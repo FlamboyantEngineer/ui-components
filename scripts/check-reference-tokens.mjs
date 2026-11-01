@@ -4,7 +4,7 @@
 // every token is defined once, used, and not a literal copy of another; component-scoped tokens
 // carry their partial's name. A state rule never sizes or places a box (UIC-LABS-3.6), and a
 // control takes its height from the control scale at every size (UIC-LABS-3.7). Containers and
-// container queries are named (UIC-LABS-3.1).
+// container queries are named (UIC-LABS-3.1). A literal z-index stays on the in-page scale.
 
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -182,6 +182,12 @@ for (const declaration of declarations) {
   ) {
     problems.push(
       `${where(declaration)}: ${property} "${value}" pins a glyph by hand; use a --ref-icon-size-* token`,
+    );
+  }
+  // In-page parts stack from 0 to 4; overlays take their z-index from the layer scale (base.css).
+  if (property === 'z-index' && /^\d+$/.test(value) && Number(value) > 4) {
+    problems.push(
+      `${where(declaration)}: z-index ${value} is above the in-page scale (0 to 4); portal the part onto an overlay layer`,
     );
   }
   const isShared = declaration.file === 'base.css';

@@ -385,6 +385,7 @@ Verification: `src/components/modal/modal-confirm.test.tsx`
 | `data-entering`            | state     | `true`                                            | On the overlay and panel while an entry animation runs (React Aria).      |
 | `data-exiting`             | state     | `true`                                            | On the overlay and panel while an exit animation runs (React Aria).       |
 | `data-non-modal`           | state     | `true`                                            | On the overlay of a dialog that does not block the page.                  |
+| `data-stack-index`         | state     | `0`, `1`, …                                       | On a blocking dialog's overlay, its place among open ones, from 0.        |
 | `data-placement`           | state     | `top`, `bottom`, `left`, `right`, `center`        | On an anchored dialog, the side of the trigger it opened on (React Aria). |
 | `data-trigger`             | state     | `DialogTrigger`                                   | On an anchored dialog, what opened it (React Aria).                       |
 

@@ -91,7 +91,7 @@ Verification: `src/components/split-view/split-view.test.tsx`, `e2e/split-view.s
 
 ### UIC-SPLIT-VIEW-3.3 - Pointer resizing
 
-A primary-button press on the separator shall start a drag that keeps the pointer through pointer capture on the separator; moving along the axis changes the value by the travel times the units per pixel that `getUnitsPerPixel` returns when the drag starts (1 by default), and release, cancellation or lost capture end it. While a drag is in progress the separator and its split publish `data-resizing`, and a `ui-resize-handle__shield` covers the viewport (fixed, inline) so the stylesheet can keep the resize cursor everywhere. Keyboard resizing never enters this state.
+A primary-button press on the separator shall start a drag that keeps the pointer through pointer capture on the separator; moving along the axis changes the value by the travel times the units per pixel that `getUnitsPerPixel` returns when the drag starts (1 by default), and release, cancellation or lost capture end it. While a drag is in progress the separator and its split publish `data-resizing`, and a `ui-resize-handle__shield` covers the viewport (fixed, inline) so the stylesheet can keep the resize cursor everywhere. The shield renders through a portal on the highest overlay layer (`toast`), so no transformed or filtered ancestor confines it and no overlay covers it. Keyboard resizing never enters this state.
 
 Implementation: `src/components/split-view/resize-handle.tsx`, `src/components/split-view/resizable-split-view.tsx`
 Verification: `src/components/split-view/split-view.test.tsx`, `e2e/split-view.spec.ts`
@@ -118,7 +118,7 @@ Verification: `src/components/split-view/split-view.test.tsx`
 | `ui-split-view__pane`      | slot      |                                                                      | A pane of a resizable split.                               |
 | `ui-resize-handle`         | root      |                                                                      | The separator.                                             |
 | `ui-resize-handle__grip`   | slot      |                                                                      | Decorative grip inside the separator.                      |
-| `ui-resize-handle__shield` | slot      |                                                                      | Viewport cover while dragging, a sibling of the separator. |
+| `ui-resize-handle__shield` | slot      |                                                                      | Viewport cover while dragging, portaled on the top layer.  |
 | `data-orientation`         | attribute | `horizontal`, `vertical`                                             | Split direction on the split; bar direction on the handle. |
 | `data-ratio`               | attribute | `equal`, `main-sidebar`, `main-rail`, `content-main`, `main-content` | Fixed track sizes.                                         |
 | `data-space`               | attribute | `none`, `3xs`, `2xs`, `xs`, `sm`, `md`, `lg`, `xl`, `2xl`, `3xl`     | Gap between fixed tracks.                                  |

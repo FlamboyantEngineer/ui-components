@@ -71,6 +71,14 @@ test.describe('Modal Controller lab', () => {
       return element?.closest('[data-lab-modal]')?.getAttribute('data-lab-modal') ?? null;
     });
     expect(centre).toBe('oslo');
+    // The page is dimmed once: the modal above takes the weaker scrim.
+    const oslo = page.locator('.ui-modal[data-lab-modal="oslo"]');
+    await expect(lisbon).toHaveAttribute('data-stack-index', '0');
+    await expect(oslo).toHaveAttribute('data-stack-index', '1');
+    const background = (locator: typeof oslo) =>
+      locator.evaluate((node) => getComputedStyle(node).backgroundColor);
+    const [lower, upper] = [await background(lisbon), await background(oslo)];
+    expect(lower).not.toBe(upper);
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog', { name: 'Oslo' })).toHaveCount(0);
     await expect(another).toBeFocused();

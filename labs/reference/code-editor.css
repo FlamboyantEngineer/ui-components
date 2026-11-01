@@ -357,9 +357,6 @@
 .ui-code-editor__scrollbars .ui-scroll-region__track {
   pointer-events: auto;
 }
-.ui-code-editor__scrollbars .ui-scroll-region__thumb {
-  z-index: 1;
-}
 .ui-code-editor__scroll-marker {
   position: absolute;
   inset-inline: 0;

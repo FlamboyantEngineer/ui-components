@@ -19,6 +19,7 @@ import { Portal, useLayerZIndex } from '../portal/portal.js';
 import { ModalShownContext, retainedStyle } from './modal-retained.js';
 import { DEFAULT_OVERLAY_GUTTER, POPOVER_OFFSET } from '../../utils/overlay-defaults.js';
 import { modalHooks as hooks } from './modal-hooks.js';
+import { useModalStackIndex } from './modal-stack.js';
 
 /** The open state a dialog shares with the overlays and trigger around it. */
 interface ModalOpenState {
@@ -132,12 +133,14 @@ export function useModalOpenState({
  */
 function BlockingModal({ state, rootProps, children, ...overlay }: BlockingModalProps) {
   const zIndex = useLayerZIndex('modal');
+  const stackIndex = useModalStackIndex(state.isOpen);
   return (
     <ModalOverlay
       isOpen={state.isOpen}
       onOpenChange={state.setOpen}
       {...overlay}
       {...rootProps}
+      {...dataAttributes({ stackIndex })}
       style={{ position: 'fixed', inset: 0, zIndex }}
     >
       <AriaModal className={hooks.slotClass('panel')}>{children}</AriaModal>
@@ -223,12 +226,13 @@ function RetainedModal({ state, rootProps, children, ...dismissal }: BlockingMod
   const panelRef = useRef<HTMLDivElement>(null);
   const phase = useEnterExit(overlayRef, state.isOpen);
   const { modalProps, underlayProps } = useModalOverlay(dismissal, state, panelRef);
+  const stackIndex = useModalStackIndex(state.isOpen);
   return (
     <Portal layer="modal">
       <div
         {...underlayProps}
         {...rootProps}
-        {...dataAttributes({ entering: phase.isEntering, exiting: phase.isExiting })}
+        {...dataAttributes({ entering: phase.isEntering, exiting: phase.isExiting, stackIndex })}
         ref={overlayRef}
         inert={!state.isOpen}
         style={{ position: 'fixed', inset: 0, zIndex, ...retainedStyle(phase.isMounted) }}

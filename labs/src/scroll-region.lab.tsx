@@ -6,6 +6,7 @@ import {
 } from '../../src/components/scroll-region/scroll-region.js';
 import { resolveScrollSpy, useScrollSpy } from '../../src/components/scroll-region/index.js';
 import { Button } from '../../src/components/button/button.js';
+import { ProseTable } from '../../src/components/prose-table/prose-table.js';
 import { LabOutput } from './lab-output.js';
 import { requireDefined } from './require-defined.js';
 import { useScrollStripOverflow } from '../../src/utils/use-scroll-strip-overflow.js';
@@ -124,6 +125,18 @@ function StickyTable() {
 }
 
 const chapters = ['Orchards', 'Vineyards', 'Meadows', 'Forests'];
+
+const proseHeader = [
+  { key: 'city', content: 'City', isRowHeader: true },
+  { key: 'letter', content: 'Letter' },
+];
+const proseRows = cities.map((city) => ({
+  key: city,
+  cells: [
+    { key: 'city', content: city },
+    { key: 'letter', content: city[0] },
+  ],
+}));
 
 function Log() {
   const [lines, setLines] = useState(() => cities.slice(0, 8));
@@ -348,6 +361,21 @@ mountLab(
           aria-label="Cities table"
         >
           <StickyTable />
+        </ScrollRegion>
+      </div>
+    </LabSection>
+    <LabSection
+      title="Thumb over a sticky header"
+      description="A table whose sticky header registers no inset: the overlay track paints above the header, so the top of the thumb shows and can be grabbed there."
+    >
+      <div style={frame(360, 200)} data-lab-region="sticky-prose">
+        <ScrollRegion scrollbar="overlay" role="region" aria-label="Cities by letter">
+          <ProseTable
+            aria-label="Cities by letter"
+            header={proseHeader}
+            rows={proseRows}
+            stickyHeader
+          />
         </ScrollRegion>
       </div>
     </LabSection>

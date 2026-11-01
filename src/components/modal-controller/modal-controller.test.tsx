@@ -237,10 +237,12 @@ describe('Modal controller', () => {
     const overlays = [...document.querySelectorAll<HTMLElement>('body > .ui-modal')];
     expect(overlays).toHaveLength(2);
     expect(within(overlays[1] as HTMLElement).getByRole('dialog')).toHaveAccessibleName('Upper');
+    expect(overlays.map((overlay) => overlay.dataset.stackIndex)).toEqual(['0', '1']);
     await waitFor(() => expect(screen.getByRole('button', { name: 'Upper field' })).toHaveFocus());
     await userEvent.keyboard('{Escape}');
     await expect(upper).resolves.toBeUndefined();
     expect(titles()).toEqual(['Lower']);
+    expect(document.querySelector('.ui-modal')).toHaveAttribute('data-stack-index', '0');
     await waitFor(() => expect(screen.getByRole('textbox', { name: 'Note' })).toHaveFocus());
     expect(screen.getByRole('textbox', { name: 'Note' })).toHaveValue('Plum');
     await userEvent.keyboard('{Escape}');

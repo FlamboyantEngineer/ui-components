@@ -50,9 +50,9 @@ Verification: `src/components/modal-controller/modal-controller.test.tsx`, `e2e/
 
 ### UIC-MODAL-CONTROLLER-2.2 - Stacking and focus
 
-The most recently opened modal shall stack on top and alone respond to Escape and outside presses, while the modals beneath stay mounted with their state. Closing the topmost shall return focus into the modal beneath it, and closing the last shall return focus to the element focused when it opened.
+The most recently opened modal shall stack on top and alone respond to Escape and outside presses, while the modals beneath stay mounted with their state. Each blocking modal publishes its place among the open blocking modals of its document in `data-stack-index` on its overlay (0 for the lowest, in opening order, kept while it leaves), as drawers do ([DRAWER.md](DRAWER.md)), so the stylesheet dims the page once: a modal over another takes the weaker scrim (`--ref-scrim-weak`). Closing the topmost shall return focus into the modal beneath it, and closing the last shall return focus to the element focused when it opened.
 
-Implementation: `src/components/modal-controller/modal-controller.tsx`, `src/components/modal/modal.tsx`
+Implementation: `src/components/modal-controller/modal-controller.tsx`, `src/components/modal/modal.tsx`, `src/components/modal/modal-stack.ts`, `labs/reference/modal.css`
 Verification: `src/components/modal-controller/modal-controller.test.tsx`, `e2e/modal-controller.spec.ts`
 
 ### UIC-MODAL-CONTROLLER-2.3 - Another controller

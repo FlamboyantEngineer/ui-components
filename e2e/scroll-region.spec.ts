@@ -239,6 +239,28 @@ test.describe('Scroll Region lab', () => {
     expect(region.y + region.height - (horizontal.y + horizontal.height)).toBeGreaterThan(50);
   });
 
+  test('UIC-SCROLL-REGION-2.1 paints the overlay thumb above a sticky header', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('scroll-region');
+    const region = page.locator('[data-lab-region="sticky-prose"]');
+    await region.scrollIntoViewIfNeeded();
+    const header = await box(region.locator('thead'));
+    const thumb = await box(
+      region.locator(
+        '.ui-scroll-region__track[data-orientation="vertical"] .ui-scroll-region__thumb',
+      ),
+    );
+    // The thumb starts at the top, under the sticky header's row.
+    expect(thumb.y).toBeLessThan(header.y + header.height);
+    const hit = await page.evaluate(
+      ({ x, y }) => Boolean(document.elementFromPoint(x, y)?.closest('.ui-scroll-region__thumb')),
+      { x: thumb.x + thumb.width / 2, y: thumb.y + 2 },
+    );
+    expect(hit).toBe(true);
+  });
+
   test('UIC-SCROLL-REGION-2.2 starts a right-to-left horizontal thumb at the right', async ({
     page,
     lab,

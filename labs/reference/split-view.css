@@ -123,10 +123,6 @@
   opacity: var(--ref-disabled-opacity);
 }
 
-.ui-resize-handle__shield {
-  z-index: 1000;
-}
-
 .ui-resize-handle__shield[data-orientation='vertical'] {
   cursor: col-resize;
 }

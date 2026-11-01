@@ -211,7 +211,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Stacking"
-      description="Each modal can open another above it; Escape closes the top one and focus returns to the one beneath."
+      description="Each modal can open another above it, which dims the page less since the one beneath already dims it; Escape closes the top one and focus returns to the one beneath."
     >
       <Button size="sm" data-lab-open="stack" onPress={() => openCity('Lisbon')}>
         Plan a trip
