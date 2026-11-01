@@ -136,32 +136,24 @@ function CoverageSortedMatrix() {
 
 /** A matrix mounted before its data loads: its first cell keeps its row as the rows reorder. */
 function ArrivingMatrix() {
-  const [isMounted, setMounted] = useState(false);
   const [rows, setRows] = useState<RelationMatrixItem[]>([]);
   const [output, setOutput] = useState('No action yet');
-  const load = () => {
-    setMounted(true);
-    setRows([]);
-    setTimeout(() => setRows(requirements.slice(0, 3)), 300);
-  };
   return (
     <div data-lab-demo="arriving">
-      <button type="button" onClick={load}>
-        Mount, then load the data
+      <button type="button" onClick={() => setRows(requirements.slice(0, 3))}>
+        Load the data
       </button>{' '}
       <button type="button" onClick={() => setRows((current) => [...current].reverse())}>
         Reverse the rows
       </button>
-      {isMounted ? (
-        <RelationMatrix
-          aria-label="Matrix that loads later"
-          rows={rows}
-          columns={rows.length > 0 ? tests.slice(0, 3) : []}
-          relations={traces}
-          kinds={kinds}
-          onCellAction={(cell) => setOutput(describeAction(cell, 'verifies'))}
-        />
-      ) : null}
+      <RelationMatrix
+        aria-label="Matrix that loads later"
+        rows={rows}
+        columns={rows.length > 0 ? tests.slice(0, 3) : []}
+        relations={traces}
+        kinds={kinds}
+        onCellAction={(cell) => setOutput(describeAction(cell, 'verifies'))}
+      />
       <output data-lab-output>{output}</output>
     </div>
   );
@@ -282,7 +274,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Data that arrives"
-      description="The matrix mounts with no rows or columns and its data loads a moment later. Reverse the rows, then Tab into the grid and press Enter: the first cell still belongs to Requirement 1."
+      description="The matrix mounts with no rows or columns: the header row alone, with no empty body. Load the data, reverse the rows, then Tab into the grid and press Enter: the first cell still belongs to Requirement 1."
     >
       <ArrivingMatrix />
     </LabSection>

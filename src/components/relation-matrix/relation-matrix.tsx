@@ -72,6 +72,35 @@ const defaultRowHeight = 32;
 const defaultColumnWidth = 32;
 
 /**
+ * The body rows. A row group holds at least one row, so a matrix without rows has the header row
+ * alone.
+ */
+function RelationMatrixBody({
+  rows,
+  rowIndices,
+  context,
+}: {
+  rows: readonly RelationMatrixItem[];
+  rowIndices: readonly number[];
+  context: RelationMatrixRowContext;
+}) {
+  if (rows.length === 0) return null;
+  const { virtualized, rowHeight } = context;
+  return (
+    <div
+      role="rowgroup"
+      {...hooks.slot('body')}
+      style={virtualized ? { position: 'relative', height: rows.length * rowHeight } : undefined}
+    >
+      {rowIndices.map((rowIndex) => {
+        const row = rows[rowIndex] as RelationMatrixItem;
+        return <RelationMatrixRow key={toKeyIdentity(row.id)} {...{ row, rowIndex, context }} />;
+      })}
+    </div>
+  );
+}
+
+/**
  * A matrix of row items × column items: a grid with a header row pinned to the top and a row
  * header column pinned to the start, each header with its relation count (rows and columns without
  * one publish `data-uncovered`), and a mark in each related cell by its relation's kind. Arrow
@@ -142,16 +171,7 @@ export function RelationMatrix({
         {...{ tracks: view.tracks, index, rowsLabel: rowsLabel ?? strings.relationItems }}
         {...{ focus: navigation.focus, isFocusWithin: navigation.isFocusWithin }}
       />
-      <div
-        role="rowgroup"
-        {...hooks.slot('body')}
-        style={virtualized ? { position: 'relative', height: rows.length * rowHeight } : undefined}
-      >
-        {view.rows.map((rowIndex) => {
-          const row = rows[rowIndex] as RelationMatrixItem;
-          return <RelationMatrixRow key={toKeyIdentity(row.id)} {...{ row, rowIndex, context }} />;
-        })}
-      </div>
+      <RelationMatrixBody {...{ rows, rowIndices: view.rows, context }} />
     </div>
   );
 }
