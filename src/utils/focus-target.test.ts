@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { getDeepActiveElement, isFocusableElement } from './focus-target.js';
+import { getDeepActiveElement, isFocusableElement, isFocused } from './focus-target.js';
 
 /** A same-origin frame with a button, appended to the page. */
 function createFrame() {
@@ -33,5 +33,22 @@ describe('focus targets', () => {
     button.focus();
     expect(frame).toHaveFocus();
     expect(getDeepActiveElement()).toBe(button);
+  });
+  it('UIC-FOCUS-SCOPE-2.8 follows focus into open shadow roots, also through a frame', () => {
+    const host = document.body.appendChild(document.createElement('div'));
+    const shadow = host.attachShadow({ mode: 'open' });
+    const inner = shadow.appendChild(document.createElement('button'));
+    const other = shadow.appendChild(document.createElement('button'));
+    inner.focus();
+    expect(host).toHaveFocus();
+    expect(getDeepActiveElement()).toBe(inner);
+    expect(isFocused(inner)).toBe(true);
+    expect(isFocused(other)).toBe(false);
+    expect(isFocused(host)).toBe(false);
+    const root = inner.getRootNode();
+    inner.remove();
+    expect(isFocused(inner)).toBe(false);
+    expect(isFocused(null)).toBe(false);
+    expect(root).toBe(shadow);
   });
 });

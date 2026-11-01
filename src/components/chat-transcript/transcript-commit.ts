@@ -1,4 +1,5 @@
 import { isEditableTarget } from '../../utils/is-editable-target.js';
+import { containsFocus, getDeepActiveElement } from '../../utils/composed-focus.js';
 import { readOffset } from './transcript-geometry.js';
 import {
   isTranscriptMessage,
@@ -114,8 +115,8 @@ export function focusMessage(
 /** Whether focus may move to a message: not while the reader types in a field outside. */
 function isFocusFree(runtime: TranscriptRuntime) {
   const viewport = runtime.viewport.current;
-  const active = getOwnerDocument(viewport).activeElement;
-  if (viewport?.contains(active)) return true;
+  if (containsFocus(viewport)) return true;
+  const active = getDeepActiveElement(getOwnerDocument(viewport));
   return !isEditableTarget(active);
 }
 

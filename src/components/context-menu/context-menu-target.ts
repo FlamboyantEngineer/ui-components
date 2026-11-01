@@ -1,5 +1,6 @@
 'use client';
 
+import { isFocused } from '../../utils/focus-target.js';
 import {
   useCallback,
   useMemo,
@@ -81,7 +82,7 @@ function hasMoved(press: PendingPress, event: PointerEvent) {
 
 /** Opens the menu at a point, focusing a focusable target first so focus returns to it on close. */
 function openAt(controller: MenuController, element: HTMLElement, point: { x: number; y: number }) {
-  if (element.tabIndex >= 0 && element.ownerDocument.activeElement !== element) {
+  if (element.tabIndex >= 0 && !isFocused(element)) {
     element.focus({ preventScroll: true });
   }
   controller.open(point);

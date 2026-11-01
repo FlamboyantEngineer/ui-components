@@ -1,5 +1,6 @@
 'use client';
 
+import { getComposedActiveElement } from '../../utils/focus-target.js';
 import { PlusGlyph } from '../../core/glyphs.js';
 import { useMemo, useRef, type RefObject } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
@@ -102,7 +103,7 @@ function useStepActions(options: {
   };
   /** Alt+Arrow keys: focus stays on the element that had it, which the move may drop. */
   const step = (id: string, delta: -1 | 1) => {
-    const active = getOwnerDocument(root.current).activeElement;
+    const active = getComposedActiveElement(root.current ?? getOwnerDocument(null));
     move(resolveStepMove(steps, id, delta), () =>
       requestFocus(() => (isHTMLElement(active) && active.isConnected ? active : null)),
     );

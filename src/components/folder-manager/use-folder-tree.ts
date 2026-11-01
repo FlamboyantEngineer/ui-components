@@ -1,5 +1,6 @@
 'use client';
 
+import { containsFocus, isFocusLost } from '../../utils/focus-target.js';
 import { useEffect, useState, type RefObject } from 'react';
 import type { Key } from '../../core/props.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
@@ -149,10 +150,7 @@ export function useRowFocus(
     const region = regionRef.current;
     if (!request || !root || !region) return undefined;
     const owner = root.ownerDocument;
-    const isOwned = () => {
-      const active = owner.activeElement;
-      return active === null || active === owner.body || root.contains(active);
-    };
+    const isOwned = () => isFocusLost(root) || containsFocus(root);
     const focusRow = () => {
       if (!isOwned()) {
         done();
@@ -171,7 +169,9 @@ export function useRowFocus(
     });
     // Focus the reader moves out of the manager while the row is awaited ends the request.
     const onFocusIn = (event: FocusEvent) => {
-      if (isNode(event.target) && root.contains(event.target)) return;
+      // A shadow root retargets the event to its host; the composed path starts at the element.
+      const target = event.composedPath()[0] ?? event.target;
+      if (isNode(target) && root.contains(target)) return;
       observer.disconnect();
       done();
     };

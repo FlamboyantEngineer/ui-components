@@ -2,8 +2,9 @@ import { act, render, renderHook, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { ShadowHost, deepActive, inShadow, shadowRootOf } from '../../test/shadow-fixtures.js';
 import { requireDefined } from './require-defined.js';
-import { useFocusRequest } from './use-focus-request.js';
+import { focusWithRetry, useFocusRequest } from './use-focus-request.js';
 
 function Editor({
   blockFrames = 0,
@@ -174,5 +175,23 @@ describe('useFocusRequest', () => {
       unmount();
       frame.remove();
     }
+  });
+  it('UIC-FOCUS-SCOPE-2.8 sees focus it gave inside a shadow root and stops retrying', () => {
+    vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame'] });
+    render(
+      <ShadowHost name="editor">
+        <input aria-label="Name" />
+      </ShadowHost>,
+    );
+    const input = inShadow('editor').getByRole('textbox', { name: 'Name' });
+    const focus = vi.spyOn(input, 'focus');
+    focusWithRetry(() => shadowRootOf('editor').querySelector<HTMLElement>('input'));
+    for (let frame = 0; frame < 6; frame += 1) {
+      act(() => {
+        vi.advanceTimersToNextFrame();
+      });
+    }
+    expect(deepActive()).toBe(input);
+    expect(focus).toHaveBeenCalledOnce();
   });
 });

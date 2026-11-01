@@ -2,6 +2,7 @@
 
 // Keeps focus in a card whose focused element a collapse or a smaller presentation took away.
 
+import { isFocusLost, isFocused } from '../../utils/focus-target.js';
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { isElement, isHTMLElement, isNode } from '../../utils/is-element.js';
 import { cardHooks as hooks } from './card-hooks.js';
@@ -57,8 +58,7 @@ export function useFocusRescue(
     shownPresentation.current = presentation;
     const element = focused.current;
     if (!root || !element || !isGone(element)) return;
-    const active = root.ownerDocument.activeElement;
-    if (active && active !== element && active !== root.ownerDocument.body) return;
+    if (!isFocused(element, root) && !isFocusLost(root)) return;
     const own = (candidate: HTMLElement) =>
       !isGone(candidate) &&
       !candidate.matches(':disabled') &&

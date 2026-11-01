@@ -2,6 +2,7 @@
 
 // Whether focus is inside a field, and the moment it leaves.
 
+import { isFocusLost } from '../../utils/focus-target.js';
 import { useEffect, useLayoutEffect, useRef, useState, type FocusEvent } from 'react';
 import { useLatest } from '../../utils/use-latest.js';
 
@@ -32,8 +33,8 @@ function useFocusedPartRecovery(
     const element = part.current;
     if (!isFocused || !element || element.isConnected) return;
     part.current = null;
-    const active = getRoot()?.ownerDocument.activeElement;
-    if (!active || active.localName === 'body') getControl()?.focus();
+    const root = getRoot();
+    if (!root || isFocusLost(root)) getControl()?.focus();
   });
   return (event: FocusEvent) => {
     const inside = getRoot()?.contains(event.target as Node);

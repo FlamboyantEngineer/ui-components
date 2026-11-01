@@ -1,5 +1,6 @@
 'use client';
 
+import { containsFocus, isFocusLost } from '../../utils/focus-target.js';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import type { BaseProps } from '../../core/props.js';
@@ -53,8 +54,7 @@ function useSettledFocus(status: ChatQuestionData['status']) {
     if (status === 'pending' || !isSettling.current) return;
     isSettling.current = false;
     const root = rootRef.current;
-    const active = root?.ownerDocument.activeElement;
-    if (root && (!active || active === root.ownerDocument.body || root.contains(active))) {
+    if (root && (isFocusLost(root) || containsFocus(root))) {
       root.focus();
     }
   }, [status]);

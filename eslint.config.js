@@ -123,6 +123,40 @@ const CONTEXT_PROVIDER_SYNTAX = {
   message: 'Render a context as `<Context value>`, not `<Context.Provider>` (I5).',
 };
 
+// Library source: function components, cross-window node checks, cached formatters.
+const SOURCE_SYNTAX = [
+  {
+    selector: 'ClassDeclaration',
+    message: 'Use function components and plain functions (I1).',
+  },
+  {
+    selector: 'ClassExpression',
+    message: 'Use function components and plain functions (I1).',
+  },
+  {
+    // A frame's or a popup window's nodes come from other constructors.
+    selector:
+      "BinaryExpression[operator='instanceof'][right.name=/^(Node|Element|(HTML|SVG)\\w*Element)$/]",
+    message:
+      'Use isNode, isElement or isHTMLElement (src/utils/is-element.ts), which hold for nodes of any window.',
+  },
+  {
+    // Each call builds a new Intl formatter.
+    selector: 'CallExpression[callee.property.name=/^toLocale(Date|Time)?String$/]',
+    message:
+      'Format through the cached useNumberFormatter or useDateFormatter (src/primitives), or getNumberFormat.',
+  },
+  ENUM_SYNTAX,
+  CONTEXT_PROVIDER_SYNTAX,
+];
+
+// Inside a shadow root, `document.activeElement` is the host; read focus through the helpers.
+const ACTIVE_ELEMENT_SYNTAX = {
+  selector: "MemberExpression[property.name='activeElement']",
+  message:
+    'Read focus with getComposedActiveElement, isFocused, containsFocus or isFocusLost (src/utils/composed-focus.ts), which see through shadow roots.',
+};
+
 export default tseslint.config(
   {
     ignores: [
@@ -294,32 +328,7 @@ export default tseslint.config(
       'max-lines': ['error', { max: 300, skipBlankLines: true, skipComments: true }],
       'max-lines-per-function': ['error', { max: 80, skipBlankLines: true, skipComments: true }],
       'ui/component-imports': 'error',
-      'no-restricted-syntax': [
-        'error',
-        {
-          selector: 'ClassDeclaration',
-          message: 'Use function components and plain functions (I1).',
-        },
-        {
-          selector: 'ClassExpression',
-          message: 'Use function components and plain functions (I1).',
-        },
-        {
-          // A frame's or a popup window's nodes come from other constructors.
-          selector:
-            "BinaryExpression[operator='instanceof'][right.name=/^(Node|Element|(HTML|SVG)\\w*Element)$/]",
-          message:
-            'Use isNode, isElement or isHTMLElement (src/utils/is-element.ts), which hold for nodes of any window.',
-        },
-        {
-          // Each call builds a new Intl formatter.
-          selector: 'CallExpression[callee.property.name=/^toLocale(Date|Time)?String$/]',
-          message:
-            'Format through the cached useNumberFormatter or useDateFormatter (src/primitives), or getNumberFormat.',
-        },
-        ENUM_SYNTAX,
-        CONTEXT_PROVIDER_SYNTAX,
-      ],
+      'no-restricted-syntax': ['error', ...SOURCE_SYNTAX, ACTIVE_ELEMENT_SYNTAX],
       '@typescript-eslint/naming-convention': [
         'error',
         { selector: 'typeLike', format: ['PascalCase'] },
@@ -332,6 +341,11 @@ export default tseslint.config(
         { selector: 'parameter', format: ['camelCase', 'PascalCase'], leadingUnderscore: 'allow' },
       ],
     },
+  },
+  {
+    // The focus helpers are where `activeElement` is read.
+    files: ['src/utils/composed-focus.ts'],
+    rules: { 'no-restricted-syntax': ['error', ...SOURCE_SYNTAX] },
   },
   {
     // Tests query what a reader perceives and act as a reader does (docs/TESTING-GUIDELINES.md).

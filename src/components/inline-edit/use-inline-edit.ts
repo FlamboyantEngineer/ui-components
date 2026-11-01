@@ -1,5 +1,6 @@
 'use client';
 
+import { isFocused } from '../../utils/focus-target.js';
 import { toErrorMessage } from '../../utils/to-error-message.js';
 // The editing state of an inline edit: opening and closing the editor, the value being edited, the
 // save and its outcome, focus, and the keys and focus moves that save or cancel.
@@ -45,7 +46,7 @@ function focusEditor(editor: HTMLElement | null) {
   if (!editor) return;
   for (const target of listTabbables(editor)) {
     target.focus();
-    if (target.ownerDocument.activeElement !== target) continue;
+    if (!isFocused(target)) continue;
     if (isHTMLElement(target, 'input')) target.select();
     if (isHTMLElement(target, 'textarea')) target.setSelectionRange(-1, -1);
     return;

@@ -1,5 +1,6 @@
 'use client';
 
+import { isFocused } from '../../utils/focus-target.js';
 import { useId, useLayoutEffect, useRef, type KeyboardEvent, type RefObject } from 'react';
 import { getCompletionOptionId } from './completion-option-id.js';
 import {
@@ -76,7 +77,7 @@ function hasCaret(input: TextControl): boolean {
 function insertNatively(input: TextControl, range: CompletionRange, text: string): boolean {
   const next = `${input.value.slice(0, range.start)}${text}${input.value.slice(range.end)}`;
   const doc = input.ownerDocument;
-  if (doc.activeElement !== input || typeof doc.execCommand !== 'function') return false;
+  if (!isFocused(input) || typeof doc.execCommand !== 'function') return false;
   const caret = hasCaret(input);
   // Without a caret only the whole value can be selected, so the edit replaces all of it.
   if (caret) input.setSelectionRange(range.start, range.end);

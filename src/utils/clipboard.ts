@@ -1,6 +1,8 @@
 // Copying text to the system clipboard: the asynchronous Clipboard API first, then a selection copy
 // for pages where that API is missing (insecure origins, older browsers) or refuses.
 
+import { isFocused } from './composed-focus.js';
+import { getDeepActiveElement } from './composed-focus.js';
 import { isHTMLElement } from './is-element.js';
 import { getOwnerDocument } from './owner-window.js';
 
@@ -86,7 +88,7 @@ function copyWithSelection(
   const ranges = selection
     ? Array.from({ length: selection.rangeCount }, (_, index) => selection.getRangeAt(index))
     : [];
-  const focused = document.activeElement;
+  const focused = getDeepActiveElement(document);
 
   const buffer = document.createElement('pre');
   buffer.textContent = formats['text/plain'] ?? '';
@@ -122,7 +124,7 @@ function copyWithSelection(
       selection.removeAllRanges();
       for (const range of ranges) selection.addRange(range);
     }
-    if (isHTMLElement(focused) && document.activeElement !== focused) {
+    if (isHTMLElement(focused) && !isFocused(focused)) {
       focused.focus({ preventScroll: true });
     }
   }

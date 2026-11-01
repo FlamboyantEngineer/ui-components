@@ -4,6 +4,7 @@
 // the row, and Escape keeps the old name. The rename acts on the row as the owner draws it now: a
 // row that becomes disabled, leaves the tree or stops taking renames closes its field unrenamed.
 
+import { isFocused } from '../../utils/focus-target.js';
 import {
   useLayoutEffect,
   useMemo,
@@ -47,7 +48,7 @@ function findRenameable<T extends TreeItemData>(key: Key, scope: RenameScope<T>)
 /** Moves focus from a closing name field to its row, or to the tree when the row takes no focus. */
 function focusNear(input: HTMLInputElement) {
   input.closest<HTMLElement>('[role="row"]')?.focus();
-  if (input !== input.ownerDocument.activeElement) return;
+  if (!isFocused(input)) return;
   input.closest<HTMLElement>('[role="treegrid"]')?.focus();
 }
 
@@ -112,7 +113,7 @@ export function useTreeRename<T extends TreeItemData>(
     if (!isRevoked) return;
     const input = inputRef.current;
     editingRef.current = null;
-    if (input && input === input.ownerDocument.activeElement) focusNear(input);
+    if (input && isFocused(input)) focusNear(input);
     // eslint-disable-next-line react-hooks/set-state-in-effect -- focus leaves the committed field before it unmounts.
     setEditingKey(null);
   }, [isRevoked]);

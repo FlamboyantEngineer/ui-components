@@ -1,5 +1,6 @@
 'use client';
 
+import { isFocusLost } from './focus-target.js';
 import { useLayoutEffect, useRef } from 'react';
 import { isElement, isNode } from './is-element.js';
 
@@ -10,7 +11,7 @@ import { isElement, isNode } from './is-element.js';
 function refocusItem(collection: HTMLElement, key: string): () => void {
   const owner = collection.ownerDocument;
   const attempt = () => {
-    if (owner.activeElement !== owner.body) return true;
+    if (!isFocusLost(owner)) return true;
     const item = collection.querySelector<HTMLElement>(`[data-key="${CSS.escape(key)}"]`);
     item?.focus();
     return item !== null;

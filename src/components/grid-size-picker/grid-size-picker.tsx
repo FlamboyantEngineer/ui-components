@@ -1,5 +1,7 @@
 'use client';
 
+import { getOwnerDocument } from '../../utils/owner-window.js';
+import { isFocusLost } from '../../utils/focus-target.js';
 import { useLayoutEffect, useRef, useState, type FocusEvent, type KeyboardEvent } from 'react';
 import { useHover, useLocale, usePress } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
@@ -113,9 +115,8 @@ function useGridPreview(max: GridSize, autoFocus: boolean) {
   // Browsers fire no blur when they remove a focused cell, so this stays set until focus leaves.
   const hasFocus = useRef(false);
   useLayoutEffect(() => {
-    const active = gridRef.current?.ownerDocument.activeElement;
-    const isFocusLost = hasFocus.current && (!active || active === active.ownerDocument.body);
-    if (!shouldFocus.current && !isFocusLost) return;
+    const isLost = hasFocus.current && isFocusLost(getOwnerDocument(gridRef.current));
+    if (!shouldFocus.current && !isLost) return;
     shouldFocus.current = false;
     cellRef.current?.focus();
   });

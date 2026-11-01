@@ -1,5 +1,6 @@
 'use client';
 
+import { containsFocus, isFocusLost } from '../../utils/focus-target.js';
 import { useCallback, useId, useMemo, useRef, useState, type RefObject } from 'react';
 import type { Key } from '../../core/props.js';
 import { getOwnerDocument } from '../../utils/owner-window.js';
@@ -168,9 +169,8 @@ export function useFolderManager<T extends FolderItem, M extends FolderSelection
     onSettle: (key) => setFocusRequest({ key: toRowKey(key) }),
     onRevoke: () => {
       // The name field left with its row, so focus fell to the page or the tree; elsewhere it moved on.
-      const active = getOwnerDocument(regionRef.current).activeElement;
-      const isInManager = active === null || regionRef.current?.contains(active) === true;
-      if (!isInManager && active !== active.ownerDocument.body) return;
+      const region = regionRef.current;
+      if (!isFocusLost(getOwnerDocument(region)) && !containsFocus(region)) return;
       const kept = selected.find((key) => findFolderPath(folders, key).length > 0);
       setFocusRequest({ key: toRowKey(kept ?? null) });
     },

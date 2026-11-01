@@ -1,5 +1,6 @@
 'use client';
 
+import { getComposedActiveElement, isFocusLost } from '../../utils/focus-target.js';
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import type { BaseProps, ControlSize, Key } from '../../core/props.js';
 import { createSlotRegistry, type SlotRegistry } from '../../utils/slot-registry.js';
@@ -95,18 +96,22 @@ function useFieldLeave(state: FieldState<unknown>, slots: FieldSlots, commitOnBl
  * Focuses the control once, when the field mounts with `autoFocus`, unless focus moved to another
  * element while it mounted, such as into a list that opens with the field.
  */
+/** The element focused in the tree `container` renders into, or null on the server. */
+function readFocused(container: Element | null | undefined): Element | null {
+  const owner = findOwnerDocument(container);
+  return owner ? getComposedActiveElement(container ?? owner) : null;
+}
+
 function useAutoFocus(autoFocus: boolean | undefined, slots: FieldSlots) {
   // The element focused when the field first renders, read before any part can take focus, in the
   // document the field renders into (its portal container's).
   const container = usePortalContainer();
-  const [focusedBefore] = useState(() =>
-    autoFocus === true ? (findOwnerDocument(container)?.activeElement ?? null) : undefined,
-  );
+  const [focusedBefore] = useState(() => (autoFocus === true ? readFocused(container) : undefined));
   useEffect(() => {
     const control = slots.read('control');
     if (focusedBefore === undefined || !control) return;
-    const active = control.ownerDocument.activeElement;
-    if (active === focusedBefore || !active || active === control.ownerDocument.body) {
+    const active = getComposedActiveElement(control);
+    if (active === focusedBefore || isFocusLost(control)) {
       focusControl(control);
     }
   }, [focusedBefore, slots]);

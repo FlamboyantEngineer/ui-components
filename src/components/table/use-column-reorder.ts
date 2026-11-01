@@ -1,5 +1,6 @@
 'use client';
 
+import { isFocused } from '../../utils/focus-target.js';
 import { useId, useLayoutEffect, useRef, type KeyboardEvent, type RefObject } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { isMoveChord } from '../../utils/use-reorder-drag-and-drop.js';
@@ -72,7 +73,7 @@ export function useColumnReorder<T>({
     refocus.current = null;
     if (!pending) return;
     const header = listHeaders(pending.root).find((item) => item.dataset['column'] === pending.id);
-    if (header && header !== header.ownerDocument.activeElement) header.focus();
+    if (header && !isFocused(header)) header.focus();
   });
 
   const onKeyDownCapture = (event: KeyboardEvent<HTMLElement>) => {

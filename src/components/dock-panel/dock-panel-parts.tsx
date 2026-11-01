@@ -1,5 +1,6 @@
 'use client';
 
+import { containsComposed, getComposedActiveElement, isFocused } from '../../utils/focus-target.js';
 import {
   Children,
   isValidElement,
@@ -174,12 +175,11 @@ function createPaneHost(): PaneHost {
     // Moving an element blurs what it holds; focus stays put where the element lands shown. The
     // holder may still be hidden while React commits, so focus that does not take is retried once
     // the commit has shown it.
-    const active = element.ownerDocument.activeElement;
+    const active = getComposedActiveElement(element);
     holder.append(element);
-    if (!isHTMLElement(active) || !element.contains(active)) return;
+    if (!isHTMLElement(active) || !containsComposed(element, active)) return;
     active.focus({ preventScroll: true });
-    if (element.ownerDocument.activeElement !== active)
-      queueMicrotask(() => active.focus({ preventScroll: true }));
+    if (!isFocused(active)) queueMicrotask(() => active.focus({ preventScroll: true }));
   };
   return {
     element,

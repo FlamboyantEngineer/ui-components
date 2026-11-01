@@ -1,5 +1,6 @@
 'use client';
 
+import { isFocused } from '../../utils/focus-target.js';
 import { DragHandleGlyph, ResizeGlyph } from '../../core/glyphs.js';
 import { useLayoutEffect, useRef, type ReactNode } from 'react';
 import { Glyph, useUiStrings } from '../../core/provider.js';
@@ -60,7 +61,7 @@ function TileHandle({ grid, kind, label, minColumnSpan, minRowSpan }: TileHandle
     const target = refocusRef.current;
     if (target?.id !== grid.item.id || target.kind !== kind) return;
     refocusRef.current = null;
-    if (ref.current && ref.current.ownerDocument.activeElement !== ref.current) ref.current.focus();
+    if (ref.current && !isFocused(ref.current)) ref.current.focus();
   });
   return (
     <button

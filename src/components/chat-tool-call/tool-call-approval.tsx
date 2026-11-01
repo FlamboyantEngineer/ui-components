@@ -2,6 +2,7 @@
 
 // A tool call's approval: the request with its buttons and deny reason form, then the decision.
 
+import { containsFocus } from '../../utils/focus-target.js';
 import { useId, useLayoutEffect, useRef, useState, type FocusEvent } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
@@ -71,8 +72,7 @@ function useFocusRescue(getFallbackFocus: () => HTMLElement | null) {
   useLayoutEffect(() => {
     const container = containerRef.current;
     return () => {
-      if (container?.contains(container.ownerDocument.activeElement))
-        fallbackRef.current()?.focus();
+      if (containsFocus(container)) fallbackRef.current()?.focus();
     };
   }, []);
   return containerRef;
@@ -143,7 +143,7 @@ function DenyForm({ state }: { state: ToolCallApprovalState }) {
   useLayoutEffect(() => {
     const form = formRef.current;
     return () => {
-      if (form?.contains(form.ownerDocument.activeElement)) rescueFocus();
+      if (containsFocus(form)) rescueFocus();
     };
   }, [rescueFocus]);
   return (

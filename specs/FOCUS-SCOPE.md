@@ -73,8 +73,10 @@ Verification: `src/components/focus-scope/focus-scope.test.tsx`, `src/utils/focu
 
 A scope shall read focus in its own tree and follow it into open shadow roots, so the final focus of [UIC-FOCUS-SCOPE-2.7](#uic-focus-scope-27---final-focus) holds for a scope inside a shadow root: focus on an element inside the scope counts as inside, not as moved elsewhere, and focus the reader moved elsewhere in the shadow root stays there.
 
-Implementation: `src/components/focus-scope/focus-scope.tsx`, `src/utils/focus-target.ts`
-Verification: `src/components/focus-scope/focus-scope-shadow.test.tsx`, `e2e/focus-scope.spec.ts`
+Every component of the library reads focus the same way, through `getComposedActiveElement`, `isFocused`, `containsFocus`, `isFocusLost` and `getDeepActiveElement` (which follows frames and open shadow roots), never through `activeElement` directly, which inside a shadow root names the host: closing editors and renames (Table, Tree, Tabs), moved panes (DockPanel), settled questions and approvals (ChatQuestion, ChatToolCall), removed rows and items (RelationMatrix, ChatAttachment, CalendarView, FolderManager), focus requests and retries, InlineEdit's first control, native edits that keep the undo stack (CodeEditor, completions) and the transcript's typing check all hold inside a shadow root. A lint rule rejects `activeElement` outside `src/utils/composed-focus.ts`; the portal tab-order guard, which walks the page's own tab sequence, is the one allowed exception.
+
+Implementation: `src/components/focus-scope/focus-scope.tsx`, `src/utils/focus-target.ts`, `src/utils/composed-focus.ts`, `src/utils/use-focus-request.ts`, `src/components/inline-edit/use-inline-edit.ts`, `eslint.config.js`
+Verification: `src/components/focus-scope/focus-scope-shadow.test.tsx`, `src/utils/focus-target.test.ts`, `src/utils/use-focus-request.test.tsx`, `src/components/inline-edit/inline-edit.test.tsx`, `e2e/focus-scope.spec.ts`
 
 ## UIC-FOCUS-SCOPE-3 - Focus manager
 

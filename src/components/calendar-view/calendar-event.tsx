@@ -1,5 +1,6 @@
 'use client';
 
+import { isFocused } from '../../utils/focus-target.js';
 import { useLayoutEffect, useRef, type CSSProperties } from 'react';
 import { Button as AriaButton } from '../../primitives/index.js';
 import type { Key } from '../../core/props.js';
@@ -68,15 +69,16 @@ function formatTime(
  */
 function useFocusHandoff() {
   const ref = useRef<HTMLButtonElement>(null);
-  useLayoutEffect(
-    () => () => {
-      const button = ref.current;
-      if (button && button.ownerDocument.activeElement === button) {
+  useLayoutEffect(() => {
+    // The button and its tree, read before the button leaves it.
+    const button = ref.current;
+    const root = button?.getRootNode();
+    return () => {
+      if (button && isFocused(button, root)) {
         button.closest<HTMLElement>(dayCellSelector)?.focus();
       }
-    },
-    [],
-  );
+    };
+  }, []);
   return ref;
 }
 

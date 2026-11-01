@@ -3,6 +3,7 @@
 // The menubar's shared state: which menu is open, which top-level item is the tab stop, and the
 // keys and pointer moves that pass from one menu to another.
 
+import { isFocusLost } from '../../utils/focus-target.js';
 import {
   createContext,
   useCallback,
@@ -204,9 +205,7 @@ function useOpenMenu(
     if (openKey === null || items.has(openKey)) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect -- The registry is filled by ref callbacks, so a removed item is known only after commit.
     setOpenKey(null);
-    const owner = getOwnerDocument(rootRef.current);
-    const active = owner.activeElement;
-    if (!pending.current && (!active || active === owner.body)) {
+    if (!pending.current && isFocusLost(getOwnerDocument(rootRef.current))) {
       focusTrigger(sortByDocumentOrder(items)[0]?.[1], undefined);
     }
   }, [triggers, openKey, version, rootRef, focusTrigger]);

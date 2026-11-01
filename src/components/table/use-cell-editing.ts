@@ -1,5 +1,6 @@
 'use client';
 
+import { containsFocus, isFocusLost } from '../../utils/focus-target.js';
 import {
   useCallback,
   useLayoutEffect,
@@ -15,7 +16,6 @@ import type { TableCellValue, TableColumn, TableRow } from './table-rows.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { isElement, isHTMLElement } from '../../utils/is-element.js';
-import { getOwnerDocument } from '../../utils/owner-window.js';
 
 /** A finished cell edit: the row, the column and the cell's new value. */
 export interface TableCellEdit<T> {
@@ -165,10 +165,8 @@ function useRefocus(rootRef: RefObject<HTMLElement | null>, refocusRef: RefObjec
     refocusRef.current = null;
     const element =
       target && rootRef.current ? findFocusTarget(rootRef.current, target.cell) : undefined;
-    const owner = getOwnerDocument(rootRef.current);
-    const active = owner.activeElement;
     // Focus is still in the closing editor, or fell to the page with it; elsewhere it moved on.
-    if (element && (active === null || active === owner.body || element.contains(active))) {
+    if (element && (isFocusLost(element) || containsFocus(element))) {
       const isCell = element.dataset['column'] === target?.cell.columnId;
       const next =
         isCell && target?.move && rootRef.current

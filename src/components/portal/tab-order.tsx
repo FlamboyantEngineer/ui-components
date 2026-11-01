@@ -204,6 +204,9 @@ function onTabKeyDown(event: KeyboardEvent) {
   restoreTabOrder();
   if (!isPlainTab(event)) return;
   const owner = getOwnerDocument(event.currentTarget as Node | null);
+  // The page's tab sequence is walked from the document's own focused element, a shadow host for
+  // focus inside one, as the browser's sequential navigation does.
+  // eslint-disable-next-line no-restricted-syntax
   const active = owner.activeElement;
   if (!active || active === owner.body) return;
   const direction: TabDirection = event.shiftKey ? 'backward' : 'forward';

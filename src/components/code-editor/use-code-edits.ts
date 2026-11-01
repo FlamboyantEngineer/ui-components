@@ -1,5 +1,6 @@
 'use client';
 
+import { getComposedActiveElement, isFocused } from '../../utils/focus-target.js';
 import { useCallback, useLayoutEffect, useRef, type RefObject } from 'react';
 import type { CodeEdit, CodeSelection } from './code-editing.js';
 import { isHTMLElement } from '../../utils/is-element.js';
@@ -31,11 +32,11 @@ function holdFocus(element: Element | null): () => void {
 function editNatively(input: HTMLTextAreaElement, edit: CodeEdit, next: string): boolean {
   const document = input.ownerDocument;
   if (typeof document.execCommand !== 'function') return false;
-  const owner = document.activeElement;
+  const owner = getComposedActiveElement(input);
   const restore = owner === input ? null : holdFocus(owner);
   if (restore) input.focus({ preventScroll: true });
   try {
-    if (document.activeElement !== input) return false;
+    if (!isFocused(input)) return false;
     input.setSelectionRange(edit.start, edit.end);
     document.execCommand(edit.text ? 'insertText' : 'delete', false, edit.text);
   } catch {

@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { pressComposingKeys } from '../../../test/composition.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { ShadowHost, deepActive, inShadow } from '../../../test/shadow-fixtures.js';
 import { NumberField } from '../number-field/number-field.js';
 import { InlineEdit, type InlineEditProps } from './inline-edit.js';
 
@@ -97,6 +98,23 @@ describe('InlineEdit', { timeout: 15_000 }, () => {
       await user.keyboard('{Escape}');
       expect(read()).toHaveFocus();
     }
+  });
+
+  it('UIC-INLINE-EDIT-1.2 UIC-FOCUS-SCOPE-2.8 opens on its first control inside a shadow root', async () => {
+    render(
+      <ShadowHost name="edit">
+        <Saved label="Title" />
+      </ShadowHost>,
+    );
+    const button = inShadow('edit').getByRole('button', { name: /^Edit Title/ });
+    act(() => button.focus());
+    // React Aria presses need its shadow DOM flag, which stays off in unit tests (UIC-PORTAL-1.8).
+    // eslint-disable-next-line testing-library/prefer-user-event
+    fireEvent.keyDown(button, { key: 'F2' });
+    const field = await inShadow('edit').findByRole('textbox', { name: 'Title' });
+    expect(deepActive()).toBe(field);
+    expect((field as HTMLInputElement).selectionStart).toBe(0);
+    expect((field as HTMLInputElement).selectionEnd).toBe(8);
   });
 
   it('UIC-INLINE-EDIT-1.2 opens under control without taking focus on mount', async () => {

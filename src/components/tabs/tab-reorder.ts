@@ -3,6 +3,7 @@
 // Reordering a list's tabs: Alt+Arrow keys on the focused tab, and pointer drags through the
 // building blocks' drag and drop, each reported as one move for the owner to apply.
 
+import { isFocused } from '../../utils/focus-target.js';
 import {
   useLayoutEffect,
   useRef,
@@ -124,7 +125,7 @@ export function useTabReorderKeys({ state, listRef, reorder }: TabReorderKeyOpti
     const key = refocusKey.current;
     refocusKey.current = null;
     const tab = key === null ? undefined : findTabElement(listRef.current, key);
-    if (tab && tab !== tab.ownerDocument.activeElement) tab.focus();
+    if (tab && !isFocused(tab)) tab.focus();
   });
 
   if (!reorder || !state) return undefined;

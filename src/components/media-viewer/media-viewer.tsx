@@ -11,8 +11,7 @@ import { defaultZoomLevels, findNextZoomLevel } from '../zoom-control/zoom-contr
 import { resolveMediaKey, type MediaKeyCommand } from './media-layout.js';
 import { MediaStage } from './media-stage.js';
 import { useImageRequest } from './use-image-request.js';
-import { getDeepActiveElement } from '../../utils/focus-target.js';
-import { getOwnerDocument } from '../../utils/owner-window.js';
+import { containsFocus, isFocused } from '../../utils/focus-target.js';
 import {
   MediaHeaderActions,
   MediaThumbnails,
@@ -69,8 +68,7 @@ function isPanning(viewport: HTMLElement | null, target: EventTarget): boolean {
  */
 function keepFocusInViewport(viewport: HTMLElement | null) {
   if (!viewport) return;
-  const active = getDeepActiveElement(getOwnerDocument(viewport));
-  if (active && active !== viewport && viewport.contains(active)) viewport.focus();
+  if (!isFocused(viewport) && containsFocus(viewport)) viewport.focus();
 }
 
 /** The zoom a key asks for, or the current one when there is no level that way. */

@@ -1,5 +1,6 @@
 'use client';
 
+import { containsFocus, isFocused } from '../../utils/focus-target.js';
 import {
   useContext,
   useLayoutEffect,
@@ -80,8 +81,7 @@ function useChoiceControl(
     if (Array.isArray(value)) return;
     const element = box.current;
     const selected = element?.querySelector<HTMLInputElement>('input[type="radio"]:checked');
-    const active = element?.ownerDocument.activeElement;
-    if (selected && active !== selected && element?.contains(active ?? null)) selected.focus();
+    if (selected && !isFocused(selected) && containsFocus(element)) selected.focus();
   }, [value]);
   return { box, enabled };
 }

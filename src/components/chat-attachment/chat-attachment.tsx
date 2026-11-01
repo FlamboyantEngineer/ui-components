@@ -1,5 +1,6 @@
 'use client';
 
+import { isFocusLost } from '../../utils/focus-target.js';
 import { useLayoutEffect, useRef, type RefObject } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import type { BaseProps } from '../../core/props.js';
@@ -55,9 +56,7 @@ function useRetryFocus(
     if (!retried.current || status === 'error') return;
     retried.current = false;
     const root = rootRef.current;
-    const owner = getOwnerDocument(root);
-    const active = owner.activeElement;
-    if (active && active !== owner.body) return;
+    if (!isFocusLost(getOwnerDocument(root))) return;
     (removeRef.current ?? root)?.focus();
   }, [status, rootRef, removeRef]);
   return () => {

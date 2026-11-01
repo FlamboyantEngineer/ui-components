@@ -1,5 +1,6 @@
 'use client';
 
+import { isFocused } from './focus-target.js';
 import { useCallback, useLayoutEffect, useRef } from 'react';
 
 /** Finds the element a focus request moves focus to, once the edit that asked for it has rendered. */
@@ -34,10 +35,10 @@ function createFocusAttempt(target: FocusRequestTarget) {
     if (!active) return;
     const element = target();
     if (!active) return;
-    const wasHeld = Boolean(element && element === previous && owner.activeElement === element);
+    const wasHeld = Boolean(element && element === previous && isFocused(element));
     if (element) {
       if (owner !== element.ownerDocument) listen(element.ownerDocument);
-      if (owner.activeElement !== element) element.focus();
+      if (!isFocused(element)) element.focus();
     }
     held = wasHeld ? held + 1 : 0;
     previous = element ?? null;

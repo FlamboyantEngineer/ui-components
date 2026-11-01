@@ -5,6 +5,16 @@
 
 import { useLayoutEffect, useRef, type RefObject } from 'react';
 import { isElement } from './is-element.js';
+import { containsComposed, getComposedActiveElement, isFocusLost } from './composed-focus.js';
+
+export {
+  containsComposed,
+  containsFocus,
+  getComposedActiveElement,
+  getDeepActiveElement,
+  isFocused,
+  isFocusLost,
+} from './composed-focus.js';
 
 /** An element to focus: a ref, or a function asked for the element when focus moves. */
 export type FocusTarget = RefObject<HTMLElement | null> | (() => HTMLElement | null | undefined);
@@ -21,57 +31,6 @@ interface FocusReturnOptions {
 /** Whether a value is an element that takes focus (an HTML or SVG element), from any window. */
 export function isFocusableElement(value: unknown): value is HTMLElement {
   return isElement(value) && typeof (value as Partial<HTMLElement>).focus === 'function';
-}
-
-/**
- * The focused element, followed into same-origin frames: a document whose focus sits on a frame
- * reports the frame element, not the element inside it that holds focus.
- */
-export function getDeepActiveElement(owner: Document = document): Element | null {
-  let active = owner.activeElement;
-  while (active?.tagName === 'IFRAME') {
-    const inner = (active as HTMLIFrameElement).contentDocument?.activeElement;
-    if (!inner) break;
-    active = inner;
-  }
-  return active;
-}
-
-/**
- * The element holding focus in the tree `node` belongs to, followed into open shadow roots: a
- * document or shadow root whose focus sits inside a shadow host reports the host, not the element
- * inside it.
- */
-export function getComposedActiveElement(node: Node): Element | null {
-  const root = node.getRootNode() as Partial<DocumentOrShadowRoot>;
-  let active = root.activeElement ?? null;
-  while (active?.shadowRoot?.activeElement) active = active.shadowRoot.activeElement;
-  return active;
-}
-
-/** Whether `node` is `container` or inside it, also through the shadow roots of its hosts. */
-export function containsComposed(container: Node, node: Node | null): boolean {
-  let current = node;
-  while (current) {
-    if (current === container) return true;
-    current = current.parentNode ?? (current as Partial<ShadowRoot>).host ?? null;
-  }
-  return false;
-}
-
-/** Whether focus sits on `container` or inside it, read in its tree and through open shadow roots. */
-export function containsFocus(container: Node | null | undefined): boolean {
-  return !!container && containsComposed(container, getComposedActiveElement(container));
-}
-
-/**
- * Whether focus fell to the page: nothing in the document `node` belongs to holds it, or its body
- * does. An element that leaves a shadow root with focus leaves the page's focus on the body too.
- */
-export function isFocusLost(node: Node): boolean {
-  const owner = node.ownerDocument ?? (node as Document);
-  const active = owner.activeElement;
-  return !active || active === owner.body;
 }
 
 /** The element a focus target names now, if it is still in the document. */

@@ -1,5 +1,6 @@
 'use client';
 
+import { isFocused } from '../../utils/focus-target.js';
 import {
   useCallback,
   useLayoutEffect,
@@ -120,8 +121,10 @@ function useFocusHandback(
   useLayoutEffect(() => {
     const element = thumb.current;
     const scroller = viewport.current;
+    // The tree the thumb lives in, read before the thumb leaves it.
+    const root = element?.getRootNode();
     return () => {
-      if (element && element.ownerDocument.activeElement === element) {
+      if (isFocused(element, root)) {
         scroller?.focus({ preventScroll: true });
         onFocusChange(false);
       }

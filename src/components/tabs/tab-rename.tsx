@@ -3,6 +3,7 @@
 // Renaming a tab in place: a text field laid over the tab; Enter or leaving the field renames the
 // tab when the name is valid, and Escape keeps the old name.
 
+import { isFocused } from '../../utils/focus-target.js';
 import {
   useContext,
   useEffect,
@@ -141,10 +142,12 @@ function useFocusReleaseOnClose({
   useLayoutEffect(() => {
     const input = inputRef.current;
     const list = listRef.current;
+    // The tree the field lives in, read before the field leaves it.
+    const root = input?.getRootNode();
     return () => {
       if (isDone.current) return;
       isDone.current = true;
-      if (input && input.ownerDocument.activeElement === input) focusListTab(list, tabKey);
+      if (isFocused(input, root)) focusListTab(list, tabKey);
     };
   }, [inputRef, isDone, listRef, tabKey]);
 }
@@ -173,7 +176,7 @@ function TabRenameField({ tabKey, name, rename, listRef }: TabRenameFieldProps) 
     const refocus = () => {
       view.cancelAnimationFrame(frame);
       frame = view.requestAnimationFrame(() => {
-        if (!isDone.current && tab?.ownerDocument.activeElement === tab) {
+        if (!isDone.current && isFocused(tab)) {
           inputRef.current?.focus();
         }
       });
