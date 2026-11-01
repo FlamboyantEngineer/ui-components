@@ -6,9 +6,9 @@
 
 ### UIC-TAG-GROUP-1.1 - Structure
 
-`TagGroup` shall render React Aria's `TagGroup` as its root (`ui-tag-group`, a `<div>`) holding a `TagList` (`ui-tag-group__list`, `role="grid"`) named by the group's `aria-label` or `aria-labelledby`. Each `Tag` is a row (`ui-tag-group__tag`, `role="row"`) named by its `textValue`, which defaults to its children when they are plain text, with its children in `ui-tag-group__label`.
+`TagGroup` shall render React Aria's `TagGroup` as its root (`ui-tag-group`, a `<div>`) holding a `TagList` (`ui-tag-group__list`, `role="grid"`) named by the group's `aria-label` or `aria-labelledby`. Each `Tag` is a row (`ui-tag-group__tag`, `role="row"`) named by its `textValue`, which defaults to its children when they are plain text, with its children in `ui-tag-group__label`. Buttons and checkboxes in a tag's children are free of the tag's remove-button slot: they need no `slot` and take none of its props, and the tag's own remove button keeps its slot.
 
-Implementation: `src/components/tag-group/tag-group.tsx`
+Implementation: `src/components/tag-group/tag-group.tsx`, `src/utils/free-controls.tsx`
 Verification: `src/components/tag-group/tag-group.test.tsx`, `e2e/tag-group.spec.ts`
 
 ### UIC-TAG-GROUP-1.2 - Items or children

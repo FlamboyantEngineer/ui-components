@@ -7,6 +7,7 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { UiProvider } from '../../core/provider.js';
+import { Button } from '../button/button.js';
 import { Tag, TagGroup, type TagProps } from './tag-group.js';
 
 interface Fruit {
@@ -46,6 +47,27 @@ function FruitTag(props: TagProps) {
 }
 
 describe('TagGroup', () => {
+  it('UIC-TAG-GROUP-1.1 UIC-TAG-GROUP-2.2 takes a free button in a tag and keeps its remove button', async () => {
+    const user = userEvent.setup();
+    const onPress = vi.fn();
+    const onRemove = vi.fn();
+    render(
+      <TagGroup aria-label="Filters" onRemove={onRemove}>
+        <Tag id="fig" textValue="Fig">
+          Fig{' '}
+          <Button variant="bare" size="xs" onPress={onPress}>
+            Edit
+          </Button>
+        </Tag>
+      </TagGroup>,
+    );
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    expect(onPress).toHaveBeenCalledOnce();
+    expect(onRemove).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: /^Remove/ }));
+    expect(onRemove).toHaveBeenCalledWith(new Set(['fig']));
+  });
+
   it('UIC-TAG-GROUP-2.3 UIC-TAG-GROUP-2.4 retains one-shot selected and disabled keys across rerenders', () => {
     const selectedKeys = (function* () {
       yield 'apple';

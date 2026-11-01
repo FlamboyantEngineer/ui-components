@@ -68,9 +68,9 @@ Verification: `src/components/number-field/number-field.test.tsx`, `e2e/number-f
 
 ### UIC-NUMBER-FIELD-3.1 - Literal affixes
 
-`startAdornment` and `endAdornment` shall render the caller's content in `ui-number-field__start` and `ui-number-field__end`, inside the group, around the input and within the step buttons, so a literal the locale formats cannot produce (`$ 1,000 /mo`) frames the number without becoming part of its text. The locale's own formats (currency, units, grouping such as the `en-IN` lakh) stay `formatOptions`' and the locale's. Content that renders nothing (`null`, `undefined`, a boolean or an empty string) counts as absent; `0` counts as content.
+`startAdornment` and `endAdornment` shall render the caller's content in `ui-number-field__start` and `ui-number-field__end`, inside the group, around the input and within the step buttons, so a literal the locale formats cannot produce (`$ 1,000 /mo`) frames the number without becoming part of its text. The locale's own formats (currency, units, grouping such as the `en-IN` lakh) stay `formatOptions`' and the locale's. Content that renders nothing (`null`, `undefined`, a boolean or an empty string) counts as absent; `0` counts as content. The content may hold controls, such as a `Button` that switches the unit: buttons and checkboxes there are free of the field's step-button slots, need no `slot` and take none of the steppers' props, in the decimal and the radix field alike.
 
-Implementation: `src/components/number-field/number-field.tsx`, `labs/reference/number-field.css`
+Implementation: `src/components/number-field/number-field.tsx`, `src/components/number-field/number-field-parts.tsx`, `src/utils/free-controls.tsx`, `labs/reference/number-field.css`
 Verification: `src/components/number-field/number-field.test.tsx`, `e2e/number-field.spec.ts`
 
 ### UIC-NUMBER-FIELD-3.2 - Modifier steps

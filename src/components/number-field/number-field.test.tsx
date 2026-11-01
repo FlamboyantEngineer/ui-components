@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { Button } from '../button/button.js';
 import { NumberField, type NumberFieldProps } from './number-field.js';
 
 function root(container: HTMLElement) {
@@ -351,6 +352,29 @@ describe('NumberField', () => {
     expect(container.querySelector('.ui-number-field__start')).toBeNull();
     expect(container.querySelector('.ui-number-field__end')).toBeNull();
   });
+
+  it.each<Partial<NumberFieldProps>>([{}, { radix: 16 }])(
+    'UIC-NUMBER-FIELD-3.1 takes a free button in an affix (%j)',
+    async (props) => {
+      const user = userEvent.setup();
+      const onPress = vi.fn();
+      render(
+        <NumberField
+          label="Length"
+          defaultValue={4}
+          {...props}
+          endAdornment={
+            <Button variant="ghost" size="xs" onPress={onPress}>
+              Units
+            </Button>
+          }
+        />,
+      );
+      await user.click(screen.getByRole('button', { name: 'Units' }));
+      expect(onPress).toHaveBeenCalledOnce();
+      expect(screen.getAllByRole('button', { name: /^Increase/ })).toHaveLength(1);
+    },
+  );
 
   it('UIC-NUMBER-FIELD-3.1 frames literal affixes with the number', () => {
     const { container } = render(

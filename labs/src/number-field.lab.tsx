@@ -126,6 +126,24 @@ function SavedField() {
   );
 }
 
+function UnitSwitch() {
+  const [unit, setUnit] = useState<'km' | 'mi'>('km');
+  return (
+    <div data-lab-demo="unit-switch">
+      <NumberField
+        label="Distance"
+        defaultValue={12}
+        endAdornment={
+          <Button variant="ghost" size="xs" onPress={() => setUnit(unit === 'km' ? 'mi' : 'km')}>
+            {unit}
+          </Button>
+        }
+      />
+      <LabOutput name="unit">{unit}</LabOutput>
+    </div>
+  );
+}
+
 function Affixes() {
   return (
     <>
@@ -248,6 +266,12 @@ mountLab(
       description="A prefix and suffix the locale cannot format, and the Indian lakh grouping of the en-IN locale."
     >
       <Affixes />
+    </LabSection>
+    <LabSection
+      title="A control in an affix"
+      description="The end affix holds a button that switches the unit; the step buttons keep their own roles."
+    >
+      <UnitSwitch />
     </LabSection>
     <LabSection title="Fast steps" description="Modifier steps and a scrub handle.">
       <FastSteps />

@@ -14,6 +14,18 @@ function output(page: Page, name: string): Locator {
 }
 
 test.describe('Number Field lab', () => {
+  test('UIC-NUMBER-FIELD-3.1 presses a button in an affix beside the step buttons', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('number-field');
+    const demo = page.locator('[data-lab-demo="unit-switch"]');
+    await demo.getByRole('button', { name: 'km' }).click();
+    await expect(demo.locator('[data-lab-output="unit"]')).toHaveText('mi');
+    await demo.getByRole('button', { name: /^Increase/ }).click();
+    await expect(demo.getByRole('textbox', { name: 'Distance' })).toHaveValue('13');
+  });
+
   test('UIC-NUMBER-FIELD-1.3 frames the input between step buttons that step from the keyboard too', async ({
     page,
     lab,
