@@ -34,10 +34,10 @@ Verification: `src/components/calendar-view/calendar-view.test.tsx`, `e2e/calend
 
 ### UIC-CALENDAR-VIEW-1.5 - Time zone and locale
 
-Events shall be placed on days and hours in `timeZone` (the runtime's by default): a date-time with an offset or a zone converts to it, and a floating one reads as wall time in it. The first day of the week, the names of days and months, times and date ranges follow the provider's locale.
+Events shall be placed on days and hours in `timeZone` (the runtime's by default): a date-time with an offset or a zone converts to it, and a floating one reads as wall time in it. The first day of the week, the names of days and months, times and date ranges follow the provider's locale. Every formatted date, time and range writes its spaces as plain spaces (`normalizeIntlSpaces`), so text a server renders hydrates unchanged in a browser whose `Intl` sets thin or narrow no-break spaces differently.
 
 Implementation: `src/components/calendar-view/calendar-layout.ts`, `src/components/calendar-view/use-calendar-format.ts`, `src/components/calendar-view/calendar-days.ts`
-Verification: `src/components/calendar-view/calendar-view.test.tsx`, `src/components/calendar-view/calendar-layout.test.ts`, `src/components/calendar-view/calendar-days.test.ts`
+Verification: `src/components/calendar-view/calendar-view.test.tsx`, `src/components/calendar-view/calendar-view-ssr.test.tsx`, `src/components/calendar-view/calendar-layout.test.ts`, `src/components/calendar-view/calendar-days.test.ts`
 
 ## UIC-CALENDAR-VIEW-2 - Events
 
