@@ -59,7 +59,7 @@ Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs.spec.ts`
 
 ### UIC-TABS-2.2 - Disabled tabs
 
-A `Tab` with `isDisabled` (or listed in `disabledKeys`) shall carry `aria-disabled="true"` and `data-disabled`, ignore presses including its close mark, and be skipped by keyboard navigation. `isDisabled` on `Tabs` disables every tab, the overflow menu and reordering. Disabled states shall also refuse Delete or Backspace on a tab that already has focus. The close mark follows changes to these disabled states without removing the mark.
+A `Tab` with `isDisabled` (or listed in `disabledKeys`) shall carry `aria-disabled="true"` and `data-disabled`, ignore presses including its close mark, and be skipped by keyboard navigation. `isDisabled` on `Tabs` disables every tab, the overflow menu (closing it if open, UIC-DROPDOWN-MENU-1.8) and reordering. Disabled states shall also refuse Delete or Backspace on a tab that already has focus. The close mark follows changes to these disabled states without removing the mark.
 
 Implementation: `src/components/tabs/tabs.tsx`
 Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs.spec.ts`

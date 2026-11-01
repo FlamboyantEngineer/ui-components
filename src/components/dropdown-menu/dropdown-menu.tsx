@@ -155,7 +155,7 @@ function DropdownSplitButton({
       >
         {label}
       </Button>
-      <MenuTrigger isOpen={isOpen} onOpenChange={setOpen}>
+      <MenuTrigger isOpen={isOpen} onOpenChange={setOpen} isDisabled={isDisabled}>
         <Button
           {...shared}
           icon={ChevronDownGlyph}
@@ -225,7 +225,12 @@ export function DropdownMenu({
     );
   }
   return (
-    <MenuTrigger isOpen={isOpen} defaultOpen={defaultOpen} onOpenChange={onOpenChange}>
+    <MenuTrigger
+      isOpen={isOpen}
+      defaultOpen={defaultOpen}
+      onOpenChange={onOpenChange}
+      isDisabled={trigger.isDisabled}
+    >
       <DropdownMenuTrigger {...parts.trigger} />
       <MenuPopover placement={placement}>
         <Menu {...menu} />

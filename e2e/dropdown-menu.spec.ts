@@ -176,4 +176,22 @@ test.describe('Dropdown Menu lab', () => {
     await page.keyboard.press('Enter');
     await expect(area.locator('[data-lab-output="moved"]')).toHaveText('oslo');
   });
+
+  test('UIC-DROPDOWN-MENU-1.8 closes an open menu for good when its trigger turns disabled', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('dropdown-menu');
+    const demo = page.locator('[data-lab-case="disabled-while-open"]');
+    await demo.getByRole('button', { name: 'Disable in a second' }).click();
+    const trigger = demo.getByRole('button', { name: 'Lockable edit' });
+    await trigger.click();
+    await expect(page.getByRole('menu')).toBeVisible();
+    await expect(trigger).toBeDisabled();
+    await expect(page.getByRole('menu')).toHaveCount(0);
+    await demo.getByRole('button', { name: 'Enable' }).click();
+    await expect(trigger).toBeEnabled();
+    await expect(page.getByRole('menu')).toHaveCount(0);
+    await expect(demo.locator('[data-lab-output="action"]')).toHaveText('none');
+  });
 });

@@ -62,16 +62,19 @@ function ActionRowMenu({
   action,
   size,
   hasMenu,
+  isLocked,
   children,
 }: {
   action: ActionRowAction;
   size: ButtonSize;
   hasMenu: boolean;
+  /** The action is disabled or pending: its menu does not open, and an open one closes. */
+  isLocked: boolean;
   children: ReactNode;
 }) {
   const menuSize: MenuSize = size === 'xs' ? 'sm' : size;
   return (
-    <MenuTrigger isDisabled={!hasMenu}>
+    <MenuTrigger isDisabled={!hasMenu || isLocked}>
       {children}
       <MenuPopover placement="bottom end">
         <Menu items={action.items} onAction={action.onAction} size={menuSize} />
@@ -118,7 +121,12 @@ function ActionRowButton({
     />
   );
   return (
-    <ActionRowMenu action={action} size={size} hasMenu={hasMenu}>
+    <ActionRowMenu
+      action={action}
+      size={size}
+      hasMenu={hasMenu}
+      isLocked={Boolean(action.isDisabled || press.isPending)}
+    >
       {button}
     </ActionRowMenu>
   );

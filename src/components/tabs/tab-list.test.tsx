@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import type { Key } from '../../core/props.js';
@@ -117,14 +117,15 @@ describe('TabList', () => {
     const more = screen.getByRole('button', { name: '3 more items' });
     await user.click(more);
     await screen.findByRole('menu');
+    const grape = screen.getByRole('menuitem', { name: 'Grape' });
     rerender(<Fruit overflow="menu" isDisabled />);
     expect(more).toBeDisabled();
-    const grape = screen.getByRole('menuitem', { name: 'Grape' });
-    expect(grape).toHaveAttribute('aria-disabled', 'true');
+    // The open overflow menu closes with its disabled trigger, and its choices choose nothing.
+    await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
     await user.click(grape);
     expect(apple).toHaveAttribute('aria-selected', 'true');
-    await user.keyboard('{Escape}');
     rerender(<Fruit overflow="menu" />);
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     await user.click(more);
     await user.click(await screen.findByRole('menuitem', { name: 'Grape' }));
     expect(screen.getByRole('tab', { name: 'Grape' })).toHaveAttribute('aria-selected', 'true');

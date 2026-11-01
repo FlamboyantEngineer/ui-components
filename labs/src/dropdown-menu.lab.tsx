@@ -1,7 +1,7 @@
 import { ExpandGlyph, MoreVerticalGlyph, PlusGlyph, SaveGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import type { Key, Selection } from '../../src/core/props.js';
-import type { ButtonVariant } from '../../src/components/button/button.js';
+import { Button, type ButtonVariant } from '../../src/components/button/button.js';
 import { DropdownMenu } from '../../src/components/dropdown-menu/dropdown-menu.js';
 import { MenuItem, MenuSection, type MenuEntry } from '../../src/components/menu/menu.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
@@ -41,6 +41,44 @@ function Actions() {
         Last action: <output data-lab-output="action">{last}</output>
       </p>
     </>
+  );
+}
+
+/** Menus their host disables a second after a press, so the reader can open one first. */
+function DisabledWhileOpen() {
+  const [isDisabled, setIsDisabled] = useState(false);
+  const [last, setLast] = useState('none');
+  const onAction = (key: Key) => setLast(String(key));
+  return (
+    <div data-lab-case="disabled-while-open">
+      <p>
+        <Button size="sm" onPress={() => window.setTimeout(() => setIsDisabled(true), 1000)}>
+          Disable in a second
+        </Button>{' '}
+        <Button size="sm" onPress={() => setIsDisabled(false)}>
+          Enable
+        </Button>
+      </p>
+      <div style={{ display: 'flex', gap: 16 }}>
+        <DropdownMenu
+          label="Lockable edit"
+          items={editEntries}
+          isDisabled={isDisabled}
+          onAction={onAction}
+        />
+        <DropdownMenu
+          label="Lockable save"
+          icon={SaveGlyph}
+          items={editEntries}
+          isDisabled={isDisabled}
+          onPress={() => setLast('save')}
+          onAction={onAction}
+        />
+      </div>
+      <p>
+        Last action: <output data-lab-output="action">{last}</output>
+      </p>
+    </div>
   );
 }
 
@@ -192,6 +230,12 @@ mountLab(
     </LabSection>
     <LabSection title="Choice" description="A single choice shown in the trigger label.">
       <Choice />
+    </LabSection>
+    <LabSection
+      title="Disabled while open"
+      description="Press Disable in a second, then open either menu: when its trigger turns disabled the menu closes and its items choose nothing, and enabling the trigger again leaves it closed."
+    >
+      <DisabledWhileOpen />
     </LabSection>
     <LabSection title="Controlled" description="The open state lives in the lab.">
       <Controlled />

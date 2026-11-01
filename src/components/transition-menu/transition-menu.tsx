@@ -217,7 +217,7 @@ export function TransitionMenu({
       {transitions.length === 0 ? (
         badge
       ) : (
-        <MenuTrigger>
+        <MenuTrigger isDisabled={Boolean(isDisabled || isPending)}>
           <Button
             variant="bare"
             className={hooks.slotClass('trigger')}
