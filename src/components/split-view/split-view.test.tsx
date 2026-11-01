@@ -270,7 +270,7 @@ describe('SplitView owners', () => {
     expect(capture.id).toBeNull();
     expect(root).not.toHaveAttribute('data-resizing');
     expect(handle).not.toHaveAttribute('data-resizing');
-    expect(container.querySelector('.ui-resize-handle__shield')).toBeNull();
+    expect(document.querySelector('.ui-resize-handle__shield')).toBeNull();
     pointer('pointerMove', handle, { clientX: 500 });
     pointer('pointerUp', handle, { clientX: 500 });
     expect(handle).toHaveAttribute('aria-valuenow', '70');
@@ -824,13 +824,14 @@ describe('ResizeHandle', () => {
     expect(capture.id).toBe(7);
     expect(handle).toHaveAttribute('data-resizing', 'true');
     expect(root).toHaveAttribute('data-resizing', 'true');
-    const shield = requireDefined(
-      container.querySelector<HTMLElement>('.ui-resize-handle__shield'),
-    );
+    const shield = requireDefined(document.querySelector<HTMLElement>('.ui-resize-handle__shield'));
+    // Portaled on the top layer, outside any ancestor that could confine a fixed cover.
+    expect(container.contains(shield)).toBe(false);
+    expect(shield.closest('.ui-portal')).toHaveAttribute('data-layer', 'toast');
     expect(shield).toHaveAttribute('data-orientation', 'vertical');
     expect(shield).toHaveAttribute('aria-hidden', 'true');
     expect(shield.style.position).toBe('fixed');
-    expectHooksMatchSpec(container, 'SPLIT-VIEW', { slots: 'all' });
+    expectHooksMatchSpec(document.body, 'SPLIT-VIEW', { slots: 'all' });
 
     pointer('pointerMove', handle, { clientX: 300, pointerId: 8 });
     expect(handle).toHaveAttribute('aria-valuenow', '30');
@@ -847,14 +848,14 @@ describe('ResizeHandle', () => {
     expect(capture.id).toBeNull();
     expect(handle).not.toHaveAttribute('data-resizing');
     expect(root).not.toHaveAttribute('data-resizing');
-    expect(container.querySelector('.ui-resize-handle__shield')).toBeNull();
+    expect(document.querySelector('.ui-resize-handle__shield')).toBeNull();
     expect(onSizeChangeEnd).toHaveBeenLastCalledWith(80);
 
     pointer('pointerDown', handle, { clientX: 800 });
     pointer('pointerUp', handle, { clientX: 700 });
     expect(handle).toHaveAttribute('aria-valuenow', '70');
     expect(onSizeChangeEnd).toHaveBeenLastCalledWith(70);
-    expect(container.querySelector('.ui-resize-handle__shield')).toBeNull();
+    expect(document.querySelector('.ui-resize-handle__shield')).toBeNull();
 
     pointer('pointerDown', handle, { clientX: 700 });
     fireEvent.lostPointerCapture(handle, { pointerId: 7 });
@@ -863,7 +864,7 @@ describe('ResizeHandle', () => {
     handle.focus();
     await user.keyboard('{ArrowLeft}');
     expect(handle).not.toHaveAttribute('data-resizing');
-    expect(container.querySelector('.ui-resize-handle__shield')).toBeNull();
+    expect(document.querySelector('.ui-resize-handle__shield')).toBeNull();
   });
 
   it('UIC-SPLIT-VIEW-3.3 resizes a stacked split along the vertical axis', () => {
@@ -889,7 +890,7 @@ describe('ResizeHandle', () => {
       onChangeEnd,
       onResizingChange,
     };
-    const { container, rerender } = render(<ResizeHandle {...props} />);
+    const { rerender } = render(<ResizeHandle {...props} />);
     const handle = screen.getByRole('separator', { name: 'Resize details' });
     const release = vi.fn();
     Object.assign(handle, {
@@ -902,11 +903,11 @@ describe('ResizeHandle', () => {
       { coords: { clientY: 130 } },
     ]);
     expect(onChange).toHaveBeenLastCalledWith(330);
-    expect(container.querySelector('.ui-resize-handle__shield')).not.toBeNull();
+    expect(document.querySelector('.ui-resize-handle__shield')).not.toBeNull();
     rerender(<ResizeHandle {...props} isDisabled />);
     expect(release).toHaveBeenCalledTimes(1);
     expect(handle).not.toHaveAttribute('data-resizing');
-    expect(container.querySelector('.ui-resize-handle__shield')).toBeNull();
+    expect(document.querySelector('.ui-resize-handle__shield')).toBeNull();
     expect(onResizingChange.mock.calls).toEqual([[true], [false]]);
     onChange.mockClear();
     rerender(<ResizeHandle {...props} />);

@@ -47,6 +47,18 @@ describe('reference token check', () => {
     expect(result.status).toBe(0);
   });
 
+  it('UIC-LABS-3.5 rejects a z-index above the in-page scale', () => {
+    const result = check({
+      'card.css': `.ui-card__header { z-index: 4; }
+.ui-card__shield { z-index: 1000; }
+.ui-card__stack { z-index: calc(10 - var(--ui-card-index)); }`,
+    });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('card.css:2: z-index 1000 is above the in-page scale');
+    expect(result.stderr).not.toContain('card.css:1:');
+    expect(result.stderr).not.toContain('card.css:3:');
+  });
+
   it('UIC-LABS-3.5 rejects literals a token covers, unless marked exempt', () => {
     const result = check({
       'card.css': `.ui-card { color: #333; border-radius: 5px; font-size: 13px; transition: opacity 0.3s; }

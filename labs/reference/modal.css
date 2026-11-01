@@ -12,6 +12,12 @@
   background: var(--ref-scrim);
 }
 
+/* A modal opened over another dims the page less, since the one beneath is already dimmed. */
+
+.ui-modal[data-stack-index]:not([data-stack-index='0']) {
+  background: var(--ref-scrim-weak);
+}
+
 .ui-modal[data-entering] {
   animation: ref-fade-in var(--ref-duration-fast) ease-out;
 }

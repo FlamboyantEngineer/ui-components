@@ -107,6 +107,18 @@ test.describe('Split View lab', () => {
     const shield = page.locator('.ui-resize-handle__shield');
     await expect(shield).toHaveCount(1);
     expect(await shield.evaluate((node) => getComputedStyle(node).cursor)).toBe('col-resize');
+    // On the top overlay layer, it covers the whole viewport above everything else.
+    await expect(page.locator('.ui-portal[data-layer="toast"]', { has: shield })).toHaveCSS(
+      'z-index',
+      '160',
+    );
+    expect(
+      await page.evaluate(
+        ({ x, y }) =>
+          document.elementFromPoint(x, y)?.classList.contains('ui-resize-handle__shield'),
+        { x: startX - 60, y },
+      ),
+    ).toBe(true);
     // The pointer stays captured when it leaves the split.
     await page.mouse.move(startX + width * 0.2, y + 400, { steps: 2 });
     await page.mouse.up();

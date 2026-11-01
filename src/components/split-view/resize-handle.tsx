@@ -13,6 +13,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, ContainerProps, Orientation } from '../../core/props.js';
 import { clamp } from '../../utils/clamp.js';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
+import { Portal } from '../portal/portal.js';
 import { resolveResizeKeyboardValue } from './resize-keyboard.js';
 
 /** The pane whose size the handle's value reports, relative to the separator. */
@@ -261,11 +262,14 @@ export function ResizeHandle({
         <span {...hooks.slot('grip')} aria-hidden="true" />
       </div>
       {interaction.isResizing ? (
-        <div
-          {...hooks.slot('shield', { orientation })}
-          aria-hidden="true"
-          style={{ position: 'fixed', inset: 0 }}
-        />
+        // On the highest layer, outside any transformed or filtered ancestor that would confine it.
+        <Portal layer="toast">
+          <div
+            {...hooks.slot('shield', { orientation })}
+            aria-hidden="true"
+            style={{ position: 'fixed', inset: 0 }}
+          />
+        </Portal>
       ) : null}
     </>
   );

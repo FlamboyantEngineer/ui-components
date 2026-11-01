@@ -24,7 +24,7 @@ Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll
 
 ### UIC-SCROLL-REGION-2.1 - Overlay mode
 
-With `scrollbar="overlay"` the stylesheet shall hide the native scrollbars, the viewport shall be focusable (`tabIndex` 0 unless the caller sets one), and each axis that overflows shall get a `ui-scroll-region__track` (`data-orientation` `vertical` or `horizontal`) holding one `ui-scroll-region__thumb`. The root publishes `data-overflow-y` and `data-overflow-x` for the overflowing axes. Tracks and thumbs take pointer input ([UIC-SCROLL-REGION-2.9](#uic-scroll-region-29---track-presses)).
+With `scrollbar="overlay"` the stylesheet shall hide the native scrollbars, the viewport shall be focusable (`tabIndex` 0 unless the caller sets one), and each axis that overflows shall get a `ui-scroll-region__track` (`data-orientation` `vertical` or `horizontal`) holding one `ui-scroll-region__thumb`. The root publishes `data-overflow-y` and `data-overflow-x` for the overflowing axes. Tracks and thumbs take pointer input ([UIC-SCROLL-REGION-2.9](#uic-scroll-region-29---track-presses)). The reference stylesheet isolates the root and lifts the tracks above every in-page part of the content (z-index 4), so a sticky header never covers a thumb.
 
 Implementation: `src/components/scroll-region/scroll-region.tsx`, `src/components/scroll-region/overlay-scrollbars.tsx`, `labs/reference/scroll-region.css`
 Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll-region.spec.ts`

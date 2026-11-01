@@ -6,8 +6,9 @@
  */
 
 /*
- * Stacking. In-page parts use z-index 0 to 3 only: 1 for sticky headers, rows and covers, 2 for
- * sticky groups, handles and messages above them, 3 for pinned corners where both meet. Overlays
+ * Stacking. In-page parts use z-index 0 to 4 only: 1 for sticky headers, rows and covers, 2 for
+ * sticky groups, handles and messages above them, 3 for pinned corners where both meet, and 4 for
+ * overlay scroll tracks above all of them, inside a scroll region that isolates them. Overlays
  * portal out and take their z-index from the layer scale (`useLayerZIndex`, 100 and above), never
  * from a literal. A component that covers content it contains, such as a loading region, isolates
  * that content so its in-page z-indexes stay under the cover.

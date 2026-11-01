@@ -4,6 +4,8 @@
   position: relative;
   display: flex;
   flex-direction: column;
+  /* Keeps the track's z-index, and the content's, inside the region. */
+  isolation: isolate;
 }
 
 .ui-scroll-region:is([data-clip], [data-scrollbar='overlay'], [data-overview]) {
@@ -100,6 +102,8 @@
 
 .ui-scroll-region__track {
   position: absolute;
+  /* Above every in-page part of the content, such as a sticky header. */
+  z-index: 4;
 }
 
 .ui-scroll-region__track[data-orientation='vertical'] {
