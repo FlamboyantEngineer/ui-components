@@ -203,6 +203,54 @@ function Zones() {
   );
 }
 
+function TimePickers() {
+  const [committed, setCommitted] = useState<AnyValue>(null);
+  return (
+    <>
+      <DateTimeField
+        label="Opening"
+        mode="time"
+        hourCycle={24}
+        defaultValue="09:30"
+        onCommit={setCommitted}
+        data-lab-field="time-picker"
+      />
+      <DateTimeField
+        label="Shift"
+        mode="time"
+        hourCycle={12}
+        granularity="second"
+        minValue="08:00"
+        maxValue="18:30"
+        defaultValue="08:15:00"
+        description="Between 8:00 AM and 6:30 PM."
+        onCommit={setCommitted}
+        data-lab-field="time-bounded"
+      />
+      <DateTimeField
+        label="Visit"
+        mode="date-time"
+        hourCycle={24}
+        defaultValue="2026-04-13T13:45"
+        onCommit={setCommitted}
+        data-lab-field="date-time-picker"
+      />
+      <DateTimeField
+        label="Workshop"
+        mode="date-time-range"
+        hourCycle={24}
+        minValue="2026-04-13T09:00"
+        defaultValue={{ start: '2026-04-13T10:00', end: '2026-04-14T16:00' }}
+        onCommit={setCommitted}
+        data-lab-field="range-picker"
+      />
+      <p>
+        Committed: <output data-lab-output="Time">{JSON.stringify(committed)}</output>
+      </p>
+    </>
+  );
+}
+
 function Form() {
   const [entries, setEntries] = useState('none');
   return (
@@ -314,6 +362,12 @@ mountLab(
       description="A 24-hour time to the second, a date and time in Tokyo, and a range of instants."
     >
       <Zones />
+    </LabSection>
+    <LabSection
+      title="Time picker"
+      description="Hour, minute, second and AM/PM columns: press an option or roll the wheel over a column, without typing. A time field opens them from its clock button; a date and time, or a range, shows them under the calendar. Options outside the bounds are disabled."
+    >
+      <TimePickers />
     </LabSection>
     <LabSection title="Forms" description="Named fields submit their canonical values.">
       <Form />

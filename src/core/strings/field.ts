@@ -121,6 +121,22 @@ export interface FieldStrings {
   today: string;
   /** A date field action that picks the current date and time. */
   now: string;
+  /** Names the button that opens a time field's time columns. */
+  chooseTime: string;
+  /** Names the time columns of a time or a date and time. */
+  timeOfDay: string;
+  /** Names the time columns of a range's start. */
+  startTime: string;
+  /** Names the time columns of a range's end. */
+  endTime: string;
+  /** Names the column of hours in a time picker. */
+  hoursColumn: string;
+  /** Names the column of minutes in a time picker. */
+  minutesColumn: string;
+  /** Names the column of seconds in a time picker. */
+  secondsColumn: string;
+  /** Names the column of the day periods (AM and PM) in a time picker. */
+  dayPeriodColumn: string;
   /** The message of a date or time earlier than the field allows. */
   dateTooEarly: (minValue: string) => string;
   /** The message of a date or time later than the field allows. */
