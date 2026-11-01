@@ -129,7 +129,8 @@ export function ComboboxField({
   completion,
   input,
 }: ComboboxFieldProps) {
-  const onChange = useInlineCompletion(completion, input.ref);
+  const { ref: inputRef, setRef } = input;
+  const onChange = useInlineCompletion(completion, inputRef);
   return (
     <Group className={hooks.slotClass('field')}>
       {chips === null ? null : (
@@ -139,7 +140,7 @@ export function ComboboxField({
         <Glyph icon={SearchGlyph} className={hooks.slotClass('search-icon')} />
       ) : null}
       <Input
-        ref={input.setRef}
+        ref={setRef}
         className={hooks.slotClass('input')}
         placeholder={placeholder}
         aria-busy={isPending || undefined}
@@ -147,7 +148,7 @@ export function ComboboxField({
         onChange={onChange}
       />
       {isPending ? <span {...hooks.slot('spinner')} aria-hidden="true" /> : null}
-      {isEditable ? <ClearButton inputRef={input.ref} /> : null}
+      {isEditable ? <ClearButton inputRef={inputRef} /> : null}
       <AriaButton className={hooks.slotClass('button')}>
         <Glyph icon={ChevronDownGlyph} />
       </AriaButton>

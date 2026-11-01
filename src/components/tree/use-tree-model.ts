@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import type { Key } from '../../core/props.js';
 import { readTreeChildren } from '../../utils/tree-reorder.js';
 import { walkTree } from '../../utils/walk-tree.js';
@@ -105,12 +105,17 @@ function useOwnerLoads<T extends TreeItemData>(
     getChildren: (item: T) => readonly T[] | undefined;
   },
 ) {
+  const isListed = useCallback(
+    (key: Key) => findTreeItem(items, { key, getChildren }) !== undefined,
+    [items, getChildren],
+  );
   const loads = useTreeLoads(
     onLoadChildren &&
       ((key) => {
         const item = findTreeItem(items, { key, getChildren });
         return item ? onLoadChildren(item) : undefined;
       }),
+    isListed,
   );
   return onLoadChildren ? loads : null;
 }

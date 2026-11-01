@@ -103,11 +103,14 @@ function useAnchorElement(anchor: TooltipAnchor | null | undefined, isOpen: bool
   // update stops there, since setting the same element renders nothing.
   // eslint-disable-next-line react-hooks/exhaustive-deps -- runs after every commit on purpose
   useLayoutEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- A ref's element is known only once the commit has attached it.
     setElement(read.current());
   });
   const isElementAnchor = isOpen && anchor != null && !isVirtualAnchor(anchor);
   useLayoutEffect(() => {
     if (!isElementAnchor) return undefined;
+    // Until the tooltip has an element, the script's document stands in.
+    // eslint-disable-next-line no-restricted-properties -- no element to read a document from
     const document = read.current()?.ownerDocument ?? globalThis.document;
     const view = document.defaultView;
     if (!view) return undefined;
@@ -211,6 +214,7 @@ export function AnchoredTooltip({
   const generatedId = useId();
   const id = callerId ?? generatedId;
   const { refs, element, phase, position } = useAnchoredPanel({ anchor, isOpen, placement });
+  const { proxy: proxyRef, panel: panelRef, arrow: arrowRef } = refs;
   const zIndex = useLayerZIndex('tooltip');
   useAnchorRelationship(element, { id, relationship });
   const target = usePortalTarget();
@@ -221,7 +225,7 @@ export function AnchoredTooltip({
   // would become the containing block the positioning measures against.
   return createPortal(
     <>
-      {refs.proxy ? <span ref={refs.proxy} hidden /> : null}
+      {proxyRef ? <span ref={proxyRef} hidden /> : null}
       <div
         {...rest}
         {...hooks.root({
@@ -229,7 +233,7 @@ export function AnchoredTooltip({
           props: rest,
           data: { ...data, entering: phase.isEntering, exiting: phase.isExiting },
         })}
-        ref={refs.panel}
+        ref={panelRef}
         id={id}
         role="tooltip"
         aria-hidden={relationship === 'none' || undefined}
@@ -239,7 +243,7 @@ export function AnchoredTooltip({
           {...position.arrowProps}
           style={arrowStyle(resolvedPlacement, position.arrowProps.style)}
           {...hooks.slot('arrow', { placement: resolvedPlacement })}
-          ref={refs.arrow}
+          ref={arrowRef}
         />
         <span {...hooks.slot('content')}>{content}</span>
       </div>

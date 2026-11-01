@@ -12,7 +12,7 @@ import {
 } from '../../src/components/timeline/timeline.js';
 import type { Key } from '../../src/core/props.js';
 import { UiProvider } from '../../src/core/provider.js';
-import { requireDefined } from '../../src/utils/require-defined.js';
+import { requireDefined } from './require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const today = '2026-03-11';

@@ -6,7 +6,7 @@ import {
 } from '../../src/components/media-viewer/media-viewer.js';
 import { PdfViewer } from '../../src/components/pdf-viewer/pdf-viewer.js';
 import type { Key } from '../../src/core/props.js';
-import { requireDefined } from '../../src/utils/require-defined.js';
+import { requireDefined } from './require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 import { loadEngine, sampleUrl, workerSrc } from './pdf-viewer-cases.js';

@@ -27,12 +27,8 @@ import { TableSearch } from './table-search.js';
 import { isEmptyFilterValue, setColumnFilter, type TableFilter } from './table-filters.js';
 import { hasTableFooter, TableFooter } from './table-footer.js';
 import { TableVirtualizer } from './table-virtualizer.js';
-import {
-  hasGroupRow,
-  renderTableWithTracks,
-  TableHeader,
-  type TableHeaderModel,
-} from './table-header.js';
+import { hasGroupRow, renderTableWithTracks } from './table-group-header.js';
+import { TableHeader, type TableHeaderModel } from './table-header.js';
 import { tableHooks as hooks } from './table-hooks.js';
 import type { TableCellWrap, TableColumn, TableRow } from './table-rows.js';
 import { TableToolbar } from './table-toolbar.js';
@@ -142,16 +138,22 @@ export interface TableProps<T extends TableRow>
 
 const virtualRowHeights: Readonly<Record<TableSize, number>> = { md: 40, sm: 32 };
 
+type TableGridElementOptions<T extends TableRow> = Pick<
+  TableProps<T>,
+  'rows' | 'getChildRows' | 'columnGroups'
+> & { rowHeight: number };
+
 /** What the header row shows, from the grid and the table's own props. */
 function createHeaderModel<T extends TableRow>(
   grid: TableGrid<T>,
-  options: Pick<TableProps<T>, 'rows' | 'columnGroups'>,
+  options: TableGridElementOptions<T>,
 ): TableHeaderModel<T> {
   const { view } = grid;
   const values = view.filter.columns ?? {};
   return {
     widths: grid.widths.widths,
     groups: options.columnGroups ?? [],
+    rowHeight: options.rowHeight,
     pinOffsets: grid.pinOffsets,
     onPinOffsets: grid.onPinOffsets,
     sort: view.sort.descriptors,
@@ -165,6 +167,7 @@ function createHeaderModel<T extends TableRow>(
           label={getColumnText(column)}
           value={values[column.id]}
           rows={options.rows}
+          getChildRows={options.getChildRows}
           onChange={(value) => view.onFilterChange(setColumnFilter(view.filter, column.id, value))}
         />
       ) : null,
@@ -176,7 +179,7 @@ function TableGridElement<T extends TableRow>({
   options,
 }: {
   grid: TableGrid<T>;
-  options: Pick<TableProps<T>, 'rows' | 'columnGroups'>;
+  options: TableGridElementOptions<T>;
 }) {
   const { ariaProps, view, reordering, onRowAction, body, structure } = grid;
   const header = createHeaderModel(grid, options);
@@ -187,7 +190,10 @@ function TableGridElement<T extends TableRow>({
       // React Aria keeps drag and drop hooks for a table's lifetime: remount when reorder toggles.
       key={reordering ? 'reorder' : 'static'}
       className={hooks.slotClass('grid')}
-      render={hasGroupRow(structure, header.groups) ? renderTableWithTracks : undefined}
+      // A static table's group row needs column tracks; a virtualized one places its cells itself.
+      render={
+        hasGroupRow(header.groups) && !structure.isVirtualized ? renderTableWithTracks : undefined
+      }
       treeColumn={structure.treeColumn === null ? undefined : toCollectionKey(structure.treeColumn)}
       sortDescriptor={
         view.sort.descriptors[0] && {
@@ -234,7 +240,7 @@ export function Table<T extends TableRow>({
   const { view, layout } = grid;
   const { virtualized } = rest;
   const height = rowHeight ?? virtualRowHeights[size];
-  const element = <TableGridElement grid={grid} options={rest} />;
+  const element = <TableGridElement grid={grid} options={{ ...rest, rowHeight: height }} />;
   const label = rest['aria-label'];
   return (
     <div
@@ -267,7 +273,13 @@ export function Table<T extends TableRow>({
         onResize={grid.widths.onResize}
         onResizeEnd={grid.widths.onResizeEnd}
       >
-        {virtualized ? <TableVirtualizer rowHeight={height}>{element}</TableVirtualizer> : element}
+        {virtualized ? (
+          <TableVirtualizer rowHeight={height} hasGroupRow={hasGroupRow(rest.columnGroups ?? [])}>
+            {element}
+          </TableVirtualizer>
+        ) : (
+          element
+        )}
       </ResizableTableContainer>
       {view.pages ? (
         <Pagination

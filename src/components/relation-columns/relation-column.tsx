@@ -3,6 +3,8 @@
 import { useId, type ReactNode } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useLocale } from '../../primitives/index.js';
+import { formatCount } from '../../utils/count.js';
 import { EmptyState } from '../empty-state/empty-state.js';
 import { ListView, ListViewItem } from '../list-row/list-row.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
@@ -23,7 +25,7 @@ interface RelationColumnViewProps<T> {
   context: RelationColumnContext<T>;
 }
 
-/** A count drawn as digits and read as text. */
+/** A count drawn as digits in the provider locale and read as text. */
 function Count({
   count,
   text,
@@ -33,9 +35,10 @@ function Count({
   text: string;
   slot: 'column-count' | 'item-count';
 }) {
+  const { locale } = useLocale();
   return (
     <span {...hooks.slot(slot)}>
-      <span aria-hidden="true">{count}</span>
+      <span aria-hidden="true">{formatCount(count, locale)}</span>
       <VisuallyHidden elementType="span">{text}</VisuallyHidden>
     </span>
   );

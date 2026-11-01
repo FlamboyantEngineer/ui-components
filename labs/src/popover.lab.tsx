@@ -6,7 +6,11 @@ import {
   type PopoverProps,
 } from '../../src/components/popover/popover.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-import { getOverlayBoundary } from '../../src/utils/index.js';
+import {
+  getOverlayBoundary,
+  resolveOverlayGeometry,
+  type OverlayGeometry,
+} from '../../src/utils/index.js';
 import { LabOutput } from './lab-output.js';
 
 const placements = ['top', 'bottom', 'start', 'end'] as const;
@@ -43,6 +47,63 @@ function BoundaryDemo() {
         Measure the frame
       </Button>
       <LabOutput name="boundary">{boundary}</LabOutput>
+    </div>
+  );
+}
+
+/**
+ * Places a host's own panel above an anchor near the top of a frame with resolveOverlayGeometry:
+ * without room above, it flips below.
+ */
+function GeometryDemo() {
+  const frame = useRef<HTMLDivElement>(null);
+  const anchor = useRef<HTMLSpanElement>(null);
+  const panel = useRef<HTMLDivElement>(null);
+  const [geometry, setGeometry] = useState<OverlayGeometry | null>(null);
+  const place = () => {
+    if (!panel.current || !anchor.current) return;
+    const options = { side: 'top', gutter: 8, boundaryElement: frame.current } as const;
+    setGeometry(resolveOverlayGeometry(panel.current, anchor.current, options));
+  };
+  return (
+    <div style={{ display: 'grid', gap: 8 }}>
+      <div
+        ref={frame}
+        data-lab-stage=""
+        style={{ position: 'relative', width: 240, height: 160, border: '1px dashed' }}
+      >
+        <span
+          ref={anchor}
+          data-lab-geometry-anchor=""
+          style={{ position: 'absolute', top: 12, left: 16 }}
+        >
+          Anchor
+        </span>
+      </div>
+      <div
+        ref={panel}
+        data-lab-geometry-panel=""
+        style={{
+          position: 'fixed',
+          left: geometry?.left ?? 0,
+          top: geometry?.top ?? 0,
+          visibility: geometry ? 'visible' : 'hidden',
+          width: 120,
+          padding: 4,
+          border: '1px solid',
+          background: 'Canvas',
+        }}
+      >
+        A host panel
+      </div>
+      <Button size="sm" onPress={place}>
+        Place the panel above
+      </Button>
+      <LabOutput name="geometry">
+        {geometry
+          ? `resolveOverlayGeometry(panel, anchor, { side: 'top', gutter: 8, boundaryElement: frame }) → side ${geometry.side}, align ${geometry.align}, ${geometry.constrained ? 'constrained' : 'fits'}`
+          : 'Not placed'}
+      </LabOutput>
     </div>
   );
 }
@@ -303,6 +364,12 @@ mountLab(
       description="getOverlayBoundary measures a frame less its gutter, as the library's own overlays solve against it."
     >
       <BoundaryDemo />
+    </LabSection>
+    <LabSection
+      title="Geometry for a host layer"
+      description="resolveOverlayGeometry measures a host's own panel and solves where it goes against an anchor in a frame. Asked for the top with no room there, it flips below."
+    >
+      <GeometryDemo />
     </LabSection>
   </>,
 );

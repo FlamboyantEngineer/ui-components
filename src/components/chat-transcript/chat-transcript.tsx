@@ -66,12 +66,13 @@ function TranscriptFeed({
   labelling: AriaLabellingProps;
 }) {
   const { runtime, navigation } = model;
+  const { registry, feed, windowModel } = runtime;
   return (
-    <TranscriptContext value={runtime.registry}>
+    <TranscriptContext value={registry}>
       <div
         {...labelling}
         {...hooks.slot('feed')}
-        ref={runtime.feed}
+        ref={feed}
         role="feed"
         aria-busy={isLoadingOlder || undefined}
         onKeyDown={(event) => handleTranscriptKeyDown(event, navigation)}
@@ -79,7 +80,7 @@ function TranscriptFeed({
         onFocus={(event) => handleTranscriptFocus(event, navigation)}
         onBlur={(event) => handleTranscriptBlur(event, navigation)}
       >
-        {renderTranscriptItems(model.items, model.mounted, runtime.windowModel)}
+        {renderTranscriptItems(model.items, model.mounted, windowModel)}
       </div>
     </TranscriptContext>
   );
@@ -128,6 +129,7 @@ export function ChatTranscript({
   });
   const isEmpty = model.items.length === 0;
   const { ui, runtime } = model;
+  const { viewport, spacer } = runtime;
   const labelling = useFeedLabelling({
     'aria-label': ariaLabel,
     'aria-labelledby': labelledBy,
@@ -146,11 +148,7 @@ export function ChatTranscript({
       {ui.isUnreadAbove && model.unreadCount > 0 ? (
         <TranscriptUnreadBar count={model.unreadCount} onJump={model.jumpToUnread} />
       ) : null}
-      <ScrollRegion
-        ref={runtime.viewport}
-        className={hooks.slotClass('log')}
-        onScroll={model.onScroll}
-      >
+      <ScrollRegion ref={viewport} className={hooks.slotClass('log')} onScroll={model.onScroll}>
         {hasOlder || isLoadingOlder ? <TranscriptHistory isLoading={isLoadingOlder} /> : null}
         {isEmpty ? (
           emptyState ? (
@@ -159,7 +157,7 @@ export function ChatTranscript({
         ) : (
           <TranscriptFeed model={model} isLoadingOlder={isLoadingOlder} labelling={labelling} />
         )}
-        {scrollMode === 'anchor' ? <div {...hooks.slot('spacer')} ref={runtime.spacer} /> : null}
+        {scrollMode === 'anchor' ? <div {...hooks.slot('spacer')} ref={spacer} /> : null}
       </ScrollRegion>
       {ui.isAway ? (
         <TranscriptJumpButton unseenCount={ui.unseenCount} onJump={model.jumpToLatest} />

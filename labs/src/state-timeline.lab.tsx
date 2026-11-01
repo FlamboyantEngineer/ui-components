@@ -5,7 +5,7 @@ import {
   type StateTimelineEntry,
   type StateTimelineState,
 } from '../../src/components/state-timeline/state-timeline.js';
-import { requireDefined } from '../../src/utils/require-defined.js';
+import { requireDefined } from './require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { samplePicture } from './people-samples.js';
 

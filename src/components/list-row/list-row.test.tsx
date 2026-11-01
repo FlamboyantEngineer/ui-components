@@ -111,6 +111,90 @@ describe('List', () => {
     expect(primaries(container).map((node) => node.tabIndex)).toEqual([-1, 0]);
   });
 
+  function DisabledTrailingList({
+    disabled = ['Blue'],
+    rows = ['Alpha', 'Blue', 'Gamma'],
+  }: {
+    disabled?: string[];
+    rows?: string[];
+  }) {
+    return (
+      <>
+        <button type="button">Before</button>
+        <List aria-label="Letters">
+          {rows.map((name) => (
+            <ListRow
+              key={name}
+              title={name}
+              onPress={() => {}}
+              isDisabled={disabled.includes(name)}
+              trailing={<button type="button">{`Share ${name}`}</button>}
+            />
+          ))}
+        </List>
+        <button type="button">After</button>
+      </>
+    );
+  }
+  const tabStops = (container: HTMLElement) =>
+    primaries(container).flatMap((node) =>
+      node.tabIndex === 0 && !node.matches(':disabled') ? [node.textContent] : [],
+    );
+
+  it("UIC-LIST-ROW-1.2 keeps the tab stop on an enabled row when a disabled row's trailing control takes keyboard focus", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<DisabledTrailingList />);
+    await flush();
+    await user.click(screen.getByRole('button', { name: 'Before' }));
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Alpha' })).toHaveFocus();
+    await user.tab();
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Share Blue' })).toHaveFocus();
+    await user.click(screen.getByRole('button', { name: 'After' }));
+    expect(tabStops(container)).toEqual(['Alpha']);
+    await user.click(screen.getByRole('button', { name: 'Before' }));
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Alpha' })).toHaveFocus();
+  });
+
+  it("UIC-LIST-ROW-1.2 keeps the last enabled tab stop when a disabled row's trailing control is pressed", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<DisabledTrailingList />);
+    await flush();
+    await user.click(screen.getByRole('button', { name: 'Gamma' }));
+    await user.click(screen.getByRole('button', { name: 'Share Blue' }));
+    expect(tabStops(container)).toEqual(['Gamma']);
+    await user.click(screen.getByRole('button', { name: 'Share Alpha' }));
+    expect(tabStops(container)).toEqual(['Alpha']);
+  });
+
+  it('UIC-LIST-ROW-1.2 moves the tab stop to an enabled row when its row is disabled or removed', async () => {
+    const user = userEvent.setup();
+    const { container, rerender } = render(<DisabledTrailingList disabled={[]} />);
+    await flush();
+    await user.click(screen.getByRole('button', { name: 'Share Blue' }));
+    expect(tabStops(container)).toEqual(['Blue']);
+    rerender(<DisabledTrailingList />);
+    await flush();
+    expect(tabStops(container)).toEqual(['Gamma']);
+    await user.click(screen.getByRole('button', { name: 'Share Blue' }));
+    rerender(<DisabledTrailingList rows={['Alpha', 'Blue']} />);
+    await flush();
+    expect(tabStops(container)).toEqual(['Alpha']);
+    expect(screen.getByRole('button', { name: 'Share Blue' })).toHaveFocus();
+  });
+
+  it('UIC-LIST-ROW-1.2 leaves an all-disabled list without a row tab stop while its trailing controls work', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<DisabledTrailingList disabled={['Alpha', 'Blue', 'Gamma']} />);
+    await flush();
+    await user.click(screen.getByRole('button', { name: 'Before' }));
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Share Alpha' })).toHaveFocus();
+    expect(tabStops(container)).toEqual([]);
+  });
+
   it('UIC-LIST-ROW-1.3 moves focus with arrows, Home and End, skipping disabled rows without wrapping or activating', async () => {
     const onPress = vi.fn();
     const user = userEvent.setup();

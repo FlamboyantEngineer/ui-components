@@ -4,8 +4,14 @@ import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import { Tree, type TreeItemState } from '../../src/components/tree/tree.js';
 import { UiProvider } from '../../src/core/provider.js';
-import { applyTreeMove, type TreeMove } from '../../src/utils/tree-reorder.js';
+import {
+  applyTreeMove,
+  getVisibleTreeRows,
+  resolveTreeMove,
+  type TreeMove,
+} from '../../src/utils/index.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabHelperCalls } from './lab-helper-calls.js';
 import { LockedRenameTree } from './tree-rename-lock.js';
 import {
   CheckboxTree,
@@ -249,6 +255,38 @@ function ReorderTree({ betweenParents }: { betweenParents: boolean }) {
   );
 }
 
+const libraryRows = getVisibleTreeRows(LIBRARY, { expandedKeys: ALL_FOLDERS });
+const showMove = (move: TreeMove | null) =>
+  move ? `${move.key} ${move.position} ${move.targetKey}` : 'null';
+const moveCalls = [
+  [
+    "resolveTreeMove(rows, { key: 'soup', targetKey: 'bread', position: 'after' })",
+    showMove(resolveTreeMove(libraryRows, { key: 'soup', targetKey: 'bread', position: 'after' })),
+  ],
+  [
+    "resolveTreeMove(rows, { key: 'recipes', targetKey: 'tart', position: 'inside' })",
+    showMove(
+      resolveTreeMove(libraryRows, { key: 'recipes', targetKey: 'tart', position: 'inside' }),
+    ),
+  ],
+  [
+    "resolveTreeMove(rows, { key: 'soup', targetKey: 'lisbon', position: 'before' })",
+    showMove(
+      resolveTreeMove(libraryRows, { key: 'soup', targetKey: 'lisbon', position: 'before' }),
+    ),
+  ],
+  [
+    "resolveTreeMove(rows, { key: 'soup', targetKey: 'lisbon', position: 'before' }, { canMoveInto })",
+    showMove(
+      resolveTreeMove(
+        libraryRows,
+        { key: 'soup', targetKey: 'lisbon', position: 'before' },
+        { canMoveInto },
+      ),
+    ),
+  ],
+] as const;
+
 const stateNote = (state: TreeItemState) => (state.isExpanded ? 'open' : null);
 
 const manyFolders: Entry[] = Array.from({ length: 20 }, (_, group) =>
@@ -426,7 +464,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Filtering"
-      description="Matching places show with their ancestors opened and the match marked; a matching country keeps its cities to open."
+      description="Matching places show with their ancestors opened and the match marked; a matching country keeps its cities to open. Places added while filtering open to their matches, and branches you collapsed stay collapsed."
     >
       <FilterTree />
     </LabSection>
@@ -453,6 +491,12 @@ mountLab(
       description="Press the lock button, then F2 on Review and type: when the row locks, its field closes without renaming and focus stays in the tree. Unlock to rename it again."
     >
       <LockedRenameTree />
+    </LabSection>
+    <LabSection
+      title="Move rules for owners"
+      description="An owner checks a move before it applies it, with the same rules the tree uses: no move into a row's own descendants, and none to another parent without canMoveInto."
+    >
+      <LabHelperCalls calls={moveCalls} />
     </LabSection>
     <LabSection
       title="Right to left"

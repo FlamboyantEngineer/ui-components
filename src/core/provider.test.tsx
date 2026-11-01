@@ -82,13 +82,8 @@ describe('UiProvider defaults', () => {
   it('UIC-PROVIDER-2.1 UIC-PROVIDER-3.1 resolves glyph overrides with an explicit fallback', () => {
     expect(CloseGlyph.glyphName).toBe('close');
     expect(defaultStrings.close).toBe('Close');
-    let drawn: unknown;
-    function Reader() {
-      drawn = useGlyph('check', StarGlyph);
-      return null;
-    }
-    render(<Reader />);
-    expect(drawn).toBe(StarGlyph);
+    const { result } = renderHook(() => useGlyph('check', StarGlyph));
+    expect(result.current).toBe(StarGlyph);
   });
 });
 

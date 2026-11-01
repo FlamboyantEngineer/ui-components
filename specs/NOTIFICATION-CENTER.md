@@ -8,7 +8,7 @@ Each notification is plain data: `id`, a one-line `title`, an optional `descript
 
 ### UIC-NOTIFICATION-CENTER-1.1 - Rows
 
-`NotificationList` shall render a `ui-notification-list` `<div>` drawing each shown notification as a `ListRow` that also carries `ui-notification-list__item`: the `title` as its title, the actor's decorative small `Avatar` (`ui-notification-list__actor`) as its leading media, or the `icon` when there is no actor, and a `MetaLine` of the actor's name, the `description` and a `RelativeTime` of `time` (`ui-notification-list__time`, read against `getNow`, without a tooltip of its own because the row's control holds it). A notification with `href` is a link row; without one it is a button row while the list has `onAction`, and a read-only row otherwise. Opening a row, by link or button, calls `onAction` with its `id`.
+`NotificationList` shall render a `ui-notification-list` `<div>` drawing each shown notification as a `ListRow` that also carries `ui-notification-list__item`: the `title` as its title, the actor's decorative small `Avatar` (`ui-notification-list__actor`) as its leading media, or the `icon` when there is no actor, and a `MetaLine` of the actor's name, the `description` and the `time` as an [Attribution](ATTRIBUTION.md) without a person (`ui-notification-list__time`, read against `getNow` with `fallbackAfterDays` in `timeZone`, which the list also groups days in, and without a tooltip of its own because the row's control holds it). A notification with `href` is a link row; without one it is a button row while the list has `onAction`, and a read-only row otherwise. Opening a row, by link or button, calls `onAction` with its `id`.
 
 Numeric and text IDs, such as `1` and `'1'`, identify distinct entries; removing one preserves the other entry's rendered identity.
 
@@ -124,7 +124,7 @@ Verification: `src/components/notification-center/notification-list.test.tsx`, `
 | `ui-notification-list__list`           | slot      |                     | The day's rows (also `ui-list`).                         |
 | `ui-notification-list__item`           | slot      |                     | One notification (also `ui-list-row`).                   |
 | `ui-notification-list__actor`          | slot      |                     | The actor's avatar (also `ui-avatar`).                   |
-| `ui-notification-list__time`           | slot      |                     | When it happened (also `ui-relative-time`).              |
+| `ui-notification-list__time`           | slot      |                     | When it happened (also `ui-attribution`).                |
 | `ui-notification-list__unread`         | slot      |                     | The unread dot (also `ui-badge`).                        |
 | `ui-notification-list__item-actions`   | slot      |                     | The caller's controls for one notification.              |
 | `ui-notification-list__read-toggle`    | slot      |                     | Mark as read or unread (also `ui-button`).               |

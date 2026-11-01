@@ -64,6 +64,31 @@ describe('SelectField field', () => {
     },
   );
 
+  it.each(['isReadOnly', 'isDisabled'] as const)(
+    'UIC-SELECT-FIELD-1.3 closes an open list for good when it turns %s',
+    async (lock) => {
+      const user = userEvent.setup();
+      const onOpenChange = vi.fn();
+      const { rerender } = render(
+        <SelectField label="Fruit" options={fruit} onOpenChange={onOpenChange} />,
+      );
+      await user.click(trigger(/Fruit$/));
+      expect(screen.getByRole('listbox')).toBeInTheDocument();
+      rerender(
+        <SelectField
+          label="Fruit"
+          options={fruit}
+          onOpenChange={onOpenChange}
+          {...{ [lock]: true }}
+        />,
+      );
+      expect(onOpenChange).toHaveBeenLastCalledWith(false);
+      rerender(<SelectField label="Fruit" options={fruit} onOpenChange={onOpenChange} />);
+      expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+      expect(onOpenChange.mock.calls).toEqual([[true], [false]]);
+    },
+  );
+
   it('UIC-SELECT-FIELD-1.1 renders a field around a framed trigger named by its value and label', () => {
     const { container } = render(
       <SelectField

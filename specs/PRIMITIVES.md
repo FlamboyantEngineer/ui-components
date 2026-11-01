@@ -27,7 +27,7 @@ Verification: `test/primitives.test.ts`
 
 ### UIC-PRIMITIVES-1.4 - Labs use the public API
 
-The labs show hosts how to use the library, so they shall import only its public API, from the component and core modules that `src/index.ts` exports, and never `src/primitives/`. Lint rejects a lab import of any module under `src/primitives/`, as it rejects a lab import of React Aria and its companion packages. A lab imports a component through its entry point (`src/components/<name>/index.js`) or its main module (`<name>.js`), never through one of its helper modules, so every symbol a lab uses is one a host can import; lint (`ui/component-imports`) rejects the rest.
+The labs show hosts how to use the library, so they shall import only its public API, from the component and core modules that `src/index.ts` exports, and never `src/primitives/`. Lint rejects a lab import of any module under `src/primitives/`, as it rejects a lab import of React Aria and its companion packages. A lab imports a component through its entry point (`src/components/<name>/index.js`) or its main module (`<name>.js`), never through one of its helper modules, so every symbol a lab uses is one a host can import. A lab imports from a `src/utils` or `src/core` module only the names that folder's index (`src/utils/index.ts`, `src/core/index.ts`) re-exports from it, and an index module itself; helpers only the labs need, such as `requireDefined`, live beside the labs. Lint (`ui/component-imports`) rejects the rest.
 
 Implementation: `eslint.config.js`, `eslint-rules/index.js`
 Verification: `test/primitives.test.ts`, `test/lint-rules.test.ts`

@@ -77,11 +77,12 @@ export function TabBar({
   onAdd,
   children,
 }: TabBarProps) {
+  const { containerRef, indicatorRef, hiddenItems } = menu;
   const strings = useUiStrings();
   const { isDisabled } = useContext(TabsSharedContext);
   return (
     <div
-      ref={isMenu ? menu.containerRef : undefined}
+      ref={isMenu ? containerRef : undefined}
       {...hooks.slot('bar', { overflow: isMenu ? 'menu' : 'scroll', orientation })}
     >
       <ScrollStrip
@@ -92,15 +93,15 @@ export function TabBar({
       >
         {children}
       </ScrollStrip>
-      {isMenu && menu.hiddenItems.length > 0 ? (
-        <div ref={menu.indicatorRef} {...hooks.slot('overflow')}>
+      {isMenu && hiddenItems.length > 0 ? (
+        <div ref={indicatorRef} {...hooks.slot('overflow')}>
           <DropdownMenu
             iconOnly
             size="sm"
             placement="bottom end"
-            label={strings.moreItems(menu.hiddenItems.length)}
+            label={strings.moreItems(hiddenItems.length)}
             isDisabled={isDisabled}
-            items={toMenuEntries(state, menu.hiddenItems, isDisabled)}
+            items={toMenuEntries(state, hiddenItems, isDisabled)}
             onAction={(key) => state.setSelectedKey(key)}
           />
         </div>

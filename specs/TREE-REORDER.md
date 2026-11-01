@@ -46,7 +46,7 @@ Verification: `src/utils/tree-reorder.test.ts`
 `resolveTreeMove(rows, move, rules)` shall return the move (`{ key, targetKey, position }`), or `null` when the row or the target is missing or cannot move, when the target is the row itself or one of its descendants, when the move lands inside the parent the row is already in or in the slot it already holds, or when it lands under another parent (a different sibling list or inside a row) without `rules.canMoveInto` accepting the row there (`null` for the top level).
 
 Implementation: `src/utils/tree-reorder.ts`
-Verification: `src/utils/tree-reorder.test.ts`
+Verification: `src/utils/tree-reorder.test.ts`, `e2e/tree-reorder.spec.ts`
 
 ### UIC-TREE-REORDER-2.3 - Drops
 

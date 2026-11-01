@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { useLocale } from '../../primitives/index.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Size, Tone } from '../../core/props.js';
@@ -113,11 +114,12 @@ function AccessibleLabel({ children }: { children: string }) {
 function describeCount(
   { count, more, 'aria-label': ariaLabel }: Pick<BadgeCountProps, 'count' | 'more' | 'aria-label'>,
   strings: UiStrings,
+  locale: string,
 ): string {
   if (ariaLabel !== undefined) return ariaLabel;
   const exact = normalizeCount(count);
   if (exact === undefined) return '';
-  return more ? strings.countOrMore(exact) : String(exact);
+  return more ? strings.countOrMore(exact) : formatCount(exact, locale);
 }
 
 function CountBadge({
@@ -134,8 +136,9 @@ function CountBadge({
   ...rest
 }: BadgeCountProps) {
   const strings = useUiStrings();
-  const visible = formatCount(count, { max, more });
-  const spoken = describeCount({ count, more, 'aria-label': ariaLabel }, strings);
+  const { locale } = useLocale();
+  const visible = formatCount(count, locale, { max, more });
+  const spoken = describeCount({ count, more, 'aria-label': ariaLabel }, strings, locale);
   const isSeparate = !isAriaHidden(rest['aria-hidden']) && spoken !== visible;
   const data = { variant: 'count', tone, size, placement, bare };
   if (!showZero && normalizeCount(count) === 0 && !more) return null;

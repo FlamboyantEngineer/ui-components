@@ -1,6 +1,15 @@
 import { act, render, renderHook, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { StrictMode, Suspense, startTransition, use, useState } from 'react';
+import {
+  StrictMode,
+  Suspense,
+  createRef,
+  startTransition,
+  use,
+  useImperativeHandle,
+  useState,
+  type Ref,
+} from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
 import { useFieldState, type FieldStateOptions } from './field-state.js';
@@ -43,11 +52,13 @@ function RecordField({ record }: { record: SampleRecord }) {
   );
 }
 
-let showRecord: (record: SampleRecord) => void = () => undefined;
+interface RecordShower {
+  show: (record: SampleRecord) => void;
+}
 
-function RecordEditor({ initial }: { initial: SampleRecord }) {
+function RecordEditor({ initial, ref }: { initial: SampleRecord; ref: Ref<RecordShower> }) {
   const [record, setRecord] = useState(initial);
-  showRecord = setRecord;
+  useImperativeHandle(ref, () => ({ show: setRecord }), []);
   return (
     <Suspense fallback="Loading">
       <RecordField record={record} />
@@ -63,9 +74,10 @@ describe('useFieldState', () => {
       onChange: vi.fn(),
       onCommit: vi.fn(),
     };
+    const editor = createRef<RecordShower>();
     render(
       <StrictMode>
-        <RecordEditor initial={first} />
+        <RecordEditor initial={first} ref={editor} />
       </StrictMode>,
     );
     const input = screen.getByRole('textbox', { name: 'Name' });
@@ -75,7 +87,7 @@ describe('useFieldState', () => {
       onChange: vi.fn(),
       onCommit: vi.fn(),
     };
-    act(() => startTransition(() => showRecord(second)));
+    act(() => startTransition(() => editor.current?.show(second)));
     expect(input).toHaveValue('Atlas');
     await user.type(input, 's');
     await user.tab();
@@ -93,10 +105,11 @@ describe('useFieldState', () => {
       validateAsync: vi.fn(() => Promise.resolve(null)),
     });
     const first = sample('Atlas');
-    render(<RecordEditor initial={first} />);
+    const editor = createRef<RecordShower>();
+    render(<RecordEditor initial={first} ref={editor} />);
     expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue('Atlas');
     const second = sample('Borealis', new Promise<void>(() => undefined));
-    act(() => startTransition(() => showRecord(second)));
+    act(() => startTransition(() => editor.current?.show(second)));
     await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
     expect(first.validateAsync).toHaveBeenCalledWith('Atlas', expect.any(AbortSignal));
     expect(second.validateAsync).not.toHaveBeenCalled();

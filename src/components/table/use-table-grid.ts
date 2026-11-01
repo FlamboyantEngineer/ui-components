@@ -159,7 +159,8 @@ export function useTableGrid<T extends TableRow>(options: TableGridOptions<T>): 
   const grouped = useTableGrouping(options, view);
   const selection = useTableSelection(options, view.presentedNodes);
   const keyIndex = useTableKeyIndex(options.rows, options.getChildRows, onRowAction !== undefined);
-  const reordering = useTableReorder({ rows: view.rows, reorder });
+  const { isRowDisabled } = selection;
+  const reordering = useTableReorder({ rows: view.rows, reorder, isRowDisabled });
   const structure = useStructure(options, layout.visibleColumns, grouped.isGrouped);
   const visibleRows = useVisibleRows<T>(grouped);
   const cells = useCellsView(options, {

@@ -57,7 +57,7 @@ Verification: `src/components/completion-list/text-completions.test.tsx`
 
 ### UIC-COMPLETION-LIST-2.3 - Keys
 
-While the list is open, ArrowDown and ArrowUp shall move the active option, wrapping at either end, Enter or Tab (not Shift+Tab) insert it, and Escape close the list until the next lookup; Ctrl+Space asks for completions whether the list is open or not. Those keys have their default prevented and go no further than the control, so the control's other key handling (committing, sending, reverting) does not see them. Keys pressed during an input method composition are left alone. The first option is active whenever the list opens.
+While the list is open, ArrowDown and ArrowUp shall move the active option, wrapping at either end, Enter or Tab (not Shift+Tab) insert it, and Escape close the list until the next lookup; Ctrl+Space asks for completions whether the list is open or not. Those keys have their default prevented and go no further than the control, so the control's other key handling (committing, sending, reverting) does not see them. Keys an input method owns are left alone, Escape included: those pressed during a composition and the Enter some browsers report with key code 229 as a composition ends. The first option is active whenever the list opens.
 
 Implementation: `src/components/completion-list/use-completions.ts`
 Verification: `src/components/completion-list/text-completions.test.tsx`

@@ -226,9 +226,10 @@ describe('ApprovalPanel', () => {
     expect(row('Quality team')).toHaveTextContent('Abstained');
     await userEvent.tab();
     // Only the decision times' tooltips take focus.
-    expect(document.activeElement).toHaveClass('ui-approval-panel__time');
+    const time = () => document.activeElement?.closest('.ui-approval-panel__time');
+    expect(time()).toHaveClass('ui-attribution');
     await userEvent.tab();
-    expect(document.activeElement).toHaveClass('ui-approval-panel__time');
+    expect(time()).toHaveClass('ui-attribution');
     await userEvent.tab();
     expect(document.body).toHaveFocus();
   });

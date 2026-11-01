@@ -13,6 +13,7 @@ import { callSettling, isThenable } from '../../utils/is-thenable.js';
 import { matchCompletions, type Completion } from './completion-match.js';
 import { isShallowEqual } from '../../utils/is-shallow-equal.js';
 import { useLatest } from '../../utils/use-latest.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 
 /** What a completion source knows about the place it completes. */
 export interface CompletionContext {
@@ -102,7 +103,7 @@ interface Lookup {
 interface CompletionSession {
   state: CompletionState;
   setState: Dispatch<SetStateAction<CompletionState>>;
-  request: RefObject<number>;
+  requestRef: RefObject<number>;
   /** The lookup the pending answer or open list belongs to, or null while there is neither. */
   lookup: RefObject<Lookup | null>;
   /** The source that lookup asked. */
@@ -204,18 +205,23 @@ function hasSessionSource(session: CompletionSession): boolean {
 
 function useCompletionState(options: CompletionsOptions) {
   const [state, setState] = useState<CompletionState>(closed);
-  const request = useRef(0);
+  const requestRef = useRef(0);
   const lookup = useRef<Lookup | null>(null);
   const source = useRef<Completions | undefined>(undefined);
   // Every commit: callers pass a fresh options object each render.
   const latest = useLatest({ state, options });
-  const session = { state, setState, request, lookup, source, latest };
+  const session = { state, setState, requestRef, lookup, source, latest };
   const isLocked = options.isLocked || options.completions === undefined;
+  // Locking hides the list in the same render; the effect drops the session's pending request.
+  const [wasLocked, setWasLocked] = useState(isLocked);
+  if (isLocked !== wasLocked) {
+    setWasLocked(isLocked);
+    if (isLocked) setState(hideCompletionState);
+  }
   useLayoutEffect(() => {
     if (!isLocked) return;
-    request.current += 1;
+    requestRef.current += 1;
     lookup.current = null;
-    setState(hideCompletionState);
   }, [isLocked]);
   // A value the control was given from outside, such as a controlled replacement, ends the session:
   // its answer and range belong to the text it was looked up for. A new source answers it again.
@@ -227,7 +233,7 @@ function useCompletionState(options: CompletionsOptions) {
   });
   useLayoutEffect(
     () => () => {
-      request.current += 1;
+      requestRef.current += 1;
       latest.current.state = hideCompletionState(latest.current.state);
     },
     [latest],
@@ -236,7 +242,7 @@ function useCompletionState(options: CompletionsOptions) {
 }
 
 function closeCompletions(session: CompletionSession) {
-  session.request.current += 1;
+  session.requestRef.current += 1;
   session.lookup.current = null;
   session.latest.current.state = hideCompletionState(session.latest.current.state);
   session.setState(hideCompletionState);
@@ -269,11 +275,11 @@ function applyCompletion(session: CompletionSession, option: Completion) {
 function askSource(session: CompletionSession, lookup: Lookup, isNewSource: boolean) {
   const { completions } = session.latest.current.options;
   if (!completions) return;
-  const id = (session.request.current += 1);
+  const id = (session.requestRef.current += 1);
   session.lookup.current = lookup;
   session.source.current = completions;
   const show = (answer: CompletionAnswer) => {
-    if (id !== session.request.current || session.latest.current.options.isLocked) return;
+    if (id !== session.requestRef.current || session.latest.current.options.isLocked) return;
     if (!holdsSessionText(session) || !hasSessionSource(session)) return closeCompletions(session);
     session.setState((state) => toState(answer, lookup, state.revision + 1));
   };
@@ -305,7 +311,7 @@ function trackCompletions(session: CompletionSession, reason: CompletionReason) 
 export function useCompletions(options: CompletionsOptions): CompletionsModel {
   const { completions, isLocked } = options;
   const session = useCompletionState(options);
-  const { state, setState, request } = session;
+  const { state, setState, requestRef } = session;
   const usedKey = useRef<string | null>(null);
   const isOpen = state.isOpen && !isLocked && completions !== undefined;
   const close = () => closeCompletions(session);
@@ -327,9 +333,10 @@ export function useCompletions(options: CompletionsOptions): CompletionsModel {
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLElement>): boolean => {
+    // Keys an input method owns, its confirming Enter included, never accept or dismiss.
+    if (isComposingKey(event.nativeEvent)) return false;
     // Escape also drops a lookup that has not answered yet.
-    if (!isOpen && event.key === 'Escape') request.current += 1;
-    if (event.nativeEvent.isComposing) return false;
+    if (!isOpen && event.key === 'Escape') requestRef.current += 1;
     const isRequest = isExplicitRequest(event) && Boolean(completions) && !isLocked;
     if (isRequest) track('explicit');
     else if (!isOpen || !choose(event.key, event.shiftKey)) return false;

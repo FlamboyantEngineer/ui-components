@@ -377,7 +377,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Nested rows"
-      description="Expand with the chevron or ArrowRight; sorting keeps sibling order stable, and filtering retains the places above a deep match."
+      description="Expand with the chevron or ArrowRight; sorting keeps sibling order stable, and filtering retains the places above a deep match. The place filter lists collapsed places too."
     >
       <NestedRows />
     </LabSection>
@@ -422,7 +422,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Row groups"
-      description="Groups by one or two columns or a computed value, with counts and sums; collapse with the chevron or ArrowLeft. Numeric aggregates also handle large groups."
+      description="Groups by one or two columns or a computed value, with counts and sums; collapse with the chevron or ArrowLeft. Numeric aggregates also handle large groups. A number and the text of the same number keep separate groups."
     >
       <Grouping />
     </LabSection>

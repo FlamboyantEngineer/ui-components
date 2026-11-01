@@ -20,6 +20,7 @@ export function useSegmentedAnimation(element: Element | null, animated: boolean
   useLayoutEffect(() => {
     if (!element || !animated || current === 'complete') return undefined;
     if (typeof element.ownerDocument.defaultView?.IntersectionObserver !== 'function') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- the observer is looked up in the committed element's window.
       setPhase('complete');
       return undefined;
     }

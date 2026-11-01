@@ -198,19 +198,18 @@ export function Section({
 }: SectionProps) {
   const headingId = useId();
   const level = useHeadingLevel(headingLevel);
-  const disclosure = useSectionDisclosure({
-    collapsible,
-    isExpanded,
-    defaultExpanded,
-    onExpandedChange,
-  });
-  const heading = disclosure.collapsible ? (
-    <AriaButton
-      {...disclosure.buttonProps}
-      ref={disclosure.triggerRef}
-      className={headerHooks.slotClass('trigger')}
-    >
-      <SectionChevron isExpanded={disclosure.expanded} />
+  const {
+    collapsible: isCollapsible,
+    expanded,
+    buttonProps,
+    triggerRef,
+    panelProps,
+    panelRef,
+    isFocusVisibleWithin,
+  } = useSectionDisclosure({ collapsible, isExpanded, defaultExpanded, onExpandedChange });
+  const heading = isCollapsible ? (
+    <AriaButton {...buttonProps} ref={triggerRef} className={headerHooks.slotClass('trigger')}>
+      <SectionChevron isExpanded={expanded} />
       {title}
     </AriaButton>
   ) : (
@@ -221,9 +220,9 @@ export function Section({
       as="section"
       {...rest}
       className={mergeClassNames(sectionHooks.className, className)}
-      data-collapsible={disclosure.collapsible || undefined}
-      data-expanded={(disclosure.collapsible && disclosure.expanded) || undefined}
-      data-focus-visible-within={disclosure.isFocusVisibleWithin || undefined}
+      data-collapsible={isCollapsible || undefined}
+      data-expanded={(isCollapsible && expanded) || undefined}
+      data-focus-visible-within={isFocusVisibleWithin || undefined}
       space={space}
       aria-labelledby={headingId}
     >
@@ -236,11 +235,7 @@ export function Section({
           headingId={headingId}
         />
       </header>
-      <div
-        {...disclosure.panelProps}
-        ref={disclosure.panelRef}
-        className={sectionHooks.slotClass('panel')}
-      >
+      <div {...panelProps} ref={panelRef} className={sectionHooks.slotClass('panel')}>
         <HeadingLevelContext value={level}>
           <Stack space={space}>{children}</Stack>
         </HeadingLevelContext>

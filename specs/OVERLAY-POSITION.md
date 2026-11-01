@@ -97,7 +97,7 @@ Verification: `src/utils/overlay-geometry.test.ts`
 `resolveOverlayGeometry` shall measure an overlay's natural size and solve its placement against an anchor element or rect, taking the solver's `side`, `align` and `crossOffset`. Above or below the anchor, an overlay wider than the boundary gets a `maxWidth` of the boundary width; beside it, an overlay wider than the room on its side gets a `maxWidth` of that room, and one taller than the boundary a `maxHeight` of the boundary height. A width limit is kept while the remeasured width equals it, so a wrapped overlay settles instead of oscillating, and released when the room grows. A constrained overlay gets a whole-pixel `maxHeight` and is placed at that height. Coordinates are whole pixels relative to the viewport for the `fixed` strategy, or to `offsetParent` (an element, or its rect and scroll offsets) for `absolute`.
 
 Implementation: `src/utils/overlay-geometry.ts`
-Verification: `src/utils/overlay-geometry.test.ts`
+Verification: `src/utils/overlay-geometry.test.ts`, `e2e/popover.spec.ts`
 
 ### UIC-OVERLAY-POSITION-3.4 - Geometry equality
 

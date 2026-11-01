@@ -105,3 +105,54 @@ describe('Tree filtering', () => {
     expect(rowNames()).toEqual(['Nuts']);
   });
 });
+
+describe('Tree filtering as items arrive', () => {
+  const first: Food = { id: 'first', name: 'First', children: [{ id: 'one', name: 'Match one' }] };
+  const second: Food = { id: 'second', name: 'Second', children: [{ id: 'two', name: 'Other' }] };
+  const third: Food = { id: 'third', name: 'Third', children: [{ id: 'new', name: 'Match new' }] };
+  const thirdUnloaded: Food = { id: 'third', name: 'Third' };
+
+  function Branches(props: Partial<TreeProps<Food>>) {
+    return (
+      <Tree
+        aria-label="Branches"
+        items={[first, second]}
+        getTextValue={(item) => item.name}
+        filterText="Match"
+        {...props}
+      />
+    );
+  }
+  const toggle = (label: string, action: 'Expand' | 'Collapse') =>
+    userEvent.click(within(row(label)).getByRole('button', { name: `${action} ${label}` }));
+
+  it('UIC-TREE-6.1 reveals a match that arrives after the reader re-expanded a branch', async () => {
+    const { rerender } = render(<Branches />);
+    expect(rowNames()).toEqual(['First', 'Match one']);
+    await toggle('First', 'Collapse');
+    await toggle('First', 'Expand');
+    rerender(<Branches items={[first, second, third]} />);
+    expect(rowNames()).toEqual(['First', 'Match one', 'Third', 'Match new']);
+  });
+
+  it('UIC-TREE-6.1 keeps a collapse while revealing a match loaded under another branch', async () => {
+    const { rerender } = render(<Branches items={[first, second, thirdUnloaded]} />);
+    await toggle('First', 'Collapse');
+    expect(rowNames()).toEqual(['First']);
+    rerender(<Branches items={[first, second, third]} />);
+    expect(rowNames()).toEqual(['First', 'Third', 'Match new']);
+    expect(row('First')).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('UIC-TREE-6.1 starts a new query, or the same query entered again, from its matches', async () => {
+    const { rerender } = render(<Branches />);
+    await toggle('First', 'Collapse');
+    rerender(<Branches filterText="Match one" />);
+    expect(rowNames()).toEqual(['First', 'Match one']);
+    await toggle('First', 'Collapse');
+    rerender(<Branches filterText="" />);
+    expect(rowNames()).toEqual(['First', 'Second']);
+    rerender(<Branches filterText="Match one" />);
+    expect(rowNames()).toEqual(['First', 'Match one']);
+  });
+});

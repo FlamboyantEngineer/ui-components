@@ -259,6 +259,7 @@ function Custom() {
 
 function Limits() {
   const [basket, setBasket] = useState<Key[]>(['apple']);
+  const [kept, setKept] = useState<Key[]>(['apple']);
   return (
     <>
       <SelectField
@@ -281,6 +282,45 @@ function Limits() {
         data-lab-field="limited"
       />
       <LabOutput name="Basket">{basket.join(', ') || 'none'}</LabOutput>
+      <SelectField
+        label="One kept fruit"
+        selectionMode="multiple"
+        options={fruit}
+        value={kept}
+        onChange={setKept}
+        committedValue={['retired']}
+        maxValues={1}
+        description="The committed value is no longer listed; it cannot be restored while one fruit is chosen."
+        data-lab-field="limited-missing"
+      />
+    </>
+  );
+}
+
+/** Locking an open select closes it for good, so unlocking does not reopen it. */
+function Locking() {
+  const [isLocked, setLocked] = useState(false);
+  const [openChanges, setOpenChanges] = useState<string[]>([]);
+  return (
+    <>
+      <SelectField
+        label="Lockable"
+        options={fruit}
+        isDisabled={isLocked}
+        onOpenChange={(open) => setOpenChanges((changes) => [...changes, String(open)])}
+        data-lab-field="lockable"
+      />
+      <button
+        type="button"
+        onClick={() => {
+          // The delay leaves time to open the select, which a press outside would close.
+          if (isLocked) setLocked(false);
+          else window.setTimeout(() => setLocked(true), 1000);
+        }}
+      >
+        {isLocked ? 'Unlock' : 'Lock in 1 s'}
+      </button>
+      <LabOutput name="Open changes">{openChanges.join(', ') || 'none'}</LabOutput>
     </>
   );
 }
@@ -422,6 +462,12 @@ mountLab(
       </LabSection>
       <LabSection title="Clearing and limits" description="A clear button and a maximum of values.">
         <Limits />
+      </LabSection>
+      <LabSection
+        title="Locking while open"
+        description="A select that turns disabled while open closes and reports it; unlocking leaves it closed."
+      >
+        <Locking />
       </LabSection>
       <LabSection
         title="Virtualized"

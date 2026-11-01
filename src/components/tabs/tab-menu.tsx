@@ -83,12 +83,12 @@ function findMoveDirections(reorder: TabReorder): [MoveDirection, MoveDirection]
  */
 function useStandardEntries(options: TabMenuOptions) {
   const strings = useUiStrings();
-  const latest = useLatest(options);
+  const latestRef = useLatest(options);
   const { rename, reorder, onDuplicate, onRemove } = options;
   return useCallback(
     (key: Key): MenuEntry[] => {
       const act = (run: (current: TabMenuOptions) => void) => () => {
-        if (isTabAvailable(latest.current.shared, key)) run(latest.current);
+        if (isTabAvailable(latestRef.current.shared, key)) run(latestRef.current);
       };
       const edits: MenuItemEntry[] = [];
       if (rename) {
@@ -142,7 +142,7 @@ function useStandardEntries(options: TabMenuOptions) {
         : [];
       return joinMenuGroups([edits, moves, removal]);
     },
-    [latest, strings, rename, reorder, onDuplicate, onRemove],
+    [latestRef, strings, rename, reorder, onDuplicate, onRemove],
   );
 }
 
@@ -153,6 +153,7 @@ function useStandardEntries(options: TabMenuOptions) {
 export function useTabMenu(options: TabMenuOptions): TabMenu {
   const listStandard = useStandardEntries(options);
   const { getMenuItems, shared } = options;
+  const { menuKey: menuKeyRef } = shared;
   return useMemo<TabMenu>(() => {
     const getEntries = (key: Key) => getMenuItems?.(key, listStandard(key)) ?? [];
     return {
@@ -160,13 +161,13 @@ export function useTabMenu(options: TabMenuOptions): TabMenu {
       isEnabled: getMenuItems !== undefined,
       getEntries,
       showFor: (key) => {
-        shared.menuKey.current = key;
+        menuKeyRef.current = key;
         shared.controller.setItems(getEntries(key));
       },
-      openKey: () => (shared.controller.isOpen() ? shared.menuKey.current : null),
+      openKey: () => (shared.controller.isOpen() ? menuKeyRef.current : null),
       isAvailable: (key, state) => isTabAvailable(shared, key, state),
     };
-  }, [getMenuItems, listStandard, shared]);
+  }, [getMenuItems, listStandard, shared, menuKeyRef]);
 }
 
 /**

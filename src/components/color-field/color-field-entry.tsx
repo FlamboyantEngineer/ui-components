@@ -1,16 +1,20 @@
 'use client';
 
-import { useLayoutEffect, useState } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { mergeRefs } from '../../utils/merge-props.js';
+import { useNativeReset } from '../../utils/use-native-reset.js';
 import { Button as AriaButton, Input, TextField } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { ColorSwatch } from '../color-swatch/color-swatch.js';
 import {
   toAriaControlProps,
+  toSpellCheckAttribute,
   type FieldControlProps,
   type FieldIssue,
   type FieldState,
 } from '../field/field.js';
+import type { ColorFieldTextInputProps } from './color-field.js';
 import { colorFieldHooks as hooks } from './color-field-hooks.js';
 import { formatColor, storeColorText, type ColorFieldFormat } from './color-values.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
@@ -24,6 +28,8 @@ interface ColorEntryProps {
   format: ColorFieldFormat;
   valueFormat: ColorFieldFormat;
   placeholder: string;
+  /** The typed input's native text-entry attributes. */
+  textInput: Omit<ColorFieldTextInputProps, 'placeholder'>;
 }
 
 /**
@@ -74,6 +80,7 @@ export function ColorEntry({
   format,
   valueFormat,
   placeholder,
+  textInput,
 }: ColorEntryProps) {
   const strings = useUiStrings();
   const [draft, setDraft] = useState<ColorDraft | null>(null);
@@ -88,7 +95,13 @@ export function ColorEntry({
   const { setDraftIssue } = state;
   // After every commit: the field keeps the issue it has while the report says the same.
   useLayoutEffect(() => setDraftIssue(draftIssue));
+  const input = useRef<HTMLInputElement>(null);
+  const inputRef = useMemo(() => mergeRefs<HTMLInputElement>(control.ref, input), [control.ref]);
+  // The building block puts the first text back on the form's own reset listener, before a
+  // listener that cancels the reset has run: the typed text stays until the reset goes through.
+  const isResetting = useNativeReset(input, () => setDraft(null));
   const type = (text: string) => {
+    if (isResetting()) return;
     const typed = storeColorText(text, valueFormat);
     const isCleared = typed === null && !text.trim() && !state.isRequired;
     const value = typed !== null || isCleared ? typed : state.value;
@@ -119,6 +132,7 @@ export function ColorEntry({
       <TextField
         {...toAriaControlProps(control)}
         className={hooks.slotClass('entry')}
+        spellCheck={toSpellCheckAttribute(textInput.spellCheck)}
         value={current?.text ?? (color ? formatColor(color, format) : '')}
         onChange={type}
         onBlur={() => finish({ shouldCommit: false })}
@@ -130,7 +144,14 @@ export function ColorEntry({
           else event.continuePropagation();
         }}
       >
-        <Input {...hooks.slot('input')} ref={control.ref} placeholder={placeholder} />
+        <Input
+          {...hooks.slot('input')}
+          ref={inputRef}
+          placeholder={placeholder}
+          autoComplete={textInput.autoComplete}
+          inputMode={textInput.inputMode}
+          enterKeyHint={textInput.enterKeyHint}
+        />
       </TextField>
     </div>
   );

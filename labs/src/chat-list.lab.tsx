@@ -132,6 +132,24 @@ function StateCell({ state }: { state: (typeof listStates)[number] }) {
   );
 }
 
+const fallbacks = ['default', 'fallbackAfterDays 2'] as const;
+
+/** A conversation from four days ago, read with the default fallback or an earlier one. */
+function FallbackCell({ fallback }: { fallback: (typeof fallbacks)[number] }) {
+  const conversation = { id: 'museum', title: 'Museum visit', time: '2026-04-16T09:00:00' };
+  return (
+    <div style={{ width: 300 }}>
+      <ChatList
+        aria-label={`Fallback ${fallback}`}
+        conversations={[conversation]}
+        getNow={getNow}
+        fallbackAfterDays={fallback === 'default' ? undefined : 2}
+        timeZone="Europe/Lisbon"
+      />
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -156,6 +174,15 @@ mountLab(
       <StateMatrix
         axes={{ state: listStates }}
         render={({ state }) => <StateCell state={state} />}
+      />
+    </LabSection>
+    <LabSection
+      title="Time options"
+      description="A conversation from four days ago reads in days by default and as its date with fallbackAfterDays 2, in the row and in its name; timeZone sets the zone it reads days in."
+    >
+      <StateMatrix
+        axes={{ fallback: fallbacks }}
+        render={({ fallback }) => <FallbackCell fallback={fallback} />}
       />
     </LabSection>
     <LabSection

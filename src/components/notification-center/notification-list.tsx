@@ -181,7 +181,9 @@ export function NotificationList({
   onReadChange,
   onDismiss,
   renderActions,
+  fallbackAfterDays,
   getNow,
+  timeZone,
   className,
   ...rest
 }: NotificationListProps) {
@@ -193,13 +195,14 @@ export function NotificationList({
   const groups = groupByDay(shown, {
     getDate: (item) => item.time,
     now: useNow(getNow),
-    timeZone: useTimeZone(),
+    timeZone: useTimeZone(timeZone),
     locale,
     unknownLabel: strings.earlier,
   });
   const rootRef = useRef<HTMLDivElement>(null);
   const focusHandlers = useRemovalFocus(rootRef);
-  const rowActions = { onAction, onReadChange, onDismiss, renderActions, getNow };
+  const time = { fallbackAfterDays, getNow, timeZone };
+  const rowActions = { onAction, onReadChange, onDismiss, renderActions, ...time };
   return (
     <div
       {...rest}

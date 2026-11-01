@@ -219,6 +219,53 @@ describe('RichTextEditor', () => {
     expect(screen.getByRole('checkbox', { name: 'Done' })).toHaveAttribute('aria-readonly', 'true');
   });
 
+  it("UIC-RICH-TEXT-EDITOR-2.3 UIC-RICH-TEXT-EDITOR-4.1 takes a disabled editor's task checkboxes out of the tab sequence", async () => {
+    const user = userEvent.setup();
+    const task = (checked: boolean, text: string) => ({
+      type: 'taskItem',
+      attrs: { checked },
+      content: [{ type: 'paragraph', content: [{ type: 'text', text }] }],
+    });
+    const tasks: RichTextDocument = {
+      type: 'doc',
+      content: [{ type: 'taskList', content: [task(true, 'Wash'), task(false, 'Peel')] }],
+    };
+    const changes: RichTextDocument[] = [];
+    const page = (isDisabled: boolean) => (
+      <form aria-label="Plan">
+        <button type="button">Before</button>
+        <RichTextEditor
+          label="Notes"
+          name="notes"
+          defaultValue={tasks}
+          isDisabled={isDisabled}
+          onChange={(next) => changes.push(next)}
+        />
+        <button type="button">After</button>
+      </form>
+    );
+    const { rerender } = render(page(false));
+    const boxes = () => screen.getAllByRole('checkbox', { name: 'Done' });
+    await user.click(boxes()[1] as HTMLElement);
+    expect(changes.at(-1)?.content?.[0]?.content?.[1]?.attrs).toEqual({ checked: true });
+    expect(boxes()[1]).toHaveFocus();
+    rerender(page(true));
+    for (const box of boxes()) {
+      expect(box).toBeDisabled();
+      expect(box).not.toHaveAttribute('aria-readonly');
+    }
+    expect(boxes().map((box) => (box as HTMLInputElement).checked)).toEqual([true, true]);
+    await user.click(screen.getByRole('button', { name: 'Before' }));
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
+    const form = screen.getByRole<HTMLFormElement>('form', { name: 'Plan' });
+    expect(new FormData(form).get('notes')).toBeNull();
+    rerender(page(false));
+    for (const box of boxes()) expect(box).toBeEnabled();
+    await user.click(boxes()[0] as HTMLElement);
+    expect(changes.at(-1)?.content?.[0]?.content?.[0]?.attrs).toEqual({ checked: false });
+  });
+
   it('UIC-RICH-TEXT-EDITOR-3.1 runs mark and block shortcuts', async () => {
     const { user, value } = renderEditor();
     await user.click(getContent());
@@ -287,6 +334,31 @@ describe('RichTextEditor', () => {
       { type: 'text', text: 'break' },
     ]);
   });
+
+  it.each([
+    ['typed text', 'X', 'Pick pearsX'],
+    ['a line break', '{Enter}', 'Pick pears|'],
+  ])(
+    'UIC-RICH-TEXT-EDITOR-3.5 puts %s at a caret the engine has not seen yet',
+    async (_name, keys, expected) => {
+      const { user, value } = renderEditor({ defaultValue: note, children: <ViewProbe /> });
+      selectRange(1);
+      const content = getContent();
+      const text = content.querySelector('p')?.firstChild as Node;
+      // The browser moves the caret, and the engine commits a render (toggling bold for the next
+      // text, twice) before the selection change reaches it.
+      act(() => {
+        document.getSelection()?.collapse(text, 10);
+        for (let press = 0; press < 2; press += 1) {
+          const chord = { key: 'b', code: 'KeyB', ctrlKey: true, bubbles: true };
+          content.dispatchEvent(new KeyboardEvent('keydown', chord));
+        }
+      });
+      await user.keyboard(keys);
+      const blocks = value()?.content?.map((block) => block.content?.[0]?.text ?? '');
+      expect(blocks?.join('|')).toBe(expected);
+    },
+  );
 
   it('UIC-RICH-TEXT-EDITOR-3.4 undoes and redoes edits', async () => {
     const { user, value } = renderEditor({ defaultValue: note, children: <ViewProbe /> });

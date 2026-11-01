@@ -146,48 +146,46 @@ export function InlineEdit<T = string>(props: InlineEditProps<T>) {
     onEditingChange: props.onEditingChange,
     failureMessage: strings.saveFailed,
   });
+  const { isEditing, isPending, error, edited, setEdited, open, cancel, commit } = edit;
+  const { editorHandlers, editorRef, readRef } = edit;
   const isEmpty = isEmptyValue(value);
   const data = {
-    editing: edit.isEditing,
-    pending: edit.isPending,
-    invalid: edit.error !== null,
+    editing: isEditing,
+    pending: isPending,
+    invalid: error !== null,
     empty: isEmpty,
     disabled: isDisabled,
   };
   return (
     <div id={id} {...hooks.root({ className, props: rest, data })}>
-      {edit.isEditing ? (
-        <div ref={edit.editorRef} {...hooks.slot('editor')} {...edit.editorHandlers}>
+      {isEditing ? (
+        <div ref={editorRef} {...hooks.slot('editor')} {...editorHandlers}>
           <div {...hooks.slot('control')}>
             {renderEditor({
-              value: edit.current,
-              onChange: edit.setCurrent,
-              commit: edit.commit,
-              cancel: edit.cancel,
+              value: edited,
+              onChange: setEdited,
+              commit: commit,
+              cancel: cancel,
               label,
-              isPending: edit.isPending,
+              isPending: isPending,
             })}
           </div>
           {showActions ? (
-            <InlineEditActions
-              isPending={edit.isPending}
-              onSave={() => edit.commit()}
-              onCancel={edit.cancel}
-            />
+            <InlineEditActions isPending={isPending} onSave={() => commit()} onCancel={cancel} />
           ) : null}
-          {edit.error === null ? null : (
-            <InlineError className={hooks.slotClass('error')}>{edit.error}</InlineError>
+          {error === null ? null : (
+            <InlineError className={hooks.slotClass('error')}>{error}</InlineError>
           )}
         </div>
       ) : (
         <AriaButton
-          ref={edit.readRef}
+          ref={readRef}
           className={hooks.slotClass('read')}
           aria-labelledby={`${nameId} ${valueId}`}
           isDisabled={isDisabled}
-          onPress={edit.open}
+          onPress={open}
           onKeyDown={(event) => {
-            if (event.key === 'F2') edit.open();
+            if (event.key === 'F2') open();
             else event.continuePropagation();
           }}
         >

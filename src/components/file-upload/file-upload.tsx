@@ -113,13 +113,15 @@ function rejectionMessage(rejections: readonly FileRejection[], strings: UiStrin
 
 /**
  * Checks offered files, reports the refusals and hands on the accepted ones, and judges a drag
- * before the drop. `held` files are listed already. An offer made while an earlier one still waits
- * for `validate` is checked once the earlier one is handed on, counting the files it accepted until
- * the upload renders again, so overlapping offers never pass `maxFiles` together and the latest
+ * before the drop. `listed` are the owner's files. Files handed on stay counted against `maxFiles`
+ * until the owner gives a new `files` list, however often the upload renders itself, so offers
+ * made before the owner lists them never pass the limit together. An offer made while an earlier
+ * one still waits for `validate` is checked once the earlier one is handed on, and the latest
  * offer's refusals are the ones shown. Offers still waiting when the upload unmounts or becomes
  * disabled or read-only are abandoned: they call nothing and show nothing.
  */
-function useFileIntake(props: FileUploadProps, held: number) {
+function useFileIntake(props: FileUploadProps, listed: readonly FileUploadItem[]) {
+  const held = listed.length;
   const { allowsMultiple, acceptDirectory, isDisabled, isReadOnly } = props;
   const { acceptedFileTypes, maxSize, minSize, maxFiles, validate } = props;
   const rules: FileRules = { acceptedFileTypes, maxSize, minSize, maxFiles, validate };
@@ -131,9 +133,10 @@ function useFileIntake(props: FileUploadProps, held: number) {
   const lifetime = useRef({});
   const callbacks = useLatest({ onSelect: props.onSelect, onReject: props.onReject });
   const isLocked = Boolean(isDisabled || isReadOnly);
+  // A new list is the owner's answer to the files handed on: listed, refused or removed.
   useLayoutEffect(() => {
     count.current = { held, accepted: 0 };
-  });
+  }, [listed, held]);
   useLayoutEffect(() => {
     if (!isLocked) return undefined;
     lifetime.current = {};
@@ -235,6 +238,8 @@ function useFileCommand(
   };
 }
 
+const noFiles: readonly FileUploadItem[] = [];
+
 /**
  * Chooses files or folders from the system file chooser or by drag and drop, checks them against
  * the accepted types, the size and count limits and the caller's own check, and hands the accepted
@@ -244,11 +249,11 @@ function useFileCommand(
  * `name`.
  */
 export function FileUpload(props: FileUploadProps) {
-  const { variant = 'button', files = [], className, id, isReadOnly } = props;
+  const { variant = 'button', files = noFiles, className, id, isReadOnly } = props;
   const strings = useUiStrings();
   const { locale } = useLocale();
   const commandRef = useRef<HTMLButtonElement>(null);
-  const intake = useFileIntake(props, files.length);
+  const intake = useFileIntake(props, files);
   const form = useFileForm({ ...props, files, commandRef });
   const command = useFileCommand(props, intake, { ...form, commandRef });
   const removalFocus = useRemovalFocus(files, commandRef);

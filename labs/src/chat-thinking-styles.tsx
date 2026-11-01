@@ -6,7 +6,7 @@ import { Button } from '../../src/components/button/button.js';
 import { Chat, type ChatProps } from '../../src/components/chat/index.js';
 import type { ChatMessageData, ChatPart } from '../../src/components/chat-parts/index.js';
 import { Cluster, Stack } from '../../src/components/layout/layout.js';
-import { requireDefined } from '../../src/utils/require-defined.js';
+import { requireDefined } from './require-defined.js';
 import { assistantPeople, getLabNow, plannerId, readerId, textMessage } from './chat-samples.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
 
@@ -113,17 +113,15 @@ const tick = 1600;
 /** A style's reply played phase by phase. */
 function StyleReplay({ style }: { style: ThinkingStyle }) {
   const [index, setIndex] = useState(0);
-  const [isPlaying, setPlaying] = useState(false);
+  const [wantsPlay, setPlaying] = useState(false);
   const last = phases.length - 1;
+  // Play stops at the last phase.
+  const isPlaying = wantsPlay && index < last;
   useEffect(() => {
     if (!isPlaying) return undefined;
-    if (index >= last) {
-      setPlaying(false);
-      return undefined;
-    }
     const timer = window.setTimeout(() => setIndex((value) => value + 1), tick);
     return () => window.clearTimeout(timer);
-  }, [index, isPlaying, last]);
+  }, [index, isPlaying]);
   return (
     <Stack space="sm" data-lab-demo={`thinking-${style}`}>
       <Cluster space="sm">

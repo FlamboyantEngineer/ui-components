@@ -12,8 +12,6 @@ import {
 import {
   cloneElement,
   isValidElement,
-  useMemo,
-  useRef,
   type ReactElement,
   type ReactNode,
   type Ref,
@@ -21,7 +19,7 @@ import {
 } from 'react';
 import type { BaseProps, Key, Selection } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { mergeRefs } from '../../utils/merge-props.js';
+import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { ContextMenuTrigger } from '../context-menu/context-menu.js';
 import { Menu, MenuItem, MenuSection } from '../menu/menu.js';
 import { MessageActionsBar } from './message-actions-bar.js';
@@ -127,12 +125,11 @@ export function ChatMessageActionsMenu(props: ChatMessageActionsMenuProps) {
   const strings = useUiStrings();
   const [commands, { children, 'aria-label': ariaLabel, ...rest }] = splitCommands(props);
   const state = useMessageCommands(commands);
-  const targetRef = useRef<HTMLElement>(null);
   const isEnabled = hasCommands(commands);
   const message = children(isEnabled ? <MessageActionsBar state={state} /> : null);
   const target = isValidElement<{ ref?: Ref<HTMLElement> }>(message) ? message : null;
-  const ownRef = target?.props.ref;
-  const ref = useMemo(() => mergeRefs(ownRef, targetRef), [ownRef]);
+  // The menu anchors to the message, whose own ref still receives it.
+  const [targetRef, ref] = useForwardedRef<HTMLElement>(target?.props.ref);
   if (!target) {
     throw new Error('ChatMessageActionsMenu needs its children to return a message element.');
   }

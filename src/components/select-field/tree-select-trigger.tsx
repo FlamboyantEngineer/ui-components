@@ -5,7 +5,7 @@ import { useId, useMemo, useRef, type ReactNode, type Ref } from 'react';
 import { Button as AriaButton, DialogTrigger } from '../../primitives/index.js';
 import { Glyph } from '../../core/provider.js';
 import { mergeRefs } from '../../utils/merge-props.js';
-import type { FieldControlProps } from '../field/field.js';
+import { toAriaControlProps, type FieldControlProps } from '../field/field.js';
 import { Button } from '../button/button.js';
 import { selectFieldHooks as hooks } from './select-field-hooks.js';
 
@@ -51,18 +51,19 @@ export function TreeSelectTrigger({
     () => mergeRefs(triggerRef, control.ref, callerRef),
     [control.ref, callerRef],
   );
-  const name = control['aria-labelledby'] ?? control.id;
+  const aria = toAriaControlProps(control);
   return (
     <div {...hooks.slot('frame')}>
       <DialogTrigger isOpen={isOpen} onOpenChange={onOpenChange}>
         <AriaButton
           {...hooks.slot('trigger')}
           ref={ref}
-          id={control.id}
-          aria-label={control['aria-label']}
-          aria-labelledby={`${name} ${valueId}`}
-          aria-describedby={control['aria-describedby']}
-          isDisabled={control.disabled}
+          id={aria.id}
+          aria-label={aria['aria-label']}
+          // A button takes no state props but the disabled one; it is named by the label, then its text.
+          aria-labelledby={`${aria['aria-labelledby'] ?? aria.id} ${valueId}`}
+          aria-describedby={aria['aria-describedby']}
+          isDisabled={aria.isDisabled}
         >
           <span
             {...hooks.slot('value', { placeholder: isPlaceholder, missing: isMissing })}

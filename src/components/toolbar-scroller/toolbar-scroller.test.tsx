@@ -1,7 +1,7 @@
 import { CopyGlyph } from '../../core/glyphs.js';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState } from 'react';
+import { createRef, useImperativeHandle, useState, type Ref } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
@@ -242,16 +242,16 @@ describe('ToolbarScroller', () => {
       }
     }
     vi.stubGlobal('ResizeObserver', StubResizeObserver);
-    let show: (shown: boolean) => void = () => undefined;
-    function LateLabel() {
+    const label = createRef<{ show: (shown: boolean) => void }>();
+    function LateLabel({ ref }: { ref: Ref<{ show: (shown: boolean) => void }> }) {
       const [shown, setShown] = useState(false);
-      show = setShown;
+      useImperativeHandle(ref, () => ({ show: setShown }), []);
       return shown ? <span data-late="true">Saved</span> : null;
     }
     const { container } = render(
       <ToolbarScroller aria-label="Format">
         <button type="button">Bold</button>
-        <LateLabel />
+        <LateLabel ref={label} />
       </ToolbarScroller>,
     );
     const { root, strip } = parts(container);
@@ -261,14 +261,14 @@ describe('ToolbarScroller', () => {
     expect(root).not.toHaveAttribute('data-overflow-end');
 
     stubStrip(strip, 160, 100);
-    await act(async () => show(true));
+    await act(async () => label.current?.show(true));
     await nextFrame();
     const late = strip.querySelector('[data-late]');
     expect(late && observed.has(late)).toBe(true);
     expect(root).toHaveAttribute('data-overflow-end', 'true');
 
     stubStrip(strip, 100, 100);
-    await act(async () => show(false));
+    await act(async () => label.current?.show(false));
     await nextFrame();
     expect(late && observed.has(late)).toBe(false);
     expect(root).not.toHaveAttribute('data-overflow-end');

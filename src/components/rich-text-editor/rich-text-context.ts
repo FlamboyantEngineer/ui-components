@@ -6,6 +6,8 @@ import { createHooks } from '../../core/hooks.js';
 /** What the editor shares with the chrome rendered inside it. */
 export interface RichTextEditorContextValue {
   isEditable: boolean;
+  /** Disabled, not just read-only: interactive node views leave the tab sequence too. */
+  isDisabled: boolean;
   /** The element the content and the floating chrome are positioned in. */
   surfaceRef: RefObject<HTMLDivElement | null>;
   /** Adds attributes to the content element, such as the active option of a list it controls. */

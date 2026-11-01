@@ -188,6 +188,47 @@ function RememberedTour() {
   );
 }
 
+/** A non-modal tour about the newest order, whose row a refresh replaces and a clear removes. */
+function ReplacedTarget() {
+  const [isOpen, setOpen] = useState(false);
+  const [refreshes, setRefreshes] = useState(0);
+  const [isCleared, setCleared] = useState(false);
+  const newest = useRef<HTMLLIElement>(null);
+  return (
+    <div data-lab-replaced="">
+      <p style={{ display: 'flex', gap: 8 }}>
+        <Button onPress={() => setOpen(true)}>Point at the newest order</Button>
+        <Button
+          onPress={() => {
+            setCleared(false);
+            setRefreshes((count) => count + 1);
+          }}
+        >
+          Refresh the list
+        </Button>
+        <Button onPress={() => setCleared(true)}>Clear the list</Button>
+      </p>
+      <ul>
+        {/* Each refresh adds an order above the newest, so its row is replaced lower down. */}
+        {Array.from({ length: refreshes }, (_, index) => (
+          <li key={`older-${index}`}>Order {index + 1}</li>
+        ))}
+        {isCleared ? null : (
+          <li key={`newest-${refreshes}`} ref={newest} data-lab-newest="">
+            Order {refreshes + 1} (newest)
+          </li>
+        )}
+      </ul>
+      <Tour
+        isOpen={isOpen}
+        onOpenChange={setOpen}
+        isNonModal
+        steps={[{ target: newest, title: 'Newest order', content: 'It follows a refresh.' }]}
+      />
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -210,6 +251,12 @@ mountLab(
       description="A non-modal tour with a persist key. Reload opens it again unless it was finished or skipped; Forget completion clears the key."
     >
       <RememberedTour />
+    </LabSection>
+    <LabSection
+      title="Replaced target"
+      description="Open the tour, then refresh the list: the newest order's row is replaced lower down and the spotlight and dialog follow it. Clear the list and the step shows centred; refresh again and it points at the new row."
+    >
+      <ReplacedTarget />
     </LabSection>
     <LabSection
       title="Highlight transitions"

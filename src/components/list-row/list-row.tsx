@@ -99,13 +99,14 @@ function ListRowPrimary(props: {
   children: ReactNode;
 }) {
   const { kind, tabStop, children } = props;
+  const { isActive, setPrimary } = tabStop;
   const { href, target, rel, onPress, onAuxPress, isCurrent, isDisabled } = props.options;
   const className = rowHooks.slotClass('primary');
-  const tabIndex = isDisabled ? undefined : tabStop.isActive ? 0 : -1;
+  const tabIndex = isDisabled ? undefined : isActive ? 0 : -1;
   if (kind === 'link' && href !== undefined && !isDisabled) {
     return (
       <UiLink
-        ref={tabStop.setPrimary}
+        ref={setPrimary}
         href={href}
         target={target}
         rel={mergeSafeRel(target, rel)}
@@ -124,10 +125,10 @@ function ListRowPrimary(props: {
   if (kind === 'action') {
     return (
       <AriaButton
-        ref={tabStop.setPrimary}
+        ref={setPrimary}
         className={className}
         isDisabled={isDisabled}
-        excludeFromTabOrder={!tabStop.isActive}
+        excludeFromTabOrder={!isActive}
         onPress={onPress}
         {...(isCurrent ? { 'aria-current': true } : {})}
       >
@@ -137,7 +138,7 @@ function ListRowPrimary(props: {
   }
   return (
     <div
-      ref={tabStop.setPrimary}
+      ref={setPrimary}
       className={className}
       tabIndex={tabIndex}
       aria-current={isCurrent || undefined}
@@ -166,20 +167,22 @@ export function List({
 }: ListProps) {
   const primaryClass = rowHooks.slotClass('primary');
   const navigation = useListNavigation({ primaryClass, onNavigatePastStart, handleRef, ref });
+  const { registry, setRef } = navigation;
+  const { onKeyDown: navigateByKey, onBlurCapture: leaveRow } = navigation;
   return (
-    <RowRegistryContext value={navigation.registry}>
+    <RowRegistryContext value={registry}>
       <ul
         {...rest}
         {...listHooks.root({ className, props: rest, data: { divided, pending: isPending } })}
-        ref={navigation.setRef}
+        ref={setRef}
         aria-busy={isPending || undefined}
         onKeyDown={(event) => {
           onKeyDown?.(event);
-          navigation.onKeyDown(event);
+          navigateByKey(event);
         }}
         onBlurCapture={(event) => {
           onBlurCapture?.(event);
-          navigation.onBlurCapture(event);
+          leaveRow(event);
         }}
       >
         {children}

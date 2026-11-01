@@ -326,6 +326,30 @@ describe('Wizard', () => {
     expect(onCurrentKeyChange).toHaveBeenCalledWith('summary');
   });
 
+  it('UIC-WIZARD-2.6 keeps a check running when equal steps are given again', async () => {
+    let pass: (result: boolean) => void = () => {};
+    const validate = () => new Promise<boolean>((resolve) => (pass = resolve));
+    const onFinish = vi.fn();
+    const { rerender } = render(
+      <Wizard
+        steps={tripSteps({ summary: { validate } })}
+        defaultCurrentKey="summary"
+        onFinish={onFinish}
+      />,
+    );
+    await userEvent.click(action('Finish'));
+    rerender(
+      <Wizard
+        steps={tripSteps({ summary: { validate } })}
+        defaultCurrentKey="summary"
+        onFinish={onFinish}
+      />,
+    );
+    expect(action('Finish')).toHaveAttribute('data-pending');
+    await act(async () => pass(true));
+    expect(onFinish).toHaveBeenCalledTimes(1);
+  });
+
   it('UIC-WIZARD-2.6 ignores a late refusal or error from a check whose workflow was replaced', async () => {
     let refuse: (error: Error) => void = () => {};
     const validate = () => new Promise<boolean>((_, reject) => (refuse = reject));

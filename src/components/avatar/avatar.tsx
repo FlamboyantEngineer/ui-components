@@ -7,6 +7,7 @@ import type { BaseProps, NativeProps, PresenceStatus, Size } from '../../core/pr
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { getInitials } from '../../utils/initials.js';
+import { useStableArray } from '../../utils/use-stable-array.js';
 import type { PressEvent } from '../../core/events.js';
 import { toImageProps } from '../icon/icon.js';
 import { AvatarRoot } from './avatar-root.js';
@@ -84,8 +85,8 @@ export interface AvatarProps extends AvatarIdentity, BaseProps {
 
 /** The picture's loading state and the handlers that settle it. */
 interface AvatarPicture {
-  /** The image request the status is about. */
-  request: string;
+  /** Counts the image requests, so each gets its own element. */
+  generation: number;
   status: AvatarLoadingStatus;
   settle: (status: 'loaded' | 'error') => void;
   imageRef: (image: HTMLImageElement | null) => void;
@@ -102,34 +103,39 @@ function pictureOf({ src, kind }: Pick<AvatarIdentity, 'src' | 'kind'>): string 
  * What decides the image the browser requests: the picture and the attributes that choose or fetch
  * a candidate. Empty without a picture.
  */
-function requestOf(identity: Pick<AvatarIdentity, 'src' | 'kind' | 'imageProps'>): string {
+function requestOf(identity: Pick<AvatarIdentity, 'src' | 'kind' | 'imageProps'>): unknown[] {
   const picture = pictureOf(identity);
-  if (picture === '') return '';
+  if (picture === '') return [];
   const { srcSet, sizes, crossOrigin, referrerPolicy } = identity.imageProps ?? {};
-  return JSON.stringify([picture, srcSet, sizes, crossOrigin, referrerPolicy]);
+  return [picture, srcSet, sizes, crossOrigin, referrerPolicy];
 }
 
 /**
- * Tracks whether the image `request` has loaded or failed; a different request starts loading
- * afresh.
+ * Tracks whether the image `request` has loaded or failed; a different request (compared item by
+ * item) starts loading afresh.
  */
 function useAvatarPicture(
-  request: string,
+  requested: readonly unknown[],
   onLoadingStatusChange: AvatarProps['onLoadingStatusChange'],
 ): AvatarPicture {
-  const [settled, setSettled] = useState<{ request: string; status: 'loaded' | 'error' } | null>(
-    null,
-  );
+  const request = useStableArray(requested);
+  const [tracked, setTracked] = useState({ request, generation: 0 });
+  if (tracked.request !== request) setTracked({ request, generation: tracked.generation + 1 });
+  const generation = tracked.request === request ? tracked.generation : tracked.generation + 1;
+  const [settled, setSettled] = useState<{
+    generation: number;
+    status: 'loaded' | 'error';
+  } | null>(null);
   const status: AvatarLoadingStatus =
-    request === '' ? 'idle' : settled?.request === request ? settled.status : 'loading';
+    request.length === 0 ? 'idle' : settled?.generation === generation ? settled.status : 'loading';
   const settle = useCallback(
     (next: 'loaded' | 'error') =>
       setSettled((previous) =>
-        previous?.request === request && previous.status === next
+        previous?.generation === generation && previous.status === next
           ? previous
-          : { request, status: next },
+          : { generation, status: next },
       ),
-    [request],
+    [generation],
   );
   // An image the browser settled before the handlers were attached, such as before hydration,
   // fires no event to them. A lazy image that has not started is not complete, so it stays loading.
@@ -155,7 +161,7 @@ function useAvatarPicture(
     reported.current = status;
     onLoadingStatusChange?.(status);
   });
-  return { request, status, settle, imageRef };
+  return { generation, status, settle, imageRef };
 }
 
 /** The group glyph, the picture, or the initials without a picture or once it has failed. */
@@ -167,19 +173,20 @@ function AvatarContent({
   picture: AvatarPicture;
 }) {
   const { name, src, imageProps, initials, kind } = identity;
+  const { status, generation, imageRef, settle } = picture;
   if (kind === 'group') return <Glyph icon={UsersGlyph} className={hooks.slotClass('glyph')} />;
-  if (picture.status === 'loading' || picture.status === 'loaded') {
+  if (status === 'loading' || status === 'loaded') {
     return (
       <img
         {...imageProps}
         // A new element per request, so events of a departed request never reach the handlers.
-        key={picture.request}
+        key={generation}
         {...hooks.slot('image')}
-        ref={picture.imageRef}
+        ref={imageRef}
         src={src?.trim()}
         alt=""
-        onLoad={() => picture.settle('loaded')}
-        onError={() => picture.settle('error')}
+        onLoad={() => settle('loaded')}
+        onError={() => settle('error')}
       />
     );
   }

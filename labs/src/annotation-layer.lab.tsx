@@ -9,7 +9,7 @@ import { Button } from '../../src/components/button/button.js';
 import { CommentThread } from '../../src/components/comment-thread/comment-thread.js';
 import { CommentThreadReply } from '../../src/components/comment-thread/index.js';
 import type { Key } from '../../src/core/props.js';
-import { requireDefined } from '../../src/utils/require-defined.js';
+import { requireDefined } from './require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const maria = { name: 'Maria Santos', colorKey: 'maria' };

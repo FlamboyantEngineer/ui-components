@@ -151,3 +151,15 @@ test.describe('Zoom Control lab', () => {
     });
   }
 });
+
+test('UIC-ZOOM-CONTROL-1.3 shows the zoom level helpers in a host-side snippet', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('zoom-control');
+  const call = (text: string) => page.locator(`[data-lab-call=${JSON.stringify(text)}]`);
+  await expect(call('defaultZoomLevels')).toHaveText('25, 50, 75, 100, 125, 150, 200, 300, 400');
+  await expect(call('findNextZoomLevel(defaultZoomLevels, 110, 1)')).toHaveText('125');
+  await expect(call('findNextZoomLevel(defaultZoomLevels, 110, -1)')).toHaveText('100');
+  await expect(call('findNextZoomLevel(defaultZoomLevels, 400, 1)')).toHaveText('undefined');
+});

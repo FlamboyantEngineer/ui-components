@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { ActionRow, type ActionRowAction } from '../action-row/action-row.js';
 import { BooleanField } from '../boolean-field/boolean-field.js';
 import { DateTimeField } from '../date-time-field/date-time-field.js';
+import { Form, useFormValidity, type FormValidity } from '../form/form.js';
 import { Modal } from '../modal/modal.js';
 import { NumberField } from '../number-field/number-field.js';
 import { SelectField } from '../select-field/select-field.js';
@@ -105,7 +106,20 @@ function createBulkEdits<T extends TableRow>(
   });
 }
 
-/** The bulk edit dialog: a choice of column, the field of its type and Apply. */
+/** Hands the enclosing form's validity to the dialog's Apply, drawn outside the form. */
+function ValidityProbe({ validityRef }: { validityRef: RefObject<FormValidity | null> }) {
+  const validity = useFormValidity();
+  useLayoutEffect(() => {
+    validityRef.current = validity;
+  });
+  return null;
+}
+
+/**
+ * The bulk edit dialog: a choice of column, the field of its type and Apply. Apply checks the
+ * field as a submit does: a draft it cannot read, such as a partly entered date, shows its error
+ * and keeps the dialog open rather than clearing the cells.
+ */
 function TableBulkEditDialog<T extends TableRow>(
   props: Omit<TableSelectionBarProps<T>, 'actions' | 'onClearSelection'> & {
     isOpen: boolean;
@@ -117,6 +131,7 @@ function TableBulkEditDialog<T extends TableRow>(
   const [columnId, setColumnId] = useState(columns[0]?.id ?? null);
   const column = columns.find((candidate) => candidate.id === columnId);
   const [value, setValue] = useState(getInitialValue(column?.bulkEdit));
+  const validity = useRef<FormValidity | null>(null);
   return (
     <Modal
       className={hooks.slotClass('bulk-edit')}
@@ -128,34 +143,38 @@ function TableBulkEditDialog<T extends TableRow>(
         label: strings.apply,
         isDisabled: !column,
         onPress: (close) => {
+          if (validity.current?.validate() === false) return;
           if (column) props.onEdit(createBulkEdits(props.rows, column, value));
           close();
         },
       }}
     >
-      <SelectField
-        label={strings.field}
-        options={columns.map((candidate) => ({
-          id: candidate.id,
-          label: getColumnText(candidate),
-        }))}
-        value={columnId}
-        tracksChanges={false}
-        onChange={(next: Key | null) => {
-          const id = next === null ? null : String(next);
-          setColumnId(id);
-          setValue(getInitialValue(columns.find((candidate) => candidate.id === id)?.bulkEdit));
-        }}
-      />
-      {column?.bulkEdit ? (
-        <BulkEditField
-          key={column.id}
-          edit={column.bulkEdit}
-          label={getColumnText(column)}
-          value={value}
-          onChange={setValue}
+      <Form onSubmit={(event) => event.preventDefault()}>
+        <ValidityProbe validityRef={validity} />
+        <SelectField
+          label={strings.field}
+          options={columns.map((candidate) => ({
+            id: candidate.id,
+            label: getColumnText(candidate),
+          }))}
+          value={columnId}
+          tracksChanges={false}
+          onChange={(next: Key | null) => {
+            const id = next === null ? null : String(next);
+            setColumnId(id);
+            setValue(getInitialValue(columns.find((candidate) => candidate.id === id)?.bulkEdit));
+          }}
         />
-      ) : null}
+        {column?.bulkEdit ? (
+          <BulkEditField
+            key={column.id}
+            edit={column.bulkEdit}
+            label={getColumnText(column)}
+            value={value}
+            onChange={setValue}
+          />
+        ) : null}
+      </Form>
     </Modal>
   );
 }

@@ -7,6 +7,8 @@ export interface PlanningStrings {
   noCards: string;
   /** A board column's or lane's card count, with the column's limit when it has one. */
   cardCount: (count: number, limit?: number) => string;
+  /** A board column's visible count against its limit, such as `3/5`. */
+  cardCountOfLimit: (count: number, limit: number) => string;
   /** Names the handle that moves a board column, by the column's title. */
   moveColumn: (column: string) => string;
   /** The month view of a calendar. */
@@ -36,6 +38,7 @@ function getLimitState(count: number, limit: number | undefined) {
 /** The module's text, with the message values each text function reads its arguments as. */
 export const planningStrings = defineStrings<PlanningStrings>({
   cardCount: (count, limit) => ({ count, limit, state: getLimitState(count, limit) }),
+  cardCountOfLimit: (count, limit) => ({ count, limit }),
   moveColumn: (column) => ({ column }),
   previousRange: (unit) => ({ unit }),
   nextRange: (unit) => ({ unit }),

@@ -58,6 +58,8 @@ export interface TableReorder<T> {
 interface ReorderSnapshot<T> {
   rows: readonly T[];
   reorder: TableReorderOptions<T> | undefined;
+  /** Whether a row is disabled, which keeps it from moving. */
+  isRowDisabled: (row: T) => boolean;
 }
 
 interface IndexedReorderSnapshot<T> extends ReorderSnapshot<T> {
@@ -83,10 +85,13 @@ function canMoveRow<T>(reorder: TableReorderOptions<T> | undefined, row: T): boo
 
 function findMovableRow<T extends TableRow>(snapshot: ReorderSnapshot<T>, key: Key): T | undefined {
   const row = snapshot.rows.find((candidate) => toCollectionKey(candidate.id) === key);
-  return row && canMoveRow(snapshot.reorder, row) ? row : undefined;
+  return row && canMoveRow(snapshot.reorder, row) && !snapshot.isRowDisabled(row) ? row : undefined;
 }
 
-/** The move a drop on `target` makes, or null when it is not allowed or changes nothing. */
+/**
+ * The move a drop on `target` makes, or null when it is not allowed or changes nothing. Only the
+ * dragged rows that may move now go: a row gone, disabled or refused by `canMove` stays.
+ */
 function resolveDrop<T extends TableRow>(
   snapshot: IndexedReorderSnapshot<T>,
   target: CollectionDropTarget,
@@ -98,8 +103,9 @@ function resolveDrop<T extends TableRow>(
   if (targetKey === undefined) return null;
   const moved = [...keys].flatMap((key) => {
     const original = index.get(String(key));
-    return original === undefined ? [] : [original];
+    return original !== undefined && findMovableRow(snapshot, String(key)) ? [original] : [];
   });
+  if (moved.length === 0) return null;
   const move = { keys: moved, targetKey, position: target.dropPosition };
   return isEffectiveTableMove(snapshot.rows, move) ? move : null;
 }

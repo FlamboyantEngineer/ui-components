@@ -2,7 +2,7 @@
 
 import { useRef, useState, type Ref, type RefObject } from 'react';
 import { useControllableState } from '../core/controllable-state.js';
-import { mergeRefs } from './merge-props.js';
+import { useMergedRefs } from './use-merged-refs.js';
 import { useNativeReset, type NativeResetOptions } from './use-native-reset.js';
 
 interface ResetHeldValueOptions<T> {
@@ -38,5 +38,5 @@ export function useResetHeldValue<T>(
 /** A ref to the control's input that also forwards it to the caller's ref. */
 export function useInputRef<T extends Element>(given: Ref<T> | undefined) {
   const ref = useRef<T>(null);
-  return { ref, setRef: mergeRefs(ref, given) };
+  return { ref, setRef: useMergedRefs(ref, given) };
 }

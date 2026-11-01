@@ -217,6 +217,20 @@ describe('Board', () => {
     expect(cells[1]).toHaveAttribute('data-over-limit', 'true');
   });
 
+  it('UIC-BOARD-1.2 UIC-BOARD-1.3 shows counts in the provider locale digits', () => {
+    const { container } = render(
+      <UiProvider locale="ar-EG">
+        <TaskBoard lanes={lanes} />
+      </UiProvider>,
+    );
+    const shown = (slot: string) =>
+      [...container.querySelectorAll(`.ui-board__${slot} [aria-hidden]`)].map(
+        (count) => count.textContent,
+      );
+    expect(shown('column-count')).toEqual(['٢', '٢/١', '٠/٥']);
+    expect(shown('lane-count')).toEqual(['٣', '١']);
+  });
+
   it('UIC-BOARD-1.3 UIC-BOARD-4.1 repeats the columns in named lanes', () => {
     const { container } = render(<TaskBoard lanes={lanes} />);
     const north = screen.getByRole('group', { name: 'North team' });

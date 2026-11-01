@@ -13,7 +13,7 @@ Verification: `src/components/chat-list/chat-list.test.tsx`, `e2e/chat-list.spec
 
 ### UIC-CHAT-LIST-1.2 - Rows
 
-Each row shall show, in order: a decorative avatar (`ui-chat-list__avatar`, hidden from assistive technology): the conversation's `avatar`, else its one participant as an [Avatar](AVATAR.md) with their `presence` as its status, else its participants as an [Avatar Group](AVATAR-GROUP.md) of two and a count, else an avatar of the title; the title (`ui-chat-list__title`); given `time`, a [Relative Time](RELATIVE-TIME.md) without a tooltip read against `getNow` (`ui-chat-list__time`); given `lastMessage`, the last message on one line (`ui-chat-list__preview`); for a muted conversation the `bell-slash` glyph named by the provider string `conversationMuted` (`ui-chat-list__muted`); above zero unread messages, a count [Badge](BADGE.md) capped at 99 (`ui-chat-list__unread`) named by `unreadMessages(count)`; then the controls `renderActions` draws for the conversation (`ui-chat-list__actions`). A row carries `data-unread` while it has unread messages and `data-muted` while it is muted.
+Each row shall show, in order: a decorative avatar (`ui-chat-list__avatar`, hidden from assistive technology): the conversation's `avatar`, else its one participant as an [Avatar](AVATAR.md) with their `presence` as its status, else its participants as an [Avatar Group](AVATAR-GROUP.md) of two and a count, else an avatar of the title; the title (`ui-chat-list__title`); given `time`, an [Attribution](ATTRIBUTION.md) without a person or a tooltip, read against `getNow` (the provider's clock by default) with `fallbackAfterDays` (7 by default) in `timeZone` (`ui-chat-list__time`), the same reading the row's name gives; given `lastMessage`, the last message on one line (`ui-chat-list__preview`); for a muted conversation the `bell-slash` glyph named by the provider string `conversationMuted` (`ui-chat-list__muted`); above zero unread messages, a count [Badge](BADGE.md) capped at 99 (`ui-chat-list__unread`) named by `unreadMessages(count)`; then the controls `renderActions` draws for the conversation (`ui-chat-list__actions`). A row carries `data-unread` while it has unread messages and `data-muted` while it is muted.
 
 Implementation: `src/components/chat-list/chat-list-row.tsx`, `src/core/glyphs.tsx`
 Verification: `src/components/chat-list/chat-list.test.tsx`, `e2e/chat-list.spec.ts`
@@ -86,7 +86,7 @@ Verification: `src/components/chat-list/chat-list.test.tsx`
 | `ui-chat-list__conversation` | slot  |            | A conversation row (`role="row"`).                             |
 | `ui-chat-list__avatar`       | slot  |            | The decorative avatar, with presence, or avatar group.         |
 | `ui-chat-list__title`        | slot  |            | The title.                                                     |
-| `ui-chat-list__time`         | slot  |            | The time of the last message (also `ui-relative-time`).        |
+| `ui-chat-list__time`         | slot  |            | The time of the last message (also `ui-attribution`).          |
 | `ui-chat-list__preview`      | slot  |            | The last message, on one line.                                 |
 | `ui-chat-list__muted`        | slot  |            | The muted mark (also `ui-icon`).                               |
 | `ui-chat-list__unread`       | slot  |            | The unread count (also `ui-badge`).                            |

@@ -264,4 +264,15 @@ describe('ColorField', () => {
     rerender(<ColorField label="Accent" value={null} />);
     expect(field).toHaveAttribute('data-validation', 'valid');
   });
+
+  it('UIC-COLOR-FIELD-1.2 gives the trigger the field control props', () => {
+    const { rerender } = render(
+      <ColorField id="accent" label="Accent" description="Brand colour." defaultValue="#336699" />,
+    );
+    const trigger = screen.getByRole('button', { name: 'Accent #336699' });
+    expect(trigger).toHaveAttribute('id', 'accent-control');
+    expect(trigger).toHaveAccessibleDescription('Brand colour.');
+    rerender(<ColorField id="accent" label="Accent" defaultValue="#336699" isDisabled />);
+    expect(screen.getByRole('button', { name: 'Accent #336699' })).toBeDisabled();
+  });
 });

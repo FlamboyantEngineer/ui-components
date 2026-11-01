@@ -43,7 +43,7 @@ Verification: `src/components/change-list/change-list.test.tsx`, `e2e/change-lis
 
 ### UIC-CHANGE-LIST-1.6 - Who and when
 
-A change with a `time` or a `person` shall show them as the row's second definition: an [Attribution](ATTRIBUTION.md) (`ui-change-list__attribution`) with `showAvatar`, `fallbackAfterDays` and `getNow` passed on to it.
+A change with a `time` or a `person` shall show them as the row's second definition: an [Attribution](ATTRIBUTION.md) (`ui-change-list__attribution`) with `showAvatar`, `fallbackAfterDays`, `getNow` and `timeZone` passed on to it.
 
 Implementation: `src/components/change-list/change-list.tsx`
 Verification: `src/components/change-list/change-list.test.tsx`, `e2e/change-list.spec.ts`

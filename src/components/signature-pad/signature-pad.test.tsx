@@ -184,6 +184,91 @@ describe('SignaturePad', () => {
     },
   );
 
+  it('UIC-SIGNATURE-PAD-2.1 drops a stroke under way when the form resets, even an empty pad', async () => {
+    const onChange = vi.fn();
+    const onCommit = vi.fn();
+    const { container } = render(
+      <Form aria-label="Sign">
+        <SignaturePad label="Signature" onChange={onChange} onCommit={onCommit} />
+      </Form>,
+    );
+    const target = canvas(container);
+    const form = requireDefined(container.querySelector('form'));
+    pointer('pointerDown', target, { clientX: 110, clientY: 60 });
+    pointer('pointerMove', target, { clientX: 200, clientY: 90 });
+    await act(async () => {
+      form.reset();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    expect(surface()).not.toHaveAttribute('data-drawing');
+    expect(strokes(container)).toEqual([]);
+    pointer('pointerUp', target, { clientX: 250, clientY: 90 });
+    expect(onChange).not.toHaveBeenCalled();
+    expect(onCommit).not.toHaveBeenCalled();
+    drawStroke(target, [
+      [110, 60],
+      [250, 90],
+    ]);
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-SIGNATURE-PAD-2.1 keeps a stroke under way through a reset a listener cancels', async () => {
+    const onChange = vi.fn();
+    const { container } = render(
+      <form aria-label="Sign" onReset={(event) => event.preventDefault()}>
+        <SignaturePad label="Signature" onChange={onChange} />
+      </form>,
+    );
+    const target = canvas(container);
+    pointer('pointerDown', target, { clientX: 110, clientY: 60 });
+    await act(async () => {
+      requireDefined(container.querySelector('form')).reset();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    expect(surface()).toHaveAttribute('data-drawing', 'true');
+    pointer('pointerUp', target, { clientX: 250, clientY: 90 });
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it.each<[string, DrawnSignature]>([
+    ['another space', { kind: 'drawn', width: 300, height: 100, paths: ['M5 5 L9 9'] }],
+    ['the same space', { kind: 'drawn', width: 600, height: 200, paths: ['M5 5 L9 9'] }],
+  ])(
+    'UIC-SIGNATURE-PAD-2.1 drops a stroke under way when the value is replaced in %s',
+    (_, next) => {
+      const onChange = vi.fn();
+      const view = render(<SignaturePad label="Signature" value={drawing} onChange={onChange} />);
+      const target = canvas(view.container);
+      pointer('pointerDown', target, { clientX: 110, clientY: 60 });
+      pointer('pointerMove', target, { clientX: 200, clientY: 90 });
+      view.rerender(<SignaturePad label="Signature" value={next} onChange={onChange} />);
+      expect(surface()).not.toHaveAttribute('data-drawing');
+      expect(strokes(view.container)).toEqual(next.paths);
+      pointer('pointerUp', target, { clientX: 250, clientY: 90 });
+      expect(onChange).not.toHaveBeenCalled();
+    },
+  );
+
+  it('UIC-SIGNATURE-PAD-2.1 keeps a stroke under way when an equal value is given again', () => {
+    const onChange = vi.fn();
+    const view = render(<SignaturePad label="Signature" value={drawing} onChange={onChange} />);
+    const target = canvas(view.container);
+    pointer('pointerDown', target, { clientX: 110, clientY: 60 });
+    view.rerender(
+      <SignaturePad
+        label="Signature"
+        value={{ ...drawing, paths: [...drawing.paths] }}
+        onChange={onChange}
+      />,
+    );
+    expect(surface()).toHaveAttribute('data-drawing', 'true');
+    pointer('pointerUp', target, { clientX: 250, clientY: 90 });
+    expect(onChange).toHaveBeenCalledWith({
+      ...drawing,
+      paths: [...drawing.paths, 'M20 20 L300 80'],
+    });
+  });
+
   it('UIC-SIGNATURE-PAD-2.1 ignores other buttons, drops cancelled strokes and keeps a drawing space', () => {
     const onChange = vi.fn();
     const { container } = render(
@@ -260,6 +345,18 @@ describe('SignaturePad', () => {
     expect(root(plain)).toHaveAttribute('data-mode', 'draw');
   });
 
+  it('UIC-SIGNATURE-PAD-3.1 returns an empty field to drawing once typing is turned off', async () => {
+    const user = userEvent.setup();
+    const { container, rerender } = render(<SignaturePad label="Signature" />);
+    await user.click(screen.getByRole('radio', { name: 'Type' }));
+    expect(root(container)).toHaveAttribute('data-mode', 'type');
+    rerender(<SignaturePad label="Signature" allowsTyping={false} />);
+    expect(root(container)).toHaveAttribute('data-mode', 'draw');
+    expect(surface()).toBeInTheDocument();
+    rerender(<SignaturePad label="Signature" />);
+    expect(root(container)).toHaveAttribute('data-mode', 'type');
+  });
+
   it('UIC-SIGNATURE-PAD-3.2 UIC-FIELD-1.11 types the name, with blank text as no signature, committing on Enter and on leaving the field', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
@@ -318,6 +415,25 @@ describe('SignaturePad', () => {
     act(() => surface().focus());
     await user.keyboard('{Control>}z{/Control}');
     expect(strokes(container)).toEqual(drawing.paths);
+  });
+
+  it.each<[string, SignatureValue]>([
+    ['empty typed text', { kind: 'typed', text: '' }],
+    ['blank typed text', { kind: 'typed', text: '   ' }],
+    ['a drawing with no stroke', { kind: 'drawn', width: 600, height: 200, paths: [] }],
+  ])('UIC-SIGNATURE-PAD-3.3 counts %s given from outside as empty', async (_, value) => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    const { container } = render(
+      <Form aria-label="Sign" onSubmit={onSubmit}>
+        <SignaturePad label="Signature" name="signature" defaultValue={value} isRequired />
+        <button type="submit">Send</button>
+      </Form>,
+    );
+    expect(root(container)).not.toHaveAttribute('data-filled');
+    await user.click(screen.getByRole('button', { name: 'Send' }));
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(root(container)).toHaveAttribute('data-validation', 'invalid');
   });
 
   it('UIC-SIGNATURE-PAD-1.3 submits the value as JSON under its name', async () => {

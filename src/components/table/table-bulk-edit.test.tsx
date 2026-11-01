@@ -201,4 +201,27 @@ describe('Table selection bar and bulk edit', { timeout: 30_000 }, () => {
       { row: items[1], columnId: 'picked', value: '2026-10-09' },
     ]);
   });
+
+  it('UIC-TABLE-15.2 keeps the dialog open on a partly entered date and clears on an empty one', async () => {
+    const user = userEvent.setup();
+    const onCellsChange = vi.fn();
+    renderItems({ onCellsChange });
+    let dialog = await openBulkEdit(user, ['Apple', 'Mint']);
+    await chooseField(user, dialog, 'Picked');
+    const [month] = within(dialog).getAllByRole('spinbutton');
+    await user.click(month as HTMLElement);
+    await user.keyboard('12');
+    await user.click(within(dialog).getByRole('button', { name: 'Apply' }));
+    expect(onCellsChange).not.toHaveBeenCalled();
+    expect(dialog).toBeInTheDocument();
+    expect(within(dialog).getByText('Finish entering the date.')).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+
+    await user.click(screen.getByRole('button', { name: 'Edit selected' }));
+    dialog = screen.getByRole('dialog', { name: 'Edit 2 rows' });
+    await chooseField(user, dialog, 'Picked');
+    await user.click(within(dialog).getByRole('button', { name: 'Apply' }));
+    expect(onCellsChange).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
 });

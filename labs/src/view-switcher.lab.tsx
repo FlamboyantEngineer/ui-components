@@ -15,7 +15,7 @@ import {
   type ViewSwitcherView,
 } from '../../src/components/view-switcher/view-switcher.js';
 import type { Key } from '../../src/core/props.js';
-import { requireDefined } from '../../src/utils/require-defined.js';
+import { requireDefined } from './require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { RecipeTable, recipeProperties, recipes } from './recipe-samples.js';
 

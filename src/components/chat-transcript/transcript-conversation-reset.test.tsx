@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
+  getViewport,
   installTranscriptLayout,
   uninstallTranscriptLayout,
 } from '../../../test/transcript-layout-fixtures.js';
@@ -113,5 +114,28 @@ describe('ChatTranscript conversation reset (UIC-CHAT-TRANSCRIPT-3.7)', () => {
     registry.register('w1', { ...entry, id: 'msg-3' });
     expect(registry.keyFor('msg-1')).toBe('msg-1');
     expect(registry.keyFor('msg-3')).toBe('w1');
+  });
+});
+
+describe('ChatTranscript conversation reset', () => {
+  /** A virtualized conversation of `count` messages whose ids start with `prefix`. */
+  function Conversation({ prefix, count }: { prefix: string; count: number }) {
+    return (
+      <ChatTranscript aria-label="Conversation" virtualized>
+        {Array.from({ length: count }, (_, index) => (
+          <ChatMessage key={`${prefix}${index}`} id={`${prefix}${index}`} author={ana}>
+            Message {index}
+          </ChatMessage>
+        ))}
+      </ChatTranscript>
+    );
+  }
+
+  it('UIC-CHAT-TRANSCRIPT-1.6 estimates the next conversation from its own measured heights only', () => {
+    const sizes = installTranscriptLayout({ viewportHeight: 400, messageHeight: 200 });
+    const { rerender } = render(<Conversation prefix="old-" count={300} />);
+    sizes.messageHeight = 50;
+    rerender(<Conversation prefix="new-" count={300} />);
+    expect(getViewport().scrollHeight).toBe(300 * 50);
   });
 });

@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { userEvent, type UserEvent } from '@testing-library/user-event';
 import { GridList, GridListItem, useDragAndDrop } from '../../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
@@ -159,6 +159,19 @@ describe('DragHandle', { timeout: 15_000 }, () => {
     expect(apple).not.toHaveAttribute('draggable');
     await press(user, row('Fig'), { x: 10 });
     expect(row('Fig')).not.toHaveAttribute('draggable');
+  });
+
+  it('UIC-DRAG-HANDLE-2.1 disarms a row whose handle press is cancelled before a drag starts', async () => {
+    const user = userEvent.setup();
+    render(<HandleRows />);
+    placeHandles();
+    const apple = row('Apple');
+    await press(user, apple, { x: 10 });
+    expect(apple).toHaveAttribute('draggable', 'true');
+    fireEvent.pointerCancel(apple);
+    await waitFor(() => expect(apple).not.toHaveAttribute('draggable'));
+    await press(user, apple, { x: 60 });
+    expect(apple).not.toHaveAttribute('draggable');
   });
 
   it('UIC-DRAG-HANDLE-2.2 keeps a press in the handle cell from focusing it until the next frame', async () => {

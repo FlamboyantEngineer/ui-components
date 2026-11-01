@@ -11,7 +11,7 @@ import {
 import { DashboardTile } from '../../src/components/dashboard-grid/index.js';
 import { StatTile } from '../../src/components/stat-tile/stat-tile.js';
 import { useUiStorage } from '../../src/core/provider.js';
-import { requireDefined } from '../../src/utils/require-defined.js';
+import { requireDefined } from './require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const titles: Record<string, string> = {

@@ -110,10 +110,11 @@ export function readDraggedItems(event: DragEvent): DraggedItem[] {
 export function DropZoneCommand(props: CommandProps) {
   const { label, hint, isDisabled, withChooser, receive, isDragAcceptable, acceptDirectory } =
     props;
+  const { commandId, commandRef, naming, describedBy } = props;
   const strings = useUiStrings();
   const labelId = useId();
   const ownId = useId();
-  const browseId = props.commandId ?? ownId;
+  const browseId = commandId ?? ownId;
   const browseTextId = useId();
   const [isOver, setOver] = useState(false);
   return (
@@ -137,13 +138,13 @@ export function DropZoneCommand(props: CommandProps) {
       {hint}
       {withChooser(
         <Button
-          {...nameCommand(props.naming, browseTextId, strings.browse)}
-          ref={props.commandRef}
+          {...nameCommand(naming, browseTextId, strings.browse)}
+          ref={commandRef}
           id={browseId}
           className={hooks.slotClass('browse')}
           size="sm"
           isDisabled={isDisabled}
-          aria-describedby={joinIds(labelId, props.describedBy)}
+          aria-describedby={joinIds(labelId, describedBy)}
         >
           <span id={browseTextId}>{strings.browse}</span>
         </Button>,

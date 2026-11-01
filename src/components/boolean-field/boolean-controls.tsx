@@ -123,11 +123,12 @@ function SegmentedControl({
   name,
   size,
 }: BooleanControlProps) {
-  const aria = toAriaControlProps(control);
+  const { ref, ...rest } = control;
+  const aria = toAriaControlProps(rest);
   return (
     <>
       <SegmentedChoice
-        ref={control.ref}
+        ref={ref}
         id={aria.id}
         aria-label={aria['aria-label']}
         aria-labelledby={aria['aria-labelledby']}
@@ -196,7 +197,8 @@ function ToggleButtonControl(props: BooleanControlProps) {
       ? undefined
       : (measuredProperty('boolean-field-caption-width', width) as CSSProperties);
   // The toggle button takes no invalid or read-only state: the field reports and refuses them.
-  const field = toAriaControlProps(control);
+  const { ref, ...rest } = control;
+  const field = toAriaControlProps(rest);
   // In the control-only layout the button names itself by `aria-label`, read after the caption.
   const labelledBy = `${captionId} ${field['aria-labelledby'] ?? field.id}`;
   return (
@@ -208,7 +210,7 @@ function ToggleButtonControl(props: BooleanControlProps) {
       ) : null}
       <ToggleButton
         {...hooks.slot('toggle-button', { indeterminate: state.value === null })}
-        ref={control.ref}
+        ref={ref}
         id={field.id}
         aria-label={field['aria-label']}
         aria-labelledby={labelledBy}

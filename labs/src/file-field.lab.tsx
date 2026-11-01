@@ -94,59 +94,71 @@ function Sample({
 
 let nextId = 0;
 
+type SimulatedUpload = FileUploadItem & { stored: FileFieldItem };
+
+interface SimulatedStorage {
+  value: FileFieldItem[];
+  uploads: SimulatedUpload[];
+}
+
+/** One tick of the storage: each running upload moves on, and finished ones join the value. */
+function advanceStorage({ value, uploads }: SimulatedStorage): SimulatedStorage {
+  const moved = uploads.map((upload) => {
+    if (upload.error || (upload.progress ?? 0) >= 100) return upload;
+    const progress = Math.min(100, (upload.progress ?? 0) + 25);
+    return upload.name.startsWith('fail') && progress >= 50
+      ? { ...upload, progress, error: 'The upload was interrupted.' }
+      : { ...upload, progress };
+  });
+  const done = moved.filter((upload) => !upload.error && upload.progress === 100);
+  return {
+    value: [...value, ...done.map((upload) => upload.stored)],
+    uploads: moved.filter((upload) => !done.includes(upload)),
+  };
+}
+
+/** A chosen file as an upload that starts, holding the stored file it becomes. */
+function toUpload(file: File): SimulatedUpload {
+  const id = `file-${(nextId += 1)}`;
+  const url = URL.createObjectURL(file);
+  const isImage = file.type.startsWith('image/');
+  const stored: FileFieldItem = {
+    id,
+    name: file.name,
+    size: file.size,
+    type: file.type,
+    previewUrl: isImage ? url : undefined,
+    downloadUrl: url,
+  };
+  return { id, name: file.name, size: file.size, type: file.type, progress: 0, stored };
+}
+
 /**
  * Plays the owner's storage: chosen files upload over a few ticks, a file named "fail…" fails
  * halfway, and finished uploads join the field's value as stored files with download links.
  */
 function useSimulatedStorage(initial: FileFieldItem[]) {
-  const [value, setValue] = useState<FileFieldItem[]>(initial);
-  const [uploads, setUploads] = useState<Array<FileUploadItem & { stored: FileFieldItem }>>([]);
+  const [storage, setStorage] = useState<SimulatedStorage>({ value: initial, uploads: [] });
+  const { value, uploads } = storage;
   const running = uploads.some((upload) => !upload.error && (upload.progress ?? 0) < 100);
   useEffect(() => {
     if (!running) return undefined;
-    const timer = setInterval(() => {
-      setUploads((current) =>
-        current.map((upload) => {
-          if (upload.error || (upload.progress ?? 0) >= 100) return upload;
-          const progress = Math.min(100, (upload.progress ?? 0) + 25);
-          return upload.name.startsWith('fail') && progress >= 50
-            ? { ...upload, progress, error: 'The upload was interrupted.' }
-            : { ...upload, progress };
-        }),
-      );
-    }, 150);
+    const timer = setInterval(() => setStorage(advanceStorage), 150);
     return () => clearInterval(timer);
   }, [running]);
-  useEffect(() => {
-    const done = uploads.filter((upload) => !upload.error && upload.progress === 100);
-    if (done.length === 0) return;
-    setValue((current) => [...current, ...done.map((upload) => upload.stored)]);
-    setUploads((current) => current.filter((upload) => !done.includes(upload)));
-  }, [uploads]);
   return {
     value,
-    setValue,
     uploads,
-    select: (files: File[]) =>
-      setUploads((current) => [
-        ...current,
-        ...files.map((file) => {
-          const id = `file-${(nextId += 1)}`;
-          const url = URL.createObjectURL(file);
-          const isImage = file.type.startsWith('image/');
-          const stored: FileFieldItem = {
-            id,
-            name: file.name,
-            size: file.size,
-            type: file.type,
-            previewUrl: isImage ? url : undefined,
-            downloadUrl: url,
-          };
-          return { id, name: file.name, size: file.size, type: file.type, progress: 0, stored };
-        }),
-      ]),
+    setValue: (next: FileFieldItem[]) => setStorage((current) => ({ ...current, value: next })),
+    select: (files: File[]) => {
+      const added = files.map(toUpload);
+      setStorage((current) => ({ ...current, uploads: [...current.uploads, ...added] }));
+    },
     removeUpload: (id: Key) =>
-      setUploads((current) => current.filter((upload) => upload.id !== id)),
+      setStorage((current) => ({
+        ...current,
+        uploads: current.uploads.filter((upload) => upload.id !== id),
+      })),
   };
 }
 
@@ -204,6 +216,32 @@ function MediaFiles() {
   );
 }
 
+/**
+ * An owner that takes 2 s to arrange its upload rows: a second file chosen meanwhile is refused,
+ * since the first one already fills the field.
+ */
+function SlowOwner() {
+  const storage = useSimulatedStorage([]);
+  const [received, setReceived] = useState(0);
+  return (
+    <div style={{ width: 420 }}>
+      <FileField
+        label="Cover letter"
+        value={storage.value}
+        onChange={storage.setValue}
+        uploads={storage.uploads}
+        onSelect={(files) => {
+          setReceived((count) => count + files.length);
+          window.setTimeout(() => storage.select(files), 2000);
+        }}
+        onUploadRemove={storage.removeUpload}
+        data-lab-field="slow"
+      />
+      <LabOutput name="slow-received">{received}</LabOutput>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -233,6 +271,12 @@ mountLab(
         maxSize={1024 * 1024}
         isRequired
       />
+    </LabSection>
+    <LabSection
+      title="Slow owner"
+      description="The owner takes 2 s to start the upload. Choose a file, then another before its row appears: the second is refused as over the limit."
+    >
+      <SlowOwner />
     </LabSection>
     <LabSection
       title="Previews and actions"

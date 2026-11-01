@@ -5,13 +5,13 @@ import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { Attribution, type AttributionProps } from '../attribution/attribution.js';
 import { Avatar, type AvatarIdentity } from '../avatar/avatar.js';
 import { Badge } from '../badge/badge.js';
 import type { IconSource } from '../icon/icon.js';
 import { Button } from '../button/button.js';
 import { ListRow } from '../list-row/list-row.js';
 import { MetaLine } from '../meta-line/meta-line.js';
-import { RelativeTime } from '../relative-time/relative-time.js';
 
 /** One notification: what happened, who did it, when, and where it leads. */
 export interface NotificationItem {
@@ -34,12 +34,14 @@ export interface NotificationItem {
 }
 
 /** What a row does when the reader acts on it, shared by every row of a list. */
-export interface NotificationRowActions {
+export interface NotificationRowActions extends Pick<
+  AttributionProps,
+  'fallbackAfterDays' | 'getNow' | 'timeZone'
+> {
   onAction?: ((key: Key) => void) | undefined;
   onReadChange?: ((key: Key, isRead: boolean) => void) | undefined;
   onDismiss?: ((key: Key) => void) | undefined;
   renderActions?: ((item: NotificationItem) => ReactNode) | undefined;
-  getNow?: (() => Date) | undefined;
 }
 
 export const notificationListHooks = createHooks('notification-list', [
@@ -123,7 +125,7 @@ export function NotificationRow({
   item: NotificationItem;
   actions: NotificationRowActions;
 }) {
-  const { onAction, getNow } = actions;
+  const { onAction, fallbackAfterDays, getNow, timeZone } = actions;
   const actor = item.actor;
   return (
     <ListRow
@@ -141,10 +143,12 @@ export function NotificationRow({
             actor?.name,
             item.description,
             // The row's link or button holds the time, so it takes no tooltip tab stop of its own.
-            <RelativeTime
+            <Attribution
               key="time"
-              value={item.time}
+              time={item.time}
+              fallbackAfterDays={fallbackAfterDays}
               getNow={getNow}
+              timeZone={timeZone}
               showTooltip={false}
               className={hooks.slotClass('time')}
             />,

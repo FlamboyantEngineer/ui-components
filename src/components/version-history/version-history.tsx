@@ -53,7 +53,7 @@ export interface VersionHistoryProps
   extends
     BaseProps,
     AriaLabellingProps,
-    Pick<AttributionProps, 'showAvatar' | 'fallbackAfterDays' | 'getNow'>,
+    Pick<AttributionProps, 'showAvatar' | 'fallbackAfterDays' | 'getNow' | 'timeZone'>,
     RefProps<HTMLDivElement> {
   /** The versions, newest first. */
   versions: readonly VersionHistoryVersion[];
@@ -178,29 +178,37 @@ function VersionListError({ error, onRetry }: Pick<VersionHistoryProps, 'error' 
 export function VersionHistory(props: VersionHistoryProps) {
   const { versions, currentKey = null, showFilters = true, onCompare, onRestore, onRename } = props;
   const { className, isLoading = false, ...rest } = props;
+  const { ref, id, error, onRetry, onLoadMore, renderEmptyState, showAvatar } = props;
+  const { fallbackAfterDays, getNow, timeZone } = props;
+  const {
+    'aria-label': ariaLabel,
+    'aria-labelledby': ariaLabelledBy,
+    'aria-describedby': ariaDescribedBy,
+    'aria-details': ariaDetails,
+  } = props;
   const strings = useUiStrings();
   const { locale } = useLocale();
-  const timeZone = useTimeZone();
+  const zone = useTimeZone(timeZone);
   const { selected, select, filter, setFilter } = useVersionState(props);
   const dialog = useVersionDialog();
   const comparison = orderForComparison(versions, selected);
   const context = {
     currentKey,
     locale,
-    timeZone,
+    timeZone: zone,
     strings,
     canRename: onRename !== undefined,
     canRestore: onRestore !== undefined,
     onAction: dialog.open,
-    showAvatar: props.showAvatar,
-    fallbackAfterDays: props.fallbackAfterDays,
-    getNow: props.getNow,
+    showAvatar,
+    fallbackAfterDays,
+    getNow,
   };
-  const isNamed = props['aria-label'] !== undefined || props['aria-labelledby'] !== undefined;
+  const isNamed = ariaLabel !== undefined || ariaLabelledBy !== undefined;
   return (
     <div
-      ref={props.ref}
-      id={props.id}
+      ref={ref}
+      id={id}
       {...hooks.root({ className, props: rest, data: { loading: isLoading } })}
     >
       {showFilters || onCompare ? (
@@ -212,26 +220,26 @@ export function VersionHistory(props: VersionHistoryProps) {
           canCompare={comparison !== null}
         />
       ) : null}
-      {props.error ? (
-        <VersionListError error={props.error} onRetry={props.onRetry} />
+      {error ? (
+        <VersionListError error={error} onRetry={onRetry} />
       ) : (
         <ListView
           className={hooks.slotClass('list')}
-          aria-label={isNamed ? props['aria-label'] : strings.versionHistory}
-          aria-labelledby={props['aria-labelledby']}
-          aria-describedby={props['aria-describedby']}
-          aria-details={props['aria-details']}
+          aria-label={isNamed ? ariaLabel : strings.versionHistory}
+          aria-labelledby={ariaLabelledBy}
+          aria-describedby={ariaDescribedBy}
+          aria-details={ariaDetails}
           selectionMode="multiple"
           selectedKeys={selected}
           onSelectionChange={select}
           disabledKeys={versions.filter((version) => version.isDisabled).map(({ id }) => id)}
-          onLoadMore={props.onLoadMore}
+          onLoadMore={onLoadMore}
           isLoading={isLoading}
           renderEmptyState={() => (
             <VersionListEmpty
               isLoading={isLoading}
               hasVersions={versions.length > 0}
-              renderEmptyState={props.renderEmptyState}
+              renderEmptyState={renderEmptyState}
             />
           )}
         >

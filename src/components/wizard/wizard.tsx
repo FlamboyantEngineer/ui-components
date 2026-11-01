@@ -137,28 +137,29 @@ export function Wizard({
     onCurrentKeyChange,
     onFinish,
   });
+  const { index, statuses, isPending, goTo, submit, headingRef, failure } = navigation;
   const headingId = useId();
   const Heading = `h${useHeadingLevel(headingLevel)}` as const;
-  const step = steps[navigation.index];
+  const step = steps[index];
   const items = steps.map((entry, position) => ({
     id: entry.id,
     label: entry.label,
     description: entry.description,
     isOptional: entry.isOptional,
-    status: navigation.statuses[position],
+    status: statuses[position],
   }));
-  const data = { orientation, pending: navigation.isPending };
+  const data = { orientation, pending: isPending };
   return (
     <div role="group" {...rest} {...hooks.root({ className, props: rest, data })}>
       <Steps
         items={items}
         currentKey={step?.id}
         orientation={orientation}
-        isDisabled={navigation.isPending}
-        onAction={navigation.goTo}
+        isDisabled={isPending}
+        onAction={goTo}
         className={hooks.slotClass('steps')}
       />
-      <Form className={hooks.slotClass('form')} onSubmit={navigation.submit}>
+      <Form className={hooks.slotClass('form')} onSubmit={submit}>
         {step ? (
           <div
             key={toKeyIdentity(step.id)}
@@ -166,21 +167,14 @@ export function Wizard({
             role="group"
             aria-labelledby={headingId}
           >
-            <Heading
-              {...hooks.slot('heading')}
-              id={headingId}
-              ref={navigation.headingRef}
-              tabIndex={-1}
-            >
+            <Heading {...hooks.slot('heading')} id={headingId} ref={headingRef} tabIndex={-1}>
               {step.label}
             </Heading>
             {step.content}
           </div>
         ) : null}
-        {navigation.failure?.message ? (
-          <InlineError className={hooks.slotClass('error')}>
-            {navigation.failure.message}
-          </InlineError>
+        {failure?.message ? (
+          <InlineError className={hooks.slotClass('error')}>{failure.message}</InlineError>
         ) : null}
         <WizardFooter
           navigation={navigation}

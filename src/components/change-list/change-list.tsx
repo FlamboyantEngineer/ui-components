@@ -54,7 +54,7 @@ export interface ChangeListProps
   extends
     BaseProps,
     Pick<DescriptionListProps, 'aria-label' | 'aria-labelledby'>,
-    Pick<AttributionProps, 'showAvatar' | 'fallbackAfterDays' | 'getNow'>,
+    Pick<AttributionProps, 'showAvatar' | 'fallbackAfterDays' | 'getNow' | 'timeZone'>,
     RefProps<HTMLDListElement> {
   /** The changes, one row each. */
   changes: readonly ChangeListChange[];
@@ -81,6 +81,7 @@ export function ChangeList({
   showAvatar,
   fallbackAfterDays,
   getNow,
+  timeZone,
   className,
   ...rest
 }: ChangeListProps) {
@@ -116,6 +117,7 @@ export function ChangeList({
                   showAvatar={showAvatar}
                   fallbackAfterDays={fallbackAfterDays}
                   getNow={getNow}
+                  timeZone={timeZone}
                   className={hooks.slotClass('attribution')}
                 />
               ) : null

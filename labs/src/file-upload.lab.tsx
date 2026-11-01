@@ -8,6 +8,8 @@ import {
   type FileUploadVariant,
 } from '../../src/components/file-upload/file-upload.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { formatBytes } from '../../src/utils/index.js';
+import { LabHelperCalls } from './lab-helper-calls.js';
 
 const variants = ['button', 'dropzone'] as const;
 const states = ['resting', 'described', 'disabled', 'listed', 'invalid'] as const;
@@ -276,6 +278,18 @@ mountLab(
       description="The upload is required: Send refuses an empty upload and moves focus to it; the form data carries the chosen files. Reset leaves the listed files, which the page holds, and the next Send still carries them."
     >
       <UploadForm />
+    </LabSection>
+    <LabSection
+      title="Sizes for hosts"
+      description="formatBytes writes a size as the upload shows its files and limit, in the locale given."
+    >
+      <LabHelperCalls
+        calls={[
+          ["formatBytes(512, 'en-US')", formatBytes(512, 'en-US')],
+          ["formatBytes(1536, 'en-US')", formatBytes(1536, 'en-US')],
+          ["formatBytes(5 * 1024 ** 2, 'fr-FR')", formatBytes(5 * 1024 ** 2, 'fr-FR')],
+        ]}
+      />
     </LabSection>
   </>,
 );

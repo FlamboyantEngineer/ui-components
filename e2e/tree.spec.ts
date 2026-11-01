@@ -176,6 +176,17 @@ test.describe('Tree lab', () => {
         .evaluateAll((rows) => rows.map((row) => row.getAttribute('aria-label')));
     expect(await names()).toEqual(['Europe', 'Norway', 'Oslo', 'Asia', 'Japan', 'Osaka']);
     await expect(tree.getByRole('row', { name: 'Oslo' }).locator('mark')).toHaveText('Os');
+    await tree.getByRole('button', { name: 'Collapse Europe' }).click();
+    await area.getByRole('button', { name: 'Add the Americas' }).click();
+    expect(await names()).toEqual([
+      'Europe',
+      'Asia',
+      'Japan',
+      'Osaka',
+      'Americas',
+      'United States',
+      'Los Angeles',
+    ]);
     const field = area.getByRole('searchbox', { name: 'Filter places' });
     await field.fill('ghana');
     expect(await names()).toEqual(['Africa', 'Ghana']);
@@ -185,7 +196,7 @@ test.describe('Tree lab', () => {
     await field.fill('zzz');
     await expect(tree).toContainText('No places match');
     await field.fill('');
-    expect(await names()).toEqual(['Europe', 'Asia', 'Africa']);
+    expect(await names()).toEqual(['Europe', 'Asia', 'Africa', 'Americas']);
     await lab.expectAccessible('[data-lab-filter]');
   });
 

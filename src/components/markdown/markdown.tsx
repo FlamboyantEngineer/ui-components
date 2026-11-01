@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import type { BaseProps } from '../../core/props.js';
 import { useStableArray } from '../../utils/use-stable-array.js';
 import { useMarkdownBlocks } from './markdown-block-cache.js';
@@ -32,6 +32,30 @@ export interface MarkdownProps extends BaseProps {
 }
 
 /**
+ * The document to draw: the given one, the parsed source, or while streaming, the source parsed
+ * from where the previous parse stopped settling.
+ */
+function useMarkdownDocument(
+  source: MarkdownProps['source'],
+  isStreaming: boolean,
+): MarkdownDocument {
+  const [streamed, setStreamed] = useState<{
+    text: string;
+    parse: StreamingMarkdownParse;
+  } | null>(null);
+  const parsed = useMemo(
+    () => (typeof source === 'string' && !isStreaming ? parseMarkdown(source) : null),
+    [source, isStreaming],
+  );
+  if (typeof source !== 'string') return source;
+  if (parsed) return parsed;
+  if (streamed?.text === source) return streamed.parse.document;
+  const parse = parseStreamingMarkdown(prepareStreamingMarkdown(source), streamed?.parse ?? null);
+  setStreamed({ text: source, parse });
+  return parse.document;
+}
+
+/**
  * Renders Markdown as React elements: headings, paragraphs, lists and task lists, block quotes,
  * code, tables through `ProseTable`, links through `Link` and text through `TextMatch`. Raw HTML
  * shows as text. While `isStreaming`, the end of the source renders as it will once complete and
@@ -46,13 +70,7 @@ export function Markdown({
   id,
   ...rest
 }: MarkdownProps) {
-  const stream = useRef<StreamingMarkdownParse | null>(null);
-  const tree = useMemo(() => {
-    if (typeof source !== 'string') return source;
-    if (!isStreaming) return parseMarkdown(source);
-    stream.current = parseStreamingMarkdown(prepareStreamingMarkdown(source), stream.current);
-    return stream.current.document;
-  }, [source, isStreaming]);
+  const tree = useMarkdownDocument(source, isStreaming);
   // The ids by content, so the blocks keep their context while the headings stay the same.
   const headings = useStableArray(
     useMemo(() => listMarkdownHeadings(tree).map((heading) => heading.id), [tree]),

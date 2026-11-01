@@ -149,7 +149,7 @@ Verification: `src/components/date-time-field/date-time-form.test.tsx`, `src/com
 
 ### UIC-DATE-TIME-FIELD-4.5 - Incomplete drafts
 
-While a segment group is typed in part, or one end of a range has segments filled and the other none, the field shall report a draft issue (UIC-FIELD-3.11) with the provider's `dateIncomplete` string, whatever value it last accepted, and withdraw it once every group is complete or empty.
+While a segment group is typed in part, or one end of a range has segments filled and the other none, the field shall report a draft issue (UIC-FIELD-3.11) with the provider's `dateIncomplete` string, whatever value it last accepted, and withdraw it once every group is complete or empty. A native form reset that a listener cancels (UIC-FIELD-2.6) keeps the segments typed in part: the building block clears them on the form's own reset listener, so the field notes each group typed in part as the reset starts and types those segments back once the reset is cancelled, without a change or commit. A reset that goes through leaves every group showing the initial value.
 
 Implementation: `src/components/date-time-field/date-draft.tsx`, `src/components/date-time-field/date-time-pickers.tsx`
 Verification: `src/components/form/form-validity.test.tsx`, `e2e/form.spec.ts`

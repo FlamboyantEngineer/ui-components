@@ -60,6 +60,27 @@ test.describe('Signature Pad lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-SIGNATURE-PAD-2.1 drops a stroke under way when the value is replaced', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('signature-pad');
+    const field = page.locator('[data-lab-field="live"]');
+    const canvas = field.locator('.ui-signature-pad__canvas');
+    await page.getByRole('button', { name: 'Replace in 2 seconds' }).click();
+    await canvas.scrollIntoViewIfNeeded();
+    const box = requireDefined(await canvas.boundingBox());
+    await page.mouse.move(box.x + box.width * 0.2, box.y + box.height * 0.5);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width * 0.5, box.y + box.height * 0.6, { steps: 4 });
+    await expect(page.locator('[data-lab-output="Strokes"]')).toHaveText('2');
+    await expect(field.locator('.ui-signature-pad__surface')).not.toHaveAttribute('data-drawing');
+    await page.mouse.move(box.x + box.width * 0.8, box.y + box.height * 0.5, { steps: 4 });
+    await page.mouse.up();
+    await expect(field.locator('.ui-signature-pad__stroke')).toHaveCount(2);
+    await expect(page.locator('[data-lab-output="Commits"]')).toHaveText('0');
+  });
+
   test('UIC-SIGNATURE-PAD-3.1 UIC-SIGNATURE-PAD-3.2 types the name as the keyboard alternative', async ({
     page,
     lab,
@@ -153,6 +174,24 @@ test.describe('Signature Pad lab', () => {
     await expect(warning).toHaveAttribute('data-mode', 'type');
     await expect(warning.getByRole('textbox')).toHaveValue('A. L.');
     await lab.expectAccessible();
+  });
+
+  test('UIC-SIGNATURE-PAD-3.1 UIC-SIGNATURE-PAD-3.3 blocks a blank name and draws once typing is off', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('signature-pad');
+    const field = page.locator('[data-lab-field="blank"]');
+    await field.getByRole('radio', { name: 'Type' }).click();
+    await field.getByRole('textbox', { name: 'Witness' }).fill('   ');
+    await expect(field).not.toHaveAttribute('data-filled');
+    await page.getByRole('button', { name: 'Witness it' }).click();
+    await expect(field).toHaveAttribute('data-validation', 'invalid');
+    await expect(page.locator('[data-lab-output="Witnessed"]')).toHaveText('none');
+    await field.getByRole('textbox', { name: 'Witness' }).fill('');
+    await page.getByRole('button', { name: 'Turn typing off' }).click();
+    await expect(field).toHaveAttribute('data-mode', 'draw');
+    await expect(field.getByRole('img', { name: 'Witness' })).toBeVisible();
   });
 
   test('UIC-SIGNATURE-PAD-1.2 keeps strokes and frames readable in the dark theme', async ({

@@ -1,6 +1,6 @@
 // The controller driving a fake streaming agent, with its event log beside the conversation.
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { ChatStatusLine } from '../../src/components/chat-activity/index.js';
 import { ChatAttachmentList } from '../../src/components/chat-attachment/chat-attachment.js';
@@ -72,9 +72,14 @@ function describeEvent(event: ChatStreamEvent): string {
     : `${type} ${detail.length > 90 ? `${detail.slice(0, 90)}…` : detail}`;
 }
 
-/** Wraps `send` so every call, event and awaited response lands in the log. */
-function withLog(send: ChatSendFunction, log: (line: string) => void): ChatSendFunction {
+/**
+ * Wraps `send` so every call, event and awaited response lands in the log, timed from the call.
+ */
+function withLog(send: ChatSendFunction, append: (line: string) => void): ChatSendFunction {
   return async function* (messages, context) {
+    const started = Date.now();
+    const log = (line: string) =>
+      append(`+${((Date.now() - started) / 1000).toFixed(1)} s ${line}`);
     log(`send(${messages.length} messages)`);
     const waitFor = async (id: string) => {
       const response = await context.waitFor(id);
@@ -123,11 +128,7 @@ export function ChatControllerDemo() {
   const [scenario, setScenario] = useState<LabScenario>('answer');
   const [log, setLog] = useState<string[]>([]);
   const [allowed, setAllowed] = useState<readonly string[]>([]);
-  const started = useRef(Date.now());
-  const append = (line: string) => {
-    const seconds = ((Date.now() - started.current) / 1000).toFixed(1);
-    setLog((lines) => [...lines.slice(-199), `+${seconds} s ${line}`]);
-  };
+  const append = (line: string) => setLog((lines) => [...lines.slice(-199), line]);
   const chat = useChatController({
     send: withLog(agents[scenario], append),
     currentUserId: readerId,

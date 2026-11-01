@@ -65,7 +65,11 @@ export interface TreeRename<T> {
   renderEditor: (item: T) => ReactNode;
 }
 
-function TreeRenameInput(props: {
+function TreeRenameInput({
+  name,
+  inputRef,
+  onBlur,
+}: {
   name: string;
   inputRef: RefObject<HTMLInputElement | null>;
   onBlur: () => void;
@@ -73,13 +77,13 @@ function TreeRenameInput(props: {
   const strings = useUiStrings();
   return (
     <Input
-      ref={props.inputRef}
+      ref={inputRef}
       className={hooks.slotClass('rename-input')}
-      aria-label={strings.renameItem(props.name)}
-      defaultValue={props.name}
+      aria-label={strings.renameItem(name)}
+      defaultValue={name}
       autoFocus
       onFocus={(event) => event.currentTarget.select()}
-      onBlur={props.onBlur}
+      onBlur={onBlur}
     />
   );
 }
@@ -109,6 +113,7 @@ export function useTreeRename<T extends TreeItemData>(
     const input = inputRef.current;
     editingRef.current = null;
     if (input && input === input.ownerDocument.activeElement) focusNear(input);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- focus leaves the committed field before it unmounts.
     setEditingKey(null);
   }, [isRevoked]);
   return useMemo(() => {

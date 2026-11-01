@@ -101,14 +101,15 @@ function MonthWeek(
 
 /** The month view: weekday headers, then one row per week of the focused day's month. */
 export function CalendarMonth({ grid, titleId, ...rest }: CalendarMonthProps) {
+  const { ref, onKeyDown, onFocus } = grid;
   const weeks = getMonthWeeks(rest.day.focused, rest.day.format.locale);
   return (
     <div
-      ref={grid.ref}
+      ref={ref}
       role="grid"
       aria-labelledby={titleId}
-      onKeyDown={grid.onKeyDown}
-      onFocus={grid.onFocus}
+      onKeyDown={onKeyDown}
+      onFocus={onFocus}
       {...hooks.slot('grid')}
     >
       <div role="row" {...hooks.slot('weekdays')}>

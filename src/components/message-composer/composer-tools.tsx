@@ -66,19 +66,19 @@ export function MessageComposerAttachButton(props: MessageComposerAttachButtonPr
 export function MessageComposerEmojiButton(props: MessageComposerEmojiButtonProps) {
   const strings = useUiStrings();
   const composer = useComposerControlsValue('MessageComposerEmojiButton');
-  const handback = useFocusHandback(composer.focusInput);
+  const { ref: returnFocusRef, request: returnFocus } = useFocusHandback(composer.focusInput);
   return (
     <EmojiPickerTrigger
       onSelect={(selection) => {
         composer.insertText(
           selection.kind === 'native' ? selection.unicode : `:${selection.emoji.shortcode}:`,
         );
-        handback.request();
+        returnFocus();
       }}
     >
       <Button
         {...props}
-        ref={handback.ref}
+        ref={returnFocusRef}
         className={mergeClassNames(hooks.slotClass('emoji'), props.className)}
         icon={EmojiGlyph}
         label={strings.insertEmoji}

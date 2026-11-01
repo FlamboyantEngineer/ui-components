@@ -28,6 +28,8 @@ import { FieldRestoreButton } from './field-restore-button.js';
 import type { FieldIssue, FieldState, FieldValidation } from './field-state.js';
 import { useFieldUndo } from './field-undo.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { findOwnerDocument } from '../../utils/owner-window.js';
+import { usePortalContainer } from '../portal/portal.js';
 
 export interface FieldProps<T> extends BaseProps {
   /** The field's controller, from `useFieldState`. */
@@ -94,9 +96,11 @@ function useFieldLeave(state: FieldState<unknown>, slots: FieldSlots, commitOnBl
  * element while it mounted, such as into a list that opens with the field.
  */
 function useAutoFocus(autoFocus: boolean | undefined, slots: FieldSlots) {
-  // The element focused when the field first renders, read before any part can take focus.
+  // The element focused when the field first renders, read before any part can take focus, in the
+  // document the field renders into (its portal container's).
+  const container = usePortalContainer();
   const [focusedBefore] = useState(() =>
-    autoFocus === true ? (globalThis.document?.activeElement ?? null) : undefined,
+    autoFocus === true ? (findOwnerDocument(container)?.activeElement ?? null) : undefined,
   );
   useEffect(() => {
     const control = slots.read('control');

@@ -60,7 +60,13 @@ export function DataColumn<T>({
   const strings = useUiStrings();
   const hasControls = column.allowsResizing === true || state.filter !== null;
   const isReorderable = column.allowsReordering === true;
-  const drag = useColumnDrag({
+  const {
+    ref: dragRef,
+    targetProps,
+    sourceProps,
+    dropPosition,
+    isDragging,
+  } = useColumnDrag({
     id: column.id,
     textValue: getColumnText(column),
     allowsReordering: isReorderable,
@@ -84,13 +90,13 @@ export function DataColumn<T>({
         pinned: state.pin,
         sortPriority: state.sortPriority,
         filtered: state.isFiltered,
-        dropPosition: drag.dropPosition ?? undefined,
-        dragging: drag.isDragging,
+        dropPosition: dropPosition ?? undefined,
+        dragging: isDragging,
         allowsReordering: column.allowsReordering,
       })}
     >
-      <div ref={drag.ref} {...drag.targetProps} {...hooks.slot('column-content')}>
-        <span {...(isReorderable ? drag.sourceProps : {})} {...hooks.slot('column-label')}>
+      <div ref={dragRef} {...targetProps} {...hooks.slot('column-content')}>
+        <span {...(isReorderable ? sourceProps : {})} {...hooks.slot('column-label')}>
           {column.header}
         </span>
         {column.allowsSorting ? (

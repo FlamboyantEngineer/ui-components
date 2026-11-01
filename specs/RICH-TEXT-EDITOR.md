@@ -61,7 +61,7 @@ Verification: `src/components/rich-text-editor/rich-text-schema.test.ts`, `e2e/r
 
 ### UIC-RICH-TEXT-EDITOR-2.3 - Task items
 
-The editor shall draw each task item as `ui-rich-text-editor__task-item` (with `data-checked` while ticked), holding a `Checkbox` named by the provider string `taskDone` in `ui-rich-text-editor__task-checkbox` and the item's content in `ui-rich-text-editor__task-content`. Toggling the checkbox sets the item's `checked` attribute as an edit; a read-only or disabled editor's checkboxes are read-only.
+The editor shall draw each task item as `ui-rich-text-editor__task-item` (with `data-checked` while ticked), holding a `Checkbox` named by the provider string `taskDone` in `ui-rich-text-editor__task-checkbox` and the item's content in `ui-rich-text-editor__task-content`. Toggling the checkbox sets the item's `checked` attribute as an edit. A read-only editor's checkboxes are read-only and stay focusable; a disabled editor's checkboxes are disabled and out of the tab sequence, as its content is (UIC-RICH-TEXT-EDITOR-4.1).
 
 Implementation: `src/components/rich-text-editor/task-item-view.tsx`, `src/core/strings/rich-text.ts`
 Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/rich-text-editor.spec.ts`
@@ -94,6 +94,13 @@ Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/
 The editor shall keep the field's one undo history: edits (typing grouped by ProseMirror) and each document replaced from outside (UIC-RICH-TEXT-EDITOR-4.2), one step each. The shortcuts, the `undo` and `redo` commands and the field's undo (its chords pressed anywhere in the field and `getFieldUndo`, UIC-FIELD-5.3) all step through it, so undoing a restore, a clear or a controlled change brings the earlier document back. The field keeps no history of its own (UIC-FIELD-5.1).
 
 Implementation: `src/components/rich-text-editor/rich-text-keys.ts`, `src/components/rich-text-editor/editor-state.ts`, `src/components/rich-text-editor/editor-surface.tsx`
+Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/rich-text-editor.spec.ts`
+
+### UIC-RICH-TEXT-EDITOR-3.5 - Edits at the latest caret
+
+A key, typed text, paste, cut or drop shall act at the browser's current selection, even when the caret moved while the editor was committing a render and the engine never saw the move: before handling one, the editor takes the browser's text selection into its state when they differ. Node selections and compositions are left alone. The rich composer mode (UIC-MESSAGE-COMPOSER-4.1) does the same.
+
+Implementation: `src/components/rich-text-editor/dom-selection-sync.ts`, `src/components/rich-text-editor/editor-surface.tsx`, `src/components/message-composer/rich/rich-editor.tsx`
 Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/rich-text-editor.spec.ts`
 
 ## UIC-RICH-TEXT-EDITOR-4 - Field behaviour
@@ -183,9 +190,9 @@ Verification: `src/components/rich-text-editor/format-toolbar.test.tsx`, `src/co
 
 ### UIC-RICH-TEXT-EDITOR-7.1 - Floating over selected text
 
-`SelectionToolbar` shall show a non-modal popover (`ui-selection-toolbar`) above a selected text range while the document or the toolbar has focus and the editor is editable, following the selection as it changes; a caret or a selected node shows none. It holds a `ToolbarRow` (its root also `ui-selection-toolbar__row`, its toolbar strip named by `aria-label`, `aria-labelledby` or `selectionFormatting`) of the mark buttons and the link button, then its `children`.
+`SelectionToolbar` shall show a non-modal popover (`ui-selection-toolbar`) above a selected text range while the document or the toolbar has focus and the editor is editable, following the selection as it changes and as the layout moves it without an edit (a scroll, a window resize, the content resizing, rewrapping or moving, such as when a sidebar opens or fonts load), measured at most once per animation frame; a caret or a selected node shows none, and neither does a range scrolled out of the window or the content, until it shows again. It holds a `ToolbarRow` (its root also `ui-selection-toolbar__row`, its toolbar strip named by `aria-label`, `aria-labelledby` or `selectionFormatting`) of the mark buttons and the link button, then its `children`.
 
-Implementation: `src/components/rich-text-editor/selection-toolbar.tsx`
+Implementation: `src/components/rich-text-editor/selection-toolbar.tsx`, `src/utils/overlay-auto-update.ts`
 Verification: `src/components/rich-text-editor/selection-toolbar.test.tsx`, `e2e/rich-text-editor.spec.ts`
 
 ### UIC-RICH-TEXT-EDITOR-7.2 - Keyboard
@@ -208,7 +215,7 @@ Verification: `src/components/rich-text-editor/insert-items.test.ts`, `src/compo
 
 ### UIC-RICH-TEXT-EDITOR-8.2 - Keys and insertion
 
-While the menu is open, ArrowDown and ArrowUp shall move the active entry (wrapping), Enter or Tab replace the slash and query with the active entry's command, and Escape closes the menu until the current slash query ends; removing and retyping a slash at the same source position can open a new menu. Pressing an entry inserts it. A menu callback that remains pending after the editor locks cannot change the document. Focus stays in the document, which autocompletes from a list (`aria-autocomplete="list"`, `aria-haspopup="listbox"`) and, while open, names the list in `aria-controls` and the active entry in `aria-activedescendant`.
+While the menu is open, ArrowDown and ArrowUp shall move the active entry (wrapping), Enter or Tab replace the slash and query with the active entry's command, and Escape closes the menu until the current slash query ends; removing and retyping a slash at the same source position can open a new menu. Pressing an entry inserts it. Keys an input method owns (pressed during a composition, or reported with key code 229 as one ends) neither move, run nor close it. A menu callback that remains pending after the editor locks cannot change the document. Focus stays in the document, which autocompletes from a list (`aria-autocomplete="list"`, `aria-haspopup="listbox"`) and, while open, names the list in `aria-controls` and the active entry in `aria-activedescendant`.
 
 Implementation: `src/components/rich-text-editor/use-slash-menu.ts`, `src/components/rich-text-editor/insert-menu.tsx`
 Verification: `src/components/rich-text-editor/insert-menu.test.tsx`, `e2e/rich-text-editor.spec.ts`

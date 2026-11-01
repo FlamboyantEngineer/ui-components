@@ -67,6 +67,21 @@ export const shortNote: RichTextDocument = {
   content: [paragraph(text('Pick the '), text('pears', [{ type: 'bold' }]), text(' on Friday.'))],
 };
 
+/** The short note with a task list, so the read-only and disabled states show their checkboxes. */
+export const taskNote: RichTextDocument = {
+  type: 'doc',
+  content: [
+    ...(shortNote.content ?? []),
+    {
+      type: 'taskList',
+      content: [
+        { type: 'taskItem', attrs: { checked: true }, content: [paragraph(text('Wash'))] },
+        { type: 'taskItem', attrs: { checked: false }, content: [paragraph(text('Peel'))] },
+      ],
+    },
+  ],
+};
+
 const templates: InsertMenuItem[] = [
   {
     id: 'signature',
@@ -116,6 +131,43 @@ export function FullEditor() {
         <BlockHandle />
       </RichTextEditor>
       <Outputs value={value} />
+    </>
+  );
+}
+
+/**
+ * An editor whose host moves and narrows from buttons that leave focus in the document, so the
+ * floating toolbar has to follow its selection without an edit.
+ */
+export function ShiftingEditor() {
+  const [isLowered, setLowered] = useState(false);
+  const [isNarrow, setNarrow] = useState(false);
+  return (
+    <>
+      <Button size="sm" preventFocusOnPress onPress={() => setLowered(!isLowered)}>
+        {isLowered ? 'Raise' : 'Lower'}
+      </Button>{' '}
+      <Button size="sm" preventFocusOnPress onPress={() => setNarrow(!isNarrow)}>
+        {isNarrow ? 'Widen' : 'Narrow'}
+      </Button>
+      <div style={{ paddingTop: isLowered ? 150 : 0, maxWidth: isNarrow ? 300 : 600 }}>
+        <RichTextEditor
+          label="Moving note"
+          data-lab-editor="shifting"
+          defaultValue={{
+            type: 'doc',
+            content: [
+              paragraph(
+                text(
+                  'Select the last word, then lower or narrow the editor: the toolbar follows it.',
+                ),
+              ),
+            ],
+          }}
+        >
+          <SelectionToolbar aria-label="Moving note formatting" />
+        </RichTextEditor>
+      </div>
     </>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useLayoutEffect, useMemo } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -16,8 +16,10 @@ import {
   indexTreeItems,
   orderChosenKeys,
   removeChosenKey,
+  settleCascadeKeys,
   type TreeIndex,
 } from './tree-index.js';
+import { useCloseWhenLocked } from './select-model.js';
 import { TreeSelectPopover } from './tree-select-popover.js';
 import { TreeSelectTrigger } from './tree-select-trigger.js';
 import type { SelectTreeFieldProps, SelectFieldValueDisplay } from './select-tree-field.js';
@@ -87,8 +89,16 @@ function useChosenNodes<T extends TreeItemData>(props: TreeSelectControlProps<T>
   } = props;
   const strings = useUiStrings();
   const index = useMemo(() => indexTreeItems(items, getChildren), [items, getChildren]);
-  const keys = toKeys(state.value);
   const cascade = isMultiple && selectionPropagation;
+  const held = toKeys(state.value);
+  const keys = cascade ? settleCascadeKeys(held, index) : held;
+  // A chosen branch whose children loaded or were added later takes them along as a change, so the
+  // value, the rows and the form agree.
+  const { setValue } = state;
+  const isUnsettled = keys.length !== held.length;
+  useLayoutEffect(() => {
+    if (isUnsettled) setValue(keys);
+  });
   const shown = cascade ? getTopChosenKeys(keys, index) : keys;
   const describe = { index, getTextValue: props.getTextValue, display: props.valueDisplay };
   const commit = (next: Iterable<Key>) => {
@@ -164,6 +174,7 @@ export function TreeSelectControl<T extends TreeItemData>(props: TreeSelectContr
     props.onOpenChange,
   );
   const isEditable = !state.isReadOnly && !state.isDisabled;
+  useCloseWhenLocked(open, !isEditable, () => setOpen(false));
   const text = nodes.summary;
   return (
     <>

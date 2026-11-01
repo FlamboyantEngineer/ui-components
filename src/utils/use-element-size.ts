@@ -3,6 +3,7 @@
 import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { useResizeObserver } from './use-resize-observer.js';
 import { isShallowEqual } from './is-shallow-equal.js';
+import { useTargetElement } from './use-target-element.js';
 
 /**
  * The box `useElementSize` reports:
@@ -27,14 +28,8 @@ export interface ElementSizeOptions {
   readonly enabled?: boolean | undefined;
 }
 
-/** An element, or a ref whose element is stable. Hold late-mounting elements in state instead. */
+/** An element, or a ref to one, followed to the element it holds after every commit. */
 export type ElementSizeTarget = Element | RefObject<Element | null> | null | undefined;
-
-function resolveElement(target: ElementSizeTarget, parent: boolean): Element | null {
-  if (!target) return null;
-  const element = 'current' in target ? target.current : target;
-  return (parent ? element?.parentElement : element) ?? null;
-}
 
 function readSize(entry: ResizeObserverEntry, element: Element, box: ElementSizeBox): ElementSize {
   if (box === 'client') return { width: element.clientWidth, height: element.clientHeight };
@@ -52,7 +47,7 @@ function readSize(entry: ResizeObserverEntry, element: Element, box: ElementSize
  * and in a window without `ResizeObserver`. The observer and animation frames come from the
  * element's own window. The first report applies at once; later reports coalesce to one update per
  * animation frame. An unchanged size keeps the previous object, so the result is a stable effect
- * dependency. A replaced element starts unmeasured.
+ * dependency. A replaced element, also one under the same ref, is measured from its first report.
  */
 export function useElementSize(
   target: ElementSizeTarget,
@@ -61,9 +56,10 @@ export function useElementSize(
   const [size, setSize] = useState<ElementSize | null>(null);
   const onEntries = useRef<(entries: readonly ResizeObserverEntry[]) => void>(() => {});
   const lastEntry = useRef<ResizeObserverEntry | null>(null);
+  const held = useTargetElement(target);
+  const element = (parent ? held?.parentElement : held) ?? null;
 
   useLayoutEffect(() => {
-    const element = resolveElement(target, parent);
     const view = element?.ownerDocument.defaultView;
     if (!enabled || !element || !view || typeof view.ResizeObserver !== 'function') {
       lastEntry.current = null;
@@ -98,15 +94,15 @@ export function useElementSize(
       if (frame !== null) view.cancelAnimationFrame(frame);
       setSize(null);
     };
-  }, [box, enabled, parent, target]);
+  }, [box, element, enabled]);
 
   // A client size changes with padding (border box) and with scrollbars (content box only).
   useResizeObserver(
     () => {
-      const element = enabled ? resolveElement(target, parent) : null;
+      const observed = enabled ? element : null;
       return [
-        { element, box: box === 'content-box' ? 'content-box' : 'border-box' },
-        box === 'client' ? { element, box: 'content-box' } : null,
+        { element: observed, box: box === 'content-box' ? 'content-box' : 'border-box' },
+        box === 'client' ? { element: observed, box: 'content-box' } : null,
       ];
     },
     (entries) => onEntries.current(entries),

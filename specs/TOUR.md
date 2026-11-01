@@ -13,7 +13,7 @@ Verification: `src/components/tour/tour.test.tsx`, `e2e/tour.spec.ts`
 
 ### UIC-TOUR-1.2 - Targets
 
-A step's `target` shall be a ref to an element, or a CSS selector looked up in the document when the step shows. The target is scrolled into view, nearest edge first, when its step shows. A step whose target is missing (an empty ref, no match or an invalid selector) shows its dialog at the centre of the viewport, with no arrow, and its spotlight carries `data-target-missing`.
+A step's `target` shall be a ref to an element, or a CSS selector looked up in the document when the step shows. The target is scrolled into view, nearest edge first, when its step shows. A step whose target is missing (an empty ref, no match or an invalid selector) shows its dialog at the centre of the viewport, with no arrow, and its spotlight carries `data-target-missing`. While the step shows, the target is looked up again after every commit and whenever nodes come or go in the document: an element that replaces it (such as a keyed replacement under the same ref) takes over the spotlight and the dialog, a removed target leaves the step centred with `data-target-missing`, and a target that appears is taken up.
 
 Implementation: `src/components/tour/use-tour-target.ts`, `src/components/tour/tour.tsx`, `src/components/tour/tour-spotlight.tsx`
 Verification: `src/components/tour/tour.test.tsx`, `e2e/tour.spec.ts`

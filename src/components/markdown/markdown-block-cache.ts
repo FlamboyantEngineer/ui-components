@@ -1,15 +1,17 @@
 'use client';
-import { useRef, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import type { MarkdownBlock } from './markdown-nodes.js';
 import { renderMarkdownBlock, type RenderContext } from './markdown-render.js';
 
 interface BlockCache {
+  blocks: readonly MarkdownBlock[];
   context: RenderContext;
   isStreaming: boolean;
   /** Elements by block. */
   elements: Map<MarkdownBlock, ReactNode>;
   /** While streaming, elements of the blocks parsed afresh, by position and signature. */
   signed: Map<string, ReactNode>;
+  rendered: ReactNode[];
 }
 
 /** Closes the fields of an object or an array in a signature. */
@@ -49,11 +51,24 @@ export function useMarkdownBlocks(
   context: RenderContext,
   isStreaming: boolean,
 ): ReactNode[] {
-  const cache = useRef<BlockCache | null>(null);
-  const previous = cache.current;
+  const [kept, setKept] = useState<BlockCache | null>(null);
+  if (kept?.blocks === blocks && kept.context === context && kept.isStreaming === isStreaming) {
+    return kept.rendered;
+  }
+  const next = renderBlocks({ blocks, context, isStreaming }, kept);
+  setKept(next);
+  return next.rendered;
+}
+
+/** The elements of the blocks, reusing the previous render's where its context still holds. */
+function renderBlocks(
+  { blocks, context, isStreaming }: Pick<BlockCache, 'blocks' | 'context' | 'isStreaming'>,
+  previous: BlockCache | null,
+): BlockCache {
   const reusable =
     previous?.context === context && previous.isStreaming === isStreaming ? previous : undefined;
-  const next: BlockCache = { context, isStreaming, elements: new Map(), signed: new Map() };
+  const elements = new Map<MarkdownBlock, ReactNode>();
+  const signed = new Map<string, ReactNode>();
   const rendered = blocks.map((block, index) => {
     let element: ReactNode;
     if (reusable?.elements.has(block)) {
@@ -63,13 +78,12 @@ export function useMarkdownBlocks(
       element = reusable?.signed.has(key)
         ? reusable.signed.get(key)
         : renderMarkdownBlock(block, index, context);
-      next.signed.set(key, element);
+      signed.set(key, element);
     } else {
       element = renderMarkdownBlock(block, index, context);
     }
-    next.elements.set(block, element);
+    elements.set(block, element);
     return element;
   });
-  cache.current = next;
-  return rendered;
+  return { blocks, context, isStreaming, elements, signed, rendered };
 }

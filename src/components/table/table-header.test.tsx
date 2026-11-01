@@ -66,10 +66,19 @@ describe('Table column groups', { timeout: 15_000 }, () => {
     ]);
   });
 
-  it('UIC-TABLE-8.7 draws no group row without groups or in a virtualized table', () => {
+  it('UIC-TABLE-8.7 draws no group row without groups', () => {
     const { container } = renderFruit({ columnGroups: [] });
     expect(container.querySelectorAll('thead tr')).toHaveLength(1);
-    const { container: virtualized } = renderFruit({ virtualized: true });
-    expect(virtualized.querySelector('.ui-table__column-group')).toBeNull();
+  });
+
+  it('UIC-TABLE-8.7 draws the group row in a virtualized table, spanning its columns', () => {
+    const { container } = renderFruit({ virtualized: true });
+    const group = screen.getByRole('columnheader', { name: 'Measures' });
+    expect(group).toHaveClass('ui-table__column-group');
+    expect(group).toHaveAttribute('aria-colindex', '2');
+    expect(group).toHaveAttribute('aria-colspan', '2');
+    const gaps = container.querySelectorAll('.ui-table__column-group[data-ungrouped]');
+    expect([...gaps].map((gap) => gap.getAttribute('aria-hidden'))).toEqual(['true', 'true']);
+    expectHooksMatchSpec(container, 'TABLE', { slots: ['column-group'] });
   });
 });

@@ -318,6 +318,85 @@ describe('SelectTreeField', () => {
     expect(row('Europe')).toHaveFocus();
   });
 
+  it('UIC-SELECT-FIELD-10.1 leaves a composing Enter and Escape on a row to the input method', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <SelectField
+        mode="tree"
+        label="Place"
+        items={places}
+        getTextValue={getTextValue}
+        onChange={onChange}
+        defaultOpen
+      />,
+    );
+    await user.keyboard('{ArrowDown}');
+    expect(row('Europe')).toHaveFocus();
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set keyCode on a keydown
+    fireEvent.keyDown(row('Europe'), { key: 'Enter', keyCode: 229 });
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing on a keydown
+    fireEvent.keyDown(row('Europe'), { key: 'Escape', isComposing: true });
+    expect(onChange).not.toHaveBeenCalled();
+    expect(tree()).toBeInTheDocument();
+  });
+
+  it('UIC-SELECT-FIELD-1.3 closes an open popover for good when the field turns disabled', async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    const props = {
+      mode: 'tree',
+      label: 'Place',
+      items: places,
+      getTextValue,
+      onOpenChange,
+    } as const;
+    const { rerender } = render(<SelectField {...props} />);
+    await user.click(trigger(/Place/));
+    expect(tree()).toBeInTheDocument();
+    rerender(<SelectField {...props} isDisabled />);
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+    rerender(<SelectField {...props} />);
+    expect(screen.queryByRole('treegrid')).not.toBeInTheDocument();
+    expect(onOpenChange.mock.calls).toEqual([[true], [false]]);
+  });
+
+  it('UIC-SELECT-FIELD-10.2 settles a chosen branch against children loaded or removed later', () => {
+    const onChange = vi.fn();
+    const onCommit = vi.fn();
+    const tree = (children: Place[]): Place[] => [{ id: 'p', name: 'Parent', children }];
+    const props = {
+      mode: 'tree' as const,
+      label: 'Place',
+      selectionMode: 'multiple' as const,
+      getTextValue,
+      onChange,
+      onCommit,
+      defaultValue: ['p', 'a'],
+    };
+    const { rerender } = render(
+      <SelectField {...props} items={tree([{ id: 'a', name: 'Alpha' }])} />,
+    );
+    rerender(
+      <SelectField
+        {...props}
+        items={tree([
+          { id: 'a', name: 'Alpha' },
+          { id: 'b', name: 'Blue' },
+        ])}
+      />,
+    );
+    expect(onChange).toHaveBeenLastCalledWith(['p', 'a', 'b']);
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: /Parent/ })).toBeInTheDocument();
+    onChange.mockClear();
+    // A partial choice under an unchosen branch is left as it is.
+    rerender(
+      <SelectField {...props} value={['a', 'gone']} items={tree([{ id: 'a', name: 'Alpha' }])} />,
+    );
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
   it('UIC-SELECT-FIELD-10.2 UIC-SELECT-FIELD-10.3 chooses several with cascading checkboxes and chips', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
@@ -490,6 +569,24 @@ describe('SelectTreeField', () => {
       />,
     );
     expect(trigger(/^Place /)).toBeDisabled();
+  });
+
+  it('UIC-SELECT-FIELD-9.1 gives the trigger the field control props', () => {
+    const props = {
+      mode: 'tree',
+      id: 'place',
+      label: 'Place',
+      description: 'Where to go.',
+      items: places,
+      getTextValue,
+      defaultValue: 'peru',
+    } as const;
+    const { rerender } = render(<SelectField {...props} />);
+    const button = trigger('Place Peru');
+    expect(button).toHaveAttribute('id', 'place-control');
+    expect(button).toHaveAccessibleDescription('Where to go.');
+    rerender(<SelectField {...props} isDisabled />);
+    expect(trigger('Place Peru')).toBeDisabled();
   });
 
   it('UIC-SELECT-FIELD-10.5 reports no opening while read-only', async () => {

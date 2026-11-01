@@ -1,10 +1,11 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { I18nProvider, type Selection } from '../../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { actionKeys } from '../../../test/menu-fixtures.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { MenuItem, MenuSection, type MenuEntry } from '../menu/menu.js';
 import { Menubar, MenubarMenu, type MenubarProps } from './menubar.js';
 
@@ -264,6 +265,33 @@ describe('Menubar', () => {
     expect(screen.getByRole('menuitemcheckbox', { name: 'Ruler' })).toHaveFocus();
     await user.keyboard('{Escape}');
     await waitFor(() => expect(top('View')).toHaveFocus());
+  });
+
+  it('UIC-MENUBAR-2.2 keeps the next menu open when focusing its item scrolls the bar', async () => {
+    const user = userEvent.setup();
+    render(
+      <div data-scroller="">
+        <Bar />
+      </div>,
+    );
+    const scroller = requireDefined(document.querySelector<HTMLElement>('[data-scroller]'));
+    let offset = 0;
+    Object.defineProperty(scroller, 'scrollLeft', { configurable: true, get: () => offset });
+    // Focusing Edit scrolls the box around the bar to reveal it, as a browser does.
+    const focus = top('Edit').focus.bind(top('Edit'));
+    vi.spyOn(top('Edit'), 'focus').mockImplementation((options) => {
+      offset = 40;
+      focus(options);
+    });
+    await focusBar(user);
+    await user.keyboard('{ArrowDown}');
+    expect(screen.getByRole('menuitem', { name: 'New Control N' })).toHaveFocus();
+    await user.keyboard('{ArrowRight}');
+    act(() => {
+      scroller.dispatchEvent(new Event('scroll'));
+    });
+    await waitFor(() => expect(screen.getByRole('menuitem', { name: 'Undo' })).toHaveFocus());
+    expect(openMenus()).toHaveLength(1);
   });
 
   it('UIC-MENUBAR-2.2 leaves submenu keys to the menu and passes on from a submenu', async () => {

@@ -65,6 +65,16 @@ const moveKeys: Readonly<Record<string, -1 | 1>> = { ArrowUp: -1, ArrowDown: 1 }
 type StepMenuProps = Pick<StepRowProps, 'index' | 'count' | 'number' | 'onAction'> & { id: string };
 
 /** A step's menu: insert above or below, duplicate, move up or down, and delete. */
+/**
+ * How a step's field tracks changes: against the committed step's text, or, without one (no
+ * committed list, or a new step, marked as a whole), not at all, as a plain input.
+ */
+function toFieldTracking(committed: StepListEditorStep | null | undefined, column: string) {
+  return committed
+    ? { committedValue: readStepValue(committed, column) }
+    : { tracksChanges: false as const };
+}
+
 function StepMenu({ id, index, count, number, onAction }: StepMenuProps) {
   const strings = useUiStrings();
   const disabledKeys: Key[] = [];
@@ -101,6 +111,7 @@ export function StepRow(props: StepRowProps) {
   const strings = useUiStrings();
   const label = strings.stepLabel(number);
   const row = useStepRowDrag({ id: step.id, label, drag: isReadOnly ? null : drag });
+  const { ref, props: rowProps, handleProps, isDragging, dropPosition } = row;
   const onKeyDownCapture = (event: KeyboardEvent<HTMLLIElement>) => {
     const delta = moveKeys[event.key];
     // Keys from an open menu reach the step through its portal; only the step's own keys move it.
@@ -119,17 +130,15 @@ export function StepRow(props: StepRowProps) {
       committed ?? undefined,
       columns.map(({ id }) => id),
     );
-  // A field marks its own edit against the committed step; a new step is marked as a whole.
-  const readCommitted = (column: string) => readStepValue(committed ?? step, column);
   return (
     <li
-      ref={row.ref}
-      {...row.props}
+      ref={ref}
+      {...rowProps}
       {...hooks.slot('step', {
         dirty: isDirty,
-        dragging: row.isDragging,
-        dropTarget: row.dropPosition !== null,
-        position: row.dropPosition,
+        dragging: isDragging,
+        dropTarget: dropPosition !== null,
+        position: dropPosition,
       })}
       data-key={step.id}
       onKeyDownCapture={onKeyDownCapture}
@@ -140,7 +149,7 @@ export function StepRow(props: StepRowProps) {
           size="sm"
           label={strings.moveStep(number)}
           className={hooks.slotClass('handle')}
-          {...row.handleProps}
+          {...handleProps}
         />
       )}
       <span {...hooks.slot('number')} aria-hidden="true">
@@ -160,7 +169,7 @@ export function StepRow(props: StepRowProps) {
             placeholder={column.placeholder}
             isReadOnly={isReadOnly}
             value={readStepValue(step, column.id)}
-            committedValue={readCommitted(column.id)}
+            {...toFieldTracking(committed, column.id)}
             onChange={(text) =>
               onChange({ ...step, values: { ...step.values, [column.id]: text } })
             }

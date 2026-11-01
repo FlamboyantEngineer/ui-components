@@ -7,6 +7,7 @@ import {
   Button as AriaButton,
   Disclosure as AriaDisclosure,
   DisclosurePanel as AriaDisclosurePanel,
+  useLocale,
 } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { PressEvent } from '../../core/events.js';
@@ -79,7 +80,8 @@ interface ItemCountProps {
 
 /** The shown count, read as part of the link's name, and the hidden description of the full count. */
 function ItemCount({ id, count, description, isCollapsed }: ItemCountProps) {
-  const shown = formatCount(count, { max: countMax });
+  const { locale } = useLocale();
+  const shown = formatCount(count, locale, { max: countMax });
   return (
     <>
       {' '}

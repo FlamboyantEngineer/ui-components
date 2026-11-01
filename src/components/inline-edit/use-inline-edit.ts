@@ -54,7 +54,7 @@ function isEditorKey(event: KeyboardEvent<HTMLElement>): boolean {
 function useEditFocus(isEditing: boolean) {
   const editorRef = useRef<HTMLDivElement | null>(null);
   const readRef = useRef<HTMLButtonElement | null>(null);
-  const focusReturn = useRef<FocusReturn>('none');
+  const focusReturnRef = useRef<FocusReturn>('none');
   const hasMounted = useRef(false);
   useLayoutEffect(() => {
     const isFirst = !hasMounted.current;
@@ -64,12 +64,12 @@ function useEditFocus(isEditing: boolean) {
       target?.focus();
       if (isHTMLElement(target, 'input')) target.select();
       if (isHTMLElement(target, 'textarea')) target.setSelectionRange(-1, -1);
-    } else if (!isEditing && focusReturn.current === 'read') {
+    } else if (!isEditing && focusReturnRef.current === 'read') {
       readRef.current?.focus();
     }
-    focusReturn.current = 'none';
+    focusReturnRef.current = 'none';
   }, [isEditing]);
-  return { editorRef, readRef, focusReturn };
+  return { editorRef, readRef, focusReturnRef };
 }
 
 /**
@@ -109,7 +109,7 @@ interface SaveQueueOptions<T> {
   session: number;
   /** The saved value and the value being edited. */
   value: T;
-  current: T;
+  edited: T;
   onSave: (value: T) => void | Promise<unknown>;
   failureMessage: string;
   setDraft: (draft: { value: T } | null) => void;
@@ -163,13 +163,13 @@ function useSaveQueue<T>(options: SaveQueueOptions<T>) {
     if (!settle(attempt, null)) return;
     const queuedSave = takeQueued();
     if (queuedSave) {
-      const newer = queuedSave.request ? queuedSave.request.value : latest.current.current;
+      const newer = queuedSave.request ? queuedSave.request.value : latest.current.edited;
       if (!isFieldValueEqual(newer, next)) {
         void save(newer, queuedSave.focusReturn);
         return;
       }
     }
-    if (isFieldValueEqual(latest.current.current, next)) {
+    if (isFieldValueEqual(latest.current.edited, next)) {
       latest.current.close(queuedSave?.focusReturn ?? focusReturn);
     }
   };
@@ -179,7 +179,7 @@ function useSaveQueue<T>(options: SaveQueueOptions<T>) {
       queued.current = { request, focusReturn };
       return;
     }
-    const target = request ? request.value : options.current;
+    const target = request ? request.value : options.edited;
     if (isFieldValueEqual(target, options.value)) options.close(focusReturn);
     else void save(target, focusReturn);
   };
@@ -201,13 +201,14 @@ export function useInlineEdit<T>(options: InlineEditStateOptions<T>) {
   );
   const { draft, setDraft, error, setError, session } = useEditSession<T>(isEditing);
   const focus = useEditFocus(isEditing);
+  const { focusReturnRef } = focus;
   const blurTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => () => clearTimeout(blurTimer.current), []);
-  const current = draft === null ? value : draft.value;
+  const edited = draft === null ? value : draft.value;
 
   const close = (focusReturn: FocusReturn) => {
     clearTimeout(blurTimer.current);
-    focus.focusReturn.current = focusReturn;
+    focusReturnRef.current = focusReturn;
     setDraft(null);
     setError(null);
     setEditing(false);
@@ -220,7 +221,7 @@ export function useInlineEdit<T>(options: InlineEditStateOptions<T>) {
   const { isPending, commit } = useSaveQueue({
     session,
     value,
-    current,
+    edited,
     onSave: options.onSave,
     failureMessage: options.failureMessage,
     setDraft,
@@ -257,8 +258,8 @@ export function useInlineEdit<T>(options: InlineEditStateOptions<T>) {
     isEditing,
     isPending,
     error,
-    current,
-    setCurrent: (next: T) => setDraft({ value: next }),
+    edited,
+    setEdited: (next: T) => setDraft({ value: next }),
     open,
     cancel: () => cancel(),
     /** Saves the value being edited, or the value given, which may be `undefined` or `null`. */

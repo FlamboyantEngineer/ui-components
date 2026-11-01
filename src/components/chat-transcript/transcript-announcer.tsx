@@ -49,17 +49,20 @@ export function useTranscriptAnnouncer(strings: UiStrings): TranscriptAnnouncer 
   const stringsRef = useLatest(strings);
 
   const pump = useCallback(() => {
-    if (timer.current !== null) return;
-    const { messages, notices } = queue.current;
-    if (messages.length === 0 && notices.length === 0) return;
-    const next = composeAnnouncement(messages, notices, stringsRef.current);
-    queue.current = { messages: [], notices: [] };
-    // A repeated announcement still changes the region, so it is read again.
-    setText((current) => (current === next ? `${next}${REANNOUNCE_MARK}` : next));
-    timer.current = setTimeout(() => {
-      timer.current = null;
-      pump();
-    }, announceInterval);
+    const announce = () => {
+      if (timer.current !== null) return;
+      const { messages, notices } = queue.current;
+      if (messages.length === 0 && notices.length === 0) return;
+      const next = composeAnnouncement(messages, notices, stringsRef.current);
+      queue.current = { messages: [], notices: [] };
+      // A repeated announcement still changes the region, so it is read again.
+      setText((current) => (current === next ? `${next}${REANNOUNCE_MARK}` : next));
+      timer.current = setTimeout(() => {
+        timer.current = null;
+        announce();
+      }, announceInterval);
+    };
+    announce();
   }, [stringsRef]);
 
   useEffect(

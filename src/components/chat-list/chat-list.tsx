@@ -3,7 +3,6 @@
 import { PlusGlyph } from '../../core/glyphs.js';
 import { useState, type ReactNode } from 'react';
 import { GridList, useFilter } from '../../primitives/index.js';
-import { useGetNow } from '../../core/clock.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, Selection } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -13,9 +12,14 @@ import { SearchField } from '../search-field/search-field.js';
 import { Skeleton, SkeletonText } from '../skeleton/skeleton.js';
 import { TextMatchProvider } from '../text-match/text-match.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
+import type { AttributionProps } from '../attribution/attribution.js';
 import { ChatListRow, listHooks, type ChatConversation } from './chat-list-row.js';
 
-export interface ChatListProps extends BaseProps, AriaLabellingProps {
+export interface ChatListProps
+  extends
+    BaseProps,
+    AriaLabellingProps,
+    Pick<AttributionProps, 'fallbackAfterDays' | 'getNow' | 'timeZone'> {
   /** The conversations, in the order to list them. */
   conversations: readonly ChatConversation[];
   /** The open conversation's id, controlled (`null` for none). Left out, the list keeps it. */
@@ -36,8 +40,6 @@ export interface ChatListProps extends BaseProps, AriaLabellingProps {
   emptyState?: ReactNode;
   /** Controls at the end of each row, such as a menu of the conversation's commands. */
   renderActions?: ((conversation: ChatConversation) => ReactNode) | undefined;
-  /** The clock the times are read against. Defaults to the provider's clock. */
-  getNow?: (() => Date) | undefined;
 }
 
 /** How many placeholder rows stand in for the conversations while they load. */
@@ -145,14 +147,15 @@ export function ChatList({
   isLoading = false,
   emptyState,
   renderActions,
-  getNow: getNowProp,
+  fallbackAfterDays,
+  getNow,
+  timeZone,
   'aria-label': ariaLabel,
   'aria-labelledby': ariaLabelledby,
   className,
   ...rest
 }: ChatListProps) {
   const strings = useUiStrings();
-  const getNow = useGetNow(getNowProp);
   const [query, setQuery] = useState('');
   const [ownSelection, setOwnSelection] = useState<string | null>(null);
   const shown = useShownConversations({ conversations, onSearchChange }, query);
@@ -183,7 +186,7 @@ export function ChatList({
           disallowEmptySelection
           selectedKeys={selected === null ? [] : [selected]}
           onSelectionChange={select}
-          dependencies={[renderActions, getNow]}
+          dependencies={[renderActions, fallbackAfterDays, getNow, timeZone]}
           renderEmptyState={() => (
             <ListEmptyState
               isLoading={isLoading}
@@ -196,7 +199,9 @@ export function ChatList({
             <ChatListRow
               conversation={conversation}
               renderActions={renderActions}
+              fallbackAfterDays={fallbackAfterDays}
               getNow={getNow}
+              timeZone={timeZone}
             />
           )}
         </GridList>

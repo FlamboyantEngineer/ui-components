@@ -8,6 +8,7 @@ import type { FieldTextInputProps } from '../field/field.js';
 import { CodeHighlight } from './code-layers.js';
 import { codeEditorHooks as hooks } from './code-editor-hooks.js';
 import { alignLayers, type CodeEditorModel } from './use-code-editor.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 
 /**
  * The caller's props the text area takes as they are. Of the text-entry attributes it takes the
@@ -59,6 +60,8 @@ function useKeyProps(model: CodeEditorModel, props: CodeTextAreaProps): TextArea
   const { completion, snippet, hover } = model;
   return {
     onKeyDown: (event) => {
+      // Keys an input method owns go to the caller alone: no completion, field, hover or edit.
+      if (isComposingKey(event.nativeEvent)) return props.onKeyDown?.(event);
       // Escape ends snippet stepping first, so Escape then Tab leaves even past an open list.
       if (event.key === 'Escape') snippet.end();
       if (completion.handleKeyDown(event) || snippet.handleKeyDown(event)) return;
@@ -119,13 +122,13 @@ function useInputProps(
 
 /** The highlighted copy and the text area over it. */
 export function CodeArea({ model, props, locks, onChange, ...area }: CodeAreaProps) {
-  const inputProps = useInputProps(model, { props, onChange, multiline: area.multiline });
-  const { listId } = area;
+  const { listId, caretRef, inputRef, id, value, wrap, multiline, isInvalid, describedBy } = area;
+  const inputProps = useInputProps(model, { props, onChange, multiline });
   return (
     <div {...hooks.slot('code')}>
       <CodeHighlight
         segments={model.segments}
-        caretRef={area.caretRef}
+        caretRef={caretRef}
         highlightRef={model.layers.highlight}
       />
       <TextArea
@@ -134,14 +137,14 @@ export function CodeArea({ model, props, locks, onChange, ...area }: CodeAreaPro
         readOnly={locks.isReadOnly}
         disabled={locks.isDisabled}
         aria-required={locks.isRequired || undefined}
-        id={area.id}
-        ref={area.inputRef}
-        value={area.value}
-        wrap={area.wrap}
-        rows={area.multiline ? undefined : 1}
-        aria-multiline={area.multiline ? undefined : false}
-        aria-invalid={area.isInvalid || undefined}
-        aria-describedby={area.describedBy}
+        id={id}
+        ref={inputRef}
+        value={value}
+        wrap={wrap}
+        rows={multiline ? undefined : 1}
+        aria-multiline={multiline ? undefined : false}
+        aria-invalid={isInvalid || undefined}
+        aria-describedby={describedBy}
         {...(listId === undefined ? {} : toCompletionInputAttributes(model.completion, listId))}
       />
     </div>

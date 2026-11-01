@@ -12,7 +12,7 @@ import { Choice, ChoiceGroup } from '../../src/components/choice-group/choice-gr
 import { Cluster, Stack } from '../../src/components/layout/layout.js';
 import type { MessageComposerShortcuts } from '../../src/components/message-composer/index.js';
 import { KeyHints, type KeyHint } from '../../src/components/shortcut/index.js';
-import { requireDefined } from '../../src/utils/require-defined.js';
+import { requireDefined } from './require-defined.js';
 import { fakeUpload } from './chat-agent.js';
 import { agentTiming, sleep, streamText } from './chat-agent-stream.js';
 import { assistantPeople, plannerId, readerId } from './chat-samples.js';

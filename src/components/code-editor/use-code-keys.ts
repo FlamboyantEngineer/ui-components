@@ -12,6 +12,7 @@ import {
   type CodeEdit,
   type CodeSelection,
 } from './code-editing.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 
 interface CodeKeysOptions {
   inputRef: RefObject<HTMLTextAreaElement | null>;
@@ -92,7 +93,7 @@ export function useCodeKeys(options: CodeKeysOptions) {
 
   return (event: KeyboardEvent<HTMLTextAreaElement>): boolean => {
     const input = inputRef.current;
-    if (!input || event.nativeEvent.isComposing) return false;
+    if (!input || isComposingKey(event.nativeEvent)) return false;
     const leaving = tabLeaves.current;
     if (!modifierKeys.has(event.key)) tabLeaves.current = event.key === 'Escape';
     if (handleShortcut(event)) {

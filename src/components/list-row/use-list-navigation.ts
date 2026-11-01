@@ -75,9 +75,9 @@ interface ListState {
   list: RefObject<HTMLUListElement | null>;
   rows: OrderedRows;
   store: ActiveRowStore;
-  focusedId: RefObject<string | null>;
+  focusedIdRef: RefObject<string | null>;
   /** Whether focus has entered the list; until then the first row holds the tab stop. */
-  hasEntered: RefObject<boolean>;
+  hasEnteredRef: RefObject<boolean>;
 }
 
 interface RemovedRow {
@@ -150,21 +150,21 @@ function resolveTargetIndex(key: string, index: number, last: number): number {
  * its nearest neighbour, and moves focus there when the removed row held it and focus fell out.
  */
 function recoverFromRemoval(state: ListState, removed: RemovedRow) {
-  const { list, rows, store, focusedId, hasEntered } = state;
+  const { list, rows, store, focusedIdRef, hasEnteredRef } = state;
   if (!list.current?.isConnected) return;
-  const candidates = hasEntered.current ? [removed.id, ...removed.neighbours] : [];
+  const candidates = hasEnteredRef.current ? [removed.id, ...removed.neighbours] : [];
   const nextId =
     candidates.find((candidate) => rows.nodes.current.has(candidate)) ??
     rows.read()[0]?.[0] ??
     null;
   if (store.getActiveId() === removed.id) store.setActiveId(nextId);
-  if (focusedId.current !== removed.id || !isFocusLost(removed.node)) return;
-  if (nextId === null) focusedId.current = null;
+  if (focusedIdRef.current !== removed.id || !isFocusLost(removed.node)) return;
+  if (nextId === null) focusedIdRef.current = null;
   else rows.nodes.current.get(nextId)?.focus();
 }
 
 function useOrderedRows(
-  list: RefObject<HTMLUListElement | null>,
+  listRef: RefObject<HTMLUListElement | null>,
   { primaryClass, onRead }: { primaryClass: string; onRead: (order: readonly string[]) => void },
 ): OrderedRows {
   const nodes = useRef(new Map<string, HTMLElement>());
@@ -172,7 +172,9 @@ function useOrderedRows(
   const isReadQueued = useRef(false);
   const read = useCallback(() => {
     const ids = new Map([...nodes.current].map(([id, node]) => [node, id]));
-    const primaries = [...(list.current?.querySelectorAll<HTMLElement>(`.${primaryClass}`) ?? [])];
+    const primaries = [
+      ...(listRef.current?.querySelectorAll<HTMLElement>(`.${primaryClass}`) ?? []),
+    ];
     const rows = primaries.flatMap((node): Array<[string, HTMLElement]> => {
       const id = ids.get(node);
       return id === undefined ? [] : [[id, node]];
@@ -180,7 +182,7 @@ function useOrderedRows(
     order.current = rows.map(([id]) => id);
     onRead(order.current);
     return rows;
-  }, [list, primaryClass, onRead]);
+  }, [listRef, primaryClass, onRead]);
   const queueRead = useCallback(() => {
     if (isReadQueued.current) return;
     isReadQueued.current = true;
@@ -191,19 +193,19 @@ function useOrderedRows(
   }, [read]);
   // Keyed moves and inserts change the order without any registration.
   useLayoutEffect(() => {
-    const element = list.current;
+    const element = listRef.current;
     const Observer = element?.ownerDocument.defaultView?.MutationObserver;
     if (!element || !Observer) return;
     const observer = new Observer(read);
     observer.observe(element, { childList: true, subtree: true });
     read();
     return () => observer.disconnect();
-  }, [list, read]);
+  }, [listRef, read]);
   return useMemo(() => ({ nodes, order, read, queueRead }), [read, queueRead]);
 }
 
 function useRowRegistry(state: ListState): RowRegistry {
-  const { list, rows, store, focusedId, hasEntered } = state;
+  const { list, rows, store, focusedIdRef, hasEnteredRef } = state;
   const register = useCallback(
     (id: string, node: HTMLElement) => {
       rows.nodes.current.set(id, node);
@@ -216,13 +218,13 @@ function useRowRegistry(state: ListState): RowRegistry {
         if (rows.nodes.current.get(id) === node) rows.nodes.current.delete(id);
         queueMicrotask(() =>
           recoverFromRemoval(
-            { list, rows, store, focusedId, hasEntered },
+            { list, rows, store, focusedIdRef, hasEnteredRef },
             { id, node, neighbours },
           ),
         );
       };
     },
-    [list, rows, store, focusedId, hasEntered],
+    [list, rows, store, focusedIdRef, hasEnteredRef],
   );
   return useMemo(
     () => ({
@@ -230,12 +232,13 @@ function useRowRegistry(state: ListState): RowRegistry {
       subscribe: store.subscribe,
       getActiveId: store.getActiveId,
       activate: (id: string) => {
-        focusedId.current = id;
-        hasEntered.current = true;
-        store.setActiveId(id);
+        focusedIdRef.current = id;
+        hasEnteredRef.current = true;
+        // A disabled row's trailing control takes focus without taking the tab stop.
+        if (rows.nodes.current.has(id)) store.setActiveId(id);
       },
     }),
-    [register, store, focusedId, hasEntered],
+    [register, store, rows, focusedIdRef, hasEnteredRef],
   );
 }
 
@@ -251,17 +254,17 @@ export function useListNavigation({
 }: ListNavigationOptions): ListNavigation {
   const [list, setRef] = useForwardedRef(ref);
   const [store] = useState(createActiveRowStore);
-  const hasEntered = useRef(false);
+  const hasEnteredRef = useRef(false);
   // Until focus enters the list, the tab stop follows the first row as rows come and go.
   const onRead = useCallback(
     (order: readonly string[]) => {
-      if (!hasEntered.current && order[0] !== undefined) store.setActiveId(order[0]);
+      if (!hasEnteredRef.current && order[0] !== undefined) store.setActiveId(order[0]);
     },
     [store],
   );
   const rows = useOrderedRows(list, { primaryClass, onRead });
-  const focusedId = useRef<string | null>(null);
-  const registry = useRowRegistry({ list, rows, store, focusedId, hasEntered });
+  const focusedIdRef = useRef<string | null>(null);
+  const registry = useRowRegistry({ list, rows, store, focusedIdRef, hasEnteredRef });
   useImperativeHandle(handleRef, () => ({ focusFirst: () => rows.read()[0]?.[1].focus() }), [rows]);
 
   const onKeyDown = (event: KeyboardEvent<HTMLUListElement>) => {
@@ -277,7 +280,7 @@ export function useListNavigation({
 
   const onBlurCapture = (event: FocusEvent<HTMLUListElement>) => {
     const next = event.relatedTarget;
-    if (!isNode(next) || !event.currentTarget.contains(next)) focusedId.current = null;
+    if (!isNode(next) || !event.currentTarget.contains(next)) focusedIdRef.current = null;
   };
 
   return { registry, setRef, onKeyDown, onBlurCapture };

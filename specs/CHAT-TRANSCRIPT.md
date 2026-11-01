@@ -43,10 +43,10 @@ Verification: `src/components/chat-transcript/transcript-anchor.test.tsx`, `e2e/
 
 ### UIC-CHAT-TRANSCRIPT-1.6 - Virtualized history
 
-With `virtualized`, the root shall publish `data-virtualized` and mount only the children within one view height above and below the visible area (the viewport's height, or the window's when the viewport is taller), plus the focused message, the anchored one, the one about to be focused, the highlighted one, the newest two children and those that just arrived; each run of unmounted children is replaced by a spacer as tall as their measured heights (the average measured height until measured, with the feed's row gap between them). Following, anchoring, keeping the reader's place as history loads, the keyboard model, unread counts and announcements work as without it: moving focus to an unmounted message mounts it first, then brings it into view and focuses it.
+With `virtualized`, the root shall publish `data-virtualized` and mount only the children within one view height above and below the visible area (the viewport's height, or the window's when the viewport is taller), plus the focused message, the anchored one, the one about to be focused, the highlighted one, the newest two children and those that just arrived; each run of unmounted children is replaced by a spacer as tall as their measured heights (the average measured height until measured, with the feed's row gap between them). The measurements restart with each conversation ([UIC-CHAT-TRANSCRIPT-3.7](#uic-chat-transcript-37---messages-register-with-the-transcript)), so a new conversation's spacers average only its own messages. Following, anchoring, keeping the reader's place as history loads, the keyboard model, unread counts and announcements work as without it: moving focus to an unmounted message mounts it first, then brings it into view and focuses it.
 
 Implementation: `src/components/chat-transcript/transcript-window.ts`, `src/components/chat-transcript/transcript-parts.tsx`, `src/components/chat-transcript/use-transcript.ts`
-Verification: `src/components/chat-transcript/transcript-virtual.test.tsx`, `e2e/chat-transcript.spec.ts`
+Verification: `src/components/chat-transcript/transcript-virtual.test.tsx`, `src/components/chat-transcript/transcript-conversation-reset.test.tsx`, `e2e/chat-transcript.spec.ts`
 
 ### UIC-CHAT-TRANSCRIPT-1.7 - Presentation
 

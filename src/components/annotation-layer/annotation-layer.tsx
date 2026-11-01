@@ -75,24 +75,24 @@ function useMeasuredTargets(
   content: ReactNode,
 ) {
   const [measured, setMeasured] = useState<ReadonlyMap<Key, readonly AnnotationRect[]>>(new Map());
-  const latest = useLatest({ layer, annotations });
+  const latestRef = useLatest({ layer, annotations });
   const remeasure = useCallback(() => {
-    const { layer, annotations } = latest.current;
+    const { layer, annotations } = latestRef.current;
     if (!layer) return;
     const next = measureTargets(layer, annotations);
     setMeasured((current) => (isSameMeasurement(current, next) ? current : next));
-  }, [latest]);
+  }, [latestRef]);
   // Measures when the layer, the annotations or the content change, which `remeasure` reads.
   useLayoutEffect(() => remeasure(), [remeasure, layer, annotations, content]);
   useLayoutEffect(() => {
     if (!layer) return;
     const observer = observeTargets(layer, {
       measure: remeasure,
-      getTargets: () => findTargets(layer, latest.current.annotations).values(),
+      getTargets: () => findTargets(layer, latestRef.current.annotations).values(),
       isOwnOutput,
     });
     return observer.disconnect;
-  }, [layer, latest, remeasure]);
+  }, [layer, latestRef, remeasure]);
   return { measured, remeasure };
 }
 

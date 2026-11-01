@@ -87,4 +87,46 @@ describe('Tree loading children', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     expect(onLoad).toHaveBeenCalledTimes(2);
   });
+
+  it('UIC-TREE-2.4 forgets a branch that leaves the items, so it asks again when it comes back', async () => {
+    const onLoad = vi
+      .fn<(place: Place) => Promise<Place[]>>()
+      .mockRejectedValueOnce(new Error('The atlas is offline.'))
+      .mockResolvedValueOnce([{ id: 'hanoi', name: 'Hanoi' }]);
+    function Swapping() {
+      const [places, setPlaces] = useState(START);
+      return (
+        <>
+          <button type="button" onClick={() => setPlaces(START.slice(0, 1))}>
+            Europe only
+          </button>
+          <button type="button" onClick={() => setPlaces(START)}>
+            Every place
+          </button>
+          <Tree
+            aria-label="Places"
+            items={places}
+            getTextValue={(place) => place.name}
+            hasChildItems={(place) => place.isLazy ?? false}
+            defaultExpandedKeys={['asia']}
+            onLoadChildren={async (place) => {
+              const children = await onLoad(place);
+              setPlaces((current) =>
+                current.map((entry) => (entry.id === place.id ? { ...entry, children } : entry)),
+              );
+            }}
+          />
+        </>
+      );
+    }
+    render(<Swapping />);
+    expect(await screen.findByRole('alert')).toHaveTextContent('The atlas is offline.');
+    expect(onLoad).toHaveBeenCalledTimes(1);
+    await userEvent.click(screen.getByRole('button', { name: 'Europe only' }));
+    expect(screen.queryByRole('row', { name: 'Asia' })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Every place' }));
+    expect(await screen.findByRole('row', { name: 'Hanoi' })).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(onLoad).toHaveBeenCalledTimes(2);
+  });
 });

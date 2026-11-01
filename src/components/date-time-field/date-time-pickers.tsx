@@ -1,5 +1,6 @@
 'use client';
 
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { useUiStrings } from '../../core/provider.js';
 import { CalendarGlyph } from '../../core/glyphs.js';
 import {
@@ -21,7 +22,8 @@ import {
   type DateValue,
 } from '../../primitives/index.js';
 import type { DateTimeFieldDateState } from './date-time-field.js';
-import { useMemo, type ReactNode } from 'react';
+import { useMemo, useRef, type ReactNode } from 'react';
+import type { SlotRef } from '../../utils/slot-registry.js';
 import { useToday } from '../../core/clock.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { Glyph } from '../../core/provider.js';
@@ -161,6 +163,13 @@ function PreviousValue({ previous }: { previous: string | null }) {
   ) : null;
 }
 
+/** The segments' group element, for the field (`control.ref`) and for the draft's form reset. */
+function useGroupRef(controlRef: SlotRef) {
+  const root = useRef<HTMLElement>(null);
+  const ref = useMergedRefs<HTMLElement>(controlRef, root);
+  return { root, ref };
+}
+
 /** A picker's framed group: the previous value while dirty, the segments and the button. */
 function DateGroup({
   control,
@@ -168,10 +177,13 @@ function DateGroup({
   previous,
   children,
 }: DatePickerControlProps & { children: ReactNode }) {
+  const { root, ref } = useGroupRef(control.ref);
   return (
-    <Group className={hooks.slotClass('group')} ref={control.ref}>
+    <Group className={hooks.slotClass('group')} ref={ref}>
       <PreviousValue previous={previous} />
-      <DateDraftScope state={state}>{children}</DateDraftScope>
+      <DateDraftScope state={state} root={root}>
+        {children}
+      </DateDraftScope>
     </Group>
   );
 }
@@ -286,6 +298,7 @@ export function DateRangeControl(props: DatePickerControlProps) {
 export function TimeControl(props: DatePickerControlProps) {
   const { state, bounds, settings, onPick } = props;
   const granularity = settings.granularity ?? 'minute';
+  const { root: groupRoot, ref: groupRef } = useGroupRef(props.control.ref);
   const text = typeof state.value === 'string' ? state.value : null;
   const value = useMemo(() => parseIsoTime(text), [text]);
   const minValue = useMemo(() => parseIsoTime(bounds.minValue), [bounds.minValue]);
@@ -299,9 +312,9 @@ export function TimeControl(props: DatePickerControlProps) {
       maxValue={maxValue}
       onChange={(next) => onPick(next ? formatIsoDate(next, granularity) : null)}
     >
-      <div {...hooks.slot('group')} ref={props.control.ref}>
+      <div {...hooks.slot('group')} ref={groupRef}>
         <PreviousValue previous={props.previous} />
-        <DateDraftScope state={state}>
+        <DateDraftScope state={state} root={groupRoot}>
           <Segments />
         </DateDraftScope>
       </div>

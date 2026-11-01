@@ -13,7 +13,7 @@ Verification: `src/components/list-row/list-row.test.tsx`, `e2e/list-row.spec.ts
 
 ### UIC-LIST-ROW-1.2 - One tab stop
 
-Exactly one enabled row's primary control shall be in the tab sequence: the first row until focus enters the list, then the row that last held focus, including focus on one of its trailing controls. Moving focus between rows shall re-render only the row losing the tab stop and the row taking it.
+Exactly one enabled row's primary control shall be in the tab sequence: the first row until focus enters the list, then the enabled row that last held focus, including focus on one of its trailing controls. Focus on a disabled row's trailing control leaves the tab stop where it was, and when the tab stop's row is disabled or removed it moves to a neighbouring enabled row. Moving focus between rows shall re-render only the row losing the tab stop and the row taking it.
 
 Implementation: `src/components/list-row/list-row.tsx`, `src/components/list-row/use-list-navigation.ts`
 Verification: `src/components/list-row/list-row.test.tsx`, `e2e/list-row.spec.ts`
@@ -154,7 +154,7 @@ Verification: `src/components/list-row/list-view.test.tsx`, `e2e/list-row.spec.t
 
 ### UIC-LIST-ROW-3.5 - Drag and drop
 
-With `reorder`, the reader shall reorder rows by drag and drop, by pointer or by keyboard from a row's drag handle (React Aria's `useDragAndDrop`), and each drop shall report one `reorder.onMove({ keys, targetKey, position })` with `position` `before` or `after`. The list never reorders its rows itself: the owner applies the move and renders the new order. A drop on a row, or beside one of the dragged rows, is refused. While the list reorders, each row draws a [DragHandle](DRAG-HANDLE.md) in the `ui-list-view-item__drag-handle` slot first and publishes `data-allows-dragging`; the dragged row carries `data-dragging`, and the landing spot between rows is a `ui-list-view__drop-indicator` row with `data-position` (`before`, `after`) and `data-drop-target`. A list without `reorder` draws no drag affordance; turning it on or off remounts the rows.
+With `reorder`, the reader shall reorder rows by drag and drop, by pointer or by keyboard from a row's drag handle (React Aria's `useDragAndDrop`), and each drop shall report one `reorder.onMove({ keys, targetKey, position })` with `position` `before` or `after`. The list never reorders its rows itself: the owner applies the move and renders the new order. A drop on a row, or beside one of the dragged rows, is refused. While the list reorders, each row draws a [DragHandle](DRAG-HANDLE.md) in the `ui-list-view-item__drag-handle` slot first and publishes `data-allows-dragging`; the dragged row carries `data-dragging`, and the landing spot between rows is a `ui-list-view__drop-indicator` row with `data-position` (`before`, `after`) and `data-drop-target`. A list without `reorder` draws no drag affordance; turning it on or off remounts the rows. Rows in `disabledKeys` when the drop lands, including rows disabled after the drag started, are left out of the move, and a drop with no row left reports nothing.
 
 Implementation: `src/components/list-row/list-view.tsx`, `src/utils/use-reorder-drag-and-drop.ts`, `labs/reference/list-row.css`
 Verification: `src/components/list-row/list-view.test.tsx`, `e2e/list-row.spec.ts`

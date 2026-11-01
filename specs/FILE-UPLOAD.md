@@ -92,7 +92,7 @@ Verification: `src/components/file-upload/file-rules.test.ts`, `src/components/f
 
 ### UIC-FILE-UPLOAD-2.6 - Count limit
 
-With `maxFiles`, the upload shall hold at most that many files, counting the listed `files` and the files it handed on since the owner last rendered it: offered files that pass the other checks are accepted in order until the limit, and the rest are refused with the reason `count`.
+With `maxFiles`, the upload shall hold at most that many files, counting the listed `files` and the files it handed on since the owner last gave a new `files` list: the upload's own renders (its refusals, a drag, its status) keep the files handed on counted, and a new list, whether it lists them, leaves them out or removes others, is the owner's answer and counts again from it. Offered files that pass the other checks are accepted in order until the limit, and the rest are refused with the reason `count`. Hosts therefore give a new list once they list or refuse the files handed on.
 
 Implementation: `src/components/file-upload/file-rules.ts`, `src/components/file-upload/file-upload.tsx`, `src/core/strings.ts`
 Verification: `src/components/file-upload/file-rules.test.ts`, `src/components/file-upload/file-upload.test.tsx`, `e2e/file-upload.spec.ts`
@@ -143,7 +143,7 @@ Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-uploa
 
 ### UIC-FILE-UPLOAD-3.5 - Image previews
 
-A listed file whose `file` is an image (`image/*`) shall show a thumbnail (`ui-file-upload__file-preview`, an `<img>` with an empty `alt`, since its name is beside it) from a temporary URL the upload revokes when the file changes or leaves the list; a file without one shows its `previewUrl` instead.
+A listed file whose `file` is an image (`image/*`) shall show a thumbnail (`ui-file-upload__file-preview`, an `<img>` with an empty `alt`, since its name is beside it) from a temporary URL the upload creates while rendering and revokes when the file changes or leaves the list (a Strict Mode remount keeps it); a file without one shows its `previewUrl` instead.
 
 Implementation: `src/components/file-upload/file-upload-files.tsx`
 Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-upload.spec.ts`

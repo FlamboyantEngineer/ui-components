@@ -6,7 +6,7 @@ import {
 } from '../../src/components/redline-compare/redline-compare.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import type { DocumentBlock } from '../../src/utils/compare-blocks.js';
-import { requireDefined } from '../../src/utils/require-defined.js';
+import { requireDefined } from './require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { LargeInputDemo } from './large-input-demo.js';
 

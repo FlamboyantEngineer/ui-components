@@ -45,7 +45,7 @@ Verification: `src/utils/use-pointer-drag.test.tsx`
 
 ### UIC-DRAG-INTERACTIONS-2.1 - Arming
 
-`armElementDrag` shall make an element draggable until pointer release or native drag end, clean up an earlier arming of the same element, and ignore pointer cancellation because a native drag cancels its pointer stream when it starts.
+`armElementDrag` shall make an element draggable until pointer release or native drag end, and clean up an earlier arming of the same element. A native drag cancels its pointer stream as it starts, before or after `dragstart`, so pointer cancellation disarms the element, removing its listeners, only when the task that cancelled passes without the element's `dragstart`; once its drag has started, the element stays armed until `dragend`. An element removed while armed is disarmed the same way.
 
 Implementation: `src/utils/pointer-drag.ts`
 Verification: `src/utils/pointer-drag.test.tsx`

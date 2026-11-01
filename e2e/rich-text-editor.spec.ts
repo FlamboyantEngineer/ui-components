@@ -439,13 +439,24 @@ test.describe('Rich Text Editor lab', () => {
     await expect(box).toHaveAttribute('aria-readonly', 'true');
     await box.focus();
     await page.keyboard.type('x');
-    await expect(box).toHaveText('Pick the pears on Friday.');
+    await expect(box).toHaveText('Pick the pears on Friday.WashPeel');
     await expect(readOnly.getByRole('button', { name: 'Bold' })).toBeDisabled();
+    await expect(readOnly.getByRole('checkbox', { name: 'Done' }).first()).toHaveAttribute(
+      'aria-readonly',
+      'true',
+    );
     const disabled = matrixCell(page, 'state=disabled chrome=plain');
     await expect(disabled.getByRole('textbox', { name: 'Note' })).toHaveAttribute(
       'aria-disabled',
       'true',
     );
+    // Nothing in a disabled editor is a tab stop, its task checkboxes included.
+    for (const checkbox of await disabled.getByRole('checkbox', { name: 'Done' }).all()) {
+      await expect(checkbox).toBeDisabled();
+    }
+    await disabled.getByText('Note', { exact: true }).click();
+    await page.keyboard.press('Tab');
+    await expect(disabled.locator(':focus')).toHaveCount(0);
     const invalid = matrixCell(page, 'state=invalid chrome=plain');
     await expect(invalid.getByRole('textbox', { name: 'Note' })).toHaveAttribute(
       'aria-invalid',
@@ -570,5 +581,80 @@ test.describe('Rich Text Editor lab', () => {
     await expect(field).toHaveAttribute('data-validation', 'valid');
     await send.click();
     await expect(output(page, 'required-submits')).toHaveText('1');
+  });
+
+  test('UIC-RICH-TEXT-EDITOR-3.5 types at a caret moved while the editor commits a render', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('rich-text-editor');
+    const box = content(page, 'form');
+    await box.click();
+    await page.keyboard.press('Home');
+    await expect(box).toBeFocused();
+    // The caret moves to the end, and the editor renders (bold toggled for the next text, twice)
+    // before the browser reports the move.
+    await box.evaluate((element) => {
+      const paragraph = element.querySelector('p') as HTMLElement;
+      const text = paragraph.lastChild as Node;
+      document.getSelection()?.collapse(text, text.textContent?.length ?? 0);
+      for (let press = 0; press < 2; press += 1) {
+        element.dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'b', code: 'KeyB', ctrlKey: true, bubbles: true }),
+        );
+      }
+    });
+    await page.keyboard.type(' Early.');
+    await expect(box).toHaveText('Pick the pears on Friday. Early.');
+  });
+
+  test('UIC-RICH-TEXT-EDITOR-7.1 keeps the floating toolbar over its selection when the layout moves', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('rich-text-editor');
+    const box = content(page, 'shifting');
+    const floating = page.getByRole('toolbar', { name: 'Moving note formatting' });
+    const selectedRect = () =>
+      box.evaluate(() => {
+        const rect = document.getSelection()?.getRangeAt(0).getBoundingClientRect();
+        return { left: rect?.left ?? 0, top: rect?.top ?? 0, right: rect?.right ?? 0 };
+      });
+    const expectAttached = async () => {
+      await expect
+        .poll(async () => {
+          const range = await selectedRect();
+          const toolbar = await floating.boundingBox();
+          if (!toolbar) return 'hidden';
+          const above = Math.abs(toolbar.y + toolbar.height - range.top) <= 12;
+          const beside =
+            toolbar.x <= range.right + 8 && toolbar.x + toolbar.width >= range.left - 8;
+          return above && beside
+            ? 'attached'
+            : `toolbar ${JSON.stringify(toolbar)} range ${JSON.stringify(range)}`;
+        })
+        .toBe('attached');
+    };
+    await box.click();
+    await pressEnd(page);
+    await page.keyboard.press('Control+Shift+ArrowLeft');
+    await expect(floating).toBeVisible();
+    await expectAttached();
+    const before = await floating.boundingBox();
+    await page.getByRole('button', { name: 'Lower' }).click();
+    await expect(box).toBeFocused();
+    await expectAttached();
+    expect(((await floating.boundingBox())?.y ?? 0) - (before?.y ?? 0)).toBeGreaterThan(140);
+    await page.getByRole('button', { name: 'Narrow' }).click();
+    await expectAttached();
+    await page.setViewportSize({ width: 700, height: 700 });
+    await expectAttached();
+    // Scrolled out of the window, the range has nothing to show the toolbar with; scrolled back,
+    // it does again.
+    const { top } = await selectedRect();
+    await page.evaluate((offset) => window.scrollBy(0, offset), top + 400);
+    await expect(floating).toHaveCount(0);
+    await page.evaluate((offset) => window.scrollBy(0, -offset), top + 400);
+    await expectAttached();
   });
 });

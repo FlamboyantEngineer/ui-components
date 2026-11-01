@@ -59,13 +59,14 @@ function useMarginGeometry(margin: HTMLElement | null, layer: HTMLElement | null
     const next = { offset, heights };
     setGeometry((current) => (isSameGeometry(current, next) ? current : next));
   };
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- Card heights and the margin's offset exist only once the cards are committed.
   useLayoutEffect(measure);
   useResizeObserver(() => [margin, ...cards.current.values()], measure);
   const register = (id: Key) => (element: HTMLElement | null) => {
     if (element) cards.current.set(id, element);
     else cards.current.delete(id);
   };
-  return { geometry, cards: cards.current, register };
+  return { geometry, cards, register };
 }
 
 /**
@@ -107,7 +108,7 @@ export function AnnotationMargin({
     if (event.target !== event.currentTarget || !step) return;
     event.preventDefault();
     const card = placements[step(index, placements.length - 1)];
-    if (card) cards.get(card.id)?.focus();
+    if (card) cards.current.get(card.id)?.focus();
   };
 
   return (

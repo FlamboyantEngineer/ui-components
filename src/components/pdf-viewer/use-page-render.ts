@@ -23,7 +23,7 @@ interface UsePageRenderOptions<
   scale: number;
   /** Only pages near the view render; the others release their bitmap and layers. */
   isNear: boolean;
-  canvasRef: RefObject<HTMLCanvasElement | null>;
+  canvas: HTMLCanvasElement | null;
   layerRef: RefObject<HTMLDivElement | null>;
   annotationLayerRef: RefObject<HTMLDivElement | null>;
   /** Follows the links the annotation layer draws. */
@@ -118,14 +118,13 @@ export function usePageRender<V extends PdfViewport, C extends PdfTextContent>({
   pageIndex,
   scale,
   isNear,
-  canvasRef,
+  canvas,
   layerRef,
   annotationLayerRef,
   linkService,
 }: UsePageRenderOptions<V, C>): PdfTextLayer | null {
   const [textLayer, setTextLayer] = useState<PdfTextLayer | null>(null);
   useEffect(() => {
-    const canvas = canvasRef.current;
     const container = layerRef.current;
     const annotationLayer = annotationLayerRef.current;
     const page = loaded.pages[pageIndex];
@@ -143,6 +142,6 @@ export function usePageRender<V extends PdfViewport, C extends PdfTextContent>({
       for (const cancel of cancels) cancel?.();
       setTextLayer(null);
     };
-  }, [annotationLayerRef, canvasRef, isNear, layerRef, linkService, loaded, pageIndex, scale]);
+  }, [annotationLayerRef, canvas, isNear, layerRef, linkService, loaded, pageIndex, scale]);
   return textLayer;
 }

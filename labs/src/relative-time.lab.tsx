@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { renderToString } from 'react-dom/server';
 import { Button } from '../../src/components/button/button.js';
 import {
   RelativeTime,
@@ -6,8 +7,18 @@ import {
   type RelativeTimeStyle,
   type RelativeTimeUnitStyle,
 } from '../../src/components/relative-time/relative-time.js';
-import { formatStableTime } from '../../src/utils/relative-time.js';
+import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+
+/** The text the server renders for a timestamp, read back from its markup. */
+function serverText(value: string): string {
+  const html = renderToString(
+    <UiProvider locale="en-US">
+      <RelativeTime value={value} />
+    </UiProvider>,
+  );
+  return new DOMParser().parseFromString(html, 'text/html').body.textContent;
+}
 
 /** A fixed clock, so every label in the matrices reads the same on every day. */
 const getNow = () => new Date(2026, 3, 20, 10, 30);
@@ -240,13 +251,13 @@ mountLab(
     </LabSection>
     <LabSection
       title="Server text"
-      description="What the server and a hydrating client render before reading the clock: the same absolute text in any time zone, an instant in UTC. The live words replace it once hydrated."
+      description="What the server and a hydrating client render before reading the clock: the same absolute text in any time zone, an instant in UTC. The live words replace it once hydrated. Each value here is rendered with renderToString."
     >
       <StateMatrix
         axes={{ value: ['2026-10-31T12:00:00Z', '2026-10-31T12:00', '2026-10-31'] }}
         render={({ value }) => (
           <span>
-            <code>{value}</code> → <output>{formatStableTime(value, 'en-US')}</output>
+            <code>{value}</code> → <output>{serverText(value)}</output>
           </span>
         )}
       />

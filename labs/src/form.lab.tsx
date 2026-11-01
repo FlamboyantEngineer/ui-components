@@ -7,6 +7,8 @@ import { ChoiceGroup, Choice } from '../../src/components/choice-group/choice-gr
 import { Fieldset, type FieldValidationMode } from '../../src/components/field/field.js';
 import { Form } from '../../src/components/form/form.js';
 import { NumberField } from '../../src/components/number-field/number-field.js';
+import { ColorField } from '../../src/components/color-field/color-field.js';
+import { DateTimeField } from '../../src/components/date-time-field/date-time-field.js';
 import { SearchField } from '../../src/components/search-field/search-field.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { Switch } from '../../src/components/switch/switch.js';
@@ -184,6 +186,14 @@ function ConfirmedReset() {
           defaultValue="cumin"
           data-lab-field="spice"
         />
+        <DateTimeField label="Best before" name="best-before" data-lab-field="best-before" />
+        <ColorField
+          label="Lid colour"
+          name="lid"
+          allowsTyping
+          defaultValue="#336699"
+          data-lab-field="lid"
+        />
         <Checkbox name="sealed" defaultSelected data-lab-field="sealed">
           Sealed
         </Checkbox>
@@ -261,7 +271,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Cancelled reset"
-      description="Edit the fields, the search, the combobox, the checkbox and the switch, then press Reset: while Keep edits is on, the form cancels the reset and the edits stay; switch it off and Reset puts the first values back."
+      description="Edit the fields (a date typed in part, a typed colour), the search, the combobox, the checkbox and the switch, then press Reset: while Keep edits is on, the form cancels the reset and the edits stay; switch it off and Reset puts the first values back."
     >
       <ConfirmedReset />
     </LabSection>

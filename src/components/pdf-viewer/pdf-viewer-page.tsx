@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { highlightTextRuns } from './highlights.js';
 import type { PdfPageGeometry } from './page-geometry.js';
 import { pdfViewerHooks as hooks } from './styling-hooks.js';
@@ -74,7 +74,8 @@ export function PdfViewerPage<V extends PdfViewport, C extends PdfTextContent>({
   renderOverlay,
 }: PdfViewerPageProps<V, C>) {
   const { registerPage, revealElement } = pages;
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  // The canvas's window sets its pixel ratio, so the canvas is held in state.
+  const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
   const layerRef = useRef<HTMLDivElement | null>(null);
   const annotationLayerRef = useRef<HTMLDivElement | null>(null);
   const pageRef = useCallback(
@@ -86,7 +87,7 @@ export function PdfViewerPage<V extends PdfViewport, C extends PdfTextContent>({
     pageIndex,
     scale,
     isNear,
-    canvasRef,
+    canvas,
     layerRef,
     annotationLayerRef,
     linkService,
@@ -95,15 +96,13 @@ export function PdfViewerPage<V extends PdfViewport, C extends PdfTextContent>({
   const size = loaded.sizes[pageIndex] ?? { width: 0, height: 0 };
   const width = size.width * scale;
   const height = size.height * scale;
-  const pixels = isNear
-    ? measureCanvasPixels(width, height, canvasRef.current)
-    : { width: 0, height: 0 };
+  const pixels = isNear ? measureCanvasPixels(width, height, canvas) : { width: 0, height: 0 };
   const viewport = isNear ? loaded.getViewport(pageIndex, scale) : undefined;
   return (
     <div {...hooks.slot('page')} ref={pageRef} style={{ position: 'relative', width, height }}>
       <canvas
         {...hooks.slot('canvas')}
-        ref={canvasRef}
+        ref={setCanvas}
         width={pixels.width}
         height={pixels.height}
         style={{ position: 'absolute', left: 0, top: 0, width, height }}

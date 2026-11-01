@@ -364,4 +364,34 @@ test.describe('Select Field trigger ref', () => {
     await back.click();
     await expect(demo.getByRole('button', { name: /Size$/ })).toBeFocused();
   });
+
+  test('UIC-SELECT-FIELD-1.3 closes an open select that locks and leaves it closed', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('select-field');
+    await page.clock.install();
+    await page.getByRole('button', { name: 'Lock in 1 s' }).click();
+    const lockable = field(page, 'lockable');
+    await lockable.getByRole('button', { name: /Lockable$/ }).click();
+    await expect(page.getByRole('listbox')).toBeVisible();
+    await page.clock.runFor(1000);
+    await expect(page.getByRole('listbox')).toHaveCount(0);
+    await expect(output(page, 'Open changes')).toHaveText('true, false');
+    await page.getByRole('button', { name: 'Unlock' }).click();
+    await expect(page.getByRole('listbox')).toHaveCount(0);
+    await expect(output(page, 'Open changes')).toHaveText('true, false');
+  });
+
+  test('UIC-SELECT-FIELD-8.2 keeps a missing committed value from passing the limit', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('select-field');
+    const limited = field(page, 'limited-missing');
+    const restore = limited.getByRole('button', { name: 'Restore retired' });
+    await expect(restore).toBeDisabled();
+    await limited.getByRole('button', { name: 'Remove Apple' }).click();
+    await expect(restore).toBeEnabled();
+  });
 });

@@ -3,6 +3,8 @@
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { RefObject } from 'react';
 import { useUiStrings } from '../../core/provider.js';
+import { useLocale } from '../../primitives/index.js';
+import { formatCount } from '../../utils/count.js';
 import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import type { RelationMatrixItem } from './relation-matrix.js';
@@ -25,7 +27,7 @@ interface RelationMatrixHeaderProps {
   isFocusWithin: boolean;
 }
 
-/** A count shown as digits and read as the provider's `relationCount` text. */
+/** A count shown as digits in the provider locale and read as the provider's `relationCount` text. */
 export function RelationCount({
   count,
   slot,
@@ -34,9 +36,10 @@ export function RelationCount({
   slot: 'row-count' | 'column-count';
 }) {
   const strings = useUiStrings();
+  const { locale } = useLocale();
   return (
     <span {...hooks.slot(slot)}>
-      <span aria-hidden="true">{count}</span>
+      <span aria-hidden="true">{formatCount(count, locale)}</span>
       <VisuallyHidden elementType="span">{strings.relationCount(count)}</VisuallyHidden>
     </span>
   );

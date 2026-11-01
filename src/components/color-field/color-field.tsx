@@ -8,10 +8,12 @@ import { ColorSwatch } from '../color-swatch/color-swatch.js';
 import {
   Field,
   FieldFormValue,
+  toAriaControlProps,
   useFieldControl,
   type FieldControlProps,
   type FieldInputProps,
   type FieldIssue,
+  type FieldTextInputProps,
   type FieldState,
 } from '../field/field.js';
 import { ColorEntry } from './color-field-entry.js';
@@ -25,7 +27,13 @@ import {
   type ColorFieldFormat,
 } from './color-values.js';
 
-export interface ColorFieldProps extends FieldInputProps<string | null> {
+/** The text-entry props the typed input takes (`placeholder` is also the trigger's empty text). */
+export type ColorFieldTextInputProps = Pick<
+  FieldTextInputProps,
+  'placeholder' | 'autoComplete' | 'inputMode' | 'spellCheck' | 'enterKeyHint'
+>;
+
+export interface ColorFieldProps extends FieldInputProps<string | null>, ColorFieldTextInputProps {
   /**
    * How the colour is written beside the swatch and edited in the picker (controlled). An alpha
    * format (`hexa`, `rgba`, `hsla`, `hsba`) adds an alpha slider and input.
@@ -48,8 +56,6 @@ export interface ColorFieldProps extends FieldInputProps<string | null> {
   allowsEyeDropper?: boolean | undefined;
   /** Draws a text input to type a colour into beside a swatch button, instead of a text trigger. */
   allowsTyping?: boolean | undefined;
-  /** The text shown while no colour is set. Defaults to the provider's `noColor`. */
-  placeholder?: string | undefined;
 }
 
 interface ColorTriggerProps {
@@ -58,6 +64,14 @@ interface ColorTriggerProps {
   /** The value as a CSS colour, or `null` without one. */
   color: string | null;
   text: string;
+}
+
+/** A value that is no colour, such as one loaded from elsewhere, is invalid rather than empty. */
+function createColorCheck(message: string) {
+  return (value: string | null): FieldIssue | null =>
+    value !== null && value.trim() !== '' && toColorText(value) === null
+      ? { severity: 'error', message }
+      : null;
 }
 
 // The picker needs a colour to show while the value is empty.
@@ -70,16 +84,18 @@ const emptyPickerColor = '#808080';
  */
 function ColorTrigger({ control, state, color, text }: ColorTriggerProps) {
   const valueId = useId();
-  const name = control['aria-labelledby'] ?? control.id;
+  const { ref, ...rest } = control;
+  const aria = toAriaControlProps(rest);
   return (
     <AriaButton
       {...hooks.slot('trigger')}
-      id={control.id}
-      ref={control.ref}
-      aria-label={control['aria-label']}
-      aria-labelledby={`${name} ${valueId}`}
-      aria-describedby={control['aria-describedby']}
-      isDisabled={control.disabled}
+      id={aria.id}
+      ref={ref}
+      aria-label={aria['aria-label']}
+      // A button takes no state props but the disabled one; it is named by the label, then its text.
+      aria-labelledby={`${aria['aria-labelledby'] ?? aria.id} ${valueId}`}
+      aria-describedby={aria['aria-describedby']}
+      isDisabled={aria.isDisabled}
       onKeyDown={(event) => {
         if ((event.key === 'Backspace' || event.key === 'Delete') && state.canClear) state.clear();
         else event.continuePropagation();
@@ -110,14 +126,14 @@ export function ColorField({
   allowsEyeDropper = false,
   allowsTyping = false,
   placeholder,
+  autoComplete,
+  inputMode,
+  spellCheck,
+  enterKeyHint,
   ...props
 }: ColorFieldProps) {
   const strings = useUiStrings();
-  // A value that is no colour, such as one loaded from elsewhere, is invalid rather than empty.
-  const check = (value: string | null): FieldIssue | null =>
-    value !== null && value.trim() !== '' && toColorText(value) === null
-      ? { severity: 'error', message: strings.colorUnreadable }
-      : null;
+  const check = createColorCheck(strings.colorUnreadable);
   const { state, field } = useFieldControl(props, { initialValue: null, emptyValue: null, check });
   const [shownFormat, setFormat] = useControllableState(format, defaultFormat, onFormatChange);
   const storedFormat = valueFormat ?? (hasAlpha(shownFormat) ? 'hexa' : 'hex');
@@ -153,6 +169,7 @@ export function ColorField({
                 format={shownFormat}
                 valueFormat={storedFormat}
                 placeholder={shownPlaceholder}
+                textInput={{ autoComplete, inputMode, spellCheck, enterKeyHint }}
               />
             ) : (
               <ColorTrigger

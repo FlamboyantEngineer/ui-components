@@ -278,6 +278,7 @@ function allowsEmptySubmit({ options }: ChatComposerProps) {
 export function ChatComposer(given: ChatComposerProps) {
   const { editValue, props } = useLiveEdit(given);
   const { options, state, isAssistantChat } = props;
+  const { setComposer, cancelEdit } = state;
   const bannerId = useId();
   const banner = useBanner(props);
   const mentions = useMentions(props);
@@ -308,7 +309,7 @@ export function ChatComposer(given: ChatComposerProps) {
         composerRef={state.composerRef}
       />
       <RichMessageComposer
-        ref={state.setComposer}
+        ref={setComposer}
         handleRef={composerRef}
         onChange={reportDraft}
         className={hooks.slotClass('composer')}
@@ -324,7 +325,7 @@ export function ChatComposer(given: ChatComposerProps) {
         onEditLast={toEditLast(props)}
         persistKey={options.conversationId ? `chat-draft:${options.conversationId}` : undefined}
         editValue={editValue}
-        onCancel={state.cancelEdit}
+        onCancel={cancelEdit}
         banner={banner ? <ComposerBanner id={bannerId} banner={banner} /> : undefined}
         aria-describedby={banner ? bannerId : undefined}
         onAttach={options.onAttach}

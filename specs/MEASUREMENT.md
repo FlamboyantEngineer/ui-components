@@ -32,35 +32,35 @@ Verification: `src/utils/use-resize-observer.test.ts`
 `useElementSize(target)` shall return `null` until the first report, apply the first report at once, coalesce later reports to one update per animation frame (the last report wins), and keep the same object when the size is unchanged, so the result is a stable effect dependency.
 
 Implementation: `src/utils/use-element-size.ts`
-Verification: `src/utils/use-element-size.test.ts`
+Verification: `src/utils/use-element-size.test.tsx`
 
 ### UIC-MEASUREMENT-2.2 - Boxes and parent
 
 `box` shall choose `content-box` (the default), `border-box`, or `client` (`clientWidth` × `clientHeight`, observed in both boxes so a scrollbar that appears or leaves updates it); `parent` measures the element's parent. Switching box rereads the last report instead of waiting for another resize.
 
 Implementation: `src/utils/use-element-size.ts`
-Verification: `src/utils/use-element-size.test.ts`
+Verification: `src/utils/use-element-size.test.tsx`
 
 ### UIC-MEASUREMENT-2.3 - Disabled and unsupported
 
 With `enabled={false}`, or in a window without `ResizeObserver`, the hook shall return `null` and observe nothing; disabling disconnects and cancels a pending frame, and re-enabling starts unmeasured.
 
 Implementation: `src/utils/use-element-size.ts`
-Verification: `src/utils/use-element-size.test.ts`
+Verification: `src/utils/use-element-size.test.tsx`
 
 ### UIC-MEASUREMENT-2.4 - Own window
 
 Content in an iframe shall be measured with the iframe window's observer and animation frames.
 
 Implementation: `src/utils/use-element-size.ts`
-Verification: `src/utils/use-element-size.test.ts`
+Verification: `src/utils/use-element-size.test.tsx`
 
 ### UIC-MEASUREMENT-2.5 - Changing elements
 
-An element held in state (through a callback ref) shall be measured when it mounts; a replacement starts unmeasured, ignores late reports from the element it replaced and gets its first measurement at once; and when the element leaves, the hook returns `null` and disconnects.
+An element held in state (through a callback ref), or held by a ref, which is read again after every commit, shall be measured when it mounts; a replacement starts unmeasured, ignores late reports from the element it replaced and gets its first measurement at once; and when the element leaves, the hook returns `null` and disconnects.
 
 Implementation: `src/utils/use-element-size.ts`
-Verification: `src/utils/use-element-size.test.ts`
+Verification: `src/utils/use-element-size.test.tsx`
 
 ## UIC-MEASUREMENT-3 - Text width
 
@@ -69,7 +69,7 @@ Verification: `src/utils/use-element-size.test.ts`
 `useWidestTextWidth(ref, texts)` shall return the width, in whole pixels rounded up, of the widest of `texts` drawn in the computed font of the ref's element, measured on an offscreen canvas after the element mounts. It measures each complete string, including embedded newlines, and returns zero for an empty list. It measures again when the set of texts changes and once the document's fonts finish loading, never for a fresh array holding the same texts, ignores font readiness after unmount, and returns `null` where no offscreen canvas is available. Components publish the result as a measured property so a control keeps its width as the shown text changes.
 
 Implementation: `src/utils/use-widest-text-width.ts`
-Verification: `src/utils/use-widest-text-width.test.ts`
+Verification: `src/utils/use-widest-text-width.test.tsx`
 
 ## UIC-MEASUREMENT-4 - Visibility
 
@@ -82,7 +82,7 @@ Verification: `src/utils/use-in-view.test.ts`, `e2e/load-more.spec.ts`
 
 ### UIC-MEASUREMENT-4.2 - Targets, disabled and unsupported
 
-The target shall be an element or a ref whose element is stable. With `enabled={false}`, without an element, or in a window without `IntersectionObserver`, the hook shall return false and observe nothing; disabling disconnects, and re-enabling starts out of view until the next report.
+The target shall be an element or a ref, which is read again after every commit: an element that mounts late or replaces the previous one under the same ref is observed instead, starting out of view. With `enabled={false}`, without an element, or in a window without `IntersectionObserver`, the hook shall return false and observe nothing; disabling disconnects, and re-enabling starts out of view until the next report.
 
 Implementation: `src/utils/use-in-view.ts`
 Verification: `src/utils/use-in-view.test.ts`

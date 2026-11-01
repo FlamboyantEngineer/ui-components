@@ -237,20 +237,20 @@ function register(nodes: TabOrderNodes, wrapper: HTMLElement) {
 
 function FocusGuard({
   kind,
-  nodes,
+  nodesRef,
 }: {
   kind: GuardKind;
-  nodes: RefObject<TabOrderNodes>;
+  nodesRef: RefObject<TabOrderNodes>;
 }): ReactNode {
   const onFocus = (event: FocusEvent<HTMLSpanElement>) => {
-    const target = resolveGuardTarget(kind, nodes.current, event.relatedTarget);
+    const target = resolveGuardTarget(kind, nodesRef.current, event.relatedTarget);
     if (target) target.focus();
     else event.currentTarget.blur();
   };
   return (
     <span
       ref={(node) => {
-        nodes.current.guards[kind] = node;
+        nodesRef.current.guards[kind] = node;
       }}
       tabIndex={0}
       style={{ position: 'fixed', top: 0, left: 0 }}
@@ -283,12 +283,12 @@ export function usePreservedTabOrder(): PreservedTabOrder {
       },
       placeGuards: (
         <>
-          <FocusGuard kind="before" nodes={nodes} />
-          <FocusGuard kind="after" nodes={nodes} />
+          <FocusGuard kind="before" nodesRef={nodes} />
+          <FocusGuard kind="after" nodesRef={nodes} />
         </>
       ),
-      startGuard: <FocusGuard kind="start" nodes={nodes} />,
-      endGuard: <FocusGuard kind="end" nodes={nodes} />,
+      startGuard: <FocusGuard kind="start" nodesRef={nodes} />,
+      endGuard: <FocusGuard kind="end" nodesRef={nodes} />,
     }),
     [],
   );

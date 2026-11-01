@@ -497,6 +497,23 @@ test.describe('Table lab', () => {
     await lab.expectAccessible('[data-lab="nested"]');
   });
 
+  test('UIC-TABLE-2.8 lists collapsed nested values in a set filter', async ({ page, lab }) => {
+    await lab.open('table');
+    const demo = section(page, 'nested');
+    await demo.getByRole('button', { name: 'Filter place' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Filter place' });
+    await dialog.getByText('Ribeira', { exact: true }).click();
+    await expect(dialog.getByRole('checkbox', { name: 'Ribeira' })).toBeChecked();
+    await page.keyboard.press('Escape');
+    const nested = demo.getByRole('treegrid');
+    await expect
+      .poll(() => nested.getByRole('rowheader').allTextContents())
+      .toEqual(['Portugal', 'Porto']);
+    await nested.getByRole('row', { name: /Porto$/ }).focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(nested.getByRole('row', { name: /Ribeira$/ })).toHaveAttribute('aria-level', '3');
+  });
+
   test('UIC-TABLE-3.4 keeps focus on a nested row action by keyboard and pointer', async ({
     page,
     lab,
@@ -744,6 +761,26 @@ test.describe('Table lab', () => {
       )
       .toEqual(['Onion', 'Leek', 'Banana', 'Apple', 'Sage', 'Mint', 'Cherry', 'Carrot']);
     await lab.expectAccessible('[data-lab="grouping"]');
+  });
+
+  test('UIC-TABLE-13.1 keeps groups of numbers, booleans and text with the same text apart', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('table');
+    const grid = section(page, 'grouping-typed').getByRole('treegrid', {
+      name: 'Readings, grouped by code',
+    });
+    await expect(grid.locator('.ui-table__group-label')).toHaveText([
+      'Code 1 (string)',
+      'Code 1 (number)',
+      'Code true (boolean)',
+      'Code true (string)',
+    ]);
+    await expect(
+      grid.locator('.ui-table__group-row .ui-table__aggregate-cell:last-child'),
+    ).toHaveText(['20', '10', '30', '40']);
+    await lab.expectAccessible('[data-lab="grouping-typed"]');
   });
 
   test('UIC-TABLE-13.4 collapses and expands groups in a virtualized table', async ({

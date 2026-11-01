@@ -12,7 +12,7 @@ import {
 } from '../../src/components/chat-parts/index.js';
 import { ChatMessage } from '../../src/components/chat-transcript/chat-transcript.js';
 import { Cluster, Stack } from '../../src/components/layout/layout.js';
-import { requireDefined } from '../../src/utils/require-defined.js';
+import { requireDefined } from './require-defined.js';
 import { tripSources } from './chat-parts-samples.js';
 
 /** A reply after one event of its stream. */
@@ -103,17 +103,15 @@ const answerFrames: ReplyFrame[] = [
 export function ReplyStream({ frames, demo, messageId }: ReplyStreamProps) {
   const [event, setEvent] = useState(0);
   const [run, setRun] = useState(0);
-  const [isPlaying, setPlaying] = useState(false);
+  const [wantsPlay, setPlaying] = useState(false);
   const last = frames.length - 1;
+  // Play stops at the last event.
+  const isPlaying = wantsPlay && event < last;
   useEffect(() => {
     if (!isPlaying) return undefined;
-    if (event >= last) {
-      setPlaying(false);
-      return undefined;
-    }
     const timer = window.setTimeout(() => setEvent((value) => value + 1), tick);
     return () => window.clearTimeout(timer);
-  }, [event, isPlaying, last]);
+  }, [event, isPlaying]);
   const frame = requireDefined(frames[event]);
   const isStreaming = frame.status === 'streaming';
   return (

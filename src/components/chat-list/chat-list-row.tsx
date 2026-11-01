@@ -14,11 +14,11 @@ import {
   describeRelativeTime,
   formatStableTime,
 } from '../../utils/relative-time.js';
+import { Attribution, type AttributionProps } from '../attribution/attribution.js';
 import { Avatar, resolveStatusLabel, type AvatarIdentity } from '../avatar/avatar.js';
 import { AvatarGroup } from '../avatar-group/avatar-group.js';
 import { Badge } from '../badge/badge.js';
 import { Icon } from '../icon/icon.js';
-import { RelativeTime } from '../relative-time/relative-time.js';
 import { TextMatch } from '../text-match/text-match.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 
@@ -52,10 +52,12 @@ export interface ChatConversation {
   isMuted?: boolean | undefined;
 }
 
-interface ChatListRowProps {
+/** How a conversation's time reads, in its row and in the row's name. */
+type ChatListTimeOptions = Pick<AttributionProps, 'fallbackAfterDays' | 'getNow' | 'timeZone'>;
+
+interface ChatListRowProps extends ChatListTimeOptions {
   conversation: ChatConversation;
   renderActions: ((conversation: ChatConversation) => ReactNode) | undefined;
-  getNow: () => Date;
 }
 
 export const listHooks = createHooks('chat-list', [
@@ -77,16 +79,19 @@ export const listHooks = createHooks('chat-list', [
 
 /**
  * The time as the row shows it, for the row's name: the stable absolute text on the server and while
- * hydrating, as `RelativeTime` shows it, then the words against `getNow()` in the reader's zone,
+ * hydrating, as the row's time shows it, then the words against `getNow()` in the reader's zone,
  * renamed when they change.
  */
-function useTimeText(value: string | undefined, getNow: () => Date): string | undefined {
+function useTimeText(
+  value: string | undefined,
+  { fallbackAfterDays = 7, getNow, timeZone }: ChatListTimeOptions,
+): string | undefined {
   const { locale } = useLocale();
   const now = useNow(getNow);
-  const timeZone = useTimeZone();
+  const zone = useTimeZone(timeZone);
   const text =
     value && now
-      ? describeRelativeTime(value, { now, locale, timeZone, fallbackAfterDays: 7 })
+      ? describeRelativeTime(value, { now, locale, fallbackAfterDays, timeZone: zone })
       : null;
   useClockTick(text?.nextChange ?? null, now?.getTime() ?? 0);
   if (!value) return undefined;
@@ -112,11 +117,11 @@ function ConversationAvatar({ conversation }: { conversation: ChatConversation }
  * the host's actions. The row is named by its title, presence, unread count, muted state and time,
  * then the last message.
  */
-export function ChatListRow({ conversation, renderActions, getNow }: ChatListRowProps) {
+export function ChatListRow({ conversation, renderActions, ...timeOptions }: ChatListRowProps) {
   const strings = useUiStrings();
   const { title, lastMessage, time, isMuted = false, participants = [] } = conversation;
   const unread = normalizeCount(conversation.unreadCount) ?? 0;
-  const timeText = useTimeText(time, getNow);
+  const timeText = useTimeText(time, timeOptions);
   const [only] = participants;
   const presence =
     conversation.avatar || !only
@@ -144,9 +149,9 @@ export function ChatListRow({ conversation, renderActions, getNow }: ChatListRow
         <TextMatch>{title}</TextMatch>
       </span>
       {time ? (
-        <RelativeTime
-          value={time}
-          getNow={getNow}
+        <Attribution
+          time={time}
+          {...timeOptions}
           showTooltip={false}
           className={listHooks.slotClass('time')}
         />

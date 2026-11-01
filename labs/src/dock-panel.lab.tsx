@@ -13,7 +13,7 @@ import {
 import { useState, type CSSProperties, type ReactNode } from 'react';
 import { DockPanel, DockPanelPane } from '../../src/components/dock-panel/dock-panel.js';
 import type { Key } from '../../src/core/props.js';
-import { requireDefined } from '../../src/utils/require-defined.js';
+import { requireDefined } from './require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 type Position = 'start' | 'end' | 'bottom';

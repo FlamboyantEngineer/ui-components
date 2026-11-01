@@ -138,41 +138,48 @@ function useTreeCompareModel<T extends CompareTreeNode>(props: TreeCompareProps<
 export function TreeCompare<T extends CompareTreeNode>(props: TreeCompareProps<T>) {
   const strings = useUiStrings();
   const model = useTreeCompareModel(props);
-  const { navigation } = model;
-  const { className, id, leftLabel, rightLabel, renderLabel } = props;
-  const labelledBy = props['aria-labelledby'];
+  const { navigation, rows, counts, hasChanges, isFiltered, setFiltered } = model;
+  const { expanded, setExpanded, onAction, onItemKeyDown } = model;
+  const { onFocus, step, treeRef, reveal } = navigation;
+  const { className, id, ref, leftLabel, rightLabel, renderLabel } = props;
+  const {
+    'aria-label': label,
+    'aria-labelledby': labelledBy,
+    'aria-describedby': describedBy,
+    'aria-details': details,
+  } = props;
   return (
     <div
-      {...hooks.root({ className, props, data: { changesOnly: model.isFiltered } })}
+      {...hooks.root({ className, props, data: { changesOnly: isFiltered } })}
       id={id}
-      ref={props.ref}
-      onFocus={navigation.onFocus}
+      ref={ref}
+      onFocus={onFocus}
     >
       <TreeCompareToolbar
-        counts={model.counts}
-        changesOnly={model.isFiltered}
-        onChangesOnlyChange={model.setFiltered}
-        hasChanges={model.hasChanges}
-        onStep={navigation.step}
+        counts={counts}
+        changesOnly={isFiltered}
+        onChangesOnlyChange={setFiltered}
+        hasChanges={hasChanges}
+        onStep={step}
       />
       <TreeCompareHeader
         leftLabel={leftLabel ?? strings.valueBefore}
         rightLabel={rightLabel ?? strings.valueAfter}
       />
       <Tree
-        aria-label={props['aria-label'] ?? (labelledBy ? undefined : strings.treeComparison)}
+        aria-label={label ?? (labelledBy ? undefined : strings.treeComparison)}
         aria-labelledby={labelledBy}
-        aria-describedby={props['aria-describedby']}
-        aria-details={props['aria-details']}
-        ref={navigation.treeRef}
+        aria-describedby={describedBy}
+        aria-details={details}
+        ref={treeRef}
         className={hooks.slotClass('tree')}
-        items={model.rows}
+        items={rows}
         getChildren={readChildren}
         getTextValue={(row) => nameRow(row, strings)}
-        expandedKeys={model.expanded}
-        onExpandedChange={model.setExpanded}
-        onAction={model.onAction}
-        onItemKeyDown={model.onItemKeyDown}
+        expandedKeys={expanded}
+        onExpandedChange={setExpanded}
+        onAction={onAction}
+        onItemKeyDown={onItemKeyDown}
         emptyMessage={strings.treeNoDifferences}
         renderLabel={(row, state) => (
           <TreeCompareRowContent
@@ -185,7 +192,7 @@ export function TreeCompare<T extends CompareTreeNode>(props: TreeCompareProps<T
           row.counterpartId === undefined ? null : (
             <TreeCompareJump
               isOldPosition={row.right === undefined}
-              onPress={() => navigation.reveal(requireDefined(row.counterpartId))}
+              onPress={() => reveal(requireDefined(row.counterpartId))}
             />
           )
         }

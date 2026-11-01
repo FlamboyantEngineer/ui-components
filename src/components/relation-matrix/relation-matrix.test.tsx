@@ -139,6 +139,16 @@ describe('RelationMatrix', () => {
     expect(columnHeaders[3]).toHaveAttribute('data-uncovered', 'true');
   });
 
+  it('UIC-RELATION-MATRIX-1.2 shows counts in the provider locale digits', () => {
+    const { container } = render(
+      <UiProvider locale="ar-EG">
+        <Matrix />
+      </UiProvider>,
+    );
+    const shown = container.querySelector('.ui-relation-matrix__row-count [aria-hidden]');
+    expect(shown?.textContent).toBe('٢');
+  });
+
   it('UIC-RELATION-MATRIX-1.3 marks related cells by kind and tone', () => {
     render(<Matrix />);
     expect(cell(0, 0)).toHaveAttribute('data-related', 'true');

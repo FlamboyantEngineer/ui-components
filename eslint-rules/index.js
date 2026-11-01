@@ -1,5 +1,8 @@
 // Local lint rules that keep library source hooks-only (specs/HOOK-CONTRACT.md).
 
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+
 const STYLE_FILE = /\.(css|scss|sass|less|styl|stylus|pcss|postcss)(\?.*)?$/i;
 
 // Inline style properties the library may set because it computes them at runtime:
@@ -222,6 +225,58 @@ const LAB_FILE = /\/labs\/src\//;
 const SIBLING_COMPONENT_IMPORT = /^\.\.\/([^/]+)\/([^/]+)\.js$/;
 const LAB_COMPONENT_IMPORT = /^(?:\.\.\/)+src\/components\/([^/]+)\/([^/]+)\.js$/;
 
+const LAB_SHARED_IMPORT = /^(?:\.\.\/)+src\/(?:utils|core)\/.+\.js$/;
+const INDEX_REEXPORT = /export\s+(type\s+)?(\*|\{[^}]*\})\s+from\s+'(\.\/[^']+\.js)'/g;
+const publicNamesByIndex = new Map();
+
+/** The names a `src/utils` or `src/core` index re-exports, by the module it takes them from. */
+function readPublicNames(indexFile) {
+  let names = publicNamesByIndex.get(indexFile);
+  if (names) return names;
+  names = new Map();
+  for (const [, , list, source] of readFileSync(indexFile, 'utf8').matchAll(INDEX_REEXPORT)) {
+    if (list === undefined) continue;
+    const own = names.get(source) ?? new Set();
+    const exported =
+      list === '*'
+        ? ['*']
+        : list
+            .slice(1, -1)
+            .split(',')
+            .map((entry) => entry.trim().replace(/^type\s+/, ''))
+            .filter(Boolean)
+            .map((entry) => entry.split(/\s+as\s+/).pop());
+    for (const name of exported) own.add(name);
+    names.set(source, own);
+  }
+  publicNamesByIndex.set(indexFile, names);
+  return names;
+}
+
+/**
+ * The names a lab imports from a `src/utils` or `src/core` module that its folder's index does not
+ * re-export. An index module itself is a public entry point.
+ */
+function findUnexportedNames(filename, source, node) {
+  const target = path.resolve(path.dirname(filename), source);
+  if (path.basename(target) === 'index.js') return [];
+  const parts = target.split(path.sep);
+  const root = parts.lastIndexOf('src');
+  const indexFile = [...parts.slice(0, root + 2), 'index.ts'].join(path.sep);
+  const key = `./${parts.slice(root + 2).join('/')}`;
+  const exported = readPublicNames(indexFile).get(key) ?? new Set();
+  if (exported.has('*')) return [];
+  return (node.specifiers ?? [])
+    .map((specifier) =>
+      specifier.type === 'ImportNamespaceSpecifier'
+        ? '*'
+        : specifier.type === 'ImportDefaultSpecifier'
+          ? 'default'
+          : (specifier.imported?.name ?? specifier.local.name),
+    )
+    .filter((name) => !exported.has(name));
+}
+
 const componentImports = {
   meta: {
     type: 'problem',
@@ -231,6 +286,8 @@ const componentImports = {
         "Import '{{component}}' through its main module '../{{component}}/{{component}}.js', not '{{source}}'.",
       labHelperImport:
         "Labs import '{{component}}' through its entry point '{{component}}/index.js' or its main module, not '{{source}}'.",
+      labInternalImport:
+        "Labs use the public API: '{{source}}' is not re-exported by its index for {{names}}.",
     },
     schema: [],
   },
@@ -242,6 +299,14 @@ const componentImports = {
     if (!own && !isLab) return {};
     function check(node, source) {
       if (typeof source !== 'string') return;
+      if (isLab && LAB_SHARED_IMPORT.test(source)) {
+        const names = findUnexportedNames(filename, source, node);
+        if (names.length > 0) {
+          const data = { source, names: names.join(', ') };
+          context.report({ node, messageId: 'labInternalImport', data });
+        }
+        return;
+      }
       const match = source.match(isLab ? LAB_COMPONENT_IMPORT : SIBLING_COMPONENT_IMPORT);
       if (!match) return;
       const [, component, module] = match;

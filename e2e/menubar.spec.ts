@@ -280,4 +280,25 @@ test.describe('Menubar lab', () => {
     await bar.getByRole('menuitem', { name: 'Help' }).hover();
     await expect(page.getByRole('menuitem', { name: 'Guide' })).toBeVisible();
   });
+
+  test('UIC-MENUBAR-2.2 keeps the next menu open when the bar scrolls to reveal its item', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('menubar');
+    const bar = page.getByRole('menubar', { name: 'Scrolling menubar' });
+    const scroller = page.locator('[data-lab-scroller="menubar"]');
+    await bar.getByRole('menuitem', { name: 'File' }).focus();
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('ArrowRight');
+    await expect(bar.getByRole('menuitem', { name: 'Help' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    expect(await scroller.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0);
+    await page.waitForTimeout(300);
+    await expect(item(page, /^Guide/)).toBeFocused();
+    await expect(popovers(page)).toHaveCount(1);
+  });
 });

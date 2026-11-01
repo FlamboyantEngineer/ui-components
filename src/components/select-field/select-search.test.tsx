@@ -64,6 +64,36 @@ describe('SelectField search', () => {
     expect(loadOptions).toHaveBeenLastCalledWith('report d', expect.any(AbortSignal));
   });
 
+  it('UIC-SELECT-FIELD-5.3 draws the latest loaded version of an option in its row, trigger and chip', async () => {
+    const user = userEvent.setup();
+    const loadOptions: SelectFieldLoader = async () => [
+      { id: 'a', label: 'Fresh label' },
+      { id: 'b', label: 'Blue', isDisabled: true },
+    ];
+    render(
+      <SelectField
+        label="Files"
+        selectionMode="multiple"
+        options={[
+          { id: 'a', label: 'Old label' },
+          { id: 'b', label: 'Blue' },
+        ]}
+        defaultValue={['b']}
+        loadOptions={loadOptions}
+        searchDelay={0}
+      />,
+    );
+    await user.click(trigger());
+    search('label');
+    await user.click(await screen.findByRole('option', { name: 'Fresh label' }));
+    expect(screen.getByRole('option', { name: 'Fresh label' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    expect(screen.getByRole('option', { name: 'Blue' })).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.queryByText('Old label')).not.toBeInTheDocument();
+  });
+
   it('UIC-SELECT-FIELD-5.1 aborts a search that a newer query replaces', async () => {
     const user = userEvent.setup();
     const signals: AbortSignal[] = [];

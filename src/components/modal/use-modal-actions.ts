@@ -46,12 +46,19 @@ export function useModalActions({
   const generation = useRef(0);
   const isOpen = state?.isOpen ?? true;
 
+  // Closing clears the pending and failed states in the same render; the effect ends the opening.
+  const [wasOpen, setWasOpen] = useState(isOpen);
+  if (isOpen !== wasOpen) {
+    setWasOpen(isOpen);
+    if (!isOpen) {
+      setRunning(null);
+      setFailure(null);
+    }
+  }
   useEffect(() => {
     if (isOpen) return;
     generation.current += 1;
     runningRef.current = null;
-    setRunning(null);
-    setFailure(null);
   }, [isOpen]);
   useEffect(
     () => () => {

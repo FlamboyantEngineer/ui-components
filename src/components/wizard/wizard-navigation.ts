@@ -2,6 +2,7 @@
 
 import { toErrorMessage } from '../../utils/to-error-message.js';
 import { useEffect, useRef, useState, type FormEvent, type RefObject } from 'react';
+import { useStableArray } from '../../utils/use-stable-array.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -59,16 +60,13 @@ function toStatuses(
   });
 }
 
-/** Names the steps in order, so a replaced workflow differs from the one a check started in. */
-function toWorkflowKey(steps: readonly WizardStep[]): string {
-  return JSON.stringify(steps.map((step) => [typeof step.id, step.id]));
-}
-
 /**
  * The Next or Finish under way and whether it is pending. Leaving the step or workflow it started in,
  * or unmounting, aborts it and ends the pending state.
  */
-function useAttempts(shownId: Key | undefined, workflowKey: string) {
+function useAttempts(shownId: Key | undefined, stepIds: readonly Key[]) {
+  // The steps in order, so a replaced workflow differs from the one a check started in.
+  const workflow = useStableArray(stepIds);
   const [isPending, setPending] = useState(false);
   // Refuses a second submit in the same turn, before the pending state renders.
   const runningRef = useRef(false);
@@ -80,7 +78,7 @@ function useAttempts(shownId: Key | undefined, workflowKey: string) {
       runningRef.current = false;
       setPending(false);
     },
-    [shownId, workflowKey],
+    [shownId, workflow],
   );
   return { isPending, setPending, runningRef, attemptRef };
 }
@@ -110,7 +108,7 @@ export function useWizardNavigation(options: NavigationOptions): WizardNavigatio
   );
   const { isPending, setPending, runningRef, attemptRef } = useAttempts(
     steps[index]?.id,
-    toWorkflowKey(steps),
+    steps.map((step) => step.id),
   );
 
   useEffect(() => {

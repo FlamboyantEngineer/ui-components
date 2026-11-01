@@ -6,7 +6,7 @@ import {
 } from '../../src/components/activity-feed/activity-feed.js';
 import { ChangeList } from '../../src/components/change-list/change-list.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
-import { requireDefined } from '../../src/utils/require-defined.js';
+import { requireDefined } from './require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { samplePicture } from './people-samples.js';
 

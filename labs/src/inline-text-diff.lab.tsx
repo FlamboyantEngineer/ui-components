@@ -3,8 +3,10 @@ import { InlineTextDiff } from '../../src/components/inline-text-diff/inline-tex
 import {
   createInlineTextDiffExcerpt,
   createInlineWordDiff,
+  splitTextDiff,
 } from '../../src/components/inline-text-diff/index.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabHelperCalls } from './lab-helper-calls.js';
 
 const longBefore = `Shipping notes for the orchard: ${'pack the apples gently, '.repeat(3)}then label each crate.`;
 const changes = {
@@ -86,6 +88,20 @@ mountLab(
     </LabSection>
     <LabSection title="Live" description="Edit both values to see the excerpt follow.">
       <LiveDiff />
+    </LabSection>
+    <LabSection
+      title="Splitting a change"
+      description="splitTextDiff splits two values around their one change, for a host that draws the change itself."
+    >
+      <LabHelperCalls
+        calls={[
+          [
+            "splitTextDiff('The red apple', 'The green apple')",
+            JSON.stringify(splitTextDiff('The red apple', 'The green apple')),
+          ],
+          ["splitTextDiff('Porto', 'Porto')", JSON.stringify(splitTextDiff('Porto', 'Porto'))],
+        ]}
+      />
     </LabSection>
   </>,
 );

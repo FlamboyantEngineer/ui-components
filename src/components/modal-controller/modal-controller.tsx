@@ -246,6 +246,7 @@ function ControllerModals({ controller }: ModalHostProps) {
   const [mounted, setMounted] = useState(0);
   const count = Math.min(mounted, entries.length);
   useLayoutEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Each modal must be committed, and hide the rest, before the next one mounts.
     if (count < entries.length) setMounted(count + 1);
     else if (mounted !== count) setMounted(count);
   }, [count, mounted, entries.length]);

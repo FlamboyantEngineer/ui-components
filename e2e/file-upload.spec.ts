@@ -346,3 +346,11 @@ test.describe('File Upload lab', () => {
     );
   });
 });
+
+test('UIC-FORMAT-BYTES-1.1 shows formatBytes in a host-side snippet', async ({ page, lab }) => {
+  await lab.open('file-upload');
+  const call = (text: string) => page.locator(`[data-lab-call=${JSON.stringify(text)}]`);
+  await expect(call("formatBytes(512, 'en-US')")).toHaveText('512 B');
+  await expect(call("formatBytes(1536, 'en-US')")).toHaveText('1.5 KB');
+  await expect(call("formatBytes(5 * 1024 ** 2, 'fr-FR')")).toHaveText(/^5,0\sMB$/);
+});

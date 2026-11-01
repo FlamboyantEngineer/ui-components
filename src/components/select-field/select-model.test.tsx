@@ -59,4 +59,39 @@ describe('SelectField limits', () => {
     await user.click(screen.getByRole('button', { name: /Fruit$/ }));
     expect(screen.getByRole('option', { name: 'Fig' })).not.toHaveAttribute('aria-disabled');
   });
+
+  it('UIC-SELECT-FIELD-8.2 counts values, not known options, so a missing value cannot be restored past the limit', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const { rerender } = render(
+      <SelectField
+        label="Basket"
+        selectionMode="multiple"
+        options={[{ id: 'apple', label: 'Apple' }]}
+        value={['apple']}
+        committedValue={['missing']}
+        maxValues={1}
+        onChange={onChange}
+      />,
+    );
+    const restore = screen.getByRole('button', { name: 'Restore missing' });
+    expect(restore).toBeDisabled();
+    await user.click(restore);
+    expect(onChange).not.toHaveBeenCalled();
+    rerender(
+      <SelectField
+        label="Basket"
+        selectionMode="multiple"
+        options={[]}
+        value={['apple']}
+        committedValue={['missing']}
+        maxValues={0}
+        onChange={onChange}
+      />,
+    );
+    expect(screen.getByRole('button', { name: 'Restore missing' })).toBeDisabled();
+    // A removal frees room again.
+    await user.click(screen.getByRole('button', { name: /Remove apple/i }));
+    expect(onChange).toHaveBeenLastCalledWith([]);
+  });
 });

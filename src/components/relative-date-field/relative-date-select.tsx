@@ -47,8 +47,9 @@ function RelativeTrigger({
   placeholder,
 }: Pick<PresetSelectProps, 'control' | 'text' | 'placeholder'>) {
   const valueProps = useSlottedContext(SelectValueContext);
+  const { ref } = control;
   return (
-    <AriaButton ref={control.ref} className={hooks.slotClass('trigger')}>
+    <AriaButton ref={ref} className={hooks.slotClass('trigger')}>
       <span {...hooks.slot('value', { placeholder: !text })} id={valueProps?.id}>
         {text ? text.relative : placeholder}
       </span>

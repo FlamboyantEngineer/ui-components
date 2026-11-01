@@ -81,16 +81,17 @@ export function useChatSearch(messages: readonly ChatMessageData[]): ChatSearchM
 /** The button in the header that opens and closes the search. */
 export function ChatSearchToggle({ search }: { search: ChatSearchModel }) {
   const strings = useUiStrings();
+  const { toggleRef, isOpen, barId, toggle } = search;
   return (
     <Button
-      ref={search.toggleRef}
+      ref={toggleRef}
       icon={SearchGlyph}
       label={strings.chatSearch}
       size="sm"
-      aria-expanded={search.isOpen}
-      aria-controls={search.isOpen ? search.barId : undefined}
+      aria-expanded={isOpen}
+      aria-controls={isOpen ? barId : undefined}
       className={hooks.slotClass('search-toggle')}
-      onPress={search.toggle}
+      onPress={toggle}
     />
   );
 }

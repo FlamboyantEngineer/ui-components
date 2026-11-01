@@ -147,3 +147,16 @@ test.describe('Badge lab', () => {
     await lab.expectAccessible();
   });
 });
+
+test('UIC-COUNT-1.2 UIC-COUNT-1.3 UIC-COUNT-1.4 shows the count helpers in a host-side snippet', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('badge');
+  const call = (text: string) => page.locator(`[data-lab-call=${JSON.stringify(text)}]`);
+  await expect(call('normalizeCount(4.7)')).toHaveText('4');
+  await expect(call('normalizeCount(-2)')).toHaveText('0');
+  await expect(call("formatCount(128, 'en-US', { max: 99 })")).toHaveText('99+');
+  await expect(call("formatCount(12, 'en-US', { more: true })")).toHaveText('12+');
+  await expect(call("formatCount(12345, 'fr-FR')")).toHaveText('12\u202f345');
+});

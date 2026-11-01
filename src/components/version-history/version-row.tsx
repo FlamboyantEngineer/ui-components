@@ -22,11 +22,11 @@ export type VersionAction = 'rename' | 'restore';
 
 interface VersionRowContext extends Pick<
   AttributionProps,
-  'showAvatar' | 'fallbackAfterDays' | 'getNow'
+  'showAvatar' | 'fallbackAfterDays' | 'getNow' | 'timeZone'
 > {
   currentKey: Key | null;
   locale: string;
-  /** The zone version times read in (`useTimeZone`). */
+  /** The zone version times read in: `timeZone`, else the provider's (`useTimeZone`). */
   timeZone: string;
   strings: UiStrings;
   /** Whether versions can be named and renamed. */
@@ -111,6 +111,7 @@ export function renderVersionRow(
             showAvatar={context.showAvatar}
             fallbackAfterDays={context.fallbackAfterDays}
             getNow={context.getNow}
+            timeZone={context.timeZone}
             className={hooks.slotClass('attribution')}
           />
           {isEmptyNode(version.summary) ? null : (

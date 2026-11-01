@@ -139,3 +139,22 @@ test.describe('Tree reordering', () => {
     await expect(tree.locator('[data-dragging], [data-drop-target]')).toHaveCount(0);
   });
 });
+
+test('UIC-TREE-REORDER-2.2 shows resolveTreeMove in a host-side snippet', async ({ page, lab }) => {
+  await lab.open('tree');
+  const call = (text: string) => page.locator(`[data-lab-call=${JSON.stringify(text)}]`);
+  await expect(
+    call("resolveTreeMove(rows, { key: 'soup', targetKey: 'bread', position: 'after' })"),
+  ).toHaveText('soup after bread');
+  await expect(
+    call("resolveTreeMove(rows, { key: 'recipes', targetKey: 'tart', position: 'inside' })"),
+  ).toHaveText('null');
+  await expect(
+    call("resolveTreeMove(rows, { key: 'soup', targetKey: 'lisbon', position: 'before' })"),
+  ).toHaveText('null');
+  await expect(
+    call(
+      "resolveTreeMove(rows, { key: 'soup', targetKey: 'lisbon', position: 'before' }, { canMoveInto })",
+    ),
+  ).toHaveText('soup before lisbon');
+});

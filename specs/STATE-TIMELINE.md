@@ -15,7 +15,7 @@ Verification: `src/components/state-timeline/state-timeline.test.tsx`, `e2e/stat
 
 ### UIC-STATE-TIMELINE-1.2 - Who and when
 
-An entry with a `time` or a `person` shall show them after the badge as an [Attribution](ATTRIBUTION.md) (`ui-state-timeline__attribution`, the provider's `attribution` sentence), with `showAvatar`, `fallbackAfterDays` and `getNow` passed on to it. An entry with neither, and every upcoming state, shows none.
+An entry with a `time` or a `person` shall show them after the badge as an [Attribution](ATTRIBUTION.md) (`ui-state-timeline__attribution`, the provider's `attribution` sentence), with `showAvatar`, `fallbackAfterDays`, `getNow` and `timeZone` passed on to it. An entry with neither, and every upcoming state, shows none.
 
 Implementation: `src/components/state-timeline/state-timeline.tsx`
 Verification: `src/components/state-timeline/state-timeline.test.tsx`, `e2e/state-timeline.spec.ts`

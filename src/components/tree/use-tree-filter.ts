@@ -62,9 +62,53 @@ function filterItems<T extends TreeItemData>(items: readonly T[], context: Filte
 }
 
 /**
+ * What the reader expanded and collapsed while one query filters, kept apart from the revealed
+ * ancestry so matches that arrive later are revealed too.
+ */
+interface ExpansionChoices {
+  text: string;
+  expanded: ReadonlySet<Key>;
+  collapsed: ReadonlySet<Key>;
+}
+
+function emptyChoices(text: string): ExpansionChoices {
+  return { text, expanded: new Set(), collapsed: new Set() };
+}
+
+/** The revealed ancestry with the reader's own expansions added and collapses taken out. */
+function applyChoices(revealed: ReadonlySet<Key>, choices: ExpansionChoices | null): Set<Key> {
+  if (!choices) return new Set(revealed);
+  const keys = new Set([...revealed, ...choices.expanded]);
+  for (const key of choices.collapsed) keys.delete(key);
+  return keys;
+}
+
+/** Records each row that `next` expands or collapses compared with `current`. */
+function recordChoices(
+  choices: ExpansionChoices,
+  current: ReadonlySet<Key>,
+  next: ReadonlySet<Key>,
+): ExpansionChoices {
+  const expanded = new Set(choices.expanded);
+  const collapsed = new Set(choices.collapsed);
+  for (const key of next) {
+    if (current.has(key)) continue;
+    expanded.add(key);
+    collapsed.delete(key);
+  }
+  for (const key of current) {
+    if (next.has(key)) continue;
+    collapsed.add(key);
+    expanded.delete(key);
+  }
+  return { text: choices.text, expanded, collapsed };
+}
+
+/**
  * The tree as `filterText` filters it. While it is not blank, the rows whose text value matches
  * show, with their ancestors (expanded) and their descendants; expanding and collapsing then
- * changes a separate expansion, so the reader's own returns once the filter clears.
+ * changes a separate expansion, so the reader's own returns once the filter clears. Ancestors of
+ * matches that arrive later are revealed unless the reader collapsed them under the same query.
  */
 export function useTreeFilter<T extends TreeItemData>(
   options: TreeFilterOptions<T>,
@@ -87,10 +131,14 @@ export function useTreeFilter<T extends TreeItemData>(
     const getShownChildren = (item: T) => context.children.get(item.id) ?? getChildren(item);
     return { kept, getShownChildren, revealed: context.revealed };
   }, [isFiltering, items, getChildren, getTextValue, filterText, filter]);
-  const [chosen, setChosen] = useState<{ text: string; keys: Set<Key> } | null>(null);
+  const [choices, setChoices] = useState<ExpansionChoices | null>(null);
+  // A cleared query ends its session, so entering the same text again starts from the matches.
+  if (!result && choices !== null) setChoices(null);
   if (!result) return { items, getChildren, expansion };
-  const expandedKeys = chosen?.text === filterText ? chosen.keys : new Set<Key>(result.revealed);
-  const setExpandedKeys = (keys: Set<Key>) => setChosen({ text: filterText, keys });
+  const session = choices?.text === filterText ? choices : null;
+  const expandedKeys = applyChoices(result.revealed, session);
+  const setExpandedKeys = (keys: Set<Key>) =>
+    setChoices(recordChoices(session ?? emptyChoices(filterText), expandedKeys, keys));
   return {
     items: result.kept,
     getChildren: result.getShownChildren,

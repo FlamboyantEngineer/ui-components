@@ -150,7 +150,8 @@ export function useFolderManager<T extends FolderItem, M extends FolderSelection
   });
   const clearFocusRequest = useCallback(() => setFocusRequest(null), []);
   useRowFocus(regionRef, focusRequest, clearFocusRequest);
-  const loads = useTreeLoads(options.onLoadChildren);
+  const isListed = useCallback((key: Key) => findFolderPath(folders, key).length > 0, [folders]);
+  const loads = useTreeLoads(options.onLoadChildren, isListed);
   const { edit } = actions;
   const draftParentKey = edit?.kind === 'create' ? edit.key : undefined;
   const filter = useFolderQuery(folders, rootLabel, options.filterable === true);

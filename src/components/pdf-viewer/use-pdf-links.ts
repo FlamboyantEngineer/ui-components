@@ -1,9 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { resolveDestination, type PdfTarget } from './pdf-destination.js';
 import type { PdfLinkService, PdfTextContent, PdfViewport } from './pdf-engine.js';
-import { createLinkService } from './pdf-link-service.js';
+import { useLinkService } from './pdf-link-service.js';
 import type { LoadedPdf } from './use-pdf-document.js';
 import { useLatest } from '../../utils/use-latest.js';
 import type { PdfPagesController } from './use-pdf-pages.js';
@@ -38,42 +38,38 @@ export interface PdfLinks {
 export function usePdfLinks<V extends PdfViewport, C extends PdfTextContent>(
   options: UsePdfLinksOptions<V, C>,
 ): PdfLinks {
-  const latest = useLatest(options);
+  const latestRef = useLatest(options);
   const request = useRef(0);
   const followDestination = useCallback(
     (destination: unknown) => {
-      const opened = latest.current.view;
+      const opened = latestRef.current.view;
       if (!opened) return;
       request.current += 1;
       const attempt = request.current;
       void resolveDestination(opened, destination).then((target) => {
         const isLatest = attempt === request.current;
-        if (target && isLatest && latest.current.view?.document === opened.document) {
-          latest.current.goTo(target);
+        if (target && isLatest && latestRef.current.view?.document === opened.document) {
+          latestRef.current.goTo(target);
         }
       });
     },
-    [latest],
+    [latestRef],
   );
   const goToPage = useCallback(
     (pageIndex: number) => {
       request.current += 1;
-      latest.current.pages.scrollToPage(pageIndex);
+      latestRef.current.pages.scrollToPage(pageIndex);
     },
-    [latest],
+    [latestRef],
   );
-  const linkService = useMemo(
-    () =>
-      createLinkService({
-        followDestination,
-        goToPage,
-        readPosition: () => ({
-          currentPage: latest.current.pages.currentPage,
-          pageCount: latest.current.view?.pages.length ?? 0,
-        }),
-      }),
-    [followDestination, goToPage, latest],
+  const readPosition = useCallback(
+    () => ({
+      currentPage: latestRef.current.pages.currentPage,
+      pageCount: latestRef.current.view?.pages.length ?? 0,
+    }),
+    [latestRef],
   );
+  const linkService = useLinkService({ followDestination, goToPage, readPosition });
 
   const { destination } = options;
   const document = options.view?.document;

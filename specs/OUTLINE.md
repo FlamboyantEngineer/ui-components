@@ -43,7 +43,7 @@ Verification: `src/components/outline/outline.test.tsx`, `e2e/outline.spec.ts`
 
 ### UIC-OUTLINE-2.2 - Scroll tracking
 
-When `currentKey` is not given, `viewportRef`, the scrolling element that holds the headings, shall make the current heading the one `useScrollSpy` reports over every heading's id: the last whose top has reached `trackingOffset` pixels (0 by default) below the viewport's top, the first before any has, and the last at the end. It updates as the viewport scrolls or resizes, as content inside it changes and as fonts load. Without either prop no heading is current.
+When `currentKey` is not given, `viewportRef`, the scrolling element that holds the headings, shall make the current heading the one `useScrollSpy` reports over every heading's id: the last whose top has reached `trackingOffset` pixels (0 by default) below the viewport's top, the first before any has, and the last at the end. It updates as the viewport scrolls or resizes, as content inside it changes and as fonts load, and follows the ref to a viewport that mounts after the outline or replaces the previous one. Without either prop no heading is current.
 
 Implementation: `src/components/outline/outline.tsx`, `src/components/scroll-region/use-scroll-spy.ts`
 Verification: `src/components/outline/outline.test.tsx`, `e2e/outline.spec.ts`
@@ -68,7 +68,7 @@ Verification: `src/components/outline/outline.test.tsx`, `e2e/outline.spec.ts`
 
 ### UIC-OUTLINE-4.2 - Expanded entries
 
-Every entry with children shall start expanded, unless `collapseBelowLevel` collapses those whose heading level is that level or deeper, or `defaultExpandedKeys` lists the ids to expand at first. A level rule also applies to headings that arrive later, until the reader toggles them. `expandedKeys` controls the expanded entries, and `onExpandedChange` receives the ids of every expanded entry after each toggle.
+Every entry with children shall start expanded, unless `collapseBelowLevel` collapses those whose heading level is that level or deeper, or `defaultExpandedKeys` lists the ids to expand at first. A level rule also applies to headings that arrive later, until the reader toggles them. The reader's toggle of an entry is forgotten once its heading leaves the outline, so a heading that later arrives with the same id starts from these rules again. `expandedKeys` controls the expanded entries, and `onExpandedChange` receives the ids of every expanded entry after each toggle.
 
 Implementation: `src/components/outline/use-outline-expansion.ts`
 Verification: `src/components/outline/outline.test.tsx`, `e2e/outline.spec.ts`
