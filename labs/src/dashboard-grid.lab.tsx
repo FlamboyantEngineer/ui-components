@@ -134,6 +134,15 @@ function SharedLayout() {
         Add a tile
       </Button>
       <Button onPress={() => setLayout(layout.slice(0, 1))}>Keep only the first tile</Button>
+      <Button
+        onPress={() => {
+          // Moves the first tile away, then puts it back while the drag's pointer is still down.
+          setLayout(layout.map((item, index) => (index === 0 ? { ...item, y: item.y + 3 } : item)));
+          window.setTimeout(() => setLayout(layout), 300);
+        }}
+      >
+        Move the first tile away and back
+      </Button>
       <div style={frame(360)}>
         <DashboardGrid
           aria-label="Shared"
@@ -224,7 +233,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Changes during a drag"
-      description="Hold a handle, then press a button with the keyboard. A tile added or removed meanwhile stays in the layout the drag reports; a drag whose own tile was removed or moved stops and reports nothing."
+      description="Hold a handle, then press a button with the keyboard. A tile added or removed meanwhile stays in the layout the drag reports; a drag whose own tile was removed or moved stops and reports nothing, and stays stopped when the tile comes back: only a new press moves it again."
     >
       <SharedLayout />
     </LabSection>

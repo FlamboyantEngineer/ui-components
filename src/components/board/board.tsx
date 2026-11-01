@@ -4,14 +4,13 @@
 // and cards move within and between cells by drag and drop or Alt+Arrow keys.
 
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
-import { createKeyIndex } from '../../utils/create-key-index.js';
-import { useMemo, useState, type KeyboardEvent, type ReactNode, type RefObject } from 'react';
+import { useCallback, useState, type ReactNode, type RefObject } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { isMoveChord } from '../../utils/use-reorder-drag-and-drop.js';
 import { useFocusRequest } from '../../utils/use-focus-request.js';
-import type { BoardCardReveal } from './board-cell.js';
+import type { BoardCardKeyDown, BoardCardReveal } from './board-cell.js';
 import { BoardColumnHeader } from './board-column-header.js';
 import type { IconSource } from '../icon/icon.js';
 import { boardHooks as hooks } from './board-hooks.js';
@@ -27,9 +26,8 @@ import {
 } from './board-moves.js';
 import { useBoardModel, type BoardModel } from './use-board-model.js';
 import { useBoardCardDrag, useBoardColumnDrag } from './use-board-drag.js';
-import { isEditableTarget } from '../../utils/is-editable-target.js';
-import { isElement } from '../../utils/is-element.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
+import { useLatest } from '../../utils/use-latest.js';
 
 /** A column of the board. */
 export interface BoardColumn {
@@ -108,8 +106,6 @@ export interface BoardProps<T extends { id: Key }>
 type FocusRequest = (kind: 'card' | 'column', key: Key) => void;
 
 const cardShortcuts = 'Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight';
-/** Text widgets a host draws in a card, which keep the arrow keys for their caret. */
-const textWidgets = '[role="textbox"], [role="combobox"]';
 
 function toDirection(key: string, isRightToLeft: boolean): BoardMoveDirection | null {
   if (key === 'ArrowUp') return 'up';
@@ -117,13 +113,6 @@ function toDirection(key: string, isRightToLeft: boolean): BoardMoveDirection | 
   if (key === 'ArrowLeft') return isRightToLeft ? 'next' : 'previous';
   if (key === 'ArrowRight') return isRightToLeft ? 'previous' : 'next';
   return null;
-}
-
-/** The card a keydown came from: the key of the card row around its target. */
-function findCardKey(target: EventTarget, identities: ReadonlyMap<string, Key>): Key | undefined {
-  if (!isElement(target) || isEditableTarget(target, textWidgets)) return undefined;
-  const identity = target.closest(`.${hooks.slotClass('card')}`)?.getAttribute('data-key');
-  return identity === null || identity === undefined ? undefined : identities.get(identity);
 }
 
 /**
@@ -149,31 +138,37 @@ function useMoveFocus(
   };
 }
 
-/** Alt+Arrow keys on a card: the move they make, reported, with focus kept on the card. */
+/**
+ * Alt+Arrow keys on a card: the move they make, reported, with focus kept on the card. The card's
+ * row hands over only the keydowns it owns, with the card's own key, so a nested board's card or a
+ * widget in the card never moves another board's card. Returns whether the keydown was claimed.
+ */
 function useCardKeys(options: {
   layout: BoardLayout;
   onMove: ((move: BoardMove) => void) | undefined;
   focus: FocusRequest;
-}) {
+}): BoardCardKeyDown | undefined {
   const { direction: textDirection } = useLocale();
-  const { layout, onMove, focus } = options;
-  const identities = useMemo(
-    () => (onMove ? createKeyIndex(layout.addresses.keys()) : new Map()),
-    [layout, onMove],
+  const latest = useLatest({ ...options, isRightToLeft: textDirection === 'rtl' });
+  // One handler for the board's life, so that the cells' rows do not redraw when it would change.
+  const onCardKeyDown = useCallback<BoardCardKeyDown>(
+    (event, key) => {
+      const { layout, onMove, focus, isRightToLeft } = latest.current;
+      const direction = toDirection(event.key, isRightToLeft);
+      if (!onMove || !direction || !isMoveChord(event)) return false;
+      const move = resolveBoardKeyboardMove(layout, { key, direction });
+      if (move === undefined) return false;
+      event.preventDefault();
+      event.stopPropagation();
+      if (move) {
+        focus('card', move.key);
+        onMove(move);
+      }
+      return true;
+    },
+    [latest],
   );
-  return (event: KeyboardEvent<HTMLElement>) => {
-    const direction = toDirection(event.key, textDirection === 'rtl');
-    if (!onMove || !direction || !isMoveChord(event)) return;
-    const key = findCardKey(event.target, identities);
-    const move =
-      key === undefined ? undefined : resolveBoardKeyboardMove(layout, { key, direction });
-    if (move === undefined) return;
-    event.preventDefault();
-    event.stopPropagation();
-    if (!move) return;
-    focus('card', move.key);
-    onMove(move);
-  };
+  return options.onMove ? onCardKeyDown : undefined;
 }
 
 /** The column headers, with keyboard column moves that keep focus on the moved column's handle. */
@@ -269,9 +264,10 @@ export function Board<T extends { id: Key }>({
       return item ? getTextValue(item) : String(key);
     },
   });
-  const onKeyDownCapture = useCardKeys({ layout, onMove, focus });
+  const onCardKeyDown = useCardKeys({ layout, onMove, focus });
   const keyShortcuts = onMove ? cardShortcuts : undefined;
   const options = {
+    onCardKeyDown,
     renderCard,
     getTextValue,
     onAction,
@@ -287,7 +283,6 @@ export function Board<T extends { id: Key }>({
       role="group"
       {...rest}
       {...hooks.root({ className, props: rest, data: { virtualized } })}
-      onKeyDownCapture={onKeyDownCapture}
     >
       <BoardColumnHeaders {...{ model, onColumnMove, renderColumnActions, focus }} />
       {lanes ? (

@@ -114,6 +114,29 @@ test.describe('Dashboard Grid lab', () => {
     await expect(output).toHaveText('a 0,1 2×1');
   });
 
+  test('UIC-DASHBOARD-GRID-2.7 keeps a drag stopped when its tile comes back', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('dashboard-grid');
+    const demo = page.locator('[data-lab-demo="shared"]');
+    const grid = demo.getByRole('group', { name: 'Shared' });
+    const output = demo.locator('[data-lab-output="layout"]');
+    const before = await output.textContent();
+    const handle = grid.getByRole('button', { name: 'Move Shared a' });
+    await handle.hover();
+    const box = requireDefined(await handle.boundingBox());
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2 + 60, { steps: 4 });
+    await demo.getByRole('button', { name: 'Move the first tile away and back' }).press('Enter');
+    await expect(grid.locator('[data-moving]')).toHaveCount(0);
+    await expect(output).toHaveText(requireDefined(before));
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2 + 120, { steps: 4 });
+    await expect(grid.locator('[data-moving]')).toHaveCount(0);
+    await page.mouse.up();
+    await expect(output).toHaveText(requireDefined(before));
+  });
+
   test('UIC-DASHBOARD-GRID-2.3 UIC-DASHBOARD-GRID-2.5 UIC-DASHBOARD-GRID-2.6 resizes a tile by keyboard and announces it', async ({
     page,
     lab,

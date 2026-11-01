@@ -20,11 +20,16 @@ interface CalendarWeekProps {
   grid: CalendarGrid;
   titleId: string;
   timeZone: string;
+  /** The least length of the ruler a timed event is drawn over, in minutes. */
+  minEventMinutes: number;
   day: CalendarDayContext;
   event: CalendarEventContext;
 }
 
-interface WeekDayProps extends Pick<CalendarWeekProps, 'events' | 'timeZone' | 'day' | 'event'> {
+interface WeekDayProps extends Pick<
+  CalendarWeekProps,
+  'events' | 'timeZone' | 'minEventMinutes' | 'day' | 'event'
+> {
   date: string;
   column: number;
   segments: readonly WeekSegment[];
@@ -65,6 +70,7 @@ function WeekDay({
   laneCount,
   events,
   timeZone,
+  minEventMinutes,
   day,
   event,
 }: WeekDayProps) {
@@ -90,7 +96,7 @@ function WeekDay({
         />
       </div>
       <div {...hooks.slot('timed')} style={{ position: 'relative' }}>
-        {layoutDay(date, events, timeZone).map((block) => (
+        {layoutDay(date, events, { timeZone, minMinutes: minEventMinutes }).map((block) => (
           <CalendarEventButton
             key={toKeyIdentity(block.placed.event.id)}
             placed={block.placed}

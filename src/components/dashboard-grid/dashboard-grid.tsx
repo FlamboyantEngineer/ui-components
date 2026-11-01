@@ -6,9 +6,7 @@ import {
   memo,
   useCallback,
   useContext,
-  useLayoutEffect,
   useMemo,
-  useRef,
   useState,
   type CSSProperties,
   type ReactNode,
@@ -26,13 +24,12 @@ import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import {
   dashboardLayoutCodec,
   normalizeDashboardLayout,
-  placeDashboardItem,
   reflowDashboardLayout,
   toColumnCount,
   type DashboardGridItem,
 } from './dashboard-layout.js';
 import type { CellStep, TileMoveKind } from './use-tile-move.js';
-import { getOwnerWindow } from '../../utils/owner-window.js';
+import { isSameCells, useTileMoves } from './use-tile-moves.js';
 
 export type { DashboardGridItem } from './dashboard-layout.js';
 
@@ -65,10 +62,17 @@ interface DashboardGridShared {
   /** The handle to focus again after a keyboard move, once the tiles have rendered. */
   refocus: RefObject<{ id: Key; kind: TileMoveKind } | null>;
   measureStep: () => CellStep;
+  /** Starts a gesture session, ending any other: only the latest session previews and commits. */
+  begin: () => number;
   /** Shows where a gesture that started from `origin` would put the tile. */
   preview: (gesture: TileGesture) => void;
-  /** Keeps the previewed layout and returns the moved tile, if a preview changed the layout. */
-  commit: (isKeyboard: boolean) => DashboardGridItem | undefined;
+  /**
+   * Keeps the session's previewed layout and returns the moved tile, if a preview changed the
+   * layout; nothing for a session the grid ended.
+   */
+  commit: (session: number, isKeyboard: boolean) => DashboardGridItem | undefined;
+  /** Ends a session without keeping it, such as when its handle unmounts mid-gesture. */
+  abandon: (session: number) => void;
   announce: (message: string) => void;
 }
 
@@ -81,6 +85,8 @@ export interface DashboardGridTileState extends DashboardGridShared {
 
 /** A move or resize in progress: the tile as it started, where it is asked to go, and how. */
 export interface TileGesture {
+  /** The session `begin` started for the gesture. */
+  session: number;
   origin: DashboardGridItem;
   next: DashboardGridItem;
   kind: TileMoveKind;
@@ -101,36 +107,6 @@ export function useDashboardGridTile(): DashboardGridTileState | null {
   return useContext(DashboardGridContext);
 }
 
-function readGap(element: Element, property: 'columnGap' | 'rowGap'): number {
-  const value = Number.parseFloat(getOwnerWindow(element).getComputedStyle(element)[property]);
-  return Number.isFinite(value) ? value : 0;
-}
-
-function isSameCells(a: DashboardGridItem, b: DashboardGridItem): boolean {
-  return a.id === b.id && a.x === b.x && a.y === b.y && a.w === b.w && a.h === b.h;
-}
-
-/** Whether two layouts place the same tiles in the same order on the same cells. */
-function isSameLayout(a: readonly DashboardGridItem[], b: readonly DashboardGridItem[]): boolean {
-  return a.length === b.length && a.every((item, index) => isSameCells(item, b[index] ?? item));
-}
-
-/**
- * The layout a gesture makes from the committed `layout`, placed again on whatever the layout now
- * holds, so tiles added, removed or moved meanwhile are kept. `null` once the gesture's own tile
- * was removed or changed under it: the gesture no longer describes the current layout.
- */
-function resolveGesture(
-  gesture: TileGesture,
-  layout: readonly DashboardGridItem[],
-  columns: number,
-): { layout: DashboardGridItem[]; item: DashboardGridItem } | null {
-  const current = layout.find((item) => item.id === gesture.origin.id);
-  if (!current || !isSameCells(current, gesture.origin)) return null;
-  const placed = placeDashboardItem(layout, gesture.next, columns);
-  return { layout: placed, item: placed.find((item) => item.id === current.id) ?? current };
-}
-
 /** The layout shown: the committed one, or the preview while a tile moves. */
 function useDashboardLayout(
   props: Pick<DashboardGridProps, 'layout' | 'defaultLayout' | 'onLayoutChange' | 'persistKey'>,
@@ -144,6 +120,8 @@ function useDashboardLayout(
   const source = props.layout ?? own;
   const layout = useMemo(() => normalizeDashboardLayout(source, columns), [source, columns]);
   const latest = useLatest(props);
+  // Who the layout belongs to: a gesture started under one owner never writes to another.
+  const owner = props.layout === undefined ? `own:${props.persistKey ?? ''}` : 'controlled';
   const commit = useCallback(
     (next: DashboardGridItem[]) => {
       if (latest.current.layout === undefined) setOwn(next);
@@ -151,7 +129,7 @@ function useDashboardLayout(
     },
     [latest, setOwn],
   );
-  return { layout, commit };
+  return { layout, commit, owner };
 }
 
 /** How many columns fit: the layout's own, or fewer below `minColumnWidth` per column. */
@@ -159,67 +137,6 @@ function useShownColumns(element: Element | null, columns: number, minColumnWidt
   const width = useElementSize(element, { enabled: minColumnWidth !== undefined })?.width ?? 0;
   if (minColumnWidth === undefined || !(minColumnWidth > 0) || width <= 0) return columns;
   return Math.min(columns, Math.max(1, Math.floor(width / minColumnWidth)));
-}
-
-/** The preview of a tile being moved and the handlers its handles call. */
-function useTileMoves({
-  element,
-  committed,
-  columns,
-  rowHeight,
-  isEditing,
-}: {
-  element: HTMLDivElement | null;
-  committed: ReturnType<typeof useDashboardLayout>;
-  columns: number;
-  rowHeight: number;
-  isEditing: boolean;
-}) {
-  const [gesture, setGesture] = useState<TileGesture | null>(null);
-  const pending = useRef<TileGesture | null>(null);
-  const refocus = useRef<{ id: Key; kind: TileMoveKind } | null>(null);
-  const shown = gesture && resolveGesture(gesture, committed.layout, columns);
-  if (gesture && (!isEditing || !shown)) setGesture(null);
-  // A gesture the render dropped leaves nothing for its commit.
-  useLayoutEffect(() => {
-    if (!gesture) pending.current = null;
-  }, [gesture]);
-  // The handlers read the grid as it is when they run, so the tiles keep the same ones.
-  const latest = useLatest({ element, committed, columns, rowHeight });
-  const handlers = useMemo(
-    () => ({
-      refocus,
-      measureStep: (): CellStep => {
-        const { element, columns, rowHeight } = latest.current;
-        if (!element) return { column: 1, row: 1 };
-        const width = element.getBoundingClientRect().width;
-        const column = (width + readGap(element, 'columnGap')) / columns;
-        const row = rowHeight + readGap(element, 'rowGap');
-        return { column: Math.max(1, column), row: Math.max(1, row) };
-      },
-      preview: (next: TileGesture) => {
-        pending.current = next;
-        setGesture(next);
-      },
-      commit: (isKeyboard: boolean) => {
-        const { committed, columns } = latest.current;
-        const last = pending.current;
-        pending.current = null;
-        setGesture(null);
-        const result = last && resolveGesture(last, committed.layout, columns);
-        if (!last || !result || isSameLayout(result.layout, committed.layout)) return undefined;
-        if (isKeyboard) refocus.current = { id: result.item.id, kind: last.kind };
-        committed.commit(result.layout);
-        return result.item;
-      },
-    }),
-    [latest],
-  );
-  return {
-    previewLayout: shown?.layout,
-    moving: gesture && shown ? { id: gesture.origin.id, kind: gesture.kind } : null,
-    handlers,
-  };
 }
 
 interface DashboardGridCellProps {

@@ -460,4 +460,53 @@ test.describe('Board lab', () => {
     await grid.evaluate((element) => element.scrollTo(0, element.scrollHeight));
     await expect(grid.getByRole('row', { name: 'Inventory item 500' })).toBeVisible();
   });
+
+  test('UIC-BOARD-2.3 moves a nested board card on its own board', async ({ page, lab }) => {
+    await lab.open('board');
+    const nested = demo(page, 'nested');
+    const inner = nested.getByRole('group', { name: 'Hall steps' });
+    const sand = inner.getByRole('row', { name: 'Sand the walls' });
+    await sand.focus();
+    await page.keyboard.press('Alt+ArrowRight');
+    await expect(cards(inner, 'Done')).toHaveText(['Sand the walls']);
+    await expect(inner.getByRole('row', { name: 'Sand the walls' })).toBeFocused();
+    const outputs = nested.locator('[data-lab-output]');
+    await expect(outputs).toHaveText(['Hall steps: moved a to done', 'Rooms: no move yet']);
+    await nested.getByRole('row', { name: 'Wash the windows' }).focus();
+    await page.keyboard.press('Alt+ArrowUp');
+    await expect(outputs.last()).toHaveText('Rooms: moved b to todo');
+    await lab.expectAccessible('[data-lab-demo="nested"]');
+  });
+
+  test('UIC-BOARD-2.3 leaves arrow keys, move chords and typing to a field in a card', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('board');
+    const nested = demo(page, 'nested');
+    const field = nested.getByRole('textbox', { name: 'Notes for Wash the windows' });
+    await field.click();
+    for (const chord of ['Alt+ArrowRight', 'Alt+ArrowLeft', 'Alt+ArrowUp', 'Alt+ArrowDown']) {
+      await page.keyboard.press(chord);
+      await expect(field, chord).toBeFocused();
+    }
+    await page.keyboard.press('Home');
+    expect(await field.evaluate((input: HTMLInputElement) => input.selectionStart)).toBe(0);
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('ArrowRight');
+    expect(await field.evaluate((input: HTMLInputElement) => input.selectionStart)).toBe(2);
+    await page.keyboard.press('ArrowLeft');
+    await page.keyboard.type('w');
+    await expect(field).toBeFocused();
+    await expect(field).toHaveValue('Uwse the soft cloth');
+    await expect(nested.locator('[data-lab-output]').last()).toHaveText('Rooms: no move yet');
+    const row = nested.getByRole('row', { name: 'Wash the windows' });
+    await row.focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(row.getByRole('button', { name: /Wash the windows/ })).toBeFocused();
+    await page.keyboard.press('ArrowRight');
+    await expect(field).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(field).not.toBeFocused();
+  });
 });
