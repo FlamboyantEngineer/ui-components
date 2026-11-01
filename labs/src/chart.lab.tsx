@@ -348,7 +348,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="States"
-      description="The summary shown under the title, the table view, and a chart with no values."
+      description="The summary shown under the title, the table view, and a chart with no values. A line chart whose series are all hidden still lists every reading in its table."
     >
       <StateMatrix
         axes={{ state: states }}
@@ -365,6 +365,16 @@ mountLab(
           </div>
         )}
       />
+      <div style={box(320)} data-lab-demo="all-hidden">
+        <LineChart
+          label="Readings, all hidden"
+          series={samples}
+          defaultHiddenKeys={samples.map((entry) => entry.id)}
+          defaultView="table"
+          categoryLabel="Hour"
+          height={160}
+        />
+      </div>
     </LabSection>
     <LabSection
       title="Controlled legend and view"

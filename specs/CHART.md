@@ -171,7 +171,7 @@ Verification: `src/components/chart/line-geometry.test.ts`
 
 ### UIC-CHART-6.4 - Table
 
-The line chart's table shall have one row per distinct x value of any series, in x order, headed by its formatted x value under `categoryLabel` (the provider's `chartCategory` string by default), then each series' formatted value at that x, or nothing.
+The line chart's table shall have one row per distinct x value of any series, in x order, headed by its formatted x value under `categoryLabel` (the provider's `chartCategory` string by default), then each series' formatted value at that x, or nothing. The table reads coordinates from every series, hidden ones included, so it keeps its rows (numbers or dates) whichever series are drawn, also with every series hidden.
 
 A repeated coordinate shall use its first point in each series, leaving the cell blank if that point has no finite value.
 

@@ -79,6 +79,14 @@ test.describe('Chart lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-CHART-6.4 lists every reading with all series hidden', async ({ page, lab }) => {
+    await lab.open('chart');
+    const table = page.locator('[data-lab-demo="all-hidden"]').getByRole('table');
+    await expect(table.getByRole('row')).toHaveCount(9);
+    await expect(table.getByRole('row').nth(1)).toHaveText('0104');
+    await lab.expectAccessible('[data-lab-demo="all-hidden"]');
+  });
+
   test('UIC-CHART-4.3 moves between unevenly sampled series by x', async ({ page, lab }) => {
     await lab.open('chart');
     const figure = page.locator('[data-lab-demo="uneven"]').getByRole('figure');

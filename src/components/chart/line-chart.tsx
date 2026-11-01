@@ -23,6 +23,7 @@ import {
 } from './line-geometry.js';
 import { resolvePlotBox } from './chart-layout.js';
 import { toLineTable } from './line-table.js';
+import { createLineXAxis } from './line-x-axis.js';
 import { useChartFrame, useLabelMargin } from './use-chart-box.js';
 
 export type { LineChartPoint } from './line-geometry.js';
@@ -177,6 +178,21 @@ function useLineGeometry(
 }
 
 /**
+ * The table's x axis. The table lists every series, hidden ones included, so it reads coordinates
+ * from all of them, apart from the drawn axis, which an all-hidden chart leaves empty.
+ */
+function useTableAxis(series: readonly LineChartSeries[], timeZone: string) {
+  const { locale } = useLocale();
+  return createLineXAxis({
+    values: series.flatMap((entry) => entry.points.map((point) => point.x)),
+    range: [0, 1],
+    tickCount: 0,
+    timeZone,
+    locale,
+  });
+}
+
+/**
  * A line chart of one or more series over dates (a time axis) or numbers (a linear axis), drawn as
  * lines or filled areas. Each point is a named, focusable value with a tooltip; the legend shows
  * and hides series, and the values can be shown as a table.
@@ -219,6 +235,7 @@ export function LineChart({
     formatOptions,
   });
   const values = geometry.lines.flatMap((line) => line.points.map((point) => point.value));
+  const tableAxis = useTableAxis(series, timeZone);
   const generated = useValueSummary({ values, series: drawn.length, format });
   const isEmpty = values.length === 0;
   return (
@@ -232,7 +249,7 @@ export function LineChart({
       summary={summary ?? generated}
       showSummary={showSummary}
       table={toLineTable(series, {
-        xAxis: geometry.xAxis,
+        xAxis: tableAxis,
         format,
         categoryLabel: categoryLabel ?? strings.chartCategory,
       })}
