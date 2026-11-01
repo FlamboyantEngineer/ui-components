@@ -141,4 +141,37 @@ test.describe('Sparkline lab', () => {
     await expect(zero).toHaveAccessibleDescription('Low 0, high 0, last 0');
     await lab.expectAccessible();
   });
+
+  test('UIC-SPARKLINE-1.3 traces the measured frame rate live and pauses', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('sparkline');
+    const demo = page.locator('[data-lab-demo="frame-rate"]');
+    const reading = demo.locator('[data-lab-output="frame rate"]');
+    // Frames come every 16 ms of the installed clock: about 60 per second.
+    await page.clock.runFor(2_000);
+    await expect(reading).toHaveText(/^(59|60|61|62|63) frames per second$/);
+    const line = demo.locator('.ui-sparkline__line');
+    const drawn = await line.getAttribute('d');
+    await page.clock.runFor(1_000);
+    await expect(line).not.toHaveAttribute('d', drawn ?? '');
+    // A stall longer than a second (a hidden tab) leaves a gap, not a catch-up spike.
+    const segments = async () => ((await line.getAttribute('d')) ?? '').split('M').length - 1;
+    expect(await segments()).toBe(1);
+    await page.clock.fastForward(5_000);
+    await page.clock.runFor(1_000);
+    await expect.poll(segments).toBe(2);
+    await expect(reading).toHaveText(/^(59|60|61|62|63) frames per second$/);
+    await demo.getByRole('button', { name: 'Pause trace' }).click();
+    await expect(reading).toHaveText('Paused');
+    const paused = await line.getAttribute('d');
+    await page.clock.runFor(2_000);
+    await expect(line).toHaveAttribute('d', paused ?? '');
+    await demo.getByRole('button', { name: 'Resume trace' }).click();
+    await page.clock.runFor(1_000);
+    await expect(reading).toHaveText(/frames per second$/);
+    await lab.expectAccessible();
+  });
 });
