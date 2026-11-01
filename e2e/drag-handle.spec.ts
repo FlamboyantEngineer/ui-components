@@ -21,6 +21,87 @@ test.describe('Drag Handle lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-DRAG-HANDLE-1.2 UIC-LIST-ROW-3.5 draws one steady insertion line while dragging through the list', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('drag-handle');
+    const list = page.locator('[data-lab-list="row"]');
+    const output = list.locator('[data-lab-output]');
+    /** The insertion lines drawn now, with their thickness and whether the list holds them. */
+    const drawn = () =>
+      list.evaluate((root) => {
+        const view = root.querySelector('.ui-list-view')?.getBoundingClientRect();
+        const indicators = [...root.querySelectorAll('.ui-list-view__drop-indicator')];
+        const lines = indicators
+          .filter(
+            (node) => getComputedStyle(node, '::before').backgroundColor !== 'rgba(0, 0, 0, 0)',
+          )
+          .map((node) => {
+            const style = getComputedStyle(node, '::before');
+            const box = node.getBoundingClientRect();
+            const top = box.top + Number.parseFloat(style.top);
+            return {
+              thickness: style.height,
+              inside: !!view && top >= view.top && top + 2 <= view.bottom,
+              isTarget: node.hasAttribute('data-drop-target'),
+            };
+          });
+        return {
+          lines,
+          targets: indicators.filter((node) => node.hasAttribute('data-drop-target')).length,
+          framed: root.querySelectorAll(':is(.ui-list-view, .ui-list-view-item)[data-drop-target]')
+            .length,
+        };
+      });
+    const rows = ['Apple', 'Banana', 'Cherry', 'Fig'].map((name) =>
+      list.getByRole('row', { name, exact: true }),
+    );
+    const boxes = await Promise.all(rows.map((row) => row.boundingBox()));
+    const [first, , cherry, last] = boxes;
+    if (!first || !cherry || !last) throw new Error('no rows');
+    for (const run of ['outside', 'drop'] as const) {
+      const apple = await list.getByRole('row', { name: 'Apple', exact: true }).boundingBox();
+      if (!apple) throw new Error('no row');
+      await page.mouse.move(apple.x + 60, apple.y + apple.height / 2);
+      await page.mouse.down();
+      // Through every row and gap, past the list's end and back.
+      for (let y = first.y + 2; y <= last.y + last.height + 30; y += 6) {
+        await page.mouse.move(first.x + 60, y);
+        const { lines, targets, framed } = await drawn();
+        // Only the target's line, 2px thick and inside the list; nothing else framed.
+        expect(lines.length).toBe(targets);
+        expect(targets).toBeLessThanOrEqual(1);
+        for (const line of lines)
+          expect(line).toEqual({ thickness: '2px', inside: true, isTarget: true });
+        expect(framed).toBe(0);
+      }
+      // A drop outside the list cancels the drag; the second run lands Apple after Cherry.
+      const landing = run === 'outside' ? first.y - 120 : cherry.y + cherry.height - 3;
+      await page.mouse.move(first.x + 60, landing, { steps: 4 });
+      await page.mouse.move(first.x + 60, landing + 1);
+      await page.mouse.up();
+      await expect.poll(drawn).toEqual({ lines: [], targets: 0, framed: 0 });
+    }
+    await expect(output).toHaveText('Order: Banana, Cherry, Apple, Fig');
+
+    // A keyboard drag mounts an indicator at every position, and draws only the target's line.
+    const banana = list.getByRole('row', { name: 'Banana', exact: true });
+    await banana.focus();
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('Enter');
+    await expect(banana).toHaveAttribute('data-dragging', 'true');
+    for (const key of ['ArrowDown', 'ArrowDown', 'ArrowUp']) {
+      await page.keyboard.press(key);
+      const { lines, targets } = await drawn();
+      expect(lines.length).toBe(targets);
+      expect(targets).toBe(1);
+    }
+    await page.keyboard.press('Escape');
+    await expect.poll(drawn).toEqual({ lines: [], targets: 0, framed: 0 });
+    await expect(output).toHaveText('Order: Banana, Cherry, Apple, Fig');
+  });
+
   test('UIC-DRAG-HANDLE-1.3 disables the handle of a row that cannot move', async ({
     page,
     lab,
