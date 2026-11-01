@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import type { Key } from '../../core/props.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
-import { isPickerSection } from '../field/field.js';
+import { isPickerSection } from '../field/field-picker-items.js';
 import type { ComboboxItem } from './combobox-options.js';
 
 type Value = Key | Key[] | null | undefined;

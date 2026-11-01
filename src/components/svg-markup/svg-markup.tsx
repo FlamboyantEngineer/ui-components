@@ -2,7 +2,7 @@ import { createElement, useId, useMemo, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { mapTree } from '../../utils/map-tree.js';
-import { toImageProps } from '../icon/icon.js';
+import { toImageProps } from '../icon/icon-props.js';
 import { parseSvgMarkup, type SvgElementNode, type SvgNode } from './parse-svg-markup.js';
 import { createSvgReferenceScope, type SvgReferenceScope } from './svg-references.js';
 

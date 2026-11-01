@@ -81,6 +81,43 @@ describe('client boundaries', () => {
     }
   });
 
+  it('UIC-SERVER-COMPONENTS-1.1 reports a server module that calls a pure helper through a client re-export', () => {
+    const dir = mkdtempSync(join(root, 'node_modules', '.client-boundaries-'));
+    try {
+      mkdirSync(join(dir, 'scripts/lib'), { recursive: true });
+      mkdirSync(join(dir, 'src'));
+      for (const script of ['check-client-boundaries.mjs', 'lib/script.mjs']) {
+        copyFileSync(join(root, 'scripts', script), join(dir, 'scripts', script));
+      }
+      const files = {
+        'pure.ts': ['export const isReady = (text: string) => text !== "";'],
+        'widget.tsx': [
+          "'use client';",
+          "import { useState } from 'react';",
+          'export const useReady = () => useState(false);',
+          "export { isReady } from './pure.js';",
+        ],
+        'server.ts': [
+          "import { isReady } from './widget.js';",
+          "export const ready = isReady('yes');",
+        ],
+      };
+      for (const [name, lines] of Object.entries(files)) {
+        writeFileSync(join(dir, 'src', name), `${lines.join('\n')}\n`);
+      }
+      const result = spawnSync('node', ['scripts/check-client-boundaries.mjs'], {
+        cwd: dir,
+        encoding: 'utf8',
+      });
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain(
+        'src/server.ts: uses isReady through client src/widget.tsx; import it from src/pure.ts',
+      );
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   it('UIC-SERVER-COMPONENTS-1.4 exports server-safe helpers from server modules', () => {
     const helpers = {
       'rich-text-editor': [
@@ -89,6 +126,8 @@ describe('client boundaries', () => {
         'serializeRichTextText',
       ],
       'chat-controller': ['isAwaitingReader', 'reduceChatStream'],
+      'condition-builder': ['createConditionMatcher', 'matchesConditionGroup'],
+      'filter-bar': ['createFilterMatcher', 'matchesFilterCondition'],
       'pdf-viewer': ['findBoxAtPoint'],
       avatar: ['resolveAvatarColor'],
       checkbox: ['cycleCheckState'],

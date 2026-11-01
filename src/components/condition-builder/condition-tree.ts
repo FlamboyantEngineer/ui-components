@@ -1,12 +1,13 @@
 // The condition tree as plain data, the pure edits the builder makes to it, and its evaluation.
 
+// Runtime helpers come from their pure modules: filter-bar.tsx is a client module, whose exports a
+// server component receives as client references it cannot call.
+import { matchesFilterCondition, type FilterValueGetter } from '../filter-bar/filter-matching.js';
 import {
   isFilterConditionComplete,
-  matchesFilterCondition,
   type FilterCondition,
   type FilterField,
-  type FilterValueGetter,
-} from '../filter-bar/filter-bar.js';
+} from '../filter-bar/filter-model.js';
 
 /** `and` matches when every rule of a group matches, `or` when any does. */
 export type ConditionCombinator = 'and' | 'or';

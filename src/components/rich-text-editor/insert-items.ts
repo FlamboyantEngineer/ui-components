@@ -3,7 +3,7 @@ import { MinusGlyph, type GlyphComponent } from '../../core/glyphs.js';
 
 import type { Key } from '../../core/props.js';
 import type { UiStrings } from '../../core/strings.js';
-import { scoreCompletion } from '../completion-list/completion-list.js';
+import { scoreCompletion } from '../completion-list/completion-match.js';
 import { getBlockItems, getWrapItems } from './format-items.js';
 import type { RichTextCommand } from './rich-text-command.js';
 

@@ -112,6 +112,8 @@ export default function Page() {
 // client reference (UIC-SERVER-COMPONENTS-1.4).
 const HELPERS_PAGE = `import { resolveAvatarColor } from '${manifest.name}/avatar';
 import { cycleCheckState } from '${manifest.name}/checkbox';
+import { createConditionMatcher } from '${manifest.name}/condition-builder';
+import { createFilterMatcher } from '${manifest.name}/filter-bar';
 import { reduceChatStream } from '${manifest.name}/chat-controller';
 import { findBoxAtPoint } from '${manifest.name}/pdf-viewer';
 import { keepThumbsApart } from '${manifest.name}/slider';
@@ -122,9 +124,30 @@ export default function Page() {
     { id: 'reply', createdAt: '2026-01-01T00:00:00Z', parts: [] },
     { type: 'text-delta', text: 'Streamed' },
   );
+  const fields = [{ id: 'title', label: 'Title', type: 'text' }];
+  const getValue = (record) => record.title;
+  const tree = {
+    type: 'group',
+    id: 'root',
+    combinator: 'or',
+    rules: [
+      { type: 'rule', id: 'a', field: 'title', operator: 'contains', value: 'salt' },
+      {
+        type: 'group',
+        id: 'b',
+        combinator: 'and',
+        rules: [{ type: 'rule', id: 'c', field: 'title', operator: 'equals', value: 'atom' }],
+      },
+    ],
+  };
+  const titles = ['Salt road', 'Atom', 'Orchard'];
+  const inTree = createConditionMatcher({ group: tree, fields, getValue });
+  const flat = createFilterMatcher({ conditions: [{ field: 'title', operator: 'contains', value: 'o' }], fields, getValue });
   const box = findBoxAtPoint([{ left: 0, top: 0, width: 10, height: 10, name: 'box' }], { left: 5, top: 5 });
   const values = [
     reply.parts.map((part) => part.text).join(''),
+    titles.filter((title) => inTree({ title })).join('+'),
+    titles.filter((title) => flat({ title })).join('+'),
     box?.name,
     resolveAvatarColor({ name: 'x', colorIndex: 9 }, 4),
     String(cycleCheckState(null)),
@@ -291,7 +314,9 @@ try {
   ]);
   await checkPage(browser, origin, '/subpaths', ['Added new', 'Add row', 'class="ui-glyph']);
   await checkPage(browser, origin, '/dates', ['class="ui-date-time-field']);
-  await checkMarkup(origin, '/helpers', ['Streamed box 1 true 200 40-50']);
+  await checkMarkup(origin, '/helpers', [
+    'Streamed Salt road+Atom Salt road+Atom+Orchard box 1 true 200 40-50',
+  ]);
   stopServer();
 
   // The rich-text helpers, with the optional peers they need.
