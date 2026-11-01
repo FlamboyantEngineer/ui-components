@@ -50,7 +50,7 @@ Verification: `src/components/property-panel/property-section.test.tsx`, `e2e/pr
 
 ### UIC-PROPERTY-PANEL-2.2 - Section count and meta
 
-A section shall show a count in the trigger (`ui-property-section__count`, a small count `Badge`): its `count` when given, zero included, and otherwise the number of properties inside it when there is at least one. Each row inside counts as one property and each card as one. `meta` follows the count inside the trigger.
+A section shall show a count in the trigger (`ui-property-section__count`, a small count `Badge`, which the reference sheet draws as a quiet tinted pill with muted digits, secondary to the title, in panels and filters alike): its `count` when given, zero included, and otherwise the number of properties inside it when there is at least one. Each row inside counts as one property and each card as one. `meta` follows the count inside the trigger.
 
 Implementation: `src/components/property-panel/property-section.tsx`, `src/components/property-scope/scope-tally.ts`
 Verification: `src/components/property-panel/property-section.test.tsx`
