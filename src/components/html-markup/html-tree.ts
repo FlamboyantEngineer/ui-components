@@ -16,6 +16,8 @@ export interface RawElement {
   tag: string;
   attributes: Readonly<Record<string, string>>;
   children: RawNode[];
+  /** Kept as content only: its tag could not survive a parse of the server HTML. */
+  isUnwrapped?: boolean;
 }
 
 export type RawNode = RawElement | string;
@@ -92,7 +94,7 @@ const headings = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
 /** Elements that close an open paragraph. */
 const paragraphClosers = new Set([
   ...headings,
-  ...'address article aside blockquote details div dl fieldset figcaption figure footer form header hr li main nav ol p pre section summary table ul'.split(
+  ...'address article aside blockquote dd details div dl dt fieldset figcaption figure footer form header hr li main nav ol p pre section summary table ul'.split(
     ' ',
   ),
 ]);
@@ -124,6 +126,20 @@ function appendElement(stack: Stack, element: RawElement): void {
   currentOpen(stack).children.push(element);
 }
 
+/**
+ * Whether an element placed before a table would close an open element when the server HTML is
+ * parsed again: there the table no longer stands between them. A heading closes only a heading it
+ * opens directly in; the other rules close the nearest open element they name, up to a boundary.
+ */
+function closesOnReparse(stack: Stack, tag: string, rule: ImpliedEnd): boolean {
+  const tables = stack.positions.get('table') ?? [];
+  const table = tables.at(-1) ?? 0;
+  if (headings.includes(tag)) return headings.includes(stack.elements[table - 1]?.tag ?? '');
+  const stopAt = [...rule.stopAt].filter((name) => name !== 'table');
+  const at = findOpen(stack, rule.closes);
+  return at > 0 && at >= Math.max(findOpen(stack, stopAt), tables.at(-2) ?? -1);
+}
+
 function openElement(stack: Stack, token: MarkupOpenToken): void {
   const tag = token.tag.toLowerCase();
   const element: RawElement = { tag, attributes: token.attributes, children: [] };
@@ -135,6 +151,7 @@ function openElement(stack: Stack, token: MarkupOpenToken): void {
     const rule = impliedEnds.get(tag);
     if (rule) applyImpliedEnd(stack, rule);
     if (!fosterElement(stack, element)) appendElement(stack, element);
+    else if (rule && closesOnReparse(stack, tag, rule)) element.isUnwrapped = true;
   }
   if (!token.isSelfClosing && !voidElements.has(tag)) pushOpen(stack, element, tag);
 }

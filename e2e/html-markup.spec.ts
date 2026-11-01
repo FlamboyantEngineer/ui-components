@@ -152,4 +152,20 @@ test.describe('HTML Markup lab', () => {
     expect(depth).toBeLessThanOrEqual(260);
     expect(errors).toEqual([]);
   });
+
+  test('UIC-HTML-MARKUP-1.2 draws misnested structure that the browser parses back the same', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('html-markup');
+    const root = page.locator('[data-lab-misnested]');
+    await expect(root.getByRole('listitem')).toHaveText(['PearsPlumsFigs']);
+    const reparsed = await root.evaluate((element) => {
+      const copy = element.ownerDocument.createElement('div');
+      copy.innerHTML = element.innerHTML;
+      return copy.innerHTML === element.innerHTML;
+    });
+    expect(reparsed).toBe(true);
+    await lab.expectAccessible('[data-lab-misnested]');
+  });
 });
