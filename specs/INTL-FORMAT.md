@@ -20,7 +20,7 @@ Verification: `src/utils/intl-format.test.ts`, `src/utils/lru-cache.test.ts`
 
 ### UIC-INTL-FORMAT-1.3 - Runtime-independent spaces
 
-`normalizeIntlSpaces` shall write each plain, no-break, thin or narrow no-break space in a formatted text as a plain space, or as a no-break space when asked, so a text formatted on a server and in a browser whose runtimes write those spaces differently is the same text.
+`normalizeIntlSpaces` shall write each plain, no-break, thin or narrow no-break space in a formatted text as a plain space, or as a no-break space when asked, so a text formatted on a server and in a browser whose runtimes write those spaces differently is the same text. The shared date formatters (`getDateFormatter` and `getDateTimeFormat`) pass every date, time and range text they format through it, so each caller's text, such as an AM/PM time or a day range with its dash, is the same on the server and in the browser that hydrates it.
 
 Implementation: `src/utils/intl-format.ts`
 Verification: `src/utils/intl-format.test.ts`

@@ -152,7 +152,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Formatted values"
-      description="Numbers, currency, ISO 8601 date strings, lists and ranges formatted for the provider's locale."
+      description="Numbers, currency, ISO 8601 date strings, lists and ranges formatted for the provider's locale. Dates and times write plain spaces, so a server-rendered range or AM/PM time reads the same once hydrated."
     >
       <StateMatrix
         axes={{ locale: ['en-US', 'de-DE', 'ja-JP'] }}
@@ -169,6 +169,11 @@ mountLab(
               <DescriptionRow label="Fruit" value={['Apples', 'pears', 'plums']} />
               <DescriptionRow label="Crates" value={{ start: 3, end: 7 }} />
               <DescriptionRow label="Season" value={{ start: picked, end: shipped }} />
+              <DescriptionRow
+                label="Tasting"
+                value={{ start: '2024-09-14T18:30', end: '2024-09-14T20:00' }}
+                formatOptions={{ timeStyle: 'short' }}
+              />
             </DescriptionList>
           </UiProvider>
         )}

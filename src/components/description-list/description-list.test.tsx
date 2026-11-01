@@ -126,8 +126,6 @@ describe('DescriptionList', () => {
   it('UIC-DESCRIPTION-LIST-1.5 formats ISO 8601 dates as calendar dates in any time zone', () => {
     expectTypeOf<Date>().not.toMatchTypeOf<DescriptionValue>();
     expectTypeOf<{ start: Date; end: Date }>().not.toMatchTypeOf<DescriptionValue>();
-    const medium = (options: Intl.DateTimeFormatOptions = {}) =>
-      new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', ...options });
     expect(formatDescriptionValue('2026-05-14', { locale: 'en-US', timeZone: 'UTC' })).toBe(
       'May 14, 2026',
     );
@@ -148,7 +146,7 @@ describe('DescriptionList', () => {
             formatOptions: { dateStyle: 'medium', timeZone },
           },
         ),
-      ).toBe(medium().formatRange(new Date(2026, 4, 14), new Date(2026, 4, 21)));
+      ).toBe('May 14 – 21, 2026');
     }
     expect(
       formatDescriptionValue('2026-05-14T23:30:00Z', {
@@ -156,13 +154,13 @@ describe('DescriptionList', () => {
         timeZone: 'UTC',
         formatOptions: { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' },
       }),
-    ).toBe(medium({ timeStyle: 'short', timeZone: 'UTC' }).format(Date.UTC(2026, 4, 14, 23, 30)));
+    ).toBe('May 14, 2026, 11:30 PM');
     expect(
       formatDescriptionValue(
         { start: '2026-05-14', end: '2026-05-21' },
         { locale: 'en-US', timeZone: 'UTC' },
       ),
-    ).toBe(medium().formatRange(new Date(2026, 4, 14), new Date(2026, 4, 21)));
+    ).toBe('May 14 – 21, 2026');
     expect(formatDescriptionValue('Pending', { locale: 'en-US', timeZone: 'UTC' })).toBe('Pending');
     expect(
       formatDescriptionValue(

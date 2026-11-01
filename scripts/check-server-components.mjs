@@ -76,13 +76,42 @@ export default function Page() {
 
 // Date fields on a 12-hour clock, whose Intl spacing literals differ between Node and browsers
 // (U+202F against U+0020), beside a 24-hour control; all in one explicit zone (UIC-DATE-TIME-FIELD-1.1).
-const DATES_PAGE = `import { Button, DateTimeField, Disclosure, UiProvider } from '${manifest.name}';
+const DATES_PAGE = `import {
+  Button,
+  DateTimeField,
+  DescriptionList,
+  DescriptionRow,
+  Disclosure,
+  RelativeTime,
+  UiProvider,
+} from '${manifest.name}';
+
+// Formatted dates whose spaces Node and the browser write differently (UIC-INTL-FORMAT-1.3): an
+// instant with its AM/PM, a floating date-time and a day range, in a 12-hour and a 24-hour locale.
+function FormattedDates({ locale }) {
+  return (
+    <UiProvider locale={locale} timeZone="UTC">
+      <RelativeTime value="2026-03-01T18:30:00Z" />
+      <RelativeTime value="2026-03-01T18:30:00" />
+      <DescriptionList>
+        <DescriptionRow
+          label="Call"
+          value="2026-03-01T18:30:00"
+          formatOptions={{ dateStyle: 'medium', timeStyle: 'short' }}
+        />
+        <DescriptionRow label="Week" value={{ start: '2026-03-01', end: '2026-03-07' }} />
+      </DescriptionList>
+    </UiProvider>
+  );
+}
 
 export default function Page() {
   const zone = 'America/New_York';
   return (
     <UiProvider locale="en-US">
       <main>
+        <FormattedDates locale="en-US" />
+        <FormattedDates locale="fr-FR" />
         <DateTimeField label="Alarm" mode="time" defaultValue="18:30" />
         <DateTimeField label="Start" mode="date-time" timeZone={zone} defaultValue="2026-11-01T06:30:00Z" />
         <DateTimeField
@@ -313,7 +342,11 @@ try {
     'class="ui-badge',
   ]);
   await checkPage(browser, origin, '/subpaths', ['Added new', 'Add row', 'class="ui-glyph']);
-  await checkPage(browser, origin, '/dates', ['class="ui-date-time-field']);
+  await checkPage(browser, origin, '/dates', [
+    'class="ui-date-time-field',
+    'class="ui-relative-time',
+    'class="ui-description-list',
+  ]);
   await checkMarkup(origin, '/helpers', [
     'Streamed Salt road+Atom Salt road+Atom+Orchard box 1 true 200 40-50',
   ]);

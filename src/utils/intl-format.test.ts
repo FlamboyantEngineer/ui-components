@@ -49,4 +49,22 @@ describe('intl formatters', () => {
       'Nov\u00a01,\u00a02026,\u00a06:30\u00a0PM',
     );
   });
+
+  it('UIC-INTL-FORMAT-1.3 writes plain spaces in every shared date format and range', () => {
+    const intlSpace = /[\u00a0\u2009\u202f]/;
+    const [start, end] = [new Date('2026-03-01T18:30:00Z'), new Date('2026-03-07T09:00:00Z')];
+    for (const locale of ['en-US', 'fr-FR']) {
+      const options = { dateStyle: 'medium', timeStyle: 'long', timeZone: 'UTC' } as const;
+      const formats = [getDateFormatter(locale, options), getDateTimeFormat(locale, options)];
+      for (const format of formats) {
+        expect(format.format(start)).not.toMatch(intlSpace);
+        expect(format.formatRange(start, end)).not.toMatch(intlSpace);
+      }
+      const days = getDateFormatter(locale, { dateStyle: 'medium', timeZone: 'UTC' });
+      expect(days.formatRange(start, end)).not.toMatch(intlSpace);
+    }
+    expect(getDateTimeFormat('en-US', { timeZone: 'Asia/Tokyo' }).resolvedOptions().timeZone).toBe(
+      'Asia/Tokyo',
+    );
+  });
 });
