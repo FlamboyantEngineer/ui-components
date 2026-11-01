@@ -228,9 +228,13 @@ function ReorderTree({ betweenParents }: { betweenParents: boolean }) {
   const [items, setItems] = useState<readonly Entry[]>(LIBRARY);
   const [expanded, setExpanded] = useState<Set<Key>>(new Set(ALL_FOLDERS));
   const [last, setLast] = useState<TreeMove | null>(null);
+  const [arranging, setArranging] = useState(true);
   const label = betweenParents ? 'Reorder between folders' : 'Reorder among siblings';
   return (
     <div data-lab-reorder={betweenParents ? 'parents' : 'siblings'}>
+      <Button size="sm" isSelected={arranging} onPress={() => setArranging(!arranging)}>
+        Arrange
+      </Button>
       <Tree
         aria-label={label}
         items={items}
@@ -239,14 +243,18 @@ function ReorderTree({ betweenParents }: { betweenParents: boolean }) {
         expandedKeys={expanded}
         onExpandedChange={setExpanded}
         disabledKeys={['archive']}
-        reorder={{
-          canMove: (entry) => entry.id !== 'budget',
-          canMoveInto: betweenParents ? canMoveInto : undefined,
-          onMove: (move) => {
-            setLast(move);
-            setItems((current) => applyTreeMove(current, move));
-          },
-        }}
+        reorder={
+          arranging
+            ? {
+                canMove: (entry) => entry.id !== 'budget',
+                canMoveInto: betweenParents ? canMoveInto : undefined,
+                onMove: (move) => {
+                  setLast(move);
+                  setItems((current) => applyTreeMove(current, move));
+                },
+              }
+            : undefined
+        }
       />
       <p data-lab-output>
         Last move: {last ? `${last.key} ${last.position} ${last.targetKey}` : 'none'}
@@ -443,7 +451,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Reordering"
-      description="Drag a row, use its drag handle with the keyboard, or press Alt+Arrow keys. Budget.xlsx is fixed and Archive.zip disabled. On the right, rows also move between folders, and folders to the top level."
+      description="Drag a row, use its drag handle with the keyboard, or press Alt+Arrow keys. Budget.xlsx is fixed and Archive.zip disabled. On the right, rows also move between folders, and folders to the top level. Arrange turns reordering off and on; the rows stay as they are."
     >
       <div data-lab-row style={{ display: 'flex', gap: 32 }}>
         <ReorderTree betweenParents={false} />

@@ -85,7 +85,7 @@ export interface TreeProps<T extends TreeItemData>
   variant?: TreeVariant | undefined;
   /** Let labels wrap instead of keeping them on one line. */
   wrap?: boolean | undefined;
-  /** Opt-in reordering by drag and drop and Alt+Arrow keys. Turning it on or off remounts the rows. */
+  /** Opt-in reordering by drag and drop and Alt+Arrow keys. Turning it on or off keeps the rows mounted. */
   reorder?: TreeReorderOptions<T> | undefined;
   /** Renders only the rows in view; the stylesheet must bound the tree's height. */
   virtualized?: boolean | undefined;

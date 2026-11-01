@@ -75,7 +75,15 @@ function splitTreeProps<T extends TreeItemData>({
   const state = { items, isPending, emptyMessage, reorder, onItemKeyDown, disabledKeys };
   const selection = { selectionPropagation, selectedKeys, defaultSelectedKeys, onSelectionChange };
   const features = { checkboxSelection, selection, filterText, filter, onLoadChildren };
-  const data = { size, variant, expandGlyph, wrap, pending: isPending, virtualized };
+  const data = {
+    size,
+    variant,
+    expandGlyph,
+    wrap,
+    pending: isPending,
+    virtualized,
+    reordering: reorder !== undefined,
+  };
   const root = {
     className,
     ref,
@@ -154,7 +162,7 @@ export function useTreeModel<T extends TreeItemData>(props: TreeProps<T>) {
   });
   const loads = useOwnerLoads(state.items, { getChildren: getAllChildren, ...features });
   const rename = useTreeRename({ ...parts.rename, getTextValue, items, getChildren, disabledKeys });
-  const reordering = useTreeReorder({
+  const { reordering, dragAndDrop } = useTreeReorder({
     items,
     reorder,
     disabledKeys,
@@ -181,6 +189,7 @@ export function useTreeModel<T extends TreeItemData>(props: TreeProps<T>) {
     expansion,
     selection,
     reordering,
+    dragAndDrop,
     keys,
     renderItem,
     dependencies,

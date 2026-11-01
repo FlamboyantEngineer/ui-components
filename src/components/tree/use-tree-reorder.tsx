@@ -107,13 +107,20 @@ function useMoveRows<T extends TreeItemData>(source: TreeReorderSource<T>) {
   );
 }
 
+/** The tree's reordering, `null` while it is not reorderable, and its drag and drop options. */
+interface TreeReorderState {
+  reordering: TreeReorder | null;
+  /** Always present: React Aria keeps the hooks a tree mounts with, disabled while not reordering. */
+  dragAndDrop: CollectionDragAndDropOptions;
+}
+
 /**
  * Reordering for the tree: pointer and keyboard drag and drop, plus Alt+Arrow moves, each checked
- * against the rows the tree last rendered. `null` while the tree is not reorderable.
+ * against the rows the tree last rendered.
  */
 export function useTreeReorder<T extends TreeItemData>(
   source: TreeReorderSource<T>,
-): TreeReorder | null {
+): TreeReorderState {
   const rows = useMoveRows(source);
   const latest = useLatest({ rows, source });
   const report = useCallback(
@@ -156,8 +163,9 @@ export function useTreeReorder<T extends TreeItemData>(
   const isMovable = useCallback((key: Key) => movable.has(key), [movable]);
   const hasReorder = source.reorder !== undefined;
   const keyShortcuts = source.reorder?.canMoveInto ? parentShortcuts : siblingShortcuts;
-  return useMemo(
+  const reordering = useMemo(
     () => (hasReorder ? { dragAndDrop, isMovable, keyShortcuts, moveByKeyboard } : null),
     [hasReorder, dragAndDrop, isMovable, keyShortcuts, moveByKeyboard],
   );
+  return { reordering, dragAndDrop };
 }

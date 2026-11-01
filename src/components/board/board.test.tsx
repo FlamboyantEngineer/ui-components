@@ -385,17 +385,20 @@ describe('Board', () => {
     }
   });
 
-  it('UIC-BOARD-2.2 draws drag handles only while the board takes moves', () => {
+  it('UIC-BOARD-2.2 draws drag handles only while the board takes moves, keeping the cards mounted', () => {
     const { container, rerender } = render(<TaskBoard onMove={vi.fn()} />);
     const card = screen.getByRole('row', { name: 'Make soup' });
-    expect(card).toHaveAttribute('data-allows-dragging', 'true');
+    expect(card.closest('.ui-board__cards')).toHaveAttribute('data-reordering', 'true');
     expect(card.querySelector('.ui-board__card-handle')).toHaveClass('ui-drag-handle');
     expectHooksMatchSpec(container, 'BOARD', { slots: ['card-handle'] });
     rerender(<TaskBoard />);
-    expect(screen.getByRole('row', { name: 'Make soup' })).not.toHaveAttribute(
-      'data-allows-dragging',
-    );
+    expect(screen.getByRole('row', { name: 'Make soup' })).toBe(card);
+    expect(card.closest('.ui-board__cards')).not.toHaveAttribute('data-reordering');
+    expect(card).not.toHaveAttribute('draggable');
     expect(container.querySelector('.ui-board__card-handle')).toBeNull();
+    rerender(<TaskBoard onMove={vi.fn()} />);
+    expect(screen.getByRole('row', { name: 'Make soup' })).toBe(card);
+    expect(card.querySelector('.ui-board__card-handle')).not.toBeNull();
   });
 
   it(

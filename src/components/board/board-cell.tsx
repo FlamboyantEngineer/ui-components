@@ -57,9 +57,6 @@ const estimatedCardHeight = 96;
 
 type DragAndDropOptions = Parameters<typeof useDragAndDrop>[0];
 
-/** The options of a cell that does not drag: neither draggable nor droppable. */
-const noDragAndDrop: DragAndDropOptions = {};
-
 const renderDropIndicator = createDropIndicator(hooks.slotClass('drop-indicator'));
 
 /**
@@ -107,7 +104,8 @@ function useCardReveal<T extends { id: Key }>(
 
 /**
  * A cell's grid list drag and drop hooks: its cards drag with the board's media type, and it takes
- * drops of the board's cards wherever `resolveDrop` lets them land. `undefined` without `drag`.
+ * drops of the board's cards wherever `resolveDrop` lets them land. React Aria keeps the hooks a
+ * list mounts with, so they stay, disabled, while the board has no `drag`.
  */
 function useCellDragAndDrop(
   drag: BoardCardDrag | null,
@@ -115,7 +113,6 @@ function useCellDragAndDrop(
   keys: ReadonlyMap<string, Key>,
 ) {
   const options = useMemo<DragAndDropOptions>(() => {
-    if (!drag) return noDragAndDrop;
     const address = { column, lane };
     const decodeTarget = (target: CollectionDropTarget): CollectionDropTarget | null => {
       if (target.type === 'root') return target;
@@ -124,28 +121,30 @@ function useCellDragAndDrop(
     };
     return {
       getItems: (dragged) =>
-        [...dragged].map((key) => ({
-          [drag.dragType]: String(key),
-          'text/plain': drag.getTextValue(requireDefined(keys.get(String(key)))),
-        })),
+        drag
+          ? [...dragged].map((key) => ({
+              [drag.dragType]: String(key),
+              'text/plain': drag.getTextValue(requireDefined(keys.get(String(key)))),
+            }))
+          : [],
       getAllowedDropOperations: () => ['move'],
-      acceptedDragTypes: [drag.dragType],
+      acceptedDragTypes: drag ? [drag.dragType] : [],
       onDragStart: ({ keys: dragged }) =>
-        drag.setDragging(keys.get(String([...dragged][0])) ?? null),
-      onDragEnd: () => drag.setDragging(null),
+        drag?.setDragging(keys.get(String([...dragged][0])) ?? null),
+      onDragEnd: () => drag?.setDragging(null),
       getDropOperation: (target) => {
         const decoded = decodeTarget(target);
-        return decoded && drag.resolveDrop(address, decoded) ? 'move' : 'cancel';
+        return decoded && drag?.resolveDrop(address, decoded) ? 'move' : 'cancel';
       },
       onDrop: ({ target }) => {
         const decoded = decodeTarget(target);
-        if (decoded) drag.drop(address, decoded);
+        if (decoded) drag?.drop(address, decoded);
       },
       renderDropIndicator,
+      isDisabled: drag === null,
     };
   }, [drag, column, lane, keys]);
-  const { dragAndDropHooks } = useDragAndDrop(options);
-  return drag ? dragAndDropHooks : undefined;
+  return useDragAndDrop(options).dragAndDropHooks;
 }
 
 /** The cell's cards: a grid list of the caller's card content, virtualized on request. */
@@ -168,8 +167,6 @@ function BoardCards<T extends { id: Key }>({
   );
   const list = (
     <GridList
-      // React Aria keeps drag and drop hooks for the list's lifetime: remount when moves toggle.
-      key={drag ? 'drag' : 'static'}
       ref={grid}
       aria-labelledby={labelledBy}
       items={items}
@@ -183,7 +180,7 @@ function BoardCards<T extends { id: Key }>({
       }
       dragAndDropHooks={dragAndDropHooks}
       renderEmptyState={renderEmptyState}
-      {...hooks.slot('cards', { virtualized })}
+      {...hooks.slot('cards', { virtualized, reordering: drag !== null })}
     >
       {(item) => (
         <GridListItem
@@ -194,7 +191,9 @@ function BoardCards<T extends { id: Key }>({
         >
           {({ allowsDragging }) => (
             <>
-              {allowsDragging ? <DragHandle className={hooks.slotClass('card-handle')} /> : null}
+              {allowsDragging && drag ? (
+                <DragHandle className={hooks.slotClass('card-handle')} />
+              ) : null}
               <div {...hooks.slot('card-content')}>{renderCard(item)}</div>
             </>
           )}

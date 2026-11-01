@@ -252,9 +252,10 @@ describe('Tree reordering', { timeout: 20_000 }, () => {
     expect(
       container.querySelector('[draggable], [aria-keyshortcuts], .ui-tree__drag-handle'),
     ).toBeNull();
-    expect(screen.getByRole('treegrid')).not.toHaveAttribute('data-allows-dragging');
+    expect(screen.getByRole('treegrid')).not.toHaveAttribute('data-reordering');
+    const apple = row('Apple');
 
-    // Turning reordering on remounts the rows with their drag affordances.
+    // Turning reordering on keeps the rows mounted and adds their drag affordances.
     rerender(
       <ShelfTree
         reorder={{ canMove: (item) => item.id !== 'plum' && item.id !== 'pantry', onMove() {} }}
@@ -275,7 +276,16 @@ describe('Tree reordering', { timeout: 20_000 }, () => {
       'Drag Apple',
     );
     expect(row('Apple').querySelector('.ui-tree__drag-handle')).toHaveAttribute('tabindex', '-1');
+    expect(row('Apple')).toBe(apple);
+    expect(screen.getByRole('treegrid')).toHaveAttribute('data-reordering', 'true');
     expectHooksMatchSpec(container, 'TREE', { slots: ['drag-handle'] });
+
+    rerender(<ShelfTree />);
+    expect(row('Apple')).toBe(apple);
+    expect(screen.getByRole('treegrid')).not.toHaveAttribute('data-reordering');
+    expect(
+      container.querySelector('[draggable], [aria-keyshortcuts], .ui-tree__drag-handle'),
+    ).toBeNull();
   });
 
   it('UIC-TREE-REORDER-1.1 announces moves between parents when the owner allows them', () => {

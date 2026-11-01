@@ -241,7 +241,7 @@ test('UIC-LIST-ROW-2.2 draws row content inside a host-owned element', async ({ 
   await expect(host.getByRole('listitem')).toHaveCount(0);
 });
 
-test('UIC-LIST-ROW-3.3 keeps the selection when reordering turns off and on', async ({
+test('UIC-LIST-ROW-3.3 UIC-LIST-ROW-3.5 keeps the rows and selection when reordering turns off and on', async ({
   page,
   lab,
 }) => {
@@ -250,10 +250,17 @@ test('UIC-LIST-ROW-3.3 keeps the selection when reordering turns off and on', as
   const banana = reorder.getByRole('row', { name: /^Banana/ });
   await banana.locator('.ui-list-view-item__checkbox').click();
   const arrange = reorder.getByRole('button', { name: 'Arrange' });
+  // A mark on the row element survives only while the row stays mounted.
+  await banana.evaluate((row) => row.setAttribute('data-lab-mark', ''));
+  const list = reorder.getByRole('grid');
+  await expect(list).toHaveAttribute('data-reordering', 'true');
   await arrange.click();
   await expect(reorder.locator('.ui-list-view-item__drag-handle')).toHaveCount(0);
+  await expect(list).not.toHaveAttribute('data-reordering');
   await expect(banana).toHaveAttribute('aria-selected', 'true');
+  await expect(banana).toHaveAttribute('data-lab-mark', '');
   await arrange.click();
   await expect(reorder.locator('.ui-list-view-item__drag-handle').first()).toBeVisible();
   await expect(banana).toHaveAttribute('aria-selected', 'true');
+  await expect(banana).toHaveAttribute('data-lab-mark', '');
 });

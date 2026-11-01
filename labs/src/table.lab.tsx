@@ -164,19 +164,32 @@ function Reordering() {
     fruit.slice(0, 5).map((row) => ({ ...row, isFixed: row.id === 'date' })),
   );
   const [last, setLast] = useState('None');
+  const [arranging, setArranging] = useState(true);
+  const [grouped, setGrouped] = useState(false);
   return (
     <div data-lab="reorder">
+      <Button size="sm" isSelected={arranging} onPress={() => setArranging(!arranging)}>
+        Arrange
+      </Button>
+      <Button size="sm" isSelected={grouped} onPress={() => setGrouped(!grouped)}>
+        Group by colour
+      </Button>
       <Table
         aria-label="Fruit, reorderable"
         rows={rows}
         columns={columns.slice(0, 2)}
-        reorder={{
-          canMove: (row) => !row.isFixed,
-          onMove: (move) => {
-            setRows((current) => applyTableMove(current, move));
-            setLast(`${move.keys.join(', ')} ${move.position} ${String(move.targetKey)}`);
-          },
-        }}
+        groupBy={grouped ? ['colour'] : []}
+        reorder={
+          arranging
+            ? {
+                canMove: (row) => !row.isFixed,
+                onMove: (move) => {
+                  setRows((current) => applyTableMove(current, move));
+                  setLast(`${move.keys.join(', ')} ${move.position} ${String(move.targetKey)}`);
+                },
+              }
+            : undefined
+        }
       />
       <output data-lab-output>{`Last move: ${last}`}</output>
     </div>
@@ -310,7 +323,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Reordering"
-      description="Drag a row or its handle, or press Alt+Arrow keys. Date stays put."
+      description="Drag a row or its handle, or press Alt+Arrow keys. Date stays put. Arrange and grouping turn reordering off and on without remounting the table."
     >
       <Reordering />
     </LabSection>

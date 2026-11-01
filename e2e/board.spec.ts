@@ -73,6 +73,26 @@ test.describe('Board lab', () => {
     await expect(board.locator('[data-dragging], [data-drop-target]')).toHaveCount(0);
   });
 
+  test('UIC-BOARD-2.2 keeps the cards mounted when moves turn off and on', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('board');
+    const board = demo(page, 'moves');
+    const card = cards(board, 'To do').filter({ hasText: 'Repaint the fence' });
+    // A mark on the card element survives only while the card stays mounted.
+    await card.evaluate((row) => row.setAttribute('data-lab-mark', ''));
+    await expect(board.locator('.ui-board__cards[data-reordering]').first()).toBeVisible();
+    await board.getByRole('button', { name: 'Arrange' }).click();
+    await expect(board.locator('.ui-board__cards[data-reordering]')).toHaveCount(0);
+    await expect(card.locator('.ui-board__card-handle')).toHaveCount(0);
+    await expect(card).not.toHaveAttribute('draggable');
+    await expect(card).toHaveAttribute('data-lab-mark', '');
+    await board.getByRole('button', { name: 'Arrange' }).click();
+    await expect(card.locator('.ui-board__card-handle')).toBeVisible();
+    await expect(card).toHaveAttribute('data-lab-mark', '');
+  });
+
   test('UIC-BOARD-2.2 moves a card to another column by keyboard from its handle', async ({
     page,
     lab,

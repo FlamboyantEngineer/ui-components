@@ -4,7 +4,7 @@
 // list in its stack layout, each row drawn with the list row's text.
 
 import { createDropIndicator } from '../../utils/create-drop-indicator.js';
-import { useMemo, type ReactElement, type ReactNode } from 'react';
+import { createContext, use, useMemo, type ReactElement, type ReactNode } from 'react';
 import {
   Collection,
   GridList,
@@ -26,6 +26,8 @@ import { toCollectionSelectionProps } from '../../utils/collection-selection.js'
 import { keyCollectionChildren } from '../../utils/key-collection-children.js';
 import { toCollectionItemKey } from '../../utils/to-collection-key.js';
 import { useCarriedFocus } from '../../utils/use-carried-focus.js';
+import { useKeptCollectionAttributes } from '../../utils/use-kept-collection-attributes.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { useHeldSelection } from '../../utils/use-held-selection.js';
 import {
   useReorderDragAndDrop,
@@ -114,8 +116,8 @@ const viewHooks = createHooks('list-view', ['drop-indicator', 'loader']);
 const itemHooks = createHooks('list-view-item', ['drag-handle', 'checkbox', 'trailing']);
 const sectionHooks = createHooks('list-view-section', ['header']);
 
-/** The drag and drop options of a list that does not reorder: neither draggable nor droppable. */
-const noDragAndDrop = {};
+/** Whether the list reorders now: its drag and drop hooks stay mounted, disabled, when it does not. */
+const ReorderingContext = createContext(false);
 
 const defaultRowHeight = 48;
 
@@ -148,8 +150,9 @@ function useListDragAndDrop(
     getTextValue: getKeyText,
     renderDropIndicator,
   });
-  const { dragAndDropHooks } = useDragAndDrop(reorder ? options : noDragAndDrop);
-  return reorder ? dragAndDropHooks : undefined;
+  // React Aria keeps the hooks a list mounts with, so they stay and are disabled without reorder.
+  const { dragAndDropHooks } = useDragAndDrop({ ...options, isDisabled: !reorder });
+  return dragAndDropHooks;
 }
 
 /** The rows: children, or the rows drawn from `items`, and the loading row when loading more. */
@@ -205,32 +208,41 @@ export function ListView<T extends object>({
   const disabled = useMemo(() => new Set(disabledKeys ?? []), [disabledKeys]);
   const dragAndDropHooks = useListDragAndDrop(reorder, disabled);
   const selection = useHeldSelection({ selectedKeys, defaultSelectedKeys, onSelectionChange });
-  const listRef = useCarriedFocus<HTMLDivElement>(`${String(virtualized)} ${String(!!reorder)}`);
+  const carriedRef = useCarriedFocus<HTMLDivElement>(String(virtualized));
+  const keptRef = useKeptCollectionAttributes<HTMLDivElement>(rest);
+  const listRef = useMergedRefs(carriedRef, keptRef);
   const emptyState = useMemo(
     () => renderEmptyState && (() => renderEmptyState()),
     [renderEmptyState],
   );
   const list = (
     <GridList
-      // React Aria keeps drag and drop hooks for the list's lifetime: remount when reorder toggles.
-      key={reorder ? 'reorder' : 'static'}
       {...rest}
       {...toCollectionSelectionProps({ ...selection, disabledKeys: disabled })}
       ref={listRef}
       onAction={onAction && ((key) => onAction(fromCollectionKey(key)))}
       dragAndDropHooks={dragAndDropHooks}
       renderEmptyState={emptyState}
-      {...viewHooks.root({ className, props: rest, data: { divided, stickyHeaders } })}
+      {...viewHooks.root({
+        className,
+        props: rest,
+        data: { divided, stickyHeaders, reordering: reorder !== undefined },
+      })}
     >
       <ListViewRows {...{ items, children, dependencies, onLoadMore, isLoading }} />
     </GridList>
   );
-  if (!virtualized) return list;
   const layoutOptions = { rowHeight, headingHeight: rowHeight, loaderHeight: rowHeight };
   return (
-    <Virtualizer layout={ListLayout} layoutOptions={layoutOptions}>
-      {list}
-    </Virtualizer>
+    <ReorderingContext value={reorder !== undefined}>
+      {virtualized ? (
+        <Virtualizer layout={ListLayout} layoutOptions={layoutOptions}>
+          {list}
+        </Virtualizer>
+      ) : (
+        list
+      )}
+    </ReorderingContext>
   );
 }
 
@@ -250,6 +262,7 @@ export function ListViewItem({
   className,
   ...rest
 }: ListViewItemProps) {
+  const isReordering = use(ReorderingContext);
   return (
     <GridListItem
       {...rest}
@@ -259,7 +272,9 @@ export function ListViewItem({
     >
       {({ selectionMode, selectionBehavior, allowsDragging }) => (
         <>
-          {allowsDragging ? <DragHandle className={itemHooks.slotClass('drag-handle')} /> : null}
+          {allowsDragging && isReordering ? (
+            <DragHandle className={itemHooks.slotClass('drag-handle')} />
+          ) : null}
           {selectionMode !== 'none' && selectionBehavior === 'toggle' ? (
             <Checkbox size="sm" slot="selection" className={itemHooks.slotClass('checkbox')} />
           ) : null}

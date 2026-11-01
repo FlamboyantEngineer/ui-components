@@ -78,8 +78,49 @@ describe('Table reordering', { timeout: 15_000 }, () => {
     const { container } = render(<Tasks onMove={() => {}} />);
     expect(screen.getByRole('button', { name: 'Drag Wash' })).toBeEnabled();
     expect(screen.getByRole('button', { name: 'Drag Pinned' })).toBeDisabled();
-    expect(screen.getByRole('grid')).toHaveAttribute('data-allows-dragging', 'true');
+    expect(container.querySelector('.ui-table')).toHaveAttribute('data-reordering', 'true');
     expectHooksMatchSpec(container, 'TABLE', { slots: ['drag-handle'] });
+  });
+
+  it('UIC-TABLE-5.1 keeps the rows mounted while reordering or grouping turns on and off', async () => {
+    const user = userEvent.setup();
+    const table = (options: { reorder: boolean; grouped: boolean }) => (
+      <Table
+        aria-label="Tasks"
+        rows={tasks}
+        columns={[{ id: 'title', header: 'Title' }]}
+        selectionMode="multiple"
+        defaultSelectedKeys={['dry']}
+        groupBy={options.grouped ? ['title'] : []}
+        reorder={options.reorder ? { onMove: vi.fn() } : undefined}
+      />
+    );
+    const { container, rerender } = render(table({ reorder: false, grouped: false }));
+    const root = container.querySelector('.ui-table');
+    const dry = row('Dry');
+    await user.click(screen.getByRole('rowheader', { name: 'Wash' }));
+    const focused = document.activeElement;
+    expect(row('Wash').contains(focused)).toBe(true);
+    expect(root).not.toHaveAttribute('data-reordering');
+    rerender(table({ reorder: true, grouped: false }));
+    expect(row('Dry')).toBe(dry);
+    expect(focused).toHaveFocus();
+    expect(root).toHaveAttribute('data-reordering', 'true');
+    expect(dry.querySelector('.ui-table__drag-handle')).toBeEnabled();
+    rerender(table({ reorder: true, grouped: true }));
+    expect(root).not.toHaveAttribute('data-reordering');
+    expect(row('Dry').querySelector('.ui-table__drag-handle')).toBeNull();
+    const grid = screen.getByRole('treegrid');
+    rerender(table({ reorder: true, grouped: false }));
+    expect(screen.getByRole('grid')).toBe(grid);
+    expect(root).toHaveAttribute('data-reordering', 'true');
+    const ungrouped = row('Dry');
+    rerender(table({ reorder: false, grouped: false }));
+    expect(root).not.toHaveAttribute('data-reordering');
+    expect(row('Dry')).toBe(ungrouped);
+    expect(ungrouped.querySelector('.ui-table__drag-handle')).toBeNull();
+    expect(ungrouped).toHaveAttribute('aria-selected', 'true');
+    expect(ungrouped).not.toHaveAttribute('draggable');
   });
 
   it('UIC-TABLE-5.1 moves a row by keyboard drag and drop from its handle', async () => {
