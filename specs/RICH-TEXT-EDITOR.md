@@ -174,9 +174,9 @@ Verification: `src/components/rich-text-editor/format-toolbar.test.tsx`, `e2e/ri
 
 ### UIC-RICH-TEXT-EDITOR-6.2 - Block type
 
-The toolbar shall hold a `SelectField` (`ui-format-toolbar__block-type`, label `blockType` without a visible label) of the text block types the schema supports (paragraph, headings 1 to 3, code block), showing the type of the selected blocks, or its placeholder when they differ. Choosing one turns the selected blocks into it and returns focus to the document.
+The toolbar shall hold a `SelectField` (`ui-format-toolbar__block-type`, label `blockType` without a visible label) of the text block types the schema supports (paragraph, headings 1 to 3, code block), showing the type of the selected blocks, or its placeholder when they differ. Choosing one turns the selected blocks into it and returns focus to the document. `blockTypeLabels` chooses how the options are drawn: `plain` (the default) with the type's glyph and name, or `preview` with the name alone in `ui-format-toolbar__block-preview`, carrying `data-block` with the type's id (`paragraph`, `heading-1` to `heading-3`, `code-block`), for the host's styles to draw each name the way its block looks. Either way each option is named by its type's name, keeps its selected state and arrow-key navigation, and the trigger names the current type in plain text.
 
-Implementation: `src/components/rich-text-editor/format-controls.tsx`, `src/components/rich-text-editor/use-focus-return.ts`
+Implementation: `src/components/rich-text-editor/format-controls.tsx`, `src/components/rich-text-editor/format-toolbar.tsx`, `src/components/rich-text-editor/use-focus-return.ts`
 Verification: `src/components/rich-text-editor/format-toolbar.test.tsx`, `e2e/rich-text-editor.spec.ts`
 
 ### UIC-RICH-TEXT-EDITOR-6.3 - Link editor
@@ -291,36 +291,38 @@ Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `src/
 
 ## Hooks
 
-| Hook                                 | Kind      | Values                                     | Description                                                                      |
-| ------------------------------------ | --------- | ------------------------------------------ | -------------------------------------------------------------------------------- |
-| `ui-rich-text-editor`                | root      |                                            | The field's root, alongside `ui-field`.                                          |
-| `ui-rich-text-editor__frame`         | slot      |                                            | The box around the toolbar row and the surface.                                  |
-| `ui-rich-text-editor__toolbar`       | slot      |                                            | The row holding `toolbar`.                                                       |
-| `ui-rich-text-editor__surface`       | slot      |                                            | The positioned area holding the content and the floating chrome.                 |
-| `ui-rich-text-editor__content`       | slot      |                                            | The editable document (role `textbox`), also ProseMirror's `ProseMirror` class.  |
-| `ui-rich-text-editor__placeholder`   | slot      |                                            | The empty document's only block, which shows the placeholder.                    |
-| `ui-rich-text-editor__task-item`     | slot      |                                            | A task list item.                                                                |
-| `ui-rich-text-editor__task-checkbox` | slot      |                                            | The task item's checkbox holder, alongside a `ui-checkbox`.                      |
-| `ui-rich-text-editor__task-content`  | slot      |                                            | The task item's content.                                                         |
-| `ui-format-toolbar`                  | root      |                                            | `FormatToolbar`'s row, alongside `ui-toolbar-row`.                               |
-| `ui-format-toolbar__block-type`      | slot      |                                            | The block type select, alongside `ui-select-field`.                              |
-| `ui-format-toolbar__link-editor`     | slot      |                                            | The link editor popover, alongside `ui-popover`.                                 |
-| `ui-selection-toolbar`               | root      |                                            | `SelectionToolbar`'s non-modal popover.                                          |
-| `ui-selection-toolbar__row`          | slot      |                                            | Its toolbar row, alongside `ui-toolbar-row`.                                     |
-| `ui-selection-toolbar__link-editor`  | slot      |                                            | Its link editor popover, alongside `ui-popover`.                                 |
-| `ui-insert-menu`                     | root      |                                            | The slash menu's popover, alongside `ui-completion-list`.                        |
-| `ui-insert-menu__caret`              | slot      |                                            | The zero-width marker at the slash the menu opens against.                       |
-| `ui-insert-menu-button`              | root      |                                            | `InsertMenuButton`'s trigger, alongside `ui-dropdown-menu`.                      |
-| `ui-block-handle`                    | root      |                                            | The handle, placed beside its block.                                             |
-| `ui-block-handle__grip`              | slot      |                                            | The grip that drags the block.                                                   |
-| `ui-block-handle__menu`              | slot      |                                            | The block menu's trigger, alongside `ui-dropdown-menu`.                          |
-| `ui-block-handle__drop-indicator`    | slot      |                                            | The line marking the gap a dragged block would drop into.                        |
-| `data-readonly`                      | state     | `true`                                     | On the content: the editor refuses edits but stays focusable.                    |
-| `data-disabled`                      | state     | `true`                                     | On the content: the editor is disabled.                                          |
-| `data-placeholder`                   | attribute |                                            | On the placeholder block: the placeholder text.                                  |
-| `data-checked`                       | state     | `true`                                     | On a task item: the task is done.                                                |
-| `data-dragging`                      | state     | `true`                                     | On the block handle: its block is being dragged.                                 |
-| `data-gutter`                        | state     | `true`                                     | On the surface: a block handle with controls is mounted and drawn in its gutter. |
-| `data-placement`                     | state     | `top`, `bottom`, `left`, `right`, `center` | On the selection toolbar: the side of the selection it opened on (React Aria).   |
-| `data-entering`                      | state     | `true`                                     | On the selection toolbar: it is opening (React Aria).                            |
-| `data-exiting`                       | state     | `true`                                     | On the selection toolbar: it is closing (React Aria).                            |
+| Hook                                 | Kind      | Values                                                | Description                                                                      |
+| ------------------------------------ | --------- | ----------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `ui-rich-text-editor`                | root      |                                                       | The field's root, alongside `ui-field`.                                          |
+| `ui-rich-text-editor__frame`         | slot      |                                                       | The box around the toolbar row and the surface.                                  |
+| `ui-rich-text-editor__toolbar`       | slot      |                                                       | The row holding `toolbar`.                                                       |
+| `ui-rich-text-editor__surface`       | slot      |                                                       | The positioned area holding the content and the floating chrome.                 |
+| `ui-rich-text-editor__content`       | slot      |                                                       | The editable document (role `textbox`), also ProseMirror's `ProseMirror` class.  |
+| `ui-rich-text-editor__placeholder`   | slot      |                                                       | The empty document's only block, which shows the placeholder.                    |
+| `ui-rich-text-editor__task-item`     | slot      |                                                       | A task list item.                                                                |
+| `ui-rich-text-editor__task-checkbox` | slot      |                                                       | The task item's checkbox holder, alongside a `ui-checkbox`.                      |
+| `ui-rich-text-editor__task-content`  | slot      |                                                       | The task item's content.                                                         |
+| `ui-format-toolbar`                  | root      |                                                       | `FormatToolbar`'s row, alongside `ui-toolbar-row`.                               |
+| `ui-format-toolbar__block-type`      | slot      |                                                       | The block type select, alongside `ui-select-field`.                              |
+| `ui-format-toolbar__block-preview`   | slot      |                                                       | A block type option's name drawn as a preview, with `data-block`.                |
+| `data-block`                         | attribute | `paragraph`, `heading-1` to `heading-3`, `code-block` | On a block preview: the block type it previews.                                  |
+| `ui-format-toolbar__link-editor`     | slot      |                                                       | The link editor popover, alongside `ui-popover`.                                 |
+| `ui-selection-toolbar`               | root      |                                                       | `SelectionToolbar`'s non-modal popover.                                          |
+| `ui-selection-toolbar__row`          | slot      |                                                       | Its toolbar row, alongside `ui-toolbar-row`.                                     |
+| `ui-selection-toolbar__link-editor`  | slot      |                                                       | Its link editor popover, alongside `ui-popover`.                                 |
+| `ui-insert-menu`                     | root      |                                                       | The slash menu's popover, alongside `ui-completion-list`.                        |
+| `ui-insert-menu__caret`              | slot      |                                                       | The zero-width marker at the slash the menu opens against.                       |
+| `ui-insert-menu-button`              | root      |                                                       | `InsertMenuButton`'s trigger, alongside `ui-dropdown-menu`.                      |
+| `ui-block-handle`                    | root      |                                                       | The handle, placed beside its block.                                             |
+| `ui-block-handle__grip`              | slot      |                                                       | The grip that drags the block.                                                   |
+| `ui-block-handle__menu`              | slot      |                                                       | The block menu's trigger, alongside `ui-dropdown-menu`.                          |
+| `ui-block-handle__drop-indicator`    | slot      |                                                       | The line marking the gap a dragged block would drop into.                        |
+| `data-readonly`                      | state     | `true`                                                | On the content: the editor refuses edits but stays focusable.                    |
+| `data-disabled`                      | state     | `true`                                                | On the content: the editor is disabled.                                          |
+| `data-placeholder`                   | attribute |                                                       | On the placeholder block: the placeholder text.                                  |
+| `data-checked`                       | state     | `true`                                                | On a task item: the task is done.                                                |
+| `data-dragging`                      | state     | `true`                                                | On the block handle: its block is being dragged.                                 |
+| `data-gutter`                        | state     | `true`                                                | On the surface: a block handle with controls is mounted and drawn in its gutter. |
+| `data-placement`                     | state     | `top`, `bottom`, `left`, `right`, `center`            | On the selection toolbar: the side of the selection it opened on (React Aria).   |
+| `data-entering`                      | state     | `true`                                                | On the selection toolbar: it is opening (React Aria).                            |
+| `data-exiting`                       | state     | `true`                                                | On the selection toolbar: it is closing (React Aria).                            |

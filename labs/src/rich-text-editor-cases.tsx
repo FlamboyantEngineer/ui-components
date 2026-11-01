@@ -217,6 +217,18 @@ export function LockedChromeEditor() {
   );
 }
 
+/** The block type select drawing each type the way its block looks. */
+export function PreviewLabelsEditor() {
+  return (
+    <RichTextEditor
+      label="Previewed block types"
+      defaultValue={shortNote}
+      data-lab-editor="preview-labels"
+      toolbar={<FormatToolbar blockTypeLabels="preview" />}
+    />
+  );
+}
+
 /** Three short steps to move around. */
 const recipeSteps: RichTextDocument = {
   type: 'doc',

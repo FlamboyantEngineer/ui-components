@@ -446,6 +446,39 @@ test.describe('Rich Text Editor lab', () => {
     await expect(none.locator('p').first()).toHaveText('Wash the plums.');
   });
 
+  test('UIC-RICH-TEXT-EDITOR-6.2 previews block types in the select and applies one', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('rich-text-editor');
+    const box = content(page, 'preview-labels');
+    await box.locator('p').first().click();
+    const trigger = editor(page, 'preview-labels').getByRole('button', { name: /Block type/ });
+    await expect(trigger).toHaveText(/Text/);
+    await trigger.click();
+    const list = page.getByRole('listbox');
+    const size = (name: string) =>
+      list
+        .getByRole('option', { name })
+        .locator('.ui-format-toolbar__block-preview')
+        .evaluate((node) => parseFloat(getComputedStyle(node).fontSize));
+    const text = await size('Text');
+    expect(await size('Heading 1')).toBeGreaterThan(await size('Heading 2'));
+    expect(await size('Heading 3')).toBeGreaterThan(text);
+    await expect(
+      list.getByRole('option', { name: 'Code block' }).locator('.ui-format-toolbar__block-preview'),
+    ).toHaveCSS('font-family', /mono/i);
+    await expect(list.getByRole('option', { name: 'Text' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Enter');
+    await expect(box.locator('h1')).toHaveCount(1);
+    await expect(trigger).toHaveText(/Heading 1/);
+    await expect(trigger.locator('.ui-format-toolbar__block-preview')).toHaveCount(0);
+  });
+
   test('UIC-RICH-TEXT-EDITOR-2.3 ticks tasks', async ({ page, lab }) => {
     await lab.open('rich-text-editor');
     const tasks = content(page, 'full').locator('.ui-rich-text-editor__task-item');

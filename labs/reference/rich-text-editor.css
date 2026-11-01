@@ -227,6 +227,28 @@
   width: 150px;
 }
 
+/* Block type previews: each name drawn the way its block looks in the document. */
+.ui-format-toolbar__block-preview:is([data-block^='heading']) {
+  line-height: 1.25;
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-format-toolbar__block-preview[data-block='heading-1'] {
+  font-size: 1.6em;
+}
+
+.ui-format-toolbar__block-preview[data-block='heading-2'] {
+  font-size: 1.3em;
+}
+
+.ui-format-toolbar__block-preview[data-block='heading-3'] {
+  font-size: 1.1em;
+}
+
+.ui-format-toolbar__block-preview[data-block='code-block'] {
+  font-family: var(--ref-mono);
+}
+
 .ui-format-toolbar__link-editor,
 .ui-selection-toolbar__link-editor {
   width: 300px;

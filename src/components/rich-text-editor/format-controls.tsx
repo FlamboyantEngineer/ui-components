@@ -1,7 +1,7 @@
 'use client';
 
 import { LinkGlyph, UnlinkGlyph } from '../../core/glyphs.js';
-import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent, type ReactNode } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isSafeUrl } from '../../utils/safe-url.js';
@@ -55,8 +55,21 @@ export function FormatButtons({ controller, items }: FormatControlProps & { item
     });
 }
 
-/** The select of text block types; choosing one turns the selected blocks into it. */
-export function BlockTypeSelect({ controller, className, onCommand }: OverlayControlProps) {
+interface BlockTypeSelectProps extends OverlayControlProps {
+  /** Draws an option as a preview of its block type instead of a glyph and its name. */
+  renderPreview?: ((item: { id: string; label: string }) => ReactNode) | undefined;
+}
+
+/**
+ * The select of text block types; choosing one turns the selected blocks into it. The trigger
+ * names the current type in plain text either way.
+ */
+export function BlockTypeSelect({
+  controller,
+  className,
+  onCommand,
+  renderPreview,
+}: BlockTypeSelectProps) {
   const strings = useUiStrings();
   const items = getBlockItems(strings).filter((item) => controller.supports(item.command));
   const value = items.find((item) => controller.isActive(item.command))?.id ?? null;
@@ -72,6 +85,11 @@ export function BlockTypeSelect({ controller, className, onCommand }: OverlayCon
       labelLayout="control-only"
       placeholder={strings.blockType}
       options={items.map(({ id, label, icon }) => ({ id, label, icon }))}
+      renderOption={
+        renderPreview
+          ? (option) => renderPreview({ id: String(option.id), label: option.label })
+          : undefined
+      }
       value={value}
       tracksChanges={false}
       onChange={choose}
