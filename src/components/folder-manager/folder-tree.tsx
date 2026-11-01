@@ -188,6 +188,7 @@ export function FolderTree<T extends FolderItem>({
           edit={edit}
           messageId={message ? messageId : undefined}
           inputRef={nameRef}
+          onType={actions.type}
           onBlur={(name) => void actions.submit(name)}
         />
       ) : (

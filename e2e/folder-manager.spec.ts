@@ -274,6 +274,31 @@ test.describe('Folder Manager lab', () => {
     expect(await rowNames(manager)).toContain('Fruit');
   });
 
+  test('UIC-FOLDER-MANAGER-2.3 keeps the typed name when the renamed folder moves', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('folder-manager');
+    const demo = page.locator('[data-lab-demo="moving"]');
+    await demo.getByRole('button', { name: 'Move Citrus into Herbs in a moment' }).click();
+    await demo.getByRole('button', { name: 'Rename' }).click();
+    await page.keyboard.type('Limes');
+    await page.clock.runFor(1500);
+    await expect(demo.locator('[data-lab-output="Moving action"]')).toHaveText(
+      'moved citrus inside herbs',
+    );
+    const field = demo.getByRole('textbox', { name: 'Rename Citrus' });
+    await expect(field).toHaveValue('Limes');
+    await expect(field).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(demo.locator('[data-lab-output="Moving action"]')).toHaveText(
+      'renamed citrus to Limes',
+    );
+    await page.clock.resume();
+    await lab.expectAccessible();
+  });
+
   test('UIC-FOLDER-MANAGER-5.1 loads subfolders on demand and retries a failed load', async ({
     page,
     lab,
