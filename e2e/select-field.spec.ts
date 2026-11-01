@@ -394,4 +394,28 @@ test.describe('Select Field trigger ref', () => {
     await limited.getByRole('button', { name: 'Remove Apple' }).click();
     await expect(restore).toBeEnabled();
   });
+
+  test('UIC-SELECT-FIELD-5.1 settles a remote search once the query stops changing', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('select-field');
+    const cities = field(page, 'search');
+    const searches = output(page, 'Searches');
+    await cities.getByRole('button').first().click();
+    const search = page.getByRole('searchbox');
+    await search.fill('li');
+    await expect(page.getByRole('option', { name: 'Lisbon' })).toBeVisible();
+    const settled = Number(await searches.textContent());
+    expect(settled).toBeGreaterThanOrEqual(1);
+    await page.waitForTimeout(1500);
+    await expect(searches).toHaveText(String(settled));
+    await search.fill('oslo');
+    await expect(page.getByRole('option', { name: 'Oslo' })).toBeVisible();
+    await expect(page.getByRole('option', { name: 'Lisbon' })).toHaveCount(0);
+    const next = Number(await searches.textContent());
+    expect(next).toBeGreaterThan(settled);
+    await page.waitForTimeout(1500);
+    await expect(searches).toHaveText(String(next));
+  });
 });
