@@ -87,9 +87,9 @@ Verification: `src/components/file-field/file-field-changes.test.ts`, `src/compo
 
 ### UIC-FILE-FIELD-3.2 - Removed files
 
-While the field is dirty, each committed file the value no longer holds shall follow the list as a `FieldPreviousValue` (`ui-file-field__removed`) with its name, whose restore button (`Restore <name>`) puts that one file back in its committed place and commits; the button is disabled while the field is full or locked.
+While the field is dirty, the committed files the value no longer holds shall follow the list in a `role="group"` (`ui-file-field__removed-files`) titled by the provider's `removedFiles` string (`Removed files`) in its `ui-file-field__removed-label` slot, absent while no file is removed. Each removed file is a `FieldPreviousValue` (`ui-file-field__removed`) with its name, whose restore button (`Restore <name>`) puts that one file back in its committed place and commits; the button is disabled while the field is full or locked. The reference stylesheet draws the group below the held files and each removed file as a chip the height of a file row, its long name cut with an ellipsis.
 
-Implementation: `src/components/file-field/file-field.tsx`, `src/components/file-field/file-field-changes.ts`, `src/components/file-field/file-field-parts.tsx`
+Implementation: `src/components/file-field/file-field.tsx`, `src/components/file-field/file-field-changes.ts`, `src/components/file-field/file-field-parts.tsx`, `src/core/strings/field.ts`, `labs/reference/file-field.css`
 Verification: `src/components/file-field/file-field-changes.test.ts`, `src/components/file-field/file-field.test.tsx`, `e2e/file-field.spec.ts`
 
 ## UIC-FILE-FIELD-4 - Accessibility and hooks
@@ -110,9 +110,11 @@ Verification: `src/components/file-field/file-field.test.tsx`
 
 ## Hooks
 
-| Hook                      | Kind | Values | Description                                                           |
-| ------------------------- | ---- | ------ | --------------------------------------------------------------------- |
-| `ui-file-field`           | root |        | The field's root (also `ui-field`).                                   |
-| `ui-file-field__upload`   | slot |        | The upload that chooses files and lists them (also `ui-file-upload`). |
-| `ui-file-field__download` | slot |        | A held file's download link (also `ui-link`).                         |
-| `ui-file-field__removed`  | slot |        | A removed committed file (also `ui-field-previous-value`).            |
+| Hook                           | Kind | Values | Description                                                           |
+| ------------------------------ | ---- | ------ | --------------------------------------------------------------------- |
+| `ui-file-field`                | root |        | The field's root (also `ui-field`).                                   |
+| `ui-file-field__upload`        | slot |        | The upload that chooses files and lists them (also `ui-file-upload`). |
+| `ui-file-field__download`      | slot |        | A held file's download link (also `ui-link`).                         |
+| `ui-file-field__removed-files` | slot |        | The titled group of removed committed files, below the held files.    |
+| `ui-file-field__removed-label` | slot |        | The group's `Removed files` title.                                    |
+| `ui-file-field__removed`       | slot |        | A removed committed file (also `ui-field-previous-value`).            |

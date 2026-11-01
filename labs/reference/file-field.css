@@ -25,7 +25,41 @@
   background: var(--ref-hover);
 }
 
-.ui-file-field__removed {
-  flex: none;
+.ui-file-field .ui-field__control {
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* The removed committed files: a titled row of chips below the held files, sized like them. */
+.ui-file-field__removed-files {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ui-file-field__removed-label {
+  flex: 1 1 100%;
+  color: var(--ref-muted);
   font-size: var(--ref-font-size-sm);
+}
+
+.ui-file-field__removed {
+  box-sizing: border-box;
+  max-width: 100%;
+  padding: 4px 4px 4px 8px;
+  gap: 4px;
+  border: 1px dashed var(--ref-danger);
+  border-radius: var(--ref-radius);
+}
+
+/* The chip draws the border; the struck name inside reads at the file names' size. */
+.ui-file-field__removed .ui-field-previous-value__value {
+  display: block;
+  height: auto;
+  padding: 0;
+  border: 0;
+  line-height: 1.5;
+  white-space: nowrap;
 }
