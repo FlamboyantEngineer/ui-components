@@ -73,7 +73,7 @@ Verification: `src/components/dock-panel/dock-panel.test.tsx`, `e2e/dock-panel.s
 
 ### UIC-DOCK-PANEL-3.2 - Separator
 
-While expanded and docked, a `ResizeHandle` in a `ui-dock-panel__handle` slot shall resize the panel from its inner edge: a vertical bar beside a side edge and a horizontal one at the bottom, named by the provider's `resizePanel` string from the panel's label, controlling the body, reporting the size and its bounds. Moving it toward the main content grows the panel. The arrow keys step 10 pixels, Shift+arrows 2, and Home and End jump to the bounds; a pointer drag follows the pointer pixel for pixel, and the root publishes `data-resizing` while it lasts.
+While expanded and docked, a `ResizeHandle` in a `ui-dock-panel__handle` slot shall resize the panel from its inner edge: a vertical bar beside a side edge and a horizontal one at the bottom, named by the provider's `resizePanel` string from the panel's label, controlling the body, reporting the size and its bounds. Moving it toward the main content grows the panel. The arrow keys step 10 pixels, Shift+arrows 2, and Home and End jump to the bounds; a pointer drag follows the pointer pixel for pixel, and the root publishes `data-resizing` while it lasts. A drag running when the separator leaves (the panel collapses or becomes an overlay) or changes axis or direction (a new `position` or writing direction) is dropped: the live size and `data-resizing` clear, its release commits nothing, and the panel shows its committed or controlled size.
 
 Implementation: `src/components/dock-panel/dock-panel-parts.tsx`, `src/components/split-view/resize-handle.tsx`
 Verification: `src/components/dock-panel/dock-panel.test.tsx`, `e2e/dock-panel.spec.ts`

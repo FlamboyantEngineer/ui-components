@@ -115,6 +115,7 @@ function RailResizeHandle({
       extent={maxWidth}
       resetKey={owner}
       onChange={onResize}
+      onChangeCancel={() => onResize(null)}
       onChangeEnd={(next) => {
         onResize(null);
         onResizeEnd(next);

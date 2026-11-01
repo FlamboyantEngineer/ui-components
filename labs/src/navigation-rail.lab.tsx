@@ -41,6 +41,41 @@ function KitchenWorkspace() {
   );
 }
 
+/**
+ * A rail the page collapses one second into a drag of its edge: the unfinished width is dropped,
+ * so expanding it again shows the width it had before the drag.
+ */
+function CollapsedMidDrag() {
+  const [current, setCurrent] = useState<KitchenPage>('inbox');
+  const [isCollapsed, setCollapsed] = useState(false);
+  const [width, setWidth] = useState<number | null>(null);
+  return (
+    <div
+      style={{ display: 'flex', height: 360 }}
+      data-lab-demo="collapsed-mid-drag"
+      onPointerDownCapture={(event) => {
+        const target = event.target as HTMLElement;
+        if (target.closest('[role="separator"]')) window.setTimeout(() => setCollapsed(true), 1000);
+      }}
+    >
+      <KitchenRail
+        aria-label="Pantry navigation"
+        current={current}
+        onNavigate={setCurrent}
+        isResizable
+        isCollapsed={isCollapsed}
+        onCollapsedChange={setCollapsed}
+        onWidthChange={setWidth}
+      />
+      <div style={{ padding: 16 }}>
+        <p data-lab-output="committed width">
+          {width === null ? 'No width committed' : `Committed ${width}px`}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -107,6 +142,12 @@ mountLab(
       description="Press items to move the current page; groups open when the current page moves inside. Collapse the rail or drag its edge, then reload: both persist. Up and Down move between entries."
     >
       <KitchenWorkspace />
+    </LabSection>
+    <LabSection
+      title="Collapsed during a drag"
+      description="The page collapses this rail one second after a drag of its edge starts. The drag ends with it: releasing commits nothing, and expanding the rail shows its earlier width."
+    >
+      <CollapsedMidDrag />
     </LabSection>
   </>,
 );
