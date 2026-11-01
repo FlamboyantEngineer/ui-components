@@ -13,7 +13,7 @@ Verification: `src/components/button-group/button-group.test.tsx`, `e2e/button-g
 
 ### UIC-BUTTON-GROUP-1.2 - Density
 
-`density` shall publish `data-density`: `default` (the default) and `compact` space the buttons apart, and `attached` joins them into one control. The reference sheet draws 8 and 2 pixel gaps, and for `attached` no gap, one shared border between neighbours and rounded corners only at the group's ends, with a focused button drawn above its neighbours.
+`density` shall publish `data-density`: `default` (the default) and `compact` space the buttons apart, and `attached` joins them into one control. The reference sheet draws 8 and 2 pixel gaps, and for `attached` no gap, one shared border between neighbours and rounded corners only at the group's ends. On a shared edge a hovered button is drawn above its resting neighbours, a selected button above a hovered one, so its whole border shows at rest and while a neighbour is hovered, and a keyboard-focused button above all, so its focus ring is never covered, in either orientation and direction, enabled or disabled.
 
 Implementation: `src/components/button-group/button-group.tsx`, `labs/reference/button-group.css`
 Verification: `src/components/button-group/button-group.test.tsx`, `e2e/button-group.spec.ts`

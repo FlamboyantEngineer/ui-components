@@ -24,9 +24,21 @@
   position: relative;
 }
 
-.ui-button-group[data-density='attached'] > [data-focus-visible],
+/*
+ * Shared edges: a hovered button rises above its resting neighbours, a selected one above a hovered
+ * one, so its border stays whole once the pointer leaves, and a focused one above all, so the focus
+ * ring is never covered.
+ */
 .ui-button-group[data-density='attached'] > [data-hovered] {
   z-index: 1;
+}
+
+.ui-button-group[data-density='attached'] > [data-selected] {
+  z-index: 2;
+}
+
+.ui-button-group[data-density='attached'] > [data-focus-visible] {
+  z-index: 3;
 }
 
 .ui-button-group[data-density='attached'][data-orientation='horizontal'] > :not(:first-child) {
