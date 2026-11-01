@@ -46,6 +46,13 @@ With `onClose`, the bar shall end with a Close icon button (`ui-find-bar__close`
 Implementation: `src/components/find-bar/find-bar.tsx`
 Verification: `src/components/find-bar/find-bar.test.tsx`, `e2e/find-bar.spec.ts`
 
+### UIC-FIND-BAR-1.7 - Values outlast their controls
+
+The bar shall own the uncontrolled option selection and replacement for as long as it is mounted, not the menu and box that show them: when `options` empties or both replace handlers go away and later come back, the menu shows the options last reported through `onSelectedOptionsChange` and the box the replacement last reported through `onReplacementChange`, with no new report and no return to the defaults. A menu that was open when its options went away comes back closed. Controlled values are shown as given whenever their control is present.
+
+Implementation: `src/components/find-bar/find-bar.tsx`
+Verification: `src/components/find-bar/find-bar-controls.test.tsx`, `e2e/find-bar.spec.ts`
+
 ## UIC-FIND-BAR-2 - Accessibility and hooks
 
 ### UIC-FIND-BAR-2.1 - Names, order and announcements

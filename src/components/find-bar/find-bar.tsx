@@ -99,22 +99,20 @@ function describeStatus(
   return strings.matchTotal(matchCount);
 }
 
-/** The menu of matching options, each one checked while it is on; choosing one keeps it open. */
-function FindBarOptions(
-  props: Pick<
-    FindBarProps,
-    'selectedOptions' | 'defaultSelectedOptions' | 'onSelectedOptionsChange'
-  > & {
-    options: readonly FindBarOption[];
-  },
-) {
+/**
+ * The menu of matching options, each one checked while it is on; choosing one keeps it open. The
+ * bar owns the selection, so it outlasts the menu while the options are gone.
+ */
+function FindBarOptions({
+  options,
+  selected,
+  setSelected,
+}: {
+  options: readonly FindBarOption[];
+  selected: Iterable<Key>;
+  setSelected: (keys: Iterable<Key>) => void;
+}) {
   const strings = useUiStrings();
-  const { options } = props;
-  const [selected, setSelected] = useControllableState<Iterable<Key>>(
-    props.selectedOptions,
-    props.defaultSelectedOptions ?? noOptions,
-    (keys) => props.onSelectedOptionsChange?.(new Set(keys)),
-  );
   return (
     <DropdownMenu
       className={hooks.slotClass('options')}
@@ -133,21 +131,22 @@ function FindBarOptions(
   );
 }
 
-/** The replacement box with the Replace and Replace all buttons the caller asked for. */
+/**
+ * The replacement box with the Replace and Replace all buttons the caller asked for. The bar owns the
+ * replacement, so it outlasts the box while the replace handlers are gone.
+ */
 function FindBarReplace({
   hasMatches,
-  ...props
-}: Pick<
-  FindBarProps,
-  'replacement' | 'defaultReplacement' | 'onReplacementChange' | 'onReplace' | 'onReplaceAll'
-> & { hasMatches: boolean }) {
+  replacement,
+  setReplacement,
+  onReplace,
+  onReplaceAll,
+}: Pick<FindBarProps, 'onReplace' | 'onReplaceAll'> & {
+  hasMatches: boolean;
+  replacement: string;
+  setReplacement: (replacement: string) => void;
+}) {
   const strings = useUiStrings();
-  const { onReplace, onReplaceAll } = props;
-  const [replacement, setReplacement] = useControllableState(
-    props.replacement,
-    props.defaultReplacement ?? '',
-    props.onReplacementChange,
-  );
   const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     // The Enter that confirms a text composition replaces nothing.
     if (event.key !== 'Enter' || isComposingKey(event.nativeEvent)) return;
@@ -308,8 +307,18 @@ export function FindBar({
   };
   const find = { label, placeholder, query, defaultQuery, onQueryChange, inputRef };
   const steps = { matchCount, currentIndex, isPending, onNext, onPrevious };
-  const replace = { replacement, defaultReplacement, onReplacementChange, onReplace, onReplaceAll };
-  const selection = { selectedOptions, defaultSelectedOptions, onSelectedOptionsChange };
+  // The bar, not its optional controls, owns their values, so they outlast the controls.
+  const [currentReplacement, setReplacement] = useControllableState(
+    replacement,
+    defaultReplacement ?? '',
+    onReplacementChange,
+  );
+  const [selected, setSelected] = useControllableState<Iterable<Key>>(
+    selectedOptions,
+    defaultSelectedOptions ?? noOptions,
+    (keys) => onSelectedOptionsChange?.(new Set(keys)),
+  );
+  const replace = { replacement: currentReplacement, setReplacement, onReplace, onReplaceAll };
   const hasMatches = (matchCount ?? 0) > 0;
   return (
     <div
@@ -318,7 +327,9 @@ export function FindBar({
       onKeyDownCapture={onKeyDownCapture}
     >
       <FindBarFind {...find} {...steps} />
-      {options && options.length > 0 ? <FindBarOptions {...selection} options={options} /> : null}
+      {options && options.length > 0 ? (
+        <FindBarOptions options={options} selected={selected} setSelected={setSelected} />
+      ) : null}
       {onReplace || onReplaceAll ? <FindBarReplace {...replace} hasMatches={hasMatches} /> : null}
       {onClose ? (
         <Button
