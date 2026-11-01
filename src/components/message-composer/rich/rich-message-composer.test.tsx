@@ -436,6 +436,40 @@ describe('RichMessageComposer', () => {
     expect(onChange).toHaveBeenLastCalledWith({ text: 'Plan a trip!', tokens: [] });
   });
 
+  it('UIC-MESSAGE-COMPOSER-3.6 starts a fresh undo history for another draft owner with the same text', async () => {
+    let now = 1_000;
+    const clock = vi.spyOn(Date, 'now').mockImplementation(() => now);
+    const user = userEvent.setup();
+    const publicText = { text: 'public', tokens: [] };
+    const composer = (persistKey: string, storage = createMemoryStorage()) => (
+      <UiProvider storage={storage}>
+        <RichMessageComposer persistKey={persistKey} defaultValue={publicText} />
+      </UiProvider>
+    );
+    const first = createMemoryStorage();
+    const { rerender } = render(composer('a', first));
+    await user.click(box());
+    await user.keyboard('Secret');
+    // A later edit is another step of the history: it brings the shown text back to `public`.
+    now += 5_000;
+    await user.keyboard('{Control>}a{/Control}{Backspace}public');
+    expect(box()).toHaveTextContent(/^public$/);
+    // The same owner keeps its history across renders.
+    rerender(composer('a', first));
+    await user.keyboard('{Control>}z{/Control}');
+    expect(box()).toHaveTextContent('Secretpublic');
+    await user.keyboard('{Control>}{Shift>}z{/Shift}{/Control}');
+    expect(box()).toHaveTextContent(/^public$/);
+    // Another draft key, another storage and a return to the first owner each start afresh.
+    for (const next of [composer('b', first), composer('b'), composer('a', first)]) {
+      rerender(next);
+      await user.click(box());
+      await user.keyboard('{Control>}z{/Control}');
+      expect(box()).toHaveTextContent(/^public$/);
+    }
+    clock.mockRestore();
+  });
+
   it('UIC-MESSAGE-COMPOSER-3.6 keeps the draft and its pills in the provider storage', async () => {
     const storage = createMemoryStorage();
     const user = userEvent.setup();

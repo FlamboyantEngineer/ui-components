@@ -472,6 +472,28 @@ test.describe('Message Composer lab', () => {
     await expect(workspace.getByRole('textbox')).toHaveValue('');
   });
 
+  test('UIC-MESSAGE-COMPOSER-3.6 starts a fresh undo history in another storage with the same text', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('message-composer');
+    const input = composer(page, 'rich-workspace').getByRole('textbox');
+    await input.click();
+    await page.keyboard.type('Secret ');
+    // A pause closes the undo step, so the next edit is a step of its own.
+    await page.waitForTimeout(700);
+    await page.keyboard.press('ControlOrMeta+a');
+    await page.keyboard.type('Same text in both');
+    await page.getByRole('radio', { name: 'West' }).click();
+    await input.click();
+    await page.keyboard.press('ControlOrMeta+z');
+    await expect(input).toHaveText('Same text in both');
+    await page.getByRole('radio', { name: 'East' }).click();
+    await input.click();
+    await page.keyboard.press('ControlOrMeta+z');
+    await expect(input).toHaveText('Same text in both');
+  });
+
   test('UIC-MESSAGE-COMPOSER-5.1 UIC-MESSAGE-COMPOSER-5.2 opens the + menu above the composer with its categories', async ({
     page,
     lab,
