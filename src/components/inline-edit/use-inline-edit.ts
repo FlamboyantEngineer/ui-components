@@ -164,9 +164,11 @@ function useSaveQueue<T>(options: SaveQueueOptions<T>) {
     setError(null);
     setPending(attempt);
     try {
-      await options.onSave(next);
+      // A save starting from the queue calls the current `onSave`, not the one of the render
+      // that started the save before it.
+      await latest.current.onSave(next);
     } catch (failure) {
-      settle(attempt, toErrorMessage(failure, options.failureMessage));
+      settle(attempt, toErrorMessage(failure, latest.current.failureMessage));
       return;
     }
     if (!settle(attempt, null)) return;

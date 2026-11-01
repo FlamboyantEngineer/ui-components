@@ -549,6 +549,36 @@ describe('InlineEdit', { timeout: 15_000 }, () => {
     expect(screen.getByText('Offline.')).toBeInTheDocument();
   });
 
+  it('UIC-INLINE-EDIT-1.6 starts a queued save with the onSave current when it starts', async () => {
+    const first = deferred();
+    const saveA = vi.fn(() => first.promise);
+    const saveB = vi.fn(() => Promise.reject(new Error('Locked by another editor.')));
+    let commitNext: (value: string) => void = () => {};
+    const view = (onSave: (value: string) => Promise<void>) => (
+      <InlineEdit
+        label="Title"
+        value="Initial"
+        onSave={onSave}
+        defaultEditing
+        renderEditor={({ commit }) => {
+          commitNext = commit;
+          return null;
+        }}
+      />
+    );
+    const { rerender } = render(view(saveA));
+    act(() => commitNext('First'));
+    rerender(view(saveB));
+    act(() => commitNext('Second'));
+    await act(async () => {
+      first.resolve();
+      await first.promise;
+    });
+    expect(saveA.mock.calls).toEqual([['First']]);
+    expect(saveB.mock.calls).toEqual([['Second']]);
+    expect(await screen.findByText('Locked by another editor.')).toBeInTheDocument();
+  });
+
   it('UIC-INLINE-EDIT-1.2 UIC-INLINE-EDIT-1.6 ignores a save that settles after its session ended', async () => {
     const user = userEvent.setup();
     let save = deferred();
