@@ -142,6 +142,24 @@ function QueuedMerge() {
   );
 }
 
+/** Our side turns a line into a blank line between paragraphs, which taking ours keeps. */
+function BlankLineMerge() {
+  const [result, setResult] = useState<MergeViewResult | null>(null);
+  return (
+    <>
+      <MergeView
+        aria-label="Blank line merge"
+        base={'Morning rota\nTea break at 10\nCheck the stores'}
+        ours={'Morning rota\n\nCheck the stores'}
+        theirs={'Morning rota\nCoffee break at 10\nCheck the stores'}
+        onChange={setResult}
+        data-lab-field="blank"
+      />
+      <Output name="blank-text" value={result ? JSON.stringify(result.text) : 'none yet'} />
+    </>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -175,6 +193,12 @@ mountLab(
       description="Next merge shows another set of texts in the same view: every conflict starts over unresolved, and undo in its editor never brings back the previous merge's text."
     >
       <QueuedMerge />
+    </LabSection>
+    <LabSection
+      title="Blank lines"
+      description="Our side replaced a line with a blank line. Taking ours keeps that blank line in the result, shown below as a string; typing in the result and then clearing it removes the line instead."
+    >
+      <BlankLineMerge />
     </LabSection>
     <LabSection
       title="Scrolling together"

@@ -115,6 +115,21 @@ test.describe('Merge View lab', () => {
     await expect(output(page, 'queued-text')).toHaveText('');
   });
 
+  test('UIC-MERGE-VIEW-2.5 keeps the blank line a taken side holds', async ({ page, lab }) => {
+    await lab.open('merge-view');
+    const merge = field(page, 'blank');
+    await merge.scrollIntoViewIfNeeded();
+    await merge.getByRole('button', { name: 'Take Ours' }).click();
+    await expect(output(page, 'blank-text')).toHaveText('"Morning rota\\n\\nCheck the stores"');
+    const editor = merge.getByRole('textbox');
+    await editor.fill('Lunch at 12');
+    await expect(output(page, 'blank-text')).toHaveText(
+      '"Morning rota\\nLunch at 12\\nCheck the stores"',
+    );
+    await editor.fill('');
+    await expect(output(page, 'blank-text')).toHaveText('"Morning rota\\nCheck the stores"');
+  });
+
   test('UIC-MERGE-VIEW-1.3 scrolls every pane together', async ({ page, lab }) => {
     await lab.open('merge-view');
     const settings = field(page, 'settings');

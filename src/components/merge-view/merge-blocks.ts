@@ -83,15 +83,18 @@ export function getCleanLines(chunk: MergeChunk): readonly string[] {
   return chunk.kind === 'theirs' ? chunk.theirs : chunk.ours;
 }
 
-/** A conflict's result text: the lines its resolution takes, the edited text, or framed sides. */
-export function getConflictText(
+/**
+ * A conflict's result lines: the lines its resolution takes, as they are, so an empty line stays a
+ * line; the edited text's lines, none when it is empty; or the sides framed by markers.
+ */
+export function getConflictLines(
   chunk: MergeChunk,
   state: ConflictState,
   markers: ConflictMarkers,
-): string {
+): readonly string[] {
   switch (state.resolution) {
     case 'edited':
-      return state.text;
+      return state.text === '' ? [] : state.text.split(/\r\n|\r|\n/);
     case 'unresolved':
       return [
         `<<<<<<< ${markers.ours}`,
@@ -99,17 +102,27 @@ export function getConflictText(
         '=======',
         ...chunk.theirs,
         `>>>>>>> ${markers.theirs}`,
-      ].join('\n');
+      ];
     case 'both':
-      return [...chunk.ours, ...chunk.theirs].join('\n');
+      return [...chunk.ours, ...chunk.theirs];
     default:
-      return chunk[state.resolution].join('\n');
+      return chunk[state.resolution];
   }
 }
 
+/** A conflict's result text: its result lines joined by line breaks. */
+export function getConflictText(
+  chunk: MergeChunk,
+  state: ConflictState,
+  markers: ConflictMarkers,
+): string {
+  if (state.resolution === 'edited') return state.text;
+  return getConflictLines(chunk, state, markers).join('\n');
+}
+
 /**
- * The merged text: clean chunks' lines and each conflict's result text in order, ending with a
- * line break when our text does.
+ * The merged text: clean chunks' lines and each conflict's result lines in order, ending with a
+ * line break when our text does and the merge has a line, even an empty one.
  */
 export function createMergeText(options: {
   blocks: readonly MergeBlock[];
@@ -118,11 +131,11 @@ export function createMergeText(options: {
   hasFinalBreak: boolean;
 }): string {
   const { blocks, states, markers, hasFinalBreak } = options;
-  const parts = blocks.flatMap((block) => {
-    if (block.conflict === null) return getCleanLines(block.chunk);
-    const text = getConflictText(block.chunk, requireDefined(states[block.conflict]), markers);
-    return text === '' ? [] : [text];
-  });
-  const text = parts.join('\n');
-  return hasFinalBreak && text !== '' ? `${text}\n` : text;
+  const lines = blocks.flatMap((block) =>
+    block.conflict === null
+      ? getCleanLines(block.chunk)
+      : getConflictLines(block.chunk, requireDefined(states[block.conflict]), markers),
+  );
+  const text = lines.join('\n');
+  return hasFinalBreak && lines.length > 0 ? `${text}\n` : text;
 }

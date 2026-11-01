@@ -221,6 +221,19 @@ describe('MergeView', { timeout: 15_000 }, () => {
     expect(onChange).toHaveBeenLastCalledWith(expect.objectContaining({ resolutions: ['ours'] }));
   });
 
+  it('UIC-MERGE-VIEW-2.5 reports the empty line a taken side holds', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<MergeView base={'a\nX\nb'} ours={'a\n\nb'} theirs={'a\nY\nb'} onChange={onChange} />);
+    const conflict = screen.getByRole('group', { name: 'Conflict 1 of 1' });
+    await user.click(within(conflict).getByRole('button', { name: 'Take Ours' }));
+    expect(onChange).toHaveBeenLastCalledWith({
+      text: 'a\n\nb',
+      resolutions: ['ours'],
+      unresolved: 0,
+    });
+  });
+
   it('UIC-MERGE-VIEW-2.4 UIC-MERGE-VIEW-2.5 resolves a conflict by editing its result', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
