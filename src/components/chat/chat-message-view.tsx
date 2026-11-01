@@ -31,6 +31,7 @@ import {
   toThinkingActivity,
   type ChatThinkingUntil,
 } from './chat-model.js';
+import { readOwn } from '../../utils/read-own.js';
 
 /** The `ChatParts` options a chat passes to every message unchanged. */
 export type ChatPartOptions = Pick<
@@ -138,7 +139,7 @@ function drawsAlike(before: ChatRenderOptions, after: ChatRenderOptions): boolea
   const next = after.toolRenderers ?? {};
   return (
     tools.length === Object.keys(next).length &&
-    tools.every(([name, renderer]) => next[name]?.replaces === renderer.replaces)
+    tools.every(([name, renderer]) => readOwn(next, name)?.replaces === renderer.replaces)
   );
 }
 

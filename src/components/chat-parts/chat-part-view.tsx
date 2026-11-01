@@ -20,6 +20,7 @@ import type { ChatPartsProps, ChatToolCallHandlers } from './chat-parts.js';
 import { chatPartsHooks as hooks } from './chat-parts-hooks.js';
 import { ChatTextPartView, type MarkdownNodeRenderer } from './chat-text-part.js';
 import type { PartsExpansion } from './use-parts-expansion.js';
+import { readOwn } from '../../utils/read-own.js';
 
 /** What every part view draws with: the message's callbacks, overrides and expansion. */
 export interface PartContext extends Pick<
@@ -67,7 +68,7 @@ function ReasoningView({ part, context }: PartViewProps<ChatReasoningPart>) {
       title={part.title}
       status={part.status}
       durationMs={part.durationMs}
-      isExpanded={expansion.expanded[part.id]}
+      isExpanded={readOwn(expansion.expanded, part.id)}
       onExpandedChange={(isExpanded) => expansion.setExpanded(part.id, isExpanded)}
       expandsAutomatically={context.expandsActivity}
     />
@@ -77,7 +78,7 @@ function ReasoningView({ part, context }: PartViewProps<ChatReasoningPart>) {
 function ToolCallView({ part, context }: PartViewProps<ChatToolCallPart>) {
   const { expansion } = context;
   const handlers = bindToolCallHandlers(context, part.id);
-  const renderer = context.toolRenderers?.[part.name];
+  const renderer = context.toolRenderers && readOwn(context.toolRenderers, part.name);
   if (renderer?.replaces === 'card') return renderer.render(part, handlers);
   return (
     <ChatToolCall
@@ -94,7 +95,7 @@ function ToolCallView({ part, context }: PartViewProps<ChatToolCallPart>) {
       approval={part.approval}
       variant="row"
       {...handlers}
-      isExpanded={expansion.expanded[part.id]}
+      isExpanded={readOwn(expansion.expanded, part.id)}
       onExpandedChange={(isExpanded) => expansion.setExpanded(part.id, isExpanded)}
     >
       {renderer?.render(part, handlers)}

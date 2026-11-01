@@ -152,7 +152,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Tool renderers"
-      description="A forecast tool draws its result inside the default card; a booking tool draws its own card, with the approval callbacks bound to the call."
+      description="A forecast tool draws its result inside the default card; a booking tool draws its own card, with the approval callbacks bound to the call. A tool named toString has no renderer and draws the default card."
     >
       <ToolRenderers />
     </LabSection>

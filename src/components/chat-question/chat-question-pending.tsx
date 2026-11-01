@@ -17,6 +17,7 @@ import {
 } from './chat-question-model.js';
 import type { QuestionRequestKind } from './chat-question-request.js';
 import { QuestionTabs } from './chat-question-tabs.js';
+import { readOwn } from '../../utils/read-own.js';
 
 type Drafts = Readonly<Record<string, QuestionDraft>>;
 
@@ -166,13 +167,16 @@ export function PendingQuestions(props: PendingQuestionsProps) {
   }, [step]);
   const current = questions[step];
   const canAnswer = onSubmit !== undefined && running === null;
-  const firstOpen = questions.findIndex((item) => !isQuestionAnswered(item, drafts[item.id]));
-  const isStepAnswered = current ? isQuestionAnswered(current, drafts[current.id]) : true;
+  const firstOpen = questions.findIndex(
+    (item) => !isQuestionAnswered(item, readOwn(drafts, item.id)),
+  );
+  const isStepAnswered = current ? isQuestionAnswered(current, readOwn(drafts, current.id)) : true;
   const goTo = (index: number) => {
     hasStepped.current = true;
     setStep(index);
   };
-  const submit = () => onSubmit?.(questions.map((item) => toAnswer(item, drafts[item.id])));
+  const submit = () =>
+    onSubmit?.(questions.map((item) => toAnswer(item, readOwn(drafts, item.id))));
   const advance = () => {
     if (!current || !canAnswer) return;
     if (!isStepAnswered) setRevealed((ids) => new Set(ids).add(current.id));
@@ -194,7 +198,7 @@ export function PendingQuestions(props: PendingQuestionsProps) {
             key={current.id}
             ref={itemRef}
             item={current}
-            draft={drafts[current.id] ?? emptyDraft}
+            draft={readOwn(drafts, current.id) ?? emptyDraft}
             onDraftChange={(draft) => setDrafts((all) => ({ ...all, [current.id]: draft }))}
             isReadOnly={!canAnswer}
             isRevealed={revealed.has(current.id)}

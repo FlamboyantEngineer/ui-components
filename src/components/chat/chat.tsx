@@ -1,5 +1,6 @@
 'use client';
 
+import { readOwn } from '../../utils/read-own.js';
 import { useMemo, type ReactNode } from 'react';
 import { useTimeZone } from '../../core/clock.js';
 import type { AriaLabellingProps } from '../../core/events.js';
@@ -122,7 +123,7 @@ function useSequence(
         groupPosition={item.groupPosition}
         quoted={message.replyTo === undefined ? undefined : byId.get(message.replyTo)}
         readers={readers.get(message.id)}
-        expandedParts={expanded[message.id]}
+        expandedParts={readOwn(expanded, message.id)}
         context={context}
         rendering={rendering}
         display={display}

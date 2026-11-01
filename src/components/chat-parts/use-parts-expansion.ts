@@ -2,6 +2,7 @@
 import { useEffect, useRef } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import { useLatest } from '../../utils/use-latest.js';
+import { readOwn } from '../../utils/read-own.js';
 
 /** The reader's open (`true`) and closed (`false`) choices, by part id or group key. */
 type ExpandedParts = Readonly<Record<string, boolean>>;
@@ -64,7 +65,7 @@ export function usePartsReveal(reveals: readonly PartsReveal[], expansion: Parts
     seen.current = new Set(current.map((reveal) => reveal.id));
     const closed = current
       .filter((reveal) => !previous.has(reveal.id))
-      .flatMap((reveal) => reveal.keys.filter((key) => state.expanded[key] === false));
+      .flatMap((reveal) => reveal.keys.filter((key) => readOwn(state.expanded, key) === false));
     if (closed.length > 0) state.expand(closed);
   }, [signature, latest]);
 }
