@@ -22,6 +22,7 @@ import { isHTMLElement } from '../../utils/is-element.js';
 export interface ContextMenuTargetProps {
   onContextMenu?: ((event: MouseEvent<HTMLElement>) => void) | undefined;
   onKeyDown?: ((event: KeyboardEvent<HTMLElement>) => void) | undefined;
+  onKeyDownCapture?: ((event: KeyboardEvent<HTMLElement>) => void) | undefined;
   onPointerDownCapture?: ((event: PointerEvent<HTMLElement>) => void) | undefined;
   onPointerMoveCapture?: ((event: PointerEvent<HTMLElement>) => void) | undefined;
   onPointerUpCapture?: ((event: PointerEvent<HTMLElement>) => void) | undefined;
@@ -56,6 +57,12 @@ interface PendingPress {
  * click stops at the innermost target.
  */
 const pressOwners = new WeakMap<Event, Element>();
+
+/**
+ * The innermost target each Context Menu key or Shift+F10 reached, written as for `pressOwners`:
+ * a control inside, such as a select trigger, may stop the key before it bubbles to the target.
+ */
+const keyOwners = new WeakMap<Event, Element>();
 
 /** Input types whose text the reader edits, where the browser's own menu offers paste and spelling. */
 const textInputTypes = new Set(['text', 'search', 'url', 'tel', 'email', 'password', 'number']);
@@ -178,6 +185,22 @@ export function useContextMenuTarget(
       cancel();
       if (isSuppressed) return;
       openAt(controller, event.currentTarget, { x: event.clientX, y: event.clientY });
+    },
+    onKeyDownCapture(event) {
+      own.onKeyDownCapture?.(event);
+      if (isDisabled || !isKeyboardContextMenu(event) || isFromPortal(event)) return;
+      if (!opensFromTextKeys && isTextInside(event.target, event.currentTarget)) return;
+      const { nativeEvent, currentTarget } = event;
+      keyOwners.set(nativeEvent, currentTarget);
+      // Read after every handler ran: a target the key bubbled to has opened its menu and
+      // prevented the key's default, as has a control that handled it; otherwise a control inside
+      // stopped the key, and the innermost target that saw it opens its menu.
+      setTimeout(() => {
+        if (nativeEvent.defaultPrevented || keyOwners.get(nativeEvent) !== currentTarget) return;
+        if (controller.isOpen()) return;
+        suppressUntil.current = Date.now() + 600;
+        controller.open(currentTarget);
+      });
     },
     onKeyDown(event) {
       own.onKeyDown?.(event);

@@ -5,7 +5,7 @@ import { PlusGlyph } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { SegmentedChoice } from '../segmented-choice/segmented-choice.js';
-import { ConditionActions } from './condition-actions.js';
+import { ConditionActions, ConditionMenuTarget } from './condition-actions.js';
 import { conditionBuilderHooks as hooks, useConditionBuilder } from './condition-context.js';
 import { ConditionRuleRow } from './condition-rule.js';
 import type { ConditionCombinator, ConditionGroup } from './condition-tree.js';
@@ -20,6 +20,37 @@ interface ConditionGroupViewProps {
   count?: number | undefined;
 }
 
+/** A group's buttons that add a rule and, above the depth limit, a nested group. */
+function GroupActions({ groupId, depth }: { groupId: string; depth: number }) {
+  const strings = useUiStrings();
+  const { maxDepth, actions, elementId } = useConditionBuilder();
+  return (
+    <div {...hooks.slot('group-actions')}>
+      <Button
+        id={elementId(groupId, 'add')}
+        variant="ghost"
+        size="sm"
+        startIcon={PlusGlyph}
+        className={hooks.slotClass('add-rule')}
+        onPress={() => actions.addRule(groupId)}
+      >
+        {strings.addRule}
+      </Button>
+      {depth < maxDepth ? (
+        <Button
+          variant="ghost"
+          size="sm"
+          startIcon={PlusGlyph}
+          className={hooks.slotClass('add-group')}
+          onPress={() => actions.addGroup(groupId)}
+        >
+          {strings.addGroup}
+        </Button>
+      ) : null}
+    </div>
+  );
+}
+
 /**
  * A group: the choice between matching all and any of its rules, its menu (except at the root), its
  * rules and nested groups in order, and buttons that add a rule and, above the depth limit, a group.
@@ -31,10 +62,10 @@ export const ConditionGroupView = memo(function ConditionGroupView({
   count,
 }: ConditionGroupViewProps) {
   const strings = useUiStrings();
-  const { maxDepth, actions, elementId } = useConditionBuilder();
+  const { actions, elementId, showActionButtons } = useConditionBuilder();
   const isRoot = index === undefined;
   const size = group.rules.length;
-  return (
+  const view = (
     <div
       {...hooks.slot('group', { depth, combinator: group.combinator })}
       id={elementId(group.id)}
@@ -56,7 +87,9 @@ export const ConditionGroupView = memo(function ConditionGroupView({
               actions.update({ ...group, combinator: combinator as ConditionCombinator });
           }}
         />
-        {isRoot ? null : <ConditionActions id={group.id} index={index} count={count ?? 1} />}
+        {isRoot || !showActionButtons ? null : (
+          <ConditionActions id={group.id} index={index} count={count ?? 1} />
+        )}
       </div>
       {size > 0 ? (
         <ul {...hooks.slot('rules')}>
@@ -73,29 +106,14 @@ export const ConditionGroupView = memo(function ConditionGroupView({
       ) : (
         <p {...hooks.slot('empty')}>{strings.noRules}</p>
       )}
-      <div {...hooks.slot('group-actions')}>
-        <Button
-          id={elementId(group.id, 'add')}
-          variant="ghost"
-          size="sm"
-          startIcon={PlusGlyph}
-          className={hooks.slotClass('add-rule')}
-          onPress={() => actions.addRule(group.id)}
-        >
-          {strings.addRule}
-        </Button>
-        {depth < maxDepth ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            startIcon={PlusGlyph}
-            className={hooks.slotClass('add-group')}
-            onPress={() => actions.addGroup(group.id)}
-          >
-            {strings.addGroup}
-          </Button>
-        ) : null}
-      </div>
+      <GroupActions groupId={group.id} depth={depth} />
     </div>
+  );
+  return isRoot ? (
+    view
+  ) : (
+    <ConditionMenuTarget id={group.id} index={index} count={count ?? 1}>
+      {view}
+    </ConditionMenuTarget>
   );
 });

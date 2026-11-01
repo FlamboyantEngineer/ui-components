@@ -414,4 +414,71 @@ describe('ConditionBuilder', () => {
     const checked = new Set(validate.mock.calls.map(([checkedRule]) => checkedRule.id));
     expect(checked).toEqual(new Set(['title']));
   });
+
+  it('UIC-CONDITION-BUILDER-1.8 offers the actions as context menus without menu buttons', async () => {
+    const user = userEvent.setup();
+    const onValue = vi.fn();
+    render(<Controlled onValue={onValue} showActionButtons={false} />);
+    expect(screen.queryByRole('button', { name: 'Actions' })).not.toBeInTheDocument();
+    const nested = rule('Group');
+    const first = within(nested).getByRole('group', { name: 'Rule 1' });
+    await user.pointer({ keys: '[MouseRight]', target: first });
+    const menu = await screen.findByRole('menu', { name: 'Actions' });
+    expect(screen.getAllByRole('menu')).toHaveLength(1);
+    expect(within(menu).getByRole('menuitem', { name: 'Move up' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+    await user.click(within(menu).getByRole('menuitem', { name: 'Move down' }));
+    expect(ruleIds(onValue.mock.lastCall?.[0] as ConditionGroup)).toEqual([
+      'title',
+      ['genre', 'pages'],
+    ]);
+    // Without a menu button, the moved rule itself keeps focus.
+    expect(within(nested).getByRole('group', { name: 'Rule 2' })).toHaveFocus();
+  });
+
+  it('UIC-CONDITION-BUILDER-1.8 moves and opens a node from the keyboard, leaving fields their own menus', async () => {
+    const user = userEvent.setup();
+    const onValue = vi.fn();
+    render(<Controlled onValue={onValue} showActionButtons={false} />);
+    const first = rule('Rule 1');
+    // A secondary click in a text control keeps the browser's own menu.
+    await user.pointer({ keys: '[MouseRight]', target: within(first).getByRole('textbox') });
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    // A field's own menu opens instead of the rule's.
+    act(() => within(first).getAllByRole('button')[0]?.focus());
+    await user.keyboard('{Shift>}{F10}{/Shift}');
+    expect(await screen.findByRole('menu', { name: 'Field actions' })).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    // The rule takes the hidden button's place in the tab order, before its controls.
+    act(() => within(first).getAllByRole('button')[0]?.focus());
+    await user.tab({ shift: true });
+    expect(first).toHaveFocus();
+    await user.keyboard('{Alt>}{ArrowUp}{/Alt}');
+    expect(onValue).not.toHaveBeenCalled();
+    await user.keyboard('{Alt>}{ArrowDown}{/Alt}');
+    expect(ruleIds(onValue.mock.lastCall?.[0] as ConditionGroup)).toEqual([
+      ['pages', 'genre'],
+      'title',
+    ]);
+    const moved = requireDefined(screen.getAllByRole('group', { name: 'Rule 2' }).at(-1));
+    expect(moved).toHaveFocus();
+    await user.keyboard('{Shift>}{F10}{/Shift}');
+    const menu = await screen.findByRole('menu', { name: 'Actions' });
+    await user.click(within(menu).getByRole('menuitem', { name: 'Duplicate' }));
+    expect(ruleIds(onValue.mock.lastCall?.[0] as ConditionGroup)).toHaveLength(3);
+    // The group's own menu acts on the group: its header is outside every rule.
+    const group = rule('Group');
+    await user.pointer({
+      keys: '[MouseRight]',
+      target: requireDefined(group.querySelector('.ui-condition-builder__group-header')),
+    });
+    const groupMenu = await screen.findByRole('menu', { name: 'Actions' });
+    await user.click(within(groupMenu).getByRole('menuitem', { name: 'Delete' }));
+    expect(ruleIds(onValue.mock.lastCall?.[0] as ConditionGroup)).toEqual([
+      'title',
+      expect.any(String),
+    ]);
+  });
 });

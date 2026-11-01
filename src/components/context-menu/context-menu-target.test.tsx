@@ -114,6 +114,31 @@ describe('ContextMenuTrigger', () => {
     expect(popover()?.style.left).not.toBe('300px');
   });
 
+  it('UIC-CONTEXT-MENU-1.2 opens from the keys a control inside stopped, the innermost target only', async () => {
+    const user = userEvent.setup();
+    const stop = (event: React.KeyboardEvent) => event.stopPropagation();
+    render(
+      <ContextMenuTrigger aria-label="Outer">
+        <div>
+          <ContextMenuTrigger aria-label="Inner">
+            <div>
+              <button type="button" onKeyDown={stop}>
+                Choose
+              </button>
+            </div>
+            <FileMenu />
+          </ContextMenuTrigger>
+        </div>
+        <FileMenu />
+      </ContextMenuTrigger>,
+    );
+    act(() => screen.getByRole('button', { name: 'Choose' }).focus());
+    await user.keyboard('{Shift>}{F10}{/Shift}');
+    await screen.findByRole('dialog', { name: 'Inner' });
+    expect(screen.queryByRole('dialog', { name: 'Outer' })).not.toBeInTheDocument();
+    expect(screen.getAllByRole('menu')).toHaveLength(1);
+  });
+
   it('UIC-CONTEXT-MENU-1.1 UIC-CONTEXT-MENU-1.3 keeps the browser menu on a text control inside the target', async () => {
     const user = setupOnFakeClock();
     render(

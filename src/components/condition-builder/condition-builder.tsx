@@ -43,9 +43,14 @@ export interface ConditionBuilderProps extends BaseProps, AriaLabellingProps {
   maxDepth?: number | undefined;
   /** Checks each rule; a returned message shows under the rule and marks it invalid. */
   validate?: ConditionRuleValidator | undefined;
+  /**
+   * Shows each rule's and nested group's menu button. Defaults to true; false leaves the same
+   * actions in their context menus only.
+   */
+  showActionButtons?: boolean | undefined;
 }
 
-/** Where focus goes after an edit: an element, or the first match of `selector` inside it. */
+/** Where focus goes after an edit: the first match of `selector` inside an element, or itself. */
 interface FocusRequest {
   elementId: string;
   selector?: string | undefined;
@@ -58,7 +63,8 @@ function findFocusTarget(
   { elementId, selector }: FocusRequest,
 ): HTMLElement | null {
   const element = getElementByIdFrom(root, elementId);
-  const target = selector ? element?.querySelector(selector) : element;
+  // Without a match, the element itself, which takes focus while it shows no menu button.
+  const target = (selector ? element?.querySelector(selector) : null) ?? element;
   return isHTMLElement(target) ? target : null;
 }
 
@@ -166,8 +172,9 @@ function useBuilderActions(options: {
  * Edits a boolean expression as nested groups: each group matches all or any of its rules, and each
  * rule tests one field with an operator and a value of the field's type, using the same field
  * definitions and editors as `FilterBar`. Rules and groups are added, duplicated, deleted and moved
- * among their siblings from their menus or with Alt+Arrow keys, groups nest up to `maxDepth`, and
- * each rule shows its validation message. The value is a plain tree.
+ * among their siblings from their menus (a button, which `showActionButtons` can leave out, and a
+ * context menu) or with Alt+Arrow keys, groups nest up to `maxDepth`, and each rule shows its
+ * validation message. The value is a plain tree.
  */
 export function ConditionBuilder({
   fields,
@@ -176,6 +183,7 @@ export function ConditionBuilder({
   onChange,
   maxDepth = 3,
   validate,
+  showActionButtons = true,
   className,
   'aria-label': ariaLabel,
   ...rest
@@ -190,8 +198,8 @@ export function ConditionBuilder({
   );
   const actions = useBuilderActions({ tree, setTree, fields, elementId, rootRef });
   const context = useMemo(
-    () => ({ fields, maxDepth, validate, actions, elementId }),
-    [fields, maxDepth, validate, actions, elementId],
+    () => ({ fields, maxDepth, validate, actions, elementId, showActionButtons }),
+    [fields, maxDepth, validate, actions, elementId, showActionButtons],
   );
   return (
     <div
