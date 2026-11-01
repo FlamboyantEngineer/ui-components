@@ -341,14 +341,14 @@ Verification: `src/components/pdf-viewer/use-pdf-rotation.test.tsx`, `e2e/pdf-vi
 
 ### UIC-PDF-VIEWER-9.3 - Printing
 
-Printing shall draw every page at 150 dots per inch, as the document sets it (without the reader's rotation), into images in a hidden frame, one printed sheet each, open the browser's print dialog on that frame, and remove the frame and release the images once printing is over (`afterprint`).
+Printing shall draw every page at 150 dots per inch, as the document sets it (without the reader's rotation), into images in a hidden frame, one printed sheet each, open the browser's print dialog on that frame, and remove the frame and release the images once printing is over (`afterprint`). The frame and every image drawn so far shall also be released, once, when a page fails to draw or encode or the frame fails to fill or print; the viewer then calls `onCommandError('print', error)`. A print still drawing is cancelled, with the page being drawn and without a failure, when another print starts, another document opens or the viewer unmounts.
 
-Implementation: `src/components/pdf-viewer/pdf-commands.ts`
+Implementation: `src/components/pdf-viewer/pdf-commands.ts`, `src/components/pdf-viewer/use-pdf-commands.ts`
 Verification: `src/components/pdf-viewer/pdf-commands.test.tsx`, `e2e/pdf-viewer.spec.ts`
 
 ### UIC-PDF-VIEWER-9.4 - Saving
 
-Downloading shall save the document's bytes, as the engine holds them, under the file name at the end of a URL source's path when it ends in `.pdf`, and otherwise under the viewer's name with `.pdf` (`Report.pdf`).
+Downloading shall save the document's bytes, as the engine holds them, under the file name at the end of a URL source's path when it ends in `.pdf`, and otherwise under the viewer's name with `.pdf` (`Report.pdf`). A save that fails calls `onCommandError('download', error)`.
 
 Implementation: `src/components/pdf-viewer/pdf-commands.ts`
 Verification: `src/components/pdf-viewer/pdf-commands.test.tsx`, `e2e/pdf-viewer.spec.ts`

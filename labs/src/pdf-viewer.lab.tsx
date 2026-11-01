@@ -72,6 +72,7 @@ function LongDocument() {
 function Reader() {
   const [zoom, setZoom] = useState<number | null>(null);
   const [shares, setShares] = useState(0);
+  const [failedCommand, setFailedCommand] = useState<string | null>(null);
   return (
     <div data-lab-case="reader">
       <div style={{ height: 560, maxWidth: 1000 }}>
@@ -82,6 +83,7 @@ function Reader() {
           workerSrc={workerSrc}
           documentOptions={documentOptions}
           onZoomChange={setZoom}
+          onCommandError={(command) => setFailedCommand(command)}
           actions={
             <Button size="sm" variant="ghost" onPress={() => setShares((count) => count + 1)}>
               Share
@@ -92,7 +94,8 @@ function Reader() {
       <p>
         Applied zoom:{' '}
         <output data-lab-output="zoom">{zoom === null ? '—' : Math.round(zoom)}</output>; shares:{' '}
-        <output data-lab-output="shares">{shares}</output>
+        <output data-lab-output="shares">{shares}</output>; failed command:{' '}
+        <output data-lab-output="failed-command">{failedCommand ?? 'none'}</output>
       </p>
     </div>
   );
@@ -181,7 +184,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Reader"
-      description="Zoom (buttons, slider, Ctrl + wheel, Ctrl + plus (including Shift + equals), minus and 0, pinch (cancelled if the document closes)), fit modes, page navigation (Home, End), find with Enter and Shift + Enter, Ctrl + F and the find options, text selection, links on the first page, rotating, printing and saving from the menu, and a caller action at the end of the toolbar. Scrolling follows the current page and zoom keeps the reading position, including in an embedded window. The sample is requested with a header of the caller's."
+      description="Zoom (buttons, slider, Ctrl + wheel, Ctrl + plus (including Shift + equals), minus and 0, pinch (cancelled if the document closes)), fit modes, page navigation (Home, End), find with Enter and Shift + Enter, Ctrl + F and the find options, text selection, links on the first page, rotating, printing and saving from the menu (a failed print or save is reported below the reader), and a caller action at the end of the toolbar. Scrolling follows the current page and zoom keeps the reading position, including in an embedded window. The sample is requested with a header of the caller's."
     >
       <Reader />
     </LabSection>

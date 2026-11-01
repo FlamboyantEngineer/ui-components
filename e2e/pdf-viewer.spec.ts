@@ -646,6 +646,26 @@ test.describe('PDF Viewer lab', () => {
     await expect(page.locator('body > iframe')).toHaveCount(0);
   });
 
+  test('UIC-PDF-VIEWER-9.3 releases a failed print and reports it', async ({ page, lab }) => {
+    const reader = await openReader(page, lab);
+    // The second printed page cannot be encoded.
+    await page.evaluate(() => {
+      const toBlob = HTMLCanvasElement.prototype.toBlob;
+      let encoded = 0;
+      HTMLCanvasElement.prototype.toBlob = function (this: HTMLCanvasElement, callback, ...rest) {
+        encoded += 1;
+        if (encoded === 2) callback(null);
+        else toBlob.call(this, callback, ...rest);
+      };
+    });
+    await reader.getByRole('button', { name: 'More options' }).click();
+    await page.getByRole('menu').getByRole('menuitem', { name: 'Print' }).click();
+    await expect(reader.locator('[data-lab-output="failed-command"]')).toHaveText('print', {
+      timeout: 20_000,
+    });
+    await expect(page.locator('body > iframe')).toHaveCount(0);
+  });
+
   test('UIC-PDF-VIEWER-11.1 reads an unrendered page and closes the handle on a new source', async ({
     page,
     lab,
