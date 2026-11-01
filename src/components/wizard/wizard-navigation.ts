@@ -80,7 +80,28 @@ function useAttempts(shownId: Key | undefined, stepIds: readonly Key[]) {
     },
     [shownId, workflow],
   );
-  return { isPending, setPending, runningRef, attemptRef };
+  return { isPending, setPending, runningRef, attemptRef, workflow };
+}
+
+/** A failed check and the step and workflow it checked. */
+interface OwnedFailure {
+  failure: NonNullable<WizardNavigation['failure']>;
+  stepId: Key | undefined;
+  workflow: readonly Key[];
+}
+
+/**
+ * The shown step's failure. A failure belongs to the step and workflow whose check produced it:
+ * once the wizard shows another step, however it got there, or its steps change, the failure is
+ * dropped, so it never shows on another step or on a return to its own.
+ */
+function useStepFailure(stepId: Key | undefined, workflow: readonly Key[]) {
+  const [owned, setOwned] = useState<OwnedFailure | null>(null);
+  const isOwned = owned !== null && owned.stepId === stepId && owned.workflow === workflow;
+  if (owned !== null && !isOwned) setOwned(null);
+  const setFailure = (failure: WizardNavigation['failure']) =>
+    setOwned(failure === null ? null : { failure, stepId, workflow });
+  return [isOwned ? owned.failure : null, setFailure] as const;
 }
 
 /**
@@ -99,17 +120,17 @@ export function useWizardNavigation(options: NavigationOptions): WizardNavigatio
     (id) => (id === undefined ? undefined : options.onCurrentKeyChange?.(id)),
   );
   const [skipped, setSkipped] = useState<ReadonlySet<Key>>(() => new Set());
-  const [failure, setFailure] = useState<WizardNavigation['failure']>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const movedRef = useRef(false);
   const index = Math.max(
     0,
     steps.findIndex((step) => step.id === currentKey),
   );
-  const { isPending, setPending, runningRef, attemptRef } = useAttempts(
+  const { isPending, setPending, runningRef, attemptRef, workflow } = useAttempts(
     steps[index]?.id,
     steps.map((step) => step.id),
   );
+  const [failure, setFailure] = useStepFailure(steps[index]?.id, workflow);
 
   useEffect(() => {
     if (!movedRef.current) return;

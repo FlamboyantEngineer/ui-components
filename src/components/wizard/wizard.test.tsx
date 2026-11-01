@@ -231,6 +231,42 @@ describe('Wizard', () => {
     expect(statuses()).toEqual(['complete', 'current', 'upcoming']);
   });
 
+  it('UIC-WIZARD-2.3 keeps a failure on the step and workflow whose check produced it', async () => {
+    const user = userEvent.setup();
+    const steps = tripSteps({ note: { validate: () => 'Note is invalid' } });
+    const { rerender } = render(<Wizard steps={steps} currentKey="note" />);
+    await user.click(action('Next'));
+    expect(screen.getByRole('alert')).toHaveTextContent('Note is invalid');
+    expect(statuses()).toEqual(['complete', 'error', 'upcoming']);
+    rerender(<Wizard steps={steps} currentKey="summary" />);
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(statuses()).toEqual(['complete', 'complete', 'current']);
+    rerender(<Wizard steps={steps} currentKey="note" />);
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(statuses()[1]).toBe('current');
+    await user.click(action('Next'));
+    expect(screen.getByRole('alert')).toHaveTextContent('Note is invalid');
+    const replacement: WizardStep[] = [
+      { id: 'flight', label: 'Flight', content: <p>Choose a flight.</p> },
+      { id: 'hotel', label: 'Hotel', content: <p>Choose a hotel.</p> },
+    ];
+    rerender(<Wizard steps={replacement} currentKey="note" />);
+    expect(screen.getByRole('heading', { name: 'Flight' })).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(statuses()).toEqual(['current', 'upcoming']);
+  });
+
+  it('UIC-WIZARD-2.3 drops a failure without a message when the host removes its step', async () => {
+    const user = userEvent.setup();
+    const steps = tripSteps({ note: { validate: () => false } });
+    const { rerender } = render(<Wizard steps={steps} currentKey="note" />);
+    await user.click(action('Next'));
+    expect(statuses()[1]).toBe('error');
+    rerender(<Wizard steps={steps.filter((step) => step.id !== 'note')} currentKey="note" />);
+    expect(screen.getByRole('heading', { name: 'City' })).toBeInTheDocument();
+    expect(statuses()).toEqual(['current', 'upcoming']);
+  });
+
   it('UIC-WIZARD-2.2 keeps Next pending while an asynchronous check runs', async () => {
     let settle: (value: boolean) => void = () => {};
     const validate = () => new Promise<boolean>((resolve) => (settle = resolve));

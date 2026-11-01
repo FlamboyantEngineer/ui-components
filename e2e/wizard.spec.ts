@@ -142,6 +142,25 @@ test.describe('Wizard lab', () => {
     await expect(log).toHaveText('North office check aborted · South office saved');
   });
 
+  test('UIC-WIZARD-2.3 keeps a failure on the step whose check produced it', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('wizard');
+    const demo = page.locator('[data-lab-demo="host-moves"]');
+    const statuses = demo.locator('.ui-steps__item');
+    await demo.getByRole('button', { name: 'Next' }).click();
+    await expect(demo.getByRole('alert')).toHaveText('The schedule overlaps another booking.');
+    await expect(statuses.first()).toHaveAttribute('data-status', 'error');
+    await demo.getByRole('button', { name: 'Show Room' }).click();
+    await expect(demo.getByRole('heading', { name: 'Room' })).toBeVisible();
+    await expect(demo.getByRole('alert')).toHaveCount(0);
+    await expect(statuses.nth(1)).toHaveAttribute('data-status', 'current');
+    await demo.getByRole('button', { name: 'Show Schedule' }).click();
+    await expect(demo.getByRole('alert')).toHaveCount(0);
+    await expect(statuses.first()).toHaveAttribute('data-status', 'current');
+  });
+
   test('UIC-WIZARD-3.2 runs inside a modal', async ({ page, lab }) => {
     await page.clock.install();
     await lab.open('wizard');
