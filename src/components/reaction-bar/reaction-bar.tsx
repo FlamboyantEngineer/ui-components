@@ -5,7 +5,8 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { normalizeCount } from '../../utils/count.js';
+import { formatCount, normalizeCount } from '../../utils/count.js';
+import { useLocale } from '../../primitives/index.js';
 import { Button } from '../button/button.js';
 import { EmojiPickerTrigger, type EmojiPickerProps } from '../emoji-picker/emoji-picker.js';
 import { Tooltip } from '../tooltip/tooltip.js';
@@ -58,6 +59,7 @@ function findCustomEmoji(emoji: string, customEmoji: EmojiPickerProps['customEmo
 /** One emoji's chip: a toggle button named by the emoji, the count and who reacted. */
 function ReactionChip({ reaction, customEmoji, maxNames, onToggle }: ReactionChipProps) {
   const strings = useUiStrings();
+  const { locale } = useLocale();
   const custom = findCustomEmoji(reaction.emoji, customEmoji);
   const names = (reaction.people ?? []).slice(0, maxNames);
   const label = strings.reactionLabel(custom?.label ?? reaction.emoji, reaction.count, names);
@@ -76,7 +78,7 @@ function ReactionChip({ reaction, customEmoji, maxNames, onToggle }: ReactionChi
         <span {...hooks.slot('emoji')}>
           {custom ? <img {...hooks.slot('image')} src={custom.src} alt="" /> : reaction.emoji}
         </span>
-        <span {...hooks.slot('count')}>{reaction.count}</span>
+        <span {...hooks.slot('count')}>{formatCount(reaction.count, locale)}</span>
       </Button>
     </Tooltip>
   );

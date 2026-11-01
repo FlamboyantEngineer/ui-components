@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ReactionBar, type ReactionEntry } from '../../src/components/reaction-bar/reaction-bar.js';
 import type { CustomEmoji } from '../../src/components/emoji-picker/index.js';
+import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 function badge(text: string, ground: string): string {
@@ -91,6 +92,25 @@ mountLab(
         axes={{ maxNames: ['1', '3'] }}
         render={({ maxNames }) => (
           <ReactionBar reactions={sets.several.slice(0, 2)} maxNames={Number(maxNames)} />
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Locales"
+      description="Counts in the locale's digits and grouping, on the chip and in its name."
+    >
+      <StateMatrix
+        axes={{ locale: ['en-US', 'de-DE', 'ar-EG'] }}
+        render={({ locale }) => (
+          <UiProvider locale={locale}>
+            <ReactionBar
+              aria-label={`Reactions, ${locale}`}
+              reactions={[
+                { emoji: '👍', count: 1234, people: ['Maria Santos'] },
+                { emoji: '🎉', count: 56789 },
+              ]}
+            />
+          </UiProvider>
         )}
       />
     </LabSection>

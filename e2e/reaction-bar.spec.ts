@@ -32,6 +32,19 @@ test.describe('Reaction Bar lab', () => {
     );
   });
 
+  test('UIC-REACTION-BAR-1.1 UIC-REACTION-BAR-1.2 formats counts in the locale', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('reaction-bar');
+    const arabic = page.getByRole('group', { name: 'Reactions, ar-EG' });
+    await expect(arabic.getByRole('button', { name: '🎉 ٥٦٬٧٨٩' })).toHaveText('🎉٥٦٬٧٨٩');
+    const english = page.getByRole('group', { name: 'Reactions, en-US' });
+    await expect(
+      english.getByRole('button', { name: '👍 1,234, reacted by Maria Santos and 1,233 others' }),
+    ).toHaveText('👍1,234');
+  });
+
   test('UIC-REACTION-BAR-1.3 UIC-REACTION-BAR-1.4 toggles and adds reactions', async ({
     page,
     lab,
