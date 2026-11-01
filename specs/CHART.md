@@ -123,7 +123,7 @@ Verification: `src/components/chart/bar-chart.test.tsx`, `src/components/chart/d
 
 ### UIC-CHART-5.1 - Bars
 
-`BarChart` shall draw one `ui-bar-chart__bar` rectangle per finite value of each shown series (`series`, each with one value per entry of `categories`), in bands laid out by the band scale, one per category. `layout` publishes `data-layout`: `grouped` (the default) splits each category's band between the shown series, side by side, with a tenth of the band between bars; `stacked` piles a category's values into one bar, positive values upward from zero and negative values downward, in series order. Values that are not finite numbers draw no bar.
+`BarChart` shall draw one `ui-bar-chart__bar` rectangle per finite value of each shown series (`series`, each with one value per entry of `categories`), in bands laid out by the band scale, one per category. `layout` publishes `data-layout`: `grouped` (the default) splits each category's band between the shown series, side by side, with a tenth of the band between bars; `stacked` piles a category's values into one bar, positive values upward from zero and negative values downward, in series order. Values that are not finite numbers draw no bar. Finite values whose stack would pass the largest number still keep their proportions and finite coordinates: the chart sums them divided by a power of two, and labels the value axis in scientific notation (or `formatOptions`), where a tick past the largest number reads as the format's infinity (`∞`).
 
 Implementation: `src/components/chart/bar-chart.tsx`, `src/components/chart/bar-geometry.ts`, `src/utils/band-scale.ts`
 Verification: `src/components/chart/bar-geometry.test.ts`, `src/components/chart/bar-chart.test.tsx`, `e2e/chart.spec.ts`

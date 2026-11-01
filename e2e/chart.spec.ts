@@ -190,6 +190,16 @@ test.describe('Chart lab', () => {
       'd',
       /A80,80 0 0 1 80,160/,
     );
+    const stacked = page.getByRole('figure', { name: 'Large stacked amounts' });
+    const sizes = await stacked
+      .locator('.ui-bar-chart__bar')
+      .evaluateAll((bars) =>
+        bars.map((bar) => [bar.getAttribute('y'), bar.getAttribute('height')]),
+      );
+    expect(sizes).toHaveLength(4);
+    for (const size of sizes)
+      expect(size.every((value) => Number.isFinite(Number(value)))).toBe(true);
+    expect(sizes[0]?.[1]).toBe(sizes[1]?.[1]);
   });
 
   test('UIC-CHART-1.2 UIC-CHART-4.5 shows a summary, a table and an empty chart', async ({

@@ -76,4 +76,75 @@ describe('resolveBarGeometry', () => {
     expect(geometry.values.domain).toEqual([0, 1]);
     expect(geometry.values.ticks().at(-1)?.label).toBe('100%');
   });
+
+  const large = (
+    series: Array<{ id: number; values: number[] }>,
+    options: Partial<BarGeometryInput> = {},
+  ) =>
+    resolveBarGeometry({
+      categories: ['A', 'B'],
+      series: series.map(({ id, values }) => ({ series: id, id, values })),
+      layout: 'stacked',
+      orientation: 'vertical',
+      width: 220,
+      height: 120,
+      margin,
+      locale: 'en-US',
+      ...options,
+    });
+  const isFiniteBox = (bar: { x: number; y: number; width: number; height: number }) =>
+    box(bar).every(Number.isFinite);
+
+  it('UIC-CHART-5.1 stacks values whose total passes the largest number in proportion', () => {
+    const geometry = large([
+      { id: 0, values: [1e308, 1e308] },
+      { id: 1, values: [1e308, Number.NaN] },
+    ]);
+    expect(geometry.bars.every(isFiniteBox)).toBe(true);
+    const [first, second, alone] = geometry.bars;
+    expect(first?.height).toBeGreaterThan(0);
+    expect(second?.height).toBe(first?.height);
+    expect(second?.y).toBeCloseTo((first?.y ?? 0) - (first?.height ?? 0), 1);
+    expect(alone?.height).toBe(first?.height);
+    expect(geometry.values.ticks().every((tick) => tick.label !== '')).toBe(true);
+    expect(geometry.values.map(0)).toBe(110);
+  });
+
+  it('UIC-CHART-5.1 stacks huge positive and negative values from zero, horizontally', () => {
+    const geometry = large(
+      [
+        { id: 0, values: [1.5e308, 1] },
+        { id: 1, values: [1.5e308, 2] },
+        { id: 2, values: [-1.5e308, -1e-300] },
+      ],
+      { orientation: 'horizontal' },
+    );
+    expect(geometry.bars.every(isFiniteBox)).toBe(true);
+    const [up, upper, down] = geometry.bars;
+    const zero = geometry.values.map(0);
+    expect(up?.x).toBeCloseTo(zero, 1);
+    expect(upper?.x).toBeCloseTo((up?.x ?? 0) + (up?.width ?? 0), 1);
+    expect(down?.x).toBeCloseTo(zero - (down?.width ?? 0), 1);
+    expect(down?.width).toBeCloseTo(up?.width ?? 0, 1);
+    // Tiny values beside huge ones draw no length but stay finite.
+    expect(geometry.bars.slice(3).every((bar) => bar.width === 0)).toBe(true);
+  });
+
+  it('UIC-CHART-5.1 keeps grouped huge values and ordinary stacks exact', () => {
+    const grouped = large(
+      [
+        { id: 0, values: [1.7e308, 1] },
+        { id: 1, values: [-1.7e308, 2] },
+      ],
+      { layout: 'grouped' },
+    );
+    expect(grouped.bars.every(isFiniteBox)).toBe(true);
+    expect(grouped.bars[0]?.height).toBeCloseTo(grouped.bars[1]?.height ?? 0, 1);
+    const ordinary = large([
+      { id: 0, values: [10, 5] },
+      { id: 1, values: [5, 5] },
+    ]);
+    expect(ordinary.values.domain).toEqual([0, 15]);
+    expect(ordinary.bars.map((bar) => bar.height)).toEqual([66.67, 33.33, 33.33, 33.33]);
+  });
 });
