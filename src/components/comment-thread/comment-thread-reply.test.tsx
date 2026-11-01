@@ -173,7 +173,7 @@ describe('CommentThreadReply', () => {
         onEdit={onEdit}
         renderEditor={({ defaultValue, onSubmit, onCancel }) => (
           <div>
-            <button type="button" onClick={() => onSubmit(`${defaultValue} v2`)}>
+            <button type="button" onClick={() => void onSubmit(`${defaultValue} v2`)}>
               Publish
             </button>
             <button type="button" onClick={onCancel}>

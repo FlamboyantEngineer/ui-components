@@ -115,6 +115,11 @@
   padding-inline-start: 36px;
 }
 
+.ui-comment-thread-reply__error {
+  margin-top: 6px;
+  font-size: var(--ref-font-size-md);
+}
+
 .ui-comment-thread-reply__body {
   font-size: var(--ref-font-size);
   line-height: 1.5;
