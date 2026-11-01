@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
+import { Table } from '../../src/components/table/table.js';
 import { Menu, MenuPopover, MenuTrigger } from '../../src/components/menu/menu.js';
 import {
   LoadingCard,
@@ -86,6 +87,52 @@ function RegionDemo() {
               Apply
             </Button>
           </p>
+        </div>
+      </LoadingRegion>
+    </div>
+  );
+}
+
+interface Fruit {
+  id: string;
+  name: string;
+  colour: string;
+  origin: string;
+  price: string;
+}
+
+const fruitRows: Fruit[] = [
+  { id: 'apple', name: 'Apple', colour: 'Red', origin: 'Portugal', price: '1.20' },
+  { id: 'pear', name: 'Pear', colour: 'Green', origin: 'Spain', price: '1.40' },
+  { id: 'plum', name: 'Plum', colour: 'Purple', origin: 'France', price: '2.10' },
+  { id: 'fig', name: 'Fig', colour: 'Purple', origin: 'Greece', price: '3.30' },
+];
+
+/** A table with a sticky header, pinned columns and column groups under a loading region. */
+function PinnedTableDemo() {
+  const [isLoading, setLoading] = useState(true);
+  return (
+    <div data-lab-demo="pinned-table">
+      <p>
+        <Button onPress={() => setLoading((value) => !value)}>
+          {isLoading ? 'Stop loading' : 'Start loading'}
+        </Button>
+      </p>
+      <LoadingRegion isLoading={isLoading} label="Refreshing prices">
+        <div style={{ width: 420, height: 200 }}>
+          <Table
+            aria-label="Fruit prices"
+            rows={fruitRows}
+            stickyHeader
+            size="sm"
+            columns={[
+              { id: 'name', header: 'Name', pin: 'start', width: 120 },
+              { id: 'colour', header: 'Colour', width: 140 },
+              { id: 'origin', header: 'Origin', width: 140 },
+              { id: 'price', header: 'Price', width: 120, align: 'end', pin: 'end' },
+            ]}
+            columnGroups={[{ id: 'look', header: 'Look', columns: ['colour', 'origin'] }]}
+          />
         </div>
       </LoadingRegion>
     </div>
@@ -264,6 +311,12 @@ mountLab(
       description="Start loading to block the form, then stop it, or press Apply to save for a moment: focus waits on the region and returns to Apply. The cover fades in and out with useEnterExit."
     >
       <RegionDemo />
+    </LabSection>
+    <LabSection
+      title="Blocking pinned content"
+      description="A table with a sticky header, pinned first and last columns and a column group, blocked while it refreshes: the cover and its card paint above the pinned header cells and the group row."
+    >
+      <PinnedTableDemo />
     </LabSection>
     <LabSection
       title="Nested regions"

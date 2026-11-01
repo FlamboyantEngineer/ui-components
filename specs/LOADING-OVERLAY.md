@@ -43,7 +43,7 @@ Verification: `src/components/loading-overlay/loading-overlay.test.tsx`, `e2e/lo
 
 ### UIC-LOADING-OVERLAY-2.1 - Cover
 
-`LoadingOverlay` shall render a `ui-loading-overlay` element that the stylesheet stretches over its positioned parent, holding a `LoadingCard` built from the same props. It has no resting state: the host mounts it while the work runs and removes it when the work settles.
+`LoadingOverlay` shall render a `ui-loading-overlay` element that the stylesheet stretches over its positioned parent, holding a `LoadingCard` built from the same props. It has no resting state: the host mounts it while the work runs and removes it when the work settles. Inside a `LoadingRegion` the reference stylesheet isolates the region and keeps its content at `z-index: 0`, so the cover paints above every part of the content it blocks, including sticky and pinned parts with in-page z-indexes (0 to 3, written down in `labs/reference/base.css`).
 
 Implementation: `src/components/loading-overlay/loading-overlay.tsx`, `labs/reference/loading-overlay.css`
 Verification: `src/components/loading-overlay/loading-overlay.test.tsx`, `e2e/loading-overlay.spec.ts`
