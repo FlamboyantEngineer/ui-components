@@ -75,7 +75,7 @@ Verification: `src/components/tour/tour.test.tsx`, `e2e/tour.spec.ts`
 
 ### UIC-TOUR-3.2 - Modal and non-modal
 
-By default the tour shall be modal: the rest of the page is inert and hidden from assistive technology, and it does not scroll, until the tour ends. `isNonModal` shall publish `data-non-modal` and leave the page reachable, visible to assistive technology and scrollable, so the reader can try the target while the step explains it.
+By default the tour shall be modal: the rest of the page is inert and hidden from assistive technology, and it does not scroll, until the tour ends. `isNonModal` shall publish `data-non-modal` and leave the page reachable, visible to assistive technology and scrollable, so the reader can try the target while the step explains it. As the page scrolls or resizes, the step's dialog and arrow follow the target with the spotlight ([OVERLAY-POSITION.md](OVERLAY-POSITION.md), `useFollowAnchor`), and the step stays open.
 
 Implementation: `src/components/tour/tour.tsx`, `src/components/popover/popover.tsx`
 Verification: `src/components/tour/tour.test.tsx`, `e2e/tour.spec.ts`

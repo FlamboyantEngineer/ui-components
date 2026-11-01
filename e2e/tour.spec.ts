@@ -12,6 +12,28 @@ async function getPositionTransitions(spotlight: Locator) {
 }
 
 test.describe('Tour lab', () => {
+  test('UIC-TOUR-3.2 keeps a non-modal step against its target as its pane scrolls', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tour');
+    const pane = page.locator('[data-lab-pane="scrolling"]');
+    const opener = pane.getByRole('button', { name: 'Tour in a pane' });
+    await pane.scrollIntoViewIfNeeded();
+    await opener.click();
+    const panel = page.locator('[data-lab-tour="pane"]');
+    await expect(panel.getByRole('dialog', { name: 'In a pane' })).toBeVisible();
+    const offset = async () => {
+      const [target, box] = [await opener.boundingBox(), await panel.boundingBox()];
+      return { x: (box?.x ?? 0) - (target?.x ?? 0), y: (box?.y ?? 0) - (target?.y ?? 0) };
+    };
+    const before = await offset();
+    await pane.evaluate((element) => element.scrollBy(0, 40));
+    await expect.poll(async () => (await offset()).y).toBe(before.y);
+    expect(await offset()).toEqual(before);
+    await expect(panel.getByRole('dialog', { name: 'In a pane' })).toBeVisible();
+  });
+
   test('UIC-TOUR-1.3 shows the first highlight in place without a position transition', async ({
     page,
     lab,

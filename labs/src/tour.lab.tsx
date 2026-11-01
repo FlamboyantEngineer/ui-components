@@ -39,6 +39,35 @@ function Opener({
   );
 }
 
+/** A non-modal tour about a button inside a pane that scrolls on its own. */
+function ScrollingPane() {
+  const [isOpen, setOpen] = useState(false);
+  const target = useRef<HTMLButtonElement>(null);
+  return (
+    <div
+      style={{ height: 240, overflow: 'auto', border: '1px solid', padding: 16 }}
+      data-lab-pane="scrolling"
+      // A scrollable region reachable from the keyboard.
+      tabIndex={0}
+      role="region"
+      aria-label="Scrolling pane"
+    >
+      <p>Scroll this pane while the step shows.</p>
+      <Button ref={target} size="sm" onPress={() => setOpen(true)}>
+        Tour in a pane
+      </Button>
+      <div style={{ height: 600 }} />
+      <Tour
+        steps={[{ target, title: 'In a pane', content: 'The step follows this button.' }]}
+        isOpen={isOpen}
+        onOpenChange={setOpen}
+        isNonModal
+        data-lab-tour="pane"
+      />
+    </div>
+  );
+}
+
 const pageSteps: TourStep[] = [
   {
     target: '[data-lab-target="search"]',
@@ -277,6 +306,12 @@ mountLab(
         axes={{ placement: placements, modality: modalities }}
         render={({ placement, modality }) => <Opener placement={placement} modality={modality} />}
       />
+    </LabSection>
+    <LabSection
+      title="Following a scrolling target"
+      description="Start the non-modal tour, then scroll the pane or the page: the step and its arrow stay against the button with the spotlight."
+    >
+      <ScrollingPane />
     </LabSection>
     <LabSection
       title="A guided page"

@@ -47,6 +47,8 @@ interface PopoverPanelProps
   arrowClassName?: string | undefined;
   /** A hint shown on hover, such as a hover card: not counted as an open interactive overlay. */
   isHint?: boolean | undefined;
+  /** Places the panel again when true after being false, to follow an anchor that moved. */
+  shouldUpdatePosition?: boolean | undefined;
   /** Measured properties for the panel, such as a dropdown's `--ui-trigger-width`. */
   style?: CSSProperties | undefined;
   'aria-label'?: string | undefined;
