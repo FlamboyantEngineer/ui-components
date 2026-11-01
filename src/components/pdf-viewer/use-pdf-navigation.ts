@@ -66,30 +66,44 @@ function consumeEcho(reported: number[], page: number): boolean {
 }
 
 /**
- * Turns a new document with `defaultPage`, and changes of `page` and `revealRect`, into one pending
- * request each.
+ * The request a newly opened document starts with: the caller's `revealRect`, else its `page`, else
+ * `defaultPage`, else none. A destination, looked up once the document has opened, comes after.
+ */
+function toOpeningRequest({
+  revealRect,
+  page,
+  defaultPage,
+}: Pick<UsePdfNavigationOptions, 'revealRect' | 'page' | 'defaultPage'>): PdfTarget | null {
+  if (revealRect) return { pageIndex: revealRect.pageIndex, rect: revealRect };
+  const pageIndex = page ?? defaultPage;
+  return pageIndex === undefined ? null : { pageIndex, rect: null };
+}
+
+/**
+ * Turns each newly opened document, and changes of `page` and `revealRect`, into one pending
+ * request each. A new document drops the previous document's request and page reports, and starts
+ * with the caller's current request even when its value has not changed.
  */
 function useNavigationRequests(
   options: Pick<
     UsePdfNavigationOptions,
     'page' | 'defaultPage' | 'document' | 'revealRect' | 'pages'
   >,
-  reported: RefObject<number[]>,
+  reportedRef: RefObject<number[]>,
 ): RefObject<PdfTarget | null> {
   const { page, revealRect, document } = options;
   const pendingRef = useRef<PdfTarget | null>(null);
   const latestRef = useLatest(options);
   useLayoutEffect(() => {
-    const { defaultPage, page: current } = latestRef.current;
-    if (document && defaultPage !== undefined && current === undefined) {
-      pendingRef.current = { pageIndex: defaultPage, rect: null };
-    }
-  }, [document, latestRef]);
+    if (!document) return;
+    reportedRef.current.length = 0;
+    pendingRef.current = toOpeningRequest(latestRef.current);
+  }, [document, latestRef, reportedRef]);
   useLayoutEffect(() => {
-    if (page === undefined || consumeEcho(reported.current, page)) return;
+    if (page === undefined || consumeEcho(reportedRef.current, page)) return;
     if (page !== latestRef.current.pages.currentPage)
       pendingRef.current = { pageIndex: page, rect: null };
-  }, [page, latestRef, reported]);
+  }, [page, latestRef, reportedRef]);
   const rectKey = toRectKey(revealRect);
   useLayoutEffect(() => {
     const rect = latestRef.current.revealRect;
@@ -111,6 +125,8 @@ export function usePdfNavigation(options: UsePdfNavigationOptions): {
   const reported = useRef<number[]>([]);
   const pendingRef = useNavigationRequests(options, reported);
   const latestRef = useLatest(options);
+  // The page a request just went to: commits from before it landed report nothing.
+  const landingRef = useRef<number | null>(null);
 
   const serve = useCallback(() => {
     const request = pendingRef.current;
@@ -119,15 +135,22 @@ export function usePdfNavigation(options: UsePdfNavigationOptions): {
     const pageIndex = clamp(request.pageIndex, 0, pageCount - 1);
     if (!elements.current.has(pageIndex)) return;
     pendingRef.current = null;
+    // Already on its page, the request moves no page and leaves no commit to wait for.
+    landingRef.current = pageIndex === latestRef.current.pages.currentPage ? null : pageIndex;
     scrollToPage(pageIndex, request.rect ? scaleRect(request.rect, scale) : undefined);
-  }, [elements, pageCount, pendingRef, scale, scrollToPage, scrollerRef]);
+  }, [elements, latestRef, pageCount, pendingRef, scale, scrollToPage, scrollerRef]);
   useLayoutEffect(serve);
   // A hidden viewer measures nothing; being shown again is a resize.
   useResizeObserver([scrollerRef], serve);
 
   const lastReport = useRef<number | null>(null);
   useEffect(() => {
-    if (!isReady || pendingRef.current || lastReport.current === currentPage) return;
+    if (!isReady || pendingRef.current) return;
+    if (landingRef.current !== null) {
+      if (landingRef.current !== currentPage) return;
+      landingRef.current = null;
+    }
+    if (lastReport.current === currentPage) return;
     lastReport.current = currentPage;
     const { page, onPageChange } = latestRef.current;
     if (page === currentPage) return;

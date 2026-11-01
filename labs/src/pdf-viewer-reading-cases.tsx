@@ -11,10 +11,7 @@ import {
   type PdfSelection,
   type PdfVisiblePosition,
 } from '../../src/components/pdf-viewer/pdf-viewer.js';
-import { loadEngine, sampleUrl, workerSrc } from './pdf-viewer-cases.js';
-
-/** The same sample at another address, so the viewer opens it as a new document. */
-const otherCopyUrl = `${sampleUrl}?copy=2`;
+import { loadEngine, otherCopyUrl, sampleUrl, workerSrc } from './pdf-viewer-cases.js';
 
 interface Pin extends PdfPagePoint {
   id: number;
