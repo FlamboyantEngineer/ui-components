@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
-import { getDateFormatter } from '../../utils/intl-format.js';
+import { getDateFormatter, normalizeIntlSpaces } from '../../utils/intl-format.js';
 import type { CalendarViewMode } from './calendar-view.js';
 import { getDayStart, isRepeatedTime } from './calendar-days.js';
 import type { PlacedEvent } from './calendar-layout.js';
@@ -71,23 +71,29 @@ export function useCalendarFormat(timeZone: string): CalendarFormat {
         new Date(placed.end),
       );
     };
+    // Runtimes space dates, times and ranges differently, so every text is normalized before it
+    // renders: a server's text then hydrates against the browser's unchanged.
+    const n = normalizeIntlSpaces;
     return {
       locale,
       formatTitle: (mode, days, focused) => {
         const [first, last] = [days[0] ?? focused, days.at(-1) ?? focused];
-        return mode === 'month'
-          ? month.format(toDate(focused))
-          : weekRange.formatRange(toDate(first), toDate(last));
+        return n(
+          mode === 'month'
+            ? month.format(toDate(focused))
+            : weekRange.formatRange(toDate(first), toDate(last)),
+        );
       },
-      formatDay: (date) => day.format(toDate(date)),
+      formatDay: (date) => n(day.format(toDate(date))),
       formatWeekday: (date) => ({
-        short: weekdayShort.format(toDate(date)),
-        long: weekdayLong.format(toDate(date)),
+        short: n(weekdayShort.format(toDate(date))),
+        long: n(weekdayLong.format(toDate(date))),
       }),
-      formatDayNumber: (date) => dayNumber.format(toDate(date)),
-      formatTime: (instant) => (isRepeated(instant) ? zonedTime : time).format(new Date(instant)),
-      formatHour: (value) => hour.format(new Date(Date.UTC(2000, 0, 1, value))),
-      formatWhen,
+      formatDayNumber: (date) => n(dayNumber.format(toDate(date))),
+      formatTime: (instant) =>
+        n((isRepeated(instant) ? zonedTime : time).format(new Date(instant))),
+      formatHour: (value) => n(hour.format(new Date(Date.UTC(2000, 0, 1, value)))),
+      formatWhen: (placed) => n(formatWhen(placed)),
     };
   }, [locale, timeZone, valueRange]);
 }
