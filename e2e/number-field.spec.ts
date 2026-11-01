@@ -136,7 +136,7 @@ test.describe('Number Field lab', () => {
     await dirty.locator('.ui-field__label', { hasText: 'Servings' }).click({ button: 'right' });
     await page.getByRole('menuitem', { name: 'Set to default' }).click();
     await expect(input).toHaveValue('2');
-    await page.getByRole('button', { name: 'Save' }).click();
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
     await expect(output(page, 'Saved')).toHaveText('2');
   });
 

@@ -87,20 +87,27 @@ Verification: `src/components/number-field/number-field.test.tsx`, `e2e/number-f
 Implementation: `src/components/number-field/number-field.tsx`, `src/components/number-field/number-field-parts.tsx`, `src/core/glyphs.tsx`, `src/utils/use-wheel-steps.ts`, `labs/reference/number-field.css`
 Verification: `src/components/number-field/number-field.test.tsx`, `e2e/number-field.spec.ts`, `e2e/number-field-displays.spec.ts`
 
+### UIC-NUMBER-FIELD-3.4 - Typed units
+
+`units` (`NumberFieldUnits`) shall let a decimal field read quantities typed in other units and keep its value in its own: `unit` names the value's unit (`mm`), and `conversions` maps each other unit a reader may type to how many of `unit` one of it makes (`{ cm: 10, m: 1000, in: 25.4 }`); only such proportional conversions are read, so units with an offset (temperatures) are the caller's. The field names no units of its own. With `units` the field types into a text input with the spinbutton role (as in a nondecimal base, UIC-NUMBER-FIELD-4.1) and shows `unit` as its end adornment unless `endAdornment` is given, at the edge or after the number as `endAdornmentPlacement` says. Typed or pasted text reads as a number in the locale (its decimal sign, with or without its grouping, the minus sign or a hyphen, and an exponent), optionally followed by one of the units, with or without spaces between them (`5cm`, `5 cm`, `0,25 m` in French); a unit matches exactly, or else in any case, the longest first, and a number alone is in `unit`. When the typing ends (Enter, Tab, focus leaving the input) the quantity times its unit's conversion, rounded to 15 significant digits so `0.1 m` reads `100`, becomes the value, snapped or validated by `commitBehavior` and the range and step as any typed number, and the input shows it in `unit`, formatted by `formatOptions` (`5cm` becomes `50`, with `mm` after it); the value, `onChange`, `onCommit` and the form value are always the number in `unit`, and assistive technology reads the value with its unit (`50 mm`). Steps start from the typed quantity. Text that is not a number, or that ends in a unit the field does not read (`5 km`), never becomes the value: it stays in the input, the field reports the provider string `quantityUnreadable` with the units it reads in a locale list (`Enter a number in mm, cm, or m.`) as an error that blocks the form, and the value keeps what it was until the text is corrected or the value is replaced from outside (restore, undo, a controlled value), which also replaces the text. Empty text empties the value.
+
+Implementation: `src/components/number-field/number-field.tsx`, `src/components/number-field/unit-number.ts`, `src/components/number-field/number-codecs.ts`, `src/components/number-field/text-number-control.tsx`, `src/core/strings/field.ts`
+Verification: `src/components/number-field/unit-number.test.ts`, `src/components/number-field/number-field-units.test.tsx`, `e2e/number-field-displays.spec.ts`
+
 ## UIC-NUMBER-FIELD-4 - Number bases
 
 ### UIC-NUMBER-FIELD-4.1 - Radix input
 
 `radix` is 10 by default, or 2, 8 or 16. Decimal input retains locale formatting and fractional precision. Nondecimal input edits safe integers, accepts an optional matching prefix and either case, and displays 0b, 0o or 0x after the sign. A malformed entry or fraction restores the previous formatted value on commit. Empty input is null. Changing the base preserves the numeric value.
 
-Implementation: `src/components/number-field/number-field.tsx`, `src/components/number-field/radix-control.tsx`, `src/components/number-field/radix-number.ts`
+Implementation: `src/components/number-field/number-field.tsx`, `src/components/number-field/text-number-control.tsx`, `src/components/number-field/radix-number.ts`
 Verification: `src/components/number-field/radix-number.test.ts`, `src/components/number-field/number-radix.test.tsx`, `e2e/number-radix.spec.ts`
 
 ### UIC-NUMBER-FIELD-4.2 - Numeric behavior and units
 
 Each base preserves numeric values, range and step behavior, modifier stepping, scrubbing, disabled/read-only state, validation, restore and field history. In every base the plain arrows and steppers step by `step` onto the step grid and stop at the last reachable step below `maxValue`, as in a decimal field; a modified arrow steps by its configured step and does nothing without one. The group publishes `data-focus-within` in every base, so the reference frame shows keyboard focus alike. Nondecimal spinbuttons report the numeric value and formatted value text to assistive technology and submit the decimal numeric value under `name`. External fractional or unsafe values remain visible and invalid. `startAdornment` and `endAdornment` combine units with every base; Intl format options apply to decimal input.
 
-Implementation: `src/components/number-field/number-field.tsx`, `src/components/number-field/radix-control.tsx`
+Implementation: `src/components/number-field/number-field.tsx`, `src/components/number-field/text-number-control.tsx`
 Verification: `src/components/number-field/number-radix.test.tsx`, `e2e/number-radix.spec.ts`
 
 ## Hooks

@@ -431,6 +431,7 @@
   "fieldHelp": "Aide pour {label}",
   "fieldActions": "Actions de {label}",
   "rangeUnderflow": "Saisissez {minimum} ou plus.",
+  "quantityUnreadable": "Saisissez un nombre en {units}.",
   "numberIncrease": "Augmenter",
   "numberDecrease": "Diminuer",
   "rangeOverflow": "Saisissez {maximum} ou moins.",

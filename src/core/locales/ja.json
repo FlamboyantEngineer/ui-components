@@ -431,6 +431,7 @@
   "fieldHelp": "{label}のヘルプ",
   "fieldActions": "{label}の操作",
   "rangeUnderflow": "{minimum} 以上を入力してください。",
+  "quantityUnreadable": "{units} で数値を入力してください。",
   "numberIncrease": "増やす",
   "numberDecrease": "減らす",
   "rangeOverflow": "{maximum} 以下を入力してください。",

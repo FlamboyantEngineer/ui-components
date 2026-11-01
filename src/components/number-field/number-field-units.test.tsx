@@ -1,0 +1,88 @@
+import { render, screen } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
+import { UiProvider } from '../../core/provider.js';
+import { NumberField } from './number-field.js';
+import type { NumberFieldUnits } from './unit-number.js';
+
+const lengths: NumberFieldUnits = { unit: 'mm', conversions: { cm: 10, m: 1000 } };
+
+describe('NumberField units', () => {
+  it('UIC-NUMBER-FIELD-3.4 converts a typed quantity to the field unit on commit', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    const { container } = render(
+      <form aria-label="Part">
+        <NumberField label="Length" name="length" units={lengths} onCommit={onCommit} />
+      </form>,
+    );
+    const input = screen.getByRole('spinbutton', { name: 'Length' });
+    expect(container.querySelector('.ui-number-field__end')).toHaveTextContent('mm');
+    await user.type(input, '5cm{Enter}');
+    expect(onCommit).toHaveBeenLastCalledWith(50);
+    expect(input).toHaveValue('50');
+    expect(input).toHaveAttribute('aria-valuetext', '50 mm');
+    expect(new FormData(screen.getByRole('form')).get('length')).toBe('50');
+    // Editing the value: a number alone is in the field's unit, and pasting works too.
+    await user.clear(input);
+    await user.paste('0.25 m');
+    await user.tab();
+    expect(input).toHaveValue('250');
+    await user.click(document.body);
+    expect(onCommit).toHaveBeenLastCalledWith(250);
+    await user.click(input);
+    await user.clear(input);
+    await user.type(input, '1,234.5{Enter}');
+    expect(onCommit).toHaveBeenLastCalledWith(1234.5);
+    expect(input).toHaveValue('1,234.5');
+  });
+
+  it('UIC-NUMBER-FIELD-3.4 keeps unreadable text and reports the units it reads', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    const { container } = render(
+      <NumberField label="Length" defaultValue={12} units={lengths} onCommit={onCommit} />,
+    );
+    const input = screen.getByRole('spinbutton', { name: 'Length' });
+    await user.clear(input);
+    await user.type(input, '5 km{Enter}');
+    expect(input).toHaveValue('5 km');
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(container.querySelector('.ui-field__message')).toHaveTextContent(
+      'Enter a number in mm, cm, or m.',
+    );
+    expect(onCommit).not.toHaveBeenCalledWith(expect.anything());
+    await user.clear(input);
+    await user.type(input, '5 cm{Enter}');
+    expect(input).not.toHaveAttribute('aria-invalid');
+    expect(onCommit).toHaveBeenLastCalledWith(50);
+  });
+
+  it('UIC-NUMBER-FIELD-3.4 steps, snaps, restores and follows the locale', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <UiProvider locale="fr-FR">
+        <NumberField
+          label="Length"
+          defaultValue={10}
+          maxValue={100}
+          step={5}
+          units={lengths}
+          endAdornment="millimètres"
+        />
+      </UiProvider>,
+    );
+    const input = screen.getByRole('spinbutton', { name: 'Length' });
+    expect(container.querySelector('.ui-number-field__end')).toHaveTextContent('millimètres');
+    await user.clear(input);
+    await user.type(input, '2,2 cm{Enter}');
+    // Snapped onto the step from 22.
+    expect(input).toHaveValue('20');
+    await user.clear(input);
+    await user.type(input, '3 cm{ArrowUp}');
+    expect(input).toHaveValue('35');
+    await user.clear(input);
+    await user.type(input, '1 m{Enter}');
+    expect(input).toHaveValue('100');
+  });
+});

@@ -1,18 +1,22 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useNumberFormatter } from '../../primitives/index.js';
+import { useLocale, useNumberFormatter } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import {
   Field,
   useFieldControl,
+  type FieldControlProps,
   type FieldInputProps,
   type FieldIssue,
+  type FieldState,
   type FieldTextInputProps,
 } from '../field/field.js';
-import { RadixControl } from './radix-control.js';
+import { TextNumberControl } from './text-number-control.js';
+import { createQuantityCodec, createRadixCodec } from './number-codecs.js';
 import { formatRadixNumber, type NumberFieldRadix } from './radix-number.js';
+import type { NumberFieldUnits } from './unit-number.js';
 import { DecimalControl } from './decimal-control.js';
 import { numberFieldHooks as hooks, type NumberSteps } from './number-field-parts.js';
 
@@ -65,6 +69,11 @@ export interface NumberFieldProps
   largeStep?: number | undefined;
   /** Draws a scrub handle before the number: dragging it sideways steps the value. */
   showScrubber?: boolean | undefined;
+  /**
+   * Reads quantities typed with a unit (`5cm`) in the field's unit (`50` with `mm`), which is the
+   * end adornment unless one is given. Decimal fields only.
+   */
+  units?: NumberFieldUnits | undefined;
 }
 
 export type NumberControlConfig = Pick<
@@ -135,6 +144,46 @@ function checkNumber(value: number | null, rules: NumberRules): FieldIssue | nul
   return null;
 }
 
+interface NumberControlProps {
+  state: FieldState<number | null>;
+  control: FieldControlProps;
+  steps: NumberSteps;
+  config: NumberControlConfig;
+  radix: NumberFieldRadix;
+  units: NumberFieldUnits | undefined;
+}
+
+/**
+ * The field's control: React Aria's number field for plain decimal numbers, or a text input with a
+ * codec for a nondecimal base or quantities with units.
+ */
+function NumberControl({ state, control, steps, config, radix, units }: NumberControlProps) {
+  const strings = useUiStrings();
+  const { locale } = useLocale();
+  const formatter = useNumberFormatter(config.formatOptions);
+  if (radix === 10 && !units) {
+    return <DecimalControl state={state} control={control} steps={steps} config={config} />;
+  }
+  const codec =
+    radix === 10 && units
+      ? createQuantityCodec({
+          units,
+          locale,
+          format: (value) => formatter.format(value),
+          strings,
+        })
+      : createRadixCodec(radix);
+  return (
+    <TextNumberControl
+      state={state}
+      control={control}
+      codec={codec}
+      steps={steps}
+      config={config}
+    />
+  );
+}
+
 /**
  * A field for a number, parsed and formatted for the locale, with steppers. It commits when focus
  * leaves the field, on Enter and on each step, and reports a value outside its range or off its
@@ -154,6 +203,7 @@ export function NumberField({
   largeStep,
   showScrubber = false,
   commitBehavior = 'snap',
+  units,
   ...props
 }: NumberFieldProps) {
   const strings = useUiStrings();
@@ -201,20 +251,19 @@ export function NumberField({
           enterKeyHint,
           hideStepper,
           startAdornment,
-          endAdornment,
+          endAdornment: endAdornment === undefined && units ? units.unit : endAdornment,
           endAdornmentPlacement,
           showScrubber,
           commitBehavior,
         };
-        return radix === 10 ? (
-          <DecimalControl state={state} control={control} steps={steps} config={config} />
-        ) : (
-          <RadixControl
+        return (
+          <NumberControl
             state={state}
             control={control}
-            radix={radix}
             steps={steps}
             config={config}
+            radix={radix}
+            units={units}
           />
         );
       }}

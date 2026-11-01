@@ -57,6 +57,8 @@ export interface FieldStrings {
   fieldActions: (label: string) => string;
   /** The message of a number below its minimum, given the formatted minimum. */
   rangeUnderflow: (minimum: string) => string;
+  /** The message of typed text that is no number in one of the units a field reads (`mm, cm, or m`). */
+  quantityUnreadable: (units: string) => string;
   /** Names the numeric increment button. */
   numberIncrease: string;
   /** Names the numeric decrement button. */
@@ -169,6 +171,7 @@ export const fieldStrings = defineStrings<FieldStrings>({
   fieldHelp: (label) => ({ label }),
   fieldActions: (label) => ({ label }),
   rangeUnderflow: (minimum) => ({ minimum }),
+  quantityUnreadable: (units) => ({ units }),
   rangeOverflow: (maximum) => ({ maximum }),
   stepMismatch: (step) => ({ step }),
   revealValue: (label) => ({ label }),
