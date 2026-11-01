@@ -88,7 +88,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Editing"
-      description="Type in the fields; add, insert, duplicate, move and delete steps from their menus; drag a step by its handle or press Alt+ArrowUp and Alt+ArrowDown in it. Focus follows the edited step until you act elsewhere. Saving makes the current steps the committed ones and clears the dirty marks."
+      description="Type in the fields; add, insert, duplicate, move and delete steps from their menus; drag a step by its handle or press Alt+ArrowUp and Alt+ArrowDown on its handle, number or menu (in a text field the keys move the caret). Focus follows the edited step until you act elsewhere. Saving makes the current steps the committed ones and clears the dirty marks."
     >
       <LiveEditor />
     </LabSection>

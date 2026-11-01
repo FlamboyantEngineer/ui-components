@@ -52,7 +52,7 @@ Verification: `src/components/step-list-editor/step-list-editor.test.tsx`, `e2e/
 
 ### UIC-STEP-LIST-EDITOR-2.3 - Moving with Alt+Arrow keys
 
-Alt+ArrowUp and Alt+ArrowDown pressed with focus anywhere in a step (with no other modifier) shall move the step one place up or down, doing nothing at either end, without opening its menu; focus stays on the element that had it once the step has moved. Keys from the step's open menu, and keys an input method composes (`isComposing`, or key code 229), do not move it.
+Alt+ArrowUp and Alt+ArrowDown pressed with focus anywhere in a step except in a text control (with no other modifier) shall move the step one place up or down, doing nothing at either end, without opening its menu; focus stays on the element that had it once the step has moved. Keys from the step's open menu, and keys an input method composes (`isComposing`, or key code 229), do not move it. In a step's text field the chord stays with the field, whose caret it moves (Option+Arrow moves by paragraph on macOS), and the step does not move.
 
 Implementation: `src/components/step-list-editor/step-row.tsx`, `src/components/step-list-editor/step-list-editor.tsx`, `src/utils/use-focus-request.ts`
 Verification: `src/components/step-list-editor/step-list-editor.test.tsx`, `e2e/step-list-editor.spec.ts`

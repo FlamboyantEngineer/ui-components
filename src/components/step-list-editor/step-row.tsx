@@ -1,5 +1,6 @@
 'use client';
 
+import { isEditableTarget } from '../../utils/is-editable-target.js';
 import { DragHandleGlyph } from '../../core/glyphs.js';
 // One step of a step list editor: its drag handle, number, text fields and menu.
 
@@ -105,7 +106,7 @@ function StepMenu({ id, index, count, number, onAction }: StepMenuProps) {
 
 /**
  * One step: a drag handle, its number, a multi-line text field per column and its menu while
- * editable. Alt+ArrowUp and Alt+ArrowDown anywhere in the step move it.
+ * editable. Alt+ArrowUp and Alt+ArrowDown anywhere in the step but its text fields move it.
  */
 export function StepRow(props: StepRowProps) {
   const { step, number, columns, committed, isReadOnly, drag, onChange, onStep } = props;
@@ -119,6 +120,8 @@ export function StepRow(props: StepRowProps) {
     // and never while an input method in a field owns them.
     const isOwn = event.currentTarget.contains(event.target as Node);
     if (!delta || !isMoveChord(event) || !isOwn || isComposingKey(event.nativeEvent)) return;
+    // A step's text field keeps the chord for its caret (Option+Arrow moves by paragraph).
+    if (isEditableTarget(event.target)) return;
     // Captured before the menu button, which would open its menu on Alt+ArrowDown.
     event.preventDefault();
     event.stopPropagation();
