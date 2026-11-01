@@ -162,6 +162,18 @@ function Review() {
   );
 }
 
+/** A paragraph whose two links overlap on "setup guide": the later link takes the overlap. */
+const linkedNote: DocumentBlock = {
+  id: 'links',
+  type: 'paragraph',
+  text: 'Read the setup guide appendix first.',
+  marks: [
+    { type: 'link', start: 9, end: 20, href: '#setup' },
+    { type: 'link', start: 15, end: 29, href: '#appendix' },
+    { type: 'bold', start: 9, end: 29 },
+  ],
+};
+
 mountLab(
   <>
     <LabSection
@@ -215,6 +227,17 @@ mountLab(
           />
         )}
       </LargeInputDemo>
+    </LabSection>
+    <LabSection
+      title="Overlapping links"
+      description="An added paragraph whose two links overlap. A stretch of text is never inside two links: where they overlap, the link that starts later wins, then the shorter one, then the one listed last; the bold mark spans both."
+    >
+      <RedlineCompare
+        aria-label="Overlapping links"
+        oldBlocks={[]}
+        newBlocks={[linkedNote]}
+        data-lab-demo="links"
+      />
     </LabSection>
     <LabSection
       title="Typed identifiers"

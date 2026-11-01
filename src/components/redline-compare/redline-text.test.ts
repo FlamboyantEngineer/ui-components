@@ -38,6 +38,45 @@ describe('cutAtMarks', () => {
     ]);
     expect(cutAtMarks('', { block, start: 0 })).toEqual([]);
   });
+
+  it('UIC-REDLINE-COMPARE-2.3 keeps one link per run: the latest start, then the shortest, then the last', () => {
+    const linksOf = (marks: DocumentBlock['marks']) =>
+      cutAtMarks('abcdef', { block: { type: 'paragraph', text: 'abcdef', marks }, start: 0 }).map(
+        (run) => [run.text, run.marks.map((mark) => mark.href ?? mark.type)],
+      );
+    const link = (start: number, end: number, href: string) =>
+      ({ type: 'link', start, end, href }) as const;
+    expect(linksOf([link(0, 4, '/a'), link(2, 6, '/b')])).toEqual([
+      ['ab', ['/a']],
+      ['cd', ['/b']],
+      ['ef', ['/b']],
+    ]);
+    expect(linksOf([link(0, 6, '/a'), link(2, 4, '/b')])).toEqual([
+      ['ab', ['/a']],
+      ['cd', ['/b']],
+      ['ef', ['/a']],
+    ]);
+    expect(linksOf([link(0, 6, '/a'), link(0, 6, '/b')])).toEqual([['abcdef', ['/b']]]);
+    expect(linksOf([link(0, 6, '/a'), link(0, 3, '/b')])).toEqual([
+      ['abc', ['/b']],
+      ['def', ['/a']],
+    ]);
+    expect(linksOf([link(0, 3, '/a'), link(3, 6, '/b')])).toEqual([
+      ['abc', ['/a']],
+      ['def', ['/b']],
+    ]);
+    expect(
+      linksOf([
+        { type: 'bold', start: 0, end: 6 },
+        { type: 'bold', start: 2, end: 4 },
+        { type: 'italic', start: 2, end: 6 },
+      ]),
+    ).toEqual([
+      ['ab', ['bold']],
+      ['cd', ['bold', 'italic']],
+      ['ef', ['bold', 'italic']],
+    ]);
+  });
 });
 
 describe('createRedlineWords', () => {

@@ -1,4 +1,6 @@
-import { createRef } from 'react';
+import { act, createRef } from 'react';
+import { hydrateRoot } from 'react-dom/client';
+import { renderToString } from 'react-dom/server';
 import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
@@ -134,6 +136,44 @@ describe('RedlineCompare', () => {
     );
     const labels = container.querySelectorAll('.ui-redline-compare__column-label');
     expect([...labels].map((label) => label.textContent)).toEqual(['Version 3', 'Version 4']);
+  });
+
+  it('UIC-REDLINE-COMPARE-2.3 never draws a link inside another, on the server or in the browser', async () => {
+    const block: DocumentBlock = {
+      id: 'links',
+      type: 'paragraph',
+      text: 'abcdef',
+      marks: [
+        { type: 'link', start: 0, end: 4, href: 'https://example.com/a' },
+        { type: 'link', start: 2, end: 6, href: 'https://example.com/b' },
+        { type: 'link', start: 1, end: 3, href: 'javascript:alert(1)' },
+      ],
+    };
+    const tree = <RedlineCompare oldBlocks={[]} newBlocks={[block]} />;
+    const host = document.body.appendChild(document.createElement('div'));
+    host.innerHTML = renderToString(tree);
+    expect(
+      host.querySelector('a a, a span[data-mark="link"], span[data-mark="link"] a'),
+    ).toBeNull();
+    const recoverable: unknown[] = [];
+    let app: ReturnType<typeof hydrateRoot> | undefined;
+    await act(async () => {
+      app = hydrateRoot(host, tree, { onRecoverableError: (error) => recoverable.push(error) });
+    });
+    try {
+      expect(recoverable).toEqual([]);
+      const anchors = [...host.querySelectorAll('a')];
+      expect(anchors.map((anchor) => [anchor.textContent, anchor.getAttribute('href')])).toEqual([
+        ['a', 'https://example.com/a'],
+        ['c', 'https://example.com/b'],
+        ['d', 'https://example.com/b'],
+        ['ef', 'https://example.com/b'],
+      ]);
+      expect(host.querySelector('span[data-mark="link"]')).toHaveTextContent('b');
+    } finally {
+      act(() => app?.unmount());
+      host.remove();
+    }
   });
 
   it('UIC-REDLINE-COMPARE-2.3 draws marks, links through the provider and unsafe links as text', () => {

@@ -32,7 +32,29 @@ interface Placed {
 
 const hunkChanges = { equal: 'equal', insert: 'added', delete: 'removed' } as const;
 
-/** Cuts a block's text from `start` where a mark starts or ends, keeping the marks over each cut. */
+/**
+ * Which of two marks of a kind covering the same run a run keeps: the one that starts later, then
+ * the one that ends sooner, then the one listed later, so a run is inside the most specific link.
+ */
+function isPreferred(mark: DocumentMark, over: DocumentMark): boolean {
+  if (mark.start !== over.start) return mark.start > over.start;
+  return mark.end <= over.end;
+}
+
+/** The marks a run draws: one of each kind, so no run sits inside two links. */
+function pickRunMarks(marks: readonly DocumentMark[]): DocumentMark[] {
+  const byType = new Map<DocumentMark['type'], DocumentMark>();
+  for (const mark of marks) {
+    const kept = byType.get(mark.type);
+    if (!kept || isPreferred(mark, kept)) byType.set(mark.type, mark);
+  }
+  return [...byType.values()];
+}
+
+/**
+ * Cuts a block's text from `start` where a mark starts or ends, keeping the marks over each cut, one
+ * of each kind.
+ */
 export function cutAtMarks(
   text: string,
   { block, start }: { block: DocumentBlock; start: number },
@@ -49,7 +71,7 @@ export function cutAtMarks(
     const from = requireDefined(points[index]);
     return {
       text: text.slice(from - start, to - start),
-      marks: marks.filter((mark) => mark.start <= from && mark.end >= to),
+      marks: pickRunMarks(marks.filter((mark) => mark.start <= from && mark.end >= to)),
     };
   });
 }

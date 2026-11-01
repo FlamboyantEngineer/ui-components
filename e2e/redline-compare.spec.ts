@@ -128,6 +128,19 @@ test.describe('Redline Compare lab', () => {
     await expect(demo.getByRole('region', { name: 'Large input' })).toBeVisible();
   });
 
+  test('UIC-REDLINE-COMPARE-2.3 never nests one link in another', async ({ page, lab }) => {
+    await lab.open('redline-compare');
+    const demo = page.locator('[data-lab-demo="links"]');
+    await demo.scrollIntoViewIfNeeded();
+    await expect(demo.locator('a a')).toHaveCount(0);
+    const links = demo.getByRole('link');
+    await expect(links).toHaveText(['setup ', 'guide', ' appendix']);
+    await links.nth(1).click();
+    await expect(page).toHaveURL(/#appendix$/);
+    await links.nth(0).click();
+    await expect(page).toHaveURL(/#setup$/);
+  });
+
   test('UIC-REDLINE-COMPARE-4.1 passes axe', async ({ page, lab }) => {
     await lab.open('redline-compare');
     await expect(page.getByRole('group', { name: /^Pump maintenance/ })).toBeVisible();
