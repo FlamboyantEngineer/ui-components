@@ -1,7 +1,6 @@
 'use client';
 
 import { CloseGlyph } from '../../core/glyphs.js';
-import type { RefObject } from 'react';
 import {
   Button as AriaButton,
   Input,
@@ -24,23 +23,23 @@ export type EmojiPickerSearchProps = BaseProps;
 export type EmojiPickerPreviewProps = BaseProps;
 
 // Down moves from the search field to the grid's first emoji, even from a field laid out after the
-// grid, where focusing the grid itself would pick its last. The field's keys stay inside the picker,
-// except Escape, which React Aria still stops while it clears a non-empty field. A composing key is
-// the input method's: it moves nothing and goes on to it.
-function moveToGrid(event: AriaKeyboardEvent, gridRef: RefObject<HTMLDivElement | null>) {
+// grid or a virtualized grid scrolled past it. The field's keys stay inside the picker, except
+// Escape, which React Aria still stops while it clears a non-empty field. A composing key is the
+// input method's: it moves nothing and goes on to it.
+function moveToGrid(event: AriaKeyboardEvent, enterGrid: () => void) {
   if (event.key === 'Escape' || isComposingKey(event.nativeEvent)) {
     event.continuePropagation();
     return;
   }
   if (event.key !== 'ArrowDown') return;
   event.preventDefault();
-  gridRef.current?.querySelector<HTMLElement>('[role="row"]')?.focus();
+  enterGrid();
 }
 
 /** The picker's search field: Down moves to the first emoji and Enter chooses it. */
 export function EmojiPickerSearch({ className, ...rest }: EmojiPickerSearchProps) {
   const strings = useUiStrings();
-  const { search, chooseFirst, autoFocus, gridRef } = useEmojiPickerContext();
+  const { search, chooseFirst, autoFocus, enterGrid } = useEmojiPickerContext();
   return (
     <SearchField
       {...rest}
@@ -50,7 +49,7 @@ export function EmojiPickerSearch({ className, ...rest }: EmojiPickerSearchProps
       autoFocus={autoFocus}
       onChange={search.setQuery}
       onSubmit={chooseFirst}
-      onKeyDown={(event) => moveToGrid(event, gridRef)}
+      onKeyDown={(event) => moveToGrid(event, enterGrid)}
     >
       <Input className={hooks.slotClass('search-input')} placeholder={strings.searchEmoji} />
       <AriaButton className={hooks.slotClass('search-clear')}>

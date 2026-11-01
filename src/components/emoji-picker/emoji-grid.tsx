@@ -1,6 +1,13 @@
 'use client';
 
-import { useId, useMemo, type KeyboardEvent, type ReactNode, type Ref } from 'react';
+import {
+  useId,
+  useLayoutEffect,
+  useMemo,
+  type KeyboardEvent,
+  type ReactNode,
+  type RefObject,
+} from 'react';
 import {
   GridLayout,
   GridList,
@@ -28,9 +35,15 @@ interface EmojiGridProps extends BaseProps {
   /** Reports the entry under the pointer or keyboard focus. */
   onActiveChange: (entry: EmojiEntry) => void;
   renderEmoji?: ((unicode: string) => ReactNode) | undefined;
-  gridRef?: Ref<HTMLDivElement> | undefined;
+  gridRef: RefObject<HTMLDivElement | null>;
   /** Renders only the cells in view of the grid, which scrolls itself. */
   virtualized?: boolean | undefined;
+  /**
+   * `first` focuses the grid's first emoji now, through React Aria's collection, so a virtualized
+   * grid brings it into view even when it is not mounted; `onEntered` then reports it done.
+   */
+  focusOnEntry?: 'first' | undefined;
+  onEntered?: (() => void) | undefined;
 }
 
 /** The grid props a picker shares between every grid it draws. */
@@ -87,10 +100,18 @@ export function EmojiGrid({
   renderEmoji,
   gridRef,
   virtualized = false,
+  focusOnEntry,
+  onEntered,
   className,
   ...rest
 }: EmojiGridProps) {
   const labelId = useId();
+  // Focus lands on the grid element, which React Aria moves to its first key on entry.
+  useLayoutEffect(() => {
+    if (!focusOnEntry) return;
+    gridRef.current?.focus();
+    onEntered?.();
+  }, [focusOnEntry, gridRef, onEntered]);
   const byKey = useMemo(
     () => new Map(entries.map((entry) => [getEmojiKey(entry), entry])),
     [entries],
@@ -106,6 +127,7 @@ export function EmojiGrid({
       aria-labelledby={labelId}
       layout="grid"
       onAction={choose}
+      UNSTABLE_focusOnEntry={focusOnEntry}
     >
       {entries.map((entry) => (
         <GridListItem

@@ -59,27 +59,39 @@ function isDrawn(context: ProbeContext, glyph: string, emojiWidth: number): bool
   return context.measureText(glyph).width <= emojiWidth * 1.5;
 }
 
-function measureSupport(fontFamily: string): EmojiSupport {
-  const canvas = new OffscreenCanvas(probeSize * 2, probeSize);
-  const context = canvas.getContext('2d', { willReadFrequently: true });
-  if (!context) return unknownSupport;
-  context.font = `${probeSize}px ${fontFamily || 'sans-serif'}`;
-  context.textBaseline = 'top';
-  const emojiWidth = context.measureText('\u{1F600}').width;
-  const newest = versionProbes.find(([, glyph]) => isDrawn(context, glyph, emojiWidth));
-  // Without even the oldest emoji there is no colour emoji font to judge by.
-  if (!newest) return unknownSupport;
-  return { version: newest[0], countryFlags: isDrawn(context, flagProbe, emojiWidth) };
+/**
+ * What a canvas measures in `fontFamily`, or `null` when it cannot measure: no 2D context, or a
+ * canvas the browser refuses to build or read back, as with readback denied by policy.
+ */
+function measureSupport(fontFamily: string): EmojiSupport | null {
+  try {
+    const canvas = new OffscreenCanvas(probeSize * 2, probeSize);
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+    if (!context) return null;
+    context.font = `${probeSize}px ${fontFamily || 'sans-serif'}`;
+    context.textBaseline = 'top';
+    const emojiWidth = context.measureText('\u{1F600}').width;
+    const newest = versionProbes.find(([, glyph]) => isDrawn(context, glyph, emojiWidth));
+    // Without even the oldest emoji there is no colour emoji font to judge by.
+    if (!newest) return unknownSupport;
+    return { version: newest[0], countryFlags: isDrawn(context, flagProbe, emojiWidth) };
+  } catch {
+    return null;
+  }
 }
 
-/** What the platform draws in a font, measured once per font family on a canvas. */
+/**
+ * What the platform draws in a font, measured once per font family on a canvas. A platform without
+ * a canvas, or one that fails to measure, counts as unknown support, which leaves nothing out; a
+ * failure is not kept, so the next picker measures again.
+ */
 export function detectEmojiSupport(fontFamily: string): EmojiSupport {
   if (typeof OffscreenCanvas === 'undefined') return unknownSupport;
-  let support = measured.get(fontFamily);
-  if (!support) {
-    support = measureSupport(fontFamily);
-    measured.set(fontFamily, support);
-  }
+  const known = measured.get(fontFamily);
+  if (known) return known;
+  const support = measureSupport(fontFamily);
+  if (!support) return unknownSupport;
+  measured.set(fontFamily, support);
   return support;
 }
 

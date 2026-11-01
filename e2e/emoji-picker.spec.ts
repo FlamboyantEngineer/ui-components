@@ -29,6 +29,9 @@ test.describe('Emoji Picker lab', () => {
     const focused = grid.locator('[role="row"]:focus');
     await expect(focused).toBeVisible();
     await expect(grid.getByRole('row').first()).not.toBeFocused();
+    await demo.getByRole('searchbox').focus();
+    await page.keyboard.press('ArrowDown');
+    await expect(grid.locator('[role="row"]:focus')).toHaveAttribute('aria-rowindex', '1');
     await lab.expectAccessible('[data-lab-demo="virtualized"]');
   });
 
@@ -43,6 +46,12 @@ test.describe('Emoji Picker lab', () => {
     await expect(loading.getByRole('status')).toHaveText('Loading');
     const failed = matrixCell(page, 'state=failed skin tones=shown');
     await expect(failed.getByRole('status')).toHaveText('Emoji could not be loaded.');
+    // The custom emoji are not shown, so Enter chooses none of them.
+    await failed.getByRole('searchbox').fill('ship');
+    await page.keyboard.press('Enter');
+    await expect(failed.getByRole('status')).toHaveText('Emoji could not be loaded.');
+    await expect(failed.getByRole('searchbox')).toHaveValue('ship');
+    await failed.getByRole('searchbox').fill('');
     const loaded = matrixCell(page, 'state=loaded skin tones=shown');
     await expect(loaded.getByRole('grid', { name: 'Smileys & Emotion' })).toBeVisible();
     await expect(loaded.getByRole('radio', { name: 'Medium', exact: true })).toBeChecked();
@@ -278,5 +287,22 @@ test.describe('Emoji Picker lab', () => {
     await page.keyboard.press('ArrowDown');
     await expect(picker.getByRole('row', { name: 'banana' })).toBeFocused();
     await expect(picker.locator('[data-lab-output="active"]')).toHaveText('🍌 banana (default)');
+  });
+
+  test('UIC-EMOJI-PICKER-5.1 shows every emoji when the browser denies canvas readback', async ({
+    page,
+    lab,
+  }) => {
+    await page.addInitScript(() => {
+      OffscreenCanvasRenderingContext2D.prototype.getImageData = () => {
+        throw new DOMException(
+          'The canvas has been tainted by cross-origin data.',
+          'SecurityError',
+        );
+      };
+    });
+    await lab.open('emoji-picker');
+    const loaded = matrixCell(page, 'state=loaded skin tones=shown');
+    await expect(loaded.getByRole('grid', { name: 'Smileys & Emotion' })).toBeVisible();
   });
 });

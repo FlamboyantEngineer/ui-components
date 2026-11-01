@@ -121,13 +121,14 @@ mountLab(
   <>
     <LabSection
       title="States"
-      description="Loading, a failed load and the loaded picker, with and without the skin tone choice."
+      description="Loading, a failed load and the loaded picker, with and without the skin tone choice. The loading and failed pickers also offer custom emoji, which wait for the standard ones: Enter in the search chooses nothing while none is shown."
     >
       <StateMatrix
         axes={{ state: ['loading', 'failed', 'loaded'], 'skin tones': ['shown', 'hidden'] }}
         render={({ state, 'skin tones': tones }) => (
           <EmojiPicker
             loadEmoji={state === 'loaded' ? undefined : loaders[state]}
+            customEmoji={state === 'loaded' ? undefined : customEmoji}
             hideSkinTones={tones === 'hidden'}
             defaultSkinTone="medium"
             aria-label={`Emoji picker, ${state}`}
@@ -143,7 +144,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Virtualized"
-      description="Only the emoji in view of each grid render; the grid scrolls itself, and Home and End still reach every emoji."
+      description="Only the emoji in view of each grid render; the grid scrolls itself, and Home and End still reach every emoji. Down in the search field returns to the first emoji however far the grid scrolled."
     >
       <div data-lab-demo="virtualized">
         <EmojiPicker aria-label="Emoji, virtualized" virtualized />
