@@ -6,7 +6,15 @@ import { requireDefined } from '../../utils/require-defined.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { createKeyIndex } from '../../utils/create-key-index.js';
-import { useCallback, useLayoutEffect, useMemo, useRef, type ReactNode } from 'react';
+import {
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  type ComponentProps,
+  type KeyboardEvent,
+  type ReactNode,
+} from 'react';
 import {
   GridList,
   GridListItem,
@@ -23,13 +31,23 @@ import { boardHooks as hooks } from './board-hooks.js';
 import type { BoardCellAddress } from './board-moves.js';
 import type { BoardCardDrag } from './use-board-drag.js';
 import type { BoardCardState } from './board.js';
-import type { CollectionDropTarget } from '../../utils/use-reorder-drag-and-drop.js';
+import { isEditableTarget } from '../../utils/is-editable-target.js';
+import { isElement } from '../../utils/is-element.js';
+import { isMoveChord, type CollectionDropTarget } from '../../utils/use-reorder-drag-and-drop.js';
 
 /** Scrolls the virtualized cell holding the card `key` toward it; other cells ignore the call. */
 export type BoardCardReveal = (key: Key) => void;
 
+/**
+ * Takes a keydown the card `key` owns, its row's own or one from a widget in the card that left it
+ * alone; returns whether the board claimed it.
+ */
+export type BoardCardKeyDown = (event: KeyboardEvent<HTMLElement>, key: Key) => boolean;
+
 /** What every cell of a board draws its cards with. */
 export interface BoardCellOptions<T> {
+  /** Card moves by key, while the board takes card moves. */
+  onCardKeyDown: BoardCardKeyDown | undefined;
   renderCard: (item: T, state: BoardCardState) => ReactNode;
   getTextValue: (item: T) => string;
   onAction: ((key: Key) => void) | undefined;
@@ -148,6 +166,51 @@ function useCellDragAndDrop(
   return useDragAndDrop(options).dragAndDropHooks;
 }
 
+/** Text widgets a host draws in a card, which keep the arrow keys for their caret. */
+const textWidgets = '[role="textbox"], [role="combobox"]';
+
+/**
+ * Whether a keydown belongs to the card row handling it: the row's own, or from a widget in the
+ * card, but not from a nested collection's row (such as a card of a board drawn in the card) or a
+ * text control, which keep their keys.
+ */
+function isCardKey(event: KeyboardEvent<HTMLElement>): boolean {
+  const { target, currentTarget } = event;
+  return (
+    isElement(target) &&
+    target.closest('[role="row"]') === currentTarget &&
+    !isEditableTarget(target, textWidgets)
+  );
+}
+
+/**
+ * Draws a card's row. While the board takes card moves, a move chord skips React Aria's row
+ * capture, which would move focus between the card's widgets first, and reaches the board on the way
+ * back up, after a widget in the card has had it and left it alone (not `preventDefault`).
+ */
+function createCardRow(
+  key: Key,
+  {
+    keyShortcuts,
+    onCardKeyDown,
+  }: Pick<BoardCellOptions<unknown>, 'keyShortcuts' | 'onCardKeyDown'>,
+) {
+  return (domProps: ComponentProps<'div'>) => (
+    <div
+      {...domProps}
+      aria-keyshortcuts={keyShortcuts}
+      onKeyDownCapture={(event) => {
+        if (onCardKeyDown && isMoveChord(event) && event.key.startsWith('Arrow')) return;
+        domProps.onKeyDownCapture?.(event);
+      }}
+      onKeyDown={(event) => {
+        if (!event.defaultPrevented && isCardKey(event) && onCardKeyDown?.(event, key)) return;
+        domProps.onKeyDown?.(event);
+      }}
+    />
+  );
+}
+
 /**
  * The cell's cards: a grid list of the caller's card content, virtualized on request. A collapsed
  * column's cell keeps its cards and draws no empty state.
@@ -176,7 +239,7 @@ function BoardCards<T extends { id: Key }>({
       ref={grid}
       aria-labelledby={labelledBy}
       items={items}
-      dependencies={[renderCard, getTextValue, keyShortcuts, isCollapsed]}
+      dependencies={[renderCard, getTextValue, keyShortcuts, options.onCardKeyDown, isCollapsed]}
       onAction={
         onAction &&
         ((key) => {
@@ -193,7 +256,7 @@ function BoardCards<T extends { id: Key }>({
           id={toCollectionKey(item.id)}
           textValue={getTextValue(item)}
           {...hooks.slot('card', { keyIdentity: toKeyIdentity(item.id) })}
-          render={(domProps) => <div {...domProps} aria-keyshortcuts={keyShortcuts} />}
+          render={createCardRow(item.id, options)}
         >
           {({ allowsDragging }) => (
             <>

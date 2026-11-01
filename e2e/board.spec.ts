@@ -460,4 +460,21 @@ test.describe('Board lab', () => {
     await grid.evaluate((element) => element.scrollTo(0, element.scrollHeight));
     await expect(grid.getByRole('row', { name: 'Inventory item 500' })).toBeVisible();
   });
+
+  test('UIC-BOARD-2.3 moves a nested board card on its own board', async ({ page, lab }) => {
+    await lab.open('board');
+    const nested = demo(page, 'nested');
+    const inner = nested.getByRole('group', { name: 'Hall steps' });
+    const sand = inner.getByRole('row', { name: 'Sand the walls' });
+    await sand.focus();
+    await page.keyboard.press('Alt+ArrowRight');
+    await expect(cards(inner, 'Done')).toHaveText(['Sand the walls']);
+    await expect(inner.getByRole('row', { name: 'Sand the walls' })).toBeFocused();
+    const outputs = nested.locator('[data-lab-output]');
+    await expect(outputs).toHaveText(['Hall steps: moved a to done', 'Rooms: no move yet']);
+    await nested.getByRole('row', { name: 'Wash the windows' }).focus();
+    await page.keyboard.press('Alt+ArrowUp');
+    await expect(outputs.last()).toHaveText('Rooms: moved b to todo');
+    await lab.expectAccessible('[data-lab-demo="nested"]');
+  });
 });
