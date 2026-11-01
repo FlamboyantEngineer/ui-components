@@ -52,10 +52,10 @@ Verification: `src/components/chat-parts/chat-text-part.test.tsx`, `e2e/chat-par
 
 ### UIC-CHAT-PARTS-2.4 - Mention and command tokens
 
-Each of a text part's `tokens` shall show its `label` as a pill (`ui-chat-parts__token`, `data-kind` `mention` or `command`) in place of the range of `text` it covers, in both formats. In Markdown the pill takes the place of the token's text wherever Markdown reads it as text, inside emphasis, links and lists as elsewhere, and text beside it keeps its citations; where Markdown shows the source as written (code, a link's target, an image), the token's text stays as written. Tokens outside the text or overlapping an earlier token are ignored. Tokens are compared field by field, so a host that rebuilds the array on each render keeps the Markdown overrides.
+Each of a text part's `tokens` shall show its `label` as a pill (`ui-chat-parts__token`, `data-kind` `mention` or `command`) in place of the range of `text` it covers, in both formats. In Markdown the pill takes the place of the token's text wherever Markdown reads it as text, inside emphasis, links and lists as elsewhere, and text beside it keeps its citations; where Markdown shows the source as written (code, a link's target, an image), the token's text stays as written. Tokens outside the text or overlapping an earlier token are ignored. Only the listed tokens become pills: any other text, including characters that look like the markers that carry tokens through Markdown (written as is or as entities), stays text, in text, code and links alike, and never adds or hides a token. Tokens are compared field by field, so a host that rebuilds the array on each render keeps the Markdown overrides.
 
 Implementation: `src/components/chat-parts/chat-text-part.tsx`, `src/components/chat-parts/chat-text-tokens.ts`
-Verification: `src/components/chat-parts/chat-text-part.test.tsx`, `src/components/chat-parts/chat-text-tokens.test.ts`, `e2e/chat-parts.spec.ts`
+Verification: `src/components/chat-parts/chat-text-part.test.tsx`, `src/components/chat-parts/chat-text-tokens.test.ts`, `src/components/chat-parts/chat-text-token-literals.test.tsx`, `e2e/chat-parts.spec.ts`
 
 ### UIC-CHAT-PARTS-2.5 - Record references
 

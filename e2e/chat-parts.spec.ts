@@ -23,6 +23,11 @@ test.describe('Chat Parts lab', () => {
     await expect(markdown.locator('.ui-chat-parts__token')).toHaveCount(2);
     const plain = matrixCell(page, 'content=tokens format=plain');
     await expect(plain.locator('.ui-chat-parts__token')).toHaveCount(3);
+    for (const format of ['markdown', 'plain']) {
+      const literal = matrixCell(page, `content=literal format=${format}`);
+      await expect(literal.locator('.ui-chat-parts__token')).toHaveCount(1);
+      await expect(literal).toContainText('pasted \uFFF90\uFFFB from');
+    }
     await expect(plain.locator('.ui-chat-parts__text')).toContainText('**');
     await expect(matrixCell(page, 'content=lines format=plain').locator('br')).toHaveCount(3);
     await lab.expectAccessible('[data-lab-section="Text and tokens"]');

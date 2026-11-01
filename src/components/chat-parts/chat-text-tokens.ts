@@ -10,11 +10,21 @@ import type { ChatTextToken } from './chat-part.js';
 /** A run of text, or a token by its position among the listed tokens. */
 type TokenPiece = string | number;
 
-// Unicode keeps the interlinear annotation anchor and terminator for use inside an application:
-// Markdown reads them as ordinary text, and neither typed nor generated text contains them.
-const markerStart = '\uFFF9';
+// A marker is a run of interlinear annotation anchors, the token's position and a terminator, which
+// Markdown reads as ordinary text. Text may hold anchors too, so the run is longer than any run of
+// anchors in the text, as written or as Markdown reads it (entities decode): text cannot spell a
+// marker, and an anchor beside one only lengthens its run.
+const anchor = '\uFFF9';
 const markerEnd = '\uFFFB';
-const markerPattern = /\uFFF9(\d+)\uFFFB/g;
+
+/** The run of anchors that opens each marker of a source, as `writeTokenSource` chose it. */
+export type TokenMarker = string;
+
+/** A Markdown source with its tokens replaced by markers, and the run that opens them. */
+export interface TokenSource {
+  source: string;
+  marker: TokenMarker;
+}
 
 const noTokens: ReadonlySet<number> = new Set();
 
@@ -55,10 +65,10 @@ export function splitTextTokens(text: string, tokens: readonly ChatTextToken[]):
 }
 
 /** Splits rendered text at its token markers. A marker of a token beyond `count` stays text. */
-export function splitTokenMarkers(text: string, count: number): TokenPiece[] {
+export function splitTokenMarkers(text: string, count: number, marker: TokenMarker): TokenPiece[] {
   const pieces: TokenPiece[] = [];
   let from = 0;
-  for (const match of text.matchAll(markerPattern)) {
+  for (const match of text.matchAll(new RegExp(`${marker}(\\d+)${markerEnd}`, 'g'))) {
     const index = Number(match[1]);
     if (index >= count) continue;
     if (match.index > from) pieces.push(text.slice(from, match.index));
@@ -73,13 +83,13 @@ export function splitTokenMarkers(text: string, count: number): TokenPiece[] {
 function writeTokenMarkers(
   text: string,
   tokens: readonly ChatTextToken[],
-  literal: ReadonlySet<number>,
+  { literal, marker }: { literal: ReadonlySet<number>; marker: TokenMarker },
 ): string {
   return splitTextTokens(text, tokens)
     .map((piece) => {
       if (typeof piece === 'string') return piece;
       const { start, end } = requireDefined(tokens[piece]);
-      return literal.has(piece) ? text.slice(start, end) : `${markerStart}${piece}${markerEnd}`;
+      return literal.has(piece) ? text.slice(start, end) : `${marker}${piece}${markerEnd}`;
     })
     .join('');
 }
@@ -104,20 +114,40 @@ function listNodeChildren(node: MarkdownNode): readonly MarkdownNode[] | undefin
   return node.type === 'table' ? [...node.header.flat(), ...node.rows.flat(2)] : undefined;
 }
 
+/** What Markdown shows of `source`: its text, and what it shows as written. */
+function readShownText(source: string) {
+  const nodes = [...walkTree<MarkdownNode>(parseMarkdown(source).children, listNodeChildren)];
+  return {
+    text: nodes.flatMap((node) => (node.type === 'text' ? [node.text] : [])),
+    literal: nodes.flatMap(readLiteralText),
+  };
+}
+
+/** The longest run of anchors in any of the strings. */
+function longestAnchorRun(values: readonly string[]): number {
+  let longest = 0;
+  for (const value of values) {
+    for (const run of value.match(/\uFFF9+/g) ?? []) longest = Math.max(longest, run.length);
+  }
+  return longest;
+}
+
 /**
  * The Markdown source of a text with tokens: a marker in place of each token that Markdown reads as
  * text, and the token's own text where Markdown shows the source as written (in code, a link's
- * target or an image), since a pill cannot show there.
+ * target or an image), since a pill cannot show there. Its marker run is longer than any run of
+ * anchors in the text, so literal text never reads as a token.
  */
-export function writeTokenSource(text: string, tokens: readonly ChatTextToken[]): string {
-  if (tokens.length === 0) return text;
-  const marked = writeTokenMarkers(text, tokens, noTokens);
-  const nodes = walkTree<MarkdownNode>(parseMarkdown(marked).children, listNodeChildren);
+export function writeTokenSource(text: string, tokens: readonly ChatTextToken[]): TokenSource {
+  if (tokens.length === 0) return { source: text, marker: anchor };
+  const shown = readShownText(text);
+  const marker = anchor.repeat(longestAnchorRun([text, ...shown.text, ...shown.literal]) + 1);
+  const marked = writeTokenMarkers(text, tokens, { literal: noTokens, marker });
   const literal = new Set(
-    [...nodes]
-      .flatMap(readLiteralText)
-      .flatMap((value) => splitTokenMarkers(value, tokens.length))
+    readShownText(marked)
+      .literal.flatMap((value) => splitTokenMarkers(value, tokens.length, marker))
       .filter((piece) => typeof piece === 'number'),
   );
-  return literal.size === 0 ? marked : writeTokenMarkers(text, tokens, literal);
+  const source = literal.size === 0 ? marked : writeTokenMarkers(text, tokens, { literal, marker });
+  return { source, marker };
 }
