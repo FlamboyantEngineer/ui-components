@@ -5,10 +5,53 @@ import {
   type ConditionGroup,
   type ConditionRule,
 } from '../../src/components/condition-builder/condition-builder.js';
+import type { FilterField } from '../../src/components/filter-bar/filter-bar.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { bookFields, getBookValue, sampleBooks } from './filter-samples.js';
 
 const column: CSSProperties = { width: 640 };
+
+/** The sample fields with a choice of long labels, to show chips wrapping inside the field. */
+const chipFields: readonly FilterField[] = [
+  ...bookFields,
+  {
+    id: 'shelf',
+    label: 'Shelf',
+    type: 'choice',
+    options: [
+      { value: 'north', label: 'North reading room, upper gallery' },
+      { value: 'south', label: 'South reading room, rare books cabinet' },
+      { value: 'annex', label: 'Annex storage, second basement' },
+    ],
+  },
+];
+
+const chosenValues = {
+  empty: { genre: [], readers: [], shelf: [] },
+  some: { genre: ['history'], readers: ['jon'], shelf: ['north'] },
+  many: {
+    genre: ['fiction', 'history', 'science', 'travel', 'cooking'],
+    readers: ['maria', 'jon', 'lena', 'sam'],
+    shelf: ['north', 'south', 'annex'],
+  },
+} as const;
+
+/** One any-of rule per multiple-value field, each holding `amount` chosen values. */
+function chipTree(amount: keyof typeof chosenValues): ConditionGroup {
+  const values = chosenValues[amount];
+  return {
+    type: 'group',
+    id: 'root',
+    combinator: 'and',
+    rules: (['genre', 'readers', 'shelf'] as const).map((field) => ({
+      type: 'rule',
+      id: field,
+      field,
+      operator: 'any-of',
+      value: [...values[field]],
+    })),
+  };
+}
 
 const flat: ConditionGroup = {
   type: 'group',
@@ -159,6 +202,26 @@ mountLab(
               fields={bookFields}
               defaultValue={nested}
               showActionButtons={buttons === 'shown'}
+            />
+          </div>
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Multiple values"
+      description="Choice and people values show their chosen values as chips inside the value field, before its search or trigger: none, some and many, with long labels, in a wide and a narrow builder. Arrow keys move between chips and Delete removes one."
+    >
+      <StateMatrix
+        axes={{
+          values: Object.keys(chosenValues) as Array<keyof typeof chosenValues>,
+          width: ['640', '360'],
+        }}
+        render={({ values, width }) => (
+          <div style={{ width: Number(width) }}>
+            <ConditionBuilder
+              aria-label={`Conditions, ${values} values, ${width}`}
+              fields={chipFields}
+              defaultValue={chipTree(values)}
             />
           </div>
         )}

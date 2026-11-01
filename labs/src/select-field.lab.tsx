@@ -182,6 +182,16 @@ function Chips() {
         Save
       </button>
       <LabOutput name="Value">{value.join(', ') || 'none'}</LabOutput>
+      <SelectField
+        label="Basket, chips inside"
+        selectionMode="multiple"
+        chipPlacement="inside"
+        options={fruit}
+        value={value}
+        onChange={setValue}
+        committedValue={committed}
+        data-lab-field="chips-inside"
+      />
     </>
   );
 }
@@ -419,7 +429,7 @@ mountLab(
       </LabSection>
       <LabSection
         title="Chips"
-        description="A multiple select keeps its list open while toggling and shows its values as chips."
+        description="A multiple select keeps its list open while toggling and shows its values as chips: below the trigger by default, or inside the field's frame with chipPlacement inside."
       >
         <Chips />
       </LabSection>

@@ -9,7 +9,7 @@ import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { useWidestTextWidth } from '../../utils/use-widest-text-width.js';
 import type { FieldControlProps, FieldState } from '../field/field.js';
-import { SelectChips } from './select-chips.js';
+import { SelectChips, SelectRemovedValues } from './select-chips.js';
 import { SelectList, type SelectListProps } from './select-list.js';
 import {
   useSelectActions,
@@ -37,6 +37,8 @@ interface SelectControlProps extends SelectConfig {
   /** The field's label, which names the chips and the clear button. */
   label: string;
   isMultiple: boolean;
+  /** A multiple select draws its chips inside the frame, before the trigger. */
+  hasChipsInside?: boolean | undefined;
 }
 
 /** The open list's props: its items, how they are drawn, the filter and the search's state. */
@@ -98,11 +100,51 @@ function useTrigger(
   };
 }
 
+/** A multiple select's chips and the committed values its edit removed; nothing for a single one. */
+function renderMultipleValues({
+  label,
+  isMultiple,
+  state,
+  model,
+  actions,
+}: {
+  label: string;
+  isMultiple: boolean;
+  state: FieldState<SelectKeysValue>;
+  model: SelectModel;
+  actions: Pick<ReturnType<typeof useSelectActions>, 'commitKeys'>;
+}) {
+  if (!isMultiple) return { chips: null, removed: null };
+  return {
+    chips: (
+      <SelectChips
+        label={label}
+        chosen={model.chosen}
+        added={model.added}
+        isEditable={!state.isReadOnly && !state.isDisabled}
+        onRemove={(keys) => actions.commitKeys(model.keys.filter((key) => !keys.has(key)))}
+      />
+    ),
+    removed: (
+      <SelectRemovedValues
+        removed={model.removed}
+        isFull={model.isFull}
+        onRestore={(key) => actions.commitKeys([...model.keys, key])}
+      />
+    ),
+  };
+}
+
 /**
  * A select field's control: React Aria's `Select` with the framed trigger, the open list and, for a
  * multiple select, the chips. Every pick, chip removal, clear and restore commits at once.
  */
-export function SelectControl({ control, label, ...props }: SelectControlProps) {
+export function SelectControl({
+  control,
+  label,
+  hasChipsInside = false,
+  ...props
+}: SelectControlProps) {
   const { state, isMultiple } = props;
   const strings = useUiStrings();
   const model = useSelectModel(props);
@@ -110,61 +152,62 @@ export function SelectControl({ control, label, ...props }: SelectControlProps) 
   const actions = useSelectActions(props, model, list.isFilterable);
   const { ref: triggerRef, style, placeholder, summary, focus } = useTrigger(control, props, model);
   const submitted = isMultiple ? model.keys : [model.keys[0] ?? ''];
+  const { chips, removed } = renderMultipleValues({ label, isMultiple, state, model, actions });
+  const select = (
+    <AriaSelect<SelectFieldOption, 'single' | 'multiple'>
+      className={hooks.slotClass('select')}
+      style={style}
+      {...toAriaControlProps(control)}
+      selectionMode={isMultiple ? 'multiple' : 'single'}
+      value={
+        isMultiple
+          ? model.keys.map(toCollectionKey)
+          : model.single
+            ? toCollectionKey(model.single.id)
+            : null
+      }
+      onChange={(value) => actions.commitKeys(toSelectKeys(value).map(fromCollectionKey))}
+      isOpen={actions.isOpen}
+      onOpenChange={actions.changeOpen}
+      allowsEmptyCollection
+    >
+      <SelectTrigger
+        ref={triggerRef}
+        chosen={model.single}
+        previous={model.previous}
+        placeholder={placeholder}
+        summary={summary}
+        clearLabel={props.isClearable && state.canClear ? strings.clearValue(label) : null}
+        onClear={() => {
+          state.clear();
+          focus();
+        }}
+        onKeyDownCapture={actions.seedFilter}
+      />
+      <SelectList
+        {...list}
+        filterText={actions.filterText}
+        onFilterTextChange={actions.changeFilter}
+      />
+    </AriaSelect>
+  );
   return (
     <>
-      <AriaSelect<SelectFieldOption, 'single' | 'multiple'>
-        className={hooks.slotClass('select')}
-        style={style}
-        {...toAriaControlProps(control)}
-        selectionMode={isMultiple ? 'multiple' : 'single'}
-        value={
-          isMultiple
-            ? model.keys.map(toCollectionKey)
-            : model.single
-              ? toCollectionKey(model.single.id)
-              : null
-        }
-        onChange={(value) => actions.commitKeys(toSelectKeys(value).map(fromCollectionKey))}
-        isOpen={actions.isOpen}
-        onOpenChange={actions.changeOpen}
-        allowsEmptyCollection
-      >
-        <SelectTrigger
-          ref={triggerRef}
-          chosen={model.single}
-          previous={model.previous}
-          placeholder={placeholder}
-          summary={summary}
-          clearLabel={props.isClearable && state.canClear ? strings.clearValue(label) : null}
-          onClear={() => {
-            state.clear();
-            focus();
-          }}
-          onKeyDownCapture={actions.seedFilter}
-        />
-        <SelectList
-          {...list}
-          filterText={actions.filterText}
-          onFilterTextChange={actions.changeFilter}
-        />
-      </AriaSelect>
+      {hasChipsInside ? (
+        <div {...hooks.slot('chip-frame')}>
+          {chips}
+          {select}
+        </div>
+      ) : (
+        select
+      )}
       <FieldFormValue
         name={props.name}
         value={submitted.map(String)}
         isDisabled={state.isDisabled}
       />
-      {isMultiple ? (
-        <SelectChips
-          label={label}
-          chosen={model.chosen}
-          added={model.added}
-          removed={model.removed}
-          isEditable={!state.isReadOnly && !state.isDisabled}
-          isFull={model.isFull}
-          onRemove={(keys) => actions.commitKeys(model.keys.filter((key) => !keys.has(key)))}
-          onRestore={(key) => actions.commitKeys([...model.keys, key])}
-        />
-      ) : null}
+      {hasChipsInside ? null : chips}
+      {removed}
     </>
   );
 }

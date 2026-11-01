@@ -20,6 +20,9 @@ import { selectFieldHooks as hooks } from './select-field-hooks.js';
 
 export type SelectFieldSelectionMode = 'single' | 'multiple';
 
+/** Where a multiple select draws its chips: on a row `below` its trigger, or `inside` its frame. */
+export type SelectFieldChipPlacement = 'below' | 'inside';
+
 /** One key or none for a single select, a list of keys for a multiple select. */
 export type SelectFieldValue<M extends SelectFieldSelectionMode = 'single'> = M extends 'multiple'
   ? Key[]
@@ -52,6 +55,11 @@ interface SelectListFieldProps<M extends SelectFieldSelectionMode = 'single'>
   searchDelay?: number | undefined;
   /** Draws a button after the trigger that clears the value in one press. */
   isClearable?: boolean | undefined;
+  /**
+   * Where a multiple select draws its chips: `below` the trigger (the default), or `inside` its
+   * frame before the trigger, like a token field.
+   */
+  chipPlacement?: SelectFieldChipPlacement | undefined;
   /** The most values a multiple select takes; once reached, the other options are disabled. */
   maxValues?: number | undefined;
   /** Draws each option's content in the list instead of its icon, label and description. */
@@ -86,7 +94,7 @@ function SelectListField<M extends SelectFieldSelectionMode = 'single'>(
         ),
     },
   );
-  const { mode = 'list', selectionMode = 'single', ...config } = rest;
+  const { mode = 'list', selectionMode = 'single', chipPlacement = 'below', ...config } = rest;
   return (
     <Field
       {...field}
@@ -96,6 +104,7 @@ function SelectListField<M extends SelectFieldSelectionMode = 'single'>(
         data: {
           mode,
           selectionMode,
+          chipPlacement: isMultiple ? chipPlacement : null,
           icons: flattenPickerItems(config.options).some((option) => Boolean(option.icon)),
         },
       })}
@@ -108,6 +117,7 @@ function SelectListField<M extends SelectFieldSelectionMode = 'single'>(
           state={state}
           label={field.label}
           isMultiple={isMultiple}
+          hasChipsInside={isMultiple && chipPlacement === 'inside'}
         />
       )}
     </Field>

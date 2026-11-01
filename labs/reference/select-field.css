@@ -278,6 +278,83 @@
   flex: 0 0 100%;
 }
 
+/*
+ * Chips inside: the chip frame draws the field's box around the chips, which wrap in the room the
+ * select leaves: its placeholder while nothing is chosen, else only its chevron, at the end. The
+ * trigger's count of the choices stays readable to assistive technology while the chips show them.
+ */
+.ui-select-field__chip-frame {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: flex-start;
+  gap: 4px;
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  min-height: var(--ref-field-height);
+  padding: 2px;
+  padding-inline-start: 4px;
+  border: 1px solid var(--ref-field-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-field-fill);
+}
+
+.ui-select-field__chip-frame .ui-select-field__chips {
+  flex: 1 1 0;
+  align-self: center;
+  min-width: 0;
+  padding-block: 1px;
+}
+
+.ui-select-field__chip-frame :is(.ui-select-field__select, .ui-select-field__frame) {
+  flex: 1 1 auto;
+}
+
+.ui-select-field__chip-frame:has(.ui-select-field__chips) .ui-select-field__select {
+  flex: none;
+}
+
+.ui-select-field .ui-select-field__chip-frame .ui-select-field__trigger {
+  flex: 1 1 auto;
+  width: auto;
+  height: calc(var(--ref-field-height) - 6px);
+  padding: 0 4px;
+  border-color: transparent;
+  background: transparent;
+  outline: none;
+}
+
+/* The trigger's count of the choices is visually hidden in base.css while chips show them. */
+
+.ui-select-field__chip-frame:hover {
+  border-color: var(--ref-border-strong);
+}
+
+.ui-select-field__chip-frame:has(
+  .ui-select-field__trigger[data-focus-visible],
+  .ui-select-field__select[data-open]
+) {
+  border-color: var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
+}
+
+.ui-select-field[data-dirty] .ui-select-field__chip-frame {
+  border-color: var(--ref-dirty);
+}
+
+.ui-select-field__chip-frame:has(.ui-select-field__select[data-invalid]) {
+  border-color: var(--ref-danger);
+}
+
+.ui-select-field[data-readonly] .ui-select-field__chip-frame {
+  border-style: dashed;
+  background: var(--ref-field-fill-inactive);
+}
+
+.ui-select-field[data-disabled] .ui-select-field__chip-frame {
+  background: var(--ref-field-fill-inactive);
+}
+
 .ui-select-field__chip-list {
   display: flex;
   flex-wrap: wrap;
