@@ -71,6 +71,9 @@
 }
 
 .ui-tag-group__label {
+  /* The clip box reaches past the line box, so descenders, capitals and accents show whole. */
+  padding-block: 0.25em;
+  margin-block: -0.25em;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
