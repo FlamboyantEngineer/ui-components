@@ -150,6 +150,29 @@ test.describe('Zoom Control lab', () => {
       await lab.expectAccessible();
     });
   }
+  test('UIC-ZOOM-CONTROL-1.4 UIC-ZOOM-CONTROL-1.9 sizes the slider with the control and lines it up with the buttons', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('zoom-control');
+    const widths: number[] = [];
+    for (const size of ['xs', 'sm', 'md', 'lg']) {
+      const control = page.getByRole('group', { name: `Zoom default ${size}` });
+      const slider = await control.getByRole('slider').boundingBox();
+      const button = await control.getByRole('button', { name: /out/i }).boundingBox();
+      if (!slider || !button) throw new Error('The control is not laid out.');
+      widths.push(slider.width);
+      expect(Math.abs(slider.height - button.height)).toBeLessThanOrEqual(1);
+      expect(
+        Math.abs(slider.y + slider.height / 2 - (button.y + button.height / 2)),
+      ).toBeLessThanOrEqual(1);
+    }
+    expect([...widths].sort((a, b) => a - b)).toEqual(widths);
+    const smallest = page.getByRole('group', { name: 'Zoom default xs' }).getByRole('slider');
+    await smallest.focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(smallest).not.toHaveValue('');
+  });
 });
 
 test('UIC-ZOOM-CONTROL-1.3 shows the zoom level helpers in a host-side snippet', async ({
@@ -162,4 +185,5 @@ test('UIC-ZOOM-CONTROL-1.3 shows the zoom level helpers in a host-side snippet',
   await expect(call('findNextZoomLevel(defaultZoomLevels, 110, 1)')).toHaveText('125');
   await expect(call('findNextZoomLevel(defaultZoomLevels, 110, -1)')).toHaveText('100');
   await expect(call('findNextZoomLevel(defaultZoomLevels, 400, 1)')).toHaveText('undefined');
+
 });
