@@ -94,19 +94,22 @@ mountLab(
     </LabSection>
     <LabSection
       title="Two columns"
-      description="Any caller columns: here a step is an instruction and a note."
+      description="Any caller columns under any ids: here a step is an instruction and a note, and the note column's id is constructor, a name every object inherits, so the whisk step's missing note reads as empty."
     >
       <div style={{ width: 560 }} data-lab-demo="two-columns">
         <StepListEditor
           aria-label="Recipe steps"
           columns={[
             { id: 'instruction', label: 'Instruction' },
-            { id: 'note', label: 'Note' },
+            { id: 'constructor', label: 'Note' },
           ]}
           defaultValue={[
             { id: 'whisk', values: { instruction: 'Whisk the eggs and sugar' } },
-            { id: 'fold', values: { instruction: 'Fold in the flour', note: 'Do not overmix' } },
-            { id: 'bake', values: { instruction: 'Bake for 25 minutes', note: '180 °C' } },
+            {
+              id: 'fold',
+              values: { instruction: 'Fold in the flour', constructor: 'Do not overmix' },
+            },
+            { id: 'bake', values: { instruction: 'Bake for 25 minutes', constructor: '180 °C' } },
           ]}
         />
       </div>

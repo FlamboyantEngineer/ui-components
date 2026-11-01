@@ -1,5 +1,7 @@
 // The pure edits a step list editor makes to its steps, and its dirty marks.
 
+import { readOwn } from '../../utils/read-own.js';
+
 /** One step: its key and its text per column, keyed by column id. */
 export interface StepListEditorStep {
   /** Unique within the list. */
@@ -75,9 +77,9 @@ export function resolveStepDrop(
   return { key, targetKey, position: from < to ? 'after' : 'before' };
 }
 
-/** A step's text in a column. */
+/** A step's text in a column: its own value, never one its values object inherits. */
 export function readStepValue(step: StepListEditorStep, column: string): string {
-  return step.values[column] ?? '';
+  return readOwn(step.values, column) ?? '';
 }
 
 /** Whether a step differs from its committed version in any column, or is new. */

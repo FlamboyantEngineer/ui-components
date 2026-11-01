@@ -27,6 +27,13 @@ The value shall be an array of steps `{ id, values }`, where `values` maps colum
 Implementation: `src/components/step-list-editor/step-list-editor.tsx`, `src/components/step-list-editor/step-list.ts`, `src/utils/use-id-factory.ts`
 Verification: `src/components/step-list-editor/step-list-editor.test.tsx`, `src/components/step-list-editor/step-list.test.ts`, `e2e/step-list-editor.spec.ts`
 
+### UIC-STEP-LIST-EDITOR-1.4 - Any column id
+
+Column ids shall be any unique strings, including names such as `constructor`, `__proto__` and `toString`: a step reads only the values it holds itself, so a missing one reads as empty rather than as a property every object inherits, and adding, inserting, duplicating, editing and dirty marks work as for any column. A value the caller gives under such a name reads as given.
+
+Implementation: `src/components/step-list-editor/step-list.ts`, `src/utils/read-own.ts`
+Verification: `src/components/step-list-editor/step-list-editor-ids.test.tsx`, `src/utils/read-own.test.ts`
+
 ## UIC-STEP-LIST-EDITOR-2 - Adding, removing and moving
 
 ### UIC-STEP-LIST-EDITOR-2.1 - Adding, inserting, duplicating and deleting
