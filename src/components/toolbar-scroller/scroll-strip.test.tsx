@@ -45,6 +45,7 @@ describe('ScrollStrip', () => {
     expect(container.querySelector('.ui-demo-strip__fade')).toHaveAttribute('aria-hidden', 'true');
     const forward = screen.getByRole('button', { name: 'Scroll forward' });
     expect(forward).toHaveAttribute('tabindex', '-1');
+    expect(forward).toHaveAttribute('data-variant', 'ghost');
     await user.click(forward);
     expect(onPage).toHaveBeenCalledWith('end');
 
