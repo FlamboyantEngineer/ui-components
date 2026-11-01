@@ -22,6 +22,7 @@ import { TagsInput } from '../../src/components/tags-input/tags-input.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import type { ControlSize } from '../../src/core/props.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { ChipDescenders } from './control-sizes-chips.js';
 
 const sizes = ['xs', 'sm', 'md', 'lg'] as const satisfies readonly ControlSize[];
 const contents = ['short', 'long', 'large type'] as const;
@@ -233,5 +234,6 @@ mountLab(
         }}
       />
     </LabSection>
+    <ChipDescenders />
   </>,
 );

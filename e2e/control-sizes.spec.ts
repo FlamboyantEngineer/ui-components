@@ -28,7 +28,7 @@ test('UIC-LABS-3.7 every control takes the height of its size, not of its conten
   lab,
 }) => {
   await lab.open('control-sizes');
-  const cells = await page.locator('td[data-lab-cell]').evaluateAll(
+  const cells = await page.locator('td[data-lab-cell*="control="]').evaluateAll(
     (tds, selectors) =>
       tds.map((td) => {
         const address = td.getAttribute('data-lab-cell') ?? '';
@@ -196,4 +196,57 @@ test('UIC-DROPDOWN-MENU-1.4 opening a dropdown preserves page scrolling', async 
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(top);
   await expect(menu).toBeVisible();
   await expect.poll(gap).toBe(offset);
+});
+
+test('UIC-LABS-3.7 chip-like controls show descenders, capitals and accents whole', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('control-sizes');
+  const clipped = await page
+    .locator(
+      '[data-lab-section="Chips keep whole letters"] :is(.ui-badge__label, .ui-tag-group__label, .ui-select-field__chip-label)',
+    )
+    .evaluateAll((labels) => {
+      const canvas = document.createElement('canvas').getContext('2d');
+      const problems: string[] = [];
+      for (const label of labels) {
+        if (!canvas || !(label instanceof HTMLElement)) continue;
+        const style = getComputedStyle(label);
+        canvas.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+        const text = label.textContent ?? '';
+        const ink = canvas.measureText(text);
+        const font = canvas.measureText('M');
+        // The line's baseline: the font's ascent and descent are centred in the line height.
+        const box = label.getBoundingClientRect();
+        const lineHeight =
+          style.lineHeight === 'normal'
+            ? font.fontBoundingBoxAscent + font.fontBoundingBoxDescent
+            : Number.parseFloat(style.lineHeight);
+        const contentTop = box.top + Number.parseFloat(style.paddingTop);
+        const half = (lineHeight - font.fontBoundingBoxAscent - font.fontBoundingBoxDescent) / 2;
+        const baseline = contentTop + half + font.fontBoundingBoxAscent;
+        // The label clips to its padding box; its parents clip too where they hide overflow.
+        let clipTop = box.top;
+        let clipBottom = box.bottom;
+        for (let node: HTMLElement | null = label; node; node = node.parentElement) {
+          if (getComputedStyle(node).overflowY === 'visible' && node !== label) continue;
+          const area = node.getBoundingClientRect();
+          clipTop = Math.max(clipTop, area.top);
+          clipBottom = Math.min(clipBottom, area.bottom);
+          if (node.matches('[data-lab-cell]')) break;
+        }
+        const inkTop = baseline - ink.actualBoundingBoxAscent;
+        const inkBottom = baseline + ink.actualBoundingBoxDescent;
+        if (inkTop < clipTop - 0.5 || inkBottom > clipBottom + 0.5) {
+          const cell = label.closest('[data-lab-cell]')?.getAttribute('data-lab-cell');
+          problems.push(
+            `${cell}: ${text} ink ${inkTop.toFixed(1)}-${inkBottom.toFixed(1)}, clip ${clipTop.toFixed(1)}-${clipBottom.toFixed(1)}`,
+          );
+        }
+      }
+      return { problems, count: labels.length };
+    });
+  expect(clipped.count).toBeGreaterThan(40);
+  expect(clipped.problems).toEqual([]);
 });

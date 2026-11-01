@@ -27,7 +27,7 @@ Verification: `src/components/badge/badge.test.tsx`, `e2e/badge.spec.ts`
 
 ### UIC-BADGE-1.4 - Sizes
 
-`size` shall publish `data-size`: `sm`, `md` (the default) or `lg`, shared by every variant and by count badges. The reference sheet draws 18, 22 and 26 pixel heights.
+`size` shall publish `data-size`: `sm`, `md` (the default) or `lg`, shared by every variant and by count badges. The reference sheet draws 18, 22 and 26 pixel heights. At every size the label shows descenders, capitals and accents whole ([UIC-LABS-3.7](LABS.md#uic-labs-37---control-scale)).
 
 Implementation: `src/components/badge/badge.tsx`, `labs/reference/badge.css`
 Verification: `src/components/badge/badge.test.tsx`, `e2e/badge.spec.ts`
