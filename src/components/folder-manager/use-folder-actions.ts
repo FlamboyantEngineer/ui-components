@@ -14,7 +14,10 @@ export interface FolderEdit {
   kind: 'create' | 'rename';
   /** The renamed folder, or the new folder's parent (`null`: at the top). */
   key: Key | null;
-  /** The name field's starting text: the current name, or the text of a refused attempt. */
+  /**
+   * The name field's text: seeded with the current name (empty for a new folder) and kept as the
+   * reader types, so a field remounted when its row moves keeps what was typed.
+   */
   name: string;
   /** The folder's name before the edit; empty for a new folder. */
   original: string;
@@ -48,6 +51,8 @@ export interface FolderActions<T extends FolderItem> {
   message: string | null;
   startCreate(parentKey: Key | null): void;
   startRename(folder: T): void;
+  /** Keeps the name field's text with the edit. */
+  type(name: string): void;
   /** Ends the edit with `name`: a blank or unchanged name abandons it. */
   submit(name: string): Promise<void>;
   cancel(): void;
@@ -109,6 +114,24 @@ function useEditRevocation({
 }
 
 /**
+ * The edit in progress, as state for rendering and as `latest` for handlers that run before the
+ * next render, and `type`, which keeps the name field's text with it.
+ */
+function useEditSession() {
+  const [edit, setEditState] = useState<FolderEdit | null>(null);
+  const latest = useRef<FolderEdit | null>(null);
+  const setEdit = (next: FolderEdit | null) => {
+    latest.current = next;
+    setEditState(next);
+  };
+  const type = (name: string) => {
+    const current = latest.current;
+    if (current && !current.isPending && current.name !== name) setEdit({ ...current, name });
+  };
+  return { edit, latest, setEdit, type };
+}
+
+/**
  * The folder manager's edits and deletes. Each runs the caller's callback, which may return a
  * promise: while it is pending the edit ignores further submits, and a refusal keeps the edit open
  * with the typed name and shows the error's message. Once the manager unmounts, a pending action
@@ -127,15 +150,10 @@ export function useFolderActions<T extends FolderItem>({
   onRevoke,
 }: FolderActionsOptions<T>): FolderActions<T> {
   const strings = useUiStrings();
-  const [edit, setEditState] = useState<FolderEdit | null>(null);
+  const { edit, latest, setEdit, type } = useEditSession();
   const [isDeleting, setDeleting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const latest = useRef<FolderEdit | null>(null);
   const beginAction = useLifetimeSignal();
-  const setEdit = (next: FolderEdit | null) => {
-    latest.current = next;
-    setEditState(next);
-  };
   const start = (next: Omit<FolderEdit, 'isPending'>) => {
     setMessage(null);
     setEdit({ ...next, isPending: false });
@@ -193,6 +211,7 @@ export function useFolderActions<T extends FolderItem>({
     startCreate: (parentKey) => start({ kind: 'create', key: parentKey, name: '', original: '' }),
     startRename: (folder) =>
       start({ kind: 'rename', key: folder.id, name: folder.name, original: folder.name }),
+    type,
     submit,
     cancel: () => {
       if (latest.current && !latest.current.isPending) finish(latest.current, latest.current.key);

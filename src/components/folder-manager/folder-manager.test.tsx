@@ -564,6 +564,59 @@ describe('FolderManager', () => {
     expect(onRename).toHaveBeenCalledWith({ key: 'draft', name: 'Renamed' });
   });
 
+  it('UIC-FOLDER-MANAGER-2.3 keeps the typed name when the renamed row moves', async () => {
+    const user = userEvent.setup();
+    const onRename = vi.fn<(folder: { key: Key; name: string }) => Promise<void>>();
+    onRename.mockRejectedValueOnce(new Error('Try again.'));
+    const flat: Folder[] = [
+      { id: 'alpha', name: 'Alpha' },
+      { id: 'blue', name: 'Blue' },
+    ];
+    const nested: Folder[] = [
+      { id: 'blue', name: 'Blue', children: [{ id: 'alpha', name: 'Alpha' }] },
+    ];
+    const props = { 'aria-label': 'Folders', defaultSelectedKey: 'alpha', onRename };
+    const { rerender } = render(<FolderManager<Folder> folders={flat} {...props} />);
+    await user.click(screen.getByRole('button', { name: 'Rename' }));
+    const field = screen.getByRole<HTMLInputElement>('textbox', { name: 'Rename Alpha' });
+    expect([field.selectionStart, field.selectionEnd]).toEqual([0, 5]);
+    await user.keyboard('Unsaved new name');
+    rerender(<FolderManager<Folder> folders={nested} {...props} />);
+    const moved = screen.getByRole<HTMLInputElement>('textbox', { name: 'Rename Alpha' });
+    expect(moved).not.toBe(field);
+    expect(moved).toHaveValue('Unsaved new name');
+    expect(moved).toHaveFocus();
+    expect([moved.selectionStart, moved.selectionEnd]).toEqual([16, 16]);
+    await user.keyboard('!{Enter}');
+    expect(await screen.findByRole('alert')).toHaveTextContent('Try again.');
+    rerender(<FolderManager<Folder> folders={flat} {...props} />);
+    expect(screen.getByRole('textbox', { name: 'Rename Alpha' })).toHaveValue('Unsaved new name!');
+    await user.keyboard('{Enter}');
+    expect(onRename).toHaveBeenLastCalledWith({ key: 'alpha', name: 'Unsaved new name!' });
+  });
+
+  it('UIC-FOLDER-MANAGER-2.2 keeps the typed name of a new folder when its parent moves', async () => {
+    const user = userEvent.setup();
+    const onCreate = vi.fn();
+    const flat: Folder[] = [
+      { id: 'alpha', name: 'Alpha' },
+      { id: 'blue', name: 'Blue' },
+    ];
+    const nested: Folder[] = [
+      { id: 'blue', name: 'Blue', children: [{ id: 'alpha', name: 'Alpha' }] },
+    ];
+    const props = { 'aria-label': 'Folders', defaultSelectedKey: 'alpha', onCreate };
+    const { rerender } = render(<FolderManager<Folder> folders={flat} {...props} />);
+    await user.click(screen.getByRole('button', { name: 'New folder' }));
+    await user.keyboard('Draft');
+    rerender(<FolderManager<Folder> folders={nested} {...props} />);
+    const field = screen.getByRole('textbox', { name: 'New folder name' });
+    expect(field).toHaveValue('Draft');
+    expect(field).toHaveFocus();
+    await user.keyboard(' text{Enter}');
+    expect(onCreate).toHaveBeenCalledWith({ name: 'Draft text', parentKey: 'alpha' });
+  });
+
   it('UIC-FOLDER-MANAGER-4.1 forwards ref to its root', () => {
     const ref = createRef<HTMLDivElement>();
     const { container } = render(<Manager ref={ref} />);

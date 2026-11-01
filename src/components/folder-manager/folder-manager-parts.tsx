@@ -13,6 +13,8 @@ interface FolderNameInputProps {
   /** The message that describes the field while an attempt was refused. */
   messageId: string | undefined;
   inputRef: Ref<HTMLInputElement>;
+  /** Called with the text as the reader types it. */
+  onType: (name: string) => void;
   onBlur: (name: string) => void;
 }
 
@@ -67,9 +69,17 @@ function ToolButton({
 
 /**
  * The name field of a folder being created or renamed. The folder manager reads its keys: Enter
- * submits the name and Escape abandons the edit.
+ * submits the name and Escape abandons the edit. Its text lives with the edit, so a field that
+ * remounts starts from what was typed; focus then selects an untouched name, or puts the caret
+ * after typed text.
  */
-export function FolderNameInput({ edit, messageId, inputRef, onBlur }: FolderNameInputProps) {
+export function FolderNameInput({
+  edit,
+  messageId,
+  inputRef,
+  onType,
+  onBlur,
+}: FolderNameInputProps) {
   const strings = useUiStrings();
   return (
     <Input
@@ -84,7 +94,12 @@ export function FolderNameInput({ edit, messageId, inputRef, onBlur }: FolderNam
       defaultValue={edit.name}
       readOnly={edit.isPending}
       autoFocus
-      onFocus={(event) => event.currentTarget.select()}
+      onFocus={(event) => {
+        const input = event.currentTarget;
+        if (input.value === edit.original) input.select();
+        else input.setSelectionRange(input.value.length, input.value.length);
+      }}
+      onChange={(event) => onType(event.currentTarget.value)}
       onBlur={(event) => onBlur(event.currentTarget.value)}
     />
   );

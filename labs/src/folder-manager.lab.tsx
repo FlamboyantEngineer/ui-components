@@ -339,6 +339,33 @@ function LockedInsideSelection() {
   );
 }
 
+/** A host that moves the folder being named: the field follows it with the typed text. */
+function MovingWhileNamed() {
+  const [last, setLast] = useState('none');
+  const { folders, callbacks } = useFolders(0, setLast);
+  const move = (targetKey: Key) =>
+    callbacks.onMove?.({ key: 'citrus', targetKey, position: 'inside' });
+  return (
+    <div data-lab-demo="moving">
+      <Button
+        onPress={() => {
+          // The delay leaves time to start renaming Citrus, or a folder inside it, and type.
+          window.setTimeout(() => move('herbs'), 1500);
+        }}
+      >
+        Move Citrus into Herbs in a moment
+      </Button>
+      <FolderManager
+        aria-label="Moving folders"
+        folders={folders}
+        defaultSelectedKey="citrus"
+        {...callbacks}
+      />
+      <LabOutput name="Moving action">{last}</LabOutput>
+    </div>
+  );
+}
+
 /** A panel closed while its manager waits: the slow answer selects nothing once it is gone. */
 function ClosingPanel() {
   const [isOpen, setOpen] = useState(true);
@@ -387,6 +414,12 @@ mountLab(
       description="Press the button, then rename Citrus or start a folder inside it: when Citrus goes, the name field closes without calling back, focus moves to the root row and the actions come back."
     >
       <VanishingFolder />
+    </LabSection>
+    <LabSection
+      title="Folder moved while named"
+      description="Press the button, then rename Citrus or start a folder inside it and type: when Citrus moves into Herbs, the name field follows it with the typed text and keeps focus."
+    >
+      <MovingWhileNamed />
     </LabSection>
     <LabSection
       title="Several folders"
