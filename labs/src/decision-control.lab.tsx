@@ -3,6 +3,7 @@ import {
   DecisionControl,
   type DecisionControlDetails,
 } from '../../src/components/decision-control/decision-control.js';
+import { Button } from '../../src/components/button/button.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const votes = [
@@ -33,6 +34,30 @@ function Recorded({
       )}
       <p data-lab-record={name}>{record}</p>
     </div>
+  );
+}
+
+/** A signed decision another reader changes while it is being signed (UIC-DECISION-CONTROL-1.5). */
+function ChangedWhileSigning() {
+  const [decision, setDecision] = useState<string | null>('approve');
+  return (
+    <Recorded
+      name="changed"
+      render={(record) => (
+        <>
+          <Button size="sm" onPress={() => setTimeout(() => setDecision('reject'), 2000)}>
+            Switch to Reject in 2 seconds
+          </Button>
+          <DecisionControl
+            label="Decision changed while signing"
+            value={decision}
+            onChange={setDecision}
+            signature={{ userName: 'Ada Park' }}
+            onSubmit={record}
+          />
+        </>
+      )}
+    />
   );
 }
 
@@ -148,6 +173,12 @@ mountLab(
           />
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Changed while signing"
+      description="Press the switch, then Submit: when the decision turns to Reject two seconds later, the signature dialog closes, because Reject needs a comment. Submit again to sign the new decision."
+    >
+      <ChangedWhileSigning />
     </LabSection>
   </>,
 );

@@ -18,6 +18,7 @@ import {
   type DecisionControlDetails,
   type DecisionControlOption,
   type DecisionControlSignature,
+  describeSigning,
 } from './decision-parts.js';
 
 export type {
@@ -88,7 +89,7 @@ export function DecisionControl({
   const picked = choices.find((option) => option.value === decision);
   const submission = useDecisionSubmission({
     details: { decision: picked?.value ?? '', comment: commentText },
-    isSigned: signature !== undefined,
+    ...describeSigning({ signature, picked, comment, commentText, isDisabled }),
     isDisabled,
     onSubmit,
     onSubmitted: () => setCommentText(''),
