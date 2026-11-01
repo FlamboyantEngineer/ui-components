@@ -148,10 +148,10 @@ Verification: `src/components/chat-controller/chat-responses.test.ts`, `e2e/chat
 
 ### UIC-CHAT-CONTROLLER-3.2 - Responses that continue the reply
 
-Without `await`, the turn ends with the part waiting. A response shall be recorded on the part: an approved or always-allowed call runs, a denied one is `denied` with the reason, a card is `answered` with its answers or `dismissed`. Once nothing in the reply waits for the reader any more, `send` shall run again with the updated conversation, which ends with that reply, and stream into the same reply. A response given while the reply still runs continues it once it finishes. A response shall be ignored for a part that does not wait, or that it does not fit.
+Without `await`, the turn ends with the part waiting. A response shall be recorded on the part: an approved or always-allowed call runs, a denied one is `denied` with the reason, a card is `answered` with its answers or `dismissed`. Once nothing in the reply waits for the reader any more, `send` shall run again with the updated conversation, which ends with that reply, and stream into the same reply. A response given while the reply still runs continues it once it finishes. A response shall be ignored for a part that does not wait, or that it does not fit (a decision for a question card, answers or a dismissal for an approval request): it changes no part, resolves no `waitFor` and continues no reply, so a later response that fits still does. This holds for awaited parts ([UIC-CHAT-CONTROLLER-3.1](#uic-chat-controller-31---awaited-responses)) as for parts that continue the reply.
 
 Implementation: `src/components/chat-controller/chat-run.ts`, `src/components/chat-controller/chat-reply.ts`, `src/components/chat-controller/chat-engine.ts`
-Verification: `src/components/chat-controller/chat-responses.test.ts`, `src/components/chat-controller/chat-reply.test.ts`
+Verification: `src/components/chat-controller/chat-responses.test.ts`, `src/components/chat-controller/chat-reply.test.ts`, `src/components/chat-controller/chat-response-fit.test.ts`, `e2e/chat-controller.spec.ts`
 
 ### UIC-CHAT-CONTROLLER-3.3 - Always allow
 

@@ -7,6 +7,7 @@ import {
   listPrompts,
   recordResponse,
   toDismissal,
+  type ChatReaderResponse,
 } from './chat-reply.js';
 
 const reply: ChatMessageData = {
@@ -63,8 +64,9 @@ describe('Reader responses', () => {
       { type: 'approval', decision: 'denied' },
       { type: 'question', status: 'dismissed', answers: [] },
     ]);
-    expect(findAwaitingMessage([reply], 'card')).toBe(0);
-    expect(findAwaitingMessage([reply], 'done')).toBe(-1);
+    const dismissal: ChatReaderResponse = { type: 'question', status: 'dismissed', answers: [] };
+    expect(findAwaitingMessage([reply], 'card', dismissal)).toBe(0);
+    expect(findAwaitingMessage([reply], 'done', dismissal)).toBe(-1);
   });
 
   it('UIC-CHAT-CONTROLLER-2.6 builds the reader message and lists their prompts', () => {

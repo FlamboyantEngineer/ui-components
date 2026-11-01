@@ -39,10 +39,27 @@ export function isAwaitingReader(part: ChatPart): boolean {
   );
 }
 
-/** The index of the last message holding the part `id` that waits for the reader, or -1. */
-export function findAwaitingMessage(messages: readonly ChatMessageData[], id: string): number {
+/** Whether the response is of the kind the part asks for: a decision on a call, answers to a card. */
+function fitsResponse(part: ChatPart, response: ChatReaderResponse): boolean {
+  return response.type === 'question' ? part.type === 'question' : part.type === 'tool-call';
+}
+
+/** Whether the part `id` waits for the reader and the response fits it. */
+function takesResponse(part: ChatPart, id: string, response: ChatReaderResponse): boolean {
+  return part.id === id && isAwaitingReader(part) && fitsResponse(part, response);
+}
+
+/**
+ * The index of the last message holding the part `id` that waits for the reader and that the
+ * response fits, or -1.
+ */
+export function findAwaitingMessage(
+  messages: readonly ChatMessageData[],
+  id: string,
+  response: ChatReaderResponse,
+): number {
   return messages.findLastIndex((message) =>
-    message.parts.some((part) => part.id === id && isAwaitingReader(part)),
+    message.parts.some((part) => takesResponse(part, id, response)),
   );
 }
 
@@ -53,7 +70,7 @@ export function toDismissal(part: ChatPart): ChatReaderResponse {
     : { type: 'approval', decision: 'denied' };
 }
 
-/** The part with the reader's response recorded, when the response fits it. */
+/** The part with the reader's response recorded; the caller checked that the response fits it. */
 function recordOnPart(part: ChatPart, response: ChatReaderResponse): ChatPart {
   if (response.type === 'question') {
     if (part.type !== 'question') return part;
@@ -83,7 +100,7 @@ export function recordResponse(
   return {
     ...message,
     parts: message.parts.map((part) =>
-      part.id === id && isAwaitingReader(part) ? recordOnPart(part, response) : part,
+      takesResponse(part, id, response) ? recordOnPart(part, response) : part,
     ),
   };
 }
