@@ -42,8 +42,12 @@
   border-bottom: 1px solid var(--ref-border);
 }
 
-/* The block handle sits in the inline-start gutter the surface keeps while one is mounted. */
+/*
+ * The block handle sits in the inline-start gutter the surface keeps while one is mounted. The
+ * surface scrolls once a host bounds its height, under the overlay scrollbars.
+ */
 .ui-rich-text-editor__surface {
+  overflow: auto;
   padding-inline-start: 12px;
 }
 
@@ -332,4 +336,44 @@
 .ui-format-toolbar .ui-field__message:empty {
   min-height: 0;
   margin-top: 0;
+}
+
+/* The surface's box, which its scrollbars lie over. */
+.ui-rich-text-editor__body {
+  isolation: isolate;
+}
+
+/* The overlay scrollbars lie over the surface; only their tracks take the pointer. */
+.ui-rich-text-editor__scrollbars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.ui-rich-text-editor__scrollbars .ui-scroll-region__track {
+  pointer-events: auto;
+}
+
+.ui-rich-text-editor__scroll-marker {
+  position: absolute;
+  inset-inline: 0;
+  min-height: 2px;
+  background: var(--ref-danger);
+  pointer-events: none;
+}
+
+.ui-rich-text-editor__scroll-marker[data-severity='warning'] {
+  background: var(--ref-warning);
+}
+
+/* A marked block: a tint and an underline, wavy for an error and dotted for a warning. */
+.ui-rich-text-editor__content > [data-severity] {
+  background: color-mix(in srgb, var(--ref-danger) var(--ref-tint), transparent);
+  text-decoration: wavy underline var(--ref-danger);
+  text-decoration-skip-ink: none;
+}
+
+.ui-rich-text-editor__content > [data-severity='warning'] {
+  background: color-mix(in srgb, var(--ref-warning) var(--ref-tint), transparent);
+  text-decoration: dotted underline var(--ref-warning);
 }

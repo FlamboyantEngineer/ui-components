@@ -289,6 +289,22 @@ Each component of the family shall carry the hooks below, append the caller's `c
 Implementation: `src/components/rich-text-editor/rich-text-context.ts`, `src/components/rich-text-editor/format-toolbar.tsx`, `src/components/rich-text-editor/selection-toolbar.tsx`, `src/components/rich-text-editor/insert-menu.tsx`, `src/components/rich-text-editor/block-handle.tsx`
 Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `src/components/rich-text-editor/format-toolbar.test.tsx`, `src/components/rich-text-editor/selection-toolbar.test.tsx`, `src/components/rich-text-editor/insert-menu.test.tsx`, `src/components/rich-text-editor/block-handle.test.tsx`
 
+## UIC-RICH-TEXT-EDITOR-12 - Long documents
+
+### UIC-RICH-TEXT-EDITOR-12.1 - Scrolling surface
+
+The surface (`ui-rich-text-editor__surface`) shall be the document's scrolling viewport once the host bounds its height (the reference stylesheet gives it `overflow: auto`; a host sets `max-height` or `height`). It sits in `ui-rich-text-editor__body` beside `ui-rich-text-editor__scrollbars`, the shared overlay scrollbars of [Scroll Region](SCROLL-REGION.md), which draw a vertical track only while the surface overflows and keep its thumb out of the Tab sequence. The reference stylesheet hides the native scrollbar. The content carries `tabindex="0"` unless the editor is disabled, so the scrolling surface holds a stop in the tab sequence. The caret, selection, keyboard scrolling and the wheel keep scrolling the surface natively, and the floating chrome stays with its blocks as it scrolls.
+
+Implementation: `src/components/rich-text-editor/editor-surface.tsx`, `src/components/rich-text-editor/surface-scrollbars.tsx`, `src/components/scroll-region/overlay-scrollbars.tsx`
+Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/rich-text-editor.spec.ts`
+
+### UIC-RICH-TEXT-EDITOR-12.2 - Block markers
+
+`blockMarkers` shall carry the host's own findings about the document: each names a first top-level block (`block`, an index into the document's `content`), an optional last one (`endBlock`), a `severity` (`error` by default, or `warning`) and a `message`. The editor checks nothing itself. Each marked block carries `data-severity` (the gravest of its markers) and its markers' messages as its `aria-description`, so the finding is not told by colour alone. While the surface scrolls, each marker draws a `ui-rich-text-editor__scroll-marker` (with `data-severity`, hidden from assistive technology) in the vertical track at its blocks' place in the whole document, measured in the surface's own pixels. Markers follow edits, rewrapping and resizing; a marker whose first block is past the document's end is left out, and its last block is clamped to the end.
+
+Implementation: `src/components/rich-text-editor/block-markers.ts`, `src/components/rich-text-editor/surface-scrollbars.tsx`, `src/components/rich-text-editor/editor-surface.tsx`, `src/components/rich-text-editor/rich-text-editor.tsx`
+Verification: `src/components/rich-text-editor/block-markers.test.ts`, `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/rich-text-editor.spec.ts`
+
 ## Hooks
 
 | Hook                                 | Kind      | Values                                                | Description                                                                      |
@@ -297,6 +313,10 @@ Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `src/
 | `ui-rich-text-editor__frame`         | slot      |                                                       | The box around the toolbar row and the surface.                                  |
 | `ui-rich-text-editor__toolbar`       | slot      |                                                       | The row holding `toolbar`.                                                       |
 | `ui-rich-text-editor__surface`       | slot      |                                                       | The positioned area holding the content and the floating chrome.                 |
+| `ui-rich-text-editor__body`          | slot      |                                                       | The positioned box holding the surface and its scrollbars.                       |
+| `ui-rich-text-editor__scrollbars`    | slot      |                                                       | The overlay scrollbars over the surface.                                         |
+| `ui-rich-text-editor__scroll-marker` | slot      |                                                       | A block marker in the vertical track, with `data-severity`.                      |
+| `data-severity`                      | state     | `error`, `warning`                                    | On a marked block and its scroll marker: the marker's severity.                  |
 | `ui-rich-text-editor__content`       | slot      |                                                       | The editable document (role `textbox`), also ProseMirror's `ProseMirror` class.  |
 | `ui-rich-text-editor__placeholder`   | slot      |                                                       | The empty document's only block, which shows the placeholder.                    |
 | `ui-rich-text-editor__task-item`     | slot      |                                                       | A task list item.                                                                |

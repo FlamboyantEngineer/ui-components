@@ -19,7 +19,10 @@ export interface RichTextEditorContextValue {
 export const richTextEditorHooks = createHooks('rich-text-editor', [
   'frame',
   'toolbar',
+  'body',
   'surface',
+  'scrollbars',
+  'scroll-marker',
   'content',
   'placeholder',
   'task-item',

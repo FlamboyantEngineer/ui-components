@@ -3,6 +3,7 @@ export type {
   RichTextAttributes,
   RichTextAttributeSpec,
   RichTextAttributeValue,
+  RichTextBlockMarker,
   RichTextCommand,
   RichTextController,
   RichTextDocument,
