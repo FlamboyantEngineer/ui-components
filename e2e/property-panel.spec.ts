@@ -22,7 +22,8 @@ test.describe('Property Panel lab', () => {
     const wide = cell(page, 'row=plain layout=responsive width=wide');
     const wideLabel = await box(wide.locator('.ui-property-row__label'));
     const wideControl = await box(wide.locator('.ui-property-row__control'));
-    expect(wideLabel.width).toBe(112);
+    // The label column is as wide as the label, so the control follows it after the gap.
+    expect(wideLabel.width).toBeLessThan(60);
     expect(Math.round(wideControl.x - (wideLabel.x + wideLabel.width))).toBe(8);
 
     const stacked = cell(page, 'row=plain layout=responsive width=narrow');
@@ -238,4 +239,37 @@ test.describe('Property Panel lab', () => {
     await expect(editable).toBeEditable();
     await lab.expectAccessible();
   });
+});
+
+test('UIC-PROPERTY-PANEL-3.1 sizes the label column to the longest label and lines the controls up', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('property-filter');
+  // The second filtered panel is wide enough to keep its labels beside the controls.
+  const section = page
+    .locator('.ui-property-panel:has(.ui-property-section .ui-property-row)')
+    .nth(1)
+    .locator('.ui-property-section__content:has(.ui-property-row)')
+    .first();
+  await section.scrollIntoViewIfNeeded();
+  const rows = await section.locator('.ui-property-row').evaluateAll((nodes) =>
+    nodes.map((row) => {
+      const label = row.querySelector('.ui-property-row__label');
+      const control = row.querySelector('.ui-property-row__control');
+      if (!label || !control) throw new Error('A row has no label or control.');
+      const range = document.createRange();
+      range.selectNodeContents(label);
+      return {
+        text: range.getBoundingClientRect().right,
+        control: control.getBoundingClientRect().left,
+      };
+    }),
+  );
+  expect(rows.length).toBeGreaterThan(1);
+  const starts = rows.map((row) => Math.round(row.control));
+  expect(new Set(starts).size).toBe(1);
+  // The longest label ends 8 pixels before the controls; none sits farther than its own width away.
+  const longest = Math.max(...rows.map((row) => row.text));
+  expect(Math.round((starts[0] ?? 0) - longest)).toBe(8);
 });

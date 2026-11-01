@@ -155,7 +155,13 @@
   text-transform: uppercase;
 }
 
-/* Rows: label, control and actions on one grid row; the description below the control. */
+/*
+ * Rows: label, control and actions on one grid row; the description below the control. A row on
+ * its own takes a fixed label column. Rows in a panel body, a section, a group or a card body share their
+ * container's columns (a subgrid), whose label column is as wide as the longest label there, up to
+ * 40% of the width (a longer label wraps), so short labels sit close to their controls and every
+ * control in the container starts on one line.
+ */
 
 .ui-property-row {
   display: grid;
@@ -163,6 +169,35 @@
   align-items: center;
   column-gap: 8px;
   min-height: 32px;
+}
+
+.ui-property-panel__body,
+:is(.ui-property-section__content, .ui-property-card__body):not([hidden]),
+.ui-property-group {
+  display: grid;
+  grid-template-columns: fit-content(40%) minmax(0, 1fr) auto;
+  column-gap: 8px;
+}
+
+:is(
+    .ui-property-panel__body,
+    .ui-property-section__content,
+    .ui-property-card__body,
+    .ui-property-group
+  )
+  > * {
+  grid-column: 1 / -1;
+}
+
+.ui-property-group,
+:is(
+    .ui-property-panel__body,
+    .ui-property-section__content,
+    .ui-property-card__body,
+    .ui-property-group
+  )
+  > .ui-property-row {
+  grid-template-columns: subgrid;
 }
 
 .ui-property-row__label {
@@ -234,10 +269,28 @@
   .ui-property-row {
     grid-template-columns: 128px minmax(0, 1fr) auto;
   }
+
+  :is(
+      .ui-property-panel__body,
+      .ui-property-section__content,
+      .ui-property-card__body,
+      .ui-property-group
+    )
+    > .ui-property-row {
+    grid-template-columns: subgrid;
+  }
 }
 
 @container ui-property-panel (width < 22.5rem) {
-  .ui-property-panel[data-label-layout='responsive'] .ui-property-row {
+  .ui-property-panel[data-label-layout='responsive'] .ui-property-row,
+  .ui-property-panel[data-label-layout='responsive']
+    :is(
+      .ui-property-panel__body,
+      .ui-property-section__content,
+      .ui-property-card__body,
+      .ui-property-group
+    )
+    > .ui-property-row {
     grid-template-columns: minmax(0, 1fr) auto;
     padding-block: 4px;
   }
