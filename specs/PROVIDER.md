@@ -98,7 +98,7 @@ Verification: `src/core/provider.test.tsx`
 
 ### UIC-PROVIDER-5.2 - Client-side navigation for React Aria links
 
-When the host passes `navigate` (and optionally `useHref`), React Aria links, menu items and tabs with an `href` shall navigate through it instead of a full page load. A nested provider without `navigate` uses the outer provider's; with none, links load their page as native links do, and a link with a target, a download or a modifier key always opens natively.
+When the host passes `navigate` (and optionally `useHref`), React Aria links, menu items and tabs with an `href` shall navigate through it instead of a full page load. Each is merged field by field over the outer provider's: a nested provider without `navigate` uses the outer provider's, and one without `useHref` keeps the outer one's; with none, links load their page as native links do, and a link with a target, a download or a modifier key always opens natively.
 
 Implementation: `src/core/provider.tsx`
 Verification: `src/core/provider.test.tsx`, `src/core/provider-options.test.tsx`, `e2e/provider.spec.ts`

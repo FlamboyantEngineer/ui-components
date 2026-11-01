@@ -75,7 +75,7 @@ Verification: `src/components/modal/modal.test.tsx`, `e2e/modal.spec.ts`
 
 `isDismissDisabled` shall refuse every way of dismissing the modal at once: it disables Cancel and the close button and ignores Escape and outside presses, for an operation that cannot be cancelled. The actions can still close it.
 
-Implementation: `src/components/modal/modal.tsx`
+Implementation: `src/components/modal/modal.tsx`, `src/components/modal/modal-dialog.tsx`
 Verification: `src/components/modal/modal.test.tsx`
 
 ### UIC-MODAL-2.4 - Vetoing a dismissal
@@ -133,7 +133,7 @@ Verification: `src/components/modal/modal.test.tsx`
 
 ### UIC-MODAL-4.3 - Body
 
-The children shall render in the body. Children given as a function receive `close`, which closes the modal, and `runPrimaryAction` ([UIC-MODAL-6.3](#uic-modal-63---primary-action-from-the-content)).
+The children shall render in the body. Children given as a function receive `close`, which closes the modal, and `runPrimaryAction` ([UIC-MODAL-6.3](#uic-modal-63---primary-action-from-the-content)). The body publishes the title's heading level (2) to its content, so automatic headings in it, such as a `SectionHeader`, `Card` or `Disclosure` title, start at level 3 wherever the dialog was opened ([UIC-SECTION-HEADER-2.1](SECTION-HEADER.md#uic-section-header-21---automatic-heading-levels)).
 
 Implementation: `src/components/modal/modal.tsx`
 Verification: `src/components/modal/modal.test.tsx`

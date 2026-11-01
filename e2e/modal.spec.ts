@@ -466,3 +466,12 @@ test('UIC-MODAL-9.1 UIC-MODAL-9.2 UIC-MODAL-9.3 keeps a draft across closing and
   await page.mouse.click(5, 5);
   await expect(opener).not.toBeFocused();
 });
+
+test('UIC-MODAL-4.3 starts the body sections below the dialog title', async ({ page, lab }) => {
+  await lab.open('modal');
+  await page.getByRole('button', { name: 'Trip outline' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Trip outline' });
+  await expect(dialog.getByRole('heading', { name: 'Trip outline', level: 2 })).toBeVisible();
+  await expect(dialog.getByRole('heading', { name: 'Stops', level: 3 })).toBeVisible();
+  await expect(dialog.getByRole('heading', { name: 'Bookings', level: 3 })).toBeVisible();
+});

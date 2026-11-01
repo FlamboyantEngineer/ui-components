@@ -89,7 +89,7 @@ Verification: `src/components/drawer/drawer.test.tsx`, `e2e/drawer.spec.ts`
 
 ### UIC-DRAWER-4.2 - Body and footer
 
-The children shall render in the `ui-drawer__body` slot after the header; children given as a function receive `close`, which closes the drawer. `footer` shall render in the `ui-drawer__footer` slot after the body. Without children or footer, their slot does not render.
+The children shall render in the `ui-drawer__body` slot after the header; children given as a function receive `close`, which closes the drawer. `footer` shall render in the `ui-drawer__footer` slot after the body. Without children or footer, their slot does not render. The body publishes the title's heading level (2) to its content, so automatic headings in it, such as a `SectionHeader`, `Card` or `Disclosure` title, start at level 3 wherever the dialog was opened ([UIC-SECTION-HEADER-2.1](SECTION-HEADER.md#uic-section-header-21---automatic-heading-levels)).
 
 Implementation: `src/components/drawer/drawer.tsx`
 Verification: `src/components/drawer/drawer.test.tsx`, `e2e/drawer.spec.ts`

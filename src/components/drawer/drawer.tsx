@@ -19,6 +19,7 @@ import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Button } from '../button/button.js';
 import { OverlayLayerScope, useLayerZIndex, useStackedLayer } from '../portal/portal.js';
 import type { OverlayLayer } from '../portal/layers.js';
+import { HeadingLevelContext, dialogTitleLevel } from '../../core/heading-level.js';
 
 /** A pressable trigger and the `Drawer` it opens. */
 export interface DrawerTriggerProps extends OpenStateProps {
@@ -176,7 +177,9 @@ export function Drawer({
               {children === undefined || children === null ? null : (
                 <div {...hooks.slot('body')}>
                   <OverlayLayerScope layer={resolvedLayer}>
-                    {typeof children === 'function' ? children({ close }) : children}
+                    <HeadingLevelContext value={dialogTitleLevel}>
+                      {typeof children === 'function' ? children({ close }) : children}
+                    </HeadingLevelContext>
                   </OverlayLayerScope>
                 </div>
               )}

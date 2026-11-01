@@ -3,6 +3,7 @@ import { useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Modal, ModalTrigger, type ModalProps } from '../../src/components/modal/modal.js';
 import { Portal, PortalHost } from '../../src/components/portal/portal.js';
+import { Section, SectionHeader } from '../../src/components/section-header/section-header.js';
 import { Shortcut } from '../../src/components/shortcut/shortcut.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { ModalFocusCases } from './modal-focus-cases.js';
@@ -335,6 +336,22 @@ function Stacking() {
 mountLab(
   <>
     <div data-lab-family="modal-main">
+      <LabSection
+        title="Sections in a dialog"
+        description="The trigger sits in a level-3 section, yet the dialog's title is a level-2 heading and the sections in its body start at level 3, as in any dialog."
+      >
+        <Section title="Trip planning" headingLevel={3}>
+          <ModalTrigger>
+            <Button>Trip outline</Button>
+            <Modal title="Trip outline" data-lab-modal="sections">
+              <SectionHeader title="Stops" />
+              <p>Lisbon, then Porto.</p>
+              <SectionHeader title="Bookings" />
+              <p>Two nights in each city.</p>
+            </Modal>
+          </ModalTrigger>
+        </Section>
+      </LabSection>
       <LabSection
         title="Tones and sizes"
         description="Each cell opens a modal with that tone and size. Escape or Cancel closes it and focus returns to the button."

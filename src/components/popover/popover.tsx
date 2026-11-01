@@ -25,6 +25,7 @@ import { useLayerZIndex } from '../portal/portal.js';
 import { PopoverPresence } from './popover-presence.js';
 import { usePopoverGutter } from './use-popover-gutter.js';
 import { POPOVER_ARROW_OFFSET, POPOVER_OFFSET } from '../../utils/overlay-defaults.js';
+import { HeadingLevelContext, dialogTitleLevel } from '../../core/heading-level.js';
 
 /** A pressable trigger and the `Popover` it opens. */
 export interface PopoverTriggerProps extends OpenStateProps {
@@ -205,7 +206,9 @@ export function Popover({
         <PopoverHeader title={title} showCloseButton={showCloseButton} onClose={close} />
         {children === undefined || children === null ? null : (
           <div {...hooks.slot('body')}>
-            {typeof children === 'function' ? children({ close }) : children}
+            <HeadingLevelContext value={dialogTitleLevel}>
+              {typeof children === 'function' ? children({ close }) : children}
+            </HeadingLevelContext>
           </div>
         )}
       </Dialog>

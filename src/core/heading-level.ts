@@ -9,6 +9,12 @@ export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 /** The heading level of the nearest enclosing section, read by the sections nested in it. */
 export const HeadingLevelContext = createContext<HeadingLevel | undefined>(undefined);
 
+/**
+ * The level of a dialog's title (React Aria's dialog heading), which a dialog's body publishes so
+ * its sections start below the title wherever the dialog was opened.
+ */
+export const dialogTitleLevel: HeadingLevel = 2;
+
 /** The level used outside any section when none is given. */
 const defaultHeadingLevel = 3;
 
