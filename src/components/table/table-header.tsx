@@ -29,6 +29,7 @@ import {
 } from './table-structure.js';
 import type { TableColumnDrag } from './use-column-reorder.js';
 import { computePinOffsets, type TablePinOffsets } from './use-pinned-offsets.js';
+import { readOwn } from '../../utils/read-own.js';
 
 /** What the header row shows: widths, groups, pins, the sort, drops and filters. */
 export interface TableHeaderModel<T> {
@@ -60,10 +61,13 @@ const selectionColumnWidth = 44;
 
 /** The pin of every drawn column, fixed ones included, by column key. */
 function collectPins<T>(structure: TableStructure<T>): Record<string, TableColumnPin | undefined> {
-  const pins: Record<string, TableColumnPin | undefined> = {
-    [selectionColumnId]: getColumnPin(structure, 'selection'),
-    [actionsColumnId]: getColumnPin(structure, 'actions'),
-  };
+  // No prototype: a column id such as `__proto__` is a key like any other.
+  const pins: Record<string, TableColumnPin | undefined> = Object.create(null) as Record<
+    string,
+    TableColumnPin | undefined
+  >;
+  pins[selectionColumnId] = getColumnPin(structure, 'selection');
+  pins[actionsColumnId] = getColumnPin(structure, 'actions');
   for (const column of structure.columns) pins[column.id] = getColumnPin(structure, column);
   return pins;
 }
@@ -85,7 +89,7 @@ function PinnedOffsetsProbe({
     (state?.collection.columns ?? []).map((column) => ({
       key: String(fromCollectionKey(column.key)),
       width: layout?.getColumnWidth(column.key) ?? 0,
-      pin: pins[String(fromCollectionKey(column.key))],
+      pin: readOwn(pins, String(fromCollectionKey(column.key))),
     })),
   );
   useLayoutEffect(() => onMeasure(offsets));
@@ -145,10 +149,10 @@ function getHeaderState<T>(
   const pin = getColumnPin(structure, column);
   const sortIndex = model.sort.findIndex((descriptor) => descriptor.column === column.id);
   return {
-    width: resolveColumnWidth(column, model.widths[column.id]),
+    width: resolveColumnWidth(column, readOwn(model.widths, column.id)),
     isRowHeader: getRowHeaderColumns(structure.columns).includes(column),
     pin,
-    pinOffset: pin ? model.pinOffsets[column.id] : undefined,
+    pinOffset: pin ? readOwn(model.pinOffsets, column.id) : undefined,
     sortDirection: model.sort[sortIndex]?.direction,
     sortPriority: model.isMultipleSort && sortIndex !== -1 ? sortIndex + 1 : undefined,
     drag: model.columnDrag,
@@ -183,7 +187,7 @@ export function TableHeader<T>(props: TableHeaderProps<T>) {
           kind="selection"
           width={selectionColumnWidth}
           pin={selectionPin}
-          pinOffset={model.pinOffsets[selectionColumnId]}
+          pinOffset={readOwn(model.pinOffsets, selectionColumnId)}
         >
           <TableCheckbox />
         </FixedColumn>
@@ -201,7 +205,7 @@ export function TableHeader<T>(props: TableHeaderProps<T>) {
           kind="actions"
           width={structure.actionsColumnWidth}
           pin={actionsPin}
-          pinOffset={model.pinOffsets[actionsColumnId]}
+          pinOffset={readOwn(model.pinOffsets, actionsColumnId)}
         >
           <span {...hooks.slot('column-label')}>{strings.rowActions}</span>
         </FixedColumn>

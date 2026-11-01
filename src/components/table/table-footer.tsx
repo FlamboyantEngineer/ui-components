@@ -15,6 +15,7 @@ import {
 } from './table-structure.js';
 import { renderNamedRow } from './table-spanning-row.js';
 import type { TablePinOffsets } from './use-pinned-offsets.js';
+import { readOwn } from '../../utils/read-own.js';
 
 interface TableFooterProps<T> {
   structure: TableStructure<T>;
@@ -69,7 +70,7 @@ export function TableFooter<T extends TableRow>({
       >
         {structure.hasSelection ? (
           <Cell
-            style={getPinStyle(selectionPin, pinOffsets[selectionColumnId])}
+            style={getPinStyle(selectionPin, readOwn(pinOffsets, selectionColumnId))}
             {...hooks.slot('footer-cell', { kind: 'selection', pinned: selectionPin })}
           />
         ) : null}
@@ -78,7 +79,7 @@ export function TableFooter<T extends TableRow>({
           return (
             <Cell
               key={column.id}
-              style={getPinStyle(pin, pinOffsets[column.id])}
+              style={getPinStyle(pin, readOwn(pinOffsets, column.id))}
               {...hooks.slot('footer-cell', {
                 kind: 'data',
                 align: column.align ?? 'start',
@@ -93,7 +94,7 @@ export function TableFooter<T extends TableRow>({
         })}
         {structure.hasActions ? (
           <Cell
-            style={getPinStyle(actionsPin, pinOffsets[actionsColumnId])}
+            style={getPinStyle(actionsPin, readOwn(pinOffsets, actionsColumnId))}
             {...hooks.slot('footer-cell', { kind: 'actions', pinned: actionsPin })}
           />
         ) : null}

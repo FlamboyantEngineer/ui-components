@@ -22,7 +22,7 @@ import {
   Summary,
 } from './table-cases.js';
 import { BulkEdit, Grouping, SmallSteps, Spreadsheet } from './table-sheet-cases.js';
-import { GroupKeyTable, TypedTable } from './collection-identity-cases.js';
+import { GroupKeyTable, ObjectKeyTable, TypedTable } from './collection-identity-cases.js';
 
 interface Fruit {
   id: string;
@@ -420,6 +420,12 @@ mountLab(
       description="Numeric, text and spaced keys name separate rows. Select, edit or expand each row independently."
     >
       <TypedTable />
+    </LabSection>
+    <LabSection
+      title="Prototype-named column ids"
+      description="Columns with the ids __proto__, constructor and valueOf: Code and Maker stay pinned side by side while the table scrolls, Maker resizes and filters, like any other column."
+    >
+      <ObjectKeyTable />
     </LabSection>
     <LabSection
       title="Independent group and row expansion"

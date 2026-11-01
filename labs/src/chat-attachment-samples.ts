@@ -59,8 +59,9 @@ export const kindSamples: Record<ChatAttachmentKind, ChatAttachmentData> = {
   },
   file: {
     id: 'file',
-    name: 'Saved session.dat',
-    mediaType: 'application/x-session',
+    // No media type and an extension named like an object property: still a plain file.
+    name: 'Saved session.constructor',
+    mediaType: '',
     size: 96_000,
     url: textFile('A file of a type the library does not know.'),
   },

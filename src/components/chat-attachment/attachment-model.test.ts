@@ -26,6 +26,13 @@ describe('attachment model', () => {
     expect(getAttachmentKind('video/mp4', 'a.png')).toBe('file');
   });
 
+  it('UIC-CHAT-ATTACHMENT-1.1 reads a prototype-named extension as a plain file', () => {
+    for (const name of ['notes.constructor', 'notes.CONSTRUCTOR', 'notes.valueof', 'a.__proto__']) {
+      expect(getAttachmentKind('', name)).toBe('file');
+      expect(getAttachmentKind('application/octet-stream', name)).toBe('file');
+    }
+  });
+
   it('UIC-CHAT-ATTACHMENT-1.1 reads the kind from the extension when the type says nothing', () => {
     expect(getAttachmentKind('', 'Notes.MD')).toBe('text');
     expect(getAttachmentKind('application/octet-stream', 'backup.tar')).toBe('archive');

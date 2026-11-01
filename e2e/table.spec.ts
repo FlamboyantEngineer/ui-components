@@ -47,6 +47,28 @@ test.describe('Table lab', () => {
     await lab.expectAccessible('[data-lab-demo="typed-table"]');
   });
 
+  test('UIC-TABLE-8.6 pins and filters columns with prototype-named ids', async ({ page, lab }) => {
+    await lab.open('table');
+    const demo = page.locator('[data-lab-demo="object-key-table"]');
+    const header = (name: string) =>
+      demo.getByRole('columnheader', { name: new RegExp(`^${name}`) });
+    await expect(header('Code')).toHaveAttribute('data-pinned', 'start');
+    await expect(header('Maker')).toHaveAttribute('data-pinned', 'start');
+    const offsets = await Promise.all(
+      ['Code', 'Maker'].map((name) =>
+        header(name).evaluate((cell) =>
+          (cell as HTMLElement).style.getPropertyValue('--ui-table-pin-offset'),
+        ),
+      ),
+    );
+    expect(offsets).toEqual(['0px', '90px']);
+    const code = await header('Code').boundingBox();
+    const maker = await header('Maker').boundingBox();
+    expect(Math.round(maker?.x ?? 0)).toBe(Math.round((code?.x ?? 0) + (code?.width ?? 0)));
+    await expect(header('Size')).not.toHaveAttribute('data-pinned');
+    await lab.expectAccessible('[data-lab-demo="object-key-table"]');
+  });
+
   test('UIC-TABLE-1.1 UIC-TABLE-1.3 UIC-TABLE-7.1 draws grids at two row sizes', async ({
     page,
     lab,

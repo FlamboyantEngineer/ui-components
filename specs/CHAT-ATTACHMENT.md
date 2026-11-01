@@ -6,7 +6,7 @@
 
 ### UIC-CHAT-ATTACHMENT-1.1 - Kind and status
 
-`ChatAttachment` shall render a `<div>` (`ui-chat-attachment`) that publishes the attachment's kind as `data-kind`: `image` for an `image/*` media type, `pdf` for `application/pdf`, `archive` for zip, gzip, tar, 7-Zip, RAR, bzip2 and xz types, `text` for `text/*`, `application/json`, `application/xml` and `application/yaml`, and `file` for any other type. A media type that says nothing (empty or `application/octet-stream`) leaves the kind to the name's extension. It publishes `status` as `data-status`: `uploading`, `complete` or `error`, defaulting to `error` when the data has an `error` and to `complete` otherwise.
+`ChatAttachment` shall render a `<div>` (`ui-chat-attachment`) that publishes the attachment's kind as `data-kind`: `image` for an `image/*` media type, `pdf` for `application/pdf`, `archive` for zip, gzip, tar, 7-Zip, RAR, bzip2 and xz types, `text` for `text/*`, `application/json`, `application/xml` and `application/yaml`, and `file` for any other type. A media type that says nothing (empty or `application/octet-stream`) leaves the kind to the name's extension, read as the extension's own entry, so one named like an object property (`constructor`, `valueOf`) is a plain `file`. It publishes `status` as `data-status`: `uploading`, `complete` or `error`, defaulting to `error` when the data has an `error` and to `complete` otherwise.
 
 Implementation: `src/components/chat-attachment/chat-attachment.tsx`, `src/components/chat-attachment/attachment-model.ts`
 Verification: `src/components/chat-attachment/chat-attachment.test.tsx`, `src/components/chat-attachment/attachment-model.test.ts`, `e2e/chat-attachment.spec.ts`
