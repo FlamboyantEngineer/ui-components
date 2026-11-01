@@ -305,6 +305,51 @@ describe('InlineEdit', { timeout: 15_000 }, () => {
     expect(onSave).toHaveBeenCalledTimes(1);
   });
 
+  it('UIC-INLINE-EDIT-1.4 drops a save on leaving when its owner closes or reopens the editor first', async () => {
+    const user = userEvent.setup();
+    const onSave = vi.fn();
+    const onEditingChange = vi.fn();
+    const view = (isEditing: boolean) => (
+      <>
+        <InlineEdit
+          label="Title"
+          value="Rye loaf"
+          onSave={onSave}
+          isEditing={isEditing}
+          onEditingChange={onEditingChange}
+        />
+        <button type="button">Elsewhere</button>
+      </>
+    );
+    const { rerender } = render(view(false));
+    rerender(view(true));
+    await user.click(textbox());
+    await user.keyboard('{Control>}a{/Control}Cancelled draft');
+    act(() => screen.getByRole('button', { name: 'Elsewhere' }).focus());
+    rerender(view(false));
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    });
+    expect(onSave).not.toHaveBeenCalled();
+    rerender(view(true));
+    await user.click(textbox());
+    await user.keyboard('{Control>}a{/Control}Reopened');
+    // Closed and reopened before the save on leaving runs: a new session.
+    act(() => screen.getByRole('button', { name: 'Elsewhere' }).focus());
+    rerender(view(false));
+    rerender(view(true));
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    });
+    expect(onSave).not.toHaveBeenCalled();
+    // The reopened editor stays open: the earlier session's save neither saves nor closes it.
+    expect(onEditingChange).not.toHaveBeenCalled();
+    await user.click(textbox());
+    await user.keyboard('{Control>}a{/Control}Kept');
+    await user.click(screen.getByRole('button', { name: 'Elsewhere' }));
+    await waitFor(() => expect(onSave).toHaveBeenCalledWith('Kept'));
+  });
+
   it('UIC-INLINE-EDIT-1.5 cancels on Escape without saving and stops the key', async () => {
     const user = userEvent.setup();
     const onSave = vi.fn();

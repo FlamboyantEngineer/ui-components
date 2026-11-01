@@ -208,12 +208,18 @@ function useEditorHandlers<T>(options: {
   commit: (request: SaveRequest<T>, focusReturn?: FocusReturn) => void;
   cancel: () => void;
   timerRef: RefObject<ReturnType<typeof setTimeout> | undefined>;
+  /** The editing session; a save scheduled in one is dropped once another replaces it. */
+  session: number;
 }) {
-  const { cancel, timerRef } = options;
-  const latestCommit = useLatest(options.commit);
+  const { cancel, timerRef, session } = options;
+  const latest = useLatest({ commit: options.commit, session });
+  // A session that ends (closed by its owner, or closed and reopened) drops the save it scheduled.
+  useEffect(() => () => clearTimeout(timerRef.current), [session, timerRef]);
   const commitLater = (focusReturn: FocusReturn) => {
     clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => latestCommit.current(null, focusReturn), 0);
+    timerRef.current = setTimeout(() => {
+      if (latest.current.session === session) latest.current.commit(null, focusReturn);
+    }, 0);
   };
   return {
     onKeyDownCapture: (event: KeyboardEvent<HTMLDivElement>) => {
@@ -290,7 +296,7 @@ export function useInlineEdit<T>(options: InlineEditStateOptions<T>) {
     if (!isPending) close(focusReturn);
   };
 
-  const editorHandlers = useEditorHandlers({ commit, cancel, timerRef: commitTimer });
+  const editorHandlers = useEditorHandlers({ commit, cancel, timerRef: commitTimer, session });
 
   return {
     isEditing,
