@@ -197,6 +197,7 @@ export function ModalTrigger({ children, ...openState }: ModalTriggerProps) {
 }
 
 export { isModalPrimaryShortcut } from './modal-shortcut.js';
+export { useModalOpenState } from './modal-presentations.js';
 export type { ModalFocusTarget } from './modal-focus.js';
 
 export { confirm } from './modal-confirm.js';

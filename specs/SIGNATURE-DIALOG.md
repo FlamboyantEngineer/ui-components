@@ -46,14 +46,21 @@ Verification: `src/components/signature-dialog/signature-dialog.test.tsx`
 Sign (pressed, or Control+Enter) shall submit the dialog's form through its ref: while an entry is missing (a meaning to choose, a required reason or drawing, a user name or the password) every entry shows its validation, focus moves to the first invalid one and `onSign` is not called.
 
 Implementation: `src/components/signature-dialog/signature-form.tsx`, `src/components/form/form.tsx`
-Verification: `src/components/signature-dialog/signature-dialog.test.tsx`, `e2e/signature-dialog.spec.ts`
+Verification: `src/components/signature-dialog/signature-dialog.test.tsx`, `src/components/signature-dialog/signature-dialog-sessions.test.tsx`, `e2e/signature-dialog.spec.ts`
 
 ### UIC-SIGNATURE-DIALOG-2.2 - Signing and errors
 
-Once every entry passes, Sign shall call `onSign` with the `SignatureDetails`: the user name, the password, the chosen meaning's `id`, the reason (empty text when none) and the signature (`null` when none). While a returned promise runs, Sign is pending (UIC-MODAL-5.2); when it resolves the dialog closes, and when it rejects (or `onSign` throws) the dialog stays open, the footer announces the error's message (UIC-MODAL-5.3) and the password is cleared for the next attempt, the other entries kept. Cancel and Escape close the dialog without calling `onSign`, and each opening starts with empty entries.
+Once every entry passes, Sign shall call `onSign` with the `SignatureDetails`: the user name, the password, the chosen meaning's `id`, the reason (empty text when none, or when `reason` is `none`) and the signature (`null` when none, or when `drawing` is `none`). A reason or signature entered before its entry stopped being asked is kept, and shows again if it is asked again, but is never signed with while it is not asked, and its requirement no longer applies. While a returned promise runs, Sign is pending (UIC-MODAL-5.2); when it resolves the dialog closes, and when it rejects (or `onSign` throws) the dialog stays open, the footer announces the error's message (UIC-MODAL-5.3) and the password is cleared for the next attempt, the other entries kept. Cancel and Escape close the dialog without calling `onSign`, and each opening starts with empty entries ([UIC-SIGNATURE-DIALOG-2.3](#uic-signature-dialog-23---signing-sessions)).
 
 Implementation: `src/components/signature-dialog/signature-dialog.tsx`, `src/components/signature-dialog/signature-form.tsx`
-Verification: `src/components/signature-dialog/signature-dialog.test.tsx`, `e2e/signature-dialog.spec.ts`
+Verification: `src/components/signature-dialog/signature-dialog.test.tsx`, `src/components/signature-dialog/signature-dialog-sessions.test.tsx`, `e2e/signature-dialog.spec.ts`
+
+### UIC-SIGNATURE-DIALOG-2.3 - Signing sessions
+
+Each signing session shall have its own entries: a session starts when the dialog opens, and ends when it closes (controlled, uncontrolled or through a `ModalTrigger`), when `userName` changes or when `credentials` changes. A new session starts with every entry empty, so the signer enters the credentials again, even when the dialog reopens before its exit animation ends; nothing is kept between sessions or stored. A signing whose session has ended settles silently: its success does not close the dialog and its failure neither shows an error nor clears the password of the session that replaced it.
+
+Implementation: `src/components/signature-dialog/signature-dialog.tsx`, `src/components/signature-dialog/signature-form.tsx`
+Verification: `src/components/signature-dialog/signature-dialog-sessions.test.tsx`, `e2e/signature-dialog.spec.ts`
 
 ## Hooks
 
