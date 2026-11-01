@@ -3,6 +3,13 @@
 .ui-loading-region {
   position: relative;
   display: block;
+  /* Traps the content's in-page z-indexes, so the cover paints above every part it blocks. */
+  isolation: isolate;
+}
+
+.ui-loading-region__content {
+  position: relative;
+  z-index: 0;
 }
 
 .ui-loading-region[data-loading] .ui-loading-region__content {

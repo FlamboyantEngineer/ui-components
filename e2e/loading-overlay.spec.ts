@@ -256,4 +256,30 @@ test.describe('Loading Overlay lab', () => {
     await page.keyboard.press('Escape');
     await expect(cover).toHaveCount(0);
   });
+
+  test('UIC-LOADING-OVERLAY-2.2 covers pinned table headers and column groups it blocks', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('loading-overlay');
+    const demo = page.locator('[data-lab-demo="pinned-table"]');
+    for (const name of ['Name', 'Price', 'Look']) {
+      const header = demo.getByRole('columnheader', { name });
+      await header.scrollIntoViewIfNeeded();
+      const box = await header.boundingBox();
+      if (!box) throw new Error(`${name} is not drawn.`);
+      // Inert content is left out of hit testing, so the check lifts it for a moment to read the
+      // paint order: what the reader sees on top at that point.
+      const isCovered = await demo.locator('.ui-loading-region__content').evaluate(
+        (content, { x, y }) => {
+          content.removeAttribute('inert');
+          const top = content.ownerDocument.elementFromPoint(x, y);
+          content.setAttribute('inert', '');
+          return Boolean(top?.closest('.ui-loading-overlay'));
+        },
+        { x: box.x + box.width / 2, y: box.y + box.height / 2 },
+      );
+      expect(isCovered, `${name} is under the cover`).toBe(true);
+    }
+  });
 });
