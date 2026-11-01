@@ -709,6 +709,32 @@ describe('FolderManager', () => {
     expect(screen.getByRole('button', { name: 'Delete' })).toHaveAttribute('aria-disabled', 'true');
   });
 
+  it('UIC-FOLDER-MANAGER-6.2 checks a selected folder inside another selected one before deleting', async () => {
+    const user = userEvent.setup();
+    const onDelete = vi.fn();
+    render(
+      <Manager
+        selectionMode="multiple"
+        defaultSelectedKeys={['fruit', 'citrus', 'vegetables']}
+        onDelete={onDelete}
+        getDeleteBlockedReason={(folder) => (folder.id === 'citrus' ? 'Citrus is locked.' : null)}
+      />,
+    );
+    act(() => row('Vegetables').focus());
+    await user.keyboard('{Delete}');
+    expect(screen.getByRole('alert')).toHaveTextContent('Citrus is locked.');
+    const button = screen.getByRole('button', { name: 'Delete' });
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+    act(() => button.focus());
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('Citrus is locked.');
+    fireEvent.contextMenu(row('Fruit'));
+    const menu = await screen.findByRole('menu');
+    const entry = within(menu).getByRole('menuitem', { name: /Delete/ });
+    expect(entry).toHaveAttribute('aria-disabled', 'true');
+    expect(entry).toHaveTextContent('Citrus is locked.');
+    expect(onDelete).not.toHaveBeenCalled();
+  });
+
   it('UIC-FOLDER-MANAGER-6.3 moves the selected folders to a place chosen in the context menu', async () => {
     const user = userEvent.setup();
     const onMove = vi.fn();

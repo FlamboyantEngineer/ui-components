@@ -12,6 +12,7 @@ import {
   findFolderPath,
   folderDraftKey,
   folderRootKey,
+  listSelectedFolders,
   listTopmostFolders,
   toFolderRowKey,
   type FolderItem,
@@ -68,8 +69,10 @@ export interface FolderManagerModel<T extends FolderItem> {
   expansion: FolderExpansion;
   actions: FolderActions<T>;
   loads: TreeLoads;
-  /** The selected folders, topmost first, in tree order. */
+  /** The selected folders, topmost first, in tree order, leaving out those inside another. */
   selection: T[];
+  /** Every selected folder in tree order, those inside another selected folder included. */
+  selectedFolders: T[];
   /** The one selected folder and its ancestors, outermost first; empty with none or several. */
   path: T[];
   /** The one selected folder, or `null` with none or several. */
@@ -113,6 +116,18 @@ function useFolderQuery<T extends FolderItem>(
     expansion.reveal(collectBranchKeys(buildFolderNodes(folders, { rootLabel, terms: nextTerms })));
   };
   return { query, applied, terms, update };
+}
+
+/** The selected folders: topmost, all of them, and the one folder's path and folder. */
+function describeSelection<T extends FolderItem>(folders: readonly T[], selected: readonly Key[]) {
+  const keys = new Set(selected);
+  const path = selected.length === 1 ? findFolderPath(folders, selected[0] ?? null) : [];
+  return {
+    selection: listTopmostFolders(folders, keys),
+    selectedFolders: listSelectedFolders(folders, keys),
+    path,
+    folder: path.at(-1) ?? null,
+  };
 }
 
 /** The row key of a folder, or of the root row for no folder (`null`). */
@@ -171,9 +186,7 @@ export function useFolderManager<T extends FolderItem, M extends FolderSelection
   );
   const expansion = useFolderExpansion(nodes, loads.load);
   const setQuery = (query: string) => filter.update(query, expansion);
-  const selection = listTopmostFolders(folders, new Set(selected));
-  const path = selected.length === 1 ? findFolderPath(folders, selected[0] ?? null) : [];
-  const folder = path.at(-1) ?? null;
+  const { selection, selectedFolders, path, folder } = describeSelection(folders, selected);
   const editKey = edit?.kind === 'create' ? folderDraftKey : edit ? toRowKey(edit.key) : null;
   const startEdit = (start: () => void) => {
     setQuery('');
@@ -187,6 +200,7 @@ export function useFolderManager<T extends FolderItem, M extends FolderSelection
     actions,
     loads,
     selection,
+    selectedFolders,
     path,
     folder,
     editKey,
@@ -203,7 +217,8 @@ export function useFolderManager<T extends FolderItem, M extends FolderSelection
         actions.startCreate(folder?.id ?? null);
       }),
     startRename: () => startEdit(() => (folder ? actions.startRename(folder) : undefined)),
-    remove: () => (selection.length > 0 ? void actions.remove(selection) : undefined),
+    remove: () =>
+      selection.length > 0 ? void actions.remove(selection, selectedFolders) : undefined,
     moveTo: (destination) => {
       for (const move of planFolderMoves(folders, selection, destination)) options.onMove?.(move);
       if (destination)

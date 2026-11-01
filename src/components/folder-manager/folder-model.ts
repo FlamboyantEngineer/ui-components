@@ -178,6 +178,19 @@ export function listTopmostFolders<T extends FolderItem>(
   return selected;
 }
 
+/** Every folder of `keys` in tree order, nested ones included. */
+export function listSelectedFolders<T extends FolderItem>(
+  folders: readonly T[],
+  keys: ReadonlySet<Key>,
+): T[] {
+  const selected: T[] = [];
+  if (keys.size === 0) return selected;
+  for (const folder of walkTree(folders, childrenOf)) {
+    if (keys.has(folder.id) && selected.push(folder) === keys.size) break;
+  }
+  return selected;
+}
+
 /**
  * Where `moving` folders may go: the top level, then every folder in tree order except the moving
  * ones and the folders inside them, each with the names of its path.

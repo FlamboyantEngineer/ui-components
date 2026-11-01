@@ -141,7 +141,7 @@ Verification: `src/components/folder-manager/folder-manager.test.tsx`, `e2e/fold
 
 ### UIC-FOLDER-MANAGER-6.2 - Deleting several folders
 
-Delete shall delete every selected folder except those inside another selected one, calling `onDelete` for each in tree order and waiting for each. A selected folder for which `getDeleteBlockedReason` returns a reason blocks the whole delete with that reason (UIC-FOLDER-MANAGER-2.6), and a rejection stops the deletes and shows its message. Afterwards the selection falls back to the first deleted folder's parent.
+Delete shall delete every selected folder except those inside another selected one, calling `onDelete` for each in tree order and waiting for each. Every selected folder is checked before the folders inside another selected one are set aside: one for which `getDeleteBlockedReason` returns a reason, nested or not, blocks the whole delete with that reason (UIC-FOLDER-MANAGER-2.6) in the toolbar, the context menu and the Delete key, and nothing is deleted, and a rejection stops the deletes and shows its message. Afterwards the selection falls back to the first deleted folder's parent.
 
 Implementation: `src/components/folder-manager/use-folder-actions.ts`, `src/components/folder-manager/use-folder-manager.ts`, `src/components/folder-manager/folder-model.ts`, `src/components/folder-manager/folder-manager.tsx`
 Verification: `src/components/folder-manager/folder-manager.test.tsx`, `src/components/folder-manager/folder-model.test.ts`

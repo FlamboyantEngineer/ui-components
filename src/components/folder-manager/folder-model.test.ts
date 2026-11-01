@@ -7,6 +7,7 @@ import {
   folderRootKey,
   getFolderHeight,
   listFolderDestinations,
+  listSelectedFolders,
   listTopmostFolders,
   fromFolderRowKey,
   toFolderRowKey,
@@ -103,6 +104,16 @@ describe('folder model', () => {
       [row('pantry'), true],
       [row('cellar'), false],
     ]);
+  });
+
+  it('UIC-FOLDER-MANAGER-6.2 lists every selected folder, nested ones included', () => {
+    const keys = new Set(['lemons', 'fruit', 'vegetables', 'missing']);
+    expect(listSelectedFolders(folders, keys).map(({ id }) => id)).toEqual([
+      'fruit',
+      'lemons',
+      'vegetables',
+    ]);
+    expect(listSelectedFolders(folders, new Set())).toEqual([]);
   });
 
   it('UIC-FOLDER-MANAGER-6.2 lists the topmost selected folders and where they may move', () => {

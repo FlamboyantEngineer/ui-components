@@ -59,7 +59,9 @@ interface Availability {
 const moveKeyPrefix = 'move-to:';
 
 function availabilityOf<T extends FolderItem>({ model, props }: ToolContext<T>): Availability {
-  const deleteReason = model.selection
+  // Every selected folder blocks, those inside another selected one included: deleting the outer
+  // folder deletes them too.
+  const deleteReason = model.selectedFolders
     .map((folder) => props.getDeleteBlockedReason?.(folder))
     .find(Boolean);
   const isFree = !model.isBusy;
