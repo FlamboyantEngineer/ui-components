@@ -42,6 +42,8 @@ export interface ContextMenuProps extends BaseProps {
   layer?: MenuPopoverProps['layer'];
   /** Placement against an element anchor. Defaults to `bottom start`. */
   placement?: Placement | undefined;
+  /** Leaves outside content reachable and selectable without locking page scroll. Defaults to false. */
+  isNonModal?: boolean | undefined;
   /**
    * The element a point menu belongs to: scrolling one of its scroll parents closes the menu.
    * Defaults to an empty element where the `ContextMenu` renders.
@@ -112,6 +114,7 @@ export function ContextMenu({
   children,
   layer = 'context-menu',
   placement = 'bottom start',
+  isNonModal = false,
   triggerRef,
   'aria-label': ariaLabel,
   ...rest
@@ -136,8 +139,7 @@ export function ContextMenu({
           {...anchorProps}
           aria-label={label}
           layer={layer}
-          // Like a platform context menu, it holds the page still while open.
-          isNonModal={false}
+          isNonModal={isNonModal}
           isOpen={isOpen}
           onOpenChange={state.setOpen}
           onContextMenu={(event) => event.preventDefault()}
