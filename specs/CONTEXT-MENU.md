@@ -53,6 +53,15 @@ A secondary click, long touch or key whose default the target's own handler, or 
 Implementation: `src/components/context-menu/context-menu-target.ts`
 Verification: `src/components/context-menu/context-menu-cancel.test.tsx`, `e2e/context-menu.spec.ts`
 
+### UIC-CONTEXT-MENU-1.8 - Non-modal menus
+
+`ContextMenu` and `ContextMenuTrigger` shall accept `isNonModal`, false by default. The default menu blocks outside content and page scrolling while open. A non-modal menu leaves outside content reachable, visible to assistive technology and selectable, preserving an existing text selection when it opens. Focus still enters the first enabled item; actions, Escape and outside primary or secondary presses still close it, and portalled submenus share its non-modal behavior and outside-press boundary.
+
+An outside primary press on a non-modal menu also reaches the outside control. Scrolling an element containing its trigger, including the trigger itself, closes the menu; scrolling the page keeps it open. A point anchor stays at its viewport coordinates until the controller moves it; an element anchor follows its element.
+
+Implementation: `src/components/context-menu/context-menu.tsx`, `src/components/menu/menu-popover.tsx`
+Verification: `src/components/context-menu/context-menu.test.tsx`, `e2e/context-menu.spec.ts`
+
 ## UIC-CONTEXT-MENU-2 - Menu controller
 
 ### UIC-CONTEXT-MENU-2.1 - Controller

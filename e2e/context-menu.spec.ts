@@ -20,6 +20,39 @@ async function centre(locator: Locator) {
 }
 
 test.describe('Context Menu lab', () => {
+  test('UIC-CONTEXT-MENU-1.8 preserves selected text in a non-modal menu action', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('context-menu');
+    const target = matrixCell(page, 'mode=non-modal').getByText('Selected text remains readable.');
+    await target.dblclick({ position: { x: 20, y: 8 } });
+    await expect
+      .poll(() => page.evaluate(() => window.getSelection()?.toString()))
+      .toBe('Selected');
+    await target.click({ button: 'right', position: { x: 20, y: 8 } });
+    await expect(item(page, 'Copy selection')).toBeFocused();
+    expect(
+      await target.evaluate((node) => node.closest('[inert], [aria-hidden="true"]') === null),
+    ).toBe(true);
+    expect(await page.evaluate(() => document.documentElement.style.overflow)).not.toBe('hidden');
+    expect(await page.evaluate(() => window.getSelection()?.toString())).toBe('Selected');
+    await item(page, 'Copy selection').click();
+    await expect(popovers(page)).toHaveCount(0);
+    await expect(page.locator('[data-lab-output="Selected text"]')).toHaveText('Selected');
+  });
+
+  test('UIC-CONTEXT-MENU-1.8 keeps the default menu modal', async ({ page, lab }) => {
+    await lab.open('context-menu');
+    const target = matrixCell(page, 'mode=modal').getByText('Selected text remains readable.');
+    await target.click({ button: 'right', position: { x: 20, y: 8 } });
+    await expect(item(page, 'Copy selection')).toBeFocused();
+    expect(await target.evaluate((node) => node.closest('[inert]') !== null)).toBe(true);
+    expect(await page.evaluate(() => document.documentElement.style.overflow)).toBe('hidden');
+    await page.keyboard.press('Escape');
+    await expect(popovers(page)).toHaveCount(0);
+  });
+
   test('UIC-CONTEXT-MENU-1.1 UIC-CONTEXT-MENU-1.4 opens at the pointer and returns focus to the target', async ({
     page,
     lab,
