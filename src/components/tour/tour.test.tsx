@@ -378,6 +378,26 @@ describe('Tour', () => {
     expect(screen.getByRole('dialog', { name: 'Search' })).toBeInTheDocument();
   });
 
+  it('UIC-TOUR-1.1 UIC-TOUR-3.2 keeps a non-modal step on its target as the page scrolls', async () => {
+    let top = 300;
+    const rect = vi
+      .spyOn(HTMLInputElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(() => new DOMRect(40, top, 200, 30));
+    try {
+      render(<Page isNonModal />);
+      await screen.findByRole('dialog', { name: 'Search' });
+      const panel = document.querySelector<HTMLElement>('.ui-tour') as HTMLElement;
+      await waitFor(() => expect(panel.style.top).not.toBe(''));
+      const before = parseFloat(panel.style.top);
+      top = 180;
+      fireEvent.scroll(window);
+      await waitFor(() => expect(parseFloat(panel.style.top)).toBe(before - 120));
+      expect(screen.getByRole('dialog', { name: 'Search' })).toBeInTheDocument();
+    } finally {
+      rect.mockRestore();
+    }
+  });
+
   it('UIC-TOUR-3.3 forwards the class name, caller attributes and id', async () => {
     render(<Page className="onboarding" id="intro" data-flow="first-run" />);
     const step = await screen.findByRole('dialog', { name: 'Search' });

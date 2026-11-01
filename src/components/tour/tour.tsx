@@ -10,6 +10,7 @@ import { TourPanel } from './tour-panel.js';
 import { TourSpotlight } from './tour-spotlight.js';
 import { useTourTarget, type TourTarget } from './use-tour-target.js';
 import { clamp } from '../../utils/clamp.js';
+import { useFollowAnchor } from '../../utils/use-follow-anchor.js';
 import { tourHooks as hooks } from './tour-hooks.js';
 
 export type { TourTarget } from './use-tour-target.js';
@@ -120,6 +121,8 @@ export function Tour({
   const [spotlight, setSpotlight] = useState<HTMLDivElement | null>(null);
   const anchor = target.element ?? spotlight;
   const anchorRef = useMemo(() => ({ current: anchor }), [anchor]);
+  // The dialog and its arrow follow the target as the page scrolls or resizes, with the spotlight.
+  const shouldUpdatePosition = useFollowAnchor({ anchorRef, isOpen: isOpen && anchor !== null });
   if (!isOpen) return null;
   const close = (onClose: () => void) => {
     open.complete();
@@ -134,6 +137,7 @@ export function Tour({
           {...hooks.root({ className, props: rest, data: { nonModal: isNonModal } })}
           isOpen
           triggerRef={anchorRef}
+          shouldUpdatePosition={shouldUpdatePosition}
           placement={current.placement ?? 'bottom'}
           isNonModal={isNonModal}
           isKeyboardDismissDisabled
