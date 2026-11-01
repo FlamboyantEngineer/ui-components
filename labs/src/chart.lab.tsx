@@ -161,6 +161,24 @@ function CustomDrawing() {
   );
 }
 
+/** A chart whose page removes a series, leaving the one the reader hid. */
+function ShrinkingChart() {
+  const [hasApples, setHasApples] = useState(true);
+  return (
+    <div style={box(520)} data-lab-demo="shrinking">
+      <Button onPress={() => setHasApples(!hasApples)}>
+        {hasApples ? 'Remove Apples' : 'Restore Apples'}
+      </Button>
+      <BarChart
+        label="Crates, shrinking"
+        categories={quarters}
+        series={crates.slice(hasApples ? 0 : 1, 2)}
+        height={160}
+      />
+    </div>
+  );
+}
+
 /** A legend and view controlled from outside the chart. */
 function ControlledChart() {
   const [hidden, setHidden] = useState<Set<Key>>(new Set(['plums']));
@@ -391,9 +409,10 @@ mountLab(
     </LabSection>
     <LabSection
       title="Controlled legend and view"
-      description="The hidden series and the view held by the page, which prints them. Hiding the series of a hovered or focused value closes its tooltip, and Escape then reaches the page again."
+      description="The hidden series and the view held by the page, which prints them. Hiding the series of a hovered or focused value closes its tooltip, and Escape then reaches the page again. Below, hide Pears and remove Apples: the legend stays while the series left is hidden, so it can be shown again."
     >
       <ControlledChart />
+      <ShrinkingChart />
     </LabSection>
     <LabSection
       title="Repeated coordinates"

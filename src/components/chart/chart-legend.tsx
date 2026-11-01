@@ -25,6 +25,17 @@ export interface ChartLegendProps
   items: readonly ChartSeries[];
 }
 
+/**
+ * Whether a bar or line chart draws its legend by default: with more than one series, or while a
+ * series is hidden, so a series the owner's data left alone and hidden can still be shown again.
+ */
+export function hasLegendByDefault(
+  series: readonly { id: Key }[],
+  hidden: ReadonlySet<Key>,
+): boolean {
+  return series.length > 1 || series.some((entry) => hidden.has(entry.id));
+}
+
 /** The hidden series: the caller's when controlled, otherwise the component's own. */
 export function useHiddenKeys({
   hiddenKeys,
