@@ -231,6 +231,29 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Separator sizes"
+      description="separatorSize draws the separators xs, sm, md (the default) or lg, in both orientations; every size keeps dragging, keys and focus."
+    >
+      <StateMatrix
+        axes={{ orientation: ['horizontal', 'vertical'], size: ['xs', 'sm', 'md', 'lg'] }}
+        render={({ orientation, size }) => (
+          <div style={frame(240, 140)}>
+            <SplitView
+              orientation={orientation}
+              panes={[
+                { id: `size-${orientation}-${size}-first`, minSize: 20 },
+                { id: `size-${orientation}-${size}-second`, minSize: 20 },
+              ]}
+              separatorSize={size}
+              separatorLabel={`Resize ${orientation} split, ${size} separator`}
+            >
+              {[<Pane key="a">Apples</Pane>, <Pane key="b">Bananas</Pane>]}
+            </SplitView>
+          </div>
+        )}
+      />
+    </LabSection>
+    <LabSection
       title="Bounds and persistence"
       description="Pane bounds keep the first pane between 25% and 60%; persistKey restores its size after a reload."
     >

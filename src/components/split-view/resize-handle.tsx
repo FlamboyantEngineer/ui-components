@@ -11,7 +11,7 @@ import {
 } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, ContainerProps, Orientation } from '../../core/props.js';
+import type { BaseProps, ContainerProps, ControlSize, Orientation } from '../../core/props.js';
 import { clamp } from '../../utils/clamp.js';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import { Portal } from '../portal/portal.js';
@@ -73,6 +73,8 @@ export interface ResizeHandleProps
   onChangeCancel?: (() => void) | undefined;
   /** Ignore pointer and keyboard input and leave the tab order. */
   isDisabled?: boolean | undefined;
+  /** How thick the bar and its grip are drawn, published as `data-size`. Defaults to `md`. */
+  size?: ControlSize | undefined;
   /**
    * A change abandons a drag in progress, as becoming disabled does, without disabling later
    * presses: for a value whose owner changed, such as a split restored from another key.
@@ -225,6 +227,7 @@ export function ResizeHandle({
   onChangeCancel,
   isDisabled = false,
   resetKey,
+  size = 'md',
   className,
   ...rest
 }: ResizeHandleProps) {
@@ -261,7 +264,7 @@ export function ResizeHandle({
         aria-disabled={isDisabled || undefined}
         {...hooks.root({
           className,
-          data: { orientation, resizing: interaction.isResizing, disabled: isDisabled },
+          data: { orientation, size, resizing: interaction.isResizing, disabled: isDisabled },
         })}
       >
         <span {...hooks.slot('grip')} aria-hidden="true" />
