@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Drawer, DrawerTrigger, type DrawerProps } from '../../src/components/drawer/drawer.js';
+import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const positions = ['start', 'end', 'top', 'bottom'] as const;
@@ -205,6 +206,26 @@ mountLab(
       description="A drawer opened from a drawer stacks above it; Escape closes only the top one and focus returns inside the one beneath."
     >
       <Nested />
+    </LabSection>
+    <LabSection
+      title="Drawer from a modal"
+      description="Open Trip settings, then Pick a city: the drawer opened from the dialog takes the dialog's layer and slides in above its scrim and panel."
+    >
+      <ModalTrigger>
+        <Button>Trip settings</Button>
+        <Modal title="Trip settings" data-lab-modal="settings">
+          <DrawerTrigger>
+            <Button>Pick a city</Button>
+            <Drawer title="Cities" showCloseButton data-lab-drawer="from-modal">
+              <ul>
+                <li>Lisbon</li>
+                <li>Oslo</li>
+                <li>Quito</li>
+              </ul>
+            </Drawer>
+          </DrawerTrigger>
+        </Modal>
+      </ModalTrigger>
     </LabSection>
     <LabSection
       title="Escape handled inside"

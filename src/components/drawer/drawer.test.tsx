@@ -6,6 +6,7 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { PortalContainerProvider } from '../portal/portal.js';
+import { Modal, ModalTrigger } from '../modal/modal.js';
 import { Drawer, DrawerTrigger, type DrawerProps } from './drawer.js';
 
 type ObserverCallback = (entries: Array<{ intersectionRatio: number }>) => void;
@@ -187,6 +188,46 @@ describe('Drawer', () => {
     await settle();
     expect(overlay()).toHaveAttribute('data-size', 'lg');
     expect(overlay()?.style.zIndex).toBe('600');
+  });
+
+  it('UIC-DRAWER-1.4 stacks on the modal layer when opened from a modal', async () => {
+    const user = userEvent.setup();
+    render(
+      <ModalTrigger>
+        <Button>Settings</Button>
+        <Modal title="Settings">
+          <DrawerTrigger>
+            <Button>Filters</Button>
+            <Drawer title="Filters">
+              <DrawerTrigger>
+                <Button>More</Button>
+                <Drawer title="More" />
+              </DrawerTrigger>
+            </Drawer>
+          </DrawerTrigger>
+        </Modal>
+      </ModalTrigger>,
+    );
+    await user.click(screen.getByRole('button', { name: 'Settings' }));
+    await user.click(await screen.findByRole('button', { name: 'Filters' }));
+    await settle();
+    const modal = document.querySelector<HTMLElement>('.ui-modal');
+    expect(modal?.style.zIndex).toBe('120');
+    expect(overlay()?.style.zIndex).toBe('120');
+    // Painted after the modal at the same z-index, so above it; a drawer inside it stays as high.
+    expect(modal?.compareDocumentPosition(overlay() as Node)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+    await user.click(screen.getByRole('button', { name: 'More' }));
+    await settle();
+    const drawers = document.querySelectorAll<HTMLElement>('.ui-drawer');
+    expect([...drawers].map((drawer) => drawer.style.zIndex)).toEqual(['120', '120']);
+  });
+
+  it('UIC-DRAWER-1.4 takes the layer it is given', async () => {
+    render(<Page layer="toast" triggerProps={{ defaultOpen: true }} />);
+    await settle();
+    expect(overlay()?.style.zIndex).toBe('160');
   });
 
   it('UIC-DRAWER-1.5 publishes entering and exiting, staying mounted until it has left', async () => {
