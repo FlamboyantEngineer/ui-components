@@ -50,14 +50,17 @@ export function toComposerLabelling(props: MessageComposerSharedProps, fallback:
 
 /**
  * Inserting text at the text area's caret, and putting the caret after it once focus is back. A
- * mention or command goes in as its text, since the plain composer has no pills.
+ * mention or command goes in as its text, since the plain composer has no pills. A disabled
+ * composer takes nothing, such as an emoji chosen as it locked.
  */
 function useCaretInsertion(
   inputRef: RefObject<HTMLTextAreaElement | null>,
   text: { value: string; setValue: (value: string) => void },
+  isDisabled: boolean,
 ) {
   const caret = useRef<number | null>(null);
   const insertText = (inserted: string) => {
+    if (isDisabled) return;
     const area = inputRef.current;
     const start = area?.selectionStart ?? text.value.length;
     const end = area?.selectionEnd ?? start;
@@ -103,7 +106,7 @@ export function useMessageComposer(props: MessageComposerProps): MessageComposer
     setValue: state.setValue,
   });
   const model = completions ? completion.model : null;
-  const caret = useCaretInsertion(inputRef, state);
+  const caret = useCaretInsertion(inputRef, state, isDisabled);
   const actions = { ...state, keys, onCancel: props.onCancel };
   const inputProps: MessageComposerModel['inputProps'] = {
     ...(completions ? completion.inputProps : {}),

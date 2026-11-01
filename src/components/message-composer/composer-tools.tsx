@@ -69,6 +69,7 @@ export function MessageComposerEmojiButton(props: MessageComposerEmojiButtonProp
   const { ref: returnFocusRef, request: returnFocus } = useFocusHandback(composer.focusInput);
   return (
     <EmojiPickerTrigger
+      isDisabled={composer.isDisabled}
       onSelect={(selection) => {
         composer.insertText(
           selection.kind === 'native' ? selection.unicode : `:${selection.emoji.shortcode}:`,

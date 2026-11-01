@@ -1,11 +1,12 @@
 'use client';
 
-import { useContext, useRef, type ReactNode } from 'react';
+import { useContext, useRef, useState, type ReactNode } from 'react';
 import { Dialog, DialogTrigger, OverlayTriggerStateContext } from '../../primitives/index.js';
 import { PopoverPanel } from '../popover/popover.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useCloseWhenLocked } from '../../utils/use-close-when-locked.js';
 import { EmojiPickerBody } from './emoji-picker-body.js';
 import { EmojiPickerContext, EmojiPickerDismissContext } from './emoji-picker-context.js';
 import { EmojiPickerPreview, EmojiPickerSearch } from './emoji-picker-parts.js';
@@ -45,6 +46,11 @@ export interface EmojiPickerProps
 export interface EmojiPickerTriggerProps extends Omit<EmojiPickerProps, 'children'> {
   /** The button that opens the picker, such as a `Button`. */
   children: ReactNode;
+  /**
+   * Opens nothing, and closes an open picker for good: re-enabling leaves it closed. Disable the
+   * button too, so it reads as unavailable.
+   */
+  isDisabled?: boolean | undefined;
 }
 
 /** The search field, the body and a footer with the preview and the skin tones. */
@@ -131,9 +137,20 @@ function TriggeredEmojiPicker(props: EmojiPickerProps) {
 }
 
 /** Opens an `EmojiPicker` in a popover from the button it wraps; choosing an emoji closes it. */
-export function EmojiPickerTrigger({ children, ...props }: EmojiPickerTriggerProps) {
+export function EmojiPickerTrigger({
+  children,
+  isDisabled = false,
+  ...props
+}: EmojiPickerTriggerProps) {
+  const [isOpen, setOpen] = useState(false);
+  useCloseWhenLocked(isOpen, isDisabled, () => setOpen(false));
   return (
-    <DialogTrigger>
+    <DialogTrigger
+      isOpen={isOpen && !isDisabled}
+      onOpenChange={(next) => {
+        if (!next || !isDisabled) setOpen(next);
+      }}
+    >
       {children}
       <PopoverPanel {...hooks.slot('popover', { layer: 'dropdown' })}>
         <TriggeredEmojiPicker {...props} />

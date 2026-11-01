@@ -101,8 +101,19 @@ export function RichMessageComposer(props: RichMessageComposerProps) {
   const keys = useComposerKeys(props.shortcuts, { isPending, isEditing: state.isEditing });
   const rootRef = useRef<HTMLDivElement>(null);
   const handleRef = useRef<RichEditorHandle | null>(null);
-  const insertText = useCallback((text: string) => handleRef.current?.insertText(text), []);
-  const insertPill = useCallback((pill: PillAttributes) => handleRef.current?.insertPill(pill), []);
+  // A disabled composer takes nothing from its tools, such as an emoji chosen as it locked.
+  const insertText = useCallback(
+    (text: string) => {
+      if (!isDisabled) handleRef.current?.insertText(text);
+    },
+    [isDisabled],
+  );
+  const insertPill = useCallback(
+    (pill: PillAttributes) => {
+      if (!isDisabled) handleRef.current?.insertPill(pill);
+    },
+    [isDisabled],
+  );
   const focusInput = useCallback(() => handleRef.current?.focus(), []);
   useComposerHandle({ handleRef: props.handleRef, editorRef: handleRef, state, isDisabled });
   return (

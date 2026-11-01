@@ -266,14 +266,18 @@ function toEditLast({
   return last ? () => state.startEdit({ kind: 'message', id: last.id }) : undefined;
 }
 
-/** The files of the next message, removable, with Retry for failed uploads. */
+/**
+ * The files of the next message, removable, with Retry for failed uploads; a disabled composer
+ * shows them without Remove and Retry.
+ */
 function renderAttachments({ options, state }: ChatComposerProps) {
   if (!options.attachments?.length) return undefined;
+  const isEditable = !options.isDisabled;
   return (
     <ChatAttachmentList
       attachments={options.attachments}
-      onRemove={options.onRemoveAttachment}
-      onRetry={options.onRetryAttachment}
+      onRemove={isEditable ? options.onRemoveAttachment : undefined}
+      onRetry={isEditable ? options.onRetryAttachment : undefined}
       finalFocus={state.composerRef}
     />
   );

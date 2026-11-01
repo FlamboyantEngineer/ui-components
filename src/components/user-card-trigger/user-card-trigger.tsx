@@ -9,6 +9,7 @@ import type { BaseProps } from '../../core/props.js';
 import { HoverCard, type HoverCardTriggerProps } from '../hover-card/hover-card.js';
 import { PopoverPanel } from '../popover/popover.js';
 import { containsFocus } from '../../utils/focus-target.js';
+import { useCloseWhenLocked } from '../../utils/use-close-when-locked.js';
 import { restoreFocus, useCardOpening, type UserCardTriggerType } from './user-card-opening.js';
 
 export type { UserCardTriggerType } from './user-card-opening.js';
@@ -78,6 +79,8 @@ export function UserCardTrigger({
   ...rest
 }: UserCardTriggerProps) {
   const [isOpen, setOpen] = useControllableState(isOpenProp, defaultOpen, onOpenChange);
+  // A card open when the trigger turns disabled closes once and stays closed when it is enabled.
+  useCloseWhenLocked(isOpen, Boolean(isDisabled), () => setOpen(false));
   const buttonRef = useRef<HTMLButtonElement>(null);
   const hasCard = card !== undefined && card !== null && card !== false;
   const isPreview = trigger === 'hover';
@@ -85,7 +88,7 @@ export function UserCardTrigger({
   const triggerId = rest.id ?? fallbackId;
   const opening = useCardOpening({
     mode: hasCard ? trigger : undefined,
-    isOpen,
+    isOpen: isOpen && !isDisabled,
     setOpen,
     buttonRef,
     triggerId,

@@ -138,7 +138,7 @@ Verification: `src/components/chat/chat-composer.test.tsx`, `e2e/chat.spec.ts`
 
 ### UIC-CHAT-3.5 - Attachments
 
-With `onAttach`, the composer shall attach files from a drop, a paste and an attach button among its controls (the default start controls hold one, [UIC-CHAT-3.8](#uic-chat-38---composer-controls)), or from a "+" menu item ([UIC-CHAT-3.9](#uic-chat-39---composer-menu)), as [UIC-MESSAGE-COMPOSER-3.2](MESSAGE-COMPOSER.md#uic-message-composer-32---attaching-files) says; without it there is no attach button. The chat's `attachments` show above the input as a `ChatAttachmentList` with `onRemoveAttachment` and `onRetryAttachment`, focus going to the composer when the last one is removed; while one of them is `complete`, the message may be sent without text.
+With `onAttach`, the composer shall attach files from a drop, a paste and an attach button among its controls (the default start controls hold one, [UIC-CHAT-3.8](#uic-chat-38---composer-controls)), or from a "+" menu item ([UIC-CHAT-3.9](#uic-chat-39---composer-menu)), as [UIC-MESSAGE-COMPOSER-3.2](MESSAGE-COMPOSER.md#uic-message-composer-32---attaching-files) says; without it there is no attach button. The chat's `attachments` show above the input as a `ChatAttachmentList` with `onRemoveAttachment` and `onRetryAttachment` (left out while the chat is disabled, so a locked message offers no Remove or Retry, and restored when it is enabled again), focus going to the composer when the last one is removed; while one of them is `complete`, the message may be sent without text.
 
 Implementation: `src/components/chat/chat-composer.tsx`
 Verification: `src/components/chat/chat-composer.test.tsx`, `e2e/chat.spec.ts`

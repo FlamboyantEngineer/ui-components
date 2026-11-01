@@ -413,6 +413,29 @@ describe('Chat composer', () => {
     expect(onSend).toHaveBeenCalledWith('', []);
   });
 
+  it('UIC-CHAT-3.5 drops Remove and Retry from the next message’s files while the chat is disabled', async () => {
+    const onRemoveAttachment = vi.fn();
+    const onRetryAttachment = vi.fn();
+    const attachments = [
+      { id: 'f1', name: 'map.pdf', mediaType: 'application/pdf', status: 'complete' as const },
+      { id: 'f2', name: 'photo.jpg', mediaType: 'image/jpeg', status: 'error' as const },
+    ];
+    const base = {
+      participants: assistantPeople,
+      onRemoveAttachment,
+      onRetryAttachment,
+      attachments,
+    };
+    const { user, rerenderWith } = renderChat({ ...base, isDisabled: true });
+    const files = screen.getByRole('list', { name: 'Attachments' });
+    expect(within(files).queryByRole('button', { name: 'Retry' })).not.toBeInTheDocument();
+    expect(within(files).queryByRole('button', { name: 'Remove map.pdf' })).not.toBeInTheDocument();
+    rerenderWith(base);
+    await user.click(within(files).getByRole('button', { name: 'Retry' }));
+    expect(onRetryAttachment).toHaveBeenCalledWith('f2');
+    expect(onRemoveAttachment).not.toHaveBeenCalled();
+  });
+
   it('UIC-CHAT-3.6 disables a model picker among the composer controls with the chat', async () => {
     const onModelChange = vi.fn();
     const models = [
