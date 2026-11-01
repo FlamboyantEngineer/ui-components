@@ -3,6 +3,7 @@
 import { toErrorMessage } from '../../utils/to-error-message.js';
 import { useEffect, useRef, useState, type FormEvent, type RefObject } from 'react';
 import { useStableArray } from '../../utils/use-stable-array.js';
+import { useRetainedKey } from '../../utils/use-retained-key.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -122,9 +123,12 @@ export function useWizardNavigation(options: NavigationOptions): WizardNavigatio
   const [skipped, setSkipped] = useState<ReadonlySet<Key>>(() => new Set());
   const headingRef = useRef<HTMLHeadingElement>(null);
   const movedRef = useRef(false);
+  const isStep = (id: Key) => steps.some((step) => step.id === id);
+  // With no current step among the steps, the step shown first stays shown while it is there.
+  const shownId = useRetainedKey(currentKey, isStep, steps[0]?.id);
   const index = Math.max(
     0,
-    steps.findIndex((step) => step.id === currentKey),
+    steps.findIndex((step) => step.id === shownId),
   );
   const { isPending, setPending, runningRef, attemptRef, workflow } = useAttempts(
     steps[index]?.id,

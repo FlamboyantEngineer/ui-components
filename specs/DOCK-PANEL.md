@@ -36,7 +36,7 @@ Verification: `src/components/dock-panel/dock-panel.test.tsx`
 
 ### UIC-DOCK-PANEL-2.1 - Selection
 
-One pane shall be selected at a time and stay selected while the panel is collapsed; its launcher publishes `data-selected`. `selectedKey` controls it, `defaultSelectedKey` sets it at first, and `onSelectionChange` receives the `id` of each pane a launcher selects. Without them, or when the key names no enabled pane, the first enabled pane is selected.
+One pane shall be selected at a time and stay selected while the panel is collapsed; its launcher publishes `data-selected`. `selectedKey` controls it, `defaultSelectedKey` sets it at first, and `onSelectionChange` receives the `id` of each pane a launcher selects. Without them, or when the key names no enabled pane, the first enabled pane is selected, and that pane, kept by its `id`, stays selected while it is enabled: panes added, reordered or disabled around it change nothing, and a panel that had no enabled pane selects the first one that comes. Only when it goes or is disabled does the first enabled pane take its place. This keeping is not a selection: `onSelectionChange` receives nothing.
 
 Implementation: `src/components/dock-panel/use-dock-panel-state.ts`, `src/components/dock-panel/dock-panel-launchers.tsx`
 Verification: `src/components/dock-panel/dock-panel.test.tsx`, `e2e/dock-panel.spec.ts`

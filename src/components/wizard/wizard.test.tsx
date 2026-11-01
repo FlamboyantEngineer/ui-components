@@ -197,6 +197,33 @@ describe('Wizard', () => {
     expect(screen.getByRole('heading', { name: 'Summary' })).toBeInTheDocument();
   });
 
+  it('UIC-WIZARD-2.1 keeps the first step shown by id when steps arrive, are added or reordered', async () => {
+    const onCurrentKeyChange = vi.fn();
+    const all = [...tripSteps(), { id: 'extra', label: 'Extra', content: <p>More.</p> }];
+    const draw = (ids: string[]) => (
+      <Wizard
+        aria-label="Plan a trip"
+        steps={all
+          .filter((step) => ids.includes(String(step.id)))
+          .sort((a, b) => ids.indexOf(String(a.id)) - ids.indexOf(String(b.id)))}
+        onCurrentKeyChange={onCurrentKeyChange}
+      />
+    );
+    const { rerender } = render(draw([]));
+    rerender(draw(['city', 'note', 'summary']));
+    const field = screen.getByRole('textbox', { name: 'City name' });
+    await userEvent.type(field, 'Lis');
+    rerender(draw(['extra', 'note', 'city', 'summary']));
+    expect(screen.getByRole('heading', { name: 'City' })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'City name' })).toBe(field);
+    expect(field).toHaveValue('Lis');
+    expect(onCurrentKeyChange).not.toHaveBeenCalled();
+    // Only when the shown step goes does the first step take its place.
+    rerender(draw(['extra', 'note', 'summary']));
+    expect(screen.getByRole('heading', { name: 'Extra' })).toBeInTheDocument();
+    expect(onCurrentKeyChange).not.toHaveBeenCalled();
+  });
+
   it('UIC-WIZARD-2.2 checks the fields before moving on', async () => {
     const onCurrentKeyChange = vi.fn();
     renderWizard({ onCurrentKeyChange });

@@ -134,6 +134,39 @@ function CoverageSortedMatrix() {
   );
 }
 
+/** A matrix mounted before its data loads: its first cell keeps its row as the rows reorder. */
+function ArrivingMatrix() {
+  const [isMounted, setMounted] = useState(false);
+  const [rows, setRows] = useState<RelationMatrixItem[]>([]);
+  const [output, setOutput] = useState('No action yet');
+  const load = () => {
+    setMounted(true);
+    setRows([]);
+    setTimeout(() => setRows(requirements.slice(0, 3)), 300);
+  };
+  return (
+    <div data-lab-demo="arriving">
+      <button type="button" onClick={load}>
+        Mount, then load the data
+      </button>{' '}
+      <button type="button" onClick={() => setRows((current) => [...current].reverse())}>
+        Reverse the rows
+      </button>
+      {isMounted ? (
+        <RelationMatrix
+          aria-label="Matrix that loads later"
+          rows={rows}
+          columns={rows.length > 0 ? tests.slice(0, 3) : []}
+          relations={traces}
+          kinds={kinds}
+          onCellAction={(cell) => setOutput(describeAction(cell, 'verifies'))}
+        />
+      ) : null}
+      <output data-lab-output>{output}</output>
+    </div>
+  );
+}
+
 const rowCount = 2000;
 const columnCount = 400;
 const manyRows: RelationMatrixItem[] = Array.from({ length: rowCount }, (_, index) => ({
@@ -246,6 +279,12 @@ mountLab(
       description="Requirements with the fewest relations come first, so adding or removing a relation can move its row. Focus and Enter stay with the cell you acted on as its row moves."
     >
       <CoverageSortedMatrix />
+    </LabSection>
+    <LabSection
+      title="Data that arrives"
+      description="The matrix mounts with no rows or columns and its data loads a moment later. Reverse the rows, then Tab into the grid and press Enter: the first cell still belongs to Requirement 1."
+    >
+      <ArrivingMatrix />
     </LabSection>
     <LabSection
       title="Large matrix"

@@ -200,6 +200,33 @@ function HostMovesStep() {
   );
 }
 
+const arrivingSteps: WizardStep[] = [
+  { id: 'title', label: 'Title', content: <TextField label="Title" /> },
+  { id: 'body', label: 'Body', content: <TextField label="Body" /> },
+];
+const extraStep: WizardStep = { id: 'cover', label: 'Cover', content: <p>Pick a cover.</p> };
+
+/** Steps that load after the wizard mounted: the first step shown stays shown as others come. */
+function ArrivingSteps() {
+  const [steps, setSteps] = useState<WizardStep[]>([]);
+  return (
+    <div data-lab-demo="arriving-steps">
+      <Button size="sm" onPress={() => setSteps(arrivingSteps)}>
+        Load steps
+      </Button>
+      <Button
+        size="sm"
+        onPress={() =>
+          setSteps((current) => (current.includes(extraStep) ? current : [extraStep, ...current]))
+        }
+      >
+        Add a step first
+      </Button>
+      <Wizard aria-label="Write a post" steps={steps} />
+    </div>
+  );
+}
+
 const records = [
   { value: 'north', label: 'North office' },
   { value: 'south', label: 'South office' },
@@ -302,6 +329,12 @@ mountLab(
       description="The same wizard as the body of a Modal: Cancel closes it and focus stays inside as the steps change."
     >
       <NewProjectModal />
+    </LabSection>
+    <LabSection
+      title="Steps that arrive"
+      description="The wizard mounts with no steps. Once they load, type a title, then add a step before it: the Title step stays shown, by its id, with its draft."
+    >
+      <ArrivingSteps />
     </LabSection>
     <LabSection
       title="Numeric and text step IDs"

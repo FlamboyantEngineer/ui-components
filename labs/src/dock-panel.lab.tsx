@@ -324,6 +324,44 @@ function ContentSized() {
   );
 }
 
+/** Panes that arrive after the panel mounted: the first one shown stays shown as others come. */
+function ArrivingPanes() {
+  const [ids, setIds] = useState<readonly string[]>([]);
+  const add = (id: string) =>
+    setIds((current) => (current.includes(id) ? current : [id, ...current]));
+  return (
+    <Frame
+      position="end"
+      width={520}
+      height={220}
+      data-lab-frame="arriving"
+      panel={
+        <DockPanel label="Arriving">
+          {ids.map((id) => (
+            <DockPanelPane key={id} id={id} label={id} icon={FolderGlyph} title={id}>
+              <label>
+                Note <input data-lab-input={id} />
+              </label>
+            </DockPanelPane>
+          ))}
+        </DockPanel>
+      }
+    >
+      <p>
+        <button type="button" onClick={() => setIds(['Notes', 'Links'])}>
+          Load panes
+        </button>{' '}
+        <button type="button" onClick={() => add('Extra')}>
+          Add a pane first
+        </button>{' '}
+        <button type="button" onClick={() => setIds((current) => [...current].reverse())}>
+          Reverse the panes
+        </button>
+      </p>
+    </Frame>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -370,6 +408,12 @@ mountLab(
       description="A host that sets no height: the docked panel is as tall as its open pane, so the whole list and its button show."
     >
       <ContentSized />
+    </LabSection>
+    <LabSection
+      title="Panes that arrive"
+      description="The panel mounts with no panes. Once they load, the first pane shown stays shown, by its id, while a pane is added before it or the panes reverse; only removing it would select another."
+    >
+      <ArrivingPanes />
     </LabSection>
   </>,
 );

@@ -117,6 +117,25 @@ function Reactions() {
   );
 }
 
+/** Custom emoji that arrive after the standard ones: the category shown stays selected. */
+function ArrivingCustomEmoji() {
+  const [custom, setCustom] = useState<CustomEmoji[]>([]);
+  const [recent, setRecent] = useState<string[]>([]);
+  return (
+    <div data-lab-demo="arriving">
+      <Button size="sm" onPress={() => setCustom(customEmoji)}>
+        Load custom emoji
+      </Button>
+      <EmojiPicker
+        aria-label="Emoji picker with late custom emoji"
+        customEmoji={custom}
+        recentEmoji={recent}
+        onRecentEmojiChange={setRecent}
+      />
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -163,6 +182,12 @@ mountLab(
           return code ? <span data-lab-region={code}>{code}</span> : unicode;
         }}
       />
+    </LabSection>
+    <LabSection
+      title="Tabs that arrive"
+      description="Choose an emoji with Enter: the Recently used tab appears, and the category you were browsing stays selected with focus on its emoji. Loading the custom emoji adds their tab the same way."
+    >
+      <ArrivingCustomEmoji />
     </LabSection>
     <LabSection
       title="Languages"

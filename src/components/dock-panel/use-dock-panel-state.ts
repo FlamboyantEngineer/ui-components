@@ -8,6 +8,7 @@ import { isKey } from '../../utils/is-key.js';
 import { useOwnedPreview } from '../../utils/use-owned-preview.js';
 import { usePersistedValue } from '../../utils/use-persisted-value.js';
 import { useShallowStable } from '../../utils/use-shallow-stable.js';
+import { useRetainedKey } from '../../utils/use-retained-key.js';
 
 interface DockPanelStateOptions {
   /** The panes that can be selected, in order. */
@@ -48,10 +49,10 @@ export interface DockPanelState {
   sizeOwner: object;
 }
 
-/** The first candidate that names an enabled pane, else the first enabled pane. */
-function resolveSelectedKey(candidates: readonly unknown[], enabledKeys: readonly Key[]) {
+/** The first candidate that names an enabled pane. */
+function findEnabledKey(candidates: readonly unknown[], enabledKeys: readonly Key[]) {
   const match = candidates.find((key) => isKey(key) && enabledKeys.includes(key));
-  return isKey(match) ? match : (enabledKeys[0] ?? null);
+  return isKey(match) ? match : null;
 }
 
 /** The storage key of one persisted value: `<persistKey>:<name>`. */
@@ -98,8 +99,15 @@ export function useDockPanelState(options: DockPanelStateOptions): DockPanelStat
   const [liveSize, setLiveSize] = useOwnedPreview<number>(sizeOwner);
   const isSizeControlled = options.size !== undefined;
 
+  // With no chosen pane, the pane shown first stays shown while it is enabled.
+  const shownKey = useRetainedKey(
+    findEnabledKey([selectedKey, options.defaultSelectedKey], enabledKeys),
+    (key) => enabledKeys.includes(key),
+    enabledKeys[0],
+  );
+
   return {
-    selectedKey: resolveSelectedKey([selectedKey, options.defaultSelectedKey], enabledKeys),
+    selectedKey: shownKey,
     setSelectedKey,
     isExpanded,
     setExpanded,

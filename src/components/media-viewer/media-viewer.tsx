@@ -21,6 +21,7 @@ import {
   type MediaViewerItem,
 } from './media-viewer-parts.js';
 import { isNode } from '../../utils/is-element.js';
+import { useRetainedKey } from '../../utils/use-retained-key.js';
 
 export type { MediaViewerItem } from './media-viewer-parts.js';
 
@@ -192,9 +193,12 @@ export function MediaViewer({
       if (next !== undefined) onSelectionChange?.(next);
     },
   );
+  const isItem = (id: Key) => items.some((entry) => entry.id === id);
+  // With no selected item among the items, the item shown first stays shown while it is there.
+  const shownKey = useRetainedKey(key, isItem, items[0]?.id);
   const index = Math.max(
     0,
-    items.findIndex((entry) => entry.id === key),
+    items.findIndex((entry) => entry.id === shownKey),
   );
   const item = items[index];
   if (!item) return null;

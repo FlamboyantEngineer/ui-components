@@ -110,3 +110,20 @@ export function resolveMatrixFocus(
     isLost: row.isLost || column.isLost,
   };
 }
+
+/**
+ * The focus with an axis that names no item yet (the matrix had no rows or columns when it took
+ * its place) bound to the item now at its resolved place, so it follows that item from then on.
+ * Returns `focus` itself when nothing is bound.
+ */
+export function adoptMatrixFocus(
+  focus: MatrixFocus,
+  rowIds: readonly string[],
+  columnIds: readonly string[],
+): MatrixFocus {
+  const { position } = resolveMatrixFocus(focus, rowIds, columnIds);
+  const row = focus.row === undefined ? rowIds[position.row] : focus.row;
+  const column = focus.column === undefined ? columnIds[position.column] : focus.column;
+  if (row === focus.row && column === focus.column) return focus;
+  return { row, column, at: position };
+}
