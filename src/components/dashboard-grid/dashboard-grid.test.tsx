@@ -494,6 +494,40 @@ describe('DashboardGrid', () => {
     expectHooksMatchSpec(document.body, 'DASHBOARD-GRID');
   });
 
+  it('UIC-DASHBOARD-GRID-3.1 reads reflowed tiles in the order they are shown', async () => {
+    stubGridWidth(250);
+    const user = userEvent.setup();
+    const chain: DashboardGridItem[] = [
+      { id: 'a', x: 2, y: 0, w: 2, h: 3 },
+      { id: 'b', x: 0, y: 1, w: 2, h: 1 },
+      { id: 'c', x: 4, y: 1, w: 2, h: 1 },
+      { id: 'd', x: 0, y: 2, w: 2, h: 1 },
+    ];
+    const board = (minColumnWidth?: number) => (
+      <DashboardGrid aria-label="Chain" layout={chain} columns={6} minColumnWidth={minColumnWidth}>
+        {(item) => (
+          <DashboardTile label={`Tile ${item.id}`}>
+            <input aria-label={`Note ${item.id}`} />
+          </DashboardTile>
+        )}
+      </DashboardGrid>
+    );
+    const { rerender } = render(board());
+    await user.type(screen.getByRole('textbox', { name: 'Note c' }), 'Kept');
+    expect(tileNames()).toEqual(['Tile a', 'Tile b', 'Tile c', 'Tile d']);
+    rerender(board(100));
+    // On two columns c is pushed below d, so it is read after d.
+    expect(tileNames()).toEqual(['Tile a', 'Tile b', 'Tile d', 'Tile c']);
+    const note = screen.getByRole('textbox', { name: 'Note c' });
+    expect(note).toHaveValue('Kept');
+    note.focus();
+    rerender(board());
+    expect(tileNames()).toEqual(['Tile a', 'Tile b', 'Tile c', 'Tile d']);
+    expect(screen.getByRole('textbox', { name: 'Note c' })).toBe(note);
+    expect(note).toHaveValue('Kept');
+    expect(note).toHaveFocus();
+  });
+
   it('UIC-DASHBOARD-GRID-3.1 counts the column gap when it fits columns', () => {
     const sheet = document.createElement('style');
     sheet.textContent = '.ui-dashboard-grid { column-gap: 12px; }';

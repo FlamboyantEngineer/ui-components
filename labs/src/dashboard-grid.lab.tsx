@@ -198,6 +198,46 @@ function RememberedLayout() {
   );
 }
 
+const chain: DashboardGridItem[] = [
+  { id: 'a', x: 2, y: 0, w: 2, h: 3 },
+  { id: 'b', x: 0, y: 1, w: 2, h: 1 },
+  { id: 'c', x: 4, y: 1, w: 2, h: 1 },
+  { id: 'd', x: 0, y: 2, w: 2, h: 1 },
+];
+
+/**
+ * A grid whose reflow pushes a tile below a later one: on two columns c settles under d, so the
+ * tiles are read a, b, d, c. The width changes a moment after the button, so focus can wait in a
+ * tile meanwhile.
+ */
+function ReflowOrder() {
+  const [isNarrow, setNarrow] = useState(false);
+  return (
+    <div data-lab-demo="reflow-order">
+      <Button onPress={() => window.setTimeout(() => setNarrow(!isNarrow), 1000)}>
+        {isNarrow ? 'Widen in 1 second' : 'Narrow in 1 second'}
+      </Button>
+      <div style={frame(isNarrow ? 250 : 700)}>
+        <DashboardGrid
+          aria-label="Reflow order"
+          layout={chain}
+          columns={6}
+          minColumnWidth={100}
+          rowHeight={40}
+        >
+          {(item) => (
+            <DashboardTile label={`Tile ${String(item.id)}`}>
+              <Button size="sm" variant="secondary">
+                Open {String(item.id)}
+              </Button>
+            </DashboardTile>
+          )}
+        </DashboardGrid>
+      </div>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -231,6 +271,12 @@ mountLab(
           </div>
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Reading order after a reflow"
+      description="Narrowing the grid to two columns pushes tile c below tile d. The tiles, and Tab, then go a, b, d, c, as they are shown, and a focused tile keeps its focus as the order changes."
+    >
+      <ReflowOrder />
     </LabSection>
     <LabSection
       title="Changes during a drag"

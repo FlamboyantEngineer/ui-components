@@ -146,6 +146,30 @@ function useShownColumns(element: Element | null, columns: number, minColumnWidt
   return Math.min(columns, fitColumns(width, minColumnWidth, readGap(element, 'columnGap')));
 }
 
+/**
+ * The layout shown (reflowed onto fewer columns, else the preview, else the committed layout) and
+ * the tiles' reading order: that of the settled layout shown, so the document and keyboard order
+ * follow a reflow, while a pointer preview never reorders the tiles mid-drag.
+ */
+function useShownLayout(
+  committed: DashboardGridItem[],
+  preview: DashboardGridItem[] | undefined,
+  { columns, shownColumns }: { columns: number; shownColumns: number },
+) {
+  const reflowed = useMemo(
+    () =>
+      shownColumns < columns
+        ? reflowDashboardLayout(committed, { from: columns, to: shownColumns })
+        : null,
+    [committed, columns, shownColumns],
+  );
+  const order = useMemo(
+    () => [...(reflowed ?? committed)].sort((a, b) => a.y - b.y || a.x - b.x),
+    [reflowed, committed],
+  );
+  return { shown: reflowed ?? preview ?? committed, order };
+}
+
 interface DashboardGridCellProps {
   shared: DashboardGridShared;
   item: DashboardGridItem;
@@ -208,13 +232,10 @@ export function DashboardGrid({
     isEditing: editable,
   });
   const [message, setMessage] = useState('');
-  const shown = isReflowed
-    ? reflowDashboardLayout(committed.layout, { from: columns, to: shownColumns })
-    : (previewLayout ?? committed.layout);
-  const order = useMemo(
-    () => [...committed.layout].sort((a, b) => a.y - b.y || a.x - b.x),
-    [committed.layout],
-  );
+  const { shown, order } = useShownLayout(committed.layout, previewLayout, {
+    columns,
+    shownColumns,
+  });
   const positions = new Map(shown.map((item) => [item.id, item]));
   const rows = findMaximum(shown, (item) => item.y + item.h, 1);
   const shared = useMemo(

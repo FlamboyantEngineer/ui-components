@@ -232,6 +232,35 @@ test.describe('Dashboard Grid lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-DASHBOARD-GRID-3.1 reads reflowed tiles in the order they are shown', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('dashboard-grid');
+    const demo = page.locator('[data-lab-demo="reflow-order"]');
+    const grid = demo.getByRole('group', { name: 'Reflow order' });
+    const names = () =>
+      grid
+        .locator('.ui-dashboard-grid__tile')
+        .evaluateAll((tiles) => tiles.map((tile) => tile.getAttribute('aria-label')));
+    await expect.poll(names).toEqual(['Tile a', 'Tile b', 'Tile c', 'Tile d']);
+    await demo.getByRole('button', { name: 'Narrow in 1 second' }).click();
+    const open = grid.getByRole('button', { name: 'Open c' });
+    await open.focus();
+    await expect(grid).toHaveAttribute('data-reflowed', 'true');
+    await expect.poll(names).toEqual(['Tile a', 'Tile b', 'Tile d', 'Tile c']);
+    await expect(open).toBeFocused();
+    // Tab follows the order shown: d comes before c.
+    await grid.getByRole('button', { name: 'Open d' }).focus();
+    await page.keyboard.press('Tab');
+    await expect(open).toBeFocused();
+    await demo.getByRole('button', { name: 'Widen in 1 second' }).click();
+    await open.focus();
+    await expect(grid).not.toHaveAttribute('data-reflowed');
+    await expect.poll(names).toEqual(['Tile a', 'Tile b', 'Tile c', 'Tile d']);
+    await expect(open).toBeFocused();
+  });
+
   test('UIC-DASHBOARD-GRID-1.2 remembers an uncontrolled layout across reloads and refuses a broken one', async ({
     page,
     lab,
