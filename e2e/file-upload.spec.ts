@@ -10,6 +10,53 @@ function upload(page: Page, variant: string): Locator {
 }
 
 test.describe('File Upload lab', () => {
+  test('UIC-FILE-UPLOAD-2.6 UIC-FILE-UPLOAD-2.8 rejects whole single-file offers and permits replacement', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('file-upload');
+    const target = upload(page, 'single');
+    const chooser = target.locator('input[type="file"]');
+    await expect(chooser).not.toHaveAttribute('multiple');
+    await expect(chooser).toHaveAttribute('accept', '.pdf');
+    await page.evaluate(() => {
+      DataTransferItem.prototype.webkitGetAsEntry = function entry() {
+        return { isFile: this.kind === 'file', isDirectory: false } as FileSystemEntry;
+      };
+    });
+    const zone = target.locator('.ui-file-upload__dropzone');
+    const sample = (name: string) => ({
+      name,
+      mimeType: 'application/pdf',
+      buffer: Buffer.from('x'),
+    });
+    for (const selected of [false, true]) {
+      if (selected) await chooser.setInputFiles(sample('Current.pdf'));
+      const dataTransfer = await page.evaluateHandle(() => {
+        const transfer = new DataTransfer();
+        for (const name of ['First.pdf', 'Second.pdf']) {
+          transfer.items.add(new File(['x'], name, { type: 'application/pdf' }));
+        }
+        return transfer;
+      });
+      await zone.dispatchEvent('dragenter', { dataTransfer });
+      await expect(zone).toHaveAttribute('data-drop-reject', 'true');
+      await zone.dispatchEvent('drop', { dataTransfer });
+      await expect(target.getByRole('alert')).toHaveText('2 files are over the file limit.');
+      await expect(page.locator('[data-lab-output="single-refused"]')).toHaveText(
+        'First.pdf (count), Second.pdf (count)',
+      );
+      await expect(target.locator('.ui-file-upload__file-name')).toHaveText(
+        selected ? ['Current.pdf'] : [],
+      );
+      await chooser.setInputFiles(sample('Accepted.pdf'));
+      await expect(target.locator('.ui-file-upload__file-name')).toHaveText(['Accepted.pdf']);
+      await expect(target.getByRole('alert')).toHaveCount(0);
+      await expect(page.locator('[data-lab-output="single-refused"]')).toHaveText('none');
+      await dataTransfer.dispose();
+    }
+    await lab.expectAccessible();
+  });
   test('UIC-FILE-UPLOAD-1.1 UIC-FILE-UPLOAD-1.4 draws the button and the drop zone, enabled and disabled', async ({
     page,
     lab,

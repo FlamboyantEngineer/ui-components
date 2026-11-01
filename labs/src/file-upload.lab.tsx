@@ -274,6 +274,32 @@ function ManyPhotos() {
   );
 }
 
+function SingleFileUpload() {
+  const [files, setFiles] = useState<FileUploadItem[]>([]);
+  const [refused, setRefused] = useState('none');
+  return (
+    <>
+      <FileUpload
+        variant="dropzone"
+        label="Drop one PDF here"
+        acceptedFileTypes={['.pdf']}
+        multipleFileBehavior="reject"
+        files={files}
+        data-lab-upload="single"
+        onSelect={([file]) => {
+          if (!file) return;
+          setFiles([{ id: 'current', name: file.name, size: file.size }]);
+          setRefused('none');
+        }}
+        onReject={(rejections) => setRefused(describeRefusals(rejections))}
+      />
+      <p>
+        Refused: <output data-lab-output="single-refused">{refused}</output>
+      </p>
+    </>
+  );
+}
+
 function FolderUpload() {
   const upload = useSimulatedUpload();
   return (
@@ -342,6 +368,12 @@ mountLab(
       description="Forty listed photos in a short scrolling box: their thumbnails load only as they scroll near. Photo 3 is a format the browser cannot decode and shows the image glyph instead."
     >
       <ManyPhotos />
+    </LabSection>
+    <LabSection
+      title="One file at a time"
+      description="Choose or drop one PDF to select or replace it. Dropping several files refuses the whole offer and keeps the current file."
+    >
+      <SingleFileUpload />
     </LabSection>
     <LabSection
       title="In a form"
