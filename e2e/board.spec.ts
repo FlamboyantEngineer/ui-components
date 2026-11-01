@@ -264,7 +264,7 @@ test.describe('Board lab', () => {
     await expect(todo.getByRole('row', { name, exact: true })).toHaveCount(0);
   });
 
-  test('UIC-BOARD-1.10 draws header icons upright without a taller header row', async ({
+  test('UIC-BOARD-1.10 draws a collapsed column as its icon toggle without a taller header row', async ({
     page,
     lab,
   }) => {
@@ -275,23 +275,24 @@ test.describe('Board lab', () => {
     await expect(board.locator('.ui-board__column-icon')).toHaveCount(4);
     await expect(board.locator('.ui-board__lane-icon')).toHaveCount(2);
     await board.getByRole('button', { name: 'Collapse Doing' }).click();
-    const icon = board.locator('.ui-board__column[data-collapsed] .ui-board__column-icon');
-    await expect(icon).toBeVisible();
-    const box = await icon.boundingBox();
-    expect(box?.width).toBeGreaterThan(0);
-    expect(Math.abs((box?.width ?? 0) - (box?.height ?? 0))).toBeLessThan(1);
-    expect(await icon.evaluate((node) => getComputedStyle(node).transform)).toBe('none');
+    const header = board.locator('.ui-board__column[data-collapsed]');
+    await expect(header.locator('.ui-board__column-icon')).toHaveCount(0);
+    const toggle = header.getByRole('button', { name: 'Expand Doing' });
+    await expect(toggle).toBeFocused();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    const icon = toggle.locator('svg');
+    await expect(icon).toHaveAttribute('data-glyph', 'edit');
+    const [headerBox, iconBox] = [await header.boundingBox(), await icon.boundingBox()];
+    const centre = (box: typeof headerBox) => (box ? box.x + box.width / 2 : 0);
+    expect(Math.abs(centre(headerBox) - centre(iconBox))).toBeLessThan(1);
     expect((await row.boundingBox())?.height).toBe(height);
     await lab.expectAccessible('[data-lab-demo="lanes"]');
   });
 
-  test('UIC-BOARD-1.4 keeps the header row one height while columns collapse', async ({
-    page,
-    lab,
-  }) => {
+  test('UIC-BOARD-1.4 compresses collapsed headers into the header row', async ({ page, lab }) => {
     await lab.open('board');
-    for (const demo of ['moves', 'lanes']) {
-      const board = page.locator(`[data-lab-demo="${demo}"] .ui-board`);
+    for (const name of ['moves', 'lanes', 'rtl']) {
+      const board = demo(page, name).locator('.ui-board');
       const row = board.locator('.ui-board__columns');
       const height = (await row.boundingBox())?.height;
       const toggles = board.locator('.ui-board__column-toggle');
@@ -305,19 +306,31 @@ test.describe('Board lab', () => {
           return {
             left: box.left,
             right: box.right,
+            top: box.top,
+            height: box.height,
+            overflows: node.scrollWidth > node.clientWidth || node.scrollHeight > node.clientHeight,
             collapsed: node.hasAttribute('data-collapsed'),
           };
         }),
       );
-      for (const [index, header] of headers.entries()) {
+      const open = headers.find((header) => !header.collapsed);
+      for (const header of headers) {
         if (header.collapsed) expect(Math.round(header.right - header.left)).toBe(44);
-        const next = headers[index + 1];
-        if (next) expect(header.right).toBeLessThanOrEqual(next.left);
+        expect(header.top).toBe(open?.top);
+        expect(header.height).toBe(open?.height);
+        expect(header.overflows).toBe(false);
       }
+      // Columns keep their order along the row, from the right in a right-to-left page.
+      const lefts = headers.map((header) => header.left);
+      const ordered = [...lefts].sort((x, y) => (name === 'rtl' ? y - x : x - y));
+      expect(lefts).toEqual(ordered);
       const collapsed = board.locator('.ui-board__column[data-collapsed]').first();
-      await expect(collapsed.locator('.ui-board__column-title')).toBeVisible();
-      await expect(collapsed.locator('.ui-board__column-count')).toBeVisible();
-      await expect(collapsed.locator('.ui-board__column-actions')).toBeVisible();
+      await expect(collapsed.getByRole('button')).toHaveCount(1);
+      await expect(collapsed.locator('.ui-board__column-actions')).toHaveCount(0);
+      // The title and count stay in the page inside a visually hidden box.
+      const hidden = collapsed.locator('.ui-board__column-title').locator('..');
+      expect((await hidden.boundingBox())?.width ?? 0).toBeLessThanOrEqual(1);
+      await expect(hidden.locator('.ui-board__column-count')).toHaveCount(1);
     }
     const long = matrixCell(page, 'state=collapsed long title');
     const longRow = await long.locator('.ui-board__columns').boundingBox();
@@ -325,11 +338,35 @@ test.describe('Board lab', () => {
       .locator('.ui-board__columns')
       .boundingBox();
     expect(longRow?.height).toBe(plainRow?.height);
-    const title = long.locator('.ui-board__column[data-collapsed] .ui-board__column-title');
-    expect(await title.evaluate((node) => node.scrollHeight > node.clientHeight)).toBe(true);
-    await expect(
-      long.getByRole('button', { name: /Waiting for parts from the hardware store/ }),
-    ).toBeVisible();
+    const toggle = long.getByRole('button', {
+      name: 'Expand Waiting for parts from the hardware store',
+    });
+    await expect(toggle.locator('svg')).toHaveAttribute('data-glyph', 'chevron-right');
+    await toggle.hover();
+    await expect(page.getByRole('tooltip')).toHaveText(
+      'Waiting for parts from the hardware store 2 cards, limit 2',
+    );
     await lab.expectAccessible();
+  });
+
+  test('UIC-BOARD-1.4 UIC-BOARD-3.1 moves a collapsed column by pointer and Alt+Arrow keys', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('board');
+    const board = demo(page, 'moves');
+    const header = (title: string) => board.locator('.ui-board__column').filter({ hasText: title });
+    await board.getByRole('button', { name: 'Collapse To do' }).click();
+    const toggle = board.getByRole('button', { name: 'Expand To do' });
+    await expect(toggle).toHaveAttribute('aria-keyshortcuts', 'Alt+ArrowLeft Alt+ArrowRight');
+    await page.keyboard.press('Alt+ArrowRight');
+    expect(await titles(board)).toEqual(['Doing', 'To do', 'Review', 'Done']);
+    await expect(toggle).toBeFocused();
+    await header('To do').dragTo(header('Done'), { targetPosition: { x: 200, y: 20 } });
+    await expect(board.locator('[data-lab-output]')).toHaveText(
+      'Last column move: todo after done',
+    );
+    expect(await titles(board)).toEqual(['Doing', 'Review', 'Done', 'To do']);
+    await expect(header('To do')).toHaveAttribute('data-collapsed', 'true');
   });
 });

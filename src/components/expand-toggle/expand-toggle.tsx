@@ -13,12 +13,21 @@ import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button, type ButtonProps } from '../button/button.js';
+import { hasIcon, type IconSource } from '../icon/icon.js';
 
 export interface ExpandToggleProps
   extends
     Pick<
       ButtonProps,
-      'isDisabled' | 'isPending' | 'pendingLabel' | 'excludeFromTabOrder' | 'aria-controls' | 'ref'
+      | 'isDisabled'
+      | 'isPending'
+      | 'pendingLabel'
+      | 'excludeFromTabOrder'
+      | 'aria-controls'
+      | 'ref'
+      | 'tooltip'
+      | 'onKeyDown'
+      | 'render'
     >,
     BaseProps {
   /** Whether the controlled region is expanded (controlled). */
@@ -34,6 +43,11 @@ export interface ExpandToggleProps
   isExpandable?: boolean | undefined;
   /** A constant accessible name. Defaults to the provider's `expand` or `collapse` string, by state. */
   label?: string | undefined;
+  /**
+   * A decorative icon drawn in place of the chevron, as a narrow collapsed panel shows what it
+   * holds. The toggle keeps its name and `aria-expanded`. Defaults to the chevron.
+   */
+  icon?: IconSource;
   /** Box size. Defaults to `sm`. */
   size?: ButtonProps['size'];
 }
@@ -58,6 +72,7 @@ export function ExpandToggle({
   onExpandedChange,
   isExpandable = true,
   label,
+  icon,
   size = 'sm',
   className,
   ...rest
@@ -87,7 +102,7 @@ export function ExpandToggle({
       {...rest}
       data-expanded={expanded || undefined}
       className={mergeClassNames(hooks.className, className)}
-      icon={glyph}
+      icon={hasIcon(icon) ? icon : glyph}
       label={label ?? (expanded ? strings.collapse : strings.expand)}
       size={size}
       {...toggleProps}

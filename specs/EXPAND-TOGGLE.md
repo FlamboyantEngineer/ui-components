@@ -60,6 +60,13 @@ Verification: `src/components/expand-toggle/expand-toggle.test.tsx`, `e2e/expand
 Implementation: `src/components/expand-toggle/expand-toggle.tsx`
 Verification: `src/components/expand-toggle/expand-toggle.test.tsx`, `e2e/expand-toggle.spec.ts`
 
+### UIC-EXPAND-TOGGLE-1.9 - Icon in place of the chevron
+
+An `icon` (an icon component or a rendered element, as `Button` takes) shall be drawn in place of the chevron in both states, decorative and hidden from assistive technology, so a narrow collapsed panel shows what it holds; the toggle keeps its name, `aria-expanded` and `data-expanded`. `tooltip` shows a hint on hover and keyboard focus, as Button's does, and `onKeyDown` and `render` pass through to the button.
+
+Implementation: `src/components/expand-toggle/expand-toggle.tsx`
+Verification: `src/components/expand-toggle/expand-toggle.test.tsx`
+
 ## Hooks
 
 | Hook               | Kind      | Values                 | Description                                             |

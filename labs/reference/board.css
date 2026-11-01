@@ -44,17 +44,11 @@
 }
 
 /*
- * A collapsed column is a narrow panel that starts in the header row and runs down over its empty
- * placeholder cells: the toggle sits in the header row and the title, count and actions run below
- * it. The negative end margin takes the panel out of the header row's height, so collapsing never
- * makes the row taller, and the panel paints over the cells and lane headers below it.
+ * A collapsed column's header stays in the header row at an expanded header's height: its toggle,
+ * drawn with the column's icon, is all that shows, centred in the narrow column.
  */
 .ui-board__column[data-collapsed] {
-  position: relative;
-  z-index: 1;
-  flex-direction: column;
-  align-self: flex-start;
-  margin-block-end: -100vh;
+  justify-content: center;
   padding: 4px 2px;
 }
 
@@ -97,13 +91,6 @@
   white-space: nowrap;
 }
 
-.ui-board__column[data-collapsed] .ui-board__column-title {
-  flex: none;
-  /* The inline axis runs down the strip. */
-  max-inline-size: 200px;
-  writing-mode: vertical-rl;
-}
-
 .ui-board__column-count,
 .ui-board__lane-count {
   flex: none;
@@ -132,11 +119,6 @@
   gap: 2px;
   margin-inline-start: 2px;
   cursor: default;
-}
-
-.ui-board__column[data-collapsed] .ui-board__column-actions {
-  flex-direction: column;
-  margin-inline-start: 0;
 }
 
 .ui-board__lane {

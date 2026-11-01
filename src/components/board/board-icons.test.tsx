@@ -1,7 +1,10 @@
 import { CalendarGlyph } from '../../core/glyphs.js';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
+import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { Board, type BoardColumn, type BoardLane } from './board.js';
+import { applyColumnMove } from './board-moves.js';
 
 interface Task {
   id: string;
@@ -69,4 +72,79 @@ describe('Board header icons', () => {
     expect(renderColumnActions).toHaveBeenCalledWith(columns[0]);
     expect(renderColumnActions.mock.calls[0]?.[0]).toHaveProperty('icon', CalendarGlyph);
   });
+
+  it('UIC-BOARD-1.4 UIC-BOARD-1.10 compresses a collapsed header to its icon toggle', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<CollapsingBoard />);
+    const [todo, done] = [...container.querySelectorAll<HTMLElement>('.ui-board__column')];
+    const toggle = within(todo as HTMLElement).getByRole('button', { name: 'Expand To do' });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(toggle).toHaveClass('ui-board__column-toggle');
+    expect(toggle.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+    expect(container.querySelector('.ui-board__column-icon')).toBeNull();
+    expect(within(todo as HTMLElement).getAllByRole('button')).toEqual([toggle]);
+    expect(container.querySelector('.ui-board__column-handle')).toBeNull();
+    // The title and count stay in the page, visually hidden, keeping the id that names the cells.
+    const title = todo?.querySelector('.ui-board__column-title');
+    expect(title?.parentElement).toHaveClass('ui-visually-hidden');
+    expect(title?.id).not.toBe('');
+    expect(todo).toHaveTextContent('1 card');
+    // A column without an icon keeps the chevron.
+    const plain = within(done as HTMLElement).getByRole('button', { name: 'Expand Done' });
+    expect(plain.querySelector('svg')).not.toBeNull();
+
+    await user.tab();
+    expect(toggle).toHaveFocus();
+    const tooltip = await screen.findByRole('tooltip');
+    expect(tooltip).toHaveTextContent('To do 1 card');
+    expect(toggle).toHaveAttribute('aria-describedby', tooltip.id);
+  });
+
+  it('UIC-BOARD-1.4 moves a collapsed column with Alt+Arrow keys on its toggle', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<CollapsingBoard />);
+    const toggle = screen.getByRole('button', { name: 'Expand To do' });
+    expect(toggle).toHaveAttribute('aria-keyshortcuts', 'Alt+ArrowLeft Alt+ArrowRight');
+    toggle.focus();
+    await user.keyboard('{Alt>}{ArrowRight}{/Alt}');
+    await waitFor(() => expect(toggle).toHaveFocus());
+    const titles = [...container.querySelectorAll('.ui-board__column-title')].map(
+      (element) => element.textContent,
+    );
+    expect(titles).toEqual(['Done', 'To do']);
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('UIC-BOARD-1.4 keeps focus on the toggle as the column expands and collapses', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<CollapsingBoard />);
+    const toggle = screen.getByRole('button', { name: 'Expand To do' });
+    await user.click(toggle);
+    expect(toggle).toHaveFocus();
+    expect(toggle).toHaveAccessibleName('Collapse To do');
+    expect(container.querySelector('.ui-board__column-icon')).not.toBeNull();
+    expect(screen.getByRole('button', { name: 'Move column To do' })).toBeInTheDocument();
+    expect(screen.getByRole('grid', { name: 'To do North team' })).toBeInTheDocument();
+    await user.keyboard('{Enter}');
+    expect(toggle).toHaveFocus();
+    expect(toggle).toHaveAccessibleName('Expand To do');
+  });
 });
+
+function CollapsingBoard() {
+  const [current, setCurrent] = useState(columns);
+  return (
+    <Board
+      aria-label="Kitchen"
+      columns={current}
+      lanes={lanes}
+      items={tasks}
+      getColumn={(task) => task.column}
+      getLane={(task) => task.lane}
+      getTextValue={(task) => task.title}
+      renderCard={(task) => task.title}
+      defaultCollapsedColumns={['todo', 'done']}
+      onColumnMove={(move) => setCurrent((list) => applyColumnMove(list, move))}
+    />
+  );
+}
