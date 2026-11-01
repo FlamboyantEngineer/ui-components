@@ -265,7 +265,7 @@ test.describe('Pin Input lab', () => {
     await expect(cells(door).first()).toBeFocused();
     await page.keyboard.press('ControlOrMeta+z');
     expect(await readValues(door)).toEqual(['1', '3', '5', '9']);
-    await door.getByRole('button', { name: 'Door code actions' }).click();
+    await door.locator('.ui-field__label', { hasText: 'Door code' }).click({ button: 'right' });
     await page.getByRole('menuitem', { name: 'Clear' }).click();
     expect(await readValues(door)).toEqual(['', '', '', '']);
 

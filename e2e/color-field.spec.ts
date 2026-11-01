@@ -130,7 +130,7 @@ test.describe('Color Field lab', () => {
     await lab.open('color-field');
     const dirty = field(page, 'dirty');
     const trigger = dirty.locator('.ui-color-field__trigger');
-    await dirty.getByRole('button', { name: 'Theme actions' }).click();
+    await dirty.locator('.ui-field__label', { hasText: 'Theme' }).click({ button: 'right' });
     await page.getByRole('menuitem', { name: 'Set to default' }).click();
     await expect(trigger).toHaveAccessibleName('Theme #000000');
     await expect(dirty).toHaveAttribute('data-dirty', 'true');

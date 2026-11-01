@@ -7,7 +7,7 @@ import { getFieldUndo, registerFieldUndo, type FieldUndo } from './field-undo.js
 function TwoFields() {
   return (
     <>
-      <TextField label="Fruit" options={{ defaultValue: 'Fig' }} menu={['clear']} />
+      <TextField label="Fruit" options={{ defaultValue: 'Fig' }} />
       <TextField label="City" options={{ defaultValue: 'Oslo' }} />
     </>
   );
@@ -124,8 +124,8 @@ describe('Field undo and redo', () => {
     render(<TwoFields />);
     const fruit = screen.getByRole('textbox', { name: 'Fruit' });
     await user.type(fruit, 's');
-    await user.click(screen.getByRole('button', { name: 'Fruit actions' }));
-    const item = await screen.findByRole('menuitem', { name: 'Clear' });
+    await user.keyboard('{Shift>}{F10}{/Shift}');
+    const item = await screen.findByRole('menuitem', { name: 'Reset' });
     const menu = screen.getByRole('menu');
     expect(menu).toContainElement(item);
     expect(menu.contains(document.activeElement)).toBe(true);

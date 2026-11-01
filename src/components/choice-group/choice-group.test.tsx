@@ -11,6 +11,7 @@ import {
   type ChoiceGroupProps,
   type ChoiceRenderState,
 } from './choice-group.js';
+import { chooseFieldMenuItem } from '../../../test/field-fixtures.js';
 
 function root(container: HTMLElement) {
   return container.querySelector<HTMLElement>('.ui-field');
@@ -266,7 +267,7 @@ describe('ChoiceGroup', () => {
     const user = userEvent.setup();
     function Saved() {
       const [value, setValue] = useState<string | null>('small');
-      return <Sizes value={value} onChange={setValue} committedValue="small" menu={['clear']} />;
+      return <Sizes value={value} onChange={setValue} committedValue="small" />;
     }
     const { container } = render(<Saved />);
     await user.click(screen.getByText('Large'));
@@ -277,8 +278,7 @@ describe('ChoiceGroup', () => {
     await user.keyboard('{Control>}z{/Control}');
     expect(radio('Large')).toBeChecked();
     expect(radio('Large')).toHaveFocus();
-    await user.click(screen.getByRole('button', { name: 'Size actions' }));
-    await user.click(await screen.findByRole('menuitem', { name: 'Clear' }));
+    await chooseFieldMenuItem(user, radio('Large'), 'Clear');
     expect(screen.queryByRole('radio', { checked: true })).not.toBeInTheDocument();
   });
 

@@ -1,6 +1,6 @@
 # Field
 
-The field base every field control is built on. `useFieldState` is the controller: it holds or relays a field's value, knows its committed value, validates it, tracks dirty state and keeps a per-field undo history. `Field` lays a field out around its control: the label, the control, the restore, help and menu buttons, a decoration slot for the host's badges, the description and the validation message. It hands the control the ids and ARIA attributes it needs through a render function, so any control (a text input, a select trigger, a custom widget) becomes a field. `getFieldUndo` lets a host's shortcut handler undo or redo the focused field, and `FieldRestoreButton` restores a value wherever a control offers one. `validateString` checks text against length and format rules. Field controls (a text field, a number field) share their props through `FieldInputProps`, text controls also through `FieldTextInputProps`, and build on `useFieldControl` and `toAriaControlProps`. `FieldPreviousValue` shows a value an edit replaced or removed, beside the current one. A field shows its validation when its validation mode allows, can check its value asynchronously, shows external errors by name, and can report its error to the browser's constraint validation; the nearest [Form](FORM.md) or `Fieldset` hands it defaults through the field scope. `Fieldset` groups fields under a legend and disables them together.
+The field base every field control is built on. `useFieldState` is the controller: it holds or relays a field's value, knows its committed value, validates it, tracks dirty state and keeps a per-field undo history. `Field` lays a field out around its control: the label, the control, the restore and help buttons, a decoration slot for the host's badges, the description and the validation message, inside a context menu of field actions (Clear and Reset by default). It hands the control the ids and ARIA attributes it needs through a render function, so any control (a text input, a select trigger, a custom widget) becomes a field. `getFieldUndo` lets a host's shortcut handler undo or redo the focused field, and `FieldRestoreButton` restores a value wherever a control offers one. `validateString` checks text against length and format rules. Field controls (a text field, a number field) share their props through `FieldInputProps`, text controls also through `FieldTextInputProps`, and build on `useFieldControl` and `toAriaControlProps`. `FieldPreviousValue` shows a value an edit replaced or removed, beside the current one. A field shows its validation when its validation mode allows, can check its value asynchronously, shows external errors by name, and can report its error to the browser's constraint validation; the nearest [Form](FORM.md) or `Fieldset` hands it defaults through the field scope. `Fieldset` groups fields under a legend and disables them together.
 
 ## UIC-FIELD-1 - Layout
 
@@ -48,7 +48,7 @@ Verification: `src/components/field/field.test.tsx`, `e2e/field.spec.ts`
 
 ### UIC-FIELD-1.7 - Read-only and disabled
 
-A read-only (`isReadOnly`) or disabled (`isDisabled`) field shall publish `data-readonly` or `data-disabled` on its root and pass `readOnly` or `disabled` to its control. It refuses every change (UIC-FIELD-2.4) and never shows dirty state. A disabled field's menu button is disabled and its context menu unavailable; a read-only field keeps its menu, with Clear and Set to default disabled.
+A read-only (`isReadOnly`) or disabled (`isDisabled`) field shall publish `data-readonly` or `data-disabled` on its root and pass `readOnly` or `disabled` to its control. It refuses every change (UIC-FIELD-2.4) and never shows dirty state. A disabled field's context menu is unavailable; a read-only field keeps its menu, with Clear, Reset and Set to default disabled.
 
 Implementation: `src/components/field/field.tsx`, `src/components/field/field-parts.tsx`, `src/components/field/field-menu.tsx`
 Verification: `src/components/field/field.test.tsx`, `src/components/field/field-menu.test.tsx`
@@ -69,7 +69,7 @@ Verification: `src/components/field/field-form.test.tsx`, `src/components/field/
 
 ### UIC-FIELD-1.10 - Size
 
-`size` (`xs`, `sm`, `md` by default, `lg`, the shared `ControlSize`) shall publish `data-size` on the field's root, so a stylesheet gives the control the height of that size on the control scale whatever its content (UIC-LABS-3.7). The field's restore, help and menu buttons take the size one step below (`xs` stays `xs`), so they fit beside the control. Every field control built on `Field` takes `size` with the field's props.
+`size` (`xs`, `sm`, `md` by default, `lg`, the shared `ControlSize`) shall publish `data-size` on the field's root, so a stylesheet gives the control the height of that size on the control scale whatever its content (UIC-LABS-3.7). The field's restore and help buttons take the size one step below (`xs` stays `xs`), so they fit beside the control. Every field control built on `Field` takes `size` with the field's props.
 
 Implementation: `src/components/field/field.tsx`, `src/components/field/field-parts.tsx`, `src/components/field/field-control.ts`
 Verification: `src/components/field/field.test.tsx`
@@ -122,7 +122,7 @@ Verification: `src/components/field/field-state.test.tsx`
 
 ### UIC-FIELD-2.5 - Clear and set to default
 
-`clear()` shall set the `emptyValue` and `setToDefault()` the `defaultValue`, each followed by a commit. `canClear` holds while the field is editable, not required, has an `emptyValue` and does not already hold it; `canSetDefault` while it is editable, has a `defaultValue` and does not already hold it. Otherwise the action does nothing.
+`clear()` shall set the `emptyValue` and `setToDefault()` the `defaultValue`, each followed by a commit. `isClearable` holds while the field is not required and has an `emptyValue`, and `canClear` while it is also editable and does not already hold it; `canSetDefault` while it is editable, has a `defaultValue` and does not already hold it. Otherwise the action does nothing.
 
 Implementation: `src/components/field/field-state.ts`
 Verification: `src/components/field/field-state.test.tsx`
@@ -277,28 +277,28 @@ Verification: `src/components/field/field-undo.test.tsx`
 
 ### UIC-FIELD-6.1 - Entries
 
-`menu` shall list the field menu's entries in the caller's order: the built-in actions by name, `clear` (provider string `clear`, `close` glyph), `set-default` (`setDefault`, `refresh` glyph) and `help` (`help`, `help` glyph), and any `Menu` entry.
+`menu` shall list the field menu's entries in the caller's order: the built-in actions by name, `clear` (provider string `clear`, `close` glyph), `reset` (`resetValue`, `restore` glyph), `set-default` (`setDefault`, `refresh` glyph) and `help` (`help`, `help` glyph), and any `Menu` entry. Every field inherits the menu from `Field`: without `menu` it lists `defaultFieldMenu`, Clear then Reset. Reset puts back the last committed (saved) value, as the restore button does; Set to default puts back the `defaultValue`, a different value once the field has been saved; Clear sets the `emptyValue`. A host adds Set to default, Help or its own entries by listing them, the built-ins it keeps included.
 
 Implementation: `src/components/field/field-menu.tsx`, `src/core/strings.ts`
 Verification: `src/components/field/field-menu.test.tsx`
 
 ### UIC-FIELD-6.2 - Availability
 
-Clear shall be disabled unless the field can be cleared and Set to default unless it can be set to its default (UIC-FIELD-2.5); Help is always enabled. A field with an empty `menu` draws no menu button, leaves the browser's context menu alone and renders no element beside its root.
+Clear shall be left out of a field that can never be cleared (`isClearable` false: required, or with no `emptyValue`) and disabled while it cannot be cleared now; Reset shall be disabled unless the field is dirty, which also covers read-only, disabled and pending fields; Set to default shall be disabled unless the field can be set to its default (UIC-FIELD-2.5); Help is always enabled. A field whose menu has no entries leaves the browser's context menu alone and renders no element beside its root. There is no menu button: the menu is the field's context menu.
 
 Implementation: `src/components/field/field-menu.tsx`, `src/components/field/field.tsx`
 Verification: `src/components/field/field-menu.test.tsx`
 
 ### UIC-FIELD-6.3 - Opening
 
-The field menu shall open from a menu button after the control (`ui-field__menu`, a `DropdownMenu` showing the `more` glyph) and as the field's context menu: a secondary click or long touch anywhere on the field but the text of its control, where the browser's own menu (paste, spelling) stays, or Shift+F10 or the Context Menu key inside it. Both are named by the provider string `fieldActions` from the label (`<label> actions`).
+The field menu shall open as the field's context menu: a secondary click or long touch anywhere on the field but the text of its control, where the browser's own menu (paste, spelling) stays, or Shift+F10 or the Context Menu key inside it, the text of its control included. It is named by the provider string `fieldActions` from the label (`<label> actions`).
 
 Implementation: `src/components/field/field-menu.tsx`, `src/components/field/field.tsx`, `src/core/strings.ts`
 Verification: `src/components/field/field-menu.test.tsx`, `e2e/field.spec.ts`
 
 ### UIC-FIELD-6.4 - Actions
 
-Choosing Clear or Set to default shall apply it to the field state. `onMenuAction` then receives the id of every chosen entry, built-in or not, so a host can act on Help or its own entries.
+Choosing Clear, Reset or Set to default shall move focus to the field's control and apply the action to the field state, so focus stays with the field whichever way the menu opened. `onMenuAction` then receives the id of every chosen entry, built-in or not, so a host can act on Help or its own entries.
 
 Implementation: `src/components/field/field-menu.tsx`
 Verification: `src/components/field/field-menu.test.tsx`, `e2e/field.spec.ts`
@@ -429,7 +429,6 @@ Verification: `src/components/field/field-picker.test.tsx`
 | `ui-field__colon`                | slot      |                                                                         | The colon of the `label-colon-control` layout, inside the label. |
 | `ui-field__control`              | slot      |                                                                         | Holds the control.                                               |
 | `ui-field__help`                 | slot      |                                                                         | The help button (also `ui-button`).                              |
-| `ui-field__menu`                 | slot      |                                                                         | The menu button (also `ui-dropdown-menu` and `ui-button`).       |
 | `ui-field__decoration`           | slot      |                                                                         | The host's badges and marks.                                     |
 | `ui-field__description`          | slot      |                                                                         | The description.                                                 |
 | `ui-field__message`              | slot      |                                                                         | The validation message; empty while valid.                       |

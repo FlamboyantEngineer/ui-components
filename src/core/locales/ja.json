@@ -419,6 +419,7 @@
   "problemCount": "{errors, plural, =0 {{warnings, plural, =0 {問題はありません} other {警告 # 件}}} other {エラー # 件{warnings, plural, =0 {} other {、警告 # 件}}}}",
   "problemSeverityLead": "{severity, select, error {エラー：} other {警告：}}",
   "setDefault": "デフォルトに戻す",
+  "resetValue": "リセット",
   "valueRequired": "値を入力してください。",
   "validating": "検証中",
   "tooShort": "{minLength} 文字以上で入力してください。",

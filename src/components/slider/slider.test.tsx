@@ -6,6 +6,7 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Fieldset } from '../field/field.js';
 import { Form } from '../form/form.js';
 import { RangeSlider, Slider, keepThumbsApart, type RangeValue } from './slider.js';
+import { chooseFieldMenuItem } from '../../../test/field-fixtures.js';
 
 function root(container: HTMLElement) {
   return container.querySelector<HTMLElement>('.ui-field');
@@ -325,8 +326,7 @@ describe('Slider', () => {
     expect(thumb).toHaveValue('21');
     await user.keyboard('{Control>}{Shift>}z{/Shift}{/Control}');
     expect(thumb).toHaveValue('20');
-    await user.click(screen.getByRole('button', { name: 'Volume actions' }));
-    await user.click(await screen.findByRole('menuitem', { name: 'Set to default' }));
+    await chooseFieldMenuItem(user, thumb as HTMLElement, 'Set to default');
     expect(thumb).toHaveValue('50');
   });
 

@@ -401,7 +401,6 @@ describe('SignaturePad', () => {
         validationMode="immediate"
         committedValue={drawing}
         defaultValue={drawing}
-        menu={['clear']}
       />,
     );
     await user.click(screen.getByRole('button', { name: 'Undo stroke' }));

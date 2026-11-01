@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { ColorField } from './color-field.js';
+import { chooseFieldMenuItem } from '../../../test/field-fixtures.js';
 
 function root(container: HTMLElement) {
   return container.querySelector<HTMLElement>('.ui-field');
@@ -224,8 +225,7 @@ describe('ColorField', () => {
         menu={['clear', 'set-default']}
       />,
     );
-    await user.click(screen.getByRole('button', { name: 'Accent actions' }));
-    await user.click(await screen.findByRole('menuitem', { name: 'Set to default' }));
+    await chooseFieldMenuItem(user, trigger(), 'Set to default');
     expect(trigger()).toHaveAccessibleName('Accent #000000');
     expect(root(container)).toHaveAttribute('data-dirty', 'true');
     await user.click(screen.getByRole('button', { name: 'Restore Accent' }));

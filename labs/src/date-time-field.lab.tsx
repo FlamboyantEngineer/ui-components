@@ -90,7 +90,6 @@ function Bounded() {
         maxValue="2026-04-30"
         description="Any day in April 2026."
         onCommit={setCommitted}
-        menu={['clear']}
         data-lab-field="bounded"
       />
       <p>

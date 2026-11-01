@@ -1,8 +1,9 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { CodeEditor } from './code-editor.js';
+import { chooseFieldMenuItem } from '../../../test/field-fixtures.js';
 
 function field(container: HTMLElement) {
   return container.querySelector<HTMLElement>('.ui-field');
@@ -209,13 +210,9 @@ describe('CodeEditor', () => {
     expect(editor()).toHaveValue('[]');
     await user.keyboard('{Control>}{Shift>}z{/Shift}{/Control}');
     expect(editor()).toHaveValue('[1]');
-    await user.click(screen.getByRole('button', { name: 'Settings actions' }));
-    await user.click(
-      within(await screen.findByRole('menu')).getByRole('menuitem', { name: 'Clear' }),
-    );
+    await chooseFieldMenuItem(user, editor(), 'Clear');
     expect(editor()).toHaveValue('');
-    await user.click(screen.getByRole('button', { name: 'Settings actions' }));
-    await user.click(await screen.findByRole('menuitem', { name: 'Set to default' }));
+    await chooseFieldMenuItem(user, editor(), 'Set to default');
     expect(editor()).toHaveValue('[]');
     expectHooksMatchSpec(container, 'CODE-EDITOR');
   });

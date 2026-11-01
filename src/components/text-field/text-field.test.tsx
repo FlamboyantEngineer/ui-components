@@ -1,9 +1,10 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { TextField, type TextFieldProps } from './text-field.js';
+import { chooseFieldMenuItem } from '../../../test/field-fixtures.js';
 
 function root(container: HTMLElement) {
   return container.querySelector<HTMLElement>('.ui-field');
@@ -244,14 +245,24 @@ describe('TextField', () => {
       />,
     );
     const input = screen.getByRole('textbox', { name: 'Fruit' });
-    await user.click(screen.getByRole('button', { name: 'Fruit actions' }));
-    await user.click(await screen.findByRole('menuitem', { name: 'Clear' }));
+    await chooseFieldMenuItem(user, input, 'Clear');
     expect(input).toHaveValue('');
     expect(onCommit).toHaveBeenLastCalledWith('');
-    await user.click(screen.getByRole('button', { name: 'Fruit actions' }));
-    await user.click(await screen.findByRole('menuitem', { name: 'Set to default' }));
+    await chooseFieldMenuItem(user, input, 'Set to default');
     expect(input).toHaveValue('Apple');
     expect(onCommit).toHaveBeenLastCalledWith('Apple');
+  });
+
+  it('UIC-TEXT-FIELD-2.4 keeps the draft while its menu is open, so Reset puts the committed value back', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    render(<TextField label="Fruit" defaultValue="Fig" onCommit={onCommit} />);
+    const input = screen.getByRole('textbox', { name: 'Fruit' });
+    await user.type(input, 's');
+    await chooseFieldMenuItem(user, input, 'Reset');
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(input).toHaveValue('Fig');
+    await waitFor(() => expect(input).toHaveFocus());
   });
 
   it('UIC-TEXT-FIELD-3.1 draws zero adornments and skips empty ones', () => {

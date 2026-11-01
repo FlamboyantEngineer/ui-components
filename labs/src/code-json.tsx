@@ -75,7 +75,7 @@ function SavedEditor() {
         defaultValue='{"fruit":"Apple"}'
         emptyValue="{}"
         indent={4}
-        menu={['clear', 'set-default', 'help']}
+        menu={['clear', 'reset', 'set-default', 'help']}
         help="Orders are JSON objects."
         onMenuAction={(key: Key) => setLast(String(key))}
         data-lab-editor="saved"

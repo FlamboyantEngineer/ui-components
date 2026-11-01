@@ -75,9 +75,9 @@ function DirtyAndRestore() {
         value={value}
         onChange={setValue}
         committedValue={saved}
-        menu={['clear', 'set-default', 'help']}
+        menu={['clear', 'reset', 'set-default', 'help']}
         defaultValue="Pear"
-        help="Clear empties the field; Set to default puts Pear back."
+        help="Clear empties the field, Reset puts back the saved value and Set to default puts Pear back."
         data-lab-field="dirty"
       />
       <Button onPress={() => setSaved(value)}>Save</Button>
@@ -321,7 +321,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Dirty, restore, undo and the field menu"
-      description="Edit, then restore, undo with Ctrl+Z, or use the field menu."
+      description="Edit, then restore, undo with Ctrl+Z, or open the field's menu (right-click it, or Shift+F10 in it)."
     >
       <DirtyAndRestore />
     </LabSection>

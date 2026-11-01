@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { I18nProvider } from '../../primitives/index.js';
@@ -7,6 +7,7 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Form } from '../form/form.js';
 import { TextField } from '../text-field/text-field.js';
 import { TagsInput, type TagsInputProps } from './tags-input.js';
+import { chooseFieldMenuItem } from '../../../test/field-fixtures.js';
 
 function root(container: HTMLElement) {
   return container.querySelector<HTMLElement>('.ui-field');
@@ -517,18 +518,16 @@ describe('TagsInput', () => {
 
   it('UIC-TAGS-INPUT-4.4 shows dirty state, restores, undoes and clears from the menu', async () => {
     const user = userEvent.setup();
-    const { container } = render(<SavedField menu={['clear']} />);
+    const { container } = render(<SavedField />);
     const input = screen.getByRole('textbox', { name: 'Fruit' });
     await user.type(input, 'Fig{Enter}');
     expect(screen.getByRole('status', { hidden: true })).toHaveTextContent('Apple, Fig');
     expect(root(container)).not.toHaveAttribute('data-dirty');
-    const field = within(container.querySelector('.ui-field') as HTMLElement);
     await user.keyboard('{Control>}z{/Control}');
     expect(tagTexts()).toEqual(['Apple']);
     await user.keyboard('{Control>}{Shift>}z{/Shift}{/Control}');
     expect(tagTexts()).toEqual(['Apple', 'Fig']);
-    await user.click(field.getByRole('button', { name: 'Fruit actions' }));
-    await user.click(await screen.findByRole('menuitem', { name: 'Clear' }));
+    await chooseFieldMenuItem(user, input, 'Clear');
     expect(tagTexts()).toEqual([]);
     expect(screen.getByRole('status', { hidden: true })).toHaveTextContent('');
   });

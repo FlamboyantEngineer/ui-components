@@ -46,7 +46,6 @@ export const fieldHooks = createHooks('field', [
   'colon',
   'control',
   'help',
-  'menu',
   'decoration',
   'description',
   'message',
