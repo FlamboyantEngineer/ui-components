@@ -15,6 +15,7 @@ import { createMemoryStorage } from '../../core/storage.js';
 import { UiProvider } from '../../core/provider.js';
 import type { Key } from '../../core/props.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { expectRowMenuReturnsFocus, RowMenuButton } from '../../../test/menu-fixtures.js';
 import { Button } from '../button/button.js';
 import { Board, type BoardColumn, type BoardProps } from './board.js';
 import {
@@ -124,6 +125,22 @@ const cardNames = (name: string) =>
     .map((row) => row.textContent);
 
 describe('Board', () => {
+  it('UIC-BOARD-1.1 returns focus to a control in a card as its menu closes', async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    render(
+      <TaskBoard
+        onAction={onAction}
+        renderCard={(task) => <RowMenuButton label={`More for ${task.title}`} />}
+      />,
+    );
+    await expectRowMenuReturnsFocus(user, 'More for Make soup', async () => {
+      act(() => screen.getByRole('row', { name: 'Make soup' }).focus());
+      await user.keyboard('{ArrowRight}');
+    });
+    expect(onAction).not.toHaveBeenCalled();
+  });
+
   it('UIC-BOARD-2.3 UIC-BOARD-3.2 keeps typed card and column identities through moves', async () => {
     const user = userEvent.setup();
     const onMove = vi.fn();

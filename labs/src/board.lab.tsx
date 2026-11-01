@@ -22,6 +22,7 @@ import {
 import type { Key } from '../../src/core/props.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { TypedBoard } from './collection-identity-cases.js';
+import { RowMenu } from './row-menu.js';
 
 interface Task {
   id: string;
@@ -301,6 +302,34 @@ function StepBoard(props: {
 }
 
 /** A board whose first card draws a board of its own (both use the keys a and b) and whose second has a field. */
+/** Cards with a menu of their own, which returns focus to its button as it closes. */
+function MenuBoard() {
+  const [output, setOutput] = useState('none');
+  return (
+    <div style={frame} data-lab-demo="card-menus">
+      <Board
+        aria-label="Errands"
+        columns={columns.slice(0, 2)}
+        items={tasks}
+        getColumn={getColumn}
+        getTextValue={getTextValue}
+        renderCard={(task) => (
+          <>
+            <span>{task.title}</span>
+            <RowMenu
+              label={`More for ${task.title}`}
+              onAction={(key) => setOutput(`${key} ${task.id}`)}
+            />
+          </>
+        )}
+      />
+      <p>
+        Menu: <output data-lab-output>{output}</output>
+      </p>
+    </div>
+  );
+}
+
 function NestedBoards() {
   return (
     <div style={frame} data-lab-demo="nested">
@@ -388,6 +417,12 @@ mountLab(
       description="Five hundred cards, virtualized: each cell renders only the cards in view. Virtualize turns virtualization off and on; the cards in view, their focus and their state stay as they are."
     >
       <LongBoard />
+    </LabSection>
+    <LabSection
+      title="Card menus"
+      description="Each card holds a menu button. Enter or Space on the button opens its menu; Escape or an item closes it and returns focus to the button, not to the card."
+    >
+      <MenuBoard />
     </LabSection>
     <LabSection
       title="Distinct board keys"

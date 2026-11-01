@@ -19,6 +19,7 @@ import type { TreeExpandGlyph, TreeItemData, TreeItemState } from './tree-props.
 import type { TreeRowOptions } from './tree-item.js';
 import { treeHooks as hooks } from './tree-hooks.js';
 import type { TreeLoads } from './use-tree-loads.js';
+import { keepControlFocusReturn } from '../../utils/keep-control-focus-return.js';
 
 /** What every row's content reads. */
 export type RowContentOptions<T extends TreeItemData> = Pick<
@@ -119,7 +120,11 @@ export function TreeRowContent<T extends TreeItemData>(props: {
       <TreeRowLabel item={item} state={state} options={options} />
       {isEmptyNode(meta) ? null : <span {...hooks.slot('meta')}>{meta}</span>}
       <TreeLoadError loads={options.loads} itemKey={item.id} />
-      {isEmptyNode(actions) ? null : <span {...hooks.slot('actions')}>{actions}</span>}
+      {isEmptyNode(actions) ? null : (
+        <span ref={keepControlFocusReturn} {...hooks.slot('actions')}>
+          {actions}
+        </span>
+      )}
     </>
   );
 }

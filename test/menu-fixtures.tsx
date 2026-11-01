@@ -1,15 +1,16 @@
 import { PlusGlyph } from '../src/core/glyphs.js';
 // Shared fixtures for the menu family's unit tests.
 
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import type { userEvent } from '@testing-library/user-event';
 import type { ReactNode } from 'react';
-import type { Mock } from 'vitest';
+import { expect, type Mock } from 'vitest';
 import { Button } from '../src/components/button/button.js';
 import {
   Menu,
   MenuPopover,
   MenuTrigger,
+  MenuItem,
   type MenuEntry,
   type MenuPopoverProps,
   type MenuProps,
@@ -59,4 +60,43 @@ export function actionKeys(handler: Mock) {
 export async function openMenu(user: ReturnType<typeof userEvent.setup>, name = 'Actions') {
   await user.click(screen.getByRole('button', { name }));
   return screen.getByRole('menu');
+}
+
+/** A row control: a button named `label` opening a menu with a Mute item. */
+export function RowMenuButton({ label, onAction }: { label: string; onAction?: () => void }) {
+  return (
+    <MenuTrigger>
+      <Button size="sm" icon={PlusGlyph} label={label} />
+      <MenuPopover>
+        <Menu onAction={onAction}>
+          <MenuItem id="mute">Mute</MenuItem>
+        </Menu>
+      </MenuPopover>
+    </MenuTrigger>
+  );
+}
+
+/**
+ * Reaches the row control named `name` with `reach`, opens its menu with Enter and with Space,
+ * closes it with Escape and with an item, and expects focus back on the control each time, not on
+ * its row.
+ */
+export async function expectRowMenuReturnsFocus(
+  user: ReturnType<typeof userEvent.setup>,
+  name: string,
+  reach: () => Promise<void>,
+) {
+  const control = screen.getByRole('button', { name });
+  for (const [open, close] of [
+    ['{Enter}', '{Escape}'],
+    [' ', '{Enter}'],
+  ] as const) {
+    await reach();
+    expect(control).toHaveFocus();
+    await user.keyboard(open);
+    expect(await screen.findByRole('menuitem', { name: 'Mute' })).toHaveFocus();
+    await user.keyboard(close);
+    await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
+    await waitFor(() => expect(control).toHaveFocus());
+  }
 }

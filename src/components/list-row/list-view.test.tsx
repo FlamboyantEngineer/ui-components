@@ -1,11 +1,12 @@
 import { InfoGlyph } from '../../core/glyphs.js';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { Selection } from '../../core/props.js';
 import { UiProvider } from '../../core/provider.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { expectRowMenuReturnsFocus, RowMenuButton } from '../../../test/menu-fixtures.js';
 import {
   ListView,
   ListViewItem,
@@ -46,6 +47,27 @@ function FruitSection(props: ListViewSectionProps<(typeof fruit)[number]>) {
 }
 
 describe('ListView', () => {
+  it('UIC-LIST-ROW-3.1 returns focus to a trailing control as its menu closes', async () => {
+    const user = userEvent.setup();
+    const onSelectionChange = vi.fn();
+    render(
+      <ListView aria-label="Fruit" selectionMode="single" onSelectionChange={onSelectionChange}>
+        <ListViewItem
+          id="apple"
+          title="Apple"
+          trailing={<RowMenuButton label="More for Apple" />}
+        />
+        <ListViewItem id="banana" title="Banana" />
+      </ListView>,
+    );
+    await expectRowMenuReturnsFocus(user, 'More for Apple', async () => {
+      // The row's selection checkbox comes first, then its trailing control.
+      act(() => screen.getByRole('row', { name: 'Apple' }).focus());
+      await user.keyboard('{ArrowRight}{ArrowRight}');
+    });
+    expect(onSelectionChange).not.toHaveBeenCalled();
+  });
+
   it('UIC-LIST-ROW-3.3 keeps an uncontrolled selection and the focused row when reorder toggles', async () => {
     const user = userEvent.setup();
     const onSelectionChange = vi.fn();

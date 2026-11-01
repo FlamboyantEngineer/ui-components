@@ -1,4 +1,3 @@
-import { MoreGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
@@ -22,6 +21,7 @@ import {
   NestedTree,
   PrimitiveTree,
 } from './tree-cases.js';
+import { RowMenu } from './row-menu.js';
 
 interface Entry {
   id: string;
@@ -98,6 +98,7 @@ function StatesTree({ state }: { state: (typeof states)[number] }) {
 function SelectionTree() {
   const [selected, setSelected] = useState('none');
   const [action, setAction] = useState('none');
+  const [menu, setMenu] = useState('none');
   return (
     <div data-lab-selection>
       <Tree
@@ -112,11 +113,14 @@ function SelectionTree() {
         onAction={(key) => setAction(String(key))}
         renderMeta={sizeOf}
         renderActions={(entry) => (
-          <Button icon={MoreGlyph} size="sm" label={`More for ${entry.name}`} />
+          <RowMenu
+            label={`More for ${entry.name}`}
+            onAction={(key) => setMenu(`${key} ${entry.name}`)}
+          />
         )}
       />
       <p data-lab-output>
-        Selected: {selected} · Opened: {action}
+        Selected: {selected} · Opened: {action} · Menu: {menu}
       </p>
     </div>
   );
@@ -368,7 +372,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Selection, actions and links"
-      description="Click selects, double-click or Enter opens; each row has a trailing action. Below, link rows navigate to in-page anchors and the current one is marked."
+      description="Click selects, double-click or Enter opens; each row has a trailing menu, which returns focus to its button as it closes. Below, link rows navigate to in-page anchors and the current one is marked."
     >
       <SelectionTree />
       <Tree

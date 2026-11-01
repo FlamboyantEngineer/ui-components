@@ -2,6 +2,7 @@ import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { expectRowMenuReturnsFocus, RowMenuButton } from '../../../test/menu-fixtures.js';
 import { UiProvider, type UiLinkProps } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { Popover, PopoverTrigger } from '../popover/popover.js';
@@ -742,6 +743,25 @@ describe('CardGrid', () => {
       </CardGrid>,
     );
     expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+  });
+
+  it('UIC-CARD-5.4 returns focus to a control in a card as its menu closes', async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    render(
+      <CardGrid aria-label="Cities" onAction={onAction}>
+        <CardGridItem id="lima" textValue="Lima">
+          <Card title="Lima" role="group">
+            <RowMenuButton label="More for Lima" />
+          </Card>
+        </CardGridItem>
+      </CardGrid>,
+    );
+    await expectRowMenuReturnsFocus(user, 'More for Lima', async () => {
+      act(() => screen.getByRole('row', { name: 'Lima' }).focus());
+      await user.tab();
+    });
+    expect(onAction).not.toHaveBeenCalled();
   });
 
   it('UIC-CARD-5.4 acts on a card from the grid or the item', async () => {

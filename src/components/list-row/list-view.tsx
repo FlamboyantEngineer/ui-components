@@ -37,6 +37,7 @@ import { Checkbox } from '../checkbox/checkbox.js';
 import { DragHandle } from '../drag-handle/drag-handle.js';
 import { EmptyState } from '../empty-state/empty-state.js';
 import { ListRowContent, type ListRowContentProps, type ListRowTone } from './list-row.js';
+import { keepControlFocusReturn } from '../../utils/keep-control-focus-return.js';
 
 /** A reorder request: move `keys` before or after the row `targetKey`. */
 export interface ListViewMove {
@@ -279,7 +280,11 @@ export function ListViewItem({
             <Checkbox size="sm" slot="selection" className={itemHooks.slotClass('checkbox')} />
           ) : null}
           <ListRowContent title={title} meta={meta} icon={icon} leading={leading} />
-          {isEmptyNode(trailing) ? null : <div {...itemHooks.slot('trailing')}>{trailing}</div>}
+          {isEmptyNode(trailing) ? null : (
+            <div ref={keepControlFocusReturn} {...itemHooks.slot('trailing')}>
+              {trailing}
+            </div>
+          )}
         </>
       )}
     </GridListItem>

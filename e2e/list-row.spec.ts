@@ -1,4 +1,5 @@
 import { expect, test, matrixCell } from './fixtures.js';
+import { expectRowMenuReturnsFocus } from './row-menu.js';
 
 test.describe('List Row lab', () => {
   test('UIC-LIST-ROW-1.1 UIC-LIST-ROW-2.1 UIC-LIST-ROW-2.2 keeps native roles and one link per link row', async ({
@@ -114,6 +115,26 @@ test.describe('List Row lab', () => {
     expect(wideTrailing?.x ?? 0).toBeGreaterThan(
       (widePrimary?.x ?? 0) + (widePrimary?.width ?? 0) - 1,
     );
+  });
+
+  test('UIC-LIST-ROW-3.1 returns focus to a trailing menu button as its menu closes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('list-row');
+    const list = page.getByRole('grid', { name: 'Fruit single' });
+    const row = list.getByRole('row', { name: /^Cherry/ });
+    // The row's selection checkbox comes first, then its menu button.
+    await expectRowMenuReturnsFocus(
+      page,
+      list.getByRole('button', { name: 'More about Cherry single' }),
+      async () => {
+        await row.focus();
+        await page.keyboard.press('ArrowRight');
+        await page.keyboard.press('ArrowRight');
+      },
+    );
+    await expect(row).toHaveAttribute('aria-selected', 'false');
   });
 
   test('UIC-LIST-ROW-3.1 UIC-LIST-ROW-3.2 UIC-LIST-ROW-3.3 selects list view rows by keyboard, checkbox and typing', async ({

@@ -36,6 +36,7 @@ import type { BoardCardState } from './board.js';
 import { isEditableTarget } from '../../utils/is-editable-target.js';
 import { isElement } from '../../utils/is-element.js';
 import { isMoveChord, type CollectionDropTarget } from '../../utils/use-reorder-drag-and-drop.js';
+import { keepControlFocusReturn } from '../../utils/keep-control-focus-return.js';
 
 /** Scrolls the virtualized cell holding the card `key` toward it; other cells ignore the call. */
 export type BoardCardReveal = (key: Key) => void;
@@ -305,7 +306,9 @@ function BoardCards<T extends { id: Key }>({
               {allowsDragging && drag ? (
                 <DragHandle className={hooks.slotClass('card-handle')} />
               ) : null}
-              <div {...hooks.slot('card-content')}>{renderCard(item, cardState)}</div>
+              <div ref={keepControlFocusReturn} {...hooks.slot('card-content')}>
+                {renderCard(item, cardState)}
+              </div>
             </>
           )}
         </GridListItem>
