@@ -437,6 +437,24 @@ describe('DiagramCanvas', () => {
     });
   });
 
+  it('UIC-DIAGRAM-CANVAS-6.4 shows each node description in the outline', () => {
+    const described = pipeNodes.map((node, index) =>
+      index === 1 ? { ...node, description: 'Half open.' } : node,
+    );
+    const { container } = render(
+      <DiagramCanvas nodes={described} edges={pipeEdges} defaultView="outline" />,
+    );
+    const outline = screen.getByRole('list', { name: 'Outline' });
+    const [pump, valve] = within(outline)
+      .getAllByRole('listitem')
+      .filter((item) => item.parentElement === outline);
+    expect(valve).toHaveAccessibleDescription('Half open.');
+    expect(valve?.querySelector('.ui-diagram-canvas__outline-label')).toHaveTextContent('Valve');
+    expect(pump).not.toHaveAttribute('aria-describedby');
+    expect(container.querySelectorAll('.ui-diagram-canvas__outline-description')).toHaveLength(1);
+    expectHooksMatchSpec(container, 'DIAGRAM-CANVAS', { slots: ['outline-description'] });
+  });
+
   it('UIC-DIAGRAM-CANVAS-6.4 removes a connection from the outline in edit mode and shows an empty outline', async () => {
     const onEdgesChange = vi.fn();
     const { rerender } = render(

@@ -286,6 +286,7 @@ export function DiagramCanvas<T = unknown>({
       onEdgesChange,
       onConnect,
     },
+    isCanvasShown: view === 'canvas',
     onNodesChange: onNodesChange as ((nodes: DiagramNode[]) => void) | undefined,
   });
   const palette = useCanvasPalette({ controller, gridSize, onNodeAdd });

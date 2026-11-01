@@ -286,6 +286,11 @@ button.ui-diagram-canvas__port:hover {
   font-weight: var(--ref-font-weight-strong);
 }
 
+.ui-diagram-canvas__outline-description {
+  font-size: var(--ref-font-size-sm);
+  color: var(--ref-muted);
+}
+
 .ui-diagram-canvas__outline-links {
   display: flex;
   align-items: baseline;

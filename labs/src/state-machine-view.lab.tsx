@@ -14,6 +14,7 @@ const doorStates: StateMachineState[] = [
   { id: 'locked', label: 'Locked' },
 ];
 
+// The `open` transition shares its id with the `open` state on purpose: the view keeps them apart.
 const doorTransitions: StateMachineTransition[] = [
   { id: 'open', from: 'closed', to: 'open', label: 'open' },
   { id: 'close', from: 'open', to: 'closed', label: 'close' },
@@ -148,7 +149,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Current state"
-      description="Follow a transition with the buttons; the current state moves and its outgoing transitions change. Tab to a state and move between connected states with the arrow keys."
+      description="Follow a transition with the buttons; the current state moves and its outgoing transitions change. Tab to a state and move between connected states with the arrow keys. Switch to the outline: each state's entry reads whether it is the initial, current or a final state."
     >
       <Orders />
     </LabSection>

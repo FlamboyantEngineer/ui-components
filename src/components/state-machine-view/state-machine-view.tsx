@@ -7,6 +7,7 @@ import type { BaseProps, Key, Orientation, RefProps } from '../../core/props.js'
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { layoutLayeredGraph } from '../../utils/layered-layout.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import {
   DiagramCanvas,
   type DiagramEdge,
@@ -71,6 +72,11 @@ const stateHeight = 44;
 // Room between layers for a transition's label.
 const layerGap = 112;
 
+// States and transitions share one diagram id space, so each id is namespaced by its kind and its
+// typed identity: a transition `a` never collides with a state `a`, nor a state `1` with `'1'`.
+const stateNodeId = (key: Key) => `state:${toKeyIdentity(key)}`;
+const transitionEdgeId = (key: Key) => `transition:${toKeyIdentity(key)}`;
+
 function describeState(state: StateMachineState, flags: StateFlags, strings: UiStrings): string {
   return [
     flags.isCurrent ? strings.stateMachineCurrent : '',
@@ -93,18 +99,26 @@ function useStateNodes(
   const positions = useMemo(() => {
     const ordered = [...states].sort((a, b) => Number(b.id === initial) - Number(a.id === initial));
     const layout = layoutLayeredGraph({
-      nodes: ordered.map((state) => ({ id: state.id, width: stateWidth, height: stateHeight })),
-      edges: transitions.map((transition) => ({ source: transition.from, target: transition.to })),
+      nodes: ordered.map((state) => ({
+        id: stateNodeId(state.id),
+        width: stateWidth,
+        height: stateHeight,
+      })),
+      edges: transitions.map((transition) => ({
+        source: stateNodeId(transition.from),
+        target: stateNodeId(transition.to),
+      })),
       orientation,
       layerGap,
     });
     return new Map(layout.map((position) => [position.id, position]));
   }, [states, transitions, orientation, initial]);
   return states.map((state) => {
-    const placed = positions.get(state.id);
+    const id = stateNodeId(state.id);
+    const placed = positions.get(id);
     const flags = { isCurrent: state.id === current, isInitial: state.id === initial };
     return {
-      id: state.id,
+      id,
       x: state.x ?? placed?.x ?? 0,
       y: state.y ?? placed?.y ?? 0,
       width: stateWidth,
@@ -157,11 +171,12 @@ export function StateMachineView({
     current: currentKey,
   });
   const edges: DiagramEdge[] = transitions.map(({ id, from, to, label }) => ({
-    id,
-    source: from,
-    target: to,
+    id: transitionEdgeId(id),
+    source: stateNodeId(from),
+    target: stateNodeId(to),
     label,
   }));
+  const stateOf = (nodeId: Key) => states.find((state) => stateNodeId(state.id) === nodeId);
   return (
     <DiagramCanvas<StateMachineState>
       {...rest}
@@ -175,12 +190,12 @@ export function StateMachineView({
       renderNode={(node) => (
         <div
           {...hooks.slot('state', {
-            current: node.id === currentKey,
-            initial: node.id === initial,
+            current: node.data?.id === currentKey,
+            initial: node.data?.id === initial,
             final: node.data?.isFinal ?? false,
           })}
         >
-          {node.id === initial ? (
+          {node.data?.id === initial ? (
             <span {...hooks.slot('initial-marker')} aria-hidden="true" />
           ) : null}
           <span {...hooks.slot('state-label')}>{node.label}</span>
@@ -193,11 +208,15 @@ export function StateMachineView({
       }
       onEdgesChange={(next) => {
         const kept = new Set(next.map((edge) => edge.id));
-        onTransitionsChange?.(transitions.filter((transition) => kept.has(transition.id)));
+        onTransitionsChange?.(
+          transitions.filter((transition) => kept.has(transitionEdgeId(transition.id))),
+        );
       }}
-      onConnect={(connection) =>
-        onTransitionAdd?.({ from: connection.source, to: connection.target })
-      }
+      onConnect={(connection) => {
+        const from = stateOf(connection.source);
+        const to = stateOf(connection.target);
+        if (from && to) onTransitionAdd?.({ from: from.id, to: to.id });
+      }}
     />
   );
 }

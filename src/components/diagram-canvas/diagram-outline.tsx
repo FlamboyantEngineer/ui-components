@@ -1,7 +1,7 @@
 'use client';
 
 import { CloseGlyph } from '../../core/glyphs.js';
-import { useId, useRef } from 'react';
+import { useId, useRef, type ReactNode, type RefObject } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { requireDefined } from '../../utils/require-defined.js';
@@ -79,9 +79,41 @@ function OutlineLinks({ direction, node, links, controller, onFollow }: OutlineL
   );
 }
 
+interface OutlineItemProps {
+  node: DiagramNode;
+  controller: DiagramController;
+  items: RefObject<Map<Key, HTMLLIElement>>;
+  children: ReactNode;
+}
+
+/** A node's entry: its label, its description (the caller's, such as a state's status), its links. */
+function OutlineItem({ node, controller, items, children }: OutlineItemProps) {
+  const descriptionId = useId();
+  return (
+    <li
+      {...hooks.slot('outline-item', { selected: controller.selection.selected.has(node.id) })}
+      ref={(element) => {
+        if (element) items.current.set(node.id, element);
+        else items.current.delete(node.id);
+      }}
+      aria-describedby={node.description ? descriptionId : undefined}
+      tabIndex={-1}
+    >
+      <span {...hooks.slot('outline-label')}>{node.label}</span>
+      {node.description ? (
+        <span {...hooks.slot('outline-description')} id={descriptionId}>
+          {node.description}
+        </span>
+      ) : null}
+      {children}
+    </li>
+  );
+}
+
 /**
- * The diagram as a list: every node with the nodes it leads to and comes from, as buttons that
- * move to that node's entry. In edit mode each outgoing link has a button that removes it.
+ * The diagram as a list: every node with its description and the nodes it leads to and comes
+ * from, as buttons that move to that node's entry. In edit mode each outgoing link has a button
+ * that removes it.
  */
 export function DiagramOutline({ controller }: DiagramOutlineProps) {
   const strings = useUiStrings();
@@ -94,21 +126,15 @@ export function DiagramOutline({ controller }: DiagramOutlineProps) {
         const links = requireDefined(controller.links.get(node.id));
         const shared = { node, controller, onFollow };
         return (
-          <li
+          <OutlineItem
             key={toKeyIdentity(node.id)}
-            {...hooks.slot('outline-item', {
-              selected: controller.selection.selected.has(node.id),
-            })}
-            ref={(element) => {
-              if (element) items.current.set(node.id, element);
-              else items.current.delete(node.id);
-            }}
-            tabIndex={-1}
+            node={node}
+            controller={controller}
+            items={items}
           >
-            <span {...hooks.slot('outline-label')}>{node.label}</span>
             <OutlineLinks {...shared} direction="outgoing" links={links.outgoing} />
             <OutlineLinks {...shared} direction="incoming" links={links.incoming} />
-          </li>
+          </OutlineItem>
         );
       })}
     </ul>

@@ -26,6 +26,7 @@ export const diagramHooks = createHooks('diagram-canvas', [
   'outline',
   'outline-item',
   'outline-label',
+  'outline-description',
   'outline-links',
   'outline-links-label',
   'outline-link',

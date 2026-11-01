@@ -13,7 +13,7 @@ Verification: `src/components/state-machine-view/state-machine-view.test.tsx`, `
 
 ### UIC-STATE-MACHINE-VIEW-1.2 - Initial, final and current states
 
-The initial state (`initialState`, by default the first state) shall carry `data-initial` and an initial marker (`ui-state-machine-view__initial-marker`, hidden from assistive technology); a state with `isFinal` carries `data-final`; the state `currentKey` names carries `data-current`. Each node's description reads the provider's `stateMachineCurrent`, `stateMachineInitial` and `stateMachineFinal` strings as they apply, before its transitions.
+The initial state (`initialState`, by default the first state) shall carry `data-initial` and an initial marker (`ui-state-machine-view__initial-marker`, hidden from assistive technology); a state with `isFinal` carries `data-final`; the state `currentKey` names carries `data-current`. Each node's description reads the provider's `stateMachineCurrent`, `stateMachineInitial` and `stateMachineFinal` strings as they apply, before its transitions; the outline view shows and reads the same status on each state's entry, without its transitions, which the outline lists.
 
 Implementation: `src/components/state-machine-view/state-machine-view.tsx`
 Verification: `src/components/state-machine-view/state-machine-view.test.tsx`, `e2e/state-machine-view.spec.ts`
@@ -55,6 +55,13 @@ Verification: `src/components/state-machine-view/state-machine-view.test.tsx`
 ### UIC-STATE-MACHINE-VIEW-3.2 - Edit mode
 
 With `isEditing`, moving states (by pointer or keyboard) shall call `onStatesChange` with every state carrying the position it is drawn at; removing states calls `onStatesChange` with the states left and `onTransitionsChange` with the transitions left; each state has one port, named by the provider's `stateMachineAddTransition` string, on its right side (bottom when vertical), and connecting it to a state calls `onTransitionAdd({ from, to })` for the caller to add the transition.
+
+Implementation: `src/components/state-machine-view/state-machine-view.tsx`
+Verification: `src/components/state-machine-view/state-machine-view.test.tsx`, `e2e/state-machine-view.spec.ts`
+
+### UIC-STATE-MACHINE-VIEW-3.3 - Distinct ids
+
+A state and a transition may share an id, and ids of different types (`1` and `'1'`) are different ids: the view shall give the canvas node and edge ids namespaced by kind and typed identity, so selecting, moving or removing a state never touches a transition that shares its id, removing a state removes only the selected entities and the transitions that start or end at a removed state, and every callback reports the caller's own ids.
 
 Implementation: `src/components/state-machine-view/state-machine-view.tsx`
 Verification: `src/components/state-machine-view/state-machine-view.test.tsx`, `e2e/state-machine-view.spec.ts`

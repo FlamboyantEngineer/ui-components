@@ -387,7 +387,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Editable plant"
-      description="Drag parts on the 10 pixel grid or move them with the arrow keys (Shift for larger steps); Shift-drag the background for a marquee; drag from a port, or press a port then a part, to connect; press or drag a palette item to add a part; Delete removes. Leaving edit mode discards unfinished moves and connections, and so does a part that goes mid-drag: press Remove selected in 2 seconds, then drag a selected part or its port until it goes. Selecting and panning still work. Cancelled drags discard their drafts. The wheel pans, Ctrl or Command with the wheel zooms."
+      description="Drag parts on the 10 pixel grid or move them with the arrow keys (Shift for larger steps); Shift-drag the background for a marquee; drag from a port, or press a port then a part, to connect; press or drag a palette item to add a part; Delete removes. Leaving edit mode discards unfinished moves and connections, and so does a part that goes mid-drag: press Remove selected in 2 seconds, then drag a selected part or its port until it goes. A connection started from a port, by click or keyboard, is given up too when its part or port goes or the outline is shown, and does not come back with the diagram. Selecting and panning still work. Cancelled drags discard their drafts. The wheel pans, Ctrl or Command with the wheel zooms."
     >
       <Plant />
     </LabSection>

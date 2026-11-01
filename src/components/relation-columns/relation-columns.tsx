@@ -52,6 +52,9 @@ function useRelationPath(options: {
 }): [RelationColumnsPath, (path: RelationColumnsPath) => void] {
   const { itemKey, path, defaultPath, onPathChange } = options;
   const [own, setOwn] = useState({ itemKey, path: defaultPath ?? emptyRelationPath });
+  // A new item takes the path over at once, so returning to an earlier item starts empty too.
+  // The reset is not a choice and calls no `onPathChange`.
+  if (path === undefined && own.itemKey !== itemKey) setOwn({ itemKey, path: emptyRelationPath });
   const current = path ?? (own.itemKey === itemKey ? own.path : emptyRelationPath);
   const setPath = (next: RelationColumnsPath) => {
     if (path === undefined) setOwn({ itemKey, path: next });

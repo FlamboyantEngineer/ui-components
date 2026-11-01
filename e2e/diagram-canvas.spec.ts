@@ -53,6 +53,39 @@ test.describe('Diagram Canvas lab', () => {
     await expect(plant(page)).not.toHaveAttribute('data-connecting');
   });
 
+  test('UIC-DIAGRAM-CANVAS-5.2 gives up a pending connection when the outline is shown or its part goes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('diagram-canvas');
+    await viewportBox(page);
+    const edges = plant(page).locator('.ui-diagram-canvas__edge');
+    const before = await edges.count();
+    await plant(page).getByRole('button', { name: 'Pump, outlet' }).focus();
+    await page.keyboard.press('Enter');
+    await expect(plant(page)).toHaveAttribute('data-connecting', 'true');
+    await plant(page).getByRole('radio', { name: 'Outline' }).click();
+    await expect(plant(page)).not.toHaveAttribute('data-connecting');
+    await plant(page).getByRole('radio', { name: 'Diagram' }).click();
+    await expect(plant(page)).not.toHaveAttribute('data-connecting');
+    await part(page, 'Filter').focus();
+    await page.keyboard.press('Enter');
+    await expect(edges).toHaveCount(before);
+    await plant(page).getByRole('button', { name: 'Pump, outlet' }).focus();
+    await page.keyboard.press('Enter');
+    await expect(plant(page)).toHaveAttribute('data-connecting', 'true');
+    await part(page, 'Pump').focus();
+    await page.keyboard.press('Delete');
+    await expect(part(page, 'Pump')).toHaveCount(0);
+    await expect(plant(page)).not.toHaveAttribute('data-connecting');
+    await expect(plant(page).locator('.ui-diagram-canvas__status')).toHaveText(
+      'Connection cancelled',
+    );
+    await plant(page).getByRole('button', { name: 'Filter, outlet' }).focus();
+    await page.keyboard.press('Enter');
+    await expect(plant(page)).toHaveAttribute('data-connecting', 'true');
+  });
+
   test('UIC-DIAGRAM-CANVAS-1.1 UIC-DIAGRAM-CANVAS-6.1 UIC-DIAGRAM-CANVAS-6.4 draws every state', async ({
     page,
     lab,
