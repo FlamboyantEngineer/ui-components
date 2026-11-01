@@ -228,7 +228,14 @@ export function LoadingOverlay({
       {isScrim ? null : <LoadingCard {...cardProps} />}
     </div>
   );
-  return fullscreen ? <Portal layer="modal">{cover}</Portal> : cover;
+  // A top layer, so a modal open beneath neither hides the status nor lets presses through.
+  return fullscreen ? (
+    <Portal layer="modal" topLayer>
+      {cover}
+    </Portal>
+  ) : (
+    cover
+  );
 }
 
 /**

@@ -150,7 +150,8 @@ function BlockingModal({ state, rootProps, children, ...overlay }: BlockingModal
 
 /**
  * A dialog floating over a page it does not block: no focus trap, no hidden or inert content, and
- * the overlay lets pointer presses through to the page around the panel. It enters and exits with
+ * the overlay lets pointer presses through to the page around the panel. Opened over a blocking
+ * overlay, it stays reachable and visible to assistive technology. It enters and exits with
  * the panel's animations.
  */
 function FloatingModal({ state, rootProps, children, isRetained }: FloatingModalProps) {
@@ -159,8 +160,10 @@ function FloatingModal({ state, rootProps, children, isRetained }: FloatingModal
   const { isMounted, isEntering, isExiting } = useEnterExit(panelRef, state.isOpen);
   if (!isMounted && !isRetained) return null;
   const phase = { entering: isEntering, exiting: isExiting };
+  // A top layer that joins React Aria's focus scopes, so a blocking overlay already open neither
+  // hides it nor pulls focus back out of it.
   return (
-    <Portal layer="modal">
+    <Portal layer="modal" topLayer>
       <div
         {...rootProps}
         {...dataAttributes(phase)}
@@ -172,9 +175,11 @@ function FloatingModal({ state, rootProps, children, isRetained }: FloatingModal
           {...hooks.slot('panel', phase)}
           style={{ pointerEvents: 'auto', ...retainedStyle(isMounted) }}
         >
-          <OverlayTriggerStateContext value={state}>
-            <ModalShownContext value={isMounted}>{children}</ModalShownContext>
-          </OverlayTriggerStateContext>
+          <FocusScope>
+            <OverlayTriggerStateContext value={state}>
+              <ModalShownContext value={isMounted}>{children}</ModalShownContext>
+            </OverlayTriggerStateContext>
+          </FocusScope>
         </div>
       </div>
     </Portal>

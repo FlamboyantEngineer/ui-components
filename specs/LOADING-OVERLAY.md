@@ -57,7 +57,7 @@ Verification: `src/components/loading-overlay/loading-overlay.test.tsx`, `e2e/lo
 
 ### UIC-LOADING-OVERLAY-2.3 - Full screen
 
-`fullscreen` shall publish `data-fullscreen` and render the cover through a [Portal](PORTAL.md) on the `modal` layer, in the overlay container, so the stylesheet can fix it over the viewport without being clipped or offset by the surrounding layout. A full-screen region keeps its own content inert while it loads, so keyboard users cannot reach what the cover hides.
+`fullscreen` shall publish `data-fullscreen` and render the cover through a top-layer [Portal](PORTAL.md) on the `modal` layer, in the overlay container, so the stylesheet can fix it over the viewport without being clipped or offset by the surrounding layout. A full-screen region keeps its own content inert while it loads, so keyboard users cannot reach what the cover hides. Shown while a modal is open, such as from a modal's action, the cover stays visible to assistive technology, so its status is announced, and blocks presses to the modal beneath.
 
 Implementation: `src/components/loading-overlay/loading-overlay.tsx`, `labs/reference/loading-overlay.css`
 Verification: `src/components/loading-overlay/loading-overlay.test.tsx`, `e2e/loading-overlay.spec.ts`

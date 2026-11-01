@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
+import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
 import { Table } from '../../src/components/table/table.js';
 import { Menu, MenuPopover, MenuTrigger } from '../../src/components/menu/menu.js';
 import {
@@ -261,6 +262,27 @@ function FullscreenDemo() {
   );
 }
 
+/** A dialog whose Save shows a full-screen cover for two seconds over it. */
+function SavingFromDialog() {
+  const [isSaving, setSaving] = useState(false);
+  useEffect(() => {
+    if (!isSaving) return undefined;
+    const timer = window.setTimeout(() => setSaving(false), 2000);
+    return () => window.clearTimeout(timer);
+  }, [isSaving]);
+  return (
+    <ModalTrigger>
+      <Button>Edit the recipe</Button>
+      <Modal title="Edit the recipe" cancelAction={null} data-lab-modal="saving">
+        <Button onPress={() => setSaving(true)}>Save the recipe</Button>
+        {isSaving ? (
+          <LoadingOverlay fullscreen label="Saving the recipe" data-lab-overlay="from-dialog" />
+        ) : null}
+      </Modal>
+    </ModalTrigger>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -347,6 +369,12 @@ mountLab(
       description="A full-screen overlay covers the viewport from the overlay layer until you press Escape."
     >
       <FullscreenDemo />
+    </LabSection>
+    <LabSection
+      title="Full screen over a dialog"
+      description="Open the dialog and press Save the recipe: the full-screen cover shows above the dialog for two seconds, announces its status and blocks presses to the dialog."
+    >
+      <SavingFromDialog />
     </LabSection>
   </>,
 );

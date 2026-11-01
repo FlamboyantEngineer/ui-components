@@ -1,8 +1,10 @@
-import { act, render, screen, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
+import { useState } from 'react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { Modal } from '../modal/modal.js';
 import { LoadingCard, LoadingOverlay, LoadingRegion } from './loading-overlay.js';
 
 const card = () => document.querySelector<HTMLElement>('.ui-loading-card');
@@ -309,6 +311,31 @@ describe('LoadingOverlay presence', () => {
     expect(cover.parentElement).toHaveAttribute('data-layer', 'modal');
     expect(within(cover).getByRole('status')).toHaveTextContent('Opening the cookbook');
     expectHooksMatchSpec(document.body, 'LOADING-OVERLAY');
+  });
+
+  it('UIC-LOADING-OVERLAY-2.3 announces a full-screen cover shown over an open modal', async () => {
+    function Saving() {
+      const [isSaving, setSaving] = useState(false);
+      return (
+        <>
+          <button type="button" onClick={() => setSaving(true)}>
+            Save
+          </button>
+          {isSaving ? <LoadingOverlay fullscreen label="Saving" /> : null}
+        </>
+      );
+    }
+    render(
+      <Modal title="Edit" defaultOpen>
+        <Saving />
+      </Modal>,
+    );
+    await userEvent.click(await screen.findByRole('button', { name: 'Save' }));
+    const status = await screen.findByRole('status');
+    expect(status).toHaveTextContent('Saving');
+    // Not hidden or made inert by the modal beneath.
+    await waitFor(() => expect(status.closest('[aria-hidden="true"], [inert]')).toBeNull());
+    expect(status.closest('.ui-portal')).toHaveAttribute('data-react-aria-top-layer', 'true');
   });
 
   it('UIC-LOADING-OVERLAY-2.3 keeps a full-screen region inert while it loads', () => {

@@ -283,3 +283,25 @@ test.describe('Loading Overlay lab', () => {
     }
   });
 });
+
+test('UIC-LOADING-OVERLAY-2.3 announces a full-screen cover over a dialog and blocks it', async ({
+  page,
+  lab,
+}) => {
+  await page.clock.install();
+  await lab.open('loading-overlay');
+  await page.getByRole('button', { name: 'Edit the recipe' }).click();
+  await page.getByRole('button', { name: 'Save the recipe' }).click();
+  const cover = page.locator('[data-lab-overlay="from-dialog"]');
+  await expect(cover.getByRole('status')).toHaveText(/Saving the recipe/);
+  const owner = await page.evaluate(
+    () =>
+      document
+        .elementFromPoint(innerWidth / 2, innerHeight / 2)
+        ?.closest('.ui-loading-overlay, .ui-modal')?.classList[0] ?? '',
+  );
+  expect(owner).toBe('ui-loading-overlay');
+  await page.clock.runFor(2000);
+  await expect(cover).toHaveCount(0);
+  await expect(page.getByRole('dialog', { name: 'Edit the recipe' })).toBeVisible();
+});
