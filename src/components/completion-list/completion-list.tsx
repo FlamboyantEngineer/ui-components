@@ -1,6 +1,14 @@
 'use client';
 
-import { useId, useMemo, type MouseEvent, type ReactNode, type RefObject } from 'react';
+import {
+  useId,
+  useMemo,
+  useRef,
+  type MouseEvent,
+  type PointerEvent,
+  type ReactNode,
+  type RefObject,
+} from 'react';
 import { Popover, useHover, usePress } from '../../primitives/index.js';
 import { PopoverPresence } from '../popover/popover.js';
 import type { AriaLabellingProps } from '../../core/events.js';
@@ -87,6 +95,7 @@ function CompletionOption({
   documentationId: string | undefined;
 }) {
   const isActive = item.id === props.activeKey;
+  const acceptsPointer = useRef(false);
   const { pressProps } = usePress({
     // A press inserts the option without taking focus from the editor.
     preventFocusOnPress: true,
@@ -94,15 +103,32 @@ function CompletionOption({
   });
   const { hoverProps } = useHover({
     onHoverStart: () => {
-      if (!isActive) props.onActiveKeyChange?.(item.id);
+      acceptsPointer.current = true;
+    },
+    onHoverEnd: () => {
+      acceptsPointer.current = false;
     },
   });
+  const activate = () => {
+    if (acceptsPointer.current && !isActive) props.onActiveKeyChange?.(item.id);
+  };
   return (
     <div
       {...mergeProps(pressProps, hoverProps, {
         // Nor its caret: a press does not move the document's selection into the option.
         onMouseDown: (event: MouseEvent) => event.preventDefault(),
       })}
+      // Layout can move an option beneath a resting pointer and emit enter without movement.
+      onPointerMove={(event: PointerEvent<HTMLDivElement>) => {
+        if (
+          typeof globalThis.PointerEvent !== 'undefined' &&
+          (event.pointerType === 'mouse' || event.pointerType === 'pen')
+        )
+          activate();
+      }}
+      onMouseMove={() => {
+        if (typeof globalThis.PointerEvent === 'undefined') activate();
+      }}
       {...hooks.slot('option', { focused: isActive, kind: item.kind })}
       id={getCompletionOptionId(listId, item.id)}
       role="option"

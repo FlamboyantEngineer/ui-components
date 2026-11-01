@@ -141,6 +141,46 @@ test.describe('Completion List lab', () => {
     await expect(input).toBeFocused();
   });
 
+  test('UIC-COMPLETION-LIST-1.3 preserves the first completion beneath a stationary pointer', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('completion-list');
+    const input = editor(page, 'labels-none');
+    await input.focus();
+    const london = page.getByRole('option', { name: 'London', exact: true });
+    await expect(london).toBeVisible();
+    const bounds = await london.boundingBox();
+    if (!bounds) throw new Error('The second completion has no bounds.');
+    await input.press('Escape');
+    await expect(london).toBeHidden();
+    await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+    await input.pressSequentially('L');
+    await expect(london).toBeVisible();
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+        ),
+    );
+    await expect(page.getByRole('option', { name: 'Lisbon', exact: true })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    await expect(london).toHaveAttribute('aria-selected', 'false');
+    await input.press('Enter');
+    await expect(input).toHaveValue('Lisbon');
+    await input.fill('L');
+    await expect(london).toBeVisible();
+    const reopened = await london.boundingBox();
+    if (!reopened) throw new Error('The reopened second completion has no bounds.');
+    await page.mouse.move(reopened.x + reopened.width / 2 + 3, reopened.y + reopened.height / 2);
+    await expect(london).toHaveAttribute('aria-selected', 'true');
+    await input.press('Enter');
+    await expect(input).toHaveValue('London');
+    await expect(input).toBeFocused();
+  });
+
   test('UIC-COMPLETION-LIST-1.4 shows an empty state and keeps a long list scrolled to the active option', async ({
     page,
     lab,

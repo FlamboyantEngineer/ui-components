@@ -27,10 +27,11 @@ export function useFollowAnchor({ anchorRef, isOpen, target }: FollowAnchorOptio
     setLast({ target });
     if (isOpen) setPaused(true);
   }
+  // A parent layout update can replace the target while the prior commit is already paused.
   useLayoutEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- The paused render must commit so React Aria measures afresh before resuming.
     if (isPaused) setPaused(false);
-  }, [isPaused]);
+  }, [isPaused, target]);
   useEffect(() => {
     const anchor = anchorRef.current;
     if (!isOpen || !anchor) return undefined;

@@ -117,6 +117,8 @@ Verification: `src/utils/overlay-auto-update.test.ts`
 
 `useFollowAnchor({ anchorRef, isOpen, target })` shall keep an open React Aria overlay on its anchor: after each change `autoUpdateOverlay` reports for the anchor (any scroll in its document, a resize of its window, a size change of the anchor), and when `target` (such as a point's `getTargetRect`) changes, it returns `false` for one render and `true` again as the overlay's `shouldUpdatePosition`, so React Aria measures afresh without closing, remounting or redrawing the overlay. While closed it follows nothing. It is the one follow mechanism of `AnchoredTooltip`, `MenuOverlay` (and so `MenuPopover`, context-menu point anchors and menubar menus) and `CompletionList`; none of them toggles between spellings of a placement or listens on a window other than the anchor's.
 
+If another target arrives while positioning is paused, including from a parent's layout update, the final target shall still resume position updates so the overlay measures its latest anchor.
+
 Implementation: `src/utils/use-follow-anchor.ts`, `src/components/tooltip/anchored-tooltip.tsx`, `src/components/menu/menu-popover.tsx`, `src/components/context-menu/menu-anchor.ts`, `src/components/completion-list/completion-list.tsx`
 Verification: `src/utils/use-follow-anchor.test.tsx`
 
