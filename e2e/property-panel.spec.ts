@@ -273,3 +273,29 @@ test('UIC-PROPERTY-PANEL-3.1 sizes the label column to the longest label and lin
   const longest = Math.max(...rows.map((row) => row.text));
   expect(Math.round((starts[0] ?? 0) - longest)).toBe(8);
 });
+
+test('UIC-PROPERTY-PANEL-2.2 draws the section count quieter than the title', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('property-filter');
+  const count = page.locator('.ui-property-section__count').first();
+  const title = page.locator('.ui-property-section__title').first();
+  const style = (locator: Locator) =>
+    locator.evaluate((node) => {
+      const computed = getComputedStyle(node);
+      return { color: computed.color, weight: computed.fontWeight, fill: computed.backgroundColor };
+    });
+  const [badge, heading] = [await style(count), await style(title)];
+  expect(Number(badge.weight)).toBeLessThan(Number(heading.weight));
+  expect(badge.color).not.toBe(heading.color);
+  const muted = await page.evaluate(() => {
+    const probe = document.createElement('span');
+    probe.style.color = 'var(--ref-muted)';
+    document.body.append(probe);
+    const color = getComputedStyle(probe).color;
+    probe.remove();
+    return color;
+  });
+  expect(badge.color).toBe(muted);
+});

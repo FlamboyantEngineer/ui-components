@@ -108,9 +108,18 @@
   background: var(--ref-accent-ink);
 }
 
+/*
+ * A section's count is secondary to its title: a quiet tinted pill with muted digits instead of the
+ * solid count badge, in panels and filters alike. Other count badges keep their own look.
+ */
 .ui-property-section__count {
   flex: none;
   font-weight: 400;
+}
+
+.ui-property-section__count.ui-badge[data-variant] {
+  background: var(--ref-hover);
+  color: var(--ref-muted);
 }
 
 .ui-property-section__meta {
