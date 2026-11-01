@@ -401,6 +401,44 @@ describe('Outline', () => {
     expect(toggle('Terms')).toHaveAttribute('aria-expanded', 'false');
   });
 
+  it('UIC-OUTLINE-4.1 moves focus to the shown ancestor when the host collapses it', () => {
+    const outline = (expandedKeys: string[]) => (
+      <Outline headings={headings} expandedKeys={expandedKeys} />
+    );
+    const { rerender } = render(outline(['intro', 'terms', 'design']));
+    act(() => screen.getByRole('link', { name: 'Abbreviations' }).focus());
+    rerender(outline(['terms', 'design']));
+    expect(screen.getByRole('link', { name: 'Introduction' })).toHaveFocus();
+  });
+
+  it.each([
+    ['its parent', 'scope', 'Introduction'],
+    ['the entry before it', 'design', 'Abbreviations'],
+  ])('UIC-OUTLINE-4.1 moves focus to %s when its heading is removed', (_, removed, next) => {
+    const outline = (list: readonly OutlineHeading[]) => <Outline headings={list} />;
+    const { rerender } = render(outline(headings));
+    const name = headings.find((heading) => heading.id === removed)?.label ?? '';
+    act(() => screen.getByRole('link', { name }).focus());
+    rerender(
+      outline(headings.filter((heading) => heading.id !== removed && heading.id !== 'layout')),
+    );
+    expect(screen.getByRole('link', { name: next })).toHaveFocus();
+  });
+
+  it('UIC-OUTLINE-4.1 leaves focus elsewhere when the host collapses an entry', async () => {
+    const outline = (expandedKeys: string[]) => (
+      <>
+        <Outline headings={headings} expandedKeys={expandedKeys} />
+        <button type="button">Elsewhere</button>
+      </>
+    );
+    const { rerender } = render(outline(['intro', 'terms', 'design']));
+    act(() => screen.getByRole('link', { name: 'Abbreviations' }).focus());
+    await userEvent.click(screen.getByRole('button', { name: 'Elsewhere' }));
+    rerender(outline(['terms', 'design']));
+    expect(screen.getByRole('button', { name: 'Elsewhere' })).toHaveFocus();
+  });
+
   it('UIC-OUTLINE-4.2 lets the caller control the expanded entries', async () => {
     function Controlled(props: Partial<OutlineProps>) {
       const [keys, setKeys] = useState<Set<Key>>(new Set(['intro']));

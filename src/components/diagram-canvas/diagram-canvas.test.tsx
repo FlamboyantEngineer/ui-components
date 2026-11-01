@@ -10,6 +10,7 @@ import {
   pipeNodes,
   stubViewportSize,
 } from '../../../test/diagram-fixtures.js';
+import { inShadow, ShadowHost } from '../../../test/shadow-fixtures.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import {
   DiagramCanvas,
@@ -412,6 +413,26 @@ describe('DiagramCanvas', () => {
     expect(onViewportChange).toHaveBeenLastCalledWith({ x: -36, y: 0, zoom: 100 });
     act(() => node('Pump').focus());
     expect(onViewportChange).toHaveBeenLastCalledWith({ x: 16, y: 16, zoom: 100 });
+  });
+
+  it('UIC-DIAGRAM-CANVAS-3.4 pans a focused node the host moves into view inside a shadow root', () => {
+    stubViewportSize(400, 300);
+    const onViewportChange = vi.fn();
+    const canvas = (nodes: typeof pipeNodes) => (
+      <ShadowHost name="page">
+        <DiagramCanvas
+          nodes={nodes}
+          edges={pipeEdges}
+          defaultViewport={{ x: 0, y: 0, zoom: 100 }}
+          onViewportChange={onViewportChange}
+        />
+      </ShadowHost>
+    );
+    const { rerender } = render(canvas(pipeNodes));
+    act(() => inShadow('page').getByRole('group', { name: 'Pump' }).focus());
+    const moved = pipeNodes.map((entry) => (entry.id === 'pump' ? { ...entry, x: 2000 } : entry));
+    rerender(canvas(moved));
+    expect(requireDefined(onViewportChange.mock.lastCall)[0].x).toBeLessThan(-1500);
   });
 
   it('UIC-DIAGRAM-CANVAS-3.5 draws a minimap of the nodes and view that centres the view where pressed', async () => {

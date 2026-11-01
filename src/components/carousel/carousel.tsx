@@ -1,23 +1,14 @@
 'use client';
 
-import {
-  Children,
-  isValidElement,
-  useId,
-  useLayoutEffect,
-  useRef,
-  type FocusEvent,
-  type KeyboardEvent,
-  type ReactNode,
-} from 'react';
+import { Children, isValidElement, useId, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { containsComposed, getComposedActiveElement } from '../../utils/focus-target.js';
 import { isEditableTarget } from '../../utils/is-editable-target.js';
-import { isHTMLElement, isNode } from '../../utils/is-element.js';
+import { isHTMLElement } from '../../utils/is-element.js';
+import { useFocusRecovery } from '../../utils/use-focus-recovery.js';
 import {
   CarouselControls,
   CarouselPaginationButtons,
@@ -69,45 +60,22 @@ function toSlideKey(slide: unknown, position: number) {
   return isValidElement(slide) && slide.key !== null ? slide.key : position;
 }
 
-/** Whether `element` was hidden or removed, rather than left by the reader. */
-function isHiddenOrGone(element: Element) {
-  return !element.isConnected || element.closest('[hidden], [inert]') !== null;
-}
-
 /**
  * Keeps focus in the carousel when the slide holding it stops being shown, however that happens:
- * a move, a new controlled index, or the slide's removal. While focus is inside a slide (deep
- * focus, through shadow roots too), a change of the shown slide moves focus to the newly shown one
- * if focus was lost with the old one. Focus that left the slides (for a control, or elsewhere on
- * the page) is never taken back.
+ * a move, a new controlled index, or the slide's removal. Focus lost with the old slide (deep
+ * focus, through shadow roots too) moves to the newly shown one; focus that left the slides (for a
+ * control, or elsewhere on the page) is never taken back.
  */
-function useSlideFocus(shownKey: unknown) {
+function useSlideFocus() {
   const viewportRef = useRef<HTMLDivElement>(null);
-  const isFocusInside = useRef(false);
-  useLayoutEffect(() => {
+  useFocusRecovery(viewportRef, () => {
     const viewport = viewportRef.current;
-    if (!viewport || !isFocusInside.current) return;
-    const shown = [...viewport.children].find((slide) => slide.hasAttribute('data-current'));
-    const active = getComposedActiveElement(viewport);
-    if (!isHTMLElement(shown) || containsComposed(shown, active)) return;
-    const isLost =
-      active === null ||
-      active === viewport.ownerDocument.body ||
-      containsComposed(viewport, active);
-    if (isLost) shown.focus();
-  }, [shownKey]);
-  const focusHandlers = {
-    onFocus: () => {
-      isFocusInside.current = true;
-    },
-    onBlur: (event: FocusEvent<HTMLDivElement>) => {
-      const next = event.relatedTarget;
-      if (isNode(next) && containsComposed(event.currentTarget, next)) return;
-      if (next === null && isHiddenOrGone(event.target)) return;
-      isFocusInside.current = false;
-    },
-  };
-  return { viewportRef, focusHandlers };
+    const shown = [...(viewport?.children ?? [])].find((slide) =>
+      slide.hasAttribute('data-current'),
+    );
+    return isHTMLElement(shown) ? shown : null;
+  });
+  return viewportRef;
 }
 
 /** The shown slide, kept within the slides, and the moves between slides. */
@@ -146,11 +114,10 @@ function CarouselViewport({
   isRotating: boolean;
 }) {
   const strings = useUiStrings();
-  const { viewportRef, focusHandlers } = useSlideFocus(toSlideKey(slides[index], index));
+  const viewportRef = useSlideFocus();
   return (
     <div
       {...hooks.slot('viewport')}
-      {...focusHandlers}
       ref={viewportRef}
       id={id}
       aria-live={isRotating ? 'off' : 'polite'}

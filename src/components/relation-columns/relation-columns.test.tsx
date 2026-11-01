@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState, createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -255,6 +255,39 @@ describe('RelationColumns', () => {
     expect(within(column('Upstream of Requirement 12')).getByRole('row')).toHaveFocus();
     await userEvent.keyboard('{ArrowLeft}');
     expect(within(column('Upstream of Requirement 12')).getByRole('row')).toHaveFocus();
+  });
+
+  it('UIC-RELATION-COLUMNS-2.1 moves focus to the deepest column left when the path shortens', () => {
+    const walk = (downstream: string[]) => <Walk path={{ upstream: [], downstream }} />;
+    const { rerender } = render(walk(['spec']));
+    act(() =>
+      within(column('Downstream of Design 4'))
+        .getByRole('row', { name: /Test 7/ })
+        .focus(),
+    );
+    rerender(walk([]));
+    expect(screen.queryByRole('grid', { name: 'Downstream of Design 4' })).not.toBeInTheDocument();
+    expect(
+      within(column('Downstream of Requirement 12')).getByRole('row', { name: /Design 4/ }),
+    ).toHaveFocus();
+  });
+
+  it('UIC-RELATION-COLUMNS-2.1 leaves focus elsewhere when the path shortens', async () => {
+    const walk = (downstream: string[]) => (
+      <>
+        <Walk path={{ upstream: [], downstream }} />
+        <button type="button">Elsewhere</button>
+      </>
+    );
+    const { rerender } = render(walk(['spec']));
+    act(() =>
+      within(column('Downstream of Design 4'))
+        .getByRole('row', { name: /Test 7/ })
+        .focus(),
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Elsewhere' }));
+    rerender(walk([]));
+    expect(screen.getByRole('button', { name: 'Elsewhere' })).toHaveFocus();
   });
 
   it('UIC-RELATION-COLUMNS-2.1 mirrors the arrow keys in right-to-left text', async () => {

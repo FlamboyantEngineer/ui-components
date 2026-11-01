@@ -211,6 +211,51 @@ describe('NavigationRail', () => {
     expect(nav().style.getPropertyValue('--ui-navigation-rail-width')).toBe('240px');
   });
 
+  it('UIC-NAVIGATION-RAIL-2.5 moves focus to the group trigger when the rail collapses over it', () => {
+    const { rerender } = render(<Rail current="north" isCollapsed={false} />);
+    act(() => screen.getByRole('link', { name: 'North field' }).focus());
+    rerender(<Rail current="north" isCollapsed />);
+    expect(document.activeElement).toHaveClass('ui-navigation-rail__group-trigger');
+    expect(nav()).toContainElement(document.activeElement as HTMLElement);
+  });
+
+  it('UIC-NAVIGATION-RAIL-2.5 moves focus to the outermost shown trigger when nested groups close', () => {
+    const rail = (isExpanded: boolean) => (
+      <NavigationRail aria-label="Main navigation">
+        <NavigationRailSection title="Workspace">
+          <NavigationRailGroup label="Fields" isExpanded={isExpanded}>
+            <NavigationRailGroup label="North" defaultExpanded>
+              <NavigationRailItem label="Upper meadow" href="/upper" />
+            </NavigationRailGroup>
+          </NavigationRailGroup>
+        </NavigationRailSection>
+      </NavigationRail>
+    );
+    const { rerender } = render(rail(true));
+    act(() => screen.getByRole('link', { name: 'Upper meadow' }).focus());
+    rerender(rail(false));
+    expect(screen.getByRole('button', { name: /Fields/ })).toHaveFocus();
+  });
+
+  it('UIC-NAVIGATION-RAIL-2.5 leaves focus elsewhere when a group closes', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(
+      <>
+        <Rail current="north" isCollapsed={false} />
+        <button type="button">Elsewhere</button>
+      </>,
+    );
+    act(() => screen.getByRole('link', { name: 'North field' }).focus());
+    await user.click(screen.getByRole('button', { name: 'Elsewhere' }));
+    rerender(
+      <>
+        <Rail current="north" isCollapsed />
+        <button type="button">Elsewhere</button>
+      </>,
+    );
+    expect(screen.getByRole('button', { name: 'Elsewhere' })).toHaveFocus();
+  });
+
   it('UIC-NAVIGATION-RAIL-1.3 draws a width outside the bounds at the nearest bound', () => {
     render(<Rail isResizable width={900} />);
     expect(nav().style.getPropertyValue('--ui-navigation-rail-width')).toBe('400px');

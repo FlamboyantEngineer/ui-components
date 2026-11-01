@@ -61,7 +61,7 @@ Verification: `src/components/outline/outline.test.tsx`, `e2e/outline.spec.ts`
 
 ### UIC-OUTLINE-4.1 - Section toggles
 
-When any entry has entries under it, each row shall start with an extra-small [Expand Toggle](EXPAND-TOGGLE.md): entries with children get a toggle named by the provider's `sectionsIn` string for their label (`Sections in Design`), reporting `aria-expanded` and controlling their list (`aria-controls`), which is `hidden` while collapsed; other entries get the toggle's empty placeholder, so labels stay aligned. An expanded entry's item publishes `data-expanded`. An outline with no nesting draws no toggles.
+When any entry has entries under it, each row shall start with an extra-small [Expand Toggle](EXPAND-TOGGLE.md): entries with children get a toggle named by the provider's `sectionsIn` string for their label (`Sections in Design`), reporting `aria-expanded` and controlling their list (`aria-controls`), which is `hidden` while collapsed; other entries get the toggle's empty placeholder, so labels stay aligned. An expanded entry's item publishes `data-expanded`. An outline with no nesting draws no toggles. When an update hides the entry holding focus under a collapsed ancestor, or removes its heading, focus shall move to the nearest shown entry: its closest shown ancestor, else the closest entry before it, else the first after it. Focus that had left the outline stays where it is.
 
 Implementation: `src/components/outline/outline.tsx`, `src/core/strings/content.ts`
 Verification: `src/components/outline/outline.test.tsx`, `e2e/outline.spec.ts`

@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useMemo, type MouseEvent, type ReactNode, type RefObject } from 'react';
+import { useId, useMemo, useRef, type MouseEvent, type ReactNode, type RefObject } from 'react';
 import type { AriaLabellingProps, ExpansionProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
@@ -21,6 +21,8 @@ import {
   type OutlineHeading,
 } from './outline-tree.js';
 import { useOutlineExpansion } from './use-outline-expansion.js';
+import { useOutlineFocusRecovery } from './use-outline-focus.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 
 export type { OutlineHeading } from './outline-tree.js';
 
@@ -181,6 +183,9 @@ export function Outline(props: OutlineProps) {
   const parents = useMemo(() => entries.filter((entry) => entry.children.length > 0), [entries]);
   const { isExpanded, setExpanded } = useOutlineExpansion(parents, props);
   const { current, currentAncestors } = useCurrentHeading(entries, props);
+  const rootRef = useRef<HTMLElement>(null);
+  const mergedRef = useMergedRefs(rootRef, ref);
+  useOutlineFocusRecovery(rootRef, entries);
   const context: OutlineContext = {
     baseId,
     currentKey: current,
@@ -202,7 +207,7 @@ export function Outline(props: OutlineProps) {
     <nav
       {...hooks.root({ className, props, data: { numbered: isNumbered, pending: isPending } })}
       id={id}
-      ref={ref}
+      ref={mergedRef}
       aria-label={ariaLabel ?? (labelledBy ? undefined : strings.outline)}
       aria-labelledby={labelledBy}
       aria-describedby={describedBy}

@@ -403,6 +403,16 @@ describe('DiagramCanvas nodes', () => {
     expect(container.querySelector('.ui-diagram-canvas__viewport')).toHaveFocus();
   });
 
+  it('UIC-DIAGRAM-CANVAS-4.5 moves focus to the nearest node when the host removes the focused one', () => {
+    const { container, rerender } = render(<DiagramCanvas nodes={pipeNodes} edges={pipeEdges} />);
+    act(() => node('Valve').focus());
+    const others = pipeNodes.filter((entry) => entry.id !== 'valve');
+    rerender(<DiagramCanvas nodes={others} edges={[]} />);
+    expect(node('Tank')).toHaveFocus();
+    rerender(<DiagramCanvas nodes={[]} edges={[]} />);
+    expect(container.querySelector('.ui-diagram-canvas__viewport')).toHaveFocus();
+  });
+
   it('UIC-DIAGRAM-CANVAS-6.2 reads a repeated announcement again', async () => {
     const user = userEvent.setup();
     render(<EditableDiagram />);

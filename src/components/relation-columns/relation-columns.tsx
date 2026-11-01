@@ -3,7 +3,7 @@
 // Walks relations upstream and downstream of an item in Miller columns: choosing an item in a
 // column opens the column of its related items beyond it.
 
-import { useId, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useId, useRef, useState, type KeyboardEvent, type ReactNode, type RefObject } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
@@ -20,6 +20,7 @@ import {
   type RelationDirection,
 } from './relation-columns-model.js';
 import { isElement } from '../../utils/is-element.js';
+import { useFocusRecovery } from '../../utils/use-focus-recovery.js';
 
 export interface RelationColumnsProps<T extends { id: Key }>
   extends BaseProps, AriaLabellingProps, RefProps<HTMLDivElement> {
@@ -76,11 +77,37 @@ function moveBetweenColumns(event: KeyboardEvent<HTMLElement>, isRightToLeft: bo
   const index = columns.findIndex((column) => column.contains(row));
   const step = (event.key === 'ArrowRight') !== isRightToLeft ? 1 : -1;
   const target = columns[index + step];
-  const rows = target ? [...target.querySelectorAll<HTMLElement>(rowSelector)] : [];
-  const next = rows.find((entry) => entry.getAttribute('aria-selected') === 'true') ?? rows[0];
   event.preventDefault();
   event.stopPropagation();
-  next?.focus();
+  if (target) findColumnRow(target)?.focus();
+}
+
+/** The row of a column that takes focus: its chosen item, else its first one. */
+function findColumnRow(column: Element): HTMLElement | undefined {
+  const rows = [...column.querySelectorAll<HTMLElement>(rowSelector)];
+  return rows.find((entry) => entry.getAttribute('aria-selected') === 'true') ?? rows[0];
+}
+
+/**
+ * Keeps focus in the columns when the column holding it closes, as a shorter path from the host
+ * closes it: focus moves to the deepest column left on the same side, else the item's column.
+ */
+function useColumnFocusRecovery(columnsRef: RefObject<HTMLDivElement | null>) {
+  useFocusRecovery(columnsRef, (lost) => {
+    const closed = lost.closest(`.${hooks.slotClass('column')}`);
+    const side = closed?.getAttribute('data-direction');
+    const depth = Number(closed?.getAttribute('data-depth'));
+    const columns = [
+      ...(columnsRef.current?.querySelectorAll(`.${hooks.slotClass('column')}`) ?? []),
+    ];
+    const depthOf = (column: Element) => Number(column.getAttribute('data-depth'));
+    const deepest = columns
+      .filter((column) => column.getAttribute('data-direction') === side && depthOf(column) < depth)
+      .sort((first, second) => depthOf(second) - depthOf(first))[0];
+    const item = columns.find((column) => column.getAttribute('data-direction') === 'item');
+    const target = deepest ?? item;
+    return target ? findColumnRow(target) : null;
+  });
 }
 
 /**
@@ -109,6 +136,8 @@ export function RelationColumns<T extends { id: Key }>({
   const pathLabelId = `${baseId}-path`;
   const [current, setPath] = useRelationPath({ itemKey: item.id, path, defaultPath, onPathChange });
   const columns = resolveRelationColumns({ item, path: current, getRelated });
+  const columnsRef = useRef<HTMLDivElement>(null);
+  useColumnFocusRecovery(columnsRef);
   const trail = listRelationTrail(columns);
   const context: RelationColumnContext<T> = {
     ...{ getRelated, getTextValue, renderItem, onAction },
@@ -141,6 +170,7 @@ export function RelationColumns<T extends { id: Key }>({
       />
       <div
         {...hooks.slot('columns')}
+        ref={columnsRef}
         onKeyDownCapture={(event) => moveBetweenColumns(event, textDirection === 'rtl')}
       >
         {columns.map((column) => (

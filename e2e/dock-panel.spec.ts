@@ -220,6 +220,21 @@ test.describe('Dock Panel lab', () => {
     await expect(panel.getByLabel('Tip draft')).toBeHidden();
   });
 
+  for (const change of ['Remove', 'Disable']) {
+    test(`UIC-DOCK-PANEL-2.4 moves focus to the next pane when the page does ${change.toLowerCase()} the focused one`, async ({
+      page,
+      lab,
+    }) => {
+      await page.clock.install();
+      await lab.open('dock-panel');
+      const frame = page.locator('[data-lab-frame="taken-away"]');
+      await frame.getByRole('button', { name: `${change} Notes in one second` }).click();
+      await frame.getByRole('textbox', { name: 'Note' }).focus();
+      await page.clock.runFor(1000);
+      await expect(frame.locator('.ui-dock-panel__pane[aria-label="Links"]')).toBeFocused();
+    });
+  }
+
   test('UIC-DOCK-PANEL-1.1 is as tall as its open pane in a host with no height, and fills a host with one', async ({
     page,
     lab,

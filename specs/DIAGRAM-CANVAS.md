@@ -84,7 +84,7 @@ Verification: `src/components/diagram-canvas/diagram-canvas.test.tsx`, `src/comp
 
 ### UIC-DIAGRAM-CANVAS-3.4 - Focused nodes stay in view
 
-A node that receives focus, or moves while focused, shall pan the view the least that brings it 16 pixels inside the viewport.
+A node that receives focus, or moves while focused (focus read through open shadow roots, so a canvas inside one follows too), shall pan the view the least that brings it 16 pixels inside the viewport.
 
 Implementation: `src/components/diagram-canvas/use-diagram-viewport.ts`, `src/components/diagram-canvas/diagram-node.tsx`
 Verification: `src/components/diagram-canvas/diagram-canvas.test.tsx`
@@ -130,7 +130,7 @@ Verification: `src/components/diagram-canvas/diagram-node.test.tsx`, `e2e/diagra
 
 ### UIC-DIAGRAM-CANVAS-4.5 - Removing
 
-In edit mode Delete or Backspace on a focused node shall remove it, or the whole selection when it is selected (selected edges included), with every edge that touches a removed node: `onNodesChange` receives the nodes left and `onEdgesChange` the edges left, the live region reads the provider's `diagramRemoved` string with the count, and focus moves to the next node left, else the previous one, else the viewport, which takes focus without joining the Tab order.
+In edit mode Delete or Backspace on a focused node shall remove it, or the whole selection when it is selected (selected edges included), with every edge that touches a removed node: `onNodesChange` receives the nodes left and `onEdgesChange` the edges left, the live region reads the provider's `diagramRemoved` string with the count, and focus moves to the next node left, else the previous one, else the viewport, which takes focus without joining the Tab order. When the host removes the node holding focus, focus shall move to the node drawn nearest to where it was, else to the viewport; focus that had left the canvas stays where it is.
 
 Implementation: `src/components/diagram-canvas/use-node-moves.ts`, `src/components/diagram-canvas/diagram-node.tsx`, `src/components/diagram-canvas/diagram-canvas.tsx`
 Verification: `src/components/diagram-canvas/diagram-node.test.tsx`

@@ -362,6 +362,55 @@ function ArrivingPanes() {
   );
 }
 
+/**
+ * The page removes or disables the Notes pane one second after a button press, time enough to put
+ * focus back in its field: focus moves to the pane shown in its place.
+ */
+function PaneTakenAway() {
+  const [notes, setNotes] = useState<'shown' | 'disabled' | 'removed'>('shown');
+  const later = (next: 'disabled' | 'removed') => window.setTimeout(() => setNotes(next), 1000);
+  return (
+    <Frame
+      position="end"
+      width={520}
+      height={220}
+      data-lab-frame="taken-away"
+      panel={
+        <DockPanel label="Taken away">
+          {notes === 'removed' ? null : (
+            <DockPanelPane
+              id="notes"
+              label="Notes"
+              icon={FolderGlyph}
+              title="Notes"
+              isDisabled={notes === 'disabled'}
+            >
+              <label>
+                Note <input />
+              </label>
+            </DockPanelPane>
+          )}
+          <DockPanelPane id="links" label="Links" icon={SearchGlyph} title="Links">
+            <p>Saved links.</p>
+          </DockPanelPane>
+        </DockPanel>
+      }
+    >
+      <p>
+        <button type="button" onClick={() => later('removed')}>
+          Remove Notes in one second
+        </button>{' '}
+        <button type="button" onClick={() => later('disabled')}>
+          Disable Notes in one second
+        </button>{' '}
+        <button type="button" onClick={() => setNotes('shown')}>
+          Restore Notes
+        </button>
+      </p>
+    </Frame>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -414,6 +463,12 @@ mountLab(
       description="The panel mounts with no panes. Once they load, the first pane shown stays shown, by its id, while a pane is added before it or the panes reverse; only removing it would select another."
     >
       <ArrivingPanes />
+    </LabSection>
+    <LabSection
+      title="A pane taken away"
+      description="Press a button, then put focus in the Notes field within a second: when the page removes or disables Notes, focus moves to the Links pane shown in its place instead of being lost."
+    >
+      <PaneTakenAway />
     </LabSection>
   </>,
 );
