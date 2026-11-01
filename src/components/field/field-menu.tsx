@@ -83,8 +83,8 @@ export function useFieldMenu(
 }
 
 /**
- * Makes the field root the field menu's target: a secondary click or long touch on it, or
- * Shift+F10 or the Context Menu key in it, opens the menu. The root renders the returned menu inside
+ * Makes the field root the field menu's target: a secondary click or long touch anywhere on it, its
+ * control's text included, or Shift+F10 or the Context Menu key in it, opens the menu. The root renders the returned menu inside
  * it, so focus in the open menu stays in the field and does not commit its draft. A secondary click
  * from outside the field focuses the control first, so the menu returns focus there on close.
  */
@@ -98,7 +98,7 @@ export function useFieldContextMenu(
   const targetProps = useContextMenuTarget({
     controller,
     isDisabled: model.isDisabled,
-    opensFromTextKeys: true,
+    opensInsideText: true,
     own: {
       ...ownProps,
       onContextMenu(event) {

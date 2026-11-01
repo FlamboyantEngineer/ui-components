@@ -20,6 +20,7 @@ import {
 import { TextMatchProvider } from '../../src/components/text-match/text-match.js';
 import type { Key } from '../../src/core/props.js';
 import { UiProvider, useUiStrings } from '../../src/core/provider.js';
+import { MenuEverywhere } from './field-menu-cases.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 import { CompactFieldsSection } from './field-compact-cases.js';
@@ -504,9 +505,15 @@ mountLab(
     </LabSection>
     <LabSection
       title="Field menu"
-      description="The field's context menu: right-click the field, long-press it, or press Shift+F10 in it. Clear empties it, Reset puts back the committed value (Pear), Set to default puts back the default (Apple); Help and a custom entry follow. The text of the input keeps the browser's own menu on a right-click."
+      description="The field's context menu: right-click the field, long-press it, or press Shift+F10 in it. Clear empties it, Reset puts back the committed value (Pear), Set to default puts back the default (Apple); Help and a custom entry follow. Right-clicking the text inside the input opens it too."
     >
       <MenuField />
+    </LabSection>
+    <LabSection
+      title="Menu everywhere in the field"
+      description="Right-click directly on the text inside each control (an input, a text area, a number and editable content), long-press it, or press Shift+F10 in it: the field menu opens, not the browser's. Edit a value first: opening the menu keeps the caret and the unsaved edit, and Reset puts back the value the field started with."
+    >
+      <MenuEverywhere />
     </LabSection>
     <LabSection title="String rules" description="Length, format and trimming rules.">
       <NameField />

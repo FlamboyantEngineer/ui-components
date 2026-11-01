@@ -1,7 +1,7 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import type { ReactElement } from 'react';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Menu, MenuItem } from '../menu/menu.js';
 import { ContextMenuTrigger } from './context-menu.js';
 
@@ -60,10 +60,10 @@ describe('ContextMenuTrigger and keys pressed in a text control', () => {
     expect(screen.getByRole('menu')).toBeInTheDocument();
   });
 
-  it('UIC-CONTEXT-MENU-1.2 opens from a text control inside the target with opensFromTextKeys', async () => {
+  it('UIC-CONTEXT-MENU-1.2 opens from a text control inside the target with opensInsideText', async () => {
     const user = userEvent.setup();
     render(
-      <ContextMenuTrigger opensFromTextKeys>
+      <ContextMenuTrigger opensInsideText>
         <div role="group" aria-label="Row">
           <input aria-label="Editor" />
         </div>
@@ -74,4 +74,38 @@ describe('ContextMenuTrigger and keys pressed in a text control', () => {
     await user.keyboard('{Shift>}{F10}{/Shift}');
     expect(screen.getByRole('menu')).toBeInTheDocument();
   });
+
+  it.each(editors)(
+    'UIC-CONTEXT-MENU-1.1 UIC-CONTEXT-MENU-1.3 opens from a secondary click and a long touch on %s with opensInsideText',
+    async (_case, editor) => {
+      vi.useFakeTimers();
+      const user = userEvent.setup({ advanceTimers: (ms) => vi.advanceTimersByTime(ms) });
+      render(
+        <ContextMenuTrigger opensInsideText>
+          <div role="group" aria-label="Row">
+            {editor}
+          </div>
+          <FileMenu />
+        </ContextMenuTrigger>,
+      );
+      const field = screen.getByRole('textbox', { name: 'Editor' });
+      expect(fireEvent.contextMenu(field)).toBe(false);
+      expect(screen.getByRole('menu')).toBeInTheDocument();
+      await user.keyboard('{Escape}');
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+      await user.pointer({
+        keys: '[TouchA>]',
+        target: field,
+        coords: { clientX: 20, clientY: 20 },
+      });
+      act(() => {
+        vi.advanceTimersByTime(500);
+      });
+      expect(screen.getByRole('menu')).toBeInTheDocument();
+    },
+  );
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });

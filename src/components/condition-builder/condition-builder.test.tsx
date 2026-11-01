@@ -443,8 +443,11 @@ describe('ConditionBuilder', () => {
     const onValue = vi.fn();
     render(<Controlled onValue={onValue} showActionButtons={false} />);
     const first = rule('Rule 1');
-    // A secondary click in a text control keeps the browser's own menu.
+    // A secondary click in a text control opens that field's own menu, not the rule's.
     await user.pointer({ keys: '[MouseRight]', target: within(first).getByRole('textbox') });
+    expect(await screen.findByRole('menu', { name: 'Value actions' })).toBeInTheDocument();
+    expect(screen.getAllByRole('menu')).toHaveLength(1);
+    await user.keyboard('{Escape}');
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     // A field's own menu opens instead of the rule's.
     act(() => within(first).getAllByRole('button')[0]?.focus());

@@ -93,8 +93,17 @@ test.describe('Chat Message Actions lab', () => {
       'aria-pressed',
       'true',
     );
-    await dialog.getByRole('textbox', { name: 'Comment (optional)' }).focus();
+    const comment = dialog.getByRole('textbox', { name: 'Comment (optional)' });
+    await comment.focus();
     await page.keyboard.type('Clear directions');
+    // A secondary click in the comment opens its field menu; Escape closes only that menu.
+    await comment.click({ button: 'right' });
+    await expect(page.getByRole('menu', { name: 'Comment (optional) actions' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('menu')).toHaveCount(0);
+    await expect(dialog).toBeVisible();
+    await expect(comment).toBeFocused();
+    await page.keyboard.press('End');
     await expectSettled(page.locator('.ui-chat-message-actions__feedback'));
     await lab.expectAccessible('.ui-chat-message-actions__feedback');
     await page.keyboard.press('Tab');

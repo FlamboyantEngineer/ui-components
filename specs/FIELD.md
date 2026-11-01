@@ -305,7 +305,7 @@ Verification: `src/components/field/field-menu.test.tsx`
 
 ### UIC-FIELD-6.3 - Opening
 
-The field menu shall open as the field's context menu: a secondary click or long touch anywhere on the field but the text of its control, where the browser's own menu (paste, spelling) stays, or Shift+F10 or the Context Menu key inside it, the text of its control included. It is named by the provider string `fieldActions` from the label (`<label> actions`).
+The field menu shall open as the field's context menu: a secondary click, long touch, Shift+F10 or the Context Menu key anywhere in the field: its label, the space around its parts, its adornments and buttons, and its control, the text of a text input, text area or editable content included (the field's target sets `opensInsideText`). Opening it from the control's text keeps the caret and selection, does not commit an unfinished draft, and returns focus to the control on close. A field inside another field's target opens only its own menu. It is named by the provider string `fieldActions` from the label (`<label> actions`).
 
 Implementation: `src/components/field/field-menu.tsx`, `src/components/field/field.tsx`, `src/core/strings.ts`
 Verification: `src/components/field/field-menu.test.tsx`, `e2e/field.spec.ts`
