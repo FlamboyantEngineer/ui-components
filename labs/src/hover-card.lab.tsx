@@ -99,16 +99,20 @@ function LinksInText() {
 /** A card the page opens and closes, beside a trigger that never opens one. */
 function ControlledAndDisabled() {
   const [isOpen, setOpen] = useState(false);
+  const [isLocked, setLocked] = useState(false);
   const [first, second] = cities as [City, City];
   return (
     <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
       <Button size="sm" data-lab-toggle="" onPress={() => setOpen(!isOpen)}>
         {isOpen ? 'Hide the card' : 'Show the card'}
       </Button>
+      <Button size="sm" data-lab-lock="" onPress={() => setLocked(!isLocked)}>
+        {isLocked ? 'Unlock the card' : 'Lock the card'}
+      </Button>
       <CityPreview
         city={first}
         data-lab-card="controlled"
-        triggerProps={{ isOpen, onOpenChange: setOpen }}
+        triggerProps={{ isOpen, onOpenChange: setOpen, isDisabled: isLocked }}
       />
       <output data-lab-output="controlled">{isOpen ? 'open' : 'closed'}</output>
       <CityPreview city={second} data-lab-card="disabled" triggerProps={{ isDisabled: true }} />

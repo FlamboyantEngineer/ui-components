@@ -265,4 +265,24 @@ test.describe('Anchored tooltip lab', () => {
     await expect(hint).toBeVisible();
     await expect(async () => beside('Draft')).toPass();
   });
+
+  test('UIC-TOOLTIP-1.7 draws a locked hint closed and asks once to close it', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tooltip');
+    const output = page.locator('[data-lab-output="locked-hint"]');
+    const hint = page.getByRole('tooltip', { name: 'Saved drafts' });
+    await page.getByRole('button', { name: 'Show the drafts hint' }).click();
+    await expect(hint).toBeVisible();
+    const before = Number((await output.textContent())?.split(' ')[0]);
+    await page.getByRole('button', { name: 'Lock the drafts hint' }).click();
+    await expect(hint).toHaveCount(0);
+    await expect(output).toHaveText(`${before + 1} close requests`);
+    await page.waitForTimeout(500);
+    await expect(output).toHaveText(`${before + 1} close requests`);
+    await page.getByRole('button', { name: 'Unlock the drafts hint' }).click();
+    await expect(hint).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Drafts', exact: true })).toBeVisible();
+  });
 });
