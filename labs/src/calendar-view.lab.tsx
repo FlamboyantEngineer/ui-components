@@ -7,6 +7,7 @@ import {
   type CalendarViewMode,
 } from '../../src/components/calendar-view/calendar-view.js';
 import { Button } from '../../src/components/button/button.js';
+import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { fr } from '../../src/core/locales/index.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
@@ -159,6 +160,36 @@ function LiveLanes() {
   );
 }
 
+/** An uncontrolled calendar whose allowed views the host changes (UIC-CALENDAR-VIEW-1.3). */
+function AllowedViews() {
+  const [allowed, setAllowed] = useState<readonly CalendarViewMode[]>(['week']);
+  const toggle = (mode: CalendarViewMode, isAllowed: boolean) =>
+    setAllowed((current) =>
+      (['month', 'week'] as const).filter((entry) =>
+        entry === mode ? isAllowed : current.includes(entry),
+      ),
+    );
+  return (
+    <div data-lab-case="allowed-views">
+      <Checkbox isSelected={allowed.includes('month')} onChange={(on) => toggle('month', on)}>
+        Allow month
+      </Checkbox>{' '}
+      <Checkbox isSelected={allowed.includes('week')} onChange={(on) => toggle('week', on)}>
+        Allow week
+      </Checkbox>
+      <div style={frame(720)}>
+        <CalendarView
+          events={events}
+          views={allowed}
+          timeZone="UTC"
+          getNow={getNow}
+          defaultDate="2026-03-18"
+        />
+      </div>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -190,6 +221,12 @@ mountLab(
       description="Move by month or week, back to today and between views; arrow keys, Home, End, PageUp and PageDown move between days. Press an event to open it, or +n more to list a crowded day. Each day shows its workload or a holiday."
     >
       <InteractiveCalendar />
+    </LabSection>
+    <LabSection
+      title="Allowed views"
+      description="Starts with only the week allowed, so it opens on the week. Allow the month and switch to it, then disallow the month: the calendar moves to the week, and returns to the month once it is allowed again. With neither box ticked both views are allowed."
+    >
+      <AllowedViews />
     </LabSection>
     <LabSection
       title="Events that change while focused"

@@ -185,6 +185,24 @@ test.describe('Calendar View lab', () => {
     });
   }
 
+  test('UIC-CALENDAR-VIEW-1.3 shows an allowed view as the allowed views change', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('calendar-view');
+    const area = page.locator('[data-lab-case="allowed-views"]');
+    const calendar = area.locator('.ui-calendar-view');
+    await expect(calendar).toHaveAttribute('data-view', 'week');
+    await expect(area.getByRole('radiogroup')).toHaveCount(0);
+    await area.getByText('Allow month').click();
+    await area.getByRole('radio', { name: 'Month' }).click();
+    await expect(calendar).toHaveAttribute('data-view', 'month');
+    await area.getByText('Allow month').click();
+    await expect(calendar).toHaveAttribute('data-view', 'week');
+    await area.getByText('Allow month').click();
+    await expect(calendar).toHaveAttribute('data-view', 'month');
+  });
+
   test('UIC-CALENDAR-VIEW-4.2 moves between days by keyboard', async ({ page, lab }) => {
     await lab.open('calendar-view');
     const calendar = interactive(page);
