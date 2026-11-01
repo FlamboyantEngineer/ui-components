@@ -310,6 +310,34 @@ test.describe('Scroll Region lab', () => {
     await expect(page.locator('[data-lab-output="end"]')).toHaveText('no');
   });
 
+  test('UIC-SCROLL-STRIP-1.3 keeps the page still while the wheel pushes the strip past either end', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('scroll-region');
+    const strip = page.getByRole('group', { name: 'City chips' });
+    await strip.evaluate((node) => node.scrollIntoView({ block: 'center' }));
+    const pageTop = await page.evaluate(() => window.scrollY);
+    await strip.hover();
+    await page.mouse.wheel(0, 5000);
+    await expect(page.locator('[data-lab-output="end"]')).toHaveText('no');
+    for (const [x, y] of [
+      [0, 400],
+      [300, 0],
+      [200, 120],
+    ] as const) {
+      await page.mouse.wheel(x, y);
+    }
+    await page.waitForTimeout(200);
+    expect(await page.evaluate(() => window.scrollY)).toBe(pageTop);
+    await page.mouse.wheel(0, -5000);
+    await expect(page.locator('[data-lab-output="start"]')).toHaveText('no');
+    await page.mouse.wheel(0, -400);
+    await page.mouse.wheel(-300, 0);
+    await page.waitForTimeout(200);
+    expect(await page.evaluate(() => window.scrollY)).toBe(pageTop);
+  });
+
   test('UIC-SCROLL-REGION-2.8 shows scrollbars by their visibility mode', async ({ page, lab }) => {
     await page.clock.install();
     await lab.open('scroll-region');

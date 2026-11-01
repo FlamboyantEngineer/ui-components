@@ -342,7 +342,7 @@ describe('ToolbarScroller', () => {
     expect(strip.scrollLeft).toBe(-80);
   });
 
-  it('UIC-TOOLBAR-SCROLLER-2.4 turns wheel input into horizontal scroll only while the strip can move', () => {
+  it('UIC-TOOLBAR-SCROLLER-2.4 turns wheel input into horizontal scroll and keeps it from the page at both bounds', () => {
     const { container } = render(
       <ToolbarScroller aria-label="Format">
         <Tools />
@@ -366,8 +366,13 @@ describe('ToolbarScroller', () => {
     expect(wheel(strip, { deltaY: 50, metaKey: true }).defaultPrevented).toBe(false);
     expect(strip.scrollLeft).toBe(132);
 
+    // At the end bound the strip still owns the wheel, so the page does not scroll behind it.
     stubStrip(strip, 400, 100, 300);
-    expect(wheel(strip, { deltaY: 50 }).defaultPrevented).toBe(false);
+    expect(wheel(strip, { deltaY: 50 }).defaultPrevented).toBe(true);
+    expect(strip.scrollLeft).toBe(300);
+    stubStrip(strip, 400, 100, 0);
+    expect(wheel(strip, { deltaY: -50 }).defaultPrevented).toBe(true);
+    // A strip that fits leaves the wheel to the page.
     stubStrip(strip, 100, 100);
     expect(wheel(strip, { deltaY: 50 }).defaultPrevented).toBe(false);
   });

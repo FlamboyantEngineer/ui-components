@@ -112,6 +112,25 @@ test.describe('Toolbar Scroller lab', () => {
     await expect.poll(position).toBe(0);
   });
 
+  test('UIC-TOOLBAR-SCROLLER-2.4 keeps the page still at either end of a right-to-left strip', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('toolbar-scroller');
+    const strip = page.locator(`${cell('rtl', 'off', 'start')} .ui-toolbar-scroller__strip`);
+    await strip.evaluate((node) => node.scrollIntoView({ block: 'center' }));
+    const pageTop = await page.evaluate(() => window.scrollY);
+    await strip.hover();
+    await page.mouse.wheel(0, 3000);
+    await page.mouse.wheel(0, 300);
+    await page.mouse.wheel(-300, 0);
+    await page.mouse.wheel(0, -3000);
+    await page.mouse.wheel(0, -300);
+    await page.mouse.wheel(300, 0);
+    await page.waitForTimeout(200);
+    expect(await page.evaluate(() => window.scrollY)).toBe(pageTop);
+  });
+
   test('UIC-TOOLBAR-SCROLLER-1.2 UIC-TOOLBAR-SCROLLER-2.5 moves focus with the arrow keys and keeps it in view', async ({
     page,
     lab,

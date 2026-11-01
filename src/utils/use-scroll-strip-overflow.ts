@@ -61,7 +61,11 @@ function isStripWheel(strip: HTMLElement, event: WheelEvent): boolean {
   return !path.slice(0, index).some((node) => isElement(node) && node.matches(popupSelector));
 }
 
-/** The strip's next scroll position for wheel input along its dominant axis, or null for none. */
+/**
+ * What wheel input does to the strip along its dominant axis: `null` when the strip has no wheel
+ * travel to own (no delta, or nothing overflows), else the clamped next scroll position, which is
+ * the current one at the bound the wheel pushes toward.
+ */
 function resolveWheelScrollPosition(strip: HTMLElement, event: WheelEvent): number | null {
   const isHorizontal = Math.abs(event.deltaX) > Math.abs(event.deltaY);
   const delta = isHorizontal ? event.deltaX : event.deltaY;
@@ -73,8 +77,7 @@ function resolveWheelScrollPosition(strip: HTMLElement, event: WheelEvent): numb
   // keeps its sign; vertical travel means "toward the inline end", which is leftward there.
   const rtl = isRtl(strip);
   const offset = (rtl && !isHorizontal ? -delta : delta) * unit;
-  const next = Math.min(rtl ? 0 : range, Math.max(rtl ? -range : 0, strip.scrollLeft + offset));
-  return next === strip.scrollLeft ? null : next;
+  return Math.min(rtl ? 0 : range, Math.max(rtl ? -range : 0, strip.scrollLeft + offset));
 }
 
 type StripAttachment = (strip: HTMLElement) => () => void;
@@ -107,7 +110,10 @@ function useStripAttachment(
   );
 }
 
-/** Lets the vertical wheel scroll a horizontal strip. */
+/**
+ * Lets the vertical wheel scroll a horizontal strip. An overflowing strip owns the wheel under the
+ * pointer, at its bounds too, so the page never scrolls behind it; a strip that fits leaves it.
+ */
 function useWheelScrolling(
   stripRef: RefObject<HTMLElement | null>,
   horizontal: boolean,
@@ -124,6 +130,7 @@ function useWheelScrolling(
       const next = resolveWheelScrollPosition(strip, event);
       if (next === null) return;
       event.preventDefault();
+      if (next === strip.scrollLeft) return;
       strip.scrollLeft = next;
       onWheelScrollRef.current?.();
     };
@@ -159,7 +166,8 @@ export function scrollStripPage(
 
 /**
  * Tracks whether a scrolling strip (a row of tabs or tools) hides content past either edge, so the
- * stylesheet can draw a fade there, and lets the vertical wheel scroll a horizontal strip. Scrolling
+ * stylesheet can draw a fade there, and lets the vertical wheel scroll a horizontal strip, which keeps
+ * the wheel from the page while it overflows, at its bounds too. Scrolling
  * stays free: no snapping, paging or stepper buttons. Measurements coalesce to one read per animation
  * frame and resync when the strip or its children resize and when children mount or unmount. A strip
  * that mounts after the first render, or is replaced, is followed too. Right-to-left strips report
