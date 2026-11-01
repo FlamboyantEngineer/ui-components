@@ -9,6 +9,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { CodeEditor, type CodeDiagnostic, type CodeTokenizer } from '../code-editor/code-editor.js';
 import type { Completions } from '../completion-list/completion-list.js';
 import { Button } from '../button/button.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 
 /** A query language, as the functions that read it. */
 export interface QueryGrammar {
@@ -72,7 +73,8 @@ export function QueryField({
     if (!hasError) onSubmit?.(value);
   };
   const onKeyDown = (event: KeyboardEvent) => {
-    if (event.key === 'Enter' && !event.nativeEvent.isComposing) submit();
+    // The Enter that confirms an input method candidate is the input method's.
+    if (event.key === 'Enter' && !isComposingKey(event.nativeEvent)) submit();
   };
   return (
     <div

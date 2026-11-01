@@ -2,6 +2,7 @@
 
 import { useRef, useState, type KeyboardEvent, type RefObject } from 'react';
 import { useFocusRequest } from '../../utils/use-focus-request.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 
 interface ToolCallApprovalOptions {
   /** The call waits for the reader's decision. */
@@ -78,7 +79,7 @@ export function useToolCallApproval({
     return true;
   };
   const onKeyDownCapture = (event: KeyboardEvent<HTMLElement>) => {
-    if (!isPending || event.nativeEvent.isComposing || !runKey(event)) return;
+    if (!isPending || isComposingKey(event.nativeEvent) || !runKey(event)) return;
     event.preventDefault();
     event.stopPropagation();
   };

@@ -20,7 +20,7 @@ Verification: `src/components/query-field/query-field.test.tsx`, `e2e/query-fiel
 
 ### UIC-QUERY-FIELD-1.3 - Invalid query
 
-While `diagnose` reports an error, the root shall publish `data-invalid`, the input is invalid, and the query cannot be submitted; warnings alone keep it valid.
+While `diagnose` reports an error, the root shall publish `data-invalid`, the input is invalid, and the query cannot be submitted; warnings alone keep it valid. An Enter during a text composition, or the one that confirms an input method candidate (key code 229), belongs to the input method and submits nothing.
 
 Implementation: `src/components/query-field/query-field.tsx`
 Verification: `src/components/query-field/query-field.test.tsx`, `e2e/query-field.spec.ts`

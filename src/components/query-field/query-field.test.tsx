@@ -1,4 +1,4 @@
-import { act, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -79,6 +79,22 @@ describe('QueryField', () => {
     expect(screen.getByRole('status', { name: 'Current query' })).toHaveTextContent(
       'genre:history pages:',
     );
+  });
+
+  it.each([
+    { name: 'during a composition', init: { isComposing: true } },
+    { name: 'that confirms a candidate', init: { keyCode: 229 } },
+  ])('UIC-QUERY-FIELD-1.3 leaves an Enter $name to the input method', async ({ init }) => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(<Controlled onSubmit={onSubmit} />);
+    const input = screen.getByRole('textbox', { name: 'Query' });
+    await user.click(input);
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing or keyCode on a keydown
+    fireEvent.keyDown(input, { key: 'Enter', ...init });
+    expect(onSubmit).not.toHaveBeenCalled();
+    await user.keyboard('{End}{Enter}');
+    expect(onSubmit).toHaveBeenCalledTimes(1);
   });
 
   it('UIC-QUERY-FIELD-1.3 UIC-QUERY-FIELD-1.4 submits on Enter and the run button unless invalid', async () => {

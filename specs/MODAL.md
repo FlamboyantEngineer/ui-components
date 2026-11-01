@@ -343,7 +343,7 @@ Verification: `src/components/modal/modal-prompts.test.tsx`, `e2e/modal-confirma
 
 ### UIC-MODAL-22.3 - Prompt
 
-`prompt(controller, options)` shall open, through `controller`, a `Modal` titled `title`, described by `message`, holding a [Text Field](TEXT-FIELD.md) named by `label` that starts with `defaultValue` and has focus, with Cancel (`cancelLabel`) and a primary action labelled by `confirmLabel` or the provider's `ok` string. It returns a promise that resolves to the field's text when the reader presses the action, presses Enter in the field or Control+Enter, and to `null` when the dialog closes any other way. The promise settles once and the dialog leaves the controller.
+`prompt(controller, options)` shall open, through `controller`, a `Modal` titled `title`, described by `message`, holding a [Text Field](TEXT-FIELD.md) named by `label` that starts with `defaultValue` and has focus, with Cancel (`cancelLabel`) and a primary action labelled by `confirmLabel` or the provider's `ok` string. It returns a promise that resolves to the field's text when the reader presses the action, presses Enter in the field or Control+Enter, and to `null` when the dialog closes any other way. An Enter during a text composition, or the one that confirms an input method candidate (key code 229), belongs to the input method and answers nothing. The promise settles once and the dialog leaves the controller.
 
 Implementation: `src/components/modal/modal-prompts.tsx`
 Verification: `src/components/modal/modal-prompts.test.tsx`, `e2e/modal-confirmation.spec.ts`

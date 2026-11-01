@@ -1,4 +1,4 @@
-import { act, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
@@ -92,6 +92,25 @@ describe('imperative dialogs', () => {
     await user.click(screen.getByRole('button', { name: 'Rename' }));
     await expect(answer).resolves.toBe('Summary.pdf');
     expect(controller.getSnapshot()).toEqual([]);
+  });
+
+  it('UIC-MODAL-22.3 leaves the Enter that confirms an input method candidate unanswered', async () => {
+    const user = userEvent.setup();
+    const controller = mountHost();
+    let answer!: Promise<string | null>;
+    let settled = false;
+    act(() => {
+      answer = prompt(controller, { title: 'Add city', label: 'City' });
+    });
+    void answer.then(() => (settled = true));
+    const field = await screen.findByRole('textbox', { name: 'City' });
+    await user.type(field, 'Lima');
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set keyCode on a keydown
+    fireEvent.keyDown(field, { key: 'Enter', keyCode: 229 });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(settled).toBe(false);
+    await user.type(field, '{Enter}');
+    await expect(answer).resolves.toBe('Lima');
   });
 
   it('UIC-MODAL-22.3 answers on Enter and resolves null when cancelled or closed', async () => {

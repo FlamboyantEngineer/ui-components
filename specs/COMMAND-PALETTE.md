@@ -43,7 +43,7 @@ Verification: `src/components/command-palette/command-palette.test.tsx`, `e2e/co
 
 ### UIC-COMMAND-PALETTE-2.1 - Commands
 
-The palette shall draw its commands as a `Menu` from `items` (the menu's item, section and separator entries) or from `children` (`MenuItem`, `MenuSection` and `MenuSeparator` elements). Running an enabled command, by Enter or a press, shall call its `onAction` and the palette's `onAction` with its `id`, once, then close the palette, unless `shouldCloseOnSelect={false}` on the item or its section keeps it open.
+The palette shall draw its commands as a `Menu` from `items` (the menu's item, section and separator entries) or from `children` (`MenuItem`, `MenuSection` and `MenuSeparator` elements). Running an enabled command, by Enter or a press, shall call its `onAction` and the palette's `onAction` with its `id`, once, then close the palette, unless `shouldCloseOnSelect={false}` on the item or its section keeps it open. An Enter during a text composition, or the one that confirms an input method candidate (key code 229), belongs to the input method and runs no command.
 
 Implementation: `src/components/command-palette/command-palette.tsx`
 Verification: `src/components/command-palette/command-palette.test.tsx`, `e2e/command-palette.spec.ts`

@@ -138,6 +138,25 @@ describe('ViewSwitcher', { timeout: 20_000 }, () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 
+  it.each([
+    { name: 'during a composition', init: { isComposing: true } },
+    { name: 'that confirms a candidate', init: { keyCode: 229 } },
+  ])('UIC-VIEW-SWITCHER-1.5 leaves an Enter $name to the input method', async ({ init }) => {
+    const user = userEvent.setup();
+    const onSaveAs = vi.fn();
+    render(<ViewSwitcher views={views} onSaveAs={onSaveAs} />);
+    await user.click(actionsButton('All recipes'));
+    await user.click(await screen.findByRole('menuitem', { name: 'Save as new view' }));
+    const dialog = await screen.findByRole('dialog', { name: 'New view' });
+    const field = within(dialog).getByRole('textbox', { name: /^View name/ });
+    await user.type(field, 'Mine');
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing or keyCode on a keydown
+    fireEvent.keyDown(field, { key: 'Enter', ...init });
+    expect(onSaveAs).not.toHaveBeenCalled();
+    await user.keyboard('{Enter}');
+    expect(onSaveAs).toHaveBeenCalledWith('Mine');
+  });
+
   it('UIC-VIEW-SWITCHER-1.5 saves once per Enter or Control+Enter, pending, and shows a failure', async () => {
     const user = userEvent.setup();
     const save = deferred();
