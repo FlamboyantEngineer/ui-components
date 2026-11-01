@@ -137,6 +137,7 @@
   "help": "ヘルプ",
   "expand": "展開",
   "collapse": "折りたたむ",
+  "treeItemNew": "新規",
   "details": "詳細",
   "search": "検索",
   "noResults": "結果はありません",

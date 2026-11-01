@@ -20,10 +20,14 @@ import type { TreeItemData, TreeProps } from './tree-props.js';
 import { useTreeModel } from './use-tree-model.js';
 
 export type {
+  TreeCurrentMark,
   TreeExpandGlyph,
   TreeItemData,
   TreeItemState,
+  TreeMarks,
+  TreeNewMark,
   TreeProps,
+  TreeSelectedMark,
   TreeSize,
   TreeVariant,
 } from './tree-props.js';

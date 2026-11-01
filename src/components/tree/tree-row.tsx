@@ -34,6 +34,7 @@ export type RowContentOptions<T extends TreeItemData> = Pick<
   | 'isIndeterminate'
   | 'rename'
   | 'loads'
+  | 'hasStateMark'
 > & { isMovable: (key: Key) => boolean; hasReorder: boolean };
 
 /** The expand glyph: the shared chevron, pointing to the inline end while collapsed, or plus-minus. */
@@ -86,8 +87,8 @@ function TreeLoadError({ loads, itemKey }: { loads: TreeLoads | null; itemKey: K
 }
 
 /**
- * One row's anatomy: drag handle, expand button or spacer, selection checkbox, icon, label, meta,
- * load error and actions.
+ * One row's anatomy: drag handle, expand button or spacer, selection checkbox, state mark, icon,
+ * label, new mark, meta, load error and actions.
  */
 export function TreeRowContent<T extends TreeItemData>(props: {
   item: T;
@@ -116,8 +117,10 @@ export function TreeRowContent<T extends TreeItemData>(props: {
           isIndeterminate={options.isIndeterminate(item.id)}
         />
       ) : null}
+      {options.hasStateMark ? <span {...hooks.slot('state-mark')} aria-hidden="true" /> : null}
       {!icon ? null : <Icon {...toIconProps(icon)} className={hooks.slotClass('icon')} />}
       <TreeRowLabel item={item} state={state} options={options} />
+      {state.isNew ? <span {...hooks.slot('new-mark')} aria-hidden="true" /> : null}
       {isEmptyNode(meta) ? null : <span {...hooks.slot('meta')}>{meta}</span>}
       <TreeLoadError loads={options.loads} itemKey={item.id} />
       {isEmptyNode(actions) ? null : (

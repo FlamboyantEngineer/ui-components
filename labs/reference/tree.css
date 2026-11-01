@@ -44,13 +44,91 @@
   background: var(--ref-pressed);
 }
 
-.ui-tree__item:is([data-selected], [data-current]) {
+/*
+ * Row marks (data-current-mark, data-selected-mark, data-new-mark on the tree). A tint fills the row;
+ * bold and underline mark the current label; a dot or caret is drawn in the state mark every row
+ * reserves, the current row's first and a selected row's after it, so both show on one row. A new
+ * row draws its own mark after the label.
+ */
+.ui-tree[data-selected-mark='tint'] .ui-tree__item[data-selected] {
   background: var(--ref-selected);
 }
 
-.ui-tree__item[data-current] {
+.ui-tree[data-current-mark='tint'] .ui-tree__item[data-current] {
+  background: color-mix(in srgb, var(--ref-accent) var(--ref-tint), transparent);
   outline: 1px solid color-mix(in srgb, var(--ref-accent) var(--ref-tint-border), transparent);
   outline-offset: -1px;
+}
+
+.ui-tree[data-current-mark='bold'] .ui-tree__item[data-current] .ui-tree__label {
+  font-weight: var(--ref-font-weight-strong); /* layout-exempt: the label fills the row */
+}
+
+.ui-tree[data-current-mark='underline'] .ui-tree__item[data-current] .ui-tree__label {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.ui-tree__state-mark {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 2px;
+}
+
+.ui-tree__state-mark::before,
+.ui-tree__state-mark::after,
+.ui-tree__new-mark::before {
+  content: '';
+  box-sizing: border-box;
+}
+
+.ui-tree[data-current-mark='dot'] .ui-tree__state-mark::before,
+.ui-tree[data-selected-mark='dot'] .ui-tree__state-mark::after,
+.ui-tree[data-new-mark='dot'] .ui-tree__new-mark::before {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--ref-radius-full);
+}
+
+.ui-tree[data-current-mark='caret'] .ui-tree__state-mark::before,
+.ui-tree[data-selected-mark='caret'] .ui-tree__state-mark::after,
+.ui-tree[data-new-mark='caret'] .ui-tree__new-mark::before {
+  width: 5px;
+  height: 8px;
+  border-block: 4px solid transparent;
+  border-inline-start: 5px solid transparent;
+}
+
+.ui-tree[data-current-mark='dot'] .ui-tree__item[data-current] .ui-tree__state-mark::before {
+  background: var(--ref-accent);
+}
+
+.ui-tree[data-current-mark='caret'] .ui-tree__item[data-current] .ui-tree__state-mark::before {
+  border-inline-start-color: var(--ref-accent);
+}
+
+.ui-tree[data-selected-mark='dot'] .ui-tree__item[data-selected] .ui-tree__state-mark::after {
+  background: var(--ref-muted);
+}
+
+.ui-tree[data-selected-mark='caret'] .ui-tree__item[data-selected] .ui-tree__state-mark::after {
+  border-inline-start-color: var(--ref-muted);
+}
+
+.ui-tree__new-mark {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+}
+
+.ui-tree[data-new-mark='dot'] .ui-tree__new-mark::before {
+  background: var(--ref-success);
+}
+
+.ui-tree[data-new-mark='caret'] .ui-tree__new-mark::before {
+  border-inline-start-color: var(--ref-success);
 }
 
 .ui-tree__item[data-focus-visible] {

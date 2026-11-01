@@ -5,7 +5,7 @@ import type { Key } from '../../core/props.js';
 import { readTreeChildren } from '../../utils/tree-reorder.js';
 import { walkTree } from '../../utils/walk-tree.js';
 import { useTreeItemRenderer } from './tree-item.js';
-import type { TreeItemData, TreeProps, TreeSize } from './tree-props.js';
+import type { TreeItemData, TreeMarks, TreeProps, TreeSize } from './tree-props.js';
 import { useTreeExpansion } from './use-tree-expansion.js';
 import { useTreeFilter } from './use-tree-filter.js';
 import { useTreeKeyDown } from './use-tree-key-down.js';
@@ -16,6 +16,20 @@ import { useTreeSelection } from './use-tree-selection.js';
 
 const virtualRowHeights: Readonly<Record<TreeSize, number>> = { sm: 28, md: 32, lg: 40 };
 
+/** Whether a mark is a glyph that every row reserves a place for. */
+const isGlyphMark = (mark: string) => mark === 'dot' || mark === 'caret';
+
+/** The marks the tree publishes, defaults filled. */
+function toMarkData({ current = 'tint', selected = 'tint', new: fresh = 'dot' }: TreeMarks = {}) {
+  return { currentMark: current, selectedMark: selected, newMark: fresh };
+}
+
+/** Whether every row reserves the place of a dot or caret marking the current or selected row. */
+function hasStateGlyph(marks: TreeMarks | undefined): boolean {
+  const { currentMark, selectedMark } = toMarkData(marks);
+  return isGlyphMark(currentMark) || isGlyphMark(selectedMark);
+}
+
 /** Separates the props that draw rows, the expansion, the root's own and React Aria's. */
 function splitTreeProps<T extends TreeItemData>({
   items,
@@ -25,6 +39,8 @@ function splitTreeProps<T extends TreeItemData>({
   isItemPending,
   getHref,
   currentKey,
+  isItemNew,
+  marks,
   getIcon,
   renderLabel,
   renderMeta,
@@ -65,6 +81,8 @@ function splitTreeProps<T extends TreeItemData>({
     isItemPending,
     getHref,
     currentKey,
+    isItemNew,
+    hasStateMark: hasStateGlyph(marks),
     getIcon,
     renderLabel,
     renderMeta,
@@ -79,6 +97,7 @@ function splitTreeProps<T extends TreeItemData>({
     size,
     variant,
     expandGlyph,
+    ...toMarkData(marks),
     wrap,
     pending: isPending,
     virtualized,
