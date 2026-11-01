@@ -449,4 +449,46 @@ test.describe('Field lab', () => {
     }
     await lab.expectAccessible();
   });
+
+  test('UIC-FIELD-3.13 shows messages in tooltips without moving the layout', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('field');
+    const tooltip = page.locator('.ui-field__message-tooltip');
+    const row = page.locator('[data-lab-tooltip-row]');
+    const below = page.locator('[data-lab-below-row]');
+    const code = field(page, 'tooltip-code');
+    const input = code.getByRole('textbox', { name: 'Code' });
+    const rowBefore = await box(row);
+    const belowBefore = await box(below);
+    // Invalid, described and announced, with no message drawn in the layout.
+    await expect(input).toHaveAttribute('aria-invalid', 'true');
+    await expect(input).toHaveAccessibleDescription(/No spaces\./);
+    await expect(tooltip).toHaveCount(0);
+    await input.focus();
+    await expect(tooltip).toBeVisible();
+    await expect(tooltip.locator('li')).toHaveText(['No spaces.', 'Capitals read better.']);
+    await lab.expectAccessible();
+    await page.keyboard.press('Escape');
+    await expect(tooltip).toHaveCount(0);
+    // Valid: no tooltip; one error again: it comes back.
+    await input.fill('ABCD');
+    await expect(input).not.toHaveAttribute('aria-invalid');
+    await input.fill('AB');
+    await expect(tooltip.locator('li')).toHaveText(['Use 4 characters or more.']);
+    // Errors on other fields, shown on hover, and the asynchronous check, shown on focus.
+    await page.getByRole('button', { name: 'Show errors' }).click();
+    await field(page, 'tooltip-select').locator('.ui-field__label').hover();
+    await expect(tooltip).toHaveText('Fix this before saving.');
+    await page.mouse.move(0, 0);
+    await expect(tooltip).toHaveCount(0);
+    await field(page, 'tooltip-async').getByRole('textbox').focus();
+    await expect(tooltip).toHaveText('That name is taken.');
+    // Nothing moved while messages came and went.
+    const rowAfter = await box(row);
+    const belowAfter = await box(below);
+    expect(rowAfter.height).toBe(rowBefore.height);
+    expect(belowAfter.y - rowAfter.y).toBe(belowBefore.y - rowBefore.y);
+  });
 });

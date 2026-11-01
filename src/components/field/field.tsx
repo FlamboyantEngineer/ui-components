@@ -1,12 +1,10 @@
 'use client';
 
-import { getComposedActiveElement, isFocusLost } from '../../utils/focus-target.js';
-import { useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
-import { DialogEnteringContext } from '../../utils/dialog-entering.js';
+import { useRef, useState, type ReactNode, type RefObject } from 'react';
 import type { BaseProps, ControlSize, Key } from '../../core/props.js';
-import { createSlotRegistry, type SlotRegistry } from '../../utils/slot-registry.js';
+import { createSlotRegistry } from '../../utils/slot-registry.js';
 import { defaultFieldMenu, type FieldMenuEntry } from './field-menu-entries.js';
-import { useFieldContextMenu, useFieldMenu } from './field-menu.js';
+import { useFieldBehaviour, type FieldSlots } from './field-behaviour.js';
 import {
   FieldHelp,
   FieldLabel,
@@ -20,15 +18,11 @@ import {
   type FieldDensity,
   type FieldLabelLayout,
 } from './field-parts.js';
-import { useFieldFocus } from './field-focus.js';
-import { focusControl, useFieldFormBinding } from './field-form.js';
+import { focusControl } from './field-form.js';
 import { FieldRestoreButton } from './field-restore-button.js';
 import type { FieldIssue, FieldState, FieldValidation } from './field-state.js';
-import { useFieldRoot } from './field-root.js';
-import { useFieldUndo } from './field-undo.js';
+import { FieldMessageTooltip, type FieldMessageDisplay } from './field-message-tooltip.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
-import { findOwnerDocument } from '../../utils/owner-window.js';
-import { usePortalContainer } from '../portal/portal.js';
 
 export interface FieldProps<T> extends BaseProps {
   /** The field's controller, from `useFieldState`. */
@@ -52,6 +46,12 @@ export interface FieldProps<T> extends BaseProps {
    * the current value (`inline`, the default) or on its own line above it (`stacked`).
    */
   changeLayout?: FieldChangeLayout | undefined;
+  /**
+   * Where the validation message shows: in a line below the control (`inline`, the default), or in
+   * a tooltip against the control while the field is focused or hovered (`tooltip`), which never
+   * takes room or moves the layout as the message comes and goes.
+   */
+  messageDisplay?: FieldMessageDisplay | undefined;
   /** Help text below the control, which describes it. */
   description?: ReactNode;
   /** Help shown in a tooltip from a help button after the control. */
@@ -85,53 +85,6 @@ export interface FieldProps<T> extends BaseProps {
   children: (control: FieldControlProps) => ReactNode;
 }
 
-type FieldSlots = SlotRegistry<'root' | 'control'>;
-
-/** Focus in the field: leaving it touches the field and, with `commitOnBlur`, commits first. */
-function useFieldLeave(state: FieldState<unknown>, slots: FieldSlots, commitOnBlur: boolean) {
-  return useFieldFocus({
-    getRoot: () => slots.read('root'),
-    getControl: () => slots.read('control'),
-    onLeave: () => {
-      if (commitOnBlur) state.commit();
-      state.touch();
-    },
-  });
-}
-
-/**
- * Focuses the control once, when the field mounts with `autoFocus`, unless focus moved to another
- * element while it mounted, such as into a list that opens with the field. Inside a dialog that
- * publishes its entrance, it waits until the dialog has entered (taking focus from the dialog
- * element itself) and focuses without scrolling.
- */
-/** The element focused in the tree `container` renders into, or null on the server. */
-function readFocused(container: Element | null | undefined): Element | null {
-  const owner = findOwnerDocument(container);
-  return owner ? getComposedActiveElement(container ?? owner) : null;
-}
-
-function useAutoFocus(autoFocus: boolean | undefined, slots: FieldSlots) {
-  // The element focused when the field first renders, read before any part can take focus, in the
-  // document the field renders into (its portal container's).
-  const container = usePortalContainer();
-  const [focusedBefore] = useState(() => (autoFocus === true ? readFocused(container) : undefined));
-  const isDialogEntering = useContext(DialogEnteringContext);
-  const isDone = useRef(false);
-  useEffect(() => {
-    const control = slots.read('control');
-    if (focusedBefore === undefined || !control || isDone.current || isDialogEntering) return;
-    isDone.current = true;
-    const active = getComposedActiveElement(control);
-    const isInDialog = isDialogEntering !== undefined;
-    const isOnDialog =
-      isInDialog && active !== null && active === control.closest('[role="dialog"]');
-    if (active === focusedBefore || isFocusLost(control) || isOnDialog) {
-      focusControl(control, isInDialog ? { preventScroll: true } : undefined);
-    }
-  }, [focusedBefore, slots, isDialogEntering]);
-}
-
 /** Puts the committed value back; the button leaves with it, so keyboard focus moves to the control first. */
 function restoreField(state: FieldState<unknown>, slots: FieldSlots) {
   focusControl(slots.read('control'));
@@ -145,6 +98,7 @@ function toFieldData(
     size: ControlSize;
     density: FieldDensity | undefined;
     changeLayout: FieldChangeLayout | undefined;
+    messageDisplay: FieldMessageDisplay | undefined;
   },
   state: FieldState<unknown>,
   focused: boolean,
@@ -153,6 +107,7 @@ function toFieldData(
     ...layout,
     density: layout.density ?? 'default',
     changeLayout: layout.changeLayout ?? 'inline',
+    messageDisplay: layout.messageDisplay ?? 'inline',
     focused,
     validation: state.validation.status,
     dirty: state.isDirty,
@@ -188,6 +143,50 @@ function FieldButtons({
   );
 }
 
+/** The parts after the control's row: the decoration, the description and the message. */
+function FieldNotes({
+  ids,
+  state,
+  decoration,
+  description,
+  message,
+  tooltip,
+}: {
+  ids: ReturnType<typeof useFieldIds>;
+  state: FieldState<unknown>;
+  decoration: ReactNode;
+  description: ReactNode;
+  message: ReactNode;
+  tooltip: { isOpen: boolean; anchor: RefObject<Element | null> } | null;
+}) {
+  return (
+    <>
+      {isEmptyNode(decoration) ? null : (
+        <div {...hooks.slot('decoration')} id={ids.decoration}>
+          {decoration}
+        </div>
+      )}
+      {isEmptyNode(description) ? null : (
+        <div {...hooks.slot('description')} id={ids.description}>
+          {description}
+        </div>
+      )}
+      <FieldMessage id={ids.message} validation={state.validation}>
+        {message}
+      </FieldMessage>
+      {tooltip ? (
+        <FieldMessageTooltip
+          isOpen={tooltip.isOpen}
+          anchor={tooltip.anchor}
+          validation={state.validation}
+        >
+          {message}
+        </FieldMessageTooltip>
+      ) : null}
+    </>
+  );
+}
+
 /**
  * Lays out a field around its control: the label, the control, the restore and help buttons,
  * the host's decoration, the description and the validation message. It gives the control its ids
@@ -201,6 +200,7 @@ export function Field<T>({
   size = 'md',
   density,
   changeLayout,
+  messageDisplay = 'inline',
   description,
   help,
   decoration,
@@ -216,18 +216,15 @@ export function Field<T>({
 }: FieldProps<T>) {
   const ids = useFieldIds(id);
   const [slots] = useState<FieldSlots>(() => createSlotRegistry());
-  const getRoot = useCallback(() => slots.read('root'), [slots]);
-  useFieldRoot(getRoot);
-  const onKeyDown = useFieldUndo(getRoot, state);
-  const focus = useFieldLeave(state, slots, commitOnBlur);
-  useFieldFormBinding(state, slots, label);
-  useAutoFocus(autoFocus, slots);
-  const menuModel = useFieldMenu(state, label, { menu, onMenuAction });
-  const contextMenu = useFieldContextMenu(menuModel, {
-    ref: slots.ref('root'),
-    onKeyDown,
-    focusControl: () => focusControl(slots.read('control')),
+  const behaviour = useFieldBehaviour(state, slots, {
+    label,
+    menu,
+    onMenuAction,
+    commitOnBlur,
+    autoFocus,
+    messageDisplay,
   });
+  const controlSlot = useRef<HTMLDivElement>(null);
   const hasLabel = labelLayout !== 'control-only';
   const control = toFieldControlProps(state, ids, {
     ref: slots.ref('control'),
@@ -238,17 +235,17 @@ export function Field<T>({
   const labelElement = hasLabel ? (
     <FieldLabel ids={ids} label={label} layout={labelLayout} isRequired={state.isRequired} />
   ) : null;
-  const data = toFieldData({ labelLayout, size, density, changeLayout }, state, focus.isFocused);
+  const data = toFieldData(
+    { labelLayout, size, density, changeLayout, messageDisplay },
+    state,
+    behaviour.isFocused,
+  );
   return (
-    <div
-      {...hooks.root({ className, props: rest, data })}
-      {...contextMenu.targetProps}
-      id={id}
-      onFocus={focus.onFocus}
-      onBlur={focus.onBlur}
-    >
+    <div {...hooks.root({ className, props: rest, data })} {...behaviour.rootProps} id={id}>
       {labelLayout === 'control-label' ? null : labelElement}
-      <div {...hooks.slot('control')}>{children(control)}</div>
+      <div {...hooks.slot('control')} ref={controlSlot}>
+        {children(control)}
+      </div>
       {labelLayout === 'control-label' ? labelElement : null}
       <FieldButtons
         label={label}
@@ -256,24 +253,26 @@ export function Field<T>({
         help={isEmptyNode(help) ? null : { id: ids.help, content: help }}
         onRestore={state.isDirty ? () => restoreField(state, slots) : null}
       />
-      {isEmptyNode(decoration) ? null : (
-        <div {...hooks.slot('decoration')} id={ids.decoration}>
-          {decoration}
-        </div>
-      )}
-      {isEmptyNode(description) ? null : (
-        <div {...hooks.slot('description')} id={ids.description}>
-          {description}
-        </div>
-      )}
-      <FieldMessage id={ids.message} validation={state.validation}>
-        {renderMessage ? renderMessage(state.validation, state.issues) : state.validation.message}
-      </FieldMessage>
-      {contextMenu.menu}
+      <FieldNotes
+        ids={ids}
+        state={state}
+        decoration={decoration}
+        description={description}
+        message={
+          renderMessage ? renderMessage(state.validation, state.issues) : state.validation.message
+        }
+        tooltip={
+          messageDisplay === 'tooltip'
+            ? { isOpen: behaviour.isTooltipOpen, anchor: controlSlot }
+            : null
+        }
+      />
+      {behaviour.menu}
     </div>
   );
 }
 
+export type { FieldMessageDisplay } from './field-message-tooltip.js';
 export type {
   FieldChangeLayout,
   FieldControlProps,

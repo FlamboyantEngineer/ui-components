@@ -180,8 +180,21 @@
   font-size: var(--ref-font-size-sm);
 }
 
+/*
+ * With messageDisplay="tooltip" the message region is visually hidden (base.css), still describing
+ * the control and announcing, and a tooltip against the control shows it while focused or hovered.
+ */
+.ui-field__message-tooltip[data-severity='error'] {
+  border-inline-start: 3px solid var(--ref-danger);
+}
+
+.ui-field__message-tooltip[data-severity='warning'] {
+  border-inline-start: 3px solid var(--ref-warning);
+}
+
 /* Several issues listed in the message start where a single one does: no indent, no bullets. */
-.ui-field__message :is(ul, ol) {
+.ui-field__message :is(ul, ol),
+.ui-field__message-tooltip :is(ul, ol) {
   margin: 0;
   padding: 0;
   list-style: none;

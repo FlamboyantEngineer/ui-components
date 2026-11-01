@@ -234,6 +234,13 @@ When its form moves focus to a field (a blocked submit, `validate()`, a blocker'
 Implementation: `src/components/field/field-scope.ts`, `src/components/field/field-form.ts`, `src/components/form/form.tsx`
 Verification: `src/components/property-panel/property-section.test.tsx`
 
+### UIC-FIELD-3.13 - Message display
+
+`messageDisplay` shall publish `data-message-display` on the field's root, `inline` by default. With `inline` the message shows in its region below the control (UIC-FIELD-3.1). With `tooltip` the message region stays in the document, describing the control and announcing changes as before (UIC-FIELD-3.3, UIC-FIELD-3.4), and the reference sheet hides it visually and keeps no room for it, so a message coming, changing or going never moves the field or its neighbours, unlike `compact` density, which takes a line while a message shows. The field shows the same content (`renderMessage`'s, every issue included) in a tooltip against its control (`ui-field__message-tooltip`, a `ui-tooltip` with the message's `data-severity`), hidden from assistive technology since the region already describes the control, while the field has a message and focus is in it (a tap on touch focuses the control) or a mouse or pen rests on it, staying a moment after the pointer leaves. Escape hides it until focus or the pointer enters the field again or the message changes. The invalid state, its ARIA, validation modes, submit validation and asynchronous validation are the same in both. Every field control built on `Field` takes `messageDisplay` with the field's props.
+
+Implementation: `src/components/field/field.tsx`, `src/components/field/field-message-tooltip.tsx`, `src/components/field/field-behaviour.tsx`, `labs/reference/field.css`, `labs/reference/base.css`
+Verification: `src/components/field/field-message-tooltip.test.tsx`, `e2e/field.spec.ts`
+
 ## UIC-FIELD-4 - Restore
 
 ### UIC-FIELD-4.1 - Restoring a field
@@ -439,10 +446,12 @@ Verification: `src/components/field/field-picker.test.tsx`
 | `ui-field__decoration`           | slot      |                                                                         | The host's badges and marks.                                     |
 | `ui-field__description`          | slot      |                                                                         | The description.                                                 |
 | `ui-field__message`              | slot      |                                                                         | The validation message; empty while valid.                       |
+| `ui-field__message-tooltip`      | slot      |                                                                         | The tooltip showing the message with `messageDisplay="tooltip"`. |
 | `data-label-layout`              | attribute | `label-control`, `control-label`, `label-colon-control`, `control-only` | Where the label sits.                                            |
 | `data-size`                      | attribute | `xs`, `sm`, `md`, `lg`                                                  | The control size.                                                |
 | `data-density`                   | attribute | `default`, `compact`                                                    | The room the field keeps for its message and restore button.     |
 | `data-change-layout`             | attribute | `inline`, `stacked`                                                     | Where the control shows the value a dirty field's edit replaced. |
+| `data-message-display`           | attribute | `inline`, `tooltip`                                                     | Where the validation message shows.                              |
 | `data-validation`                | state     | `valid`, `invalid`, `warning`, `pending`                                | Validation status.                                               |
 | `data-dirty`                     | state     | `true`                                                                  | The value differs from the committed value.                      |
 | `data-required`                  | state     | `true`                                                                  | A value is required.                                             |
