@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { compareTrees, type CompareTreeNode, type ComparedTreeRow } from './compare-trees.js';
+import {
+  compareTrees,
+  isSameTrees,
+  type CompareTreeNode,
+  type ComparedTreeRow,
+} from './compare-trees.js';
 import { requireDefined } from './require-defined.js';
 
 const node = (id: string, label: string, children?: CompareTreeNode[]): CompareTreeNode => ({
@@ -196,5 +201,20 @@ describe('compareTrees', () => {
       changed: 1,
       moved: 1,
     });
+  });
+});
+
+describe('isSameTrees', () => {
+  it('UIC-TREE-COMPARE-3.1 matches rebuilt trees by their nodes and shape', () => {
+    const tree: CompareTreeNode[] = [
+      { id: 'p', label: 'Parent', children: [{ id: 'a', label: 'A' }] },
+    ];
+    const copy = () => [{ ...tree[0], children: [{ id: 'a', label: 'A' }] }] as CompareTreeNode[];
+    expect(isSameTrees(tree, copy())).toBe(true);
+    expect(
+      isSameTrees(tree, [{ id: 'p', label: 'Parent', children: [{ id: 'a', label: 'B' }] }]),
+    ).toBe(false);
+    expect(isSameTrees(tree, [{ id: 'p', label: 'Parent' }])).toBe(false);
+    expect(isSameTrees(tree, [...copy(), { id: 'q', label: 'Q' }])).toBe(false);
   });
 });

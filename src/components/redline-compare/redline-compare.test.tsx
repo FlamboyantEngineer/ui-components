@@ -272,7 +272,14 @@ describe('RedlineCompare', () => {
     await user.keyboard('p');
     expect(rows[6]).toHaveFocus();
     expect(rows[7]).not.toHaveAttribute('data-current');
-    rerender(<RedlineCompare oldBlocks={before} newBlocks={[...after]} />);
+    rerender(<RedlineCompare oldBlocks={[...before]} newBlocks={after.map((b) => ({ ...b }))} />);
+    expect(rows[6]).toHaveAttribute('data-current', 'true');
+    rerender(
+      <RedlineCompare
+        oldBlocks={before}
+        newBlocks={[...after, { type: 'paragraph', text: 'Enjoy.' }]}
+      />,
+    );
     expect(container.querySelector('[data-current]')).toBeNull();
     expectHooksMatchSpec(container, 'REDLINE-COMPARE', {
       slots: ['navigation', 'previous', 'next'],
@@ -341,17 +348,55 @@ describe('RedlineCompare', () => {
     expect(container.querySelector('.ui-redline-compare__actions')).toBeNull();
   });
 
-  it('UIC-REDLINE-COMPARE-3.2 forgets its own decisions when the documents change', async () => {
+  it('UIC-REDLINE-COMPARE-3.2 keeps its own decisions for equal documents and forgets them when they change', async () => {
     const user = userEvent.setup();
-    const { container, rerender } = render(
-      <RedlineCompare oldBlocks={before} newBlocks={after} onResolve={() => {}} />,
-    );
-    await user.click(
-      within(requireDefined(rowsOf(container)[7])).getByRole('button', { name: 'Accept' }),
-    );
+    const onResolve = vi.fn();
+    function Host({ blocks }: { blocks: DocumentBlock[] }) {
+      // A parent that rebuilds both documents on every render, as a selector or map does.
+      return (
+        <RedlineCompare
+          oldBlocks={before.map((block) => ({ ...block }))}
+          newBlocks={blocks.map((block) => ({ ...block, marks: block.marks && [...block.marks] }))}
+          onResolve={onResolve}
+        />
+      );
+    }
+    const { container, rerender } = render(<Host blocks={after} />);
+    const accept = () =>
+      within(requireDefined(rowsOf(container)[7])).getByRole('button', { name: 'Accept' });
+    await user.click(accept());
+    rerender(<Host blocks={after} />);
     expect(rowsOf(container)[7]).toHaveAttribute('data-resolution', 'accepted');
-    rerender(<RedlineCompare oldBlocks={before} newBlocks={[...after]} onResolve={() => {}} />);
-    expect(rowsOf(container)[7]).not.toHaveAttribute('data-resolution');
+    expect(accept()).toHaveAttribute('aria-pressed', 'true');
+    await user.click(accept());
+    expect(onResolve).toHaveBeenCalledTimes(1);
+    const edited = after.map((block) =>
+      block.id === 'chill' ? { ...block, text: 'Chill the pastry overnight.' } : block,
+    );
+    rerender(<Host blocks={edited} />);
+    expect(container.querySelector('[data-resolution]')).toBeNull();
+  });
+
+  it('UIC-REDLINE-COMPARE-3.2 shows controlled decisions across rebuilt documents', () => {
+    const { container, rerender } = render(
+      <RedlineCompare
+        oldBlocks={before}
+        newBlocks={after}
+        resolutions={{ 'id:["string","chill"]': 'rejected' }}
+        onResolve={() => {}}
+      />,
+    );
+    const resolved = () => container.querySelectorAll('[data-resolution="rejected"]').length;
+    expect(resolved()).toBe(1);
+    rerender(
+      <RedlineCompare
+        oldBlocks={[...before]}
+        newBlocks={[...after]}
+        resolutions={{ 'id:["string","chill"]': 'rejected' }}
+        onResolve={() => {}}
+      />,
+    );
+    expect(resolved()).toBe(1);
   });
 
   it('UIC-REDLINE-COMPARE-4.1 names the group and keeps rows out of the Tab order', () => {

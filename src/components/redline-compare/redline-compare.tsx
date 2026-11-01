@@ -7,6 +7,8 @@ import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEditableTarget } from '../../utils/is-editable-target.js';
 import { requireDefined } from '../../utils/require-defined.js';
+import { isSameDocument } from '../../utils/is-same-document.js';
+import { useEqualValue } from '../../utils/use-equal-value.js';
 import { useStateFor } from '../../utils/use-state-for.js';
 import {
   compareBlocks,
@@ -117,7 +119,13 @@ export function RedlineCompare<B extends DocumentBlock>({
 }: RedlineCompareProps<B>) {
   const strings = useUiStrings();
   const baseId = useId();
-  const comparison = useMemo(() => compareBlocks(oldBlocks, newBlocks), [oldBlocks, newBlocks]);
+  // Equal documents keep the comparison, so a parent that rebuilds its arrays keeps decisions.
+  const oldDocument = useEqualValue(oldBlocks, isSameDocument);
+  const newDocument = useEqualValue(newBlocks, isSameDocument);
+  const comparison = useMemo(
+    () => compareBlocks(oldDocument, newDocument),
+    [oldDocument, newDocument],
+  );
   const { move, setRootRef, canMove, rowId, current, goTo } = useRedlineNavigation(
     comparison,
     baseId,

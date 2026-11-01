@@ -7,10 +7,12 @@ import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import {
   compareTrees,
+  isSameTrees,
   type CompareTreeNode,
   type ComparedTreeRow,
 } from '../../utils/compare-trees.js';
 import { requireDefined } from '../../utils/require-defined.js';
+import { useEqualValue } from '../../utils/use-equal-value.js';
 import { useStateFor } from '../../utils/use-state-for.js';
 import { Tree } from '../tree/tree.js';
 import {
@@ -81,7 +83,10 @@ function useCompareExpansion<T extends CompareTreeNode>(
 
 /** Everything the comparison draws: the aligned rows shown, the filter, expansion and navigation. */
 function useTreeCompareModel<T extends CompareTreeNode>(props: TreeCompareProps<T>) {
-  const { left, right, isEqual, changesOnly, defaultChangesOnly = false } = props;
+  const { isEqual, changesOnly, defaultChangesOnly = false } = props;
+  // Equal trees keep the comparison, so a parent that rebuilds its data keeps the expansion.
+  const left = useEqualValue(props.left, isSameTrees);
+  const right = useEqualValue(props.right, isSameTrees);
   const comparison = useMemo(() => compareTrees(left, right, { isEqual }), [left, right, isEqual]);
   const trees = useMemo(() => ({ left, right }), [left, right]);
   const [isFiltered, setFiltered] = useControllableState(

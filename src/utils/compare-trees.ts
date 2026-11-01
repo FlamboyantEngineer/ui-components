@@ -2,6 +2,7 @@
 
 import type { Key } from '../core/props.js';
 import { diffSequences } from './diff.js';
+import { isShallowEqual } from './is-shallow-equal.js';
 import { requireDefined } from './require-defined.js';
 import { walkTree } from './walk-tree.js';
 
@@ -205,4 +206,28 @@ export function compareTrees<T extends CompareTreeNode>(
   for (const id of comparison.left.keys()) comparison.rowIds.add(id);
   for (const id of comparison.right.keys()) comparison.rowIds.add(id);
   return { rows: alignRows(left, right, comparison), counts: comparison.counts };
+}
+
+/** Whether two nodes hold the same own fields (shallowly) and the same children in order. */
+function isSameNode(left: CompareTreeNode, right: CompareTreeNode): boolean {
+  if (left === right) return true;
+  const { children: leftChildren = [], ...leftFields } = left;
+  const { children: rightChildren = [], ...rightFields } = right;
+  return isShallowEqual(leftFields, rightFields) && isSameTrees(leftChildren, rightChildren);
+}
+
+/**
+ * Whether two lists of trees hold the same nodes in the same shape, as a parent that rebuilds its
+ * data on each render passes them: each node's own fields are compared shallowly and its children
+ * in order, so the check costs no more than walking the trees once.
+ */
+export function isSameTrees(
+  left: readonly CompareTreeNode[],
+  right: readonly CompareTreeNode[],
+): boolean {
+  return (
+    left === right ||
+    (left.length === right.length &&
+      left.every((node, index) => isSameNode(node, requireDefined(right[index]))))
+  );
 }

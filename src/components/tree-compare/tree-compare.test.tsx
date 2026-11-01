@@ -230,6 +230,24 @@ describe('TreeCompare', () => {
     expect(rowNames()).not.toContain('Terms');
   });
 
+  it('UIC-TREE-COMPARE-3.1 keeps the expansion for equal trees rebuilt by the parent', async () => {
+    const user = userEvent.setup();
+    const copy = (nodes: readonly Section[]): Section[] =>
+      nodes.map((node) => ({ ...node, children: node.children && copy(node.children) }));
+    const { rerender } = render(<Compare left={copy(LEFT)} right={copy(RIGHT)} />);
+    await user.click(row('Introduction'));
+    await user.keyboard('{ArrowLeft}');
+    expect(rowNames()).not.toContain('Terms');
+    rerender(<Compare left={copy(LEFT)} right={copy(RIGHT)} />);
+    expect(rowNames()).not.toContain('Terms');
+    expect(row('Introduction')).toHaveAttribute('aria-expanded', 'false');
+    const renamed = copy(RIGHT).map((node) =>
+      node.id === 'setup' ? { ...node, label: 'Set up' } : node,
+    );
+    rerender(<Compare left={copy(LEFT)} right={renamed} />);
+    expect(row('Introduction')).toHaveAttribute('aria-expanded', 'true');
+  });
+
   it('UIC-TREE-COMPARE-3.2 keeps only the differences and the rows above them', async () => {
     const user = userEvent.setup();
     const onChangesOnlyChange = vi.fn();

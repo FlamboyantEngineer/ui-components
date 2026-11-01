@@ -130,6 +130,22 @@ test.describe('Tree Compare lab', () => {
     await expect(filtered).toContainText('No differences');
   });
 
+  test('UIC-TREE-COMPARE-3.1 keeps the expansion when the owner rebuilds equal trees', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tree-compare');
+    const demo = page.locator('[data-lab-demo="baselines"]');
+    const requirements = demo.getByRole('treegrid').getByRole('row', { name: 'Requirements' });
+    await expect(requirements).toHaveAttribute('aria-expanded', 'true');
+    await requirements.click();
+    await page.keyboard.press('ArrowLeft');
+    await expect(requirements).toHaveAttribute('aria-expanded', 'false');
+    await demo.getByRole('button', { name: 'Reload the same baselines' }).click();
+    await expect(demo.getByText('Reloaded 1 times')).toBeVisible();
+    await expect(requirements).toHaveAttribute('aria-expanded', 'false');
+  });
+
   test('UIC-TREE-COMPARE-4.1 steps between differences with the buttons and F7', async ({
     page,
     lab,

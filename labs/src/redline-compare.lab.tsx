@@ -4,6 +4,7 @@ import {
   type RedlineCompareLayout,
   type RedlineDecision,
 } from '../../src/components/redline-compare/redline-compare.js';
+import { Button } from '../../src/components/button/button.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import type { DocumentBlock } from '../../src/utils/compare-blocks.js';
 import { requireDefined } from './require-defined.js';
@@ -163,6 +164,32 @@ function Review() {
   );
 }
 
+/**
+ * A parent that rebuilds both documents on every render, including the one each decision causes,
+ * with the compare keeping its own decisions; editing a paragraph is a real change and starts over.
+ */
+function RebuiltDocuments() {
+  const [decisions, setDecisions] = useState(0);
+  const [isEdited, setEdited] = useState(false);
+  const edited = finalNotes.map((block, index) =>
+    index === 0 && isEdited ? { ...block, text: 'The library opens at seven on weekdays.' } : block,
+  );
+  return (
+    <div data-lab-demo="rebuilt">
+      <Button size="sm" onPress={() => setEdited(!isEdited)}>
+        {isEdited ? 'Undo the edit' : 'Edit the first paragraph'}
+      </Button>
+      <RedlineCompare
+        aria-label="Rebuilt visitor notes"
+        oldBlocks={draftNotes.map((block) => ({ ...block }))}
+        newBlocks={edited.map((block) => ({ ...block }))}
+        onResolve={() => setDecisions(decisions + 1)}
+      />
+      <output data-lab-output="rebuilt-decisions">{`Decisions reported: ${decisions}`}</output>
+    </div>
+  );
+}
+
 /** A paragraph whose two links overlap on "setup guide": the later link takes the overlap. */
 const linkedNote: DocumentBlock = {
   id: 'links',
@@ -228,6 +255,12 @@ mountLab(
           />
         )}
       </LargeInputDemo>
+    </LabSection>
+    <LabSection
+      title="Rebuilt documents"
+      description="The parent rebuilds both documents on every render, as a selector or a map does, and each decision re-renders it. Equal documents keep the compare's own decisions and current change; editing a paragraph is a real change and starts them over."
+    >
+      <RebuiltDocuments />
     </LabSection>
     <LabSection
       title="Overlapping links"

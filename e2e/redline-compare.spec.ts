@@ -128,6 +128,23 @@ test.describe('Redline Compare lab', () => {
     await expect(demo.getByRole('region', { name: 'Large input' })).toBeVisible();
   });
 
+  test('UIC-REDLINE-COMPARE-3.2 keeps its own decisions while the owner rebuilds equal documents', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('redline-compare');
+    const demo = page.locator('[data-lab-demo="rebuilt"]');
+    await demo.scrollIntoViewIfNeeded();
+    const accept = demo.getByRole('button', { name: 'Accept' }).first();
+    await accept.click();
+    await expect(demo.getByText('Decisions reported: 1')).toBeVisible();
+    await expect(accept).toHaveAttribute('aria-pressed', 'true');
+    await accept.click();
+    await expect(demo.getByText('Decisions reported: 1')).toBeVisible();
+    await demo.getByRole('button', { name: 'Edit the first paragraph' }).click();
+    await expect(demo.locator('[data-resolution]')).toHaveCount(0);
+  });
+
   test('UIC-REDLINE-COMPARE-2.3 never nests one link in another', async ({ page, lab }) => {
     await lab.open('redline-compare');
     const demo = page.locator('[data-lab-demo="links"]');

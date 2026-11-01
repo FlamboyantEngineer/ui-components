@@ -145,15 +145,24 @@ function renderSection(node: Section) {
   );
 }
 
-/** Two baselines of a specification outline, numbered, with statuses compared too. */
+/** A fresh copy of every node, as a parent that rebuilds its data on each render passes. */
+function copySections<T extends { children?: readonly T[] | undefined }>(nodes: readonly T[]): T[] {
+  return nodes.map((node) => ({ ...node, children: node.children && copySections(node.children) }));
+}
+
+/**
+ * Two baselines of a specification outline, numbered, with statuses compared too. The parent
+ * rebuilds both trees on every render, and equal trees keep the reader's expansion.
+ */
 function Baselines() {
   const [changesOnly, setChangesOnly] = useState(false);
+  const [refreshes, setRefreshes] = useState(0);
   return (
     <div data-lab-demo="baselines">
       <TreeCompare
         aria-label="Specification, baseline 1 against baseline 2"
-        left={BASELINE_1}
-        right={BASELINE_2}
+        left={copySections(BASELINE_1)}
+        right={copySections(BASELINE_2)}
         leftLabel="Baseline 1"
         rightLabel="Baseline 2"
         isEqual={isSameSection}
@@ -162,6 +171,10 @@ function Baselines() {
         onChangesOnlyChange={setChangesOnly}
       />
       <p>{changesOnly ? 'Showing only differences.' : 'Showing every section.'}</p>
+      <Button size="sm" onPress={() => setRefreshes(refreshes + 1)}>
+        Reload the same baselines
+      </Button>
+      <output data-lab-output="refreshes">{`Reloaded ${refreshes} times`}</output>
     </div>
   );
 }
@@ -210,7 +223,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Baselines of an outline"
-      description="Numbered sections drawn through renderLabel, a custom isEqual that also compares statuses, and the filter controlled by the owner. Requirement 12 moved from Requirements to Verification; F7 and Shift+F7 step between differences."
+      description="Numbered sections drawn through renderLabel, a custom isEqual that also compares statuses, and the filter controlled by the owner. The owner rebuilds both trees on every render, and Reload the same baselines re-renders it: equal trees keep the rows you expanded or collapsed. Requirement 12 moved from Requirements to Verification; F7 and Shift+F7 step between differences."
     >
       <Baselines />
     </LabSection>
