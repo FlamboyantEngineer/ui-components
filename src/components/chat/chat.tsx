@@ -194,6 +194,7 @@ export function Chat(props: ChatProps) {
       <ChatSearchBar search={search} />
       <TextMatchProvider query={search.query} ignoreAccents>
         <ChatTranscript
+          conversationId={props.conversationId}
           className={hooks.slotClass('transcript')}
           aria-label={ariaLabel ?? (labelledBy ? undefined : props.title || undefined)}
           aria-labelledby={labelledBy}

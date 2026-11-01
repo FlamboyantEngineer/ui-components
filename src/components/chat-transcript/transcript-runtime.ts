@@ -186,4 +186,8 @@ export function resetConversation(runtime: TranscriptRuntime) {
   runtime.readKey = null;
   runtime.reportedKey = null;
   runtime.handledHighlight = null;
+  runtime.olderRequested = false;
+  runtime.isPaging = false;
+  for (const timer of runtime.timers.values()) clearTimeout(timer);
+  runtime.timers.clear();
 }

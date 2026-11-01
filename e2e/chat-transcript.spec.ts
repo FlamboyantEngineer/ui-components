@@ -565,4 +565,19 @@ test.describe('Chat Transcript lab: embedded in a panel', () => {
     await expect(feed.locator('#embedded-wide-reply-3')).toBeFocused();
     await expect(jump).toHaveCount(0);
   });
+
+  test('UIC-CHAT-TRANSCRIPT-3.7 UIC-CHAT-TRANSCRIPT-4.1 starts over for another conversation with the same ids', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-transcript');
+    const demo = page.locator('[data-lab-demo="conversation-switch"]');
+    const requests = demo.locator('[data-lab-output="older-requests"]');
+    await expect(requests).toHaveText('Older history asked for: kitchen 1, garden 0');
+    await expect(demo.locator('[data-lab-output="last-read"]')).toHaveText('Last read: kitchen m2');
+    await demo.getByRole('radio', { name: 'Garden' }).click();
+    await expect(requests).toHaveText('Older history asked for: kitchen 1, garden 1');
+    await expect(demo.locator('[data-lab-output="last-read"]')).toHaveText('Last read: garden m2');
+    await lab.expectAccessible('[data-lab-demo="conversation-switch"]');
+  });
 });
