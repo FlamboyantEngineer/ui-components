@@ -1,6 +1,8 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import { UiProvider } from '../../core/provider.js';
+import { createMemoryStorage } from '../../core/storage.js';
 import { DashboardGrid, type DashboardGridItem } from './dashboard-grid.js';
 import { DashboardTile } from './dashboard-tile.js';
 
@@ -116,4 +118,79 @@ describe('DashboardGrid layout changes during a gesture', () => {
       expect(onLayoutChange).not.toHaveBeenCalled();
     },
   );
+
+  it('UIC-DASHBOARD-GRID-2.7 never revives a gesture its layout change ended', async () => {
+    const user = userEvent.setup();
+    const onLayoutChange = vi.fn();
+    const { rerender } = render(grid(start, { onLayoutChange }));
+    await dragDown(user, 'Move');
+    rerender(grid([{ ...tileA, y: 5 }, tileC], { onLayoutChange }));
+    expectNothingMoving();
+    // The tile's cells come back while the same pointer is still down.
+    rerender(grid(start, { onLayoutChange }));
+    await user.pointer({ coords: { pageX: 0, pageY: 240 } });
+    expectNothingMoving();
+    await user.pointer({ keys: '[/MouseLeft]' });
+    expect(onLayoutChange).not.toHaveBeenCalled();
+    // A new press moves again.
+    await dragDown(user, 'Move');
+    await user.pointer({ keys: '[/MouseLeft]' });
+    expect(onLayoutChange).toHaveBeenCalledOnce();
+  });
+
+  it('UIC-DASHBOARD-GRID-2.7 ends a gesture whose handle unmounts', async () => {
+    const user = userEvent.setup();
+    const onLayoutChange = vi.fn();
+    const tiles = (hidden: boolean) => (
+      <DashboardGrid aria-label="Overview" layout={start} onLayoutChange={onLayoutChange} isEditing>
+        {(item) =>
+          hidden && item.id === 'a' ? null : (
+            <DashboardTile label={`Tile ${item.id}`}>{item.id}</DashboardTile>
+          )
+        }
+      </DashboardGrid>
+    );
+    const { rerender } = render(tiles(false));
+    await dragDown(user, 'Move');
+    rerender(tiles(true));
+    rerender(tiles(false));
+    await user.pointer({ coords: { pageX: 0, pageY: 160 } });
+    expectNothingMoving();
+    await user.pointer({ keys: '[/MouseLeft]' });
+    expect(onLayoutChange).not.toHaveBeenCalled();
+    expect(screen.getByRole('status')).toHaveTextContent('');
+  });
+
+  it('UIC-DASHBOARD-GRID-2.7 never writes a gesture to another persisted layout', async () => {
+    const user = userEvent.setup();
+    const onLayoutChange = vi.fn();
+    const companion = { id: 'z', x: 6, y: 0, w: 3, h: 1 };
+    const storage = createMemoryStorage({
+      second: JSON.stringify([tileA, companion]),
+    });
+    const owned = (persistKey: string) => (
+      <UiProvider storage={storage}>
+        <DashboardGrid
+          aria-label="Saved"
+          defaultLayout={start}
+          persistKey={persistKey}
+          onLayoutChange={onLayoutChange}
+          isEditing
+        >
+          {(item) => <DashboardTile label={`Tile ${item.id}`}>{item.id}</DashboardTile>}
+        </DashboardGrid>
+      </UiProvider>
+    );
+    const { rerender } = render(owned('first'));
+    await dragDown(user, 'Move');
+    rerender(owned('second'));
+    await user.pointer({ coords: { pageX: 0, pageY: 160 } });
+    await user.pointer({ keys: '[/MouseLeft]' });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+    expect(onLayoutChange).not.toHaveBeenCalled();
+    expect(JSON.parse(storage.getItem('second') ?? '[]')).toEqual([tileA, companion]);
+    expect(storage.getItem('first')).toBeNull();
+  });
 });

@@ -71,9 +71,9 @@ Verification: `src/components/dashboard-grid/dashboard-grid.test.tsx`, `e2e/dash
 
 ### UIC-DASHBOARD-GRID-2.7 - Layout changes during a gesture
 
-A pointer move or resize shall belong to the layout its tile had when it started. When `layout` or `columns` change before it ends, the gesture is placed again on the current layout: tiles added, removed or moved meanwhile keep their current data in the preview and in the layout `onLayoutChange` reports, and a new layout array equal to the last one changes nothing. When the gesture's own tile was removed, or its cells changed (including by fitting fewer columns), the gesture is cancelled: the grid shows the current layout, clears the moving state, and the rest of that drag reports no layout change and announces nothing.
+A pointer move or resize shall belong to the layout its tile had when it started. When `layout` or `columns` change before it ends, the gesture is placed again on the current layout: tiles added, removed or moved meanwhile keep their current data in the preview and in the layout `onLayoutChange` reports, and a new layout array equal to the last one changes nothing. When the gesture's own tile was removed, or its cells changed (including by fitting fewer columns), the gesture is cancelled: the grid shows the current layout, clears the moving state, and the rest of that drag reports no layout change and announces nothing. A cancelled gesture stays cancelled even if its tile's cells come back while the same pointer is down: only a new press moves the tile. The gesture is also cancelled when the layout's owner changes (a controlled `layout` given or taken away, or another `persistKey`), so it never writes to the other layout or its storage, and when its handle unmounts, such as when `children` stops rendering the tile.
 
-Implementation: `src/components/dashboard-grid/dashboard-grid.tsx`, `src/components/dashboard-grid/use-tile-move.ts`
+Implementation: `src/components/dashboard-grid/dashboard-grid.tsx`, `src/components/dashboard-grid/use-tile-moves.ts`, `src/components/dashboard-grid/use-tile-move.ts`
 Verification: `src/components/dashboard-grid/dashboard-grid-external.test.tsx`, `e2e/dashboard-grid.spec.ts`
 
 ## UIC-DASHBOARD-GRID-3 - Responsive columns
