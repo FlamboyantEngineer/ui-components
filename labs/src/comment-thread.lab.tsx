@@ -6,6 +6,7 @@ import { CommentThreadReply } from '../../src/components/comment-thread/index.js
 import { ReactionBar, type ReactionEntry } from '../../src/components/reaction-bar/reaction-bar.js';
 import { Switch } from '../../src/components/switch/switch.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { MentionThread } from './comment-thread-mentions.js';
 import { samplePicture } from './people-samples.js';
 
 const maria = { name: 'Maria Santos', colorKey: 'maria' };
@@ -247,6 +248,12 @@ mountLab(
       description="Reply (Ctrl+Enter sends), react, edit or delete your own comments from their menu, copy a link, and resolve or reopen: an unsent reply waits, hidden, while the thread is resolved. Edits and deletes take a moment to save: the editor or the confirmation stays open, pending, until they do. Switch on the failure to see the error and the kept draft or edit. Switch off changing your comments while editing or confirming: the editor or confirmation ends, and does not come back when you switch it on."
     >
       <LiveThread />
+    </LabSection>
+    <LabSection
+      title="Mentions, emoji and reactions"
+      description="The thread's composer and editor are the rich composer: type @ and pick a person to insert a pill, or use the emoji button to insert at the caret. Sent comments draw their mentions as pills through the chat parts renderer, and editing your own comment starts from its mentions and keeps them. Add a reaction from the smiley button, or press a reaction to toggle yours."
+    >
+      <MentionThread />
     </LabSection>
     <LabSection
       title="Frozen clock"

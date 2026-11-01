@@ -20,10 +20,10 @@ Verification: `src/components/comment-thread/comment-thread.test.tsx`, `src/comp
 
 ### UIC-COMMENT-THREAD-1.3 - Caller composer
 
-`composer` shall render in the composer slot in place of the default composer, so a host can reply with mentions, attachments or rich text.
+`composer` shall render in the composer slot in place of the default composer, so a host can reply with mentions, attachments or rich text. The [Rich Message Composer](MESSAGE-COMPOSER.md) fits there and in `renderEditor` (UIC-COMMENT-THREAD-2.3): `@` inserts a mention pill and its emoji button inserts at the caret. The thread and its comments carry plain text, so the host keeps each message's mentions beside its text, starts an edit from them, and draws them in the comment's children, for example through [Chat Parts](CHAT-PARTS.md).
 
 Implementation: `src/components/comment-thread/comment-thread.tsx`
-Verification: `src/components/comment-thread/comment-thread.test.tsx`
+Verification: `src/components/comment-thread/comment-thread.test.tsx`, `e2e/comment-thread.spec.ts`
 
 ### UIC-COMMENT-THREAD-1.4 - Resolve and reopen
 
@@ -71,7 +71,7 @@ Verification: `src/components/comment-thread/comment-thread-drafts.test.tsx`, `e
 
 ### UIC-COMMENT-THREAD-2.1 - Author, time and body
 
-`CommentThreadReply` shall render a `ui-comment-thread-reply` `<article>` whose `ui-comment-thread-reply__header` holds a small `UserIdentity` of `author` (`ui-comment-thread-reply__author`) with, on its description line, an [Attribution](ATTRIBUTION.md) of `time` alone (`ui-comment-thread-reply__time`) read against `getNow` with `fallbackAfterDays` and `timeZone`, the provider's `unknownTime` string when it is missing, and, with `isEdited`, the provider's `edited` string in `ui-comment-thread-reply__edited` and `data-edited` on the root. The body follows in `ui-comment-thread-reply__body`: the children as the caller renders them, else `text`. `reactions`, such as a [Reaction Bar](REACTION-BAR.md), render after it in `ui-comment-thread-reply__reactions`. The article is named by the author's display name.
+`CommentThreadReply` shall render a `ui-comment-thread-reply` `<article>` whose `ui-comment-thread-reply__header` holds a small `UserIdentity` of `author` (`ui-comment-thread-reply__author`) with, on its description line, an [Attribution](ATTRIBUTION.md) of `time` alone (`ui-comment-thread-reply__time`) read against `getNow` with `fallbackAfterDays` and `timeZone`, the provider's `unknownTime` string when it is missing, and, with `isEdited`, the provider's `edited` string in `ui-comment-thread-reply__edited` and `data-edited` on the root. The body follows in `ui-comment-thread-reply__body`: the children as the caller renders them, else `text`. `reactions`, such as a [Reaction Bar](REACTION-BAR.md), render after it in `ui-comment-thread-reply__reactions`. The article is named by the author's display name. The reference stylesheet indents the body, the reactions, an editor and its error past the small avatar, so their text lines up under the author's name, trims the outer margins of a body the host renders in blocks, and lets the composer fill the thread's width.
 
 Implementation: `src/components/comment-thread/comment-thread-reply.tsx`
 Verification: `src/components/comment-thread/comment-thread-reply.test.tsx`, `e2e/comment-thread.spec.ts`
