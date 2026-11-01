@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import type { FocusTarget } from '../../utils/focus-target.js';
+import { isFocusLost, resolveFocusTarget, type FocusTarget } from '../../utils/focus-target.js';
+import { requireDefined } from '../../utils/require-defined.js';
+import { focusWithRetry } from '../../utils/use-focus-request.js';
 import { useRemovalFocus } from '../../utils/use-removal-focus.js';
 import { MediaViewer, type MediaViewerItem } from '../media-viewer/media-viewer.js';
 import { AttachmentRemovalContext } from './attachment-context.js';
@@ -32,10 +34,57 @@ export interface ChatAttachmentListProps
   finalFocus?: ChatAttachmentFocusTarget | undefined;
 }
 
-/** The image the media viewer shows: its key and whether the viewer is open. */
+/** The image the media viewer shows: its key, its place in the gallery and whether the viewer is open. */
 interface ViewerState {
   key: Key;
+  index: number;
   isOpen: boolean;
+}
+
+/**
+ * The viewer session once the gallery changed: the same while its image is listed; on the image now
+ * at its place, else the last image, while its image left; ended once no image is listed.
+ */
+function followGallery(
+  viewer: ViewerState | null,
+  gallery: readonly MediaViewerItem[],
+): ViewerState | null {
+  if (!viewer) return null;
+  const index = gallery.findIndex((item) => item.id === viewer.key);
+  if (index === viewer.index) return viewer;
+  if (index >= 0) return { ...viewer, index };
+  if (gallery.length === 0) return null;
+  const at = Math.min(viewer.index, gallery.length - 1);
+  return { ...viewer, key: requireDefined(gallery[at]).id, index: at };
+}
+
+/**
+ * When an open viewer's session ends because its images left and the focus fell to the page,
+ * focuses the list's first control, else `finalFocus`.
+ */
+function useSessionEndFocus(
+  isOpen: boolean,
+  listRef: RefObject<HTMLUListElement | null>,
+  finalFocus: FocusTarget | undefined,
+) {
+  const wasOpen = useRef(false);
+  const owner = useRef<Document | null>(null);
+  const stop = useRef(() => {});
+  useLayoutEffect(() => () => stop.current(), []);
+  useLayoutEffect(() => {
+    const list = listRef.current;
+    if (list) owner.current = list.ownerDocument;
+    const ended = wasOpen.current && !isOpen;
+    wasOpen.current = isOpen;
+    if (!ended || !owner.current || !isFocusLost(owner.current)) return;
+    // The page outside the viewer can stay inert for a moment, so the focus is retried.
+    stop.current();
+    stop.current = focusWithRetry(
+      () =>
+        listRef.current?.querySelector<HTMLElement>('button, a[href]') ??
+        resolveFocusTarget(finalFocus),
+    );
+  });
 }
 
 const hooks = createHooks('chat-attachment-list', ['item']);
@@ -73,14 +122,19 @@ export function ChatAttachmentList({
 }: ChatAttachmentListProps) {
   const strings = useUiStrings();
   const removal = useRemovalFocus(attachments, finalFocus);
-  const [viewer, setViewer] = useState<ViewerState | null>(null);
+  const [stored, setViewer] = useState<ViewerState | null>(null);
+  const listRef = useRef<HTMLUListElement>(null);
   const gallery = attachments.flatMap(toGalleryItems);
-  const inGallery = new Set(gallery.map((item) => item.id));
+  const viewer = followGallery(stored, gallery);
+  if (viewer !== stored) setViewer(viewer);
+  useSessionEndFocus(viewer?.isOpen ?? false, listRef, finalFocus);
+  const indexOf = new Map(gallery.map((item, index) => [item.id, index]));
   if (attachments.length === 0) return null;
   const labelledBy = rest['aria-labelledby'];
   return (
     <AttachmentRemovalContext value={removal}>
       <ul
+        ref={listRef}
         {...hooks.root({ className, props: rest })}
         id={id}
         aria-label={
@@ -95,21 +149,28 @@ export function ChatAttachmentList({
               onRemove={onRemove && (() => onRemove(attachment.id))}
               onRetry={onRetry && (() => onRetry(attachment.id))}
               onPreview={
-                inGallery.has(attachment.id)
-                  ? () => setViewer({ key: attachment.id, isOpen: true })
+                indexOf.has(attachment.id)
+                  ? () =>
+                      setViewer({
+                        key: attachment.id,
+                        index: requireDefined(indexOf.get(attachment.id)),
+                        isOpen: true,
+                      })
                   : undefined
               }
             />
           </li>
         ))}
       </ul>
-      {viewer && gallery.length > 0 ? (
+      {viewer ? (
         <MediaViewer
           items={gallery}
           selectedKey={viewer.key}
           isOpen={viewer.isOpen}
           onOpenChange={(isOpen) => setViewer({ ...viewer, isOpen })}
-          onSelectionChange={(key) => setViewer({ key, isOpen: true })}
+          onSelectionChange={(key) =>
+            setViewer({ key, index: indexOf.get(key) ?? viewer.index, isOpen: true })
+          }
         />
       ) : null}
     </AttachmentRemovalContext>
