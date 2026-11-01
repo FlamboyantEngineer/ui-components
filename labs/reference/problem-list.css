@@ -5,24 +5,29 @@
   max-width: 100%;
   margin: 0 0 12px;
   padding: 10px 12px;
-  border: 1px solid var(--ref-border);
-  border-inline-start-width: 4px;
+  --problem-list-tone: var(--ref-border-strong);
+  border: 1px solid
+    color-mix(in srgb, var(--problem-list-tone) var(--ref-tint-border), var(--ref-border));
   border-radius: var(--ref-radius);
-  background: var(--ref-surface);
+  background: color-mix(
+    in srgb,
+    var(--problem-list-tone) var(--ref-tint-subtle),
+    var(--ref-surface)
+  );
   color: var(--ref-text);
   font-size: var(--ref-font-size-md);
 }
 
 .ui-problem-list[data-severity='error'] {
-  border-color: var(--ref-danger);
+  --problem-list-tone: var(--ref-danger);
 }
 
 .ui-problem-list[data-severity='warning'] {
-  border-color: var(--ref-warning);
+  --problem-list-tone: var(--ref-warning);
 }
 
 .ui-problem-list[data-empty] {
-  border-inline-start-color: var(--ref-success);
+  --problem-list-tone: var(--ref-success);
 }
 
 .ui-problem-list__title {

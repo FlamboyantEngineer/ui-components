@@ -82,8 +82,8 @@
   background: color-mix(in srgb, var(--ref-danger) var(--ref-tint-subtle), transparent);
 }
 
-.ui-text-diff__line[data-current] > td:first-child {
-  box-shadow: inset 3px 0 0 var(--ref-accent);
+.ui-text-diff__line[data-current] > td {
+  background-image: linear-gradient(var(--ref-selected), var(--ref-selected));
 }
 
 .ui-text-diff__line:focus-visible {

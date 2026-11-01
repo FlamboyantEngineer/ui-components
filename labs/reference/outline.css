@@ -28,8 +28,7 @@
   gap: 6px;
   min-width: 0;
   padding: 3px 8px;
-  border-inline-start: 2px solid transparent;
-  border-radius: 0 var(--ref-radius) var(--ref-radius) 0;
+  border-radius: var(--ref-radius);
   color: var(--ref-text);
   text-decoration: none;
 }
@@ -57,12 +56,13 @@
 }
 
 .ui-outline__item[data-current] > .ui-outline__row > .ui-outline__link {
-  border-inline-start-color: var(--ref-accent);
   background: var(--ref-selected);
+  outline: 1px solid color-mix(in srgb, var(--ref-accent) var(--ref-tint-border), transparent);
+  outline-offset: -1px;
 }
 
 .ui-outline__item[data-current-within]:not([data-expanded]) > .ui-outline__row > .ui-outline__link {
-  border-inline-start-color: var(--ref-border-strong);
+  background: var(--ref-hover);
 }
 
 .ui-outline__empty {

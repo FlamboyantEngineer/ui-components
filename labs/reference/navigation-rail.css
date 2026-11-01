@@ -140,11 +140,8 @@
 
 .ui-navigation-rail__link[data-current] {
   background: var(--ref-selected);
-  box-shadow: inset 3px 0 0 var(--ref-accent);
-}
-
-[dir='rtl'] .ui-navigation-rail__link[data-current] {
-  box-shadow: inset -3px 0 0 var(--ref-accent);
+  outline: 1px solid color-mix(in srgb, var(--ref-accent) var(--ref-tint-border), transparent);
+  outline-offset: -1px;
 }
 
 .ui-navigation-rail__item[data-current]

@@ -36,27 +36,29 @@ p.ui-tree-compare__summary {
 
 .ui-tree-compare__count {
   padding: 0 8px;
-  border: 1px solid var(--ref-border);
-  border-inline-start-width: 3px;
+  --tree-compare-tone: var(--ref-border-strong);
+  border: 1px solid
+    color-mix(in srgb, var(--tree-compare-tone) var(--ref-tint-border), var(--ref-border));
   border-radius: var(--ref-radius);
+  background: color-mix(in srgb, var(--tree-compare-tone) var(--ref-tint-subtle), transparent);
   font-size: var(--ref-font-size-sm);
   line-height: 1.25rem;
 }
 
 .ui-tree-compare__count[data-change='added'] {
-  border-inline-start-color: var(--ref-success);
+  --tree-compare-tone: var(--ref-success);
 }
 
 .ui-tree-compare__count[data-change='removed'] {
-  border-inline-start-color: var(--ref-danger);
+  --tree-compare-tone: var(--ref-danger);
 }
 
 .ui-tree-compare__count[data-change='changed'] {
-  border-inline-start-color: var(--ref-warning);
+  --tree-compare-tone: var(--ref-warning);
 }
 
 .ui-tree-compare__count[data-change='moved'] {
-  border-inline-start-color: var(--ref-info);
+  --tree-compare-tone: var(--ref-info);
 }
 
 .ui-tree-compare__changes-only {

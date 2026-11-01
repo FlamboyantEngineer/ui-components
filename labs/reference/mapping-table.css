@@ -26,11 +26,7 @@
 }
 
 .ui-mapping-table__row[data-duplicate] > .ui-mapping-table__column {
-  box-shadow: inset 3px 0 0 var(--ref-warning);
-}
-
-[dir='rtl'] .ui-mapping-table__row[data-duplicate] > .ui-mapping-table__column {
-  box-shadow: inset -3px 0 0 var(--ref-warning);
+  background: color-mix(in srgb, var(--ref-warning) var(--ref-tint), transparent);
 }
 
 .ui-mapping-table__column {

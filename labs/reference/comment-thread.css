@@ -32,8 +32,9 @@
   flex: 1 1 100%;
   margin: 0;
   padding: 2px 8px;
-  border-inline-start: 3px solid var(--ref-warning);
-  color: var(--ref-muted);
+  border-radius: var(--ref-radius-sm);
+  background: var(--ref-highlight);
+  color: var(--ref-text);
   font-size: var(--ref-font-size-md);
 }
 

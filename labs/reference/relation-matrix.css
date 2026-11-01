@@ -100,13 +100,8 @@
 
 .ui-relation-matrix__row-header[data-uncovered],
 .ui-relation-matrix__column[data-uncovered] {
-  box-shadow: inset 3px 0 0 var(--ref-danger);
   color: var(--ref-danger);
-}
-
-[dir='rtl'] .ui-relation-matrix__row-header[data-uncovered],
-[dir='rtl'] .ui-relation-matrix__column[data-uncovered] {
-  box-shadow: inset -3px 0 0 var(--ref-danger);
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-relation-matrix__column[data-uncovered] {

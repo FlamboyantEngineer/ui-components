@@ -103,14 +103,7 @@
 
 .ui-dock-panel__launcher > [aria-expanded='true'] {
   background: var(--ref-selected);
-  box-shadow: inset 0 -2px var(--ref-accent);
   color: var(--ref-on-fill);
-}
-
-.ui-dock-panel__launchers[data-orientation='vertical']
-  .ui-dock-panel__launcher
-  > [aria-expanded='true'] {
-  box-shadow: inset 2px 0 var(--ref-accent);
 }
 
 .ui-dock-panel__count {

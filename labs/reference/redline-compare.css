@@ -93,11 +93,7 @@
 }
 
 .ui-redline-compare__row[data-current] {
-  box-shadow: inset 3px 0 0 var(--ref-accent);
-}
-
-[dir='rtl'] .ui-redline-compare__row[data-current] {
-  box-shadow: inset -3px 0 0 var(--ref-accent);
+  background-image: linear-gradient(var(--ref-selected), var(--ref-selected));
 }
 
 .ui-redline-compare__row:focus-visible {
@@ -105,12 +101,13 @@
   outline-offset: -2px;
 }
 
-.ui-redline-compare__row[data-resolution] {
-  border-inline-end: 3px solid var(--ref-success);
+.ui-redline-compare__row[data-resolution] .ui-redline-compare__actions {
+  border-radius: var(--ref-radius-sm);
+  background: color-mix(in srgb, var(--ref-success) var(--ref-tint), transparent);
 }
 
-.ui-redline-compare__row[data-resolution='rejected'] {
-  border-inline-end-color: var(--ref-danger);
+.ui-redline-compare__row[data-resolution='rejected'] .ui-redline-compare__actions {
+  background: color-mix(in srgb, var(--ref-danger) var(--ref-tint), transparent);
 }
 
 .ui-redline-compare__marker {
