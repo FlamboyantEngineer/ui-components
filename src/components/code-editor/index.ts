@@ -3,6 +3,7 @@ export { resolveCodeTokenizer } from './code-languages.js';
 export type {
   CodeDiagnostic,
   CodeEditorProps,
+  CodeEditorResize,
   CodeEditorFieldProps,
   CodeEditorSurfaceProps,
   CodeEditorSize,

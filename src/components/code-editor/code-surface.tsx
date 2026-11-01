@@ -30,6 +30,9 @@ export type CodeEditorSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 /** `soft` wraps long lines; `off` scrolls them sideways. */
 export type CodeEditorWrap = 'soft' | 'off';
 
+/** Which way the reader may resize the editing surface: its height, both its sides, or neither. */
+export type CodeEditorResize = 'vertical' | 'both' | 'none';
+
 export interface CodeSurfaceProps extends BaseProps, CodeTextAreaProps {
   /** Language identifier published for the stylesheet. */
   language?: CodeLanguage | undefined;
@@ -50,6 +53,11 @@ export interface CodeSurfaceProps extends BaseProps, CodeTextAreaProps {
   size?: CodeEditorSize | undefined;
   /** Defaults to `soft`. */
   wrap?: CodeEditorWrap | undefined;
+  /**
+   * Which way the reader may resize the editing surface, within the room its container gives it.
+   * Defaults to `vertical`; a single-line editor never resizes.
+   */
+  resize?: CodeEditorResize | undefined;
   /**
    * Edits several lines. Defaults to `true`; `false` keeps the source on one line that never wraps:
    * Enter is left to the caller's `onKeyDown`, and typed or pasted line breaks become spaces.

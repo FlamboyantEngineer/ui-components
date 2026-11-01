@@ -43,7 +43,7 @@ export function CodeEditor(props: CodeEditorProps) {
   );
 }
 
-export type { CodeEditorSize, CodeEditorWrap } from './code-surface.js';
+export type { CodeEditorResize, CodeEditorSize, CodeEditorWrap } from './code-surface.js';
 export type { CodeDiagnostic, CodeToken, CodeTokenizer } from './code-layers.js';
 export type { CodeLanguage, CodeSyntax, CodeSyntaxRule } from './code-languages.js';
 export type { JsonSchema, JsonSchemaType } from './json-schema.js';

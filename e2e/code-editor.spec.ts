@@ -617,4 +617,73 @@ test.describe('Code Editor lab', () => {
     expect(sizes[0]).toBeLessThan(sizes[1] ?? 0);
     expect(sizes[1]).toBeLessThan(sizes[2] ?? 0);
   });
+  test('UIC-CODE-EDITOR-1.8 resizes the surface sideways within its container and keeps the layers together', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('code-editor');
+    const demo = page.locator('[data-lab-demo="resize"]');
+    const resizable = demo.locator('[data-lab-editor="resize-both"]');
+    await resizable.scrollIntoViewIfNeeded();
+    const surface = resizable.locator('.ui-code-editor__surface');
+    const input = resizable.getByRole('textbox', { name: 'Resizable source' });
+    const drag = async (target: Locator, dx: number, dy = 0) => {
+      const from = await box(target);
+      const x = from.x + from.width - 3;
+      const y = from.y + from.height - 3;
+      await page.mouse.move(x, y);
+      await page.mouse.down();
+      await page.mouse.move(x + dx, y + dy, { steps: 5 });
+      await page.mouse.up();
+    };
+    await input.click();
+    await page.keyboard.press('Control+End');
+    await page.keyboard.type(' // kept');
+    const value = await input.inputValue();
+    const start = await box(surface);
+    expect(start.width).toBe(418);
+    await drag(surface, 150, 30);
+    const wider = await box(surface);
+    expect(wider.width).toBeCloseTo(568, 0);
+    expect(wider.height).toBeGreaterThan(start.height);
+    expect((await box(resizable)).width).toBeCloseTo(wider.width + 2, 0);
+    expect((await box(resizable.locator('.ui-code-editor__toolbar'))).width).toBeCloseTo(
+      wider.width,
+      0,
+    );
+    expect((await box(resizable.locator('.ui-code-editor__diagnostics'))).width).toBeCloseTo(
+      wider.width,
+      0,
+    );
+    expect(await box(input)).toEqual(await box(resizable.locator('.ui-code-editor__highlight')));
+    await expect(input).toHaveValue(value);
+
+    // Never past the room the container gives it, never below a usable width.
+    const room = await demo.evaluate((node) => node.clientWidth - 8);
+    await drag(surface, 600);
+    expect((await box(resizable)).width).toBeLessThanOrEqual(room + 0.5);
+    await drag(surface, -900);
+    expect((await box(surface)).width).toBe(200);
+    expect(await box(input)).toEqual(await box(resizable.locator('.ui-code-editor__highlight')));
+    await expect(input).toHaveValue(value);
+
+    const field = demo.locator('[data-lab-editor="resize-field"]');
+    const fieldSurface = field.locator('.ui-code-editor__surface');
+    await drag(fieldSurface, 120);
+    expect((await box(field)).width).toBeLessThanOrEqual(room + 0.5);
+    expect((await box(field.locator('.ui-field__control > .ui-code-editor'))).width).toBeCloseTo(
+      (await box(fieldSurface)).width + 2,
+      0,
+    );
+
+    for (const [name, resize] of [
+      ['resize-vertical', 'vertical'],
+      ['resize-single', 'none'],
+    ] as const) {
+      const other = demo.locator(`[data-lab-editor="${name}"]`);
+      await expect(other).toHaveAttribute('data-resize', resize);
+      await expect(other.locator('.ui-code-editor__surface')).toHaveCSS('resize', resize);
+    }
+    await lab.expectAccessible('[data-lab-demo="resize"]');
+  });
 });
