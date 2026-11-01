@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { useFilter } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { OpenStateProps } from '../../core/events.js';
+import { useCloseWhenLocked } from '../../utils/use-close-when-locked.js';
 import { flattenPickerItems, usePickerEmptyContent } from '../field/field.js';
 import {
   withKnownOptions,
@@ -90,6 +91,7 @@ export function useComboboxModel(options: ComboboxModelOptions) {
   );
   const isLocked = Boolean(options.isDisabled || options.isReadOnly);
   const isOpen = open && !isLocked;
+  useCloseWhenLocked(open, isLocked, () => setOpen(false));
   const input = useInputText(options);
   const search = useComboboxSearch({ ...options, isOpen, text: input.text });
   const renderEmpty = usePickerEmptyContent(search, options.renderEmptyState);

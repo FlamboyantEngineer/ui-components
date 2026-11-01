@@ -1,10 +1,10 @@
 'use client';
 
-import { useId, useLayoutEffect, useState, type KeyboardEvent, type Ref } from 'react';
+import { useId, useState, type KeyboardEvent, type Ref } from 'react';
 import type { Key } from '../../core/props.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
-import { useLatest } from '../../utils/use-latest.js';
+import { useCloseWhenLocked } from '../../utils/use-close-when-locked.js';
 import type { FieldState } from '../field/field.js';
 import type { SelectFieldOptionRenderer } from './select-option.js';
 import { flattenPickerItems } from '../field/field.js';
@@ -115,19 +115,6 @@ export function useSelectModel({ state, isMultiple, ...config }: SelectModelProp
 }
 
 export type SelectModel = ReturnType<typeof useSelectModel>;
-
-/**
- * Closes an open picker once its field turns read-only or disabled, through the ordinary close
- * (`onOpenChange(false)`), so it stays closed when the field unlocks. While locked it is drawn
- * closed whatever its owner says.
- */
-export function useCloseWhenLocked(isOpen: boolean, isLocked: boolean, close: () => void) {
-  const shouldClose = isOpen && isLocked;
-  const latestClose = useLatest(close);
-  useLayoutEffect(() => {
-    if (shouldClose) latestClose.current();
-  }, [shouldClose, latestClose]);
-}
 
 /** Open state (controlled or held here), the filter text and the actions that commit keys. */
 export function useSelectActions(

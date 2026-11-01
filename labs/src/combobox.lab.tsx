@@ -336,6 +336,31 @@ function ControlledOpen() {
   );
 }
 
+/** A combobox its host locks a second after a press, so the reader can open the list first. */
+function LockWhileOpen() {
+  const [isLocked, setIsLocked] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <div data-lab-case="lock-while-open">
+      <p>
+        <Button size="sm" onPress={() => window.setTimeout(() => setIsLocked(true), 1000)}>
+          Disable in a second
+        </Button>{' '}
+        <Button size="sm" onPress={() => setIsLocked(false)}>
+          Enable
+        </Button>{' '}
+        Open: <output data-lab-output="open">{String(isOpen)}</output>
+      </p>
+      <Combobox
+        label="Lockable fruit"
+        defaultItems={fruit}
+        isDisabled={isLocked}
+        onOpenChange={setIsOpen}
+      />
+    </div>
+  );
+}
+
 const fileTypes: ComboboxOption[] = [
   { id: 'notes', label: 'Notes', icon: EditGlyph },
   { id: 'links', label: 'Links', icon: LinkGlyph },
@@ -476,6 +501,12 @@ mountLab(
           />
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Locked while open"
+      description="Press Disable in a second, then open the list: when the field turns disabled the list closes and reports it, and enabling the field again leaves it closed until it is opened."
+    >
+      <LockWhileOpen />
     </LabSection>
     <LabSection title="Virtualized list" description="5000 cities render only the options in view.">
       <Combobox label="Any city" defaultItems={manyCities} virtualized />

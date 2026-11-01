@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
 import type { FieldLabelLayout } from '../../src/components/field/field.js';
 import type { DateRangeValue } from '../../src/components/date-time-field/index.js';
 import {
@@ -152,6 +153,24 @@ function Form() {
   );
 }
 
+/** A field its host disables a second after a press, so the reader can open the presets first. */
+function LockWhileOpen() {
+  const [isLocked, setIsLocked] = useState(false);
+  return (
+    <div data-lab-case="lock-while-open">
+      <p>
+        <Button size="sm" onPress={() => window.setTimeout(() => setIsLocked(true), 1000)}>
+          Disable in a second
+        </Button>{' '}
+        <Button size="sm" onPress={() => setIsLocked(false)}>
+          Enable
+        </Button>
+      </p>
+      <RelativeDateField label="Lockable due date" isDisabled={isLocked} getNow={getNow} />
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -159,6 +178,12 @@ mountLab(
       description="A disabled field keeps its presets closed even with an explicit open state."
     >
       <RelativeDateField label="Disabled due date" isDisabled isOpen getNow={getNow} />
+    </LabSection>
+    <LabSection
+      title="Disabled while open"
+      description="Press Disable in a second, then open the presets: when the field turns disabled they close, and enabling it again leaves them closed."
+    >
+      <LockWhileOpen />
     </LabSection>
     <LabSection
       title="Layouts and states"

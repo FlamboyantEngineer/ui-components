@@ -6,10 +6,10 @@
 
 ### UIC-PEOPLE-PICKER-1.1 - Combobox field
 
-`PeoplePicker` shall render a `Combobox` whose root also carries `ui-people-picker`, handing it `label`, `description`, `errorMessage`, `placeholder`, `isDisabled`, `isReadOnly`, `isInvalid`, `isRequired`, `size` (`sm`, `md` by default, `lg`) and `searchDelay` unchanged, so the field follows the combobox's structure, states and keyboard behaviour (UIC-COMBOBOX-1 and UIC-COMBOBOX-2).
+`PeoplePicker` shall render a `Combobox` whose root also carries `ui-people-picker`, handing it `label`, `description`, `errorMessage`, `placeholder`, `isDisabled`, `isReadOnly`, `isInvalid`, `isRequired`, `size` (`sm`, `md` by default, `lg`) and `searchDelay` unchanged, so the field follows the combobox's structure, states and keyboard behaviour (UIC-COMBOBOX-1 and UIC-COMBOBOX-2), and closes an open list for good when it locks (UIC-COMBOBOX-5.6).
 
 Implementation: `src/components/people-picker/people-picker.tsx`, `labs/reference/people-picker.css`
-Verification: `src/components/people-picker/people-picker.test.tsx`, `e2e/people-picker.spec.ts`
+Verification: `src/components/people-picker/people-picker.test.tsx`, `src/components/people-picker/people-picker-locking.test.tsx`, `e2e/people-picker.spec.ts`
 
 ### UIC-PEOPLE-PICKER-1.2 - Single and multiple selection
 
