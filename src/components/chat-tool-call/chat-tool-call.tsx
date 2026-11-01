@@ -69,23 +69,30 @@ export interface ChatToolCallProps extends Omit<BaseProps, 'id'>, ChatToolCallDa
 
 type ExpansionOptions = Pick<
   ChatToolCallProps,
-  'status' | 'isExpanded' | 'defaultExpanded' | 'onExpandedChange'
+  'id' | 'status' | 'isExpanded' | 'defaultExpanded' | 'onExpandedChange'
 >;
 
 /**
  * The card's expanded state. Uncontrolled, it follows the status (open while an approval is
  * requested) until the reader toggles it or `defaultExpanded` sets it. A failure stays closed.
+ * The reader's toggle belongs to the call `id`: another call follows its own status again.
  */
 function useToolCallExpansion({
+  id,
   status,
   isExpanded,
   defaultExpanded,
   onExpandedChange,
 }: ExpansionOptions): [boolean, (next: boolean) => void] {
-  const [toggled, setToggled] = useState<boolean>();
+  const [toggle, setToggle] = useState<{ id: string; value: boolean }>();
+  let toggled = toggle?.value;
+  if (toggle && toggle.id !== id) {
+    toggled = undefined;
+    setToggle(undefined);
+  }
   const shown = isExpanded ?? toggled ?? defaultExpanded ?? status === 'approval-requested';
   const setExpanded = (next: boolean) => {
-    if (isExpanded === undefined) setToggled(next);
+    if (isExpanded === undefined) setToggle({ id, value: next });
     onExpandedChange?.(next);
   };
   return [shown, setExpanded];
@@ -122,21 +129,19 @@ export function ChatToolCall({
 }: ChatToolCallProps) {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [expanded, setExpanded] = useToolCallExpansion({
+    id,
     status,
     isExpanded,
     defaultExpanded,
     onExpandedChange,
   });
   const isPending = status === 'approval-requested' && approval?.decision === undefined;
-  const approvalState = useToolCallApproval({ isPending, onApprove, onDeny });
+  const approvalState = useToolCallApproval({ callId: id, isPending, onApprove, onDeny });
   const title = label ?? formatToolName(name);
+  const data = { variant, status, kind, autoApproved: approval?.isAutoApproved };
   return (
     <div
-      {...hooks.root({
-        className,
-        props: rest,
-        data: { variant, status, kind, autoApproved: approval?.isAutoApproved },
-      })}
+      {...hooks.root({ className, props: rest, data })}
       id={id}
       aria-busy={status === 'running' || undefined}
       onKeyDownCapture={approvalState.onKeyDownCapture}

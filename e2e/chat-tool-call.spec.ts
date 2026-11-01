@@ -183,6 +183,27 @@ test.describe('Chat Tool Call lab', () => {
     await expect(call.getByRole('button', { name: 'Deny' })).toHaveCount(0);
   });
 
+  test('UIC-CHAT-TOOL-CALL-4.2 starts the next call in the same card without the earlier denial draft', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-tool-call');
+    const queue = page.locator('[data-lab-demo="queue"]');
+    await queue.getByRole('button', { name: 'Deny' }).click();
+    const reason = queue.getByRole('textbox', { name: 'Reason (optional)' });
+    await expect(reason).toBeFocused();
+    await page.keyboard.type('Reason for the first call');
+    await queue.getByRole('button', { name: 'Next call' }).click();
+    await expect(queue.getByRole('group', { name: 'Allow “Delete file”?' })).toBeVisible();
+    await expect(reason).toHaveCount(0);
+    await queue.getByRole('button', { name: 'Deny' }).click();
+    await expect(reason).toHaveValue('');
+    await page.keyboard.press('Enter');
+    await expect(queue.locator('[data-lab-events="queue"] li')).toHaveText([
+      'queued-delete: onDeny()',
+    ]);
+  });
+
   test('UIC-CHAT-TOOL-CALL-4.5 keeps a pressed button focused and disabled once decided', async ({
     page,
     lab,

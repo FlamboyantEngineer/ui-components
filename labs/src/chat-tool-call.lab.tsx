@@ -8,6 +8,7 @@ import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import {
   ApprovalDemo,
   ForecastCard,
+  QueueDemo,
   recipeArgs,
   recipeResult,
   timetableResult,
@@ -260,6 +261,12 @@ mountLab(
       description="Decide with the buttons or the keyboard: Ctrl+Enter (Cmd+Enter on macOS) approves, Escape focuses Deny. Approving runs the tool; Deny asks for an optional reason. Ask again resets the call."
     >
       <ApprovalDemo />
+    </LabSection>
+    <LabSection
+      title="Next call in place"
+      description="One card the host reuses for its next waiting call. Press Deny and type a reason, then press Next call (or move focus away and back): the other call shows with a fresh approval and no reason, and focus lands on its Deny button. Each decision names the call it reached."
+    >
+      <QueueDemo />
     </LabSection>
   </>,
 );
