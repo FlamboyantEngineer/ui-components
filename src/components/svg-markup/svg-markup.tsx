@@ -1,7 +1,8 @@
 import { createElement, useId, useMemo, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
-import { mapTree } from '../../utils/map-tree.js';
+import { mapTreeToDepth } from '../../utils/map-tree.js';
+import { maxMarkupDepth } from '../../utils/markup.js';
 import { toImageProps } from '../icon/icon-props.js';
 import { parseSvgMarkup, type SvgElementNode, type SvgNode } from './parse-svg-markup.js';
 import { createSvgReferenceScope, type SvgReferenceScope } from './svg-references.js';
@@ -71,16 +72,16 @@ function toElementProps(
 }
 
 function renderChildren(node: SvgElementNode, scope: SvgReferenceScope): ReactNode[] {
-  return mapTree<SvgNode, ReactNode>(
-    node.children,
-    (child) => (child.type === 'element' ? child.children : undefined),
-    (child, children, key) => {
+  return mapTreeToDepth<SvgNode, ReactNode>(node.children, {
+    getChildren: (child) => (child.type === 'element' ? child.children : undefined),
+    transform: (child, children, key) => {
       if (child.type === 'text') return child.text;
       const attributes = scope(child.tag, child.attributes);
       if (attributes === null) return null;
       return createElement(child.tag, { ...toElementProps(attributes), key }, children);
     },
-  );
+    maxDepth: maxMarkupDepth,
+  });
 }
 
 interface SvgDrawing {

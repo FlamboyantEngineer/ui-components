@@ -1,7 +1,8 @@
 'use client';
 import { createElement, Fragment, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import { mapTree } from '../../utils/map-tree.js';
+import { mapTreeToDepth } from '../../utils/map-tree.js';
+import { maxMarkupDepth } from '../../utils/markup.js';
 import { untrustedImageProps } from '../../utils/safe-url.js';
 import { Checkbox } from '../checkbox/checkbox.js';
 import { Link } from '../link/link.js';
@@ -89,9 +90,13 @@ function listChildEntries({
 }
 
 function renderEntries(entries: RenderEntry[], context: RenderContext): ReactNode[] {
-  return mapTree<RenderEntry, ReactNode>(entries, listChildEntries, (entry, children, index) => (
-    <Fragment key={entry.key ?? index}>{renderNode(entry, children, context)}</Fragment>
-  ));
+  return mapTreeToDepth<RenderEntry, ReactNode>(entries, {
+    getChildren: listChildEntries,
+    transform: (entry, children, index) => (
+      <Fragment key={entry.key ?? index}>{renderNode(entry, children, context)}</Fragment>
+    ),
+    maxDepth: maxMarkupDepth,
+  });
 }
 
 /** Renders nodes from the leaves up, without recursion, so deep nesting cannot overflow the stack. */

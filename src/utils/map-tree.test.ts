@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mapTree } from './map-tree.js';
+import { mapTree, mapTreeToDepth } from './map-tree.js';
 
 interface Item {
   id: string;
@@ -35,5 +35,40 @@ describe('mapTree', () => {
         () => null,
       ),
     ).toEqual([]);
+  });
+
+  it('UIC-MARKUP-1.6 unwraps items past maxDepth into their ancestor at that depth, in order', () => {
+    const input: Item[] = [
+      {
+        id: 'a',
+        children: [
+          { id: 'b', children: [{ id: 'c', children: [{ id: 'd' }, { id: 'e' }] }, { id: 'f' }] },
+          { id: 'g' },
+        ],
+      },
+    ];
+    const result = mapTreeToDepth(input, {
+      getChildren: (item) => item.children,
+      transform: (item, children: string[], index) => `${item.id}${index}[${children.join(',')}]`,
+      maxDepth: 2,
+    });
+    expect(result).toEqual(['a0[b0[d0[],e1[],f2[]],g1[]]']);
+  });
+
+  it('UIC-MARKUP-1.6 maps a very deep chain without growing deeper than maxDepth', () => {
+    let deepest: Item = { id: 'leaf' };
+    for (let level = 0; level < 50_000; level += 1) deepest = { id: 'node', children: [deepest] };
+    const depths: number[] = [];
+    mapTreeToDepth([deepest], {
+      getChildren: (item) => item.children,
+      transform: (_item, children: number[]) => {
+        const depth = Math.max(0, ...children) + 1;
+        depths.push(depth);
+        return depth;
+      },
+      maxDepth: 256,
+    });
+    // The leaf joins the item at depth 256 as its child.
+    expect(Math.max(...depths)).toBe(257);
   });
 });

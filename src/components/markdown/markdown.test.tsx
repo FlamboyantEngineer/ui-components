@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { render, renderHook, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { isValidElement } from 'react';
+import { maxMarkupDepth } from '../../utils/markup.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
@@ -150,17 +151,20 @@ describe('Markdown', () => {
     // renderer's own nesting limit.
     const { result } = renderHook(() => Markdown({ source: document }));
     const tags: unknown[] = [];
+    const texts: string[] = [];
     const pending: unknown[] = [result.current];
     while (pending.length > 0) {
       const node = pending.pop();
       if (Array.isArray(node)) pending.push(...node);
+      else if (typeof node === 'string') texts.push(node);
       else if (isValidElement<{ children?: unknown }>(node)) {
         tags.push(node.type);
         pending.push(node.props.children);
       }
     }
-    expect(tags.filter((tag) => tag === 'blockquote')).toHaveLength(5000);
-    expect(tags).toContain('p');
+    // Quotes past the drawing depth are unwrapped (UIC-MARKUP-1.6).
+    expect(tags.filter((tag) => tag === 'blockquote')).toHaveLength(maxMarkupDepth);
+    expect(texts.join('')).toContain('deep');
   });
 
   it('UIC-MARKDOWN-2.8 renders each node of a task item once', () => {
