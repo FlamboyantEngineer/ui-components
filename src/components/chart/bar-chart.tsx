@@ -18,7 +18,12 @@ import { Chart, type ChartSeries, type ChartTable, type ChartViewProps } from '.
 import { resolvePlotBox } from './chart-layout.js';
 import { ChartAxis } from './chart-axis.js';
 import { barChartHooks, chartHooks } from './chart-hooks.js';
-import { ChartLegend, useHiddenKeys, type ChartHiddenKeysProps } from './chart-legend.js';
+import {
+  ChartLegend,
+  hasLegendByDefault,
+  useHiddenKeys,
+  type ChartHiddenKeysProps,
+} from './chart-legend.js';
 import { ChartPlot, useChartPoints } from './chart-points.js';
 import { useValueSummary } from './chart-summary.js';
 import { useChartFrame, useLabelMargin } from './use-chart-box.js';
@@ -197,7 +202,7 @@ export function BarChart({
   categoryLabel,
   summary,
   showSummary,
-  showLegend = series.length > 1,
+  showLegend: showLegendProp,
   hiddenKeys,
   defaultHiddenKeys,
   onHiddenKeysChange,
@@ -209,6 +214,7 @@ export function BarChart({
   const { width, element, frameRef } = useChartFrame(ref);
   const format = useNumberFormatter(formatOptions);
   const [hidden, setHidden] = useHiddenKeys({ hiddenKeys, defaultHiddenKeys, onHiddenKeysChange });
+  const showLegend = showLegendProp ?? hasLegendByDefault(series, hidden);
   const drawn = series
     .map((entry, index) => ({ series: index, values: entry.values, id: entry.id }))
     .filter((entry) => !hidden.has(entry.id));

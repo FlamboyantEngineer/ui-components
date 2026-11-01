@@ -79,6 +79,21 @@ test.describe('Chart lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-CHART-2.1 keeps the legend to show a hidden series left alone', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chart');
+    const demo = page.locator('[data-lab-demo="shrinking"]');
+    await demo.getByRole('button', { name: 'Pears' }).click();
+    await demo.getByRole('button', { name: 'Remove Apples' }).click();
+    const pears = demo.getByRole('button', { name: 'Pears' });
+    await expect(pears).toHaveAttribute('aria-pressed', 'false');
+    await pears.click();
+    await expect(demo.getByRole('img', { name: /^Pears/ })).toHaveCount(4);
+    await lab.expectAccessible('[data-lab-demo="shrinking"]');
+  });
+
   test('UIC-CHART-6.4 lists every reading with all series hidden', async ({ page, lab }) => {
     await lab.open('chart');
     const table = page.locator('[data-lab-demo="all-hidden"]').getByRole('table');
