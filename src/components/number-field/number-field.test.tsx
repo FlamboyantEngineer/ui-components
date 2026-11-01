@@ -616,6 +616,73 @@ describe('NumberField', () => {
     expect(onCommit).toHaveBeenLastCalledWith(2e-7);
   });
 
+  it('UIC-NUMBER-FIELD-3.3 steps and commits the value with the wheel over the scrub handle', () => {
+    const onCommit = vi.fn();
+    const { container, rerender } = render(
+      <NumberField
+        label="Weight"
+        defaultValue={4}
+        maxValue={20}
+        smallStep={0.5}
+        largeStep={10}
+        showScrubber
+        onCommit={onCommit}
+      />,
+    );
+    const scrubber = container.querySelector('.ui-number-field__scrubber') as HTMLElement;
+    const input = screen.getByRole('textbox');
+    // Two notches before a render still make two steps.
+    expect(fireEvent.wheel(scrubber, { deltaY: -100 })).toBe(false);
+    fireEvent.wheel(scrubber, { deltaY: -100 });
+    expect(input).toHaveValue('6');
+    expect(onCommit).toHaveBeenLastCalledWith(6);
+    fireEvent.wheel(scrubber, { deltaY: 100, altKey: true });
+    expect(onCommit).toHaveBeenLastCalledWith(5.5);
+    fireEvent.wheel(scrubber, { deltaX: -100, shiftKey: true });
+    expect(onCommit).toHaveBeenLastCalledWith(15.5);
+    fireEvent.wheel(scrubber, { deltaY: -100, shiftKey: true });
+    expect(onCommit).toHaveBeenLastCalledWith(20);
+    // A zoom gesture, a sideways wheel and a locked field leave the wheel to the page.
+    expect(fireEvent.wheel(scrubber, { deltaY: 100, ctrlKey: true })).toBe(true);
+    expect(fireEvent.wheel(scrubber, { deltaX: 100 })).toBe(true);
+    rerender(<NumberField label="Weight" value={20} showScrubber isReadOnly onCommit={onCommit} />);
+    expect(fireEvent.wheel(scrubber, { deltaY: 100 })).toBe(true);
+    expect(onCommit).toHaveBeenCalledTimes(5);
+  });
+
+  it.each([10, 16] as const)(
+    'UIC-NUMBER-FIELD-3.1 sets the end adornment after the number (radix %i)',
+    async (radix) => {
+      const user = userEvent.setup();
+      const { container, rerender } = render(
+        <NumberField
+          label="Size"
+          radix={radix}
+          defaultValue={12}
+          endAdornment="kB"
+          endAdornmentPlacement="value"
+        />,
+      );
+      const root = container.querySelector('.ui-number-field');
+      expect(root).toHaveAttribute('data-adornment-placement', 'value');
+      const sizer = container.querySelector('.ui-number-field__sizer');
+      expect(sizer).toHaveAttribute('aria-hidden', 'true');
+      expect(sizer?.parentElement).toHaveClass('ui-number-field__value');
+      expect(sizer?.previousElementSibling).toHaveClass('ui-number-field__input');
+      expect(sizer?.parentElement?.nextElementSibling).toHaveClass('ui-number-field__end');
+      const input = screen.getByRole(radix === 10 ? 'textbox' : 'spinbutton');
+      expect(sizer).toHaveTextContent(radix === 10 ? '12' : '0xc');
+      await user.clear(input);
+      expect(sizer).toHaveTextContent(/^$/);
+      await user.type(input, radix === 10 ? '1234' : '0x4d2');
+      expect(sizer).toHaveTextContent(radix === 10 ? '1234' : '0x4d2');
+      expectHooksMatchSpec(container, 'NUMBER-FIELD', { slots: ['value', 'sizer', 'end'] });
+      rerender(<NumberField label="Size" radix={radix} defaultValue={12} endAdornment="kB" />);
+      expect(container.querySelector('.ui-number-field__sizer')).toBeNull();
+      expect(root).not.toHaveAttribute('data-adornment-placement');
+    },
+  );
+
   it('UIC-NUMBER-FIELD-3.3 steps the value while its scrub handle is dragged', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();

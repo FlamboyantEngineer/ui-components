@@ -11,6 +11,7 @@ import type {
 import {
   NumberAdornment,
   NumberScrubber,
+  NumberValue,
   Stepper,
   addStep,
   createModifierStepHandler,
@@ -93,6 +94,7 @@ export function DecimalControl({ state, control, config, steps }: DecimalControl
     hideStepper,
     startAdornment,
     endAdornment,
+    endAdornmentPlacement,
     showScrubber,
     placeholder,
     autoComplete,
@@ -122,14 +124,19 @@ export function DecimalControl({ state, control, config, steps }: DecimalControl
           )}
           {showScrubber ? <NumberScrubber state={state} steps={steps} /> : null}
           <NumberAdornment side="start">{startAdornment}</NumberAdornment>
-          <Input
-            {...hooks.slot('input')}
-            ref={control.ref}
-            placeholder={placeholder}
-            autoComplete={autoComplete}
-            enterKeyHint={enterKeyHint}
-            {...entry.toInputProps(inputState)}
-          />
+          <NumberValue
+            isTight={endAdornmentPlacement === 'value'}
+            text={inputState.inputValue || (placeholder ?? '')}
+          >
+            <Input
+              {...hooks.slot('input')}
+              ref={control.ref}
+              placeholder={placeholder}
+              autoComplete={autoComplete}
+              enterKeyHint={enterKeyHint}
+              {...entry.toInputProps(inputState)}
+            />
+          </NumberValue>
           <NumberAdornment side="end">{endAdornment}</NumberAdornment>
           {hideStepper ? null : (
             <Stepper

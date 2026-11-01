@@ -1,5 +1,18 @@
 /* Number Field: an input between two step buttons, framed as one box. */
 
+/* The step and scrub glyphs follow the field's size. */
+.ui-number-field {
+  --ref-number-field-icon: var(--ref-icon-size-md);
+}
+
+.ui-number-field:is([data-size='xs'], [data-size='sm']) {
+  --ref-number-field-icon: var(--ref-icon-size-sm);
+}
+
+.ui-number-field[data-size='lg'] {
+  --ref-number-field-icon: var(--ref-icon-size-lg);
+}
+
 .ui-number-field__box {
   display: flex;
   flex: 1 1 auto;
@@ -78,8 +91,8 @@
 }
 
 :is(.ui-number-field__decrement, .ui-number-field__increment) .ui-glyph {
-  width: var(--ref-icon-size-md);
-  height: var(--ref-icon-size-md);
+  width: var(--ref-number-field-icon);
+  height: var(--ref-number-field-icon);
 }
 
 .ui-number-field[data-dirty] .ui-number-field__group {
@@ -104,23 +117,31 @@
   background: var(--ref-field-fill-inactive);
 }
 
-/* The scrub handle drags sideways; literal affixes sit beside the number. */
+/*
+ * The double-arrow handle drags sideways and takes the wheel; it is as wide as the step buttons,
+ * and darkens under the pointer. Literal affixes sit beside the number.
+ */
 .ui-number-field__scrubber {
   display: inline-flex;
   flex: none;
   align-items: center;
   justify-content: center;
-  width: 22px;
+  width: calc(var(--ref-field-height) - 4px);
   color: var(--ref-muted);
   cursor: ew-resize;
 }
 
+.ui-number-field__scrubber:hover {
+  color: var(--ref-text);
+}
+
 .ui-number-field__scrubber .ui-glyph {
-  width: var(--ref-icon-size-md);
-  height: var(--ref-icon-size-md);
+  width: var(--ref-number-field-icon);
+  height: var(--ref-number-field-icon);
 }
 
 .ui-number-field:is([data-readonly], [data-disabled]) .ui-number-field__scrubber {
+  color: var(--ref-muted);
   cursor: default;
 }
 
@@ -130,7 +151,8 @@
   flex: none;
   align-items: center;
   color: var(--ref-muted);
-  font-size: var(--ref-font-size-sm);
+  /* A step below the number's type, whatever the field's size. */
+  font-size: 0.875em;
 }
 
 .ui-number-field__start {
@@ -147,4 +169,42 @@
 
 .ui-number-field__input:has(+ .ui-number-field__end) {
   padding-inline-end: 4px;
+}
+
+/*
+ * With the end adornment after the value, the input is as wide as its text: it shares a grid cell
+ * with a hidden copy of the text, and the adornment follows it, leaving the free room after it.
+ */
+.ui-number-field__value {
+  display: inline-grid;
+  flex: 0 1 auto;
+  min-width: 0;
+  padding-inline: 8px 4px;
+}
+
+.ui-number-field__value > .ui-number-field__input,
+.ui-number-field__sizer {
+  grid-area: 1 / 1;
+}
+
+.ui-number-field__value > .ui-number-field__input {
+  width: 0;
+  min-width: 100%;
+  padding: 0;
+}
+
+.ui-number-field__sizer {
+  min-width: 1ch;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+  white-space: pre;
+  visibility: hidden;
+}
+
+.ui-number-field__start + .ui-number-field__value {
+  padding-inline-start: 4px;
+}
+
+.ui-number-field[data-adornment-placement='value'] .ui-number-field__end {
+  flex: 1 1 auto;
 }

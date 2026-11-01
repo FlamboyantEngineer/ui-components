@@ -19,7 +19,8 @@ export function isZoomWheel(event: Pick<WheelEvent, 'ctrlKey' | 'metaKey'>): boo
  * The vertical wheel over `target` steps a value: `onStep(1)` for each notch rolled up (away from
  * the reader) and `onStep(-1)` for each notch down, a trackpad's smaller deltas adding up to a step.
  * While it steps, the wheel does not scroll the page. A zoom gesture, a mostly horizontal wheel and
- * a disabled target are left to the browser. The listener runs in the capture phase, so it owns the
+ * a disabled target are left to the browser; a sideways wheel with Shift held, as some platforms
+ * report a Shift-modified mouse wheel, steps. The listener runs in the capture phase, so it owns the
  * wheel over the target's own inputs too.
  */
 export function useWheelSteps(
@@ -34,7 +35,9 @@ export function useWheelSteps(
     let travelled = 0;
     const onWheel = (event: WheelEvent) => {
       if (isZoomWheel(event)) return;
-      const delta = toWheelPixels(event, { width: element.clientWidth, height: 400 });
+      const pixels = toWheelPixels(event, { width: element.clientWidth, height: 400 });
+      // Shift turns a mouse wheel sideways on some platforms: it still steps.
+      const delta = event.shiftKey && pixels.y === 0 ? { x: 0, y: pixels.x } : pixels;
       if (Math.abs(delta.y) <= Math.abs(delta.x)) return;
       event.preventDefault();
       event.stopPropagation();
