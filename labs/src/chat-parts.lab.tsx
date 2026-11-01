@@ -11,6 +11,8 @@ import {
   partTypes,
   renderLabPart,
   searchCall,
+  literalText,
+  literalTokens,
   textTokens,
   tokenText,
 } from './chat-parts-samples.js';
@@ -85,6 +87,7 @@ const textCases = {
   tokens: { text: tokenText, tokens: textTokens },
   references: { text: referenceText, tokens: referenceTokens },
   lines: { text: linesText, tokens: undefined },
+  literal: { text: literalText, tokens: literalTokens },
 };
 
 mountLab(
@@ -111,10 +114,13 @@ mountLab(
     </LabSection>
     <LabSection
       title="Text and tokens"
-      description="Text renders as Markdown by default, or as written with its line breaks in plain format. Mention and command tokens show as pills in both; a token inside code stays as written. Record references show as record chips whose name, link and preview come from the host's getReference lookup by id, a missing and a restricted record among them."
+      description="Text renders as Markdown by default, or as written with its line breaks in plain format. Mention and command tokens show as pills in both; a token inside code stays as written. Record references show as record chips whose name, link and preview come from the host's getReference lookup by id, a missing and a restricted record among them. Text holding characters that look like the token markers keeps them as text: only real tokens become pills."
     >
       <StateMatrix
-        axes={{ content: ['tokens', 'references', 'lines'], format: ['markdown', 'plain'] }}
+        axes={{
+          content: ['tokens', 'references', 'lines', 'literal'],
+          format: ['markdown', 'plain'],
+        }}
         render={({ content, format }) => (
           <div style={{ width: 300 }}>
             <ChatParts

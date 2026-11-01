@@ -51,6 +51,14 @@ export const textTokens: ChatTextToken[] = [
   { start: codeMention, end: codeMention + 4, kind: 'mention', id: 'ana', label: '@Ana Lopez' },
 ];
 
+/** Text pasted with characters that look like the library's own token markers: they stay text. */
+export const literalText = '@Ana pasted \uFFF90\uFFFB from a notes file.';
+
+/** The one real token of `literalText`. */
+export const literalTokens: ChatTextToken[] = [
+  tokenOver(literalText, '@Ana', { kind: 'mention', id: 'ana', label: '@Ana Lopez' }),
+];
+
 export const referenceText =
   'Compare TRIP-4 with NOTE-12, and drop NOTE-9.\nTRIP-2 stays as it is.';
 

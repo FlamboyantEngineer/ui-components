@@ -22,6 +22,7 @@ import {
   splitTextTokens,
   splitTokenMarkers,
   writeTokenSource,
+  type TokenMarker,
 } from './chat-text-tokens.js';
 
 interface ChatTextPartViewProps {
@@ -83,16 +84,18 @@ function PlainText({ part, getReference }: Pick<ChatTextPartViewProps, 'part' | 
 /** Draws the token markers in text nodes as pills, and hands everything else to `renderNode`. */
 function createTokenOverride({
   tokens,
+  marker,
   renderNode,
   getReference,
 }: {
   tokens: readonly ChatTextToken[];
+  marker: TokenMarker;
   renderNode: MarkdownRenderNode;
   getReference: RecordLabelResolver | undefined;
 }): MarkdownRenderNode {
   return (node, children, place) => {
     if (node.type !== 'text') return renderNode(node, children, place);
-    const pieces = splitTokenMarkers(node.text, tokens.length);
+    const pieces = splitTokenMarkers(node.text, tokens.length, marker);
     if (pieces.every((piece) => typeof piece === 'string'))
       return renderNode(node, children, place);
     return pieces.map((piece, at) =>
@@ -114,14 +117,15 @@ function MarkdownText({ part, renderNode, getReference }: Omit<ChatTextPartViewP
   const partTokens = useStableArray(part.tokens ?? noTokens);
   const placed = useMemo(() => {
     const tokens = listTextTokens(part.text, partTokens);
-    return { tokens, source: writeTokenSource(part.text, tokens) };
+    return { tokens, ...writeTokenSource(part.text, tokens) };
   }, [part.text, partTokens]);
+  const { tokens, marker } = placed;
   const nodeRenderer = useMemo(
     () =>
-      placed.tokens.length === 0
+      tokens.length === 0
         ? renderNode
-        : createTokenOverride({ tokens: placed.tokens, renderNode, getReference }),
-    [placed.tokens, renderNode, getReference],
+        : createTokenOverride({ tokens, marker, renderNode, getReference }),
+    [tokens, marker, renderNode, getReference],
   );
   return (
     <Markdown
