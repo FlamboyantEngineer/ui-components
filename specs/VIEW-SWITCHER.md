@@ -22,6 +22,8 @@ Verification: `src/components/view-switcher/view-switcher.test.tsx`, `e2e/view-s
 
 The view whose `id` is `defaultViewKey` shall show a mark after its label (`ui-view-switcher__default`) holding the `star` glyph and the provider's `defaultView` string for assistive technology. While `isDirty`, the root publishes `data-dirty` and the selected view shows a modified mark (`ui-view-switcher__modified`) holding the provider's `viewModified` string for assistive technology; the stylesheet draws it.
 
+The name (`ui-view-switcher__label`, which publishes the name in `data-label`) and the marks follow one another inside the tab's label, which [Tabs](TABS.md) lays out in one row when it holds more than plain text, so the view's icon, name, star and modified mark share a row. The reference stylesheet caps a tab's width and truncates the name first, keeps the marks' room, reserves the name's selected weight from `data-label` and keeps the modified mark's room on every tab, so neither selecting a view nor the mark coming and going resizes a tab; the same holds right to left.
+
 Implementation: `src/components/view-switcher/view-switcher.tsx`, `src/core/strings/view.ts`
 Verification: `src/components/view-switcher/view-switcher.test.tsx`, `e2e/view-switcher.spec.ts`
 
@@ -98,4 +100,5 @@ Verification: `src/components/view-switcher/view-switcher.test.tsx`, `e2e/view-s
 | `ui-view-switcher__actions`  | slot      |                | The actions menu's button (also `ui-dropdown-menu`).        |
 | `ui-view-switcher__panel`    | slot      |                | The selected view's content.                                |
 | `data-variant`               | attribute | `tabs`, `menu` | How the views show.                                         |
+| `data-label`                 | attribute |                | A view's name, on the label slot.                           |
 | `data-dirty`                 | state     | `true`         | The selected view's settings differ from its saved ones.    |

@@ -97,6 +97,10 @@ describe('ViewSwitcher', { timeout: 20_000 }, () => {
     expect(tabs()[0]).toHaveAccessibleName('All recipes Default view');
     expect(tabs()[1]).toHaveAccessibleName('Quick meals Modified');
     expect(requireDefined(tabs()[0]).querySelector('.ui-view-switcher__modified')).toBeNull();
+    expect(requireDefined(tabs()[0]).querySelector('.ui-view-switcher__label')).toHaveAttribute(
+      'data-label',
+      'All recipes',
+    );
     expectHooksMatchSpec(container, 'VIEW-SWITCHER', { slots: ['default', 'modified'] });
   });
 

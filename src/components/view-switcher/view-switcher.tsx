@@ -87,9 +87,10 @@ function ViewLabel({
   isModified: boolean;
 }) {
   const strings = useUiStrings();
+  // The spaces keep the parts apart in the accessible name; a row layout drops them.
   return (
     <>
-      <span {...hooks.slot('label')}>{view.label}</span>
+      <span {...hooks.slot('label', { label: view.label })}>{view.label}</span>
       {isDefault ? (
         <>
           {' '}

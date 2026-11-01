@@ -28,6 +28,30 @@ const matrixViews: ViewSwitcherView[] = [
   { id: 'mine', label: 'My recipes', icon: UsersGlyph },
 ];
 
+const longViews: ViewSwitcherView[] = [
+  { id: 'long', label: 'Every recipe from the shared family cookbook', icon: FolderGlyph },
+  { id: 'quick', label: 'Quick meals', icon: ClockGlyph },
+  { id: 'mine', label: 'My recipes', icon: UsersGlyph },
+  { id: 'cuisine', label: 'By cuisine', icon: FilterGlyph },
+];
+
+/** A long selected view with or without its marks, in a narrow bar, so the label truncates. */
+function MarkedViews({ marks, layout }: { marks: string; layout: string }) {
+  return (
+    <div dir={layout === 'tabs, rtl' ? 'rtl' : undefined} style={{ width: '28rem' }}>
+      <ViewSwitcher
+        aria-label={`Views, ${marks}, ${layout}`}
+        variant={layout === 'menu' ? 'menu' : 'tabs'}
+        views={longViews}
+        defaultViewKey={marks === 'default' || marks === 'both' ? 'long' : null}
+        isDirty={marks === 'modified' || marks === 'both'}
+        onSave={noop}
+        onReset={noop}
+      />
+    </div>
+  );
+}
+
 interface SavedView extends ViewSwitcherView {
   settings: DisplayOptionsValue;
 }
@@ -167,6 +191,18 @@ mountLab(
             onDefaultViewChange={noop}
           />
         )}
+      />
+    </LabSection>
+    <LabSection
+      title="Marks in one row"
+      description="A long view name truncates while its icon, default star and modified mark stay on its row; every tab keeps the modified mark's room, so the mark coming and going never resizes a tab."
+    >
+      <StateMatrix
+        axes={{
+          marks: ['none', 'default', 'modified', 'both'],
+          layout: ['tabs', 'tabs, rtl', 'menu'],
+        }}
+        render={({ marks, layout }) => <MarkedViews marks={marks} layout={layout} />}
       />
     </LabSection>
     <LabSection
