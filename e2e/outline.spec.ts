@@ -91,6 +91,56 @@ test.describe('Outline lab', () => {
     );
   });
 
+  test('UIC-OUTLINE-3.1 scrolls only the guide, never the page or an outer scroller', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('outline');
+    const panel = page.locator('[data-lab-panel]');
+    for (const [demo, name, scale] of [
+      ['reader', 'Guide', 1],
+      ['shadow-reader', 'Embedded guide', 1],
+      ['scaled-reader', 'Scaled guide', 0.8],
+    ] as const) {
+      const reader = page.locator(`[data-lab-demo="${demo}"]`);
+      const region = reader.getByRole('region', { name: `${name} text` });
+      await region.evaluate((element) => element.scrollTo({ top: 0 }));
+      // The guide's text runs below the window's bottom edge, where scrollIntoView would scroll the page.
+      await reader.evaluate((element) => {
+        const box = element.getBoundingClientRect();
+        window.scrollBy(0, box.top - window.innerHeight + 120);
+      });
+      await panel.evaluate((element) => element.scrollTo({ top: 20 }));
+      const before = await page.evaluate(() => window.scrollY);
+      const panelBefore = await panel.evaluate((element) => element.scrollTop);
+      for (const [entry, id, how] of [
+        ['3.3.1 Viewpoints', 'guide-viewpoints', 'pointer'],
+        ['2.2 By air', 'guide-air', 'keyboard'],
+      ] as const) {
+        const link = reader.getByRole('navigation', { name }).getByRole('link', { name: entry });
+        if (how === 'pointer') await link.evaluate((element: HTMLElement) => element.click());
+        else {
+          await link.evaluate((element: HTMLElement) => element.focus({ preventScroll: true }));
+          await page.keyboard.press('Enter');
+        }
+        const heading = reader.locator(`#${id}`);
+        await expect(heading).toBeFocused();
+        const offset = await heading.evaluate(
+          (node) =>
+            node.getBoundingClientRect().top -
+            (node.closest('[role="region"]') as HTMLElement).getBoundingClientRect().top,
+        );
+        // Below the 40px sticky header, drawn at the guide's scale.
+        expect(Math.round(offset)).toBe(Math.round(40 * scale));
+        expect(await page.evaluate(() => window.scrollY)).toBe(before);
+        expect(await panel.evaluate((element) => element.scrollTop)).toBe(panelBefore);
+        await expect(
+          reader.getByRole('navigation', { name }).locator('[aria-current="location"]'),
+        ).toHaveText(entry);
+      }
+    }
+  });
+
   test('UIC-OUTLINE-4.1 UIC-OUTLINE-4.2 UIC-OUTLINE-5.1 collapses sections from the keyboard and the caller', async ({
     page,
     lab,

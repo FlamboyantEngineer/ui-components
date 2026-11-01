@@ -203,6 +203,20 @@ mountLab(
       </ShadowRootHost>
     </LabSection>
     <LabSection
+      title="In a scaled, scrolling panel"
+      description="The guide drawn at 80%, in its own shadow root, inside a panel that scrolls on its own. Following an entry scrolls only the guide: the panel and the page stay where they are."
+    >
+      <div data-lab-panel="" style={{ height: 300, overflow: 'auto', border: '1px dashed' }}>
+        <p>The panel scrolls too; the guide sits below this line.</p>
+        <div style={{ transform: 'scale(0.8)', transformOrigin: 'top left' }}>
+          <ShadowRootHost demo="scaled-guide">
+            <Reader demo="scaled-reader" name="Scaled guide" isPlain />
+          </ShadowRootHost>
+        </div>
+        <div style={{ height: 400 }} />
+      </div>
+    </LabSection>
+    <LabSection
       title="Controlled sections"
       description="The caller holds the expanded sections, numbered in Roman numerals, then letters, then digits."
     >

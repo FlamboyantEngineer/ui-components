@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { measureInScroller, measureScale, toScale } from './scroll-geometry.js';
+import {
+  measureInScroller,
+  measureScale,
+  scrollToStartWithin,
+  toScale,
+} from './scroll-geometry.js';
 
 /** A scroller drawn at `scale`: 200 by 100 own pixels, a 2px border, scrolled 40 down. */
 function scaledScroller(scale: number) {
@@ -45,5 +50,35 @@ describe('scroll geometry', () => {
         height: 30,
       });
     }
+  });
+
+  it('UIC-OUTLINE-3.1 scrolls a target to the start of its boundary and leaves outer scrollers', () => {
+    const outer = document.createElement('div');
+    outer.style.overflowY = 'auto';
+    Object.defineProperties(outer, { scrollHeight: { value: 900 }, clientHeight: { value: 300 } });
+    outer.scrollTop = 25;
+    const boundary = scaledScroller(1);
+    boundary.style.scrollPaddingTop = '4px';
+    const target = document.createElement('h2');
+    target.style.scrollMarginTop = '40px';
+    // 130 own pixels into the content, seen with 40 scrolled away.
+    target.getBoundingClientRect = () =>
+      ({ top: 10 + 2 + 130 - 40, left: 30, width: 50, height: 20 }) as DOMRect;
+    const scrolls: { element: string; top: number }[] = [];
+    for (const [element, name] of [
+      [outer, 'outer'],
+      [boundary, 'boundary'],
+    ] as const) {
+      element.scrollTo = ((options: ScrollToOptions) =>
+        scrolls.push({ element: name, top: options.top ?? 0 })) as typeof element.scrollTo;
+    }
+    outer.append(boundary);
+    boundary.append(target);
+    document.body.append(outer);
+    scrollToStartWithin(target, boundary);
+    // The heading's 130px, less its 40px margin and the scroller's 4px padding.
+    expect(scrolls).toEqual([{ element: 'boundary', top: 86 }]);
+    expect(outer.scrollTop).toBe(25);
+    outer.remove();
   });
 });

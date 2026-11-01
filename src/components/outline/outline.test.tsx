@@ -317,17 +317,21 @@ describe('Outline', () => {
       const view = within(container);
       expect(view.getByRole('link', { name: 'Terms' })).toHaveAttribute('aria-current', 'location');
       const terms = view.getByRole('heading', { name: 'Terms' });
+      const region = view.getByRole('region', { name: 'Viewport' });
+      const scrollTo = vi.fn();
+      region.scrollTo = scrollTo as typeof region.scrollTo;
       await userEvent.click(view.getByRole('link', { name: 'Terms' }));
-      expect(scrollIntoView.mock.contexts).toEqual([terms]);
+      // Inside the viewport only the viewport scrolls, not the page through scrollIntoView.
+      expect(scrollTo).toHaveBeenCalledTimes(1);
+      expect(scrollIntoView).not.toHaveBeenCalled();
       expect(terms.getRootNode()).toHaveProperty('activeElement', terms);
       rerender(<Embedded hasViewport={false} />);
       await userEvent.click(view.getByRole('link', { name: 'Introduction' }));
       expect(scrollIntoView.mock.contexts).toEqual([
-        terms,
         view.getByRole('heading', { name: 'Introduction' }),
       ]);
       await userEvent.click(view.getByRole('link', { name: 'Scope' }));
-      expect(scrollIntoView).toHaveBeenCalledTimes(2);
+      expect(scrollIntoView).toHaveBeenCalledTimes(1);
       expect(decoy).not.toHaveFocus();
     } finally {
       decoy.remove();
