@@ -73,6 +73,11 @@ export interface PdfViewerProps<
   /** Called when the engine or the document cannot be opened. */
   onError?: ((error: Error) => void) | undefined;
   /**
+   * Called when a page's bitmap fails to draw, with the page's zero-based index. The page shows the
+   * failure with a retry; a drawing cancelled by scrolling, zoom or another document is not one.
+   */
+  onPageError?: ((pageIndex: number, error: Error) => void) | undefined;
+  /**
    * Called when printing or saving the document fails. A print cancelled by a newer one, another
    * document or the viewer's unmount is not a failure.
    */
@@ -191,6 +196,7 @@ export function PdfViewer<
         onKeyDown={keyboard.onViewerKeyDown}
         onScrollerKeyDown={keyboard.onScrollerKeyDown}
         renderOverlay={props.renderPageOverlay}
+        onPageError={props.onPageError}
       />
     </div>
   );

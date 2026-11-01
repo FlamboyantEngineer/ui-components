@@ -40,14 +40,24 @@ export function renderPageBitmap<V extends PdfViewport, C extends PdfTextContent
   });
 }
 
-/** Draws a page bitmap into `canvas`; returns a cancel. */
+/**
+ * Draws a page bitmap into `canvas`; returns a cancel. A drawing that fails before it is cancelled
+ * calls `onFailure`; the rejection that a cancel causes does not.
+ */
 export function drawPage<V extends PdfViewport, C extends PdfTextContent>(
   bitmap: PageBitmap<V, C>,
   canvas: HTMLCanvasElement,
+  onFailure: (error: Error) => void = ignore,
 ): () => void {
   const task = renderPageBitmap(bitmap, canvas);
-  task.promise.catch(ignore);
-  return () => task.cancel();
+  let isCancelled = false;
+  task.promise.catch((cause: unknown) => {
+    if (!isCancelled) onFailure(cause instanceof Error ? cause : new Error(String(cause)));
+  });
+  return () => {
+    isCancelled = true;
+    task.cancel();
+  };
 }
 
 /**

@@ -287,6 +287,7 @@
   "nextMatch": "Next match",
   "matchTotal": "{total, plural, one {# match} other {# matches}}",
   "documentFailed": "The document could not be opened.",
+  "pageFailed": "Page {pageNumber} could not be drawn.",
   "sidebar": "Sidebar",
   "pages": "Pages",
   "outline": "Outline",

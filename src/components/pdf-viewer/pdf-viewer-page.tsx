@@ -1,6 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useUiStrings } from '../../core/provider.js';
+import { InlineError } from '../inline-error/inline-error.js';
 import { highlightTextRuns } from './highlights.js';
 import type { PdfPageGeometry } from './page-geometry.js';
 import { pdfViewerHooks as hooks } from './styling-hooks.js';
@@ -27,6 +29,8 @@ interface PdfViewerPageProps<
   linkService: PdfLinkService;
   /** The caller's content over the page. */
   renderOverlay?: ((page: PdfPageGeometry<V>) => ReactNode) | undefined;
+  /** Called when the page's bitmap fails to draw. */
+  onPageError?: ((pageIndex: number, error: Error) => void) | undefined;
 }
 
 interface UseMatchHighlightsOptions {
@@ -72,7 +76,9 @@ export function PdfViewerPage<V extends PdfViewport, C extends PdfTextContent>({
   pages,
   linkService,
   renderOverlay,
+  onPageError,
 }: PdfViewerPageProps<V, C>) {
+  const strings = useUiStrings();
   const { registerPage, revealElement } = pages;
   // The canvas's window sets its pixel ratio, so the canvas is held in state.
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
@@ -82,7 +88,7 @@ export function PdfViewerPage<V extends PdfViewport, C extends PdfTextContent>({
     (element: HTMLDivElement | null) => registerPage(pageIndex, element),
     [pageIndex, registerPage],
   );
-  const textLayer = usePageRender({
+  const { textLayer, failure, retry } = usePageRender({
     loaded,
     pageIndex,
     scale,
@@ -91,6 +97,7 @@ export function PdfViewerPage<V extends PdfViewport, C extends PdfTextContent>({
     layerRef,
     annotationLayerRef,
     linkService,
+    onPageError,
   });
   useMatchHighlights({ textLayer, ranges, revealKey, revealElement });
   const size = loaded.sizes[pageIndex] ?? { width: 0, height: 0 };
@@ -99,7 +106,12 @@ export function PdfViewerPage<V extends PdfViewport, C extends PdfTextContent>({
   const pixels = isNear ? measureCanvasPixels(width, height, canvas) : { width: 0, height: 0 };
   const viewport = isNear ? loaded.getViewport(pageIndex, scale) : undefined;
   return (
-    <div {...hooks.slot('page')} ref={pageRef} style={{ position: 'relative', width, height }}>
+    <div
+      {...hooks.slot('page')}
+      ref={pageRef}
+      data-error={failure ? true : undefined}
+      style={{ position: 'relative', width, height }}
+    >
       <canvas
         {...hooks.slot('canvas')}
         ref={setCanvas}
@@ -126,6 +138,11 @@ export function PdfViewerPage<V extends PdfViewport, C extends PdfTextContent>({
           style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
         >
           {renderOverlay({ pageIndex, viewport })}
+        </div>
+      ) : null}
+      {failure ? (
+        <div {...hooks.slot('page-error')} style={{ position: 'absolute', inset: 0 }}>
+          <InlineError onRetry={retry}>{strings.pageFailed(pageIndex + 1)}</InlineError>
         </div>
       ) : null}
     </div>

@@ -88,6 +88,8 @@ export interface ContentStrings {
   /** How many matches a find found, while none is current (`12 matches`). */
   matchTotal: (total: number) => string;
   documentFailed: string;
+  /** A document page whose drawing failed, from its page number (`Page 3 could not be drawn.`). */
+  pageFailed: (pageNumber: number) => string;
   /** Names a document view's panel of page thumbnails and outline, and its toggle. */
   sidebar: string;
   /** Names a document's page thumbnails. */
@@ -199,6 +201,7 @@ export const contentStrings = defineStrings<ContentStrings>({
   matchTotal: (total) => ({ total }),
   sectionsIn: (label) => ({ label }),
   pageNumber: (pageNumber) => ({ pageNumber }),
+  pageFailed: (pageNumber) => ({ pageNumber }),
   paginationOf: (name) => ({ name }),
   seriesSummary: (values) => ({ ...values }),
   saveStatus: (phase) => ({ phase }),

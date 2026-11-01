@@ -41,6 +41,7 @@ interface PdfViewerStageProps<
   onKeyDown(event: KeyboardEvent<HTMLElement>): void;
   onScrollerKeyDown(event: KeyboardEvent<HTMLElement>): void;
   renderOverlay?: ((page: PdfPageGeometry<V>) => ReactNode) | undefined;
+  onPageError?: ((pageIndex: number, error: Error) => void) | undefined;
 }
 
 const noRanges: readonly PdfMatchRange[] = [];
@@ -75,6 +76,7 @@ export function PdfViewerStage<V extends PdfViewport, C extends PdfTextContent>(
   onKeyDown,
   onScrollerKeyDown,
   renderOverlay,
+  onPageError,
 }: PdfViewerStageProps<V, C>) {
   return (
     <div {...hooks.slot('stage')} style={{ position: 'relative' }} onKeyDown={onKeyDown}>
@@ -112,6 +114,7 @@ export function PdfViewerStage<V extends PdfViewport, C extends PdfTextContent>(
               pages={pages}
               linkService={links.linkService}
               renderOverlay={renderOverlay}
+              onPageError={onPageError}
             />
           ))}
         </div>

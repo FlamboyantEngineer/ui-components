@@ -90,6 +90,13 @@ Verification: `src/components/pdf-viewer/use-pdf-links.test.tsx`, `src/component
 Implementation: `src/components/pdf-viewer/pdf-viewer.tsx`, `src/components/pdf-viewer/use-pdf-viewer.ts`, `src/components/pdf-viewer/use-page-render.ts`, `src/components/pdf-viewer/use-pdf-document.ts`, `src/components/pdf-viewer/pdf-commands.ts`
 Verification: `src/components/pdf-viewer/pdf-viewer.test.tsx`, `src/components/pdf-viewer/pdf-commands.test.tsx`, `e2e/pdf-viewer.spec.ts`
 
+### UIC-PDF-VIEWER-2.6 - Page failures
+
+A page whose bitmap fails to draw shall publish `data-error` on its `ui-pdf-viewer__page` and show, over the page in a `ui-pdf-viewer__page-error` slot, an [Inline Error](INLINE-ERROR.md) with the provider's `pageFailed` string for its page number and a retry button that draws the page again, and the viewer shall call `onPageError(pageIndex, error)`. The other pages, find and the page navigation keep working. A drawing cancelled because the page left the view, the zoom or rotation changed, another document opened or the viewer unmounted is not a failure, and a failure from a drawing that was replaced is ignored. The failure clears once the page draws again: on a retry, a new zoom or rotation, or after the page leaves the view and comes back. A thumbnail that fails to draw stays blank.
+
+Implementation: `src/components/pdf-viewer/use-page-render.ts`, `src/components/pdf-viewer/page-bitmap.ts`, `src/components/pdf-viewer/pdf-viewer-page.tsx`
+Verification: `src/components/pdf-viewer/use-page-render.test.tsx`, `e2e/pdf-viewer.spec.ts`
+
 ## UIC-PDF-VIEWER-3 - Zoom
 
 ### UIC-PDF-VIEWER-3.1 - Zoom control
@@ -408,47 +415,48 @@ Verification: `src/components/pdf-viewer/use-pdf-visible-position.test.tsx`, `e2
 
 ## Hooks
 
-| Hook                              | Kind     | Values                  | Description                                                                                  |
-| --------------------------------- | -------- | ----------------------- | -------------------------------------------------------------------------------------------- |
-| `ui-pdf-viewer`                   | root     |                         | The viewer `<div>`.                                                                          |
-| `ui-pdf-viewer__toolbar`          | slot     |                         | The toolbar's wrapper, around a Toolbar Scroller.                                            |
-| `ui-pdf-viewer__leading-actions`  | slot     |                         | The caller's leading actions at the start of the toolbar.                                    |
-| `ui-pdf-viewer__group`            | slot     |                         | The page navigation group, and the find row (a Find Bar beside its own `ui-find-bar` hooks). |
-| `ui-pdf-viewer__page-field`       | slot     |                         | The page number field (React Aria `NumberField`).                                            |
-| `ui-pdf-viewer__page-label`       | slot     |                         | The page field's visible label.                                                              |
-| `ui-pdf-viewer__page-input`       | slot     |                         | The page field's `<input>`.                                                                  |
-| `ui-pdf-viewer__page-total`       | slot     |                         | The page total after the field.                                                              |
-| `ui-pdf-viewer__actions`          | slot     |                         | The caller's actions at the end of the toolbar.                                              |
-| `ui-pdf-viewer__stage`            | slot     |                         | The positioned area under the toolbar.                                                       |
-| `ui-pdf-viewer__sidebar`          | slot     |                         | The panel of thumbnails and outline before the page scroller.                                |
-| `ui-pdf-viewer__thumbnails`       | slot     |                         | The thumbnails' React Aria `ListBox`.                                                        |
-| `ui-pdf-viewer__thumbnail`        | slot     |                         | One page's option in the thumbnails; its content width sizes the canvas.                     |
-| `ui-pdf-viewer__thumbnail-canvas` | slot     |                         | A thumbnail's bitmap, sized inline.                                                          |
-| `ui-pdf-viewer__thumbnail-label`  | slot     |                         | A thumbnail's page number.                                                                   |
-| `ui-pdf-viewer__outline`          | slot     |                         | The outline's Tree, beside its own `ui-tree` hooks.                                          |
-| `ui-pdf-viewer__scroller`         | slot     |                         | The focusable `role="document"` element the pages scroll in.                                 |
-| `ui-pdf-viewer__pages`            | slot     |                         | The positioned page column; its padding is left free by the fits.                            |
-| `ui-pdf-viewer__page`             | slot     |                         | One page, sized inline to the zoom.                                                          |
-| `ui-pdf-viewer__canvas`           | slot     |                         | The page bitmap.                                                                             |
-| `ui-pdf-viewer__text-layer`       | slot     |                         | The engine's selectable text layer over the bitmap.                                          |
-| `ui-pdf-viewer__annotation-layer` | slot     |                         | The engine's pointer-transparent layer of the page's links over the text.                    |
-| `ui-pdf-viewer__overlay`          | slot     |                         | The pointer-transparent layer over a page holding the caller's overlay content.              |
-| `ui-pdf-viewer__match`            | slot     |                         | A find match inside a text run.                                                              |
-| `ui-pdf-viewer__password`         | slot     |                         | The form that asks for a protected document's password, over the stage.                      |
-| `data-loading`                    | state    | `true`                  | The document has not opened yet.                                                             |
-| `data-locked`                     | state    | `true`                  | The document waits for its password.                                                         |
-| `data-error`                      | state    | `true`                  | The engine or the document could not be opened.                                              |
-| `data-current`                    | state    | `true`                  | On the current match.                                                                        |
-| `data-main-rotation`              | state    | `0`, `90`, `180`, `270` | Set on the text and annotation layers by the engine: the page's rotation.                    |
-| `data-selected`                   | state    | `true`                  | The thumbnail of the page the reader is on (React Aria).                                     |
-| `data-selection-mode`             | state    | `single`                | On a thumbnail: the thumbnails' selection mode (React Aria).                                 |
-| `data-layout`                     | state    | `stack`                 | On the thumbnails: their layout (React Aria).                                                |
-| `data-orientation`                | state    | `vertical`              | On the thumbnails: their orientation (React Aria).                                           |
-| `data-collection`                 | state    |                         | React Aria's collection marker, on the thumbnails and each thumbnail.                        |
-| `data-key`                        | state    |                         | On a thumbnail: its page index (React Aria).                                                 |
-| `data-disabled`                   | state    | `true`                  | The page field or input, or a thumbnail, is disabled (React Aria).                           |
-| `data-hovered`                    | state    | `true`                  | The page input or a thumbnail is hovered (React Aria).                                       |
-| `data-focused`                    | state    | `true`                  | The page input, the thumbnails or one of them has focus (React Aria).                        |
-| `data-focus-visible`              | state    | `true`                  | The page input, the thumbnails or one of them has keyboard focus (React Aria).               |
-| `data-pressed`                    | state    | `true`                  | A thumbnail is pressed (React Aria).                                                         |
-| `--ui-pdf-viewer-scale`           | property |                         | CSS pixels per point at the applied zoom, on the root.                                       |
+| Hook                              | Kind     | Values                  | Description                                                                                        |
+| --------------------------------- | -------- | ----------------------- | -------------------------------------------------------------------------------------------------- |
+| `ui-pdf-viewer`                   | root     |                         | The viewer `<div>`.                                                                                |
+| `ui-pdf-viewer__toolbar`          | slot     |                         | The toolbar's wrapper, around a Toolbar Scroller.                                                  |
+| `ui-pdf-viewer__leading-actions`  | slot     |                         | The caller's leading actions at the start of the toolbar.                                          |
+| `ui-pdf-viewer__group`            | slot     |                         | The page navigation group, and the find row (a Find Bar beside its own `ui-find-bar` hooks).       |
+| `ui-pdf-viewer__page-field`       | slot     |                         | The page number field (React Aria `NumberField`).                                                  |
+| `ui-pdf-viewer__page-label`       | slot     |                         | The page field's visible label.                                                                    |
+| `ui-pdf-viewer__page-input`       | slot     |                         | The page field's `<input>`.                                                                        |
+| `ui-pdf-viewer__page-total`       | slot     |                         | The page total after the field.                                                                    |
+| `ui-pdf-viewer__actions`          | slot     |                         | The caller's actions at the end of the toolbar.                                                    |
+| `ui-pdf-viewer__stage`            | slot     |                         | The positioned area under the toolbar.                                                             |
+| `ui-pdf-viewer__sidebar`          | slot     |                         | The panel of thumbnails and outline before the page scroller.                                      |
+| `ui-pdf-viewer__thumbnails`       | slot     |                         | The thumbnails' React Aria `ListBox`.                                                              |
+| `ui-pdf-viewer__thumbnail`        | slot     |                         | One page's option in the thumbnails; its content width sizes the canvas.                           |
+| `ui-pdf-viewer__thumbnail-canvas` | slot     |                         | A thumbnail's bitmap, sized inline.                                                                |
+| `ui-pdf-viewer__thumbnail-label`  | slot     |                         | A thumbnail's page number.                                                                         |
+| `ui-pdf-viewer__outline`          | slot     |                         | The outline's Tree, beside its own `ui-tree` hooks.                                                |
+| `ui-pdf-viewer__scroller`         | slot     |                         | The focusable `role="document"` element the pages scroll in.                                       |
+| `ui-pdf-viewer__pages`            | slot     |                         | The positioned page column; its padding is left free by the fits.                                  |
+| `ui-pdf-viewer__page`             | slot     |                         | One page, sized inline to the zoom.                                                                |
+| `ui-pdf-viewer__page-error`       | slot     |                         | The positioned layer over a page whose bitmap failed, holding its Inline Error.                    |
+| `ui-pdf-viewer__canvas`           | slot     |                         | The page bitmap.                                                                                   |
+| `ui-pdf-viewer__text-layer`       | slot     |                         | The engine's selectable text layer over the bitmap.                                                |
+| `ui-pdf-viewer__annotation-layer` | slot     |                         | The engine's pointer-transparent layer of the page's links over the text.                          |
+| `ui-pdf-viewer__overlay`          | slot     |                         | The pointer-transparent layer over a page holding the caller's overlay content.                    |
+| `ui-pdf-viewer__match`            | slot     |                         | A find match inside a text run.                                                                    |
+| `ui-pdf-viewer__password`         | slot     |                         | The form that asks for a protected document's password, over the stage.                            |
+| `data-loading`                    | state    | `true`                  | The document has not opened yet.                                                                   |
+| `data-locked`                     | state    | `true`                  | The document waits for its password.                                                               |
+| `data-error`                      | state    | `true`                  | On the root: the engine or the document could not be opened. On a page: its bitmap failed to draw. |
+| `data-current`                    | state    | `true`                  | On the current match.                                                                              |
+| `data-main-rotation`              | state    | `0`, `90`, `180`, `270` | Set on the text and annotation layers by the engine: the page's rotation.                          |
+| `data-selected`                   | state    | `true`                  | The thumbnail of the page the reader is on (React Aria).                                           |
+| `data-selection-mode`             | state    | `single`                | On a thumbnail: the thumbnails' selection mode (React Aria).                                       |
+| `data-layout`                     | state    | `stack`                 | On the thumbnails: their layout (React Aria).                                                      |
+| `data-orientation`                | state    | `vertical`              | On the thumbnails: their orientation (React Aria).                                                 |
+| `data-collection`                 | state    |                         | React Aria's collection marker, on the thumbnails and each thumbnail.                              |
+| `data-key`                        | state    |                         | On a thumbnail: its page index (React Aria).                                                       |
+| `data-disabled`                   | state    | `true`                  | The page field or input, or a thumbnail, is disabled (React Aria).                                 |
+| `data-hovered`                    | state    | `true`                  | The page input or a thumbnail is hovered (React Aria).                                             |
+| `data-focused`                    | state    | `true`                  | The page input, the thumbnails or one of them has focus (React Aria).                              |
+| `data-focus-visible`              | state    | `true`                  | The page input, the thumbnails or one of them has keyboard focus (React Aria).                     |
+| `data-pressed`                    | state    | `true`                  | A thumbnail is pressed (React Aria).                                                               |
+| `--ui-pdf-viewer-scale`           | property |                         | CSS pixels per point at the applied zoom, on the root.                                             |
