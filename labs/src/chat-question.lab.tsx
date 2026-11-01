@@ -63,6 +63,34 @@ function Recorded({
   );
 }
 
+/**
+ * A card whose host withdraws an option after the reader may have chosen it: a draft that held
+ * Croutons keeps its other choices and submits without it.
+ */
+function RevisedCard() {
+  const [isWithdrawn, setWithdrawn] = useState(false);
+  const [record, setRecord] = useState('');
+  const question: ChatQuestionItem = {
+    ...toppingsQuestion,
+    options: toppingsQuestion.options.filter((option) => !isWithdrawn || option.id !== 'croutons'),
+  };
+  return (
+    <div>
+      <ChatQuestion
+        id="ask-revised"
+        questions={[question]}
+        status="pending"
+        onSubmit={(answers) => setRecord(JSON.stringify(answers))}
+        data-lab-demo="revised"
+      />
+      <Button isDisabled={isWithdrawn} onPress={() => setWithdrawn(true)}>
+        Withdraw Croutons
+      </Button>
+      <p data-lab-record="revised">{record}</p>
+    </div>
+  );
+}
+
 function wait(milliseconds: number) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
@@ -219,6 +247,12 @@ mountLab(
       <div style={{ maxWidth: 360 }}>
         <Recorded name="many" questions={tripQuestions} />
       </div>
+    </LabSection>
+    <LabSection
+      title="Changing options"
+      description="The host withdraws an option the reader may have chosen. Choose Croutons and another topping, then Withdraw Croutons: the card keeps the other choice and submits without the withdrawn one, and a draft left with no choice is no longer answered."
+    >
+      <RevisedCard />
     </LabSection>
     <LabSection
       title="Interactive"

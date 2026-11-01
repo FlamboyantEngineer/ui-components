@@ -64,10 +64,10 @@ Verification: `src/components/chat-question/chat-question.test.tsx`, `src/compon
 
 ### UIC-CHAT-QUESTION-2.1 - Answers
 
-A question shall count as answered once it has an option chosen or Other chosen, and words whenever Other is chosen; a `none` question once it has words (text that is not only white space). The answer of a question is a `ChatQuestionAnswer`: its `questionId`, the chosen options' ids in `optionIds` in the order they are offered, and, when Other is chosen or the question is `none`, the trimmed words in `otherText`. Question ids are the caller's own keys: any string, including one that names an `Object` member such as `constructor`, `__proto__` or `toString`, keeps its own draft and answer.
+A question shall count as answered once it has an option chosen or Other chosen, and words whenever Other is chosen; a `none` question once it has words (text that is not only white space). The answer of a question is a `ChatQuestionAnswer`: its `questionId`, the chosen options' ids in `optionIds` in the order they are offered, and, when Other is chosen or the question is `none`, the trimmed words in `otherText`. Question ids are the caller's own keys: any string, including one that names an `Object` member such as `constructor`, `__proto__` or `toString`, keeps its own draft and answer. A draft is read against the question as it stands: a chosen option the question no longer offers is dropped, a `single` question keeps at most one option and no option beside Other, Other counts only while `allowsOther` is set, and a `none` question keeps no options. Whether the question is answered, and its answer, follow that reading, so a draft left with no choice is unanswered again.
 
-Implementation: `src/components/chat-question/chat-question-model.ts`
-Verification: `src/components/chat-question/chat-question-model.test.ts`, `src/components/chat-question/chat-question.test.tsx`, `src/components/chat-parts/chat-part-own-keys.test.tsx`
+Implementation: `src/components/chat-question/chat-question-model.ts`, `src/components/chat-question/chat-question-pending.tsx`
+Verification: `src/components/chat-question/chat-question-model.test.ts`, `src/components/chat-question/chat-question.test.tsx`, `src/components/chat-parts/chat-part-own-keys.test.tsx`, `src/components/chat-question/chat-question-revalidate.test.tsx`, `e2e/chat-question.spec.ts`
 
 ### UIC-CHAT-QUESTION-2.2 - Submit
 

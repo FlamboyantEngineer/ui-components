@@ -106,17 +106,37 @@ function hasText(text: string | undefined): boolean {
 }
 
 /**
- * Whether a question has an answer: words for a free-text question; otherwise an option or Other,
- * and words whenever Other is chosen.
+ * A draft as the question now reads it: options it no longer offers dropped, one option at most
+ * for a single choice (none with Other), and Other only while the question allows it; a free-text
+ * question keeps only its words. The draft itself comes back while it still fits.
  */
-export function isQuestionAnswered(item: ChatQuestionItem, draft: QuestionDraft = emptyDraft) {
+export function normalizeDraft(item: ChatQuestionItem, draft: QuestionDraft = emptyDraft) {
+  const offered = new Set(item.options.map((option) => option.id));
+  const isText = item.selectionMode === 'none';
+  const isOther = !isText && draft.isOther && Boolean(item.allowsOther);
+  let optionIds = isText ? [] : draft.optionIds.filter((id) => offered.has(id));
+  if (item.selectionMode === 'single') optionIds = isOther ? [] : optionIds.slice(0, 1);
+  const isSame =
+    isOther === draft.isOther &&
+    optionIds.length === draft.optionIds.length &&
+    optionIds.every((id, index) => id === draft.optionIds[index]);
+  return isSame ? draft : { ...draft, optionIds, isOther };
+}
+
+/**
+ * Whether a question has an answer: words for a free-text question; otherwise an option it offers or
+ * Other, and words whenever Other is chosen.
+ */
+export function isQuestionAnswered(item: ChatQuestionItem, given: QuestionDraft = emptyDraft) {
+  const draft = normalizeDraft(item, given);
   if (item.selectionMode === 'none') return hasText(draft.otherText);
   if (draft.isOther) return hasText(draft.otherText);
   return draft.optionIds.length > 0;
 }
 
 /** The answer a draft gives: the options chosen in offered order, and trimmed words when given. */
-export function toAnswer(item: ChatQuestionItem, draft: QuestionDraft = emptyDraft) {
+export function toAnswer(item: ChatQuestionItem, given: QuestionDraft = emptyDraft) {
+  const draft = normalizeDraft(item, given);
   const isText = item.selectionMode === 'none';
   const optionIds = isText
     ? []
