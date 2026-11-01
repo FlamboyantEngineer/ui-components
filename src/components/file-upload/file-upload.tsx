@@ -54,6 +54,8 @@ export interface FileUploadProps
   label: string;
   /** Takes several files at once from the chooser and a drop. */
   allowsMultiple?: boolean | undefined;
+  /** Handles several offered files in single-file mode; `first` by default, or `reject` all. */
+  multipleFileBehavior?: 'first' | 'reject' | undefined;
   /** The chooser picks a folder, and a dropped folder is read for its files; implies several files. */
   acceptDirectory?: boolean | undefined;
   /** Help below the command. Defaults to the accepted types and the size and count limits. */
@@ -151,6 +153,7 @@ function useFileIntake(props: FileUploadProps, listed: readonly FileUploadItem[]
     [],
   );
   const isMultiple = Boolean(allowsMultiple || acceptDirectory);
+  const rejectsMultiple = !isMultiple && props.multipleFileBehavior === 'reject';
   const report = (result: FilePartition) => {
     count.current.accepted += result.accepted.length;
     setRejections(result.rejections);
@@ -159,7 +162,11 @@ function useFileIntake(props: FileUploadProps, listed: readonly FileUploadItem[]
   };
   const judge = (offered: readonly File[], owner: object): Promise<void> | undefined => {
     if (owner !== lifetime.current) return undefined;
-    const outcome = partitionFiles(offered, rules, count.current.held + count.current.accepted);
+    const files = isMultiple ? offered : offered.slice(0, 1);
+    const outcome: FilePartition | Promise<FilePartition> =
+      rejectsMultiple && offered.length > 1
+        ? { accepted: [], rejections: offered.map((file) => ({ file, reason: 'count' })) }
+        : partitionFiles(files, rules, count.current.held + count.current.accepted);
     if (!(outcome instanceof Promise)) {
       report(outcome);
       return undefined;
@@ -173,9 +180,8 @@ function useFileIntake(props: FileUploadProps, listed: readonly FileUploadItem[]
     isDragAcceptable,
     receive(offered: readonly File[]) {
       if (isLocked) return;
-      const files = isMultiple ? offered : offered.slice(0, 1);
       const owner = lifetime.current;
-      const run = () => judge(files, owner);
+      const run = () => judge(offered, owner);
       const outcome = queue.current ? queue.current.then(run, run) : run();
       if (!outcome) return;
       const settled: Promise<void> = outcome.finally(() => {
@@ -185,7 +191,10 @@ function useFileIntake(props: FileUploadProps, listed: readonly FileUploadItem[]
     },
     onDragEnter(event: DragEvent) {
       const items = readDraggedItems(event);
-      setDragAcceptable(canAcceptDrag(isMultiple ? items : items.slice(0, 1), rules, held));
+      const tooMany = rejectsMultiple && items.filter(({ kind }) => kind === 'file').length > 1;
+      setDragAcceptable(
+        !tooMany && canAcceptDrag(isMultiple ? items : items.slice(0, 1), rules, held),
+      );
     },
   };
 }
