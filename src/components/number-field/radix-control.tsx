@@ -23,6 +23,7 @@ import {
   modifierStep,
   NumberAdornment,
   NumberScrubber,
+  NumberValue,
   numberFieldHooks as hooks,
   toModifiedPressProps,
   type NumberSteps,
@@ -149,6 +150,7 @@ export function RadixControl(props: RadixControlProps) {
     showScrubber,
     startAdornment,
     endAdornment,
+    endAdornmentPlacement,
     placeholder,
     autoComplete,
     enterKeyHint,
@@ -182,23 +184,28 @@ export function RadixControl(props: RadixControlProps) {
         {hideStepper ? null : stepper(-1)}
         {showScrubber ? <NumberScrubber state={state} steps={steps} /> : null}
         <NumberAdornment side="start">{startAdornment}</NumberAdornment>
-        <Input
-          {...hooks.slot('input')}
-          role="spinbutton"
-          aria-valuenow={state.value ?? undefined}
-          aria-valuetext={
-            state.value === null ? undefined : formatRadixNumber(state.value, props.radix)
-          }
-          aria-valuemin={minValue}
-          aria-valuemax={maxValue}
-          inputMode={props.radix === 16 ? 'text' : 'numeric'}
-          ref={inputRef}
-          placeholder={placeholder}
-          autoComplete={autoComplete}
-          enterKeyHint={enterKeyHint}
-          onBlur={() => entry.finish(false)}
-          onKeyDown={entry.onKeyDown}
-        />
+        <NumberValue
+          isTight={endAdornmentPlacement === 'value'}
+          text={entry.draft || (placeholder ?? '')}
+        >
+          <Input
+            {...hooks.slot('input')}
+            role="spinbutton"
+            aria-valuenow={state.value ?? undefined}
+            aria-valuetext={
+              state.value === null ? undefined : formatRadixNumber(state.value, props.radix)
+            }
+            aria-valuemin={minValue}
+            aria-valuemax={maxValue}
+            inputMode={props.radix === 16 ? 'text' : 'numeric'}
+            ref={inputRef}
+            placeholder={placeholder}
+            autoComplete={autoComplete}
+            enterKeyHint={enterKeyHint}
+            onBlur={() => entry.finish(false)}
+            onKeyDown={entry.onKeyDown}
+          />
+        </NumberValue>
         <NumberAdornment side="end">{endAdornment}</NumberAdornment>
         {hideStepper ? null : stepper(1)}
       </Group>

@@ -22,6 +22,9 @@ import { numberFieldHooks as hooks, type NumberSteps } from './number-field-part
  */
 export type NumberFieldCommitBehavior = 'snap' | 'validate';
 
+/** Where the end adornment sits: at the frame's trailing edge or right after the number. */
+export type NumberFieldAdornmentPlacement = 'edge' | 'value';
+
 /**
  * The text-entry attributes a number field hands its input: its keyboard and spelling follow from
  * the number's format, so it takes the hint, autofill and the Enter key's label.
@@ -49,8 +52,13 @@ export interface NumberFieldProps
   hideStepper?: boolean | undefined;
   /** Content inside the frame before the number, such as a literal prefix (`$`). */
   startAdornment?: ReactNode;
-  /** Content inside the frame after the number, such as a literal suffix (`/mo`). */
+  /** Content inside the frame after the number, such as a literal suffix (`/mo`) or a unit. */
   endAdornment?: ReactNode;
+  /**
+   * Where `endAdornment` sits: at the frame's trailing edge (`edge`, the default) or right after
+   * the number (`value`), following it as it is typed and as its width changes.
+   */
+  endAdornmentPlacement?: NumberFieldAdornmentPlacement | undefined;
   /** The step of Alt with Arrow Up or Arrow Down, a step button or a scrub. */
   smallStep?: number | undefined;
   /** The step of Shift with Arrow Up or Arrow Down, a step button or a scrub. */
@@ -72,6 +80,7 @@ export type NumberControlConfig = Pick<
   | 'hideStepper'
   | 'startAdornment'
   | 'endAdornment'
+  | 'endAdornmentPlacement'
   | 'showScrubber'
   | 'commitBehavior'
 >;
@@ -140,6 +149,7 @@ export function NumberField({
   hideStepper = false,
   startAdornment,
   endAdornment,
+  endAdornmentPlacement = 'edge',
   smallStep,
   largeStep,
   showScrubber = false,
@@ -171,7 +181,11 @@ export function NumberField({
   // A non-finite value reaches the controls as empty, as the field judges it.
   const state = isReadableNumber(held.value) ? held : { ...held, value: null };
   const steps: NumberSteps = { step: step ?? 1, smallStep, largeStep, minValue, maxValue };
-  const data = { hideStepper, radix };
+  const data = {
+    hideStepper,
+    radix,
+    adornmentPlacement: endAdornmentPlacement === 'value' ? 'value' : undefined,
+  };
   return (
     <Field
       {...field}
@@ -188,6 +202,7 @@ export function NumberField({
           hideStepper,
           startAdornment,
           endAdornment,
+          endAdornmentPlacement,
           showScrubber,
           commitBehavior,
         };

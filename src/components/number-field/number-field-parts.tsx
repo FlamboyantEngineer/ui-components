@@ -4,10 +4,12 @@ import { isComposingKey } from '../../utils/is-composing-key.js';
 import { MinusGlyph, PlusGlyph, ScrubGlyph } from '../../core/glyphs.js';
 import {
   useId,
+  useRef,
   type KeyboardEvent,
   type MouseEvent,
   type PointerEvent,
   type ReactNode,
+  type RefObject,
 } from 'react';
 import { Button as AriaButton, useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
@@ -16,6 +18,7 @@ import { clamp } from '../../utils/clamp.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { countDecimalPlaces } from '../../utils/count-decimal-places.js';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
+import { useWheelSteps } from '../../utils/use-wheel-steps.js';
 import { FreeControls } from '../../utils/free-controls.js';
 import type { FieldState } from '../field/field.js';
 
@@ -25,7 +28,9 @@ export const numberFieldHooks = createHooks('number-field', [
   'decrement',
   'scrubber',
   'start',
+  'value',
   'input',
+  'sizer',
   'end',
   'increment',
 ]);
@@ -154,6 +159,32 @@ export function NumberAdornment({
   );
 }
 
+/**
+ * The input, and with `isTight` a wrapper that also holds a hidden copy of its text
+ * (`ui-number-field__sizer`), so a stylesheet can size the input to the number and set the end
+ * adornment right after it, while editing too.
+ */
+export function NumberValue({
+  isTight,
+  text,
+  children,
+}: {
+  isTight: boolean;
+  /** The text the input shows, or its placeholder while empty. */
+  text: string;
+  children: ReactNode;
+}) {
+  if (!isTight) return children;
+  return (
+    <span {...hooks.slot('value')}>
+      {children}
+      <span {...hooks.slot('sizer')} aria-hidden="true">
+        {text}
+      </span>
+    </span>
+  );
+}
+
 /** A step button, named by its action and the field label (`Decrease Weight`). */
 export function Stepper({
   slot,
@@ -192,6 +223,32 @@ interface ScrubGesture {
 /** Whether the field holds a value the scrub set: its latest, or the one before while that renders. */
 function isScrubValue(value: number | null, gesture: ScrubGesture): boolean {
   return Object.is(value, gesture.value) || Object.is(value, gesture.previous);
+}
+
+/**
+ * The wheel over the scrub handle steps the value, one step a notch (up raises it), by `largeStep`
+ * with Shift and `smallStep` with Alt, and commits each step, as an arrow key does. Steps that come
+ * before the field re-renders build on the value the last one set, unless the host replaced it.
+ */
+function useScrubberWheel(
+  handle: RefObject<HTMLSpanElement | null>,
+  state: FieldState<number | null>,
+  steps: NumberSteps,
+) {
+  const last = useRef<{ from: number | null; to: number | null } | null>(null);
+  useWheelSteps(
+    handle,
+    (direction, event) => {
+      const pending = last.current;
+      const value = pending && Object.is(state.value, pending.from) ? pending.to : state.value;
+      const size = modifierStep(event, steps) ?? steps.step;
+      const next = addStep(value, direction * size, steps);
+      last.current = { from: state.value, to: next };
+      state.setValue(next);
+      state.commit();
+    },
+    isLocked(state),
+  );
 }
 
 /**
@@ -247,8 +304,16 @@ export function NumberScrubber({
       else state.commit();
     },
   });
+  const handle = useRef<HTMLSpanElement>(null);
+  useScrubberWheel(handle, state, steps);
   return (
-    <span {...hooks.slot('scrubber')} aria-hidden="true" style={{ touchAction: 'none' }} {...drag}>
+    <span
+      ref={handle}
+      {...hooks.slot('scrubber')}
+      aria-hidden="true"
+      style={{ touchAction: 'none' }}
+      {...drag}
+    >
       <Glyph icon={ScrubGlyph} />
     </span>
   );
