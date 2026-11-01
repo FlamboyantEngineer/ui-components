@@ -99,6 +99,31 @@ test.describe('Signature Dialog lab', () => {
     );
   });
 
+  test('UIC-SIGNATURE-DIALOG-2.2 UIC-SIGNATURE-DIALOG-2.3 leaves out entries no longer asked and clears them for another signer', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('signature-dialog');
+    await page.locator('[data-lab-open="session"]').click();
+    const dialog = page.getByRole('dialog', { name: 'Sign the shift handover' });
+    await settled(page);
+    await dialog.getByRole('textbox', { name: 'Reason' }).fill('Private note');
+    const password = dialog.locator('input[type="password"]');
+    await password.fill('orchard');
+    await dialog.getByRole('button', { name: 'Hand over to Grace Hopper' }).click();
+    await expect(password).toHaveValue('');
+    await expect(dialog.getByRole('textbox', { name: 'Reason' })).toHaveValue('');
+    await dialog.getByRole('textbox', { name: 'Reason' }).fill('Private note');
+    await dialog.getByRole('button', { name: 'Stop asking for a reason and signature' }).click();
+    await expect(dialog.getByRole('textbox', { name: 'Reason' })).toHaveCount(0);
+    await password.fill('orchard');
+    await dialog.getByRole('button', { name: 'Sign', exact: true }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(page.locator('[data-lab-output="session"]')).toHaveText(
+      'Grace Hopper, approve, no reason',
+    );
+  });
+
   test('UIC-SIGNATURE-DIALOG-1.3 asks for a required reason and drawing', async ({ page, lab }) => {
     await lab.open('signature-dialog');
     const cell = matrixCell(page, 'reason=required drawing=required');

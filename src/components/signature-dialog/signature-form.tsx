@@ -1,7 +1,8 @@
 'use client';
 
-import { useImperativeHandle, useRef, useState, type Ref } from 'react';
+import { useImperativeHandle, useRef, useState, type Ref, type RefObject } from 'react';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import { useLifetimeSignal } from '../../utils/use-lifetime-signal.js';
 import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -143,6 +144,51 @@ function SignerCredentials({
 }
 
 /**
+ * Hands the dialog's Sign action a submit function that validates the form and, when it passes,
+ * signs with the details and closes. A signing that settles after its session ended (the form left
+ * with a close, a new opening or another signer) neither closes, fails nor clears the session that
+ * replaced it. Returns what the form calls when its submit passes validation.
+ */
+function useSigningSubmit({
+  submitRef,
+  form,
+  onSign,
+  clearPassword,
+  getDetails,
+}: {
+  submitRef: Ref<SignatureSubmit>;
+  form: RefObject<HTMLFormElement | null>;
+  onSign: SignatureFormProps['onSign'];
+  clearPassword: () => void;
+  getDetails: () => SignatureDetails | null;
+}) {
+  const isValid = useRef(false);
+  const beginSigning = useLifetimeSignal();
+  useImperativeHandle(submitRef, () => (close: () => void) => {
+    isValid.current = false;
+    form.current?.requestSubmit();
+    const details = getDetails();
+    if (!isValid.current || !details) return undefined;
+    const signal = beginSigning();
+    return Promise.resolve()
+      .then(() => onSign(details))
+      .then(
+        () => {
+          if (!signal.aborted) close();
+        },
+        (error: unknown) => {
+          if (signal.aborted) return;
+          clearPassword();
+          throw error;
+        },
+      );
+  });
+  return () => {
+    isValid.current = true;
+  };
+}
+
+/**
  * The entries of a signature: the meaning, the reason, the drawn signature and the credentials, in
  * a form whose submit validation runs when the dialog's Sign action asks. The credentials live only
  * here, so they leave with the dialog, and a failed signing clears the password.
@@ -158,32 +204,30 @@ export function SignatureForm({
 }: SignatureFormProps) {
   const strings = useUiStrings();
   const form = useRef<HTMLFormElement>(null);
-  const isValid = useRef(false);
   const [typedUserName, setTypedUserName] = useState('');
   const [password, setPassword] = useState('');
   const [picked, setPicked] = useState<string | null>(null);
   const meaning = resolveMeaning(meanings, picked);
   const [reasonText, setReasonText] = useState('');
   const [signature, setSignature] = useState<SignatureValue | null>(null);
-  useImperativeHandle(submitRef, () => (close: () => void) => {
-    isValid.current = false;
-    form.current?.requestSubmit();
-    const chosen = meanings.find((entry) => toKeyIdentity(entry.id) === meaning);
-    // Validation refuses a missing choice, so this only guards against a list without meanings.
-    if (!isValid.current || !chosen) return undefined;
-    const details: SignatureDetails = {
-      userName: credentials === 'username-password' ? typedUserName : userName,
-      password,
-      meaning: chosen.id,
-      reason: reasonText,
-      signature,
-    };
-    return Promise.resolve()
-      .then(() => onSign(details))
-      .then(close, (error: unknown) => {
-        setPassword('');
-        throw error;
-      });
+  const submitted = useSigningSubmit({
+    submitRef,
+    form,
+    onSign,
+    clearPassword: () => setPassword(''),
+    getDetails: () => {
+      const chosen = meanings.find((entry) => toKeyIdentity(entry.id) === meaning);
+      // Validation refuses a missing choice, so this only guards against a list without meanings.
+      if (!chosen) return null;
+      return {
+        userName: credentials === 'username-password' ? typedUserName : userName,
+        password,
+        meaning: chosen.id,
+        // An entry no longer asked for is kept for later but never signed with.
+        reason: reason === 'none' ? '' : reasonText,
+        signature: drawing === 'none' ? null : signature,
+      };
+    },
   });
   return (
     <Form
@@ -192,7 +236,7 @@ export function SignatureForm({
       validationBehavior="aria"
       onSubmit={(event) => {
         event.preventDefault();
-        isValid.current = true;
+        submitted();
       }}
     >
       <MeaningChoice meanings={meanings} value={meaning} onChange={setPicked} />
