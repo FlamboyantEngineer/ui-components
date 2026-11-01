@@ -165,6 +165,22 @@ test.describe('Chat Question lab', () => {
     );
   });
 
+  test('UIC-CHAT-QUESTION-2.1 drops a chosen option the host withdraws from the answer', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-question');
+    const card = demo(page, 'revised');
+    await card.getByText('Croutons').click();
+    await card.getByText('Fresh herbs').click();
+    await page.getByRole('button', { name: 'Withdraw Croutons' }).click();
+    await expect(card.getByText('Croutons')).toHaveCount(0);
+    await card.getByRole('button', { name: 'Submit' }).click();
+    await expect(page.locator('[data-lab-record="revised"]')).toHaveText(
+      '[{"questionId":"toppings","optionIds":["herbs"]}]',
+    );
+  });
+
   test('UIC-CHAT-QUESTION-1.8 shows the preview of the focused option beside the options', async ({
     page,
     lab,

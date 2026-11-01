@@ -7,8 +7,8 @@ import { InlineError } from '../inline-error/inline-error.js';
 import { QuestionItem } from './chat-question-item.js';
 import {
   chatQuestionHooks as hooks,
-  emptyDraft,
   isQuestionAnswered,
+  normalizeDraft,
   toAnswer,
   type ChatQuestionAnswer,
   type ChatQuestionAnsweredMark,
@@ -198,7 +198,7 @@ export function PendingQuestions(props: PendingQuestionsProps) {
             key={current.id}
             ref={itemRef}
             item={current}
-            draft={readOwn(drafts, current.id) ?? emptyDraft}
+            draft={normalizeDraft(current, readOwn(drafts, current.id))}
             onDraftChange={(draft) => setDrafts((all) => ({ ...all, [current.id]: draft }))}
             isReadOnly={!canAnswer}
             isRevealed={revealed.has(current.id)}
