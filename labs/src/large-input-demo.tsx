@@ -8,10 +8,17 @@ interface LargeInputDemoProps {
   build: () => string;
   /** Draws the input. */
   children: (input: string) => ReactNode;
+  /** The demo's `data-lab-demo` name, for a page with more than one. */
+  name?: string;
 }
 
 /** Loads a large adversarial input on demand and reports how long it took to draw. */
-export function LargeInputDemo({ label, build, children }: LargeInputDemoProps) {
+export function LargeInputDemo({
+  label,
+  build,
+  children,
+  name = 'large-input',
+}: LargeInputDemoProps) {
   const [input, setInput] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState<number | null>(null);
   const started = useRef(0);
@@ -19,7 +26,7 @@ export function LargeInputDemo({ label, build, children }: LargeInputDemoProps) 
     if (input !== null) setElapsed(Math.round(performance.now() - started.current));
   }, [input]);
   return (
-    <div data-lab-demo="large-input">
+    <div data-lab-demo={name}>
       <Button
         size="sm"
         onPress={() => {

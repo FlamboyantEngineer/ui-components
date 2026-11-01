@@ -277,5 +277,19 @@ mountLab(
         {(source) => <Markdown source={source} />}
       </LargeInputDemo>
     </LabSection>
+    <LabSection
+      title="Deep nesting"
+      description="2,000 nested block quotes and 2,000 nested emphasis spans draw without overflowing the stack: past 256 levels elements are unwrapped and their text kept in order."
+    >
+      <LargeInputDemo
+        name="deep-nesting"
+        label="2,000 nested quotes and emphasis"
+        build={() =>
+          '>'.repeat(2_000) + ' Deepest quote\n\n' + '*a '.repeat(2_000) + 'b*'.repeat(2_000)
+        }
+      >
+        {(source) => <Markdown source={source} />}
+      </LargeInputDemo>
+    </LabSection>
   </>,
 );

@@ -165,5 +165,19 @@ mountLab(
         {(markup) => <HtmlMarkup markup={markup} />}
       </LargeInputDemo>
     </LabSection>
+    <LabSection
+      title="Deep nesting"
+      description="5,000 nested elements draw without overflowing the stack: past 256 levels elements are unwrapped and their text kept in order."
+    >
+      <LargeInputDemo
+        name="deep-nesting"
+        label="5,000 nested elements"
+        build={() =>
+          '<div><b>'.repeat(2_500) + 'Deepest text' + '</b></div>'.repeat(2_500) + ' After'
+        }
+      >
+        {(markup) => <HtmlMarkup markup={markup} />}
+      </LargeInputDemo>
+    </LabSection>
   </>,
 );

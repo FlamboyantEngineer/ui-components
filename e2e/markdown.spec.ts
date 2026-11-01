@@ -250,4 +250,25 @@ test.describe('Markdown lab', () => {
     await expect(demo.getByRole('region', { name: 'Large input' })).toBeVisible();
     await lab.expectAccessible();
   });
+
+  test('UIC-MARKUP-1.6 draws deep nesting without overflowing the stack', async ({ page, lab }) => {
+    const errors: string[] = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await lab.open('markdown');
+    const demo = page.locator('[data-lab-demo="deep-nesting"]');
+    await demo.getByRole('button', { name: 'Load 2,000 nested quotes and emphasis' }).click();
+    const region = demo.getByRole('region', { name: 'Large input' });
+    await expect(region).toContainText('Deepest quote');
+    const depth = await region.evaluate((root) => {
+      let deepest = 0;
+      const pending: Array<[Element, number]> = [[root, 0]];
+      for (let next = pending.pop(); next; next = pending.pop()) {
+        deepest = Math.max(deepest, next[1]);
+        for (const child of next[0].children) pending.push([child, next[1] + 1]);
+      }
+      return deepest;
+    });
+    expect(depth).toBeLessThanOrEqual(260);
+    expect(errors).toEqual([]);
+  });
 });
