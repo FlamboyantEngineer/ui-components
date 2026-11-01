@@ -265,6 +265,28 @@ function EdgeCell({ direction }: { direction: 'ltr' | 'rtl' }) {
   );
 }
 
+/** Items at the last supported days and one past them, which is left out (UIC-TIMELINE-1.2). */
+const endItems: TimelineItem[] = [
+  { id: 'wrap', rowId: 'close', label: 'Wrap-up', start: '9998-12-28', end: '9998-12-30' },
+  { id: 'last', rowId: 'close', label: 'Last day', start: '9998-12-31', kind: 'milestone' },
+  { id: 'past', rowId: 'close', label: 'Past the range', start: '9999-12-31' },
+];
+
+/** An editable timeline at the end of the supported range: moves and resizes stop at its last day. */
+function RangeEndCell() {
+  return (
+    <div style={cellBox} data-lab-demo="range-end">
+      <OwnedTimeline
+        aria-label="Plan at the end of the range"
+        rows={[{ id: 'close', label: 'Closing' }]}
+        scale="day"
+        range={{ start: '9998-12-26', end: '9998-12-31' }}
+        initialItems={endItems}
+      />
+    </div>
+  );
+}
+
 function StateCell({ state }: { state: string }) {
   const props = {
     'aria-label': `Dinner plan, ${state}`,
@@ -396,6 +418,12 @@ mountLab(
         axes={{ direction: ['ltr', 'rtl'] as const }}
         render={({ direction }) => <EdgeCell direction={direction} />}
       />
+    </LabSection>
+    <LabSection
+      title="End of the range"
+      description="The last supported days, up to 31 December 9998. The last day is a full day wide, an item on a later day is left out, and moving or resizing Wrap-up by drag or keyboard stops at the last day."
+    >
+      <RangeEndCell />
     </LabSection>
     <LabSection
       title="Project plan"

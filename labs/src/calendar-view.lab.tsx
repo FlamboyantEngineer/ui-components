@@ -308,6 +308,25 @@ mountLab(
       </div>
     </LabSection>
     <LabSection
+      title="Ends of the calendar"
+      description="Days outside the supported range, 2 January 0001 and 31 December 9999, show the first supported month (January of year 2) and the last supported week (ending in 9998, with its last days in 9999). Moving past either end keeps the first or last supported day focused."
+    >
+      <div style={{ display: 'grid', gap: 16 }}>
+        <div style={frame(620)} data-lab-demo="range-start">
+          <CalendarView events={[]} timeZone="UTC" getNow={getNow} defaultDate="0001-01-02" />
+        </div>
+        <div style={frame(620)} data-lab-demo="range-end">
+          <CalendarView
+            events={[]}
+            timeZone="UTC"
+            getNow={getNow}
+            defaultDate="9999-12-31"
+            defaultView="week"
+          />
+        </div>
+      </div>
+    </LabSection>
+    <LabSection
       title="Week starting Monday"
       description="A French locale and strings: the week starts on Monday, and days, months, times and controls read in French."
     >

@@ -271,6 +271,27 @@ test.describe('Calendar View lab', () => {
     });
   }
 
+  test('UIC-CALENDAR-VIEW-1.6 keeps to the supported range at both ends', async ({ page, lab }) => {
+    await lab.open('calendar-view');
+    const start = page.locator('[data-lab-demo="range-start"]');
+    await expect(start.getByRole('grid', { name: 'January 2' })).toBeVisible();
+    await start.getByRole('button', { name: 'Previous month' }).click();
+    await expect(start.getByRole('grid', { name: 'January 2' })).toBeVisible();
+    const end = page.locator('[data-lab-demo="range-end"]');
+    const dates = await end
+      .locator('[role="gridcell"][data-date]')
+      .evaluateAll((cells) => cells.map((cell) => cell.getAttribute('data-date')));
+    expect(dates).toHaveLength(7);
+    expect(new Set(dates).size).toBe(7);
+    await expect(end.locator('[role="gridcell"][tabindex="0"]')).toHaveAttribute(
+      'data-date',
+      '9998-12-31',
+    );
+    await end.locator('[role="gridcell"][tabindex="0"]').focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(end.locator('[role="gridcell"][data-date="9998-12-31"]')).toBeFocused();
+  });
+
   test('UIC-CALENDAR-VIEW-2.5 packs overlapping events from the right edge right to left', async ({
     page,
     lab,
