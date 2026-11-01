@@ -8,6 +8,7 @@ import type { BaseProps, Placement } from '../../core/props.js';
 import { useLayerZIndex } from '../portal/portal.js';
 import { TOOLTIP_DELAY, TOOLTIP_OFFSET } from '../../utils/overlay-defaults.js';
 import { tooltipHooks as hooks } from './tooltip-hooks.js';
+import { useInCallerTrigger } from './caller-trigger.js';
 
 export type TooltipVariant = 'default' | 'info';
 
@@ -103,7 +104,8 @@ function labelTrigger(children: ReactNode, label: string): ReactNode {
 /**
  * A short, non-interactive hint shown when its trigger is hovered (after `delay`) or keyboard
  * focused, and dismissed on leave, blur, press or Escape. With `relationship="label"` the hint is
- * the trigger's name instead of its description.
+ * the trigger's name instead of its description. Inside a caller's own `Tooltip` or `HoverCard`
+ * trigger it renders the trigger alone, so the outer trigger keeps working.
  */
 export function Tooltip({
   content,
@@ -115,11 +117,15 @@ export function Tooltip({
   relationship = 'description',
   ...rest
 }: TooltipProps) {
-  const [data, triggerProps] = splitDataAttributes(rest);
+  // Inside a caller's own tooltip or hover card, that trigger keeps the element.
+  const inCallerTrigger = useInCallerTrigger();
   const isLabel = relationship === 'label' && typeof content === 'string';
+  const trigger = isLabel ? labelTrigger(children, content) : children;
+  if (inCallerTrigger) return trigger;
+  const [data, triggerProps] = splitDataAttributes(rest);
   return (
     <TooltipTrigger {...triggerProps} delay={delay}>
-      {isLabel ? labelTrigger(children, content) : children}
+      {trigger}
       <TooltipPanel {...data} variant={variant} className={className} placement={placement}>
         {content}
       </TooltipPanel>

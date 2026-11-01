@@ -6,9 +6,9 @@
 
 ### UIC-TOOLTIP-1.1 - Trigger and panel
 
-`Tooltip` shall wrap one focusable trigger (a library `Button` or `Link`) and render its `content` in the `ui-tooltip__content` slot of a panel with `role="tooltip"`, portalled to the end of the overlay container ([UIC-PORTAL-1.2](PORTAL.md#uic-portal-12---choosing-the-container)): the document body, or the container a `PortalHost` or `PortalContainerProvider` above chooses. The panel never takes focus, holds no interactive content and adds no wrapper element around the trigger.
+`Tooltip` shall wrap one focusable trigger (a library `Button` or `Link`) and render its `content` in the `ui-tooltip__content` slot of a panel with `role="tooltip"`, portalled to the end of the overlay container ([UIC-PORTAL-1.2](PORTAL.md#uic-portal-12---choosing-the-container)): the document body, or the container a `PortalHost` or `PortalContainerProvider` above chooses. The panel never takes focus, holds no interactive content and adds no wrapper element around the trigger. Inside a caller's own `Tooltip` or `HoverCardTrigger`, a `Tooltip` renders its trigger alone (still named by a `label` hint), so the caller's trigger keeps its hover, focus and long-press handling and its popup semantics; the outer trigger wins.
 
-Implementation: `src/components/tooltip/tooltip.tsx`
+Implementation: `src/components/tooltip/tooltip.tsx`, `src/components/tooltip/caller-trigger.ts`
 Verification: `src/components/tooltip/tooltip.test.tsx`, `e2e/tooltip.spec.ts`
 
 ### UIC-TOOLTIP-1.2 - Opening

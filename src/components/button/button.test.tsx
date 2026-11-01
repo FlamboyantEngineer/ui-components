@@ -8,6 +8,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { mergeProps } from '../../utils/merge-props.js';
+import { HoverCard, HoverCardTrigger } from '../hover-card/hover-card.js';
+import { Tooltip } from '../tooltip/tooltip.js';
 import { Button } from './button.js';
 
 describe('Button', () => {
@@ -163,6 +165,56 @@ describe('Button', () => {
       expect(screen.getByRole('tooltip')).toHaveTextContent('Save every change');
       expect(button).toHaveAttribute('aria-describedby', screen.getByRole('tooltip').id);
       expectHooksMatchSpec(document.body, 'TOOLTIP', { slots: ['content'] });
+      await act(async () => {
+        vi.advanceTimersByTime(5000);
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('UIC-BUTTON-1.6 leaves a hinted button to the caller tooltip or hover card around it', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      const { rerender } = render(
+        <Tooltip content="Saved to the shared folder">
+          <Button tooltip="Save every change" shortcut="Mod+S">
+            Save
+          </Button>
+        </Tooltip>,
+      );
+      const button = screen.getByRole('button', { name: /Save/ });
+      await user.pointer({ target: document.body });
+      await user.hover(button);
+      await act(async () => {
+        vi.advanceTimersByTime(500);
+      });
+      expect(screen.getByRole('tooltip')).toHaveTextContent('Saved to the shared folder');
+      await user.unhover(button);
+      await act(async () => {
+        vi.advanceTimersByTime(5000);
+      });
+
+      rerender(
+        <HoverCardTrigger>
+          <Button tooltip="Open the profile">Ana Lima</Button>
+          <HoverCard aria-label="About Ana Lima">
+            <p>Works on the north site.</p>
+          </HoverCard>
+        </HoverCardTrigger>,
+      );
+      const person = screen.getByRole('button', { name: 'Ana Lima' });
+      expect(person).toHaveAttribute('aria-haspopup', 'dialog');
+      await user.pointer([
+        { target: document.body, coords: { clientX: 1, clientY: 1 } },
+        { target: person },
+      ]);
+      await act(async () => {
+        vi.advanceTimersByTime(1000);
+      });
+      expect(screen.getByRole('dialog', { name: 'About Ana Lima' })).toBeInTheDocument();
+      expect(person).toHaveAttribute('aria-expanded', 'true');
       await act(async () => {
         vi.advanceTimersByTime(5000);
       });

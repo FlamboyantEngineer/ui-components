@@ -8,6 +8,33 @@ async function boxOf(locator: Locator) {
 }
 
 test.describe('Hover Card lab', () => {
+  test('UIC-HOVER-CARD-1.1 UIC-BUTTON-1.6 opens from a trigger with a hint of its own, by hover and by keyboard', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('hover-card');
+    const demo = page.locator('[data-lab-demo="hinted-trigger"]');
+    const trigger = demo.getByRole('button', { name: 'Kyoto' });
+    await expect(trigger).toHaveAttribute('aria-haspopup', 'dialog');
+    await page.mouse.move(0, 0);
+    await trigger.hover();
+    const card = page.getByRole('dialog', { name: 'About Kyoto' });
+    await expect(card).toBeVisible();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.getByRole('tooltip')).toHaveCount(0);
+    // Keyboard focus too opens the card, and Tab reaches the card's Save button.
+    await page.mouse.move(0, 0);
+    await expect(card).toHaveCount(0);
+    await trigger.focus();
+    await page.keyboard.press('Shift+Tab');
+    await page.keyboard.press('Tab');
+    await expect(trigger).toBeFocused();
+    await expect(card).toBeVisible();
+    await page.keyboard.press('Tab');
+    await expect(card.getByRole('button', { name: 'Save Kyoto' })).toBeFocused();
+    await expect(card).toBeVisible();
+  });
+
   test('UIC-HOVER-CARD-1.2 UIC-HOVER-CARD-1.3 UIC-HOVER-CARD-2.2 opens on hover after the delay and stays open on the way in', async ({
     page,
     lab,

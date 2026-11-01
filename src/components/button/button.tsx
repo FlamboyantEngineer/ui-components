@@ -1,13 +1,7 @@
 'use client';
 
-import { useContext, useState, type ReactNode } from 'react';
-import {
-  Button as AriaButton,
-  Link as AriaLink,
-  PopoverContext,
-  ProgressBar,
-  TooltipTriggerStateContext,
-} from '../../primitives/index.js';
+import { useState, type ReactNode } from 'react';
+import { Button as AriaButton, Link as AriaLink, ProgressBar } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -139,30 +133,17 @@ function ButtonParts({
 }
 
 /**
- * Whether the button sits in a caller's own hover trigger, a `Tooltip` or a `HoverCard`, which
- * hands the button its trigger props through React Aria's focusable context. A tooltip trigger of
- * the button's own would take that context over.
- */
-function useInCallerTrigger(): boolean {
-  const tooltip = useContext(TooltipTriggerStateContext);
-  const popover = useContext(PopoverContext) as { trigger?: string } | null;
-  return tooltip !== null || popover?.trigger === 'PreviewTrigger';
-}
-
-/**
  * Wraps a button in a `Tooltip` for its hint and shortcut, which follows the hint. A button without
  * either keeps the wrapper with the tooltip disabled, so a hint that comes or goes leaves the
- * element, its ref, its content and its focus in place. In a caller's own tooltip or hover card a
- * button without a hint is left unwrapped, so that trigger keeps working.
+ * element, its ref, its content and its focus in place. In a caller's own tooltip or hover card the
+ * `Tooltip` yields, hint or not, so that trigger keeps working.
  */
 function ButtonTooltip({ children, tooltip, shortcut }: ButtonHint & { children: ReactNode }) {
-  const inCallerTrigger = useInCallerTrigger();
   // Held here, so a hint that goes while open closes its tooltip.
   const [isOpen, setOpen] = useState(false);
   const keys = shortcut && toKeyShortcuts(shortcut) ? <Shortcut chord={shortcut} /> : null;
   const hint = isEmptyNode(tooltip) ? null : tooltip;
   const isEmpty = hint === null && keys === null;
-  if (isEmpty && inCallerTrigger) return children;
   const content = (
     <>
       {hint}
