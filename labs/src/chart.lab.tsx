@@ -79,7 +79,8 @@ const samples: LineChartSeries[] = [
   {
     id: 'spot',
     label: 'Spot check',
-    points: [0, 1, 2, 3, 24].map((x) => ({ x, y: 4 + x / 3 })),
+    // A reading without a usable hour is left out and does not stretch the value axis.
+    points: [...[0, 1, 2, 3, 24].map((x) => ({ x, y: 4 + x / 3 })), { x: Number.NaN, y: 400 }],
   },
 ];
 
@@ -277,7 +278,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Line charts"
-      description="A burndown over working days on a time axis (with a gap on a missing day and an ideal line), as lines and as areas, and build minutes on a numeric axis. Dates preserve explicit offsets and millisecond precision. In the unevenly sampled readings, the up and down arrow keys move to the other series' reading nearest in hour, not in position."
+      description="A burndown over working days on a time axis (with a gap on a missing day and an ideal line), as lines and as areas, and build minutes on a numeric axis. Dates preserve explicit offsets and millisecond precision. In the unevenly sampled readings, the up and down arrow keys move to the other series' reading nearest in hour, not in position, and a spot check without a usable hour is left out without stretching the value axis."
     >
       <StateMatrix
         axes={{ variant: ['line', 'area'] }}

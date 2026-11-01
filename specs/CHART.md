@@ -162,7 +162,7 @@ Verification: `src/components/chart/line-geometry.test.ts`, `src/components/char
 
 ### UIC-CHART-6.3 - Value axis
 
-The value axis shall run from `minValue` to `maxValue` when given, keeping values beyond them at the edges, and otherwise over a nice domain that includes zero and every value, about one tick every 40 pixels, with grid lines across the plot.
+The value axis shall run from `minValue` to `maxValue` when given, keeping values beyond them at the edges, and otherwise over a nice domain that includes zero and every drawn value (a value whose x the axis cannot read is not drawn and does not stretch the axis; a value that is not a finite number at a readable x still breaks the line), about one tick every 40 pixels, with grid lines across the plot.
 
 The domain comes from the finite values alone, however many there are (a series of 200 000 values draws).
 

@@ -96,6 +96,9 @@ test.describe('Chart lab', () => {
     await page.keyboard.press('ArrowLeft');
     await page.keyboard.press('ArrowUp');
     await expect(figure.getByRole('img', { name: 'Hourly reading, 0: 10' })).toBeFocused();
+    // The reading without a usable hour neither draws nor stretches the value axis.
+    await expect(figure.locator('.ui-line-chart__point')).toHaveCount(10);
+    await expect(figure.locator('.ui-chart-axis__label').filter({ hasText: '400' })).toHaveCount(0);
     await lab.expectAccessible('[data-lab-demo="uneven"]');
   });
 

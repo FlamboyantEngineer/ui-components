@@ -13,7 +13,12 @@ import {
   type ChartBox,
   type ChartMargin,
 } from './chart-layout.js';
-import { createLineXAxis, type LineChartX, type LineXAxis } from './line-x-axis.js';
+import {
+  createLineXAxis,
+  createLineXReader,
+  type LineChartX,
+  type LineXAxis,
+} from './line-x-axis.js';
 
 /** One value of a line chart's series. */
 export interface LineChartPoint {
@@ -80,9 +85,16 @@ export interface LineGeometry {
 const xTickSpacing = 80;
 const yTickSpacing = 40;
 
+/** The automatic value extent covers only points drawn: those whose x the axis can read. */
 function findValueDomain(input: LineGeometryInput): [number, number] {
+  const points = input.series.flatMap((entry) => entry.points);
+  // Each x is read once.
+  const xs = points.map((point) => point.x);
+  const read = createLineXReader(xs, input.timeZone);
   const summary = summarizeNumbers(
-    input.series.flatMap(({ points }) => points.map((point) => point.y)),
+    points
+      .filter((_, index) => Number.isFinite(read(requireDefined(xs[index]))))
+      .map((point) => point.y),
   );
   const low = input.minValue ?? Math.min(0, summary.min);
   const high = input.maxValue ?? Math.max(0, summary.max);
@@ -110,13 +122,16 @@ function layOutSeries(
 ): { runs: LinePoint[][]; points: LinePoint[] } {
   // Each x is read once before the sort, not again in the comparator.
   const ordered = points
-    .map((point) => ({ point, at: scales.xAxis.read(point.x) }))
+    .map((point) => {
+      const { x } = point;
+      return { point, x, at: scales.xAxis.read(x) };
+    })
     .filter(({ at }) => Number.isFinite(at))
     .sort((a, b) => a.at - b.at);
   const runs: LinePoint[][] = [[]];
   const drawn: LinePoint[] = [];
   const placeOf = createPlaceIdentities();
-  for (const { point, at } of ordered) {
+  for (const { point, x, at } of ordered) {
     const place = placeOf(at);
     if (!Number.isFinite(point.y)) {
       runs.push([]);
@@ -127,9 +142,9 @@ function layOutSeries(
       series,
       index: drawn.length,
       position: at,
-      at: point.x,
+      at: x,
       value: point.y,
-      x: roundCoordinate(scales.xAxis.map(point.x)),
+      x: roundCoordinate(scales.xAxis.map(x)),
       y: roundCoordinate(scales.y(point.y)),
     };
     drawn.push(laid);
