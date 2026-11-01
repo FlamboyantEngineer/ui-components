@@ -137,4 +137,59 @@ test.describe('View Switcher lab', () => {
     await expect(list.getByRole('tab').nth(1)).toHaveAttribute('aria-selected', 'true');
     await lab.expectAccessible();
   });
+
+  test('UIC-VIEW-SWITCHER-1.3 keeps the marks on the label row while it truncates', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('view-switcher');
+    for (const marks of ['none', 'default', 'modified', 'both']) {
+      for (const layout of ['tabs', 'tabs, rtl', 'menu']) {
+        const root = page.locator(cell(`marks=${marks} layout=${layout}`));
+        const row =
+          layout === 'menu'
+            ? root.locator('.ui-view-switcher__menu')
+            : root.getByRole('tab').first();
+        const geometry = await row.evaluate((element) => {
+          const box = (selector: string) =>
+            element.querySelector(selector)?.getBoundingClientRect();
+          const label = element.querySelector<HTMLElement>('.ui-view-switcher__label');
+          const middle = (rect: DOMRect | undefined) => (rect ? rect.top + rect.height / 2 : null);
+          return {
+            label: middle(box('.ui-view-switcher__label')),
+            marks: [box('.ui-view-switcher__default'), box('.ui-view-switcher__modified')]
+              .filter((rect) => rect !== undefined)
+              .map(middle),
+            truncated: label ? label.scrollWidth > label.clientWidth : false,
+            inside: [...element.querySelectorAll('.ui-view-switcher__label ~ span')].every(
+              (mark) => {
+                const outer = element.getBoundingClientRect();
+                const rect = mark.getBoundingClientRect();
+                return rect.left >= outer.left && rect.right <= outer.right;
+              },
+            ),
+          };
+        });
+        const where = `${marks}, ${layout}`;
+        expect(geometry.marks, where).toHaveLength(
+          { none: 0, default: 1, modified: 1, both: 2 }[marks] ?? 0,
+        );
+        for (const mark of geometry.marks) {
+          expect(Math.abs((mark ?? 0) - (geometry.label ?? 0)), where).toBeLessThan(2);
+        }
+        // A tab caps its width; the menu's button shows the whole name while the bar has room.
+        expect(geometry.truncated, where).toBe(layout !== 'menu');
+        expect(geometry.inside, where).toBe(true);
+      }
+    }
+    // Every tab keeps the modified mark's room, so the mark never resizes its tab.
+    const tabWidth = (marks: string) =>
+      page
+        .locator(cell(`marks=${marks} layout=tabs`))
+        .getByRole('tab')
+        .first()
+        .evaluate((tab) => tab.getBoundingClientRect().width);
+    expect(await tabWidth('modified')).toBeCloseTo(await tabWidth('none'), 0);
+    expect(await tabWidth('both')).toBeCloseTo(await tabWidth('default'), 0);
+  });
 });

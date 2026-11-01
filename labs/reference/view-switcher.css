@@ -31,15 +31,45 @@
 
 .ui-view-switcher__tab {
   gap: 6px;
+  max-width: var(--ref-view-switcher-tab-max);
+}
+
+/* The label truncates first; the marks after it keep their room. */
+.ui-view-switcher {
+  --ref-view-switcher-tab-max: 16rem;
+  --ref-view-switcher-mark: 7px;
+}
+
+/* Every tab keeps the modified mark's room, so the mark never resizes its tab. */
+.ui-view-switcher__tab .ui-tabs__label:not(:has(.ui-view-switcher__modified))::after {
+  content: '';
+  flex: none;
+  width: var(--ref-view-switcher-mark);
 }
 
 .ui-view-switcher__menu {
   max-width: 100%;
 }
+.ui-view-switcher__menu .ui-button__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
 
 .ui-view-switcher__label {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* The label reserves the width of the selected tab's heavier weight, so selecting never resizes it. */
+.ui-view-switcher__label[data-label]::after {
+  content: attr(data-label);
+  display: block;
+  height: 0;
+  font-weight: var(--ref-font-weight-strong);
+  visibility: hidden;
+  overflow: hidden;
 }
 
 .ui-view-switcher__default {
@@ -56,8 +86,8 @@
 .ui-view-switcher__modified {
   display: inline-block;
   flex: none;
-  width: 7px;
-  height: 7px;
+  width: var(--ref-view-switcher-mark);
+  height: var(--ref-view-switcher-mark);
   border-radius: 50%;
   background: var(--ref-accent);
 }
