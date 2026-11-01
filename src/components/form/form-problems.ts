@@ -3,6 +3,7 @@
 // The problems a form's fields show, kept for a problem list that summarises them.
 
 import { createContext, useContext } from 'react';
+import { useWithinBoundary, type Bounded } from '../../utils/form-boundary.js';
 import type { FieldIssue, FieldRegistration } from '../field/field.js';
 
 /** One issue a field inside a form shows, with the field's label and a way to reach it. */
@@ -95,9 +96,9 @@ export function createFormProblemStore(fields: ReadonlySet<FieldRegistration>): 
   };
 }
 
-/** The problems of the enclosing form; `null` outside a form. */
-export const FormProblemContext = createContext<FormProblemSource | null>(null);
+/** The problems of the enclosing form; `null` outside a form or across an overlay's body. */
+export const FormProblemContext = createContext<Bounded<FormProblemSource> | null>(null);
 
 export function useFormProblems(): FormProblemSource | null {
-  return useContext(FormProblemContext);
+  return useWithinBoundary(useContext(FormProblemContext));
 }

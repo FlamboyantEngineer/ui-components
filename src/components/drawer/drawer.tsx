@@ -32,6 +32,7 @@ import { getOwnerDocument } from '../../utils/owner-window.js';
 import { isHTMLElement } from '../../utils/is-element.js';
 import type { OverlayLayer } from '../portal/layers.js';
 import { HeadingLevelContext, dialogTitleLevel } from '../../core/heading-level.js';
+import { FormBoundary } from '../../utils/form-boundary.js';
 
 /** A pressable trigger and the `Drawer` it opens. */
 export interface DrawerTriggerProps extends OpenStateProps {
@@ -220,7 +221,9 @@ export function Drawer({
                   <div {...hooks.slot('body')}>
                     <OverlayLayerScope layer={resolvedLayer}>
                       <HeadingLevelContext value={dialogTitleLevel}>
-                        {typeof children === 'function' ? children({ close }) : children}
+                        <FormBoundary>
+                          {typeof children === 'function' ? children({ close }) : children}
+                        </FormBoundary>
                       </HeadingLevelContext>
                     </OverlayLayerScope>
                   </div>

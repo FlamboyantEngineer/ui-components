@@ -10,12 +10,13 @@ import {
   type ReactNode,
   type RefObject,
 } from 'react';
-import { Form as AriaForm } from '../../primitives/index.js';
+import { Form as AriaForm, FormContext } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { useShallowStable } from '../../utils/use-shallow-stable.js';
+import { useFormBoundary } from '../../utils/form-boundary.js';
 import {
   FieldScopeContext,
   useFieldScope,
@@ -178,6 +179,7 @@ export function Form({
   ...rest
 }: FormProps) {
   const parent = useFieldScope();
+  const boundary = useFormBoundary();
   const [fields] = useState(() => new Set<FieldRegistration>());
   const [problems] = useState(() => createFormProblemStore(fields));
   const notify = useBatchedNotify(problems);
@@ -207,30 +209,43 @@ export function Form({
     register,
     onIssuesChange: notify,
     onValidityChange: notifyValidity,
+    boundary,
   });
+  const bounded = useMemo(
+    () => ({
+      problems: { value: problems, boundary },
+      validity: { value: validity, boundary },
+    }),
+    [problems, validity, boundary],
+  );
   const form = useInvalidFocus(fields);
   useOrderNotify(form, fields, notifyAll);
   const formRef = useMemo(() => mergeRefs(form, ref), [form, ref]);
   const errorLists = useMemo(() => toErrorLists(validationErrors), [validationErrors]);
   const submit = (event: FormEvent<HTMLFormElement>) => {
+    // React bubbles the submit of a form in a portal (a dialog's) through this one: it is not ours.
+    if (event.target !== event.currentTarget) return undefined;
     if (validity.validate()) return onSubmit?.(event);
     event.preventDefault();
   };
+  // React Aria's form hands its props to a form inside it; this form takes none from one around it.
   return (
-    <AriaForm
-      {...rest}
-      {...hooks.root({ className, props: rest })}
-      ref={formRef}
-      validationBehavior={validationBehavior}
-      validationErrors={errorLists}
-      onSubmit={submit}
-    >
-      <FieldScopeContext value={scope}>
-        <FormProblemContext value={problems}>
-          <FormValidityContext value={validity}>{children}</FormValidityContext>
-        </FormProblemContext>
-      </FieldScopeContext>
-    </AriaForm>
+    <FormContext value={null}>
+      <AriaForm
+        {...rest}
+        {...hooks.root({ className, props: rest })}
+        ref={formRef}
+        validationBehavior={validationBehavior}
+        validationErrors={errorLists}
+        onSubmit={submit}
+      >
+        <FieldScopeContext value={scope}>
+          <FormProblemContext value={bounded.problems}>
+            <FormValidityContext value={bounded.validity}>{children}</FormValidityContext>
+          </FormProblemContext>
+        </FieldScopeContext>
+      </AriaForm>
+    </FormContext>
   );
 }
 

@@ -3,6 +3,7 @@
 // What an enclosing form or fieldset gives the fields inside it.
 
 import { createContext, useContext, useMemo } from 'react';
+import { useFormBoundary } from '../../utils/form-boundary.js';
 import { useLatest } from '../../utils/use-latest.js';
 import type { FieldIssue, FieldValidation } from './field-validation.js';
 
@@ -62,13 +63,27 @@ export interface FieldScope {
    * collapsed sections and cards around it and lifts a filter that hides it.
    */
   reveal?: (() => void) | undefined;
+  /** The form boundary (an overlay's body) the form that set `register` sits in. */
+  boundary?: object | null | undefined;
 }
 
 /** The scope of the nearest form or fieldset; empty outside both. */
 export const FieldScopeContext = createContext<FieldScope>({});
 
+/** What a fieldset gives: the part of a scope that crosses a form boundary. */
+function toFieldsetScope({ isDisabled, isReadOnly }: FieldScope): FieldScope {
+  return { isDisabled, isReadOnly };
+}
+
+/**
+ * The scope of the nearest form or fieldset. A form's part ends at the form boundaries inside it
+ * (overlay bodies): a field there belongs to a form inside the boundary or to none.
+ */
 export function useFieldScope(): FieldScope {
-  return useContext(FieldScopeContext);
+  const scope = useContext(FieldScopeContext);
+  const boundary = useFormBoundary();
+  const isAcross = scope.register !== undefined && scope.boundary !== boundary;
+  return useMemo(() => (isAcross ? toFieldsetScope(scope) : scope), [isAcross, scope]);
 }
 
 /**

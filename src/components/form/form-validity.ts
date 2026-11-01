@@ -4,6 +4,7 @@
 // button, that must not reveal validation, move focus or submit just to ask.
 
 import { createContext, useContext } from 'react';
+import { useWithinBoundary, type Bounded } from '../../utils/form-boundary.js';
 import type { FieldRegistration } from '../field/field.js';
 import { inDocumentOrder } from './form-problems.js';
 
@@ -109,9 +110,12 @@ export function createFormValidityStore(fields: ReadonlySet<FieldRegistration>):
 }
 
 /** The validity of the enclosing form; `null` outside a form. */
-export const FormValidityContext = createContext<FormValidity | null>(null);
+export const FormValidityContext = createContext<Bounded<FormValidity> | null>(null);
 
-/** The enclosing form's verdict on its fields as they stand; `null` outside a form. */
+/**
+ * The enclosing form's verdict on its fields as they stand; `null` outside a form or across an
+ * overlay's body.
+ */
 export function useFormValidity(): FormValidity | null {
-  return useContext(FormValidityContext);
+  return useWithinBoundary(useContext(FormValidityContext));
 }

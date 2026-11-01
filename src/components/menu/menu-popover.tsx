@@ -34,6 +34,7 @@ import {
 } from '../../utils/overlay-defaults.js';
 import { isElement } from '../../utils/is-element.js';
 import { getOwnerWindow } from '../../utils/owner-window.js';
+import { FormBoundary } from '../../utils/form-boundary.js';
 
 export interface MenuPopoverProps extends BaseProps, OverlayPositionProps, RefProps<HTMLElement> {
   /**
@@ -193,7 +194,9 @@ export function MenuOverlay({
       >
         <MenuSurfaceContext value={group}>
           <MenuNonModalContext value={nonModal}>
-            <MenuLayerContext value={resolved}>{children}</MenuLayerContext>
+            <MenuLayerContext value={resolved}>
+              <FormBoundary>{children}</FormBoundary>
+            </MenuLayerContext>
           </MenuNonModalContext>
         </MenuSurfaceContext>
       </AriaPopover>
