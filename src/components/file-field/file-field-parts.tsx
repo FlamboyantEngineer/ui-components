@@ -1,7 +1,7 @@
 'use client';
 
 import { DownloadGlyph } from '../../core/glyphs.js';
-import type { ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -11,7 +11,13 @@ import { Icon } from '../icon/icon.js';
 import { Link } from '../link/link.js';
 import type { FileFieldItem } from './file-field-changes.js';
 
-export const fileFieldHooks = createHooks('file-field', ['upload', 'download', 'removed']);
+export const fileFieldHooks = createHooks('file-field', [
+  'upload',
+  'download',
+  'removed-files',
+  'removed-label',
+  'removed',
+]);
 
 const hooks = fileFieldHooks;
 
@@ -49,7 +55,10 @@ export function renderFileFieldActions(
   );
 }
 
-/** The committed files an edit removed, each with a button that puts it back. */
+/**
+ * The committed files an edit removed, in a titled group below the held files, each with a button
+ * that puts it back. Without removed files it renders nothing.
+ */
 export function RemovedFiles({
   removed,
   isDisabled,
@@ -60,15 +69,25 @@ export function RemovedFiles({
   isDisabled: boolean;
   onRestore: (item: FileFieldItem) => void;
 }) {
-  return removed.map((item) => (
-    <FieldPreviousValue
-      key={toKeyIdentity(item.id)}
-      className={hooks.slotClass('removed')}
-      restoreLabel={item.name}
-      isDisabled={isDisabled}
-      onRestore={() => onRestore(item)}
-    >
-      {item.name}
-    </FieldPreviousValue>
-  ));
+  const strings = useUiStrings();
+  const labelId = useId();
+  if (removed.length === 0) return null;
+  return (
+    <div {...hooks.slot('removed-files')} role="group" aria-labelledby={labelId}>
+      <span {...hooks.slot('removed-label')} id={labelId}>
+        {strings.removedFiles}
+      </span>
+      {removed.map((item) => (
+        <FieldPreviousValue
+          key={toKeyIdentity(item.id)}
+          className={hooks.slotClass('removed')}
+          restoreLabel={item.name}
+          isDisabled={isDisabled}
+          onRestore={() => onRestore(item)}
+        >
+          {item.name}
+        </FieldPreviousValue>
+      ))}
+    </div>
+  );
 }

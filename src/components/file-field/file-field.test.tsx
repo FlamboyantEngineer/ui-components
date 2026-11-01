@@ -303,7 +303,15 @@ describe('FileField', () => {
     const removed = container.querySelector('.ui-file-field__removed');
     expect(removed).toHaveClass('ui-field-previous-value');
     expect(removed).toHaveTextContent('Harbour.png');
-    const restore = screen.getByRole('button', { name: 'Restore Harbour.png' });
+    const group = screen.getByRole('group', { name: 'Removed files' });
+    expect(group).toHaveClass('ui-file-field__removed-files');
+    expect(group.querySelector('.ui-file-field__removed-label')).toHaveTextContent('Removed files');
+    expect(group).toContainElement(removed as HTMLElement);
+    expect(group.compareDocumentPosition(rows(container).at(-1) as Node)).toBe(
+      Node.DOCUMENT_POSITION_PRECEDING,
+    );
+    expectHooksMatchSpec(container, 'FILE-FIELD');
+    const restore = within(group).getByRole('button', { name: 'Restore Harbour.png' });
     expect(restore).toBeDisabled();
     await user.click(screen.getByRole('button', { name: 'Remove Song.ogg' }));
     await user.click(screen.getByRole('button', { name: 'Restore Harbour.png' }));
@@ -312,6 +320,7 @@ describe('FileField', () => {
       expect.stringContaining('Harbour.png'),
     ]);
     expect(container.querySelector('.ui-file-field__removed')).toBeNull();
+    expect(screen.queryByRole('group', { name: 'Removed files' })).not.toBeInTheDocument();
     expectHooksMatchSpec(container, 'FILE-FIELD');
   });
 

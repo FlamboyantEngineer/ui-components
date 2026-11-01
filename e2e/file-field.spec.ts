@@ -9,6 +9,12 @@ function field(page: Page, name: string): Locator {
   return page.locator(`[data-lab-field="${name}"]`);
 }
 
+async function box(locator: Locator) {
+  const bounds = await locator.boundingBox();
+  if (!bounds) throw new Error('The element has no box.');
+  return bounds;
+}
+
 test.describe('File Field lab', () => {
   test('UIC-FILE-FIELD-1.1 UIC-FILE-FIELD-2.1 UIC-FILE-FIELD-3.2 draws the states with held, added and removed files', async ({
     page,
@@ -37,6 +43,40 @@ test.describe('File Field lab', () => {
       'data-validation',
       'pending',
     );
+    await lab.expectAccessible();
+  });
+
+  test('UIC-FILE-FIELD-3.2 lists removed files below the held files as chips the height of a file row', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('file-field');
+    for (const width of ['narrow', 'wide']) {
+      const removedField = field(page, `removed-${width}`);
+      const group = removedField.getByRole('group', { name: 'Removed files' });
+      const chips = group.locator('.ui-file-field__removed');
+      await expect(chips).toHaveCount(3);
+      const fileBox = await box(removedField.locator('.ui-file-upload__file').last());
+      const groupBox = await box(group);
+      const fieldBox = await box(removedField);
+      expect(groupBox.y).toBeGreaterThanOrEqual(fileBox.y + fileBox.height);
+      for (const chip of await chips.all()) {
+        const chipBox = await box(chip);
+        expect(Math.abs(chipBox.height - fileBox.height), width).toBeLessThanOrEqual(1);
+        expect(chipBox.x + chipBox.width).toBeLessThanOrEqual(fieldBox.x + fieldBox.width + 0.5);
+        // The struck name keeps its descenders: its box is no shorter than its text.
+        const name = chip.locator('del');
+        expect(await name.evaluate((node) => node.scrollHeight <= node.clientHeight), width).toBe(
+          true,
+        );
+      }
+      const long = chips.filter({ hasText: 'north pier' }).locator('del');
+      expect(await long.evaluate((node) => node.scrollWidth > node.clientWidth)).toBe(true);
+    }
+    const narrow = field(page, 'removed-narrow');
+    await narrow.getByRole('button', { name: 'Restore Notes.txt' }).click();
+    await expect(narrow.locator('.ui-file-upload__file')).toHaveCount(2);
+    await expect(narrow.locator('.ui-file-field__removed')).toHaveCount(2);
     await lab.expectAccessible();
   });
 

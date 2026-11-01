@@ -414,6 +414,7 @@
   "fileCountLimit": "{count, plural, one {One file} other {Up to # files}}",
   "addFile": "Add a file",
   "addFiles": "Add files",
+  "removedFiles": "Removed files",
   "problems": "Problems",
   "problemCount": "{errors, plural, =0 {{warnings, plural, =0 {No problems} one {# warning} other {# warnings}}} one {# error{warnings, plural, =0 {} one {, # warning} other {, # warnings}}} other {# errors{warnings, plural, =0 {} one {, # warning} other {, # warnings}}}}",
   "problemSeverityLead": "{severity, select, error {Error:} other {Warning:}}",

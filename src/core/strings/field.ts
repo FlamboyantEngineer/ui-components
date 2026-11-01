@@ -23,6 +23,8 @@ export interface FieldStrings {
   addFile: string;
   /** The command of a file field that takes several files. */
   addFiles: string;
+  /** Titles a file field's committed files that an edit removed. */
+  removedFiles: string;
   /** The default title of a problem list. */
   problems: string;
   /** Counts a problem list's problems by severity. */

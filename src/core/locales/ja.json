@@ -414,6 +414,7 @@
   "fileCountLimit": "{count, plural, =1 {ファイル 1 個} other {最大 # 個のファイル}}",
   "addFile": "ファイルを追加",
   "addFiles": "ファイルを追加",
+  "removedFiles": "削除したファイル",
   "problems": "問題",
   "problemCount": "{errors, plural, =0 {{warnings, plural, =0 {問題はありません} other {警告 # 件}}} other {エラー # 件{warnings, plural, =0 {} other {、警告 # 件}}}}",
   "problemSeverityLead": "{severity, select, error {エラー：} other {警告：}}",
