@@ -232,6 +232,10 @@ export function InPlaceRenameTree() {
         onRename={(entry, newName) =>
           setItems((current) => renamePlace(current, entry.id, newName))
         }
+        reorder={{
+          dragTrigger: 'handle',
+          onMove: (move) => setItems((current) => [...applyTreeMove(current, move)]),
+        }}
       />
     </div>
   );

@@ -35,6 +35,11 @@ export interface TreeReorderOptions<T> {
   /** Reports one move. The tree never reorders its own items: apply the move and render the result. */
   onMove: (move: TreeMove) => void;
   /**
+   * What starts a pointer drag: anywhere on the row (`row`, the default), or only its drag handle
+   * (`handle`), which leaves presses elsewhere in the row, such as in a field, to the row.
+   */
+  dragTrigger?: 'row' | 'handle' | undefined;
+  /**
    * Reports the moves of several selected rows dragged together, in the order they apply. Without
    * it, a drag of several rows reports nothing.
    */
@@ -59,6 +64,8 @@ export interface TreeReorder {
   isMovable: (key: Key) => boolean;
   /** The `aria-keyshortcuts` value of a movable row. */
   keyShortcuts: string;
+  /** Only a row's drag handle starts its pointer drag. */
+  isHandleDrag: boolean;
   /** Reports the move a chord makes; returns whether the chord belongs to reordering. */
   moveByKeyboard: (request: TreeKeyboardMove) => boolean;
 }
@@ -163,9 +170,11 @@ export function useTreeReorder<T extends TreeItemData>(
   const isMovable = useCallback((key: Key) => movable.has(key), [movable]);
   const hasReorder = source.reorder !== undefined;
   const keyShortcuts = source.reorder?.canMoveInto ? parentShortcuts : siblingShortcuts;
+  const isHandleDrag = source.reorder?.dragTrigger === 'handle';
   const reordering = useMemo(
-    () => (hasReorder ? { dragAndDrop, isMovable, keyShortcuts, moveByKeyboard } : null),
-    [hasReorder, dragAndDrop, isMovable, keyShortcuts, moveByKeyboard],
+    () =>
+      hasReorder ? { dragAndDrop, isMovable, keyShortcuts, isHandleDrag, moveByKeyboard } : null,
+    [hasReorder, dragAndDrop, isMovable, keyShortcuts, isHandleDrag, moveByKeyboard],
   );
   return { reordering, dragAndDrop };
 }

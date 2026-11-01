@@ -4,7 +4,14 @@
 // list in its stack layout, each row drawn with the list row's text.
 
 import { createDropIndicator } from '../../utils/create-drop-indicator.js';
-import { createContext, use, useMemo, type ReactElement, type ReactNode } from 'react';
+import {
+  createContext,
+  use,
+  useMemo,
+  type ComponentProps,
+  type ReactElement,
+  type ReactNode,
+} from 'react';
 import {
   Collection,
   GridList,
@@ -34,7 +41,7 @@ import {
   type CollectionDropTarget,
 } from '../../utils/use-reorder-drag-and-drop.js';
 import { Checkbox } from '../checkbox/checkbox.js';
-import { DragHandle } from '../drag-handle/drag-handle.js';
+import { armHandleDrag, DragHandle } from '../drag-handle/drag-handle.js';
 import { EmptyState } from '../empty-state/empty-state.js';
 import { ListRowContent, type ListRowContentProps, type ListRowTone } from './list-row.js';
 import { keepControlFocusReturn } from '../../utils/keep-control-focus-return.js';
@@ -54,6 +61,11 @@ export interface ListViewMove {
 export interface ListViewReorderOptions {
   /** Reports one move. The list never reorders its rows itself: apply the move and re-render. */
   onMove: (move: ListViewMove) => void;
+  /**
+   * What starts a pointer drag: anywhere on the row (`row`, the default), or only its drag handle
+   * (`handle`), which leaves presses elsewhere in the row, such as in a field, to the row.
+   */
+  dragTrigger?: 'row' | 'handle' | undefined;
 }
 
 /** Rows as children, or a function drawing a row or section from each of `items`. */
@@ -118,8 +130,13 @@ const viewHooks = createHooks('list-view', ['drop-indicator', 'loader']);
 const itemHooks = createHooks('list-view-item', ['drag-handle', 'checkbox', 'trailing']);
 const sectionHooks = createHooks('list-view-section', ['header']);
 
-/** Whether the list reorders now: its drag and drop hooks stay mounted, disabled, when it does not. */
-const ReorderingContext = createContext(false);
+/** What starts a row's pointer drag while the list reorders; `null` while it does not. */
+const ReorderingContext = createContext<'row' | 'handle' | null>(null);
+
+/** A row element without React Aria's `draggable`, so only its handle starts a pointer drag. */
+function renderHandleRow({ draggable: _draggable, ...props }: ComponentProps<'div'>) {
+  return renderTextKeyRow(props);
+}
 
 const defaultRowHeight = 48;
 
@@ -224,6 +241,8 @@ export function ListView<T extends object>({
       ref={listRef}
       onAction={onAction && ((key) => onAction(fromCollectionKey(key)))}
       dragAndDropHooks={dragAndDropHooks}
+      // With handle drags only a press on a row's handle makes that row draggable.
+      onPointerDownCapture={reorder?.dragTrigger === 'handle' ? armHandleDrag : undefined}
       renderEmptyState={emptyState}
       {...viewHooks.root({
         className,
@@ -236,7 +255,7 @@ export function ListView<T extends object>({
   );
   const layoutOptions = { rowHeight, headingHeight: rowHeight, loaderHeight: rowHeight };
   return (
-    <ReorderingContext value={reorder !== undefined}>
+    <ReorderingContext value={reorder ? (reorder.dragTrigger ?? 'row') : null}>
       {virtualized ? (
         <Virtualizer layout={ListLayout} layoutOptions={layoutOptions}>
           {list}
@@ -264,14 +283,15 @@ export function ListViewItem({
   className,
   ...rest
 }: ListViewItemProps) {
-  const isReordering = use(ReorderingContext);
+  const dragTrigger = use(ReorderingContext);
+  const isReordering = dragTrigger !== null;
   return (
     <GridListItem
       {...rest}
       id={toCollectionItemKey(id)}
       textValue={textValue ?? (typeof title === 'string' ? title : undefined)}
       {...itemHooks.root({ className, props: rest, data: { tone } })}
-      render={renderTextKeyRow}
+      render={dragTrigger === 'handle' ? renderHandleRow : renderTextKeyRow}
     >
       {({ selectionMode, selectionBehavior, allowsDragging }) => (
         <>

@@ -286,13 +286,15 @@ test('UIC-LIST-ROW-3.3 UIC-LIST-ROW-3.5 keeps the rows and selection when reorde
   await expect(banana).toHaveAttribute('data-lab-mark', '');
 });
 
-test('UIC-LIST-ROW-3.1 UIC-LIST-ROW-3.2 leaves the caret and arrow keys to fields in rows', async ({
+test('UIC-LIST-ROW-3.1 UIC-LIST-ROW-3.2 UIC-LIST-ROW-3.5 leaves the caret and arrow keys to fields in rows', async ({
   page,
   lab,
 }) => {
   await lab.open('list-row');
   const list = page.getByRole('grid', { name: 'Fruit notes' });
   const note = list.getByRole('textbox', { name: 'Note for Apple' });
+  // The rows drag by their handles only.
+  await expect(note.locator('xpath=ancestor::*[@role="row"][1]')).not.toHaveAttribute('draggable');
   await note.click();
   await page.keyboard.press('Home');
   await page.keyboard.type('b');

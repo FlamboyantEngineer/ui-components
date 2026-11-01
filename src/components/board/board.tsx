@@ -76,6 +76,11 @@ export interface BoardProps<T extends { id: Key }>
   renderCard: (item: T, state: BoardCardState) => ReactNode;
   /** Turns on card moves by drag and drop and Alt+Arrow keys, and reports each one. */
   onMove?: ((move: BoardMove) => void) | undefined;
+  /**
+   * What starts a card's pointer drag: anywhere on the card (`card`, the default), or only its drag
+   * handle (`handle`), which leaves presses elsewhere in the card, such as in a field, to the card.
+   */
+  dragTrigger?: 'card' | 'handle' | undefined;
   /** Turns on column moves by drag and drop and Alt+Arrow keys, and reports each one. */
   onColumnMove?: ((move: BoardColumnMove) => void) | undefined;
   /** Called with the key of the card the reader activates. */
@@ -231,6 +236,7 @@ export function Board<T extends { id: Key }>({
   getTextValue,
   renderCard,
   onMove,
+  dragTrigger = 'card',
   onColumnMove,
   onAction,
   renderColumnActions,
@@ -267,15 +273,8 @@ export function Board<T extends { id: Key }>({
   const onCardKeyDown = useCardKeys({ layout, onMove, focus });
   const keyShortcuts = onMove ? cardShortcuts : undefined;
   const options = {
-    onCardKeyDown,
-    renderCard,
-    getTextValue,
-    onAction,
-    onAddCard,
-    keyShortcuts,
-    virtualized,
-    drag,
-    reveals,
+    ...{ onCardKeyDown, renderCard, getTextValue, onAction, onAddCard, keyShortcuts },
+    ...{ virtualized, drag, isHandleDrag: dragTrigger === 'handle', reveals },
   };
   return (
     <div

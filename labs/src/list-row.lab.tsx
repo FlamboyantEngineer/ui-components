@@ -249,7 +249,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Fields in rows"
-      description="A text field and a number field in the rows keep their keys: the arrow keys, Home, End and typed letters move the caret or step the value, and only Tab and Escape leave for the list."
+      description="A text field and a number field in the rows keep their keys: the arrow keys, Home, End and typed letters move the caret or step the value, and only Tab and Escape leave for the list. The rows drag by their handles only, so a press in a field selects its text."
     >
       <div style={{ width: 420 }}>
         <FieldRowsCase />

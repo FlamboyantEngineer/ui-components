@@ -27,7 +27,7 @@ import {
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
-import { DragHandle } from '../drag-handle/drag-handle.js';
+import { armHandleDrag, DragHandle } from '../drag-handle/drag-handle.js';
 import { EmptyState } from '../empty-state/empty-state.js';
 import { boardHooks as hooks } from './board-hooks.js';
 import type { BoardCellAddress } from './board-moves.js';
@@ -60,6 +60,8 @@ export interface BoardCellOptions<T> {
   keyShortcuts: string | undefined;
   virtualized: boolean;
   drag: BoardCardDrag | null;
+  /** Only a card's drag handle starts its pointer drag. */
+  isHandleDrag: boolean;
   /** Where each virtualized cell registers its `BoardCardReveal` for focus after a move. */
   reveals: Set<BoardCardReveal>;
 }
@@ -215,11 +217,14 @@ function createCardRow(
   {
     keyShortcuts,
     onCardKeyDown,
-  }: Pick<BoardCellOptions<unknown>, 'keyShortcuts' | 'onCardKeyDown'>,
+    isHandleDrag,
+  }: Pick<BoardCellOptions<unknown>, 'keyShortcuts' | 'onCardKeyDown' | 'isHandleDrag'>,
 ) {
-  return (domProps: ComponentProps<'div'>) => (
+  return ({ draggable, ...domProps }: ComponentProps<'div'>) => (
     <div
       {...domProps}
+      // With handle drags the card is draggable only while its handle is pressed (armHandleDrag).
+      draggable={isHandleDrag ? undefined : draggable}
       aria-keyshortcuts={keyShortcuts}
       onKeyDownCapture={(event) => {
         if (isTextControlKey(event) || isNestedKey(event)) return;
@@ -277,6 +282,7 @@ function BoardCards<T extends { id: Key }>({
         })
       }
       dragAndDropHooks={dragAndDropHooks}
+      onPointerDownCapture={options.isHandleDrag ? armHandleDrag : undefined}
       renderEmptyState={isCollapsed ? undefined : renderEmptyState}
       {...hooks.slot('cards', { virtualized, reordering: drag !== null })}
     >
