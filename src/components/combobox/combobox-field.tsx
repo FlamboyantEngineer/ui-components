@@ -133,20 +133,23 @@ export function ComboboxField({
   const onChange = useInlineCompletion(completion, inputRef);
   return (
     <Group className={hooks.slotClass('field')}>
-      {chips === null ? null : (
-        <ComboboxChips {...chips} size={size === 'xs' ? 'sm' : size} isEditable={isEditable} />
-      )}
-      {variant === 'search' ? (
-        <Glyph icon={SearchGlyph} className={hooks.slotClass('search-icon')} />
-      ) : null}
-      <Input
-        ref={setRef}
-        className={hooks.slotClass('input')}
-        placeholder={placeholder}
-        aria-busy={isPending || undefined}
-        aria-autocomplete={completion ? 'both' : undefined}
-        onChange={onChange}
-      />
+      {/* Chips and the input wrap together, so the controls after them keep the trailing edge. */}
+      <span {...hooks.slot('entry')}>
+        {chips === null ? null : (
+          <ComboboxChips {...chips} size={size === 'xs' ? 'sm' : size} isEditable={isEditable} />
+        )}
+        {variant === 'search' ? (
+          <Glyph icon={SearchGlyph} className={hooks.slotClass('search-icon')} />
+        ) : null}
+        <Input
+          ref={setRef}
+          className={hooks.slotClass('input')}
+          placeholder={placeholder}
+          aria-busy={isPending || undefined}
+          aria-autocomplete={completion ? 'both' : undefined}
+          onChange={onChange}
+        />
+      </span>
       {isPending ? <span {...hooks.slot('spinner')} aria-hidden="true" /> : null}
       {isEditable ? <ClearButton inputRef={inputRef} /> : null}
       <AriaButton className={hooks.slotClass('button')}>
