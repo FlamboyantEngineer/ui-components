@@ -185,5 +185,4 @@ test('UIC-ZOOM-CONTROL-1.3 shows the zoom level helpers in a host-side snippet',
   await expect(call('findNextZoomLevel(defaultZoomLevels, 110, 1)')).toHaveText('125');
   await expect(call('findNextZoomLevel(defaultZoomLevels, 110, -1)')).toHaveText('100');
   await expect(call('findNextZoomLevel(defaultZoomLevels, 400, 1)')).toHaveText('undefined');
-
 });

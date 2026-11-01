@@ -129,18 +129,26 @@
   overflow: hidden;
 }
 
+/*
+ * One digit makes a circle as wide as it is tall; more digits widen it into a pill of the same
+ * height with the same padding, so a count is never squeezed or clipped.
+ */
 .ui-segmented-choice__count {
   position: relative;
   flex: none;
-  min-width: 16px;
-  padding: 0 5px;
+  box-sizing: border-box;
+  min-width: 1rem;
+  height: 1rem;
+  padding: 0 0.25rem;
   border-radius: var(--ref-radius-full);
   background: var(--ref-hover);
   color: var(--ref-muted);
   font-size: var(--ref-font-size-xs);
+  font-variant-numeric: tabular-nums;
   font-weight: var(--ref-font-weight-strong);
   line-height: 1rem;
   text-align: center;
+  white-space: nowrap;
 }
 .ui-segmented-choice__segment[data-selected] .ui-segmented-choice__count {
   background: var(--ref-canvas);
