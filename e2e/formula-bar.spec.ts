@@ -1,6 +1,6 @@
 import { toCollectionKey } from '../src/utils/to-collection-key.js';
 import type { Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { cellSelector, expect, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 function spreadsheet(page: Page) {
@@ -148,5 +148,32 @@ test.describe('Formula Bar lab', () => {
     await lab.open('formula-bar');
     await expect(page.getByRole('grid', { name: 'Fruit order' })).toBeVisible();
     await lab.expectAccessible();
+  });
+
+  test('UIC-FORMULA-BAR-3.4 drops the buttons and their room, and commits and cancels by key', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('formula-bar');
+    const withButtons = page.locator(
+      `${cellSelector('width=320px actions=buttons')} .ui-formula-bar`,
+    );
+    const keysOnly = page.locator(
+      `${cellSelector('width=320px actions=keys only')} .ui-formula-bar`,
+    );
+    await expect(withButtons.locator('.ui-formula-bar__confirm')).toBeVisible();
+    await expect(keysOnly.locator('button')).toHaveCount(0);
+    const editorWidth = async (bar: typeof keysOnly) =>
+      requireDefined(await bar.locator('.ui-formula-bar__editor').boundingBox()).width;
+    // The editor takes the room the buttons left.
+    expect(await editorWidth(keysOnly)).toBeGreaterThan((await editorWidth(withButtons)) + 40);
+    const content = keysOnly.getByRole('textbox', { name: 'Cell content' });
+    await expect(content).toHaveAccessibleDescription(/Enter confirms, Escape cancels\./);
+    await content.click();
+    await page.keyboard.press('End');
+    await page.keyboard.type('+1');
+    await expect(keysOnly).toHaveAttribute('data-dirty', 'true');
+    await page.keyboard.press('Escape');
+    await expect(keysOnly).not.toHaveAttribute('data-dirty');
   });
 });

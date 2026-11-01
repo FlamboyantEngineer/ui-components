@@ -598,6 +598,7 @@
   "formulaCellContent": "Cell content",
   "formulaInvalidReference": "No cell named {text}",
   "formulaResult": "Result",
+  "formulaKeysHint": "Enter confirms, Escape cancels.",
   "relationItems": "Items",
   "related": "Related",
   "relationCount": "{count, plural, =0 {No relations} one {# relation} other {# relations}}",
