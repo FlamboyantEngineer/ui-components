@@ -13,7 +13,7 @@ import {
 import { ChatMessage } from '../../src/components/chat-transcript/chat-transcript.js';
 import { Cluster, Stack } from '../../src/components/layout/layout.js';
 import { requireDefined } from './require-defined.js';
-import { tripSources } from './chat-parts-samples.js';
+import { bookingCall, tripSources } from './chat-parts-samples.js';
 
 /** A reply after one event of its stream. */
 export type ReplyFrame = Pick<ChatMessageData, 'parts' | 'status' | 'statusText'>;
@@ -25,6 +25,8 @@ interface ReplyStreamProps {
   demo: string;
   /** The reply's message id. */
   messageId: string;
+  /** Decides a tool call that waits for approval; shows Approve and Deny. */
+  onDecide?: ((callId: string) => void) | undefined;
 }
 
 /** One tick of Play, in milliseconds. */
@@ -100,7 +102,7 @@ const answerFrames: ReplyFrame[] = [
  * A reply streamed one event per press of Next (or per tick of Play). Reset starts a new run, which
  * forgets the reader's open and closed choices of the last one.
  */
-export function ReplyStream({ frames, demo, messageId }: ReplyStreamProps) {
+export function ReplyStream({ frames, demo, messageId, onDecide }: ReplyStreamProps) {
   const [event, setEvent] = useState(0);
   const [run, setRun] = useState(0);
   const [wantsPlay, setPlaying] = useState(false);
@@ -141,7 +143,14 @@ export function ReplyStream({ frames, demo, messageId }: ReplyStreamProps) {
         author={{ name: 'Trip planner', colorKey: 'planner' }}
         status={frame.status}
       >
-        <ChatParts key={run} parts={frame.parts} messageId={messageId} isStreaming={isStreaming} />
+        <ChatParts
+          key={run}
+          parts={frame.parts}
+          messageId={messageId}
+          isStreaming={isStreaming}
+          onApprove={onDecide}
+          onDeny={onDecide}
+        />
       </ChatMessage>
       <ChatStatusLine text={frame.statusText ?? ''} isRunning={isStreaming} />
     </Stack>
@@ -151,4 +160,40 @@ export function ReplyStream({ frames, demo, messageId }: ReplyStreamProps) {
 /** The answer, streamed one event at a time. */
 export function StreamedAnswer() {
   return <ReplyStream frames={answerFrames} demo="stream" messageId="stream-reply" />;
+}
+
+const meanwhileWords =
+  'While the booking waits, here is the plan: arrive at 10:50, drop the bags and walk to the river.'.split(
+    ' ',
+  );
+
+const meanwhileAt = (count: number): ChatPart => ({
+  type: 'text',
+  id: 'meanwhile',
+  text: meanwhileWords.slice(0, count).join(' '),
+  status: 'streaming',
+});
+
+/** A booking that waits for approval, then text streamed after it. */
+const approvalFrames: ReplyFrame[] = [
+  { parts: [bookingCall], status: 'streaming', statusText: 'Waiting for approval…' },
+  ...[5, 11, 99].map(
+    (count): ReplyFrame => ({
+      parts: [bookingCall, meanwhileAt(count)],
+      status: 'streaming',
+      statusText: 'Writing the plan…',
+    }),
+  ),
+];
+
+/** A tool call waiting for approval while text streams after it, which keeps its Deny form. */
+export function ApprovalStream() {
+  return (
+    <ReplyStream
+      frames={approvalFrames}
+      demo="approval-stream"
+      messageId="approval-stream"
+      onDecide={() => undefined}
+    />
+  );
 }

@@ -75,7 +75,7 @@ Verification: `src/components/chat-parts/chat-part-view.test.tsx`
 
 ### UIC-CHAT-PARTS-3.2 - Tool calls
 
-A tool-call part shall render as a `ChatToolCall` with its data and the `row` variant ([UIC-CHAT-TOOL-CALL-1.8](CHAT-TOOL-CALL.md#uic-chat-tool-call-18---variant)), whether it sits in a group of steps or on its own, so every call of a reply takes the same styles. Approve, Deny and Always allow show while its approval waits only when `onApprove`, `onDeny` and `onAlwaysAllow` are given, and call them with the call's `id` (and the reader's reason, for `onDeny`).
+A tool-call part shall render as a `ChatToolCall` with its data and the `row` variant ([UIC-CHAT-TOOL-CALL-1.8](CHAT-TOOL-CALL.md#uic-chat-tool-call-18---variant)), always in a group of steps ([UIC-CHAT-PARTS-5.1](#uic-chat-parts-51---grouping)), so every call of a reply takes the same styles and keeps its state as the reply streams. Approve, Deny and Always allow show while its approval waits only when `onApprove`, `onDeny` and `onAlwaysAllow` are given, and call them with the call's `id` (and the reader's reason, for `onDeny`).
 
 Implementation: `src/components/chat-parts/chat-part-view.tsx`
 Verification: `src/components/chat-parts/chat-part-view.test.tsx`
@@ -142,7 +142,7 @@ Verification: `src/components/chat-parts/chat-part-view.test.tsx`
 
 ### UIC-CHAT-PARTS-5.1 - Grouping
 
-A run of consecutive reasoning and tool-call parts shall fold into one `ChatSteps` group, holding them in order, when it holds a tool call and has two or more parts, or one part that further parts follow. A single tool call that ends the message stays on its own; it moves into a group once a part follows it. A run without a tool call stays as reasoning parts on their own. Any other part, such as text the assistant writes between tool calls, ends the run, so it shows between two groups as a part of the message.
+A run of consecutive reasoning and tool-call parts shall fold into one `ChatSteps` group, holding them in order, when it holds a tool call, even a single tool call that ends the message. A call therefore keeps its place in the tree as further parts stream after it: its denial reason, focus, custom body state and the reader's open and closed choices survive the update. A run without a tool call stays as reasoning parts on their own. Any other part, such as text the assistant writes between tool calls, ends the run, so it shows between two groups as a part of the message.
 
 Implementation: `src/components/chat-parts/chat-parts-grouping.ts`, `src/components/chat-parts/chat-parts.tsx`
 Verification: `src/components/chat-parts/chat-parts-grouping.test.ts`, `src/components/chat-parts/chat-parts.test.tsx`

@@ -45,7 +45,13 @@ describe('Caller keys that name Object members', () => {
   it.each(inherited)(
     'UIC-CHAT-PARTS-3.3 draws the standard card for an unregistered tool named %s',
     (name) => {
-      const { container } = render(<ChatParts parts={[call(name)]} toolRenderers={{}} />);
+      const { container } = render(
+        <ChatParts
+          parts={[call(name)]}
+          toolRenderers={{}}
+          expandedParts={{ [`steps:call-${name}`]: true }}
+        />,
+      );
       expect(container.querySelector('.ui-chat-tool-call')).toHaveAttribute('id', `call-${name}`);
       expect(screen.getByRole('button', { name: new RegExp(`Run ${name}`) })).toBeInTheDocument();
     },
