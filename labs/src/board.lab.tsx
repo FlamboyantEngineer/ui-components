@@ -253,7 +253,7 @@ mountLab(
   <>
     <LabSection
       title="States"
-      description="Columns with cards and drag handles, empty cells, a column over its limit, and a collapsed column, whose long title is cut rather than making the header row taller."
+      description="Columns with cards and drag handles, empty cells, a column over its limit, and collapsed columns: one compressed to its icon, and one without an icon that keeps its chevron. A collapsed toggle shows its column's title and count in a tooltip."
     >
       <StateMatrix
         axes={{ state: Object.keys(states) as Array<keyof typeof states> }}
@@ -291,7 +291,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Moving cards and columns"
-      description="Drag cards within and between columns, or press Alt+Arrow keys on a card; drag a column header or press Alt+ArrowLeft and Alt+ArrowRight on its handle. Focus follows a moved item until you act elsewhere. Doing holds at most two cards. Every cell adds cards, and each column header ends with a menu that sorts or clears the column. Arrange turns card moves off and on; the cards stay as they are."
+      description="Drag cards within and between columns, or press Alt+Arrow keys on a card; drag a column header or press Alt+ArrowLeft and Alt+ArrowRight on its handle, or on the toggle of a collapsed column. Focus follows a moved item until you act elsewhere. Doing holds at most two cards. Every cell adds cards, and each column header ends with a menu that sorts or clears the column. Arrange turns card moves off and on; the cards stay as they are."
     >
       <MovingBoard />
     </LabSection>

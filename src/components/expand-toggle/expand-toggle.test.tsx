@@ -5,6 +5,7 @@ import { Disclosure, DisclosurePanel } from '../../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { CalendarGlyph } from '../../core/glyphs.js';
 import { ExpandToggle } from './expand-toggle.js';
 
 function glyph(element: Element) {
@@ -190,5 +191,31 @@ describe('ExpandToggle', () => {
     );
     await userEvent.click(toggle);
     expect(onExpandedChange).not.toHaveBeenCalled();
+  });
+
+  it('UIC-EXPAND-TOGGLE-1.9 draws an icon in place of the chevron in both states', async () => {
+    const user = userEvent.setup();
+    const onKeyDown = vi.fn();
+    render(
+      <ExpandToggle
+        label="Show fruit"
+        icon={CalendarGlyph}
+        tooltip="Fruit"
+        onKeyDown={onKeyDown}
+        render={(props) => <button {...props} data-mark="own" />}
+      />,
+    );
+    const toggle = screen.getByRole('button', { name: 'Show fruit' });
+    expect(glyph(toggle)).toBe('calendar');
+    expect(toggle.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+    expect(toggle).toHaveAttribute('data-mark', 'own');
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(glyph(toggle)).toBe('calendar');
+    await user.keyboard('a');
+    expect(onKeyDown).toHaveBeenCalled();
+    await user.tab({ shift: true });
+    await user.tab();
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('Fruit');
   });
 });

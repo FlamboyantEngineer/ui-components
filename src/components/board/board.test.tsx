@@ -635,9 +635,12 @@ describe('Board', () => {
     expect(container.querySelector('.ui-board__column')).not.toHaveAttribute('data-collapsed');
   });
 
-  it('UIC-BOARD-1.9 keeps the actions of a collapsed column', () => {
+  it('UIC-BOARD-1.4 UIC-BOARD-1.9 drops the actions of a collapsed column until it expands', async () => {
+    const user = userEvent.setup();
     render(<TaskBoard defaultCollapsedColumns={['doing']} renderColumnActions={sortAction} />);
-    expect(screen.getByRole('button', { name: 'Expand Doing' })).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Sort Doing' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Sort To do' })).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Expand Doing' }));
     expect(screen.getByRole('button', { name: 'Sort Doing' })).toBeVisible();
   });
 
