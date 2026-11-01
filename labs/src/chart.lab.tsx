@@ -69,6 +69,20 @@ const buildTimes: LineChartSeries[] = [
   },
 ];
 
+/** A sparse series beside a dense one: moving between them keeps the reading's x, not its position. */
+const samples: LineChartSeries[] = [
+  {
+    id: 'hourly',
+    label: 'Hourly reading',
+    points: [0, 6, 12, 18, 24].map((x) => ({ x, y: 10 + x / 4 })),
+  },
+  {
+    id: 'spot',
+    label: 'Spot check',
+    points: [0, 1, 2, 3, 24].map((x) => ({ x, y: 4 + x / 3 })),
+  },
+];
+
 const results: DonutChartSegment[] = [
   { id: 'passed', label: 'Passed', tone: 'success', value: 214 },
   { id: 'failed', label: 'Failed', tone: 'danger', value: 6 },
@@ -169,6 +183,11 @@ function ControlledChart() {
   );
 }
 
+const typedSeries: BarChartSeries[] = [
+  { id: 1, label: 'Numeric series', values: [2, 3] },
+  { id: '1', label: 'Text series', values: [4, 5] },
+];
+
 function TypedKeys() {
   const [isReversed, setReversed] = useState(false);
   const [hidden, setHidden] = useState<Set<Key>>(new Set());
@@ -197,6 +216,15 @@ function TypedKeys() {
           gridLength={30}
         />
       </svg>
+      <div style={box(320)}>
+        <BarChart
+          label="Typed series"
+          categories={['First', 'Second']}
+          series={isReversed ? [...typedSeries].reverse() : typedSeries}
+          height={140}
+          showLegend={false}
+        />
+      </div>
       <output data-lab-output="typed-hidden">
         {[...hidden].map((key) => `${typeof key} ${key}`).join(', ') || 'none'}
       </output>
@@ -208,7 +236,7 @@ mountLab(
   <>
     <LabSection
       title="Typed identities"
-      description="Numeric and text series IDs and tick values with the same spelling remain distinct when reordered."
+      description="Numeric and text series IDs and tick values with the same spelling remain distinct when reordered. A focused or hovered bar keeps its series through the reorder, though its colour slot follows the new position."
     >
       <TypedKeys />
     </LabSection>
@@ -249,7 +277,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Line charts"
-      description="A burndown over working days on a time axis (with a gap on a missing day and an ideal line), as lines and as areas, and build minutes on a numeric axis. Dates preserve explicit offsets and millisecond precision."
+      description="A burndown over working days on a time axis (with a gap on a missing day and an ideal line), as lines and as areas, and build minutes on a numeric axis. Dates preserve explicit offsets and millisecond precision. In the unevenly sampled readings, the up and down arrow keys move to the other series' reading nearest in hour, not in position."
     >
       <StateMatrix
         axes={{ variant: ['line', 'area'] }}
@@ -273,6 +301,15 @@ mountLab(
           minValue={0}
           maxValue={10}
           categoryLabel="Build"
+          formatOptions={{ maximumFractionDigits: 1 }}
+          height={180}
+        />
+      </div>
+      <div style={box(440)} data-lab-demo="uneven">
+        <LineChart
+          label="Readings by hour"
+          series={samples}
+          categoryLabel="Hour"
           formatOptions={{ maximumFractionDigits: 1 }}
           height={180}
         />

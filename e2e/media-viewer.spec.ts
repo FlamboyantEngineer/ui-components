@@ -5,6 +5,7 @@ async function settled(page: Page) {
   const overlay = page.locator('.ui-modal.ui-media-viewer');
   await expect(overlay).toBeVisible();
   await expect(overlay).not.toHaveAttribute('data-entering');
+  await expect(page.locator('.ui-media-viewer__stage')).toHaveAttribute('data-status', 'loaded');
 }
 
 function title(page: Page) {
@@ -160,5 +161,99 @@ test.describe('Media Viewer lab', () => {
     await page.locator('[data-lab-open="mixed-last"]').click();
     await settled(page);
     await lab.expectAccessible('.ui-modal');
+  });
+
+  test('UIC-MEDIA-VIEWER-1.3 requests only the thumbnails near the strip of a large set', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('media-viewer');
+    const requested = new Set<string>();
+    page.on('request', (request) => {
+      const photo = new URL(request.url()).searchParams.get('photo');
+      if (photo) requested.add(photo);
+    });
+    await page.locator('[data-lab-open="large"]').click();
+    await settled(page);
+    const strip = page.getByRole('group', { name: 'Thumbnails' });
+    await expect(strip.getByRole('button')).toHaveCount(100);
+    await expect.poll(() => requested.has('1')).toBe(true);
+    expect(requested.size).toBeLessThan(60);
+    expect(requested.has('100')).toBe(false);
+    // Moving to a far photo shows it, and scrolling the strip there loads its thumbnail.
+    const last = strip.getByRole('button', { name: 'Photo 100.svg' });
+    await last.scrollIntoViewIfNeeded();
+    await last.click();
+    await expect(title(page)).toHaveText('Photo 100.svg');
+    await expect(page.locator('.ui-media-viewer__stage')).toHaveAttribute('data-status', 'loaded');
+    await expect
+      .poll(() => last.locator('img').evaluate((image: HTMLImageElement) => image.naturalWidth))
+      .toBeGreaterThan(0);
+  });
+
+  test('UIC-MEDIA-VIEWER-2.4 shows a failed image with Retry and loads the URL the page refreshes', async ({
+    page,
+    lab,
+  }) => {
+    // Answer the broken URLs with bytes that are no image, which fail as a decode error without the
+    // console error a 404 logs.
+    await page.route(/expired-link\.svg|missing\.svg/, (route) =>
+      route.fulfill({ status: 200, contentType: 'image/svg+xml', body: 'not an image' }),
+    );
+    await lab.open('media-viewer');
+    await page.locator('[data-lab-open="failing"]').click();
+    const stage = page.locator('.ui-media-viewer__stage');
+    // The page answers the expired link's failure with a fresh URL, which loads.
+    await expect(stage).toHaveAttribute('data-status', 'loaded');
+    await expect(page.locator('[data-lab-output="image-errors"]')).toHaveText('Expired link.svg');
+    await expect(page.getByRole('button', { name: 'Rotate clockwise' })).toBeEnabled();
+    await page.getByRole('button', { name: 'Next' }).click();
+    await expect(stage).toHaveAttribute('data-status', 'failed');
+    const alert = page.getByRole('alert');
+    await expect(alert).toHaveText(/“Missing.svg” could not be loaded./);
+    await expect(page.getByRole('button', { name: 'Rotate clockwise' })).toBeDisabled();
+    await expect(page.getByRole('link', { name: /Download/ })).toHaveCount(0);
+    await alert.getByRole('button', { name: 'Retry' }).click();
+    await expect(stage).toHaveAttribute('data-status', 'failed');
+    await expect(page.locator('[data-lab-output="image-errors"]')).toHaveText(
+      'Expired link.svg, Missing.svg, Missing.svg',
+    );
+    await expect(page.getByRole('button', { name: 'Previous' })).toBeEnabled();
+    await lab.expectAccessible('.ui-modal');
+  });
+
+  test('UIC-MEDIA-VIEWER-3.1 keeps the caller rendering of each file apart', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('media-viewer');
+    await page.locator('[data-lab-open="drafts"]').click();
+    await settled(page);
+    const agenda = page.getByRole('textbox', { name: 'Draft for Agenda.txt' });
+    await agenda.fill('Changed agenda');
+    await page.getByRole('button', { name: 'Next' }).click();
+    await expect(page.getByRole('textbox', { name: 'Draft for Minutes.txt' })).toHaveValue(
+      'Notes for Minutes.txt',
+    );
+    // Page Down from a control inside the replaced rendering moves on and keeps focus in the viewer.
+    await page.getByRole('button', { name: 'Clear the draft for Minutes.txt' }).focus();
+    await page.keyboard.press('PageDown');
+    await expect(title(page)).toHaveText('Follow-ups.txt');
+    await expect(page.getByRole('group', { name: 'Follow-ups.txt, viewer' })).toBeFocused();
+  });
+
+  test('UIC-MEDIA-VIEWER-1.1 stays closed while its list empties and refills', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('media-viewer');
+    await page.locator('[data-lab-open="refreshing"]').click();
+    await settled(page);
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.ui-media-viewer')).toHaveCount(0);
+    await page.locator('[data-lab-refresh="refreshing"]').click();
+    await expect(page.locator('[data-lab-output="refreshing-count"]')).toHaveText('0');
+    await expect(page.locator('[data-lab-output="refreshing-count"]')).toHaveText('3');
+    await expect(page.locator('.ui-media-viewer')).toHaveCount(0);
   });
 });

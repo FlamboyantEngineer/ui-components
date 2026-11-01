@@ -155,10 +155,10 @@ Verification: `src/components/diagram-canvas/diagram-node.test.tsx`, `src/compon
 
 ### UIC-DIAGRAM-CANVAS-5.3 - Palette
 
-`palette` shall render in a `ui-diagram-canvas__palette` group named by the provider's `diagramPalette` string. Each `DiagramPaletteItem` (`ui-diagram-canvas__palette-item`, a button showing its `icon` and `label`) is disabled, with `data-disabled`, unless the canvas is in edit mode with `onNodeAdd`. Pressing it calls `onNodeAdd({ type, x, y })` with the middle of the view in diagram pixels; dragging it onto the viewport (which publishes `data-drop-target` while it would accept the drop) calls it with the point it is dropped on, both snapped to the grid.
+`palette` shall render in a `ui-diagram-canvas__palette` group named by the provider's `diagramPalette` string. Each `DiagramPaletteItem` (`ui-diagram-canvas__palette-item`, a button showing its `icon` and `label`) is disabled, with `data-disabled`, unless the canvas is in edit mode with `onNodeAdd`. Pressing it calls `onNodeAdd({ type, x, y })` with the middle of the view in diagram pixels; dragging it onto the viewport (which publishes `data-drop-target` while it would accept the drop) calls it with the point it is dropped on, both snapped to the grid. A drop reads its item's text before it adds: the point is taken under the drop as the view stood then, and once the text settles the current `onNodeAdd` is called exactly once, unless the canvas left edit mode, lost `onNodeAdd` or unmounted meanwhile (even if it came back), in which case, as for unreadable text, nothing is added.
 
 Implementation: `src/components/diagram-canvas/diagram-palette.tsx`, `src/components/diagram-canvas/diagram-canvas.tsx`
-Verification: `src/components/diagram-canvas/diagram-canvas.test.tsx`, `e2e/diagram-canvas.spec.ts`
+Verification: `src/components/diagram-canvas/diagram-canvas.test.tsx`, `e2e/diagram-canvas.spec.ts`, `src/components/diagram-canvas/diagram-palette.test.tsx`
 
 ## UIC-DIAGRAM-CANVAS-6 - Accessibility
 

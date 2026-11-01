@@ -89,9 +89,11 @@ Verification: `src/components/chart/bar-chart.test.tsx`, `src/components/chart/l
 
 ### UIC-CHART-4.3 - Keyboard
 
-The drawn values shall take one tab stop, on the first value or the last one focused. The left and right arrow keys move focus to the previous and next value of the same series (the up and down arrow keys for a horizontal bar chart, whose categories run down), the up and down arrow keys (left and right for a horizontal bar chart) move to the nearest value of the previous and next drawn series, and Home and End move to the first and last value of the series. A donut's slices form one series.
+The drawn values shall take one tab stop, on the first value or the last one focused. The left and right arrow keys move focus to the previous and next value of the same series (the up and down arrow keys for a horizontal bar chart, whose categories run down), the up and down arrow keys (left and right for a horizontal bar chart) move to the value of the previous and next drawn series nearest along the shared axis (a bar's category; a line point's read x, a number or a time, so unevenly sampled series and series over different ranges meet at the same x rather than at the same position), and Home and End move to the first and last value of the series. A donut's slices form one series.
 
 When two points in the target series are equally close, the first in input order wins.
+
+Each drawn value is identified by its series' typed `id` (numeric and text ids of one spelling stay apart) and its place along the series: a bar by its category, counting repeated category names in order, a line point by its read x, counting repeated coordinates in order, and a donut slice by its segment's `id` alone. The tab stop, focus, the active value and its tooltip stay on that value while series or segments reorder or values are added or removed elsewhere, while `data-series` keeps following the series' current position (its colour slot). When the value goes, the tab stop falls back to the first value and focus is not moved.
 
 Implementation: `src/components/chart/chart-points.tsx`
 Verification: `src/components/chart/chart-points.test.tsx`, `src/components/chart/bar-chart.test.tsx`, `src/components/chart/line-chart.test.tsx`, `src/components/chart/donut-chart.test.tsx`, `e2e/chart.spec.ts`

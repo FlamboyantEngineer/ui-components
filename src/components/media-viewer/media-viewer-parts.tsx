@@ -40,6 +40,9 @@ export const mediaViewerHooks = createHooks('media-viewer', [
   'canvas',
   'image',
   'content',
+  'loading',
+  'error',
+  'retry',
   'fallback',
   'fallback-icon',
   'counter',
@@ -61,6 +64,8 @@ export function isImageItem(item: MediaViewerItem): boolean {
 
 interface MediaHeaderActionsProps {
   item: MediaViewerItem;
+  /** The image loaded, so zooming and turning it mean something. */
+  isImageReady: boolean;
   position: number;
   count: number;
   zoom: number;
@@ -83,6 +88,7 @@ export function MediaHeaderActions(props: MediaHeaderActionsProps) {
         <>
           <ZoomControl
             className={hooks.slotClass('zoom')}
+            isDisabled={!props.isImageReady}
             value={zoom}
             onChange={props.onZoomChange}
             resetValue={100}
@@ -92,6 +98,7 @@ export function MediaHeaderActions(props: MediaHeaderActionsProps) {
             icon={RotateGlyph}
             label={strings.rotateClockwise}
             size="sm"
+            isDisabled={!props.isImageReady}
             onPress={props.onRotate}
           />
         </>
@@ -136,7 +143,14 @@ export function MediaThumbnails({
             onPress={() => onSelect(item.id)}
           >
             {url ? (
-              <img {...hooks.slot('thumbnail-image')} src={url} alt="" />
+              // Thumbnails out of the strip's view wait until it scrolls them near.
+              <img
+                {...hooks.slot('thumbnail-image')}
+                src={url}
+                alt=""
+                loading="lazy"
+                decoding="async"
+              />
             ) : (
               <Icon icon={getFileGlyph(item.type)} className={hooks.slotClass('thumbnail-icon')} />
             )}

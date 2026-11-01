@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type RefObject } from 'react';
 import { observeViewport } from '../../utils/observe-viewport.js';
+import { getElementByIdFrom } from '../../utils/owner-window.js';
 import { useStableArray } from '../../utils/use-stable-array.js';
 import { useTargetElement } from '../../utils/use-target-element.js';
 
@@ -15,15 +16,15 @@ export interface ScrollSpyOptions {
 /**
  * The current section of a scrolled viewport: the last of `ids` whose top has reached `offset` below
  * the viewport's top, the first before any has, and the last once the viewport is scrolled to its
- * end. Ids without an element are skipped.
+ * end. Ids are looked up in the viewport's tree (its shadow root, else its document); ids without an
+ * element there are skipped.
  */
 export function resolveScrollSpy(
   viewport: HTMLElement,
   { ids, offset = 0 }: ScrollSpyOptions,
 ): string | undefined {
-  const document = viewport.ownerDocument;
   const sections = ids.flatMap((id) => {
-    const element = document.getElementById(id);
+    const element = getElementByIdFrom(viewport, id);
     return element ? [{ id, element }] : [];
   });
   const atEnd = viewport.scrollHeight - viewport.clientHeight - viewport.scrollTop <= 1;

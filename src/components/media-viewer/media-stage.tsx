@@ -15,6 +15,8 @@ import {
   mediaViewerHooks as hooks,
   type MediaViewerItem,
 } from './media-viewer-parts.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import type { MediaImageRequest } from './use-image-request.js';
 
 interface MediaStageProps {
   item: MediaViewerItem;
@@ -29,11 +31,8 @@ interface MediaStageProps {
   /** Several items: the stage shows the previous and next buttons. */
   hasSiblings: boolean;
   renderItem: ((item: MediaViewerItem) => ReactNode) | undefined;
-}
-
-/** The image's own size, once it has loaded, for the image it was read from. */
-interface NaturalSize extends MediaSize {
-  src: string;
+  /** The shown image's request. */
+  request: MediaImageRequest;
 }
 
 /** The image, fitted to the viewport, zoomed and turned, in a canvas the viewport scrolls. */
@@ -42,10 +41,11 @@ function MediaImage({
   zoom,
   rotation,
   stage,
-}: Pick<MediaStageProps, 'item' | 'zoom' | 'rotation'> & { stage: MediaSize | null }) {
-  const [natural, setNatural] = useState<NaturalSize | null>(null);
-  const loaded = natural?.src === item.src ? natural : null;
-  const layout = loaded && stage ? layoutMedia({ natural: loaded, stage, zoom, rotation }) : null;
+  request,
+}: Pick<MediaStageProps, 'item' | 'zoom' | 'rotation' | 'request'> & { stage: MediaSize | null }) {
+  const [natural, setNatural] = useState<MediaSize | null>(null);
+  const layout = natural && stage ? layoutMedia({ natural, stage, zoom, rotation }) : null;
+  if (request.status === 'failed') return <MediaImageError item={item} onRetry={request.retry} />;
   const image = (
     <img
       {...hooks.slot('image')}
@@ -53,8 +53,15 @@ function MediaImage({
       alt={item.alt ?? item.name}
       onLoad={(event) => {
         const { naturalWidth: width, naturalHeight: height } = event.currentTarget;
-        setNatural({ src: item.src, width, height });
+        // A response that decodes to nothing is no image.
+        if (width === 0 && height === 0) {
+          request.settle(request.id, 'failed');
+          return;
+        }
+        setNatural({ width, height });
+        request.settle(request.id, 'loaded');
       }}
+      onError={() => request.settle(request.id, 'failed')}
       style={
         layout
           ? {
@@ -79,6 +86,30 @@ function MediaImage({
       }
     >
       {image}
+      {request.status === 'loading' ? <MediaImageLoading /> : null}
+    </div>
+  );
+}
+
+function MediaImageLoading() {
+  const strings = useUiStrings();
+  return (
+    <div {...hooks.slot('loading')} role="status">
+      {strings.loading}
+    </div>
+  );
+}
+
+/** What stands in for an image that failed to load: why, and a way to request it again. */
+function MediaImageError({ item, onRetry }: { item: MediaViewerItem; onRetry: () => void }) {
+  const strings = useUiStrings();
+  return (
+    <div {...hooks.slot('error')} role="alert">
+      <Icon icon={getFileGlyph(item.type)} className={hooks.slotClass('fallback-icon')} />
+      {strings.imageLoadFailed(item.name)}
+      <Button className={hooks.slotClass('retry')} size="sm" onPress={onRetry}>
+        {strings.retry}
+      </Button>
     </div>
   );
 }
@@ -99,14 +130,14 @@ function MediaFallback({ item }: { item: MediaViewerItem }) {
  * file, or a fallback) and the next button.
  */
 export function MediaStage(props: MediaStageProps) {
-  const { item, viewportRef, hasSiblings } = props;
+  const { item, viewportRef, hasSiblings, request } = props;
   const strings = useUiStrings();
   const isRtl = useLocale().direction === 'rtl';
   const stage = useElementSize(viewportRef, { box: 'client' });
   const isImage = isImageItem(item);
   const custom = isImage ? null : props.renderItem?.(item);
   return (
-    <div {...hooks.slot('stage', { kind: isImage ? 'image' : 'file' })}>
+    <div {...hooks.slot('stage', { kind: isImage ? 'image' : 'file', status: request.status })}>
       {hasSiblings ? (
         <Button
           className={hooks.slotClass('previous')}
@@ -125,11 +156,22 @@ export function MediaStage(props: MediaStageProps) {
         tabIndex={0}
       >
         {isImage ? (
-          <MediaImage item={item} zoom={props.zoom} rotation={props.rotation} stage={stage} />
+          // One image per request, so a retry or a new URL starts from nothing.
+          <MediaImage
+            key={request.id}
+            item={item}
+            zoom={props.zoom}
+            rotation={props.rotation}
+            stage={stage}
+            request={request}
+          />
         ) : isEmptyNode(custom) ? (
           <MediaFallback item={item} />
         ) : (
-          <div {...hooks.slot('content')}>{custom}</div>
+          // One boundary per item, so the caller's state for one file never carries to another.
+          <div key={toKeyIdentity(item.id)} {...hooks.slot('content')}>
+            {custom}
+          </div>
         )}
       </div>
       {hasSiblings ? (

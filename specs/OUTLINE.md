@@ -43,7 +43,7 @@ Verification: `src/components/outline/outline.test.tsx`, `e2e/outline.spec.ts`
 
 ### UIC-OUTLINE-2.2 - Scroll tracking
 
-When `currentKey` is not given, `viewportRef`, the scrolling element that holds the headings, shall make the current heading the one `useScrollSpy` reports over every heading's id: the last whose top has reached `trackingOffset` pixels (0 by default) below the viewport's top, the first before any has, and the last at the end. It updates as the viewport scrolls or resizes, as content inside it changes and as fonts load, and follows the ref to a viewport that mounts after the outline or replaces the previous one. Without either prop no heading is current.
+When `currentKey` is not given, `viewportRef`, the scrolling element that holds the headings, shall make the current heading the one `useScrollSpy` reports over every heading's id: the last whose top has reached `trackingOffset` pixels (0 by default) below the viewport's top, the first before any has, and the last at the end. It updates as the viewport scrolls or resizes, as content inside it changes and as fonts load, and follows the ref to a viewport that mounts after the outline or replaces the previous one. Without either prop no heading is current. Headings are looked up in the viewport's tree: its shadow root when it sits in one, else its document, so an outline embedded in a web component follows its own headings and never a heading with the same id outside that root.
 
 Implementation: `src/components/outline/outline.tsx`, `src/components/scroll-region/use-scroll-spy.ts`
 Verification: `src/components/outline/outline.test.tsx`, `e2e/outline.spec.ts`
@@ -52,7 +52,7 @@ Verification: `src/components/outline/outline.test.tsx`, `e2e/outline.spec.ts`
 
 ### UIC-OUTLINE-3.1 - Following an entry
 
-Following an entry's link with a plain primary click or Enter shall call `onNavigate(id)`, then scroll the document element with that id into view (`scrollIntoView({ block: 'start' })`) and, when the element has a `tabindex`, move focus to it without scrolling again, instead of the browser's fragment navigation; the address does not change. A click with a modifier key or another button keeps the browser's behaviour (a new tab, a copied address), as does a click a handler already prevented.
+Following an entry's link with a plain primary click or Enter shall call `onNavigate(id)`, then scroll the element with that id into view, looked up in the tree of `viewportRef`'s element or, without one, of the outline's link (its shadow root, else its document), (`scrollIntoView({ block: 'start' })`) and, when the element has a `tabindex`, move focus to it without scrolling again, instead of the browser's fragment navigation; the address does not change. A click with a modifier key or another button keeps the browser's behaviour (a new tab, a copied address), as does a click a handler already prevented.
 
 Implementation: `src/components/outline/outline.tsx`
 Verification: `src/components/outline/outline.test.tsx`, `e2e/outline.spec.ts`

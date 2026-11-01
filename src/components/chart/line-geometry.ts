@@ -1,6 +1,8 @@
 // The lines, areas and points of a line chart and its scales (specs/CHART.md).
 
 import { requireDefined } from '../../utils/require-defined.js';
+import type { Key } from '../../core/props.js';
+import { createPlaceIdentities, toValueIdentity } from './chart-identity.js';
 import { summarizeNumbers } from '../../utils/summarize-numbers.js';
 import { clamp } from '../../utils/clamp.js';
 import { createLinearScale, type LinearScale, type ScaleTick } from '../../utils/linear-scale.js';
@@ -24,6 +26,8 @@ export interface LineChartPoint {
 /** A drawn series: its position among the chart's series and its points. */
 interface LineGeometrySeries {
   series: number;
+  /** The series' id, which keys its line and points across reorders. */
+  id: Key;
   points: readonly LineChartPoint[];
 }
 
@@ -48,6 +52,8 @@ interface LinePoint {
   series: number;
   /** Its position among its series' drawn values, in x order. */
   index: number;
+  /** Its read x, a number or a time, which keyboard moves between series compare. */
+  position: number;
   at: LineChartX;
   value: number;
   x: number;
@@ -56,6 +62,8 @@ interface LinePoint {
 
 /** One series' line through its values, the area under it and its points. */
 interface LinePath {
+  /** The series' id identity, stable while the series moves. */
+  key: string;
   series: number;
   line: string;
   area: string;
@@ -97,7 +105,7 @@ function toPaths(runs: readonly LinePoint[][], baseline: number) {
 
 /** One series laid out: its readable points in x order, split into runs at missing values. */
 function layOutSeries(
-  { series, points }: LineGeometrySeries,
+  { series, id, points }: LineGeometrySeries,
   scales: { xAxis: LineXAxis; y: (value: number) => number },
 ): { runs: LinePoint[][]; points: LinePoint[] } {
   // Each x is read once before the sort, not again in the comparator.
@@ -107,15 +115,18 @@ function layOutSeries(
     .sort((a, b) => a.at - b.at);
   const runs: LinePoint[][] = [[]];
   const drawn: LinePoint[] = [];
-  for (const { point } of ordered) {
+  const placeOf = createPlaceIdentities();
+  for (const { point, at } of ordered) {
+    const place = placeOf(at);
     if (!Number.isFinite(point.y)) {
       runs.push([]);
       continue;
     }
     const laid = {
-      key: `${series}:${drawn.length}`,
+      key: toValueIdentity(id, place),
       series,
       index: drawn.length,
+      position: at,
       at: point.x,
       value: point.y,
       x: roundCoordinate(scales.xAxis.map(point.x)),
@@ -164,7 +175,12 @@ export function resolveLineGeometry(
   const baseline = roundCoordinate(values.map(clamp(0, low, high)));
   const lines = input.series.map((entry) => {
     const { runs, points } = layOutSeries(entry, { xAxis, y: values.map });
-    return { series: entry.series, ...toPaths(runs, baseline), points };
+    return {
+      key: toValueIdentity(entry.id),
+      series: entry.series,
+      ...toPaths(runs, baseline),
+      points,
+    };
   });
   return { lines, xAxis, yTicks: values.ticks(), plot };
 }

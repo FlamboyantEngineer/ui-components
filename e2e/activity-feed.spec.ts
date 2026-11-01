@@ -78,6 +78,22 @@ test.describe('Activity Feed lab', () => {
     ]);
   });
 
+  test('UIC-ACTIVITY-FEED-1.3 keeps a typed reply as events arrive and leave', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('activity-feed');
+    const demo = page.locator('[data-lab-demo="live"]');
+    const reply = demo.getByRole('textbox', { name: 'Reply' });
+    await reply.fill('Keep my draft');
+    await demo.getByRole('button', { name: 'Add an event' }).click();
+    await demo.getByRole('button', { name: 'Add an event' }).click();
+    await expect(demo.locator('.ui-activity-feed__entry')).toHaveCount(4);
+    await demo.getByRole('button', { name: 'Remove the newest' }).click();
+    await expect(demo.locator('.ui-activity-feed__entry')).toHaveCount(3);
+    await expect(reply).toHaveValue('Keep my draft');
+  });
+
   test('UIC-ACTIVITY-FEED-3.1 names each list and passes axe', async ({ page, lab }) => {
     await lab.open('activity-feed');
     await expect(page.getByRole('list', { name: 'Activity, entries, day' })).toBeVisible();

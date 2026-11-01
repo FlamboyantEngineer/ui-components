@@ -1,11 +1,15 @@
 // The slices of a donut chart, from its values and size (specs/CHART.md).
 
 import { roundCoordinate } from './chart-layout.js';
+import type { Key } from '../../core/props.js';
+import { toValueIdentity } from './chart-identity.js';
 import { resolveAmountShares } from '../../utils/resolve-amount-shares.js';
 
 /** A drawn segment: its position among the chart's segments and its value. */
 interface DonutGeometryValue {
   series: number;
+  /** The segment's id, which keys its slice across reorders. */
+  id: Key;
   value: number;
 }
 
@@ -75,13 +79,13 @@ export function resolveDonutGeometry({ values, diameter }: DonutGeometryInput): 
   const slices: DonutSlice[] = [];
   let turn = 0;
   for (const {
-    item: { series },
+    item: { series, id },
     value,
     share,
   } of amounts) {
     if (value === 0) continue;
     slices.push({
-      key: String(series),
+      key: toValueIdentity(id),
       series,
       index: slices.length,
       value,

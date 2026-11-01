@@ -1,6 +1,15 @@
 'use client';
 
-import { createContext, useContext, useMemo, type HTMLAttributes, type RefObject } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  type HTMLAttributes,
+  type RefObject,
+} from 'react';
+import { useLatest } from '../../utils/use-latest.js';
 import { useDrag, useDrop } from '../../primitives/index.js';
 import type { BaseProps } from '../../core/props.js';
 import { mergeProps } from '../../utils/merge-props.js';
@@ -23,6 +32,10 @@ export interface DiagramPaletteItemProps extends BaseProps {
 export interface DiagramPalette {
   /** Asks for a node of `type` at a point of the viewport element, by default its centre. */
   add: (type: string, at?: DiagramPoint) => void;
+  /** The grid point of the diagram under a point of the viewport element, as it is shown now. */
+  place: (at: DiagramPoint) => DiagramPoint;
+  /** Asks for a node of `type` at a grid point of the diagram, while new nodes are allowed. */
+  request: (type: string, at: DiagramPoint) => void;
   isEnabled: boolean;
 }
 
@@ -43,17 +56,23 @@ export function useCanvasPalette({
 }): DiagramPalette {
   const { viewport, size } = controller.view;
   const { isEditing } = controller;
-  return useMemo(
-    () => ({
-      isEnabled: isEditing && onNodeAdd !== undefined,
-      add: (type, at) => {
-        const centre = { x: (size?.width ?? 0) / 2, y: (size?.height ?? 0) / 2 };
-        const point = toDiagramPoint(viewport, at ?? centre);
-        onNodeAdd?.({ type, x: snapToGrid(point.x, gridSize), y: snapToGrid(point.y, gridSize) });
-      },
-    }),
-    [isEditing, onNodeAdd, viewport, size, gridSize],
-  );
+  return useMemo(() => {
+    const isEnabled = isEditing && onNodeAdd !== undefined;
+    const place = (at: DiagramPoint) => {
+      const point = toDiagramPoint(viewport, at);
+      return { x: snapToGrid(point.x, gridSize), y: snapToGrid(point.y, gridSize) };
+    };
+    const request = (type: string, { x, y }: DiagramPoint) => {
+      if (isEnabled) onNodeAdd?.({ type, x, y });
+    };
+    return {
+      isEnabled,
+      place,
+      request,
+      add: (type, at) =>
+        request(type, place(at ?? { x: (size?.width ?? 0) / 2, y: (size?.height ?? 0) / 2 })),
+    };
+  }, [isEditing, onNodeAdd, viewport, size, gridSize]);
 }
 
 /** Makes the viewport element accept palette items dropped on it. */
@@ -64,6 +83,19 @@ export function usePaletteDrop({
   ref: RefObject<HTMLElement | null>;
   palette: DiagramPalette;
 }): { dropProps: HTMLAttributes<HTMLElement>; isDropTarget: boolean } {
+  // Each drop reads its item's text before it adds; a drop still reading when new nodes stop being
+  // allowed, or the canvas goes, belongs to a session that has ended and adds nothing.
+  const session = useRef(0);
+  const latest = useLatest(palette);
+  useEffect(() => {
+    if (!palette.isEnabled) session.current += 1;
+  }, [palette.isEnabled]);
+  useEffect(() => {
+    const sessions = session;
+    return () => {
+      sessions.current += 1;
+    };
+  }, []);
   const { dropProps, isDropTarget } = useDrop({
     ref,
     isDisabled: !palette.isEnabled,
@@ -71,10 +103,14 @@ export function usePaletteDrop({
     onDrop: (event) => {
       for (const item of event.items) {
         if (item.kind === 'text' && item.types.has(paletteDragType)) {
-          const point = { x: event.x, y: event.y };
+          // The grid point under the drop as the view stood then; the current callback asks.
+          const at = palette.place({ x: event.x, y: event.y });
+          const ticket = session.current;
           // A drop whose text cannot be read adds nothing.
           void item.getText(paletteDragType).then(
-            (type) => palette.add(type, point),
+            (type) => {
+              if (session.current === ticket) latest.current.request(type, at);
+            },
             () => undefined,
           );
           return;

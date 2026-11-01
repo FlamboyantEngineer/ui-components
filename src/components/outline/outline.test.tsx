@@ -286,6 +286,55 @@ describe('Outline', () => {
     expect(onNavigate).toHaveBeenCalledTimes(3);
   });
 
+  it('UIC-OUTLINE-2.2 UIC-OUTLINE-3.1 finds headings in the shadow root that holds them', async () => {
+    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+      callback(0);
+      return 0;
+    });
+    const decoy = document.body.appendChild(document.createElement('h2'));
+    decoy.id = 'scope';
+    decoy.tabIndex = -1;
+    const host = document.body.appendChild(document.createElement('div'));
+    const container = host
+      .attachShadow({ mode: 'open' })
+      .appendChild(document.createElement('div'));
+    function Embedded({ hasViewport }: { hasViewport: boolean }) {
+      const ref = useRef<HTMLDivElement>(null);
+      return (
+        <>
+          <Outline headings={headings.slice(0, 3)} viewportRef={hasViewport ? ref : undefined} />
+          <div ref={ref} role="region" aria-label="Viewport">
+            <h2 id="intro">Introduction</h2>
+            <h2 id="terms" tabIndex={-1}>
+              Terms
+            </h2>
+          </div>
+        </>
+      );
+    }
+    try {
+      const { rerender } = render(<Embedded hasViewport />, { container });
+      const view = within(container);
+      expect(view.getByRole('link', { name: 'Terms' })).toHaveAttribute('aria-current', 'location');
+      const terms = view.getByRole('heading', { name: 'Terms' });
+      await userEvent.click(view.getByRole('link', { name: 'Terms' }));
+      expect(scrollIntoView.mock.contexts).toEqual([terms]);
+      expect(terms.getRootNode()).toHaveProperty('activeElement', terms);
+      rerender(<Embedded hasViewport={false} />);
+      await userEvent.click(view.getByRole('link', { name: 'Introduction' }));
+      expect(scrollIntoView.mock.contexts).toEqual([
+        terms,
+        view.getByRole('heading', { name: 'Introduction' }),
+      ]);
+      await userEvent.click(view.getByRole('link', { name: 'Scope' }));
+      expect(scrollIntoView).toHaveBeenCalledTimes(2);
+      expect(decoy).not.toHaveFocus();
+    } finally {
+      decoy.remove();
+      host.remove();
+    }
+  });
+
   it('UIC-OUTLINE-4.1 UIC-OUTLINE-5.1 collapses and expands the entries under a heading', async () => {
     const { container } = render(<Outline headings={headings} />);
     const introToggle = toggle('Introduction');

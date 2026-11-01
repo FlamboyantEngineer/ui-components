@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { toValueIdentity } from './chart-identity.js';
 import {
   createLineValueScale,
   resolveLineGeometry,
@@ -18,7 +19,11 @@ describe('resolveLineGeometry', () => {
     const input = {
       ...base,
       series: [
-        { series: 0, points: Array.from({ length: 200_000 }, (_, x) => ({ x, y: x - 100_000 })) },
+        {
+          series: 0,
+          id: 0,
+          points: Array.from({ length: 200_000 }, (_, x) => ({ x, y: x - 100_000 })),
+        },
       ],
     };
     const scale = createLineValueScale(input, { top: 10, bottom: 110, left: 10, right: 110 });
@@ -31,6 +36,7 @@ describe('resolveLineGeometry', () => {
       series: [
         {
           series: 0,
+          id: 0,
           points: [
             { x: 2, y: 10 },
             { x: 0, y: 0 },
@@ -44,9 +50,9 @@ describe('resolveLineGeometry', () => {
     expect(line?.line).toBe('M10,110L60,10L110,60');
     expect(line?.area).toBe('M10,110L60,10L110,60L110,110L10,110Z');
     expect(line?.points.map((point) => [point.key, point.at, point.value])).toEqual([
-      ['0:0', 0, 0],
-      ['0:1', 2, 10],
-      ['0:2', 4, 5],
+      [toValueIdentity(0, '[0,0]'), 0, 0],
+      [toValueIdentity(0, '[2,0]'), 2, 10],
+      [toValueIdentity(0, '[4,0]'), 4, 5],
     ]);
     expect(geometry.xAxis.ticks.map((tick) => tick.label)).toEqual(['0', '2', '4']);
     expect(geometry.xAxis.format(1500)).toBe('1,500');
@@ -59,6 +65,7 @@ describe('resolveLineGeometry', () => {
       series: [
         {
           series: 1,
+          id: 1,
           points: [
             { x: 0, y: 1 },
             { x: 1, y: Number.NaN },
@@ -69,7 +76,10 @@ describe('resolveLineGeometry', () => {
     });
     const [line] = geometry.lines;
     expect(line?.line.match(/M/g)).toHaveLength(2);
-    expect(line?.points.map((point) => point.key)).toEqual(['1:0', '1:1']);
+    expect(line?.points.map((point) => point.key)).toEqual([
+      toValueIdentity(1, '[0,0]'),
+      toValueIdentity(1, '[2,0]'),
+    ]);
   });
 
   it('UIC-CHART-6.3 keeps values beyond a fixed range at its edges', () => {
@@ -80,6 +90,7 @@ describe('resolveLineGeometry', () => {
       series: [
         {
           series: 0,
+          id: 0,
           points: [
             { x: 0, y: 2.5 },
             { x: 1, y: 10 },
@@ -98,6 +109,7 @@ describe('resolveLineGeometry', () => {
       series: [
         {
           series: 0,
+          id: 0,
           points: [
             { x: '2026-03-31', y: 2 },
             { x: '2026-03-01', y: 1 },
@@ -131,7 +143,7 @@ describe('resolveLineGeometry', () => {
       },
       y: index,
     }));
-    const geometry = resolveLineGeometry({ ...base, series: [{ series: 0, points }] });
+    const geometry = resolveLineGeometry({ ...base, series: [{ series: 0, id: 0, points }] });
     expect(geometry.lines[0]?.points.map(({ at }) => at)).toEqual(
       Array.from({ length: count }, (_, x) => x),
     );

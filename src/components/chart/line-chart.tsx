@@ -123,7 +123,7 @@ function LinePlot({ geometry, width, height, series, variant, format }: LinePlot
       {variant === 'area'
         ? lines.map((line) => (
             <path
-              key={`area:${line.series}`}
+              key={`area:${line.key}`}
               {...lineChartHooks.slot('area', toSeriesData(series, line.series))}
               d={line.area}
             />
@@ -131,7 +131,7 @@ function LinePlot({ geometry, width, height, series, variant, format }: LinePlot
         : null}
       {lines.map((line) => (
         <path
-          key={`line:${line.series}`}
+          key={`line:${line.key}`}
           {...lineChartHooks.slot('line', toSeriesData(series, line.series))}
           d={line.line}
           fill="none"

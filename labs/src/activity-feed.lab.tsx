@@ -4,8 +4,10 @@ import {
   ActivityFeed,
   type ActivityFeedItem,
 } from '../../src/components/activity-feed/activity-feed.js';
+import { Button } from '../../src/components/button/button.js';
 import { ChangeList } from '../../src/components/change-list/change-list.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
+import { TextField } from '../../src/components/text-field/text-field.js';
 import { requireDefined } from './require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { samplePicture } from './people-samples.js';
@@ -139,6 +141,49 @@ function FilteredFeed() {
   );
 }
 
+/** A reply typed in an entry's detail, which an arriving event must not wipe. */
+function ReplyDraft() {
+  return <TextField label="Reply" placeholder="Type a reply" />;
+}
+
+/** A live feed: events arrive at the top of today while an entry below holds a typed reply. */
+function LiveFeed() {
+  const [items, setItems] = useState<ActivityFeedItem[]>([
+    {
+      id: 'question',
+      person: lena,
+      action: 'asked about',
+      target: 'Proofing times',
+      time: '2026-04-20T09:40:00',
+      detail: <ReplyDraft />,
+    },
+    { id: 'joined', person: jon, action: 'joined', time: '2026-04-19T16:00:00' },
+  ]);
+  const add = () =>
+    setItems((list) => [
+      {
+        id: `arrival-${list.length}`,
+        person: maria,
+        action: 'edited',
+        target: `Recipe ${list.length}`,
+        time: '2026-04-20T10:20:00',
+      },
+      ...list,
+    ]);
+  const removeFirst = () => setItems((list) => (list.length > 2 ? list.slice(1) : list));
+  return (
+    <div data-lab-demo="live">
+      <Button size="sm" onPress={add}>
+        Add an event
+      </Button>{' '}
+      <Button size="sm" variant="secondary" onPress={removeFirst}>
+        Remove the newest
+      </Button>
+      <ActivityFeed aria-label="Live activity" items={items} getNow={getNow} />
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -195,6 +240,12 @@ mountLab(
       description="A filter in the feed's slot narrows the events; scrolling to the end loads two older pages."
     >
       <FilteredFeed />
+    </LabSection>
+    <LabSection
+      title="Arriving events"
+      description="Type a reply under today's question, then add events to today or remove the newest: the reply stays, because the day's entries keep their place."
+    >
+      <LiveFeed />
     </LabSection>
   </>,
 );
