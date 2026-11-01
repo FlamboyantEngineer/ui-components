@@ -113,7 +113,7 @@ mountLab(
     <div data-lab-family="avatar-main">
       <LabSection
         title="Content, variant and size"
-        description="A picture, initials and a group glyph in each variant and size. The fill size takes a 48px box."
+        description="A picture, initials and a group glyph in each variant and size. The fill size takes a 48px box. The outlined ring is drawn over the picture, with no light seam inside it."
       >
         <StateMatrix
           axes={{ content: ['picture', 'initials', 'group'], variant: variants, size: sizes }}
