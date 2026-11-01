@@ -4,6 +4,8 @@ import type { Orientation } from '../../core/props.js';
 import { createBandScale, type BandScale } from '../../utils/band-scale.js';
 import { createLinearScale, type LinearScale } from '../../utils/linear-scale.js';
 import { requireDefined } from '../../utils/require-defined.js';
+import type { Key } from '../../core/props.js';
+import { createPlaceIdentities, toValueIdentity } from './chart-identity.js';
 import {
   countTicks,
   resolvePlotBox,
@@ -18,6 +20,8 @@ export type BarChartLayout = 'grouped' | 'stacked';
 /** A drawn series: its position among the chart's series and one value per category. */
 interface BarGeometrySeries {
   series: number;
+  /** The series' id, which keys its bars across reorders. */
+  id: Key;
   values: readonly number[];
 }
 
@@ -39,6 +43,7 @@ export interface BarGeometryInput {
 
 /** One drawn bar. */
 interface BarRect {
+  /** Its series' id and its category, stable while either moves. */
   key: string;
   series: number;
   /** The category's position. */
@@ -126,9 +131,11 @@ export function resolveBarGeometry(input: BarGeometryInput, valueScale?: LinearS
   });
   const isGrouped = input.layout === 'grouped';
   const bars: BarRect[] = [];
+  const placeOf = createPlaceIdentities();
   input.categories.forEach((category, index) => {
+    const place = placeOf(category);
     const stack = { above: 0, below: 0 };
-    for (const { series, values: seriesValues } of input.series) {
+    for (const { series, id, values: seriesValues } of input.series) {
       const value = seriesValues[index];
       if (value === undefined || !Number.isFinite(value)) continue;
       const side = value >= 0 ? 'above' : 'below';
@@ -144,7 +151,7 @@ export function resolveBarGeometry(input: BarGeometryInput, valueScale?: LinearS
           ? { x: start, y: low, width: breadth, height: length }
           : { x: low, y: start, width: length, height: breadth };
       bars.push({
-        key: `${series}:${index}`,
+        key: toValueIdentity(id, place),
         series,
         index,
         value,

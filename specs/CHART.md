@@ -93,6 +93,8 @@ The drawn values shall take one tab stop, on the first value or the last one foc
 
 When two points in the target series are equally close, the first in input order wins.
 
+Each drawn value is identified by its series' typed `id` (numeric and text ids of one spelling stay apart) and its place along the series: a bar by its category, counting repeated category names in order, a line point by its read x, counting repeated coordinates in order, and a donut slice by its segment's `id` alone. The tab stop, focus, the active value and its tooltip stay on that value while series or segments reorder or values are added or removed elsewhere, while `data-series` keeps following the series' current position (its colour slot). When the value goes, the tab stop falls back to the first value and focus is not moved.
+
 Implementation: `src/components/chart/chart-points.tsx`
 Verification: `src/components/chart/chart-points.test.tsx`, `src/components/chart/bar-chart.test.tsx`, `src/components/chart/line-chart.test.tsx`, `src/components/chart/donut-chart.test.tsx`, `e2e/chart.spec.ts`
 
