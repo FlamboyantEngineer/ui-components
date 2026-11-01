@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { requireDefined } from '../../utils/require-defined.js';
+import { NumberField } from '../number-field/number-field.js';
+import { Slider } from '../slider/slider.js';
 import { Table, type TableProps } from './table.js';
 import type { TableColumn } from './table-rows.js';
 import type { TableCellEdit } from './use-cell-editing.js';
@@ -169,6 +171,45 @@ describe('Table spreadsheet mode', { timeout: 20_000 }, () => {
     expect(selectedText()).toEqual([]);
     await user.click(cell('Plum', 'name'));
     expect(onSelectedRangeChange).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-TABLE-14.1 leaves presses on a slider track and thumb and a scrub handle to them', () => {
+    const onSelectedRangeChange = vi.fn();
+    const withSurfaces: TableColumn<Item>[] = [
+      ...columns.slice(0, 2),
+      {
+        id: 'note',
+        header: 'Note',
+        renderCell: (row) => (
+          <>
+            <Slider label={`Level ${row.name}`} defaultValue={row.count} maxValue={10} />
+            <NumberField label={`Amount ${row.name}`} defaultValue={row.count} showScrubber />
+          </>
+        ),
+      },
+    ];
+    render(<Sheet columns={withSurfaces} onSelectedRangeChange={onSelectedRangeChange} />);
+    const note = cell('Pear', 'note');
+    for (const surface of [
+      '.ui-slider__thumb',
+      '.ui-slider__track',
+      '.ui-number-field__scrubber',
+    ]) {
+      const target = requireDefined(note.querySelector<HTMLElement>(surface));
+      const pointerDown = new PointerEvent('pointerdown', {
+        bubbles: true,
+        cancelable: true,
+        button: 0,
+        isPrimary: true,
+      });
+      const reached = vi.fn();
+      target.addEventListener('pointerdown', reached);
+      fireEvent(target, pointerDown);
+      expect(reached).toHaveBeenCalledOnce();
+    }
+    expect(onSelectedRangeChange).not.toHaveBeenCalled();
+    expect(selectedText()).toEqual([]);
+    expect(note).not.toHaveFocus();
   });
 
   it('UIC-TABLE-14.1 extends the range by dragging and takes a controlled range', async () => {

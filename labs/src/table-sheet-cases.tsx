@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
+import { Slider } from '../../src/components/slider/slider.js';
 import { Switch } from '../../src/components/switch/switch.js';
 import { Table } from '../../src/components/table/table.js';
 import type { TableCellRange } from '../../src/components/table/index.js';
@@ -324,6 +325,7 @@ export function Spreadsheet() {
   const [range, setRange] = useState<TableCellRange | null>(null);
   const [last, setLast] = useState('none');
   const [organic, setOrganic] = useState<ReadonlySet<string>>(new Set());
+  const [ripeness, setRipeness] = useState<Readonly<Record<string, number>>>({});
   return (
     <div data-lab="spreadsheet">
       <Table
@@ -368,6 +370,20 @@ export function Spreadsheet() {
               >
                 {`Organic ${row.name}`}
               </Switch>
+            ),
+          },
+          {
+            id: 'ripeness',
+            header: 'Ripeness',
+            renderCell: (row) => (
+              <Slider
+                size="sm"
+                label={`Ripeness ${row.name}`}
+                valueLabel="none"
+                maxValue={10}
+                value={ripeness[row.id] ?? 5}
+                onChange={(value) => setRipeness((current) => ({ ...current, [row.id]: value }))}
+              />
             ),
           },
         ]}

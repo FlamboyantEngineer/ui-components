@@ -5,6 +5,8 @@ import { Card, type CardVariant } from '../../src/components/card/card.js';
 import type { Density } from '../../src/core/props.js';
 import { CardAction, CardGrid, CardGridItem, CardTitle } from '../../src/components/card/index.js';
 import { Button } from '../../src/components/button/button.js';
+import { NumberField } from '../../src/components/number-field/number-field.js';
+import { Slider } from '../../src/components/slider/slider.js';
 import { Section } from '../../src/components/section-header/section-header.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import {
@@ -101,6 +103,24 @@ function NestedActionDemo() {
       <p>
         Trip opened <output data-lab-output="outer">{outer}</output>, day opened{' '}
         <output data-lab-output="inner">{inner}</output>
+      </p>
+    </div>
+  );
+}
+
+function GestureDemo() {
+  const [opened, setOpened] = useState(0);
+  const [level, setLevel] = useState(4);
+  return (
+    <div data-lab-demo="gestures" style={{ width: 320 }}>
+      <Card title="Mixer" onAction={() => setOpened((count) => count + 1)}>
+        <Slider label="Volume" value={level} onChange={setLevel} maxValue={10} />
+        <NumberField label="Gain" defaultValue={2} showScrubber />
+        <p>Press here to open the mixer.</p>
+      </Card>
+      <p>
+        Volume <output data-lab-output="level">{level}</output>, mixer opened{' '}
+        <output data-lab-output="mixer">{opened}</output>
       </p>
     </div>
   );
@@ -386,6 +406,12 @@ mountLab(
       description="A click on the inner card opens only the day; a click in the editable packing notes opens nothing; a click elsewhere on the trip opens the trip."
     >
       <NestedActionDemo />
+    </LabSection>
+    <LabSection
+      title="Sliders and scrubbing in an actionable card"
+      description="Dragging the slider or scrubbing the gain moves them and never opens the card, even when the drag is released elsewhere on it; a press on the text opens the card."
+    >
+      <GestureDemo />
     </LabSection>
     <LabSection
       title="Card grid"

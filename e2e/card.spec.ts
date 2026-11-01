@@ -2,6 +2,42 @@ import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 import { expectRowMenuReturnsFocus } from './row-menu.js';
 
 test.describe('Card lab', () => {
+  test('UIC-CARD-3.2 leaves slider drags and scrubs in an actionable card to them', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('card');
+    const demo = page.locator('[data-lab-demo="gestures"]');
+    const thumb = demo.locator('.ui-slider__thumb');
+    const track = demo.locator('.ui-slider__track');
+    const text = demo.getByText('Press here to open the mixer.');
+    await demo.scrollIntoViewIfNeeded();
+    const [from, along, away] = [
+      await thumb.boundingBox(),
+      await track.boundingBox(),
+      await text.boundingBox(),
+    ];
+    if (!from || !along || !away) throw new Error('no layout');
+    // Drag the thumb to the end and release it down on the card's text.
+    await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(along.x + along.width - 1, from.y + from.height / 2, { steps: 6 });
+    await page.mouse.move(along.x + along.width - 1, away.y + away.height / 2, { steps: 4 });
+    await page.mouse.up();
+    await expect(demo.locator('[data-lab-output="level"]')).toHaveText('10');
+    await page.mouse.click(along.x + 1, along.y + along.height / 2);
+    await expect(demo.locator('[data-lab-output="level"]')).toHaveText('0');
+    const scrubber = await demo.locator('.ui-number-field__scrubber').boundingBox();
+    if (!scrubber) throw new Error('no scrubber');
+    await page.mouse.move(scrubber.x + scrubber.width / 2, scrubber.y + scrubber.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(scrubber.x + 60, scrubber.y + scrubber.height / 2, { steps: 6 });
+    await page.mouse.up();
+    await expect(demo.locator('[data-lab-output="mixer"]')).toHaveText('0');
+    await text.click();
+    await expect(demo.locator('[data-lab-output="mixer"]')).toHaveText('1');
+  });
+
   test('UIC-CARD-2.1 UIC-CARD-2.2 draws every variant, density and state', async ({
     page,
     lab,
