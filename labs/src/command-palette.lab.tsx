@@ -16,6 +16,8 @@ import {
   type CommandPaletteProps,
 } from '../../src/components/command-palette/command-palette.js';
 import { MenuItem, MenuSection, type MenuEntry } from '../../src/components/menu/menu.js';
+import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
+import { TextField } from '../../src/components/text-field/text-field.js';
 import {
   TextMatch,
   splitMatchTerms,
@@ -114,6 +116,37 @@ function GlobalPalette() {
       />
       <Feedback name="Command">{last}</Feedback>
       <Feedback name="Open">{isOpen ? 'yes' : 'no'}</Feedback>
+    </>
+  );
+}
+
+/**
+ * A second palette with the same chord that a pane mounts on demand: while it is mounted it answers
+ * Control+K instead of the document's palette, and an unrelated modal keeps the chord to itself.
+ */
+function ChordOwners() {
+  const [hasPane, setHasPane] = useState(false);
+  const [last, setLast] = useState('none');
+  return (
+    <>
+      <Button onPress={() => setHasPane(!hasPane)}>
+        {hasPane ? 'Remove the pane palette' : 'Add a pane palette'}
+      </Button>{' '}
+      <ModalTrigger>
+        <Button>Settings</Button>
+        <Modal title="Settings">
+          <TextField label="Display name" />
+        </Modal>
+      </ModalTrigger>
+      {hasPane ? (
+        <CommandPalette
+          aria-label="Pane commands"
+          items={commands}
+          onAction={(key: Key) => setLast(`pane ${String(key)}`)}
+          data-lab-palette="pane"
+        />
+      ) : null}
+      <Feedback name="Pane command">{last}</Feedback>
     </>
   );
 }
@@ -290,6 +323,12 @@ mountLab(
       description="Control+K (Command+K on macOS) opens the palette with focus in the search field; typing narrows the commands, Arrow Down and Up move the highlight, Enter runs it and closes, Escape clears the text and then closes, and focus returns to where it was."
     >
       <GlobalPalette />
+    </LabSection>
+    <LabSection
+      title="Several palettes and modals"
+      description="Add a pane palette with the same Control+K chord: while it is mounted it alone answers the chord, and removing it hands the chord back to the document's palette. Open Settings and press Control+K inside it: the modal keeps the chord and no palette opens on top of it."
+    >
+      <ChordOwners />
     </LabSection>
     <LabSection
       title="Custom shortcut and filter"

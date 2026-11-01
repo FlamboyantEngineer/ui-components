@@ -237,4 +237,30 @@ test.describe('Command Palette lab', () => {
       );
     }).toPass();
   });
+
+  test('UIC-COMMAND-PALETTE-1.3 opens one palette per press and leaves the chord to another modal', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('command-palette');
+    const owners = section(page, 'Several palettes and modals');
+    await owners.getByRole('button', { name: 'Add a pane palette' }).click();
+    await page.keyboard.press('Control+k');
+    await expect(page.getByRole('dialog', { name: 'Pane commands' })).toBeVisible();
+    await expect(page.getByRole('dialog')).toHaveCount(1);
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await owners.getByRole('button', { name: 'Remove the pane palette' }).click();
+    await page.keyboard.press('Control+k');
+    await expect(page.getByRole('dialog', { name: 'Command palette' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await owners.getByRole('button', { name: 'Settings' }).click();
+    const name = page.getByRole('textbox', { name: 'Display name' });
+    await name.focus();
+    await page.keyboard.press('Control+k');
+    await expect(page.getByRole('dialog')).toHaveCount(1);
+    await expect(page.getByRole('dialog', { name: 'Settings' })).toBeVisible();
+    await expect(name).toBeFocused();
+  });
 });
