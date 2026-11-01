@@ -50,6 +50,15 @@ test.describe('Inline Edit lab', () => {
     await page.keyboard.press('ArrowUp');
     await page.keyboard.press('Enter');
     await expect(servings.locator('.ui-inline-edit__value')).toHaveText('9 servings');
+    // Typed text reaches the save: the number field parses it on Enter or on leaving first.
+    await servings.getByRole('button', { name: /^Edit Servings/ }).click();
+    await page.keyboard.type('12');
+    await page.keyboard.press('Enter');
+    await expect(servings.locator('.ui-inline-edit__value')).toHaveText('12 servings');
+    await servings.getByRole('button', { name: /^Edit Servings/ }).click();
+    await page.keyboard.type('1,500');
+    await page.keyboard.press('Tab');
+    await expect(servings.locator('.ui-inline-edit__value')).toHaveText('1500 servings');
   });
 
   test('UIC-INLINE-EDIT-1.6 keeps the editor open with a failed save', async ({ page, lab }) => {
