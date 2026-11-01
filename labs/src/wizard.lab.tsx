@@ -168,6 +168,38 @@ function ClosingPanel() {
   );
 }
 
+const hostSteps: WizardStep[] = [
+  {
+    id: 'schedule',
+    label: 'Schedule',
+    content: <p>The schedule check always fails here.</p>,
+    validate: () => 'The schedule overlaps another booking.',
+  },
+  { id: 'room', label: 'Room', content: <p>Pick a room.</p> },
+  { id: 'confirm', label: 'Confirm', content: <p>All set.</p> },
+];
+
+/** A host that moves the step itself: a failure stays with the step whose check produced it. */
+function HostMovesStep() {
+  const [currentKey, setCurrentKey] = useState<string | number>('schedule');
+  return (
+    <div data-lab-demo="host-moves">
+      <Button size="sm" onPress={() => setCurrentKey('room')}>
+        Show Room
+      </Button>
+      <Button size="sm" onPress={() => setCurrentKey('schedule')}>
+        Show Schedule
+      </Button>
+      <Wizard
+        aria-label="Book a room"
+        steps={hostSteps}
+        currentKey={currentKey}
+        onCurrentKeyChange={setCurrentKey}
+      />
+    </div>
+  );
+}
+
 const records = [
   { value: 'north', label: 'North office' },
   { value: 'south', label: 'South office' },
@@ -258,6 +290,12 @@ mountLab(
       description="Both records use the same step, and the wizard is keyed by the record. Press Save, then switch record before the two-second check ends: the check is aborted and neither record is saved. Wait it out and the record shown is saved."
     >
       <RecordSwitcher />
+    </LabSection>
+    <LabSection
+      title="Host moves the step"
+      description="Press Next on Schedule to see its failure, then let the host show Room or Schedule again: the failure stays with the check that produced it and never shows on another step."
+    >
+      <HostMovesStep />
     </LabSection>
     <LabSection
       title="In a modal"

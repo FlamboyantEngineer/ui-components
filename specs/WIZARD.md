@@ -57,7 +57,7 @@ Verification: `src/components/wizard/wizard.test.tsx`, `e2e/wizard.spec.ts`
 
 ### UIC-WIZARD-2.3 - Failed step
 
-While the shown step's check has failed, its entry in the list of steps shall have the `error` status, until the next attempt or move.
+While the shown step's check has failed, its entry in the list of steps shall have the `error` status, until the next attempt or move. A failure, with or without a message, belongs to the step and workflow whose check produced it: once the wizard shows another step by any route (its own moves, a controlled `currentKey`, the step's removal) or its steps are replaced, the failure is dropped, so neither its message nor its status shows on another step or on a return to its own.
 
 Implementation: `src/components/wizard/wizard-navigation.ts`
 Verification: `src/components/wizard/wizard.test.tsx`, `e2e/wizard.spec.ts`
