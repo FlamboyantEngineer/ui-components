@@ -1,4 +1,5 @@
 import { RedoGlyph, RefreshGlyph, UndoGlyph } from '../../src/core/glyphs.js';
+import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Icon } from '../../src/components/icon/icon.js';
 import { Tooltip, type TooltipVariant } from '../../src/components/tooltip/tooltip.js';
@@ -7,6 +8,35 @@ import { AnchoredTooltipCases } from './tooltip-anchored-cases.js';
 
 const variants: TooltipVariant[] = ['default', 'info'];
 const placements = ['top', 'bottom', 'start', 'end'] as const;
+
+/**
+ * A hint the page shows and keeps open, whatever the hint reports, and can lock: a locked hint draws
+ * closed and asks the page once to close it.
+ */
+function LockedHint() {
+  const [isOpen, setOpen] = useState(false);
+  const [isLocked, setLocked] = useState(false);
+  const [requests, setRequests] = useState(0);
+  return (
+    <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+      <Button onPress={() => setOpen(true)}>Show the drafts hint</Button>
+      <Button onPress={() => setLocked(!isLocked)}>
+        {isLocked ? 'Unlock the drafts hint' : 'Lock the drafts hint'}
+      </Button>
+      <Tooltip
+        content="Saved drafts"
+        isOpen={isOpen}
+        onOpenChange={(next) => {
+          if (!next) setRequests((count) => count + 1);
+        }}
+        isDisabled={isLocked}
+      >
+        <Button>Drafts</Button>
+      </Tooltip>
+      <output data-lab-output="locked-hint">{`${requests} close requests`}</output>
+    </div>
+  );
+}
 
 mountLab(
   <>
@@ -114,6 +144,12 @@ mountLab(
           </Tooltip>
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Disabled while open"
+      description="The page shows the hint and keeps it open. Locking draws it closed and asks the page to close it once; unlocking shows it again, since the page still keeps it open."
+    >
+      <LockedHint />
     </LabSection>
     <LabSection
       title="Anchored tooltips"

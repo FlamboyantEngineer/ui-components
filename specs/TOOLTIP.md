@@ -48,7 +48,7 @@ Verification: `src/components/tooltip/tooltip.test.tsx`, `e2e/tooltip.spec.ts`
 
 ### UIC-TOOLTIP-1.7 - Controlled state
 
-`isOpen` with `onOpenChange` shall control the panel, and `defaultOpen` shall open it initially; hover, focus, Escape and press then report changes through `onOpenChange`.
+`isOpen` with `onOpenChange` shall control the panel, and `defaultOpen` shall open it initially; hover, focus, Escape and press then report changes through `onOpenChange`. While `isDisabled`, the panel is drawn closed even when a controlled owner keeps `isOpen` true, and an open panel is closed once per change to disabled through `onOpenChange(false)`, so an uncontrolled panel stays closed when it is enabled again. The trigger keeps its element, focus and own action.
 
 Implementation: `src/components/tooltip/tooltip.tsx`
 Verification: `src/components/tooltip/tooltip.test.tsx`
