@@ -36,12 +36,16 @@ const focusableSelector = ['input', 'textarea', 'select', 'button', '[tabindex]'
   .map((element) => `${element}:not([disabled]):not([tabindex="-1"])`)
   .join(', ');
 
-/** Whether Enter on this element belongs to the element: a button, an open list or a text area. */
+/**
+ * Whether Enter on this element belongs to the element: a button, an open list, or a new line in a
+ * text area or an editable region (where Ctrl or Cmd with Enter saves instead).
+ */
 function isOwnEnter(event: KeyboardEvent<HTMLElement>): boolean {
   const target = event.target as HTMLElement;
   if (target.closest('button, [role="button"]')) return true;
   if (target.getAttribute('aria-expanded') === 'true') return true;
-  return target.tagName === 'TEXTAREA' && !event.ctrlKey && !event.metaKey;
+  const isMultiline = target.tagName === 'TEXTAREA' || target.isContentEditable;
+  return isMultiline && !event.ctrlKey && !event.metaKey;
 }
 
 /** Whether a key went to the editor's own elements rather than to an overlay it opened. */
@@ -202,12 +206,12 @@ export function useInlineEdit<T>(options: InlineEditStateOptions<T>) {
   const { draft, setDraft, error, setError, session } = useEditSession<T>(isEditing);
   const focus = useEditFocus(isEditing);
   const { focusReturnRef } = focus;
-  const blurTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  useEffect(() => () => clearTimeout(blurTimer.current), []);
+  const commitTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(commitTimer.current), []);
   const edited = draft === null ? value : draft.value;
 
   const close = (focusReturn: FocusReturn) => {
-    clearTimeout(blurTimer.current);
+    clearTimeout(commitTimer.current);
     focusReturnRef.current = focusReturn;
     setDraft(null);
     setError(null);
@@ -232,6 +236,14 @@ export function useInlineEdit<T>(options: InlineEditStateOptions<T>) {
     if (!isPending) close(focusReturn);
   };
 
+  // A commit waits for the task that asked for it to end, so the editor's own handling of the key
+  // or the blur (a number field parsing its text) updates the value being edited first; it then
+  // runs with the handlers of the latest render.
+  const latestCommit = useLatest(commit);
+  const commitLater = (focusReturn: FocusReturn) => {
+    clearTimeout(commitTimer.current);
+    commitTimer.current = setTimeout(() => latestCommit.current(null, focusReturn), 0);
+  };
   const editorHandlers = {
     onKeyDownCapture: (event: KeyboardEvent<HTMLDivElement>) => {
       if (!isEditorKey(event) || isComposingKey(event.nativeEvent)) return;
@@ -240,17 +252,21 @@ export function useInlineEdit<T>(options: InlineEditStateOptions<T>) {
         event.stopPropagation();
         cancel();
       } else if (event.key === 'Enter' && !isOwnEnter(event)) {
+        // The editor still sees Enter; its default (submitting a form) does not run.
         event.preventDefault();
-        event.stopPropagation();
-        commit(null);
+        commitLater('read');
       }
     },
+    // Enter stops at the editor, so the surrounding collection or form never acts on it.
+    onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => {
+      if (event.key === 'Enter' && isEditorKey(event) && !isOwnEnter(event))
+        event.stopPropagation();
+    },
     // Focus moving into an overlay the editor opened (a list, a calendar) comes back through React.
-    onFocus: () => clearTimeout(blurTimer.current),
+    onFocus: () => clearTimeout(commitTimer.current),
     onBlur: (event: FocusEvent<HTMLDivElement>) => {
       if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
-      clearTimeout(blurTimer.current);
-      blurTimer.current = setTimeout(() => commit(null, 'none'), 0);
+      commitLater('none');
     },
   };
 

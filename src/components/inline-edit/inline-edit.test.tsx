@@ -274,6 +274,37 @@ describe('InlineEdit', { timeout: 15_000 }, () => {
     expect(onSave).toHaveBeenCalledWith(5);
   });
 
+  it.each([
+    ['Enter', '{Enter}'],
+    ['focus leaving', '{Tab}'],
+  ])('UIC-INLINE-EDIT-1.4 saves the text a number field takes in on %s', async (_, key) => {
+    const user = userEvent.setup();
+    const onSave = vi.fn();
+    render(
+      <>
+        <InlineEdit<number | null>
+          label="Servings"
+          value={1}
+          onSave={onSave}
+          renderEditor={({ value, onChange, label }) => (
+            <NumberField
+              label={label}
+              labelLayout="control-only"
+              value={value}
+              tracksChanges={false}
+              onChange={onChange}
+            />
+          )}
+        />
+        <button type="button">After</button>
+      </>,
+    );
+    await user.click(screen.getByRole('button', { name: /^Edit Servings/ }));
+    await user.keyboard(`42${key}`);
+    await waitFor(() => expect(onSave).toHaveBeenCalledWith(42));
+    expect(onSave).toHaveBeenCalledTimes(1);
+  });
+
   it('UIC-INLINE-EDIT-1.5 cancels on Escape without saving and stops the key', async () => {
     const user = userEvent.setup();
     const onSave = vi.fn();
