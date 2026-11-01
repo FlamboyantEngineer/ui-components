@@ -643,6 +643,33 @@ describe('Button', () => {
     expect(container.querySelectorAll('.ui-button__new-tab-label')).toHaveLength(4);
   });
 
+  it('UIC-BUTTON-1.9 publishes the underline of a link variant, none by default', () => {
+    const { container } = render(
+      <>
+        <Button variant="link" href="#reports">
+          Reports
+        </Button>
+        <Button variant="link" href="#guide" underline="hover">
+          Guide
+        </Button>
+        <Button variant="link" underline="always">
+          Show more
+        </Button>
+        <Button href="#help" underline="always">
+          Help
+        </Button>
+      </>,
+    );
+    expect(screen.getByRole('link', { name: 'Reports' })).toHaveAttribute('data-underline', 'none');
+    expect(screen.getByRole('link', { name: 'Guide' })).toHaveAttribute('data-underline', 'hover');
+    expect(screen.getByRole('button', { name: 'Show more' })).toHaveAttribute(
+      'data-underline',
+      'always',
+    );
+    expect(screen.getByRole('link', { name: 'Help' })).not.toHaveAttribute('data-underline');
+    expectHooksMatchSpec(container, 'BUTTON', { slots: ['label'] });
+  });
+
   it('UIC-BUTTON-1.9 keeps target and rel off a disabled link', () => {
     render(
       <Button href="https://example.com/help" target="_blank" isDisabled>

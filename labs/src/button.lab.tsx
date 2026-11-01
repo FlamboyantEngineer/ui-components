@@ -236,6 +236,32 @@ mountLab(
         />
       </LabSection>
       <LabSection
+        title="Link variant: underline and icon sizes"
+        description="variant=link draws a button as a link. Its text has no underline by default (underline none, even on hover and focus), or one on hover and keyboard focus (hover) or always (always); keyboard focus also draws the focus ring either way. Its icons, the new-tab glyph included, grow with the size: 12, 14, 16 and 20 pixels from xs to lg."
+      >
+        <StateMatrix
+          axes={{
+            link: ['internal', 'new tab', 'custom icon'],
+            underline: ['none', 'hover', 'always'],
+            size: ['xs', 'sm', 'md', 'lg'],
+          }}
+          render={({ link, underline, size }) => (
+            <Button
+              variant="link"
+              href={link === 'internal' ? '#reports' : 'https://example.com/guide'}
+              isExternal={link === 'new tab'}
+              startIcon={link === 'custom icon' ? InfoGlyph : undefined}
+              endIcon={link === 'custom icon' ? ChevronRightGlyph : undefined}
+              underline={underline}
+              size={size}
+              data-lab-link={`${link}-${underline}-${size}`}
+            >
+              {link === 'internal' ? 'Reports' : 'Growing guide'}
+            </Button>
+          )}
+        />
+      </LabSection>
+      <LabSection
         title="Toggles"
         description="A button with defaultSelected keeps its own pressed state; one with isSelected and onChange leaves it to its caller. Pin panel gains a hint while pinned and loses it again, keeping keyboard focus."
       >
