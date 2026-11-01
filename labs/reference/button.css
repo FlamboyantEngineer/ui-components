@@ -19,6 +19,8 @@
   font-weight: var(--ref-font-weight-medium);
   line-height: 1.2;
   white-space: nowrap;
+  /* A link drawn as a button is an <a>: no native underline unless the link variant asks. */
+  text-decoration: none;
   cursor: pointer;
   user-select: none;
   outline: none;
@@ -102,7 +104,11 @@
   color: var(--ref-accent-ink);
   font-weight: inherit;
 }
-.ui-button[data-variant='link']:is([data-hovered], [data-focus-visible]) {
+.ui-button[data-variant='link'] {
+  text-underline-offset: 2px;
+}
+.ui-button[data-underline='always'],
+.ui-button[data-underline='hover']:is([data-hovered], [data-focus-visible]) {
   text-decoration: underline;
 }
 .ui-button[data-variant='bare'] {
@@ -146,6 +152,24 @@
 }
 .ui-button[data-content='sentence'] .ui-button__label {
   overflow: visible;
+}
+/* Icons follow the button's size, a step up from its type: 12, 14, 16 and 20 pixels. */
+.ui-button {
+  --ref-button-icon: var(--ref-icon-size-lg);
+}
+.ui-button[data-size='xs'] {
+  --ref-button-icon: var(--ref-icon-size-sm);
+  gap: 4px;
+}
+.ui-button[data-size='sm'] {
+  --ref-button-icon: var(--ref-icon-size-md);
+}
+.ui-button[data-size='lg'] {
+  --ref-button-icon: var(--ref-icon-size-xl);
+}
+.ui-button > :is(.ui-button__start-icon, .ui-button__end-icon, .ui-button__icon) {
+  width: var(--ref-button-icon);
+  height: var(--ref-button-icon);
 }
 .ui-button__start-icon,
 .ui-button__end-icon {

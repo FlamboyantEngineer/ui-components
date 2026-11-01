@@ -34,10 +34,10 @@ Verification: `src/components/button/button.test.tsx`
 
 ### UIC-BUTTON-1.5 - Icons
 
-`startIcon` and `endIcon` shall draw an imported icon component or rendered element as a decorative [Icon](ICON.md) in the `ui-button__start-icon` and `ui-button__end-icon` slots, before and after the label.
+`startIcon` and `endIcon` shall draw an imported icon component or rendered element as a decorative [Icon](ICON.md) in the `ui-button__start-icon` and `ui-button__end-icon` slots, before and after the label. The reference stylesheet sizes every icon of a button (the start, end and icon-only icons, a new-tab link's external-link glyph included) with the button's `size`, a step above its type: 12, 14, 16 and 20 pixels from `xs` to `lg`, centred on the label's line, with a 4-pixel gap at `xs` and 6 pixels otherwise.
 
-Implementation: `src/components/button/button.tsx`
-Verification: `src/components/button/button.test.tsx`
+Implementation: `src/components/button/button.tsx`, `labs/reference/button.css`
+Verification: `src/components/button/button.test.tsx`, `e2e/button.spec.ts`
 
 ### UIC-BUTTON-1.6 - Tooltip
 
@@ -63,6 +63,8 @@ Verification: `src/components/button/button.test.tsx`
 ### UIC-BUTTON-1.9 - Links
 
 With `href` the button shall be a link: an `<a>` with the same hooks and parts, drawn through the provider's `renderLink` so the host's router can take it ([PROVIDER.md](PROVIDER.md)), navigating through the provider's `navigate` when the host sets one, and reporting `onPress`. `target` and `rel` pass through, and `target="_blank"` adds `noopener` and `noreferrer` to the caller's `rel`, as a [Link](LINK.md#uic-link-22---new-tabs) does. `isExternal` opens the destination in a new tab (`target="_blank"` unless `target` is given). A link that opens a new tab (an enabled link whose target is `_blank`, from `isExternal` or `target`) shall show the external-link glyph (`ExternalLinkGlyph`) in the `ui-button__end-icon` slot and add the provider's `opensInNewTab` text, visually hidden in the `ui-button__new-tab-label` slot, to its name. A given `endIcon` replaces the glyph, and `endIcon={null}` or `false` shows none; the hidden text stays. An icon-only link shows no extra glyph and is named by its `label` followed by that text. A link that opens in the same tab gets neither, however its address reads. A disabled link renders as a `<span>` with role `link`, `aria-disabled="true"` and `data-disabled`, without `href`, `target` or `rel`. The link takes the button's name and description (`aria-label`, `aria-labelledby`, `aria-describedby`, `aria-details`), `id`, `aria-current`, `autoFocus`, `hidden` and the press, hover, focus and key handlers of UIC-BUTTON-1.10. `tooltip` and `shortcut` work as on a button; `render`, `type`, `isPending`, `isSelected`, the toggle state, `focusableWhenDisabled`, `excludeFromTabOrder`, `preventFocusOnPress`, `slot`, `role` and the toggle and popup states (`aria-pressed`, `aria-checked`, `aria-selected`, `aria-haspopup`, `aria-expanded`, `aria-controls`) apply to a `<button>` only, because `render` keeps the element type. `ref` reaches the `<a>`.
+
+`underline` (`none` by default, `hover` or `always`, the [Link](LINK.md) values) shall say when the `link` variant's text is underlined, published as `data-underline` on a `link` variant only: `none` draws no underline in any state, hover and keyboard focus included, `hover` underlines it while hovered or keyboard-focused, and `always` underlines it at rest. The reference stylesheet removes the native underline of every button drawn as an `<a>`, so only `data-underline` adds one, and keyboard focus draws the focus ring whatever the underline. Other variants never underline.
 
 Implementation: `src/components/button/button.tsx`, `src/components/button/button-state.tsx`
 Verification: `src/components/button/button.test.tsx`, `e2e/button.spec.ts`
@@ -251,6 +253,7 @@ Verification: `src/components/button/button-action.test.tsx`, `src/components/bu
 | `data-content`             | attribute | `label`, `parts`, `sentence`, `icon`                                                    | The content layout.                                                       |
 | `data-align`               | attribute | `center`, `start`                                                                       | Content alignment.                                                        |
 | `data-full-width`          | state     | `true`                                                                                  | Fills the container's width.                                              |
+| `data-underline`           | attribute | `none`, `hover`, `always`                                                               | On a `link` variant: when its text is underlined.                         |
 | `data-selected`            | state     | `true`                                                                                  | The current choice.                                                       |
 | `data-disabled`            | state     | `true`                                                                                  | Disabled (also when focusable).                                           |
 | `data-pending`             | state     | `true`                                                                                  | Pending; presses are refused.                                             |

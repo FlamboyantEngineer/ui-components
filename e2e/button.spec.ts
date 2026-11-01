@@ -196,6 +196,44 @@ test.describe('Button lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-BUTTON-1.9 UIC-BUTTON-1.5 underlines a link variant only as asked and grows its icons with its size', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('button');
+    const link = (name: string) => page.locator(`[data-lab-link="${name}"]`);
+    const decoration = (locator: ReturnType<typeof link>) =>
+      locator.evaluate((node) => getComputedStyle(node).textDecorationLine);
+    const plain = link('internal-none-md');
+    await plain.hover();
+    expect(await decoration(plain)).toBe('none');
+    await plain.focus();
+    await page.keyboard.press('Shift+Tab');
+    await page.keyboard.press('Tab');
+    await expect(plain).toHaveAttribute('data-focus-visible', 'true');
+    expect(await decoration(plain)).toBe('none');
+    expect(await plain.evaluate((node) => getComputedStyle(node).boxShadow)).not.toBe('none');
+    const hover = link('internal-hover-md');
+    expect(await decoration(hover)).toBe('none');
+    await hover.hover();
+    expect(await decoration(hover)).toBe('underline');
+    expect(await decoration(link('internal-always-md'))).toBe('underline');
+    const widths: number[] = [];
+    for (const size of ['xs', 'sm', 'md', 'lg']) {
+      const external = link(`new tab-none-${size}`);
+      const glyph = await external.locator('.ui-button__end-icon').boundingBox();
+      const label = await external.locator('.ui-button__label').boundingBox();
+      const start = await link(`custom icon-none-${size}`)
+        .locator('.ui-button__start-icon')
+        .boundingBox();
+      if (!glyph || !label || !start) throw new Error('no layout');
+      expect(start.width).toBe(glyph.width);
+      expect(Math.abs(glyph.y + glyph.height / 2 - (label.y + label.height / 2))).toBeLessThan(2);
+      widths.push(glyph.width);
+    }
+    expect(widths).toEqual([12, 14, 16, 20]);
+  });
+
   test('UIC-BUTTON-2.6 toggles its own state or reports it to its caller', async ({
     page,
     lab,

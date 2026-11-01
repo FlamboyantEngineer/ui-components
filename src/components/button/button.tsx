@@ -9,6 +9,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { Icon, type IconSource } from '../icon/icon.js';
 import { hasIcon, toIconProps } from '../icon/icon.js';
 import { Shortcut, useDetectedPlatform } from '../shortcut/shortcut.js';
+import type { LinkUnderline } from '../link/link.js';
 import { Tooltip } from '../tooltip/tooltip.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
@@ -69,6 +70,11 @@ export interface ButtonProps extends ButtonStateProps, ButtonActionProps, BasePr
   isExternal?: boolean | undefined;
   /** Take the full width of the container. */
   fullWidth?: boolean | undefined;
+  /**
+   * When the stylesheet underlines a `link` variant's text: `always`, on `hover` and keyboard
+   * focus, or `none` (the default). Other variants never underline.
+   */
+  underline?: LinkUnderline | undefined;
   /**
    * A hint shown in a `Tooltip` on hover and keyboard focus. A natively disabled button cannot show
    * it; use `focusableWhenDisabled` to explain why a command is unavailable.
@@ -231,6 +237,16 @@ function useNewTab(
   };
 }
 
+/** The root's data attributes: a link variant also says when its text is underlined. */
+function toRootData(
+  { variant, content }: { variant: ButtonVariant; content: ButtonContent | undefined },
+  given: Required<Pick<ButtonProps, 'size' | 'align' | 'fullWidth' | 'underline'>>,
+  isSelected: boolean | undefined,
+) {
+  const underline = variant === 'link' ? given.underline : undefined;
+  return { ...given, variant, content, selected: isSelected, underline };
+}
+
 /** A labelled command button, or a link drawn as one with `href`. */
 export function Button({
   variant,
@@ -243,6 +259,7 @@ export function Button({
   startIcon,
   endIcon,
   fullWidth = false,
+  underline = 'none',
   tooltip,
   className,
   onError,
@@ -270,14 +287,11 @@ export function Button({
   const hookProps = hooks.root({
     className,
     props: rest,
-    data: {
-      variant: presentation.variant,
-      size,
-      content: presentation.content,
-      align,
-      selected: !isLink && selection.isSelected,
-      fullWidth,
-    },
+    data: toRootData(
+      presentation,
+      { size, align, fullWidth, underline },
+      !isLink && selection.isSelected,
+    ),
   });
   const parts = (
     <ButtonParts
