@@ -88,6 +88,13 @@ Verification: `src/components/field/field-focus.test.tsx`, `src/components/code-
 Implementation: `src/components/field/field.tsx`, `src/components/field/field-parts.tsx`, `src/components/field/field-control.ts`, `labs/reference/field.css`
 Verification: `src/components/field/field.test.tsx`, `e2e/field.spec.ts`
 
+### UIC-FIELD-1.13 - Change layout
+
+`changeLayout` shall publish `data-change-layout` on the field's root, `inline` by default, choosing where a dirty field's control shows the value its edit replaced (`FieldPreviousValue`, UIC-FIELD-9): with `inline` the reference sheet draws it before the current value on the control's row, for dense rows, where the previous value keeps its width up to half the row and is cut past it, so the current value always keeps the rest; with `stacked` it takes its own line above the current value, as wide as the control, so neither value squeezes the other at any width, label layout or size. The previous value, the current value and the restore button stay distinct in both: the previous value is struck through in its own frame outside the control's value, a per-value restore button on a previous value (UIC-FIELD-9.2) puts back that one value, and the field's restore button and the menu's Reset (UIC-FIELD-6.1) put back the whole committed value. Only the room the reference sheet gives differs; names, order and behaviour are the same. Every field control built on `Field` takes `changeLayout` with the field's props.
+
+Implementation: `src/components/field/field.tsx`, `src/components/field/field-parts.tsx`, `src/components/field/field-control.ts`, `labs/reference/field.css`, `labs/reference/select-field.css`
+Verification: `src/components/field/field.test.tsx`, `src/components/select-field/select-field.test.tsx`, `e2e/select-field.spec.ts`
+
 ## UIC-FIELD-2 - Value and commit
 
 ### UIC-FIELD-2.1 - Value
@@ -435,6 +442,7 @@ Verification: `src/components/field/field-picker.test.tsx`
 | `data-label-layout`              | attribute | `label-control`, `control-label`, `label-colon-control`, `control-only` | Where the label sits.                                            |
 | `data-size`                      | attribute | `xs`, `sm`, `md`, `lg`                                                  | The control size.                                                |
 | `data-density`                   | attribute | `default`, `compact`                                                    | The room the field keeps for its message and restore button.     |
+| `data-change-layout`             | attribute | `inline`, `stacked`                                                     | Where the control shows the value a dirty field's edit replaced. |
 | `data-validation`                | state     | `valid`, `invalid`, `warning`, `pending`                                | Validation status.                                               |
 | `data-dirty`                     | state     | `true`                                                                  | The value differs from the committed value.                      |
 | `data-required`                  | state     | `true`                                                                  | A value is required.                                             |

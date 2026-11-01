@@ -256,6 +256,16 @@
   height: 22px;
 }
 
+/* Stacked changes: the previous value takes its own line above the current one. */
+.ui-field[data-change-layout='stacked'] :has(> .ui-field-previous-value) {
+  flex-wrap: wrap;
+}
+
+.ui-field[data-change-layout='stacked'] .ui-field-previous-value {
+  flex: 0 0 100%;
+  max-width: 100%;
+}
+
 /* A fieldset: a framed group under its legend. */
 .ui-fieldset {
   display: flex;

@@ -27,6 +27,60 @@ async function width(locator: Locator): Promise<number> {
 }
 
 test.describe('Select Field lab', () => {
+  test('UIC-SELECT-FIELD-2.3 UIC-FIELD-1.13 places the saved value inline or stacked without overlap', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('select-field');
+    const box = async (locator: Locator) => requireDefined(await locator.boundingBox());
+    const changeCell = (edit: string, change: string) =>
+      page.locator(`${familySelector('list')} ${cellSelector(`edit=${edit} change=${change}`)}`);
+    for (const edit of ['changed', 'emptied', 'long']) {
+      const inline = changeCell(edit, 'inline');
+      const stacked = changeCell(edit, 'stacked');
+      const inlinePrevious = await box(inline.locator('.ui-select-field__previous'));
+      const inlineTrigger = await box(inline.locator('.ui-select-field__trigger'));
+      // Inline: before the trigger on its row.
+      expect(inlinePrevious.x + inlinePrevious.width).toBeLessThanOrEqual(inlineTrigger.x + 1);
+      expect(
+        Math.abs(
+          inlinePrevious.y +
+            inlinePrevious.height / 2 -
+            (inlineTrigger.y + inlineTrigger.height / 2),
+        ),
+      ).toBeLessThan(2);
+      // Stacked: on its own line above the trigger.
+      const stackedPrevious = await box(stacked.locator('.ui-select-field__previous'));
+      const stackedTrigger = await box(stacked.locator('.ui-select-field__trigger'));
+      expect(stackedPrevious.y + stackedPrevious.height).toBeLessThanOrEqual(stackedTrigger.y + 1);
+    }
+    // An empty saved value shows no previous value; a multiple value lists its removed values.
+    await expect(changeCell('filled', 'stacked').locator('.ui-select-field__previous')).toHaveCount(
+      0,
+    );
+    await expect(
+      changeCell('added-removed', 'stacked').locator('.ui-select-field__removed'),
+    ).toHaveText(['Apple', 'Quince']);
+    // Long values in a 240px column stay inside it and apart, whatever the size and label layout.
+    const fits = page.locator(
+      `${familySelector('list')} table[data-lab-matrix="size layout change"] td[data-lab-cell]`,
+    );
+    await expect(fits).toHaveCount(12);
+    for (const fit of await fits.all()) {
+      const column = await box(fit.locator('.ui-field'));
+      const previous = await box(fit.locator('.ui-select-field__previous'));
+      const trigger = await box(fit.locator('.ui-select-field__trigger'));
+      for (const part of [previous, trigger]) {
+        expect(part.x).toBeGreaterThanOrEqual(column.x - 1);
+        expect(part.x + part.width).toBeLessThanOrEqual(column.x + column.width + 1);
+      }
+      const apart =
+        previous.x + previous.width <= trigger.x + 1 ||
+        previous.y + previous.height <= trigger.y + 1;
+      expect(apart).toBe(true);
+    }
+  });
+
   test('UIC-SELECT-FIELD-1.1 UIC-SELECT-FIELD-1.3 UIC-SELECT-FIELD-2.1 UIC-SELECT-FIELD-2.3 draws every layout and state', async ({
     page,
     lab,

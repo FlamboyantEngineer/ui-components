@@ -18,6 +18,13 @@ import { joinIds } from '../../utils/join-ids.js';
  */
 export type FieldDensity = Extract<Density, 'default' | 'compact'>;
 
+/**
+ * Where a dirty field's control shows the value its edit replaced: `inline`, before the current
+ * value on its row, for dense rows; `stacked`, on its own line above the current value, so a long
+ * previous value never squeezes the control.
+ */
+export type FieldChangeLayout = 'inline' | 'stacked';
+
 export type FieldLabelLayout =
   | 'control-label'
   | 'label-control'

@@ -15,6 +15,7 @@ import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 import { Paged } from './select-field-paged.js';
 import { TriggerRefField } from './select-field-trigger-cases.js';
+import { ChangeFit, ChangeMatrix } from './select-field-changes.js';
 import { fieldLayouts, fieldStates, type FieldStateName } from './field-states.js';
 
 const fruit: SelectFieldOption[] = [
@@ -385,6 +386,18 @@ mountLab(
             <MatrixField state={state} mode="single" layout={layout} />
           )}
         />
+      </LabSection>
+      <LabSection
+        title="Changes against the saved value"
+        description="Each select starts with an unsaved edit: a changed value, an empty value filled, a value emptied, long values, and a multiple value with additions and removals. changeLayout places the struck-through saved value before the current one (inline) or on its own line above it (stacked). A removed value's own restore button puts back that one value; the field's restore button, and Reset in its context menu (right-click, or Shift+F10), put back the whole saved value."
+      >
+        <ChangeMatrix />
+      </LabSection>
+      <LabSection
+        title="Changes in narrow columns"
+        description="Long saved and current values with an error, at three sizes and two label layouts in a 240px column: neither value overlaps the other or leaves the column."
+      >
+        <ChangeFit />
       </LabSection>
       <LabSection title="Selection modes" description="Single and multiple selects in every state.">
         <StateMatrix

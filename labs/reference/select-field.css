@@ -79,9 +79,11 @@
   cursor: not-allowed;
 }
 
+/* Inline, the saved value keeps its width up to half the row; the trigger gives way first. */
 .ui-select-field__previous {
-  flex: 0 1 auto;
+  flex: 0 0 auto;
   min-width: 0;
+  max-width: 50%;
   font-size: var(--ref-font-size-sm);
 }
 
@@ -330,6 +332,11 @@
 .ui-select-field__removed {
   flex: none;
   font-size: var(--ref-font-size-sm);
+}
+
+/* Removed values share their row below the chips in either change layout. */
+.ui-field[data-change-layout='stacked'] .ui-select-field__removed {
+  flex: none;
 }
 
 /* Tree Select Field: a framed trigger like a select's, opening a panel with a search and a tree. */
