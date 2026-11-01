@@ -10,6 +10,7 @@ import { useUiStrings } from '../../core/provider.js';
 import type { IconSource } from '../icon/icon.js';
 import { Menu, MenuItem, MenuPopover, MenuTrigger } from '../menu/menu.js';
 import { ComposerControlButton } from './composer-control-button.js';
+import { useMessageComposerControls } from './composer-controls.js';
 import { composerHooks as hooks } from './composer-hooks.js';
 
 /** An option of a composer select. */
@@ -85,17 +86,21 @@ export function MessageComposerSelect({
   ...props
 }: MessageComposerSelectProps) {
   const strings = useUiStrings();
+  // Disabled itself or with its composer: the trigger refuses to open and an open menu closes.
+  const composer = useMessageComposerControls();
+  const isOff = isDisabled || composer.isDisabled;
   // An id no option has falls back to the first available option.
   const [value, setValue] = useControllableState(valueProp, defaultValue ?? '', onChange);
   const current = findCurrent(options, value);
   if (!current) return null;
   const name = strings.composerSelectTrigger(label, current.label);
   const choose = (key: Key) => {
+    if (isOff) return;
     const id = String(key);
     if (id !== current.id) setValue(id);
   };
   return (
-    <MenuTrigger>
+    <MenuTrigger isDisabled={isOff}>
       <ComposerControlButton
         {...props}
         className={mergeClassNames(hooks.slotClass('select'), props.className)}

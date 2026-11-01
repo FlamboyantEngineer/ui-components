@@ -75,6 +75,43 @@ function ComposerDemo() {
   );
 }
 
+/** A composer the host disables a moment after the reader asks, so its picker's menu can be open. */
+function DisablingDemo() {
+  const [isDisabled, setDisabled] = useState(false);
+  const [model, setModel] = useState('balanced');
+  return (
+    <Stack space="sm" align="start" data-lab-demo="disabling">
+      <button
+        type="button"
+        onClick={() => {
+          setDisabled(false);
+          setTimeout(() => setDisabled(true), 2000);
+        }}
+      >
+        Disable the composer in 2 seconds
+      </button>
+      <button type="button" onClick={() => setDisabled(false)}>
+        Enable it
+      </button>
+      <MessageComposer
+        placeholder="Ask anything…"
+        isDisabled={isDisabled}
+        endControls={
+          <ChatModelPicker
+            models={labModels}
+            efforts={labEfforts}
+            model={model}
+            onModelChange={setModel}
+          />
+        }
+      />
+      <p>
+        Model: <output data-lab-output="disabling-model">{model}</output>
+      </p>
+    </Stack>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -111,6 +148,12 @@ mountLab(
       description="Passed as a composer's toolbar, the picker sits with its tools beside the send button; the host reads the model when the message is sent."
     >
       <ComposerDemo />
+    </LabSection>
+    <LabSection
+      title="Disabled while open"
+      description="Press Disable the composer in 2 seconds, then open the picker: when the composer becomes disabled the menu closes and its models choose nothing. Enable it again: the menu stays closed until you open it."
+    >
+      <DisablingDemo />
     </LabSection>
   </>,
 );

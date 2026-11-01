@@ -6,6 +6,29 @@ const cell = (page: Page, state: string) => matrixCell(page, `state=${state}`);
 const picker = (scope: Locator) => scope.getByRole('button', { name: /^Model:/ });
 
 test.describe('Chat Model Picker lab', () => {
+  test('UIC-CHAT-MODEL-PICKER-1.3 closes its open menu when the composer becomes disabled', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-model-picker');
+    const disabling = demo(page, 'disabling');
+    await page.clock.install();
+    await disabling.getByRole('button', { name: 'Disable the composer in 2 seconds' }).click();
+    const trigger = picker(disabling);
+    await trigger.focus();
+    await page.keyboard.press('Enter');
+    const menu = page.getByRole('menu');
+    await expect(menu).toBeVisible();
+    await page.clock.runFor(2100);
+    await expect(menu).toHaveCount(0);
+    await expect(trigger).toBeDisabled();
+    await disabling.getByRole('button', { name: 'Enable it' }).click();
+    await expect(trigger).toBeEnabled();
+    await expect(menu).toHaveCount(0);
+    await expect(disabling.locator('[data-lab-output="disabling-model"]')).toHaveText('balanced');
+    await lab.expectAccessible('[data-lab-demo="disabling"]');
+  });
+
   test('UIC-CHAT-MODEL-PICKER-2.4 UIC-CHAT-MODEL-PICKER-3.2 chooses a model and an effort by keyboard', async ({
     page,
     lab,

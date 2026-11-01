@@ -96,6 +96,37 @@ describe('MessageComposerSelect', () => {
     expect(screen.queryByRole('button', { name: /^Approval/ })).not.toBeInTheDocument();
   });
 
+  it('UIC-MESSAGE-COMPOSER-7.1 closes its open menu when it or the composer becomes disabled', async () => {
+    const onChange = vi.fn();
+    const user = userEvent.setup();
+    const select = (isDisabled: boolean, isComposerDisabled: boolean) => (
+      <MessageComposer
+        isDisabled={isComposerDisabled}
+        endControls={
+          <MessageComposerSelect
+            label="Approval"
+            options={options}
+            onChange={onChange}
+            isDisabled={isDisabled}
+          />
+        }
+      />
+    );
+    const { rerender } = render(select(false, false));
+    for (const [isDisabled, isComposerDisabled] of [
+      [true, false],
+      [false, true],
+    ] as const) {
+      await user.click(trigger());
+      expect(await screen.findByRole('menu')).toBeInTheDocument();
+      rerender(select(isDisabled, isComposerDisabled));
+      await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
+      rerender(select(false, false));
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    }
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
   it('UIC-MESSAGE-COMPOSER-7.2 lists the options with icons and notes, the current one checked', async () => {
     const { user } = renderSelect();
     await user.click(trigger());

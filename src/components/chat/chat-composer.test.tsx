@@ -436,7 +436,11 @@ describe('Chat composer', () => {
     rerenderWith({ composerEndControls: picker(), isDisabled: true });
     expect(screen.getByRole('button', { name: /^Model:/ })).toBeDisabled();
     rerenderWith({ composerEndControls: picker(true) });
-    expect(screen.getByRole('button', { name: /^Model:/ })).toBeDisabled();
+    // Disabled on its own, the picker stays focusable.
+    expect(screen.getByRole('button', { name: /^Model:/ })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
   });
 
   it('UIC-CHAT-3.9 runs a + menu among the composer controls on the chat composer, disabled with it', async () => {

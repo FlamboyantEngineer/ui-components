@@ -173,7 +173,8 @@ export function MessageComposerMenuButton({
   const { helpers, returnFocusRef, chooserRef } = useComposerHelpers(composer);
   return (
     <>
-      <MenuTrigger>
+      {/* Disabled with the composer, the trigger refuses to open and an open menu closes. */}
+      <MenuTrigger isDisabled={isDisabled}>
         <Button
           {...props}
           ref={returnFocusRef}
