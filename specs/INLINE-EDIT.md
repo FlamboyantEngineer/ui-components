@@ -55,7 +55,7 @@ Verification: `src/components/inline-edit/inline-edit.test.tsx`, `e2e/inline-edi
 
 ### UIC-INLINE-EDIT-1.8 - Disabled
 
-With `isDisabled`, the read view shall be a disabled button without the edit glyph that never opens the editor, and the root publishes `data-disabled`.
+With `isDisabled`, explicit or inherited from a disabled scope, the read view shall be a disabled button without the edit glyph that never opens the editor, and the root publishes `data-disabled`. An editor already open (opened before, by `defaultEditing` or by a controlled `isEditing`) stays open and keeps its draft but is frozen: `renderEditor` receives `isDisabled` (the default text field and the save button are disabled), changes are ignored, and Enter, focus leaving, the save button and `commit` start no save. A save already running finishes and closes the editor as usual; a save queued behind it has not started and is dropped, leaving its draft. Escape still closes the editor without saving. Once enabled again, the draft saves as usual.
 
 Implementation: `src/components/inline-edit/inline-edit.tsx`
 Verification: `src/components/inline-edit/inline-edit.test.tsx`

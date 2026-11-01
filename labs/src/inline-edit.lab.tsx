@@ -161,6 +161,26 @@ function RecipeDetails() {
   );
 }
 
+/** An inline edit the page locks a moment later, while its editor may be open, and unlocks. */
+function LockableNote() {
+  const [note, setNote] = useState('Proof overnight');
+  const [isLocked, setLocked] = useState(false);
+  return (
+    <div data-lab-field="lockable">
+      <Button
+        variant="secondary"
+        onPress={() => {
+          if (isLocked) setLocked(false);
+          else window.setTimeout(() => setLocked(true), 1500);
+        }}
+      >
+        {isLocked ? 'Unlock' : 'Lock in 1.5 seconds'}
+      </Button>
+      <InlineEdit label="Note" value={note} onSave={setNote} isDisabled={isLocked} showActions />
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -180,6 +200,12 @@ mountLab(
       description="Text, number, select, date and multiline editors. Each save waits half a second; an empty title is refused. Typing while a save runs keeps the newer text, and Enter meanwhile saves it once the first save ends. A select saves on a choice, and clearing the cuisine saves no cuisine, even while a choice is still saving; Enter saves the others, after the number field takes in typed text, and Control+Enter the notes."
     >
       <RecipeDetails />
+    </LabSection>
+    <LabSection
+      title="Locking an open editor"
+      description="Start the lock, open the note and type: once locked, the editor keeps the draft but saves nothing, through Enter, leaving or the save button, until it is unlocked."
+    >
+      <LockableNote />
     </LabSection>
   </>,
 );
