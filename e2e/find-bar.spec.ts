@@ -62,8 +62,24 @@ test.describe('Find Bar lab', () => {
     await expect(status).toHaveText('1 of 5');
     await area.getByRole('button', { name: 'Previous match' }).click();
     await expect(status).toHaveText('5 of 5');
+    // Only the current match stands out, in its own colour and outline, and it follows the steps.
+    const marks = area.locator('mark');
+    const current = area.locator('mark[data-lab-current]');
+    await expect(current).toHaveCount(1);
+    await expect(marks.nth(4)).toHaveAttribute('data-lab-current', 'true');
+    const look = (mark: typeof current) =>
+      mark.evaluate((element) => {
+        const style = getComputedStyle(element);
+        return { background: style.backgroundColor, outline: style.outlineStyle };
+      });
+    const active = await look(current);
+    const other = await look(marks.nth(0));
+    expect(active.background).not.toBe(other.background);
+    expect(active.outline).toBe('solid');
+    expect(other.outline).toBe('none');
     await box.fill('quince');
     await expect(status).toHaveText('No results');
+    await expect(current).toHaveCount(0);
     await area.getByRole('button', { name: 'Clear search' }).click();
     await expect(box).toHaveValue('');
     await expect(status).toHaveText('');

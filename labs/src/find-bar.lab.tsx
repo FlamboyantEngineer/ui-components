@@ -75,7 +75,11 @@ function markMatches(text: string, matches: readonly Match[], current: number): 
   matches.forEach((match, index) => {
     parts.push(text.slice(offset, match.start));
     parts.push(
-      <mark key={match.start} data-lab-current={index === current || undefined}>
+      <mark
+        key={match.start}
+        data-lab-current={index === current || undefined}
+        aria-current={index === current || undefined}
+      >
         {text.slice(match.start, match.end)}
       </mark>,
     );
