@@ -4,6 +4,7 @@ import {
   getElementByIdWithin,
   getOwnerDocument,
   getOwnerWindow,
+  getTreeRoot,
 } from './owner-window.js';
 
 function frameWindow(): Window {
@@ -54,5 +55,19 @@ describe('owner document and window', () => {
     const light = document.body.appendChild(document.createElement('section'));
     expect(getElementByIdWithin(light, 'row')).toBeNull();
     expect(getElementByIdWithin(null, 'row')).toBeNull();
+  });
+
+  it('UIC-FIELD-2.6 takes the shadow root a node is in as its tree root, else its document', () => {
+    const shadow = document.body
+      .appendChild(document.createElement('div'))
+      .attachShadow({ mode: 'open' });
+    shadow.innerHTML = '<form><div></div></form>';
+    const inner = shadow.querySelector('div') as HTMLDivElement;
+    const nested = inner.attachShadow({ mode: 'open' });
+    nested.innerHTML = '<input>';
+    expect(getTreeRoot(inner)).toBe(shadow);
+    expect(getTreeRoot(nested.querySelector('input') as Element)).toBe(nested);
+    expect(getTreeRoot(document.body)).toBe(document);
+    expect(getTreeRoot(document.createElement('p'))).toBe(document);
   });
 });

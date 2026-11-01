@@ -1,6 +1,7 @@
 import { act, render } from '@testing-library/react';
 import { useRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { ShadowHost, shadowRootOf } from '../../test/shadow-fixtures.js';
 import { useNativeReset } from './use-native-reset.js';
 
 function Control({ form, onReset }: { form?: string; onReset: () => void }) {
@@ -116,6 +117,32 @@ describe('useNativeReset', () => {
       </form>,
     );
     resetForm('around');
+    await settle();
+    expect(onReset).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-FIELD-2.6 sees a reset of a form inside a shadow root', async () => {
+    const onReset = vi.fn();
+    const onCancel = vi.fn();
+    function Owned() {
+      const ref = useRef<HTMLInputElement>(null);
+      useNativeReset(ref, onReset, { onCancel });
+      return <input ref={ref} aria-label="Note" />;
+    }
+    render(
+      <ShadowHost name="panel">
+        <form>
+          <Owned />
+        </form>
+      </ShadowHost>,
+    );
+    const form = shadowRootOf('panel').querySelector('form') as HTMLFormElement;
+    form.addEventListener('reset', (event) => event.preventDefault(), { once: true });
+    act(() => form.reset());
+    await settle();
+    expect(onCancel).toHaveBeenCalledTimes(1);
+    expect(onReset).not.toHaveBeenCalled();
+    act(() => form.reset());
     await settle();
     expect(onReset).toHaveBeenCalledTimes(1);
   });

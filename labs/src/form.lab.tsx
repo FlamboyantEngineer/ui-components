@@ -17,6 +17,7 @@ import { SegmentedChoice } from '../../src/components/segmented-choice/segmented
 import { Switch } from '../../src/components/switch/switch.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { ShadowFormCase } from './form-shadow-cases.js';
 import { ExternalSave } from './form-validity-cases.js';
 import { LabOutput } from './lab-output.js';
 
@@ -352,6 +353,12 @@ mountLab(
       description="The note and the checkbox sit inside the nearby form, but their form attribute names a form that does not exist yet, so they belong to no form: edit them and Reset nearby leaves them. Add the named form, and its Reset puts them back."
     >
       <OwnedElsewhere />
+    </LabSection>
+    <LabSection
+      title="Inside a shadow root"
+      description="A form inside a web component's shadow root, where reset and form data events stay. Change the fruit and choose Week, then press Reset: everything returns to Fig and Day, and the attached sample.txt still submits. With Keep shadow edits on, the reset is cancelled and the edits stay."
+    >
+      <ShadowFormCase />
     </LabSection>
     <LabSection
       title="Submitting from outside"

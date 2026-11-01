@@ -22,6 +22,15 @@ export function getOwnerWindow(node: Node | null | undefined): Window & typeof g
   return (getOwnerDocument(node).defaultView as (Window & typeof globalThis) | null) ?? window;
 }
 
+/**
+ * The root of the tree `node` is in: its shadow root, else its document. Events that do not cross
+ * a shadow boundary, such as a form's `reset` and `formdata`, reach a listener there.
+ */
+export function getTreeRoot(node: Node): Document | ShadowRoot {
+  const root = node.getRootNode();
+  return root.nodeType === 11 ? (root as ShadowRoot) : getOwnerDocument(node);
+}
+
 /** The element with `id` in the tree `node` is in: its shadow root, else its document. */
 export function getElementByIdFrom(node: Node | null | undefined, id: string): HTMLElement | null {
   const root = node?.getRootNode();
