@@ -322,9 +322,39 @@ describe('NotificationList', () => {
     );
     expect(container.firstElementChild).not.toHaveAttribute('aria-busy');
     expect(container.querySelector('[aria-busy="true"] [role="status"]')).toBeNull();
-    rerender(<NotificationList items={[]} getNow={getNow} hasMore onLoadMore={onLoadMore} />);
+    rerender(<NotificationList items={[]} getNow={getNow} onLoadMore={onLoadMore} />);
     expect(container.querySelector('.ui-notification-list__load-more')).toBeNull();
     expectHooksMatchSpec(container, 'NOTIFICATION-CENTER', { slots: ['empty'] });
+  });
+
+  it('UIC-NOTIFICATION-CENTER-1.7 UIC-NOTIFICATION-CENTER-1.8 keeps loading under a filter that shows no loaded row', async () => {
+    const onLoadMore = vi.fn();
+    const read = { id: 'read', title: 'Read note', time: '2026-04-20T09:00:00', isRead: true };
+    const unread = { id: 'unread', title: 'Unread note', time: '2026-04-20T08:00:00' };
+    const list = (shown: NotificationItem[], count: number, hasMore = true) => (
+      <NotificationList
+        items={shown}
+        getNow={getNow}
+        defaultFilter="unread"
+        unreadCount={count}
+        hasMore={hasMore}
+        onLoadMore={onLoadMore}
+      />
+    );
+    const { rerender } = render(list([read], 5));
+    expect(screen.queryByText('Nothing unread')).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Load more' }));
+    expect(onLoadMore).toHaveBeenCalledTimes(1);
+    // Reading the last unread row shown keeps Load more while later pages hold unread ones.
+    rerender(list([read, unread], 5));
+    rerender(list([read, { ...unread, isRead: true }], 4));
+    expect(screen.getByRole('button', { name: 'Load more' })).toBeInTheDocument();
+    expect(screen.queryByText('Nothing unread')).not.toBeInTheDocument();
+    // The count still says some are unread: the list does not claim the reader caught up.
+    rerender(list([read], 2, false));
+    expect(screen.queryByText('Nothing unread')).not.toBeInTheDocument();
+    rerender(list([read], 0, false));
+    expect(screen.getByText('Nothing unread')).toBeInTheDocument();
   });
 
   it('UIC-NOTIFICATION-CENTER-3.1 announces notifications that arrive', () => {

@@ -6,14 +6,14 @@
 
 ### UIC-REACTION-BAR-1.1 - Chips
 
-`ReactionBar` shall render a `ui-reaction-bar` element holding one chip per entry of `reactions`, in order: a chip-variant `Button` in the `ui-reaction-bar__reaction` slot showing the emoji in `ui-reaction-bar__emoji` and the count in `ui-reaction-bar__count`. An entry's count is `count`, else the number of its `people`; an entry counting nobody draws no chip. The emoji is a standard glyph, drawn as text, or `:shortcode:`: a shortcode found in `customEmoji` draws that emoji's image in `ui-reaction-bar__image` with empty alternative text, and any other is drawn as its text.
+`ReactionBar` shall render a `ui-reaction-bar` element holding one chip per entry of `reactions`, in order: a chip-variant `Button` in the `ui-reaction-bar__reaction` slot showing the emoji in `ui-reaction-bar__emoji` and the count in `ui-reaction-bar__count`, in the provider locale's digits and grouping (`1,234`; `١٬٢٣٤` in `ar-EG`). An entry's count is `count`, else the number of its `people`; an entry counting nobody draws no chip. The emoji is a standard glyph, drawn as text, or `:shortcode:`: a shortcode found in `customEmoji` draws that emoji's image in `ui-reaction-bar__image` with empty alternative text, and any other is drawn as its text.
 
 Implementation: `src/components/reaction-bar/reaction-bar.tsx`
 Verification: `src/components/reaction-bar/reaction-bar.test.tsx`, `e2e/reaction-bar.spec.ts`
 
 ### UIC-REACTION-BAR-1.2 - Who reacted
 
-Each chip shall be named by the provider's `reactionLabel` string from the emoji (a custom emoji's `label` when it has one), the count and the first `maxNames` names of `people` (3 by default), such as `👍 5, reacted by Ana Lima, Ben Ode and 3 others`, where the others are the count less the names listed. The same text shows in a `Tooltip` on hover and keyboard focus, which names the chip rather than describing it again.
+Each chip shall be named by the provider's `reactionLabel` string from the emoji (a custom emoji's `label` when it has one), the count and the first `maxNames` names of `people` (3 by default), such as `👍 5, reacted by Ana Lima, Ben Ode and 3 others`, where the others are the count less the names listed; the count and the others read in the locale's digits and grouping, as on the chip. The same text shows in a `Tooltip` on hover and keyboard focus, which names the chip rather than describing it again.
 
 Implementation: `src/components/reaction-bar/reaction-bar.tsx`, `src/core/strings/content.ts`
 Verification: `src/components/reaction-bar/reaction-bar.test.tsx`, `e2e/reaction-bar.spec.ts`

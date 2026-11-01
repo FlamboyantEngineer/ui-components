@@ -148,6 +148,56 @@ function ChangingMeanings() {
   );
 }
 
+/** A dialog whose entries and signer change while it is open (UIC-SIGNATURE-DIALOG-2.2, 2.3). */
+function ChangingSession() {
+  const [open, setOpen] = useState(false);
+  const [isAsking, setAsking] = useState(true);
+  const [signer, setSigner] = useState('Ada Lovelace');
+  const [signed, setSigned] = useState('none');
+  const entry = isAsking ? 'optional' : 'none';
+  return (
+    <>
+      <Button
+        data-lab-open="session"
+        onPress={() => {
+          setAsking(true);
+          setSigner('Ada Lovelace');
+          setOpen(true);
+        }}
+      >
+        Sign with changing entries
+      </Button>
+      <p>
+        Signed: <output data-lab-output="session">{signed}</output>
+      </p>
+      <SignatureDialog
+        isOpen={open}
+        onOpenChange={setOpen}
+        title="Sign the shift handover"
+        userName={signer}
+        meanings={meaningSets.one}
+        reason={entry}
+        drawing={entry}
+        onSign={(details) => setSigned(describeSignature(details))}
+        data-lab-modal="session"
+      >
+        <p>
+          <Button size="sm" onPress={() => setAsking((current) => !current)}>
+            {isAsking ? 'Stop asking for a reason and signature' : 'Ask for a reason and signature'}
+          </Button>{' '}
+          <Button
+            size="sm"
+            isDisabled={signer !== 'Ada Lovelace'}
+            onPress={() => setSigner('Grace Hopper')}
+          >
+            Hand over to Grace Hopper
+          </Button>
+        </p>
+      </SignatureDialog>
+    </>
+  );
+}
+
 function Entries({
   reason,
   drawing,
@@ -202,6 +252,12 @@ mountLab(
       description="Pick Reviewed, then load the next meanings: Reviewed is gone, so Sign asks for a new choice. Load again: the sole meaning stated, Reviewed, is the one signed."
     >
       <ChangingMeanings />
+    </LabSection>
+    <LabSection
+      title="Entries and signer that change while open"
+      description="Type a reason and a signature, then stop asking for them: Sign leaves them out, and asking again brings them back. Hand over to another signer: every entry starts empty and the password is asked again. Closing clears the entries too."
+    >
+      <ChangingSession />
     </LabSection>
     <LabSection
       title="Reason and drawn signature"

@@ -88,6 +88,30 @@ describe('ReactionBar', () => {
     expect(screen.getByRole('button', { name: ':unknown: 2' })).toHaveTextContent(':unknown:2');
   });
 
+  it.each([
+    ['en-US', '1,234', '👍 1,234, reacted by Ana and 1,233 others', '🎉 1,234'],
+    ['ar-EG', '١٬٢٣٤', '👍 ١٬٢٣٤, reacted by Ana and ١٬٢٣٣ others', '🎉 ١٬٢٣٤'],
+  ])(
+    'UIC-REACTION-BAR-1.1 UIC-REACTION-BAR-1.2 formats counts in the %s locale',
+    (locale, visible, named, unnamed) => {
+      render(
+        <UiProvider locale={locale}>
+          <ReactionBar
+            reactions={[
+              { emoji: '👍', count: 1234, people: ['Ana'] },
+              { emoji: '🎉', count: 1234.7 },
+              { emoji: '🙂', count: 0 },
+            ]}
+          />
+        </UiProvider>,
+      );
+      const chips = screen.getAllByRole('button');
+      expect(chips).toHaveLength(2);
+      expect(screen.getByRole('button', { name: named })).toHaveTextContent(`👍${visible}`);
+      expect(screen.getByRole('button', { name: unnamed })).toHaveTextContent(`🎉${visible}`);
+    },
+  );
+
   it('UIC-REACTION-BAR-1.3 toggles the reader reaction on a chip press', async () => {
     const onToggle = vi.fn();
     render(<ReactionBar reactions={reactions} onToggle={onToggle} />);
