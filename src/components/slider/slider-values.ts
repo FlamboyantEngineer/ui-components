@@ -16,9 +16,12 @@ function countDecimals(step: number): number {
 
 /**
  * A number on the grid, as React Aria's slider draws it: the nearest step from the minimum within
- * the bounds, rounded to the step's decimals; above the last step it is the last step.
+ * the bounds, rounded to the step's decimals; above the last step it is the last step. NaN is the
+ * minimum, and an infinity the end it points to.
  */
-export function snapToStep(value: number, { minValue, maxValue, step }: SliderGrid): number {
+export function snapToStep(given: number, { minValue, maxValue, step }: SliderGrid): number {
+  // NaN reads as the minimum; the infinities clamp to the ends.
+  const value = Number.isNaN(given) ? minValue : given;
   const decimals = countDecimals(step);
   const round = (number: number) => (decimals > 0 ? Number(number.toFixed(decimals)) : number);
   if (!(step > 0)) return clamp(value, minValue, maxValue);

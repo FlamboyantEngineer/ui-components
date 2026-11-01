@@ -144,6 +144,7 @@ function Normalized() {
       <Button onPress={() => setMaxValue((max) => (max === 1 ? 0.25 : 1))}>
         {maxValue === 1 ? 'Narrow to 0.25' : 'Widen to 1'}
       </Button>
+      <Button onPress={() => setValue([Number.NaN, Infinity])}>Give NaN and Infinity</Button>
       <LabOutput name="Share">{value.join(' to ')}</LabOutput>
     </>
   );
@@ -264,7 +265,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Normalized value"
-      description="Validation, callbacks and the form all hold the snapped, clamped and ordered value."
+      description="Validation, callbacks and the form all hold the snapped, clamped and ordered value. NaN reads as the minimum and Infinity as the last step, reported as a change."
     >
       <Normalized />
     </LabSection>

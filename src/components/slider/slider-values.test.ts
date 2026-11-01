@@ -15,6 +15,15 @@ describe('slider values', () => {
     expect(snapToStep(2e-7, { minValue: 0, maxValue: 1, step: 1e-7 })).toBe(2e-7);
   });
 
+  it('UIC-SLIDER-1.2 maps NaN to the minimum and an infinity to its end', () => {
+    const grid = { minValue: 10, maxValue: 50, step: 7 };
+    expect(snapToStep(Number.NaN, grid)).toBe(10);
+    expect(snapToStep(Infinity, grid)).toBe(45);
+    expect(snapToStep(-Infinity, grid)).toBe(10);
+    expect(normalizeSliderValue([Number.NaN, 30], grid)).toEqual([10, 31]);
+    expect(normalizeSliderValue([24, Infinity], grid)).toEqual([24, 45]);
+  });
+
   it('UIC-SLIDER-1.2 puts a range in order', () => {
     const grid = { minValue: 0, maxValue: 100, step: 1 };
     expect(normalizeSliderValue([80, 20], grid)).toEqual([20, 80]);

@@ -6,7 +6,7 @@
 
 ### UIC-TAGS-INPUT-1.1 - Field control
 
-`TagsInput` shall render a `Field` around a frame (`ui-tags-input__group`, a React Aria `Group` with role `presentation`) that holds the tags and then a text input (`ui-tags-input__input`, a React Aria `Input`), built with `useFieldControl`. Its root element is the field's root, which carries `ui-tags-input` beside `ui-field`. The value is the list of tags, in the order they were added: a field given no value, committed value or default starts with none, and Clear empties it. The tags show in the library's `TagGroup` (`ui-tags-input__tags`, also `ui-tag-group`), one `Tag` per value, which renders only while there is a tag. Adding or removing tags sets the new list and commits it.
+`TagsInput` shall render a `Field` around a frame (`ui-tags-input__group`, a React Aria `Group` with role `presentation`) that holds the tags and then a text input (`ui-tags-input__input`, a React Aria `Input`), built with `useFieldControl`. Its root element is the field's root, which carries `ui-tags-input` beside `ui-field`. The value is the list of tags, in the order they were added: a field given no value, committed value or default starts with none, and Clear empties it. A list whose tags are all blank is empty: it shows no fill (`data-filled`) and a required field reports the missing value. The tags show in the library's `TagGroup` (`ui-tags-input__tags`, also `ui-tag-group`), one `Tag` per value, which renders only while there is a tag. Adding or removing tags sets the new list and commits it.
 
 Implementation: `src/components/tags-input/tags-input.tsx`, `src/components/tags-input/tags-input-parts.tsx`, `labs/reference/tags-input.css`
 Verification: `src/components/tags-input/tags-input.test.tsx`, `e2e/tags-input.spec.ts`
@@ -80,7 +80,7 @@ Verification: `src/components/tags-input/tags-input.test.tsx`, `src/components/t
 
 ### UIC-TAGS-INPUT-3.3 - Duplicates
 
-A tag equal to one the field holds (compared exactly, after trimming) shall be refused with the provider string `duplicateValue` (“Apple” is already added., validity `customError`), unless `allowsDuplicates` is set. Equal tags then show as separate tags, each removable on its own.
+A tag equal to one the field holds (compared exactly, after trimming) shall be refused with the provider string `duplicateValue` (“Apple” is already added., validity `customError`), unless `allowsDuplicates` is set. A given value that repeats a tag shows every tag but reports the first repeated one with the same message, as an error, until one copy is removed. With `allowsDuplicates`, equal tags show as separate tags, each removable on its own.
 
 Implementation: `src/components/tags-input/tag-entry.ts`, `src/components/tags-input/tags-input-parts.tsx`, `src/core/strings/field.ts`
 Verification: `src/components/tags-input/tags-input.test.tsx`, `src/components/tags-input/tag-entry.test.ts`

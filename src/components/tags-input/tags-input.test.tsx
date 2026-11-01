@@ -381,6 +381,27 @@ describe('TagsInput', () => {
     expect(tagTexts()).toEqual(['A', 'B', 'C', 'D']);
   });
 
+  it('UIC-TAGS-INPUT-1.1 counts only tags with text toward a value', () => {
+    const { container, rerender } = render(
+      <TagsInput label="Fruit" value={['', ' ']} isRequired />,
+    );
+    expect(root(container)).not.toHaveAttribute('data-filled');
+    expect(root(container)).toHaveAttribute('data-validation', 'invalid');
+    rerender(<TagsInput label="Fruit" value={['', 'Fig']} isRequired />);
+    expect(root(container)).toHaveAttribute('data-filled', 'true');
+    expect(root(container)).toHaveAttribute('data-validation', 'valid');
+  });
+
+  it('UIC-TAGS-INPUT-3.3 flags a given value that repeats a tag', () => {
+    const { container, rerender } = render(
+      <TagsInput label="Fruit" value={['Fig', 'Kiwi', 'Fig']} validationMode="immediate" />,
+    );
+    expect(root(container)).toHaveAttribute('data-validation', 'invalid');
+    expect(message(container)).toBe('“Fig” is already added.');
+    rerender(<TagsInput label="Fruit" value={['Fig', 'Kiwi', 'Fig']} allowsDuplicates />);
+    expect(root(container)).toHaveAttribute('data-validation', 'valid');
+  });
+
   it('UIC-TAGS-INPUT-3.3 accepts duplicates as separate tags when allowed', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();

@@ -8,7 +8,7 @@ Pointer ownership and drag lifecycle cleanup follow the shared [drag interaction
 
 ### UIC-NUMBER-FIELD-1.1 - Field control
 
-`NumberField` shall render a `Field` around a number field element, built with `useFieldControl`, and take the field's props, its own range, step, format and commit props and `placeholder`. Its root element is the field's root, which carries `ui-number-field` beside `ui-field`. The value is a number or `null` while empty; a field given no value, committed value or default starts empty, and Clear empties it.
+`NumberField` shall render a `Field` around a number field element, built with `useFieldControl`, and take the field's props, its own range, step, format and commit props and `placeholder`. Its root element is the field's root, which carries `ui-number-field` beside `ui-field`. The value is a number or `null` while empty; a field given no value, committed value or default starts empty, and Clear empties it. A non-finite number (`NaN`, `Infinity` or `-Infinity`, given as `value`, `defaultValue` or `committedValue`) reads as no value in every radix: the input shows it empty, the field is empty (no `data-filled`; a required field reports the missing value and blocks), the range and step checks pass over it, and the form submits nothing for it. The field reports no change of its own for it.
 
 Implementation: `src/components/number-field/number-field.tsx`, `src/components/field/field-control.ts`
 Verification: `src/components/number-field/number-field.test.tsx`

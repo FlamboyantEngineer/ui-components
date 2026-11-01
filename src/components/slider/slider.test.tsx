@@ -113,6 +113,18 @@ describe('Slider', () => {
     expect(root(container)).toHaveAttribute('data-dirty', 'true');
   });
 
+  it('UIC-SLIDER-1.2 moves a non-finite value onto the grid as a change', () => {
+    const onChange = vi.fn();
+    const { rerender } = render(
+      <Slider label="Level" minValue={10} value={Number.NaN} onChange={onChange} />,
+    );
+    expect(onChange).toHaveBeenLastCalledWith(10);
+    expect(thumbs()[0]).toHaveValue('10');
+    rerender(<RangeSlider label="Level" value={[20, Infinity]} onChange={onChange} />);
+    expect(onChange).toHaveBeenLastCalledWith([20, 100]);
+    expect(thumbs().map((thumb) => thumb.value)).toEqual(['20', '100']);
+  });
+
   it('UIC-SLIDER-1.3 sizes the fill from the minimum or the fill offset and positions the thumb', () => {
     const { container, rerender } = render(<Slider label="Volume" defaultValue={30} />);
     const fill = container.querySelector<HTMLElement>('.ui-slider__fill');

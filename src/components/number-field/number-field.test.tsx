@@ -62,6 +62,36 @@ describe('NumberField', () => {
     expectHooksMatchSpec(container, 'FIELD', { slots: ['label', 'control'] });
   });
 
+  it('UIC-NUMBER-FIELD-1.1 reads a non-finite value as empty in every radix', () => {
+    const givens = ['value', 'defaultValue', 'committedValue'] as const;
+    for (const radix of [2, 8, 10, 16] as const) {
+      for (const number of [Number.NaN, Infinity, -Infinity]) {
+        for (const given of givens) {
+          const { container, unmount } = render(
+            <form aria-label="Order">
+              <NumberField
+                label="Count"
+                name="count"
+                radix={radix}
+                isRequired
+                {...{ [given]: number }}
+              />
+            </form>,
+          );
+          const role = radix === 10 ? 'textbox' : 'spinbutton';
+          expect(screen.getByRole(role, { name: 'Count' })).toHaveValue('');
+          expect(root(container)).not.toHaveAttribute('data-filled');
+          expect(root(container)).toHaveAttribute('data-validation', 'invalid');
+          const form = screen.getByRole('form', { name: 'Order' }) as HTMLFormElement;
+          expect(new FormData(form).getAll('count').filter(Boolean)).toEqual([]);
+          unmount();
+        }
+      }
+    }
+    const { container } = render(<NumberField label="Count" value={Infinity} maxValue={10} />);
+    expect(root(container)).toHaveAttribute('data-validation', 'valid');
+  });
+
   it('UIC-NUMBER-FIELD-1.2 formats and parses in the provider locale', async () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();

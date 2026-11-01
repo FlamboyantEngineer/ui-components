@@ -157,6 +157,22 @@ mountLab(
     >
       <Limits />
     </LabSection>
+    <LabSection
+      title="Given values"
+      description="A given list of blank tags is empty, so a required field asks for a tag; a given list that repeats a tag says which one."
+    >
+      <StateMatrix
+        axes={{ given: ['blank tags', 'repeated tag'] }}
+        render={({ given }) => (
+          <TagsInput
+            label="Fruit"
+            isRequired
+            validationMode="immediate"
+            defaultValue={given === 'blank tags' ? ['', ' '] : ['Fig', 'Kiwi', 'Fig']}
+          />
+        )}
+      />
+    </LabSection>
     <LabSection title="Tag validation" description="Each guest must be an email address.">
       <TagsInput
         label="Guests"
