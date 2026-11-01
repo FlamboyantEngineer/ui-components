@@ -8,6 +8,37 @@ import { useLatest } from '../../utils/use-latest.js';
 import type { PdfPagesController } from './use-pdf-pages.js';
 import type { PdfZoomState } from './use-pdf-zoom.js';
 import { isNode } from '../../utils/is-element.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
+import { isEditableTarget } from '../../utils/is-editable-target.js';
+
+/** Widgets a caller may draw over a page that use Home, End and the page keys themselves. */
+const keyOwningWidgets = [
+  'slider',
+  'spinbutton',
+  'textbox',
+  'combobox',
+  'listbox',
+  'grid',
+  'tree',
+  'treegrid',
+  'menu',
+  'tablist',
+]
+  .map((role) => `[role="${role}"]`)
+  .join(', ');
+
+/**
+ * Whether a key press belongs to something inside the scroller rather than to the page scroller:
+ * a field, editable content or a key-owning widget, a press another handler already took, or one
+ * that confirms an input method's text.
+ */
+function isOwnedInside(event: KeyboardEvent<HTMLElement>) {
+  return (
+    event.defaultPrevented ||
+    isComposingKey(event.nativeEvent) ||
+    (event.target !== event.currentTarget && isEditableTarget(event.target, keyOwningWidgets))
+  );
+}
 
 interface UsePdfKeyboardOptions {
   isReady: boolean;
@@ -67,14 +98,15 @@ export function readPageKey(
 /**
  * The viewer's keyboard: Ctrl or Command with F focuses the find field, with + and - steps the zoom
  * and with 0 returns to the opening zoom, instead of the browser's own. In the page scroller, Home
- * and End go to the first and last page, and Page Up and Page Down turn pages that fit the view.
+ * and End go to the first and last page, and Page Up and Page Down turn pages that fit the view,
+ * unless a field or widget drawn over a page, or another handler, takes the key.
  */
 export function usePdfKeyboard(options: UsePdfKeyboardOptions): PdfKeyboard {
   const latest = useLatest(options);
 
   const onViewerKeyDown = useCallback(
     (event: KeyboardEvent<HTMLElement>) => {
-      if (!(event.ctrlKey || event.metaKey) || event.altKey) return;
+      if (event.defaultPrevented || !(event.ctrlKey || event.metaKey) || event.altKey) return;
       const shortcut = readShortcut(readCommandKey(event));
       if (event.shiftKey && shortcut !== 'zoom-in') return;
       const { isReady, zoom, defaultZoom, findFieldRef } = latest.current;
@@ -99,6 +131,7 @@ export function usePdfKeyboard(options: UsePdfKeyboardOptions): PdfKeyboard {
       const { isReady, pages, pageCount, zoom } = latest.current;
       const isOwn = isNode(event.target) && event.currentTarget.contains(event.target);
       if (!isReady || !isOwn || event.ctrlKey || event.metaKey || event.altKey) return;
+      if (isOwnedInside(event)) return;
       const pageIndex = readPageKey(event.key, {
         currentPage: pages.currentPage,
         pageCount,

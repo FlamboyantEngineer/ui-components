@@ -124,6 +124,49 @@ describe('PdfViewer keyboard', () => {
     expect(scroller().scrollTop).toBe(0);
   });
 
+  it.each([
+    ['{End}', 'page-fit'],
+    ['{Home}', 'page-fit'],
+    ['{PageDown}', 'page-fit'],
+    ['{End}', 100],
+  ] as const)(
+    'UIC-PDF-VIEWER-4.6 leaves %s to a field drawn over a page at %s zoom',
+    async (key, zoom) => {
+      const user = userEvent.setup();
+      stubLayout();
+      await renderReady({
+        defaultZoom: zoom,
+        renderPageOverlay: (page) =>
+          page.pageIndex === 0 ? <input aria-label="Note" defaultValue="abcdef" /> : null,
+      });
+      const note = screen.getByRole('textbox', { name: 'Note' });
+      focus(note);
+      expect(await pressUnhandled(user, key)).toBe(true);
+      expect(scroller().scrollTop).toBe(0);
+      expect(screen.getByLabelText('Page')).toHaveValue('1');
+      expect(note).toHaveFocus();
+    },
+  );
+
+  it('UIC-PDF-VIEWER-4.6 leaves a page key that a widget over the page handled', async () => {
+    const user = userEvent.setup();
+    stubLayout();
+    await renderReady({
+      defaultZoom: 'page-fit',
+      renderPageOverlay: (page) =>
+        page.pageIndex === 0 ? (
+          <button type="button" onKeyDown={(event) => event.preventDefault()}>
+            Mark
+          </button>
+        ) : null,
+    });
+    focus(screen.getByRole('button', { name: 'Mark' }));
+    await user.keyboard('{End}');
+    expect(scroller().scrollTop).toBe(0);
+    await user.keyboard('{Control>}={/Control}');
+    expect(screen.getByLabelText('Page')).toHaveValue('1');
+  });
+
   it('UIC-PDF-VIEWER-4.6 turns pages that fit the view with Page Up and Page Down', async () => {
     const user = userEvent.setup();
     stubLayout();

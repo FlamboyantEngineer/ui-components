@@ -229,6 +229,27 @@ test.describe('PDF Viewer lab', () => {
     await expect(reader.locator('[data-lab-output="shares"]')).toHaveText('1');
   });
 
+  test('UIC-PDF-VIEWER-4.6 leaves Home, End and the page keys to a field drawn over a page', async ({
+    page,
+    lab,
+  }) => {
+    const annotated = await openCase(page, lab, 'annotated');
+    const note = annotated.getByRole('textbox', { name: 'Page note' });
+    const pageField = annotated.getByLabel('Page', { exact: true });
+    await note.click();
+    await page.keyboard.press('Home');
+    await page.keyboard.press('End');
+    await page.keyboard.press('PageDown');
+    await expect(note).toBeFocused();
+    expect(await note.evaluate((field: HTMLInputElement) => field.selectionStart)).toBe(
+      'Check the harvest totals'.length,
+    );
+    await expect(pageField).toHaveValue('1');
+    await annotated.getByRole('document').focus();
+    await page.keyboard.press('End');
+    await expect(pageField).toHaveValue('3');
+  });
+
   test('UIC-PDF-VIEWER-7.1 UIC-PDF-VIEWER-7.2 UIC-PDF-VIEWER-7.3 UIC-PDF-VIEWER-7.4 draws marks on their pages in page coordinates and reveals them', async ({
     page,
     lab,

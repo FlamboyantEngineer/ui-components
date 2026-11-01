@@ -177,7 +177,7 @@ Verification: `src/components/pdf-viewer/pdf-destination.test.ts`, `src/componen
 
 ### UIC-PDF-VIEWER-4.6 - Page keys
 
-With focus in the page scroller and the document open, Home and End shall go to the first and the last page. Page Up and Page Down go to the previous and the next page while the zoom fits the whole page; at any other zoom they keep the browser's scrolling by a screen, as the arrow keys and the space bar do.
+With focus in the page scroller and the document open, Home and End shall go to the first and the last page. Page Up and Page Down go to the previous and the next page while the zoom fits the whole page; at any other zoom they keep the browser's scrolling by a screen, as the arrow keys and the space bar do. A key pressed in a field, editable content or a key-owning widget (slider, spin button, text box, combo box, list box, grid, tree, menu or tab list) that a caller draws over a page stays with it, as does a key another handler already handled (its default prevented) or one that confirms an input method's text; the viewer's Ctrl or Command shortcuts likewise leave a handled key alone.
 
 Implementation: `src/components/pdf-viewer/use-pdf-keyboard.ts`, `src/components/pdf-viewer/pdf-viewer-stage.tsx`
 Verification: `src/components/pdf-viewer/use-pdf-keyboard.test.tsx`, `e2e/pdf-viewer.spec.ts`
