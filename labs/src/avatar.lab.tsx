@@ -6,6 +6,7 @@ import {
   type AvatarSize,
 } from '../../src/components/avatar/avatar.js';
 import { Button } from '../../src/components/button/button.js';
+import { UserCard } from '../../src/components/user-card/user-card.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { brokenPicture, otherPicture, samplePicture } from './people-samples.js';
 
@@ -112,7 +113,7 @@ mountLab(
     <div data-lab-family="avatar-main">
       <LabSection
         title="Content, variant and size"
-        description="A picture, initials and a group glyph in each variant and size. The fill size takes a 48px box."
+        description="A picture, initials and a group glyph in each variant and size. The fill size takes a 48px box. The outlined ring is drawn over the picture, with no light seam inside it."
       >
         <StateMatrix
           axes={{ content: ['picture', 'initials', 'group'], variant: variants, size: sizes }}
@@ -172,6 +173,24 @@ mountLab(
               shape={shape}
               variant={variant}
               size="lg"
+            />
+          )}
+        />
+      </LabSection>
+      <LabSection
+        title="Group card trigger"
+        description="A group avatar that opens a card keeps its glyph centred in every shape."
+      >
+        <StateMatrix
+          axes={{ shape: shapes, variant: variants }}
+          render={({ shape, variant }) => (
+            <Avatar
+              name="Design team"
+              kind="group"
+              shape={shape}
+              variant={variant}
+              size="lg"
+              card={<UserCard name="Design team" description="Six people" />}
             />
           )}
         />

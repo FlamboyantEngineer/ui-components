@@ -1,6 +1,7 @@
 import { act, render } from '@testing-library/react';
 import { useRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { ShadowHost, shadowRootOf } from '../../test/shadow-fixtures.js';
 import { useNativeReset } from './use-native-reset.js';
 
 function Control({ form, onReset }: { form?: string; onReset: () => void }) {
@@ -56,6 +57,92 @@ describe('useNativeReset', () => {
     rerender(view('b'));
     expect(container.querySelector('form')).not.toBe(replaced);
     resetForm('owner');
+    await settle();
+    expect(onReset).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-FIELD-2.6 leaves a native control whose form names no form out of the form around it', async () => {
+    const onReset = vi.fn();
+    const nearby = (
+      <form id="nearby">
+        <Control form="missing-form" onReset={onReset} />
+      </form>
+    );
+    const { rerender } = render(nearby);
+    resetForm('nearby');
+    await settle();
+    expect(onReset).not.toHaveBeenCalled();
+    // The named form arriving later owns the control from then on.
+    rerender(
+      <>
+        {nearby}
+        <form id="missing-form" />
+      </>,
+    );
+    resetForm('nearby');
+    await settle();
+    expect(onReset).not.toHaveBeenCalled();
+    resetForm('missing-form');
+    await settle();
+    expect(onReset).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-FIELD-2.6 drops a control whose named form is removed', async () => {
+    const onReset = vi.fn();
+    const view = (hasOwner: boolean) => (
+      <>
+        <form id="nearby">
+          <Control form="owner" onReset={onReset} />
+        </form>
+        {hasOwner ? <form id="owner" /> : null}
+      </>
+    );
+    const { rerender } = render(view(true));
+    rerender(view(false));
+    resetForm('nearby');
+    await settle();
+    expect(onReset).not.toHaveBeenCalled();
+  });
+
+  it('UIC-FIELD-2.6 resets an element without a native owner, such as a group root, with the form around it', async () => {
+    const onReset = vi.fn();
+    function Group() {
+      const ref = useRef<HTMLDivElement>(null);
+      useNativeReset(ref, onReset);
+      return <div ref={ref} role="group" aria-label="Sizes" />;
+    }
+    render(
+      <form id="around">
+        <Group />
+      </form>,
+    );
+    resetForm('around');
+    await settle();
+    expect(onReset).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-FIELD-2.6 sees a reset of a form inside a shadow root', async () => {
+    const onReset = vi.fn();
+    const onCancel = vi.fn();
+    function Owned() {
+      const ref = useRef<HTMLInputElement>(null);
+      useNativeReset(ref, onReset, { onCancel });
+      return <input ref={ref} aria-label="Note" />;
+    }
+    render(
+      <ShadowHost name="panel">
+        <form>
+          <Owned />
+        </form>
+      </ShadowHost>,
+    );
+    const form = shadowRootOf('panel').querySelector('form') as HTMLFormElement;
+    form.addEventListener('reset', (event) => event.preventDefault(), { once: true });
+    act(() => form.reset());
+    await settle();
+    expect(onCancel).toHaveBeenCalledTimes(1);
+    expect(onReset).not.toHaveBeenCalled();
+    act(() => form.reset());
     await settle();
     expect(onReset).toHaveBeenCalledTimes(1);
   });

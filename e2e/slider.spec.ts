@@ -189,7 +189,7 @@ test.describe('Slider lab', () => {
     await page.keyboard.press('PageUp');
     await expect(start).not.toHaveAttribute('aria-invalid');
     await page.getByRole('button', { name: 'Submit' }).click();
-    await expect(output(page, 'Submitted')).toHaveText('volume=50 quiet=10 quiet=22');
+    await expect(output(page, 'Submitted')).toHaveText('volume=50 quiet-from=10 quiet-to=22');
   });
 });
 

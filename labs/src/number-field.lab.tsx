@@ -196,7 +196,7 @@ function FastSteps() {
     <>
       <NumberField
         label="Opacity"
-        description="Shift steps by 10, Alt by 0.1; drag the handle sideways to scrub. Releasing or cancelling ends the scrub."
+        description="Shift steps by 10, Alt by 0.1, with the arrows or the − and + buttons; drag the handle sideways to scrub. Releasing or cancelling ends the scrub."
         defaultValue={40}
         minValue={0}
         maxValue={100}
@@ -275,7 +275,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Fast steps"
-      description="Modifier steps and a scrub handle. A scrub the browser cancels (a pen leaving the screen) puts the start value back and saves nothing."
+      description="Modifier steps from the arrow keys and the step buttons, and a scrub handle. A scrub the browser cancels (a pen leaving the screen) puts the start value back and saves nothing."
     >
       <FastSteps />
     </LabSection>

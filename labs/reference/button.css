@@ -152,6 +152,11 @@
   flex: none;
 }
 
+/* The hidden "opens in a new tab" text reads as one phrase. */
+.ui-button__new-tab-label {
+  white-space: nowrap;
+}
+
 /* The spinner covers the icons and label, which keep their place so pending never resizes it. */
 .ui-button[data-pending] > :not(.ui-button__spinner) {
   opacity: 0;

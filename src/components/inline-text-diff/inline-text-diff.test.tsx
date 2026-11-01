@@ -140,4 +140,39 @@ describe('InlineTextDiff', () => {
     expect(root).toHaveAttribute('data-testid', 'probe');
     expectHooksMatchSpec(container, 'INLINE-TEXT-DIFF', { slots: ['added'] });
   });
+
+  /** Matches the whole text content, not a part of it. */
+  const exactly = (text: string) => new RegExp(`^${text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`);
+
+  it('UIC-INLINE-TEXT-DIFF-2.4 shows the final text without marks, from the segments or finalText', () => {
+    const cases: Array<[string, string]> = [
+      ['Pack the crates.', 'Pack the crates. Label each one.'],
+      ['Pears, plums and cherries', 'Pears and cherries'],
+      ['The red apple', 'The green apple'],
+      ['Unchanged', 'Unchanged'],
+      ['An old description', ''],
+      ['two  spaces\nand a line', 'two  spaces\nand  a\nline'],
+    ];
+    for (const [before, after] of cases) {
+      const { container, unmount } = render(
+        <InlineTextDiff segments={createInlineWordDiff(before, after)} view="final" />,
+      );
+      const root = container.querySelector('.ui-inline-text-diff');
+      expect(root).toHaveAttribute('data-view', 'final');
+      expect(root).toHaveTextContent(exactly(after), { normalizeWhitespace: false });
+      expect(container.querySelector('del, ins')).not.toBeInTheDocument();
+      unmount();
+    }
+    const long = `${'Pack the apples gently, '.repeat(4)}then label each crate.`;
+    const changed = long.replace('label', 'stamp');
+    const excerpt = createInlineTextDiffExcerpt(long, changed, { context: 8 });
+    const { container, rerender } = render(
+      <InlineTextDiff segments={excerpt} view="final" finalText={changed} />,
+    );
+    expect(container).toHaveTextContent(exactly(changed), { normalizeWhitespace: false });
+    rerender(<InlineTextDiff segments={excerpt} finalText={changed} />);
+    expect(container.querySelector('.ui-inline-text-diff')).toHaveAttribute('data-view', 'changes');
+    expect(screen.getByText('label')).toBeInTheDocument();
+    expect(container).not.toHaveTextContent(changed, { normalizeWhitespace: false });
+  });
 });

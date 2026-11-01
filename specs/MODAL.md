@@ -181,8 +181,10 @@ Verification: `src/components/modal/modal.test.tsx`
 
 Enter with exactly one of Control or Command and no other modifier, pressed anywhere in the modal's content (including a popover opened from it), shall run the primary action through the same lifecycle as a press. It shall do nothing while the primary action is disabled or pending, for plain Enter, for a repeated key or text composition, for a key press already handled, from a multiline editor (a `textarea`, an editable element or a multiline textbox) and when `actions` replaces the built-in buttons. A modal opened from another handles its own key presses. `isModalPrimaryShortcut` exposes the key test.
 
-Implementation: `src/components/modal/modal.tsx`, `src/components/modal/modal-shortcut.ts`
-Verification: `src/components/modal/modal.test.tsx`, `e2e/modal.spec.ts`
+A focused library Button inside the dialog, including Cancel, the close button and secondary actions, shall leave modified Enter to the dialog instead of activating its own press. The button's caller `onKeyDown` shall run exactly once and may prevent the shortcut, as may a content ancestor's handler. The dialog shall still refuse the focused button's native Enter activation when the primary is disabled, pending or otherwise excluded. Unmodified Enter and Space keep their ordinary button behavior. This handling shall apply only inside the dialog's primary-key boundary; buttons elsewhere remain unchanged.
+
+Implementation: `src/components/modal/modal.tsx`, `src/components/modal/modal-dialog.tsx`, `src/components/modal/modal-shortcut.ts`, `src/components/button/button-primary-keys.tsx`, `src/utils/primary-action-keys.tsx`
+Verification: `src/components/modal/modal.test.tsx`, `src/components/modal/modal-focused-shortcuts.test.tsx`, `src/components/modal/modal-consumed-escape.test.tsx`, `e2e/modal.spec.ts`
 
 ### UIC-MODAL-6.2 - Caller keys
 

@@ -9,6 +9,8 @@ import { useLayerZIndex } from '../portal/portal.js';
 import { TOOLTIP_DELAY, TOOLTIP_OFFSET } from '../../utils/overlay-defaults.js';
 import { tooltipHooks as hooks } from './tooltip-hooks.js';
 import { useInCallerTrigger } from './caller-trigger.js';
+import { useControllableState } from '../../core/controllable-state.js';
+import { useCloseWhenLocked } from '../../utils/use-close-when-locked.js';
 
 export type TooltipVariant = 'default' | 'info';
 
@@ -115,8 +117,16 @@ export function Tooltip({
   className,
   delay = TOOLTIP_DELAY,
   relationship = 'description',
+  isDisabled = false,
+  isOpen: isOpenProp,
+  defaultOpen = false,
+  onOpenChange,
   ...rest
 }: TooltipProps) {
+  const [isOpen, setOpen] = useControllableState(isOpenProp, defaultOpen, onOpenChange);
+  // A disabled tooltip draws its hint closed whatever its owner says, and closes an open hint once,
+  // through the ordinary close, so it stays closed when it is enabled again.
+  useCloseWhenLocked(isOpen, isDisabled, () => setOpen(false));
   // Inside a caller's own tooltip or hover card, that trigger keeps the element.
   const inCallerTrigger = useInCallerTrigger();
   const isLabel = relationship === 'label' && typeof content === 'string';
@@ -124,7 +134,13 @@ export function Tooltip({
   if (inCallerTrigger) return trigger;
   const [data, triggerProps] = splitDataAttributes(rest);
   return (
-    <TooltipTrigger {...triggerProps} delay={delay}>
+    <TooltipTrigger
+      {...triggerProps}
+      delay={delay}
+      isDisabled={isDisabled}
+      isOpen={isOpen && !isDisabled}
+      onOpenChange={setOpen}
+    >
       {trigger}
       <TooltipPanel {...data} variant={variant} className={className} placement={placement}>
         {content}

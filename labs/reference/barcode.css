@@ -1,0 +1,35 @@
+/* Barcode: black bars and value on a white ground in both themes, since readers expect that contrast. */
+
+.ui-barcode {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 120px;
+  min-height: 48px;
+  vertical-align: middle;
+  border-radius: var(--ref-radius);
+  outline: 1px solid var(--ref-border);
+  background: #ffffff; /* token-exempt: scanners need white quiet zones */
+}
+
+.ui-barcode__symbol {
+  display: block;
+}
+
+.ui-barcode__bars {
+  fill: #000000; /* token-exempt: scanners need black bars */
+}
+
+.ui-barcode__value {
+  padding: 2px 4px 4px;
+  color: #000000; /* token-exempt: the value reads on the white ground */
+  font-family: var(--ref-mono);
+  font-size: var(--ref-font-size-sm);
+  letter-spacing: 0.08em;
+  white-space: pre;
+}
+
+.ui-barcode[data-invalid] {
+  background: var(--ref-surface);
+  outline-style: dashed;
+}

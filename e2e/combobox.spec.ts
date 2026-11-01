@@ -583,3 +583,78 @@ test('UIC-COMBOBOX-3.1 UIC-PORTAL-1.8 names chips from aria-labelledby inside a 
   await demo.scrollIntoViewIfNeeded();
   await expect(demo.getByRole('grid', { name: 'Cities to visit selected values' })).toBeVisible();
 });
+
+test('UIC-COMBOBOX-1.1 keeps the list button at the trailing edge, centred, beside wrapping chips', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('combobox');
+  const section = page.locator('[data-lab-section="Chips by size"]');
+  const measure = () =>
+    section.locator('.ui-combobox__field').evaluateAll((fields) =>
+      fields.map((field) => {
+        const frame = field.getBoundingClientRect();
+        const button = field.querySelector('.ui-combobox__button')?.getBoundingClientRect();
+        const isRtl = getComputedStyle(field).direction === 'rtl';
+        const trailingGap = isRtl
+          ? (button?.left ?? 0) - frame.left
+          : frame.right - (button?.right ?? 0);
+        const middle = (button?.top ?? 0) + (button?.height ?? 0) / 2;
+        return {
+          label: field.querySelector('input')?.getAttribute('aria-label') ?? '',
+          rows: field.querySelectorAll('.ui-tag').length,
+          trailingGap,
+          offCentre: Math.abs(middle - (frame.top + frame.height / 2)),
+          tall: frame.height,
+        };
+      }),
+    );
+  const fields = await measure();
+  expect(fields).toHaveLength(16);
+  for (const field of fields) {
+    expect(field.trailingGap, field.label).toBeCloseTo(fields[0]?.trailingGap ?? 0, 0);
+    expect(field.offCentre, field.label).toBeLessThan(1);
+  }
+  // Four chips wrap in the narrow column, and the button still keeps its place.
+  const many = fields.filter(({ label }) => label.startsWith('Cities many'));
+  expect(many.some(({ tall }) => tall > 40)).toBe(true);
+  // Typed text adds the clear button beside the list button, both inside the frame.
+  const input = page.getByRole('combobox', { name: 'Cities many md' });
+  await input.fill('Qu');
+  const field = section.locator('.ui-combobox__field').filter({ has: input });
+  const boxes = await field.evaluate((element) => {
+    const frame = element.getBoundingClientRect();
+    const clear = element.querySelector('.ui-combobox__clear')?.getBoundingClientRect();
+    const button = element.querySelector('.ui-combobox__button')?.getBoundingClientRect();
+    return { frame: frame.right, clear: clear?.right ?? 0, button: button?.left ?? 0 };
+  });
+  expect(boxes.clear).toBeLessThanOrEqual(boxes.button + 0.5);
+  await input.press('Escape');
+  await lab.expectAccessible();
+});
+
+test('UIC-COMBOBOX-5.5 ends the list header 6px below its field, populated or empty', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('combobox');
+  const input = section(page, 'Filter in the list header').getByRole('combobox', {
+    name: 'City by first letters',
+  });
+  await input.click();
+  await page.keyboard.press('ArrowDown');
+  const header = page.locator('.ui-combobox__list-header');
+  const gapBelow = () =>
+    header.evaluate((element) => {
+      const control = element.querySelector('.ui-field__control')?.getBoundingClientRect();
+      const box = element.getBoundingClientRect();
+      // The header's bottom border is 1px.
+      return box.bottom - 1 - (control?.bottom ?? 0);
+    });
+  expect(await gapBelow()).toBeCloseTo(6, 0);
+  // No city starts with "x": the empty list keeps the same header.
+  await page.getByRole('textbox', { name: 'Starts with' }).fill('x');
+  await expect(page.getByRole('listbox').getByRole('option', { name: 'Paris' })).toHaveCount(0);
+  await expect(header).toBeVisible();
+  expect(await gapBelow()).toBeCloseTo(6, 0);
+});

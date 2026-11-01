@@ -237,8 +237,8 @@ describe('table grouping helpers', () => {
   it('UIC-TABLE-13.5 groups dates by day and leaves the nodes as they are without groupings', () => {
     const dated = buildTableNodes(
       [
-        { id: 'x', at: new Date('2026-10-02T10:00:00Z') },
-        { id: 'y', at: new Date('2026-10-02T18:00:00Z') },
+        { id: 'x', at: new Date(2026, 9, 2, 10) },
+        { id: 'y', at: new Date(2026, 9, 2, 18) },
       ],
       undefined,
     );
@@ -338,8 +338,8 @@ describe('table grouping by typed values', () => {
     const mixed: Entry[] = [
       { id: 'null', code: null, amount: 1 },
       { id: 'blank', code: '', amount: 2 },
-      { id: 'morning', code: new Date('2026-10-02T08:00:00Z'), amount: 3 },
-      { id: 'evening', code: new Date('2026-10-02T20:00:00Z'), amount: 4 },
+      { id: 'morning', code: new Date(2026, 9, 2, 8), amount: 3 },
+      { id: 'evening', code: new Date(2026, 9, 2, 20), amount: 4 },
       { id: 'text', code: '2026-10-02', amount: 5 },
     ];
     expect(summary(mixed).map(({ key, rows }) => ({ key, rows }))).toEqual([

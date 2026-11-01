@@ -1,4 +1,4 @@
-/* Code Block. A bordered panel: a header row of the title and actions over code that scrolls sideways. */
+/* Code Block. A bordered panel: a header row of the title and actions over code that scrolls, or wraps. */
 
 .ui-code-block {
   margin: 0 0 0.75em;
@@ -42,12 +42,17 @@
 .ui-code-block__code {
   margin: 0;
   padding: 10px 12px;
-  overflow-x: auto;
+  overflow: auto;
   font-family: var(--ref-mono);
   font-size: 0.9em;
   line-height: 1.45;
   white-space: pre;
   tab-size: 2;
+}
+
+.ui-code-block__code[data-wrap='soft'] {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .ui-code-block__code[data-overflowing]:focus-visible {
@@ -85,4 +90,46 @@
 .ui-code-block__prompt {
   color: var(--ref-muted);
   user-select: none;
+}
+
+/*
+ * Numbered lines. Each line is a block that starts with its number, drawn from data-line-number so
+ * it never joins a selection. The number sticks to the start while the code scrolls sideways, and
+ * a hanging indent keeps a wrapped line's later rows clear of the gutter.
+ */
+
+.ui-code-block__code[data-line-numbers] {
+  --ref-code-block-gutter: calc(var(--ui-code-block-line-number-digits, 1) * 1ch + 20px);
+
+  padding-inline-start: 0;
+}
+
+.ui-code-block__code[data-line-numbers][data-wrap='off'] > code {
+  display: block;
+  width: max-content;
+  min-width: 100%;
+}
+
+.ui-code-block__code[data-line-numbers] .ui-code-block__line {
+  display: block;
+  padding-inline-start: var(--ref-code-block-gutter);
+  text-indent: calc(-1 * var(--ref-code-block-gutter));
+}
+
+.ui-code-block__line-number {
+  position: sticky;
+  left: 0;
+  display: inline-block;
+  box-sizing: border-box;
+  width: var(--ref-code-block-gutter);
+  padding-inline: 8px 12px;
+  background: var(--ref-surface);
+  color: var(--ref-muted);
+  text-align: end;
+  text-indent: 0;
+  user-select: none;
+}
+
+.ui-code-block__line-number::before {
+  content: attr(data-line-number);
 }

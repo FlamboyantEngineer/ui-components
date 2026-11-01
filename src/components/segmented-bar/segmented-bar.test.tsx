@@ -1,9 +1,10 @@
 import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
+import type { Size } from '../../core/props.js';
 import { UiProvider } from '../../core/provider.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { SegmentedBar, type SegmentedBarSegment } from './segmented-bar.js';
+import { SegmentedBar, type SegmentedBarSegment, type SegmentedBarSize } from './segmented-bar.js';
 
 const results: SegmentedBarSegment[] = [
   { id: 'passed', label: 'Passed', value: 12, tone: 'success' },
@@ -218,11 +219,16 @@ describe('SegmentedBar', () => {
     const { rerender } = render(<SegmentedBar aria-label="Sized" segments={results} />);
     const bar = screen.getByRole('group');
     expect(bar).toHaveAttribute('data-size', 'md');
-    for (const size of ['sm', 'md', 'lg'] as const) {
-      rerender(<SegmentedBar aria-label="Sized" segments={results} size={size} />);
-      expect(bar).toHaveAttribute('data-size', size);
-      expectHooksMatchSpec(document.body, 'SEGMENTED-BAR');
+    for (const size of ['sm', 'md', 'lg', 'xl', '2xl', '3xl'] as const) {
+      for (const shape of ['linear', 'donut', 'pie'] as const) {
+        rerender(<SegmentedBar aria-label="Sized" segments={results} size={size} shape={shape} />);
+        expect(bar).toHaveAttribute('data-size', size);
+        expectHooksMatchSpec(document.body, 'SEGMENTED-BAR');
+      }
     }
+    // The figure sizes are the bar's own: the shared size scale does not grow.
+    expectTypeOf<'2xl'>().not.toMatchTypeOf<Size>();
+    expectTypeOf<'3xl'>().toMatchTypeOf<SegmentedBarSize>();
   });
 
   it('UIC-SEGMENTED-BAR-1.7 appends the caller class and forwards id, ref and data attributes', () => {

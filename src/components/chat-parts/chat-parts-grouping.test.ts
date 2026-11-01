@@ -38,8 +38,9 @@ describe('groupChatParts', () => {
     expect(shape([reasoning('r1'), call('c1')])).toEqual(['steps(r1,c1)']);
   });
 
-  it('UIC-CHAT-PARTS-5.1 groups a single step only when further parts follow it', () => {
-    expect(shape([text('Looking'), call('c1')])).toEqual(['text@0', 'tool-call:c1']);
+  it('UIC-CHAT-PARTS-5.1 groups a single tool call, whether or not parts follow it', () => {
+    expect(shape([text('Looking'), call('c1')])).toEqual(['text@0', 'steps(c1)']);
+    expect(shape([call('c1')])).toEqual(['steps(c1)']);
     expect(shape([call('c1'), text('a'), call('c2'), text('b')])).toEqual([
       'steps(c1)',
       'text@1',

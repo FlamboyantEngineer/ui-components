@@ -7,10 +7,10 @@ import { parseColor } from '../../primitives/index.js';
 export type ColorFieldFormat = 'hex' | 'hexa' | 'rgb' | 'rgba' | 'hsl' | 'hsla' | 'hsb' | 'hsba';
 
 /** The colour space a format's channel inputs edit. */
-type ColorFormatSpace = 'rgb' | 'hsl' | 'hsb';
+export type ColorFormatSpace = 'rgb' | 'hsl' | 'hsb';
 
 /** A channel a colour input edits. */
-type ColorFormatChannel =
+export type ColorFormatChannel =
   | 'red'
   | 'green'
   | 'blue'

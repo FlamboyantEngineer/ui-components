@@ -6,7 +6,6 @@ import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isSafeUrl } from '../../utils/safe-url.js';
 import { Button } from '../button/button.js';
-import { FieldScopeContext, type FieldScope } from '../field/field.js';
 import { Popover, PopoverTrigger } from '../popover/popover.js';
 import { SelectField } from '../select-field/select-field.js';
 import { TextField } from '../text-field/text-field.js';
@@ -81,8 +80,6 @@ export function BlockTypeSelect({ controller, className, onCommand }: OverlayCon
   );
 }
 
-const ownForm: FieldScope = {};
-
 /**
  * The link button, pressed on a link, and its popover: an address field that links the selection
  * (or inserts the address at a caret), and a button that removes the link.
@@ -100,7 +97,7 @@ export function LinkButton({ controller, className, onCommand }: OverlayControlP
   };
   const apply = (event: FormEvent) => {
     // The popover is portaled out of the DOM but not out of React, whose submit event would
-    // otherwise reach a form around the editor.
+    // otherwise reach an ordinary form around the editor.
     event.preventDefault();
     event.stopPropagation();
     finish(controller.run({ type: 'set-link', href }));
@@ -122,36 +119,28 @@ export function LinkButton({ controller, className, onCommand }: OverlayControlP
         isDisabled={!controller.isEditable}
       />
       <Popover className={className} placement="bottom start" aria-label={strings.link}>
-        {/* Its own form: the address field stays out of a form around the editor. */}
-        <FieldScopeContext value={ownForm}>
-          <form onSubmit={apply}>
-            <TextField
-              label={strings.linkAddress}
-              inputMode="url"
-              spellCheck={false}
-              autoFocus
-              value={address}
-              onChange={setAddress}
-            />
+        <form onSubmit={apply}>
+          <TextField
+            label={strings.linkAddress}
+            inputMode="url"
+            spellCheck={false}
+            autoFocus
+            value={address}
+            onChange={setAddress}
+          />
+          <Button type="submit" variant="primary" size="sm" isDisabled={!href || !isSafeUrl(href)}>
+            {strings.apply}
+          </Button>
+          {controller.link === null ? null : (
             <Button
-              type="submit"
-              variant="primary"
               size="sm"
-              isDisabled={!href || !isSafeUrl(href)}
+              startIcon={UnlinkGlyph}
+              onPress={() => finish(controller.run({ type: 'set-link', href: null }))}
             >
-              {strings.apply}
+              {strings.removeLink}
             </Button>
-            {controller.link === null ? null : (
-              <Button
-                size="sm"
-                startIcon={UnlinkGlyph}
-                onPress={() => finish(controller.run({ type: 'set-link', href: null }))}
-              >
-                {strings.removeLink}
-              </Button>
-            )}
-          </form>
-        </FieldScopeContext>
+          )}
+        </form>
       </Popover>
     </PopoverTrigger>
   );

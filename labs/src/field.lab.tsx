@@ -14,11 +14,12 @@ import {
   type FieldMenuEntry,
   type FieldProps,
   type FieldStateOptions,
+  type FieldValidation,
   type FieldValidationMode,
 } from '../../src/components/field/field.js';
 import { TextMatchProvider } from '../../src/components/text-match/text-match.js';
 import type { Key } from '../../src/core/props.js';
-import { useUiStrings } from '../../src/core/provider.js';
+import { UiProvider, useUiStrings } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 import { CompactFieldsSection } from './field-compact-cases.js';
@@ -103,6 +104,76 @@ interface SampleFieldProps extends Omit<FieldProps<string>, 'state' | 'children'
   options: FieldStateOptions<string>;
   /** Controls the value from this starting value, so a field can start dirty. */
   start?: string;
+}
+
+function renderIssues(validation: FieldValidation, issues: readonly FieldIssue[]) {
+  return (
+    <ul data-lab-status={validation.status}>
+      {issues.map((issue) => (
+        <li key={issue.message}>
+          {issue.validity === 'tooShort' ? 'Use 8 characters or more.' : issue.message}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/**
+ * Label-colon-control fields whose messages, one or several, wrapped or not, start under the
+ * control, at two sizes and right to left. Toggle the errors to see them come and go in place.
+ */
+function MessageAlignment() {
+  const [hasErrors, setHasErrors] = useState(true);
+  // A new start value remounts the fields, which take it as their value.
+  const fields = (prefix: string) => (
+    <div key={String(hasErrors)} style={{ display: 'grid', gap: 12 }}>
+      <SampleField
+        label="Fruit"
+        labelLayout="label-colon-control"
+        options={{}}
+        start={hasErrors ? 'Stone' : 'Pear'}
+        data-lab-field={`${prefix}single`}
+      />
+      <SampleField
+        label="A much longer label"
+        labelLayout="label-colon-control"
+        size="sm"
+        options={{
+          validate: (value: string) =>
+            value === 'Stone'
+              ? {
+                  severity: 'error',
+                  message: 'A stone is not a fruit, so pick something that grows on a tree.',
+                }
+              : null,
+        }}
+        start={hasErrors ? 'Stone' : 'Pear'}
+        data-lab-field={`${prefix}wrapped`}
+      />
+      <SampleField
+        label="Password"
+        labelLayout="label-colon-control"
+        size="lg"
+        options={{ validate: checkPassword }}
+        start={hasErrors ? 'abc' : 'Abcdefg1'}
+        renderMessage={renderIssues}
+        data-lab-field={`${prefix}several`}
+      />
+    </div>
+  );
+  return (
+    <div style={{ display: 'grid', gap: 12 }}>
+      <p>
+        <Button size="sm" onPress={() => setHasErrors((value) => !value)}>
+          {hasErrors ? 'Fix the values' : 'Break the values'}
+        </Button>
+      </p>
+      {fields('')}
+      <UiProvider locale="he-IL">
+        <div dir="rtl">{fields('rtl-')}</div>
+      </UiProvider>
+    </div>
+  );
 }
 
 /** A field around a plain native `<input>`, which commits on blur and on Enter. */
@@ -281,6 +352,12 @@ function UndoToolbar() {
       </div>
       <SampleField label="Fruit" options={{ defaultValue: 'Fig' }} data-lab-field="fruit" />
       <SampleField label="City" options={{ defaultValue: 'Oslo' }} data-lab-field="city" />
+      <SampleField
+        label="Dish"
+        options={{ defaultValue: 'Soup' }}
+        description={<SampleField label="Note" options={{ defaultValue: '' }} />}
+        data-lab-field="dish"
+      />
       <LabOutput name="Toolbar">{last}</LabOutput>
     </>
   );
@@ -419,7 +496,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Undo and redo"
-      description="Ctrl+Z and Ctrl+Shift+Z (or Ctrl+Y) inside a field, or the toolbar, change only the focused field."
+      description="Ctrl+Z and Ctrl+Shift+Z (or Ctrl+Y) inside a field, or the toolbar, change only the focused field: the note inside the dish's description undoes itself, never the dish."
     >
       <UndoToolbar />
     </LabSection>
@@ -457,17 +534,15 @@ mountLab(
       <SampleField
         label="Password"
         options={{ defaultValue: 'abc', validate: checkPassword }}
-        renderMessage={(validation, issues) => (
-          <ul data-lab-status={validation.status}>
-            {issues.map((issue) => (
-              <li key={issue.message}>
-                {issue.validity === 'tooShort' ? 'Use 8 characters or more.' : issue.message}
-              </li>
-            ))}
-          </ul>
-        )}
+        renderMessage={renderIssues}
         data-lab-field="issues"
       />
+    </LabSection>
+    <LabSection
+      title="Messages under the control"
+      description="With the label before the control, a message starts under the control, not the label, wrapped lines included, and several issues line up with a single one: no indent, no bullets. Short and long labels, three sizes and right to left; the button switches the errors off and on, and the fields keep their place."
+    >
+      <MessageAlignment />
     </LabSection>
     <LabSection
       title="Switching records"

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   clampColumnWidth,
+  getColumnSizing,
   getColumnBounds,
   isColumnSize,
   pickColumnWidths,
@@ -12,6 +13,23 @@ const name: TableColumnSizing = { id: 'name', minWidth: 80, maxWidth: 240 };
 const city: TableColumnSizing = { id: 'city', width: '2fr' };
 
 describe('column sizing', () => {
+  it('UIC-TABLE-4.5 bounds measured content and gives a stored resize precedence', () => {
+    const content = { id: 'name', width: 'content', minWidth: 80, maxWidth: 240 } as const;
+    expect(resolveColumnWidth(content)).toBe(80);
+    expect(resolveColumnWidth(content, undefined, 160)).toBe(160);
+    expect(resolveColumnWidth(content, undefined, 500)).toBe(240);
+    expect(resolveColumnWidth(content, 120, 200)).toBe(120);
+    expect(resolveColumnWidth({ id: 'x', width: 'content' }, undefined, 20)).toBe(75);
+    expect(resolveColumnWidth({ id: 'x', width: 'content', maxWidth: 30 }, undefined, 200)).toBe(
+      75,
+    );
+    expect(getColumnSizing(content)).toBe('content');
+    expect(getColumnSizing(content, 120)).toBe('fixed');
+    expect(getColumnSizing({ id: 'x' })).toBe('flex');
+    expect(getColumnSizing({ id: 'x', width: '25%' })).toBe('fixed');
+    expect(isColumnSize('content')).toBe(false);
+    expect(pickColumnWidths({ name: 'content' }, [content])).toEqual({});
+  });
   it('UIC-TABLE-4.4 accepts positive pixels, percentages and shares only', () => {
     for (const value of [120, 0.5, '25%', '2fr', '1.5fr']) expect(isColumnSize(value)).toBe(true);
     for (const value of [

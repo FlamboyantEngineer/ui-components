@@ -2,7 +2,10 @@ import { FolderGlyph, UsersGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import { Avatar } from '../../src/components/avatar/avatar.js';
 import { NavigationRail } from '../../src/components/navigation-rail/navigation-rail.js';
+import { Disclosure } from '../../src/components/disclosure/disclosure.js';
+import { ExpandToggle } from '../../src/components/expand-toggle/expand-toggle.js';
 import {
+  NavigationRailGroup,
   NavigationRailItem,
   NavigationRailSection,
 } from '../../src/components/navigation-rail/index.js';
@@ -13,6 +16,31 @@ import {
   kitchenPages,
   type KitchenPage,
 } from './navigation-rail-cases.js';
+
+/** A group whose panel holds a toggle and a disclosure of its own, beside a nested group. */
+function GroupToggles() {
+  return (
+    <div style={{ display: 'flex', height: 320 }} data-lab-demo="group-toggles">
+      <NavigationRail aria-label="Tools navigation">
+        <NavigationRailSection title="Workspace">
+          <NavigationRailGroup label="Tools" defaultExpanded>
+            <li>
+              <ExpandToggle label="Details" defaultExpanded={false} />
+            </li>
+            <li>
+              <Disclosure title="Shortcuts">
+                <p>Press G then I to open the inbox.</p>
+              </Disclosure>
+            </li>
+            <NavigationRailGroup label="Lists" defaultExpanded>
+              <NavigationRailItem label="Groceries" href="#groceries" />
+            </NavigationRailGroup>
+          </NavigationRailGroup>
+        </NavigationRailSection>
+      </NavigationRail>
+    </div>
+  );
+}
 
 /**
  * A rail with a header and a footer whose collapsed state and width persist across reloads, beside
@@ -148,6 +176,12 @@ mountLab(
       description="The page collapses this rail one second after a drag of its edge starts. The drag ends with it: releasing commits nothing, and expanding the rail shows its earlier width."
     >
       <CollapsedMidDrag />
+    </LabSection>
+    <LabSection
+      title="Toggles in a group"
+      description="The Tools group holds a Details toggle and a Shortcuts disclosure. Both start closed and open on their own, while Tools stays open and its nested Lists group still works."
+    >
+      <GroupToggles />
     </LabSection>
   </>,
 );

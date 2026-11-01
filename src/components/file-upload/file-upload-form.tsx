@@ -12,6 +12,7 @@ import {
 } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { getTreeRoot } from '../../utils/owner-window.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { useNativeReset } from '../../utils/use-native-reset.js';
 import { InlineError } from '../inline-error/inline-error.js';
@@ -95,22 +96,24 @@ function useResetFiles(
   useNativeReset(ref, () => {
     if (ref.current) fillInput(ref.current, latest.current.files, held);
   });
-  // The document's capture phase sees the form data of every form, so the input's current owner
+  // The tree root's capture phase sees the form data of every form in it, so the input's current owner
   // is the one that counts, after a change of its `form` attribute or of the form around it too.
   useEffect(() => {
-    const document = ref.current?.ownerDocument;
-    if (!document) return undefined;
+    const input = ref.current;
+    if (!input) return undefined;
+    // Form data does not leave a shadow root, so the listener sits on the root of the input's tree.
+    const root = getTreeRoot(input);
     const onFormData = (event: Event) => {
       const { name: key, isDisabled: isLeftOut, files: listed } = latest.current;
-      const input = ref.current;
-      if (!input || event.target !== input.form || !('formData' in event)) return;
-      if (key === undefined || isLeftOut || (input.files?.length ?? 0) === listed.length) return;
+      const current = ref.current;
+      if (!current || event.target !== current.form || !('formData' in event)) return;
+      if (key === undefined || isLeftOut || (current.files?.length ?? 0) === listed.length) return;
       const { formData } = event as FormDataEvent;
       formData.delete(key);
       for (const file of listed) formData.append(key, file);
     };
-    document.addEventListener('formdata', onFormData, true);
-    return () => document.removeEventListener('formdata', onFormData, true);
+    root.addEventListener('formdata', onFormData, true);
+    return () => root.removeEventListener('formdata', onFormData, true);
   }, [ref, latest]);
 }
 

@@ -5,8 +5,10 @@ import { Menu, MenuItem, MenuSeparator } from '../../src/components/menu/menu.js
 import { Separator } from '../../src/components/separator/separator.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
-const variants = ['solid', 'dashed', 'dotted'] as const;
+const variants = ['solid', 'dashed', 'dotted', 'wiggly'] as const;
 const positions = ['start', 'center', 'end'] as const;
+const placements = ['across', 'before', 'after'] as const;
+const orientations = ['horizontal', 'vertical'] as const;
 
 // Lab layout only: a row whose items a vertical separator stands between.
 const row: CSSProperties = { display: 'flex', alignItems: 'center', minInlineSize: 160 };
@@ -14,6 +16,33 @@ const column: CSSProperties = { inlineSize: 200 };
 
 function Row({ children, height }: { children: ReactNode; height?: number }) {
   return <div style={height ? { ...row, blockSize: height } : row}>{children}</div>;
+}
+
+function PlacedSeparator({
+  orientation,
+  placement,
+  position,
+}: {
+  orientation: (typeof orientations)[number];
+  placement: (typeof placements)[number];
+  position: (typeof positions)[number];
+}) {
+  return orientation === 'horizontal' ? (
+    <div style={column}>
+      <Separator label="Desserts" labelPlacement={placement} labelPosition={position} />
+    </div>
+  ) : (
+    <Row height={120}>
+      <span>Breakfast</span>
+      <Separator
+        orientation="vertical"
+        label="or"
+        labelPlacement={placement}
+        labelPosition={position}
+      />
+      <span>Brunch</span>
+    </Row>
+  );
 }
 
 function SignInOptions() {
@@ -68,7 +97,7 @@ mountLab(
   <>
     <LabSection
       title="Orientations and line styles"
-      description="Horizontal rules span their container; vertical rules stand between the items of a row at its height."
+      description="Horizontal rules span their container; vertical rules stand between the items of a row at its height. A wiggly rule draws a wave along either axis."
     >
       <StateMatrix
         axes={{ orientation: ['horizontal', 'vertical'], variant: variants }}
@@ -112,6 +141,26 @@ mountLab(
           </Row>
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Label placement"
+      description="A label sits across the line, or before or after an unbroken one: above or below a horizontal line, at the inline start or end of a vertical one. Its position still aligns it along the line."
+    >
+      <StateMatrix
+        axes={{ orientation: orientations, placement: placements, align: positions }}
+        render={({ orientation, placement, align }) => (
+          <PlacedSeparator orientation={orientation} placement={placement} position={align} />
+        )}
+      />
+      <div dir="rtl">
+        <StateMatrix
+          axes={{ direction: ['rtl'], orientation: orientations, placement: placements }}
+          caption="Right to left, aligned to the start"
+          render={({ orientation, placement }) => (
+            <PlacedSeparator orientation={orientation} placement={placement} position="start" />
+          )}
+        />
+      </div>
     </LabSection>
     <LabSection
       title="Semantics"

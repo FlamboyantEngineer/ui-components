@@ -16,20 +16,20 @@ interface ListLayoutOptions {
   parts: TabListPartsModel | null;
   orientation: Orientation;
   isMenu: boolean;
-  hasButtons: boolean;
+  isStrip: boolean;
   setListRef: RefCallback<HTMLDivElement>;
 }
 
 /** Share the native list ref across menu measurement, scrolling and the caller. */
 export function useTabListLayout(
   listRef: RefObject<HTMLDivElement | null>,
-  { state, editingKey, parts, orientation, isMenu, hasButtons, setListRef }: ListLayoutOptions,
+  { state, editingKey, parts, orientation, isMenu, isStrip, setListRef }: ListLayoutOptions,
 ) {
   const selectedKey = state?.selectedKey ?? null;
   const scrollActions = useTabActionScroll(listRef, { model: parts, selectedKey, enabled: isMenu });
   const menuMode = isMenu && !scrollActions;
   const menu = useTabOverflow(state, menuMode, { editingKey, parts });
-  const scroll = useToolbarScroll(hasButtons);
+  const scroll = useToolbarScroll(isStrip);
   const scrollOverflowing = useListOverflow(listRef, orientation);
   useCenterSelectedTab(listRef, { orientation, selectedKey });
   const elementRef = useMemo(

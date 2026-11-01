@@ -44,6 +44,42 @@ test.describe('Button Group lab', () => {
     await expect(group.getByRole('button', { name: 'More history' })).toBeFocused();
   });
 
+  test('UIC-BUTTON-GROUP-1.2 keeps a selected attached button above its neighbours at rest', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('button-group');
+    await page.mouse.move(0, 0);
+    // The topmost element at the middle of each edge a selected button shares is that button.
+    const covered = await page.evaluate(() => {
+      const problems: string[] = [];
+      const groups = document.querySelectorAll<HTMLElement>(
+        '[data-lab-section="Selected on a shared edge"] .ui-button-group',
+      );
+      for (const group of groups) {
+        group.scrollIntoView({ block: 'center', inline: 'center' });
+        const buttons = [...group.querySelectorAll<HTMLElement>('.ui-button')];
+        const selected = buttons.findIndex((button) => button.hasAttribute('data-selected'));
+        const box = buttons[selected]?.getBoundingClientRect();
+        if (!box) continue;
+        const isVertical = group.dataset['orientation'] === 'vertical';
+        for (const neighbour of [buttons[selected - 1], buttons[selected + 1]]) {
+          if (!neighbour) continue;
+          const other = neighbour.getBoundingClientRect();
+          const point = isVertical
+            ? [box.left + box.width / 2, other.top < box.top ? box.top + 0.5 : box.bottom - 0.5]
+            : [other.left < box.left ? box.left + 0.5 : box.right - 0.5, box.top + box.height / 2];
+          const hit = document.elementFromPoint(point[0] ?? 0, point[1] ?? 0);
+          if (!buttons[selected]?.contains(hit))
+            problems.push(group.getAttribute('aria-label') ?? '');
+        }
+      }
+      return { problems, groups: groups.length };
+    });
+    expect(covered.groups).toBe(12);
+    expect(covered.problems).toEqual([]);
+  });
+
   test('UIC-BUTTON-GROUP-1.3 shares the width of a justified group', async ({ page, lab }) => {
     await lab.open('button-group');
     const buttons = page.locator('[data-lab-case="justified"] .ui-button');

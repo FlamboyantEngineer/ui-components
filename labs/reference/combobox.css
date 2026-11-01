@@ -31,7 +31,8 @@
   box-sizing: border-box;
   min-width: 0;
   min-height: var(--ref-combobox-height);
-  padding: 0 4px 0 8px;
+  padding-block: 0;
+  padding-inline: 8px 4px;
   border: 1px solid var(--ref-field-border);
   border-radius: var(--ref-radius);
   background: var(--ref-field-fill);
@@ -72,6 +73,17 @@
 .ui-combobox[data-disabled] .ui-combobox__field {
   background: var(--ref-field-fill-inactive);
   color: var(--ref-muted);
+}
+
+/* The chips, search glyph and input; they wrap within it, never past the trailing controls. */
+.ui-combobox__entry {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  align-self: stretch;
+  gap: 4px;
+  min-width: 0;
 }
 
 .ui-combobox__search-icon {
@@ -145,6 +157,15 @@
   gap: 4px;
   padding: 6px 8px;
   border-bottom: 1px solid var(--ref-border);
+}
+
+/*
+ * A field in the header keeps no empty message line, so the header ends 6px below the control; a
+ * message that shows still takes its line.
+ */
+.ui-combobox__list-header .ui-field__message:empty {
+  min-height: 0;
+  margin-top: 0;
 }
 
 /* The listbox scrolls inside the popover, whose height React Aria limits to the room in view. */
@@ -240,7 +261,6 @@
 /* A multiple combobox's chips sit before the input and wrap with it. */
 
 .ui-combobox:has(.ui-combobox__chips) .ui-combobox__field {
-  flex-wrap: wrap;
   padding-block: 3px;
 }
 

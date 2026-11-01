@@ -32,6 +32,13 @@ test.describe('Form lab', () => {
     await expect(guests).toBeFocused();
     await guests.fill('3');
     await booking.getByText('Main', { exact: true }).click();
+    // The house rules start unchecked, not mixed, and block booking until ticked.
+    const rules = booking.getByRole('checkbox', { name: 'Accept the house rules' });
+    await expect(rules).not.toBeChecked();
+    await expect(rules).not.toBeChecked({ indeterminate: true });
+    await booking.getByRole('button', { name: 'Book' }).click();
+    await expect(output(page, 'Booking')).toHaveText('none');
+    await expect(rules).toBeFocused();
     await booking.getByText('Accept the house rules', { exact: true }).click();
     await booking.getByRole('button', { name: 'Book' }).click();
     await expect(output(page, 'Booking')).toHaveText(
@@ -232,5 +239,80 @@ test.describe('Form lab', () => {
     await expect(jars).toHaveValue('12');
     await expect(month).toHaveText('mm');
     await expect(lid).toHaveValue('#336699');
+  });
+
+  test('UIC-FORM-1.8 keeps the forms and fields of overlays out of the page form', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('form');
+    const form = page.getByRole('form', { name: 'Page' });
+    await form.getByRole('button', { name: 'Rename' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Rename' });
+    await dialog.getByRole('textbox', { name: 'New name' }).fill('Plan');
+    await page.keyboard.press('Enter');
+    await expect(page.locator('[data-lab-output="Renamed"]')).toHaveText('name=Plan');
+    await expect(page.locator('[data-lab-output="Page saved"]')).toHaveText('none');
+    await expect(dialog.getByRole('textbox', { name: 'New name' })).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+    await expect(form.getByRole('textbox', { name: 'Heading' })).not.toHaveAttribute(
+      'aria-invalid',
+    );
+    await form.getByRole('textbox', { name: 'Heading' }).fill('Spring');
+    await form.getByRole('button', { name: 'Add a note' }).click();
+    await expect(page.getByRole('textbox', { name: 'Note text' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await form.getByRole('button', { name: 'Save page' }).click();
+    await expect(page.locator('[data-lab-output="Page saved"]')).toHaveText('heading=Spring');
+  });
+
+  test('UIC-FIELD-2.6 UIC-CHECKBOX-1.6 leaves controls whose form names no form out of the form around them', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('form');
+    const section = page.locator('[data-lab-section="Owned by another form"]');
+    const note = section.getByRole('textbox', { name: 'Note' });
+    const sealed = section.getByRole('checkbox', { name: 'Sealed' });
+    await note.fill('Pear');
+    await sealed.check({ force: true });
+    await section.getByRole('button', { name: 'Reset nearby' }).click();
+    await expect(note).toHaveValue('Pear');
+    await expect(sealed).toBeChecked();
+    await section.getByRole('switch', { name: 'Add the named form' }).click({ force: true });
+    await section.getByRole('button', { name: 'Reset named' }).click();
+    await expect(note).toHaveValue('Fig');
+    await expect(sealed).not.toBeChecked();
+    await lab.expectAccessible('[data-lab-section="Owned by another form"]');
+  });
+
+  test('UIC-FIELD-2.6 UIC-SEGMENTED-CHOICE-2.7 UIC-FILE-UPLOAD-4.2 resets a form inside a shadow root and keeps its files', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('form');
+    const host = page.locator('[data-lab-demo="shadow-form"]');
+    const fruit = host.getByRole('textbox', { name: 'Fruit' });
+    const output = host.locator('[data-lab-output="Shadow form"]');
+    const reset = host.getByRole('button', { name: 'Reset' });
+    await fruit.fill('Pear');
+    await host.getByRole('radio', { name: 'Week' }).click({ force: true });
+    const keepEdits = host.getByRole('switch', { name: 'Keep shadow edits' });
+    await host.getByText('Keep shadow edits').click();
+    await expect(keepEdits).toBeChecked();
+    await reset.click();
+    await host.getByRole('button', { name: 'Read form data' }).click();
+    await expect(output).toHaveText('view=week; attachment=sample.txt');
+    await expect(fruit).toHaveValue('Pear');
+    await host.getByText('Keep shadow edits').click();
+    await expect(keepEdits).not.toBeChecked();
+    await reset.click();
+    await expect(fruit).toHaveValue('Fig');
+    await expect(host.getByRole('radio', { name: 'Day' })).toBeChecked();
+    await host.getByRole('button', { name: 'Read form data' }).click();
+    await expect(output).toHaveText('view=day; attachment=sample.txt');
+    await expect(host.getByText('sample.txt').first()).toBeVisible();
+    await lab.expectAccessible('[data-lab-section="Inside a shadow root"]');
   });
 });

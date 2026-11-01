@@ -3,6 +3,7 @@ import { Sparkline } from '../../src/components/sparkline/sparkline.js';
 import { createLinearScale } from '../../src/utils/linear-scale.js';
 import { createTimeScale } from '../../src/utils/time-scale.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { FrameRateTrace } from './frame-rate-trace.js';
 
 const series = {
   rising: [2, 3, 3, 5, 4, 7, 8, 11],
@@ -166,6 +167,12 @@ function QuarterWithTicks() {
 
 mountLab(
   <>
+    <LabSection
+      title="Live frame rate"
+      description="The browser's own rendering frame rate, measured from requestAnimationFrame timestamps: every half second the frames drawn since the last sample become one frames-per-second value, and the trace keeps the last 30 seconds on a scale from 0. It measures how often this page draws, not processor load. While the tab is hidden the browser stops drawing, so the trace shows a gap instead of a catch-up spike; Pause trace stops measuring, and resuming starts after a gap."
+    >
+      <FrameRateTrace />
+    </LabSection>
     <LabSection
       title="Variants and markers"
       description="Lines and areas with no markers, the last value marked, or the lowest, highest and last marked."

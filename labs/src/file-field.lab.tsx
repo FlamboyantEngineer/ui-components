@@ -242,6 +242,33 @@ function SlowOwner() {
   );
 }
 
+const longName: FileFieldItem = {
+  id: 'long',
+  name: 'Harbour survey photographs, north pier, spring tide, full resolution.zip',
+  size: 48_000_000,
+  type: 'application/zip',
+};
+const committedFiles = [report, harbour, notes, longName];
+const widths = { narrow: 260, wide: 420 } as const;
+
+/** Committed files with three removed, in a narrow and a wide column, each put back by its button. */
+function RemovedFiles({ width }: { width: keyof typeof widths }) {
+  const [value, setValue] = useState<FileFieldItem[]>([report]);
+  return (
+    <div style={{ width: widths[width] }}>
+      <FileField
+        label="Attachments"
+        allowsMultiple
+        value={value}
+        onChange={setValue}
+        committedValue={committedFiles}
+        onSelect={() => {}}
+        data-lab-field={`removed-${width}`}
+      />
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -251,6 +278,15 @@ mountLab(
       <StateMatrix
         axes={{ state: fieldStates, layout: fieldLayouts }}
         render={({ state, layout }) => <Sample state={state} layout={layout} />}
+      />
+    </LabSection>
+    <LabSection
+      title="Removed files"
+      description="Three committed files removed, one with a long name: they follow the held files under a Removed files title, as chips the height of the file rows, and each restore button puts its file back."
+    >
+      <StateMatrix
+        axes={{ width: ['narrow', 'wide'] }}
+        render={({ width }) => <RemovedFiles width={width} />}
       />
     </LabSection>
     <LabSection

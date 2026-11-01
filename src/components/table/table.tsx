@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { useContentWidths } from './use-content-widths.js';
 import {
   ResizableTableContainer,
   Table as AriaTable,
@@ -151,11 +152,13 @@ type TableGridElementOptions<T extends TableRow> = Pick<
 function createHeaderModel<T extends TableRow>(
   grid: TableGrid<T>,
   options: TableGridElementOptions<T>,
+  contentWidths: Readonly<Record<string, number>>,
 ): TableHeaderModel<T> {
   const { view } = grid;
   const values = view.filter.columns ?? {};
   return {
     widths: grid.widths.widths,
+    contentWidths,
     groups: options.columnGroups ?? [],
     rowHeight: options.rowHeight,
     pinOffsets: grid.pinOffsets,
@@ -181,12 +184,14 @@ function createHeaderModel<T extends TableRow>(
 function TableGridElement<T extends TableRow>({
   grid,
   options,
+  contentWidths,
 }: {
   grid: TableGrid<T>;
   options: TableGridElementOptions<T>;
+  contentWidths: Readonly<Record<string, number>>;
 }) {
   const { ariaProps, view, reordering, onRowAction, body, structure } = grid;
-  const header = createHeaderModel(grid, options);
+  const header = createHeaderModel(grid, options, contentWidths);
   // React Aria keeps the hooks a table mounts with, so they stay and are disabled while it does
   // not reorder: turning reordering or grouping on and off keeps the rows mounted.
   const { dragAndDropHooks } = useDragAndDrop<T>({
@@ -256,7 +261,14 @@ export function Table<T extends TableRow>({
   const { view, layout } = grid;
   const { virtualized } = rest;
   const height = rowHeight ?? virtualRowHeights[size];
-  const element = <TableGridElement grid={grid} options={{ ...rest, rowHeight: height }} />;
+  const { ref: rootRef, widths: contentWidths } = useContentWidths(rest.columns, ref);
+  const element = (
+    <TableGridElement
+      grid={grid}
+      options={{ ...rest, rowHeight: height }}
+      contentWidths={contentWidths}
+    />
+  );
   const label = rest['aria-label'];
   return (
     <div
@@ -267,7 +279,7 @@ export function Table<T extends TableRow>({
         data: { size, stickyHeader, virtualized, reordering: grid.reordering !== null },
       })}
       id={id}
-      ref={ref}
+      ref={rootRef}
       aria-busy={grid.body.status === 'loading' || undefined}
     >
       <TableToolbar

@@ -1,7 +1,7 @@
 import { MinusGlyph, PlusGlyph } from '../../src/core/glyphs.js';
 import { treeChoices } from './select-tree.js';
 import { iconsChoices } from './select-icons.js';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import type { Key } from '../../src/core/props.js';
 import type { FieldLabelLayout, FieldMenuEntry } from '../../src/components/field/field.js';
 import {
@@ -187,11 +187,13 @@ function Chips() {
 
 function Search() {
   const [calls, setCalls] = useState(0);
-  const loadOptions = async (query: string) => {
+  // A stable loader: a new one would be a new search source, which searches the query again, and
+  // its own counter update would then create another, searching forever.
+  const loadOptions = useCallback(async (query: string) => {
     setCalls((count) => count + 1);
     await new Promise((resolve) => setTimeout(resolve, 300));
     return cities.filter((city) => city.label.toLowerCase().includes(query.toLowerCase()));
-  };
+  }, []);
   return (
     <>
       <SelectField

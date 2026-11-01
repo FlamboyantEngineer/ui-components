@@ -172,6 +172,45 @@ test.describe('Color Field lab', () => {
     await expect(trigger).toHaveAccessibleName('Overlay #FF6699');
   });
 
+  test('UIC-COLOR-FIELD-3.2 labels each channel and steps the one under the wheel', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('color-field');
+    const formats = field(page, 'formats');
+    const trigger = formats.locator('.ui-color-field__trigger');
+    await trigger.click();
+    const dialog = page.getByRole('dialog', { name: 'Overlay' });
+    await expect(
+      dialog.locator('.ui-color-field__channel-label > [aria-hidden="true"]'),
+    ).toHaveText(['R', 'G', 'B', 'A']);
+    const green = dialog.getByRole('textbox', { name: 'Green' });
+    await expect(green).toHaveValue('102');
+    // The label sits above its input and names it.
+    const label = dialog.locator('.ui-color-field__channel-label').nth(1);
+    const [labelBox, inputBox] = [await label.boundingBox(), await green.boundingBox()];
+    expect(labelBox && inputBox && labelBox.y + labelBox.height <= inputBox.y + 1).toBe(true);
+    const scroller = await page.evaluate(() => document.scrollingElement?.scrollTop ?? 0);
+    await green.hover();
+    await page.mouse.wheel(0, -100);
+    await expect(green).toHaveValue('103');
+    await page.mouse.wheel(0, -100);
+    await page.mouse.wheel(0, 100);
+    await page.mouse.wheel(0, 100);
+    await page.mouse.wheel(0, 100);
+    await expect(green).toHaveValue('101');
+    await expect(dialog.getByRole('textbox', { name: 'Red' })).toHaveValue('51');
+    await expect(dialog.getByRole('textbox', { name: 'Alpha' })).toHaveValue('50%');
+    expect(await page.evaluate(() => document.scrollingElement?.scrollTop ?? 0)).toBe(scroller);
+    const alpha = dialog.getByRole('textbox', { name: 'Alpha' });
+    await alpha.hover();
+    await page.mouse.wheel(0, -100);
+    await expect(alpha).toHaveValue('51%');
+    await expect(green).not.toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(output(page, 'Format committed')).toHaveText('#33659982');
+  });
+
   test('UIC-COLOR-FIELD-3.4 stores the value in its value format', async ({ page, lab }) => {
     await lab.open('color-field');
     const trigger = field(page, 'value-format').locator('.ui-color-field__trigger');
@@ -388,5 +427,34 @@ test.describe('Color Field lab', () => {
     const unreadable = field(page, 'unreadable');
     await expect(unreadable).toHaveAttribute('data-validation', 'invalid');
     await expect(unreadable).toContainText('Enter a color, such as #3366ff.');
+  });
+  test('UIC-COLOR-FIELD-1.2 scales the swatch with the field size at one inset', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('color-field');
+    const measure = await page
+      .locator('[data-lab-section="Sizes"] .ui-color-field')
+      .evaluateAll((fields) =>
+        fields.map((field) => {
+          const frame = field.querySelector(
+            ':is(.ui-color-field__group, .ui-color-field__trigger)',
+          );
+          const swatch = field.querySelector('.ui-color-field__swatch');
+          const outer = frame?.getBoundingClientRect();
+          const inner = swatch?.getBoundingClientRect();
+          return {
+            size: inner?.height ?? 0,
+            inset: (inner?.top ?? 0) - (outer?.top ?? 0),
+          };
+        }),
+      );
+    expect(measure).toHaveLength(8);
+    for (const entry of [measure.slice(0, 4), measure.slice(4)]) {
+      const sizes = entry.map(({ size }) => size);
+      expect(sizes).toEqual([...sizes].sort((a, b) => a - b));
+      expect(new Set(sizes).size).toBe(4);
+      for (const { inset } of entry) expect(inset).toBeCloseTo(entry[0]?.inset ?? 0, 0);
+    }
   });
 });

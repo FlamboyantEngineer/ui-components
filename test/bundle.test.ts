@@ -22,15 +22,20 @@ async function retainedIcons(contents: string) {
 }
 
 describe('icon tree shaking', () => {
-  it('UIC-ICON-1.1 retains no default icons for a Button-only entry point', async () => {
+  it('UIC-ICON-1.1 UIC-BUTTON-1.9 retains only the new-tab default icon for a Button entry point', async () => {
     expect(
       await retainedIcons("export { Button } from './src/components/button/index.ts'"),
-    ).toEqual([]);
+    ).toEqual(['arrowTopRightOnSquarePath']);
   });
 
-  it('UIC-ICON-1.1 retains only the requested icon through the package root', async () => {
+  it('UIC-ICON-1.1 UIC-BUTTON-1.9 retains only the Button default and requested icon through the package root', async () => {
     expect(await retainedIcons("export { Button, PlusGlyph } from './src/index.ts'")).toEqual([
+      'arrowTopRightOnSquarePath',
       'plusPath',
     ]);
+  });
+
+  it('UIC-ICON-1.1 retains only the requested glyph without Button through the package root', async () => {
+    expect(await retainedIcons("export { PlusGlyph } from './src/index.ts'")).toEqual(['plusPath']);
   });
 });

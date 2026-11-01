@@ -659,6 +659,17 @@ describe('ResizeHandle', () => {
     'aria-label': 'Resize details',
   };
 
+  it('UIC-SPLIT-VIEW-3.4 publishes the handle size, md by default, and the split passes separatorSize on', () => {
+    const { rerender } = render(<ResizeHandle orientation="vertical" {...handleProps} />);
+    expect(screen.getByRole('separator')).toHaveAttribute('data-size', 'md');
+    rerender(<ResizeHandle orientation="vertical" size="xs" {...handleProps} />);
+    expect(screen.getByRole('separator')).toHaveAttribute('data-size', 'xs');
+    rerender(resizable({ separatorSize: 'lg' }));
+    const separator = screen.getByRole('separator');
+    expect(separator).toHaveAttribute('data-size', 'lg');
+    expect(separator).toHaveAttribute('aria-valuenow', '30');
+  });
+
   it('UIC-SPLIT-VIEW-3.4 abandons a drag when the handle unmounts and reports the cancel', () => {
     const onChangeCancel = vi.fn();
     const onResizingChange = vi.fn();

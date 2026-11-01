@@ -296,9 +296,34 @@ test.describe('Chat Parts lab', () => {
     await expect(section(page, 'Part types').locator('.ui-chat-parts')).toHaveCount(12);
     await expect(
       matrixCell(page, 'state=single parts=rendered').locator('.ui-chat-steps'),
-    ).toHaveCount(0);
+    ).toHaveCount(1);
     await lab.expectAccessible('[data-lab-section="Part types"]');
     await lab.expectAccessible('[data-lab-section="Steps"]');
     await lab.expectAccessible('[data-lab-section="Kept expansion"]');
+  });
+
+  test('UIC-CHAT-PARTS-5.1 keeps a denial reason and its focus as text streams after the call', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-parts');
+    const stream = demo(page, 'approval-stream');
+    const group = stream.locator('.ui-chat-steps');
+    await expect(group).toHaveAttribute('data-expanded', 'true');
+    await stream.getByRole('button', { name: /^Deny/ }).click();
+    const reason = stream.getByRole('textbox');
+    await reason.fill('Do not send private data');
+    await expect(reason).toBeFocused();
+    const next = stream.getByRole('button', { name: 'Next event' });
+    // A virtual click streams the next event without taking focus from the reason.
+    for (const event of [2, 3, 4]) {
+      await next.dispatchEvent('click');
+      await expect(stream).toContainText(`Event ${event} of 4`);
+    }
+    await expect(stream).toContainText('walk to the river.');
+    await expect(reason).toHaveValue('Do not send private data');
+    await expect(reason).toBeFocused();
+    await expect(group).toHaveCount(1);
+    await lab.expectAccessible('[data-lab-section="Approval while streaming"]');
   });
 });

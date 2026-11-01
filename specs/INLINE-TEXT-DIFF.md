@@ -48,10 +48,18 @@ Verification: `src/components/inline-text-diff/inline-text-diff.test.tsx`
 Implementation: `src/components/inline-text-diff/inline-text-diff.tsx`
 Verification: `src/components/inline-text-diff/inline-text-diff.test.tsx`
 
+### UIC-INLINE-TEXT-DIFF-2.4 - Final view
+
+`view="final"` shall show the text after the change without marking it: no `<del>` or `<ins>`, removed text left out. It shows `finalText` when given, else the unchanged and added segments joined in order, which is the whole final text only for uncut segments such as `createInlineWordDiff`'s; an excerpt from `createInlineTextDiffExcerpt` cuts its context, so a host passes the full value as `finalText` with one. Whitespace and line breaks are kept as characters (the reference sheet keeps them with `white-space: pre-wrap`). `view="changes"`, the default, shows the runs as UIC-INLINE-TEXT-DIFF-2.1 says. The root publishes the view in `data-view`; the host supplies the control that switches it.
+
+Implementation: `src/components/inline-text-diff/inline-text-diff.tsx`, `labs/reference/inline-text-diff.css`
+Verification: `src/components/inline-text-diff/inline-text-diff.test.tsx`, `e2e/inline-text-diff.spec.ts`
+
 ## Hooks
 
-| Hook                           | Kind | Values | Description                    |
-| ------------------------------ | ---- | ------ | ------------------------------ |
-| `ui-inline-text-diff`          | root |        | The `<span>` holding the runs. |
-| `ui-inline-text-diff__removed` | slot |        | The removed run's `<del>`.     |
-| `ui-inline-text-diff__added`   | slot |        | The added run's `<ins>`.       |
+| Hook                           | Kind      | Values             | Description                    |
+| ------------------------------ | --------- | ------------------ | ------------------------------ |
+| `ui-inline-text-diff`          | root      |                    | The `<span>` holding the runs. |
+| `data-view`                    | attribute | `changes`, `final` | What the diff shows.           |
+| `ui-inline-text-diff__removed` | slot      |                    | The removed run's `<del>`.     |
+| `ui-inline-text-diff__added`   | slot      |                    | The added run's `<ins>`.       |

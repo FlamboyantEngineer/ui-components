@@ -75,8 +75,10 @@ Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs.spec.ts`
 
 While its tabs do not fit, the list shall publish `data-overflowing`, re-measured when the list, its tabs or their content change size (also outside a render of the list, such as a count badge or an icon that loads), and when fonts load, at most once per animation frame. Whenever the selection changes, and on first render, an overflowing list shall scroll the selected tab toward its middle, clamped to the list's scroll range so the last tab ends flush with the list's end, smoothly unless the reader prefers reduced motion. Positions are read in the scroller's own pixels, so this holds under an ancestor `transform: scale()` as without one.
 
-Implementation: `src/components/tabs/tabs.tsx`, `src/components/tabs/tab-list-overflow.ts`, `labs/reference/tabs.css`
-Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs.spec.ts`
+A horizontal list with `overflow="scroll"` (the default) shall take the mouse wheel through the [scroll strip hook](SCROLL-STRIP.md), with or without scroll buttons ([UIC-TABS-2.7](#uic-tabs-27---scroll-buttons)), which only add a paging control: while its tabs do not fit, the vertical wheel scrolls it sideways (toward the inline end, leftward right to left), horizontal travel such as a trackpad swipe scrolls it as is, and it keeps the wheel at both ends so the page behind it does not scroll. A list whose tabs fit, and a wheel with Control or Meta held, leave the wheel to the page. Keyboard selection reveals the selected tab as above. The reference sheet keeps a horizontal list from scrolling vertically, so a list that fits never holds the wheel. A vertical list scrolls natively.
+
+Implementation: `src/components/tabs/tabs.tsx`, `src/components/tabs/tab-list.tsx`, `src/components/tabs/tab-list-overflow.ts`, `labs/reference/tabs.css`
+Verification: `src/components/tabs/tabs.test.tsx`, `src/components/tabs/tab-list.test.tsx`, `e2e/tabs.spec.ts`
 
 ### UIC-TABS-2.5 - Interaction states
 
@@ -94,7 +96,7 @@ Verification: `src/components/tabs/tab-list.test.tsx`, `e2e/tabs.spec.ts`
 
 ### UIC-TABS-2.7 - Scroll buttons
 
-With `scrollButtons` a horizontal list that scrolls shall sit in a `ui-tabs__bar` element between two `ui-tabs__scroll-button` [Icon Buttons](BUTTON.md) (`data-edge` `start` and `end`), each hidden with the native `hidden` attribute while its edge hides no tabs, as the [scroll strip hook](SCROLL-STRIP.md) measures it. Pressing one scrolls the list by 80% of its visible width toward its edge. They are named by the provider's `scrollBackward` and `scrollForward` strings, draw a chevron pointing to their edge (mirrored right to left) and stay out of the tab order, since the arrow keys reach every tab. The vertical wheel also scrolls the list sideways. Scrolling, and the scroll buttons showing or hiding, draws no tab again: the list hands its tabs the same actions while its options stay the same.
+With `scrollButtons` a horizontal list that scrolls shall sit in a `ui-tabs__bar` element between two `ui-tabs__scroll-button` [Icon Buttons](BUTTON.md) (`data-edge` `start` and `end`), each hidden with the native `hidden` attribute while its edge hides no tabs, as the [scroll strip hook](SCROLL-STRIP.md) measures it. Pressing one scrolls the list by 80% of its visible width toward its edge. They are named by the provider's `scrollBackward` and `scrollForward` strings, draw a chevron pointing to their edge (mirrored right to left) and stay out of the tab order, since the arrow keys reach every tab. The list takes the wheel with or without them ([UIC-TABS-2.4](#uic-tabs-24---overflow)). Scrolling, and the scroll buttons showing or hiding, draws no tab again: the list hands its tabs the same actions while its options stay the same.
 
 Implementation: `src/components/tabs/tab-list.tsx`, `src/utils/use-scroll-strip-overflow.ts`, `labs/reference/tabs.css`
 Verification: `src/components/tabs/tab-list.test.tsx`, `e2e/tabs.spec.ts`

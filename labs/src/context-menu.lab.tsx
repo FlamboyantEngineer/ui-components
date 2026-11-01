@@ -102,8 +102,11 @@ function Nested() {
           style={{ ...area, width: 320, height: 140 }}
         >
           <ContextMenuTrigger>
-            <div tabIndex={0} role="button" style={area} data-lab-inner="">
-              Notes.txt
+            <div tabIndex={0} role="group" aria-label="Notes.txt" style={area} data-lab-inner="">
+              Notes.txt{' '}
+              <Button size="sm" onPress={() => setLast('file preview')}>
+                Preview
+              </Button>
             </div>
             <Menu aria-label="File" onAction={(key: Key) => setLast(`file ${String(key)}`)}>
               <MenuItem id="open">Open file</MenuItem>
@@ -127,6 +130,9 @@ function Handled() {
       <ContextMenuTrigger>
         <div tabIndex={0} role="group" aria-label="Report row" style={{ ...area, width: 320 }}>
           Report.pdf <input aria-label="Report note" defaultValue="Draft" />{' '}
+          <Button size="sm" onPress={() => setLast('row preview')}>
+            Preview
+          </Button>{' '}
           <span
             data-lab-badge=""
             onContextMenu={(event) => {
@@ -246,12 +252,15 @@ mountLab(
     >
       <Targets />
     </LabSection>
-    <LabSection title="Nested targets" description="The innermost target opens its own menu only.">
+    <LabSection
+      title="Nested targets"
+      description="The innermost target opens its own menu only, also from a long touch on its Preview button."
+    >
       <Nested />
     </LabSection>
     <LabSection
       title="Requests handled inside the target"
-      description="The Locked badge handles its own secondary click and long touch and cancels them, so the row's menu stays closed there; anywhere else on the row opens it. In the note, Shift+F10 and the Context Menu key stay with the text."
+      description="The Locked badge handles its own secondary click and long touch and cancels them, so the row's menu stays closed there; anywhere else on the row opens it, a long touch on the Preview button included. In the note, Shift+F10 and the Context Menu key stay with the text."
     >
       <Handled />
     </LabSection>

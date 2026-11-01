@@ -4,6 +4,7 @@ import {
   SegmentedBar,
   type SegmentedBarSegment,
   type SegmentedBarShape,
+  type SegmentedBarSize,
 } from '../../src/components/segmented-bar/segmented-bar.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -34,6 +35,38 @@ function manyParts(remainder: number): { segments: SegmentedBarSegment[]; total:
 }
 
 const tones = ['neutral', 'info', 'success', 'warning', 'danger'] as const;
+
+const barSizes = ['sm', 'md', 'lg', 'xl', '2xl', '3xl'] as const;
+
+const figureData = {
+  empty: { segments: [], total: 10 },
+  single: {
+    segments: [{ id: 'done', label: 'Done', value: 7, tone: 'success' as const }],
+    total: 10,
+  },
+  several: { segments: checks, total: 80 },
+  animated: { segments: checks, total: 80 },
+} satisfies Record<string, { segments: SegmentedBarSegment[]; total: number }>;
+
+/** One data case at one figure size, in each shape. */
+function FigureSizes({ data, size }: { data: keyof typeof figureData; size: SegmentedBarSize }) {
+  const { segments, total } = figureData[data];
+  return (
+    <div style={{ ...column(180), display: 'grid', gap: 12 }}>
+      {(['linear', 'donut', 'pie'] as const).map((shape) => (
+        <SegmentedBar
+          key={shape}
+          shape={shape}
+          size={size}
+          label={`Checks, ${shape}`}
+          segments={segments}
+          total={total}
+          animated={data === 'animated'}
+        />
+      ))}
+    </div>
+  );
+}
 
 function RunningChecks() {
   const [run, setRun] = useState(0);
@@ -91,12 +124,12 @@ mountLab(
   <>
     <LabSection
       title="Sizes"
-      description="Every size with the legend hidden and shown, in a 240px column."
+      description="Every size with the legend hidden and shown, in a 180px column. xl, 2xl and 3xl are the bar's own figure sizes, past the shared size scale, with a larger label, total and legend."
     >
       <StateMatrix
-        axes={{ legend: ['hidden', 'shown'], size: ['sm', 'md', 'lg'] }}
+        axes={{ legend: ['hidden', 'shown'], size: barSizes }}
         render={({ legend, size }) => (
-          <div style={column(240)}>
+          <div style={column(180)}>
             <SegmentedBar
               label="Checks"
               size={size}
@@ -109,7 +142,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="One-time sequential animation"
-      description="Opt in with animated: each shape fills once when first visible, in segment order and proportional time across 1.2 seconds. Replay remounts the bar. Reduced motion shows the complete result immediately."
+      description="Opt in with animated: each shape fills once when first visible, in segment order and proportional time across 0.6 seconds, half the shared loop duration. Replay remounts the bar. Reduced motion shows the complete result immediately."
     >
       <StateMatrix
         axes={{ shape: ['linear', 'donut', 'pie'], motion: ['static', 'animated'] }}
@@ -213,13 +246,22 @@ mountLab(
       <RunningChecks />
     </LabSection>
     <LabSection
+      title="Figure sizes"
+      description="xl, 2xl and 3xl with no segments, one segment, several segments, and the one-time entry animation, in every shape."
+    >
+      <StateMatrix
+        axes={{ data: ['empty', 'single', 'several', 'animated'], size: ['xl', '2xl', '3xl'] }}
+        render={({ data, size }) => <FigureSizes data={data} size={size} />}
+      />
+    </LabSection>
+    <LabSection
       title="Linear, donut and pie"
       description="The same shares and remainder, in every shape and size, with a shared legend."
     >
       <StateMatrix
-        axes={{ shape: ['linear', 'donut', 'pie'], size: ['sm', 'md', 'lg'] }}
+        axes={{ shape: ['linear', 'donut', 'pie'], size: barSizes }}
         render={({ shape, size }) => (
-          <div style={column(240)}>
+          <div style={column(180)}>
             <SegmentedBar
               shape={shape}
               size={size}

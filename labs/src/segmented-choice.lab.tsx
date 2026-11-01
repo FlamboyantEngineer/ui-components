@@ -325,6 +325,35 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Count widths"
+      description="One digit is a circle; more digits widen the badge into a pill of the same height: 9, 10, 99, a capped 99+, and 1,000 with countMax 9999. Selected or not, at every size, the segment keeps its height."
+    >
+      <StateMatrix
+        axes={{ size: ['xs', ...sizes] }}
+        render={({ size }) => (
+          <SegmentedChoice
+            aria-label={`Count widths, ${size}`}
+            size={size}
+            sizing="content"
+            defaultValue="nine"
+            countMax={9999}
+            options={[
+              { value: 'nine', label: 'Nine', count: 9 },
+              { value: 'ten', label: 'Ten', count: 10 },
+              { value: 'many', label: 'Many', count: 99 },
+              { value: 'thousand', label: 'Thousand', count: 1000 },
+            ]}
+          />
+        )}
+      />
+      <SegmentedChoice
+        aria-label="Capped count"
+        sizing="content"
+        defaultValue="capped"
+        options={[{ value: 'capped', label: 'Capped', count: 100 }]}
+      />
+    </LabSection>
+    <LabSection
       title="Asynchronous change"
       description="The pick shows at once and stays pending while it saves; a failed save puts the previous choice back."
     >

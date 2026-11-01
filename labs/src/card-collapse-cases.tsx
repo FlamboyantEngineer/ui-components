@@ -88,13 +88,13 @@ const paneRows = [
   { name: 'Plum row 8, the long stretch by the gate', short: 'P8', done: 90 },
 ];
 
-/** Collapsible records, one controlled by the lab so "Collapse all" works from outside. */
+/** Collapsible records, one controlled by the lab so a button outside collapses and expands it. */
 export function CollapsibleRecords() {
   const [first, setFirst] = useState(true);
   return (
     <div data-lab-demo="collapse" style={{ display: 'grid', gap: 12, maxWidth: 560 }}>
-      <Button size="sm" onPress={() => setFirst(false)}>
-        Collapse row 4
+      <Button size="sm" onPress={() => setFirst(!first)}>
+        {first ? 'Collapse row 4' : 'Expand row 4'}
       </Button>
       <RowCard row={requireDefined(rows[0])} isExpanded={first} onExpandedChange={setFirst} />
       <RowCard row={requireDefined(rows[1])} />
@@ -208,6 +208,60 @@ export function CollapsibleGrid() {
       <p>
         Selected: <output data-lab-output="grid-selected">{names.join(', ') || 'none'}</output>
       </p>
+    </div>
+  );
+}
+
+const gridSteps: CardPresentationSteps = { compact: { width: 260 }, minimal: { width: 120 } };
+
+/**
+ * Adaptive, collapsible cards in a selectable grid whose width the slider sets: the checkbox, the
+ * badge, the title, the toggle and More share the header row without overlapping at any width.
+ */
+export function TopRowGrid({ dir, initialWidth }: { dir?: 'rtl'; initialWidth: number }) {
+  const [width, setWidth] = useState(initialWidth);
+  const [selected, setSelected] = useState<Selection>(new Set());
+  const name = dir === 'rtl' ? 'top-row-rtl' : 'top-row';
+  return (
+    <div data-lab-demo={name} dir={dir}>
+      <Slider
+        label={dir === 'rtl' ? 'Grid width, right to left' : 'Grid width'}
+        minValue={160}
+        maxValue={720}
+        value={width}
+        onChange={(next) => setWidth(next)}
+      />
+      <div style={{ width }}>
+        <CardGrid
+          aria-label={dir === 'rtl' ? 'Rows, right to left' : 'Rows by width'}
+          items={[...rows, ...paneRows].map((row) => ({ ...row, id: row.short }))}
+          selectionMode="multiple"
+          selectedKeys={selected}
+          onSelectionChange={setSelected}
+        >
+          {(row) => (
+            <CardGridItem textValue={row.name}>
+              {({ isSelected }) => (
+                <Card
+                  title={row.name}
+                  abbreviation={row.short}
+                  role="group"
+                  leading={<Badge tone="success">Active</Badge>}
+                  meta="Updated Monday"
+                  actions={<Button size="sm">Water</Button>}
+                  isSelected={isSelected}
+                  isCollapsible
+                  defaultExpanded={false}
+                  summary={`Harvest ${row.done}% done`}
+                  presentationSteps={gridSteps}
+                >
+                  Twelve trees.
+                </Card>
+              )}
+            </CardGridItem>
+          )}
+        </CardGrid>
+      </div>
     </div>
   );
 }

@@ -4,7 +4,8 @@ import { createElement, Fragment, useMemo, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { UiLink } from '../../core/provider.js';
-import { mapTree } from '../../utils/map-tree.js';
+import { mapTreeToDepth } from '../../utils/map-tree.js';
+import { maxMarkupDepth } from '../../utils/markup.js';
 import { untrustedImageProps } from '../../utils/safe-url.js';
 import { TextMatch } from '../text-match/text-match.js';
 import {
@@ -75,10 +76,9 @@ function renderDefaultElement(element: HtmlElementNode, children: ReactNode): Re
 type ElementRenderer = HtmlMarkupProps['renderElement'];
 
 function renderNodes(nodes: readonly HtmlNode[], renderElement: ElementRenderer): ReactNode[] {
-  return mapTree<HtmlNode, ReactNode>(
-    nodes,
-    (node) => (node.type === 'element' ? node.children : undefined),
-    (node, children, index) => {
+  return mapTreeToDepth<HtmlNode, ReactNode>(nodes, {
+    getChildren: (node) => (node.type === 'element' ? node.children : undefined),
+    transform: (node, children, index) => {
       if (node.type === 'text') return <TextMatch key={index}>{node.text}</TextMatch>;
       const custom = renderElement?.(node, children);
       return (
@@ -87,7 +87,8 @@ function renderNodes(nodes: readonly HtmlNode[], renderElement: ElementRenderer)
         </Fragment>
       );
     },
-  );
+    maxDepth: maxMarkupDepth,
+  });
 }
 
 /**

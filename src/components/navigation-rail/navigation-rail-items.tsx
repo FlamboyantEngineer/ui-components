@@ -16,6 +16,7 @@ import { Glyph, useUiStrings } from '../../core/provider.js';
 import { formatCount, normalizeCount } from '../../utils/count.js';
 import { getInitials } from '../../utils/initials.js';
 import { Badge } from '../badge/badge.js';
+import { DisclosureContentScope } from '../disclosure/disclosure.js';
 import { useExpandGlyph } from '../expand-toggle/expand-toggle.js';
 import { Icon, type IconSource } from '../icon/icon.js';
 import { toIconProps } from '../icon/icon.js';
@@ -259,9 +260,11 @@ export function NavigationRailGroup({
           </AriaButton>
         </Tooltip>
         <AriaDisclosurePanel className={hooks.slotClass('group-panel')}>
-          <CurrentItemContext value={register}>
-            <ul {...hooks.slot('list')}>{children}</ul>
-          </CurrentItemContext>
+          <DisclosureContentScope>
+            <CurrentItemContext value={register}>
+              <ul {...hooks.slot('list')}>{children}</ul>
+            </CurrentItemContext>
+          </DisclosureContentScope>
         </AriaDisclosurePanel>
       </AriaDisclosure>
     </li>

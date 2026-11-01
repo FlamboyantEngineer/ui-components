@@ -1,10 +1,11 @@
 import { DragHandleGlyph, FitPageGlyph, SortAscendingGlyph } from '../../core/glyphs.js';
-import { act, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { I18nProvider } from '../../primitives/index.js';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { inShadow, ShadowHost, shadowRootOf } from '../../../test/shadow-fixtures.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { SegmentedChoice, type SegmentedChoiceOption } from './segmented-choice.js';
 
@@ -553,6 +554,23 @@ describe('SegmentedChoice', () => {
     await user.click(within(view).getByRole('radio', { name: 'Month' }));
     act(() => form.reset());
     await waitFor(() => expect(data()).toEqual(['view=day']));
+  });
+
+  it('UIC-SEGMENTED-CHOICE-2.7 puts back its default on the reset of a form inside a shadow root', async () => {
+    render(
+      <ShadowHost name="panel">
+        <form>
+          <SegmentedChoice aria-label="View" name="view" options={views} defaultValue="day" />
+        </form>
+      </ShadowHost>,
+    );
+    const form = shadowRootOf('panel').querySelector('form') as HTMLFormElement;
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event's pointer does not reach a React input inside a shadow root
+    fireEvent.click(inShadow('panel').getByRole('radio', { name: 'Week' }));
+    expect(new FormData(form).get('view')).toBe('week');
+    act(() => form.reset());
+    await waitFor(() => expect(new FormData(form).get('view')).toBe('day'));
+    expect(inShadow('panel').getByRole('radio', { name: 'Day' })).toBeChecked();
   });
 
   it('UIC-SEGMENTED-CHOICE-2.6 UIC-SEGMENTED-CHOICE-2.7 drops a pending change on a reset and reports a controlled reset', async () => {

@@ -21,10 +21,10 @@ import { isHTMLElement } from '../../utils/is-element.js';
 export interface ContextMenuTargetProps {
   onContextMenu?: ((event: MouseEvent<HTMLElement>) => void) | undefined;
   onKeyDown?: ((event: KeyboardEvent<HTMLElement>) => void) | undefined;
-  onPointerDown?: ((event: PointerEvent<HTMLElement>) => void) | undefined;
-  onPointerMove?: ((event: PointerEvent<HTMLElement>) => void) | undefined;
-  onPointerUp?: ((event: PointerEvent<HTMLElement>) => void) | undefined;
-  onPointerCancel?: ((event: PointerEvent<HTMLElement>) => void) | undefined;
+  onPointerDownCapture?: ((event: PointerEvent<HTMLElement>) => void) | undefined;
+  onPointerMoveCapture?: ((event: PointerEvent<HTMLElement>) => void) | undefined;
+  onPointerUpCapture?: ((event: PointerEvent<HTMLElement>) => void) | undefined;
+  onPointerCancelCapture?: ((event: PointerEvent<HTMLElement>) => void) | undefined;
   ref?: Ref<HTMLElement> | undefined;
 }
 
@@ -50,10 +50,11 @@ interface PendingPress {
 }
 
 /**
- * Touch presses a nested target already took for its own long press, so an enclosing target leaves
- * them alone, as a secondary click stops at the innermost target.
+ * The innermost target each touch press reached. Targets see the press on its way in (capture), the
+ * outermost first, so the last to write is the innermost: only it opens its menu, as a secondary
+ * click stops at the innermost target.
  */
-const claimedPresses = new WeakSet<Event>();
+const pressOwners = new WeakMap<Event, Element>();
 
 /** Input types whose text the reader edits, where the browser's own menu offers paste and spelling. */
 const textInputTypes = new Set(['text', 'search', 'url', 'tel', 'email', 'password', 'number']);
@@ -88,7 +89,13 @@ function openAt(controller: MenuController, element: HTMLElement, point: { x: nu
   controller.open(point);
 }
 
-/** A touch resting on the target opens the menu there, for platforms that send no contextmenu event. */
+/**
+ * A touch resting on the target opens the menu there, for platforms that send no contextmenu event.
+ * The press is watched on its way in (capture), so a pressable, a row or a gesture surface inside
+ * the target that stops it on the way out still lets it through; whether something inside vetoed it
+ * (prevented its default) or a nested target owns it is read when the delay ends, after every
+ * handler has run.
+ */
 function useLongPress(options: ContextMenuTargetOptions, suppressUntil: RefObject<number>) {
   const { controller, isDisabled, own } = options;
   const pending = useRef<PendingPress | null>(null);
@@ -99,33 +106,33 @@ function useLongPress(options: ContextMenuTargetOptions, suppressUntil: RefObjec
   useEffect(() => cancel, [cancel, isDisabled]);
   return {
     cancel,
-    onPointerDown(event: PointerEvent<HTMLElement>) {
-      own.onPointerDown?.(event);
+    onPointerDownCapture(event: PointerEvent<HTMLElement>) {
+      own.onPointerDownCapture?.(event);
       cancel();
       if (isDisabled || event.pointerType !== 'touch') return;
-      // A handler that prevented the press's default, or a nested target that took it, keeps it.
-      if (event.defaultPrevented || claimedPresses.has(event.nativeEvent)) return;
       if (isTextInside(event.target, event.currentTarget)) return;
-      claimedPresses.add(event.nativeEvent);
-      const { clientX: x, clientY: y, pointerId, currentTarget } = event;
+      const { nativeEvent, clientX: x, clientY: y, pointerId, currentTarget } = event;
+      pressOwners.set(nativeEvent, currentTarget);
       const timer = setTimeout(() => {
         pending.current = null;
+        // A handler that prevented the press's default, or a nested target, keeps it.
+        if (nativeEvent.defaultPrevented || pressOwners.get(nativeEvent) !== currentTarget) return;
         // The platform may still send its own contextmenu event for this press.
         suppressUntil.current = Date.now() + 1000;
         openAt(controller, currentTarget, { x, y });
       }, LONG_PRESS_DELAY);
       pending.current = { timer, pointerId, x, y };
     },
-    onPointerMove(event: PointerEvent<HTMLElement>) {
-      own.onPointerMove?.(event);
+    onPointerMoveCapture(event: PointerEvent<HTMLElement>) {
+      own.onPointerMoveCapture?.(event);
       if (pending.current && hasMoved(pending.current, event)) cancel();
     },
-    onPointerUp(event: PointerEvent<HTMLElement>) {
-      own.onPointerUp?.(event);
+    onPointerUpCapture(event: PointerEvent<HTMLElement>) {
+      own.onPointerUpCapture?.(event);
       cancel();
     },
-    onPointerCancel(event: PointerEvent<HTMLElement>) {
-      own.onPointerCancel?.(event);
+    onPointerCancelCapture(event: PointerEvent<HTMLElement>) {
+      own.onPointerCancelCapture?.(event);
       cancel();
     },
   };

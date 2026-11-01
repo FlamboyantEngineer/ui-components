@@ -51,4 +51,18 @@ describe('built-in glyph paths', () => {
     expect(notice).toContain('MIT License');
     expect(notice).toContain('Copyright (c) Tailwind Labs, Inc.');
   });
+
+  it('UIC-PROVIDER-2.1 draws each lone dot as an open circle that renders at small sizes', () => {
+    const dot = /a\.3\.3 0 1 1-\.6 0 \.3\.3 0 1 1 \.6 0$/;
+    for (const name of [
+      'informationCirclePath',
+      'questionMarkCirclePath',
+      'exclamationCirclePath',
+      'exclamationTrianglePath',
+      'signalSlashPath',
+      'wrenchPath',
+    ] as const) {
+      expect(glyphPaths[name], name).toMatch(dot);
+    }
+  });
 });

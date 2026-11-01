@@ -51,9 +51,9 @@ export interface NumberFieldProps
   startAdornment?: ReactNode;
   /** Content inside the frame after the number, such as a literal suffix (`/mo`). */
   endAdornment?: ReactNode;
-  /** The step of Alt with Arrow Up or Arrow Down, and of a scrub with Alt held. */
+  /** The step of Alt with Arrow Up or Arrow Down, a step button or a scrub. */
   smallStep?: number | undefined;
-  /** The step of Shift with Arrow Up or Arrow Down, and of a scrub with Shift held. */
+  /** The step of Shift with Arrow Up or Arrow Down, a step button or a scrub. */
   largeStep?: number | undefined;
   /** Draws a scrub handle before the number: dragging it sideways steps the value. */
   showScrubber?: boolean | undefined;

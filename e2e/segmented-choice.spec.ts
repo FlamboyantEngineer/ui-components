@@ -262,4 +262,35 @@ test.describe('Segmented Choice lab', () => {
     await expect(demo.locator('[data-lab-output="saved"]')).toHaveText('Saved: resolved');
     await lab.expectAccessible('[data-lab-demo="saved"]');
   });
+  test('UIC-SEGMENTED-CHOICE-1.9 grows a count badge with its digits at one height', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('segmented-choice');
+    const sizes = ['xs', 'sm', 'md', 'lg'];
+    for (const size of sizes) {
+      const group = page.getByRole('radiogroup', { name: `Count widths, ${size}` });
+      const counts = group.locator('.ui-segmented-choice__count');
+      const boxes = await counts.evaluateAll((elements) =>
+        elements.map((element) => {
+          const box = element.getBoundingClientRect();
+          return {
+            width: box.width,
+            height: box.height,
+            clipped: element.scrollWidth > element.clientWidth,
+          };
+        }),
+      );
+      const [nine, ten, many, thousand] = boxes;
+      expect(nine?.width).toBeCloseTo(nine?.height ?? 0, 0);
+      expect(boxes.every((box) => Math.abs(box.height - (nine?.height ?? 0)) < 0.5)).toBe(true);
+      expect(ten?.width).toBeGreaterThan(nine?.width ?? 0);
+      expect(many?.width).toBeCloseTo(ten?.width ?? 0, 0);
+      expect(thousand?.width).toBeGreaterThan(many?.width ?? 0);
+      expect(boxes.some((box) => box.clipped)).toBe(false);
+      await expect(counts).toHaveText(['9', '10', '99', '1,000']);
+    }
+    const capped = page.getByRole('radiogroup', { name: 'Capped count' });
+    await expect(capped.locator('.ui-segmented-choice__count')).toHaveText('99+');
+  });
 });

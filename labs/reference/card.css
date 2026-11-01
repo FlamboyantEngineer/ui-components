@@ -42,7 +42,8 @@
 }
 .ui-card__heading {
   display: grid;
-  flex: 1 1 10rem;
+  flex: 1 1 0;
+  grid-template-columns: minmax(0, 1fr);
   gap: 4px;
   min-width: 0;
 }
@@ -58,6 +59,7 @@
 }
 .ui-card__actions {
   display: flex;
+  flex: 1 1 100%;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
@@ -141,7 +143,11 @@
   text-decoration: underline;
 }
 
-/* Header regions, the expand and collapse control and the More panel. */
+/*
+ * Header regions, the expand and collapse control and the More panel. The first row holds the
+ * selection checkbox, the leading content, the title block, the toggle and More, each with its own
+ * room; the title block takes what is left. The actions follow on a line of their own.
+ */
 
 .ui-card__leading {
   display: flex;
@@ -177,6 +183,8 @@
 }
 .ui-card__header > .ui-card__actions[data-moved] {
   justify-content: flex-start;
+  padding-block-start: 8px;
+  border-block-start: 1px dashed var(--ref-border);
 }
 .ui-card__summary {
   min-width: 0;
@@ -203,6 +211,11 @@
   flex-wrap: nowrap;
   align-items: center;
   gap: 4px;
+}
+.ui-card:is([data-presentation='compact'], [data-presentation='minimal'])
+  > .ui-card__header:has(> .ui-card__more[data-expanded]) {
+  flex-wrap: wrap;
+  align-items: flex-start;
 }
 .ui-card:is([data-presentation='compact'], [data-presentation='minimal']) .ui-card__heading {
   flex: 1 1 0;
@@ -304,6 +317,14 @@
   inset-block-start: 10px;
   inset-inline-end: 10px;
   z-index: 1;
+}
+/* A card draws its grid item's checkbox at the start of its header row. */
+.ui-card__header > .ui-card-grid-item__checkbox {
+  position: static;
+  display: flex;
+  flex: none;
+  align-items: center;
+  min-height: 28px;
 }
 
 /* Hidden feedback parts keep the native hidden behaviour over their display rules. */

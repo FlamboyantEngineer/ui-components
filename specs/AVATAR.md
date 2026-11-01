@@ -6,9 +6,9 @@
 
 ### UIC-AVATAR-1.1 - Picture, initials or glyph
 
-`Avatar` shall draw the picture at `src` in the `ui-avatar__image` slot when `src` is not blank, otherwise its initials in the `ui-avatar__initials` slot. With `kind="group"` it shall draw the decorative `users` glyph in the `ui-avatar__glyph` slot instead, ignoring `src` and `initials`. `kind` defaults to `person` and is published in `data-kind`.
+`Avatar` shall draw the picture at `src` in the `ui-avatar__image` slot when `src` is not blank, otherwise its initials in the `ui-avatar__initials` slot. With `kind="group"` it shall draw the decorative `users` glyph in the `ui-avatar__glyph` slot instead, ignoring `src` and `initials`. `kind` defaults to `person` and is published in `data-kind`. The reference stylesheet centres the glyph, picture or initials within the `ui-avatar__surface` slot in every size, shape and variant, also when the avatar opens a card.
 
-Implementation: `src/components/avatar/avatar.tsx`
+Implementation: `src/components/avatar/avatar.tsx`, `labs/reference/avatar.css`
 Verification: `src/components/avatar/avatar.test.tsx`, `e2e/avatar.spec.ts`
 
 ### UIC-AVATAR-1.2 - Initials
@@ -57,7 +57,7 @@ Verification: `src/components/avatar/avatar.test.tsx`, `e2e/avatar.spec.ts`
 
 ### UIC-AVATAR-2.2 - Variants
 
-`variant` shall publish `data-variant`: `filled` (the default), where the initials sit on the colour slot, or `outlined`, where the circle is ringed and the initials sit on the container's own ground.
+`variant` shall publish `data-variant`: `filled` (the default), where the initials sit on the colour slot, or `outlined`, where the circle is ringed and the initials sit on the container's own ground. The reference stylesheet draws the ring over the `ui-avatar__surface` slot, which keeps the whole box, so no light seam shows between the picture or fill and the ring in any shape, theme or pixel ratio, and the box size and status indicator are unchanged.
 
 Implementation: `src/components/avatar/avatar.tsx`, `labs/reference/avatar.css`
 Verification: `src/components/avatar/avatar.test.tsx`, `e2e/avatar.spec.ts`

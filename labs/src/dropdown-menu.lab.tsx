@@ -4,6 +4,7 @@ import type { Key, Selection } from '../../src/core/props.js';
 import { Button, type ButtonVariant } from '../../src/components/button/button.js';
 import { DropdownMenu } from '../../src/components/dropdown-menu/dropdown-menu.js';
 import { MenuItem, MenuSection, type MenuEntry } from '../../src/components/menu/menu.js';
+import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const variants: ButtonVariant[] = ['primary', 'secondary', 'tertiary', 'ghost', 'danger'];
@@ -152,6 +153,75 @@ function Filterable() {
   );
 }
 
+const insertEntries: MenuEntry[] = [
+  { id: 'text-box', label: 'Text box' },
+  {
+    id: 'shape',
+    label: 'Shape',
+    items: [
+      { id: 'square', label: 'Square' },
+      { id: 'circle', label: 'Circle' },
+      { id: 'star', label: 'Star', isDisabled: true },
+      { type: 'separator', id: 'shape-rule' },
+      {
+        id: 'arrow',
+        label: 'Arrow',
+        items: [
+          { id: 'arrow-start', label: 'Arrow to start' },
+          { id: 'arrow-end', label: 'Arrow to end' },
+          { type: 'separator', id: 'arrow-rule' },
+          { id: 'arrow-both', label: 'Double arrow' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'chart',
+    label: 'Chart',
+    items: [
+      { id: 'bar-chart', label: 'Bar chart' },
+      { id: 'line-chart', label: 'Line chart' },
+      { id: 'pie-chart', label: 'Pie chart', isDisabled: true },
+    ],
+  },
+  { type: 'separator', id: 'insert-rule' },
+  { id: 'comment', label: 'Comment', isDisabled: true },
+];
+
+/** A menu two submenu levels deep whose leaf items report the action they ran. */
+function Nested({ label, placement }: { label: string; placement?: 'bottom end' }) {
+  const [last, setLast] = useState('none');
+  return (
+    <div data-lab-case={label}>
+      <DropdownMenu
+        label={label}
+        items={insertEntries}
+        placement={placement}
+        onAction={(key: Key) => setLast(String(key))}
+      />
+      <p>
+        Inserted: <output data-lab-output="inserted">{last}</output>
+      </p>
+    </div>
+  );
+}
+
+/** Nested menus pressed against the inline end of the page, left to right and right to left. */
+function NestedAtEdges() {
+  return (
+    <div style={{ display: 'grid', gap: 16 }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <Nested label="Insert at the end" placement="bottom end" />
+      </div>
+      <UiProvider locale="he-IL">
+        <div dir="rtl" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <Nested label="Insert right to left" placement="bottom end" />
+        </div>
+      </UiProvider>
+    </div>
+  );
+}
+
 function Controlled() {
   const [open, setOpen] = useState(false);
   return (
@@ -236,6 +306,18 @@ mountLab(
       description="Press Disable in a second, then open either menu: when its trigger turns disabled the menu closes and its items choose nothing, and enabling the trigger again leaves it closed."
     >
       <DisabledWhileOpen />
+    </LabSection>
+    <LabSection
+      title="Nested submenus"
+      description="Insert opens Shape and Chart, and Shape opens Arrow, two levels below the menu. Point at an item with a chevron to open its submenu, or press Arrow Right (Enter or Space also open it); Arrow Left or Escape close only that level and return focus to the item that opened it. Choosing a leaf closes every level, shows it under Inserted and returns focus to the trigger. Star, Pie chart and Comment are disabled; separators group the entries."
+    >
+      <Nested label="Insert" />
+    </LabSection>
+    <LabSection
+      title="Nested submenus at the edge"
+      description="The same menu against the end of the line, left to right and right to left: submenus that would leave the window open on the side with room instead. In right-to-left text Arrow Left opens a level and Arrow Right closes it."
+    >
+      <NestedAtEdges />
     </LabSection>
     <LabSection title="Controlled" description="The open state lives in the lab.">
       <Controlled />

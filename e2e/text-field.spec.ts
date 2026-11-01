@@ -351,6 +351,54 @@ test.describe('Text Field lab', () => {
     await expect(input).toHaveValue('ada@example.com');
     await expect(input).toBeFocused();
   });
+
+  test('UIC-TEXT-FIELD-1.2 UIC-TEXT-FIELD-3.3 keeps long values inside bounded boxes with the caret reaching the end', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('text-field');
+    const line = field(page, 'long-line').getByRole('textbox');
+    const length = (await line.inputValue()).length;
+    expect(await line.evaluate((node) => node.scrollWidth > node.clientWidth)).toBe(true);
+    await line.click();
+    await page.keyboard.press('End');
+    await expect.poll(() => line.evaluate((node) => node.scrollLeft)).toBeGreaterThan(0);
+    expect(await line.evaluate((node: HTMLInputElement) => node.selectionStart)).toBe(length);
+    await page.keyboard.press('Home');
+    await expect.poll(() => line.evaluate((node) => node.scrollLeft)).toBe(0);
+
+    for (const [name, maximum] of [
+      ['long-notes', 120],
+      ['long-grow', 220],
+    ] as const) {
+      const area = field(page, name).getByRole('textbox');
+      const box = await area.boundingBox();
+      expect(box?.height).toBeLessThanOrEqual(maximum);
+      // Wrapped, never sideways.
+      expect(await area.evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(true);
+      expect(await area.evaluate((node) => node.scrollHeight > node.clientHeight * 3)).toBe(true);
+      await area.click();
+      await page.keyboard.press('Control+End');
+      const text = await area.inputValue();
+      expect(await area.evaluate((node: HTMLTextAreaElement) => node.selectionStart)).toBe(
+        text.length,
+      );
+      // The last line is in view: at most the text area's bottom padding stays below it.
+      await expect
+        .poll(() => area.evaluate((node) => node.scrollHeight - node.clientHeight - node.scrollTop))
+        .toBeLessThanOrEqual(10);
+      await page.keyboard.type(' End.');
+      await expect(area).toHaveValue(`${text} End.`);
+    }
+    const grow = await field(page, 'long-grow').getByRole('textbox').boundingBox();
+    const fixed = await field(page, 'long-notes').getByRole('textbox').boundingBox();
+    expect(grow?.height ?? 0).toBeGreaterThan(fixed?.height ?? 0);
+    expect(
+      await field(page, 'long-notes')
+        .getByRole('textbox')
+        .evaluate((node) => getComputedStyle(node).resize),
+    ).toBe('vertical');
+  });
 });
 
 test.describe('Text Field driven by an editor', () => {

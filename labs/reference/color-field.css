@@ -63,6 +63,12 @@
   flex: none;
 }
 
+/* The swatch follows the field's height, so it sits the same 4px inside the frame at every size. */
+.ui-color-field .ui-color-field__swatch.ui-color-swatch {
+  width: calc(var(--ref-field-height) - 10px);
+  height: calc(var(--ref-field-height) - 10px);
+}
+
 .ui-color-field__value {
   font-family: var(--ref-mono);
   font-size: var(--ref-font-size-sm);
@@ -151,14 +157,27 @@
 
 .ui-color-field__hex {
   display: flex;
+  flex-direction: column;
+  gap: 2px;
   flex: 2 1 0;
   min-width: 0;
 }
 
 .ui-color-field__channel {
   display: flex;
+  flex-direction: column;
+  gap: 2px;
   flex: 1 1 0;
   min-width: 0;
+}
+
+/* The channel's initial above its input; the wheel over the input steps the channel. */
+.ui-color-field__channel-label {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-xs);
+  font-weight: var(--ref-font-weight-medium);
+  line-height: 1.25;
+  text-align: center;
 }
 
 .ui-color-field__channel .ui-color-field__input {

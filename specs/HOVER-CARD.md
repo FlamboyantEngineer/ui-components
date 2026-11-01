@@ -20,14 +20,14 @@ Verification: `src/components/hover-card/hover-card.test.tsx`, `e2e/hover-card.s
 
 ### UIC-HOVER-CARD-1.3 - Staying open and closing
 
-The card shall stay open while the pointer travels from the trigger into the card and while the pointer or focus is on either, and close `closeDelay` milliseconds (200 by default) after both have left them. Tab from the trigger moves into the open card. Escape closes it at once, keeping focus on the trigger or returning it there from inside the card.
+The card shall stay open while the pointer travels from the trigger into the card and while the pointer or focus is on either, and close `closeDelay` milliseconds (200 by default) after both have left them. Tab from the trigger moves into the open card. Escape closes it at once, keeping focus on the trigger or returning it there from inside the card. The card keeps its open state apart from React Aria's tooltips, which allow one open tooltip at a time: a [Tooltip](TOOLTIP.md) on a control inside the open card opens on keyboard focus and on hover, and the card stays open meanwhile.
 
-Implementation: `src/components/hover-card/hover-card.tsx`
+Implementation: `src/components/hover-card/hover-card.tsx`, `src/utils/use-preview-state.ts`
 Verification: `src/components/hover-card/hover-card.test.tsx`, `e2e/hover-card.spec.ts`
 
 ### UIC-HOVER-CARD-1.4 - Controlled state
 
-`isOpen` with `onOpenChange` on the trigger shall control the card, and `defaultOpen` shall open it at first; hover, focus, Escape and the delays running out report changes through `onOpenChange`. `isDisabled` opens nothing, closes an open card and leaves the trigger as it would be without the card (no `aria-haspopup`, `aria-expanded` or description), while keeping the trigger mounted, so a card can come and go around a focused trigger.
+`isOpen` with `onOpenChange` on the trigger shall control the card, and `defaultOpen` shall open it at first; hover, focus, Escape and the delays running out report changes through `onOpenChange`. `isDisabled` opens nothing and draws the card closed even while a controlled owner keeps `isOpen` true. An open card, by `isOpen`, `defaultOpen` or an interaction, is closed once per change to disabled through `onOpenChange(false)`, so an uncontrolled card stays closed when the trigger is enabled again. The trigger is left as it would be without the card (no `aria-haspopup`, `aria-expanded` or description), while keeping the trigger mounted, so a card can come and go around a focused trigger.
 
 Implementation: `src/components/hover-card/hover-card.tsx`
 Verification: `src/components/hover-card/hover-card.test.tsx`, `e2e/hover-card.spec.ts`

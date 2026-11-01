@@ -39,6 +39,13 @@ Reading untrusted markup shall take time about proportional to its length, whate
 Implementation: `src/utils/markup.ts`, `src/utils/open-elements.ts`, `src/components/html-markup/html-tree.ts`, `src/components/svg-markup/parse-svg-markup.ts`
 Verification: `src/utils/markup-scaling.test.tsx`, `e2e/html-markup.spec.ts`
 
+### UIC-MARKUP-1.6 - Nesting depth
+
+No input shall overflow the call stack while it is read or drawn, on the server or in the browser. HtmlMarkup, SvgMarkup and Markdown draw at most 256 levels of nested elements (`maxMarkupDepth`): a deeper element that has content is unwrapped, and its content joins the element at level 256 in document order, so text, line breaks and images are kept and only the deeper wrappers go; those wrappers are not offered to `renderElement` or `renderNode`. The bound sits well below the 512 open elements Chromium's parser keeps, so server HTML parses back to the same tree inside a page's own nesting and hydrates.
+
+Implementation: `src/utils/map-tree.ts`, `src/utils/markup.ts`, `src/components/html-markup/html-markup.tsx`, `src/components/svg-markup/svg-markup.tsx`, `src/components/markdown/markdown-render.tsx`
+Verification: `src/utils/map-tree.test.ts`, `src/utils/markup-depth.test.tsx`, `e2e/html-markup.spec.ts`, `e2e/markdown.spec.ts`
+
 ## UIC-MARKUP-2 - URLs
 
 ### UIC-MARKUP-2.1 - Safe URLs

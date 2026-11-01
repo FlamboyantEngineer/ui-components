@@ -27,7 +27,7 @@ Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-edito
 
 ### UIC-CODE-EDITOR-1.4 - Size and wrapping
 
-`size` (`sm`, `md` by default, `lg`) shall publish `data-size`, from which the stylesheet sets the starting height. `wrap` (`soft` by default, or `off`) shall publish `data-wrap` and set the text area's `wrap`: `soft` wraps long lines and `off` scrolls them sideways.
+`size` (`sm`, `md` by default, `lg`) shall publish `data-size`, from which the stylesheet sets the starting height and the source metrics (font size, line height and inset) that the text area, the highlighted copy, the gutter and the caret marker share, so a larger size has larger text and the layers stay level at every size. `wrap` (`soft` by default, or `off`) shall publish `data-wrap` and set the text area's `wrap`: `soft` wraps long lines and `off` scrolls them sideways.
 
 Implementation: `src/components/code-editor/code-editor.tsx`, `labs/reference/code-editor.css`
 Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-editor.spec.ts`
@@ -57,9 +57,9 @@ Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/query-fiel
 
 ### UIC-CODE-EDITOR-2.1 - Gutter
 
-`lineNumbers` shall draw a gutter (`ui-code-editor__gutter`, hidden from assistive technology) with one row (`ui-code-editor__line`) per source line, split on line feeds, holding its number (`ui-code-editor__line-number`) and a hidden copy of the line (`ui-code-editor__line-text`, a zero-width space for an empty line), and publish `data-numbered` on the root.
+`lineNumbers` shall draw a gutter (`ui-code-editor__gutter`, hidden from assistive technology) with one row (`ui-code-editor__line`) per source line, split on line feeds, holding its number (`ui-code-editor__line-number`) and a hidden copy of the line (`ui-code-editor__line-text`, a zero-width space for an empty line), and publish `data-numbered` on the root. The reference sheet clips the gutter's background to the surface frame's rounded corners, so the frame's border stays whole where the gutter meets it.
 
-Implementation: `src/components/code-editor/code-layers.tsx`, `src/components/code-editor/code-editor.tsx`
+Implementation: `src/components/code-editor/code-layers.tsx`, `src/components/code-editor/code-editor.tsx`, `labs/reference/code-editor.css`
 Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-editor.spec.ts`
 
 ### UIC-CODE-EDITOR-2.2 - Wrapped lines
@@ -331,7 +331,7 @@ Verification: `src/components/code-editor/code-json.test.tsx`
 
 ### UIC-CODE-EDITOR-12.1 - Built-in and custom syntax
 
-`language` selects basic highlighting for text (default), JSON, JavaScript, TypeScript, HTML, CSS, SQL, Python or Markdown. These presets highlight syntax without providing a language server. `syntax` accepts ordered `{ type, pattern: RegExp }` rules for another language, preserving regex flags and ignoring empty matches. `tokenize` overrides syntax and language. Every tokenizer preserves source text exactly; token kinds publish `data-token` for the stylesheet.
+`language` selects basic highlighting for text (default), JSON, JavaScript, TypeScript, HTML, CSS, SQL, Python or Markdown. These presets highlight syntax without providing a language server. `syntax` accepts ordered `{ type, pattern: RegExp }` rules for another language, preserving regex flags and ignoring empty matches. `tokenize` overrides syntax and language. Every tokenizer preserves source text exactly; token kinds publish `data-token` for the stylesheet. `resolveCodeTokenizer({ language, syntax })` returns the tokenizer the editor uses for them, or none for plain text, so a [Code Block](CODE-BLOCK.md) can highlight with the same presets through its `tokenize`.
 
 Implementation: `src/components/code-editor/code-languages.ts`, `src/components/code-editor/code-editor.tsx`
 Verification: `src/components/code-editor/code-languages.test.tsx`
@@ -421,7 +421,7 @@ Verification: `src/components/code-editor/code-json.test.tsx`, `e2e/code-json.sp
 | `ui-code-editor__tooltip`       | slot      |                                                                                        | The hover tip popover.                                                   |
 | `ui-code-editor__popover`       | slot      |                                                                                        | The completion list (also `ui-completion-list`).                         |
 | `ui-code-editor__search`        | slot      |                                                                                        | The find and replace row, a Find Bar beside its own `ui-find-bar` hooks. |
-| `data-size`                     | attribute | `sm`, `md`, `lg`                                                                       | Starting height.                                                         |
+| `data-size`                     | attribute | `sm`, `md`, `lg`                                                                       | Starting height and source metrics.                                      |
 | `data-wrap`                     | attribute | `soft`, `off`                                                                          | Whether long lines wrap.                                                 |
 | `data-token`                    | attribute |                                                                                        | On a token: its type, from the caller's tokenizer.                       |
 | `data-numbered`                 | state     | `true`                                                                                 | The gutter shows.                                                        |

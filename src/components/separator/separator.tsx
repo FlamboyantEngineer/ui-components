@@ -9,10 +9,17 @@ import { isEmptyNode } from '../../utils/is-empty-node.js';
 import type { ElementRender } from '../../utils/render-element.js';
 
 /** The line style. */
-export type SeparatorVariant = 'solid' | 'dashed' | 'dotted';
+export type SeparatorVariant = 'solid' | 'dashed' | 'dotted' | 'wiggly';
 
 /** Where a label sits along the line, in the writing direction. */
 export type SeparatorLabelPosition = 'start' | 'center' | 'end';
+
+/**
+ * Where a label sits relative to the line: `across` it, between a start and an end line, or
+ * `before` or `after` an unbroken line (above or below a horizontal one; at its inline start or
+ * end beside a vertical one).
+ */
+export type SeparatorLabelPlacement = 'across' | 'before' | 'after';
 
 /** The element a separator renders when it can hold an `<hr>`'s rule. */
 export type SeparatorElement = 'hr' | 'div' | 'li';
@@ -34,6 +41,8 @@ export interface SeparatorProps
   label?: ReactNode;
   /** Where the label sits along the line. Defaults to `center`. */
   labelPosition?: SeparatorLabelPosition | undefined;
+  /** Where the label sits relative to the line. Defaults to `across`. */
+  labelPlacement?: SeparatorLabelPlacement | undefined;
   /** A purely visual rule (`role="none"`) that assistive technology passes over. */
   decorative?: boolean | undefined;
   /**
@@ -104,6 +113,7 @@ export function Separator({
   variant = 'solid',
   label,
   labelPosition = 'center',
+  labelPlacement = 'across',
   decorative = false,
   elementType,
   render,
@@ -122,7 +132,12 @@ export function Separator({
       {...hooks.root({
         className,
         props: rest,
-        data: { orientation, variant, labelPosition: isLabelled ? labelPosition : undefined },
+        data: {
+          orientation,
+          variant,
+          labelPosition: isLabelled ? labelPosition : undefined,
+          labelPlacement: isLabelled ? labelPlacement : undefined,
+        },
       })}
       orientation={orientation}
       elementType={element}

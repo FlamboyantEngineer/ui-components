@@ -20,7 +20,7 @@ Verification: `src/components/tag-group/tag-group.test.tsx`
 
 ### UIC-TAG-GROUP-1.3 - Sizes
 
-`size` shall publish `data-size` on the root: `sm`, `md` (the default) or `lg`. The reference sheet draws 18, 22 and 26 pixel tags.
+`size` shall publish `data-size` on the root: `sm`, `md` (the default) or `lg`. The reference sheet draws 18, 22 and 26 pixel tags. At every size the label shows descenders, capitals and accents whole ([UIC-LABS-3.7](LABS.md#uic-labs-37---control-scale)).
 
 Implementation: `src/components/tag-group/tag-group.tsx`, `labs/reference/tag-group.css`
 Verification: `src/components/tag-group/tag-group.test.tsx`, `e2e/tag-group.spec.ts`

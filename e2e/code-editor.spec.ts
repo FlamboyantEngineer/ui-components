@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { cellSelector, expect, familySelector, test } from './fixtures.js';
+import { cellSelector, expect, familySelector, matrixCell, test } from './fixtures.js';
 
 function cell(page: Page, wrap: string, state: string, size: string): Locator {
   return page.locator(
@@ -105,7 +105,11 @@ test.describe('Code Editor lab', () => {
     expect(await highlight.evaluate((element) => element.scrollLeft)).toBe(30);
     const gutter = long.locator('.ui-code-editor__gutter');
     expect(await gutter.evaluate((element) => element.scrollTop)).toBe(240);
-    const row = long.locator('.ui-code-editor__line').nth(14);
+    // The first row below the scrolled-off part, whatever the size's line height.
+    const lineHeight = await input.evaluate((element) =>
+      Number.parseFloat(getComputedStyle(element).lineHeight),
+    );
+    const row = long.locator('.ui-code-editor__line').nth(Math.ceil(240 / lineHeight));
     const line = await box(row);
     const surface = await box(long.locator('.ui-code-editor__surface'));
     expect(line.y).toBeGreaterThanOrEqual(surface.y);
@@ -559,5 +563,74 @@ test.describe('Code Editor lab', () => {
     await expect(page.getByRole('listbox', { name: 'Suggestions' })).toBeVisible();
     await page.keyboard.press('Enter');
     await expect(input).toHaveValue(/\npick\(test, yes, no\)$/);
+  });
+  test('UIC-CODE-EDITOR-2.1 keeps the frame corners whole where the gutter meets them', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('code-editor');
+    for (const wrap of ['soft', 'off']) {
+      for (const size of ['sm', 'md', 'lg']) {
+        const editor = matrixCell(page, `wrap=${wrap} state=numbered size=${size}`).locator(
+          '.ui-code-editor',
+        );
+        await editor.scrollIntoViewIfNeeded();
+        // Just inside the frame's box but outside its rounded corners, the gutter paints nothing.
+        const shot = (await editor.screenshot()).toString('base64');
+        const corners = await page.evaluate(async (data) => {
+          const image = new Image();
+          image.src = `data:image/png;base64,${data}`;
+          await image.decode();
+          const canvas = document.createElement('canvas');
+          canvas.width = image.width;
+          canvas.height = image.height;
+          const context = canvas.getContext('2d');
+          if (!context) return [];
+          context.drawImage(image, 0, 0);
+          const pixel = (x: number, y: number) => [...context.getImageData(x, y, 1, 1).data].join();
+          const gutter = pixel(6, image.height - 8);
+          return [pixel(1, 1), pixel(1, image.height - 2)].map((corner) => corner !== gutter);
+        }, shot);
+        expect(corners, `${wrap} ${size}`).toEqual([true, true]);
+      }
+    }
+  });
+  test('UIC-CODE-EDITOR-1.4 UIC-CODE-EDITOR-1.3 scales the source text with the size and keeps the layers level', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('code-editor');
+    const sizes: number[] = [];
+    for (const size of ['sm', 'md', 'lg']) {
+      for (const wrap of ['soft', 'off']) {
+        const target = cell(page, wrap, 'numbered', size);
+        await target.scrollIntoViewIfNeeded();
+        const input = target.getByRole('textbox', { name: 'Source' });
+        const highlight = target.locator('.ui-code-editor__highlight');
+        const metrics = (locator: Locator) =>
+          locator.evaluate((node) => {
+            const style = getComputedStyle(node);
+            return [style.fontSize, style.lineHeight, style.paddingTop, style.paddingLeft];
+          });
+        const inputMetrics = await metrics(input);
+        expect(await metrics(highlight)).toEqual(inputMetrics);
+        expect(await box(input)).toEqual(await box(highlight));
+        const gutter = target.locator('.ui-code-editor__gutter');
+        expect(await gutter.evaluate((node) => getComputedStyle(node).fontSize)).toBe(
+          inputMetrics[0],
+        );
+        // The gutter's numbers stay level with the lines they number.
+        const rows = target.locator('.ui-code-editor__line-number');
+        const lines = target.locator('.ui-code-editor__highlight');
+        const firstRow = await box(rows.first());
+        const text = await box(lines);
+        expect(
+          Math.abs(firstRow.y - (text.y + Number.parseFloat(inputMetrics[2] ?? '0'))),
+        ).toBeLessThanOrEqual(1);
+        if (wrap === 'soft') sizes.push(Number.parseFloat(inputMetrics[0] ?? '0'));
+      }
+    }
+    expect(sizes[0]).toBeLessThan(sizes[1] ?? 0);
+    expect(sizes[1]).toBeLessThan(sizes[2] ?? 0);
   });
 });

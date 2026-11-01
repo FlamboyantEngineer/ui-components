@@ -188,6 +188,34 @@ test.describe('Number Field lab', () => {
     await expect(output(page, 'Fine committed')).toHaveText('2e-7');
   });
 
+  test('UIC-NUMBER-FIELD-3.2 steps by the modifier step when a step button is pressed with Shift or Alt', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('number-field');
+    const fast = field(page, 'fast');
+    const input = fast.getByRole('textbox', { name: 'Opacity' });
+    const increase = fast.getByRole('button', { name: 'Increase Opacity' });
+    const decrease = fast.getByRole('button', { name: 'Decrease Opacity' });
+    await increase.click({ modifiers: ['Shift'] });
+    await expect(input).toHaveValue('50');
+    await expect(output(page, 'Opacity')).toHaveText('50');
+    // Held down, a modified press still steps once.
+    await increase.hover();
+    await page.keyboard.down('Shift');
+    await page.mouse.down();
+    await page.waitForTimeout(600);
+    await page.mouse.up();
+    await page.keyboard.up('Shift');
+    await expect(input).toHaveValue('60');
+    await decrease.click({ modifiers: ['Alt'] });
+    await expect(input).toHaveValue('59.9');
+    // A plain press steps by `step` onto its grid.
+    await increase.click();
+    await expect(input).toHaveValue('60');
+    await expect(output(page, 'Opacity')).toHaveText('60');
+  });
+
   test('UIC-NUMBER-FIELD-3.3 abandons a scrub when the field becomes read-only', async ({
     page,
     lab,

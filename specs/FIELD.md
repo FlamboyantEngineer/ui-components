@@ -13,7 +13,7 @@ Verification: `src/components/field/field.test.tsx`, `e2e/field.spec.ts`
 
 ### UIC-FIELD-1.2 - Label layouts
 
-`labelLayout` shall choose where the label sits and publish it as `data-label-layout`: `label-control` (the default) puts the label before the control, `control-label` after it, `label-colon-control` before it followed by the provider's `labelColon` punctuation (`ui-field__colon`, hidden from assistive technology; `:` in English, a spaced colon in French, a full-width colon in Japanese), and `control-only` draws no label: the control is named by `aria-label` with the label text instead. The reference sheet stacks `label-control` and lays the other layouts on one row.
+`labelLayout` shall choose where the label sits and publish it as `data-label-layout`: `label-control` (the default) puts the label before the control, `control-label` after it, `label-colon-control` before it followed by the provider's `labelColon` punctuation (`ui-field__colon`, hidden from assistive technology; `:` in English, a spaced colon in French, a full-width colon in Japanese), and `control-only` draws no label: the control is named by `aria-label` with the label text instead. The reference sheet stacks `label-control` and lays the other layouts on one row. In `label-colon-control` the description and message start under the control, not the label, wrapped lines included, so they line up with the input in either reading direction; the label column takes at most half the field. A message holding a list (several issues drawn by `renderMessage`) has no indent or bullets, so its text starts where a single message does.
 
 Implementation: `src/components/field/field.tsx`, `src/components/field/field-parts.tsx`, `labs/reference/field.css`
 Verification: `src/components/field/field.test.tsx`, `e2e/field.spec.ts`
@@ -129,7 +129,7 @@ Verification: `src/components/field/field-state.test.tsx`
 
 ### UIC-FIELD-2.6 - Native reset
 
-A native reset of the form the field's control belongs to at the time of the reset (or the form around the field) shall put back the value the field had when it mounted, through `setValue`, as the browser does for its own controls, whatever element the control renders. The field holds its changes from the moment the reset starts until every listener has seen it, so a building block that resets itself (as React Aria's controls do) waits too. A reset that any listener cancels with `preventDefault`, such as while asking whether to discard edits, changes nothing: the value, `onChange` and the field's other state stay as they were, as do drafts a control shows but has not made a value (a date typed in part, a colour's typed text). Any other reset then puts the initial value back once. A control moved to another form (its `form` attribute changed, its form replaced) resets with its new owner only. The same holds for the drafts and held state of building blocks that reset themselves through the shared native reset hook (`src/utils/use-native-reset.ts`), which looks up the control's form at each reset: a new owner's reset clears a draft with the value, and an old form's reset clears neither.
+A native reset of the form the field's control belongs to at the time of the reset (or the form around the field) shall put back the value the field had when it mounted, through `setValue`, as the browser does for its own controls, whatever element the control renders. The field holds its changes from the moment the reset starts until every listener has seen it, so a building block that resets itself (as React Aria's controls do) waits too. A reset that any listener cancels with `preventDefault`, such as while asking whether to discard edits, changes nothing: the value, `onChange` and the field's other state stay as they were, as do drafts a control shows but has not made a value (a date typed in part, a colour's typed text). Any other reset then puts the initial value back once. A control moved to another form (its `form` attribute changed, its form replaced) resets with its new owner only. A native form control's own `form` owner decides even when it is null (a `form` attribute naming no form, or a named form removed or renamed): the control then belongs to no form, and a reset of the form around it changes nothing until a form takes the name. Only a control without a native owner, such as a group's root, takes part in the form around the field. A form inside a shadow root, nested ones included, resets its fields alike: a native `reset` does not leave the shadow root, so the field and the shared hook listen at the root of the control's tree (its shadow root, else its document), and an accepted or cancelled reset behaves as in the document. The same holds for the drafts and held state of building blocks that reset themselves through the shared native reset hook (`src/utils/use-native-reset.ts`), which looks up the control's form at each reset: a new owner's reset clears a draft with the value, and an old form's reset clears neither.
 
 Implementation: `src/components/field/field-form.ts`, `src/components/field/field-state.ts`, `src/utils/use-native-reset.ts`
 Verification: `src/components/pin-input/pin-input.test.tsx`, `src/components/tags-input/tags-input.test.tsx`, `src/components/field/field-form.test.tsx`, `e2e/form.spec.ts`, `src/utils/use-native-reset.test.tsx`
@@ -208,9 +208,9 @@ Verification: `src/components/field/field-validation.test.tsx`, `src/components/
 
 ### UIC-FIELD-3.10 - Native constraint validation
 
-`validationBehavior` (the nearest form's, else `aria`) shall decide whether the browser sees the field's validation. In the `native` behavior, while the value has an error or is being checked, the field gives its control element, when it takes part in constraint validation (an input, a text area), the message as its custom validity, and clears it otherwise, so `checkValidity()` fails and the browser blocks a native submit. An `invalid` event at the control shows the field's validation; inside a form the field prevents the browser's own message. In the `aria` behavior the field leaves the control's validity alone.
+`validationBehavior` (the nearest form's, else `aria`) shall decide whether the browser sees the field's validation. In the `native` behavior, while the value has an error or is being checked, the field gives its control element, when it takes part in constraint validation (an input, a text area), the message as its custom validity, and clears it otherwise, so `checkValidity()` fails and the browser blocks a native submit. An `invalid` event at the control shows the field's validation; inside a form the field prevents the browser's own message. An `invalid` event inside a field nested in it (in its description, decoration or a custom control) is that field's alone. In the `aria` behavior the field leaves the control's validity alone.
 
-Implementation: `src/components/field/field-form.ts`, `src/components/field/field-state.ts`
+Implementation: `src/components/field/field-form.ts`, `src/components/field/field-root.ts`, `src/components/field/field-state.ts`
 Verification: `src/components/field/field-form.test.tsx`
 
 ### UIC-FIELD-3.11 - Draft issues
@@ -254,16 +254,16 @@ Verification: `src/components/field/field-history.test.ts`, `src/components/fiel
 
 ### UIC-FIELD-5.2 - Shortcuts
 
-Ctrl+Z or Cmd+Z pressed inside a field shall undo that field, and Ctrl+Shift+Z, Cmd+Shift+Z or Ctrl+Y redo it, preventing the browser's default. On a layout whose letters are not Latin, the key in the letter's place on a US layout counts (`readCommandKey`, [UIC-SHORTCUT-1.8](SHORTCUT.md)), so Control with `я` on the Z key undoes. Only the field holding focus changes. A chord with nothing to undo or redo, one already handled, one pressed in a menu the field opened, or one that belongs to an input method composition (`isComposing`, or key code 229) is left alone.
+Ctrl+Z or Cmd+Z pressed inside a field shall undo that field, and Ctrl+Shift+Z, Cmd+Shift+Z or Ctrl+Y redo it, preventing the browser's default. On a layout whose letters are not Latin, the key in the letter's place on a US layout counts (`readCommandKey`, [UIC-SHORTCUT-1.8](SHORTCUT.md)), so Control with `я` on the Z key undoes. Only the field holding focus changes: a chord pressed in a field nested inside another (in its description, decoration or a custom control) is the inner field's alone, and with nothing to undo there it is left to the browser, not applied to the outer field. A chord with nothing to undo or redo, one already handled, one pressed in a menu the field opened, or one that belongs to an input method composition (`isComposing`, or key code 229) is left alone.
 
-Implementation: `src/components/field/field-undo.ts`, `src/components/field/field.tsx`
+Implementation: `src/components/field/field-undo.ts`, `src/components/field/field-root.ts`, `src/components/field/field.tsx`
 Verification: `src/components/field/field-undo.test.tsx`, `e2e/field.spec.ts`
 
 ### UIC-FIELD-5.3 - Undo registry
 
 Each mounted field shall register its undo on its root element. `getFieldUndo(element)` returns the undo of the nearest field at or above `element` (`canUndo`, `canRedo`, `undo()`, `redo()`), or `null` outside any field, so a host's shortcut handler passes the focused element and changes only that field. No event reaches the other fields.
 
-Implementation: `src/components/field/field-undo.ts`, `src/components/field/field.tsx`
+Implementation: `src/components/field/field-undo.ts`, `src/components/field/field-root.ts`, `src/components/field/field.tsx`
 Verification: `src/components/field/field-undo.test.tsx`, `e2e/field.spec.ts`
 
 ### UIC-FIELD-5.4 - Removing a registration

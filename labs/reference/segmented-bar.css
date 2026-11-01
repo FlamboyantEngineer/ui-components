@@ -1,6 +1,8 @@
 /* Segmented Bar: drawn like a meter, so the bars read as one family. */
 
 .ui-segmented-bar {
+  /* The entry sequence takes half the shared loop, so only this bar speeds up. */
+  --ref-segmented-bar-duration: calc(var(--ref-duration-loop) / 2);
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: baseline;
@@ -35,6 +37,33 @@
 
 .ui-segmented-bar[data-size='lg'] .ui-segmented-bar__track {
   height: 12px;
+}
+
+.ui-segmented-bar[data-size='xl'] .ui-segmented-bar__track {
+  height: 16px;
+}
+
+.ui-segmented-bar[data-size='2xl'] .ui-segmented-bar__track {
+  height: 20px;
+}
+
+.ui-segmented-bar[data-size='3xl'] .ui-segmented-bar__track {
+  height: 24px;
+}
+
+/* The figure sizes read their label, total and legend larger too. */
+.ui-segmented-bar:is([data-size='xl'], [data-size='2xl'], [data-size='3xl'])
+  .ui-segmented-bar__label {
+  font-size: var(--ref-font-size-lg);
+}
+
+.ui-segmented-bar:is([data-size='xl'], [data-size='2xl'], [data-size='3xl'])
+  :is(.ui-segmented-bar__total, .ui-segmented-bar__legend) {
+  font-size: var(--ref-font-size-md);
+}
+
+.ui-segmented-bar[data-size='3xl'] .ui-segmented-bar__label {
+  font-size: var(--ref-font-size-xl);
 }
 
 .ui-segmented-bar__segment,
@@ -129,6 +158,18 @@
   width: 32px;
   height: 32px;
 }
+.ui-segmented-bar[data-size='xl'] .ui-segmented-bar__ring {
+  width: 48px;
+  height: 48px;
+}
+.ui-segmented-bar[data-size='2xl'] .ui-segmented-bar__ring {
+  width: 64px;
+  height: 64px;
+}
+.ui-segmented-bar[data-size='3xl'] .ui-segmented-bar__ring {
+  width: 96px;
+  height: 96px;
+}
 .ui-segmented-bar__ring .ui-segmented-bar__track {
   stroke: var(--ref-border);
 }
@@ -153,10 +194,10 @@
 
   .ui-segmented-bar [data-animation-state='running'] .ui-segmented-bar__segment {
     animation-duration: calc(
-      var(--ref-duration-loop) * var(--ui-segment-share) / var(--ui-segment-total)
+      var(--ref-segmented-bar-duration) * var(--ui-segment-share) / var(--ui-segment-total)
     );
     animation-delay: calc(
-      var(--ref-duration-loop) * var(--ui-segment-start) / var(--ui-segment-total)
+      var(--ref-segmented-bar-duration) * var(--ui-segment-start) / var(--ui-segment-total)
     );
     animation-timing-function: linear;
     animation-fill-mode: both;

@@ -2,7 +2,7 @@ import { ProgressBar } from '../../src/components/progress-bar/progress-bar.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
 
 const sizes = ['sm', 'md', 'lg'] as const;
-const states = ['0%', '42%', '100%', 'indeterminate'] as const;
+const states = ['0%', '42%', '99%', '100%', 'indeterminate'] as const;
 
 export function ProgressRingCases() {
   return (
@@ -10,7 +10,7 @@ export function ProgressRingCases() {
       <>
         <LabSection
           title="Circular: Sizes and values"
-          description="Empty, partial, full and indeterminate rings. Each indeterminate arc rotates around its fixed center."
+          description="Empty, partial, nearly full, full and indeterminate rings. A full ring is one closed stroke with no seam at the top; 99% still leaves a sliver open. Each indeterminate arc rotates around its fixed center."
         >
           <StateMatrix
             axes={{ state: states, size: sizes }}

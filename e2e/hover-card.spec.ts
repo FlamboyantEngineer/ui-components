@@ -31,7 +31,14 @@ test.describe('Hover Card lab', () => {
     await expect(trigger).toBeFocused();
     await expect(card).toBeVisible();
     await page.keyboard.press('Tab');
-    await expect(card.getByRole('button', { name: 'Save Kyoto' })).toBeFocused();
+    const save = card.getByRole('button', { name: 'Save Kyoto' });
+    await expect(save).toBeFocused();
+    await expect(card).toBeVisible();
+    // The Save button's own tooltip opens inside the card, which stays open.
+    await expect(page.getByRole('tooltip')).toHaveText('Keep it in your list');
+    await expect(card).toBeVisible();
+    await save.hover();
+    await expect(page.getByRole('tooltip')).toHaveText('Keep it in your list');
     await expect(card).toBeVisible();
   });
 
@@ -147,6 +154,17 @@ test.describe('Hover Card lab', () => {
     await page.locator('[data-lab-trigger="disabled"]').hover();
     await page.clock.runFor(2000);
     await expect(page.locator('.ui-hover-card[data-lab-card="disabled"]')).toHaveCount(0);
+
+    // Locking an open card closes it once; it stays closed when unlocked.
+    await page.locator('[data-lab-toggle]').click();
+    await expect(card).toBeVisible();
+    await page.locator('[data-lab-lock]').click();
+    await page.clock.runFor(500);
+    await expect(card).toHaveCount(0);
+    await expect(output).toHaveText('closed');
+    await page.locator('[data-lab-lock]').click();
+    await page.clock.runFor(500);
+    await expect(card).toHaveCount(0);
     await page.clock.resume();
   });
 

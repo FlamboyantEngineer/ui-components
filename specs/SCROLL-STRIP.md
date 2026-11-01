@@ -1,6 +1,6 @@
 # Scroll Strip
 
-`useScrollStripOverflow` serves a strip that scrolls along one axis, such as a row of tabs or tools: it reports whether content is hidden past either edge, so the stylesheet can draw a fade there, and lets the vertical wheel scroll a horizontal strip. Scrolling stays free: no snapping, paging or stepper buttons.
+`useScrollStripOverflow` serves a strip that scrolls along one axis, such as a row of tabs or tools: it reports whether content is hidden past either edge, so the stylesheet can draw a fade there, and lets the vertical wheel scroll a horizontal strip, keeping the wheel from the page while it overflows. Scrolling stays free: no snapping, paging or stepper buttons.
 
 ## UIC-SCROLL-STRIP-1 - Strip overflow
 
@@ -20,7 +20,7 @@ Verification: `src/utils/use-scroll-strip-overflow.test.ts`
 
 ### UIC-SCROLL-STRIP-1.3 - Wheel scrolling
 
-A horizontal strip shall turn wheel input on it into horizontal scrolling along the dominant wheel axis, in pixels, lines (16 pixels) or pages (the visible width), clamped to the scroll range, and call `onWheelScroll` after scrolling. It leaves the wheel alone with Ctrl or Meta held, inside a menu, listbox or dialog open in the strip, at the end it is scrolling toward, and for a vertical strip. A strip element that mounts after the first render takes wheel input too.
+A horizontal strip shall turn wheel input on it into horizontal scrolling along the dominant wheel axis, in pixels, lines (16 pixels) or pages (the visible width), clamped to the scroll range, and call `onWheelScroll` after scrolling. While the strip overflows, it owns wheel input over it at both bounds as well: wheel travel toward a bound the strip already reached is cancelled, so the page behind never scrolls while the pointer is over the strip, whether the input is a vertical mouse wheel or a horizontal or diagonal trackpad swipe. A strip that fits (nothing overflows) leaves the wheel to the page. It also leaves the wheel alone with Ctrl or Meta held (browser zoom), inside a menu, listbox or dialog open in the strip (which scrolls itself), and for a vertical strip. A strip element that mounts after the first render takes wheel input too.
 
 Implementation: `src/utils/use-scroll-strip-overflow.ts`
 Verification: `src/utils/use-scroll-strip-overflow.test.ts`, `e2e/scroll-region.spec.ts`

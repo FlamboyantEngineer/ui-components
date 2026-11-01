@@ -14,6 +14,7 @@ import {
   CollapsibleRecords,
   CustomHeaderCard,
   ResizablePane,
+  TopRowGrid,
 } from './card-collapse-cases.js';
 import { RowMenu } from './row-menu.js';
 import { ShadowRootApp } from './shadow-root-host.js';
@@ -433,7 +434,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Collapsible records"
-      description="Collapse a record and expand it again: its notes keep what you typed. The button above collapses row 4 from outside."
+      description="Collapse a record with the chevron at the end of its title row and expand it again: its notes keep what you typed, and its buttons, fields and checkbox never toggle it. The button above collapses and expands row 4 from outside, which controls that card."
     >
       <CollapsibleRecords />
     </LabSection>
@@ -442,12 +443,19 @@ mountLab(
     </LabSection>
     <LabSection
       title="Adaptive cards in a resizable pane"
-      description="Narrow the pane with the slider or its grip: the cards turn compact, then show a few characters and a More button that holds the rest."
+      description="Narrow the pane with the slider or its grip: the cards turn compact, then show a few characters. The plus button at the end of the title row is not a menu: it shows what the smaller card hides (description, metadata, actions, and in the minimal card the badge and toggle) in place, below the title row, and turns into a minus. Press it again, or Escape in a revealed field, to hide them; focus returns to it."
     >
       <ResizablePane />
     </LabSection>
     <LabSection title="Collapsible cards in a selectable grid">
       <CollapsibleGrid />
+    </LabSection>
+    <LabSection
+      title="Header row in a selectable grid"
+      description="Each card's header row holds the selection checkbox, the badge, the title, the toggle and More, each in its own room; the actions follow on their own line. Narrow the grid: long titles shorten, then the cards turn compact and minimal, and nothing overlaps. The second grid is right to left."
+    >
+      <TopRowGrid initialWidth={560} />
+      <TopRowGrid dir="rtl" initialWidth={320} />
     </LabSection>
     <LabSection
       title="Inside a shadow root"

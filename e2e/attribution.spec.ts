@@ -73,6 +73,68 @@ test.describe('Attribution lab', () => {
     await page.clock.resume();
   });
 
+  test('UIC-ATTRIBUTION-1.3 centres the avatar on the name and keeps the name on the sentence baseline', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('attribution');
+    const attributions = [
+      ...['initials', 'picture'].flatMap((avatar) =>
+        ['name', 'card'].map((person) => cell(`avatar=${avatar} person=${person}`)),
+      ),
+      cell('template=default person=avatar'),
+      cell('template=person first person=avatar'),
+      '[data-lab-note="1"]',
+    ];
+    for (const selector of attributions) {
+      const geometry = await page.locator(selector).evaluate((root) => {
+        const avatar = root.querySelector('.ui-attribution__avatar')?.getBoundingClientRect();
+        const nameNode = root.querySelector('.ui-attribution__name');
+        const name = nameNode?.getBoundingClientRect();
+        const charBottoms = (node: Text) =>
+          [...node.data].flatMap((character, index) => {
+            if (!character.trim()) return [];
+            const range = document.createRange();
+            range.setStart(node, index);
+            range.setEnd(node, index + 1);
+            return [range.getBoundingClientRect()];
+          });
+        const words: DOMRect[] = [];
+        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+        for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+          if (!node.parentElement?.closest('.ui-attribution__person'))
+            words.push(...charBottoms(node as Text));
+        }
+        const first = nameNode?.firstChild
+          ? charBottoms(nameNode.firstChild as Text)[0]
+          : undefined;
+        const sameLine = first
+          ? words.filter(
+              (word) =>
+                Math.abs(word.top + word.height / 2 - (first.top + first.height / 2)) <
+                first.height / 2,
+            )
+          : [];
+        return {
+          centres:
+            avatar && name
+              ? Math.abs(avatar.top + avatar.height / 2 - (name.top + name.height / 2))
+              : Infinity,
+          baseline:
+            first && sameLine.length > 0
+              ? Math.max(...sameLine.map((word) => Math.abs(word.bottom - first.bottom)))
+              : Infinity,
+          lines: Math.round(
+            root.getBoundingClientRect().height / parseFloat(getComputedStyle(root).lineHeight),
+          ),
+        };
+      });
+      expect(geometry.centres, selector).toBeLessThanOrEqual(1);
+      expect(geometry.baseline, selector).toBeLessThanOrEqual(0.5);
+      if (selector.includes('avatar=')) expect(geometry.lines, selector).toBeGreaterThan(1);
+    }
+  });
+
   test('UIC-ATTRIBUTION-1.6 adds no role and passes axe', async ({ page, lab }) => {
     await lab.open('attribution');
     await expect(page.locator('#lab-root .ui-attribution[role]')).toHaveCount(0);

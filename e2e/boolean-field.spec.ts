@@ -223,6 +223,99 @@ test.describe('Boolean Field lab', () => {
     await form.getByRole('button', { name: 'Save' }).click();
     await expect(output(page, 'Submitted')).toHaveText('ripe=true fresh=false');
   });
+
+  test('UIC-BOOLEAN-FIELD-1.1 starts a two-state control false and a choice unset, required either way', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('boolean-field');
+    for (const variant of ['checkbox', 'switch', 'toggle-button']) {
+      await expect(cell(page, variant, 'required').locator('.ui-boolean-field')).toHaveAttribute(
+        'data-value',
+        'false',
+      );
+    }
+    await expect(cell(page, 'checkbox', 'required').getByRole('checkbox')).not.toBeChecked({
+      indeterminate: true,
+    });
+    await expect(cell(page, 'checkbox', 'required').getByRole('checkbox')).not.toBeChecked();
+    await expect(cell(page, 'segmented', 'required').locator('.ui-boolean-field')).toHaveAttribute(
+      'data-value',
+      'unset',
+    );
+    const consent = field(page, 'required-consent');
+    const box = consent.getByRole('checkbox', { name: 'Accept the terms' });
+    await expect(box).not.toBeChecked();
+    await expect(box).not.toBeChecked({ indeterminate: true });
+    await expect(consent).toHaveAttribute('data-validation', 'invalid');
+    await consent.locator('.ui-field__label').click();
+    await expect(consent).toHaveAttribute('data-validation', 'valid');
+    await consent.locator('.ui-field__label').click();
+    await expect(box).not.toBeChecked();
+    await expect(box).not.toBeChecked({ indeterminate: true });
+    await expect(consent).toHaveAttribute('data-validation', 'invalid');
+    const choice = field(page, 'required-choice');
+    await expect(choice.getByRole('radio', { checked: true })).toHaveCount(0);
+    await choice.getByText('Keep private').click();
+    await expect(choice).toHaveAttribute('data-validation', 'valid');
+    await lab.expectAccessible();
+  });
+
+  test('UIC-BOOLEAN-FIELD-1.2 sizes every variant with the field at xs, sm, md and lg', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('boolean-field');
+    const matrixCells = page.locator(
+      'table[data-lab-matrix="variant state size"] td[data-lab-cell]',
+    );
+    expect(await matrixCells.count()).toBe(5 * 5 * 4);
+    const sized = (variant: string, size: string, part: string) =>
+      matrixCell(page, `variant=${variant} state=true size=${size}`).locator(part).first();
+    const heights = { xs: 20, sm: 24, md: 28, lg: 32 } as const;
+    const boxes = { xs: 12, sm: 14, md: 16, lg: 18 } as const;
+    const tracks = { xs: [22, 12], sm: [26, 14], md: [30, 18], lg: [34, 20] } as const;
+    let previousFont = 0;
+    for (const size of ['xs', 'sm', 'md', 'lg'] as const) {
+      for (const [variant, part] of [
+        ['segmented', '.ui-segmented-choice'],
+        ['dropdown', '.ui-select-field__trigger'],
+        ['toggle-button', '.ui-boolean-field__toggle-button'],
+      ] as const) {
+        expect((await sized(variant, size, part).boundingBox())?.height).toBe(heights[size]);
+      }
+      expect((await sized('checkbox', size, '.ui-checkbox__box').boundingBox())?.height).toBe(
+        boxes[size],
+      );
+      const track = await sized('switch', size, '.ui-boolean-field__track').boundingBox();
+      expect([track?.width, track?.height]).toEqual([...tracks[size]]);
+      const font = await sized('switch', size, '.ui-field__label').evaluate((node) =>
+        Number.parseFloat(getComputedStyle(node).fontSize),
+      );
+      expect(font).toBeGreaterThan(previousFont);
+      previousFont = font;
+    }
+    // The thumb sits at either end, or in the middle while unset, at the smallest size too.
+    const thumbGap = async (state: string) => {
+      const scope = matrixCell(page, `variant=switch state=${state} size=xs`);
+      const track = await scope.locator('.ui-boolean-field__track').boundingBox();
+      const thumb = await scope.locator('.ui-boolean-field__thumb').boundingBox();
+      return [
+        (thumb?.x ?? 0) - (track?.x ?? 0),
+        (track?.x ?? 0) + (track?.width ?? 0) - (thumb?.x ?? 0) - (thumb?.width ?? 0),
+      ];
+    };
+    expect(await thumbGap('false')).toEqual([3, 13]);
+    expect(await thumbGap('true')).toEqual([13, 3]);
+    expect(await thumbGap('unset')).toEqual([8, 8]);
+    await expect(
+      matrixCell(page, 'variant=checkbox state=unset size=xs').getByRole('checkbox'),
+    ).toBeChecked({ indeterminate: true });
+    await expect(
+      matrixCell(page, 'variant=toggle-button state=disabled size=lg').getByRole('button'),
+    ).toBeDisabled();
+    await lab.expectAccessible();
+  });
 });
 
 test('UIC-BOOLEAN-FIELD-3.5 UIC-SEGMENTED-CHOICE-1.3 keeps the False label glyphs inside the segmented label', async ({

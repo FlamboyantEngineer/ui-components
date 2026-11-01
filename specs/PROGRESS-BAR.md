@@ -161,7 +161,7 @@ Verification: `src/components/progress-bar/progress-ring.test.tsx`, `e2e/progres
 
 ### UIC-PROGRESS-BAR-11.2 - Ring geometry
 
-The ring shall hold a `ui-progress-bar__track` circle and a `ui-progress-bar__fill` circle whose path length is normalised to 100 and whose `stroke-dashoffset` is 100 minus the percentage, starting at the top. These are SVG geometry attributes computed from the value; the stylesheet chooses stroke colour and width.
+The ring shall hold a `ui-progress-bar__track` circle and a `ui-progress-bar__fill` circle whose path length is normalised to 100 and whose `stroke-dashoffset` is 100 minus the percentage, starting at the top. A full ring (100%) draws its fill without `stroke-dasharray` or `stroke-dashoffset`, one closed stroke, so no seam shows where a dash would end at its own start; any value short of the maximum keeps the dash and its sliver of gap. These are SVG geometry attributes computed from the value; the stylesheet chooses stroke colour and width.
 
 Implementation: `src/components/progress-bar/progress-bar.tsx`, `labs/reference/progress-bar.css`
 Verification: `src/components/progress-bar/progress-ring.test.tsx`, `e2e/progress-ring.spec.ts`

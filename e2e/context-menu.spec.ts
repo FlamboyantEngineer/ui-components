@@ -130,6 +130,35 @@ test.describe('Context Menu lab', () => {
     await expect(popovers(page)).toHaveCount(1);
   });
 
+  test('UIC-CONTEXT-MENU-1.3 UIC-CONTEXT-MENU-1.7 opens at a resting touch on a button inside the target', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('context-menu');
+    const touchOn = async (target: Locator) => {
+      await target.scrollIntoViewIfNeeded();
+      const { x, y } = await centre(target);
+      const touch = { pointerType: 'touch', pointerId: 7, isPrimary: true, clientX: x, clientY: y };
+      await target.dispatchEvent('pointerdown', touch);
+      return async () => target.dispatchEvent('pointerup', touch);
+    };
+    const row = page.getByRole('group', { name: 'Report row' });
+    let release = await touchOn(row.getByRole('button', { name: 'Preview' }));
+    await expect(page.getByRole('menu', { name: 'Row' })).toBeVisible({ timeout: 2000 });
+    await release();
+    await page.keyboard.press('Escape');
+    await expect(popovers(page)).toHaveCount(0);
+    release = await touchOn(row.locator('[data-lab-badge]'));
+    await page.waitForTimeout(800);
+    await expect(popovers(page)).toHaveCount(0);
+    await release();
+    const inner = page.locator('[data-lab-inner]');
+    release = await touchOn(inner.getByRole('button', { name: 'Preview' }));
+    await expect(page.getByRole('menu', { name: 'File' })).toBeVisible({ timeout: 2000 });
+    await expect(popovers(page)).toHaveCount(1);
+    await release();
+  });
+
   test('UIC-CONTEXT-MENU-1.5 closes on outside presses without running an action', async ({
     page,
     lab,

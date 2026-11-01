@@ -86,3 +86,28 @@ test('UIC-INLINE-TEXT-DIFF-1.1 shows splitTextDiff in a host-side snippet', asyn
     '{"prefix":"Porto","removed":"","added":"","suffix":""}',
   );
 });
+
+test('UIC-INLINE-TEXT-DIFF-2.4 switches between the changes and the final text', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('inline-text-diff');
+  const live = page.locator('[data-lab-live]');
+  const diff = live.locator('.ui-inline-text-diff');
+  const after = 'Ship the pears first, then pack the apples gently and label each crate.';
+  await live
+    .getByLabel('Before')
+    .fill('Ship the plums first, then pack the apples gently and label each crate.');
+  await live.getByLabel('After').fill(after);
+  await expect(live.getByRole('deletion')).toHaveText('lum');
+  await live.getByRole('radio', { name: 'Final text' }).click();
+  await expect(diff).toHaveAttribute('data-view', 'final');
+  await expect(diff).toHaveText(after);
+  await expect(live.getByRole('deletion')).toHaveCount(0);
+  await expect(live.getByRole('insertion')).toHaveCount(0);
+  await live.getByLabel('After').fill('Ship the figs first.');
+  await expect(diff).toHaveText('Ship the figs first.');
+  await live.getByRole('radio', { name: 'Changes' }).click();
+  await expect(live.getByRole('insertion')).toHaveText('figs first');
+  await lab.expectAccessible();
+});

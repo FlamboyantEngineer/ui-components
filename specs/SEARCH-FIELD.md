@@ -9,7 +9,7 @@
 `SearchField` shall render a search box (`ui-search-field`) holding a decorative `search` glyph (`ui-search-field__glyph`) and an `<input type="search">` (`ui-search-field__input`) named by `label`. `inputRef` receives the input, so a caller can move focus to it. The query is `value` (controlled) or `defaultValue` (uncontrolled), reported through `onChange`; `name` submits it with a form; `isDisabled` and `isReadOnly` lock it. The text input props (UIC-FIELD-8.3: `placeholder`, `autoComplete`, `inputMode`, `spellCheck`, `autoFocus`) and the focus and keyboard handlers (`onFocus`, `onBlur`, `onFocusChange`, `onKeyDown`, `onKeyUp`) reach the input.
 
 Implementation: `src/components/search-field/search-field.tsx`, `labs/reference/search-field.css`
-Verification: `src/components/search-field/search-field.test.tsx`, `e2e/search-field.spec.ts`
+Verification: `src/components/search-field/search-field.test.tsx`, `e2e/search-field.spec.ts`, `e2e/character-grid.spec.ts`
 
 ### UIC-SEARCH-FIELD-1.2 - Sizes
 
@@ -27,7 +27,7 @@ Verification: `src/components/search-field/search-field.test.tsx`, `e2e/search-f
 
 ### UIC-SEARCH-FIELD-1.4 - Keyboard
 
-Escape in a box holding text shall empty the query and stop there; in an empty box it goes on to the enclosing surface. Enter shall call `onSubmit` with the query. Each change of the query is published once through `onChange`.
+Escape in a box holding text shall empty the query and stop there; in an empty box it goes on to the enclosing surface. Enter shall call `onSubmit` with the query. An Enter that belongs to an input method composition (`isComposing`, or the key code 229 Enter that confirms a candidate) stays the input method's: it submits nothing and goes no further than the input, so a form or picker around the field does not act on it either. Each change of the query is published once through `onChange`.
 
 Implementation: `src/components/search-field/search-field.tsx`
 Verification: `src/components/search-field/search-field.test.tsx`, `e2e/search-field.spec.ts`

@@ -13,7 +13,7 @@ import {
 import type { SortDescriptor } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Icon } from '../icon/icon.js';
-import { resolveColumnWidth, type TableColumnWidths } from './column-sizing.js';
+import { getColumnSizing, resolveColumnWidth, type TableColumnWidths } from './column-sizing.js';
 import { DataColumn, type TableColumnHeaderState } from './table-column.js';
 import type { TableColumnGroup } from './table-columns.js';
 import { createGroupedHeader, hasGroupRow } from './table-group-header.js';
@@ -34,6 +34,7 @@ import { readOwn } from '../../utils/read-own.js';
 /** What the header row shows: widths, groups, pins, the sort, drops and filters. */
 export interface TableHeaderModel<T> {
   widths: TableColumnWidths;
+  contentWidths: Readonly<Record<string, number>>;
   /** Group headers drawn in a row above the column headers; empty draws none. */
   groups: readonly TableColumnGroup[];
   /** A virtualized table's row height, which its group header row takes. */
@@ -149,7 +150,12 @@ function getHeaderState<T>(
   const pin = getColumnPin(structure, column);
   const sortIndex = model.sort.findIndex((descriptor) => descriptor.column === column.id);
   return {
-    width: resolveColumnWidth(column, readOwn(model.widths, column.id)),
+    width: resolveColumnWidth(
+      column,
+      readOwn(model.widths, column.id),
+      readOwn(model.contentWidths, column.id),
+    ),
+    sizing: getColumnSizing(column, readOwn(model.widths, column.id)),
     isVirtualized: structure.isVirtualized,
     isRowHeader: getRowHeaderColumns(structure.columns).includes(column),
     pin,

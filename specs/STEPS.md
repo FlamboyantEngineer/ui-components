@@ -27,7 +27,7 @@ Verification: `src/components/steps/steps.test.tsx`, `e2e/steps.spec.ts`
 
 ### UIC-STEPS-1.4 - Markers
 
-The marker shall show the step's number, formatted for the locale, or a glyph for a settled step: `check` for `complete`, `error` for `error` and `minus` for `skipped`. It is hidden from assistive technology.
+The marker shall show the step's number, formatted for the locale, or a glyph for a settled step: `check` for `complete`, `error` for `error` and `minus` for `skipped`. A step's `icon` (an imported icon component or rendered element) replaces its number while it is upcoming or current; once settled it shows the status glyph like any other step, so a sequence of custom icons still shows which steps are done. It is hidden from assistive technology, so the label and status words name the step whatever its marker draws.
 
 Implementation: `src/components/steps/steps.tsx`
 Verification: `src/components/steps/steps.test.tsx`
@@ -115,7 +115,7 @@ Verification: `src/components/steps/steps.test.tsx`, `e2e/unified-options.spec.t
 | `ui-steps`              | root      |                                                       | The ordered list (`<ol>`).                                        |
 | `ui-steps__item`        | slot      |                                                       | One step (`<li>`).                                                |
 | `ui-steps__step`        | slot      |                                                       | The step's content: a `<button>` when pressable, else a `<span>`. |
-| `ui-steps__marker`      | slot      |                                                       | The decorative number or status glyph.                            |
+| `ui-steps__marker`      | slot      |                                                       | The decorative number, step icon or status glyph.                 |
 | `ui-steps__text`        | slot      |                                                       | The label, optional mark and description.                         |
 | `ui-steps__label`       | slot      |                                                       | The step's label.                                                 |
 | `ui-steps__optional`    | slot      |                                                       | The optional mark.                                                |

@@ -64,7 +64,7 @@ test.describe('Avatar lab', () => {
         family: 'avatar-main',
       })
         .locator(`.ui-avatar`)
-        .evaluate((node) => getComputedStyle(node).borderTopColor);
+        .evaluate((node) => getComputedStyle(node, '::after').borderTopColor);
       expect(ring).toBe(fill);
     }
     expect(fills.size).toBe(8);
@@ -151,6 +151,87 @@ test.describe('Avatar lab', () => {
         family: 'avatar-main',
       }).locator('.ui-avatar'),
     ).toHaveAttribute('data-shape', 'square');
+  });
+
+  test('UIC-AVATAR-1.1 centres the group glyph in every size, shape, variant and card trigger', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('avatar');
+    const offCentre = (cell: ReturnType<typeof matrixCell>) =>
+      cell.locator('.ui-avatar__surface').evaluate((surface) => {
+        const glyph = surface.querySelector('.ui-avatar__glyph');
+        if (!glyph) return Number.POSITIVE_INFINITY;
+        const outer = surface.getBoundingClientRect();
+        const inner = glyph.getBoundingClientRect();
+        return Math.max(
+          Math.abs(inner.left + inner.width / 2 - (outer.left + outer.width / 2)),
+          Math.abs(inner.top + inner.height / 2 - (outer.top + outer.height / 2)),
+        );
+      });
+    const cells = [
+      ...['xs', 'sm', 'md', 'lg', 'fill'].flatMap((size) =>
+        ['filled', 'outlined'].map((variant) => `content=group variant=${variant} size=${size}`),
+      ),
+      ...['circle', 'rounded', 'square'].flatMap((shape) =>
+        ['filled', 'outlined'].flatMap((variant) => [
+          `shape=${shape} content=group variant=${variant}`,
+          `shape=${shape} variant=${variant}`,
+        ]),
+      ),
+    ];
+    for (const address of cells) {
+      const cell = matrixCell(page, address, { family: 'avatar-main' });
+      expect(await offCentre(cell), address).toBeLessThanOrEqual(0.5);
+    }
+    await expect(
+      matrixCell(page, 'shape=circle variant=filled', { family: 'avatar-main' }).getByRole(
+        'button',
+        {
+          name: 'Design team',
+        },
+      ),
+    ).toBeVisible();
+  });
+
+  test('UIC-AVATAR-2.2 draws the outline over a surface that fills the whole box', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('avatar');
+    for (const shape of ['circle', 'rounded', 'square']) {
+      for (const content of ['picture', 'initials', 'group']) {
+        const avatar = matrixCell(page, `shape=${shape} content=${content} variant=outlined`, {
+          family: 'avatar-main',
+        }).locator('.ui-avatar');
+        const geometry = await avatar.evaluate((root) => {
+          const surface = root.querySelector('.ui-avatar__surface');
+          const outer = root.getBoundingClientRect();
+          const inner = surface?.getBoundingClientRect();
+          const ring = getComputedStyle(root, '::after');
+          return {
+            insets: inner
+              ? [
+                  inner.left - outer.left,
+                  inner.top - outer.top,
+                  outer.right - inner.right,
+                  outer.bottom - inner.bottom,
+                ]
+              : [],
+            rootBorder: getComputedStyle(root).borderTopWidth,
+            ring: ring.borderTopWidth,
+            ringRadius: ring.borderTopLeftRadius,
+            rootRadius: getComputedStyle(root).borderTopLeftRadius,
+            width: outer.width,
+          };
+        });
+        expect(geometry.insets, `${shape} ${content}`).toEqual([0, 0, 0, 0]);
+        expect(geometry.rootBorder).toBe('0px');
+        expect(geometry.ring).toBe('2px');
+        expect(geometry.ringRadius).toBe(geometry.rootRadius);
+        expect(geometry.width).toBe(40);
+      }
+    }
   });
 
   test('UIC-AVATAR-1.5 UIC-AVATAR-1.6 reports each loading status and keeps picture attributes', async ({

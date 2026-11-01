@@ -20,25 +20,53 @@ afterEach(() => {
 });
 
 describe('BooleanField', () => {
-  it('UIC-BOOLEAN-FIELD-1.1 is a field that starts unset and publishes its value', async () => {
+  it('UIC-BOOLEAN-FIELD-1.1 is a field that starts false and publishes its value', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     const { container } = render(<BooleanField label="Ripe" onChange={onChange} />);
     expect(root(container)).toHaveClass('ui-field', 'ui-boolean-field');
-    expect(root(container)).toHaveAttribute('data-value', 'unset');
-    await user.click(screen.getByRole('checkbox', { name: 'Ripe' }));
+    expect(root(container)).toHaveAttribute('data-value', 'false');
+    const checkbox = screen.getByRole('checkbox', { name: 'Ripe' });
+    expect(checkbox).not.toBeChecked();
+    expect(checkbox).not.toBePartiallyChecked();
+    await user.click(checkbox);
     expect(onChange).toHaveBeenLastCalledWith(true);
     expect(root(container)).toHaveAttribute('data-value', 'true');
     expectHooksMatchSpec(container, 'BOOLEAN-FIELD');
     expectHooksMatchSpec(container, 'FIELD', { slots: ['label', 'control'] });
   });
 
-  it('UIC-BOOLEAN-FIELD-1.1 is invalid while required and unset, and false is a value', () => {
-    const { container, rerender } = render(<BooleanField label="Agree" isRequired />);
+  it('UIC-BOOLEAN-FIELD-1.1 starts a choice unset, where false is a value, and a two-state control false, where required asks for true', async () => {
+    const user = userEvent.setup();
+    const { container, rerender, unmount } = render(
+      <BooleanField label="Agree" variant="segmented" isRequired />,
+    );
+    expect(root(container)).toHaveAttribute('data-value', 'unset');
     expect(root(container)).toHaveAttribute('data-validation', 'invalid');
     expect(screen.getByText('A value is required.')).toBeInTheDocument();
-    rerender(<BooleanField label="Agree" isRequired value={false} />);
+    rerender(<BooleanField label="Agree" variant="segmented" isRequired value={false} />);
     expect(root(container)).toHaveAttribute('data-validation', 'valid');
+    rerender(<BooleanField label="Agree" allowsUnset isRequired />);
+    expect(root(container)).toHaveAttribute('data-value', 'unset');
+    expect(screen.getByRole('checkbox', { name: 'Agree' })).toBePartiallyChecked();
+    unmount();
+
+    for (const variant of ['checkbox', 'switch', 'toggle-button'] as const) {
+      const view = render(<BooleanField label="Consent" variant={variant} isRequired />);
+      expect(root(view.container)).toHaveAttribute('data-value', 'false');
+      expect(root(view.container)).toHaveAttribute('data-validation', 'invalid');
+      view.rerender(<BooleanField label="Consent" variant={variant} isRequired value />);
+      expect(root(view.container)).toHaveAttribute('data-validation', 'valid');
+      view.unmount();
+    }
+    const utils = render(<BooleanField label="Consent" isRequired />);
+    const checkbox = screen.getByRole('checkbox', { name: 'Consent' });
+    await user.click(checkbox);
+    expect(checkbox).toBeChecked();
+    expect(root(utils.container)).toHaveAttribute('data-validation', 'valid');
+    await user.click(checkbox);
+    expect(checkbox).not.toBeChecked();
+    expect(root(utils.container)).toHaveAttribute('data-validation', 'invalid');
   });
 
   it('UIC-BOOLEAN-FIELD-1.2 draws a checkbox, a switch or two segments', () => {
@@ -436,7 +464,7 @@ describe('BooleanField', () => {
     const { unmount } = render(
       <BooleanField label="Fresh" labelLayout="control-only" variant="toggle-button" />,
     );
-    expect(screen.getByRole('button', { name: 'Unset Fresh' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: 'False Fresh' })).toHaveAttribute(
       'aria-label',
       'Fresh',
     );

@@ -2,6 +2,7 @@
 
 import { readCommandKey } from '../shortcut/shortcut.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
+import { isOwnFieldTarget } from './field-root.js';
 import { useEffect, type KeyboardEvent } from 'react';
 
 /** The undo and redo of one field, as its root element registers them. */
@@ -61,8 +62,9 @@ export function useFieldUndo(getRoot: () => Element | null, undo: FieldUndo) {
 
   return (event: KeyboardEvent<HTMLElement>) => {
     const direction = undoDirection(event);
-    // Keys from a menu portalled inside the field's React tree are not the field's own.
-    if (!direction || !event.currentTarget.contains(event.target as Node)) return;
+    // Keys from a menu portalled inside the field's React tree, or from a field nested in it, are
+    // not the field's own.
+    if (!direction || !isOwnFieldTarget(event.currentTarget, event.target)) return;
     if (direction === 'undo' ? !undo.canUndo : !undo.canRedo) return;
     event.preventDefault();
     undo[direction]();

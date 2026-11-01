@@ -1,19 +1,34 @@
 /* Date Time Field: a framed group of segments with a calendar button and popover. */
 
+/* The control keeps its own size, so a label or button after it sits right beside it. */
+.ui-date-time-field .ui-field__control {
+  flex: 0 1 auto;
+}
+
+/* A date and time range is wider than a field's usual width: it takes the room its value needs. */
+.ui-date-time-field[data-mode='date-time-range'] {
+  width: max-content;
+}
+
 .ui-date-time-field__picker {
   display: inline-flex;
   min-width: 0;
   max-width: 100%;
 }
 
+/*
+ * Where the field is too narrow, a range's end, the separator and the button wrap onto further rows
+ * of the frame, so every segment stays visible and reachable.
+ */
 .ui-date-time-field__group {
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 4px;
+  column-gap: 4px;
   min-width: 0;
   box-sizing: border-box;
-  height: var(--ref-field-height);
-  padding: 0 4px 0 8px;
+  min-height: var(--ref-field-height);
+  padding: 2px 4px 2px 8px;
   border: 1px solid var(--ref-field-border);
   border-radius: var(--ref-radius);
   background: var(--ref-field-fill);
@@ -367,7 +382,16 @@
   text-decoration: none;
 }
 
-.ui-date-time-field__calendar-cell[data-unavailable] {
+/*
+ * An unavailable day is faded and hatched, so it stays apart from the days a range being chosen
+ * cannot reach (data-disabled alone), which are only muted and return once the range is picked.
+ */
+.ui-date-time-field__calendar-cell[data-unavailable]:not([data-outside-month]) {
+  opacity: var(--ref-disabled-opacity);
+  background-image: repeating-linear-gradient(135deg, transparent 0 4px, var(--ref-border) 4px 5px);
+}
+
+.ui-date-time-field__calendar-cell[data-unavailable][data-outside-month] {
   opacity: var(--ref-disabled-opacity);
 }
 

@@ -26,6 +26,7 @@ import {
 import { BulkEdit, Grouping, SmallSteps, Spreadsheet } from './table-sheet-cases.js';
 import { GroupKeyTable, ObjectKeyTable, TypedTable } from './collection-identity-cases.js';
 import { HeaderFilter } from './table-control-cases.js';
+import { ContentWidths, GroupedReordering } from './table-content-contracts.js';
 
 function TrailingActions() {
   const [count, setCount] = useState(0);
@@ -339,6 +340,18 @@ function Notices() {
 
 mountLab(
   <>
+    <LabSection
+      title="Content widths"
+      description="Content-sized header and cells beside a flexible column; resize to keep an explicit width."
+    >
+      <ContentWidths />
+    </LabSection>
+    <LabSection
+      title="Moves within groups"
+      description="Move eligible rows inside their current group; fixed rows and group headers never drag."
+    >
+      <GroupedReordering />
+    </LabSection>
     <LabSection title="States" description="Each state at both row sizes.">
       <StateMatrix
         axes={{ state: states, size: ['md', 'sm'] }}

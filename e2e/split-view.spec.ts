@@ -127,6 +127,28 @@ test.describe('Split View lab', () => {
     await expect(shield).toHaveCount(0);
   });
 
+  test('UIC-SPLIT-VIEW-3.4 draws separators by size and keeps them usable', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('split-view');
+    const thickness: number[] = [];
+    for (const size of ['xs', 'sm', 'md', 'lg']) {
+      const separator = page.getByRole('separator', {
+        name: `Resize horizontal split, ${size} separator`,
+      });
+      await expect(separator).toHaveAttribute('data-size', size);
+      thickness.push((await box(separator)).width);
+    }
+    expect([...thickness].sort((a, b) => a - b)).toEqual(thickness);
+    expect(thickness[0]).toBeGreaterThanOrEqual(6);
+    const smallest = page.getByRole('separator', { name: 'Resize vertical split, xs separator' });
+    await smallest.focus();
+    await page.keyboard.press('ArrowDown');
+    await expect(smallest).not.toHaveAttribute('aria-valuenow', '50');
+    await lab.expectAccessible('[data-lab-section="Separator sizes"]');
+  });
+
   test('UIC-SPLIT-VIEW-2.4 restores a persisted size after a reload', async ({ page, lab }) => {
     await lab.open('split-view');
     const separator = page.getByRole('separator', { name: 'Resize persisted panes' });

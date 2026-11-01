@@ -137,6 +137,7 @@ export * from './components/pdf-viewer/index.js';
 export * from './components/media-viewer/index.js';
 export * from './components/carousel/index.js';
 export * from './components/qr-code/index.js';
+export * from './components/barcode/index.js';
 export * from './components/tag-group/index.js';
 export * from './components/record-label/index.js';
 export * from './components/steps/index.js';

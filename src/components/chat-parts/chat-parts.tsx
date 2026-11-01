@@ -114,12 +114,10 @@ function toReveals(part: ChatPart, groupKeys: readonly string[]): PartsReveal[] 
   return [{ id: `approval:${part.id}`, keys: groupKeys }];
 }
 
-/** What the message's tool calls call for the reader with. */
+/** What the message's tool calls, each in a group of steps, call for the reader with. */
 function listReveals(items: readonly ChatPartsItem[]): PartsReveal[] {
   return items.flatMap((item) =>
-    item.kind === 'steps'
-      ? item.steps.flatMap((step) => toReveals(step, [item.key]))
-      : toReveals(item.part, []),
+    item.kind === 'steps' ? item.steps.flatMap((step) => toReveals(step, [item.key])) : [],
   );
 }
 
@@ -171,7 +169,8 @@ export function toPartDomId(messageId: string, partId: string): string {
  * The parts of one message, each drawn by the component for its type: text as Markdown (or plain
  * text) with code blocks, citations and token pills, reasoning, tool calls with their approvals and
  * renderers, questions, plans, sources, attachments, code, diffs and custom parts. Consecutive
- * reasoning and tool calls fold into a group of steps that runs while the message streams; both
+ * reasoning and tool calls fold into a group of steps that runs while the message streams, even a
+ * lone tool call, so parts streamed after a call never remount it; both
  * open on their own while they run, unless `expandsActivity` is false.
  */
 export function ChatParts({

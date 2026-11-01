@@ -53,6 +53,13 @@ Verification: `src/components/form/form.test.tsx`
 Implementation: `src/components/form/form.tsx`, `src/components/form/form-problems.ts`, `src/components/field/field-form.ts`, `src/components/field/field-scope.ts`
 Verification: `src/components/form/form-problems.test.tsx`, `src/components/form/form.test.tsx`, `src/components/problem-list/problem-list.test.tsx`
 
+### UIC-FORM-1.8 - Where a form ends
+
+`Form` shall act only on submits of its own `<form>` element: the submit of another form that React passes through it, such as a dialog's form portalled out of it, neither validates its fields nor calls `onSubmit`, and it takes no props from a React Aria form around it. A form's fields end at the body of an overlay opened inside it (Modal, Drawer, Popover, HoverCard and a menu's popover, `FormBoundary`): the fields inside belong to a form inside the overlay or to none, so they never block, reveal, take focus for, count in `useFormValidity` or `onValidityChange` of, or list in a `ProblemList` of the form around, nor take its validation mode, behavior or external errors.
+
+Implementation: `src/components/form/form.tsx`, `src/utils/form-boundary.tsx`, `src/components/field/field-scope.ts`, `src/components/modal/modal-presentations.tsx`, `src/components/drawer/drawer.tsx`, `src/components/popover/popover.tsx`, `src/components/menu/menu-popover.tsx`
+Verification: `src/components/form/form.test.tsx`, `e2e/form.spec.ts`
+
 ## UIC-FORM-2 - Validity
 
 ### UIC-FORM-2.1 - Drafts block

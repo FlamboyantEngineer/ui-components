@@ -24,7 +24,7 @@ import {
   tokenText,
 } from './chat-parts-samples.js';
 import { WorkingSession } from './chat-parts-session.js';
-import { StreamedAnswer } from './chat-parts-stream.js';
+import { ApprovalStream, StreamedAnswer } from './chat-parts-stream.js';
 import { getLabReference } from './reference-samples.js';
 
 const stepStates = [
@@ -142,7 +142,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Steps"
-      description="Consecutive reasoning and tool calls fold into a group of steps, summed up by the kinds of its calls once it ends. It runs while it ends a streaming message, collapses once the answer streams after it or the message completes, and stays open while a tool call in it waits for approval. A failed call is a quiet row like the others, told apart by its red ! glyph, with its error closed in its body until the reader opens it (failed-opened). A single tool call that ends the message stays on its own (single, single-done), as the same quiet row as the calls in a group, so one style covers every call. A long tool call label wraps beside its status glyph."
+      description="Consecutive reasoning and tool calls fold into a group of steps, summed up by the kinds of its calls once it ends. It runs while it ends a streaming message, collapses once the answer streams after it or the message completes, and stays open while a tool call in it waits for approval. A failed call is a quiet row like the others, told apart by its red ! glyph, with its error closed in its body until the reader opens it (failed-opened). A single tool call folds into a group too (single, single-done), so it keeps its place, state and focus as the message streams after it, and every call takes the same quiet row style. A long tool call label wraps beside its status glyph."
     >
       <StateMatrix
         axes={{ state: stepStates, parts: ['rendered'] }}
@@ -181,6 +181,12 @@ mountLab(
       description="Press Next event (or Play) to stream a run whose hotel search fails between steps that succeed. The failed search shows as a quiet row with a red ! glyph and its error closed; the failure opens nothing, so the group collapses once the answer follows, and a group closed during the run stays closed. Open the row to read the error, close it to hide it again."
     >
       <FailedRun />
+    </LabSection>
+    <LabSection
+      title="Approval while streaming"
+      description="A booking waits for approval while the reply keeps streaming. Press Deny and type a reason, then press Next event (or Play) to stream text after the call: the call stays in its group of steps, so the reason, its focus and the open Deny form survive each event."
+    >
+      <ApprovalStream />
     </LabSection>
     <LabSection
       title="Mixed message"

@@ -11,6 +11,31 @@
   flex: 1 0 auto;
 }
 
+/* The switch scales with the field's size: track width and height, and the thumb inside it. */
+.ui-boolean-field {
+  --ref-boolean-field-track-width: 30px;
+  --ref-boolean-field-track-height: 18px;
+  --ref-boolean-field-thumb: 10px;
+}
+
+.ui-boolean-field[data-size='xs'] {
+  --ref-boolean-field-track-width: 22px;
+  --ref-boolean-field-track-height: 12px;
+  --ref-boolean-field-thumb: 6px;
+}
+
+.ui-boolean-field[data-size='sm'] {
+  --ref-boolean-field-track-width: 26px;
+  --ref-boolean-field-track-height: 14px;
+  --ref-boolean-field-thumb: 8px;
+}
+
+.ui-boolean-field[data-size='lg'] {
+  --ref-boolean-field-track-width: 34px;
+  --ref-boolean-field-track-height: 20px;
+  --ref-boolean-field-thumb: 12px;
+}
+
 .ui-boolean-field__switch {
   display: inline-flex;
   align-items: center;
@@ -24,8 +49,8 @@
   display: inline-block;
   flex: none;
   box-sizing: border-box;
-  width: 30px;
-  height: 18px;
+  width: var(--ref-boolean-field-track-width);
+  height: var(--ref-boolean-field-track-height);
   border: 1px solid var(--ref-border-strong);
   border-radius: var(--ref-radius-full);
   background: var(--ref-surface);
@@ -33,10 +58,13 @@
 
 .ui-boolean-field__thumb {
   position: absolute;
-  top: 3px;
-  inset-inline-start: 3px;
-  width: 10px;
-  height: 10px;
+  /* Centred in the track inside its 1px border, with the same gap at the start. */
+  top: calc((var(--ref-boolean-field-track-height) - 2px - var(--ref-boolean-field-thumb)) / 2);
+  inset-inline-start: calc(
+    (var(--ref-boolean-field-track-height) - 2px - var(--ref-boolean-field-thumb)) / 2
+  );
+  width: var(--ref-boolean-field-thumb);
+  height: var(--ref-boolean-field-thumb);
   border-radius: 50%;
   background: var(--ref-border-strong);
   transition: inset-inline-start var(--ref-duration-fast);
@@ -48,7 +76,10 @@
 }
 
 .ui-boolean-field__switch[data-selected] .ui-boolean-field__thumb {
-  inset-inline-start: 15px;
+  inset-inline-start: calc(
+    var(--ref-boolean-field-track-width) - 2px - var(--ref-boolean-field-thumb) -
+      (var(--ref-boolean-field-track-height) - 2px - var(--ref-boolean-field-thumb)) / 2
+  );
   background: var(--ref-on-fill);
 }
 
@@ -181,7 +212,9 @@
 }
 
 .ui-boolean-field__switch[data-indeterminate] .ui-boolean-field__thumb {
-  inset-inline-start: 9px;
+  inset-inline-start: calc(
+    (var(--ref-boolean-field-track-width) - 2px - var(--ref-boolean-field-thumb)) / 2
+  );
 }
 .ui-boolean-field__toggle-button[data-indeterminate] {
   border-style: dashed;

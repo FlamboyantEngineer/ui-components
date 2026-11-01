@@ -12,7 +12,7 @@ import type { SortDirection } from '../../core/props.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Icon } from '../icon/icon.js';
-import { getColumnBounds, type TableColumnSize } from './column-sizing.js';
+import { getColumnBounds, type TableColumnWidths } from './column-sizing.js';
 import { tableHooks as hooks } from './table-hooks.js';
 import { getColumnText } from './table-columns.js';
 import { useColumnDrag } from './use-column-drag.js';
@@ -25,7 +25,8 @@ import { isInteractiveTarget } from '../../utils/is-interactive-target.js';
 
 /** What a data column header shows beyond the column's own declaration. */
 export interface TableColumnHeaderState {
-  width: TableColumnSize;
+  width: TableColumnWidths[string];
+  sizing: 'content' | 'flex' | 'fixed';
   isVirtualized: boolean;
   isRowHeader: boolean;
   pin: TableColumnPin | undefined;
@@ -123,6 +124,7 @@ export function DataColumn<T>({
         kind: 'data',
         align: column.align ?? 'start',
         column: column.id,
+        sizing: state.sizing,
         pinned: state.pin,
         sortPriority: state.sortPriority,
         filtered: state.isFiltered,

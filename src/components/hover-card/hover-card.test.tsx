@@ -230,6 +230,28 @@ describe('HoverCard', () => {
     expect(trigger()).toHaveFocus();
   });
 
+  it('UIC-HOVER-CARD-1.3 opens the tooltip of a control inside the open card and stays open', async () => {
+    render(
+      <Preview triggerProps={{ delay: 0 }}>
+        <Button tooltip="Keep this city">Save city</Button>
+      </Preview>,
+    );
+    await user.tab();
+    await user.tab();
+    await advance(0);
+    expect(card()).not.toBeNull();
+    await user.tab();
+    const save = screen.getByRole('button', { name: 'Save city' });
+    expect(save).toHaveFocus();
+    await advance(1000);
+    expect(screen.getByRole('tooltip')).toHaveTextContent('Keep this city');
+    expect(card()).not.toBeNull();
+    await hover(user, save);
+    await advance(1000);
+    expect(screen.getByRole('tooltip')).toHaveTextContent('Keep this city');
+    expect(card()).not.toBeNull();
+  });
+
   it('UIC-HOVER-CARD-1.3 stays open while the pointer moves into the card, then closes after the close delay', async () => {
     render(<Preview triggerProps={{ delay: 0, closeDelay: 400 }} />);
     await hover(user, trigger());
@@ -299,6 +321,42 @@ describe('HoverCard', () => {
     rerender(<Preview triggerProps={{ delay: 0 }} />);
     expect(trigger()).toBe(button);
     expect(button).toHaveAttribute('aria-haspopup', 'dialog');
+  });
+
+  it('UIC-HOVER-CARD-1.4 draws a disabled card closed and asks once to close it', async () => {
+    const onOpenChange = vi.fn();
+    const onPress = vi.fn();
+    const preview = (props: TriggerOptions) => (
+      <Preview onPress={onPress} triggerProps={{ closeDelay: 0, onOpenChange, ...props }} />
+    );
+    const { rerender, unmount } = render(preview({ isOpen: true, isDisabled: true }));
+    expect(card()).toBeNull();
+    expect(onOpenChange).toHaveBeenCalledTimes(1);
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+    rerender(preview({ isOpen: true, isDisabled: true }));
+    await advance(1000);
+    expect(card()).toBeNull();
+    expect(onOpenChange).toHaveBeenCalledTimes(1);
+    rerender(preview({ isOpen: true }));
+    expect(card()).not.toBeNull();
+    const button = trigger();
+    rerender(preview({ isOpen: true, isDisabled: true }));
+    await advance(1000);
+    expect(card()).toBeNull();
+    expect(onOpenChange).toHaveBeenCalledTimes(2);
+    expect(trigger()).toBe(button);
+    await user.click(button);
+    expect(onPress).toHaveBeenCalledTimes(1);
+    unmount();
+
+    // An uncontrolled card that opened stays closed once the trigger is enabled again.
+    const { rerender: rerenderUncontrolled } = render(
+      preview({ defaultOpen: true, isDisabled: true }),
+    );
+    expect(card()).toBeNull();
+    rerenderUncontrolled(preview({ defaultOpen: true }));
+    await advance(1000);
+    expect(card()).toBeNull();
   });
 
   it('UIC-HOVER-CARD-2.1 becomes a plain container around content with its own dialog', async () => {

@@ -1,16 +1,16 @@
 import { clamp } from '../../utils/clamp.js';
 
-/** A column width: pixels, a percentage of the table, or a share (`fr`) of the width left over. */
-export type TableColumnSize = number | `${number}%` | `${number}fr`;
+/** A column width: pixels, a percentage, a share (`fr`), or its rendered content. */
+export type TableColumnSize = number | `${number}%` | `${number}fr` | 'content';
 
 /** Column widths keyed by column id. */
-export type TableColumnWidths = Readonly<Record<string, TableColumnSize>>;
+export type TableColumnWidths = Readonly<Record<string, Exclude<TableColumnSize, 'content'>>>;
 
 /** What a column declares about its width. */
 export interface TableColumnSizing {
   /** The column's id, unique in the table. */
   id: string;
-  /** Initial width. Defaults to `1fr`: columns without one share the width the others leave. */
+  /** Initial width, or `content` to fit the rendered header and cells. Defaults to `1fr`. */
   width?: TableColumnSize | undefined;
   /** Narrowest width in pixels. Without it React Aria's default minimum (75px) applies. */
   minWidth?: number | undefined;
@@ -39,32 +39,47 @@ function listEntries(source: unknown): Iterable<[unknown, unknown]> {
 }
 
 /** Whether `value` is a usable width: a positive pixel count, percentage or share. */
-export function isColumnSize(value: unknown): value is TableColumnSize {
+export function isColumnSize(value: unknown): value is Exclude<TableColumnSize, 'content'> {
   if (typeof value === 'number') return Number.isFinite(value) && value > 0;
   return typeof value === 'string' && relativeSize.test(value) && Number.parseFloat(value) > 0;
 }
 
 /** The column's bounds, with a maximum never below the minimum. */
 export function getColumnBounds(column: TableColumnSizing): TableColumnBounds {
-  const { minWidth, maxWidth } = column;
+  const { maxWidth } = column;
+  const minWidth = column.minWidth ?? (column.width === 'content' ? 75 : undefined);
   if (minWidth === undefined || maxWidth === undefined) return { minWidth, maxWidth };
   return { minWidth, maxWidth: Math.max(minWidth, maxWidth) };
 }
 
 /** Keeps a pixel width inside the column's bounds; percentages and shares pass unchanged. */
 export function clampColumnWidth(
-  width: TableColumnSize,
+  width: Exclude<TableColumnSize, 'content'>,
   column: TableColumnSizing,
-): TableColumnSize {
+): Exclude<TableColumnSize, 'content'> {
   if (typeof width !== 'number') return width;
   const { minWidth = 0, maxWidth = Number.POSITIVE_INFINITY } = getColumnBounds(column);
   return clamp(width, minWidth, maxWidth);
 }
 
 /** The width a column renders at: a usable stored width, else its declared width, else `1fr`. */
-export function resolveColumnWidth(column: TableColumnSizing, stored?: unknown): TableColumnSize {
+export function resolveColumnWidth(
+  column: TableColumnSizing,
+  stored?: unknown,
+  contentWidth?: number,
+): Exclude<TableColumnSize, 'content'> {
   const width = isColumnSize(stored) ? stored : (column.width ?? defaultWidth);
-  return clampColumnWidth(width, column);
+  return clampColumnWidth(width === 'content' ? (contentWidth ?? 75) : width, column);
+}
+
+/** The sizing mode of the declared width, or a usable resize that overrides it. */
+export function getColumnSizing(
+  column: TableColumnSizing,
+  stored?: unknown,
+): 'content' | 'flex' | 'fixed' {
+  const width = isColumnSize(stored) ? stored : (column.width ?? defaultWidth);
+  if (width === 'content') return 'content';
+  return typeof width === 'string' && width.endsWith('fr') ? 'flex' : 'fixed';
 }
 
 /**
@@ -78,7 +93,7 @@ export function pickColumnWidths(
 ): TableColumnWidths {
   const byId = new Map(columns.map((column) => [column.id, column]));
   // No prototype: a column id such as `__proto__` is a key like any other.
-  const widths = Object.create(null) as Record<string, TableColumnSize>;
+  const widths = Object.create(null) as Record<string, Exclude<TableColumnSize, 'content'>>;
   for (const [key, value] of listEntries(source)) {
     const column = byId.get(String(key));
     if (column && isColumnSize(value)) widths[column.id] = clampColumnWidth(value, column);

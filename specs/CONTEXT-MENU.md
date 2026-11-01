@@ -20,7 +20,7 @@ Verification: `src/components/context-menu/context-menu-target.test.tsx`, `src/c
 
 ### UIC-CONTEXT-MENU-1.3 - Long press
 
-A touch that rests on the target for 500 milliseconds without moving more than 10 pixels shall open the menu at the touch point; a touch on a text control inside the target leaves the platform's own text handling alone. Disabling or unmounting the trigger cancels a pending touch; re-enabling does not resume it. A `contextmenu` event the platform sends for the same press is ignored, so the menu opens once.
+A touch that rests on the target for 500 milliseconds without moving more than 10 pixels shall open the menu at the touch point, also when it rests on a pressable (a `Button`, a list or table row, a tab, a menu item) or a gesture surface inside the target that stops the press on its way out: the target watches the touch on its way in and decides when the delay ends, after every handler ran. A touch on a text control inside the target leaves the platform's own text handling alone, and an element inside that prevented the touch's default, or a nested target, keeps it ([UIC-CONTEXT-MENU-1.7](#uic-context-menu-17---requests-handled-elsewhere)). Disabling or unmounting the trigger cancels a pending touch; re-enabling does not resume it. A `contextmenu` event the platform sends for the same press is ignored, so the menu opens once.
 
 Implementation: `src/components/context-menu/context-menu-target.ts`
 Verification: `src/components/context-menu/context-menu-target.test.tsx`, `e2e/context-menu.spec.ts`
@@ -48,7 +48,7 @@ Verification: `src/components/context-menu/context-menu-target.test.tsx`, `src/c
 
 ### UIC-CONTEXT-MENU-1.7 - Requests handled elsewhere
 
-A secondary click, long touch or key whose default the target's own handler, or a handler on an element inside the target, prevented shall open no menu: a cancelled touch schedules no long press and leaves the browser's later events alone, and a cancelled secondary click also drops a pending long press. Each of the target's own handlers runs once per event. A long touch on nested targets opens only the innermost target's menu, as a secondary click does.
+A secondary click, long touch or key whose default the target's own handler, or a handler on an element inside the target, prevented shall open no menu: a cancelled touch opens nothing when its delay ends and leaves the browser's later events alone, and a cancelled secondary click also drops a pending long press. Each of the target's own handlers runs once per event. A long touch on nested targets opens only the innermost target's menu, as a secondary click does.
 
 Implementation: `src/components/context-menu/context-menu-target.ts`
 Verification: `src/components/context-menu/context-menu-cancel.test.tsx`, `e2e/context-menu.spec.ts`

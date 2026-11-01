@@ -34,6 +34,23 @@ const header = (name: string) => screen.getByRole('columnheader', { name: new Re
 
 // Full React Aria tables driven by userEvent are slow in jsdom on a busy machine.
 describe('Table', { timeout: 15_000 }, () => {
+  it('UIC-TABLE-4.5 publishes content and default flex sizing without changing row values', () => {
+    const { container } = render(
+      <Table
+        aria-label="Content-sized fruit"
+        rows={fruit}
+        columns={[
+          { id: 'name', header: 'Name', width: 'content', minWidth: 100 },
+          { id: 'colour', header: 'Colour' },
+        ]}
+      />,
+    );
+    expect(header('Name')).toHaveAttribute('data-sizing', 'content');
+    expect(header('Name').style.width).toBe('100px');
+    expect(header('Colour')).toHaveAttribute('data-sizing', 'flex');
+    expect(names()).toEqual(['Banana', 'Apple', 'Cherry']);
+    expectHooksMatchSpec(container, 'TABLE');
+  });
   it('UIC-TABLE-3.1 preserves Shift range anchors while a caller controls typed row selections', async () => {
     const user = userEvent.setup();
     const onSelectionChange = vi.fn();

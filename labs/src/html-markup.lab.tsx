@@ -155,12 +155,39 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Misnested structure"
+      description="A list item or heading written inside a table, and a description inside a paragraph, are placed so that the server HTML parses back to the same tree: a fostered element that would close its new parent keeps only its content."
+    >
+      <HtmlMarkup
+        data-lab-misnested
+        markup={
+          '<ul><li>Pears<table><li>Plums</li></table>Figs</li></ul>' +
+          '<h3>Orchard<table><h4>Rows</h4></table></h3>' +
+          '<dl><dt>Harvest</dt><dd><p>Autumn<dd>Late autumn</dl>'
+        }
+      />
+    </LabSection>
+    <LabSection
       title="Large unbalanced input"
       description="A tag that never ends, nesting and stray closing tags read in time proportional to their length."
     >
       <LargeInputDemo
         label="96 KB of unbalanced tags"
         build={() => '<div>'.repeat(300) + '</span>'.repeat(7_000) + '<' + 'a'.repeat(45_000)}
+      >
+        {(markup) => <HtmlMarkup markup={markup} />}
+      </LargeInputDemo>
+    </LabSection>
+    <LabSection
+      title="Deep nesting"
+      description="5,000 nested elements draw without overflowing the stack: past 256 levels elements are unwrapped and their text kept in order."
+    >
+      <LargeInputDemo
+        name="deep-nesting"
+        label="5,000 nested elements"
+        build={() =>
+          '<div><b>'.repeat(2_500) + 'Deepest text' + '</b></div>'.repeat(2_500) + ' After'
+        }
       >
         {(markup) => <HtmlMarkup markup={markup} />}
       </LargeInputDemo>

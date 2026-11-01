@@ -1,6 +1,7 @@
 /* Code Editor: a transparent text area over the highlighted copy, both with the same metrics. */
 
 .ui-code-editor[data-variant='surface'] {
+  --ref-code-editor-font: var(--ref-font-size-md);
   --ref-code-editor-pad: 8px;
   --ref-code-editor-line: 18px;
 
@@ -9,6 +10,8 @@
   box-sizing: border-box;
   width: 420px;
   max-width: 100%;
+  /* Clips the gutter, toolbar and status backgrounds to the rounded frame, so its corners show. */
+  overflow: clip;
   border: 1px solid var(--ref-field-border);
   border-radius: var(--ref-radius);
   background: var(--ref-field-fill);
@@ -41,6 +44,22 @@
 
 .ui-code-editor__toolbar > :last-child {
   margin-inline-start: auto;
+}
+
+/*
+ * Each size sets the source metrics every layer shares (the text area, the highlighted copy, the
+ * gutter and the caret marker), so the layers stay level at every size.
+ */
+.ui-code-editor[data-variant='surface'][data-size='sm'] {
+  --ref-code-editor-font: var(--ref-font-size-sm);
+  --ref-code-editor-pad: 6px;
+  --ref-code-editor-line: 16px;
+}
+
+.ui-code-editor[data-variant='surface'][data-size='lg'] {
+  --ref-code-editor-font: var(--ref-font-size);
+  --ref-code-editor-pad: 10px;
+  --ref-code-editor-line: 20px;
 }
 
 /* The surface, not the text area, resizes, so both layers keep the same size. */
@@ -86,7 +105,7 @@
   border-inline-end: 1px solid var(--ref-border);
   background: var(--ref-surface);
   color: var(--ref-muted);
-  font: var(--ref-font-size-md) / var(--ref-code-editor-line) var(--ref-mono);
+  font: var(--ref-code-editor-font) / var(--ref-code-editor-line) var(--ref-mono);
   user-select: none;
 }
 
@@ -139,7 +158,7 @@
   margin: 0;
   padding: var(--ref-code-editor-pad);
   border: 0;
-  font: var(--ref-font-size-md) / var(--ref-code-editor-line) var(--ref-mono);
+  font: var(--ref-code-editor-font) / var(--ref-code-editor-line) var(--ref-mono);
   letter-spacing: normal;
   tab-size: 2;
   white-space: pre-wrap;

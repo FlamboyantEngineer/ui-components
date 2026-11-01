@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { TextField } from '../../../test/field-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { inShadow, ShadowHost, shadowRootOf } from '../../../test/shadow-fixtures.js';
 import { Input } from '../../primitives/index.js';
 import { Field, useFieldState } from './field.js';
 
@@ -22,6 +23,8 @@ function OwnedField({ form }: { form: string }) {
     </Field>
   );
 }
+
+const warning = { severity: 'warning', message: 'Check the spelling.' } as const;
 
 function resetForm(id: string) {
   const form = document.getElementById(id) as HTMLFormElement;
@@ -120,6 +123,28 @@ describe('Field in a form', () => {
     expect(root(container)).toHaveAttribute('data-validation', 'invalid');
   });
 
+  it('UIC-FIELD-3.10 leaves an invalid event of a field nested in it to that field', () => {
+    const native = { validationBehavior: 'native', validationMode: 'submit' } as const;
+    const { container } = render(
+      <form aria-label="Order">
+        <TextField
+          label="Fruit"
+          options={{ ...native, defaultValue: 'Fig', validate: () => warning }}
+          description={
+            <TextField label="Note" options={{ ...native, defaultValue: '', isRequired: true }} />
+          }
+        />
+      </form>,
+    );
+    const [outer, inner] = container.querySelectorAll<HTMLElement>('.ui-field');
+    const note = screen.getByRole<HTMLInputElement>('textbox', { name: 'Note' });
+    act(() => {
+      note.dispatchEvent(new Event('invalid', { cancelable: true }));
+    });
+    expect(inner).toHaveAttribute('data-validation', 'invalid');
+    expect(outer).toHaveAttribute('data-validation', 'valid');
+  });
+
   it('UIC-FIELD-2.6 resets with the form its control belongs to now', async () => {
     const user = userEvent.setup();
     const settle = () => act(() => new Promise((resolve) => setTimeout(resolve, 10)));
@@ -146,5 +171,54 @@ describe('Field in a form', () => {
     resetForm('first');
     await settle();
     expect(input).toHaveValue('initial');
+  });
+
+  it('UIC-FIELD-2.6 keeps a control whose form names no form out of the form around the field', async () => {
+    const user = userEvent.setup();
+    const settle = () => act(() => new Promise((resolve) => setTimeout(resolve, 10)));
+    const view = (hasOwner: boolean) => (
+      <>
+        <form id="nearby" aria-label="Nearby form">
+          <OwnedField form="missing-form" />
+        </form>
+        {hasOwner ? <form id="missing-form" aria-label="Owner" /> : null}
+      </>
+    );
+    const { rerender } = render(view(false));
+    const input = screen.getByRole<HTMLInputElement>('textbox', { name: 'Note' });
+    expect(input.form).toBeNull();
+    await user.clear(input);
+    await user.type(input, 'edited');
+    resetForm('nearby');
+    await settle();
+    expect(input).toHaveValue('edited');
+    rerender(view(true));
+    resetForm('missing-form');
+    await settle();
+    expect(input).toHaveValue('initial');
+  });
+
+  it('UIC-FIELD-2.6 resets a field in a form inside a shadow root, and keeps it through a cancelled reset', async () => {
+    let isCancelling = true;
+    render(
+      <ShadowHost name="panel">
+        <form onReset={(event) => isCancelling && event.preventDefault()}>
+          <TextField label="Fruit" options={{ defaultValue: 'Fig' }} />
+        </form>
+      </ShadowHost>,
+    );
+    const input = inShadow('panel').getByRole('textbox', { name: 'Fruit' });
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event's typing does not reach a React input inside a shadow root
+    fireEvent.change(input, { target: { value: 'Pear' } });
+    expect(input).toHaveValue('Pear');
+    const form = shadowRootOf('panel').querySelector('form') as HTMLFormElement;
+    const settle = () => act(() => new Promise((resolve) => setTimeout(resolve, 10)));
+    act(() => form.reset());
+    await settle();
+    expect(input).toHaveValue('Pear');
+    isCancelling = false;
+    act(() => form.reset());
+    await settle();
+    expect(input).toHaveValue('Fig');
   });
 });

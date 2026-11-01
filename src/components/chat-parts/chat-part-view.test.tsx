@@ -137,6 +137,7 @@ describe('ChatParts part views', () => {
         parts={[{ ...approvalCall, status: 'succeeded', approval: undefined }]}
         toolRenderers={{ delete_draft: { render: render_ } }}
         onApprove={onApprove}
+        expandedParts={{ 'steps:call-1': true }}
       />,
     );
     const card = toolCard(container) as HTMLElement;

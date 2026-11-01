@@ -56,6 +56,28 @@
   margin-bottom: 0;
 }
 
+/*
+^ * Label then control on one row: a grid whose second column is the control's, so the description
+ * and the message (wrapped lines included) start under the control, not under the label. The
+ * buttons and decoration follow on the control's row, in their own columns.
+ */
+.ui-field[data-label-layout='label-colon-control'] {
+  display: grid;
+  grid-template-columns: fit-content(50%) minmax(0, 1fr);
+  grid-auto-columns: auto;
+}
+
+.ui-field[data-label-layout='label-colon-control']
+  > :not(.ui-field__description, .ui-field__message),
+.ui-field[data-label-layout='label-colon-control']::after {
+  grid-row: 1;
+}
+
+.ui-field[data-label-layout='label-colon-control']
+  > :is(.ui-field__description, .ui-field__message) {
+  grid-column: 2 / -1;
+}
+
 .ui-field__required {
   margin-inline-start: 2px;
   color: var(--ref-danger);
@@ -157,6 +179,13 @@
   min-height: 1lh;
   margin-top: 4px;
   font-size: var(--ref-font-size-sm);
+}
+
+/* Several issues listed in the message start where a single one does: no indent, no bullets. */
+.ui-field__message :is(ul, ol) {
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .ui-field__message[data-severity='error'] {

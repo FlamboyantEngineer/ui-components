@@ -2,6 +2,14 @@
 
 import { decodeHTML, decodeHTMLAttribute, decodeHTMLStrict } from 'entities/decode';
 
+/**
+ * The deepest element nesting the markup renderers draw (specs/MARKUP.md): deeper elements are
+ * unwrapped and their content kept, so no input overflows the stack while React mounts it. It sits
+ * well below the 512 open elements Chromium's parser keeps, so server HTML parses back the same
+ * inside a page's own nesting.
+ */
+export const maxMarkupDepth = 256;
+
 interface MarkupTextToken {
   readonly type: 'text';
   readonly text: string;

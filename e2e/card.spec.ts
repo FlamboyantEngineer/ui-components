@@ -395,9 +395,15 @@ test.describe('Card lab', () => {
     await expect(card).toHaveAttribute('data-presentation', 'compact');
     await expect(card.getByRole('button', { name: 'Water' })).toHaveCount(0);
     await expect(card.getByRole('button', { name: 'Details Plum row 7' })).toBeVisible();
-    const compactMore = card.getByRole('button', { name: 'More Plum row 7' });
+    const compactMore = card.getByRole('button', { name: 'Show more Plum row 7' });
     await compactMore.click();
+    await expect(compactMore).toHaveAttribute('aria-expanded', 'true');
     await expect(crates).toHaveValue('Unsaved');
+    // The revealed actions sit on their own line below the title row, not over it.
+    const opener = await compactMore.boundingBox();
+    const revealed = await card.locator('.ui-card__actions').boundingBox();
+    if (!opener || !revealed) throw new Error('no layout');
+    expect(revealed.y).toBeGreaterThanOrEqual(opener.y + opener.height);
     await compactMore.click();
     await thumb.focus();
 
@@ -411,7 +417,7 @@ test.describe('Card lab', () => {
     expect(box.width).toBeLessThanOrEqual(56);
     expect(box.overflows).toBe(false);
     await expect(card).toHaveAccessibleName('Plum row 7');
-    const more = card.getByRole('button', { name: 'More Plum row 7' });
+    const more = card.getByRole('button', { name: 'Show more Plum row 7' });
     await expect(more).toBeVisible();
     await more.click();
     await expect(more).toHaveAttribute('aria-expanded', 'true');
@@ -437,7 +443,7 @@ test.describe('Card lab', () => {
     const custom = demo.getByRole('region', { name: 'Plum row 9' });
     await expect(custom).toHaveAttribute('data-presentation', 'minimal');
     await expect(custom.getByRole('button', { name: 'Archive row 9' })).toHaveCount(0);
-    await custom.getByRole('button', { name: 'More Plum row 9' }).click();
+    await custom.getByRole('button', { name: 'Show more Plum row 9' }).click();
     await expect(custom.getByRole('button', { name: 'Archive row 9' })).toBeVisible();
     await lab.expectAccessible('[data-lab-demo="pane"]');
 
@@ -474,11 +480,120 @@ test('UIC-CARD-7.2 UIC-PORTAL-1.8 returns focus to More inside a shadow root', a
   await lab.open('card');
   const demo = page.locator('[data-lab-demo="shadow-card"]');
   await demo.scrollIntoViewIfNeeded();
-  const more = demo.getByRole('button', { name: 'More Pear row' });
+  const more = demo.getByRole('button', { name: 'Show more Pear row' });
   await more.click();
   await expect(more).toHaveAttribute('aria-expanded', 'true');
   await demo.getByRole('button', { name: 'Water' }).focus();
   await page.keyboard.press('Escape');
   await expect(more).toHaveAttribute('aria-expanded', 'false');
   await expect(more).toBeFocused();
+});
+
+test('UIC-CARD-6.3 UIC-CARD-5.3 keeps the header row controls apart at every width and direction', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('card');
+  type Box = { x: number; y: number; width: number; height: number };
+  const overlaps = (a: Box, b: Box) =>
+    a.x + a.width > b.x + 0.5 &&
+    b.x + b.width > a.x + 0.5 &&
+    a.y + a.height > b.y + 0.5 &&
+    b.y + b.height > a.y + 0.5;
+  const rowParts =
+    ':scope > :is(.ui-card-grid-item__checkbox, .ui-card__leading, .ui-card__toggle, .ui-card__more, .ui-card__abbreviation):not([hidden]), :scope > .ui-card__heading .ui-card__title';
+  const checkRows = async (demo: string, width: number | null) => {
+    const root = page.locator(`[data-lab-demo="${demo}"]`);
+    if (width !== null) {
+      const frame =
+        demo === 'pane' ? root.locator('[data-lab-pane]') : root.locator('> div').last();
+      await frame.evaluate((node, next) => {
+        (node as HTMLElement).style.width = `${next}px`;
+      }, width);
+    }
+    await root.scrollIntoViewIfNeeded();
+    const headers = root.locator('.ui-card__header');
+    await expect(headers.first()).toBeVisible();
+    for (const header of await headers.all()) {
+      const boxes = await header.evaluate((node, selector) => {
+        return [...node.querySelectorAll(selector)]
+          .map((part) => part.getBoundingClientRect())
+          .filter((rect) => rect.width > 0)
+          .map(({ x, y, width: w, height }) => ({ x, y, width: w, height }));
+      }, rowParts);
+      expect(boxes.length, `${demo} at ${width}`).toBeGreaterThanOrEqual(1);
+      for (const [index, box] of boxes.entries()) {
+        for (const other of boxes.slice(index + 1)) {
+          expect(overlaps(box, other), `${demo} at ${width}: ${JSON.stringify([box, other])}`).toBe(
+            false,
+          );
+        }
+      }
+    }
+  };
+  await checkRows('collapse-grid', null);
+  for (const width of [560, 400, 260, 160]) await checkRows('top-row', width);
+  await checkRows('top-row-rtl', null);
+  for (const width of [520, 300, 100]) await checkRows('pane', width);
+
+  const rtl = page.locator('[data-lab-demo="top-row-rtl"] .ui-card__header').first();
+  const checkbox = await rtl.locator('.ui-card-grid-item__checkbox').boundingBox();
+  const toggle = await rtl.locator('.ui-card__toggle').boundingBox();
+  if (!checkbox || !toggle) throw new Error('no layout');
+  expect(checkbox.x).toBeGreaterThan(toggle.x);
+
+  const grid = page.locator('[data-lab-demo="collapse-grid"]');
+  const row = grid.getByRole('row').first();
+  await row.getByRole('button', { name: /^Details/ }).click();
+  await expect(grid.locator('[data-lab-output="grid-selected"]')).toHaveText('none');
+  await row.locator('.ui-card-grid-item__checkbox').click();
+  await expect(grid.locator('[data-lab-output="grid-selected"]')).toHaveText('R4');
+});
+
+test('UIC-CARD-6.2 collapses and expands each record from its toggle and row 4 from outside', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('card');
+  const demo = page.locator('[data-lab-demo="collapse"]');
+  const output = demo.locator('[data-lab-output="expanded"]');
+  const names = ['Orchard row 4', 'Orchard row 5, the long stretch beside the old stone barn'];
+  for (const name of names) {
+    const card = demo.getByRole('region', { name });
+    const toggle = card.getByRole('button', { name: `Details ${name}` });
+    const body = card.locator('.ui-card__body');
+    await card.getByRole('button', { name: 'Water' }).click();
+    await card.getByRole('textbox', { name: 'Crates' }).fill('3');
+    await card.getByRole('textbox', { name: 'Crates' }).press('Enter');
+    await card.getByText('Pruned this week').click();
+    await expect(card.getByRole('checkbox', { name: 'Pruned this week' })).toBeChecked();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(body).toBeHidden();
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(body).toBeVisible();
+    await expect(card.getByRole('checkbox', { name: 'Pruned this week' })).toBeChecked();
+  }
+
+  const first = demo.getByRole('region', { name: names[0] });
+  const toggle = first.getByRole('button', { name: `Details ${names[0]}` });
+  const notes = first.getByRole('textbox', { name: 'Notes' });
+  await notes.fill('Thin the fruit');
+  await notes.focus();
+  // A press from outside that leaves focus where it was hides the focused field.
+  await demo.getByRole('button', { name: 'Collapse row 4' }).dispatchEvent('click');
+  await expect(output).toHaveText('false');
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await expect(toggle).toBeFocused();
+  await demo.getByRole('button', { name: 'Expand row 4' }).click();
+  await expect(output).toHaveText('true');
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await expect(notes).toHaveValue('Thin the fruit');
+  await demo.getByRole('button', { name: 'Collapse row 4' }).click();
+  await expect(output).toHaveText('false');
+  await toggle.click();
+  await expect(output).toHaveText('true');
+  await expect(demo.getByRole('button', { name: 'Collapse row 4' })).toBeVisible();
 });

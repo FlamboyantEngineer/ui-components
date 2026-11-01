@@ -194,4 +194,105 @@ test.describe('Dropdown Menu lab', () => {
     await expect(page.getByRole('menu')).toHaveCount(0);
     await expect(demo.locator('[data-lab-output="action"]')).toHaveText('none');
   });
+  test('UIC-DROPDOWN-MENU-1.4 UIC-MENU-4.5 walks two submenu levels by keyboard and pointer', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('dropdown-menu');
+    const demo = page.locator('[data-lab-case="Insert"]');
+    const trigger = demo.getByRole('button', { name: 'Insert' });
+    const result = demo.locator('[data-lab-output="inserted"]');
+    const item = (name: string) => page.getByRole('menuitem', { name, exact: true });
+    await trigger.focus();
+    await page.keyboard.press('Enter');
+    await expect(item('Text box')).toBeFocused();
+    await expect(item('Comment')).toHaveAttribute('aria-disabled', 'true');
+    await page.keyboard.press('ArrowDown');
+    await expect(item('Shape')).toBeFocused();
+    await page.keyboard.press('ArrowRight');
+    await expect(item('Square')).toBeFocused();
+    await expect(item('Star')).toHaveAttribute('aria-disabled', 'true');
+    await page.keyboard.press('End');
+    await expect(item('Arrow')).toBeFocused();
+    await page.keyboard.press('ArrowRight');
+    await expect(item('Arrow to start')).toBeFocused();
+    await expect(popovers(page)).toHaveCount(3);
+    await page.keyboard.press('Escape');
+    await expect(item('Arrow')).toBeFocused();
+    await expect(popovers(page)).toHaveCount(2);
+    await page.keyboard.press('ArrowLeft');
+    await expect(item('Shape')).toBeFocused();
+    await expect(popovers(page)).toHaveCount(1);
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('End');
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('End');
+    await expect(item('Double arrow')).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(popovers(page)).toHaveCount(0);
+    await expect(result).toHaveText('arrow-both');
+    await expect(trigger).toBeFocused();
+
+    await trigger.click();
+    await item('Chart').hover();
+    await item('Line chart').click();
+    await expect(popovers(page)).toHaveCount(0);
+    await expect(result).toHaveText('line-chart');
+    await trigger.click();
+    await item('Chart').hover();
+    await item('Pie chart').click({ force: true });
+    await expect(result).toHaveText('line-chart');
+    await expect(item('Pie chart')).toBeVisible();
+    await lab.expectAccessible();
+  });
+
+  test('UIC-MENU-4.5 keeps nested submenus inside the window at the edge and in right-to-left text', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('dropdown-menu');
+    const width = page.viewportSize()?.width ?? 0;
+    const item = (name: string) => page.getByRole('menuitem', { name, exact: true });
+    const levels = async () => {
+      const boxes = [];
+      for (const popover of await popovers(page).all()) boxes.push(await popover.boundingBox());
+      return boxes.map((box) => ({ left: box?.x ?? -1, right: (box?.x ?? 0) + (box?.width ?? 0) }));
+    };
+    for (const [label, open, close] of [
+      ['Insert at the end', 'ArrowRight', 'ArrowLeft'],
+      ['Insert right to left', 'ArrowLeft', 'ArrowRight'],
+    ] as const) {
+      const demo = page.locator(`[data-lab-case="${label}"]`);
+      const trigger = demo.getByRole('button', { name: label });
+      await trigger.scrollIntoViewIfNeeded();
+      await trigger.focus();
+      await page.keyboard.press('Enter');
+      await page.keyboard.press('ArrowDown');
+      await page.keyboard.press(open);
+      await page.keyboard.press('End');
+      await page.keyboard.press(open);
+      await expect(item('Arrow to start')).toBeFocused();
+      const boxes = await levels();
+      expect(boxes).toHaveLength(3);
+      for (const box of boxes) {
+        expect(box.left).toBeGreaterThanOrEqual(0);
+        expect(box.right).toBeLessThanOrEqual(width);
+      }
+      await page.keyboard.press(close);
+      await expect(item('Arrow')).toBeFocused();
+      await expect(popovers(page)).toHaveCount(2);
+      await page.keyboard.press('Escape');
+      await expect(item('Shape')).toBeFocused();
+      await expect(popovers(page)).toHaveCount(1);
+      await page.keyboard.press('Escape');
+      await expect(popovers(page)).toHaveCount(0);
+      await expect(trigger).toBeFocused();
+      await trigger.focus();
+      await page.keyboard.press('Enter');
+      await page.keyboard.press('ArrowDown');
+      await page.keyboard.press(open);
+      await page.keyboard.press('Enter');
+      await expect(demo.locator('[data-lab-output="inserted"]')).toHaveText('square');
+    }
+  });
 });

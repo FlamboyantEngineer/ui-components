@@ -99,16 +99,20 @@ function LinksInText() {
 /** A card the page opens and closes, beside a trigger that never opens one. */
 function ControlledAndDisabled() {
   const [isOpen, setOpen] = useState(false);
+  const [isLocked, setLocked] = useState(false);
   const [first, second] = cities as [City, City];
   return (
     <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
       <Button size="sm" data-lab-toggle="" onPress={() => setOpen(!isOpen)}>
         {isOpen ? 'Hide the card' : 'Show the card'}
       </Button>
+      <Button size="sm" data-lab-lock="" onPress={() => setLocked(!isLocked)}>
+        {isLocked ? 'Unlock the card' : 'Lock the card'}
+      </Button>
       <CityPreview
         city={first}
         data-lab-card="controlled"
-        triggerProps={{ isOpen, onOpenChange: setOpen }}
+        triggerProps={{ isOpen, onOpenChange: setOpen, isDisabled: isLocked }}
       />
       <output data-lab-output="controlled">{isOpen ? 'open' : 'closed'}</output>
       <CityPreview city={second} data-lab-card="disabled" triggerProps={{ isDisabled: true }} />
@@ -127,7 +131,9 @@ function HintedTrigger() {
         </Button>
         <HoverCard aria-label={`About ${city.name}`}>
           <p>{city.note}</p>
-          <Button size="sm">Save {city.name}</Button>
+          <Button size="sm" tooltip="Keep it in your list">
+            Save {city.name}
+          </Button>
         </HoverCard>
       </HoverCardTrigger>
     </div>
@@ -183,7 +189,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="A trigger with its own hint"
-      description="The Kyoto button has a tooltip and a shortcut of its own; inside the hover card trigger they yield, so the card opens on hover and focus."
+      description="The Kyoto button has a tooltip and a shortcut of its own; inside the hover card trigger they yield, so the card opens on hover and focus. The card's Save button keeps its own tooltip, which opens on focus and hover while the card stays open."
     >
       <HintedTrigger />
     </LabSection>

@@ -287,3 +287,48 @@ test('UIC-DATE-TIME-FIELD-1.1 keeps the space before the day period', async ({ p
   expect(await space.evaluate((element) => element.textContent)).toBe(' ');
   expect((await space.boundingBox())?.width).toBeGreaterThan(1);
 });
+
+test('UIC-DATE-TIME-FIELD-1.1 keeps the label beside the control and a range inside its frame', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('date-time-field');
+  const after = matrixCell(page, 'layout=control-label').locator('.ui-date-time-field');
+  const group = await after.locator('.ui-date-time-field__group').boundingBox();
+  const label = await after.locator('.ui-field__label').boundingBox();
+  if (!group || !label) throw new Error('field not drawn');
+  const gap = label.x - (group.x + group.width);
+  expect(gap).toBeGreaterThanOrEqual(4);
+  expect(gap).toBeLessThanOrEqual(8);
+
+  const shift = page.locator('[data-lab-field="time-range"]');
+  const contained = () =>
+    shift.locator('.ui-date-time-field__group').evaluate((frame) => {
+      const box = frame.getBoundingClientRect();
+      const parts = [
+        ...frame.querySelectorAll(
+          '.ui-date-time-field__segment, .ui-date-time-field__separator, .ui-date-time-field__button',
+        ),
+      ];
+      return parts.every((part) => {
+        const rect = part.getBoundingClientRect();
+        return (
+          rect.left >= box.left - 0.5 &&
+          rect.right <= box.right + 0.5 &&
+          rect.top >= box.top - 0.5 &&
+          rect.bottom <= box.bottom + 0.5
+        );
+      });
+    });
+  expect(await contained()).toBe(true);
+  expect(
+    await shift.locator('.ui-date-time-field__group').evaluate((frame) => frame.clientHeight),
+  ).toBeLessThan(40);
+  await page.setViewportSize({ width: 330, height: 800 });
+  await expect.poll(contained).toBe(true);
+  const end = shift.getByRole('spinbutton', { name: /minute/i }).last();
+  await end.click();
+  await expect(end).toBeFocused();
+  await shift.getByRole('button', { name: /Calendar/ }).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+});

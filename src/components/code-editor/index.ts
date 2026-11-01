@@ -1,4 +1,5 @@
 export { CodeEditor } from './code-editor.js';
+export { resolveCodeTokenizer } from './code-languages.js';
 export type {
   CodeDiagnostic,
   CodeEditorProps,

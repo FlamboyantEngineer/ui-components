@@ -1,13 +1,9 @@
 'use client';
 
 import { useEffect, useRef, type RefObject } from 'react';
+import { findFormOwner } from './form-owner.js';
+import { getTreeRoot } from './owner-window.js';
 import { useLatest } from './use-latest.js';
-
-/** The form an element takes part in: its `form` owner when it has one, else the form around it. */
-function findForm(element: Element): HTMLFormElement | null {
-  const owner = 'form' in element ? (element.form as HTMLFormElement | null) : null;
-  return owner ?? element.closest('form');
-}
 
 /** What a control does around a native reset besides applying it. */
 export interface NativeResetOptions {
@@ -21,9 +17,11 @@ export interface NativeResetOptions {
  * Runs `onReset` after a native reset of the form `ref`'s element takes part in (a reset button or
  * `form.reset()`), once every listener has seen the reset, and not for one a listener cancelled
  * with `preventDefault`. The form is the one the element takes part in when the reset happens, so a
-control whose `form` attribute or enclosing form changes resets with its new owner only. Returns whether a
- * reset is under way, from the document's capture phase until then, so a control can hold the
- * changes React Aria makes on the form's own reset listener, which runs before a cancelling one.
+ * control whose `form` attribute or enclosing form changes resets with its new owner only, and a
+ * native control whose `form` names no form resets with none. Returns whether a reset is under way,
+ * from the capture phase of the element's tree (its shadow root, else its document) until then, so a
+ * control can hold the changes React Aria makes on the form's own reset listener, which runs before
+ * a cancelling one.
  */
 export function useNativeReset(
   ref: RefObject<Element | null>,
@@ -33,14 +31,16 @@ export function useNativeReset(
   const latest = useLatest({ onReset, ...options });
   const isResetting = useRef(false);
   useEffect(() => {
-    const document = ref.current?.ownerDocument;
-    const view = document?.defaultView;
-    if (!document || !view) return undefined;
+    const element = ref.current;
+    const view = element?.ownerDocument.defaultView;
+    if (!element || !view) return undefined;
+    // A reset does not leave a shadow root, so the listener sits on the root of the element's tree.
+    const root = getTreeRoot(element);
     let timer: number | undefined;
-    // The document's capture phase sees the reset first; the timer runs after every listener.
+    // The tree root's capture phase sees the reset first; the timer runs after every listener.
     const onEvent = (event: Event) => {
-      const element = ref.current;
-      if (!element || event.target !== findForm(element)) return;
+      const current = ref.current;
+      if (!current || event.target !== findFormOwner(current)) return;
       view.clearTimeout(timer);
       if (!isResetting.current) latest.current.onStart?.();
       isResetting.current = true;
@@ -51,11 +51,11 @@ export function useNativeReset(
         if (!event.defaultPrevented) handlers.onReset();
       }, 0);
     };
-    document.addEventListener('reset', onEvent, true);
+    root.addEventListener('reset', onEvent, true);
     return () => {
       view.clearTimeout(timer);
       isResetting.current = false;
-      document.removeEventListener('reset', onEvent, true);
+      root.removeEventListener('reset', onEvent, true);
     };
   }, [ref, latest]);
   return () => isResetting.current;

@@ -65,6 +65,27 @@ describe('Field undo and redo', () => {
     expect(fruit).toHaveValue('Figs');
   });
 
+  it('UIC-FIELD-5.2 leaves a chord pressed in a field nested in it to that field', async () => {
+    const user = userEvent.setup();
+    render(
+      <TextField
+        label="Fruit"
+        options={{ defaultValue: 'Fig' }}
+        description={<TextField label="Note" options={{ defaultValue: '' }} />}
+      />,
+    );
+    const fruit = screen.getByRole('textbox', { name: 'Fruit' });
+    const note = screen.getByRole('textbox', { name: 'Note' });
+    await user.type(fruit, 's');
+    await user.click(note);
+    expect(await pressUnhandled(user, '{Control>}z{/Control}')).toBe(true);
+    expect(fruit).toHaveValue('Figs');
+    await user.type(note, 'x');
+    await user.keyboard('{Control>}z{/Control}');
+    expect(note).toHaveValue('');
+    expect(fruit).toHaveValue('Figs');
+  });
+
   it('UIC-FIELD-5.2 leaves chords it cannot apply to the browser and other handlers', async () => {
     const user = userEvent.setup();
     render(<TwoFields />);

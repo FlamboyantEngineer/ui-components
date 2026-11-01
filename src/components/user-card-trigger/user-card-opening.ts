@@ -12,8 +12,8 @@ import {
   useOverlayTrigger,
   useOverlayTriggerState,
   usePreviewTrigger,
-  useTooltipTriggerState,
 } from '../../primitives/index.js';
+import { usePreviewState } from '../../utils/use-preview-state.js';
 import { HOVER_CARD_CLOSE_DELAY, HOVER_CARD_DELAY } from '../../utils/overlay-defaults.js';
 import { focusRestoreEvent } from '../../utils/keep-control-focus-return.js';
 
@@ -83,7 +83,7 @@ function useHoverOpening({
   closeDelay = HOVER_CARD_CLOSE_DELAY,
   isDisabled,
 }: OpeningOptions & Pick<CardOpeningOptions, 'delay' | 'closeDelay' | 'isDisabled'>): Opening {
-  const state = useTooltipTriggerState({
+  const state = usePreviewState({
     isOpen: isActive && isOpen,
     onOpenChange: setOpen,
     delay,

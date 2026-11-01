@@ -205,7 +205,8 @@ function SavedForm() {
       />
       <RangeSlider
         label="Quiet hours"
-        name="quiet"
+        startName="quiet-from"
+        endName="quiet-to"
         minValue={0}
         maxValue={24}
         defaultValue={[6, 22]}

@@ -269,6 +269,41 @@ describe('Tooltip', () => {
     expect(tooltip()).toHaveTextContent('Controlled');
   });
 
+  it('UIC-TOOLTIP-1.7 draws a disabled hint closed and asks once to close it', async () => {
+    const onOpenChange = vi.fn();
+    const onPress = vi.fn();
+    const hint = (props: { isOpen?: boolean; defaultOpen?: boolean; isDisabled?: boolean }) => (
+      <Tooltip content="Hint" onOpenChange={onOpenChange} {...props}>
+        <Button onPress={onPress}>Help</Button>
+      </Tooltip>
+    );
+    const { rerender, unmount } = render(hint({ isOpen: true, isDisabled: true }));
+    expect(tooltip()).toBeNull();
+    expect(onOpenChange).toHaveBeenCalledTimes(1);
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+    rerender(hint({ isOpen: true, isDisabled: true }));
+    await advance(1000);
+    expect(onOpenChange).toHaveBeenCalledTimes(1);
+    rerender(hint({ isOpen: true }));
+    expect(tooltip()).toHaveTextContent('Hint');
+    const button = screen.getByRole('button', { name: 'Help' });
+    rerender(hint({ isOpen: true, isDisabled: true }));
+    expect(tooltip()).toBeNull();
+    expect(onOpenChange).toHaveBeenCalledTimes(2);
+    expect(screen.getByRole('button', { name: 'Help' })).toBe(button);
+    await user.click(button);
+    expect(onPress).toHaveBeenCalledTimes(1);
+    unmount();
+
+    // An uncontrolled hint that opened stays closed once it is enabled again.
+    const { rerender: rerenderUncontrolled } = render(
+      hint({ defaultOpen: true, isDisabled: true }),
+    );
+    expect(tooltip()).toBeNull();
+    rerenderUncontrolled(hint({ defaultOpen: true }));
+    expect(tooltip()).toBeNull();
+  });
+
   it('UIC-TOOLTIP-1.8 appends the caller class and forwards data attributes to the panel', () => {
     render(
       <Tooltip content="Hint" defaultOpen className="caller" data-test="panel" data-variant="x">

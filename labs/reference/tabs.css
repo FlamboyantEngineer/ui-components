@@ -14,7 +14,8 @@
   display: flex;
   min-width: 0;
   border-bottom: 1px solid var(--ref-border);
-  overflow-x: auto;
+  /* The selection indicator must not make the row scroll vertically, which would take the wheel. */
+  overflow: auto hidden;
 }
 .ui-tabs__list[data-orientation='vertical'] {
   flex-direction: column;

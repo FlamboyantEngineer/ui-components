@@ -8,10 +8,12 @@ import { flushSync } from 'react-dom';
 import type { SlotRegistry } from '../../utils/slot-registry.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { useStableArray } from '../../utils/use-stable-array.js';
+import { isOwnFieldTarget } from './field-root.js';
 import { useFieldScope } from './field-scope.js';
 import { fieldChangeHold, type FieldChangeHold, type FieldState } from './field-state.js';
 import { isFieldValueEqual } from './field-value.js';
-import { isHTMLElement } from '../../utils/is-element.js';
+import { hasNativeFormOwner } from '../../utils/form-owner.js';
+import { getTreeRoot } from '../../utils/owner-window.js';
 
 type FieldSlots = SlotRegistry<'root' | 'control'>;
 
@@ -56,10 +58,13 @@ function isValidatable(element: HTMLElement | null): element is ValidatableEleme
   return element !== null && 'setCustomValidity' in element;
 }
 
-/** The form the control belongs to (its `form` owner when it has one), else the enclosing form. */
+/**
+ * The form the control belongs to: a native control's own `form` owner, null included, else the
+ * form around the field.
+ */
 function findForm(slots: FieldSlots): HTMLFormElement | null {
   const control = slots.read('control');
-  if (control && 'form' in control && isHTMLElement(control.form, 'form')) return control.form;
+  if (control && hasNativeFormOwner(control)) return control.form;
   return slots.read('root')?.closest('form') ?? null;
 }
 
@@ -71,7 +76,7 @@ function readHold(state: FieldState<unknown>): FieldChangeHold | undefined {
 /**
  * A native form reset puts back the value the field had when it mounted, as the browser does for its
  * own controls, so every field control resets alike whatever element it renders. The field holds
- * its changes from the moment the reset starts (the document's capture phase) until every listener
+ * its changes from the moment the reset starts (the capture phase of its tree's root) until every listener
  * has seen it, so a building block that resets itself waits too; then a reset a listener cancelled
  * (`preventDefault`) changes nothing, and any other puts the initial value back.
  */
@@ -79,9 +84,11 @@ function useFormReset(state: FieldState<unknown>, slots: FieldSlots) {
   const latest = useLatest(state);
   const [initial] = useState(() => state.value);
   useEffect(() => {
-    const document = (slots.read('root') ?? slots.read('control'))?.ownerDocument;
-    const view = document?.defaultView;
-    if (!document || !view) return undefined;
+    const node = slots.read('root') ?? slots.read('control');
+    const view = node?.ownerDocument.defaultView;
+    if (!node || !view) return undefined;
+    // A reset does not leave a shadow root, so the listener sits on the root of the field's tree.
+    const root = getTreeRoot(node);
     // The same hold for the field's whole life.
     const hold = readHold(latest.current);
     let timer: number | undefined;
@@ -99,11 +106,11 @@ function useFormReset(state: FieldState<unknown>, slots: FieldSlots) {
       view.clearTimeout(timer);
       timer = view.setTimeout(() => restore(event), 0);
     };
-    document.addEventListener('reset', onReset, true);
+    root.addEventListener('reset', onReset, true);
     return () => {
       view.clearTimeout(timer);
       if (hold) hold.isHeld = false;
-      document.removeEventListener('reset', onReset, true);
+      root.removeEventListener('reset', onReset, true);
     };
   }, [slots, initial, latest]);
 }
@@ -172,6 +179,8 @@ export function useFieldFormBinding(
     const root = slots.read('root');
     if (!root) return undefined;
     const onInvalid = (event: Event) => {
+      // A field nested inside this one, such as in its description, reports its own control.
+      if (!isOwnFieldTarget(root, event.target)) return;
       const current = latest.current.state;
       current.revealValidation();
       if (isInForm && event.target === slots.read('control') && isFieldBlocking(current)) {

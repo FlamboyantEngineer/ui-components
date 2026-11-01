@@ -6,6 +6,7 @@ import {
   PlusGlyph,
   SaveGlyph,
 } from '../../src/core/glyphs.js';
+import type { IconSource } from '../../src/components/icon/icon.js';
 import { ButtonActionCases } from './button-action-cases.js';
 import { ButtonIconCases } from './button-icon-cases.js';
 import { ButtonTriggerCases } from './button-trigger-cases.js';
@@ -85,6 +86,12 @@ function EnabledLater() {
     </div>
   );
 }
+
+/** The end icon each external-link case gives: a replacement, none, or the default glyph. */
+const linkEndIcons: Record<string, IconSource> = {
+  'custom icon': ChevronRightGlyph,
+  'no icon': null,
+};
 
 mountLab(
   <>
@@ -193,6 +200,37 @@ mountLab(
               isDisabled={link === 'disabled'}
             >
               Open reports
+            </Button>
+          )}
+        />
+      </LabSection>
+      <LabSection
+        title="External and new-tab links"
+        description="A link that opens a new tab (isExternal, or target=_blank) shows the external-link glyph after its label and says so to assistive technology; a same-tab link shows none. A given end icon replaces the glyph and endIcon={null} hides it; an icon-only link adds the words to its name."
+      >
+        <StateMatrix
+          axes={{
+            link: [
+              'same tab',
+              'isExternal',
+              'target _blank',
+              'custom icon',
+              'no icon',
+              'icon only',
+            ],
+            size: ['xs', 'sm', 'md', 'lg'],
+          }}
+          render={({ link, size }) => (
+            <Button
+              href="https://example.com/guide"
+              size={size}
+              isExternal={link !== 'same tab' && link !== 'target _blank'}
+              target={link === 'target _blank' ? '_blank' : undefined}
+              endIcon={linkEndIcons[link]}
+              icon={link === 'icon only' ? InfoGlyph : undefined}
+              label="Guide"
+            >
+              Guide
             </Button>
           )}
         />

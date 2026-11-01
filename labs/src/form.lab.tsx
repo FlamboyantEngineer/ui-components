@@ -6,6 +6,9 @@ import { Combobox } from '../../src/components/combobox/combobox.js';
 import { ChoiceGroup, Choice } from '../../src/components/choice-group/choice-group.js';
 import { Fieldset, type FieldValidationMode } from '../../src/components/field/field.js';
 import { Form } from '../../src/components/form/form.js';
+import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
+import { Popover, PopoverTrigger } from '../../src/components/popover/popover.js';
+import { ProblemList } from '../../src/components/problem-list/problem-list.js';
 import { NumberField } from '../../src/components/number-field/number-field.js';
 import { ColorField } from '../../src/components/color-field/color-field.js';
 import { DateTimeField } from '../../src/components/date-time-field/date-time-field.js';
@@ -14,6 +17,7 @@ import { SegmentedChoice } from '../../src/components/segmented-choice/segmented
 import { Switch } from '../../src/components/switch/switch.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { ShadowFormCase } from './form-shadow-cases.js';
 import { ExternalSave } from './form-validity-cases.js';
 import { LabOutput } from './lab-output.js';
 
@@ -207,6 +211,34 @@ function ConfirmedReset() {
   );
 }
 
+/** Points an input at the form named `elsewhere`, which may not exist. */
+const ownedElsewhere = (input: HTMLInputElement | null) => input?.setAttribute('form', 'elsewhere');
+
+/**
+ * Inputs inside one form whose `form` attribute names another: while no form has that id they
+ * belong to none, so the form around them leaves them alone; once it exists, its reset is theirs.
+ */
+function OwnedElsewhere() {
+  const [hasOwner, setHasOwner] = useState(false);
+  return (
+    <>
+      <form aria-label="Nearby form">
+        <TextField label="Note" defaultValue="Fig" inputRef={ownedElsewhere} />
+        <Checkbox inputRef={ownedElsewhere}>Sealed</Checkbox>
+        <Button type="reset">Reset nearby</Button>
+      </form>
+      <Switch isSelected={hasOwner} onChange={setHasOwner}>
+        Add the named form
+      </Switch>
+      {hasOwner ? (
+        <form id="elsewhere" aria-label="Named form">
+          <Button type="reset">Reset named</Button>
+        </form>
+      ) : null}
+    </>
+  );
+}
+
 /** A button outside the form submits it through the form's ref, with the same validation. */
 function OutsideSubmit() {
   const form = useRef<HTMLFormElement>(null);
@@ -224,6 +256,47 @@ function OutsideSubmit() {
       <Button onPress={() => form.current?.requestSubmit()}>Submit from outside</Button>
       <LabOutput name="Note">{submitted}</LabOutput>
     </>
+  );
+}
+
+/**
+ * A page form that opens a dialog with its own form and a popover with a bare field: neither one
+ * submits, validates or blocks the page form.
+ */
+function OverlaysInForm() {
+  const [saved, setSaved] = useState('none');
+  const [renamed, setRenamed] = useState('none');
+  return (
+    <Form
+      aria-label="Page"
+      validationBehavior="aria"
+      onSubmit={(event) => setSaved(readEntries(event))}
+    >
+      <ProblemList />
+      <TextField label="Heading" name="heading" isRequired />
+      <ModalTrigger>
+        <Button>Rename</Button>
+        <Modal title="Rename">
+          <Form
+            aria-label="Rename"
+            validationBehavior="aria"
+            onSubmit={(event) => setRenamed(readEntries(event))}
+          >
+            <TextField label="New name" name="name" isRequired autoFocus />
+            <Button type="submit">Apply</Button>
+          </Form>
+        </Modal>
+      </ModalTrigger>
+      <PopoverTrigger>
+        <Button>Add a note</Button>
+        <Popover aria-label="Note">
+          <TextField label="Note text" isRequired />
+        </Popover>
+      </PopoverTrigger>
+      <Button type="submit">Save page</Button>
+      <LabOutput name="Page saved">{saved}</LabOutput>
+      <LabOutput name="Renamed">{renamed}</LabOutput>
+    </Form>
   );
 }
 
@@ -276,6 +349,18 @@ mountLab(
       <ConfirmedReset />
     </LabSection>
     <LabSection
+      title="Owned by another form"
+      description="The note and the checkbox sit inside the nearby form, but their form attribute names a form that does not exist yet, so they belong to no form: edit them and Reset nearby leaves them. Add the named form, and its Reset puts them back."
+    >
+      <OwnedElsewhere />
+    </LabSection>
+    <LabSection
+      title="Inside a shadow root"
+      description="A form inside a web component's shadow root, where reset and form data events stay. Change the fruit and choose Week, then press Reset: everything returns to Fig and Day, and the attached sample.txt still submits. With Keep shadow edits on, the reset is cancelled and the edits stay."
+    >
+      <ShadowFormCase />
+    </LabSection>
+    <LabSection
       title="Submitting from outside"
       description="The form's ref lets a button outside it submit it, as a dialog's footer action does."
     >
@@ -286,6 +371,12 @@ mountLab(
       description="Save asks the form whether what its fields show can be saved, without showing their validation: a date typed in part, a range with one end empty or a colour that does not read refuses it. Check shows every message and focuses the first."
     >
       <ExternalSave />
+    </LabSection>
+    <LabSection
+      title="Overlays in a form"
+      description="Rename submits only the dialog's own form, and the note's required field neither blocks nor lists in the page form: Save page checks the heading alone."
+    >
+      <OverlaysInForm />
     </LabSection>
   </>,
 );

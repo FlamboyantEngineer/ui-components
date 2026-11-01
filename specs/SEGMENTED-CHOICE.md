@@ -62,7 +62,7 @@ Verification: `src/components/segmented-choice/segmented-choice.test.tsx`
 
 ### UIC-SEGMENTED-CHOICE-1.9 - Counts
 
-An option's `count` shall show a positive whole number after the label in the `ui-segmented-choice__count` slot, capped at `countMax` (99 by default) as `<max>+`, in the provider locale's digits ([COUNT.md](COUNT.md)); zero, negative and non-finite counts show nothing. The count is hidden from assistive technology and read in the segment's accessible name instead, joined to the label by the provider's `labelWithCount` string (`Open, 3`), also for an icon-only segment.
+An option's `count` shall show a positive whole number after the label in the `ui-segmented-choice__count` slot, capped at `countMax` (99 by default) as `<max>+`, in the provider locale's digits ([COUNT.md](COUNT.md)); zero, negative and non-finite counts show nothing. The count is hidden from assistive technology and read in the segment's accessible name instead, joined to the label by the provider's `labelWithCount` string (`Open, 3`), also for an icon-only segment. The reference sheet draws one digit as a circle as wide as it is tall and widens more digits, or a capped `99+`, into a pill of the same height with the same inline padding, at every size and whether selected or not, without changing the segment's height.
 
 Implementation: `src/components/segmented-choice/segmented-choice.tsx`, `src/core/strings/common.ts`, `labs/reference/segmented-choice.css`
 Verification: `src/components/segmented-choice/pending-change.test.tsx`, `e2e/segmented-choice.spec.ts`
@@ -113,7 +113,7 @@ Verification: `src/components/segmented-choice/pending-change.test.tsx`, `e2e/se
 
 ### UIC-SEGMENTED-CHOICE-2.7 - Native reset
 
-A native reset of the form the group is in (a reset button or `form.reset()`) shall put back the value the group had when it mounted, as the browser does for its own controls and as fields do: an uncontrolled group shows its `defaultValue` again (no value or no pressed values when it had none), so its segments, their ARIA state and the values it submits agree, and `onChange` reports that value when the value in effect differs, which is how a controlled group puts it back. The reset applies once every listener has seen it, and a reset a listener cancels with `preventDefault` changes nothing. A change still pending ([UIC-SEGMENTED-CHOICE-2.6](#uic-segmented-choice-26---asynchronous-change)) is dropped: its promise settles without effect.
+A native reset of the form the group is in (a reset button or `form.reset()`), in the document or inside a shadow root, shall put back the value the group had when it mounted, as the browser does for its own controls and as fields do: an uncontrolled group shows its `defaultValue` again (no value or no pressed values when it had none), so its segments, their ARIA state and the values it submits agree, and `onChange` reports that value when the value in effect differs, which is how a controlled group puts it back. The reset applies once every listener has seen it, and a reset a listener cancels with `preventDefault` changes nothing. A change still pending ([UIC-SEGMENTED-CHOICE-2.6](#uic-segmented-choice-26---asynchronous-change)) is dropped: its promise settles without effect.
 
 Implementation: `src/components/segmented-choice/pending-change.ts`, `src/components/segmented-choice/segmented-choice.tsx`, `src/utils/use-native-reset.ts`
 Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/segmented-choice.spec.ts`

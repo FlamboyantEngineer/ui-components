@@ -163,4 +163,27 @@ test.describe('Navigation Rail lab', () => {
     await expect(page.locator('#lab-root .ui-navigation-rail').first()).toBeAttached();
     await lab.expectAccessible();
   });
+
+  test('UIC-NAVIGATION-RAIL-2.5 keeps a toggle and a disclosure in a group panel on their own state', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('navigation-rail');
+    const rail = page.getByRole('navigation', { name: 'Tools navigation' });
+    const details = rail.getByRole('button', { name: 'Details' });
+    await expect(details).toHaveAttribute('aria-expanded', 'false');
+    await details.click();
+    await expect(details).toHaveAttribute('aria-expanded', 'true');
+    const shortcuts = rail.getByRole('button', { name: 'Shortcuts' });
+    await expect(shortcuts).toHaveAttribute('aria-expanded', 'false');
+    await shortcuts.click();
+    await expect(rail.getByText('Press G then I to open the inbox.')).toBeVisible();
+    await expect(rail.getByRole('button', { name: /^Tools/ })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    await rail.getByRole('button', { name: /^Lists/ }).click();
+    await expect(rail.getByRole('link', { name: 'Groceries' })).toBeHidden();
+    await lab.expectAccessible('[data-lab-section="Toggles in a group"]');
+  });
 });

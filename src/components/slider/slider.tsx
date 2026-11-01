@@ -28,6 +28,7 @@ export function Slider({
   ...props
 }: SliderProps) {
   const { state, field, rest, grid } = useSliderField(props, props.minValue ?? 0);
+  const { name, ...own } = rest;
   return (
     <Field
       {...field}
@@ -40,11 +41,12 @@ export function Slider({
           state={state}
           control={control}
           label={field.label}
-          rest={rest}
+          rest={own}
           marks={marks}
           valueLabel={valueLabel}
           fillOffset={fillOffset}
           thumbLabels={[undefined]}
+          thumbNames={[name]}
           normalize={(next) => normalizeSliderValue(next, grid)}
         />
       )}

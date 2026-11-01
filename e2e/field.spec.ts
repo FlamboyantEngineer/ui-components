@@ -196,6 +196,15 @@ test.describe('Field lab', () => {
     await page.getByRole('button', { name: 'Redo' }).click();
     await expect(city).toHaveValue('Oslox');
     await expect(fruit).toHaveValue('Figs');
+
+    // A field in another field's description keeps its chords to itself.
+    const dish = field(page, 'dish').getByRole('textbox', { name: 'Dish' });
+    const note = field(page, 'dish').getByRole('textbox', { name: 'Note' });
+    await dish.fill('Soups');
+    await note.fill('hot');
+    await page.keyboard.press('ControlOrMeta+z');
+    await expect(note).toHaveValue('');
+    await expect(dish).toHaveValue('Soups');
   });
 
   test('UIC-FIELD-6.3 UIC-FIELD-6.4 opens the field menu from a right click, the keyboard and its button', async ({
@@ -386,5 +395,54 @@ test.describe('Field lab', () => {
     await expect(page.getByRole('textbox', { name: 'South fruit' })).toHaveValue('Quince', {
       timeout: 5000,
     });
+  });
+
+  test('UIC-FIELD-1.2 starts messages under the control, single or several, either direction', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('field');
+    const names = ['', 'rtl-'].flatMap((prefix) =>
+      ['single', 'wrapped', 'several'].map((name) => `${prefix}${name}`),
+    );
+    const parts = async (name: string) => ({
+      root: await box(field(page, name)),
+      control: await box(field(page, name).locator('.ui-field__control')),
+      message: await box(field(page, name).locator('.ui-field__message')),
+    });
+    const offsets: number[] = [];
+    for (const name of names) {
+      await expect(field(page, name)).toHaveAttribute('data-validation', 'invalid');
+      const { root, control, message } = await parts(name);
+      if (name.startsWith('rtl-')) {
+        expect(Math.abs(message.x + message.width - (control.x + control.width))).toBeLessThan(1);
+      } else {
+        expect(Math.abs(message.x - control.x)).toBeLessThan(1);
+      }
+      offsets.push(control.y - root.y);
+    }
+    // A wrapped message stays in the control's column.
+    const wrapped = await parts('wrapped');
+    expect(wrapped.message.height).toBeGreaterThan(20);
+    expect(wrapped.message.x + wrapped.message.width).toBeLessThanOrEqual(
+      wrapped.control.x + wrapped.control.width + 1,
+    );
+    // Several issues start where one does: the list has no indent and no bullets.
+    const items = field(page, 'several').locator('.ui-field__message li');
+    await expect(items).toHaveCount(3);
+    const several = await parts('several');
+    expect(Math.abs((await box(items.first())).x - several.control.x)).toBeLessThan(1);
+    expect(await items.first().evaluate((node) => getComputedStyle(node).listStyleType)).toBe(
+      'none',
+    );
+
+    // Without errors each control keeps its place in its field.
+    await page.getByRole('button', { name: 'Fix the values' }).click();
+    for (const [index, name] of names.entries()) {
+      await expect(field(page, name)).toHaveAttribute('data-validation', 'valid');
+      const { root, control } = await parts(name);
+      expect(Math.abs(control.y - root.y - (offsets[index] ?? 0))).toBeLessThan(1);
+    }
+    await lab.expectAccessible();
   });
 });

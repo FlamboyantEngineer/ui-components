@@ -58,7 +58,10 @@ export interface TabListProps extends BaseProps, AriaLabellingProps, RefProps<HT
    * keeps the selected tab and as many others as fit and lists the rest in a "more" menu.
    */
   overflow?: TabListOverflow | undefined;
-  /** Draws previous and next buttons beside a horizontal list that scrolls, at an edge hiding tabs. */
+  /**
+   * Draws previous and next buttons beside a horizontal list that scrolls, at an edge hiding tabs.
+   * The list takes the mouse wheel with or without them.
+   */
   scrollButtons?: boolean | undefined;
   /** Makes the tabs removable: a close mark on each and Delete or Backspace on the focused one. */
   onRemove?: ((keys: Set<Key>) => void) | undefined;
@@ -90,7 +93,10 @@ interface ListKeyOptions {
 
 type ListKeyHandlers = Pick<JSX.IntrinsicElements['div'], 'onKeyDown' | 'onKeyDownCapture'>;
 
-/** Menus and scroll buttons serve horizontal lists; a vertical list scrolls. */
+/**
+ * Menus, the wheel and scroll buttons serve horizontal lists; a vertical list scrolls. A horizontal
+ * `scroll` list is a scroll strip that takes the wheel, buttons or not.
+ */
 function resolveParts({
   orientation,
   overflow,
@@ -101,9 +107,11 @@ function resolveParts({
   scrollButtons: boolean;
 }) {
   const horizontal = orientation === 'horizontal';
+  const isStrip = horizontal && overflow === 'scroll';
   return {
     isMenu: horizontal && overflow === 'menu',
-    hasButtons: horizontal && overflow === 'scroll' && scrollButtons,
+    isStrip,
+    hasButtons: isStrip && scrollButtons,
   };
 }
 
@@ -268,7 +276,7 @@ export function TabList({
 }: TabListProps) {
   const state = useContext(TabListStateContext);
   const orientation = useSlottedContext(TabsContext)?.orientation ?? 'horizontal';
-  const { isMenu, hasButtons } = resolveParts({ orientation, overflow, scrollButtons });
+  const { isMenu, isStrip, hasButtons } = resolveParts({ orientation, overflow, scrollButtons });
   const [listRef, setListRef] = useForwardedRef(ref);
   const { editingKey } = useContext(TabsSharedContext);
   const parts = useTabListParts(state, renderAfterTab);
@@ -278,7 +286,7 @@ export function TabList({
     parts,
     orientation,
     isMenu,
-    hasButtons,
+    isStrip,
     setListRef,
   });
   const actions = useTabActions({
