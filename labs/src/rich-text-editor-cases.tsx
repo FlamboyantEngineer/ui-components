@@ -67,7 +67,10 @@ export const shortNote: RichTextDocument = {
   content: [paragraph(text('Pick the '), text('pears', [{ type: 'bold' }]), text(' on Friday.'))],
 };
 
-/** The short note with a task list, so the read-only and disabled states show their checkboxes. */
+/**
+ * The short note with a task list and a link, so the read-only and disabled states show their
+ * checkboxes and links.
+ */
 export const taskNote: RichTextDocument = {
   type: 'doc',
   content: [
@@ -75,7 +78,17 @@ export const taskNote: RichTextDocument = {
     {
       type: 'taskList',
       content: [
-        { type: 'taskItem', attrs: { checked: true }, content: [paragraph(text('Wash'))] },
+        {
+          type: 'taskItem',
+          attrs: { checked: true },
+          content: [
+            paragraph(
+              text('Wash', [
+                { type: 'link', attrs: { href: 'https://example.com/wash', title: null } },
+              ]),
+            ),
+          ],
+        },
         { type: 'taskItem', attrs: { checked: false }, content: [paragraph(text('Peel'))] },
       ],
     },

@@ -18,6 +18,18 @@ function toListStart(value: string | null) {
   return Number.isSafeInteger(start) ? start : 1;
 }
 
+/** A default link's anchor attributes: its `href` when it is safe, and its `title`. */
+export function toLinkAttributes(attrs: Readonly<Record<string, unknown>>): {
+  href?: string;
+  title?: string;
+} {
+  const href = String(attrs.href);
+  return {
+    ...(isSafeUrl(href) ? { href } : {}),
+    ...(attrs.title === null || attrs.title === undefined ? {} : { title: String(attrs.title) }),
+  };
+}
+
 /** The default block and inline node types, in the order the schema tries them. */
 export const defaultNodes: Record<string, NodeSpec> = {
   doc: { content: 'block+' },
@@ -136,11 +148,7 @@ export const defaultMarks: Record<string, MarkSpec> = {
     attrs: { href: {}, title: { default: null } },
     inclusive: false,
     parseDOM: [{ tag: 'a[href]', getAttrs: readHref }],
-    toDOM: (mark) => {
-      const href = String(mark.attrs.href);
-      const title = mark.attrs.title === null ? {} : { title: String(mark.attrs.title) };
-      return ['a', { ...(isSafeUrl(href) ? { href } : {}), ...title }, 0];
-    },
+    toDOM: (mark) => ['a', toLinkAttributes(mark.attrs), 0],
   },
   bold: {
     parseDOM: [
