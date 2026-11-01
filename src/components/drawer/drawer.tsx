@@ -4,11 +4,13 @@ import { CloseGlyph } from '../../core/glyphs.js';
 import type { KeyboardEvent, ReactNode } from 'react';
 import {
   Heading,
+  DialogContext,
   Sheet,
   SheetBackdrop,
   SheetContent,
   SheetOverlay,
   SheetTrigger,
+  useSlottedContext,
 } from '../../primitives/index.js';
 import type { OpenStateProps, OverlayDismissProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
@@ -17,6 +19,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { stopConsumedEscape } from '../../utils/consumed-escape.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Button } from '../button/button.js';
+import { DialogEnteringContext } from '../../utils/dialog-entering.js';
 import { OverlayLayerScope, useLayerZIndex, useStackedLayer } from '../portal/portal.js';
 import type { OverlayLayer } from '../portal/layers.js';
 import { HeadingLevelContext, dialogTitleLevel } from '../../core/heading-level.js';
@@ -113,6 +116,17 @@ export function DrawerTrigger({ children, ...openState }: DrawerTriggerProps) {
 }
 
 /**
+ * Publishes the sheet's entrance as React Aria defers it for the dialog (until the panel has slid
+ * in), so a field with `autoFocus` waits for it too.
+ */
+function DrawerEntrance({ children }: { children: ReactNode }) {
+  const dialog = useSlottedContext(DialogContext);
+  return (
+    <DialogEnteringContext value={dialog?.isEntering ?? false}>{children}</DialogEnteringContext>
+  );
+}
+
+/**
  * A panel that slides in from an edge of the viewport over a page it blocks (React Aria `Sheet`):
  * a title, an optional close button, the body and a footer. Focus moves in once it has entered and
  * stays inside; Escape, an outside press and a swipe toward its edge close it, and focus returns to
@@ -158,36 +172,38 @@ export function Drawer({
       }
       style={{ zIndex }}
     >
-      <SheetBackdrop className={hooks.slotClass('backdrop')} />
-      <Sheet className={hooks.slotClass('panel')}>
-        <SheetContent
-          id={id}
-          className={hooks.slotClass('dialog')}
-          // React Aria's Dialog forwards no keyboard handlers, so the listener goes on its element.
-          render={(props) => <section {...props} onKeyDown={onKeyDown} />}
-        >
-          {({ close }) => (
-            <>
-              <DrawerHeader
-                title={title}
-                showCloseButton={showCloseButton}
-                isDisabled={isDismissDisabled}
-                onClose={close}
-              />
-              {children === undefined || children === null ? null : (
-                <div {...hooks.slot('body')}>
-                  <OverlayLayerScope layer={resolvedLayer}>
-                    <HeadingLevelContext value={dialogTitleLevel}>
-                      {typeof children === 'function' ? children({ close }) : children}
-                    </HeadingLevelContext>
-                  </OverlayLayerScope>
-                </div>
-              )}
-              {isEmptyNode(footer) ? null : <div {...hooks.slot('footer')}>{footer}</div>}
-            </>
-          )}
-        </SheetContent>
-      </Sheet>
+      <DrawerEntrance>
+        <SheetBackdrop className={hooks.slotClass('backdrop')} />
+        <Sheet className={hooks.slotClass('panel')}>
+          <SheetContent
+            id={id}
+            className={hooks.slotClass('dialog')}
+            // React Aria's Dialog forwards no keyboard handlers, so the listener goes on its element.
+            render={(props) => <section {...props} onKeyDown={onKeyDown} />}
+          >
+            {({ close }) => (
+              <>
+                <DrawerHeader
+                  title={title}
+                  showCloseButton={showCloseButton}
+                  isDisabled={isDismissDisabled}
+                  onClose={close}
+                />
+                {children === undefined || children === null ? null : (
+                  <div {...hooks.slot('body')}>
+                    <OverlayLayerScope layer={resolvedLayer}>
+                      <HeadingLevelContext value={dialogTitleLevel}>
+                        {typeof children === 'function' ? children({ close }) : children}
+                      </HeadingLevelContext>
+                    </OverlayLayerScope>
+                  </div>
+                )}
+                {isEmptyNode(footer) ? null : <div {...hooks.slot('footer')}>{footer}</div>}
+              </>
+            )}
+          </SheetContent>
+        </Sheet>
+      </DrawerEntrance>
     </SheetOverlay>
   );
 }

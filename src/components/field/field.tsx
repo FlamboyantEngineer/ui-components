@@ -1,7 +1,8 @@
 'use client';
 
 import { getComposedActiveElement, isFocusLost } from '../../utils/focus-target.js';
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { DialogEnteringContext } from '../../utils/dialog-entering.js';
 import type { BaseProps, ControlSize, Key } from '../../core/props.js';
 import { createSlotRegistry, type SlotRegistry } from '../../utils/slot-registry.js';
 import {
@@ -94,7 +95,9 @@ function useFieldLeave(state: FieldState<unknown>, slots: FieldSlots, commitOnBl
 
 /**
  * Focuses the control once, when the field mounts with `autoFocus`, unless focus moved to another
- * element while it mounted, such as into a list that opens with the field.
+ * element while it mounted, such as into a list that opens with the field. Inside a dialog that
+ * publishes its entrance, it waits until the dialog has entered (taking focus from the dialog
+ * element itself) and focuses without scrolling.
  */
 /** The element focused in the tree `container` renders into, or null on the server. */
 function readFocused(container: Element | null | undefined): Element | null {
@@ -107,14 +110,20 @@ function useAutoFocus(autoFocus: boolean | undefined, slots: FieldSlots) {
   // document the field renders into (its portal container's).
   const container = usePortalContainer();
   const [focusedBefore] = useState(() => (autoFocus === true ? readFocused(container) : undefined));
+  const isDialogEntering = useContext(DialogEnteringContext);
+  const isDone = useRef(false);
   useEffect(() => {
     const control = slots.read('control');
-    if (focusedBefore === undefined || !control) return;
+    if (focusedBefore === undefined || !control || isDone.current || isDialogEntering) return;
+    isDone.current = true;
     const active = getComposedActiveElement(control);
-    if (active === focusedBefore || isFocusLost(control)) {
-      focusControl(control);
+    const isInDialog = isDialogEntering !== undefined;
+    const isOnDialog =
+      isInDialog && active !== null && active === control.closest('[role="dialog"]');
+    if (active === focusedBefore || isFocusLost(control) || isOnDialog) {
+      focusControl(control, isInDialog ? { preventScroll: true } : undefined);
     }
-  }, [focusedBefore, slots]);
+  }, [focusedBefore, slots, isDialogEntering]);
 }
 
 /** Puts the committed value back; the button leaves with it, so keyboard focus moves to the control first. */

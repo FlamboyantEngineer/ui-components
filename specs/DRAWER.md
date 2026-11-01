@@ -73,9 +73,9 @@ Verification: `src/components/drawer/drawer.test.tsx`, `e2e/drawer.spec.ts`
 
 ### UIC-DRAWER-3.1 - Focus and blocking the page
 
-Once the panel has slid in, focus shall move to the element inside it that has `autoFocus`, otherwise to the dialog element; Tab and Shift+Tab stay inside the drawer, and the page outside is hidden from assistive technology, inert and not scrollable. When the drawer closes, focus returns to the element focused when it opened, usually the trigger.
+Once the panel has slid in, focus shall move to the element inside it that has `autoFocus`, otherwise to the dialog element: a field with `autoFocus` ([FIELD.md](FIELD.md)) waits, as React Aria defers the dialog's own focus, until the panel has entered and then focuses without scrolling, so it never cuts the slide short; Tab and Shift+Tab stay inside the drawer, and the page outside is hidden from assistive technology, inert and not scrollable. When the drawer closes, focus returns to the element focused when it opened, usually the trigger.
 
-Implementation: `src/components/drawer/drawer.tsx`
+Implementation: `src/components/drawer/drawer.tsx`, `src/components/field/field.tsx`, `src/utils/dialog-entering.ts`
 Verification: `src/components/drawer/drawer.test.tsx`, `e2e/drawer.spec.ts`
 
 ## UIC-DRAWER-4 - Content

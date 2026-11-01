@@ -239,7 +239,8 @@ function RetainedModal({ state, rootProps, children, ...dismissal }: BlockingMod
         {...rootProps}
         {...dataAttributes({ entering: phase.isEntering, exiting: phase.isExiting, stackIndex })}
         ref={overlayRef}
-        inert={!state.isOpen}
+        // Inert once its exit has ended, so focus stays in the leaving dialog until it returns.
+        inert={!phase.isMounted}
         style={{ position: 'fixed', inset: 0, zIndex, ...retainedStyle(phase.isMounted) }}
       >
         <FocusScope contain={state.isOpen}>

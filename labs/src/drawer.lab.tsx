@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Drawer, DrawerTrigger, type DrawerProps } from '../../src/components/drawer/drawer.js';
 import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
+import { TextField } from '../../src/components/text-field/text-field.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const positions = ['start', 'end', 'top', 'bottom'] as const;
@@ -206,6 +207,17 @@ mountLab(
       description="A drawer opened from a drawer stacks above it; Escape closes only the top one and focus returns inside the one beneath."
     >
       <Nested />
+    </LabSection>
+    <LabSection
+      title="Focusing a field once open"
+      description="Open Find a city: the search field has autoFocus, and takes focus only once the panel has slid in, without cutting the slide short."
+    >
+      <DrawerTrigger>
+        <Button>Find a city</Button>
+        <Drawer title="Find a city" showCloseButton data-lab-drawer="autofocus">
+          <TextField label="City" autoFocus />
+        </Drawer>
+      </DrawerTrigger>
     </LabSection>
     <LabSection
       title="Drawer from a modal"
