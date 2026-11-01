@@ -59,7 +59,7 @@ Verification: `src/components/slider/slider.test.tsx`
 
 The group shall carry the field label as its `aria-label`, because each thumb is named after the group's own name. Each thumb holds a visually hidden native range input (role `slider`) named by the field label (UIC-SLIDER-4.4 for a range), described by the field's description, decoration and message, and reporting its formatted value in `aria-valuetext`. While invalid, each input carries `aria-invalid="true"` and `aria-errormessage` naming the message.
 
-Implementation: `src/components/slider/slider-parts.tsx`
+Implementation: `src/components/slider/slider-parts.tsx`, `src/components/slider/slider.tsx`, `src/components/slider/range-slider.tsx`
 Verification: `src/components/slider/slider.test.tsx`, `e2e/slider.spec.ts`
 
 ### UIC-SLIDER-2.2 - Keyboard and states
@@ -87,7 +87,7 @@ Verification: `src/components/slider/slider.test.tsx`, `e2e/slider.spec.ts`
 
 ### UIC-SLIDER-3.2 - Forms
 
-With `name`, a form shall submit each thumb's value under that name, the start before the end for a range. The field's control reference is the first thumb's input, so a form's submit validation focuses it and the native behavior's custom validity (UIC-FIELD-3.10) blocks a native submit through it.
+With `name`, a form shall submit a slider's value under that name. A range slider takes `startName` and `endName` instead and submits each end once under its own name. Errors a [Form](FORM.md) gives in `validationErrors` under `startName` or `endName` belong to the field ([UIC-FIELD-3.9](FIELD.md#uic-field-39---external-errors)): it shows them, they block the form's submission, and each clears once its own end changes, while the other end's error stays until a new errors object or its own end changes. The field's control reference is the first thumb's input, so a form's submit validation focuses it and the native behavior's custom validity (UIC-FIELD-3.10) blocks a native submit through it.
 
 Implementation: `src/components/slider/slider-parts.tsx`
 Verification: `src/components/slider/slider.test.tsx`, `e2e/slider.spec.ts`

@@ -330,19 +330,21 @@ describe('Slider', () => {
     expect(thumb).toHaveValue('50');
   });
 
-  it('UIC-SLIDER-3.2 submits under its name, blocks an invalid submit and follows a disabled fieldset', async () => {
+  it('UIC-SLIDER-3.2 submits under its names, blocks an invalid submit and follows a disabled fieldset', async () => {
     const user = userEvent.setup();
-    let submitted: string[] = [];
+    let submitted: string[][] = [];
     const onSubmit = vi.fn((event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
-      submitted = new FormData(event.currentTarget).getAll('price') as string[];
+      const data = new FormData(event.currentTarget);
+      submitted = ['volume', 'price-from', 'price-to'].map((name) => data.getAll(name) as string[]);
     });
     const { rerender } = render(
       <Form aria-label="Filter" validationBehavior="aria" onSubmit={onSubmit}>
         <Slider label="Volume" name="volume" defaultValue={30} />
         <RangeSlider
           label="Price"
-          name="price"
+          startName="price-from"
+          endName="price-to"
           defaultValue={[20, 80]}
           validate={([start]) => (start < 30 ? { severity: 'error', message: 'Too low.' } : null)}
         />
@@ -356,7 +358,7 @@ describe('Slider', () => {
     await user.keyboard('{PageUp}');
     await user.click(screen.getByRole('button', { name: 'Apply' }));
     expect(onSubmit).toHaveBeenCalledTimes(1);
-    expect(submitted).toEqual(['30', '80']);
+    expect(submitted).toEqual([['30'], ['30'], ['80']]);
     rerender(
       <Form aria-label="Filter">
         <Fieldset legend="Sound" isDisabled>
@@ -365,6 +367,28 @@ describe('Slider', () => {
       </Form>,
     );
     expect(screen.getByRole('slider', { name: 'Volume' })).toBeDisabled();
+  });
+
+  it('UIC-SLIDER-3.2 shows the errors a form gives under either end name until that end moves', async () => {
+    const user = userEvent.setup();
+    render(
+      <Form
+        aria-label="Filter"
+        validationErrors={{ 'price-from': 'Too low.', 'price-to': 'Too high.' }}
+      >
+        <RangeSlider
+          label="Price"
+          startName="price-from"
+          endName="price-to"
+          defaultValue={[20, 80]}
+        />
+      </Form>,
+    );
+    expect(screen.getByText('Too low.')).toBeInTheDocument();
+    await user.click(screen.getByRole('slider', { name: 'Minimum Price' }));
+    await user.keyboard('{ArrowRight}');
+    expect(screen.queryByText('Too low.')).not.toBeInTheDocument();
+    expect(screen.getByText('Too high.')).toBeInTheDocument();
   });
 
   it('UIC-SLIDER-3.2 gives the first thumb the custom validity of the native behavior', () => {
@@ -468,7 +492,6 @@ describe('RangeSlider', () => {
     render(
       <RangeSlider
         label="Share"
-        name="share"
         minValue={0}
         maxValue={1}
         step={0.1}
