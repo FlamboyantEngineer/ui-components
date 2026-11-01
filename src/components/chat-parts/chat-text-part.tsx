@@ -7,7 +7,11 @@ import { createCitationOverride } from '../chat-sources/chat-sources.js';
 import { createCodeBlockOverride } from '../code-block/code-block.js';
 import { Markdown, type MarkdownNode } from '../markdown/markdown.js';
 import type { MarkdownNodePlace, MarkdownRenderNode } from '../markdown/markdown-place.js';
-import { RecordLabel, type RecordLabelResolver } from '../record-label/record-label.js';
+import {
+  RecordLabel,
+  type RecordLabelPresentation,
+  type RecordLabelResolver,
+} from '../record-label/record-label.js';
 import { TextMatch } from '../text-match/text-match.js';
 import type {
   ChatCodePart,
@@ -37,17 +41,35 @@ interface ChatTextPartViewProps {
 interface TokenPillProps {
   token: ChatTextToken;
   getReference: RecordLabelResolver | undefined;
+  /** The pill sits inside a link or a task label, where its chip must not be a link. */
+  isInteractivePlace?: boolean | undefined;
 }
 
-/** A token's pill: its label, or a record reference's chip. */
-function TokenPill({ token, getReference }: TokenPillProps) {
+/** How a reference chip shows: the host's presentation, without its link inside another control. */
+function toPresentation(
+  presentation: RecordLabelPresentation | undefined,
+  isInteractivePlace: boolean,
+): RecordLabelPresentation | undefined {
+  if (!presentation || !isInteractivePlace) return presentation;
+  const { href: _href, isExternal: _isExternal, preview: _preview, ...shown } = presentation;
+  return shown;
+}
+
+/**
+ * A token's pill: its label, or a record reference's chip, which is not a link inside a link or a
+ * task label.
+ */
+function TokenPill({ token, getReference, isInteractivePlace = false }: TokenPillProps) {
   const { id, label, recordType } = token;
   return (
     <span {...hooks.slot('token', { kind: token.kind })}>
       {token.kind === 'reference' ? (
         <RecordLabel
           mode="chip"
-          {...getReference?.({ id, label, ...(recordType === undefined ? {} : { recordType }) })}
+          {...toPresentation(
+            getReference?.({ id, label, ...(recordType === undefined ? {} : { recordType }) }),
+            isInteractivePlace,
+          )}
           identifier={label}
         />
       ) : (
@@ -100,7 +122,12 @@ function createTokenOverride({
       return renderNode(node, children, place);
     return pieces.map((piece, at) =>
       typeof piece === 'number' ? (
-        <TokenPill key={at} token={requireDefined(tokens[piece])} getReference={getReference} />
+        <TokenPill
+          key={at}
+          token={requireDefined(tokens[piece])}
+          getReference={getReference}
+          isInteractivePlace={place.isInteractive}
+        />
       ) : (
         <Fragment key={at}>
           {renderNode({ type: 'text', text: piece }, null, place) ?? <TextMatch>{piece}</TextMatch>}

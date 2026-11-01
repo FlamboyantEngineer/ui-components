@@ -59,10 +59,10 @@ Verification: `src/components/chat-parts/chat-text-part.test.tsx`, `src/componen
 
 ### UIC-CHAT-PARTS-2.5 - Record references
 
-A token of kind `reference` (an opaque record `id`, its `label` and an optional host `recordType`) shall show in its pill (`data-kind` `reference`), in both formats and wherever UIC-CHAT-PARTS-2.4 places pills, a [Record Label](RECORD-LABEL.md) chip whose identifier is the label, with what `getReference({ id, label, recordType })` returns for it (its name, icon, link, kind, version, state, preview, or that it is missing or restricted); without `getReference`, or when it returns nothing, the chip shows only the label. The parts never fetch the record, and a link reaches it through the provider's link renderer. The label and the host's values render as text, never as markup.
+A token of kind `reference` (an opaque record `id`, its `label` and an optional host `recordType`) shall show in its pill (`data-kind` `reference`), in both formats and wherever UIC-CHAT-PARTS-2.4 places pills, a [Record Label](RECORD-LABEL.md) chip whose identifier is the label, with what `getReference({ id, label, recordType })` returns for it (its name, icon, link, kind, version, state, preview, or that it is missing or restricted); without `getReference`, or when it returns nothing, the chip shows only the label. The parts never fetch the record, and a link reaches it through the provider's link renderer. Inside a Markdown link or a task item's label the chip drops its link and preview (the host's `href`, `isExternal` and `preview`), so no link nests in another control and server markup hydrates cleanly. The label and the host's values render as text, never as markup.
 
 Implementation: `src/components/chat-parts/chat-text-part.tsx`, `src/components/chat-parts/chat-parts.tsx`
-Verification: `src/components/chat-parts/chat-text-part.test.tsx`, `e2e/chat-parts.spec.ts`
+Verification: `src/components/chat-parts/chat-text-part.test.tsx`, `src/components/chat-parts/chat-reference-places.test.tsx`, `e2e/chat-parts.spec.ts`
 
 ## UIC-CHAT-PARTS-3 - Agent parts
 
