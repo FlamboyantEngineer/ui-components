@@ -1,4 +1,5 @@
 import { expect, test, matrixCell } from './fixtures.js';
+import { expectRowMenuReturnsFocus } from './row-menu.js';
 
 test.describe('Tree lab', () => {
   test('UIC-TREE-1.3 points a collapsed chevron to the inline end right to left', async ({
@@ -72,6 +73,25 @@ test.describe('Tree lab', () => {
     await expect(row('Travel')).toHaveAttribute('aria-expanded', 'true');
     await expect(row('Lisbon.pdf')).toBeVisible();
     await lab.expectAccessible();
+  });
+
+  test('UIC-TREE-3.3 returns focus to a row menu button as its menu closes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tree');
+    const demo = page.locator('[data-lab-selection]');
+    await expectRowMenuReturnsFocus(
+      page,
+      demo.getByRole('button', { name: 'More for Oslo.pdf' }),
+      async () => {
+        await demo.getByRole('row', { name: 'Oslo.pdf' }).focus();
+        await page.keyboard.press('ArrowRight');
+      },
+    );
+    await expect(demo.locator('[data-lab-output]')).toContainText(
+      'Opened: none · Menu: pin Oslo.pdf',
+    );
   });
 
   test('UIC-TREE-1.2 indents rows by their depth', async ({ page, lab }) => {

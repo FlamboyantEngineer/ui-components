@@ -77,7 +77,7 @@ Verification: `src/components/tree/tree.test.tsx`, `src/components/tree/tree-ari
 
 ### UIC-TREE-3.3 - Row actions
 
-`onAction` shall receive the key of the row the reader activates: on press, or on Enter and double-click when selection replaces on press (React Aria). Controls from `renderActions` act on their own without selecting or activating the row.
+`onAction` shall receive the key of the row the reader activates: on press, or on Enter and double-click when selection replaces on press (React Aria). Controls from `renderActions` act on their own without selecting or activating the row, and a menu or popover one of them opened returns focus to it as it closes, not to its row.
 
 Implementation: `src/components/tree/tree.tsx`, `src/components/tree/use-tree-model.ts`, `src/components/tree/tree-aria-keys.ts`
 Verification: `src/components/tree/tree.test.tsx`, `src/components/tree/tree-aria-keys.test.tsx`

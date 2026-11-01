@@ -1,4 +1,5 @@
 import { cellSelector, expect, matrixCell, test } from './fixtures.js';
+import { expectRowMenuReturnsFocus } from './row-menu.js';
 
 test.describe('Card lab', () => {
   test('UIC-CARD-2.1 UIC-CARD-2.2 draws every variant, density and state', async ({
@@ -230,6 +231,26 @@ test.describe('Card lab', () => {
     await expect(demo.locator('[data-lab-output="selected"]')).toHaveText('curry, tart');
     await expect(rows.nth(5).locator('.ui-card')).toHaveAttribute('data-selected', 'true');
     await lab.expectAccessible();
+  });
+
+  test('UIC-CARD-5.4 returns focus to a menu button in a card as its menu closes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('card');
+    const demo = page.locator('[data-lab-demo="grid"]');
+    await expectRowMenuReturnsFocus(
+      page,
+      demo.getByRole('button', { name: 'More for Tomato soup' }),
+      // Tab moves through a card's controls: its selection checkbox, then its menu button.
+      async () => {
+        await demo.getByRole('row').first().focus();
+        await page.keyboard.press('Tab');
+        await page.keyboard.press('Tab');
+      },
+    );
+    await expect(demo.locator('[data-lab-output="menu"]')).toHaveText('pin soup');
+    await expect(demo.locator('[data-lab-output="opened"]')).toHaveText('none');
   });
 
   test('UIC-CARD-5.2 lays cards out as a virtualized waterfall', async ({ page, lab }) => {

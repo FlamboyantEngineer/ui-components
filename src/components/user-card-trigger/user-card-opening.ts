@@ -15,6 +15,7 @@ import {
   useTooltipTriggerState,
 } from '../../primitives/index.js';
 import { HOVER_CARD_CLOSE_DELAY, HOVER_CARD_DELAY } from '../../utils/overlay-defaults.js';
+import { focusRestoreEvent } from '../../utils/keep-control-focus-return.js';
 
 /** `press` opens the card on a click, Enter or Space; `hover` on hover, keyboard focus or long press. */
 export type UserCardTriggerType = 'press' | 'hover';
@@ -167,7 +168,7 @@ export function useCardOpening({
  * reopening its card.
  */
 export function restoreFocus(element: HTMLElement): void {
-  const event = new CustomEvent('react-aria-focus-scope-restore', {
+  const event = new CustomEvent(focusRestoreEvent, {
     bubbles: true,
     cancelable: true,
   });

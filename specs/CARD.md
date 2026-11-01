@@ -153,7 +153,7 @@ Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`
 
 ### UIC-CARD-5.4 - Card actions in a grid
 
-`onAction` on the grid (with the card's key) or on an item, and `href` on an item, shall act on a card as React Aria's grid list does: with toggle selection, Enter or a press opens the card while no card is selected, and selects once some are; so a card collection opens a card without nesting a link inside each card.
+`onAction` on the grid (with the card's key) or on an item, and `href` on an item, shall act on a card as React Aria's grid list does: with toggle selection, Enter or a press opens the card while no card is selected, and selects once some are; so a card collection opens a card without nesting a link inside each card. A menu or popover a control inside a card opened returns focus to that control as it closes, not to the card's row.
 
 Implementation: `src/components/card/card-grid.tsx`
 Verification: `src/components/card/card.test.tsx`

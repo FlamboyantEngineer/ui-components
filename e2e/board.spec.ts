@@ -1,5 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { expect, test, matrixCell } from './fixtures.js';
+import { expectRowMenuReturnsFocus } from './row-menu.js';
 
 const demo = (page: Page, name: string) => page.locator(`[data-lab-demo="${name}"]`);
 const cards = (board: Locator, column: string) =>
@@ -7,6 +8,23 @@ const cards = (board: Locator, column: string) =>
 const titles = (board: Locator) => board.locator('.ui-board__column-title').allTextContents();
 
 test.describe('Board lab', () => {
+  test('UIC-BOARD-1.1 returns focus to a menu button in a card as its menu closes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('board');
+    const board = demo(page, 'card-menus');
+    await expectRowMenuReturnsFocus(
+      page,
+      board.getByRole('button', { name: 'More for Order seeds' }),
+      async () => {
+        await board.getByRole('row', { name: 'Order seeds' }).focus();
+        await page.keyboard.press('ArrowRight');
+      },
+    );
+    await expect(board.locator('[data-lab-output]')).toHaveText('pin seeds');
+  });
+
   test('UIC-BOARD-2.3 UIC-BOARD-3.2 moves typed cards and columns without sharing focus', async ({
     page,
     lab,

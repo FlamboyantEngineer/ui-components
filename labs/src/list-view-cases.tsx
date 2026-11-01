@@ -1,4 +1,3 @@
-import { MoreGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import type { Key, Selection } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
@@ -9,6 +8,7 @@ import {
   type ListViewItemProps,
   type ListViewMove,
 } from '../../src/components/list-row/index.js';
+import { RowMenu } from './row-menu.js';
 
 export const selections = ['none', 'single', 'multiple', 'replace'] as const;
 
@@ -74,9 +74,7 @@ export function SelectionCase({ selection }: { selection: (typeof selections)[nu
           title={item.name}
           meta={item.meta}
           tone={item.id === 'elderberry' ? 'danger' : undefined}
-          trailing={
-            <Button icon={MoreGlyph} size="sm" label={`More about ${item.name} ${selection}`} />
-          }
+          trailing={<RowMenu label={`More about ${item.name} ${selection}`} />}
         />
       )}
     </ListView>

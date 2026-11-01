@@ -13,6 +13,7 @@ import {
   CustomHeaderCard,
   ResizablePane,
 } from './card-collapse-cases.js';
+import { RowMenu } from './row-menu.js';
 
 const variants: CardVariant[] = ['default', 'panel'];
 const densities: Density[] = ['default', 'comfortable', 'compact', 'tight'];
@@ -158,6 +159,7 @@ function ActionDemo() {
 function GridDemo() {
   const [selected, setSelected] = useState<Selection>(new Set(['salad']));
   const [opened, setOpened] = useState('none');
+  const [menu, setMenu] = useState('none');
   const names = selected === 'all' ? ['all'] : [...selected].map(String).sort();
   return (
     <div data-lab-demo="grid" style={{ width: 640 }}>
@@ -172,7 +174,17 @@ function GridDemo() {
         {(recipe) => (
           <CardGridItem textValue={recipe.name}>
             {({ isSelected }) => (
-              <Card title={recipe.name} role="group" isSelected={isSelected}>
+              <Card
+                title={recipe.name}
+                role="group"
+                isSelected={isSelected}
+                actions={
+                  <RowMenu
+                    label={`More for ${recipe.name}`}
+                    onAction={(key) => setMenu(`${key} ${recipe.id}`)}
+                  />
+                }
+              >
                 {recipe.text}
               </Card>
             )}
@@ -181,7 +193,8 @@ function GridDemo() {
       </CardGrid>
       <p>
         Selected: <output data-lab-output="selected">{names.join(', ') || 'none'}</output>. Opened:{' '}
-        <output data-lab-output="opened">{opened}</output>.
+        <output data-lab-output="opened">{opened}</output>. Menu:{' '}
+        <output data-lab-output="menu">{menu}</output>.
       </p>
     </div>
   );
@@ -375,7 +388,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Card grid"
-      description="Arrow keys move between cards in two dimensions; Space or the checkbox selects; Enter opens a card."
+      description="Arrow keys move between cards in two dimensions; Space or the checkbox selects; Enter opens a card. Each card's menu returns focus to its button as it closes."
     >
       <GridDemo />
     </LabSection>

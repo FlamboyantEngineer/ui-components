@@ -1,7 +1,7 @@
 'use client';
 
 import { BellSlashGlyph } from '../../core/glyphs.js';
-import { useEffect, useRef, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { GridListItem, Text, useLocale } from '../../primitives/index.js';
 import { useNow, useTimeZone } from '../../core/clock.js';
 import { useClockTick } from '../../core/clock-tick.js';
@@ -21,6 +21,7 @@ import { Badge } from '../badge/badge.js';
 import { Icon } from '../icon/icon.js';
 import { TextMatch } from '../text-match/text-match.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { keepControlFocusReturn } from '../../utils/keep-control-focus-return.js';
 
 /** One person in a conversation. */
 export interface ChatListParticipant extends AvatarIdentity {
@@ -76,31 +77,6 @@ export const listHooks = createHooks('chat-list', [
   'empty',
   'skeleton',
 ]);
-
-// The event React Aria's FocusScope sends before it returns focus to an element, as a closing menu
-// does to its trigger. A collection cancels it to focus its row instead.
-const focusRestoreEvent = 'react-aria-focus-scope-restore';
-
-/**
- * The host's controls in a row. A menu or popover one of them opened returns focus to it when it
- * closes, instead of to the row: the list never hears of that return, which it would otherwise
- * take over.
- */
-function ChatListRowActions({ children }: { children: ReactNode }) {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const element = ref.current;
-    if (!element) return;
-    const keep = (event: Event) => event.stopPropagation();
-    element.addEventListener(focusRestoreEvent, keep);
-    return () => element.removeEventListener(focusRestoreEvent, keep);
-  }, []);
-  return (
-    <div ref={ref} {...listHooks.slot('actions')}>
-      {children}
-    </div>
-  );
-}
 
 /**
  * The time as the row shows it, for the row's name: the stable absolute text on the server and while
@@ -202,7 +178,11 @@ export function ChatListRow({ conversation, renderActions, ...timeOptions }: Cha
           className={listHooks.slotClass('unread')}
         />
       ) : null}
-      {isEmptyNode(actions) ? null : <ChatListRowActions>{actions}</ChatListRowActions>}
+      {isEmptyNode(actions) ? null : (
+        <div ref={keepControlFocusReturn} {...listHooks.slot('actions')}>
+          {actions}
+        </div>
+      )}
     </GridListItem>
   );
 }

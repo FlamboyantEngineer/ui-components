@@ -4,6 +4,7 @@ import { userEvent } from '@testing-library/user-event';
 import { createRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { expectRowMenuReturnsFocus, RowMenuButton } from '../../../test/menu-fixtures.js';
 import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage } from '../../core/storage.js';
 import { Button } from '../button/button.js';
@@ -303,6 +304,22 @@ describe('Tree', () => {
     expect(row('Nuts')).not.toHaveAttribute('data-selected');
     expect(screen.getByRole('treegrid')).toHaveAttribute('data-selection-mode', 'single');
     expectHooksMatchSpec(container, 'TREE');
+  });
+
+  it('UIC-TREE-3.3 returns focus to a row control as its menu closes', async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    render(
+      <FoodTree
+        onAction={onAction}
+        renderActions={(item) => <RowMenuButton label={`More for ${item.name}`} />}
+      />,
+    );
+    await expectRowMenuReturnsFocus(user, 'More for Nuts', async () => {
+      act(() => row('Nuts').focus());
+      await user.keyboard('{ArrowRight}');
+    });
+    expect(onAction).not.toHaveBeenCalled();
   });
 
   it('UIC-TREE-3.3 runs onAction for the activated row but not for its own controls', async () => {
