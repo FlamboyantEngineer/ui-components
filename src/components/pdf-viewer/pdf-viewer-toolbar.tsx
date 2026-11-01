@@ -21,9 +21,7 @@ import { pdfZoomLevels } from './pdf-zoom.js';
 import { PdfViewerSearch } from './pdf-viewer-search.js';
 import type { PdfSearchControls, PdfSearchState } from './use-pdf-search.js';
 import type { PdfZoomState } from './use-pdf-zoom.js';
-import { isHTMLElement } from '../../utils/is-element.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
-import { isComposingKey } from '../../utils/is-composing-key.js';
 
 /** The document commands of the toolbar's menu. */
 export interface PdfCommands {
@@ -69,25 +67,6 @@ const fitModes: readonly PdfFitMode[] = [
   { zoom: 'page-width', glyph: FitWidthGlyph, stringKey: 'fitWidth' },
   { zoom: 'page-fit', glyph: FitPageGlyph, stringKey: 'fitPage' },
 ];
-
-/**
- * The toolbar moves focus with the left and right arrow keys; a text field inside it keeps them for
- * its caret, except at the ends of its text, and every arrow while an input method composes in it.
- */
-function keepCaretKeys(event: KeyboardEvent<HTMLElement>) {
-  const field = event.target;
-  if (!isHTMLElement(field, 'input') || field.selectionStart === null) return;
-  if (event.key.startsWith('Arrow') && isComposingKey(event.nativeEvent)) {
-    event.stopPropagation();
-    return;
-  }
-  const { selectionStart, selectionEnd, value } = field;
-  const atStart = selectionStart === 0 && selectionEnd === 0;
-  const atEnd = selectionStart === value.length && selectionEnd === value.length;
-  if ((event.key === 'ArrowLeft' && !atStart) || (event.key === 'ArrowRight' && !atEnd)) {
-    event.stopPropagation();
-  }
-}
 
 /** The find state a caller's controls receive, without the viewer's highlight bookkeeping. */
 function pickSearchControls(search: PdfSearchControls): PdfSearchControls {
@@ -198,7 +177,7 @@ export function PdfViewerToolbar({
 }: PdfViewerToolbarProps) {
   const strings = useUiStrings();
   return (
-    <div {...hooks.slot('toolbar')} onKeyDownCapture={keepCaretKeys} onKeyDown={onKeyDown}>
+    <div {...hooks.slot('toolbar')} onKeyDown={onKeyDown}>
       <ToolbarScroller aria-label={strings.controlsFor(label)}>
         {isEmptyNode(leadingActions) ? null : (
           <div {...hooks.slot('leading-actions')}>{leadingActions}</div>

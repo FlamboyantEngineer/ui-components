@@ -94,10 +94,10 @@ Verification: `src/components/layout/wrappers.test.tsx`
 
 ### UIC-LAYOUT-3.3 - Toolbar row
 
-`ToolbarRow` shall line up controls in a centred row. Its root `<div>` carries the row's hooks and holds one strip (`ui-toolbar-row__strip`) that holds the controls in every mode and carries the row's role and name; the stylesheet lays the controls out in the strip. With `role="toolbar"` (the default) the strip is a toolbar: arrow keys move focus between its controls and Tab leaves the row; `role="group"` renders a group whose controls are each a tab stop, and `role="none"` adds no role. `variant` publishes `data-variant`: `plain` (the default) or `surface`, a row the stylesheet draws on a surface.
+`ToolbarRow` shall line up controls in a centred row. Its root `<div>` carries the row's hooks and holds one strip (`ui-toolbar-row__strip`) that holds the controls in every mode and carries the row's role and name; the stylesheet lays the controls out in the strip. With `role="toolbar"` (the default) the strip is a toolbar: arrow keys move focus between its controls and Tab leaves the row; inside a text control in the row (a text input, a slider or select, a text area, editable content, or an element with role `textbox` or `combobox`) the arrow keys move the caret and move focus only from the end of the text they point to, with no modifier held (Shift, Alt, Control or Meta arrows stay with the control) and no input method composing; a field among several in a group, such as the cells of a `PinInput`, moves between them first. `role="group"` renders a group whose controls are each a tab stop, and `role="none"` adds no role. `variant` publishes `data-variant`: `plain` (the default) or `surface`, a row the stylesheet draws on a surface.
 
-Implementation: `src/components/layout/toolbar-row.tsx`, `labs/reference/layout.css`
-Verification: `src/components/layout/toolbar-row.test.tsx`, `e2e/layout.spec.ts`
+Implementation: `src/components/layout/toolbar-row.tsx`, `labs/reference/layout.css`, `src/utils/toolbar-caret-keys.tsx`
+Verification: `src/components/layout/toolbar-row.test.tsx`, `e2e/layout.spec.ts`, `src/utils/toolbar-caret-keys.test.tsx`
 
 ### UIC-LAYOUT-3.4 - Status bar
 

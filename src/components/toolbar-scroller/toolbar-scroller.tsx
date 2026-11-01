@@ -1,5 +1,6 @@
 'use client';
 
+import { renderCaretKeyToolbar } from '../../utils/toolbar-caret-keys.js';
 import { useMemo, type ReactNode } from 'react';
 import { Toolbar } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
@@ -154,6 +155,7 @@ export function ToolbarScroller<T extends ToolbarScrollerItem = ToolbarScrollerI
           aria-label={ariaLabel}
           aria-labelledby={ariaLabelledBy}
           onScroll={isMenu ? undefined : scroll.syncOverflow}
+          render={renderCaretKeyToolbar}
         >
           {shown && renderItem
             ? shown.map((item) => (

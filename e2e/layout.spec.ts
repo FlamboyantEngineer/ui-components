@@ -333,7 +333,7 @@ test.describe('Layout lab', () => {
     await lab.expectAccessible('[data-lab-section="Toolbar overflow"]');
   });
 
-  test('UIC-LAYOUT-2.7 UIC-LAYOUT-3.8 keeps drafts and focus while the presentation changes', async ({
+  test('UIC-LAYOUT-2.7 UIC-LAYOUT-3.3 UIC-LAYOUT-3.8 keeps drafts and focus while the presentation changes', async ({
     page,
     lab,
   }) => {
@@ -361,6 +361,12 @@ test.describe('Layout lab', () => {
     await page.keyboard.press('End');
     await page.keyboard.type('!');
     await expect(search).toHaveValue('toolbar draft!');
+    // The arrows move the caret inside the field, and leave for the next tool only from its end.
+    await page.keyboard.press('ArrowLeft');
+    await expect(search).toBeFocused();
+    await page.keyboard.press('End');
+    await page.keyboard.press('ArrowRight');
+    await expect(tools.getByRole('button', { name: 'Duplicate' })).toBeFocused();
     await demo.getByRole('button', { name: 'Hide dividers' }).click();
     await expect(note).toHaveValue('stack draft');
   });
