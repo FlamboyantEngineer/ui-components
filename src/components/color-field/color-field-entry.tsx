@@ -27,6 +27,8 @@ interface ColorEntryProps {
   color: string | null;
   format: ColorFieldFormat;
   valueFormat: ColorFieldFormat;
+  /** Writes and stores the colour with its alpha. */
+  allowsTransparency: boolean;
   placeholder: string;
   /** The typed input's native text-entry attributes. */
   textInput: Omit<ColorFieldTextInputProps, 'placeholder'>;
@@ -79,6 +81,7 @@ export function ColorEntry({
   color,
   format,
   valueFormat,
+  allowsTransparency,
   placeholder,
   textInput,
 }: ColorEntryProps) {
@@ -102,7 +105,7 @@ export function ColorEntry({
   const isResetting = useNativeReset(input, () => setDraft(null));
   const type = (text: string) => {
     if (isResetting()) return;
-    const typed = storeColorText(text, valueFormat);
+    const typed = storeColorText(text, valueFormat, allowsTransparency);
     const isCleared = typed === null && !text.trim() && !state.isRequired;
     const value = typed !== null || isCleared ? typed : state.value;
     if (value !== state.value) state.setValue(value);
@@ -133,7 +136,7 @@ export function ColorEntry({
         {...toAriaControlProps(control)}
         className={hooks.slotClass('entry')}
         spellCheck={toSpellCheckAttribute(textInput.spellCheck)}
-        value={current?.text ?? (color ? formatColor(color, format) : '')}
+        value={current?.text ?? (color ? formatColor(color, format, allowsTransparency) : '')}
         onChange={type}
         onBlur={() => finish({ shouldCommit: false })}
         onKeyDown={(event) => {

@@ -35,11 +35,19 @@ test.describe('Color Field lab', () => {
     await readOnly.click();
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(cell(page, 'disabled').locator('.ui-color-field__trigger')).toBeDisabled();
-    await expect(matrixCell(page, 'format=rgb').locator('.ui-color-field__value')).toHaveText(
+    const formatValue = (address: string) =>
+      matrixCell(page, address).locator('.ui-color-field__value');
+    await expect(formatValue('format=rgb transparency=off colour=opaque')).toHaveText(
       'rgb(51, 102, 153)',
     );
-    await expect(matrixCell(page, 'format=hsb').locator('.ui-color-field__value')).toHaveText(
+    await expect(formatValue('format=hsb transparency=off colour=opaque')).toHaveText(
       'hsb(210, 66.67%, 60%)',
+    );
+    await expect(formatValue('format=rgb transparency=off colour=translucent')).toHaveText(
+      'rgba(51, 102, 153, 0.75)',
+    );
+    await expect(formatValue('format=hex transparency=allowed colour=opaque')).toHaveText(
+      '#336699FF',
     );
     await lab.expectAccessible();
   });
@@ -140,15 +148,17 @@ test.describe('Color Field lab', () => {
     lab,
   }) => {
     await lab.open('color-field');
-    await expect(matrixCell(page, 'format=hexa').locator('.ui-color-field__value')).toHaveText(
-      '#336699BF',
-    );
+    await expect(
+      matrixCell(page, 'format=hex transparency=allowed colour=translucent').locator(
+        '.ui-color-field__value',
+      ),
+    ).toHaveText('#336699BF');
     const formats = field(page, 'formats');
     const trigger = formats.locator('.ui-color-field__trigger');
     await expect(trigger).toHaveAccessibleName('Overlay rgba(51, 102, 153, 0.5)');
     await trigger.click();
     const dialog = page.getByRole('dialog', { name: 'Overlay' });
-    await expect(dialog.getByRole('radio', { name: 'RGBA' })).toBeChecked();
+    await expect(dialog.getByRole('radio', { name: 'RGB' })).toBeChecked();
     const channels = dialog.locator('.ui-color-field__channel');
     await expect(channels).toHaveCount(4);
     const boxes = await channels.evaluateAll((nodes) =>
@@ -161,15 +171,48 @@ test.describe('Color Field lab', () => {
     await red.fill('255');
     await red.press('Enter');
     await expect(trigger).toHaveAccessibleName('Overlay rgba(255, 102, 153, 0.5)');
-    await dialog.getByRole('radio', { name: 'HSLA' }).click();
-    await expect(output(page, 'Format')).toHaveText('hsla');
+    await dialog.getByRole('radio', { name: 'HSL' }).click();
+    await expect(output(page, 'Format')).toHaveText('hsl');
+    await expect(trigger).toHaveAccessibleName('Overlay hsla(340, 100%, 70%, 0.5)');
     await expect(dialog.getByRole('textbox', { name: 'Lightness' })).toBeVisible();
     await dialog.getByRole('radio', { name: 'HEX', exact: true }).click();
-    await expect(dialog.getByRole('slider', { name: 'Alpha' })).toHaveCount(0);
+    // Transparency is the field's, so the alpha slider stays through the switch.
+    await expect(dialog.getByRole('slider', { name: 'Alpha' })).toBeVisible();
     await expect(dialog.getByRole('textbox', { name: 'Hex color' })).toHaveValue('#FF6699');
+    await expect(dialog.getByRole('textbox', { name: 'Alpha' })).toHaveValue('50%');
     await page.keyboard.press('Escape');
     await expect(output(page, 'Format committed')).toHaveText('#ff669980');
-    await expect(trigger).toHaveAccessibleName('Overlay #FF6699');
+    await expect(trigger).toHaveAccessibleName('Overlay #FF669980');
+  });
+
+  test('UIC-COLOR-FIELD-3.1 adds the alpha slider only with transparency, over a checkerboard', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('color-field');
+    const opaque = field(page, 'opaque').locator('.ui-color-field__trigger');
+    await opaque.click();
+    let dialog = page.getByRole('dialog', { name: 'Stroke' });
+    await expect(dialog.getByRole('slider', { name: 'Hue' })).toBeVisible();
+    await expect(dialog.getByRole('slider', { name: 'Alpha' })).toHaveCount(0);
+    await expect(dialog.getByRole('textbox', { name: 'Alpha' })).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    const translucent = field(page, 'transparency').locator('.ui-color-field__trigger');
+    await expect(translucent).toHaveAccessibleName('Fill #336699FF');
+    await translucent.click();
+    dialog = page.getByRole('dialog', { name: 'Fill' });
+    const alpha = dialog.getByRole('slider', { name: 'Alpha' });
+    await expect(alpha).toBeVisible();
+    const slider = dialog.locator('.ui-color-field__slider[data-channel="alpha"]');
+    expect(await slider.evaluate((node) => getComputedStyle(node).backgroundImage)).toContain(
+      'conic-gradient',
+    );
+    await alpha.focus();
+    for (let index = 0; index < 5; index += 1) await page.keyboard.press('ArrowLeft');
+    await page.keyboard.press('Escape');
+    await expect(output(page, 'Transparency committed')).toHaveText('#336699f2');
+    await expect(translucent).toHaveAccessibleName('Fill #336699F2');
+    await lab.expectAccessible();
   });
 
   test('UIC-COLOR-FIELD-3.2 labels each channel and steps the one under the wheel', async ({

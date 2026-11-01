@@ -10,16 +10,7 @@ import {
   type FieldStateName,
 } from './field-states.js';
 
-const formats = [
-  'hex',
-  'hexa',
-  'rgb',
-  'rgba',
-  'hsl',
-  'hsla',
-  'hsb',
-  'hsba',
-] as const satisfies readonly ColorFieldFormat[];
+const formats = ['hex', 'rgb', 'hsl', 'hsb'] as const satisfies readonly ColorFieldFormat[];
 // The first colour comes back at the end: each place is its own swatch.
 const swatches = ['#cc3300', '#e69500', '#2e8b57', '#336699', '#7b4fa0', '#4d4d4d', '#cc3300'];
 
@@ -64,7 +55,7 @@ function Picking() {
 }
 
 function Formats() {
-  const [format, setFormat] = useState<ColorFieldFormat>('rgba');
+  const [format, setFormat] = useState<ColorFieldFormat>('rgb');
   const [committed, setCommitted] = useState('none');
   return (
     <>
@@ -73,8 +64,9 @@ function Formats() {
         defaultValue="rgba(51, 102, 153, 0.5)"
         format={format}
         onFormatChange={setFormat}
-        formats={['hex', 'hexa', 'rgb', 'rgba', 'hsla']}
-        description="Switch the format in the picker; the value keeps its alpha as #rrggbbaa. Each input is labelled by its channel's initial; roll the wheel over a channel to step it."
+        formats={['hex', 'rgb', 'hsl']}
+        allowsTransparency
+        description="Switch the format in the picker; with transparency allowed, the value keeps its alpha as #rrggbbaa. Each input is labelled by its channel's initial; roll the wheel over a channel to step it."
         onCommit={(value) => setCommitted(value ?? 'empty')}
         data-lab-field="formats"
       />
@@ -90,6 +82,28 @@ function Formats() {
       />
       <LabOutput name="Format">{format}</LabOutput>
       <LabOutput name="Format committed">{committed}</LabOutput>
+    </>
+  );
+}
+
+function Transparency() {
+  const [committed, setCommitted] = useState('none');
+  return (
+    <>
+      <ColorField
+        label="Fill"
+        defaultValue="#336699"
+        allowsTransparency
+        onCommit={(value) => setCommitted(value ?? 'empty')}
+        data-lab-field="transparency"
+      />
+      <ColorField
+        label="Stroke"
+        defaultValue="#336699"
+        onCommit={(value) => setCommitted(value ?? 'empty')}
+        data-lab-field="opaque"
+      />
+      <LabOutput name="Transparency committed">{committed}</LabOutput>
     </>
   );
 }
@@ -196,18 +210,29 @@ mountLab(
     </LabSection>
     <LabSection
       title="Formats"
-      description="The colour text in each format, with or without alpha."
+      description="The colour text in each format, with transparency allowed or not, for an opaque and a translucent colour. A translucent colour keeps and shows its alpha either way."
     >
       <StateMatrix
-        axes={{ format: formats }}
-        render={({ format }) => (
+        axes={{
+          format: formats,
+          transparency: ['allowed', 'off'],
+          colour: ['translucent', 'opaque'],
+        }}
+        render={({ format, transparency, colour }) => (
           <ColorField
             label={`Accent, ${format}`}
             format={format}
-            defaultValue="rgba(51, 102, 153, 0.75)"
+            allowsTransparency={transparency === 'allowed'}
+            defaultValue={colour === 'opaque' ? '#336699' : 'rgba(51, 102, 153, 0.75)'}
           />
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Transparency"
+      description="With allowsTransparency the picker adds an alpha slider over a checkerboard and an Alpha input; without it the picker edits the colour alone and never changes its alpha."
+    >
+      <Transparency />
     </LabSection>
     <LabSection
       title="Format choice and stored format"

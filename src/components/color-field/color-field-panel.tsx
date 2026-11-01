@@ -8,7 +8,7 @@ import { ColorSwatchPicker, ColorSwatchPickerItem } from '../color-swatch/color-
 import type { FieldState } from '../field/field.js';
 import { ColorChannelInputs, ColorFormatChoice } from './color-field-channels.js';
 import { ColorFieldEyeDropper } from './color-field-eye-dropper.js';
-import { hasAlpha, type ColorFieldFormat } from './color-values.js';
+import type { ColorFieldFormat } from './color-values.js';
 import { DEFAULT_DROPDOWN_OFFSET } from '../../utils/overlay-defaults.js';
 import { colorFieldHooks } from './color-field-hooks.js';
 
@@ -18,6 +18,8 @@ interface ColorFieldPanelProps {
   format: ColorFieldFormat;
   formats: readonly ColorFieldFormat[];
   onFormatChange: (format: ColorFieldFormat) => void;
+  /** Adds the alpha slider and input. */
+  allowsTransparency: boolean;
   /** Preset colours, offered as swatches. */
   swatches: readonly string[];
   /** Draws the eye dropper where the browser has one. */
@@ -38,8 +40,8 @@ function ChannelSlider({ channel }: { channel: 'hue' | 'alpha' }) {
 
 /**
  * The picker popover: the format choice, a saturation and brightness area, the hue slider (and the
- * alpha slider for an alpha format), the format's inputs, the eye dropper, the preset swatches and
- * Clear, which closes the picker once the colour is gone.
+ * alpha slider while transparency is allowed), the format's inputs, the eye dropper, the preset
+ * swatches and Clear, which closes the picker once the colour is gone.
  */
 export function ColorFieldPanel({
   label,
@@ -47,6 +49,7 @@ export function ColorFieldPanel({
   format,
   formats,
   onFormatChange,
+  allowsTransparency,
   swatches,
   allowsEyeDropper,
 }: ColorFieldPanelProps) {
@@ -75,8 +78,8 @@ export function ColorFieldPanel({
                 <ColorThumb {...hooks.slot('thumb')} />
               </ColorArea>
               <ChannelSlider channel="hue" />
-              {hasAlpha(format) ? <ChannelSlider channel="alpha" /> : null}
-              <ColorChannelInputs format={format} />
+              {allowsTransparency ? <ChannelSlider channel="alpha" /> : null}
+              <ColorChannelInputs format={format} allowsTransparency={allowsTransparency} />
               {swatches.length > 0 ? (
                 <ColorSwatchPicker className={hooks.slotClass('swatches')} size="sm">
                   {swatches.map((swatch, index) => (

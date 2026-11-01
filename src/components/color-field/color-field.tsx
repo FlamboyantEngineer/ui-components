@@ -21,7 +21,7 @@ import { ColorFieldPanel } from './color-field-panel.js';
 import { colorFieldHooks as hooks } from './color-field-hooks.js';
 import {
   formatColor,
-  hasAlpha,
+  keepAlpha,
   toColorText,
   toStoredValue,
   type ColorFieldFormat,
@@ -34,10 +34,7 @@ export type ColorFieldTextInputProps = Pick<
 >;
 
 export interface ColorFieldProps extends FieldInputProps<string | null>, ColorFieldTextInputProps {
-  /**
-   * How the colour is written beside the swatch and edited in the picker (controlled). An alpha
-   * format (`hexa`, `rgba`, `hsla`, `hsba`) adds an alpha slider and input.
-   */
+  /** How the colour is written beside the swatch and edited in the picker (controlled). */
   format?: ColorFieldFormat | undefined;
   /** The initial format when uncontrolled. Defaults to `hex`. */
   defaultFormat?: ColorFieldFormat | undefined;
@@ -46,10 +43,16 @@ export interface ColorFieldProps extends FieldInputProps<string | null>, ColorFi
   /** The formats the picker offers to switch between; two or more draw a format choice. */
   formats?: readonly ColorFieldFormat[] | undefined;
   /**
-   * How the value is stored. Defaults to lowercase hex: `#rrggbb`, or `#rrggbbaa` while the format
-   * has alpha.
+   * How the value is stored. Defaults to lowercase hex: `#rrggbb`, or `#rrggbbaa` with alpha (while
+   * transparency is allowed or the colour is translucent).
    */
   valueFormat?: ColorFieldFormat | undefined;
+  /**
+   * Adds an alpha slider and an alpha input to the picker, and writes and stores the colour with its
+   * alpha (`#rrggbbaa`, `rgba()`). Without it the picker edits the colour alone, and a translucent
+   * value keeps and shows its alpha.
+   */
+  allowsTransparency?: boolean | undefined;
   /** Preset colours the picker offers as swatches. */
   swatches?: readonly string[] | undefined;
   /** Adds a picker button that samples a colour from the screen, where the browser can. */
@@ -110,11 +113,27 @@ function ColorTrigger({ control, state, color, text }: ColorTriggerProps) {
 }
 
 /**
+ * Whether the picker is open: it opens only while the field is editable, closes when the field is
+ * locked, and commits the picked colour as it closes.
+ */
+function usePickerOpen(state: FieldState<string | null>) {
+  const [isOpen, setOpen] = useState(false);
+  const isEditable = !state.isReadOnly && !state.isDisabled;
+  if (isOpen && !isEditable) setOpen(false);
+  const changeOpen = (next: boolean) => {
+    if (next && !isEditable) return;
+    setOpen(next);
+    if (!next) state.commit();
+  };
+  return { isOpen, changeOpen };
+}
+
+/**
  * A field for a colour value, stored as lowercase hex (or in `valueFormat`) or `null`. Its trigger
  * shows a swatch and the colour text (or, with `allowsTyping`, a swatch button and a text input) and
- * opens a picker: a format choice, a saturation and brightness area, hue and alpha sliders, the
- * format's inputs, an eye dropper, preset swatches and, unless required, a Clear button. The picked
- * colour commits when the picker closes. With `name`, a hidden input submits the stored value.
+ * opens a picker: a format choice, a saturation and brightness area, a hue slider (and, with
+ * `allowsTransparency`, an alpha slider), the format's inputs, an eye dropper, preset swatches and,
+ * unless required, a Clear button. The picked colour commits when the picker closes. With `name`, a hidden input submits the stored value.
  */
 export function ColorField({
   format,
@@ -125,6 +144,7 @@ export function ColorField({
   swatches = [],
   allowsEyeDropper = false,
   allowsTyping = false,
+  allowsTransparency = false,
   placeholder,
   autoComplete,
   inputMode,
@@ -136,17 +156,10 @@ export function ColorField({
   const check = createColorCheck(strings.colorUnreadable);
   const { state, field } = useFieldControl(props, { initialValue: null, emptyValue: null, check });
   const [shownFormat, setFormat] = useControllableState(format, defaultFormat, onFormatChange);
-  const storedFormat = valueFormat ?? (hasAlpha(shownFormat) ? 'hexa' : 'hex');
+  const storedFormat = valueFormat ?? 'hex';
   const color = toColorText(state.value);
   const shownPlaceholder = placeholder ?? strings.noColor;
-  const [isOpen, setOpen] = useState(false);
-  const isEditable = !state.isReadOnly && !state.isDisabled;
-  if (isOpen && !isEditable) setOpen(false);
-  const changeOpen = (next: boolean) => {
-    if (next && !isEditable) return;
-    setOpen(next);
-    if (!next) state.commit();
-  };
+  const picker = usePickerOpen(state);
   return (
     <Field
       {...field}
@@ -157,9 +170,12 @@ export function ColorField({
       {(control) => (
         <ColorPicker
           value={color ?? emptyPickerColor}
-          onChange={(next) => state.setValue(toStoredValue(next, storedFormat))}
+          onChange={(next) => {
+            const picked = allowsTransparency ? next : keepAlpha(next, color);
+            state.setValue(toStoredValue(picked, storedFormat, allowsTransparency));
+          }}
         >
-          <DialogTrigger isOpen={isOpen} onOpenChange={changeOpen}>
+          <DialogTrigger isOpen={picker.isOpen} onOpenChange={picker.changeOpen}>
             {allowsTyping ? (
               <ColorEntry
                 control={control}
@@ -168,6 +184,7 @@ export function ColorField({
                 color={color}
                 format={shownFormat}
                 valueFormat={storedFormat}
+                allowsTransparency={allowsTransparency}
                 placeholder={shownPlaceholder}
                 textInput={{ autoComplete, inputMode, spellCheck, enterKeyHint }}
               />
@@ -176,7 +193,9 @@ export function ColorField({
                 control={control}
                 state={state}
                 color={color}
-                text={color ? formatColor(color, shownFormat) : shownPlaceholder}
+                text={
+                  color ? formatColor(color, shownFormat, allowsTransparency) : shownPlaceholder
+                }
               />
             )}
             <ColorFieldPanel
@@ -185,6 +204,7 @@ export function ColorField({
               format={shownFormat}
               formats={formats}
               onFormatChange={setFormat}
+              allowsTransparency={allowsTransparency}
               swatches={swatches}
               allowsEyeDropper={allowsEyeDropper}
             />

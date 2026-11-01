@@ -22,7 +22,8 @@ describe('ColorField formats and channels', () => {
     render(
       <ColorField
         label="Tint"
-        format="rgba"
+        format="rgb"
+        allowsTransparency
         defaultValue="rgba(51, 102, 153, 0.5)"
         onChange={onChange}
       />,
@@ -48,7 +49,8 @@ describe('ColorField formats and channels', () => {
     render(
       <ColorField
         label="Tint"
-        format="rgba"
+        format="rgb"
+        allowsTransparency
         defaultValue="rgba(51, 102, 153, 0.5)"
         onChange={onChange}
       />,
@@ -81,6 +83,20 @@ describe('ColorField formats and channels', () => {
     ).toHaveTextContent('#Hex color');
     fireEvent.wheel(hex, { deltaY: -100 });
     expect(hex).toHaveValue('#336699');
+  });
+
+  it('UIC-COLOR-FIELD-3.1 keeps a translucent value without transparency editing', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<ColorField label="Stroke" defaultValue="#33669980" onChange={onChange} />);
+    expect(trigger()).toHaveAccessibleName('Stroke #33669980');
+    const dialog = await openPicker(user);
+    expect(within(dialog).queryByRole('slider', { name: 'Alpha' })).not.toBeInTheDocument();
+    expect(within(dialog).queryByRole('textbox', { name: 'Alpha' })).not.toBeInTheDocument();
+    const hex = within(dialog).getByRole('textbox', { name: 'Hex color' });
+    await user.clear(hex);
+    await user.type(hex, 'FF0000{Enter}');
+    expect(onChange).toHaveBeenLastCalledWith('#ff000080');
   });
 
   it('UIC-COLOR-FIELD-3.2 edits the channels of the format as numbers', async () => {
@@ -125,17 +141,18 @@ describe('ColorField formats and channels', () => {
       <ColorField
         label="Accent"
         defaultValue="#336699"
-        formats={['hex', 'rgb', 'hsla']}
+        formats={['hex', 'rgb', 'hsl']}
+        allowsTransparency
         onFormatChange={onFormatChange}
       />,
     );
-    expect(trigger()).toHaveAccessibleName('Accent #336699');
+    expect(trigger()).toHaveAccessibleName('Accent #336699FF');
     const dialog = await openPicker(user);
     const choice = within(dialog).getByRole('radiogroup', { name: 'Color format' });
     expect(choice).toHaveClass('ui-color-field__format', 'ui-segmented-choice');
     expect(within(choice).getByRole('radio', { name: 'HEX' })).toBeChecked();
-    await user.click(within(choice).getByRole('radio', { name: 'HSLA' }));
-    expect(onFormatChange).toHaveBeenCalledWith('hsla');
+    await user.click(within(choice).getByRole('radio', { name: 'HSL' }));
+    expect(onFormatChange).toHaveBeenCalledWith('hsl');
     expect(trigger()).toHaveAccessibleName('Accent hsla(210, 50%, 40%, 1)');
     expect(within(dialog).getByRole('textbox', { name: 'Lightness' })).toBeInTheDocument();
     expect(within(dialog).getByRole('slider', { name: 'Alpha' })).toBeInTheDocument();
