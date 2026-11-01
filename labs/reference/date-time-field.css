@@ -367,7 +367,16 @@
   text-decoration: none;
 }
 
-.ui-date-time-field__calendar-cell[data-unavailable] {
+/*
+ * An unavailable day is faded and hatched, so it stays apart from the days a range being chosen
+ * cannot reach (data-disabled alone), which are only muted and return once the range is picked.
+ */
+.ui-date-time-field__calendar-cell[data-unavailable]:not([data-outside-month]) {
+  opacity: var(--ref-disabled-opacity);
+  background-image: repeating-linear-gradient(135deg, transparent 0 4px, var(--ref-border) 4px 5px);
+}
+
+.ui-date-time-field__calendar-cell[data-unavailable][data-outside-month] {
   opacity: var(--ref-disabled-opacity);
 }
 
