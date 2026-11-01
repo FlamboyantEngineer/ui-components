@@ -93,6 +93,9 @@ export function RecordHeader({
           {...hooks.slot('title')}
         >
           <InlineEdit
+            // Each record edits its own title: a draft, a save or a failure never carries over to
+            // the next record a reused header shows.
+            key={identifier}
             label={strings.recordTitle}
             value={title}
             onSave={onTitleChange}

@@ -61,4 +61,25 @@ test.describe('Record Header lab', () => {
     await expect(demo.locator('[data-lab-output="log"]')).toHaveText('Last action: Edit details');
     await lab.expectAccessible();
   });
+
+  test('UIC-RECORD-HEADER-1.3 keeps a rename with its record when the header moves on', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('record-header');
+    const demo = page.locator('[data-lab-demo="requirement"]');
+    const title = demo.locator('.ui-record-header__title');
+    await title.getByRole('button', { name: /^Edit Title/ }).click();
+    await page.keyboard.press('ControlOrMeta+a');
+    await page.keyboard.type('Rack for rye');
+    await page.keyboard.press('Enter');
+    await demo.getByRole('button', { name: 'Show REQ-43' }).click();
+    await expect(demo.locator('.ui-record-header__label')).toHaveText('REQ-43');
+    await expect(title.locator('.ui-inline-edit')).not.toHaveAttribute('data-pending');
+    await expect(title.locator('.ui-inline-edit__value')).toHaveText(
+      'Proofing basket lined with linen',
+    );
+    await demo.getByRole('button', { name: 'Show REQ-42' }).click();
+    await expect(title.locator('.ui-inline-edit__value')).toHaveText('Rack for rye');
+  });
 });
