@@ -43,7 +43,7 @@ Verification: `src/components/segmented-bar/segmented-bar.test.tsx`, `e2e/segmen
 
 ### UIC-SEGMENTED-BAR-1.6 - Sizes
 
-`size` shall publish `data-size`: `sm`, `md` (the default) or `lg`. The reference sheet draws 4, 8 and 12 pixel tracks.
+`size` shall publish `data-size`: `sm`, `md` (the default), `lg`, `xl`, `2xl` or `3xl`. `SegmentedBarSize` is the bar's own type: `xl`, `2xl` and `3xl` go past the shared `Size` scale for a bar or ring shown as a figure, and no other component takes them. The reference sheet draws 4, 8, 12, 16, 20 and 24 pixel tracks and 16, 24, 32, 48, 64 and 96 pixel rings (donut and pie strokes scale with the ring), and at `xl` and above draws the label, total and legend larger, the `3xl` label larger still.
 
 Implementation: `src/components/segmented-bar/segmented-bar.tsx`, `labs/reference/segmented-bar.css`
 Verification: `src/components/segmented-bar/segmented-bar.test.tsx`, `e2e/segmented-bar.spec.ts`
@@ -75,7 +75,7 @@ Verification: `src/components/segmented-bar/segmented-bar.test.tsx`
 
 ### UIC-SEGMENTED-BAR-3.1 - Circular shares
 
-shape shall select linear (default), donut or pie. Both circular forms draw the same ordered shares from twelve oclock clockwise, keep any remainder empty, retain the accessible summary and support the same size steps as circular progress.
+shape shall select linear (default), donut or pie. Both circular forms draw the same ordered shares from twelve oclock clockwise, keep any remainder empty, retain the accessible summary and take every size step of [UIC-SEGMENTED-BAR-1.6](#uic-segmented-bar-16---sizes): `sm`, `md` and `lg` match circular progress, and `xl`, `2xl` and `3xl` continue past it.
 
 Implementation: `src/components/segmented-bar/segmented-bar.tsx`
 Verification: `src/components/segmented-bar/segmented-bar.test.tsx`, `e2e/unified-options.spec.ts`
@@ -111,7 +111,7 @@ Verification: `src/components/segmented-bar/segmented-animation.test.tsx`, `e2e/
 | `ui-segmented-bar__item-label` | slot      |                                                   | The segment's label.                                     |
 | `ui-segmented-bar__item-value` | slot      |                                                   | The segment's count.                                     |
 | `ui-segmented-bar__item-share` | slot      |                                                   | The segment's share of the whole, as a percentage.       |
-| `data-size`                    | attribute | `sm`, `md`, `lg`                                  | Track thickness.                                         |
+| `data-size`                    | attribute | `sm`, `md`, `lg`, `xl`, `2xl`, `3xl`              | Track thickness or ring diameter.                        |
 | `data-tone`                    | attribute | `neutral`, `info`, `success`, `warning`, `danger` | A segment's tone, on its track segment and legend entry. |
 | `ui-segmented-bar__ring`       | slot      |                                                   | The SVG of a donut or pie.                               |
 | `data-shape`                   | attribute | `linear`, `donut`, `pie`                          | Share appearance.                                        |

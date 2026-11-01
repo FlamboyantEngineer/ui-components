@@ -3,7 +3,7 @@
 import { useId, type ReactNode } from 'react';
 import { useNumberFormatter } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps, Key, Size, Tone, RefProps } from '../../core/props.js';
+import type { BaseProps, Key, Tone, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { resolveSegmentedBar, type SegmentedPart } from './segmented-layout.js';
@@ -12,7 +12,11 @@ import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { segmentedBarHooks as hooks } from './segmented-bar-hooks.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 
-export type SegmentedBarSize = Extract<Size, 'sm' | 'md' | 'lg'>;
+/**
+ * The bar's own size steps. `xl`, `2xl` and `3xl` go past the shared `Size` scale, for a bar or
+ * ring shown as a figure; other components do not take them.
+ */
+export type SegmentedBarSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
 
 /** One named part of the whole. */
 export interface SegmentedBarSegment {
@@ -43,7 +47,7 @@ export interface SegmentedBarProps extends BaseProps, AriaLabellingProps, RefPro
   showTotal?: boolean | undefined;
   /** Show the summary list as a visible legend. Defaults to `false`: only assistive technology reads it. */
   showLegend?: boolean | undefined;
-  /** Track thickness. Defaults to `md`. */
+  /** Track thickness, or ring diameter for the circular shapes. Defaults to `md`. */
   size?: SegmentedBarSize | undefined;
   /** How counts and the total are formatted, such as with a unit. */
   formatOptions?: Intl.NumberFormatOptions | undefined;

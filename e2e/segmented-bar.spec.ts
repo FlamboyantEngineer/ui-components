@@ -1,17 +1,20 @@
 import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Segmented Bar lab', () => {
-  test('UIC-SEGMENTED-BAR-1.1 UIC-SEGMENTED-BAR-1.6 UIC-SEGMENTED-BAR-2.1 draws named groups with 4, 8 and 12 pixel tracks', async ({
+  test('UIC-SEGMENTED-BAR-1.1 UIC-SEGMENTED-BAR-1.6 UIC-SEGMENTED-BAR-2.1 draws named groups with 4 to 24 pixel tracks', async ({
     page,
     lab,
   }) => {
     await lab.open('segmented-bar');
     const cells = page.locator('table[data-lab-matrix="legend size"] td[data-lab-cell]');
-    expect(await cells.count()).toBe(2 * 3);
+    expect(await cells.count()).toBe(2 * 6);
     for (const [size, height] of [
       ['sm', 4],
       ['md', 8],
       ['lg', 12],
+      ['xl', 16],
+      ['2xl', 20],
+      ['3xl', 24],
     ] as const) {
       const cell = matrixCell(page, `legend=hidden size=${size}`);
       const bar = cell.getByRole('group', { name: 'Checks' });
@@ -151,5 +154,47 @@ test.describe('Segmented Bar lab', () => {
     const legend = matrixCell(page, 'direction=ltr remainder=none').getByRole('listitem').last();
     await expect(legend).toContainText('Majority');
     await expect(legend).toContainText('90%');
+  });
+  test('UIC-SEGMENTED-BAR-1.6 UIC-SEGMENTED-BAR-3.1 draws the figure sizes in every shape and data case', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('segmented-bar');
+    for (const [size, ring, track] of [
+      ['xl', 48, 16],
+      ['2xl', 64, 20],
+      ['3xl', 96, 24],
+    ] as const) {
+      for (const data of ['empty', 'single', 'several', 'animated']) {
+        const cell = matrixCell(page, `data=${data} size=${size}`);
+        await cell.scrollIntoViewIfNeeded();
+        const bar = (shape: string) => cell.getByRole('group', { name: `Checks, ${shape}` });
+        expect(
+          (await bar('linear').locator('.ui-segmented-bar__track').boundingBox())?.height,
+        ).toBe(track);
+        for (const shape of ['donut', 'pie']) {
+          const box = await bar(shape).locator('.ui-segmented-bar__ring').boundingBox();
+          expect([box?.width, box?.height]).toEqual([ring, ring]);
+        }
+        const segments = cell.locator('.ui-segmented-bar__segment');
+        await expect(segments).toHaveCount(
+          { empty: 0, single: 3, several: 12, animated: 12 }[data] ?? 0,
+        );
+        await expect(cell.locator('[data-animated]')).toHaveCount(data === 'animated' ? 3 : 0);
+        for (const drawing of await cell.locator('[data-animation-state]').all()) {
+          await drawing.evaluate((node) =>
+            node.getAnimations({ subtree: true }).forEach((animation) => animation.finish()),
+          );
+          await expect(drawing).toHaveAttribute('data-animation-state', 'complete');
+        }
+      }
+      const label = matrixCell(page, `data=several size=${size}`)
+        .locator('.ui-segmented-bar__label')
+        .first();
+      expect(
+        Number.parseFloat(await label.evaluate((node) => getComputedStyle(node).fontSize)),
+      ).toBeGreaterThanOrEqual(16);
+    }
+    await lab.expectAccessible();
   });
 });
