@@ -385,9 +385,16 @@ describe('ChatMessageActions', () => {
     await user.click(screen.getByRole('button', { name: 'Good response' }));
     const field = await screen.findByRole('textbox', { name: 'Comment (optional)' });
     await user.type(field, 'x');
+    // The secondary click opens the comment field's own menu, which Escape closes first.
     await user.pointer({ keys: '[MouseRight]', target: field });
+    expect(await screen.findByRole('menu')).toBeInTheDocument();
     expect(onKeyDown).not.toHaveBeenCalled();
     expect(onContextMenu).not.toHaveBeenCalled();
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    // A browser returns focus to the field (e2e); jsdom drops it, so put it back.
+    act(() => field.focus());
     await user.keyboard('{Escape}');
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     await waitFor(() =>

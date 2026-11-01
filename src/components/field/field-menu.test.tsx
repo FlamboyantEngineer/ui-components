@@ -3,6 +3,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { TextField } from '../../../test/field-fixtures.js';
+import type { FieldState } from './field-state.js';
 import type { FieldMenuEntry } from './field.js';
 
 const menu: FieldMenuEntry[] = [
@@ -122,16 +123,33 @@ describe('Field menu', () => {
     expect(await screen.findByRole('menuitem', { name: 'Copy name' })).toHaveFocus();
   });
 
-  it('UIC-FIELD-6.3 keeps the browser menu on the text of its control', async () => {
+  it('UIC-FIELD-6.3 opens on the text of its control, keeping the caret and the draft', async () => {
     const user = userEvent.setup();
-    const { container } = render(<TextField options={{ defaultValue: 'Fig' }} menu={menu} />);
-    const input = screen.getByRole('textbox');
-    expect(fireEvent.contextMenu(input)).toBe(true);
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
-    expect(container.children).toHaveLength(1);
+    const onState = vi.fn<(state: FieldState<string>) => void>();
+    render(
+      <TextField
+        options={{ committedValue: 'Fig', defaultValue: 'Fig', emptyValue: '' }}
+        menu={menu}
+        onState={onState}
+      />,
+    );
+    const input = screen.getByRole<HTMLInputElement>('textbox');
     await user.click(input);
-    await user.keyboard('{Shift>}{F10}{/Shift}');
-    expect(await screen.findByRole('menuitem', { name: 'Copy name' })).toHaveFocus();
+    await user.keyboard('{End}s');
+    input.setSelectionRange(1, 2);
+    // A secondary click on the input's text opens the field menu, not the browser's.
+    expect(fireEvent.contextMenu(input)).toBe(false);
+    const opened = await screen.findByRole('menu', { name: 'Fruit actions' });
+    expect(onState.mock.lastCall?.[0].isDirty).toBe(true);
+    await user.keyboard('{Escape}');
+    expect(opened).not.toBeInTheDocument();
+    await waitFor(() => expect(input).toHaveFocus());
+    expect(input).toHaveValue('Figs');
+    expect([input.selectionStart, input.selectionEnd]).toEqual([1, 2]);
+    // The unfinished draft stays uncommitted, so Reset still puts back the saved value.
+    fireEvent.contextMenu(input);
+    await user.click(await screen.findByRole('menuitem', { name: 'Reset' }));
+    expect(input).toHaveValue('Fig');
   });
 
   it('UIC-FIELD-6.4 applies Clear, Reset and Set to default, keeps focus on the control and reports every entry', async () => {

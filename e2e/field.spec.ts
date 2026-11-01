@@ -491,4 +491,43 @@ test.describe('Field lab', () => {
     expect(rowAfter.height).toBe(rowBefore.height);
     expect(belowAfter.y - rowAfter.y).toBe(belowBefore.y - rowBefore.y);
   });
+
+  test('UIC-FIELD-6.3 opens the field menu from the text inside every kind of control', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('field');
+    const area = page.locator('[data-lab-menu-everywhere]');
+    const cases = [
+      { name: 'Fruit', saved: 'Pear', read: 'value' },
+      { name: 'Shopping list', saved: 'Pears\nFigs', read: 'value' },
+      { name: 'Quantity', saved: '12', read: 'value' },
+      { name: 'Note', saved: 'Pick the pears on Friday.', read: 'text' },
+    ] as const;
+    for (const { name, saved, read } of cases) {
+      const control = area.getByRole('textbox', { name, exact: true });
+      const valueOf = () =>
+        control.evaluate(
+          (node, kind) =>
+            kind === 'value' ? (node as HTMLInputElement).value : (node.textContent ?? ''),
+          read,
+        );
+      await control.click();
+      await page.keyboard.press('ControlOrMeta+End');
+      await page.keyboard.type('7');
+      // A secondary click right on the control's text opens the field's menu, not the browser's.
+      await control.click({ button: 'right' });
+      const opened = page.getByRole('menu', { name: `${name} actions` });
+      await expect(opened, name).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(opened, name).toBeHidden();
+      await expect(control, name).toBeFocused();
+      // The unfinished edit stays, uncommitted, so Reset puts back the value the field started with.
+      expect(await valueOf(), name).toBe(`${saved}7`);
+      await control.click({ button: 'right' });
+      await page.getByRole('menuitem', { name: 'Reset' }).click();
+      expect(await valueOf(), name).toBe(saved);
+      await expect(control, name).toBeFocused();
+    }
+  });
 });

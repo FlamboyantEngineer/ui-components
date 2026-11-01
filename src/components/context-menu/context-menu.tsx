@@ -61,11 +61,11 @@ export interface ContextMenuTriggerProps extends Omit<
   /** Leaves the target's own context menu alone. */
   isDisabled?: boolean | undefined;
   /**
-   * Opens the menu from Shift+F10 or the Context Menu key pressed in a text control inside the
-   * target too, for a menu about that control, such as a field's. By default those keys stay with
-   * the control.
+   * Opens the menu from a text control inside the target too (a text input, a text area or
+   * editable content), by secondary click, long touch, Shift+F10 or the Context Menu key, for a menu
+   * about that control, such as a field's. By default the control keeps the browser's own menu.
    */
-  opensFromTextKeys?: boolean | undefined;
+  opensInsideText?: boolean | undefined;
 }
 
 /**
@@ -157,7 +157,7 @@ export function ContextMenu({
 export function ContextMenuTrigger({
   children,
   isDisabled = false,
-  opensFromTextKeys = false,
+  opensInsideText = false,
   ...rest
 }: ContextMenuTriggerProps) {
   const controller = useMenuController();
@@ -169,7 +169,7 @@ export function ContextMenuTrigger({
   const targetProps = useContextMenuTarget({
     controller,
     isDisabled,
-    opensFromTextKeys,
+    opensInsideText,
     own,
     targetRef,
   });

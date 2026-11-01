@@ -33,8 +33,11 @@ export interface ContextMenuTargetProps {
 interface ContextMenuTargetOptions {
   controller: MenuController;
   isDisabled: boolean;
-  /** Opens from Shift+F10 or the Context Menu key in a text control inside the target too. */
-  opensFromTextKeys?: boolean | undefined;
+  /**
+   * Opens from a text control inside the target too, by secondary click, long touch and keys, for
+   * a menu about that control, such as a field's. By default the control keeps the browser's menu.
+   */
+  opensInsideText?: boolean | undefined;
   /** The target's own props, which keep working. */
   own: ContextMenuTargetProps;
   /** Receives the target element. */
@@ -123,7 +126,7 @@ function useLongPress(options: ContextMenuTargetOptions, suppressUntil: RefObjec
       own.onPointerDownCapture?.(event);
       cancel();
       if (isDisabled || event.pointerType !== 'touch' || isFromPortal(event)) return;
-      if (isTextInside(event.target, event.currentTarget)) return;
+      if (!options.opensInsideText && isTextInside(event.target, event.currentTarget)) return;
       const { nativeEvent, clientX: x, clientY: y, pointerId, currentTarget } = event;
       pressOwners.set(nativeEvent, currentTarget);
       const timer = setTimeout(() => {
@@ -155,14 +158,14 @@ function useLongPress(options: ContextMenuTargetOptions, suppressUntil: RefObjec
  * The handlers and ref that make an element a context menu target: a secondary click opens the
  * menu at the pointer, the Context Menu key or Shift+F10 below the element, a long touch at the
  * touch point. A secondary click, long touch or key on a text control inside the target keeps the
- * browser's own menu, which edits the text. A request whose default the target's own handler, or
+ * browser's own menu, which edits the text, unless `opensInsideText` asks for the menu there too. A request whose default the target's own handler, or
  * one inside it, prevented opens nothing, whether a secondary click, a long touch or a key. Events
  * from a portal the target renders, such as its own open menu, open nothing.
  */
 export function useContextMenuTarget(
   options: ContextMenuTargetOptions,
 ): ContextMenuTargetProps & { ref: RefCallback<HTMLElement> } {
-  const { controller, isDisabled, opensFromTextKeys = false, own, targetRef } = options;
+  const { controller, isDisabled, opensInsideText = false, own, targetRef } = options;
   const suppressUntil = useRef(0);
   const { cancel, ...pointerHandlers } = useLongPress(options, suppressUntil);
   const ownRef = own.ref;
@@ -179,7 +182,8 @@ export function useContextMenuTarget(
         return;
       }
       const isSuppressed = Date.now() < suppressUntil.current;
-      if (!isSuppressed && isTextInside(event.target, event.currentTarget)) return;
+      const keepsTextMenu = !opensInsideText && isTextInside(event.target, event.currentTarget);
+      if (!isSuppressed && keepsTextMenu) return;
       event.preventDefault();
       event.stopPropagation();
       cancel();
@@ -189,7 +193,7 @@ export function useContextMenuTarget(
     onKeyDownCapture(event) {
       own.onKeyDownCapture?.(event);
       if (isDisabled || !isKeyboardContextMenu(event) || isFromPortal(event)) return;
-      if (!opensFromTextKeys && isTextInside(event.target, event.currentTarget)) return;
+      if (!opensInsideText && isTextInside(event.target, event.currentTarget)) return;
       const { nativeEvent, currentTarget } = event;
       keyOwners.set(nativeEvent, currentTarget);
       // Read after every handler ran: a target the key bubbled to has opened its menu and
@@ -207,7 +211,7 @@ export function useContextMenuTarget(
       if (isDisabled || event.defaultPrevented || !isKeyboardContextMenu(event)) return;
       if (isFromPortal(event)) return;
       // A text control inside the target keeps the key for its own editing menu.
-      if (!opensFromTextKeys && isTextInside(event.target, event.currentTarget)) return;
+      if (!opensInsideText && isTextInside(event.target, event.currentTarget)) return;
       event.preventDefault();
       event.stopPropagation();
       // The browser may follow the key with its own contextmenu event.
