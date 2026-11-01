@@ -157,7 +157,12 @@ export function DisclosureGroup({
   );
 }
 
-export { DisclosureHeader, DisclosurePanel, DisclosureTitle } from './disclosure-parts.js';
+export {
+  DisclosureContentScope,
+  DisclosureHeader,
+  DisclosurePanel,
+  DisclosureTitle,
+} from './disclosure-parts.js';
 export type {
   DisclosureHeaderProps,
   DisclosurePanelProps,

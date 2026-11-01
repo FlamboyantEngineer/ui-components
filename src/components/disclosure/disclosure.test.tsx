@@ -5,6 +5,7 @@ import { I18nProvider } from '../../primitives/index.js';
 import type { Key } from '../../core/props.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { Outline } from '../outline/outline.js';
 import { HeadingLevelContext } from '../section-header/section-header.js';
 import {
   Disclosure,
@@ -493,5 +494,59 @@ describe('Disclosure accessibility', () => {
     fireEvent(panels[1] as HTMLElement, new Event('beforematch'));
     expect(onExpandedChange).toHaveBeenCalledWith(new Set(['pears']));
     expect(screen.getByRole('button', { name: 'Pears' })).toHaveAttribute('aria-expanded', 'true');
+  });
+});
+
+describe('Disclosure content scope', () => {
+  it("UIC-DISCLOSURE-3.1 keeps a disclosure in a grouped disclosure's panel out of the group", async () => {
+    const user = userEvent.setup();
+    const onExpandedChange = vi.fn();
+    render(
+      <DisclosureGroup defaultExpandedKeys={['section']} onExpandedChange={onExpandedChange}>
+        <Disclosure id="section" title="Section">
+          <Disclosure title="Advanced" defaultExpanded>
+            <p>Advanced options</p>
+          </Disclosure>
+        </Disclosure>
+        <Disclosure id="other" title="Other">
+          <p>Other options</p>
+        </Disclosure>
+      </DisclosureGroup>,
+    );
+    const advanced = screen.getByRole('button', { name: 'Advanced' });
+    expect(advanced).toHaveAttribute('aria-expanded', 'true');
+    await user.click(advanced);
+    expect(advanced).toHaveAttribute('aria-expanded', 'false');
+    await user.click(advanced);
+    expect(advanced).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('button', { name: 'Section' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    expect(onExpandedChange).not.toHaveBeenCalled();
+  });
+
+  it("UIC-DISCLOSURE-3.1 UIC-EXPAND-TOGGLE-1.7 lets an outline in a disclosure's panel own its toggles", async () => {
+    const user = userEvent.setup();
+    render(
+      <Disclosure title="Contents" defaultExpanded>
+        <Outline
+          headings={[
+            { id: 'intro', label: 'Introduction', level: 1 },
+            { id: 'scope', label: 'Scope', level: 2 },
+          ]}
+        />
+      </Disclosure>,
+    );
+    const toggle = screen.getByRole('button', { name: 'Sections in Introduction' });
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.getByRole('button', { name: 'Contents' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
   });
 });

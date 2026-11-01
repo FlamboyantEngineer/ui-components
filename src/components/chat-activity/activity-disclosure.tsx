@@ -3,6 +3,7 @@
 // The collapsible frame reasoning and groups of steps share: a trigger with a label and a busy
 // indicator, and a panel that opens while the work goes on and collapses once it ends.
 
+import { DisclosureContentScope } from '../disclosure/disclosure.js';
 import { useState, type ReactNode } from 'react';
 import {
   Button as AriaButton,
@@ -122,7 +123,7 @@ export function ActivityDisclosure({
           />
         )}
       >
-        {children}
+        <DisclosureContentScope>{children}</DisclosureContentScope>
       </DisclosurePanel>
     </Disclosure>
   );

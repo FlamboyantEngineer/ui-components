@@ -180,6 +180,28 @@ test.describe('Disclosure lab', () => {
     await expect(demo.getByRole('button', { name: 'Apples' })).toBeFocused();
   });
 
+  test("UIC-DISCLOSURE-3.1 UIC-EXPAND-TOGGLE-1.7 keeps a panel's disclosures and toggles its own", async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('disclosure');
+    const demo = page.locator('[data-lab-demo="nested-content"]');
+    const delivery = demo.getByRole('button', { name: 'Delivery', exact: true });
+    const advanced = demo.getByRole('button', { name: 'Advanced delivery' });
+    await advanced.click();
+    await expect(advanced).toHaveAttribute('aria-expanded', 'true');
+    await expect(delivery).toHaveAttribute('aria-expanded', 'true');
+    await expect(demo.getByText('Leave with a neighbour.')).toBeVisible();
+    const toggle = demo.getByRole('button', { name: 'Sections in Getting started' });
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(demo.getByRole('button', { name: 'Contents' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    await lab.expectAccessible('[data-lab-section="Nested content"]');
+  });
+
   test('UIC-DISCLOSURE-4.3 opens a collapsed panel that find in page matches', async ({
     page,
     lab,
