@@ -66,6 +66,37 @@ describe('Modal presentations', () => {
     expect(opener).toHaveFocus();
   });
 
+  it('UIC-MODAL-8.1 keeps a non-modal dialog opened over a blocking one reachable and announced', async () => {
+    const user = userEvent.setup();
+    render(
+      <ModalTrigger>
+        <Button>Settings</Button>
+        <Modal title="Settings">
+          <ModalTrigger>
+            <Button>Notes</Button>
+            <Modal title="Notes" isNonModal cancelAction={null}>
+              <input aria-label="Note" />
+              <button type="button">Pin</button>
+            </Modal>
+          </ModalTrigger>
+        </Modal>
+      </ModalTrigger>,
+    );
+    await user.click(screen.getByRole('button', { name: 'Settings' }));
+    await user.click(await screen.findByRole('button', { name: 'Notes' }));
+    const notes = await screen.findByRole('dialog', { name: 'Notes' });
+    const note = screen.getByRole('textbox', { name: 'Note' });
+    await waitFor(() => expect(note).toHaveFocus());
+    expect(notes.closest('[aria-hidden="true"], [inert]')).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Pin' }));
+    expect(screen.getByRole('button', { name: 'Pin' })).toHaveFocus();
+    await user.keyboard('{Escape}');
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: 'Notes' })).not.toBeInTheDocument(),
+    );
+    expect(screen.getByRole('dialog', { name: 'Settings' })).toBeInTheDocument();
+  });
+
   it('UIC-MODAL-8.1 leaves focus where the reader moved it and honours keyboard dismissal settings', async () => {
     const user = userEvent.setup();
     function Toggle() {

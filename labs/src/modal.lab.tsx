@@ -337,6 +337,24 @@ mountLab(
   <>
     <div data-lab-family="modal-main">
       <LabSection
+        title="Notes over a dialog"
+        description="Open Trip details, then Notes: the floating notes dialog opened from the blocking one takes focus, stays usable and readable by assistive technology, and Escape closes only it."
+      >
+        <ModalTrigger>
+          <Button>Trip details</Button>
+          <Modal title="Trip details" data-lab-modal="trip-details">
+            <ModalTrigger>
+              <Button>Notes</Button>
+              <Modal title="Notes" isNonModal cancelAction={null} data-lab-modal="notes">
+                <label>
+                  Note <input />
+                </label>
+              </Modal>
+            </ModalTrigger>
+          </Modal>
+        </ModalTrigger>
+      </LabSection>
+      <LabSection
         title="Sections in a dialog"
         description="The trigger sits in a level-3 section, yet the dialog's title is a level-2 heading and the sections in its body start at level 3, as in any dialog."
       >

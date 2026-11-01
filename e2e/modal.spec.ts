@@ -475,3 +475,26 @@ test('UIC-MODAL-4.3 starts the body sections below the dialog title', async ({ p
   await expect(dialog.getByRole('heading', { name: 'Stops', level: 3 })).toBeVisible();
   await expect(dialog.getByRole('heading', { name: 'Bookings', level: 3 })).toBeVisible();
 });
+
+test('UIC-MODAL-8.1 keeps a non-modal dialog opened from a blocking one usable', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('modal');
+  await page.getByRole('button', { name: 'Trip details' }).click();
+  await page
+    .getByRole('dialog', { name: 'Trip details' })
+    .getByRole('button', { name: 'Notes' })
+    .click();
+  const notes = page.getByRole('dialog', { name: 'Notes' });
+  await expect(notes).toBeVisible();
+  const note = notes.getByRole('textbox', { name: 'Note' });
+  await expect(note).toBeFocused();
+  await note.click();
+  await page.keyboard.type('Bring a map');
+  await expect(note).toHaveValue('Bring a map');
+  await expect(note).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(notes).toHaveCount(0);
+  await expect(page.getByRole('dialog', { name: 'Trip details' })).toBeVisible();
+});
