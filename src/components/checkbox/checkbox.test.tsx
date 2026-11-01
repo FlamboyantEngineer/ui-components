@@ -234,6 +234,22 @@ describe('Checkbox', () => {
     expect(readPantry()).toEqual([]);
   });
 
+  it('UIC-CHECKBOX-1.6 takes no part in the reset of a form its input does not belong to', async () => {
+    const user = userEvent.setup();
+    render(
+      <ResetForm cancels={false}>
+        <Checkbox name="sealed" inputRef={(input) => input?.setAttribute('form', 'missing-form')}>
+          Sealed
+        </Checkbox>
+      </ResetForm>,
+    );
+    const box = screen.getByRole<HTMLInputElement>('checkbox', { name: 'Sealed' });
+    expect(box.form).toBeNull();
+    await user.click(box);
+    await pressReset(user);
+    expect(box).toBeChecked();
+  });
+
   it('UIC-CHECKBOX-1.6 reports the mounted state once to a controlled box on a reset', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
