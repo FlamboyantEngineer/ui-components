@@ -166,7 +166,38 @@ const completeValueTests: Readonly<Record<FilterValueKind, (value: FilterValue) 
   boolean: (value) => typeof value === 'boolean',
 };
 
-/** Whether a condition has every value its operator needs, so that it filters. */
+/**
+ * Whether a condition has every value its operator needs, so that it filters. An operator the field
+ * no longer offers leaves the condition incomplete until another is chosen.
+ */
 export function isFilterConditionComplete(condition: FilterCondition, field: FilterField): boolean {
+  if (!getFilterOperators(field).includes(condition.operator)) return false;
   return completeValueTests[getFilterValueKind(field.type, condition.operator)](condition.value);
+}
+
+const readNumber = (value: unknown) => (isNumber(value) ? value : null);
+
+const valueReaders: Readonly<Record<FilterValueKind, (value: FilterValue) => FilterValue>> = {
+  none: () => null,
+  text: (value) => (typeof value === 'string' ? value : ''),
+  number: readNumber,
+  'number-range': (value) =>
+    isNumberRange(value)
+      ? { min: readNumber(value.min), max: readNumber(value.max) }
+      : createEmptyValue('number-range'),
+  date: (value) => (typeof value === 'string' && value !== '' ? value : null),
+  'date-range': (value) => (isDateRange(value) ? value : null),
+  list: (value) =>
+    Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === 'string') : [],
+  boolean: (value) => (typeof value === 'boolean' ? value : null),
+};
+
+/**
+ * A condition's value in the shape its operator takes on `field`, for an editor to show: a value of
+ * another shape, such as `null` for a list, a saved value from an older shape or a value kept after
+ * the field's type changed, reads as that shape's empty value (a boolean as `null`, unanswered).
+ * The condition itself keeps its value, incomplete, until an edit replaces it.
+ */
+export function readFilterValue(condition: FilterCondition, field: FilterField): FilterValue {
+  return valueReaders[getFilterValueKind(field.type, condition.operator)](condition.value);
 }

@@ -19,6 +19,7 @@ import {
   getFilterValueKind,
   isDateRange,
   isNumberRange,
+  readFilterValue,
   type FilterCondition,
   type FilterField,
   type FilterValue,
@@ -158,7 +159,7 @@ function ValueControl(props: ValueControlProps) {
         <BooleanField
           {...shared}
           variant="segmented"
-          value={value as boolean}
+          value={value as boolean | null}
           tracksChanges={false}
           onChange={(next) => setValue(next ?? true)}
         />
@@ -221,7 +222,11 @@ export function FilterConditionFields(props: FilterConditionFieldsProps) {
           }
         />
       ) : null}
-      <ValueControl {...props} setValue={setValue} />
+      <ValueControl
+        {...props}
+        condition={{ ...condition, value: readFilterValue(condition, field) }}
+        setValue={setValue}
+      />
     </>
   );
 }

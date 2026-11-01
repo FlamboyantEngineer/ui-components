@@ -26,6 +26,22 @@ test.describe('Filter Bar lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-FILTER-BAR-2.2 completes a choice filter saved without its list', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('filter-bar');
+    const cell = matrixCell(page, 'type=choice state=incomplete');
+    await cell.locator('.ui-filter-bar__chip').getByRole('button').first().click();
+    const dialog = page.getByRole('dialog', { name: 'Genre' });
+    await dialog.getByRole('button', { name: /Value/ }).click();
+    await page.getByRole('option', { name: 'History' }).click();
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+    await expect(cell.locator('.ui-filter-bar__chip')).not.toHaveAttribute('data-incomplete');
+  });
+
   test('UIC-FILTER-BAR-2.2 UIC-FILTER-BAR-2.3 UIC-FILTER-BAR-3.2 adds and edits a filter that narrows the list', async ({
     page,
     lab,

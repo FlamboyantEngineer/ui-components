@@ -154,6 +154,59 @@ describe('FilterConditionFields', () => {
     });
   });
 
+  it.each<[string, FilterCondition]>([
+    ['a choice list of null', { field: 'genre', operator: 'any-of', value: null }],
+    ['a person list of null', { field: 'readers', operator: 'any-of', value: null }],
+    ['a number as text', { field: 'pages', operator: 'equals', value: 'many' }],
+    ['a range of null', { field: 'pages', operator: 'between', value: null }],
+    ['a date as a number', { field: 'published', operator: 'equals', value: 3 }],
+    ['text as a list', { field: 'title', operator: 'contains', value: ['sea'] }],
+    ['a boolean as text', { field: 'available', operator: 'equals', value: 'yes' }],
+  ])('UIC-FILTER-BAR-2.2 shows %s as an empty value instead of failing', (_, condition) => {
+    render(<Editor initial={condition} />);
+    expect(slot('value')).toBeInTheDocument();
+  });
+
+  it('UIC-FILTER-BAR-2.2 corrects a list of null through the editor', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <Editor initial={{ field: 'genre', operator: 'any-of', value: null }} onChange={onChange} />,
+    );
+    await user.click(screen.getByRole('button', { name: /Value/ }));
+    await user.click(await screen.findByRole('option', { name: 'Travel' }));
+    expect(onChange).toHaveBeenLastCalledWith({
+      field: 'genre',
+      operator: 'any-of',
+      value: ['travel'],
+    });
+  });
+
+  it('UIC-FILTER-BAR-2.2 keeps an open editor whose field turns from number to choice', () => {
+    const condition: FilterCondition = { field: 'pages', operator: 'any-of', value: 3 };
+    const props = {
+      condition,
+      onChange: () => {},
+      labelLayout: 'label-control' as const,
+      slotClass: (part: string) => `part-${part}`,
+    };
+    const view = render(
+      <FilterConditionFields {...props} field={{ id: 'pages', label: 'Pages', type: 'number' }} />,
+    );
+    view.rerender(
+      <FilterConditionFields
+        {...props}
+        field={{
+          id: 'pages',
+          label: 'Pages',
+          type: 'choice',
+          options: [{ value: '3', label: 'Three' }],
+        }}
+      />,
+    );
+    expect(screen.getByRole('button', { name: /Value/ })).toBeInTheDocument();
+  });
+
   it('UIC-FILTER-BAR-2.2 searches a person field’s own people', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
