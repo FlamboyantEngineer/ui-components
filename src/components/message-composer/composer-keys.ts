@@ -82,9 +82,7 @@ function matchesAny(event: ComposerKey, chords: readonly ShortcutChord[]): boole
 }
 
 function toRecallDirection(event: ComposerKey): RecallDirection | null {
-  if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || event.isComposing) {
-    return null;
-  }
+  if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return null;
   if (event.key === 'ArrowUp') return 'older';
   return event.key === 'ArrowDown' ? 'newer' : null;
 }
@@ -129,20 +127,21 @@ export function useComposerKeys(
 /**
  * Runs the composer's own key: a chord that sends or sends now (the sending chords come first),
  * Escape to cancel an edit, and the arrows that recall earlier messages; returns whether it used
- * the key. A key that belongs to an input method composition never sends.
+ * the key. A key that belongs to an input method composition (`isComposing` or key code 229) is
+ * left to the input method: it never sends, cancels or recalls.
  */
 export function runComposerKey(event: ComposerKey, actions: ComposerKeyActions): boolean {
-  if (!isComposingKey(event)) {
-    if (matchesAny(event, actions.keys.submit)) {
-      actions.submit();
-      return true;
-    }
-    if (matchesAny(event, actions.keys.submitNow)) {
-      actions.submitNow();
-      return true;
-    }
+  // A key that belongs to an input method composition is the input method's, whatever it is.
+  if (isComposingKey(event)) return false;
+  if (matchesAny(event, actions.keys.submit)) {
+    actions.submit();
+    return true;
   }
-  if (event.key === 'Escape' && actions.isEditing && !event.isComposing) {
+  if (matchesAny(event, actions.keys.submitNow)) {
+    actions.submitNow();
+    return true;
+  }
+  if (event.key === 'Escape' && actions.isEditing) {
     actions.onCancel?.();
     return true;
   }

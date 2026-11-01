@@ -168,6 +168,26 @@ describe('MessageComposer', () => {
     expect(onSubmit).toHaveBeenCalledWith('こんにちは');
   });
 
+  it('UIC-MESSAGE-COMPOSER-1.2 leaves Escape and the recall arrows of a composition to the input method', () => {
+    const onCancel = vi.fn();
+    const { unmount } = render(<MessageComposer editValue="Draft" onCancel={onCancel} />);
+    for (const composing of [{ isComposing: true }, { keyCode: 229 }]) {
+      // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing or keyCode 229
+      expect(fireEvent.keyDown(input(), { key: 'Escape', ...composing })).toBe(true);
+    }
+    expect(onCancel).not.toHaveBeenCalled();
+    unmount();
+    render(<MessageComposer history={['Earlier message']} />);
+    for (const composing of [{ isComposing: true }, { keyCode: 229 }]) {
+      // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing or keyCode 229
+      expect(fireEvent.keyDown(input(), { key: 'ArrowUp', ...composing })).toBe(true);
+    }
+    expect(input()).toHaveValue('');
+    // eslint-disable-next-line testing-library/prefer-user-event -- the same key outside a composition
+    fireEvent.keyDown(input(), { key: 'ArrowUp' });
+    expect(input()).toHaveValue('Earlier message');
+  });
+
   it('UIC-MESSAGE-COMPOSER-1.2 sends on the host chords, one or several, and breaks the line on any other Enter', async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();

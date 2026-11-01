@@ -347,6 +347,27 @@ describe('RichMessageComposer', () => {
     expect(onSubmit).toHaveBeenCalledWith({ text: 'にほん', tokens: [] });
   });
 
+  it('UIC-MESSAGE-COMPOSER-4.8 leaves Escape and the recall arrows of a composition to the input method', async () => {
+    const onCancel = vi.fn();
+    const view = renderComposer({ editValue: { text: 'Draft', tokens: [] }, onCancel });
+    await view.user.click(box());
+    for (const composing of [{ isComposing: true }, { keyCode: 229 }]) {
+      // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing or keyCode 229
+      fireEvent.keyDown(box(), { key: 'Escape', ...composing });
+    }
+    expect(onCancel).not.toHaveBeenCalled();
+    view.unmount();
+    const { user } = renderComposer({ history: ['Earlier message'] });
+    await user.click(box());
+    for (const composing of [{ isComposing: true }, { keyCode: 229 }]) {
+      // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing or keyCode 229
+      fireEvent.keyDown(box(), { key: 'ArrowUp', ...composing });
+    }
+    expect(box()).toHaveTextContent('');
+    await user.keyboard('{ArrowUp}');
+    expect(box()).toHaveTextContent('Earlier message');
+  });
+
   it('UIC-MESSAGE-COMPOSER-3.3 UIC-MESSAGE-COMPOSER-2.1 edits a message with its pills and cancels with Escape', async () => {
     const onCancel = vi.fn();
     const keys: string[] = [];
