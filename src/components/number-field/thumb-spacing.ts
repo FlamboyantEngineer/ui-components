@@ -1,4 +1,4 @@
-import type { RangeValue } from './range-slider.js';
+import type { NumberRange } from './number-slider.js';
 
 /**
  * The range after a thumb moved, keeping the thumbs `distance` apart: the thumb that moved stops
@@ -7,10 +7,10 @@ import type { RangeValue } from './range-slider.js';
  * refused, and one that moves them apart is kept.
  */
 export function keepThumbsApart(
-  next: RangeValue,
-  previous: RangeValue,
+  next: NumberRange,
+  previous: NumberRange,
   bounds: { distance: number; minValue: number; maxValue: number },
-): RangeValue {
+): NumberRange {
   const [start, end] = next;
   const gap = end - start;
   const movedStart = start !== previous[0];

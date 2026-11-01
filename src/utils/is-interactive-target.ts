@@ -23,15 +23,15 @@ const widgetRoles = [
 ];
 
 /**
- * The library's own pointer-driven surfaces, which carry no widget role and no tab stop: a slider's
- * track and thumbs (their `role="slider"` is on a hidden input inside), a number field's scrub
+ * The library's own pointer-driven surfaces, which carry no widget role and no tab stop: a number
+ * field's slider track and thumbs (their `role="slider"` is on a hidden input inside) and its scrub
  * handle, a scroll region's overlay track and a signature pad's drawing surface. They handle the
  * pointer in the bubble phase, so a surrounding widget deciding in the capture phase, or from the
  * click that follows a drag, recognises them by their hook classes.
  */
 const gestureSurfaces = [
-  '.ui-slider__track',
-  '.ui-slider__thumb',
+  '.ui-number-field__track',
+  '.ui-number-field__thumb',
   '.ui-number-field__scrubber',
   '.ui-scroll-region__track',
   '.ui-signature-pad__surface',

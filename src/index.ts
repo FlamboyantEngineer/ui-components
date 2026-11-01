@@ -113,7 +113,6 @@ export * from './components/chat-parts/index.js';
 export * from './components/chat-controller/index.js';
 export * from './components/chat-model-picker/index.js';
 export * from './components/number-field/index.js';
-export * from './components/slider/index.js';
 export * from './components/boolean-field/index.js';
 export * from './components/color-field/index.js';
 export * from './components/tags-input/index.js';

@@ -2,18 +2,15 @@ import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Form } from '../../src/components/form/form.js';
 import {
-  RangeSlider,
-  Slider,
-  type RangeValue,
-  type SliderValueLabel,
-} from '../../src/components/slider/slider.js';
-import type { ControlSize } from '../../src/core/props.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-import {
+  NumberField,
   keepThumbsApart,
   normalizeSliderValue,
   snapToStep,
-} from '../../src/components/slider/index.js';
+  type NumberFieldValueLabel,
+  type NumberRange,
+} from '../../src/components/number-field/index.js';
+import type { ControlSize } from '../../src/core/props.js';
+import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { LabHelperCalls } from './lab-helper-calls.js';
 import { LabOutput } from './lab-output.js';
 import {
@@ -26,7 +23,12 @@ import {
 // A slider always holds a value, so it has no required state.
 const sliderStates = fieldStates.filter((state) => state !== 'required');
 const sizes = ['sm', 'md', 'lg'] as const satisfies readonly ControlSize[];
-const valueLabels = ['output', 'thumb', 'none'] as const satisfies readonly SliderValueLabel[];
+const valueLabels = [
+  'output',
+  'input',
+  'thumb',
+  'none',
+] as const satisfies readonly NumberFieldValueLabel[];
 
 function Sample({ state, size }: { state: FieldStateName; size: ControlSize }) {
   const props = useLabFieldState<number>(state, {
@@ -36,25 +38,26 @@ function Sample({ state, size }: { state: FieldStateName; size: ControlSize }) {
     warning: 75,
     empty: 0,
   });
-  return <Slider label="Volume" size={size} {...props} />;
+  return <NumberField display="slider" label="Volume" size={size} {...props} />;
 }
 
 function RangeSample({ state }: { state: FieldStateName }) {
-  const props = useLabFieldState<RangeValue>(state, {
+  const props = useLabFieldState<NumberRange>(state, {
     value: [20, 60],
     edited: [30, 70],
     invalid: [0, 90],
     warning: [10, 80],
     empty: [0, 100],
   });
-  return <RangeSlider label="Price" {...props} />;
+  return <NumberField range display="slider" label="Price" {...props} />;
 }
 
 /** Marks with labels, a unit format and the value shown on the thumbs. */
 function Marks() {
   return (
     <>
-      <Slider
+      <NumberField
+        display="slider"
         label="Temperature"
         minValue={16}
         maxValue={28}
@@ -65,7 +68,8 @@ function Marks() {
         description="From 16 to 28 °C in steps of 0.5."
         data-lab-field="marks"
       />
-      <Slider
+      <NumberField
+        display="slider"
         label="Balance"
         minValue={-50}
         maxValue={50}
@@ -89,7 +93,8 @@ function Commit() {
   const [committed, setCommitted] = useState(30);
   return (
     <>
-      <Slider
+      <NumberField
+        display="slider"
         label="Brightness"
         value={value}
         onChange={setValue}
@@ -105,10 +110,12 @@ function Commit() {
 
 /** Two thumbs that keep five steps between them, formatted as currency. */
 function Range() {
-  const [value, setValue] = useState<RangeValue>([100, 300]);
+  const [value, setValue] = useState<NumberRange>([100, 300]);
   return (
     <>
-      <RangeSlider
+      <NumberField
+        range
+        display="slider"
         label="Price"
         maxValue={500}
         step={10}
@@ -128,10 +135,12 @@ function Range() {
 /** The value the field holds is always the one on screen, whatever the bounds and step. */
 function Normalized() {
   const [maxValue, setMaxValue] = useState(1);
-  const [value, setValue] = useState<RangeValue>([0.1, 0.3]);
+  const [value, setValue] = useState<NumberRange>([0.1, 0.3]);
   return (
     <>
-      <RangeSlider
+      <NumberField
+        range
+        display="slider"
         label="Share"
         maxValue={maxValue}
         step={0.1}
@@ -153,7 +162,8 @@ function Normalized() {
 function Vertical() {
   return (
     <div style={{ display: 'flex', gap: 48 }}>
-      <Slider
+      <NumberField
+        display="slider"
         label="Level"
         orientation="vertical"
         defaultValue={60}
@@ -164,7 +174,9 @@ function Vertical() {
         ]}
         data-lab-field="vertical"
       />
-      <RangeSlider
+      <NumberField
+        range
+        display="slider"
         label="Hours"
         orientation="vertical"
         minValue={0}
@@ -173,6 +185,44 @@ function Vertical() {
         data-lab-field="vertical-range"
       />
     </div>
+  );
+}
+
+/** A range typed into two inputs, and sliders whose value is edited in inputs beside the track. */
+function RangeInputs() {
+  const [value, setValue] = useState<NumberRange>([20, 80]);
+  return (
+    <>
+      <NumberField
+        range
+        label="Age"
+        maxValue={120}
+        minStepsBetweenThumbs={1}
+        value={value}
+        onChange={setValue}
+        description="Two inputs that stay in order and one year apart."
+        data-lab-field="range-field"
+      />
+      <LabOutput name="Age">{value.join(' to ')}</LabOutput>
+      <NumberField
+        display="slider"
+        label="Opacity"
+        valueLabel="input"
+        defaultValue={70}
+        formatOptions={{ style: 'unit', unit: 'percent' }}
+        data-lab-field="slider-input"
+      />
+      <NumberField
+        range
+        display="slider"
+        label="Budget"
+        valueLabel="input"
+        maxValue={1000}
+        step={50}
+        defaultValue={[200, 600]}
+        data-lab-field="range-slider-input"
+      />
+    </>
   );
 }
 
@@ -193,7 +243,8 @@ function SavedForm() {
         );
       }}
     >
-      <Slider
+      <NumberField
+        display="slider"
         label="Volume"
         name="volume"
         value={value}
@@ -203,7 +254,9 @@ function SavedForm() {
         menu={['reset', 'set-default']}
         data-lab-field="saved"
       />
-      <RangeSlider
+      <NumberField
+        range
+        display="slider"
         label="Quiet hours"
         startName="quiet-from"
         endName="quiet-to"
@@ -239,7 +292,13 @@ mountLab(
       <StateMatrix
         axes={{ valueLabel: valueLabels, layout: fieldLayouts }}
         render={({ valueLabel, layout }) => (
-          <Slider label="Volume" labelLayout={layout} valueLabel={valueLabel} defaultValue={40} />
+          <NumberField
+            display="slider"
+            label="Volume"
+            labelLayout={layout}
+            valueLabel={valueLabel}
+            defaultValue={40}
+          />
         )}
       />
     </LabSection>
@@ -263,6 +322,12 @@ mountLab(
     </LabSection>
     <LabSection title="Range" description="The thumbs never cross and keep a minimum distance.">
       <Range />
+    </LabSection>
+    <LabSection
+      title="Range field and value inputs"
+      description="A range without a track: a start and an end input. A slider with valueLabel input edits its value in an input per thumb before the track."
+    >
+      <RangeInputs />
     </LabSection>
     <LabSection
       title="Normalized value"

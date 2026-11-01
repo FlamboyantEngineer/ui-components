@@ -959,8 +959,12 @@ test.describe('Table lab', () => {
         name: 'Stock, one cell at a time',
       });
       const slider = grid.getByRole('slider', { name: 'Ripeness Banana' });
-      const thumb = grid.locator(`[data-key="${toCollectionKey('banana')}"] .ui-slider__thumb`);
-      const track = grid.locator(`[data-key="${toCollectionKey('banana')}"] .ui-slider__track`);
+      const thumb = grid.locator(
+        `[data-key="${toCollectionKey('banana')}"] .ui-number-field__thumb`,
+      );
+      const track = grid.locator(
+        `[data-key="${toCollectionKey('banana')}"] .ui-number-field__track`,
+      );
       await expect(slider).toHaveValue('5');
       await track.scrollIntoViewIfNeeded();
       const [from, along] = [await thumb.boundingBox(), await track.boundingBox()];

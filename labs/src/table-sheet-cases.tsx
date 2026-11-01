@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
-import { Slider } from '../../src/components/slider/slider.js';
+import { NumberField } from '../../src/components/number-field/index.js';
 import { Switch } from '../../src/components/switch/switch.js';
 import { Table } from '../../src/components/table/table.js';
 import type { TableCellRange } from '../../src/components/table/index.js';
@@ -376,7 +376,8 @@ export function Spreadsheet() {
             id: 'ripeness',
             header: 'Ripeness',
             renderCell: (row) => (
-              <Slider
+              <NumberField
+                display="slider"
                 size="sm"
                 label={`Ripeness ${row.name}`}
                 valueLabel="none"

@@ -1,6 +1,6 @@
 # Number Field
 
-`NumberField` is a [field](FIELD.md) for a number, built on React Aria's `NumberField`. It parses and formats the number for the locale with `Intl.NumberFormat` options (decimals, grouping, currency, percent, units), steps it with buttons and the arrow keys, and reports a value outside its range or off its step. It takes the field's props (`FieldInputProps<number | null>`): an empty field holds `null`, never zero. What a number means (units, currencies, derived values) is the caller's: the field edits a plain number. Literal affixes sit inside its frame as adornments, Shift and Alt step by larger and smaller amounts, and a scrub handle steps the value by dragging.
+`NumberField` is a [field](FIELD.md) for a number, built on React Aria's `NumberField`. It parses and formats the number for the locale with `Intl.NumberFormat` options (decimals, grouping, currency, percent, units), steps it with buttons and the arrow keys, and reports a value outside its range or off its step. It takes the field's props (`FieldInputProps<number | null>`): an empty field holds `null`, never zero. What a number means (units, currencies, derived values) is the caller's: the field edits a plain number. Literal affixes sit inside its frame as adornments, Shift and Alt step by larger and smaller amounts, and a scrub handle steps the value by dragging. With `display="slider"` the number is picked along a track instead (UIC-NUMBER-FIELD-5), and with `range` the field holds a start and an end, typed into two inputs or picked with two thumbs (UIC-NUMBER-FIELD-8).
 
 Pointer ownership and drag lifecycle cleanup follow the shared [drag interaction contract](DRAG-INTERACTIONS.md).
 
@@ -110,30 +110,175 @@ Each base preserves numeric values, range and step behavior, modifier stepping, 
 Implementation: `src/components/number-field/number-field.tsx`, `src/components/number-field/text-number-control.tsx`
 Verification: `src/components/number-field/number-radix.test.tsx`, `e2e/number-radix.spec.ts`
 
+## UIC-NUMBER-FIELD-5 - Slider display
+
+### UIC-NUMBER-FIELD-5.1 - Field control
+
+`display="slider"` shall draw the number as a slider: a `Field` around a slider group (`ui-number-field__slider`, role `group`) built on React Aria's `Slider`, `SliderTrack`, `SliderFill`, `SliderThumb` and `SliderOutput`, with `useFieldControl`. Its root is the field's root, which carries `ui-number-field` beside `ui-field` and publishes `data-display="slider"`. Its props are `NumberSliderFieldProps`: the field's props (`FieldInputProps<number>`) but `isRequired` and `emptyValue`, since a slider always holds a value and is never required or cleared, plus the range, step, format and the track props this section lists; the number input's own props (steppers, adornments, scrubber, units, radix) do not apply. The value is a number: a field given no value, committed value or default starts at the minimum. The colour sliders of a [Color Field](COLOR-FIELD.md) are a different control. While a thumb moves, by a drag or a key press, each new value goes through `onChange`; when the drag or key press ends the field commits (`onCommit`) and calls `onChangeEnd` with the value.
+
+Implementation: `src/components/number-field/number-slider.tsx`, `src/components/number-field/number-slider-parts.tsx`, `labs/reference/number-field.css`
+Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-slider.spec.ts`
+
+### UIC-NUMBER-FIELD-5.2 - Range, step and format
+
+`minValue` (0 by default), `maxValue` (100 by default) and `step` (1 by default) shall bound the value, which the slider keeps within the range and on the step. The field holds one normalized value, the one the thumbs, output, ARIA values and form inputs show, so validation, dirty state, restore and every callback see it too: a given `value`, `defaultValue` or `committedValue` is snapped to the nearest step from the minimum (rounded to the step's decimals, `0.1 + 0.2` reading `0.3`), clamped into the range (above the last step, the last step; `Infinity` the last step and `-Infinity` the minimum), `NaN` read as the minimum, and a range's ends are put in order. A given or held value off the grid (as when the bounds or the step change) moves onto it as a change (`onChange`), not a commit, so an owner can take the value on screen. `snapToStep(value, grid)` and `normalizeSliderValue(value, grid)` give that value. `formatOptions` (`Intl.NumberFormat` options) shall format the value in the `UiProvider` locale ([PROVIDER.md](PROVIDER.md)), in the value output and in each thumb's `aria-valuetext`.
+
+Implementation: `src/components/number-field/number-slider.tsx`, `src/components/number-field/number-slider-parts.tsx`, `src/components/number-field/slider-values.ts`
+Verification: `src/components/number-field/number-slider.test.tsx`
+
+### UIC-NUMBER-FIELD-5.3 - Track, fill and thumb
+
+The slider shall draw a track (`ui-number-field__track`) holding the fill (`ui-number-field__fill`) and one thumb per value (`ui-number-field__thumb`). The slider positions the thumb along the track and sizes the fill with functional inline styles: the fill runs from the minimum, or from `fillOffset` (so a slider around zero fills from 0), to the value. Pressing the track moves the nearest thumb to the press, and dragging a thumb or the track moves it with the pointer. A drag maps the pointer's travel onto the track's length, so a stylesheet keeps that length steady while a thumb moves: the reference sheet reserves the restore button's place, which shows once the value differs from the committed one, and gives the output a fixed width.
+
+Implementation: `src/components/number-field/number-slider.tsx`, `src/components/number-field/number-slider-parts.tsx`, `labs/reference/number-field.css`
+Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-slider.spec.ts`
+
+### UIC-NUMBER-FIELD-5.4 - Value label
+
+`valueLabel` shall choose where the value shows and publish it as `data-value-label` on the root: `output` (the default) draws a value output (`ui-number-field__output`, an `<output>` for the thumbs that does not announce itself) before the track, with the formatted value or range; `input` draws a number input per value before the track (`ui-number-field__endpoints`, UIC-NUMBER-FIELD-8.5) that edits it, named like its thumb, while the thumbs keep the field's control and its form value; `thumb` draws each thumb's formatted value in `ui-number-field__thumb-label` inside the thumb, hidden from assistive technology, which the reference sheet shows above the thumb while it is hovered, focused or dragged; `none` draws neither.
+
+Implementation: `src/components/number-field/number-slider-parts.tsx`, `labs/reference/number-field.css`
+Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-slider.spec.ts`
+
+### UIC-NUMBER-FIELD-5.5 - Marks
+
+`marks` shall draw one `ui-number-field__mark` per entry inside the track, at its `value`, positioned with functional inline styles (`inset-inline-start` as a percentage of the track, or `bottom` on a vertical slider), with its `label` in `ui-number-field__mark-label`. A mark within the filled part publishes `data-in-range`. Marks are a visual scale, hidden from assistive technology: each thumb reports its own value. Pressing a mark's label presses the track there.
+
+Implementation: `src/components/number-field/number-slider-parts.tsx`, `labs/reference/number-field.css`
+Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-slider.spec.ts`
+
+### UIC-NUMBER-FIELD-5.6 - Orientation and size
+
+`orientation` (`horizontal` by default, or `vertical`) shall lay the track out along that axis, publish `data-orientation` on the box, the track, the fill and the output, and turn the thumb's drag and arrow keys to that axis. `size` (`xs`, `sm`, `md` by default, `lg`) is the field's size (UIC-FIELD-1.10), which also sizes the track and thumb.
+
+Implementation: `src/components/number-field/number-slider.tsx`, `src/components/number-field/number-slider-parts.tsx`, `labs/reference/number-field.css`
+Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-slider.spec.ts`
+
+### UIC-NUMBER-FIELD-5.7 - Hooks and caller attributes
+
+The slider display shall carry the hooks below on top of the field's, append the caller's `className` to their root and forward caller `data-*` attributes to it. A caller `id` goes on the root; the group's id derives from it (`<id>-control`) and each thumb input's from the group's (`<id>-control-0`, `<id>-control-1`). `aria-details` names an element with details about the slider; it takes no other props than the field's and those this spec lists.
+
+Implementation: `src/components/number-field/number-slider.tsx`
+Verification: `src/components/number-field/number-slider.test.tsx`
+
+## UIC-NUMBER-FIELD-6 - Accessibility and keyboard
+
+### UIC-NUMBER-FIELD-6.1 - Names and descriptions
+
+The group shall carry the field label as its `aria-label`, because each thumb is named after the group's own name. Each thumb holds a visually hidden native range input (role `slider`) named by the field label (UIC-NUMBER-FIELD-8.4 for a range), described by the field's description, decoration and message, and reporting its formatted value in `aria-valuetext`. While invalid, each input carries `aria-invalid="true"` and `aria-errormessage` naming the message.
+
+Implementation: `src/components/number-field/number-slider-parts.tsx`, `src/components/number-field/number-slider.tsx`
+Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-slider.spec.ts`
+
+### UIC-NUMBER-FIELD-6.2 - Keyboard and states
+
+Tab shall reach each thumb in order. Arrow Right and Arrow Up shall step the focused thumb's value up and Arrow Left and Arrow Down down by `step` (mirrored for Right and Left in right-to-left locales); Shift with an arrow, Page Up and Page Down step by a page, a tenth of the range rounded to a multiple of the step; Home and End move to the lowest and highest value the thumb may take. Each thumb publishes `data-focused`, `data-focus-visible` (keyboard focus only), `data-hovered` and `data-dragging` while it is dragged.
+
+Implementation: `src/components/number-field/number-slider-parts.tsx`
+Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-slider.spec.ts`
+
+### UIC-NUMBER-FIELD-6.3 - Disabled and read-only
+
+A disabled slider (`isDisabled`, or a disabled `Fieldset` around it) shall disable its thumb inputs natively, leave the tab order and publish `data-disabled` on the box, the track, the fill, the output and the thumbs. A read-only slider keeps its thumbs focusable and its value readable but refuses every change: its thumbs do not move and `onChange`, `onCommit` and `onChangeEnd` are not called.
+
+Implementation: `src/components/number-field/number-slider-parts.tsx`, `src/components/field/field-state.ts`
+Verification: `src/components/number-field/number-slider.test.tsx`
+
+## UIC-NUMBER-FIELD-7 - Field behaviour
+
+### UIC-NUMBER-FIELD-7.1 - Validation, dirty state and undo
+
+The slider display shall show each validation status from `validate` (invalid, warning and pending), show dirty state with a restore button that puts the committed value back and focuses the first thumb, undo and redo with the field's chords pressed on a thumb, and offer the field menu, whose Set to default puts the default back.
+
+Implementation: `src/components/number-field/number-slider.tsx`, `src/components/field/field.tsx`
+Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-slider.spec.ts`
+
+### UIC-NUMBER-FIELD-7.2 - Forms
+
+With `name`, a form shall submit a slider's value under that name. A range takes `startName` and `endName` instead and submits each end once under its own name. Errors a [Form](FORM.md) gives in `validationErrors` under `startName` or `endName` belong to the field ([UIC-FIELD-3.9](FIELD.md#uic-field-39---external-errors)): it shows them, they block the form's submission, and each clears once its own end changes, while the other end's error stays until a new errors object or its own end changes. The field's control reference is the first thumb's input, so a form's submit validation focuses it and the native behavior's custom validity (UIC-FIELD-3.10) blocks a native submit through it.
+
+Implementation: `src/components/number-field/number-slider-parts.tsx`
+Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-slider.spec.ts`
+
+## UIC-NUMBER-FIELD-8 - Range
+
+### UIC-NUMBER-FIELD-8.1 - Two thumbs
+
+`range` shall make the field hold a range, a start and an end (`NumberRange`, `[number, number]`), with `NumberRangeFieldProps`: the slider display's props, but `name`, plus `startName`, `endName` and `minStepsBetweenThumbs`. Its root publishes `data-range`. With `display="slider"` it renders the slider's parts with two thumbs, so every slider rule applies to it. A field given no value, committed value or default starts at the whole range, the fill runs between the thumbs and the output shows the formatted range.
+
+Implementation: `src/components/number-field/number-slider.tsx`, `src/components/number-field/number-slider-parts.tsx`, `labs/reference/number-field.css`
+Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-slider.spec.ts`
+
+### UIC-NUMBER-FIELD-8.2 - Thumbs never cross
+
+Each thumb of a range shall stop at the other one, by drag, track press and keyboard alike: the start never passes the end and the end never passes the start.
+
+Implementation: `src/components/number-field/number-slider.tsx`
+Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-slider.spec.ts`
+
+### UIC-NUMBER-FIELD-8.3 - Minimum distance
+
+`minStepsBetweenThumbs` (0 by default) shall keep that many steps between the thumbs: the thumb that moves stops that far from the other, within the range. `keepThumbsApart(next, previous, bounds)` gives the range after a move from the previous one, holding back the thumb that moved, and keeps a change that moves both thumbs as it is. Thumbs already closer than that (a value set from outside, or the range's end) never jump apart: a move that brings them closer is refused and one that moves them apart is kept as it is. The spaced range is snapped onto the grid (UIC-NUMBER-FIELD-5.2), so a fractional step gives `0.2`, not `0.19999999999999998`.
+
+Implementation: `src/components/number-field/number-slider.tsx`
+Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-slider.spec.ts`
+
+### UIC-NUMBER-FIELD-8.4 - Thumb names
+
+The start thumb shall be named by the provider string `rangeMinimum` and the end thumb by `rangeMaximum`, each followed by the field label (`Minimum Price`, `Maximum Price`).
+
+Implementation: `src/components/number-field/number-slider.tsx`, `src/core/strings/field.ts`
+Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-slider.spec.ts`
+
+### UIC-NUMBER-FIELD-8.5 - Range inputs
+
+A range without `display="slider"` (`display="field"`, the default) shall draw no track: its control is a start and an end number input (`ui-number-field__endpoints` holding a `ui-number-field__endpoint` per end, React Aria's `NumberField` around a `ui-number-field__input`) with a dash between them (`ui-number-field__separator`, hidden from assistive technology). Each input is named like its thumb (UIC-NUMBER-FIELD-8.4), described by the field's description and message, formats and parses its end in the locale with `formatOptions`, and steps it with the arrow keys within the range and on the step. A typed end takes effect on Enter, when focus leaves the input and on each arrow step, and commits; the range keeps its ends in order and `minStepsBetweenThumbs` steps apart, as the thumbs do (UIC-NUMBER-FIELD-8.3). The start input is the field's control and submits under `startName`, the end input under `endName`. Read-only inputs refuse edits and disabled ones leave the tab order. The same inputs edit the value before the track with `valueLabel="input"` (UIC-NUMBER-FIELD-5.4), where the thumbs submit it.
+
+Implementation: `src/components/number-field/number-endpoints.tsx`, `src/components/number-field/number-slider.tsx`, `labs/reference/number-field.css`
+Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-slider.spec.ts`
+
 ## Hooks
 
-| Hook                         | Kind      | Values               | Description                                                    |
-| ---------------------------- | --------- | -------------------- | -------------------------------------------------------------- |
-| `ui-number-field`            | root      |                      | The field's root (also `ui-field`).                            |
-| `ui-number-field__box`       | slot      |                      | The React Aria number field element.                           |
-| `ui-number-field__group`     | slot      |                      | The group around the input and the step buttons.               |
-| `ui-number-field__decrement` | slot      |                      | The decrement button.                                          |
-| `ui-number-field__scrubber`  | slot      |                      | The scrub handle.                                              |
-| `ui-number-field__start`     | slot      |                      | The start adornment.                                           |
-| `ui-number-field__value`     | slot      |                      | With the end adornment after the number: the input and sizer.  |
-| `ui-number-field__input`     | slot      |                      | The text input.                                                |
-| `ui-number-field__sizer`     | slot      |                      | A hidden copy of the input's text, beside it in the value.     |
-| `ui-number-field__end`       | slot      |                      | The end adornment.                                             |
-| `ui-number-field__increment` | slot      |                      | The increment button.                                          |
-| `data-hide-stepper`          | state     | `true`               | On the root: the step buttons are left out.                    |
-| `data-adornment-placement`   | attribute | `value`              | On the root: the end adornment follows the number.             |
-| `data-invalid`               | state     | `true`               | On the box, the group and the input: invalid (React Aria).     |
-| `data-required`              | state     | `true`               | On the box: a value is required (React Aria).                  |
-| `data-readonly`              | state     | `true`               | On the box and the group: read-only (React Aria).              |
-| `data-disabled`              | state     | `true`               | On the box, the group, the input and the buttons (React Aria). |
-| `data-hovered`               | state     | `true`               | On the group, the input and the buttons: hovered (React Aria). |
-| `data-focus-within`          | state     | `true`               | On the group: focus is inside it (React Aria).                 |
-| `data-focused`               | state     | `true`               | On the input and the buttons: focused (React Aria).            |
-| `data-focus-visible`         | state     | `true`               | On the group, the input and the buttons (React Aria).          |
-| `data-pressed`               | state     | `true`               | On the buttons: being pressed (React Aria).                    |
-| `data-radix`                 | attribute | `2`, `8`, `10`, `16` | Number base on root.                                           |
+| Hook                           | Kind      | Values                             | Description                                                                                  |
+| ------------------------------ | --------- | ---------------------------------- | -------------------------------------------------------------------------------------------- |
+| `ui-number-field`              | root      |                                    | The field's root (also `ui-field`).                                                          |
+| `ui-number-field__box`         | slot      |                                    | The React Aria number field element.                                                         |
+| `ui-number-field__group`       | slot      |                                    | The group around the input and the step buttons.                                             |
+| `ui-number-field__decrement`   | slot      |                                    | The decrement button.                                                                        |
+| `ui-number-field__scrubber`    | slot      |                                    | The scrub handle.                                                                            |
+| `ui-number-field__start`       | slot      |                                    | The start adornment.                                                                         |
+| `ui-number-field__value`       | slot      |                                    | With the end adornment after the number: the input and sizer.                                |
+| `ui-number-field__input`       | slot      |                                    | The text input.                                                                              |
+| `ui-number-field__sizer`       | slot      |                                    | A hidden copy of the input's text, beside it in the value.                                   |
+| `ui-number-field__end`         | slot      |                                    | The end adornment.                                                                           |
+| `ui-number-field__increment`   | slot      |                                    | The increment button.                                                                        |
+| `ui-number-field__slider`      | slot      |                                    | The slider display's React Aria slider (role `group`).                                       |
+| `ui-number-field__output`      | slot      |                                    | The slider's value output.                                                                   |
+| `ui-number-field__track`       | slot      |                                    | The slider's track.                                                                          |
+| `ui-number-field__fill`        | slot      |                                    | The filled part of the track.                                                                |
+| `ui-number-field__mark`        | slot      |                                    | A mark on the track.                                                                         |
+| `ui-number-field__mark-label`  | slot      |                                    | A mark's label.                                                                              |
+| `ui-number-field__thumb`       | slot      |                                    | A thumb, holding its hidden range input.                                                     |
+| `ui-number-field__thumb-label` | slot      |                                    | A thumb's value, with `valueLabel="thumb"`.                                                  |
+| `ui-number-field__endpoints`   | slot      |                                    | A range's start and end inputs, or the inputs before a track.                                |
+| `ui-number-field__endpoint`    | slot      |                                    | One value's React Aria number field, around its input.                                       |
+| `ui-number-field__separator`   | slot      |                                    | The dash between a range's inputs.                                                           |
+| `data-hide-stepper`            | state     | `true`                             | On the root: the step buttons are left out.                                                  |
+| `data-adornment-placement`     | attribute | `value`                            | On the root: the end adornment follows the number.                                           |
+| `data-invalid`                 | state     | `true`                             | On the box, the group and the input: invalid (React Aria).                                   |
+| `data-required`                | state     | `true`                             | On the box: a value is required (React Aria).                                                |
+| `data-readonly`                | state     | `true`                             | On the box and the group: read-only (React Aria).                                            |
+| `data-disabled`                | state     | `true`                             | On the box, the group, the input, the buttons and the slider's parts (React Aria).           |
+| `data-hovered`                 | state     | `true`                             | On the group, the input, the buttons, the track, the fill and a thumb: hovered (React Aria). |
+| `data-focus-within`            | state     | `true`                             | On the group: focus is inside it (React Aria).                                               |
+| `data-focused`                 | state     | `true`                             | On the input, the buttons and a thumb: focused (React Aria).                                 |
+| `data-focus-visible`           | state     | `true`                             | On the group, the input, the buttons and a thumb (React Aria).                               |
+| `data-pressed`                 | state     | `true`                             | On the buttons: being pressed (React Aria).                                                  |
+| `data-radix`                   | attribute | `2`, `8`, `10`, `16`               | Number base on root.                                                                         |
+| `data-display`                 | attribute | `slider`                           | On the root: the slider display.                                                             |
+| `data-range`                   | state     | `true`                             | On the root: the field holds a range.                                                        |
+| `data-size`                    | attribute | `xs`, `sm`, `md`, `lg`             | On the root: the field's size, also the slider's track and thumb.                            |
+| `data-value-label`             | attribute | `output`, `input`, `thumb`, `none` | On a slider display's root: where the value shows.                                           |
+| `data-orientation`             | attribute | `horizontal`, `vertical`           | On the slider, the track, the fill and the output (React Aria).                              |
+| `data-in-range`                | state     | `true`                             | On a mark within the filled part.                                                            |
+| `data-dragging`                | state     | `true`                             | On a thumb being dragged (React Aria).                                                       |

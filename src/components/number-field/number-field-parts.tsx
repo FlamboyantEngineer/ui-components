@@ -33,6 +33,17 @@ export const numberFieldHooks = createHooks('number-field', [
   'sizer',
   'end',
   'increment',
+  'slider',
+  'output',
+  'track',
+  'fill',
+  'mark',
+  'mark-label',
+  'thumb',
+  'thumb-label',
+  'endpoints',
+  'endpoint',
+  'separator',
 ]);
 
 const hooks = numberFieldHooks;
