@@ -389,6 +389,24 @@ test.describe('Chat lab', () => {
     await expect(reply.locator('.ui-chat-message__edited')).toHaveText('Edited');
   });
 
+  test('UIC-CHAT-2.5 starts a new edit for another message with the same words', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat');
+    const pair = section(page, 'Between two people');
+    await message(pair, 'pair-1b').hover();
+    await message(pair, 'pair-1b').getByRole('button', { name: 'Edit' }).click();
+    await expect(composer(pair)).toBeFocused();
+    await page.keyboard.type(' (first copy)');
+    await expect(composer(pair)).toHaveText('Yes! 9 at the main gate? (first copy)');
+    await message(pair, 'pair-2').hover();
+    await message(pair, 'pair-2').getByRole('button', { name: 'Edit' }).click();
+    await expect(composer(pair)).toHaveText('Yes! 9 at the main gate?');
+    await page.keyboard.press('Escape');
+    await expect(pair.locator('.ui-chat__banner')).toHaveCount(0);
+  });
+
   test('UIC-CHAT-3.1 keeps the draft of a conversation across a reload', async ({ page, lab }) => {
     await lab.open('chat');
     const pair = section(page, 'Between two people');

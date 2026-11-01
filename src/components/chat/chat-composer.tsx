@@ -128,7 +128,7 @@ interface BannerContent {
 const noQueue: readonly ChatQueuedMessage[] = [];
 const noTokens: ChatMessageText['tokens'] = [];
 
-/** The text the composer edits: the reader's message or a queued one, kept while its words do. */
+/** The text the composer edits: the reader's message or a queued one, kept while its target and words are. */
 function useEditValue({ state, messages, options }: ChatComposerProps) {
   const { editing } = state;
   let source: ChatMessageText | undefined;
@@ -139,13 +139,16 @@ function useEditValue({ state, messages, options }: ChatComposerProps) {
     const entry = options.queue?.find((item) => item.id === editing.id);
     source = entry && { text: entry.text, tokens: toComposerTokens(entry.tokens ?? []) };
   }
-  // A new value restarts the edit, so it changes with the words only, not with the message object.
-  const hasSource = source !== undefined;
+  // A new value restarts the edit, so it changes with the edit's target (its conversation, kind and
+  // id) and its words, not with the message object: another message with the same words restarts.
+  const target =
+    source && editing ? JSON.stringify([options.conversationId, editing.kind, editing.id]) : null;
   const text = source?.text ?? '';
   const tokens = useStableArray(source?.tokens ?? noTokens);
   return useMemo(
-    (): ComposerMessage | undefined => (hasSource ? { text, tokens: [...tokens] } : undefined),
-    [hasSource, text, tokens],
+    (): ComposerMessage | undefined =>
+      target === null ? undefined : { text, tokens: [...tokens] },
+    [target, text, tokens],
   );
 }
 

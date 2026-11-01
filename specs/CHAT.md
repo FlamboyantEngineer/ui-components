@@ -94,10 +94,10 @@ Verification: `src/components/chat/chat-composer.test.tsx`, `e2e/chat.spec.ts`
 
 ### UIC-CHAT-2.5 - Edit
 
-Edit, and Up in the empty composer of a chat between people with `onEdit` (on the reader's last message that has text), shall put the composer in edit mode ([UIC-MESSAGE-COMPOSER-3.3](MESSAGE-COMPOSER.md#uic-message-composer-33---edit-mode)) with the message's first text part and its tokens, move focus to it, and show the banner reading the provider string `chatEditingMessage`. Save calls `onEdit` with the message's id, the text and its tokens; Cancel and Escape leave edit mode. The edit holds while the message's words stay the same, as when a reaction arrives.
+Edit, and Up in the empty composer of a chat between people with `onEdit` (on the reader's last message that has text), shall put the composer in edit mode ([UIC-MESSAGE-COMPOSER-3.3](MESSAGE-COMPOSER.md#uic-message-composer-33---edit-mode)) with the message's first text part and its tokens, move focus to it, and show the banner reading the provider string `chatEditingMessage`. Save calls `onEdit` with the message's id, the text and its tokens; Cancel and Escape leave edit mode. The edit holds while its target (the conversation, whether it edits a message or a queued one, and its id) and the message's words stay the same, as when a reaction arrives; Edit on another message, or on a queued message with the same id, starts again from that message's words even when they are the same, so an unsaved edit is never saved to another message.
 
 Implementation: `src/components/chat/chat-composer.tsx`, `src/components/chat/use-chat-state.ts`
-Verification: `src/components/chat/chat-composer.test.tsx`, `e2e/chat.spec.ts`
+Verification: `src/components/chat/chat-composer.test.tsx`, `e2e/chat.spec.ts`, `src/components/chat/chat-edit-target.test.tsx`
 
 ### UIC-CHAT-2.6 - Delete
 
