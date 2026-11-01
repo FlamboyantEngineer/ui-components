@@ -230,6 +230,98 @@ describe('FileUpload', () => {
     expect(onSelect).toHaveBeenCalledWith([icon]);
   });
 
+  it.each([false, true])(
+    'UIC-FILE-UPLOAD-2.6 UIC-FILE-UPLOAD-2.8 rejects a whole single-file drop (listed=%s)',
+    async (listed) => {
+      const user = userEvent.setup();
+      const onSelect = vi.fn();
+      const onReject = vi.fn();
+      const validate = vi.fn(() => null);
+      const files = listed ? [{ id: 'current', name: 'Current.pdf' }] : [];
+      const { container } = render(
+        <FileUpload
+          variant="dropzone"
+          label="Drop one file"
+          multipleFileBehavior="reject"
+          acceptedFileTypes={['.pdf']}
+          files={files}
+          validate={validate}
+          onSelect={onSelect}
+          onReject={onReject}
+        />,
+      );
+      expect(chooser(container)).not.toHaveAttribute('multiple');
+      expect(chooser(container)).toHaveAttribute('accept', '.pdf');
+      const zone = container.querySelector<HTMLElement>('.ui-file-upload__dropzone');
+      if (!zone) throw new Error('no drop zone');
+      const first = file('First.pdf', 'application/pdf');
+      const second = file('Second.txt', 'text/plain');
+      const dataTransfer = filesTransfer([first, second]);
+      fireEvent.dragEnter(zone, { dataTransfer });
+      expect(zone).toHaveAttribute('data-drop-reject', 'true');
+      fireEvent.drop(zone, { dataTransfer });
+      await waitFor(() =>
+        expect(onReject).toHaveBeenCalledWith([
+          { file: first, reason: 'count' },
+          { file: second, reason: 'count' },
+        ]),
+      );
+      expect(onSelect).not.toHaveBeenCalled();
+      expect(validate).not.toHaveBeenCalled();
+      expect(screen.getByRole('alert')).toHaveTextContent('2 files are over the file limit.');
+      expect(
+        [...container.querySelectorAll('.ui-file-upload__file-name')].map(
+          (node) => node.textContent,
+        ),
+      ).toEqual(files.map((entry) => entry.name));
+      await user.upload(chooser(container), first);
+      expect(onSelect).toHaveBeenCalledExactlyOnceWith([first]);
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    },
+  );
+
+  it.each([{ allowsMultiple: true }, { acceptDirectory: true }])(
+    'UIC-FILE-UPLOAD-2.6 preserves multiple-file intake with %j',
+    async (mode) => {
+      const user = userEvent.setup();
+      const onSelect = vi.fn();
+      const onReject = vi.fn();
+      const { container } = render(
+        <FileUpload
+          label="Attach"
+          multipleFileBehavior="reject"
+          {...mode}
+          onSelect={onSelect}
+          onReject={onReject}
+        />,
+      );
+      const offered = [file('First.txt', 'text/plain'), file('Second.txt', 'text/plain')];
+      await user.upload(chooser(container), offered);
+      expect(onSelect).toHaveBeenCalledExactlyOnceWith(offered);
+      expect(onReject).not.toHaveBeenCalled();
+    },
+  );
+
+  it('UIC-FILE-UPLOAD-2.6 rejects a complete chooser offer only when requested', () => {
+    const onSelect = vi.fn();
+    const onReject = vi.fn();
+    const { container } = render(
+      <FileUpload
+        label="Attach"
+        multipleFileBehavior="reject"
+        onSelect={onSelect}
+        onReject={onReject}
+      />,
+    );
+    const offered = [file('First.txt', 'text/plain'), file('Second.txt', 'text/plain')];
+    // eslint-disable-next-line testing-library/prefer-user-event -- user.upload truncates a single-file chooser before its change event
+    fireEvent.change(chooser(container), { target: { files: offered } });
+    expect(onReject).toHaveBeenCalledExactlyOnceWith(
+      offered.map((file) => ({ file, reason: 'count' })),
+    );
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+
   it('UIC-FILE-UPLOAD-2.2 UIC-FILE-UPLOAD-2.3 reports refused files and counts them by reason', async () => {
     const user = userEvent.setup({ applyAccept: false });
     const onSelect = vi.fn();

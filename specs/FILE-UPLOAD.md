@@ -57,7 +57,7 @@ Verification: `src/components/file-upload/file-upload-files.test.tsx`
 
 ### UIC-FILE-UPLOAD-2.1 - Accepted types
 
-A chosen or dropped file shall pass when it matches one of `acceptedFileTypes` by extension (`.pdf`), exact MIME type (`image/png`) or MIME family (`image/*`), ignoring case, or always when no types are given. `onSelect` receives the files that pass, in order. Without `allowsMultiple` only the first offered file is considered.
+A chosen or dropped file shall pass when it matches one of `acceptedFileTypes` by extension (`.pdf`), exact MIME type (`image/png`) or MIME family (`image/*`), ignoring case, or always when no types are given. `onSelect` receives the files that pass, in order. Without `allowsMultiple` or `acceptDirectory` only the first offered file is considered by default (`multipleFileBehavior="first"`); `multipleFileBehavior="reject"` refuses the whole multi-file offer (UIC-FILE-UPLOAD-2.6).
 
 Implementation: `src/components/file-upload/file-rules.ts`, `src/components/file-upload/file-upload.tsx`
 Verification: `src/components/file-upload/file-rules.test.ts`, `src/components/file-upload/file-upload.test.tsx`
@@ -94,6 +94,8 @@ Verification: `src/components/file-upload/file-rules.test.ts`, `src/components/f
 
 With `maxFiles`, the upload shall hold at most that many files, counting the listed `files` and the files it handed on since the owner last gave a new `files` list: the upload's own renders (its refusals, a drag, its status) keep the files handed on counted, and a new list, whether it lists them, leaves them out or removes others, is the owner's answer and counts again from it. Offered files that pass the other checks are accepted in order until the limit, and the rest are refused with the reason `count`. Hosts therefore give a new list once they list or refuse the files handed on.
 
+In single-file mode (neither `allowsMultiple` nor `acceptDirectory`), `multipleFileBehavior="reject"` shall refuse every file in an offer of two or more files with reason `count`, before checking individual files. It shall call no `onSelect`, preserve listed files and keep the chooser single-file. A later valid single file shall still be accepted, including as a replacement, and clear the refusals. Multiple-file and directory modes keep their normal checks regardless of this option.
+
 Implementation: `src/components/file-upload/file-rules.ts`, `src/components/file-upload/file-upload.tsx`, `src/core/strings.ts`
 Verification: `src/components/file-upload/file-rules.test.ts`, `src/components/file-upload/file-upload.test.tsx`, `e2e/file-upload.spec.ts`
 
@@ -106,7 +108,7 @@ Verification: `src/components/file-upload/file-rules.test.ts`, `src/components/f
 
 ### UIC-FILE-UPLOAD-2.8 - Drag feedback
 
-While a drag is over the drop zone, it shall carry `data-drop-accept` when the dragged files would pass the checks a drag allows (their count against `maxFiles`, their MIME types against the MIME rules of `acceptedFileTypes`) and `data-drop-reject` otherwise. Extensions, sizes and `validate` need the dropped files, so a file only they could refuse counts as passing until the drop.
+While a drag is over the drop zone, it shall carry `data-drop-accept` when the dragged files would pass the checks a drag allows (their count against `maxFiles`, their MIME types against the MIME rules of `acceptedFileTypes`) and `data-drop-reject` otherwise. Single-file mode with `multipleFileBehavior="reject"` shall mark a drag of several files as rejected. Extensions, sizes and `validate` need the dropped files, so a file only they could refuse counts as passing until the drop.
 
 Implementation: `src/components/file-upload/file-rules.ts`, `src/components/file-upload/file-upload-drop.tsx`, `src/components/file-upload/file-upload.tsx`
 Verification: `src/components/file-upload/file-rules.test.ts`, `src/components/file-upload/file-upload.test.tsx`, `e2e/file-upload.spec.ts`

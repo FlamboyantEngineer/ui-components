@@ -210,6 +210,32 @@ function SlowCheck() {
   );
 }
 
+function SingleFileUpload() {
+  const [files, setFiles] = useState<FileUploadItem[]>([]);
+  const [refused, setRefused] = useState('none');
+  return (
+    <>
+      <FileUpload
+        variant="dropzone"
+        label="Drop one PDF here"
+        acceptedFileTypes={['.pdf']}
+        multipleFileBehavior="reject"
+        files={files}
+        data-lab-upload="single"
+        onSelect={([file]) => {
+          if (!file) return;
+          setFiles([{ id: 'current', name: file.name, size: file.size }]);
+          setRefused('none');
+        }}
+        onReject={(rejections) => setRefused(describeRefusals(rejections))}
+      />
+      <p>
+        Refused: <output data-lab-output="single-refused">{refused}</output>
+      </p>
+    </>
+  );
+}
+
 function FolderUpload() {
   const upload = useSimulatedUpload();
   return (
@@ -272,6 +298,12 @@ mountLab(
       description="Choose or drop a folder: every file in it, through its subfolders, is listed in entry order."
     >
       <FolderUpload />
+    </LabSection>
+    <LabSection
+      title="One file at a time"
+      description="Choose or drop one PDF to select or replace it. Dropping several files refuses the whole offer and keeps the current file."
+    >
+      <SingleFileUpload />
     </LabSection>
     <LabSection
       title="In a form"
