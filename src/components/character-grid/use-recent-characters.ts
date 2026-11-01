@@ -17,9 +17,26 @@ const charListCodec = createListCodec((value): value is string => typeof value =
 const recentLimit = 16;
 
 /**
+ * The stored characters the categories offer, each once at its most recent place, at most
+ * `recentLimit` of them, so any stored list, however it was written, builds a valid collection.
+ */
+function toRecentCharacters(
+  stored: readonly string[],
+  known: ReadonlyMap<string, CharacterGridCharacter>,
+): CharacterGridCharacter[] {
+  const recent = new Map<string, CharacterGridCharacter>();
+  for (const char of stored) {
+    if (recent.size === recentLimit) break;
+    const character = known.get(char);
+    if (character && !recent.has(char)) recent.set(char, character);
+  }
+  return [...recent.values()];
+}
+
+/**
  * The characters chosen last, kept through the provider's storage under `persistKey` (or for the
  * component's lifetime without one) as a list of characters. A stored character no category still
- * offers is left out.
+ * offers, or one stored again further down, is left out, and the list stops at `recentLimit`.
  */
 export function useRecentCharacters(
   persistKey: string | undefined,
@@ -34,10 +51,7 @@ export function useRecentCharacters(
     return byChar;
   }, [categories]);
   // One list while neither changes, so the sections built from it are kept too.
-  const characters = useMemo(
-    () => stored.flatMap((char) => known.get(char) ?? []),
-    [stored, known],
-  );
+  const characters = useMemo(() => toRecentCharacters(stored, known), [stored, known]);
   return {
     characters,
     remember: (character) =>

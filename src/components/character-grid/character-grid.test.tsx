@@ -332,6 +332,59 @@ describe('CharacterGrid', () => {
     ).toEqual(['Recently used', '€']);
   });
 
+  it('UIC-CHARACTER-GRID-2.2 reads any stored list as known characters, once each, at most 16', async () => {
+    const user = userEvent.setup();
+    const many = Array.from({ length: 40 }, (_, index) => String.fromCodePoint(0x2460 + index));
+    const wide: CharacterGridCategory[] = [
+      ...categories,
+      {
+        id: 'circled',
+        label: 'Circled',
+        characters: many.map((char, index) => ({ char, name: `Circled ${index + 1}` })),
+      },
+    ];
+    // A store that loses every write, as a full browser store does, still renders what it holds.
+    const values: Record<string, string> = {
+      repeated: '["€","€","£"]',
+      unknownFirst: '["☃","☃","¥","☃","€"]',
+      oversized: JSON.stringify(many),
+    };
+    const storage: UiStorage = {
+      getItem: (key) => values[key] ?? null,
+      setItem: () => {},
+      removeItem: () => {},
+    };
+    const recentCells = (container: HTMLElement) => {
+      const recent = container.querySelector('.ui-character-grid__section') as HTMLElement;
+      return within(recent)
+        .getAllByRole('row')
+        .slice(1)
+        .map((row) => row.textContent);
+    };
+    const grid = (persistKey: string, offered = wide) => (
+      <UiProvider storage={storage}>
+        <CharacterGrid categories={offered} onSelect={() => {}} persistKey={persistKey} />
+      </UiProvider>
+    );
+    const { container, rerender } = render(grid('repeated'));
+    expect(recentCells(container)).toEqual(['€', '£']);
+    rerender(grid('unknownFirst'));
+    expect(recentCells(container)).toEqual(['¥', '€']);
+    rerender(grid('oversized'));
+    expect(recentCells(container)).toEqual(many.slice(0, 16));
+    // Categories that no longer offer the first stored ones let later ones in, still at most 16.
+    rerender(
+      grid('oversized', [
+        { ...requireCircled(wide), characters: requireCircled(wide).characters.slice(4) },
+      ]),
+    );
+    expect(recentCells(container)).toEqual(many.slice(4, 20));
+    rerender(grid('repeated'));
+    // The lost write does not stop the choice leading the list while the grid is mounted.
+    await user.click(cell('Yen sign'));
+    expect(recentCells(container)).toEqual(['¥', '€', '£']);
+  });
+
   it('UIC-CHARACTER-GRID-2.2 remembers choices for the grid lifetime without a key', async () => {
     const user = userEvent.setup();
     const { container } = renderGrid();
@@ -369,3 +422,9 @@ describe('CharacterGrid', () => {
     );
   });
 });
+
+function requireCircled(offered: readonly CharacterGridCategory[]): CharacterGridCategory {
+  const circled = offered.find((category) => category.id === 'circled');
+  if (!circled) throw new Error('No circled category');
+  return circled;
+}
