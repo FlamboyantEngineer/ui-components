@@ -53,6 +53,11 @@ export interface ChatTranscriptProps extends BaseProps, AriaLabellingProps {
   onRead?: ((lastSeenId: string) => void) | undefined;
   /** Mount only the messages near the view, for very long histories. */
   virtualized?: boolean | undefined;
+  /**
+   * Names the conversation shown. Another one starts the transcript over, with its place, paging,
+   * read state and timers, even where the new messages reuse ids or dates.
+   */
+  conversationId?: string | undefined;
 }
 
 /** The feed of messages: one tab stop, with the keyboard model and the children to draw. */
@@ -96,13 +101,8 @@ function useFeedLabelling(labelling: AriaLabellingProps): AriaLabellingProps {
   };
 }
 
-/**
- * A conversation: a `feed` of messages, one tab stop, that follows the latest message (or
- * anchors the reader's sent message at the top), keeps the reader's place as older history loads,
- * announces new messages through its own live region, marks the unread and can virtualize a very
- * long history.
- */
-export function ChatTranscript({
+/** The transcript of one conversation; `ChatTranscript` starts it over for another. */
+function TranscriptView({
   children,
   emptyState,
   scrollMode = 'follow',
@@ -122,7 +122,7 @@ export function ChatTranscript({
   'aria-describedby': describedBy,
   'aria-details': details,
   ...rest
-}: ChatTranscriptProps) {
+}: Omit<ChatTranscriptProps, 'conversationId'>) {
   const model = useTranscript({
     ...{ children, scrollMode, onEscape, onLoadOlder, hasOlder, isLoadingOlder },
     ...{ highlightedMessageId, firstUnreadId, onRead, virtualized },
@@ -165,6 +165,16 @@ export function ChatTranscript({
       <TranscriptAnnouncerRegion text={model.announcement} />
     </div>
   );
+}
+
+/**
+ * A conversation: a `feed` of messages, one tab stop, that follows the latest message (or
+ * anchors the reader's sent message at the top), keeps the reader's place as older history loads,
+ * announces new messages through its own live region, marks the unread and can virtualize a very
+ * long history. A new `conversationId` starts it over.
+ */
+export function ChatTranscript({ conversationId, ...props }: ChatTranscriptProps) {
+  return <TranscriptView key={conversationId} {...props} />;
 }
 
 export { ChatMessage } from './chat-message.js';
