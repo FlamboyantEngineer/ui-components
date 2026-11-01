@@ -4,7 +4,7 @@ import { useEffect, useState, type RefObject } from 'react';
 import type { Key } from '../../core/props.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { walkTree } from '../../utils/walk-tree.js';
-import { type FolderItem, type FolderNode } from './folder-model.js';
+import { fromFolderRowKey, type FolderItem, type FolderNode } from './folder-model.js';
 
 /** `single` selects one folder; `multiple` lets the reader select several. */
 export type FolderSelectionMode = 'single' | 'multiple';
@@ -91,7 +91,8 @@ export function useFolderSelection<M extends FolderSelectionMode>(
 /**
  * Every row with children is expanded unless the reader collapsed it, so a folder created deep in
  * the tree is in view as soon as it appears. A folder whose subfolders are not loaded yet starts
- * collapsed; expanding it calls `onOpen`, which loads them.
+ * collapsed; expanding it calls `onOpen` with its folder key, which loads them. Expansion is kept
+ * by row key.
  */
 export function useFolderExpansion<T extends FolderItem>(
   nodes: readonly FolderNode<T>[],
@@ -113,7 +114,10 @@ export function useFolderExpansion<T extends FolderItem>(
     ],
     onExpandedChange: (keys) => {
       const lazy = [...keys].filter(isLazy);
-      for (const key of lazy) if (!opened.has(key)) onOpen(key);
+      for (const key of lazy) {
+        const folderKey = fromFolderRowKey(key);
+        if (!opened.has(key) && folderKey !== null) onOpen(folderKey);
+      }
       setOpened(new Set(lazy));
       setCollapsed(new Set(branchKeys.filter((key) => !keys.has(key))));
     },

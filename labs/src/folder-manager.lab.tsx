@@ -293,6 +293,32 @@ function VanishingFolder() {
   );
 }
 
+const plainKeys: Folder[] = [
+  { id: 'root', name: 'Root cellar', children: [{ id: 'draft', name: 'Draft notes' }] },
+  { id: 7, name: 'Shelf 7 (number key)' },
+  { id: '7', name: 'Shelf 7 (text key)' },
+];
+
+/** Folder keys that look like the manager's own rows: each still selects as itself. */
+function AnyFolderKeys() {
+  const [selected, setSelected] = useState<Key | null>('draft');
+  return (
+    <>
+      <FolderManager
+        aria-label="Keyed folders"
+        folders={plainKeys}
+        rootLabel="All folders"
+        selectedKey={selected}
+        onSelectionChange={setSelected}
+        data-lab-manager="keys"
+      />
+      <LabOutput name="Selected key">
+        {selected === null ? 'none' : `${typeof selected} ${String(selected)}`}
+      </LabOutput>
+    </>
+  );
+}
+
 /** A panel closed while its manager waits: the slow answer selects nothing once it is gone. */
 function ClosingPanel() {
   const [isOpen, setOpen] = useState(true);
@@ -371,6 +397,12 @@ mountLab(
         rowHeight={28}
         data-lab-manager="virtualized"
       />
+    </LabSection>
+    <LabSection
+      title="Any folder keys"
+      description="Folders keyed root, draft, 7 and '7' sit beside the root row: each selects and reports its own key."
+    >
+      <AnyFolderKeys />
     </LabSection>
     <LabSection
       title="Closing while saving"

@@ -16,6 +16,31 @@ async function rowNames(scope: Locator): Promise<Array<string | null>> {
 }
 
 test.describe('Folder Manager lab', () => {
+  test('UIC-FOLDER-MANAGER-1.1 keeps folder keys apart from the root row', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('folder-manager');
+    const manager = page.locator('[data-lab-manager="keys"]');
+    const output = page.locator('[data-lab-output="Selected key"]');
+    expect(await rowNames(manager)).toEqual([
+      'All folders',
+      'Root cellar',
+      'Draft notes',
+      'Shelf 7 (number key)',
+      'Shelf 7 (text key)',
+    ]);
+    await expect(row(manager, 'Draft notes')).toHaveAttribute('aria-selected', 'true');
+    await row(manager, 'Root cellar').click();
+    await expect(output).toHaveText('string root');
+    await row(manager, 'Shelf 7 (number key)').click();
+    await expect(output).toHaveText('number 7');
+    await row(manager, 'Shelf 7 (text key)').click();
+    await expect(output).toHaveText('string 7');
+    await row(manager, 'All folders').click();
+    await expect(output).toHaveText('none');
+  });
+
   test('UIC-FOLDER-MANAGER-1.1 UIC-FOLDER-MANAGER-1.3 shows the folders and selects one at a time', async ({
     page,
     lab,

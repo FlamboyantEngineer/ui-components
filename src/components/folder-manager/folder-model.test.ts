@@ -8,6 +8,8 @@ import {
   getFolderHeight,
   listFolderDestinations,
   listTopmostFolders,
+  fromFolderRowKey,
+  toFolderRowKey,
   type FolderItem,
 } from './folder-model.js';
 import { planFolderMoves } from './folder-moves.js';
@@ -27,24 +29,38 @@ function createFolderChain(depth: number): FolderItem {
   return folder;
 }
 
+const row = toFolderRowKey;
+
 describe('folder model', () => {
+  it('UIC-FOLDER-MANAGER-1.1 keeps row keys apart from every folder key', () => {
+    for (const key of ['root', 'draft', 'folder-manager-root', '', '7', 7, -0.5]) {
+      const rowKey = row(key);
+      expect(rowKey).not.toBe(folderRootKey);
+      expect(rowKey).not.toBe(folderDraftKey);
+      expect(fromFolderRowKey(rowKey)).toBe(key);
+    }
+    expect(row('7')).not.toBe(row(7));
+    expect(fromFolderRowKey(folderRootKey)).toBeNull();
+    expect(fromFolderRowKey(folderDraftKey)).toBeNull();
+  });
+
   it('UIC-FOLDER-MANAGER-1.1 shapes the folders into tree rows and lists the rows with children', () => {
     const nodes = buildFolderNodes(folders, {});
     expect(nodes.map(({ id, kind }) => [id, kind])).toEqual([
-      ['fruit', 'folder'],
-      ['vegetables', 'folder'],
+      [row('fruit'), 'folder'],
+      [row('vegetables'), 'folder'],
     ]);
     expect(nodes[0]?.folder).toBe(folders[0]);
     expect(nodes[0]?.children?.[0]?.children?.[0]?.name).toBe('Lemons');
     expect(nodes[1]?.children).toBeUndefined();
-    expect(collectBranchKeys(nodes)).toEqual(['fruit', 'citrus']);
+    expect(collectBranchKeys(nodes)).toEqual([row('fruit'), row('citrus')]);
   });
 
   it('UIC-FOLDER-MANAGER-1.2 wraps the folders in a root row', () => {
     const [root] = buildFolderNodes(folders, { rootLabel: 'All folders' });
     expect(root).toMatchObject({ id: folderRootKey, name: 'All folders', kind: 'root' });
     expect(root?.folder).toBeNull();
-    expect(root?.children?.map(({ id }) => id)).toEqual(['fruit', 'vegetables']);
+    expect(root?.children?.map(({ id }) => id)).toEqual([row('fruit'), row('vegetables')]);
   });
 
   it('UIC-FOLDER-MANAGER-2.2 adds the draft row as the last child of its parent', () => {
@@ -53,7 +69,7 @@ describe('folder model', () => {
       [folderDraftKey, 'draft'],
     ]);
     const atTop = buildFolderNodes(folders, { draftParentKey: null });
-    expect(atTop.map(({ id }) => id)).toEqual(['fruit', 'vegetables', folderDraftKey]);
+    expect(atTop.map(({ id }) => id)).toEqual([row('fruit'), row('vegetables'), folderDraftKey]);
     const underRoot = buildFolderNodes(folders, { rootLabel: 'All', draftParentKey: null });
     expect(underRoot[0]?.children?.at(-1)?.id).toBe(folderDraftKey);
   });
@@ -84,8 +100,8 @@ describe('folder model', () => {
       {},
     );
     expect(nodes.map(({ id, isLazy }) => [id, isLazy])).toEqual([
-      ['pantry', true],
-      ['cellar', false],
+      [row('pantry'), true],
+      [row('cellar'), false],
     ]);
   });
 
@@ -184,7 +200,7 @@ describe('folder model', () => {
     expect(getFolderHeight(root)).toBe(20_001);
     expect(collectBranchKeys(nodes)).toHaveLength(20_002);
     let leaf = nodes[0];
-    while (leaf?.children?.[0] && leaf.id !== 20_000) leaf = leaf.children[0];
+    while (leaf?.children?.[0] && leaf.id !== row(20_000)) leaf = leaf.children[0];
     expect(leaf?.folder).toBe(path.at(-1));
     expect(leaf?.children?.[0]?.id).toBe(folderDraftKey);
     expect(listTopmostFolders([root], new Set([20_000]))[0]).toBe(path.at(-1));

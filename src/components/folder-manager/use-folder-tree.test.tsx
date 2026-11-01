@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { type FolderItem, type FolderNode } from './folder-model.js';
+import { toFolderRowKey, type FolderItem, type FolderNode } from './folder-model.js';
 import { useFolderExpansion } from './use-folder-tree.js';
 
 describe('folder expansion', () => {
@@ -9,14 +9,14 @@ describe('folder expansion', () => {
     const nodes: FolderNode<FolderItem>[] = Array.from({ length: 1_000 }, (_, id) => ({
       get id() {
         reads += 1;
-        return id;
+        return toFolderRowKey(id);
       },
       name: String(id),
       kind: 'folder',
       folder: { id, name: String(id) },
       isLazy: true,
     }));
-    const keys = new Set(nodes.map((_, id) => id));
+    const keys = new Set(nodes.map((_, id) => toFolderRowKey(id)));
     const onOpen = vi.fn();
     const { result } = renderHook(() => useFolderExpansion(nodes, onOpen));
     reads = 0;
@@ -24,6 +24,7 @@ describe('folder expansion', () => {
     expect(reads).toBeLessThanOrEqual(nodes.length * 3);
     expect(result.current.expandedKeys).toEqual([...keys]);
     expect(onOpen).toHaveBeenCalledTimes(nodes.length);
+    expect(onOpen).toHaveBeenLastCalledWith(nodes.length - 1);
     act(() => result.current.onExpandedChange(keys));
     expect(onOpen).toHaveBeenCalledTimes(nodes.length);
   });

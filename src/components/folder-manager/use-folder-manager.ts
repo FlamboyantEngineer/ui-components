@@ -13,6 +13,7 @@ import {
   folderDraftKey,
   folderRootKey,
   listTopmostFolders,
+  toFolderRowKey,
   type FolderItem,
   type FolderNode,
 } from './folder-model.js';
@@ -57,7 +58,10 @@ export interface FolderManagerOptions<
 
 export interface FolderManagerModel<T extends FolderItem> {
   nodes: FolderNode<T>[];
-  /** The selected rows: the folders, the root row for no folder, or the draft row while creating. */
+  /**
+   * The selected rows, by row key: the folders, the root row for no folder, or the draft row while
+   * creating.
+   */
   selectedRows: Key[];
   /** Selects these folders (none: no folder). */
   select(keys: Key[]): void;
@@ -70,7 +74,7 @@ export interface FolderManagerModel<T extends FolderItem> {
   path: T[];
   /** The one selected folder, or `null` with none or several. */
   folder: T | null;
-  /** The row whose label is the name field. */
+  /** The row key of the row whose label is the name field. */
   editKey: Key | null;
   /** Loading, deleting or naming a folder: other actions wait. */
   isBusy: boolean;
@@ -111,6 +115,11 @@ function useFolderQuery<T extends FolderItem>(
   return { query, applied, terms, update };
 }
 
+/** The row key of a folder, or of the root row for no folder (`null`). */
+function toRowKey(key: Key | null): Key {
+  return key === null ? folderRootKey : toFolderRowKey(key);
+}
+
 /** The selected rows the tree shows: the draft while creating, else the folders or the root row. */
 function toSelectedRows(
   selected: Key[],
@@ -118,7 +127,7 @@ function toSelectedRows(
   rootLabel: string | undefined,
 ): Key[] {
   if (editKey === folderDraftKey) return [folderDraftKey];
-  if (selected.length > 0) return selected;
+  if (selected.length > 0) return selected.map(toFolderRowKey);
   return rootLabel === undefined ? [] : [folderRootKey];
 }
 
@@ -138,14 +147,14 @@ export function useFolderManager<T extends FolderItem, M extends FolderSelection
   const actions = useFolderActions({
     ...options,
     select: (key) => select(key === null ? [] : [key]),
-    onSettle: (key) => setFocusRequest({ key: key ?? folderRootKey }),
+    onSettle: (key) => setFocusRequest({ key: toRowKey(key) }),
     onRevoke: () => {
       // The name field left with its row, so focus fell to the page or the tree; elsewhere it moved on.
       const active = getOwnerDocument(regionRef.current).activeElement;
       const isInManager = active === null || regionRef.current?.contains(active) === true;
       if (!isInManager && active !== active.ownerDocument.body) return;
       const kept = selected.find((key) => findFolderPath(folders, key).length > 0);
-      setFocusRequest({ key: kept ?? folderRootKey });
+      setFocusRequest({ key: toRowKey(kept ?? null) });
     },
   });
   const clearFocusRequest = useCallback(() => setFocusRequest(null), []);
@@ -165,7 +174,7 @@ export function useFolderManager<T extends FolderItem, M extends FolderSelection
   const selection = listTopmostFolders(folders, new Set(selected));
   const path = selected.length === 1 ? findFolderPath(folders, selected[0] ?? null) : [];
   const folder = path.at(-1) ?? null;
-  const editKey = edit?.kind === 'create' ? folderDraftKey : (edit?.key ?? null);
+  const editKey = edit?.kind === 'create' ? folderDraftKey : edit ? toRowKey(edit.key) : null;
   const startEdit = (start: () => void) => {
     setQuery('');
     start();
@@ -190,7 +199,7 @@ export function useFolderManager<T extends FolderItem, M extends FolderSelection
     messageId,
     startCreate: () =>
       startEdit(() => {
-        expansion.reveal([folderRootKey, ...path.map((entry) => entry.id)]);
+        expansion.reveal([folderRootKey, ...path.map((entry) => toFolderRowKey(entry.id))]);
         actions.startCreate(folder?.id ?? null);
       }),
     startRename: () => startEdit(() => (folder ? actions.startRename(folder) : undefined)),
@@ -198,7 +207,9 @@ export function useFolderManager<T extends FolderItem, M extends FolderSelection
     moveTo: (destination) => {
       for (const move of planFolderMoves(folders, selection, destination)) options.onMove?.(move);
       if (destination)
-        expansion.reveal([...findFolderPath(folders, destination.id).map(({ id }) => id)]);
+        expansion.reveal(
+          findFolderPath(folders, destination.id).map(({ id }) => toFolderRowKey(id)),
+        );
     },
   };
 }

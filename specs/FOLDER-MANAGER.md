@@ -6,7 +6,7 @@
 
 ### UIC-FOLDER-MANAGER-1.1 - Folders as a tree
 
-`FolderManager` shall render its nested `folders` (`id`, `name`, `children`) as a `Tree` (inside `ui-folder-manager__tree`) named by its `aria-label` or `aria-labelledby`, one row per folder with the `folder` glyph. Every row with children starts expanded and stays so unless the reader collapses it, so a folder created deep in the tree is in view as soon as it appears.
+`FolderManager` shall render its nested `folders` (`id`, `name`, `children`) as a `Tree` (inside `ui-folder-manager__tree`) named by its `aria-label` or `aria-labelledby`, one row per folder with the `folder` glyph. Any key unique among the folders is valid: the root and draft rows take row keys that no folder key can produce, and every callback receives the caller's own key. Every row with children starts expanded and stays so unless the reader collapses it, so a folder created deep in the tree is in view as soon as it appears.
 
 Implementation: `src/components/folder-manager/folder-manager.tsx`, `src/components/folder-manager/folder-tree.tsx`, `src/components/folder-manager/folder-model.ts`, `src/components/folder-manager/use-folder-tree.ts`, `src/core/glyphs.tsx`
 Verification: `src/components/folder-manager/folder-manager.test.tsx`, `src/components/folder-manager/folder-model.test.ts`, `e2e/folder-manager.spec.ts`
@@ -105,7 +105,7 @@ Verification: `src/components/folder-manager/folder-manager.test.tsx`
 
 ### UIC-FOLDER-MANAGER-3.1 - Moves
 
-`onMove` shall make the tree reorderable: folders move among their siblings and into other folders by drag and drop, Alt+ArrowUp and Alt+ArrowDown, and Alt+ArrowRight and Alt+ArrowLeft. Each move is reported as a `TreeMove` for the owner to apply (for example with `applyTreeMove`). The root and draft rows never move, and nothing moves while the manager is busy.
+`onMove` shall make the tree reorderable: folders move among their siblings and into other folders by drag and drop, Alt+ArrowUp and Alt+ArrowDown, and Alt+ArrowRight and Alt+ArrowLeft. Each move is reported as a `TreeMove` of folder keys for the owner to apply (for example with `applyTreeMove`); a drop inside the root row is reported as a move to the end of the top level. The root and draft rows never move, and nothing moves while the manager is busy.
 
 Implementation: `src/components/folder-manager/folder-tree.tsx`
 Verification: `src/components/folder-manager/folder-manager.test.tsx`, `e2e/folder-manager.spec.ts`

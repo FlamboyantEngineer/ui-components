@@ -4,6 +4,7 @@
 import { requireDefined } from '../../utils/require-defined.js';
 import { walkTree } from '../../utils/walk-tree.js';
 import { mapTree } from '../../utils/map-tree.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { Key } from '../../core/props.js';
 import { textMatchesTerms } from '../text-match/text-match.js';
 
@@ -16,7 +17,10 @@ export interface FolderItem {
   hasChildren?: boolean | undefined;
 }
 
-/** A row of the folder tree. */
+/**
+ * A row of the folder tree. Its `id` is a row key, never a caller's folder key: a folder's row key
+ * is its key's identity (`toFolderRowKey`), so the root and draft rows cannot share it.
+ */
 export interface FolderNode<T extends FolderItem> {
   id: Key;
   name: string;
@@ -44,11 +48,23 @@ export interface FolderDestination<T extends FolderItem> {
   path: string[];
 }
 
-/** The key of the root row. */
-export const folderRootKey = 'folder-manager-root';
+/** The row key of the root row; no folder's row key can equal it. */
+export const folderRootKey = 'root';
 
-/** The key of the draft row. */
-export const folderDraftKey = 'folder-manager-draft';
+/** The row key of the draft row; no folder's row key can equal it. */
+export const folderDraftKey = 'draft';
+
+/** The row key of a folder: its key's identity, which always opens with a bracket. */
+export function toFolderRowKey(key: Key): string {
+  return toKeyIdentity(key);
+}
+
+/** The folder key a row key stands for, or `null` for the root and draft rows. */
+export function fromFolderRowKey(rowKey: Key): Key | null {
+  if (typeof rowKey !== 'string' || !rowKey.startsWith('[')) return null;
+  const [type, text] = JSON.parse(rowKey) as [string, string];
+  return type === 'number' ? Number(text) : text;
+}
 
 function childrenOf<T extends FolderItem>(folder: T): readonly T[] {
   return (folder.children ?? []) as readonly T[];
@@ -78,7 +94,7 @@ export function buildFolderNodes<T extends FolderItem>(
     const isMatch = terms.length === 0 || textMatchesTerms(folder.name, terms);
     if (!isMatch && children.length === 0) return null;
     return {
-      id: folder.id,
+      id: toFolderRowKey(folder.id),
       name: folder.name,
       kind: 'folder',
       folder,

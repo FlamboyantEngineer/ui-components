@@ -513,6 +513,57 @@ describe('FolderManager', () => {
     expect(onMove).not.toHaveBeenCalled();
   });
 
+  it('UIC-FOLDER-MANAGER-1.1 keeps any folder key apart from the root and draft rows', async () => {
+    const user = userEvent.setup();
+    const onSelectionChange = vi.fn();
+    const onCreate = vi.fn();
+    const onRename = vi.fn();
+    const reserved: Folder[] = [
+      { id: 'folder-manager-root', name: 'Actual folder' },
+      {
+        id: 'folder-manager-draft',
+        name: 'Draft folder',
+        children: [{ id: 'root', name: 'Inner' }],
+      },
+      { id: 'draft', name: 'Other' },
+      { id: 7, name: 'Number seven' },
+      { id: '7', name: 'Text seven' },
+    ];
+    const props = { folders: reserved, onSelectionChange, onCreate, onRename };
+    const { rerender } = render(
+      <FolderManager<Folder> aria-label="Folders" rootLabel="All folders" {...props} />,
+    );
+    expect(rowNames()).toEqual([
+      'All folders',
+      'Actual folder',
+      'Draft folder',
+      'Inner',
+      'Other',
+      'Number seven',
+      'Text seven',
+    ]);
+    for (const [name, key] of [
+      ['Actual folder', 'folder-manager-root'],
+      ['Inner', 'root'],
+      ['Other', 'draft'],
+      ['Number seven', 7],
+      ['Text seven', '7'],
+      ['Draft folder', 'folder-manager-draft'],
+    ] as const) {
+      await user.click(row(name));
+      expect(onSelectionChange).toHaveBeenLastCalledWith(key);
+    }
+    await user.click(screen.getByRole('button', { name: 'New folder' }));
+    expect(row('Actual folder')).toBeInTheDocument();
+    await user.keyboard('Fresh{Enter}');
+    expect(onCreate).toHaveBeenCalledWith({ name: 'Fresh', parentKey: 'folder-manager-draft' });
+    rerender(<FolderManager<Folder> aria-label="Folders" {...props} />);
+    await user.click(row('Other'));
+    expect(onSelectionChange).toHaveBeenLastCalledWith('draft');
+    await user.keyboard('{F2}Renamed{Enter}');
+    expect(onRename).toHaveBeenCalledWith({ key: 'draft', name: 'Renamed' });
+  });
+
   it('UIC-FOLDER-MANAGER-4.1 forwards ref to its root', () => {
     const ref = createRef<HTMLDivElement>();
     const { container } = render(<Manager ref={ref} />);
