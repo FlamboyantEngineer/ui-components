@@ -102,7 +102,9 @@ test.describe('Separator lab', () => {
     const across = await box(horizontal);
     expect(across.width).toBe(200);
     expect(across.height).toBe(6);
-    expect(await horizontal.evaluate((node) => getComputedStyle(node).maskImage)).toContain('svg');
+    expect(await horizontal.evaluate((node) => getComputedStyle(node).backgroundImage)).toContain(
+      'radial-gradient',
+    );
     const vertical = matrixCell(page, 'orientation=vertical variant=wiggly').getByRole('separator');
     const down = await box(vertical);
     expect(down.width).toBe(6);
@@ -111,6 +113,45 @@ test.describe('Separator lab', () => {
       '.ui-separator__start-line',
     );
     expect((await box(line)).height).toBe(6);
+  });
+
+  test('UIC-SEPARATOR-1.3 draws a labelled wiggly separator on its lines only, clear of its label', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('separator');
+    const rules = [
+      ...['start', 'center', 'end'].map((position) =>
+        matrixCell(page, `variant=wiggly labelPosition=${position}`),
+      ),
+      ...['horizontal', 'vertical'].flatMap((orientation) =>
+        ['across', 'before', 'after'].map((placement) =>
+          matrixCell(page, `variant=wiggly orientation=${orientation} placement=${placement}`),
+        ),
+      ),
+    ].map((cell) => cell.getByRole('separator'));
+    for (const rule of rules) {
+      const root = await rule.evaluate((node) => {
+        const style = getComputedStyle(node);
+        return { mask: style.maskImage, background: style.backgroundImage };
+      });
+      expect(root).toEqual({ mask: 'none', background: 'none' });
+      const label = await box(rule.locator('.ui-separator__label'));
+      const lines = rule.locator(':is(.ui-separator__start-line, .ui-separator__end-line)');
+      for (const line of await lines.all()) {
+        if (!(await line.isVisible())) continue;
+        expect(await line.evaluate((node) => getComputedStyle(node).backgroundImage)).toContain(
+          'radial-gradient',
+        );
+        const drawn = await box(line);
+        const apart =
+          drawn.x + drawn.width <= label.x ||
+          label.x + label.width <= drawn.x ||
+          drawn.y + drawn.height <= label.y ||
+          label.y + label.height <= drawn.y;
+        expect(apart).toBe(true);
+      }
+    }
   });
 
   test('UIC-SEPARATOR-2.3 sets a label before or after an unbroken line, aligned by its position', async ({

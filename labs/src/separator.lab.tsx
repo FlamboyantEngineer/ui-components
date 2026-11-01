@@ -22,14 +22,21 @@ function PlacedSeparator({
   orientation,
   placement,
   position,
+  variant,
 }: {
   orientation: (typeof orientations)[number];
   placement: (typeof placements)[number];
   position: (typeof positions)[number];
+  variant?: (typeof variants)[number];
 }) {
   return orientation === 'horizontal' ? (
     <div style={column}>
-      <Separator label="Desserts" labelPlacement={placement} labelPosition={position} />
+      <Separator
+        label="Desserts"
+        labelPlacement={placement}
+        labelPosition={position}
+        variant={variant}
+      />
     </div>
   ) : (
     <Row height={120}>
@@ -39,6 +46,7 @@ function PlacedSeparator({
         label="or"
         labelPlacement={placement}
         labelPosition={position}
+        variant={variant}
       />
       <span>Brunch</span>
     </Row>
@@ -150,6 +158,18 @@ mountLab(
         axes={{ orientation: orientations, placement: placements, align: positions }}
         render={({ orientation, placement, align }) => (
           <PlacedSeparator orientation={orientation} placement={placement} position={align} />
+        )}
+      />
+      <StateMatrix
+        axes={{ variant: ['wiggly'], orientation: orientations, placement: placements }}
+        caption="Wiggly lines beside their labels"
+        render={({ variant, orientation, placement }) => (
+          <PlacedSeparator
+            orientation={orientation}
+            placement={placement}
+            position="center"
+            variant={variant}
+          />
         )}
       />
       <div dir="rtl">

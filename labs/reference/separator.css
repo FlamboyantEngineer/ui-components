@@ -1,6 +1,7 @@
 /*
  * Separator. A 1px rule in the border colour: solid rules are filled, dashed and dotted ones are a
- * border, and a wiggly one is a wave the border colour shows through. A labelled separator lays out a line on each side of its label. The generic rules sit in
+ * border, and a wiggly one is a wave drawn with gradients. A labelled separator lays out a line on
+ * each side of its label. The generic rules sit in
  * :where() so the separators of toolbar rows and menus keep the look their own partials give them.
  */
 
@@ -52,29 +53,40 @@
   border-style: dotted;
 }
 
-/* Wiggly rules: a 6px band masked by a repeating wave, along either axis. */
+/*
+ * Wiggly rules: a wave drawn in CSS along either axis, on the rule itself or, with a label, on its
+ * lines only, so the label is never painted over. Each half of the 6px band holds a row of half
+ * rings, the lower halves of rings centred on the band's middle and the upper halves of rings half
+ * a wavelength along, which meet in one continuous line.
+ */
 
 :where(.ui-separator) {
-  --separator-wave-x: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='6'%3E%3Cpath d='M0 3Q3 0 6 3T12 3' fill='none' stroke='black' stroke-width='1.25'/%3E%3C/svg%3E"); /* token-exempt: an alpha mask, not a colour */
-  --separator-wave-y: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='12'%3E%3Cpath d='M3 0Q0 3 3 6T3 12' fill='none' stroke='black' stroke-width='1.25'/%3E%3C/svg%3E"); /* token-exempt: an alpha mask, not a colour */
+  --separator-wave: var(--ref-border);
+  --separator-wave-ring: transparent 2.4px, var(--separator-wave) 2.5px 3.6px, transparent 3.7px;
 }
 
-:where(.ui-separator[data-orientation='horizontal'][data-variant='wiggly']),
+:where(
+  .ui-separator[data-orientation='horizontal'][data-variant='wiggly']:not([data-label-position])
+),
 .ui-separator[data-orientation='horizontal'][data-variant='wiggly']
   > :is(.ui-separator__start-line, .ui-separator__end-line) {
   block-size: 6px;
   border-width: 0;
-  background: var(--ref-border);
-  mask: var(--separator-wave-x) 0 50% / 12px 6px repeat-x;
+  background:
+    radial-gradient(circle at 3px 0, var(--separator-wave-ring)) 0 100% / 12px 50% repeat-x,
+    radial-gradient(circle at 9px 100%, var(--separator-wave-ring)) 0 0 / 12px 50% repeat-x;
 }
 
-:where(.ui-separator[data-orientation='vertical'][data-variant='wiggly']),
+:where(
+  .ui-separator[data-orientation='vertical'][data-variant='wiggly']:not([data-label-position])
+),
 .ui-separator[data-orientation='vertical'][data-variant='wiggly']
   > :is(.ui-separator__start-line, .ui-separator__end-line) {
   inline-size: 6px;
   border-width: 0;
-  background: var(--ref-border);
-  mask: var(--separator-wave-y) 50% 0 / 6px 12px repeat-y;
+  background:
+    radial-gradient(circle at 0 3px, var(--separator-wave-ring)) 100% 0 / 50% 12px repeat-y,
+    radial-gradient(circle at 100% 9px, var(--separator-wave-ring)) 0 0 / 50% 12px repeat-y;
 }
 
 /* Labelled separators: the lines grow; the one on the label's side keeps a short inset. */
