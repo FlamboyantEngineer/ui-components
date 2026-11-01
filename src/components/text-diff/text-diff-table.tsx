@@ -24,6 +24,8 @@ export interface TableOptions {
   baseId: string;
   /** The change the reader moved to. */
   current: number | null;
+  /** Counts the pairs of texts drawn, so each pair's widgets are new elements. */
+  generation: number;
   renderLineWidget: ((line: TextDiffLine) => ReactNode) | undefined;
   onExpand: (fold: FoldRow) => void;
 }
@@ -37,8 +39,8 @@ interface LineRowsProps {
 
 const markers = { added: '+', removed: '−', unchanged: '' } as const;
 
-function toPublicLine({ change, oldNumber, newNumber, text }: DiffLine): TextDiffLine {
-  return { change, oldNumber, newNumber, text };
+function toPublicLine({ change, oldNumber, newNumber, text, id }: DiffLine): TextDiffLine {
+  return { change, oldNumber, newNumber, text, id };
 }
 
 function columnCount(side: TableSide): number {
@@ -86,7 +88,7 @@ function LineRows({ line, side, change, options }: LineRowsProps) {
   return (
     <>
       <tr
-        id={getRowId(options.baseId, side, line.key)}
+        id={getRowId(options.baseId, side, line.id)}
         tabIndex={-1}
         {...hooks.slot('line', {
           change: line.change,
@@ -104,7 +106,7 @@ function LineRows({ line, side, change, options }: LineRowsProps) {
         </td>
       </tr>
       {isEmptyNode(widget) ? null : (
-        <tr {...hooks.slot('widget')}>
+        <tr key={options.generation} {...hooks.slot('widget')}>
           <td colSpan={columnCount(side)}>{widget}</td>
         </tr>
       )}
@@ -145,8 +147,8 @@ function FoldRows({
 }
 
 /** The id of the row that draws a line on one side. */
-export function getRowId(baseId: string, side: TableSide, key: string): string {
-  return `${baseId}-${side}-${key}`;
+export function getRowId(baseId: string, side: TableSide, lineId: string): string {
+  return `${baseId}-${side}-${lineId}`;
 }
 
 /** The id of a change's first row: its first added line in a split diff, when it adds any. */
@@ -157,10 +159,10 @@ export function getChangeRowId(
 ): string {
   const [removed] = block.removed;
   const [added] = block.added;
-  if (!isSplit) return getRowId(baseId, 'both', requireDefined(removed ?? added).key);
+  if (!isSplit) return getRowId(baseId, 'both', requireDefined(removed ?? added).id);
   return added
-    ? getRowId(baseId, 'new', added.key)
-    : getRowId(baseId, 'old', requireDefined(removed).key);
+    ? getRowId(baseId, 'new', added.id)
+    : getRowId(baseId, 'old', requireDefined(removed).id);
 }
 
 /** Both texts in one table: each change's removed lines, then its added lines. */

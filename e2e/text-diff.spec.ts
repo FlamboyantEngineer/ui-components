@@ -140,6 +140,29 @@ test.describe('Text Diff lab', () => {
     await expect(diff.locator('.ui-text-diff__widget')).toHaveCount(3);
   });
 
+  test('UIC-TEXT-DIFF-1.7 starts widgets over for new texts and restores host-kept drafts by line id', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('text-diff');
+    const demo = page.locator('[data-lab-demo="drafts"]');
+    const tart = demo.getByRole('textbox', { name: 'Note on “Lime tart”' });
+    await tart.fill('Check the lime count');
+    await demo.getByRole('radio', { name: 'Split' }).click();
+    await expect(demo.locator('.ui-text-diff')).toHaveAttribute('data-layout', 'split');
+    await expect(tart).toHaveValue('Check the lime count');
+    await demo.getByRole('radio', { name: 'Bread' }).click();
+    const bread = demo.getByRole('textbox', { name: 'Note on “Spelt bread”' });
+    await expect(bread).toHaveValue('');
+    await expect(demo.getByRole('textbox', { name: 'Note on “Prove for 3 hours.”' })).toHaveValue(
+      '',
+    );
+    await bread.fill('Spelt needs more water');
+    await demo.getByRole('radio', { name: 'Tart' }).click();
+    await expect(tart).toHaveValue('Check the lime count');
+    await expect(demo.locator('output')).toHaveText('Drafts kept: 2');
+  });
+
   test('UIC-SYNCED-SCROLL-1.1 keeps two lists at the same fraction of their range', async ({
     page,
     lab,

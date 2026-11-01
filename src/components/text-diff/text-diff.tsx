@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from 'react';
 import { isEditableTarget } from '../../utils/is-editable-target.js';
+import { useGeneration } from '../../utils/use-generation.js';
 import { useStateFor } from '../../utils/use-state-for.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
@@ -55,7 +56,10 @@ export interface TextDiffProps extends BaseProps, AriaLabellingProps, RefProps<H
   layout?: TextDiffLayout | undefined;
   /** Unchanged lines kept beside each change; longer unchanged runs fold. Defaults to 3. */
   context?: number | undefined;
-  /** Draws content under a line, such as its comments; nothing when it returns nothing. */
+  /**
+   * Draws content under a line, such as its comments; nothing when it returns nothing. Widgets
+   * start over when either text changes; keep state that must outlive a layout change by `line.id`.
+   */
   renderLineWidget?: ((line: TextDiffLine) => ReactNode) | undefined;
 }
 
@@ -183,6 +187,8 @@ export function TextDiff({
   // Opened folds and the current change belong to one pair of texts and start over with the next.
   const [expanded, setExpanded] = useStateFor(blocks, noneExpanded);
   const [current, setCurrent] = useStateFor<number | null>(blocks, null);
+  // Line widgets belong to one pair of texts too: the next pair draws new widget elements.
+  const generation = useGeneration(blocks);
   const isSplit = layout === 'split';
   const counts = countChanges(blocks);
   const changeBlocks = blocks.filter((block) => block.kind === 'change');
@@ -203,7 +209,7 @@ export function TextDiff({
   };
   const onExpand = (fold: FoldRow) => {
     setExpanded(new Set(expanded).add(fold.block));
-    pendingFocus.current = getRowId(baseId, isSplit ? 'new' : 'both', fold.firstKey);
+    pendingFocus.current = getRowId(baseId, isSplit ? 'new' : 'both', fold.firstId);
   };
   const onKeyDown = (event: KeyboardEvent) => {
     const widget = `.${hooks.slotClass('widget')}`;
@@ -229,7 +235,7 @@ export function TextDiff({
         blocks={blocks}
         isSplit={isSplit}
         fold={{ context, expanded }}
-        options={{ baseId, current, renderLineWidget, onExpand }}
+        options={{ baseId, current, generation, renderLineWidget, onExpand }}
       />
     </div>
   );

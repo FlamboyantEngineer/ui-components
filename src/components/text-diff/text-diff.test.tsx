@@ -214,6 +214,7 @@ describe('TextDiff', () => {
       oldNumber: 3,
       newNumber: null,
       text: 'Add two eggs.',
+      id: 'r3',
     });
     const widgets = [...container.querySelectorAll<HTMLElement>('.ui-text-diff__widget')];
     expect(widgets.map((widget) => widget.textContent)).toEqual([

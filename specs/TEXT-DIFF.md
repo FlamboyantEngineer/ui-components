@@ -48,10 +48,12 @@ Verification: `src/components/text-diff/diff-rows.test.ts`, `src/components/text
 
 ### UIC-TEXT-DIFF-1.7 - Line widgets
 
-`renderLineWidget(line)` shall be called with each drawn line (`change`, `oldNumber`, `newNumber`, `text`), and what it returns, unless nothing (`null`, `undefined`, a boolean or an empty string), draws in a `ui-text-diff__widget` row right under the line, its one cell spanning the table. In the split layout a line's widget draws once: in the new pane when the line has a new number, else in the old pane.
+`renderLineWidget(line)` shall be called with each drawn line (`change`, `oldNumber`, `newNumber`, `text`, `id`), and what it returns, unless nothing (`null`, `undefined`, a boolean or an empty string), draws in a `ui-text-diff__widget` row right under the line, its one cell spanning the table. In the split layout a line's widget draws once: in the new pane when the line has a new number, else in the old pane.
 
-Implementation: `src/components/text-diff/text-diff-table.tsx`
-Verification: `src/components/text-diff/text-diff.test.tsx`, `e2e/text-diff.spec.ts`
+A widget belongs to one line of one pair of texts. Rerenders that keep `oldText` and `newText`, such as a new `renderLineWidget`, labels or the opening of a fold, keep each drawn widget's elements and their state. When either text changes, every widget is a new element, so an input's draft or an editor's history never carries over to a line of the new texts. A widget's elements also end when its line stops being drawn: the layout changes (the panes are other tables) or `context` folds the line away. A host that keeps a widget's state across those keeps it outside the widget, by the line's `id`: it names the line within the pair of texts, the same in both layouts and whatever folds; another pair of texts reuses ids for other lines, so the host keeps such state per pair of texts.
+
+Implementation: `src/components/text-diff/text-diff.tsx`, `src/components/text-diff/text-diff-table.tsx`, `src/components/text-diff/diff-rows.ts`, `src/utils/use-generation.ts`
+Verification: `src/components/text-diff/text-diff.test.tsx`, `src/utils/use-generation.test.ts`, `e2e/text-diff.spec.ts`
 
 ## UIC-TEXT-DIFF-2 - Summary and navigation
 

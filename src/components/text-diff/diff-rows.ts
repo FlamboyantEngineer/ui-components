@@ -17,6 +17,11 @@ export interface TextDiffLine {
   newNumber: number | null;
   /** The line's text, without its line break. */
   text: string;
+  /**
+   * Names the line within this pair of texts, the same in both layouts and while folds open, so
+   * a host can keep a widget's state by it. Another pair of texts reuses ids for other lines.
+   */
+  id: string;
 }
 
 /** A run of a line's text, and whether the word diff with its paired line changed it. */
@@ -27,7 +32,6 @@ interface WordPart {
 
 /** A line with its key and, when it pairs with a line on the other side, its word changes. */
 export interface DiffLine extends TextDiffLine {
-  key: string;
   words: WordPart[] | null;
 }
 
@@ -43,8 +47,8 @@ export interface FoldRow {
   /** The unchanged block it folds. */
   block: number;
   count: number;
-  /** The key of the first line it hides, which takes focus when the fold opens. */
-  firstKey: string;
+  /** The id of the first line it hides, which takes focus when the fold opens. */
+  firstId: string;
 }
 
 /** A unified row: one line, with the change it belongs to. */
@@ -83,8 +87,8 @@ interface FoldedLines {
 
 function toLine(change: TextDiffChange, numbers: { old: number | null; new: number | null }) {
   return (text: string): DiffLine => {
-    const key = `${change[0]}${change === 'added' ? numbers.new : numbers.old}`;
-    const line = { change, oldNumber: numbers.old, newNumber: numbers.new, text, key, words: null };
+    const id = `${change[0]}${change === 'added' ? numbers.new : numbers.old}`;
+    const line = { change, oldNumber: numbers.old, newNumber: numbers.new, text, id, words: null };
     if (numbers.old !== null) numbers.old += 1;
     if (numbers.new !== null) numbers.new += 1;
     return line;
@@ -137,7 +141,7 @@ function foldLines(
 function toFoldRow(block: number, hidden: DiffLine[]): FoldRow[] {
   const first = hidden[0];
   if (!first) return [];
-  return [{ kind: 'fold', key: `f${block}`, block, count: hidden.length, firstKey: first.key }];
+  return [{ kind: 'fold', key: `f${block}`, block, count: hidden.length, firstId: first.id }];
 }
 
 /** The blocks of the line diff of two texts, changes numbered in order. */
@@ -182,7 +186,7 @@ export function createUnifiedRows(blocks: readonly DiffBlock[], options: FoldOpt
   return blocks.flatMap((block): UnifiedRow[] => {
     const line = (change: number | null) => (entry: DiffLine) => ({
       kind: 'line' as const,
-      key: entry.key,
+      key: entry.id,
       line: entry,
       change,
     });
@@ -202,7 +206,7 @@ export function createSplitRows(blocks: readonly DiffBlock[], options: FoldOptio
         const next = block.added[index] ?? null;
         return {
           kind: 'line',
-          key: requireDefined(old ?? next).key,
+          key: requireDefined(old ?? next).id,
           old,
           new: next,
           change: block.change,
@@ -211,7 +215,7 @@ export function createSplitRows(blocks: readonly DiffBlock[], options: FoldOptio
     }
     const line = (entry: DiffLine): SplitLineRow => ({
       kind: 'line',
-      key: entry.key,
+      key: entry.id,
       old: entry,
       new: entry,
       change: null,

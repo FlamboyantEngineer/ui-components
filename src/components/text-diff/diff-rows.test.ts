@@ -105,8 +105,8 @@ describe('text diff rows', () => {
       'unchanged 13/13',
       'fold 8',
     ]);
-    expect(rows[0]).toMatchObject({ kind: 'fold', block: 0, firstKey: 'u1' });
-    expect(rows.at(-1)).toMatchObject({ kind: 'fold', block: 2, firstKey: 'u14' });
+    expect(rows[0]).toMatchObject({ kind: 'fold', block: 0, firstId: 'u1' });
+    expect(rows.at(-1)).toMatchObject({ kind: 'fold', block: 2, firstId: 'u14' });
     const opened = createUnifiedRows(blocks, { context: 2, expanded: new Set([0]) });
     expect(describeUnified(opened).slice(0, 3)).toEqual([
       'unchanged 1/1',

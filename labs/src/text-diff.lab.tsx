@@ -3,6 +3,7 @@ import { CommentThread } from '../../src/components/comment-thread/comment-threa
 import { CommentThreadReply } from '../../src/components/comment-thread/index.js';
 import { Button } from '../../src/components/button/button.js';
 import { ScrollRegion } from '../../src/components/scroll-region/scroll-region.js';
+import { TextField } from '../../src/components/text-field/text-field.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import {
   TextDiff,
@@ -157,6 +158,64 @@ function Review() {
   );
 }
 
+const drafts = {
+  tart: ['Lemon tart\nServes 8\nBake for 25 minutes.', 'Lime tart\nServes 8\nBake for 20 minutes.'],
+  bread: ['Rye bread\nServes 8\nProve for 2 hours.', 'Spelt bread\nServes 8\nProve for 3 hours.'],
+} as const;
+type DraftVersion = keyof typeof drafts;
+
+/**
+ * Note drafts under changed lines. Each recipe is its own pair of texts, so switching recipes
+ * draws new note fields; the host keeps every draft by recipe and line id, so a draft comes back
+ * after a layout change or a return to its recipe, and never lands on another recipe's line.
+ */
+function LineDrafts() {
+  const [layout, setLayout] = useState<TextDiffLayout>('unified');
+  const [version, setVersion] = useState<DraftVersion>('tart');
+  const [notes, setNotes] = useState<Record<string, string>>({});
+  const [oldText, newText] = drafts[version];
+  return (
+    <div data-lab-demo="drafts">
+      <SegmentedChoice
+        aria-label="Recipe"
+        options={[
+          { value: 'tart', label: 'Tart' },
+          { value: 'bread', label: 'Bread' },
+        ]}
+        value={version}
+        onChange={(value) => setVersion(value === 'bread' ? 'bread' : 'tart')}
+      />
+      <SegmentedChoice
+        aria-label="Drafts layout"
+        options={[
+          { value: 'unified', label: 'Unified' },
+          { value: 'split', label: 'Split' },
+        ]}
+        value={layout}
+        onChange={(value) => setLayout(value === 'split' ? 'split' : 'unified')}
+      />
+      <TextDiff
+        aria-label={`Drafts on the ${version} recipe`}
+        oldText={oldText}
+        newText={newText}
+        layout={layout}
+        renderLineWidget={(line) => {
+          if (line.change !== 'added') return null;
+          const key = `${version}:${line.id}`;
+          return (
+            <TextField
+              label={`Note on “${line.text}”`}
+              value={notes[key] ?? ''}
+              onChange={(value) => setNotes((current) => ({ ...current, [key]: value }))}
+            />
+          );
+        }}
+      />
+      <output>Drafts kept: {Object.values(notes).filter(Boolean).length}</output>
+    </div>
+  );
+}
+
 const cities = ['Lisbon', 'Porto', 'Coimbra', 'Braga', 'Faro', 'Évora', 'Aveiro', 'Viseu'];
 const shortList = Array.from({ length: 24 }, (_, index) => `${cities[index % 8]} ${index + 1}`);
 const longList = Array.from({ length: 60 }, (_, index) => `Stop ${index + 1}`);
@@ -280,6 +339,12 @@ mountLab(
       description="Read-only comment threads drawn under the lines they are about. In the split layout a thread sits on the side of its line, and the panes scroll together, meeting again at the next shared line."
     >
       <Review />
+    </LabSection>
+    <LabSection
+      title="Drafts on lines"
+      description="Note fields under added lines. Widgets belong to one pair of texts: another recipe draws new fields. The host keeps each draft by recipe and line id, so it returns after a layout change or back on its recipe."
+    >
+      <LineDrafts />
     </LabSection>
     <LabSection
       title="Synced scroll"
