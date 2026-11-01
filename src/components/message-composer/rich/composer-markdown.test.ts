@@ -44,6 +44,37 @@ describe('rich composer Markdown', () => {
     expect(serializeComposerDocument(parseComposerMessage(block))).toEqual(block);
   });
 
+  it('UIC-MESSAGE-COMPOSER-4.2 fences code longer than its own backtick runs, so it round-trips', () => {
+    const code = (text: string) =>
+      composerSchema.node('codeBlock', { language: 'md' }, composerSchema.text(text));
+    const pill = composerSchema.node('pill', {
+      kind: 'mention',
+      id: 'maria',
+      label: 'Maria Santos',
+    });
+    const doc = composerSchema.node('doc', null, [
+      composerSchema.node('paragraph', null, [composerSchema.text('Hi '), pill]),
+      code('before\n```\nafter'),
+      code('````js\nx\n````'),
+      composerSchema.node('paragraph', null, composerSchema.text('done')),
+    ]);
+    const saved = serializeComposerDocument(doc);
+    expect(saved.text).toBe(
+      'Hi @Maria Santos\n````md\nbefore\n```\nafter\n````\n`````md\n````js\nx\n````\n`````\ndone',
+    );
+    // Saved and restored again and again, the document and the token offsets stay the same.
+    let restored = parseComposerMessage(saved);
+    for (let round = 0; round < 3; round += 1) {
+      expect(restored.eq(doc)).toBe(true);
+      expect(serializeComposerDocument(restored)).toEqual(saved);
+      restored = parseComposerMessage(serializeComposerDocument(restored));
+    }
+    // A longer closing fence closes a block too, as in CommonMark; a shorter one is code.
+    const longer = parseComposerMessage({ text: '````\n```\nx\n`````\nafter', tokens: [] });
+    const texts = [longer.child(0), longer.child(1)].map((block) => block.textContent);
+    expect(texts).toEqual(['```\nx', 'after']);
+  });
+
   it('UIC-MESSAGE-COMPOSER-4.9 reads and writes references with their identity, record type and edits around them', () => {
     const references: MessageComposerMessage = {
       text: 'TRIP-4 and NOTE-12\nTRIP-4',

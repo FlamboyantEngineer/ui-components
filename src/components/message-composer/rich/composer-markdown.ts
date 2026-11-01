@@ -4,8 +4,17 @@ import type { Node } from 'prosemirror-model';
 import type { MessageComposerMessage, MessageComposerToken } from '../composer-message.js';
 import { composerSchema as schema, getPillText, type PillAttributes } from './composer-schema.js';
 
-const openingFence = /^```([^`\s]*)$/;
-const closingFence = '```';
+// A fence is three or more backticks; the opening one may name a language, and a run of at least
+// as many backticks alone on a line closes it, as in CommonMark.
+const openingFence = /^(`{3,})([^`\s]*)$/;
+const backtickLine = /^`+$/;
+const backtickRun = /`+/g;
+
+/** A fence longer than every run of backticks in `code`, so no line of it closes the block. */
+function toFence(code: string): string {
+  const longest = Math.max(0, ...Array.from(code.matchAll(backtickRun), ([run]) => run.length));
+  return '`'.repeat(Math.max(3, longest + 1));
+}
 
 /** A pill's token without its range: `recordType` only when the pill has one. */
 function toPillToken({ kind, id, label, recordType }: PillAttributes) {
@@ -54,14 +63,18 @@ function writeParagraph(writer: Writer, block: Node) {
   }
 }
 
-/** The document as Markdown: a line per paragraph, code blocks between fences, pills as text. */
+/**
+ * The document as Markdown: a line per paragraph, code blocks between fences longer than any run of
+ * backticks in their code, pills as text.
+ */
 export function serializeComposerDocument(doc: Node): MessageComposerMessage {
   const writer = createWriter();
   doc.forEach((block) => {
     if (!block.type.spec.code) return writeParagraph(writer, block);
-    writer.line(`${closingFence}${String(block.attrs.language ?? '')}`);
+    const fence = toFence(block.textContent);
+    writer.line(`${fence}${String(block.attrs.language ?? '')}`);
     for (const line of block.textContent.split('\n')) writer.line(line);
-    writer.line(closingFence);
+    writer.line(fence);
   });
   return writer.finish();
 }
@@ -86,8 +99,11 @@ function parseLine(line: string, start: number, tokens: MessageComposerToken[]) 
 
 /** Where the code block opened at `open` closes, or -1 when it never does. */
 function findClosingFence(lines: readonly string[], open: number): number {
-  if (!openingFence.test(lines[open] ?? '')) return -1;
-  return lines.findIndex((line, index) => index > open && line === closingFence);
+  const length = openingFence.exec(lines[open] ?? '')?.[1]?.length;
+  if (length === undefined) return -1;
+  return lines.findIndex(
+    (line, index) => index > open && line.length >= length && backtickLine.test(line),
+  );
 }
 
 /**
@@ -108,7 +124,7 @@ export function parseComposerMessage(message: MessageComposerMessage): Node {
       continue;
     }
     const code = lines.slice(index + 1, close).join('\n');
-    const language = openingFence.exec(line)?.[1] ?? '';
+    const language = openingFence.exec(line)?.[2] ?? '';
     blocks.push(schema.node('codeBlock', { language }, code ? schema.text(code) : undefined));
     start += lines.slice(index, close + 1).join('\n').length + 1;
     index = close + 1;
