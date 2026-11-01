@@ -20,6 +20,7 @@ export const pdfViewerHooks = createHooks('pdf-viewer', [
   'scroller',
   'pages',
   'page',
+  'page-error',
   'canvas',
   'text-layer',
   'annotation-layer',

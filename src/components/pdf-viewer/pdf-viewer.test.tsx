@@ -308,8 +308,13 @@ describe('PdfViewer', () => {
       await userEvent.click(screen.getByRole('button', { name: 'Download' }));
       expect(download).toHaveBeenCalled();
 
-      // The password form and the outline show in viewers of their own.
+      // The password form, the outline and a failed page show in viewers of their own.
       const outline = [{ title: 'Markets', dest: 'markets', url: null, items: [] }];
+      const failing = createEngine({ lines: [['Markets']] });
+      failing.render.mockImplementation(() => ({
+        promise: Promise.reject(new Error('The page cannot be drawn.')),
+        cancel: vi.fn(),
+      }));
       render(
         <>
           <PdfViewer
@@ -323,12 +328,18 @@ describe('PdfViewer', () => {
             loadEngine={createEngine({ outline }).loadEngine}
             defaultSidebarOpen
           />
+          <PdfViewer
+            aria-label="Failing"
+            source="/files/Report.pdf"
+            loadEngine={failing.loadEngine}
+          />
         </>,
       );
       // Each new viewer loads its engine and opens its document before these parts render.
       const opened = { timeout: 15_000 };
       await screen.findByLabelText('Password', {}, opened);
       await screen.findByRole('treegrid', { name: 'Outline' }, opened);
+      await screen.findByText('Page 1 could not be drawn.', {}, opened);
       expectHooksMatchSpec(document.body, 'PDF-VIEWER', { slots: 'all' });
     },
   );

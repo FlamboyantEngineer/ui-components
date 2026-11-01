@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, type RefObject } from 'react';
+import { useEffect, useMemo, useState, type RefObject } from 'react';
 import {
   createAnnotationLayer,
   createTextLayer,
@@ -12,6 +12,7 @@ import {
 } from './pdf-engine.js';
 import { drawPage, type PageBitmap } from './page-bitmap.js';
 import type { LoadedPdf } from './use-pdf-document.js';
+import { useLatest } from '../../utils/use-latest.js';
 
 interface UsePageRenderOptions<
   V extends PdfViewport = PdfViewport,
@@ -28,6 +29,17 @@ interface UsePageRenderOptions<
   annotationLayerRef: RefObject<HTMLDivElement | null>;
   /** Follows the links the annotation layer draws. */
   linkService: PdfLinkService;
+  /** Called when the page's bitmap fails to draw; not when a drawing is cancelled. */
+  onPageError?: ((pageIndex: number, error: Error) => void) | undefined;
+}
+
+/** A page's drawing: its text layer once rendered, the failure of its bitmap and a retry. */
+export interface PageRender {
+  textLayer: PdfTextLayer | null;
+  /** The bitmap's drawing failed, until the page draws again. */
+  failure: Error | null;
+  /** Draws the page again. */
+  retry(): void;
 }
 
 interface PageDrawing<V extends PdfViewport, C extends PdfTextContent> extends PageBitmap<V, C> {
@@ -111,7 +123,8 @@ function buildAnnotationLayer<V extends PdfViewport, C extends PdfTextContent>(
 
 /**
  * Draws a page into its canvas and builds its text and annotation layers while the page is near
- * the view, again at every scale and rotation. Returns the text layer once it has rendered.
+ * the view, again at every scale and rotation and on a retry. Returns the text layer once it has
+ * rendered, and the failure of the bitmap's drawing until the page draws again.
  */
 export function usePageRender<V extends PdfViewport, C extends PdfTextContent>({
   loaded,
@@ -122,8 +135,12 @@ export function usePageRender<V extends PdfViewport, C extends PdfTextContent>({
   layerRef,
   annotationLayerRef,
   linkService,
-}: UsePageRenderOptions<V, C>): PdfTextLayer | null {
+  onPageError,
+}: UsePageRenderOptions<V, C>): PageRender {
   const [textLayer, setTextLayer] = useState<PdfTextLayer | null>(null);
+  const [failure, setFailure] = useState<Error | null>(null);
+  const [attempt, setAttempt] = useState(0);
+  const latestOnPageError = useLatest(onPageError);
   useEffect(() => {
     const container = layerRef.current;
     const annotationLayer = annotationLayerRef.current;
@@ -133,15 +150,32 @@ export function usePageRender<V extends PdfViewport, C extends PdfTextContent>({
       return undefined;
     }
     const drawing = { loaded, page, pageIndex, viewport };
+    const onFailure = (error: Error) => {
+      setFailure(error);
+      latestOnPageError.current?.(pageIndex, error);
+    };
     const cancels = [
-      drawPage(drawing, canvas),
+      drawPage(drawing, canvas, onFailure),
       buildTextLayer(drawing, container, setTextLayer),
       loaded.hidesAnnotations ? null : buildAnnotationLayer(drawing, annotationLayer, linkService),
     ];
     return () => {
       for (const cancel of cancels) cancel?.();
       setTextLayer(null);
+      setFailure(null);
     };
-  }, [annotationLayerRef, canvas, isNear, layerRef, linkService, loaded, pageIndex, scale]);
-  return textLayer;
+  }, [
+    annotationLayerRef,
+    attempt,
+    canvas,
+    isNear,
+    latestOnPageError,
+    layerRef,
+    linkService,
+    loaded,
+    pageIndex,
+    scale,
+  ]);
+  const retry = useMemo(() => () => setAttempt((count) => count + 1), []);
+  return { textLayer, failure, retry };
 }

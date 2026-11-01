@@ -205,6 +205,11 @@
   display: block;
 }
 
+/* A page that failed to draw shows its error at the top of the page. */
+.ui-pdf-viewer__page-error {
+  padding: 16px;
+}
+
 /* Caller content stays on its page. */
 .ui-pdf-viewer__overlay {
   overflow: hidden;

@@ -666,6 +666,27 @@ test.describe('PDF Viewer lab', () => {
     await expect(page.locator('body > iframe')).toHaveCount(0);
   });
 
+  test('UIC-PDF-VIEWER-2.6 shows a page that fails to draw with a retry', async ({ page, lab }) => {
+    const reader = await openCase(page, lab, 'failing-page');
+    const failed = reader.locator('[data-lab-output="Failed pages"]');
+    await expect(reader.locator('.ui-pdf-viewer__page')).toHaveCount(3);
+    await expect(failed).toHaveText('none');
+    const third = reader.locator('.ui-pdf-viewer__page').nth(2);
+    await third.scrollIntoViewIfNeeded();
+    const alert = third.getByRole('alert');
+    await expect(alert).toHaveText(/Page 3 could not be drawn\./);
+    await expect(third).toHaveAttribute('data-error', 'true');
+    await expect(failed).toHaveText('3');
+    // The rest of the document stays readable: the page navigation still moves.
+    await reader.getByRole('button', { name: 'Previous page' }).click();
+    await expect(reader.getByRole('textbox', { name: 'Page' })).toHaveValue('2');
+    await third.scrollIntoViewIfNeeded();
+    await alert.getByRole('button', { name: 'Retry' }).click();
+    await expect(third.getByRole('alert')).toHaveCount(0);
+    await expect(third).not.toHaveAttribute('data-error');
+    await expect(failed).toHaveText('3');
+  });
+
   test('UIC-PDF-VIEWER-11.1 reads an unrendered page and closes the handle on a new source', async ({
     page,
     lab,

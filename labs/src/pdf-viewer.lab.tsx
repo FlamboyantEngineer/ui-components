@@ -16,6 +16,7 @@ import {
 import { LabOutput } from './lab-output.js';
 import { createLongPdf, longSampleMarkedPage } from './pdf-long-sample.js';
 import { ReadingNotes } from './pdf-viewer-reading-cases.js';
+import { FailingPage } from './pdf-viewer-failure-cases.js';
 
 const notAPdf = new TextEncoder().encode('This file is not a PDF.');
 
@@ -217,6 +218,12 @@ mountLab(
       description="The caller reads the last page's text before it renders, drops a pin where the reader clicks a page, keeps the finished selection to note it, and shows the page and offset at the top of the view. Opening the other copy closes the first document's handle."
     >
       <ReadingNotes />
+    </LabSection>
+    <LabSection
+      title="A page that fails to draw"
+      description="The third page's first drawing fails, as unsupported content would. Scrolled to, it shows the failure with a retry while the other pages and the page navigation keep working; the retry draws it."
+    >
+      <FailingPage />
     </LabSection>
     <LabSection
       title="Caller-owned find"
