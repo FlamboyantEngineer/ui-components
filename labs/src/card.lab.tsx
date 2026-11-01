@@ -443,7 +443,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Adaptive cards in a resizable pane"
-      description="Narrow the pane with the slider or its grip: the cards turn compact, then show a few characters and a More button that holds the rest."
+      description="Narrow the pane with the slider or its grip: the cards turn compact, then show a few characters. The plus button at the end of the title row is not a menu: it shows what the smaller card hides (description, metadata, actions, and in the minimal card the badge and toggle) in place, below the title row, and turns into a minus. Press it again, or Escape in a revealed field, to hide them; focus returns to it."
     >
       <ResizablePane />
     </LabSection>
