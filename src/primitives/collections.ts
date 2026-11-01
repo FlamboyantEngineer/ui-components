@@ -19,6 +19,7 @@ export {
   ListBoxLoadMoreItem,
   ListBoxSection,
   ListLayout,
+  Rect,
   ResizableTableContainer,
   Row,
   SelectionIndicator,

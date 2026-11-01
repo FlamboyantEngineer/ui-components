@@ -236,8 +236,12 @@ const longColumn: Task[] = Array.from({ length: 500 }, (_, index) => ({
 
 function LongBoard() {
   const [items, setItems] = useState(longColumn);
+  const [virtualized, setVirtualized] = useState(true);
   return (
     <div style={frame} data-lab-demo="virtualized">
+      <Button size="sm" isSelected={virtualized} onPress={() => setVirtualized(!virtualized)}>
+        Virtualize
+      </Button>
       <Board
         aria-label="Inventory"
         columns={[columns[0] as BoardColumn, columns[3] as BoardColumn]}
@@ -245,7 +249,7 @@ function LongBoard() {
         getColumn={getColumn}
         getTextValue={getTextValue}
         renderCard={renderCard}
-        virtualized
+        virtualized={virtualized}
         onMove={(move) => setItems(applyBoardMove(items, move, place))}
       />
     </div>
@@ -381,7 +385,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Long columns"
-      description="Five hundred cards, virtualized: each cell renders only the cards in view."
+      description="Five hundred cards, virtualized: each cell renders only the cards in view. Virtualize turns virtualization off and on; the cards in view, their focus and their state stay as they are."
     >
       <LongBoard />
     </LabSection>
