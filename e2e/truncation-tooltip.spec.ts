@@ -3,6 +3,20 @@ import { expect, test, matrixCell } from './fixtures.js';
 const FULL_TEXT = 'Quarterly report for the northern region, final edition.pdf';
 
 test.describe('Truncation Tooltip lab', () => {
+  test('UIC-TRUNCATION-TOOLTIP-1.5 shows the text of a link without its id or a reachable copy of the link', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('truncation-tooltip');
+    const text = page.locator('[data-lab-text="inner link"]');
+    await text.hover();
+    const panel = page.getByRole('tooltip');
+    await expect(panel).toHaveText(FULL_TEXT);
+    await expect(panel.locator('[id]')).toHaveCount(0);
+    await expect(panel.locator('[inert] a')).toHaveCount(1);
+    await expect(page.locator('#lab-inner-link')).toHaveCount(1);
+  });
+
   test('UIC-TRUNCATION-TOOLTIP-1.1 UIC-TRUNCATION-TOOLTIP-1.2 shows cut text whole and leaves whole text alone', async ({
     page,
     lab,

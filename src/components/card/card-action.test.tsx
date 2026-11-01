@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { Card } from './card.js';
+import { CardAction } from './card-parts.js';
 
 // Which card a click belongs to, and which content keeps its clicks (UIC-CARD-3.2).
 
@@ -66,6 +67,28 @@ describe('Card background clicks', () => {
     expect(onRadio).toHaveBeenCalledTimes(1);
     expect(onAction).not.toHaveBeenCalled();
     await user.click(screen.getByText('Background'));
+    expect(onAction).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-CARD-3.2 keeps the first action element when a later copy of it leaves', async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    const card = (withCopy: boolean) => (
+      <Card
+        onAction={onAction}
+        header={
+          <>
+            <CardAction>Seeds</CardAction>
+            {withCopy ? <CardAction>Seeds copy</CardAction> : null}
+          </>
+        }
+      >
+        <p>Twelve packets</p>
+      </Card>
+    );
+    const { rerender } = render(card(true));
+    rerender(card(false));
+    await user.click(screen.getByText('Twelve packets'));
     expect(onAction).toHaveBeenCalledTimes(1);
   });
 });

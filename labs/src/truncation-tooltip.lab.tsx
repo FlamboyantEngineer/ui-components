@@ -54,6 +54,18 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="A link inside the text"
+      description="The cut text is a link with an id; the tooltip shows its text only, so the page keeps one link and one id."
+    >
+      <div style={{ width: 160 }}>
+        <TruncationTooltip data-lab-text="inner link">
+          <a id="lab-inner-link" href="#inner-link">
+            {longText}
+          </a>
+        </TruncationTooltip>
+      </div>
+    </LabSection>
+    <LabSection
       title="Beside a text field"
       description="Focus the note, rest the pointer on the cut name, then type with an input method: Escape while composing cancels the composition and leaves the hint open; Escape after it closes the hint and keeps focus in the note."
     >

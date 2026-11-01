@@ -34,7 +34,7 @@ Verification: `src/components/truncation-tooltip/truncation-tooltip.test.tsx`, `
 
 ### UIC-TRUNCATION-TOOLTIP-1.5 - Visual only
 
-The panel shall have `role="tooltip"`, show the same children in the Tooltip's `default` variant, also carry the `ui-truncation-tooltip__panel` class, and be visual only: because the text is already the accessible content, the component adds no `aria-describedby` and never moves focus. `placement` (`top` by default) chooses the preferred side, flipping when it does not fit. Inside a control that has its own [Tooltip](TOOLTIP.md), the panel keeps a separate id and is positioned against the text.
+The panel shall have `role="tooltip"`, show the children's text in the Tooltip's `default` variant, also carry the `ui-truncation-tooltip__panel` class, and be visual only: because the text is already the accessible content, the component adds no `aria-describedby` and never moves focus. The panel holds a copy of the text's markup taken from the page, hidden from assistive technology and inert, with every `id` removed: it renders no second instance of the children, so it owns no ids, refs or focusable elements, and a ref, id or control in the children stays the page's one. The copy keeps the markup's direction and formatting, such as a [Path](PATH.md)'s left-to-right isolation. `placement` (`top` by default) chooses the preferred side, flipping when it does not fit. Inside a control that has its own [Tooltip](TOOLTIP.md), the panel keeps a separate id and is positioned against the text.
 
 Implementation: `src/components/truncation-tooltip/truncation-tooltip.tsx`, `src/components/tooltip/tooltip.tsx`
 Verification: `src/components/truncation-tooltip/truncation-tooltip.test.tsx`, `e2e/truncation-tooltip.spec.ts`
