@@ -101,9 +101,9 @@ Verification: `src/components/property-panel/property-section.test.tsx`, `e2e/pr
 
 ### UIC-PROPERTY-PANEL-3.1 - Row structure
 
-`PropertyRow` shall render its `label` in the `ui-property-row__label` slot, then the control slot holding its children followed by the `unit` and the `hint`, then the `description` and the `actions`, each slot only when given. A text label is drawn through `TextMatch`.
+`PropertyRow` shall render its `label` in the `ui-property-row__label` slot, then the control slot holding its children followed by the `unit` and the `hint`, then the `description` and the `actions`, each slot only when given. A text label is drawn through `TextMatch`. In the reference sheet, rows in the panel body, a section, a group or a card body share that container's columns: the label column is as wide as the container's longest label, up to 40% of its width (a longer label wraps), with an 8-pixel gap before the controls, so a short label sits close to its control and every control in the container starts on one line; a row elsewhere takes a fixed label column. A field placed in a row adds no label column or gap of its own.
 
-Implementation: `src/components/property-panel/property-row.tsx`
+Implementation: `src/components/property-panel/property-row.tsx`, `labs/reference/property-panel.css`
 Verification: `src/components/property-panel/property-row.test.tsx`, `e2e/property-panel.spec.ts`
 
 ### UIC-PROPERTY-PANEL-3.2 - Label association
