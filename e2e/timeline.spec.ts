@@ -336,3 +336,30 @@ test.describe('Timeline lab', () => {
     await lab.expectAccessible('[data-lab-demo="rtl"]');
   });
 });
+
+for (const scale of [1.5, 0.5]) {
+  test(`UIC-TIMELINE-2.1 keeps a dragged bar under the pointer inside scale(${scale})`, async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('timeline');
+    const plan = page.locator('[data-lab-demo="plan"]');
+    await plan.evaluate((node, factor) => {
+      Object.assign(node.style, { transform: `scale(${factor})`, transformOrigin: '0 0' });
+    }, scale);
+    const bar = plan.getByRole('button', { name: 'Strip kitchen' });
+    await bar.scrollIntoViewIfNeeded();
+    const box = requireDefined(await bar.boundingBox());
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2 + 35 * scale, box.y + box.height / 2, {
+      steps: 5,
+    });
+    await page.mouse.up();
+    await expect(plan.locator('[data-lab-demo="last-change"]')).toHaveText(
+      'Last change: Strip kitchen: Mar 18, 2026 to Mar 22, 2026',
+    );
+    const moved = requireDefined(await bar.boundingBox());
+    expect(Math.abs(moved.x - box.x - 32 * scale)).toBeLessThanOrEqual(1);
+  });
+}

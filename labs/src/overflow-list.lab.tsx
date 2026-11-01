@@ -124,6 +124,21 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Inside a scaled frame"
+      description="The 300 pixel row inside ancestors scaled by 0.75 and 1.5 keeps the same fruit as the unscaled row: items and room are measured in the row's own pixels."
+    >
+      <StateMatrix
+        axes={{ scale: ['0.75', '1.5'] }}
+        render={({ scale }) => (
+          <div style={{ transform: `scale(${scale})`, transformOrigin: '0 0' }}>
+            <Frame width={widths.medium}>
+              <FruitRow collapseFrom="end" />
+            </Frame>
+          </div>
+        )}
+      />
+    </LabSection>
+    <LabSection
       title="Resizing"
       description="The row solves again as its frame narrows or widens, measuring hidden items from the last time they showed."
     >

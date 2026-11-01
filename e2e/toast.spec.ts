@@ -469,3 +469,26 @@ test.describe('Toast over overlays', () => {
     await expect(frame.getByRole('region')).toHaveCount(0);
   });
 });
+
+for (const scale of [1.5, 0.5]) {
+  test(`UIC-TOAST-4.2 keeps a swiped toast under the pointer inside scale(${scale})`, async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('toast');
+    await page.locator('[data-lab-push="action"]').click();
+    const toast = page.getByRole('alertdialog', { name: 'Row deleted' });
+    await toast.evaluate((node, factor) => {
+      Object.assign(node.style, { scale: String(factor) });
+    }, scale);
+    const title = await toast.locator('.ui-toast__title').boundingBox();
+    const startX = (title?.x ?? 0) + 10;
+    const y = (title?.y ?? 0) + (title?.height ?? 0) / 2;
+    await page.mouse.move(startX, y);
+    await page.mouse.down();
+    await page.mouse.move(startX + 40 * scale, y, { steps: 6 });
+    await expect(toast).toHaveAttribute('style', /--ui-toast-swipe-x: 40px/);
+    await page.mouse.up();
+    await expect(toast).toBeVisible();
+  });
+}

@@ -3,6 +3,7 @@
 // Swiping a toast away: the pointer drags it along one direction, and a release past the threshold
 // dismisses it.
 
+import { measureScale, type ElementScale } from '../../utils/element-scale.js';
 import { useState } from 'react';
 import { capturePointer } from '../../utils/pointer-drag.js';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
@@ -43,6 +44,20 @@ function toTravel(direction: ToastSwipeEdge, deltaX: number, deltaY: number): nu
   return direction === 'down' ? deltaY : -deltaY;
 }
 
+/** The travel from the swipe's start toward `direction`, in the toast's own layout pixels. */
+function readTravel(
+  direction: ToastSwipeEdge,
+  event: { clientX: number; clientY: number },
+  start: { x: number; y: number; scale: ElementScale },
+): number {
+  const { scale } = start;
+  return toTravel(
+    direction,
+    (event.clientX - start.x) / scale.x,
+    (event.clientY - start.y) / scale.y,
+  );
+}
+
 /** Swallows the click that follows a swipe, so ending a swipe on a button does not press it. */
 function swallowNextClick(element: HTMLElement) {
   const swallow = (event: MouseEvent) => {
@@ -62,11 +77,19 @@ function swallowNextClick(element: HTMLElement) {
 export function useToastSwipe({ direction, threshold, onDismiss }: ToastSwipeOptions) {
   const [travel, setTravel] = useState(0);
   const [isSwiping, setSwiping] = useState(false);
-  const swipeProps = usePointerDrag<HTMLElement, { x: number; y: number; isSwiping: boolean }>({
+  const swipeProps = usePointerDrag<
+    HTMLElement,
+    { x: number; y: number; scale: ElementScale; isSwiping: boolean }
+  >({
     capture: false,
-    onStart: (event) => ({ x: event.clientX, y: event.clientY, isSwiping: false }),
+    onStart: (event) => ({
+      x: event.clientX,
+      y: event.clientY,
+      scale: measureScale(event.currentTarget),
+      isSwiping: false,
+    }),
     onMove: (event, current) => {
-      const distance = toTravel(direction, event.clientX - current.x, event.clientY - current.y);
+      const distance = readTravel(direction, event, current);
       if (!current.isSwiping && Math.abs(distance) < swipeSlop) return;
       if (!current.isSwiping) {
         current.isSwiping = true;
@@ -81,7 +104,7 @@ export function useToastSwipe({ direction, threshold, onDismiss }: ToastSwipeOpt
       if (!current.isSwiping) return;
       setSwiping(false);
       swallowNextClick(event.currentTarget);
-      const distance = toTravel(direction, event.clientX - current.x, event.clientY - current.y);
+      const distance = readTravel(direction, event, current);
       if (!isCancelled && distance >= threshold) onDismiss();
       else setTravel(0);
     },

@@ -1,5 +1,6 @@
 'use client';
 
+import { measureScale, toLocalPoint } from '../../utils/element-scale.js';
 import {
   useEditorEffect,
   useEditorEventCallback,
@@ -44,11 +45,11 @@ function findSlashRange(state: EditorState): SlashRange | null {
 function placeCaret(view: EditorView, surface: HTMLElement | null, pos: number): CaretPlace | null {
   if (!surface) return null;
   const caret = view.coordsAtPos(pos);
-  const box = surface.getBoundingClientRect();
+  const at = toLocalPoint(surface, { x: caret.left, y: caret.top });
   return {
-    left: caret.left - box.left,
-    top: caret.top - box.top,
-    height: caret.bottom - caret.top,
+    left: at.x,
+    top: at.y,
+    height: (caret.bottom - caret.top) / measureScale(surface).y,
   };
 }
 

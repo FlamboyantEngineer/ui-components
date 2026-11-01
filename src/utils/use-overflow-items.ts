@@ -17,7 +17,9 @@ import {
   type MeasureCache,
   type OverflowCollapseFrom,
   type RenderedItems,
+  measureLayoutWidth,
 } from './overflow-measure.js';
+import { measureScale } from './element-scale.js';
 import { flushSync } from 'react-dom';
 import { useResizeObserver } from './use-resize-observer.js';
 
@@ -163,10 +165,11 @@ function useOverflowObserver(
     },
     (entries) => {
       const container = elements.container.current;
+      const scale = measureScale(container).x;
       const changed = entries.some(({ target }) => {
         if (target === container) return !isSameRoom(container, measured.current.room);
         const known = measured.current.observed.get(target);
-        const size = target.getBoundingClientRect().width;
+        const size = measureLayoutWidth(target, scale);
         return known === undefined || Math.abs(known - size) > tolerance;
       });
       if (changed) remeasure();

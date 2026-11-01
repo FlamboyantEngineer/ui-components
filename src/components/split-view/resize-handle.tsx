@@ -1,5 +1,6 @@
 'use client';
 
+import { measureScale } from '../../utils/element-scale.js';
 import {
   useLayoutEffect,
   useMemo,
@@ -154,7 +155,11 @@ function useResizeInteraction(options: ResizeInteractionOptions) {
       event.preventDefault();
       latest.current = value;
       changeResizing(true);
-      return { start: axisCoordinate(event), startValue: value, scale: getUnitsPerPixel() };
+      // Pointer travel is in viewport pixels; a scaled ancestor makes them more or fewer than the
+      // split's own pixels, so the travel is measured against the split the handle sits in.
+      const split = measureScale(event.currentTarget.parentElement ?? event.currentTarget);
+      const scale = getUnitsPerPixel() / (orientation === 'vertical' ? split.x : split.y);
+      return { start: axisCoordinate(event), startValue: value, scale };
     },
     onMove: move,
     onEnd: (event, active, isCancelled) => {

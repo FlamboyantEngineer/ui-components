@@ -391,5 +391,29 @@ mountLab(
         ]}
       />
     </LabSection>
+    <LabSection
+      title="Inside a scaled frame"
+      description="A pixel split inside an ancestor with transform: scale(0.75) and one with scale(1.5), as an embedded preview or a zoomed design canvas draws it. Dragging a separator keeps it under the pointer."
+    >
+      <StateMatrix
+        axes={{ scale: ['0.75', '1.5'] }}
+        render={({ scale }) => (
+          <div style={{ transform: `scale(${scale})`, transformOrigin: '0 0' }}>
+            <div style={frame(360, 120)}>
+              <SplitView
+                panes={[
+                  { id: `scaled-${scale}-rail`, unit: 'pixel', minSize: 80, maxSize: 240 },
+                  { id: `scaled-${scale}-canvas` },
+                ]}
+                defaultSizes={[120, 100]}
+                separatorLabel={() => `Resize rail at scale ${scale}`}
+              >
+                {[<Pane key="a">Tools</Pane>, <Pane key="b">Canvas</Pane>]}
+              </SplitView>
+            </div>
+          </div>
+        )}
+      />
+    </LabSection>
   </>,
 );

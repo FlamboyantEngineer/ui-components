@@ -3,6 +3,7 @@
 // A tile gesture's lifetime in a dashboard grid: its session, its preview against the layout as it
 // now is, and its commit, which only the session the grid still accepts can make.
 
+import { measureScale } from '../../utils/element-scale.js';
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { useLatest } from '../../utils/use-latest.js';
@@ -42,9 +43,12 @@ function measureCellStep({
   rowHeight: number;
 }): CellStep {
   if (!element) return { column: 1, row: 1 };
+  // Pointer travel is in viewport pixels, so the step is too: the grid's layout pixels times the
+  // scale of any transformed ancestor.
+  const scale = measureScale(element);
   const width = element.getBoundingClientRect().width;
-  const column = (width + readGap(element, 'columnGap')) / columns;
-  const row = rowHeight + readGap(element, 'rowGap');
+  const column = (width + readGap(element, 'columnGap') * scale.x) / columns;
+  const row = (rowHeight + readGap(element, 'rowGap')) * scale.y;
   return { column: Math.max(1, column), row: Math.max(1, row) };
 }
 

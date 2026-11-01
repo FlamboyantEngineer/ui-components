@@ -1,5 +1,6 @@
 'use client';
 
+import { measureScale, type ElementScale } from '../../utils/element-scale.js';
 import { useLatest } from '../../utils/use-latest.js';
 import {
   memo,
@@ -59,6 +60,8 @@ interface DiagramNodeViewProps<T> {
 interface PointerStart {
   x: number;
   y: number;
+  /** Viewport pixels per canvas pixel, so the node follows the pointer at any ancestor scale. */
+  scale: ElementScale;
   isDragging: boolean;
   wasSelected: boolean;
   isToggle: boolean;
@@ -98,6 +101,8 @@ function useNodePointer(id: Key, controller: RefObject<DiagramController>, isEdi
       const state = {
         x: event.clientX,
         y: event.clientY,
+        // The viewport sits outside the canvas zoom, so it reads only an ancestor's scale.
+        scale: measureScale(controller.current.viewportElement),
         isDragging: false,
         wasSelected,
         isToggle,
@@ -110,7 +115,11 @@ function useNodePointer(id: Key, controller: RefObject<DiagramController>, isEdi
     },
     onMove: (event, active) => {
       if (!isEditing || active.isToggle) return;
-      const delta = { x: event.clientX - active.x, y: event.clientY - active.y };
+      const { scale } = active;
+      const delta = {
+        x: (event.clientX - active.x) / scale.x,
+        y: (event.clientY - active.y) / scale.y,
+      };
       if (!active.isDragging && Math.hypot(delta.x, delta.y) < dragThreshold) return;
       active.isDragging = true;
       controller.current.moves.drag(delta);

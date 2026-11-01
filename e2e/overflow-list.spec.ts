@@ -168,3 +168,30 @@ test('UIC-OVERFLOW-LIST-1.4 shows the exported helpers in a host-side snippet', 
     ),
   ).toHaveText('2');
 });
+
+for (const scale of [1.5, 0.5]) {
+  test(`UIC-OVERFLOW-LIST-1.1 keeps as many items inside scale(${scale}) as unscaled`, async ({
+    page,
+    lab,
+  }) => {
+    const cell = `${cellSelector('collapseFrom=end width=medium')}`;
+    await lab.open('overflow-list');
+    const unscaled = await keptItems(page.locator(`${cell} .ui-overflow-list`));
+    // The scale is in place before the row first measures.
+    await page.addInitScript(
+      ({ selector, factor }) => {
+        document.addEventListener('DOMContentLoaded', () => {
+          const style = document.createElement('style');
+          style.textContent = `${selector} { transform: scale(${factor}); transform-origin: 0 0; }`;
+          document.head.append(style);
+        });
+      },
+      { selector: cell, factor: scale },
+    );
+    await lab.open('overflow-list');
+    const row = page.locator(`${cell} .ui-overflow-list`);
+    await expect(row).toHaveAttribute('data-overflowing', 'true');
+    await expect.poll(() => keptItems(row)).toEqual(unscaled);
+    await expectInsideRow(row);
+  });
+}

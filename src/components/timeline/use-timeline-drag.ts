@@ -1,5 +1,6 @@
 'use client';
 
+import { measureScale } from '../../utils/element-scale.js';
 import { useLayoutEffect, useRef, useState, type PointerEvent } from 'react';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import {
@@ -25,6 +26,8 @@ interface TimelineDragOptions {
 }
 
 interface Drag {
+  /** Viewport pixels per chart pixel, so pointer travel counts days at any ancestor scale. */
+  scale: number;
   originX: number;
   edge: TimelineDragEdge;
   origin: ReadItem;
@@ -81,7 +84,7 @@ export function useTimelineDrag({
     // Later days lie to the left of a right-to-left axis.
     const travel = (event.clientX - active.originX) * (isRtl ? -1 : 1);
     if (Math.abs(travel) >= dragThreshold) moved.current = true;
-    const days = Math.round(travel / dayWidth);
+    const days = Math.round(travel / (dayWidth * active.scale));
     if (days === active.days) return;
     active.days = days;
     showDraft(resolveDragChange(active.origin, active.edge, days));
@@ -98,7 +101,9 @@ export function useTimelineDrag({
     onStart: (event) => {
       moved.current = false;
       setDragging(true);
+      const chart = event.currentTarget.closest('.ui-timeline') ?? event.currentTarget;
       return {
+        scale: measureScale(chart).x,
         originX: event.clientX,
         edge: readEdge(event.target, read.kind),
         origin: read,

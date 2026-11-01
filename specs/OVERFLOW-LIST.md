@@ -6,10 +6,10 @@
 
 ### UIC-OVERFLOW-LIST-1.1 - Measured row
 
-`OverflowList` shall render each of `items` through `renderItem(item, index)`, keyed by `getKey(item)`, in a `ui-overflow-list__item` element inside its `ui-overflow-list` root. While all of them fit in the root's content box it renders them all and no indicator. Otherwise it renders as many as fit from the kept end beside a `ui-overflow-list__overflow` element holding `renderOverflow(hiddenItems)`, publishes `data-overflowing`, and does not render the hidden items, which reach the user only through the indicator.
+`OverflowList` shall render each of `items` through `renderItem(item, index)`, keyed by `getKey(item)`, in a `ui-overflow-list__item` element inside its `ui-overflow-list` root. While all of them fit in the root's content box it renders them all and no indicator. Otherwise it renders as many as fit from the kept end beside a `ui-overflow-list__overflow` element holding `renderOverflow(hiddenItems)`, publishes `data-overflowing`, and does not render the hidden items, which reach the user only through the indicator. Under an ancestor's axis-aligned `transform: scale()`, items, fixed parts and the indicator are measured in the row's own layout pixels, so a scaled row shows as many items as an unscaled one; rotated or skewed ancestors are not supported.
 
-Implementation: `src/components/overflow-list/overflow-list.tsx`, `src/utils/use-overflow-items.ts`, `labs/reference/overflow-list.css`
-Verification: `src/components/overflow-list/overflow-list.test.tsx`, `e2e/overflow-list.spec.ts`
+Implementation: `src/components/overflow-list/overflow-list.tsx`, `src/utils/use-overflow-items.ts`, `labs/reference/overflow-list.css`, `src/utils/element-scale.ts`
+Verification: `src/components/overflow-list/overflow-list.test.tsx`, `e2e/overflow-list.spec.ts`, `src/utils/element-scale.test.ts`
 
 ### UIC-OVERFLOW-LIST-1.2 - Collapsing end
 

@@ -1,5 +1,6 @@
 'use client';
 
+import { measureScale } from '../../utils/element-scale.js';
 import { isFocused } from '../../utils/focus-target.js';
 import {
   useCallback,
@@ -74,6 +75,8 @@ interface TrackProps extends ThumbProps, FocusProps {
 interface ThumbDrag {
   start: number;
   value: number;
+  /** Viewport pixels per track pixel along the thumb's axis. */
+  scale: number;
 }
 
 const arrowKeys: Readonly<Record<string, { orientation: Orientation; step: number }>> = {
@@ -141,11 +144,16 @@ function useThumbDrag(thumb: ThumbProps, travel: number) {
     onStart: (event) => {
       event.preventDefault();
       event.currentTarget.focus({ preventScroll: true });
-      return { start: coordinate(event), value: clamp(readScrollPosition(thumb), 0, thumb.max) };
+      const track = measureScale(event.currentTarget.parentElement ?? event.currentTarget);
+      return {
+        start: coordinate(event),
+        value: clamp(readScrollPosition(thumb), 0, thumb.max),
+        scale: vertical ? track.y : track.x,
+      };
     },
     onMove: (event, active) => {
       if (travel <= 0) return;
-      const delta = coordinate(event) - active.start;
+      const delta = (coordinate(event) - active.start) / active.scale;
       scrollViewportTo(thumb, clamp(active.value + (delta / travel) * thumb.max, 0, thumb.max));
     },
   });

@@ -45,10 +45,10 @@ Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll
 
 ### UIC-SCROLL-REGION-2.4 - Thumb pointer and wheel
 
-Dragging a thumb shall keep the pointer through pointer capture and scroll the viewport in proportion to the travel; the wheel over a thumb scrolls the viewport, and not the page while the viewport can still scroll that way. At the viewport's edge the wheel scrolls the page, as a native scrollbar's does. A zoom gesture, the wheel with Ctrl or Meta held (as a trackpad pinch reports), is left to the browser and the page: it neither scrolls the viewport nor is cancelled or stopped.
+Dragging a thumb shall keep the pointer through pointer capture and scroll the viewport in proportion to the travel; the wheel over a thumb scrolls the viewport, and not the page while the viewport can still scroll that way. At the viewport's edge the wheel scrolls the page, as a native scrollbar's does. A zoom gesture, the wheel with Ctrl or Meta held (as a trackpad pinch reports), is left to the browser and the page: it neither scrolls the viewport nor is cancelled or stopped. Under an ancestor's axis-aligned `transform: scale()`, thumb travel is measured in the track's own layout pixels, so the thumb stays under the pointer; rotated or skewed ancestors are not supported.
 
-Implementation: `src/components/scroll-region/overlay-scrollbars.tsx`, `src/components/scroll-region/use-thumb-wheel.ts`
-Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll-region.spec.ts`
+Implementation: `src/components/scroll-region/overlay-scrollbars.tsx`, `src/components/scroll-region/use-thumb-wheel.ts`, `src/utils/element-scale.ts`
+Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll-region.spec.ts`, `src/utils/element-scale.test.ts`
 
 ### UIC-SCROLL-REGION-2.5 - Header inset
 

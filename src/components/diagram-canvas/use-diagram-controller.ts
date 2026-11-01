@@ -1,5 +1,6 @@
 'use client';
 
+import { toLocalPoint } from '../../utils/element-scale.js';
 import { useCallback, useMemo, useState, type RefCallback } from 'react';
 import type { Key, Selection, SelectionMode } from '../../core/props.js';
 import { indexDiagramLinks, type DiagramLinks } from './diagram-links.js';
@@ -160,13 +161,8 @@ export function useDiagramController(options: DiagramControllerOptions): Diagram
     announce,
   });
   const [registry] = useState(createTargetRegistry);
-  const toDiagram = (clientX: number, clientY: number) => {
-    const box = viewportElement?.getBoundingClientRect();
-    return toDiagramPoint(view.viewport, {
-      x: clientX - (box?.left ?? 0),
-      y: clientY - (box?.top ?? 0),
-    });
-  };
+  const toDiagram = (clientX: number, clientY: number) =>
+    toDiagramPoint(view.viewport, toLocalPoint(viewportElement, { x: clientX, y: clientY }));
   return {
     nodes: applyPreview(options.nodes, moves.preview),
     edges,

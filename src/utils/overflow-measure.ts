@@ -1,6 +1,8 @@
 // DOM measurement for `useOverflowItems`: item sizes, the room a row offers and which rendered
 // element is which (specs/OVERFLOW-LIST.md).
 
+import { measureScale } from './element-scale.js';
+
 /** The end of a row that hidden items leave from: `end` keeps the first items, `start` the last. */
 export type OverflowCollapseFrom = 'start' | 'end';
 
@@ -58,11 +60,19 @@ function measureInlineChrome(element: Element): number {
   ].reduce((sum, value) => sum + readPixels(value), 0);
 }
 
-/** An element's border-box width plus its inline margins. */
-function measureOuterSize(element: Element): number {
+/**
+ * An element's border-box width in layout pixels: its client rect, in viewport pixels, over
+ * `scale`, the viewport pixels per layout pixel of the row it sits in.
+ */
+export function measureLayoutWidth(element: Element, scale: number): number {
+  return element.getBoundingClientRect().width / scale;
+}
+
+/** An element's border-box width plus its inline margins, in layout pixels. */
+function measureOuterSize(element: Element, scale: number): number {
   const style = getStyle(element);
   const margins = style ? readPixels(style.marginLeft) + readPixels(style.marginRight) : 0;
-  return element.getBoundingClientRect().width + margins;
+  return measureLayoutWidth(element, scale) + margins;
 }
 
 /** The container's content box. */
@@ -79,15 +89,15 @@ export function measureContentBox(container: HTMLElement) {
 /** The room of a flat row, or of a nested item container beside the indicator and fixed parts. */
 function measureRoom(
   container: HTMLElement,
-  itemContainer: HTMLElement | null,
-  fixed: readonly Element[],
+  { itemContainer, fixed }: { itemContainer: HTMLElement | null; fixed: readonly Element[] },
+  scale: number,
 ): OverflowRoom {
   const { width, height } = measureContentBox(container);
   const outerGap = readPixels(getStyle(container)?.columnGap);
   if (!itemContainer) {
     return { width, height, available: width, gap: outerGap, indicatorGap: outerGap };
   }
-  const fixedSize = fixed.reduce((sum, part) => sum + measureOuterSize(part) + outerGap, 0);
+  const fixedSize = fixed.reduce((sum, part) => sum + measureOuterSize(part, scale) + outerGap, 0);
   return {
     width,
     height,
@@ -198,9 +208,9 @@ interface CommitMeasurement<T> {
   isStale: boolean;
 }
 
-function recordSize(measured: MeasureCache, element: Element): number {
-  measured.observed.set(element, element.getBoundingClientRect().width);
-  return measureOuterSize(element);
+function recordSize(measured: MeasureCache, element: Element, scale: number): number {
+  measured.observed.set(element, measureLayoutWidth(element, scale));
+  return measureOuterSize(element, scale);
 }
 
 /** Measures what this commit rendered and returns the visible count it leads to. */
@@ -213,13 +223,16 @@ export function measureCommit<T>(input: CommitMeasurement<T>): number | null {
   });
   if (parts.items.length !== rendered.visibleItems.length) return null;
   if (input.isStale) measured.sizes = input.items.map(() => 0);
+  // Client rects scale with a transformed ancestor; the row's own sizes do not.
+  const scale = measureScale(element).x;
   for (const [index, child] of parts.items.entries()) {
-    measured.sizes[rendered.visibleIndices[index] ?? index] = recordSize(measured, child);
+    measured.sizes[rendered.visibleIndices[index] ?? index] = recordSize(measured, child, scale);
   }
-  for (const part of parts.fixed) recordSize(measured, part);
-  const room = measureRoom(element, itemContainer, parts.fixed);
+  for (const part of parts.fixed) recordSize(measured, part, scale);
+  const room = measureRoom(element, { itemContainer, fixed: parts.fixed }, scale);
   if (parts.indicator) {
-    measured.indicatorSize = recordSize(measured, parts.indicator) + room.indicatorGap - room.gap;
+    const size = recordSize(measured, parts.indicator, scale);
+    measured.indicatorSize = size + room.indicatorGap - room.gap;
   }
   measured.room = { width: room.width, height: room.height };
   return resolveOverflowCount({

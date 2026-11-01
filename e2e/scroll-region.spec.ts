@@ -519,3 +519,33 @@ test('UIC-SCROLL-REGION-4.5 reads the current section on demand', async ({ page,
   await read.click();
   await expect(page.locator('[data-lab-output="resolved-section"]')).toHaveText(/^chapter-/);
 });
+
+for (const scale of [1.5, 0.5]) {
+  test(`UIC-SCROLL-REGION-2.4 keeps a dragged thumb under the pointer inside scale(${scale})`, async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('scroll-region');
+    const region = page.locator('[data-lab-region="overlay"]');
+    await region.evaluate((node, factor) => {
+      Object.assign(node.style, { transform: `scale(${factor})`, transformOrigin: '0 0' });
+    }, scale);
+    const viewport = region.locator('.ui-scroll-region__viewport');
+    const thumb = region.locator('.ui-scroll-region__thumb[data-orientation="vertical"]');
+    await region.scrollIntoViewIfNeeded();
+    const track = await box(
+      region.locator('.ui-scroll-region__track[data-orientation="vertical"]'),
+    );
+    const start = await box(thumb);
+    const travel = track.height - start.height;
+    const x = start.x + start.width / 2;
+    await page.mouse.move(x, start.y + 4);
+    await page.mouse.down();
+    await page.mouse.move(x, start.y + 4 + travel / 2, { steps: 5 });
+    await page.mouse.up();
+    const { scrollTop, scrollHeight, clientHeight } = await metrics(viewport);
+    expect(Math.abs(scrollTop - (scrollHeight - clientHeight) / 2)).toBeLessThan(3);
+    const moved = await box(thumb);
+    expect(Math.abs(moved.y - (start.y + travel / 2))).toBeLessThanOrEqual(1.5);
+  });
+}

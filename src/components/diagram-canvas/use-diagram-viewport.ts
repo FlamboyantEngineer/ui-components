@@ -1,5 +1,6 @@
 'use client';
 
+import { toLocalPoint } from '../../utils/element-scale.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
@@ -74,8 +75,7 @@ function useWheel(element: HTMLElement | null, state: DiagramViewportState): voi
       if (!isZoom && findWheelScroller(event.target, element, step)) return;
       event.preventDefault();
       if (isZoom) {
-        const box = element.getBoundingClientRect();
-        const at = { x: event.clientX - box.left, y: event.clientY - box.top };
+        const at = toLocalPoint(element, { x: event.clientX, y: event.clientY });
         zoomTo(viewport.zoom * 2 ** (-step.y * wheelZoomRate), at);
         return;
       }

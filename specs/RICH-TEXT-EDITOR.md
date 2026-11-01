@@ -208,10 +208,10 @@ Verification: `src/components/rich-text-editor/selection-toolbar.test.tsx`, `e2e
 
 `InsertMenu` shall open a `CompletionList` (also `ui-insert-menu`, named by `aria-label`, `aria-labelledby` or `insertCommands`) against a caret marker (`ui-insert-menu__caret`) placed at the slash, while the focused, editable document has a `/` at the start of a text block or after white space followed by a query up to the caret (no space, not in code). It lists the built-in entries the schema supports (paragraph, headings 1 to 3, code block, bullet, numbered and task lists, quote, divider) then the caller's `items` (`InsertMenuItem`: `id`, `label`, `description`, `icon`, `keywords`, `command`), matched by label or keyword as completions match (best first); with no match it closes.
 
-Each entry shall use its best label or keyword score, stopping its keyword scan once a prefix match is found without building a keyword score array or depending on an argument limit. All matching entries are ordered by score, preserving input order for ties.
+Each entry shall use its best label or keyword score, stopping its keyword scan once a prefix match is found without building a keyword score array or depending on an argument limit. All matching entries are ordered by score, preserving input order for ties. Under an ancestor's axis-aligned `transform: scale()`, the caret marker is placed in the editor surface's own layout pixels, so the menu opens at the caret; rotated or skewed ancestors are not supported.
 
-Implementation: `src/components/rich-text-editor/insert-menu.tsx`, `src/components/rich-text-editor/use-slash-menu.ts`, `src/components/rich-text-editor/insert-items.ts`, `src/components/completion-list/completion-list.tsx`
-Verification: `src/components/rich-text-editor/insert-items.test.ts`, `src/components/rich-text-editor/insert-menu.test.tsx`, `e2e/rich-text-editor.spec.ts`
+Implementation: `src/components/rich-text-editor/insert-menu.tsx`, `src/components/rich-text-editor/use-slash-menu.ts`, `src/components/rich-text-editor/insert-items.ts`, `src/components/completion-list/completion-list.tsx`, `src/utils/element-scale.ts`
+Verification: `src/components/rich-text-editor/insert-items.test.ts`, `src/components/rich-text-editor/insert-menu.test.tsx`, `e2e/rich-text-editor.spec.ts`, `src/utils/element-scale.test.ts`
 
 ### UIC-RICH-TEXT-EDITOR-8.2 - Keys and insertion
 

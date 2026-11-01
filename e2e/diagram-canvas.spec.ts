@@ -400,3 +400,34 @@ test.describe('Diagram Canvas lab', () => {
     await lab.expectAccessible();
   });
 });
+
+for (const scale of [1.5, 0.5]) {
+  test(`UIC-DIAGRAM-CANVAS-3.1 UIC-DIAGRAM-CANVAS-4.3 keeps a moved node and a pan under the pointer inside scale(${scale})`, async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('diagram-canvas');
+    await plant(page).evaluate((node, factor) => {
+      Object.assign(node.style, { transform: `scale(${factor})`, transformOrigin: '0 0' });
+    }, scale);
+    const box = await viewportBox(page);
+    const pump = part(page, 'Pump');
+    const start = await centreOf(pump);
+    await page.mouse.move(start.x, start.y);
+    await page.mouse.down();
+    // Whole grid steps in the canvas's own pixels, so snapping keeps the node under the pointer.
+    await page.mouse.move(start.x + 40 * scale, start.y + 20 * scale, { steps: 4 });
+    await page.mouse.up();
+    const moved = await centreOf(pump);
+    expect(Math.abs(moved.x - start.x - 40 * scale)).toBeLessThanOrEqual(1);
+    expect(Math.abs(moved.y - start.y - 20 * scale)).toBeLessThanOrEqual(1);
+    // A pan from an empty corner carries the nodes with the pointer.
+    await page.mouse.move(box.x + 6, box.y + 6);
+    await page.mouse.down();
+    await page.mouse.move(box.x + 66, box.y + 36, { steps: 5 });
+    await page.mouse.up();
+    const panned = await centreOf(pump);
+    expect(Math.abs(panned.x - moved.x - 60)).toBeLessThanOrEqual(1);
+    expect(Math.abs(panned.y - moved.y - 30)).toBeLessThanOrEqual(1);
+  });
+}

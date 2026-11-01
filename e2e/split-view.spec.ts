@@ -363,3 +363,30 @@ test("UIC-SPLIT-VIEW-2.1 keeps a pane's draft, focus and share as a pane opens b
   await expect(note).toHaveValue('Ripe');
   expect(await list.evaluate((node) => node.getBoundingClientRect().width)).toBeCloseTo(before, 0);
 });
+
+for (const scale of [1.5, 0.5]) {
+  test(`UIC-SPLIT-VIEW-3.3 keeps the dragged edge under the pointer inside scale(${scale})`, async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('split-view');
+    const rail = page.locator('#pixel-720-rail');
+    await rail.evaluate((node, factor) => {
+      const host = node.closest('.ui-split-view')?.parentElement;
+      if (host)
+        Object.assign(host.style, { transform: `scale(${factor})`, transformOrigin: '0 0' });
+    }, scale);
+    const separator = page.getByRole('separator', { name: 'Resize rail, 720px' });
+    await separator.scrollIntoViewIfNeeded();
+    const handle = await box(separator);
+    const x = handle.x + handle.width / 2;
+    const y = handle.y + handle.height / 2;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x + 50 * scale, y, { steps: 3 });
+    await page.mouse.up();
+    await expect(separator).toHaveAttribute('aria-valuenow', '210');
+    const moved = await box(separator);
+    expect(Math.abs(moved.x + moved.width / 2 - (x + 50 * scale))).toBeLessThanOrEqual(1);
+  });
+}

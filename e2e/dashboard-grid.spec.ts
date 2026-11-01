@@ -280,3 +280,38 @@ test.describe('Dashboard Grid lab', () => {
     await expect(stored.getByRole('group', { name: 'Saved C' })).toHaveCSS('grid-row-start', '2');
   });
 });
+
+/** Drags Visitors three columns right and two rows down, measured from the grid as drawn. */
+async function dragVisitors(page: Page, scale: number) {
+  const grid = overview(page).getByRole('group', { name: 'Overview' });
+  const width = requireDefined(await grid.boundingBox()).width;
+  const tile = requireDefined(
+    await grid.getByRole('group', { name: 'Visitors', exact: true }).boundingBox(),
+  );
+  const column = (width + 12 * scale) / 12;
+  const row = tile.height + 12 * scale;
+  const handle = grid.getByRole('button', { name: 'Move Visitors' });
+  await handle.hover();
+  const box = requireDefined(await handle.boundingBox());
+  const start = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  await page.mouse.down();
+  await page.mouse.move(start.x + column, start.y, { steps: 4 });
+  await page.mouse.move(start.x + 3 * column, start.y + 2 * row, { steps: 6 });
+  await page.mouse.up();
+  return layout(page).textContent();
+}
+
+for (const scale of [1.5, 0.5]) {
+  test(`UIC-DASHBOARD-GRID-2.2 moves a tile by the cells the pointer crossed inside scale(${scale})`, async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('dashboard-grid');
+    const unscaled = await dragVisitors(page, 1);
+    await lab.open('dashboard-grid');
+    await overview(page).evaluate((node, factor) => {
+      Object.assign(node.style, { transform: `scale(${factor})`, transformOrigin: '0 0' });
+    }, scale);
+    expect(await dragVisitors(page, scale)).toBe(unscaled);
+  });
+}

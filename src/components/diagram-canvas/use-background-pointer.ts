@@ -1,5 +1,6 @@
 'use client';
 
+import { measureScale, type ElementScale } from '../../utils/element-scale.js';
 import { useState } from 'react';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import type { SelectionMode } from '../../core/props.js';
@@ -18,6 +19,8 @@ interface BackgroundStart {
   left: number;
   top: number;
   origin: DiagramViewport;
+  /** Viewport pixels per canvas pixel, so pan and marquee follow the pointer at any scale. */
+  scale: ElementScale;
   mode: 'pan' | 'marquee';
   isMoved: boolean;
 }
@@ -59,13 +62,18 @@ export function useBackgroundPointer(controller: DiagramController, selectionMod
         y: event.clientY,
         left: box.left,
         top: box.top,
+        scale: measureScale(event.currentTarget),
         origin: view.viewport,
         mode: event.shiftKey && selectionMode === 'multiple' ? 'marquee' : 'pan',
         isMoved: false,
       };
     },
     onMove: (event, active) => {
-      const delta = { x: event.clientX - active.x, y: event.clientY - active.y };
+      const { scale } = active;
+      const delta = {
+        x: (event.clientX - active.x) / scale.x,
+        y: (event.clientY - active.y) / scale.y,
+      };
       if (!active.isMoved && Math.hypot(delta.x, delta.y) < dragThreshold) return;
       active.isMoved = true;
       if (active.mode === 'pan') {
@@ -76,8 +84,11 @@ export function useBackgroundPointer(controller: DiagramController, selectionMod
         });
         return;
       }
-      const from = { x: active.x - active.left, y: active.y - active.top };
-      setMarquee(spanRect(from, { x: event.clientX - active.left, y: event.clientY - active.top }));
+      const local = (x: number, y: number) => ({
+        x: (x - active.left) / scale.x,
+        y: (y - active.top) / scale.y,
+      });
+      setMarquee(spanRect(local(active.x, active.y), local(event.clientX, event.clientY)));
     },
     onEnd: (_event, active, isCancelled) => {
       if (!isCancelled) {
