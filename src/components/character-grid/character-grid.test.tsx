@@ -236,6 +236,23 @@ describe('CharacterGrid', () => {
     expect(cell('Leftwards arrow')).toHaveFocus();
   });
 
+  it('UIC-CHARACTER-GRID-2.1 leaves a composing Enter to the input method', async () => {
+    const user = userEvent.setup();
+    const { onSelect } = renderGrid();
+    const search = screen.getByRole('searchbox', { name: 'Search characters' });
+    for (const query of ['', 'arrow']) {
+      await user.clear(search);
+      if (query) await user.type(search, query);
+      // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing on a keydown
+      fireEvent.keyDown(search, { key: 'Enter', isComposing: true });
+      // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set keyCode on a keydown
+      fireEvent.keyDown(search, { key: 'Enter', keyCode: 229 });
+    }
+    expect(onSelect).not.toHaveBeenCalled();
+    await user.keyboard('{Enter}');
+    expect(onSelect).toHaveBeenCalledWith({ char: '←', name: 'Leftwards arrow' });
+  });
+
   it('UIC-CHARACTER-GRID-2.1 lets Escape in the empty search reach the surface around it', async () => {
     const user = userEvent.setup();
     const outer = vi.fn();

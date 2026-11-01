@@ -29,6 +29,7 @@ import {
   type FieldValidationBehavior,
 } from '../field/field.js';
 import { useScopedDisabled } from '../field/field.js';
+import { leaveComposingEnter } from '../../utils/is-composing-key.js';
 
 /** Where a search box's label sits: on the input only, or drawn above the box. */
 export type SearchFieldLabelLayout = Extract<FieldLabelLayout, 'label-control' | 'control-only'>;
@@ -129,7 +130,12 @@ function SearchBox({
   return (
     <>
       <Glyph icon={SearchGlyph} className={hooks.slotClass('glyph')} />
-      <Input {...hooks.slot('input')} ref={input} placeholder={placeholder} />
+      <Input
+        {...hooks.slot('input')}
+        ref={input}
+        placeholder={placeholder}
+        onKeyDownCapture={leaveComposingEnter}
+      />
       {isPending ? <ButtonSpinner className={hooks.slotClass('spinner')} /> : null}
       {onClear ? <ClearButton label={clearLabel} text={clearText} onPress={onClear} /> : null}
     </>

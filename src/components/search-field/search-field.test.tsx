@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -114,6 +114,27 @@ describe('SearchField', () => {
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
     rerender(<SearchField label="Find" value="fig" isDisabled />);
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
+
+  it('UIC-SEARCH-FIELD-1.4 leaves a composing Enter to the input method', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    const outer = vi.fn();
+    render(
+      <form onKeyDown={(event) => outer(event.key)}>
+        <SearchField label="Find" onSubmit={onSubmit} />
+      </form>,
+    );
+    const input = screen.getByRole('searchbox');
+    await user.type(input, 'plum');
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing on a keydown
+    fireEvent.keyDown(input, { key: 'Enter', isComposing: true });
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set keyCode on a keydown
+    fireEvent.keyDown(input, { key: 'Enter', keyCode: 229 });
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(outer).not.toHaveBeenCalledWith('Enter');
+    await user.keyboard('{Enter}');
+    expect(onSubmit).toHaveBeenCalledWith('plum');
   });
 
   it('UIC-SEARCH-FIELD-1.4 clears on Escape and submits on Enter', async () => {
