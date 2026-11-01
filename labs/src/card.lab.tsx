@@ -457,7 +457,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Header row in a selectable grid"
-      description="Each card's header row holds the selection checkbox, the badge, the title, the toggle and More, each in its own room; the actions follow on their own line. Narrow the grid: long titles shorten, then the cards turn compact and minimal, and nothing overlaps. The second grid is right to left."
+      description="Each card's header row holds the selection checkbox, the badge, the title, the toggle and More, each in its own room; the actions follow on their own line. Narrow the grid: long titles shorten, then the cards turn compact and minimal, and nothing overlaps. The second grid is right to left, in a Hebrew provider locale, so its width slider fills from the right and its arrow keys and drag follow that direction."
     >
       <TopRowGrid initialWidth={560} />
       <TopRowGrid dir="rtl" initialWidth={320} />

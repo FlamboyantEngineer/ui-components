@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Selection } from '../../src/core/props.js';
+import { UiProvider } from '../../src/core/provider.js';
 import { Badge } from '../../src/components/badge/badge.js';
 import { Button } from '../../src/components/button/button.js';
 import {
@@ -218,8 +219,15 @@ const gridSteps: CardPresentationSteps = { compact: { width: 260 }, minimal: { w
 /**
  * Adaptive, collapsible cards in a selectable grid whose width the slider sets: the checkbox, the
  * badge, the title, the toggle and More share the header row without overlapping at any width.
+ * The right-to-left grid sits under a Hebrew `UiProvider` as well as `dir="rtl"`: React Aria takes
+ * the direction of the slider's keys and drag from the provider's locale, the layout from `dir`.
  */
 export function TopRowGrid({ dir, initialWidth }: { dir?: 'rtl'; initialWidth: number }) {
+  const grid = <TopRowGridContent dir={dir} initialWidth={initialWidth} />;
+  return dir === 'rtl' ? <UiProvider locale="he-IL">{grid}</UiProvider> : grid;
+}
+
+function TopRowGridContent({ dir, initialWidth }: { dir?: 'rtl'; initialWidth: number }) {
   const [width, setWidth] = useState(initialWidth);
   const [selected, setSelected] = useState<Selection>(new Set());
   const name = dir === 'rtl' ? 'top-row-rtl' : 'top-row';

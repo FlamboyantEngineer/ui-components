@@ -149,7 +149,7 @@ Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-
 
 ### UIC-NUMBER-FIELD-5.6 - Orientation and size
 
-`orientation` (`horizontal` by default, or `vertical`) shall lay the track out along that axis, publish `data-orientation` on the box, the track, the fill and the output, and turn the thumb's drag and arrow keys to that axis. `size` (`xs`, `sm`, `md` by default, `lg`) is the field's size (UIC-FIELD-1.10), which also sizes the track and thumb.
+`orientation` (`horizontal` by default, or `vertical`) shall lay the track out along that axis, publish `data-orientation` on the box, the track, the fill and the output, and turn the thumb's drag and arrow keys to that axis. A horizontal slider follows the direction of the `UiProvider` locale, as React Aria reads it: in a right-to-left locale the minimum sits at the right end, the fill grows leftward, a thumb sits at its value measured from the right, Arrow Left raises the value and Arrow Right lowers it, and a drag toward the left raises it. The locale, not the DOM's `dir`, sets this direction, so a right-to-left region sets both (a provider with a right-to-left locale around content with `dir="rtl"`); a vertical slider is the same in both directions. `size` (`xs`, `sm`, `md` by default, `lg`) is the field's size (UIC-FIELD-1.10), which also sizes the track and thumb.
 
 Implementation: `src/components/number-field/number-slider.tsx`, `src/components/number-field/number-slider-parts.tsx`, `labs/reference/number-field.css`
 Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-slider.spec.ts`

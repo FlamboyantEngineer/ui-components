@@ -10,6 +10,7 @@ import {
   type NumberRange,
 } from '../../src/components/number-field/index.js';
 import type { ControlSize } from '../../src/core/props.js';
+import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { LabHelperCalls } from './lab-helper-calls.js';
 import { LabOutput } from './lab-output.js';
@@ -226,6 +227,33 @@ function RangeInputs() {
   );
 }
 
+/**
+ * Right to left: `dir="rtl"` lays the track out, and the Hebrew provider locale gives React Aria the
+ * same direction for the thumbs' positions, the drag and the arrow keys.
+ */
+function RightToLeft() {
+  return (
+    <UiProvider locale="he-IL">
+      <div dir="rtl" style={{ display: 'grid', gap: 12 }}>
+        <NumberField
+          display="slider"
+          label="Volume"
+          defaultValue={50}
+          marks={[0, 50, 100].map((value) => ({ value, label: String(value) }))}
+          data-lab-field="rtl"
+        />
+        <NumberField
+          range
+          display="slider"
+          label="Price"
+          defaultValue={[20, 60]}
+          data-lab-field="rtl-range"
+        />
+      </div>
+    </UiProvider>
+  );
+}
+
 /** The committed value is the caller's: the fields stay dirty until Save. */
 function SavedForm() {
   const [saved, setSaved] = useState(40);
@@ -337,6 +365,12 @@ mountLab(
     </LabSection>
     <LabSection title="Vertical" description="Vertical sliders, one with the value on its thumb.">
       <Vertical />
+    </LabSection>
+    <LabSection
+      title="Right to left"
+      description="Under a right-to-left provider locale and dir rtl, the minimum is at the right: the fill grows leftward, Arrow Left raises the value and a drag to the left raises it."
+    >
+      <RightToLeft />
     </LabSection>
     <LabSection
       title="Form value, dirty state and the field menu"
