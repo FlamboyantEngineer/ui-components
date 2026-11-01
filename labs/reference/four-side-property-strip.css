@@ -1,21 +1,109 @@
-/* Four Side Property Strip: the four cells stay on one line. */
+/*
+ * Four Side Property Strip: the four cells stay on one line. The strip is a grid of a letter and a
+ * control column per side, so a link bracket on the row below can end at the linked controls.
+ */
 
 .ui-four-side-property-strip .ui-property-strip {
-  flex-wrap: nowrap;
-  gap: 6px;
+  display: inline-grid;
+  grid-template-columns: repeat(4, auto auto);
+  align-items: center;
+  column-gap: 4px;
+  row-gap: 2px;
+  max-width: 100%;
 }
 
-.ui-four-side-property-strip__side {
+/* Doubled to win over the strip cell's own flex layout, which loads later. */
+.ui-four-side-property-strip .ui-four-side-property-strip__side {
+  display: grid;
+  grid-column: span 2;
+  grid-template-columns: subgrid;
+  align-items: center;
   min-width: 0;
+}
+
+.ui-four-side-property-strip__side + .ui-four-side-property-strip__side {
+  margin-inline-start: 4px;
+}
+
+/* Pairs set apart by more room, so each pair reads as one group. */
+.ui-four-side-property-strip[data-link='pairs']
+  .ui-four-side-property-strip__side:is([data-side='left'], [data-side='inline-start']) {
+  margin-inline-start: 12px;
 }
 
 .ui-four-side-property-strip .ui-four-side-property-strip__side > input {
   width: 40px;
 }
 
+/* |----icon----|: ticks up to the linked controls and a rule through the centred toggle. */
+.ui-four-side-property-strip__bracket {
+  --ref-four-side-property-strip-rule: color-mix(in srgb, var(--ref-muted) 60%, transparent);
+  display: flex;
+  grid-row: 2;
+  grid-column: 2 / -1;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  height: var(--ref-control-height-sm);
+  color: var(--ref-muted);
+}
+
+.ui-four-side-property-strip[data-link='pairs']
+  .ui-four-side-property-strip__bracket:is([data-sides~='top'], [data-sides~='block-start']) {
+  grid-column: 2 / 5;
+}
+
+.ui-four-side-property-strip[data-link='pairs']
+  .ui-four-side-property-strip__bracket:is([data-sides~='left'], [data-sides~='inline-start']) {
+  grid-column: 6 / -1;
+}
+
+.ui-four-side-property-strip__bracket::before,
+.ui-four-side-property-strip__bracket::after {
+  content: '';
+  flex: 1 1 0;
+  align-self: flex-start;
+  min-width: 6px;
+  height: 50%;
+  border: 0 dashed var(--ref-four-side-property-strip-rule);
+  border-block-end-width: 1px;
+}
+
+.ui-four-side-property-strip__bracket::before {
+  border-inline-start-width: 1px;
+  border-end-start-radius: var(--ref-radius-xs);
+}
+
+.ui-four-side-property-strip__bracket::after {
+  border-inline-end-width: 1px;
+  border-end-end-radius: var(--ref-radius-xs);
+}
+
+.ui-four-side-property-strip[data-linked] .ui-four-side-property-strip__bracket {
+  --ref-four-side-property-strip-rule: var(--ref-accent-ink);
+  color: var(--ref-accent-ink);
+}
+
+.ui-four-side-property-strip[data-linked] .ui-four-side-property-strip__bracket::before,
+.ui-four-side-property-strip[data-linked] .ui-four-side-property-strip__bracket::after {
+  border-style: solid;
+}
+
 .ui-four-side-property-strip__link {
   flex: none;
-  margin-inline-start: 2px;
+}
+
+.ui-four-side-property-strip__link[data-selected] {
+  color: var(--ref-accent-ink);
+}
+
+.ui-four-side-property-strip__glyph {
+  flex: none;
+  box-sizing: content-box;
+  width: var(--ref-icon-size-md);
+  height: var(--ref-icon-size-md);
+  /* As wide as the toggle beside the other pair, so both brackets draw alike. */
+  padding-inline: calc((var(--ref-control-height-sm) - var(--ref-icon-size-md)) / 2);
 }
 
 .ui-four-side-property-strip[data-linked] .ui-four-side-property-strip__side > input {

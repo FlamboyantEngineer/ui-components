@@ -73,11 +73,16 @@ const logicalSides: readonly LogicalBoxSide[] = [
   'inline-end',
 ];
 
-const hooks = createHooks('four-side-property-strip', ['side', 'link']);
+const hooks = createHooks('four-side-property-strip', ['side', 'bracket', 'link', 'glyph']);
 
 /** The side across the box from `index`: sides come in opposite pairs, in order. */
 function opposite<S>(sides: readonly S[], index: number): S | undefined {
   return sides[index % 2 === 0 ? index + 1 : index - 1];
+}
+
+/** The sides one edit sets together, each group drawn as a bracket below its cells. */
+function linkGroups<S>(sides: readonly S[], link: FourSidePropertyStripLink): S[][] {
+  return link === 'all' ? [[...sides]] : [sides.slice(0, 2), sides.slice(2)];
 }
 
 /** The values after `side` takes `value`, with the sides linked to it. */
@@ -112,6 +117,41 @@ function useBatchedEdits<V>(values: V, setValues: (next: V) => void) {
 }
 
 /**
+ * A bracket below each group of sides one edit sets together, its ends at the group's outer
+ * cells: the first holds the toggle that links the sides, and a later one repeats its glyph.
+ */
+function LinkBrackets({
+  sides,
+  label,
+  link,
+  isLinked,
+  onLinkedChange,
+}: {
+  sides: readonly string[];
+  label: string;
+  link: FourSidePropertyStripLink;
+  isLinked: boolean;
+  onLinkedChange: (isLinked: boolean) => void;
+}) {
+  return linkGroups(sides, link).map((group, index) => (
+    <span key={group.join(' ')} {...hooks.slot('bracket', { sides: group.join(' ') })}>
+      {index === 0 ? (
+        <Button
+          className={hooks.slotClass('link')}
+          icon={LinkGlyph}
+          size="sm"
+          label={label}
+          isSelected={isLinked}
+          onChange={onLinkedChange}
+        />
+      ) : (
+        <LinkGlyph className={hooks.slotClass('glyph')} />
+      )}
+    </span>
+  ));
+}
+
+/**
  * One property row holding a value for each side of a box, such as margins or padding: top,
  * bottom, left and right, or their flow-relative counterparts. Each side's cell shows the first
  * letter of the side's name; the names are also words a query matches. Holding the values, the
@@ -143,7 +183,7 @@ export function FourSidePropertyStrip<T = string>(props: FourSidePropertyStripPr
   return (
     <PropertyRow
       {...rest}
-      {...dataAttributes({ linked: activeLink !== null })}
+      {...dataAttributes({ link, linked: activeLink !== null })}
       className={mergeClassNames(hooks.className, className)}
       keywords={sides.map(nameOf)}
     >
@@ -167,13 +207,12 @@ export function FourSidePropertyStrip<T = string>(props: FourSidePropertyStripPr
           );
         })}
         {link ? (
-          <Button
-            className={hooks.slotClass('link')}
-            icon={LinkGlyph}
-            size="sm"
+          <LinkBrackets
+            sides={sides}
             label={strings.linkSides(link)}
-            isSelected={linked}
-            onChange={setLinked}
+            link={link}
+            isLinked={linked}
+            onLinkedChange={setLinked}
           />
         ) : null}
       </PropertyStrip>

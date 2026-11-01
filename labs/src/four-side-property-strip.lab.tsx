@@ -51,24 +51,71 @@ function Filtered() {
   );
 }
 
-/** A strip holding its values, whose link toggle sets all four sides or each opposite pair. */
-function Linked({ link }: { link: FourSidePropertyStripLink }) {
+/**
+ * A strip holding its values, whose link toggle sets all four sides or each opposite pair. The
+ * bracket below the cells joins the sides one edit sets together.
+ */
+function Linked({
+  link,
+  start,
+}: {
+  link: FourSidePropertyStripLink;
+  start: 'unlinked' | 'linked';
+}) {
   return (
     <FourSidePropertyStrip
       label="Padding"
       unit="px"
       link={link}
-      defaultLinked={link === 'all'}
+      defaultLinked={start === 'linked'}
       defaultValue={{ top: '8', bottom: '8', left: '12', right: '12' }}
       renderSide={(side, field) => (
         <input
-          aria-label={`Padding ${link} ${side}`}
+          aria-label={`Padding ${link} ${start} ${side}`}
           value={field.value ?? ''}
           size={3}
           onChange={(event) => field.onChange(event.target.value)}
         />
       )}
     />
+  );
+}
+
+/** Linked flow-relative sides in a narrow panel, left to right and right to left. */
+function LinkedLogical({
+  link,
+  direction,
+}: {
+  link: FourSidePropertyStripLink;
+  direction: 'ltr' | 'rtl';
+}) {
+  return (
+    <UiProvider locale={direction === 'rtl' ? 'ar-EG' : 'en-US'}>
+      <div dir={direction} data-lab-column="260" style={{ width: 260 }}>
+        <PropertyPanel aria-label={`Linked logical ${link} ${direction}`}>
+          <FourSidePropertyStrip
+            label="Inset"
+            sides="logical"
+            link={link}
+            defaultLinked
+            defaultValue={{
+              'block-start': '4',
+              'block-end': '4',
+              'inline-start': '16',
+              'inline-end': '16',
+            }}
+            renderSide={(side, field) => (
+              <input
+                aria-label={`Inset ${link} ${direction} ${side}`}
+                value={field.value ?? ''}
+                size={3}
+                onChange={(event) => field.onChange(event.target.value)}
+              />
+            )}
+          />
+        </PropertyPanel>
+      </div>
+    </UiProvider>
   );
 }
 
@@ -132,17 +179,26 @@ mountLab(
     </LabSection>
     <LabSection
       title="Linked sides"
-      description="The toggle links the sides: pairs link top with bottom and left with right; all links the four. The right strip starts linked."
+      description="A bracket below the cells joins the sides one edit sets: pairs bracket top with bottom and left with right, all brackets the four. The toggle at the first bracket's centre links them; linked brackets are solid, unlinked ones dashed."
     >
       <StateMatrix
-        axes={{ link: ['pairs', 'all'] }}
-        render={({ link }) => (
+        axes={{ link: ['pairs', 'all'], start: ['unlinked', 'linked'] }}
+        render={({ link, start }) => (
           <div data-lab-column="400" style={{ width: 400 }}>
-            <PropertyPanel aria-label={`Linked ${link}`}>
-              <Linked link={link} />
+            <PropertyPanel aria-label={`Linked ${link} ${start}`}>
+              <Linked link={link} start={start} />
             </PropertyPanel>
           </div>
         )}
+      />
+    </LabSection>
+    <LabSection
+      title="Linked logical sides"
+      description="Linked flow-relative sides in a 260 pixel panel, left to right and right to left: each bracket follows its cells in the reading direction."
+    >
+      <StateMatrix
+        axes={{ link: ['pairs', 'all'], direction: ['ltr', 'rtl'] }}
+        render={({ link, direction }) => <LinkedLogical link={link} direction={direction} />}
       />
     </LabSection>
     <LabSection

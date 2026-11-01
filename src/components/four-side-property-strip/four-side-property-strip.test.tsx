@@ -294,4 +294,32 @@ describe('FourSidePropertyStrip', () => {
     });
     expect(onChange).toHaveBeenLastCalledWith({ 'block-start': '1px', 'inline-end': '2px' });
   });
+
+  it('UIC-FOUR-SIDE-PROPERTY-STRIP-1.6 brackets each linked group below the cells with one toggle', () => {
+    const renderSide = (side: string) => <input aria-label={`Inset ${side}`} />;
+    const { container, rerender } = render(
+      <FourSidePropertyStrip label="Inset" sides="logical" link="pairs" renderSide={renderSide} />,
+    );
+    const row = container.querySelector('.ui-four-side-property-strip');
+    expect(row).toHaveAttribute('data-link', 'pairs');
+    const brackets = () =>
+      [...container.querySelectorAll('.ui-four-side-property-strip__bracket')].map((bracket) =>
+        bracket.getAttribute('data-sides'),
+      );
+    expect(brackets()).toEqual(['block-start block-end', 'inline-start inline-end']);
+    const [first, second] = container.querySelectorAll('.ui-four-side-property-strip__bracket');
+    expect(first).toContainElement(screen.getByRole('button', { name: 'Link opposite sides' }));
+    expect(screen.getAllByRole('button')).toHaveLength(1);
+    const glyph = second?.querySelector('.ui-four-side-property-strip__glyph');
+    expect(glyph).toHaveAttribute('aria-hidden', 'true');
+    // The brackets follow the cells, so the cells keep their order for reading and Tab.
+    const lastCell = container.querySelector('[data-side="inline-end"]');
+    expect(lastCell?.compareDocumentPosition(first as Node)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    rerender(<FourSidePropertyStrip label="Inset" link="all" renderSide={renderSide} />);
+    expect(row).toHaveAttribute('data-link', 'all');
+    expect(brackets()).toEqual(['top bottom left right']);
+    rerender(<FourSidePropertyStrip label="Inset" renderSide={renderSide} />);
+    expect(row).not.toHaveAttribute('data-link');
+    expect(brackets()).toEqual([]);
+  });
 });
