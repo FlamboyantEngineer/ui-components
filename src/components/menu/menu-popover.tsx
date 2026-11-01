@@ -34,7 +34,7 @@ import {
 } from '../../utils/overlay-defaults.js';
 import { isElement } from '../../utils/is-element.js';
 import { getOwnerWindow } from '../../utils/owner-window.js';
-import { FormBoundary } from '../form/form-boundary.js';
+import { FormBoundary } from '../../utils/form-boundary.js';
 
 export interface MenuPopoverProps extends BaseProps, OverlayPositionProps, RefProps<HTMLElement> {
   /**

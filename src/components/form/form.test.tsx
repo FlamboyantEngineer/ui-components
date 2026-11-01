@@ -306,9 +306,9 @@ describe('Form', () => {
       const user = userEvent.setup();
       const onSubmit = vi.fn(prevent);
       const onValidityChange = vi.fn<(blockers: readonly FormBlocker[]) => void>();
-      const page: { validity: ReturnType<typeof useFormValidity> } = { validity: null };
+      const readVerdict = vi.fn<(validity: ReturnType<typeof useFormValidity>) => void>();
       function Verdict() {
-        page.validity = useFormValidity();
+        readVerdict(useFormValidity());
         return null;
       }
       render(
@@ -318,7 +318,7 @@ describe('Form', () => {
           <PopoverTrigger>
             <Button>Note</Button>
             <Popover aria-label="Note">
-              <TextField label="Note text" isRequired />
+              <TextField label="Note text" isRequired validationMode="immediate" />
             </Popover>
           </PopoverTrigger>
         </PageForm>,
@@ -326,7 +326,8 @@ describe('Form', () => {
       await user.type(screen.getByRole('textbox', { name: 'Title' }), 'Plan');
       await user.click(screen.getByRole('button', { name: 'Note' }));
       expect(screen.getByRole('textbox', { name: 'Note text' })).toBeInTheDocument();
-      expect(page.validity?.isBlocked()).toBe(false);
+      expect(readVerdict.mock.lastCall?.[0]?.isBlocked()).toBe(false);
+      expect(screen.getByRole('status', { hidden: true })).toHaveTextContent('No problems');
       expect(onValidityChange).not.toHaveBeenLastCalledWith(
         expect.arrayContaining([expect.objectContaining({ label: 'Note text' })]),
       );

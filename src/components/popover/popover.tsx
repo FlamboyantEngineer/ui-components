@@ -26,7 +26,7 @@ import { PopoverPresence } from './popover-presence.js';
 import { usePopoverGutter } from './use-popover-gutter.js';
 import { POPOVER_ARROW_OFFSET, POPOVER_OFFSET } from '../../utils/overlay-defaults.js';
 import { HeadingLevelContext, dialogTitleLevel } from '../../core/heading-level.js';
-import { FormBoundary } from '../form/form-boundary.js';
+import { FormBoundary } from '../../utils/form-boundary.js';
 
 /** A pressable trigger and the `Popover` it opens. */
 export interface PopoverTriggerProps extends OpenStateProps {

@@ -16,6 +16,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { useShallowStable } from '../../utils/use-shallow-stable.js';
+import { useFormBoundary } from '../../utils/form-boundary.js';
 import {
   FieldScopeContext,
   useFieldScope,
@@ -178,6 +179,7 @@ export function Form({
   ...rest
 }: FormProps) {
   const parent = useFieldScope();
+  const boundary = useFormBoundary();
   const [fields] = useState(() => new Set<FieldRegistration>());
   const [problems] = useState(() => createFormProblemStore(fields));
   const notify = useBatchedNotify(problems);
@@ -207,7 +209,15 @@ export function Form({
     register,
     onIssuesChange: notify,
     onValidityChange: notifyValidity,
+    boundary,
   });
+  const bounded = useMemo(
+    () => ({
+      problems: { value: problems, boundary },
+      validity: { value: validity, boundary },
+    }),
+    [problems, validity, boundary],
+  );
   const form = useInvalidFocus(fields);
   useOrderNotify(form, fields, notifyAll);
   const formRef = useMemo(() => mergeRefs(form, ref), [form, ref]);
@@ -230,8 +240,8 @@ export function Form({
         onSubmit={submit}
       >
         <FieldScopeContext value={scope}>
-          <FormProblemContext value={problems}>
-            <FormValidityContext value={validity}>{children}</FormValidityContext>
+          <FormProblemContext value={bounded.problems}>
+            <FormValidityContext value={bounded.validity}>{children}</FormValidityContext>
           </FormProblemContext>
         </FieldScopeContext>
       </AriaForm>
