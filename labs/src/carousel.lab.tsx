@@ -73,6 +73,34 @@ function Controlled() {
   );
 }
 
+/**
+ * The page moves or removes the shown city one second after a button press, time enough to put
+ * focus back inside the slide: focus follows to the slide shown next.
+ */
+function HostChanges() {
+  const [list, setList] = useState(cities);
+  const [index, setIndex] = useState(0);
+  const later = (change: () => void) => window.setTimeout(change, 1000);
+  return (
+    <div data-lab-demo="host-changes">
+      <Carousel aria-label="Cities the page changes" index={index} onIndexChange={setIndex}>
+        {citySlides(list)}
+      </Carousel>
+      <p>
+        <button type="button" onClick={() => later(() => setIndex((at) => (at + 1) % list.length))}>
+          Show the next city in one second
+        </button>{' '}
+        <button
+          type="button"
+          onClick={() => later(() => setList((all) => all.filter((_, at) => at !== index)))}
+        >
+          Remove the shown city in one second
+        </button>
+      </p>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -101,6 +129,12 @@ mountLab(
       description="Tab into the carousel and press the arrow keys; focus inside a slide moves to the slide shown next. The output follows the controlled index."
     >
       <Controlled />
+    </LabSection>
+    <LabSection
+      title="Changed by the page"
+      description="Press a button, then move focus into the shown slide (its More link) within a second: when the page shows the next city or removes the shown one, focus moves to the slide shown next instead of being lost."
+    >
+      <HostChanges />
     </LabSection>
     <LabSection
       title="Autoplay"
