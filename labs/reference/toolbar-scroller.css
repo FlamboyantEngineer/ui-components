@@ -22,42 +22,49 @@
   flex: none;
 }
 
+/* Above the strip's positioned tools, which would otherwise show through; under the buttons. */
 .ui-toolbar-scroller__fade {
   position: absolute;
   inset-block: 0;
-  width: 40px;
+  z-index: 1;
+  width: 48px;
   pointer-events: none;
 }
 
 .ui-toolbar-scroller__fade[data-edge='start'] {
   inset-inline-start: 0;
-  background: linear-gradient(to right, var(--ref-canvas) 40%, transparent);
+  background: linear-gradient(to right, var(--ref-canvas) 50%, transparent);
 }
 
 .ui-toolbar-scroller__fade[data-edge='end'] {
   inset-inline-end: 0;
-  background: linear-gradient(to left, var(--ref-canvas) 40%, transparent);
+  background: linear-gradient(to left, var(--ref-canvas) 50%, transparent);
 }
 
 [dir='rtl'] .ui-toolbar-scroller__fade[data-edge='start'] {
-  background: linear-gradient(to left, var(--ref-canvas) 40%, transparent);
+  background: linear-gradient(to left, var(--ref-canvas) 50%, transparent);
 }
 
 [dir='rtl'] .ui-toolbar-scroller__fade[data-edge='end'] {
-  background: linear-gradient(to right, var(--ref-canvas) 40%, transparent);
+  background: linear-gradient(to right, var(--ref-canvas) 50%, transparent);
 }
 
+/*
+ * The scroll buttons are ghost chevrons over the edge fades: muted at rest, a soft fill under the
+ * pointer, and the button's focus ring for the keyboard.
+ */
 .ui-toolbar-scroller > .ui-toolbar-scroller__scroll-button[data-edge] {
   position: absolute;
   inset-block-start: 50%;
   z-index: 1;
   translate: 0 -50%;
-  border-color: var(--ref-border);
-  background: var(--ref-raised);
+  color: var(--ref-muted);
 }
 
-.ui-toolbar-scroller > .ui-toolbar-scroller__scroll-button[data-edge][data-hovered] {
-  background: color-mix(in srgb, var(--ref-raised), var(--ref-text) var(--ref-tint-subtle));
+.ui-toolbar-scroller
+  > .ui-toolbar-scroller__scroll-button[data-edge]:is([data-hovered], [data-pressed]) {
+  background: color-mix(in srgb, var(--ref-canvas), var(--ref-text) var(--ref-tint-subtle));
+  color: var(--ref-text);
 }
 
 .ui-toolbar-scroller__scroll-button[data-edge='start'] {

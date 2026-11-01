@@ -297,6 +297,35 @@ test.describe('Layout lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-LAYOUT-3.8 UIC-SCROLL-STRIP-2.1 draws the scroll buttons as ghost chevrons over the fades', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('layout');
+    const scroll = page.locator(cell('Toolbar overflow', 'overflow=scroll'));
+    const row = scroll.locator('.ui-toolbar-row');
+    const end = row.locator('.ui-toolbar-row__scroll-button[data-edge="end"]');
+    await expect(end).toHaveAttribute('data-variant', 'ghost');
+    await expect(end).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+    await expect(end).toHaveCSS('border-top-color', 'rgba(0, 0, 0, 0)');
+    await end.hover();
+    await expect(end).not.toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+    await end.click();
+    const start = row.locator('.ui-toolbar-row__scroll-button[data-edge="start"]');
+    await expect(start).toBeVisible();
+    // The start fade covers the tools behind the chevron: its solid half paints the canvas there.
+    const fade = row.locator('.ui-toolbar-row__fade[data-edge="start"]');
+    const [fadeLayer, toolLayer] = await Promise.all([
+      fade.evaluate((node) => getComputedStyle(node).zIndex),
+      scroll
+        .getByRole('button', { name: 'Delete' })
+        .evaluate((node) => getComputedStyle(node).zIndex),
+    ]);
+    expect(fadeLayer).toBe('1');
+    expect(toolLayer).not.toBe('1');
+    await expect(start).toHaveAccessibleName('Scroll backward');
+  });
+
   test('UIC-LAYOUT-3.8 wraps tools and groups, scrolls them, or keeps one clipped row', async ({
     page,
     lab,
