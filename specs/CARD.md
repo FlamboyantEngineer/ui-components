@@ -132,10 +132,10 @@ Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`
 
 ### UIC-CARD-5.1 - Grid
 
-`CardGrid` shall render React Aria's `GridList` in its `grid` layout with the `ui-card-grid` root, and `CardGridItem` a `GridListItem` (keyed by its `id`) with the `ui-card-grid-item` root around its content, usually a `Card` that takes `role="group"` from the caller ([UIC-CARD-1.3](#uic-card-13---region-name-and-roles)). Arrow keys move focus between cards in two dimensions by their positions on screen (in the `waterfall` layout, Left and Right move by position and Up and Down in collection order), Home and End reach the first and last card, and typing moves to the card whose `textValue` starts with the typed text. The grid needs an `aria-label` or `aria-labelledby`.
+`CardGrid` shall render React Aria's `GridList` in its `grid` layout with the `ui-card-grid` root, and `CardGridItem` a `GridListItem` (keyed by its `id`) with the `ui-card-grid-item` root around its content, usually a `Card` that takes `role="group"` from the caller ([UIC-CARD-1.3](#uic-card-13---region-name-and-roles)). Arrow keys move focus between cards in two dimensions by their positions on screen (in the `waterfall` layout, Left and Right move by position and Up and Down in collection order), Home and End reach the first and last card, and typing moves to the card whose `textValue` starts with the typed text. A text control inside a card (a text input, a slider or select, a text area, editable content, or an element with role `textbox` or `combobox`) keeps every key but Tab and Escape: the arrow keys, Home, End and typed characters move its caret or change its value, and neither the card's navigation between its controls, the grid's arrow keys nor its typeahead take them; Tab and Escape still reach the grid. The grid needs an `aria-label` or `aria-labelledby`.
 
-Implementation: `src/components/card/card-grid.tsx`, `labs/reference/card.css`
-Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`
+Implementation: `src/components/card/card-grid.tsx`, `labs/reference/card.css`, `src/utils/text-control-keys.tsx`
+Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`, `src/utils/text-control-keys.test.tsx`
 
 ### UIC-CARD-5.2 - Collection children
 

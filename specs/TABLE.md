@@ -149,10 +149,10 @@ Verification: `src/components/table/table.test.tsx`
 
 ### UIC-TABLE-3.4 - Focus on cell controls
 
-A control inside a cell (a row action, a selection checkbox, a cell's own content or a detail row's content) shall keep focus when it takes it, by keyboard, pointer or `focus()`, in flat and nested rows: the cell becomes the grid's focused cell, so the grid never moves focus to another row or cell. The control keeps focus and its element while it turns pending or unavailable (`focusableWhenDisabled`) and while rows are added around it with stable row IDs, and the arrow keys move on from its cell.
+A control inside a cell (a row action, a selection checkbox, a cell's own content or a detail row's content) shall keep focus when it takes it, by keyboard, pointer or `focus()`, in flat and nested rows: the cell becomes the grid's focused cell, so the grid never moves focus to another row or cell. The control keeps focus and its element while it turns pending or unavailable (`focusableWhenDisabled`) and while rows are added around it with stable row IDs, and the arrow keys move on from its cell when it is not a text control. A text control in a cell (a text input, a slider or select, a text area, editable content, or an element with role `textbox` or `combobox`) keeps every key but Tab and Escape: the arrow keys, Home, End and typed characters are its own, and neither the grid's navigation nor its typeahead take them.
 
-Implementation: `src/components/table/table-row.tsx`, `src/components/table/table-data-cell.tsx`
-Verification: `src/components/table/table-cell-focus.test.tsx`, `e2e/table.spec.ts`
+Implementation: `src/components/table/table-row.tsx`, `src/components/table/table-data-cell.tsx`, `src/utils/text-control-keys.tsx`
+Verification: `src/components/table/table-cell-focus.test.tsx`, `e2e/table.spec.ts`, `src/utils/text-control-keys.test.tsx`
 
 ## UIC-TABLE-4 - Column sizing
 

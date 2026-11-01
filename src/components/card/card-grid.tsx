@@ -22,6 +22,7 @@ import { EmptyState } from '../empty-state/empty-state.js';
 import { useCarriedFocus } from '../../utils/use-carried-focus.js';
 import { useHeldSelection } from '../../utils/use-held-selection.js';
 import { keepControlFocusReturn } from '../../utils/keep-control-focus-return.js';
+import { renderTextKeyRow } from '../../utils/text-control-keys.js';
 
 /** `grid` lines cards up in rows and columns; `waterfall` stacks cards of different heights in columns. */
 export type CardGridLayout = 'grid' | 'waterfall';
@@ -172,6 +173,7 @@ export function CardGridItem({ className, children, ...rest }: CardGridItemProps
       {...rest}
       {...itemHooks.root({ className, props: rest })}
       ref={keepControlFocusReturn}
+      render={renderTextKeyRow}
     >
       {({ selectionMode, selectionBehavior, isSelected }) => (
         <>

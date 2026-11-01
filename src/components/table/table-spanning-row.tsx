@@ -3,6 +3,7 @@
 // The cell element every table cell renders, and the full-width rows whose one cell spans every
 // column: detail rows and the notice row.
 
+import { keepTextControlKeys } from '../../utils/text-control-keys.js';
 import { useContext, useId, type FocusEvent, type JSX, type ReactNode } from 'react';
 import { Cell, Row, TableStateContext, type CellRenderProps } from '../../primitives/index.js';
 import type { Key } from '../../core/props.js';
@@ -35,10 +36,12 @@ function TableCellElement({
   };
   // Cells inside a range of selected cells are marked selected for assistive technology.
   const selected = isInRange ? { 'aria-selected': 'true' as const } : {};
+  // A text control in the cell keeps its caret keys from the grid's navigation and typeahead.
+  const keyed = keepTextControlKeys(props);
   return isVirtualized ? (
-    <div {...(props as JSX.IntrinsicElements['div'])} {...selected} onFocus={onFocus} />
+    <div {...(keyed as JSX.IntrinsicElements['div'])} {...selected} onFocus={onFocus} />
   ) : (
-    <td {...(props as JSX.IntrinsicElements['td'])} {...selected} onFocus={onFocus} />
+    <td {...(keyed as JSX.IntrinsicElements['td'])} {...selected} onFocus={onFocus} />
   );
 }
 
