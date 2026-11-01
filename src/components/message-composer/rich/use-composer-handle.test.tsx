@@ -123,7 +123,7 @@ describe('RichMessageComposer handle', () => {
     });
   });
 
-  it('UIC-MESSAGE-COMPOSER-4.10 refuses while disabled or editing, and reads the draft under an edit', () => {
+  it('UIC-MESSAGE-COMPOSER-4.10 refuses while disabled or editing, and reads the draft under an edit and what the text box shows', () => {
     const draft = { text: 'Draft', tokens: [] };
     const { insert, handle, rerender, onChange } = renderComposer({
       defaultValue: draft,
@@ -140,7 +140,10 @@ describe('RichMessageComposer handle', () => {
     );
     expect(insert()).toBe('editing');
     expect(handle.current?.getDraft()).toEqual(draft);
+    expect(handle.current?.getValue()).toEqual({ text: 'Sent earlier', tokens: [] });
     expect(onChange).not.toHaveBeenCalled();
+    rerender(<RichMessageComposer handleRef={handle} defaultValue={draft} onChange={onChange} />);
+    expect(handle.current?.getValue()).toEqual(draft);
   });
 
   it('UIC-MESSAGE-COMPOSER-4.10 refuses while a sent message waits, inserts while a reply runs, and reads a stored draft', async () => {

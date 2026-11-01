@@ -1,9 +1,16 @@
 'use client';
 
 import { CloseGlyph } from '../../core/glyphs.js';
-import { useEffect, useId, useMemo, useRef, type KeyboardEvent, type ReactNode } from 'react';
+import {
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+} from 'react';
 import { useUiStrings } from '../../core/provider.js';
-import { useStableArray } from '../../utils/use-stable-array.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { ChatAttachmentList, type ChatAttachmentData } from '../chat-attachment/chat-attachment.js';
 import type { ChatQueuedMessage } from '../chat-controller/chat-controller.js';
@@ -126,9 +133,8 @@ interface BannerContent {
 }
 
 const noQueue: readonly ChatQueuedMessage[] = [];
-const noTokens: ChatMessageText['tokens'] = [];
 
-/** The text the composer edits: the reader's message or a queued one, kept while its target and words are. */
+/** The text the composer edits: the reader's message or a queued one, kept while its session and target are. */
 function useEditValue({ state, messages, options }: ChatComposerProps) {
   const { editing } = state;
   let source: ChatMessageText | undefined;
@@ -139,17 +145,22 @@ function useEditValue({ state, messages, options }: ChatComposerProps) {
     const entry = options.queue?.find((item) => item.id === editing.id);
     source = entry && { text: entry.text, tokens: toComposerTokens(entry.tokens ?? []) };
   }
-  // A new value restarts the edit, so it changes with the edit's target (its conversation, kind and
-  // id) and its words, not with the message object: another message with the same words restarts.
+  // A new value restarts the edit, so it changes with the edit's session and target (its
+  // conversation, kind and id) only: another message with the same words restarts, while a reaction,
+  // or the host applying a save the reader goes on editing after, does not.
   const target =
-    source && editing ? JSON.stringify([options.conversationId, editing.kind, editing.id]) : null;
-  const text = source?.text ?? '';
-  const tokens = useStableArray(source?.tokens ?? noTokens);
-  return useMemo(
-    (): ComposerMessage | undefined =>
-      target === null ? undefined : { text, tokens: [...tokens] },
-    [target, text, tokens],
-  );
+    source && editing
+      ? JSON.stringify([options.conversationId, state.session, editing.kind, editing.id])
+      : null;
+  const [held, setHeld] = useState<{ target: string; value: ComposerMessage } | null>(null);
+  if (target === null || !source) {
+    if (held !== null) setHeld(null);
+    return undefined;
+  }
+  if (held?.target === target) return held.value;
+  const next = { target, value: { text: source.text, tokens: [...source.tokens] } };
+  setHeld(next);
+  return next.value;
 }
 
 /**
@@ -340,7 +351,7 @@ export function ChatComposer(given: ChatComposerProps) {
         startControls={renderStartControls(props)}
         endControls={options.composerEndControls}
         onKeyDown={onKeyDown}
-        onSubmit={(message) => submitMessage(props, message)}
+        onSubmit={(message) => submitMessage(props, message, () => composerRef.current?.getValue())}
         onSubmitNow={options.onSendNow && ((message) => sendMessageNow(props, message))}
         onSubmitError={options.onSendError}
       />

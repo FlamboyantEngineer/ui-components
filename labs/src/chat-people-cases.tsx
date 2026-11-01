@@ -78,7 +78,7 @@ export function ChatPeopleCases() {
   return (
     <LabSection
       title="Between two people"
-      description="Your messages walk through Sending, Sent, Delivered and Read; the failed one offers Retry. Ana shows as Active in the header, types (the indicator under the transcript) and answers. Hover or focus a message for its actions: Reply quotes it in a banner above the composer, React adds an emoji, and on your own messages Edit (or Up in the empty composer) edits it in place and Delete asks first. Your first answer went twice with the same words: Edit on either starts from that message, leaving any edit of the other. Your draft is kept for this conversation: type, reload the page, and it is still there."
+      description="Your messages walk through Sending, Sent, Delivered and Read; the failed one offers Retry. Ana shows as Active in the header, types (the indicator under the transcript) and answers. Hover or focus a message for its actions: Reply quotes it in a banner above the composer, React adds an emoji, and on your own messages Edit (or Up in the empty composer) edits it in place and Delete asks first. Your first answer went twice with the same words: Edit on either starts from that message, leaving any edit of the other. Ana's side takes a moment to store an edit: words you add while it saves stay in the composer for another Save. Your draft is kept for this conversation: type, reload the page, and it is still there."
     >
       <PairDemo />
     </LabSection>

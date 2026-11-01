@@ -125,14 +125,20 @@ export function usePeopleCallbacks({
       update(id, (message) => ({ ...message, delivery: 'sending' }));
       deliver(id);
     },
+    // The host takes a moment to store an edit, so the reader can type on while it is saved.
     onEdit: (id: string, text: string, tokens: readonly ChatTextToken[]) =>
-      update(id, (message) => ({
-        ...message,
-        isEdited: true,
-        parts: message.parts.map((part) =>
-          part.type === 'text' ? { ...part, text, tokens: [...tokens] } : part,
-        ),
-      })),
+      new Promise<void>((resolve) =>
+        later(800, () => {
+          update(id, (message) => ({
+            ...message,
+            isEdited: true,
+            parts: message.parts.map((part) =>
+              part.type === 'text' ? { ...part, text, tokens: [...tokens] } : part,
+            ),
+          }));
+          resolve();
+        }),
+      ),
     onReact: (id: string, emoji: string, isReacted: boolean) =>
       update(id, (message) => ({
         ...message,
