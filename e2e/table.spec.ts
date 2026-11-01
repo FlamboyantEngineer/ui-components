@@ -953,6 +953,31 @@ test.describe('Table lab', () => {
       ).toHaveAttribute('data-in-range', 'true');
     });
 
+    test('UIC-TABLE-14.1 leaves a slider drag in a cell to the slider', async ({ page, lab }) => {
+      await lab.open('table');
+      const grid = section(page, 'spreadsheet').getByRole('grid', {
+        name: 'Stock, one cell at a time',
+      });
+      const slider = grid.getByRole('slider', { name: 'Ripeness Banana' });
+      const thumb = grid.locator(`[data-key="${toCollectionKey('banana')}"] .ui-slider__thumb`);
+      const track = grid.locator(`[data-key="${toCollectionKey('banana')}"] .ui-slider__track`);
+      await expect(slider).toHaveValue('5');
+      await track.scrollIntoViewIfNeeded();
+      const [from, along] = [await thumb.boundingBox(), await track.boundingBox()];
+      if (!from || !along) throw new Error('no slider');
+      await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(along.x + along.width - 1, from.y + from.height / 2, { steps: 6 });
+      await page.mouse.up();
+      await expect(slider).toHaveValue('10');
+      await page.mouse.click(along.x + 1, along.y + along.height / 2);
+      await expect(slider).toHaveValue('0');
+      await expect(grid.locator('[data-in-range]')).toHaveCount(1);
+      await expect(
+        grid.locator(`[data-key="${toCollectionKey('apple')}"] > [data-column="name"]`),
+      ).toHaveAttribute('data-in-range', 'true');
+    });
+
     test('UIC-TABLE-14.5 UIC-TABLE-14.6 UIC-TABLE-14.7 fills, types to edit and checks values', async ({
       page,
       lab,

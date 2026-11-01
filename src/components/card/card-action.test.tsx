@@ -1,6 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import { NumberField } from '../number-field/number-field.js';
+import { SignaturePad } from '../signature-pad/signature-pad.js';
+import { Slider } from '../slider/slider.js';
 import { Card } from './card.js';
 import { CardAction } from './card-parts.js';
 
@@ -89,6 +92,38 @@ describe('Card background clicks', () => {
     const { rerender } = render(card(true));
     rerender(card(false));
     await user.click(screen.getByText('Twelve packets'));
+    expect(onAction).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-CARD-3.2 leaves presses on gesture surfaces, and drags released elsewhere, to them', async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    const { container } = render(
+      <Card title="Mixer" onAction={onAction}>
+        <Slider label="Volume" defaultValue={4} maxValue={10} />
+        <NumberField label="Gain" defaultValue={2} showScrubber />
+        <SignaturePad label="Signature" />
+        <p>Background</p>
+      </Card>,
+    );
+    const background = screen.getByText('Background');
+    for (const surface of [
+      '.ui-slider__thumb',
+      '.ui-slider__track',
+      '.ui-number-field__scrubber',
+      '.ui-signature-pad__surface',
+    ]) {
+      const target = container.querySelector<HTMLElement>(surface) as HTMLElement;
+      // A press on the surface, then a press that starts there and is released on the background.
+      await user.click(target);
+      await user.pointer([
+        { keys: '[MouseLeft>]', target },
+        { target: background },
+        { keys: '[/MouseLeft]' },
+      ]);
+    }
+    expect(onAction).not.toHaveBeenCalled();
+    await user.click(background);
     expect(onAction).toHaveBeenCalledTimes(1);
   });
 });

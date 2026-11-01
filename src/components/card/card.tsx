@@ -203,7 +203,7 @@ export function Card(props: CardProps) {
     rel: props.rel,
     onAction: props.onAction,
   };
-  const { isActionable, actionRef, onClick } = useCardAction(options);
+  const { isActionable, actionRef, onClick, onPointerDownCapture } = useCardAction(options);
   const collapse = useCardCollapse(props);
   const presentation = useCardPresentation(root, props.presentationSteps);
   const { more, summary } = useCardMore(presentation, {
@@ -231,6 +231,7 @@ export function Card(props: CardProps) {
       aria-labelledby={labelledBy}
       aria-busy={isLoading || undefined}
       onClick={isActionable ? onClick : undefined}
+      onPointerDownCapture={isActionable ? onPointerDownCapture : undefined}
     >
       {isEmptyNode(media) ? null : (
         <div {...hooks.slot('media')} id={collapse.ids.media} hidden={isHidden}>

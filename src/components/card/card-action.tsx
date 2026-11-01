@@ -7,6 +7,7 @@ import {
   useCallback,
   useRef,
   type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
   type ReactNode,
   type RefCallback,
 } from 'react';
@@ -16,6 +17,7 @@ import type { BaseProps } from '../../core/props.js';
 import { UiLink } from '../../core/provider.js';
 import { isElement, isHTMLElement } from '../../utils/is-element.js';
 import { mergeSafeRel } from '../../utils/merge-safe-rel.js';
+import { clickOwnerSelector } from '../../utils/is-interactive-target.js';
 
 /** What the whole card does when it is pressed: follow `href`, or run `onAction`. */
 export interface CardActionOptions {
@@ -36,40 +38,9 @@ interface CardAction {
   actionRef: RefCallback<HTMLElement>;
   /** The card root's click handler that forwards stray clicks to the action. */
   onClick: (event: ReactMouseEvent<HTMLElement>) => void;
+  /** Notes where a press starts, so a drag that a control began never ends as a card click. */
+  onPointerDownCapture: (event: ReactPointerEvent<HTMLElement>) => void;
 }
-
-/** Elements that own their clicks: a click inside one never reaches the card's action. */
-const controlSelector = [
-  'a[href]',
-  'button',
-  'input',
-  'select',
-  'textarea',
-  'summary',
-  'label',
-  // Widgets own their clicks even as a roving item that is not a tab stop.
-  ...[
-    'button',
-    'link',
-    'checkbox',
-    'switch',
-    'radio',
-    'menuitem',
-    'menuitemcheckbox',
-    'menuitemradio',
-    'option',
-    'tab',
-    'treeitem',
-    'gridcell',
-    'slider',
-    'spinbutton',
-    'scrollbar',
-    'textbox',
-    'searchbox',
-    'combobox',
-  ].map((role) => `[role="${role}"]`),
-  '[tabindex]:not([tabindex="-1"])',
-].join(', ');
 
 /** Clicks an actionable card has claimed, so the cards around it leave them alone. */
 const claimedClicks = new WeakSet<Event>();
@@ -92,7 +63,7 @@ function isInEditor(target: Element): boolean {
  * text selection.
  */
 function isCardClick(target: Element, card: Element): boolean {
-  const control = target.closest(controlSelector);
+  const control = target.closest(clickOwnerSelector);
   if (control && card.contains(control)) return false;
   if (isInEditor(target)) return false;
   const selection = card.ownerDocument.getSelection();
@@ -128,8 +99,16 @@ export function useCardAction(options: CardActionOptions): CardAction {
       registered.current = registered.current.filter((entry) => entry !== node);
     };
   }, []);
+  // The control or gesture surface the last press started on: a slider drag, a scrub or a stroke
+  // released elsewhere in the card still belongs to it.
+  const pressOwner = useRef<Element | null>(null);
+  const onPointerDownCapture = (event: ReactPointerEvent<HTMLElement>) => {
+    pressOwner.current = isElement(event.target) ? event.target.closest(clickOwnerSelector) : null;
+  };
   const onClick = (event: ReactMouseEvent<HTMLElement>) => {
     const element = registered.current.find((entry) => entry.isConnected);
+    const startedOn = pressOwner.current;
+    pressOwner.current = null;
     if (!isActionable || !element || event.defaultPrevented) return;
     // React bubbles clicks out of portals; content portalled out of the card is not the card.
     if (!isElement(event.target) || !event.currentTarget.contains(event.target)) return;
@@ -137,9 +116,10 @@ export function useCardAction(options: CardActionOptions): CardAction {
     if (claimedClicks.has(event.nativeEvent)) return;
     claimedClicks.add(event.nativeEvent);
     if (element.contains(event.target)) return;
+    if (startedOn && event.currentTarget.contains(startedOn)) return;
     if (isCardClick(event.target, event.currentTarget)) repeatClick(element, event);
   };
-  return { isActionable, actionRef, onClick };
+  return { isActionable, actionRef, onClick, onPointerDownCapture };
 }
 
 /** What draws the card's action element. */
