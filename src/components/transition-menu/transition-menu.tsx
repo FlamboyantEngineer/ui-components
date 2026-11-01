@@ -66,11 +66,51 @@ export interface TransitionMenuProps extends BaseProps {
 
 const hooks = createHooks('transition-menu', ['trigger', 'badge', 'transition', 'comment']);
 
-/** The dialog a transition opens, and the transition it is for. */
+/**
+ * The dialog a transition opens: the operation the reader consents to, from the state it was
+ * opened in, and what the dialog shows.
+ */
 interface OpenDialog {
+  /** The state the record was in when the dialog opened. */
+  from: Key;
   transition: TransitionMenuTransition;
   target: TransitionDialogTarget;
   isOpen: boolean;
+}
+
+/** The transition `key` while it may run: listed, not unavailable, and the menu enabled. */
+function findRunnable(
+  transitions: readonly TransitionMenuTransition[],
+  key: Key,
+  isRefused: boolean,
+): TransitionMenuTransition | undefined {
+  if (isRefused) return undefined;
+  const transition = transitions.find((entry) => entry.id === key);
+  return transition?.disabledReason === undefined ? transition : undefined;
+}
+
+/** A confirmation message as consent covers it: a text by its words, any other node by being one. */
+const messageConsent = (message: ReactNode) =>
+  typeof message === 'string' || message === undefined ? message : true;
+
+/**
+ * Whether the reader's consent in `dialog` still covers the transition as it stands now: the
+ * record is in the same state and the transition leads to the same state, with the same message
+ * and comment requirement.
+ */
+function isSameOperation(
+  dialog: OpenDialog,
+  value: Key,
+  current: TransitionMenuTransition | undefined,
+): current is TransitionMenuTransition {
+  const { transition } = dialog;
+  return (
+    current !== undefined &&
+    dialog.from === value &&
+    current.to === transition.to &&
+    Boolean(current.requiresComment) === Boolean(transition.requiresComment) &&
+    messageConsent(current.confirmMessage) === messageConsent(transition.confirmMessage)
+  );
 }
 
 function findState(states: readonly TransitionMenuState[], key: Key): TransitionMenuState {
@@ -114,6 +154,22 @@ function usePendingRun(onTransition: TransitionMenuProps['onTransition']) {
 }
 
 /**
+ * The dialog a transition opened, and whether the reader's consent in it still covers the
+ * transition as it stands: one revoked or changed since closes, and stays closed if it comes back.
+ */
+function useTransitionDialog(
+  transitions: readonly TransitionMenuTransition[],
+  value: Key,
+  isDisabled: boolean,
+) {
+  const [dialog, setDialog] = useState<OpenDialog | null>(null);
+  const current = dialog ? findRunnable(transitions, dialog.transition.id, isDisabled) : undefined;
+  const isDialogValid = dialog !== null && isSameOperation(dialog, value, current);
+  if (dialog?.isOpen && !isDialogValid) setDialog({ ...dialog, isOpen: false });
+  return { dialog, isDialogValid, setDialog };
+}
+
+/**
  * A record's current state as a badge that opens a menu of the states it may move to: each allowed
  * transition with its target's tone, a description, or the reason it is unavailable. A transition
  * may ask for confirmation or a required comment in a dialog before it runs.
@@ -132,15 +188,16 @@ export function TransitionMenu({
   const strings = useUiStrings();
   const current = findState(states, value);
   const { isPending, run } = usePendingRun(onTransition);
-  const [dialog, setDialog] = useState<OpenDialog | null>(null);
+  const { dialog, isDialogValid, setDialog } = useTransitionDialog(transitions, value, isDisabled);
+  const runnable = (key: Key) => findRunnable(transitions, key, isDisabled || isPending);
   const badge = (
     <Badge tone={current.tone ?? 'neutral'} className={hooks.slotClass('badge')}>
       {current.label}
     </Badge>
   );
   const choose = (key: Key) => {
-    const transition = transitions.find((entry) => entry.id === key);
-    if (!transition || transition.disabledReason !== undefined) return;
+    const transition = runnable(key);
+    if (!transition) return;
     if (transition.confirmMessage === undefined && !transition.requiresComment) {
       void run({ transition: transition.id, to: transition.to });
       return;
@@ -152,7 +209,7 @@ export function TransitionMenu({
       message: transition.confirmMessage,
       requiresComment: transition.requiresComment ?? false,
     };
-    setDialog({ transition, target, isOpen: true });
+    setDialog({ from: value, transition, target, isOpen: true });
   };
   const data = { pending: isPending, disabled: isDisabled, readonly: transitions.length === 0 };
   return (
@@ -185,7 +242,7 @@ export function TransitionMenu({
         isOpen={dialog?.isOpen ?? false}
         onClose={() => setDialog((open) => open && { ...open, isOpen: false })}
         onConfirm={(comment) =>
-          dialog
+          dialog && isDialogValid
             ? onTransition({ transition: dialog.transition.id, to: dialog.transition.to, comment })
             : undefined
         }

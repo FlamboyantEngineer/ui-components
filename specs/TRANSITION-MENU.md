@@ -53,6 +53,13 @@ Verification: `src/components/transition-menu/transition-menu.test.tsx`
 Implementation: `src/components/transition-menu/transition-menu.tsx`
 Verification: `src/components/transition-menu/transition-menu.test.tsx`
 
+### UIC-TRANSITION-MENU-1.8 - Revoked transitions
+
+Every entry point shall check the transition as it stands when it runs: choosing a menu item runs nothing while the menu is disabled or pending, or the transition is gone or unavailable. An open dialog holds the reader's consent to one operation: the transition from the state it was opened in, to the same target, with the same comment requirement and confirmation message (a non-text message by being one). When `isDisabled` turns on, the transition is removed or becomes unavailable, the current state changes, or the operation changes, the dialog closes without running anything and does not reopen if the transition comes back. While the operation stands, confirming calls the current `onTransition`.
+
+Implementation: `src/components/transition-menu/transition-menu.tsx`
+Verification: `src/components/transition-menu/transition-menu.test.tsx`
+
 ## UIC-TRANSITION-MENU-2 - Accessibility
 
 ### UIC-TRANSITION-MENU-2.1 - Names and keyboard

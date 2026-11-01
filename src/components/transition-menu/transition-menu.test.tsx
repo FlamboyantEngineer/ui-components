@@ -273,4 +273,74 @@ describe('TransitionMenu', { timeout: 15_000 }, () => {
     expect(menu).toBeInTheDocument();
     expect(screen.queryByRole('dialog', { name: /^Move to/ })).not.toBeInTheDocument();
   });
+
+  describe('UIC-TRANSITION-MENU-1.8 revalidates what is open', () => {
+    const cancel: TransitionMenuTransition = {
+      id: 'cancel',
+      to: 'dropped',
+      confirmMessage: 'Cancelled items stop.',
+    };
+    const finish: TransitionMenuTransition = { id: 'finish', to: 'done' };
+    type Props = Partial<Parameters<typeof TransitionMenu>[0]>;
+    function mountMenu(onTransition: () => void) {
+      const base = { states, value: 'open', transitions: [cancel, finish], onTransition };
+      const { rerender } = render(<TransitionMenu {...base} />);
+      return (next: Props) => rerender(<TransitionMenu {...base} {...next} />);
+    }
+    async function openCancel() {
+      await userEvent.click(trigger());
+      await userEvent.click(screen.getByRole('menuitem', { name: /Dropped/ }));
+      return screen.getByRole('dialog', { name: 'Move to Dropped' });
+    }
+
+    it.each<[string, Props]>([
+      ['the menu is disabled', { isDisabled: true }],
+      ['the transition is removed', { transitions: [finish] }],
+      [
+        'the transition becomes unavailable',
+        { transitions: [{ ...cancel, disabledReason: 'Locked' }] },
+      ],
+      ['the record moves to another state', { value: 'active', transitions: [] }],
+      [
+        'the transition leads elsewhere',
+        { transitions: [{ ...cancel, to: 'done', requiresComment: true }] },
+      ],
+      [
+        'the message changes',
+        { transitions: [{ ...cancel, confirmMessage: 'Other work stops.' }] },
+      ],
+    ])('closes the confirmation when %s, for good', async (_, change) => {
+      const onTransition = vi.fn();
+      const update = mountMenu(onTransition);
+      const dialog = await openCancel();
+      const confirm = within(dialog).getByRole('button', { name: 'Move to Dropped' });
+      update(change);
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+      await userEvent.click(confirm).catch(() => undefined);
+      update({});
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(onTransition).not.toHaveBeenCalled();
+    });
+
+    it('keeps the confirmation for the same operation and runs the current callback', async () => {
+      const first = vi.fn();
+      const second = vi.fn();
+      const update = mountMenu(first);
+      const dialog = await openCancel();
+      update({ onTransition: second, transitions: [{ ...cancel }, finish] });
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Move to Dropped' }));
+      expect(first).not.toHaveBeenCalled();
+      expect(second).toHaveBeenCalledWith({ transition: 'cancel', to: 'dropped' });
+    });
+
+    it('refuses a direct transition chosen from a menu the host disabled', async () => {
+      const onTransition = vi.fn();
+      const update = mountMenu(onTransition);
+      await userEvent.click(trigger());
+      const item = screen.getByRole('menuitem', { name: /Done/ });
+      update({ isDisabled: true });
+      await userEvent.click(item).catch(() => undefined);
+      expect(onTransition).not.toHaveBeenCalled();
+    });
+  });
 });
