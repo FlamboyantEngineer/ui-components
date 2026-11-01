@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
-import { Tree, type TreeItemState } from '../../src/components/tree/tree.js';
+import {
+  Tree,
+  type TreeCurrentMark,
+  type TreeItemState,
+  type TreeMarks,
+} from '../../src/components/tree/tree.js';
 import { UiProvider } from '../../src/core/provider.js';
 import {
   applyTreeMove,
@@ -91,6 +96,38 @@ function StatesTree({ state }: { state: (typeof states)[number] }) {
       defaultSelectedKeys={state === 'selected' ? ['lisbon'] : undefined}
       currentKey={state === 'current' ? 'lisbon' : null}
       disabledKeys={state === 'disabled' ? ['lisbon'] : undefined}
+    />
+  );
+}
+
+const currentMarks: readonly TreeCurrentMark[] = ['tint', 'bold', 'underline', 'dot', 'caret'];
+const glyphMarks = ['dot', 'caret'] as const;
+// Oslo is new; Lisbon is current and selected, Budget only selected.
+const isNewEntry = (entry: Entry) => entry.id === 'oslo';
+
+function MarkedTree({
+  label,
+  marks,
+  size,
+}: {
+  label: string;
+  marks: TreeMarks;
+  size?: 'sm' | 'lg';
+}) {
+  return (
+    <Tree
+      aria-label={label}
+      items={LIBRARY}
+      getTextValue={name}
+      getIcon={icon}
+      defaultExpandedKeys={['travel', 'desserts', 'recipes']}
+      selectionMode="multiple"
+      defaultSelectedKeys={['lisbon', 'budget']}
+      disabledKeys={['archive']}
+      currentKey="lisbon"
+      isItemNew={isNewEntry}
+      marks={marks}
+      size={size}
     />
   );
 }
@@ -349,6 +386,46 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Row marks"
+      description="How the current row stands out: a tint, bold or underlined text, a dot or a caret. Lisbon.pdf is current and selected, Budget.xlsx selected, Oslo.pdf new (described as New), Archive.zip disabled."
+    >
+      <StateMatrix
+        axes={{ current: currentMarks }}
+        render={({ current }) => (
+          <div data-lab-column="240" style={{ width: 240 }}>
+            <MarkedTree label={`Current ${current}`} marks={{ current }} />
+          </div>
+        )}
+      />
+      <StateMatrix
+        axes={{ selected: glyphMarks, new: glyphMarks }}
+        caption="Selected and new rows marked by a dot or a caret, beside a current dot"
+        render={({ selected, new: fresh }) => (
+          <div data-lab-column="240" style={{ width: 240 }}>
+            <MarkedTree
+              label={`Selected ${selected}, new ${fresh}`}
+              marks={{ current: 'dot', selected, new: fresh }}
+            />
+          </div>
+        )}
+      />
+      <div dir="rtl">
+        <StateMatrix
+          axes={{ direction: ['rtl'], size: ['sm', 'lg'] }}
+          caption="Right to left, at the smallest and largest row sizes"
+          render={({ size }) => (
+            <div data-lab-column="240" style={{ width: 240 }}>
+              <MarkedTree
+                label={`Right to left ${size}`}
+                marks={{ current: 'caret', selected: 'dot', new: 'caret' }}
+                size={size}
+              />
+            </div>
+          )}
+        />
+      </div>
+    </LabSection>
+    <LabSection
       title="Expand glyphs and wrapping"
       description="Chevrons or plus and minus; labels on one line or wrapping in a 200px column."
     >
@@ -437,6 +514,9 @@ mountLab(
         getTextValue={name}
         getIcon={icon}
         defaultExpandedKeys={manyFolders.map((entry) => entry.id)}
+        currentKey="crate-1-2"
+        isItemNew={(entry) => entry.id === 'crate-1-3'}
+        marks={{ current: 'dot', new: 'dot' }}
         virtualized
         data-lab-tree="virtualized"
       />

@@ -35,6 +35,8 @@ export interface CommonStrings {
   help: string;
   expand: string;
   collapse: string;
+  /** Describes a tree row its owner marks as new. */
+  treeItemNew: string;
   /** Names a card's expand and collapse control, with the card's title after it. */
   details: string;
   search: string;

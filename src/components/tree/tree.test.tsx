@@ -135,6 +135,7 @@ describe('Tree', () => {
       isDisabled: false,
       isFocusVisible: false,
       isCurrent: false,
+      isNew: false,
     });
     expect(states.get('apple')).toMatchObject({ level: 2, isSelected: true, hasChildItems: false });
     expect(states.get('pear')).toMatchObject({ isDisabled: true });
@@ -394,6 +395,68 @@ describe('Tree', () => {
     expect(row('Other')).not.toHaveAttribute('aria-current');
     expect(container.querySelectorAll('[data-current="true"]')).toHaveLength(1);
     expectHooksMatchSpec(container, 'TREE');
+  });
+
+  it('UIC-TREE-3.7 marks new rows and publishes the chosen marks', () => {
+    const states: Record<string, TreeItemState> = {};
+    const { container, rerender } = render(
+      <FoodTree
+        defaultExpandedKeys={['fruit']}
+        currentKey="apple"
+        isItemNew={(item) => item.id === 'pear'}
+        renderMeta={(item, state) => {
+          states[item.id] = state;
+          return null;
+        }}
+      />,
+    );
+    const tree = screen.getByRole('treegrid', { name: 'Food' });
+    expect(tree).toHaveAttribute('data-current-mark', 'tint');
+    expect(tree).toHaveAttribute('data-selected-mark', 'tint');
+    expect(tree).toHaveAttribute('data-new-mark', 'dot');
+    expect(row('Pear')).toHaveAttribute('data-new', 'true');
+    expect(row('Pear')).toHaveAttribute('aria-description', 'New');
+    expect(row('Apple')).not.toHaveAttribute('data-new');
+    expect(row('Apple')).not.toHaveAttribute('aria-description');
+    expect(states.pear?.isNew).toBe(true);
+    expect(states.apple).toMatchObject({ isNew: false, isCurrent: true });
+    expect(container.querySelectorAll('.ui-tree__new-mark')).toHaveLength(1);
+    expect(row('Pear').querySelector('.ui-tree__new-mark')).toHaveAttribute('aria-hidden', 'true');
+    // Tints draw no glyph, so no row reserves a state mark.
+    expect(container.querySelector('.ui-tree__state-mark')).toBeNull();
+
+    rerender(
+      <FoodTree
+        defaultExpandedKeys={['fruit']}
+        currentKey="apple"
+        isItemNew={(item) => item.id === 'pear'}
+        marks={{ current: 'caret', selected: 'dot', new: 'caret' }}
+      />,
+    );
+    expect(tree).toHaveAttribute('data-current-mark', 'caret');
+    expect(tree).toHaveAttribute('data-selected-mark', 'dot');
+    expect(tree).toHaveAttribute('data-new-mark', 'caret');
+    // A glyph mark reserves its place in every row, so marking a row moves no label.
+    const rows = screen.getAllByRole('row');
+    for (const each of rows) {
+      expect(each.querySelector('.ui-tree__state-mark')).toHaveAttribute('aria-hidden', 'true');
+    }
+    expect(row('Apple')).toHaveAttribute('aria-current', 'true');
+    expectHooksMatchSpec(container, 'TREE', {
+      slots: ['item', 'expand', 'expand-spacer', 'state-mark', 'label', 'new-mark'],
+    });
+  });
+
+  it('UIC-TREE-3.7 reserves the state mark for a selected glyph alone', () => {
+    const { container } = render(
+      <FoodTree
+        selectionMode="multiple"
+        defaultSelectedKeys={['nuts']}
+        marks={{ selected: 'caret' }}
+      />,
+    );
+    expect(container.querySelectorAll('.ui-tree__state-mark')).toHaveLength(3);
+    expect(row('Nuts')).toHaveAttribute('aria-selected', 'true');
   });
 
   it('UIC-TREE-3.6 lets the owner claim a key before the tree handles it', async () => {

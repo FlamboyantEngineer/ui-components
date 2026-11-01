@@ -2,6 +2,87 @@ import { expect, test, matrixCell } from './fixtures.js';
 import { expectRowMenuReturnsFocus } from './row-menu.js';
 
 test.describe('Tree lab', () => {
+  test('UIC-TREE-3.7 marks the current row five ways without moving its label', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tree');
+    const pseudo = (row: ReturnType<typeof page.locator>, slot: string, part: string) =>
+      row.locator(`.ui-tree__${slot}`).evaluate((node, which) => {
+        const style = getComputedStyle(node, which);
+        return {
+          width: style.width,
+          fill: style.backgroundColor,
+          caret: style.borderInlineStartColor,
+        };
+      }, part);
+    const labelStart = async (row: ReturnType<typeof page.locator>) =>
+      (await row.locator('.ui-tree__label').boundingBox())?.x ?? -1;
+    for (const mark of ['tint', 'bold', 'underline', 'dot', 'caret']) {
+      const tree = matrixCell(page, `current=${mark}`).getByRole('treegrid');
+      const lisbon = tree.getByRole('row', { name: 'Lisbon.pdf' });
+      const oslo = tree.getByRole('row', { name: 'Oslo.pdf' });
+      await expect(lisbon).toHaveAttribute('aria-current', 'true');
+      // Siblings start their labels at the same place: the mark moves nothing.
+      expect(await labelStart(lisbon)).toBe(await labelStart(oslo));
+      // No state is a bar along one edge (UIC-LABS-3.1).
+      await expect(lisbon).toHaveCSS('box-shadow', 'none');
+      await expect(lisbon).toHaveCSS('border-left-width', '0px');
+      const label = lisbon.locator('.ui-tree__label');
+      if (mark === 'bold') await expect(label).toHaveCSS('font-weight', '600');
+      else await expect(label).toHaveCSS('font-weight', '400');
+      await expect(label).toHaveCSS(
+        'text-decoration-line',
+        mark === 'underline' ? 'underline' : 'none',
+      );
+      if (mark === 'tint') {
+        await expect(lisbon).not.toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+        const budget = tree.getByRole('row', { name: 'Budget.xlsx' });
+        const selected = await budget.evaluate((node) => getComputedStyle(node).backgroundColor);
+        await expect(lisbon).not.toHaveCSS('background-color', selected);
+      }
+      if (mark === 'dot') {
+        const dot = await pseudo(lisbon, 'state-mark', '::before');
+        expect(dot.width).toBe('6px');
+        expect(dot.fill).not.toBe('rgba(0, 0, 0, 0)');
+        expect((await pseudo(oslo, 'state-mark', '::before')).fill).toBe('rgba(0, 0, 0, 0)');
+      }
+      if (mark === 'caret') {
+        const caret = await pseudo(lisbon, 'state-mark', '::before');
+        expect(caret.caret).not.toBe('rgba(0, 0, 0, 0)');
+        expect((await pseudo(oslo, 'state-mark', '::before')).caret).toBe('rgba(0, 0, 0, 0)');
+      }
+      // Oslo is new: described as such, with its mark after the label.
+      await expect(oslo).toHaveAttribute('aria-description', 'New');
+      const newMark = await oslo.locator('.ui-tree__new-mark').boundingBox();
+      const osloLabel = await oslo.locator('.ui-tree__label').boundingBox();
+      expect((newMark?.x ?? 0) + 0.5).toBeGreaterThanOrEqual(
+        (osloLabel?.x ?? 0) + (osloLabel?.width ?? 0),
+      );
+    }
+
+    // A row both current and selected shows both glyphs; one only selected shows the second.
+    for (const selected of ['dot', 'caret']) {
+      const tree = matrixCell(page, `selected=${selected} new=dot`).getByRole('treegrid');
+      const lisbon = tree.getByRole('row', { name: 'Lisbon.pdf' });
+      const budget = tree.getByRole('row', { name: 'Budget.xlsx' });
+      expect((await pseudo(lisbon, 'state-mark', '::before')).fill).not.toBe('rgba(0, 0, 0, 0)');
+      const shows = (part: { fill: string; caret: string }) =>
+        selected === 'dot' ? part.fill : part.caret;
+      expect(shows(await pseudo(lisbon, 'state-mark', '::after'))).not.toBe('rgba(0, 0, 0, 0)');
+      expect(shows(await pseudo(budget, 'state-mark', '::after'))).not.toBe('rgba(0, 0, 0, 0)');
+      expect((await pseudo(budget, 'state-mark', '::before')).fill).toBe('rgba(0, 0, 0, 0)');
+    }
+
+    // Right to left, the new mark follows the label to its left.
+    const rtl = matrixCell(page, 'direction=rtl size=lg').getByRole('treegrid');
+    const oslo = rtl.getByRole('row', { name: 'Oslo.pdf' });
+    const mark = await oslo.locator('.ui-tree__new-mark').boundingBox();
+    const text = await oslo.locator('.ui-tree__label').boundingBox();
+    expect((mark?.x ?? 0) + (mark?.width ?? 0)).toBeLessThanOrEqual((text?.x ?? 0) + 0.5);
+    await lab.expectAccessible('[data-lab-cell^="current="]');
+  });
+
   test('UIC-TREE-1.3 points a collapsed chevron to the inline end right to left', async ({
     page,
     lab,

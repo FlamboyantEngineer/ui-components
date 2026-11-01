@@ -26,6 +26,25 @@ export interface TreeItemState {
   isFocusVisible: boolean;
   /** Whether the row is the current page or item. */
   isCurrent: boolean;
+  /** Whether the owner marks the row as new (`isItemNew`). */
+  isNew: boolean;
+}
+
+/** How the stylesheet marks the current row: a tint, bold or underlined text, or a small dot or caret. */
+export type TreeCurrentMark = 'tint' | 'bold' | 'underline' | 'dot' | 'caret';
+/** How the stylesheet marks selected rows: a tint, or a small dot or caret. */
+export type TreeSelectedMark = 'tint' | 'dot' | 'caret';
+/** The small glyph that marks a new row after its label. */
+export type TreeNewMark = 'dot' | 'caret';
+
+/** The marks of the current, selected and new rows, published on the tree for the stylesheet. */
+export interface TreeMarks {
+  /** Defaults to `tint`. */
+  current?: TreeCurrentMark | undefined;
+  /** Defaults to `tint`. */
+  selected?: TreeSelectedMark | undefined;
+  /** Defaults to `dot`. */
+  new?: TreeNewMark | undefined;
 }
 
 /** `chevron` draws chevron-right and chevron-down; `plus-minus` draws plus and minus. */
@@ -63,6 +82,10 @@ export interface TreeProps<T extends TreeItemData>
   getHref?: ((item: T) => string | undefined) | undefined;
   /** The row that is the current page or item: `aria-current` and `data-current`. */
   currentKey?: Key | null | undefined;
+  /** Whether the owner marks an item as new: the row draws a new mark and is described as new. */
+  isItemNew?: ((item: T) => boolean) | undefined;
+  /** How the current, selected and new rows are marked. */
+  marks?: TreeMarks | undefined;
   /** An imported icon component or rendered element before the label. */
   getIcon?: ((item: T, state: TreeItemState) => IconSource) | undefined;
   /** The label. Defaults to the text value. */

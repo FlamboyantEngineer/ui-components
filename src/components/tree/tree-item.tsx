@@ -33,6 +33,7 @@ export interface TreeRowOptions<T extends TreeItemData> extends Pick<
   | 'isItemPending'
   | 'getHref'
   | 'currentKey'
+  | 'isItemNew'
   | 'getIcon'
   | 'renderLabel'
   | 'renderMeta'
@@ -54,6 +55,8 @@ export interface TreeRowOptions<T extends TreeItemData> extends Pick<
   rename: TreeRename<T> | null;
   /** Loading children on demand, while the owner loads them. */
   loads: TreeLoads | null;
+  /** Whether every row reserves the place of a dot or caret marking the current or selected row. */
+  hasStateMark: boolean;
 }
 
 /** What a row element marks on top of React Aria's props. */
@@ -63,6 +66,8 @@ interface RowElementOptions {
   isHandleDrag: boolean;
   isCurrent: boolean;
   isIndeterminate: boolean;
+  /** The row's description while the owner marks it as new. */
+  newDescription: string | undefined;
   href: string | undefined;
   keyShortcuts: string | undefined;
 }
@@ -70,17 +75,21 @@ interface RowElementOptions {
 const getLevelStyle = ({ level }: TreeItemRenderProps | TreeLoadMoreItemRenderProps) =>
   measuredProperty('tree-level', String(level));
 
-function toItemState(values: TreeItemContentRenderProps, isCurrent: boolean): TreeItemState {
+function toItemState(
+  values: TreeItemContentRenderProps,
+  marks: { isCurrent: boolean; isNew: boolean },
+): TreeItemState {
   const { isExpanded, hasChildItems, level, isSelected, isDisabled, isFocusVisible } = values;
-  return { isExpanded, hasChildItems, level, isSelected, isDisabled, isFocusVisible, isCurrent };
+  return { isExpanded, hasChildItems, level, isSelected, isDisabled, isFocusVisible, ...marks };
 }
 
 /**
  * The row element: React Aria's props, without its drag handlers when the row cannot move, plus
- * the current-row marks and the keyboard moves a movable row announces.
+ * the current and new row marks and the keyboard moves a movable row announces.
  */
 function createRowElement(options: RowElementOptions) {
   const { isMovable, isHandleDrag, isCurrent, isIndeterminate, href, keyShortcuts } = options;
+  const { newDescription } = options;
   return (domProps: JSX.IntrinsicElements['div']) => {
     const { draggable, onDragStart, onDrag, onDragEnd, ...others } = domProps;
     // With handle drags the row is draggable only while its handle is pressed (armHandleDrag).
@@ -93,6 +102,8 @@ function createRowElement(options: RowElementOptions) {
         {...(isMovable ? drag : {})}
         data-current={isCurrent || undefined}
         data-indeterminate={isIndeterminate || undefined}
+        data-new={newDescription === undefined ? undefined : true}
+        aria-description={newDescription}
         aria-current={isCurrent ? (href ? 'page' : true) : undefined}
         aria-keyshortcuts={isMovable ? keyShortcuts : undefined}
       />
@@ -136,7 +147,7 @@ const isNeverMovable = () => false;
 /** The options every row's content reads, kept while none of them changes. */
 function useRowContentOptions<T extends TreeItemData>(options: TreeRowOptions<T>) {
   const { getTextValue, getIcon, renderLabel, renderMeta, renderActions, expandGlyph } = options;
-  const { checkboxSelection, isIndeterminate, rename, loads } = options;
+  const { checkboxSelection, isIndeterminate, rename, loads, hasStateMark } = options;
   const canMove = options.reordering?.isMovable;
   const renaming = rename?.editingKey ?? null;
   // A row with its name field open never drags, so a press in the field selects its text.
@@ -146,7 +157,7 @@ function useRowContentOptions<T extends TreeItemData>(options: TreeRowOptions<T>
   );
   return useShallowStable<RowContentOptions<T>>({
     ...{ getTextValue, getIcon, renderLabel, renderMeta, renderActions, expandGlyph },
-    ...{ checkboxSelection, isIndeterminate, rename, loads },
+    ...{ checkboxSelection, isIndeterminate, rename, loads, hasStateMark },
     isMovable: canMove ? isMovable : isNeverMovable,
     hasReorder: canMove !== undefined,
   });
@@ -175,7 +186,8 @@ export function useTreeItemRenderer<T extends TreeItemData>(
   options: TreeRowOptions<T>,
 ): (item: T) => ReactElement {
   const { getTextValue, getChildren, hasChildItems, isItemPending, getHref, currentKey } = options;
-  const { reordering, registerRow, loads } = options;
+  const { reordering, registerRow, loads, isItemNew } = options;
+  const newDescription = useUiStrings().treeItemNew;
   const content = useRowContentOptions(options);
   const keyShortcuts = reordering?.keyShortcuts;
   const isHandleDrag = reordering?.isHandleDrag ?? false;
@@ -185,6 +197,7 @@ export function useTreeItemRenderer<T extends TreeItemData>(
       const isLazy = children.length === 0 && (hasChildItems?.(item) ?? false);
       const href = getHref?.(item);
       const isCurrent = currentKey != null && item.id === currentKey;
+      const isNew = isItemNew?.(item) ?? false;
       const isIndeterminate = content.isIndeterminate(item.id);
       const isMovable = content.isMovable(item.id);
       const rowElement = {
@@ -192,6 +205,7 @@ export function useTreeItemRenderer<T extends TreeItemData>(
         isHandleDrag,
         isCurrent,
         isIndeterminate,
+        newDescription: isNew ? newDescription : undefined,
         href,
         keyShortcuts,
       };
@@ -210,7 +224,7 @@ export function useTreeItemRenderer<T extends TreeItemData>(
             {(values) => (
               <TreeRowContent
                 item={item}
-                state={toItemState(values, isCurrent)}
+                state={toItemState(values, { isCurrent, isNew })}
                 hasCheckbox={content.checkboxSelection && values.selectionMode !== 'none'}
                 options={content}
               />
@@ -232,6 +246,8 @@ export function useTreeItemRenderer<T extends TreeItemData>(
       isItemPending,
       getHref,
       currentKey,
+      isItemNew,
+      newDescription,
       getTextValue,
       content,
       keyShortcuts,

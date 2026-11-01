@@ -1,9 +1,13 @@
 export { Tree } from './tree.js';
 export type {
+  TreeCurrentMark,
   TreeExpandGlyph,
   TreeItemData,
   TreeItemState,
+  TreeMarks,
+  TreeNewMark,
   TreeProps,
+  TreeSelectedMark,
   TreeSize,
   TreeVariant,
 } from './tree.js';
