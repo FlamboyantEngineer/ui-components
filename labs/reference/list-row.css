@@ -222,14 +222,31 @@
   gap: 4px;
 }
 
+/*
+ * Where a drag would land: a zero-height row holding one rounded 2px line, inset from the edges and
+ * kept inside the scrolling list. Only the target's line is drawn; a keyboard drag mounts an
+ * indicator at every position, and none of the others leaves a line.
+ */
 .ui-list-view__drop-indicator {
+  position: relative;
   height: 0;
-  outline: 1px solid var(--ref-accent);
-  outline-offset: -1px;
 }
 
-.ui-list-view__drop-indicator[data-drop-target] {
-  outline-width: 2px;
+.ui-list-view__drop-indicator::before {
+  position: absolute;
+  inset-inline: 8px;
+  top: -1px;
+  height: 2px;
+  border-radius: var(--ref-radius-full);
+  content: '';
+}
+
+.ui-list-view__drop-indicator:last-child::before {
+  top: -2px;
+}
+
+.ui-list-view__drop-indicator[data-drop-target]::before {
+  background: var(--ref-accent);
 }
 
 .ui-list-view__loader {
