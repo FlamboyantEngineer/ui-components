@@ -15,6 +15,8 @@ import {
   richTextEditorHooks as hooks,
   type RichTextEditorContextValue,
 } from './rich-text-context.js';
+import { defaultMarks } from './default-schema.js';
+import { LinkMarkView } from './link-mark-view.js';
 import { TaskItemView } from './task-item-view.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 
@@ -35,6 +37,12 @@ interface EditorSurfaceProps {
 type ContentAttributes = Readonly<Record<string, string | undefined>>;
 
 const nodeViewComponents = { taskItem: TaskItemView };
+const defaultLinkViews = { link: LinkMarkView };
+
+/** The mark views of a schema: the default link's anchor, which leaves the tab sequence when disabled. */
+function getMarkViewComponents(schema: Schema) {
+  return schema.marks.link?.spec === defaultMarks.link ? defaultLinkViews : undefined;
+}
 
 export interface SyncedEditorOptions<T> {
   /** The engine schema: a new one starts a fresh state. */
@@ -146,6 +154,7 @@ export function EditorSurface(props: EditorSurfaceProps) {
       editable={editable}
       decorations={decorations}
       nodeViewComponents={nodeViewComponents}
+      markViewComponents={getMarkViewComponents(state.schema)}
       handleDOMEvents={domSelectionEvents}
     >
       <RichTextEditorContext value={context}>

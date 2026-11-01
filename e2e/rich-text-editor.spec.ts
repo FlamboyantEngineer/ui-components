@@ -445,12 +445,15 @@ test.describe('Rich Text Editor lab', () => {
       'aria-readonly',
       'true',
     );
+    // A read-only editor's link stays a tab stop; a disabled editor's is not one.
+    await expect(readOnly.getByRole('link', { name: 'Wash' })).not.toHaveAttribute('tabindex');
     const disabled = matrixCell(page, 'state=disabled chrome=plain');
     await expect(disabled.getByRole('textbox', { name: 'Note' })).toHaveAttribute(
       'aria-disabled',
       'true',
     );
-    // Nothing in a disabled editor is a tab stop, its task checkboxes included.
+    // Nothing in a disabled editor is a tab stop, its task checkboxes and links included.
+    await expect(disabled.getByRole('link', { name: 'Wash' })).toHaveAttribute('tabindex', '-1');
     for (const checkbox of await disabled.getByRole('checkbox', { name: 'Done' }).all()) {
       await expect(checkbox).toBeDisabled();
     }

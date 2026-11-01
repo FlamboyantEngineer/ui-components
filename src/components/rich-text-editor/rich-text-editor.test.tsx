@@ -266,6 +266,63 @@ describe('RichTextEditor', () => {
     expect(changes.at(-1)?.content?.[0]?.content?.[0]?.attrs).toEqual({ checked: false });
   });
 
+  it("UIC-RICH-TEXT-EDITOR-4.1 takes a disabled editor's links out of the tab sequence", async () => {
+    const user = userEvent.setup();
+    const link = (text: string, href: string) => ({
+      type: 'text',
+      text,
+      marks: [{ type: 'link', attrs: { href, title: null } }],
+    });
+    const linked: RichTextDocument = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            link('Guide', 'https://example.com/guide'),
+            { type: 'text', text: ' and ' },
+            link('Notes', 'https://example.com/notes'),
+          ],
+        },
+      ],
+    };
+    const page = (lock: { isDisabled?: boolean; isReadOnly?: boolean }) => (
+      <>
+        <button type="button">Before</button>
+        <RichTextEditor label="Notes" defaultValue={linked} {...lock} />
+        <button type="button">After</button>
+      </>
+    );
+    const before = () => screen.getByRole('button', { name: 'Before' });
+    const after = () => screen.getByRole('button', { name: 'After' });
+    const guide = () => screen.getByRole('link', { name: 'Guide' });
+    const notes = () => screen.getByRole('link', { name: 'Notes' });
+    const { rerender } = render(page({ isDisabled: true }));
+    expect(guide()).toHaveAttribute('href', 'https://example.com/guide');
+    await user.click(before());
+    await user.tab();
+    expect(after()).toHaveFocus();
+
+    rerender(page({ isReadOnly: true }));
+    await user.click(before());
+    await user.tab();
+    expect(getContent()).toHaveFocus();
+    await user.tab();
+    expect(guide()).toHaveFocus();
+
+    rerender(page({ isDisabled: true }));
+    expect(guide()).toHaveAttribute('tabindex', '-1');
+    await user.tab();
+    expect(after()).toHaveFocus();
+    expect(notes()).toHaveAttribute('tabindex', '-1');
+
+    rerender(page({}));
+    expect(guide()).not.toHaveAttribute('tabindex');
+    await user.click(before());
+    await user.tab();
+    expect(getContent()).toHaveFocus();
+  });
+
   it('UIC-RICH-TEXT-EDITOR-3.1 runs mark and block shortcuts', async () => {
     const { user, value } = renderEditor();
     await user.click(getContent());
