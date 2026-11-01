@@ -1,4 +1,4 @@
-import { useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import { FindBar, type FindBarProps } from '../../src/components/find-bar/find-bar.js';
@@ -68,6 +68,25 @@ function replaceAll(text: string, matches: readonly Match[], replacement: string
   );
 }
 
+/**
+ * The passage's highlights, which the host draws, not the bar or the reference stylesheet: every
+ * match in the highlight tint, the current one in the accent tint with an outline and an underline,
+ * so it stands out beyond its colour.
+ */
+const matchStyle: CSSProperties = {
+  borderRadius: 'var(--ref-radius-sm)',
+  background: 'var(--ref-highlight)',
+  color: 'inherit',
+};
+
+const currentMatchStyle: CSSProperties = {
+  ...matchStyle,
+  background: 'color-mix(in srgb, var(--ref-accent) var(--ref-tint-strong), transparent)',
+  outline: '2px solid var(--ref-accent-ink)',
+  textDecoration: 'underline 2px',
+  textUnderlineOffset: 3,
+};
+
 /** The text with each match in a `<mark>`, the current one flagged. */
 function markMatches(text: string, matches: readonly Match[], current: number): ReactNode[] {
   const parts: ReactNode[] = [];
@@ -79,6 +98,7 @@ function markMatches(text: string, matches: readonly Match[], current: number): 
         key={match.start}
         data-lab-current={index === current || undefined}
         aria-current={index === current || undefined}
+        style={index === current ? currentMatchStyle : matchStyle}
       >
         {text.slice(match.start, match.end)}
       </mark>,
