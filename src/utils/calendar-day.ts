@@ -32,16 +32,20 @@ export interface CalendarDayClock {
 
 /**
  * Returns a reader of the calendar day of an ISO 8601 date, or of a date and time read as its wall
- * time, against the day of `now` in the time zone; it gives `null` for a value that is neither.
+ * time (an instant's in the time zone, a floating one's as written), against the day of `now` in
+ * the time zone; it gives `null` for a value that is neither.
  */
 export function createCalendarDayReader({
   now,
   timeZone,
 }: CalendarDayClock): (value: string) => CalendarDay | null {
-  const today = now ? toCalendarDate(fromDate(now, timeZone ?? getLocalTimeZone())) : null;
+  const zone = timeZone ?? getLocalTimeZone();
+  const today = now ? toCalendarDate(fromDate(now, zone)) : null;
   return (value) => {
     const date = parseIsoDate(value);
-    const dateTime = date ? null : parseIsoDateTime(value);
+    // An instant falls on its day in the same zone as today, whatever the device's zone; a floating
+    // date and time reads as written.
+    const dateTime = date ? null : parseIsoDateTime(value, undefined, zone);
     const day = date ?? (dateTime ? toCalendarDate(dateTime) : null);
     if (!day) return null;
     return {

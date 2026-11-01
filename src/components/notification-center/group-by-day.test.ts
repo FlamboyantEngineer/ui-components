@@ -33,4 +33,24 @@ describe('groupByDay', () => {
     expect(groupByDay([{ time: '2026-03-04' }], options)[0]?.label).toBe('Wednesday, March 4');
     expect(groupByDay([], options)).toEqual([]);
   });
+
+  it('UIC-NOTIFICATION-CENTER-1.2 reads instants in the given time zone, whatever the device zone', () => {
+    const dayOf = (time: string, timeZone: string, now: Date | null = null) =>
+      groupByDay([{ time }], { ...options, now, timeZone })[0];
+    // Near midnight: UTC, an offset and a named zone all convert to the given zone.
+    expect(dayOf('2026-11-01T23:30:00Z', 'Asia/Tokyo')?.day).toBe('2026-11-02');
+    expect(dayOf('2026-11-01T10:00:00-05:00', 'Asia/Tokyo')?.day).toBe('2026-11-02');
+    expect(dayOf('2026-11-01T08:30:00[America/Los_Angeles]', 'Asia/Tokyo')?.day).toBe('2026-11-02');
+    expect(dayOf('2026-11-01T23:30:00Z', 'Pacific/Honolulu')?.day).toBe('2026-11-01');
+    // Floating and date-only values read as written, in every zone.
+    expect(dayOf('2026-11-01T23:30:00', 'Asia/Tokyo')?.day).toBe('2026-11-01');
+    expect(dayOf('2026-11-01', 'Pacific/Kiritimati')?.day).toBe('2026-11-01');
+    // Across the end of daylight saving time in New York (06:00 UTC on 1 November 2026).
+    expect(dayOf('2026-11-01T03:59:00Z', 'America/New_York')?.day).toBe('2026-10-31');
+    expect(dayOf('2026-11-01T05:30:00Z', 'America/New_York')?.day).toBe('2026-11-01');
+    expect(dayOf('2026-11-02T04:30:00Z', 'America/New_York')?.day).toBe('2026-11-01');
+    // Today is read in the same zone: 23:30 UTC on 31 October is today in Tokyo at 07:00 UTC.
+    const tokyoNow = new Date('2026-11-01T07:00:00Z');
+    expect(dayOf('2026-10-31T23:30:00Z', 'Asia/Tokyo', tokyoNow)?.label).toBe('Today');
+  });
 });

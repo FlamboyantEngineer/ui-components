@@ -1,7 +1,7 @@
 import { RefreshGlyph } from '../../core/glyphs.js';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { createRef } from 'react';
+import { createRef, useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -148,6 +148,78 @@ describe('ActivityFeed', () => {
     ]);
     const french = groupByDay([{ time: '2026-04-19' }], { now, locale: 'fr-FR', unknownLabel: '' });
     expect(french[0]?.label).toBe('Hier');
+  });
+
+  it("UIC-ACTIVITY-FEED-1.3 keeps a day's entries mounted as events arrive and leave", async () => {
+    const user = userEvent.setup();
+    function Draft() {
+      const [count, setCount] = useState(0);
+      return (
+        <>
+          <input aria-label="Reply" />
+          <button type="button" onClick={() => setCount(count + 1)}>
+            Count {count}
+          </button>
+        </>
+      );
+    }
+    const kept: ActivityFeedItem = {
+      id: 'kept',
+      action: 'Kept entry',
+      time: '2026-04-20T09:00:00',
+      detail: <Draft />,
+    };
+    const sameDay = { id: 'same', action: 'Same day', time: '2026-04-20T10:00:00' };
+    const nextDay = { id: 'next', action: 'Next day', time: '2026-04-21T08:00:00' };
+    const earlier = { id: 'earlier', action: 'Earlier', time: '2026-04-19T08:00:00' };
+    const feed = (list: ActivityFeedItem[], groupBy: 'day' | 'none' = 'day') => (
+      <ActivityFeed items={list} getNow={getNow} groupBy={groupBy} />
+    );
+    const { rerender } = render(feed([kept]));
+    await user.type(screen.getByRole('textbox', { name: 'Reply' }), 'Keep my draft');
+    await user.click(screen.getByRole('button', { name: 'Count 0' }));
+    const input = screen.getByRole('textbox', { name: 'Reply' });
+    input.focus();
+    for (const list of [
+      [sameDay, kept],
+      [kept],
+      [nextDay, sameDay, kept, earlier],
+      [nextDay, kept, earlier],
+      [nextDay, kept, earlier, sameDay],
+    ]) {
+      rerender(feed(list));
+      expect(screen.getByRole('textbox', { name: 'Reply' })).toBe(input);
+    }
+    expect(input).toHaveValue('Keep my draft');
+    expect(input).toHaveFocus();
+    expect(screen.getByRole('button', { name: 'Count 1' })).toBeInTheDocument();
+    // A day's second run (not next to its first) is a group of its own.
+    expect(screen.getAllByRole('heading', { name: 'Today' })).toHaveLength(2);
+    // Without day groups too.
+    rerender(feed([kept], 'none'));
+    await user.type(screen.getByRole('textbox', { name: 'Reply' }), 'Ungrouped');
+    rerender(feed([sameDay, kept], 'none'));
+    rerender(feed([kept], 'none'));
+    expect(screen.getByRole('textbox', { name: 'Reply' })).toHaveValue('Ungrouped');
+  });
+
+  it("UIC-ACTIVITY-FEED-1.3 reads each instant's day in the feed's time zone", () => {
+    const tokyoNow = () => new Date('2026-11-01T07:00:00Z');
+    render(
+      <UiProvider locale="en-US" timeZone="Asia/Tokyo">
+        <ActivityFeed
+          getNow={tokyoNow}
+          items={[
+            { id: 'late', action: 'Late in Tokyo', time: '2026-10-31T23:30:00Z' },
+            { id: 'offset', action: 'Offset', time: '2026-10-31T10:00:00-05:00' },
+            { id: 'floating', action: 'Floating', time: '2026-10-31T23:30:00' },
+          ]}
+        />
+      </UiProvider>,
+    );
+    // 23:30 UTC and 10:00 at -05:00 are both 1 November in Tokyo; a floating time reads as written.
+    const days = screen.getAllByRole('heading').map((heading) => heading.textContent);
+    expect(days).toEqual(['Today', 'Yesterday']);
   });
 
   it('UIC-ACTIVITY-FEED-1.4 shows the filter above the feed', () => {
