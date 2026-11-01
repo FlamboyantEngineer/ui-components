@@ -1,6 +1,8 @@
 /* Segmented Bar: drawn like a meter, so the bars read as one family. */
 
 .ui-segmented-bar {
+  /* The entry sequence takes half the shared loop, so only this bar speeds up. */
+  --ref-segmented-bar-duration: calc(var(--ref-duration-loop) / 2);
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: baseline;
@@ -153,10 +155,10 @@
 
   .ui-segmented-bar [data-animation-state='running'] .ui-segmented-bar__segment {
     animation-duration: calc(
-      var(--ref-duration-loop) * var(--ui-segment-share) / var(--ui-segment-total)
+      var(--ref-segmented-bar-duration) * var(--ui-segment-share) / var(--ui-segment-total)
     );
     animation-delay: calc(
-      var(--ref-duration-loop) * var(--ui-segment-start) / var(--ui-segment-total)
+      var(--ref-segmented-bar-duration) * var(--ui-segment-start) / var(--ui-segment-total)
     );
     animation-timing-function: linear;
     animation-fill-mode: both;

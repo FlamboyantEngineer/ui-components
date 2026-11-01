@@ -54,13 +54,13 @@ for (const shape of ['linear', 'donut', 'pie']) {
     await drawing.scrollIntoViewIfNeeded();
     await expect(drawing).toHaveAttribute('data-animation-state', 'running');
     const timing = await pauseSequence(drawing);
-    expect(timing.map((part) => Math.round(part.duration))).toEqual([840, 120, 80, 160]);
-    expect(timing.map((part) => Math.round(part.delay ?? 0))).toEqual([0, 840, 960, 1040]);
+    expect(timing.map((part) => Math.round(part.duration))).toEqual([420, 60, 40, 80]);
+    expect(timing.map((part) => Math.round(part.delay ?? 0))).toEqual([0, 420, 480, 520]);
     expect(timing.map((part) => part.iterations)).toEqual([1, 1, 1, 1]);
-    const halfFirst = await fillAt(drawing, 420);
+    const halfFirst = await fillAt(drawing, 210);
     expect(halfFirst[0]).toBeCloseTo(shape === 'linear' ? 0.5 : 26.25, 2);
     expect(halfFirst.slice(1)).toEqual([0, 0, 0]);
-    const halfSecond = await fillAt(drawing, 900);
+    const halfSecond = await fillAt(drawing, 450);
     expect(halfSecond[0]).toBeCloseTo(shape === 'linear' ? 1 : 52.5, 2);
     expect(halfSecond[1]).toBeCloseTo(shape === 'linear' ? 0.5 : 3.75, 2);
     expect(halfSecond.slice(2)).toEqual([0, 0]);
