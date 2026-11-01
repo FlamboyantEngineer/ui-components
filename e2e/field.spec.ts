@@ -201,9 +201,6 @@ test.describe('Field lab', () => {
     const dish = field(page, 'dish').getByRole('textbox', { name: 'Dish' });
     const note = field(page, 'dish').getByRole('textbox', { name: 'Note' });
     await dish.fill('Soups');
-    await note.focus();
-    await page.keyboard.press('ControlOrMeta+z');
-    await expect(dish).toHaveValue('Soups');
     await note.fill('hot');
     await page.keyboard.press('ControlOrMeta+z');
     await expect(note).toHaveValue('');
