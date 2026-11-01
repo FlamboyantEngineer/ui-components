@@ -1,9 +1,10 @@
 'use client';
 
-import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { createContext, use, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { FieldRestoreButton } from './field-restore-button.js';
+import type { FieldChangeLayout } from './field-parts.js';
 
 export interface FieldPreviousValueProps extends BaseProps {
   /** The value the edit replaced or removed: text, or an icon with its label. */
@@ -17,6 +18,9 @@ export interface FieldPreviousValueProps extends BaseProps {
 }
 
 const hooks = createHooks('field-previous-value', ['value']);
+
+/** The `changeLayout` of the field whose control renders inside it; `hidden` draws no marker. */
+export const FieldChangeLayoutContext = createContext<FieldChangeLayout>('inline');
 
 /**
  * Marks a value that differs from the field's committed value: the previous value in a `<del>`
@@ -36,6 +40,8 @@ export function FieldPreviousValue({
   const [text, setText] = useState(typeof children === 'string' ? children : '');
   useLayoutEffect(() => setText(valueRef.current?.textContent?.trim() ?? ''), [children]);
   const label = restoreLabel ?? text;
+  // A field that hides what its edits replaced draws no marker, for sighted and assistive readers.
+  if (use(FieldChangeLayoutContext) === 'hidden') return null;
   return (
     <span {...hooks.root({ className, props: rest })} id={id}>
       <del {...hooks.slot('value')} ref={valueRef}>

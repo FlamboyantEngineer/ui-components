@@ -480,6 +480,26 @@ describe('SelectField trigger', () => {
     expect(trigger('Apple Fruit')).toBeInTheDocument();
     expect(container.querySelector('.ui-select-field__previous')).toBeNull();
   });
+
+  it('UIC-SELECT-FIELD-2.3 UIC-FIELD-1.13 hides the replaced and removed values with a hidden change layout', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <SelectField
+        label="Fruit"
+        selectionMode="multiple"
+        options={fruit}
+        committedValue={['apple', 'pear']}
+        changeLayout="hidden"
+      />,
+    );
+    const root = container.querySelector('.ui-field');
+    expect(root).toHaveAttribute('data-change-layout', 'hidden');
+    await chooseFieldMenuItem(user, trigger(), 'Clear');
+    expect(root).toHaveAttribute('data-dirty', 'true');
+    expect(container.querySelector('.ui-field-previous-value')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Restore Apple' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Restore Fruit' })).toBeInTheDocument();
+  });
 });
 
 describe('SelectField forms', () => {

@@ -389,7 +389,7 @@ mountLab(
       </LabSection>
       <LabSection
         title="Changes against the saved value"
-        description="Each select starts with an unsaved edit: a changed value, an empty value filled, a value emptied, long values, and a multiple value with additions and removals. changeLayout places the struck-through saved value before the current one (inline) or on its own line above it (stacked). A removed value's own restore button puts back that one value; the field's restore button, and Reset in its context menu (right-click, or Shift+F10), put back the whole saved value."
+        description="Each select starts with an unsaved edit: a changed value, an empty value filled, a value emptied, long values, and a multiple value with additions and removals. changeLayout places the struck-through saved value before the current one (inline), on its own line above it (stacked), or nowhere (hidden), where only the dirty border, the restore button and Reset remain. A removed value's own restore button puts back that one value; the field's restore button, and Reset in its context menu (right-click, or Shift+F10), put back the whole saved value."
       >
         <ChangeMatrix />
       </LabSection>

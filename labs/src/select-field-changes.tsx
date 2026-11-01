@@ -31,7 +31,7 @@ type EditName = keyof typeof edits;
 
 const editNames = Object.keys(edits) as EditName[];
 
-export const changeLayouts: readonly FieldChangeLayout[] = ['inline', 'stacked'];
+export const changeLayouts: readonly FieldChangeLayout[] = ['inline', 'stacked', 'hidden'];
 
 interface ChangeSampleProps {
   edit: EditName;
@@ -96,7 +96,7 @@ const sizes: readonly ControlSize[] = ['xs', 'md', 'lg'];
 export function ChangeFit() {
   return (
     <StateMatrix
-      axes={{ size: sizes, layout: labelLayouts, change: changeLayouts }}
+      axes={{ size: sizes, layout: labelLayouts, change: ['inline', 'stacked'] as const }}
       render={({ size, layout, change }) => (
         <div style={{ width: 240 }}>
           <ChangeSample

@@ -20,6 +20,7 @@ import {
 } from './field-parts.js';
 import { focusControl } from './field-form.js';
 import { FieldRestoreButton } from './field-restore-button.js';
+import { FieldChangeLayoutContext } from './field-previous-value.js';
 import type { FieldIssue, FieldState, FieldValidation } from './field-state.js';
 import { FieldMessageTooltip, type FieldMessageDisplay } from './field-message-tooltip.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
@@ -43,7 +44,8 @@ export interface FieldProps<T> extends BaseProps {
   density?: FieldDensity | undefined;
   /**
    * Where the control shows the value a dirty field's edit replaced (`FieldPreviousValue`): before
-   * the current value (`inline`, the default) or on its own line above it (`stacked`).
+   * the current value (`inline`, the default), on its own line above it (`stacked`), or nowhere
+   * (`hidden`), leaving the dirty state, the restore button and the menu's Reset.
    */
   changeLayout?: FieldChangeLayout | undefined;
   /**
@@ -244,7 +246,9 @@ export function Field<T>({
     <div {...hooks.root({ className, props: rest, data })} {...behaviour.rootProps} id={id}>
       {labelLayout === 'control-label' ? null : labelElement}
       <div {...hooks.slot('control')} ref={controlSlot}>
-        {children(control)}
+        <FieldChangeLayoutContext value={changeLayout ?? 'inline'}>
+          {children(control)}
+        </FieldChangeLayoutContext>
       </div>
       {labelLayout === 'control-label' ? labelElement : null}
       <FieldButtons
