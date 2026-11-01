@@ -368,7 +368,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Controlled legend and view"
-      description="The hidden series and the view held by the page, which prints them."
+      description="The hidden series and the view held by the page, which prints them. Hiding the series of a hovered or focused value closes its tooltip, and Escape then reaches the page again."
     >
       <ControlledChart />
     </LabSection>

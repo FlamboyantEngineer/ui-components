@@ -165,7 +165,16 @@ export function useChartPoints(points: readonly ChartPoint[], isVertical = false
   const elements = useRef(new Map<string, SVGElement>());
   const anchor = useRef<SVGElement | null>(null);
   const [focusKey, setFocusKey] = useState<string | null>(null);
-  const [activeKey, setActiveKey] = useState<string | null>(null);
+  const [held, setActiveKey] = useState<string | null>(null);
+  // A value that went (filtered out, hidden or removed) gives up its tooltip, its anchor and the
+  // Escape it claimed; one that comes back later does not reopen it.
+  const isLive = held !== null && points.some((point) => point.key === held);
+  if (held !== null && !isLive) setActiveKey(null);
+  const activeKey = isLive ? held : null;
+  useEffect(() => {
+    // A closed tooltip keeps no element it pointed at, which may have left the page.
+    if (activeKey === null) anchor.current = null;
+  }, [activeKey]);
   const close = useCallback(() => setActiveKey(null), []);
   useEscapeToClose(activeKey !== null, close, anchor);
   const tabKey = points.some((point) => point.key === focusKey) ? focusKey : points[0]?.key;
