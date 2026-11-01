@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { I18nProvider, type Selection } from '../../primitives/index.js';
@@ -282,14 +282,13 @@ describe('Menubar', () => {
     vi.spyOn(top('Edit'), 'focus').mockImplementation((options) => {
       offset = 40;
       focus(options);
+      // The reveal scroll precedes the frame that opens the next menu.
+      scroller.dispatchEvent(new Event('scroll'));
     });
     await focusBar(user);
     await user.keyboard('{ArrowDown}');
     expect(screen.getByRole('menuitem', { name: 'New Control N' })).toHaveFocus();
     await user.keyboard('{ArrowRight}');
-    act(() => {
-      scroller.dispatchEvent(new Event('scroll'));
-    });
     await waitFor(() => expect(screen.getByRole('menuitem', { name: 'Undo' })).toHaveFocus());
     expect(openMenus()).toHaveLength(1);
   });

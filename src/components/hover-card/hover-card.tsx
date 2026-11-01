@@ -16,6 +16,7 @@ import { usePreviewState } from '../../utils/use-preview-state.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { useCloseWhenLocked } from '../../utils/use-close-when-locked.js';
 import { usePointerEntry } from '../../utils/use-pointer-entry.js';
+import { usePreviewEscape } from '../../utils/use-preview-escape.js';
 
 /** A focusable trigger and the `HoverCard` it opens on hover and focus. */
 export interface HoverCardTriggerProps extends OpenStateProps {
@@ -82,6 +83,7 @@ export function HoverCardTrigger({
   });
   const triggerRef = useRef<HTMLElement>(null);
   const popoverRef = useRef<HTMLElement>(null);
+  usePreviewEscape(state, { triggerRef, popoverRef });
   const { triggerProps, popoverProps } = usePreviewTrigger(
     { isDisabled, triggerRef, popoverRef },
     state,

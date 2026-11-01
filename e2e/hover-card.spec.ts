@@ -8,6 +8,30 @@ async function boxOf(locator: Locator) {
 }
 
 test.describe('Hover Card lab', () => {
+  test('UIC-HOVER-CARD-1.3 Escape closes a hovered card without taking focus from the page', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('hover-card');
+    const trigger = page.locator('[data-lab-trigger="bottom-arrow"]');
+    await trigger.scrollIntoViewIfNeeded();
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+        ),
+    );
+    const card = page.getByRole('dialog', { name: 'About Lisbon' });
+    await trigger.hover();
+    await expect(card).toBeVisible();
+    await card.hover();
+    await expect(page.locator('body')).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(card).toHaveCount(0);
+    await expect(page.locator('body')).toBeFocused();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+  });
+
   test('UIC-HOVER-CARD-1.2 UIC-HOVER-CARD-1.3 opens on the first pointer entry and closes after leaving', async ({
     page,
     lab,

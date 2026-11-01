@@ -27,6 +27,30 @@ async function topmostAt(page: Page, box: { x: number; y: number; width: number;
 }
 
 test.describe('Menu lab', () => {
+  test('UIC-MENU-4.3 a repeated pointer press closes the trigger menu once', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('menu');
+    const trigger = section(page, 'Composed with JSX').getByRole('button', {
+      name: 'Edit actions',
+      exact: true,
+    });
+    for (const hold of [0, 80]) {
+      await trigger.click();
+      await expect(popovers(page).getByRole('menu')).toBeVisible();
+      const box = await trigger.boundingBox();
+      if (!box) throw new Error('Menu trigger is not visible');
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+      await page.mouse.down();
+      if (hold) await page.waitForTimeout(hold);
+      await page.mouse.up();
+      await expect(popovers(page)).toHaveCount(0);
+      await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+      await expect(trigger).toBeFocused();
+    }
+  });
+
   test('UIC-MENU-1.1 UIC-MENU-3.3 preserves typed IDs through keyboard selection', async ({
     page,
     lab,

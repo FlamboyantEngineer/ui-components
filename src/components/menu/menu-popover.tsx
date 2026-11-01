@@ -78,6 +78,7 @@ const MenuSurfaceContext = createContext<Set<HTMLElement> | null>(null);
 /** Portalled submenus belong to the same outside-press boundary as their parent menu. */
 function useMenuSurface({ ref, isNonModal, shouldCloseOnInteractOutside }: MenuOverlayProps) {
   const state = useContext(RootMenuTriggerStateContext);
+  const popover = useSlottedContext(PopoverContext);
   const inherited = useContext(MenuSurfaceContext);
   const [own] = useState(() => new Set<HTMLElement>());
   const group = inherited ?? own;
@@ -97,6 +98,9 @@ function useMenuSurface({ ref, isNonModal, shouldCloseOnInteractOutside }: MenuO
       const target = event.target;
       if (!isElement(target)) return;
       if ([...group].some((element) => element.contains(target))) return;
+      // The trigger toggles on press; an outside close first would let that press reopen it.
+      if (popover?.trigger === 'MenuTrigger' && popover.triggerRef?.current?.contains(target))
+        return;
       if (shouldCloseOnInteractOutside?.(target) !== false) state?.close();
     },
   });

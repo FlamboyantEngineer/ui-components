@@ -14,6 +14,8 @@ export interface PreviewState {
   readonly isOpen: boolean;
   /** Whether it opens or closes without an animation, as when one card replaces another. */
   readonly shouldSkipAnimation: boolean;
+  /** Whether this is the last open preview, including a controlled opening. */
+  isCurrent(): boolean;
   /** Opens after the delay (at once right after a card closed, or when `immediate`). */
   open(immediate?: boolean): void;
   /** Closes after the close delay, or at once when `immediate`. */
@@ -73,7 +75,7 @@ export function usePreviewState({
     [card],
   );
   const { isOpen } = overlay;
-  return useMemo(() => {
+  const state = useMemo<PreviewState>(() => {
     const cancel = () => {
       if (timer.current) clearTimeout(timer.current);
       timer.current = null;
@@ -106,6 +108,7 @@ export function usePreviewState({
     return {
       isOpen,
       shouldSkipAnimation: isInstant,
+      isCurrent: () => Array.from(openCards.keys()).at(-1) === card,
       open(immediate) {
         if (isOpen) return cancel();
         if (immediate || isWarm) return show(isWarm && !immediate);
@@ -117,4 +120,12 @@ export function usePreviewState({
       },
     };
   }, [isOpen, isInstant, card, latest]);
+  useEffect(() => {
+    if (!isOpen) return;
+    openCards.set(card, () => state.close(true));
+    return () => {
+      openCards.delete(card);
+    };
+  }, [isOpen, card, state]);
+  return state;
 }

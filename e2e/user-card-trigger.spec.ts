@@ -165,6 +165,30 @@ test.describe('User Card Trigger lab', () => {
     await page.clock.resume();
   });
 
+  test('UIC-USER-CARD-TRIGGER-1.3 Escape dismisses a hovered card while the page keeps focus', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('user-card-trigger');
+    const trigger = page.locator('[data-lab-trigger="hover-avatar"]');
+    await trigger.scrollIntoViewIfNeeded();
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+        ),
+    );
+    const card = page.getByRole('dialog', { name: 'Priya Nair' });
+    await trigger.hover();
+    await expect(card).toBeVisible();
+    await card.hover();
+    await expect(page.locator('body')).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(card).toHaveCount(0);
+    await expect(page.locator('body')).toBeFocused();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+  });
+
   test('UIC-USER-CARD-1.4 UIC-USER-CARD-TRIGGER-1.3 closes a hover card before reporting its action', async ({
     page,
     lab,

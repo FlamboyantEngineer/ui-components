@@ -452,7 +452,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Composed with JSX"
-      description="An icon button trigger, a titled section with shortcuts and a submenu."
+      description="An icon button trigger, a titled section with shortcuts and a submenu. Press the trigger again to close its menu."
     >
       <JsxMenu />
     </LabSection>

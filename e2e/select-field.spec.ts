@@ -142,6 +142,38 @@ test.describe('Select Field lab', () => {
     await expect(trigger).toHaveAccessibleName('Fig Fruit');
   });
 
+  test('UIC-SELECT-FIELD-2.2 reveals the full truncated choice on hover without opening its list', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('select-field');
+    const long = field(page, 'long');
+    const trigger = long.locator('.ui-select-field__trigger');
+    await trigger.scrollIntoViewIfNeeded();
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+        ),
+    );
+    await trigger.click();
+    const text = 'A considerably longer option label than the column';
+    await page.getByRole('option', { name: text, exact: true }).click();
+    const label = long.locator('.ui-select-field__value-label');
+    await expect(label).toHaveText(text);
+    await expect(async () =>
+      expect(await label.evaluate((node) => node.scrollWidth > node.clientWidth)).toBe(true),
+    ).toPass();
+    await expect(label).toHaveCSS('text-overflow', 'ellipsis');
+    await label.hover();
+    await expect(page.getByRole('tooltip')).toHaveText(text);
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.getByRole('listbox')).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('tooltip')).toHaveCount(0);
+    await expect(trigger).toHaveAccessibleName(`${text} Long`);
+  });
+
   test('UIC-SELECT-FIELD-3.1 locks page scrolling while open and closes on an outside press', async ({
     page,
     lab,

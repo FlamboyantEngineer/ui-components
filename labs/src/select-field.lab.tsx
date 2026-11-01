@@ -426,7 +426,7 @@ mountLab(
       </LabSection>
       <LabSection
         title="Width"
-        description="The trigger fits its widest complete option label, capped at the column width."
+        description="The trigger fits its widest complete option label, capped at the column width. Choose the long label and hover or focus it to reveal its complete text in a tooltip."
       >
         <div data-lab-column="320" style={{ width: 320 }}>
           <SelectField

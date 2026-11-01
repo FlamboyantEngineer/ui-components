@@ -8,6 +8,28 @@ import { PortalContainerProvider } from '../portal/portal.js';
 import { Menu, MenuItem, MenuPopover, SubmenuTrigger } from './menu.js';
 
 describe('MenuPopover and SubmenuTrigger', () => {
+  it.each(['mouse', 'touch'] as const)(
+    'UIC-MENU-4.3 closes once when its trigger is pressed again with %s',
+    async (pointerType) => {
+      const user = userEvent.setup();
+      render(<MenuButton items={fruitEntries} aria-label="Fruit" />);
+      const trigger = screen.getByRole('button', { name: 'Actions' });
+      await openMenu(user);
+      const key = pointerType === 'touch' ? 'TouchA' : 'MouseLeft';
+      await user.pointer([
+        { target: trigger, keys: `[${key}>]` },
+        { target: trigger, keys: `[/${key}]` },
+      ]);
+      await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
+      expect(trigger).toHaveAttribute('aria-expanded', 'false');
+      expect(trigger).toHaveFocus();
+      await user.click(trigger);
+      expect(screen.getByRole('menu')).toBeVisible();
+      await user.click(document.body);
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    },
+  );
+
   it('UIC-MENU-4.3 places the popover against its trigger and closes on an outside press', async () => {
     const user = userEvent.setup();
     render(<MenuButton items={fruitEntries} aria-label="Fruit" />);

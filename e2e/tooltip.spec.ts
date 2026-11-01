@@ -172,6 +172,27 @@ test.describe('Tooltip lab', () => {
 });
 
 test.describe('Anchored tooltip lab', () => {
+  test('UIC-TOOLTIP-1.5 UIC-TOOLTIP-2.1 keeps a modal anchor hint accessible above its backdrop', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tooltip');
+    await page.getByRole('button', { name: 'Open build details', exact: true }).click();
+    const dialog = page.getByRole('dialog', { name: 'Build details', exact: true });
+    await expect(dialog).toBeVisible();
+    const hint = page.getByRole('tooltip', { name: 'All modal checks passed' });
+    await expect(hint).toBeVisible();
+    await expect(
+      dialog.getByRole('status', { name: 'Modal build status' }),
+    ).toHaveAccessibleDescription('All modal checks passed');
+    expect(
+      await hint.evaluate((node) => node.closest('[inert],[aria-hidden="true"]') === null),
+    ).toBe(true);
+    await expect(hint).toHaveAttribute('data-layer', 'tooltip');
+    await dialog.locator('.ui-modal__cancel').click();
+    await expect(hint).toHaveCount(0);
+  });
+
   test('UIC-TOOLTIP-2.1 UIC-TOOLTIP-2.3 shows a hint the page opens on an element it owns', async ({
     page,
     lab,
