@@ -1,6 +1,6 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { StrictMode, useState } from 'react';
+import { StrictMode, useState, type FormEvent } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { CellCoordinates } from '../../utils/cell-reference.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -136,6 +136,47 @@ describe('FormulaBar', () => {
     await user.click(screen.getByRole('button', { name: 'Confirm' }));
     expect(onCommit).toHaveBeenLastCalledWith('=B1*2+10', { row: 0, column: 0 });
   });
+
+  it('UIC-FORMULA-BAR-2.2 keeps every reference Enter from submitting a form around the bar', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn((event: FormEvent) => event.preventDefault());
+    render(
+      <form onSubmit={onSubmit}>
+        <Sheet />
+      </form>,
+    );
+    await user.click(referenceBox());
+    await user.keyboard('{Enter}');
+    await user.keyboard('b1{Enter}');
+    expect(referenceBox()).toHaveValue('B1');
+    await user.keyboard('{Enter}');
+    await user.keyboard('zz{Enter}');
+    expect(referenceBox()).toHaveAttribute('aria-invalid', 'true');
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['while composing', { isComposing: true }],
+    ['with key code 229', { keyCode: 229 }],
+  ])(
+    'UIC-FORMULA-BAR-2.2 UIC-FORMULA-BAR-3.2 leaves the Enter that confirms a text composition, %s',
+    async (_, composition) => {
+      const user = userEvent.setup();
+      const onCommit = vi.fn();
+      render(<Sheet onCommit={onCommit} />);
+      await user.click(contentBox());
+      await user.keyboard('{End}9');
+      // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing or keyCode on a keydown
+      fireEvent.keyDown(contentBox(), { key: 'Enter', ...composition });
+      expect(onCommit).not.toHaveBeenCalled();
+      await user.click(referenceBox());
+      await user.keyboard('b1');
+      // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing or keyCode on a keydown
+      fireEvent.keyDown(referenceBox(), { key: 'Enter', ...composition });
+      expect(referenceBox()).toHaveValue('b1');
+      expect(referenceBox()).not.toHaveAttribute('aria-invalid');
+    },
+  );
 
   it('UIC-FORMULA-BAR-3.2 restores the content with Escape and the cancel button', async () => {
     const user = userEvent.setup();

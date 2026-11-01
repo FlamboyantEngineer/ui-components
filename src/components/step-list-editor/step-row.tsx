@@ -11,6 +11,7 @@ import { isMoveChord } from '../../utils/use-reorder-drag-and-drop.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import { Button } from '../button/button.js';
 import { TextField } from '../text-field/text-field.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 import { isStepDirty, readStepValue, type StepListEditorStep } from './step-list.js';
 import { useStepRowDrag, type StepDrag } from './use-step-drag.js';
 
@@ -114,10 +115,10 @@ export function StepRow(props: StepRowProps) {
   const { ref, props: rowProps, handleProps, isDragging, dropPosition } = row;
   const onKeyDownCapture = (event: KeyboardEvent<HTMLLIElement>) => {
     const delta = moveKeys[event.key];
-    // Keys from an open menu reach the step through its portal; only the step's own keys move it.
-    if (!delta || !isMoveChord(event) || !event.currentTarget.contains(event.target as Node)) {
-      return;
-    }
+    // Keys from an open menu reach the step through its portal; only the step's own keys move it,
+    // and never while an input method in a field owns them.
+    const isOwn = event.currentTarget.contains(event.target as Node);
+    if (!delta || !isMoveChord(event) || !isOwn || isComposingKey(event.nativeEvent)) return;
     // Captured before the menu button, which would open its menu on Alt+ArrowDown.
     event.preventDefault();
     event.stopPropagation();

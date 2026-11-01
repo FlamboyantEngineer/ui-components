@@ -65,6 +65,26 @@ test.describe('Formula Bar lab', () => {
     await expect(sheet.reference).not.toHaveAttribute('aria-invalid');
   });
 
+  test('UIC-FORMULA-BAR-2.2 keeps reference Enter from submitting a form', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('formula-bar');
+    const form = page.locator('[data-lab-demo="form"]');
+    const reference = form.getByRole('textbox', { name: 'Cell reference' });
+    await reference.click();
+    await page.keyboard.press('Enter');
+    await page.keyboard.type('b2');
+    await page.keyboard.press('Enter');
+    await expect(reference).toHaveValue('B2');
+    await page.keyboard.type('Z9');
+    await page.keyboard.press('Enter');
+    await expect(reference).toHaveAttribute('aria-invalid', 'true');
+    await expect(form.locator('[data-lab-output]')).toHaveText('Submitted 0 times');
+    await form.getByRole('button', { name: 'Submit the form' }).click();
+    await expect(form.locator('[data-lab-output]')).toHaveText('Submitted 1 times');
+  });
+
   test('UIC-FORMULA-BAR-3.2 commits with Enter and restores with Escape', async ({ page, lab }) => {
     await lab.open('formula-bar');
     const sheet = spreadsheet(page);
