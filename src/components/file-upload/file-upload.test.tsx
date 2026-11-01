@@ -852,6 +852,32 @@ describe('FileUpload', () => {
     expect(screen.getByRole('form', { name: 'Read-only' })).toBeValid();
   });
 
+  it('UIC-FILE-UPLOAD-4.2 submits the listed files with the form the input belongs to now', () => {
+    // Without DataTransfer the input holds no files, so form data is filled from the list.
+    vi.stubGlobal('DataTransfer', undefined);
+    const listed = [{ id: 'a', name: 'a.txt', file: file('a.txt', 'text/plain') }];
+    render(
+      <>
+        <form aria-label="First">
+          <FileUpload label="Attach" name="docs" files={listed} onSelect={() => {}} />
+        </form>
+        <form id="second-owner" aria-label="Second" />
+      </>,
+    );
+    // jsdom builds form data without its event, so the browser's event is played here.
+    const submitted = (name: string) => {
+      const formData = new FormData();
+      const event = Object.assign(new Event('formdata'), { formData });
+      screen.getByRole('form', { name }).dispatchEvent(event);
+      return formData.getAll('docs');
+    };
+    expect(submitted('First')).toHaveLength(1);
+    document.querySelector('input[name="docs"]')?.setAttribute('form', 'second-owner');
+    expect(submitted('First')).toEqual([]);
+    expect(submitted('Second')).toHaveLength(1);
+    vi.unstubAllGlobals();
+  });
+
   it('UIC-FILE-UPLOAD-4.2 sets the form input files again only when the listed files change', () => {
     const transfers = vi.fn();
     class CountingTransfer {

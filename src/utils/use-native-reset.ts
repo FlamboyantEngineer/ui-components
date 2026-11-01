@@ -20,7 +20,8 @@ export interface NativeResetOptions {
 /**
  * Runs `onReset` after a native reset of the form `ref`'s element takes part in (a reset button or
  * `form.reset()`), once every listener has seen the reset, and not for one a listener cancelled
- * with `preventDefault`. The form is the one the element is in when it mounts. Returns whether a
+ * with `preventDefault`. The form is the one the element takes part in when the reset happens, so a
+control whose `form` attribute or enclosing form changes resets with its new owner only. Returns whether a
  * reset is under way, from the document's capture phase until then, so a control can hold the
  * changes React Aria makes on the form's own reset listener, which runs before a cancelling one.
  */
@@ -32,15 +33,14 @@ export function useNativeReset(
   const latest = useLatest({ onReset, ...options });
   const isResetting = useRef(false);
   useEffect(() => {
-    const element = ref.current;
-    const form = element ? findForm(element) : null;
-    const document = form?.ownerDocument;
+    const document = ref.current?.ownerDocument;
     const view = document?.defaultView;
-    if (!form || !document || !view) return undefined;
+    if (!document || !view) return undefined;
     let timer: number | undefined;
     // The document's capture phase sees the reset first; the timer runs after every listener.
     const onEvent = (event: Event) => {
-      if (event.target !== form) return;
+      const element = ref.current;
+      if (!element || event.target !== findForm(element)) return;
       view.clearTimeout(timer);
       if (!isResetting.current) latest.current.onStart?.();
       isResetting.current = true;

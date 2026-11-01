@@ -260,6 +260,44 @@ test.describe('File Upload lab', () => {
     await expect(page.locator('[data-lab-output="form-sent"]')).toHaveText('Signed.pdf');
   });
 
+  test('UIC-FILE-UPLOAD-4.2 UIC-FIELD-2.6 follows the form its input is moved to', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('file-upload');
+    const form = page.locator('[data-lab-form="upload"]');
+    const other = page.locator('[data-lab-form="upload-other"]');
+    await form
+      .locator('input[type="file"]:not([hidden])')
+      .setInputFiles([
+        { name: 'Signed.pdf', mimeType: 'application/pdf', buffer: Buffer.alloc(64) },
+      ]);
+    await expect(form.locator('.ui-file-upload__file')).toHaveCount(1);
+    await form.getByRole('button', { name: 'Move the files to the other form' }).click();
+    await expect(form.locator('input[name="attachments"]')).toHaveAttribute(
+      'form',
+      'upload-other-form',
+    );
+    // A reset of the new form keeps the listed files submitted with it, and the old form has none.
+    await other.getByRole('button', { name: 'Reset the other form' }).click();
+    await other.getByRole('button', { name: 'Send the other form' }).click();
+    await expect(page.locator('[data-lab-output="other-form-sent"]')).toHaveText('Signed.pdf');
+    await other.evaluate((element: HTMLFormElement) => {
+      element.reset();
+      element.requestSubmit();
+    });
+    await expect(page.locator('[data-lab-output="other-form-sent"]')).toHaveText('Signed.pdf');
+    await form.evaluate((element: HTMLFormElement) => element.reset());
+    expect(
+      await form.evaluate((element: HTMLFormElement) =>
+        new FormData(element).getAll('attachments'),
+      ),
+    ).toEqual([]);
+    await form.getByRole('button', { name: 'Move the files back' }).click();
+    await form.getByRole('button', { name: 'Send' }).click();
+    await expect(page.locator('[data-lab-output="form-sent"]')).toHaveText('Signed.pdf');
+  });
+
   test('UIC-FILE-UPLOAD-4.2 keeps submitting the listed files after a native reset', async ({
     page,
     lab,
