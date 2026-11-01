@@ -47,7 +47,7 @@ test.describe('Comment Thread lab', () => {
     await expect(thread.getByRole('listitem').nth(1)).toContainText('Bananas are on the list.');
   });
 
-  test('UIC-COMMENT-THREAD-1.2 UIC-COMMENT-THREAD-1.7 UIC-COMMENT-THREAD-1.4 replies, reports a failure and resolves', async ({
+  test('UIC-COMMENT-THREAD-1.2 UIC-COMMENT-THREAD-1.7 UIC-COMMENT-THREAD-1.4 UIC-COMMENT-THREAD-1.9 replies, reports a failure and resolves', async ({
     page,
     lab,
   }) => {
@@ -73,6 +73,7 @@ test.describe('Comment Thread lab', () => {
     await expect(thread.getByRole('textbox')).toHaveCount(0);
     await thread.getByRole('button', { name: 'Reopen' }).click();
     await expect(thread.getByRole('textbox', { name: 'Reply' })).toBeVisible();
+    await expect(box).toHaveValue('This one fails');
   });
 
   test('UIC-COMMENT-THREAD-2.2 UIC-COMMENT-THREAD-2.3 UIC-COMMENT-THREAD-2.4 edits, deletes and runs actions', async ({

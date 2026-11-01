@@ -1,20 +1,13 @@
 'use client';
 
 import { CheckGlyph, UndoGlyph } from '../../core/glyphs.js';
-import {
-  Children,
-  isValidElement,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react';
+import { isValidElement, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { flattenChildren } from '../../utils/flatten-children.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Badge } from '../badge/badge.js';
 import { Button } from '../button/button.js';
@@ -67,11 +60,14 @@ const hooks = createHooks('comment-thread', [
   'composer',
 ]);
 
-/** The comments, with the middle replies of a long thread hidden behind a button until it is pressed. */
+/**
+ * The comments, with the middle replies of a long thread hidden behind a button until it is pressed.
+ * Comments inside fragments count as comments of their own.
+ */
 function CommentList({
-  children,
+  comments,
   visibleReplies,
-}: Pick<CommentThreadProps, 'children' | 'visibleReplies'>) {
+}: Pick<CommentThreadProps, 'visibleReplies'> & { comments: readonly ReactNode[] }) {
   const strings = useUiStrings();
   const [isExpanded, setIsExpanded] = useState(false);
   const revealedRef = useRef<HTMLLIElement>(null);
@@ -79,7 +75,7 @@ function CommentList({
   useEffect(() => {
     if (isExpanded) revealedRef.current?.focus();
   }, [isExpanded]);
-  const [first, ...replies] = Children.toArray(children);
+  const [first, ...replies] = comments;
   if (first === undefined) return null;
   const hidden = isExpanded || visibleReplies === undefined ? 0 : replies.length - visibleReplies;
   const shown = hidden > 0 ? replies.slice(hidden) : replies;
@@ -142,12 +138,17 @@ function CommentThreadHeader({
   );
 }
 
-/** The caller's composer, or the default one when the thread takes replies. */
+/**
+ * The caller's composer, or the default one when the thread takes replies. While replying is not
+ * possible it stays mounted but hidden, so an unsent reply and a pending one outlast a resolve or a
+ * read-only spell.
+ */
 function ThreadComposer({
   composer,
   onReply,
   isFirst,
-}: Pick<CommentThreadProps, 'composer' | 'onReply'> & { isFirst: boolean }) {
+  isHidden,
+}: Pick<CommentThreadProps, 'composer' | 'onReply'> & { isFirst: boolean; isHidden: boolean }) {
   const strings = useUiStrings();
   const content =
     composer ??
@@ -158,7 +159,11 @@ function ThreadComposer({
         submitLabel={isFirst ? strings.comment : strings.reply}
       />
     ) : null);
-  return isEmptyNode(content) ? null : <div {...hooks.slot('composer')}>{content}</div>;
+  return isEmptyNode(content) ? null : (
+    <div {...hooks.slot('composer')} hidden={isHidden || undefined}>
+      {content}
+    </div>
+  );
 }
 
 /**
@@ -187,6 +192,11 @@ export function CommentThread({
     defaultResolved,
     onResolvedChange,
   );
+  const comments = flattenChildren(children);
+  // The composer mounts once replying is possible, then stays: hidden while it is not.
+  const canReply = !isReadOnly && !resolved;
+  const [hasComposer, setHasComposer] = useState(canReply);
+  if (canReply && !hasComposer) setHasComposer(true);
   return (
     <div
       {...rest}
@@ -205,17 +215,18 @@ export function CommentThread({
           isResolved={resolved}
           onToggle={onResolvedChange && !isReadOnly ? () => setResolved(!resolved) : null}
         />
-        <CommentList visibleReplies={visibleReplies}>{children}</CommentList>
+        <CommentList visibleReplies={visibleReplies} comments={comments} />
         {isEmptyNode(error) ? null : (
           <InlineError className={hooks.slotClass('error')}>{error}</InlineError>
         )}
-        {isReadOnly || resolved ? null : (
+        {hasComposer ? (
           <ThreadComposer
             composer={composer}
             onReply={onReply}
-            isFirst={Children.toArray(children).length === 0}
+            isFirst={comments.length === 0}
+            isHidden={!canReply}
           />
-        )}
+        ) : null}
       </CommentThreadContext>
     </div>
   );
