@@ -119,3 +119,24 @@ export function settleCascadeKeys<T>(keys: readonly Key[], index: TreeIndex<T>):
   }
   return chosen.size === keys.length ? [...keys] : orderChosenKeys(chosen, index);
 }
+
+/**
+ * `keys` with every loaded branch all of whose loaded children are among them, from the deepest
+ * up: how a choice of leaves reads as whole branches, in the rows and the chips. A branch without
+ * loaded children is never added.
+ */
+export function closeChosenBranches<T>(keys: readonly Key[], index: TreeIndex<T>): Key[] {
+  const chosen = new Set(keys);
+  const children = new Map<Key, { total: number; chosen: number }>();
+  const entries = [...index.entries()].sort(([, a], [, b]) => b.order - a.order);
+  for (const [key, entry] of entries) {
+    const counts = children.get(key);
+    if (counts && counts.total === counts.chosen) chosen.add(key);
+    if (entry.parent === null) continue;
+    const parent = children.get(entry.parent) ?? { total: 0, chosen: 0 };
+    parent.total += 1;
+    if (chosen.has(key)) parent.chosen += 1;
+    children.set(entry.parent, parent);
+  }
+  return chosen.size === keys.length ? [...keys] : orderChosenKeys(chosen, index);
+}

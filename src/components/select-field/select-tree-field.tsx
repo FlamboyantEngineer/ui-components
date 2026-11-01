@@ -44,6 +44,12 @@ export interface SelectTreeFieldProps<
    * when all its children are, and each chosen branch shows as one chip. Defaults to true.
    */
   selectionPropagation?: boolean | undefined;
+  /**
+   * Lets a branch be chosen: the first press on a closed branch opens it and a press on an open
+   * one chooses it. By default a press on a branch only opens or closes it, and only leaves are
+   * chosen.
+   */
+  selectableBranches?: boolean | undefined;
   /** How chosen nodes read in the trigger and the chips. Defaults to `label`. */
   valueDisplay?: SelectFieldValueDisplay | undefined;
   /** Draws a button after the trigger that clears the value in one press. */
