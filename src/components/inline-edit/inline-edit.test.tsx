@@ -138,6 +138,52 @@ describe('InlineEdit', { timeout: 15_000 }, () => {
     expect(onSave).not.toHaveBeenCalled();
   });
 
+  it('UIC-INLINE-EDIT-1.2 focuses the first editor part that takes focus', async () => {
+    const user = userEvent.setup();
+    render(
+      <InlineEdit
+        label="Title"
+        value="Rye loaf"
+        onSave={() => {}}
+        renderEditor={({ value, onChange, label }) => (
+          <>
+            <input type="hidden" name="id" value="7" />
+            <fieldset disabled>
+              <input aria-label="Locked" />
+            </fieldset>
+            <div hidden>
+              <button type="button">Hidden</button>
+            </div>
+            <div inert>
+              <input aria-label="Inert" />
+            </div>
+            <button type="button" tabIndex={-1}>
+              Skipped
+            </button>
+            <button
+              type="button"
+              ref={(element) => {
+                // A part that refuses focus is passed over for the next one.
+                if (element) element.focus = () => undefined;
+              }}
+            >
+              Refuses focus
+            </button>
+            <input
+              aria-label={label}
+              value={value}
+              onChange={(event) => onChange(event.target.value)}
+            />
+          </>
+        )}
+      />,
+    );
+    await user.click(read());
+    expect(textbox()).toHaveFocus();
+    expect(textbox()).toHaveProperty('selectionStart', 0);
+    expect(textbox()).toHaveProperty('selectionEnd', 8);
+  });
+
   it('UIC-INLINE-EDIT-1.2 opens at first with defaultEditing', () => {
     render(<InlineEdit label="Title" value="Rye loaf" onSave={() => {}} defaultEditing />);
     expect(textbox()).not.toHaveFocus();

@@ -13,7 +13,7 @@ Verification: `src/components/inline-edit/inline-edit.test.tsx`, `e2e/inline-edi
 
 ### UIC-INLINE-EDIT-1.2 - Opening the editor
 
-A press on the read view (a click, Enter or Space) or F2 on it shall replace it with the editor (`ui-inline-edit__editor`, holding the editor in `ui-inline-edit__control`), publish `data-editing` on the root and move focus to the editor's first focusable element, selecting the text of an input and putting the caret at the end of a text area. `isEditing` (controlled) or `defaultEditing` open the editor, and `onEditingChange` receives each opening and closing; an editor open when the component mounts does not take focus.
+A press on the read view (a click, Enter or Space) or F2 on it shall replace it with the editor (`ui-inline-edit__editor`, holding the editor in `ui-inline-edit__control`), publish `data-editing` on the root and move focus to the editor's first element that Tab reaches (skipping hidden inputs and any control that is disabled, inside a disabled fieldset, hidden or inert), trying the next one when focus does not land, selecting the text of an input and putting the caret at the end of a text area. `isEditing` (controlled) or `defaultEditing` open the editor, and `onEditingChange` receives each opening and closing; an editor open when the component mounts does not take focus.
 
 Implementation: `src/components/inline-edit/inline-edit.tsx`, `src/components/inline-edit/use-inline-edit.ts`
 Verification: `src/components/inline-edit/inline-edit.test.tsx`, `e2e/inline-edit.spec.ts`

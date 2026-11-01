@@ -140,6 +140,26 @@ test.describe('Inline Edit lab', () => {
     await expect(lockable.locator('.ui-inline-edit__value')).toHaveText('Bake at dawn');
   });
 
+  test('UIC-INLINE-EDIT-1.2 focuses the first part Tab reaches when opening', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('inline-edit');
+    const baker = page.locator('[data-lab-field="baker"]');
+    await baker.getByRole('button', { name: /^Edit Baker/ }).click();
+    const input = baker.getByRole('textbox', { name: 'Baker' });
+    await expect(input).toBeFocused();
+    expect(
+      await input.evaluate((element: HTMLInputElement) => [
+        element.selectionStart,
+        element.selectionEnd,
+      ]),
+    ).toEqual([0, 12]);
+    await page.keyboard.type('Ana Lima');
+    await page.keyboard.press('Enter');
+    await expect(baker.locator('.ui-inline-edit__value')).toHaveText('Ana Lima');
+  });
+
   test('UIC-INLINE-EDIT-2.1 names the read view and passes axe', async ({ page, lab }) => {
     await lab.open('inline-edit');
     await expect(
