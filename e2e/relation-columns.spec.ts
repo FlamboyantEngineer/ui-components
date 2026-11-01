@@ -80,6 +80,10 @@ test.describe('Relation Columns lab', () => {
     await expect(output).toHaveText('Started from Checkout in under a minute');
     await expect(column(walk, 'Item')).toContainText('Checkout in under a minute');
     await expect(walk.locator('.ui-relation-columns__column')).toHaveCount(3);
+    await walk.getByRole('button', { name: 'Back to the first item' }).click();
+    await expect(column(walk, 'Item')).toContainText('Requirement 13: One-page payment');
+    await expect(walk.locator('.ui-relation-columns__column')).toHaveCount(3);
+    await expect(designs.getByRole('row', { selected: true })).toHaveCount(0);
   });
 
   test('UIC-RELATION-COLUMNS-1.3 UIC-RELATION-COLUMNS-1.4 chooses items by pointer and trims the walk from the trail', async ({

@@ -125,4 +125,35 @@ test.describe('Relation Matrix lab', () => {
     ).toBeVisible();
     expect(await matrix.locator('[role="row"]').count()).toBeLessThan(40);
   });
+
+  test('UIC-RELATION-MATRIX-3.1 windows from the scroll position when windowing turns on', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('relation-matrix');
+    const section = demo(page, 'switched');
+    const matrix = section.getByRole('grid', { name: 'Switched matrix' });
+    await matrix.scrollIntoViewIfNeeded();
+    await cell(matrix, 0, 0).click();
+    await matrix.evaluate((element) => element.scrollTo({ top: 1600, left: 2000 }));
+    const headersInView = () =>
+      matrix.evaluate((element) => {
+        const view = element.getBoundingClientRect();
+        return [...element.querySelectorAll('[role="rowheader"]')].filter((header) => {
+          const box = header.getBoundingClientRect();
+          return box.bottom > view.top + 1 && box.top < view.bottom - 1;
+        }).length;
+      });
+    expect(await headersInView()).toBeGreaterThan(1);
+    await section.getByRole('button', { name: 'Window rows and columns' }).click();
+    await expect(matrix).toHaveAttribute('data-virtualized', 'true');
+    expect(await headersInView()).toBeGreaterThan(1);
+    expect(await matrix.locator('[role="row"]').count()).toBeLessThan(40);
+    expect(await matrix.locator('[tabindex="0"]').count()).toBe(1);
+    await expect(cell(matrix, 0, 0)).toHaveAttribute('tabindex', '0');
+    await section.getByRole('button', { name: 'Render every row and column' }).click();
+    await expect(matrix).not.toHaveAttribute('data-virtualized');
+    expect(await headersInView()).toBeGreaterThan(1);
+    await lab.expectAccessible();
+  });
 });

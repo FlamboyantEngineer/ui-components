@@ -163,6 +163,57 @@ describe('RelationColumns', () => {
     expect(crumbs()).toEqual(['Requirement 12']);
   });
 
+  it('UIC-RELATION-COLUMNS-1.3 starts an uncontrolled path empty on every change of item', async () => {
+    const onPathChange = vi.fn<(path: RelationColumnsPath) => void>();
+    const deep = { upstream: [], downstream: ['spec', 'test'] };
+    const { rerender } = render(<Walk defaultPath={deep} onPathChange={onPathChange} />);
+    expect(crumbs()).toEqual(['Requirement 12', 'Design 4', 'Test 7']);
+    const renamed = { ...(entries.need as Entry), title: 'Requirement 12b' };
+    rerender(<Walk item={renamed} defaultPath={deep} onPathChange={onPathChange} />);
+    expect(crumbs()).toEqual(['Requirement 12b', 'Design 4', 'Test 7']);
+    rerender(<Walk item={entries.goal} defaultPath={deep} onPathChange={onPathChange} />);
+    expect(crumbs()).toEqual(['Faster checkout']);
+    rerender(<Walk defaultPath={deep} onPathChange={onPathChange} />);
+    expect(crumbs()).toEqual(['Requirement 12']);
+    expect(onPathChange).not.toHaveBeenCalled();
+    await userEvent.click(
+      within(column('Downstream of Requirement 12')).getByRole('row', { name: /Design 5/ }),
+    );
+    expect(onPathChange).toHaveBeenLastCalledWith({ upstream: [], downstream: ['plan'] });
+    rerender(<Walk item={entries.goal} onPathChange={onPathChange} />);
+    rerender(<Walk onPathChange={onPathChange} />);
+    expect(crumbs()).toEqual(['Requirement 12']);
+  });
+
+  it('UIC-RELATION-COLUMNS-1.3 tells numeric and text item keys apart', () => {
+    type Typed = { id: Key; title: string };
+    const typed = (id: Key): Typed => ({ id, title: `Item ${String(id)}` });
+    const typedRelated = (entry: Typed, direction: RelationDirection) =>
+      direction === 'downstream' && entry.id === 1 ? [typed(2)] : [];
+    const walk = (id: Key) => (
+      <RelationColumns<Typed>
+        aria-label="Typed"
+        item={typed(id)}
+        getRelated={typedRelated}
+        getTextValue={(entry) => entry.title}
+        defaultPath={{ upstream: [], downstream: [2] }}
+      />
+    );
+    const { rerender } = render(walk(1));
+    expect(crumbs()).toEqual(['Item 1', 'Item 2']);
+    rerender(walk('1'));
+    rerender(walk(1));
+    expect(crumbs()).toEqual(['Item 1']);
+  });
+
+  it('UIC-RELATION-COLUMNS-1.3 keeps a controlled path across a change of item', () => {
+    const controlled = { upstream: [], downstream: ['plan'] };
+    const { rerender } = render(<Walk path={controlled} />);
+    rerender(<Walk item={entries.goal} path={controlled} />);
+    rerender(<Walk path={controlled} />);
+    expect(crumbs()).toEqual(['Requirement 12', 'Design 5']);
+  });
+
   it('UIC-RELATION-COLUMNS-1.3 follows a controlled path', () => {
     render(<Walk path={{ upstream: [], downstream: ['plan'] }} />);
     expect(screen.getByRole('grid', { name: 'Downstream of Design 5' })).toBeInTheDocument();

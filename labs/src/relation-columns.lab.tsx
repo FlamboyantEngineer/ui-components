@@ -1,5 +1,6 @@
 import { useState, type CSSProperties } from 'react';
 import { Badge } from '../../src/components/badge/badge.js';
+import { Button } from '../../src/components/button/button.js';
 import {
   RelationColumns,
   type RelationColumnsPath,
@@ -92,6 +93,18 @@ function TraceWalk() {
           setOutput(`Started from ${byId.get(String(key))?.title ?? ''}`);
         }}
       />
+      <p>
+        <Button
+          size="sm"
+          variant="secondary"
+          onPress={() => {
+            setFocus('req-13');
+            setOutput(`Started from ${byId.get('req-13')?.title ?? ''}`);
+          }}
+        >
+          Back to the first item
+        </Button>
+      </p>
       <output data-lab-output>{output}</output>
     </div>
   );
@@ -122,7 +135,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Walking relations"
-      description="Choose an item to open the items related to it further along; ArrowLeft and ArrowRight move between columns. Press Enter, or double-click an item, to start the walk from it. The trail above the columns trims the walk back."
+      description="Choose an item to open the items related to it further along; ArrowLeft and ArrowRight move between columns. Press Enter, or double-click an item, to start the walk from it. The trail above the columns trims the walk back. Back to the first item starts its walk again empty."
     >
       <TraceWalk />
     </LabSection>

@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { useState, createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { fr } from '../../core/locales/index.js';
 import { UiProvider } from '../../core/provider.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import {
@@ -141,6 +142,44 @@ describe('StateMachineView', () => {
     expect(container.querySelectorAll('.ui-state-machine-view__initial-marker')).toHaveLength(1);
   });
 
+  it('UIC-STATE-MACHINE-VIEW-1.2 reads the initial, final and current states in the outline', () => {
+    const entry = (name: string) =>
+      requireDefined(
+        screen
+          .getAllByText(name, { selector: '.ui-diagram-canvas__outline-label' })[0]
+          ?.closest('li'),
+      );
+    const machine = (current: string, initial = 'placed') => (
+      <StateMachineView
+        states={states}
+        transitions={transitions}
+        initialState={initial}
+        currentKey={current}
+        defaultView="outline"
+      />
+    );
+    const { rerender } = render(machine('paid'));
+    expect(entry('Placed')).toHaveAccessibleDescription('Initial state.');
+    expect(entry('Paid')).toHaveAccessibleDescription('Current state.');
+    expect(entry('Delivered')).toHaveAccessibleDescription('Final state.');
+    expect(entry('Shipped')).not.toHaveAttribute('aria-describedby');
+    expect(within(entry('Paid')).getByRole('list', { name: 'Leads to' })).toHaveTextContent(
+      'Shipped (ship)',
+    );
+    rerender(machine('delivered', 'delivered'));
+    expect(entry('Paid')).not.toHaveAttribute('aria-describedby');
+    expect(entry('Delivered')).toHaveAccessibleDescription(
+      'Current state. Initial state. Final state.',
+    );
+    rerender(
+      <UiProvider locale="fr-FR" messages={fr}>
+        {machine('shipped')}
+      </UiProvider>,
+    );
+    expect(entry('Shipped')).toHaveAccessibleDescription('État actuel.');
+    expect(entry('Placed')).toHaveAccessibleDescription('État initial.');
+  });
+
   it('UIC-STATE-MACHINE-VIEW-2.2 lays the states out in layers from the initial state', () => {
     const { rerender } = render(<StateMachineView states={states} transitions={transitions} />);
     const at = (name: string) => [
@@ -217,5 +256,80 @@ describe('StateMachineView', () => {
     ).toEqual(['placed', 'paid', 'delivered', 'cancelled']);
     expect(screen.queryByText('ship')).not.toBeInTheDocument();
     expect(screen.getByText('pay')).toBeInTheDocument();
+  });
+
+  it('UIC-STATE-MACHINE-VIEW-3.3 keeps a state and a transition that share an id apart', async () => {
+    const user = userEvent.setup();
+    const onStatesChange = vi.fn();
+    const onTransitionsChange = vi.fn();
+    const shared: StateMachineState[] = [
+      { id: 'a', label: 'Alpha' },
+      { id: 'b', label: 'Blue' },
+      { id: 'c', label: 'Gamma' },
+    ];
+    const links: StateMachineTransition[] = [{ id: 'a', from: 'b', to: 'c', label: 'go' }];
+    const { container } = render(
+      <StateMachineView
+        aria-label="Machine"
+        states={shared}
+        transitions={links}
+        isEditing
+        onStatesChange={onStatesChange}
+        onTransitionsChange={onTransitionsChange}
+      />,
+    );
+    await user.click(state('Alpha'));
+    expect(state('Alpha')).toHaveAttribute('data-selected', 'true');
+    expect(container.querySelector('.ui-diagram-canvas__edge')).not.toHaveAttribute(
+      'data-selected',
+    );
+    act(() => state('Alpha').focus());
+    await user.keyboard('{ArrowDown}');
+    const moved = requireDefined(onStatesChange.mock.lastCall)[0] as StateMachineState[];
+    expect(moved.map((item) => item.id)).toEqual(['a', 'b', 'c']);
+    await user.keyboard('{Delete}');
+    expect(
+      requireDefined(onStatesChange.mock.lastCall)[0].map((item: StateMachineState) => item.id),
+    ).toEqual(['b', 'c']);
+    expect(onTransitionsChange).not.toHaveBeenCalled();
+    act(() => state('Blue').focus());
+    await user.keyboard('{Delete}');
+    expect(onTransitionsChange).toHaveBeenLastCalledWith([]);
+  });
+
+  it('UIC-STATE-MACHINE-VIEW-3.3 keeps numeric and text ids apart and reports the caller ids', async () => {
+    const user = userEvent.setup();
+    const onTransitionAdd = vi.fn();
+    const onTransitionsChange = vi.fn();
+    const typed: StateMachineState[] = [
+      { id: 1, label: 'Number one' },
+      { id: '1', label: 'Text one' },
+      { id: 2, label: 'Two' },
+    ];
+    const links: StateMachineTransition[] = [
+      { id: 1, from: 1, to: 2, label: 'numeric' },
+      { id: '1', from: '1', to: 2, label: 'text' },
+    ];
+    render(
+      <StateMachineView
+        aria-label="Machine"
+        states={typed}
+        transitions={links}
+        isEditing
+        defaultView="outline"
+        onTransitionAdd={onTransitionAdd}
+        onTransitionsChange={onTransitionsChange}
+      />,
+    );
+    await user.click(
+      screen.getByRole('button', { name: 'Remove connection from Text one to Two' }),
+    );
+    expect(onTransitionsChange).toHaveBeenLastCalledWith([links[0]]);
+    await user.click(screen.getByRole('radio', { name: 'Diagram' }));
+    act(() => screen.getByRole('button', { name: 'Text one, new transition' }).focus());
+    await user.keyboard('{Enter}');
+    act(() => state('Number one').focus());
+    await user.keyboard('{Enter}');
+    expect(onTransitionAdd).toHaveBeenCalledWith({ from: '1', to: 1 });
   });
 });

@@ -32,7 +32,20 @@ export interface DiagramConnect {
   cancel: () => void;
 }
 
-/** The connection the reader is drawing from a port, by pointer drag or by keyboard. */
+/** Whether a node, and the port when one is named, is still drawn. */
+function isDrawn(nodes: readonly DiagramNode[], node: Key, port?: string): boolean {
+  const item = nodes.find((entry) => entry.id === node);
+  return (
+    item !== undefined &&
+    (port === undefined || Boolean(item.ports?.some((entry) => entry.id === port)))
+  );
+}
+
+/**
+ * The connection the reader is drawing from a port, by pointer drag or by keyboard. `isEditing` is
+ * false while the canvas is not editable or not shown: the connection lives only while it is
+ * editable, shown and its source port is drawn, and is given up (and announced) otherwise.
+ */
 export function useDiagramConnect({
   nodes,
   isEditing,
@@ -46,9 +59,10 @@ export function useDiagramConnect({
 }): DiagramConnect {
   const strings = useUiStrings();
   const [connecting, setConnecting] = useState<DiagramConnecting | null>(null);
-  // Leaving edit mode drops the connection in the same render; the effect announces it once.
+  // A connection whose canvas stops being editable or shown, or whose source port goes, is
+  // dropped in the same render; the effect announces it once.
   const [cancelCount, setCancelCount] = useState(0);
-  if (!isEditing && connecting) {
+  if (connecting && !(isEditing && isDrawn(nodes, connecting.node, connecting.port))) {
     setConnecting(null);
     setCancelCount((count) => count + 1);
   }
@@ -65,9 +79,9 @@ export function useDiagramConnect({
     announce(strings.diagramConnectCancelled);
   };
   return {
-    connecting: isEditing ? connecting : null,
+    connecting,
     start: (node, port) => {
-      if (!isEditing) return;
+      if (!isEditing || !isDrawn(nodes, node, port)) return;
       const portLabel = nodes
         .find((item) => item.id === node)
         ?.ports?.find((item) => item.id === port)?.label;
@@ -83,6 +97,8 @@ export function useDiagramConnect({
         cancel();
         return true;
       }
+      // A target that is no longer drawn takes no connection; the session goes on.
+      if (!isDrawn(nodes, target, targetPort)) return false;
       setConnecting(null);
       onConnect?.({ source: connecting.node, sourcePort: connecting.port, target, targetPort });
       announce(strings.diagramConnected(labelOf(connecting.node), labelOf(target)));

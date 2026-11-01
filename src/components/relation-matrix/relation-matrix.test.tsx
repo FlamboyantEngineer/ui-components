@@ -309,4 +309,46 @@ describe('RelationMatrix', () => {
     expect(columnLabels).not.toContain('Case 3');
     expect(cell(100, 100)).toHaveAttribute('aria-colindex', '102');
   });
+
+  it('UIC-RELATION-MATRIX-3.1 windows from where the matrix is scrolled when virtualization turns on', () => {
+    const manyRows = Array.from({ length: 60 }, (_, index) => ({
+      id: `r${index}`,
+      label: `Requirement ${index}`,
+    }));
+    const manyColumns = Array.from({ length: 60 }, (_, index) => ({
+      id: `c${index}`,
+      label: `Case ${index}`,
+    }));
+    const matrix = (virtualized: boolean) => (
+      <Matrix
+        rows={manyRows}
+        columns={manyColumns}
+        relations={[]}
+        virtualized={virtualized}
+        rowHeight={24}
+        columnWidth={40}
+      />
+    );
+    const { rerender } = render(matrix(false));
+    const grid = screen.getByRole('grid');
+    const labels = (slot: string) =>
+      [...grid.querySelectorAll(`.ui-relation-matrix__${slot}`)].map((label) => label.textContent);
+    const tabStops = () => grid.querySelectorAll('[tabindex="0"]').length;
+    // Right-to-left containers report a negative horizontal offset.
+    Object.assign(grid, { scrollTop: 960, scrollLeft: -1200 });
+    fireEvent.scroll(grid);
+    rerender(matrix(true));
+    expect(labels('row-label')).toContain('Requirement 45');
+    expect(labels('row-label')).not.toContain('Requirement 10');
+    expect(labels('column-label')).toContain('Case 35');
+    expect(labels('column-label')).not.toContain('Case 10');
+    expect(tabStops()).toBe(1);
+    rerender(matrix(false));
+    expect(labels('row-label')).toHaveLength(60);
+    Object.assign(grid, { scrollTop: 0, scrollLeft: 0 });
+    rerender(matrix(true));
+    expect(labels('row-label')).toContain('Requirement 1');
+    expect(labels('row-label')).not.toContain('Requirement 45');
+    expect(tabStops()).toBe(1);
+  });
 });

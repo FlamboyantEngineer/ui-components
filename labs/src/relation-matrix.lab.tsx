@@ -7,6 +7,7 @@ import {
   type RelationMatrixKind,
   type RelationMatrixRelation,
 } from '../../src/components/relation-matrix/index.js';
+import { Button } from '../../src/components/button/button.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/index.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -170,6 +171,35 @@ function LargeMatrix() {
   );
 }
 
+function SwitchedMatrix() {
+  const [virtualized, setVirtualized] = useState(false);
+  const rows = manyRows.slice(0, 100);
+  const columns = manyColumns.slice(0, 100);
+  const columnIds = new Set(columns.map((column) => column.id));
+  return (
+    <div data-lab-demo="switched">
+      <p>
+        <Button size="sm" variant="secondary" onPress={() => setVirtualized((on) => !on)}>
+          {virtualized ? 'Render every row and column' : 'Window rows and columns'}
+        </Button>
+      </p>
+      <RelationMatrix
+        aria-label="Switched matrix"
+        rows={rows}
+        columns={columns}
+        relations={manyRelations.filter(
+          (relation) =>
+            columnIds.has(String(relation.column)) && rows.some((row) => row.id === relation.row),
+        )}
+        kinds={kinds}
+        columnLabels="truncated"
+        columnWidth={72}
+        virtualized={virtualized}
+      />
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -222,6 +252,12 @@ mountLab(
       description="Two thousand requirements against four hundred tests, windowed on both axes: only the rows and columns in view render. Every ninth requirement is uncovered."
     >
       <LargeMatrix />
+    </LabSection>
+    <LabSection
+      title="Turning windowing on"
+      description="A hundred requirements against a hundred tests. Scroll anywhere, then window the rows and columns: the cells in view stay drawn, from the same scroll position, and focus keeps its cell."
+    >
+      <SwitchedMatrix />
     </LabSection>
     <LabSection
       title="Distinct relation keys"

@@ -86,4 +86,41 @@ test.describe('State Machine View lab', () => {
     await expect(output(page, 'transitions')).toHaveText('closed→open, open→closed');
     await lab.expectAccessible();
   });
+
+  test('UIC-STATE-MACHINE-VIEW-3.3 keeps a state apart from a transition with the same id', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('state-machine-view');
+    const door = field(page, 'door');
+    await stateOf(door, 'Open').click();
+    await expect(stateOf(door, 'Open')).toHaveAttribute('data-selected', 'true');
+    await expect(
+      door.locator('.ui-diagram-canvas__edge-label', { hasText: /^open$/ }),
+    ).not.toHaveAttribute('data-selected');
+    await page.keyboard.press('Delete');
+    await expect(output(page, 'states')).toHaveText('Closed, Locked');
+    await expect(output(page, 'transitions')).toHaveText('closed→locked, locked→closed');
+    await lab.expectAccessible();
+  });
+
+  test('UIC-STATE-MACHINE-VIEW-1.2 reads the state status in the outline', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('state-machine-view');
+    const orders = field(page, 'orders');
+    await orders.getByRole('radio', { name: 'Outline' }).click();
+    const entry = (name: string) =>
+      orders
+        .locator('.ui-diagram-canvas__outline-item')
+        .filter({ has: page.locator('.ui-diagram-canvas__outline-label', { hasText: name }) })
+        .first();
+    await expect(entry('Placed')).toHaveAccessibleDescription('Current state. Initial state.');
+    await expect(entry('Delivered')).toHaveAccessibleDescription('Final state.');
+    await page.getByRole('button', { name: 'pay', exact: true }).click();
+    await expect(entry('Paid')).toHaveAccessibleDescription('Current state.');
+    await expect(entry('Placed')).toHaveAccessibleDescription('Initial state.');
+    await lab.expectAccessible();
+  });
 });

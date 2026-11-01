@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type RefObject, type UIEvent } from 'react';
+import { useLayoutEffect, useState, type RefObject, type UIEvent } from 'react';
 import { useElementSize } from '../../utils/use-element-size.js';
 import {
   listMatrixIndices,
@@ -39,6 +39,11 @@ const overscan = 2;
 /** The view assumed before the first measurement (and where nothing measures, as in tests). */
 const fallbackView = { width: 960, height: 480 };
 
+/** A container's scroll offsets; right-to-left containers scroll to negative offsets. */
+function readScroll(element: HTMLElement) {
+  return { top: element.scrollTop, left: Math.abs(element.scrollLeft) };
+}
+
 function listAll(count: number): number[] {
   return Array.from({ length: count }, (_, index) => index);
 }
@@ -52,6 +57,15 @@ export function useMatrixWindow(options: MatrixWindowOptions): MatrixWindow {
   const { root, header, corner, virtualized, rowCount, columnCount, rowHeight, columnWidth } =
     options;
   const [scroll, setScroll] = useState({ top: 0, left: 0 });
+  // The offsets are tracked only while windowing, so turning it on reads where the container
+  // already stands before the first window is painted.
+  useLayoutEffect(() => {
+    const element = root.current;
+    if (!virtualized || !element) return;
+    const next = readScroll(element);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- The offsets live in the committed container, read before paint.
+    setScroll((last) => (last.top === next.top && last.left === next.left ? last : next));
+  }, [virtualized, root]);
   const view = useElementSize(root, { box: 'client' }) ?? fallbackView;
   const headerHeight = useElementSize(header, { box: 'border-box' })?.height ?? 0;
   const cornerWidth = useElementSize(corner, { box: 'border-box' })?.width ?? 0;
@@ -77,9 +91,7 @@ export function useMatrixWindow(options: MatrixWindowOptions): MatrixWindow {
     columns,
     tracks: resolveMatrixColumnTracks({ indices: columns, count: columnCount, width: columnWidth }),
     onScroll: (event) => {
-      const target = event.currentTarget;
-      // Right-to-left containers scroll to negative offsets.
-      const next = { top: target.scrollTop, left: Math.abs(target.scrollLeft) };
+      const next = readScroll(event.currentTarget);
       if (virtualized && (next.top !== scroll.top || next.left !== scroll.left)) setScroll(next);
     },
   };

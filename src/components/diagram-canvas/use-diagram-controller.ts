@@ -44,6 +44,8 @@ interface DiagramControllerOptions {
   onNodesChange: ((nodes: DiagramNode[]) => void) | undefined;
   onEdgesChange: ((edges: DiagramEdge[]) => void) | undefined;
   onConnect: ((connection: DiagramConnection) => void) | undefined;
+  /** Whether the canvas view is shown rather than the outline; a connection lives only there. */
+  isCanvasShown: boolean;
 }
 
 /** What the parts of a canvas share: the data, its interaction state and element lookups. */
@@ -153,7 +155,7 @@ export function useDiagramController(options: DiagramControllerOptions): Diagram
   });
   const connect = useDiagramConnect({
     nodes: options.nodes,
-    isEditing,
+    isEditing: isEditing && options.isCanvasShown,
     onConnect: options.onConnect,
     announce,
   });

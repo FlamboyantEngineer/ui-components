@@ -1,7 +1,23 @@
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { EditableDiagram } from '../../../test/diagram-fixtures.js';
+import { EditableDiagram, pipeEdges, pipeNodes } from '../../../test/diagram-fixtures.js';
+import { DiagramCanvas, type DiagramNode } from './diagram-canvas.js';
+
+function Pipes({ nodes = pipeNodes, onConnect }: { nodes?: DiagramNode[]; onConnect: () => void }) {
+  return (
+    <DiagramCanvas
+      aria-label="Pipes"
+      nodes={nodes}
+      edges={pipeEdges}
+      defaultViewport={{ x: 0, y: 0, zoom: 100 }}
+      isEditing
+      onConnect={onConnect}
+    />
+  );
+}
+
+const status = () => document.querySelector('.ui-diagram-canvas__status');
 
 describe('DiagramCanvas port gestures', () => {
   it('UIC-DIAGRAM-CANVAS-5.1 abandons a captured connection drag when editing stops', async () => {
@@ -73,4 +89,72 @@ describe('DiagramCanvas port gestures', () => {
       expect(target).toHaveAttribute('data-connect-source', 'true');
     },
   );
+
+  it('UIC-DIAGRAM-CANVAS-5.1 UIC-DIAGRAM-CANVAS-5.2 gives up a keyboard connection whose source node is removed', async () => {
+    const user = userEvent.setup();
+    const onConnect = vi.fn();
+    const { rerender } = render(<Pipes onConnect={onConnect} />);
+    const root = screen.getByRole('group', { name: 'Pipes' });
+    act(() => screen.getByRole('button', { name: 'Pump, outlet' }).focus());
+    await user.keyboard('{Enter}');
+    expect(root).toHaveAttribute('data-connecting', 'true');
+    rerender(<Pipes nodes={pipeNodes.slice(1)} onConnect={onConnect} />);
+    expect(root).not.toHaveAttribute('data-connecting');
+    expect(status()).toHaveTextContent('Connection cancelled');
+    act(() => screen.getByRole('group', { name: 'Tank' }).focus());
+    await user.keyboard('{Enter}');
+    expect(onConnect).not.toHaveBeenCalled();
+    act(() => screen.getByRole('button', { name: 'Valve, outlet' }).focus());
+    await user.keyboard('{Enter}');
+    act(() => screen.getByRole('group', { name: 'Tank' }).focus());
+    await user.keyboard('{Enter}');
+    expect(onConnect).toHaveBeenCalledExactlyOnceWith({
+      source: 'valve',
+      sourcePort: 'out',
+      target: 'tank',
+      targetPort: undefined,
+    });
+  });
+
+  it('UIC-DIAGRAM-CANVAS-5.1 gives up a clicked connection whose source port is removed', async () => {
+    const user = userEvent.setup();
+    const onConnect = vi.fn();
+    const { rerender } = render(<Pipes onConnect={onConnect} />);
+    const root = screen.getByRole('group', { name: 'Pipes' });
+    await user.click(screen.getByRole('button', { name: 'Pump, outlet' }));
+    expect(root).toHaveAttribute('data-connecting', 'true');
+    const portless = pipeNodes.map((node) =>
+      node.id === 'pump' ? { ...node, ports: undefined } : node,
+    );
+    rerender(<Pipes nodes={portless} onConnect={onConnect} />);
+    expect(root).not.toHaveAttribute('data-connecting');
+    expect(status()).toHaveTextContent('Connection cancelled');
+    await user.click(screen.getByRole('group', { name: 'Tank' }));
+    expect(onConnect).not.toHaveBeenCalled();
+    const inlet = screen.getByRole('button', { name: 'Valve, inlet' });
+    await user.click(inlet);
+    expect(onConnect).not.toHaveBeenCalled();
+    expect(inlet).toHaveAttribute('data-connect-source', 'true');
+  });
+
+  it('UIC-DIAGRAM-CANVAS-5.2 UIC-DIAGRAM-CANVAS-6.4 gives up a keyboard connection when the outline is shown', async () => {
+    const user = userEvent.setup();
+    const onConnect = vi.fn();
+    render(<Pipes onConnect={onConnect} />);
+    const root = screen.getByRole('group', { name: 'Pipes' });
+    act(() => screen.getByRole('button', { name: 'Pump, outlet' }).focus());
+    await user.keyboard('{Enter}');
+    expect(root).toHaveAttribute('data-connecting', 'true');
+    await user.click(screen.getByRole('radio', { name: 'Outline' }));
+    expect(root).not.toHaveAttribute('data-connecting');
+    expect(status()).toHaveTextContent('Connection cancelled');
+    await user.click(screen.getByRole('radio', { name: 'Diagram' }));
+    expect(root).not.toHaveAttribute('data-connecting');
+    expect(screen.getByRole('button', { name: 'Pump, outlet' })).not.toHaveAttribute(
+      'data-connect-source',
+    );
+    act(() => screen.getByRole('group', { name: 'Tank' }).focus());
+    await user.keyboard('{Enter}');
+    expect(onConnect).not.toHaveBeenCalled();
+  });
 });

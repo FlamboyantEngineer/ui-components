@@ -20,7 +20,7 @@ Verification: `src/components/relation-columns/relation-columns-model.test.ts`, 
 
 ### UIC-RELATION-COLUMNS-1.3 - Choosing an item
 
-A side column shall take one chosen item (single selection, replacing on press, following focus from the keyboard): choosing an item calls `onPathChange` with the path where that side keeps the choices before the column, then the new one, dropping those beyond. The path (`{ upstream, downstream }`, each a list of keys) is controlled with `path` or uncontrolled from `defaultPath`; an uncontrolled path starts empty again when `item` changes to another key. The middle column chooses nothing.
+A side column shall take one chosen item (single selection, replacing on press, following focus from the keyboard): choosing an item calls `onPathChange` with the path where that side keeps the choices before the column, then the new one, dropping those beyond. The path (`{ upstream, downstream }`, each a list of keys) is controlled with `path` or uncontrolled from `defaultPath`; an uncontrolled path starts empty again whenever `item` changes to another key, including a return to an earlier item, without calling `onPathChange`; `defaultPath` applies only to the first item, a new `item` object with the same key keeps the path, keys of different types (`1` and `'1'`) are different items, and a controlled path is left to the caller. The middle column chooses nothing.
 
 Implementation: `src/components/relation-columns/relation-columns.tsx`, `src/components/relation-columns/relation-column.tsx`, `src/components/relation-columns/relation-columns-model.ts`
 Verification: `src/components/relation-columns/relation-columns-model.test.ts`, `src/components/relation-columns/relation-columns.test.tsx`, `e2e/relation-columns.spec.ts`
