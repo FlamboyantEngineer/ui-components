@@ -174,6 +174,39 @@ describe('TabList', () => {
     }
   });
 
+  it('UIC-TABS-2.4 scrolls an overflowing list with the wheel and keeps the wheel from the page', () => {
+    render(<Fruit />);
+    const list = screen.getByRole('tablist');
+    const stub = (scrollWidth: number, scrollLeft = 0) =>
+      Object.defineProperties(list, {
+        clientWidth: { configurable: true, value: 200 },
+        scrollWidth: { configurable: true, value: scrollWidth },
+        scrollLeft: { configurable: true, value: scrollLeft, writable: true },
+      });
+    const wheel = (init: WheelEventInit) => {
+      const event = new WheelEvent('wheel', { bubbles: true, cancelable: true, ...init });
+      act(() => {
+        screen.getByRole('tab', { name: 'Banana' }).dispatchEvent(event);
+      });
+      return event.defaultPrevented;
+    };
+    stub(500);
+    expect(wheel({ deltaY: 120 })).toBe(true);
+    expect(list.scrollLeft).toBe(120);
+    // Trackpad travel along the list scrolls it as is.
+    expect(wheel({ deltaX: 40, deltaY: 5 })).toBe(true);
+    expect(list.scrollLeft).toBe(160);
+    // At either end the list still holds the wheel, so the page behind it stays put.
+    stub(500, 300);
+    expect(wheel({ deltaY: 50 })).toBe(true);
+    expect(list.scrollLeft).toBe(300);
+    stub(500, 0);
+    expect(wheel({ deltaY: -50 })).toBe(true);
+    // A list whose tabs fit leaves the wheel to the page.
+    stub(200);
+    expect(wheel({ deltaY: 50 })).toBe(false);
+  });
+
   it('UIC-TABS-2.7 does not draw its tabs again while the list scrolls', async () => {
     vi.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockImplementation(function (
       this: HTMLElement,

@@ -201,6 +201,37 @@ mountLab(
       </div>
     </LabSection>
     <LabSection
+      title="Wheel and trackpad"
+      description="A list that scrolls takes the mouse wheel whether or not it draws scroll buttons: the wheel scrolls it sideways, a trackpad swipe scrolls it as is, and at either end it keeps the wheel so the page does not scroll behind it. Scroll buttons only add a paging control. Arrow keys select tabs and scroll the selected one into view. In right-to-left text the wheel scrolls toward the left. A list whose tabs all fit leaves the wheel to the page."
+    >
+      <div style={{ display: 'grid', gap: 16 }}>
+        <div data-lab-wheel="ltr" style={{ width: 360 }}>
+          <CityTabs label="Places by wheel" />
+        </div>
+        <UiProvider locale="he-IL">
+          <div data-lab-wheel="rtl" dir="rtl" style={{ width: 360 }}>
+            <CityTabs label="Places by wheel, right to left" />
+          </div>
+        </UiProvider>
+        <div data-lab-wheel="fits" style={{ width: 360 }}>
+          <Tabs>
+            <TabList aria-label="Tabs that fit">
+              {fruit.map((item) => (
+                <Tab key={item.id} id={item.id}>
+                  {item.label}
+                </Tab>
+              ))}
+            </TabList>
+            {fruit.map((item) => (
+              <TabPanel key={item.id} id={item.id}>
+                {item.text}
+              </TabPanel>
+            ))}
+          </Tabs>
+        </div>
+      </div>
+    </LabSection>
+    <LabSection
       title="Overflow menu"
       description="The same tabs with overflow menu: the selected tab and as many others as fit stay, and a menu after the list holds the rest."
     >
@@ -210,7 +241,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Scroll buttons"
-      description="Previous and next buttons appear at an edge that hides tabs and page the list."
+      description="Previous and next buttons appear at an edge that hides tabs and page the list. The wheel scrolls it too."
     >
       <div data-lab-overflow="buttons" style={{ width: 360 }}>
         <CityTabs label="Destinations with scroll buttons" scrollButtons />

@@ -247,6 +247,53 @@ test.describe('Tabs lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-TABS-2.4 scrolls a list without buttons by wheel and trackpad and holds the page', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tabs');
+    const scrollY = () => page.evaluate(() => window.scrollY);
+    const wheelOver = async (frame: string, x: number, y: number) => {
+      const box = await page.locator(`[data-lab-wheel="${frame}"] [role="tablist"]`).boundingBox();
+      if (!box) throw new Error(`no ${frame} list`);
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+      await page.mouse.wheel(x, y);
+    };
+    const ltr = page.locator('[data-lab-wheel="ltr"]');
+    const list = ltr.getByRole('tablist');
+    await ltr.scrollIntoViewIfNeeded();
+    await expect(list).toHaveAttribute('data-overflowing', 'true');
+    await expect(ltr.locator('.ui-tabs__scroll-button')).toHaveCount(0);
+    const left = () => list.evaluate((node) => node.scrollLeft);
+    const range = await list.evaluate((node) => node.scrollWidth - node.clientWidth);
+    const top = await scrollY();
+    await wheelOver('ltr', 0, 120);
+    await expect.poll(left).toBe(120);
+    await wheelOver('ltr', 60, 0);
+    await expect.poll(left).toBe(180);
+    for (let step = 0; step < 4; step += 1) await wheelOver('ltr', 0, 1000);
+    await expect.poll(left).toBe(range);
+    for (let step = 0; step < 4; step += 1) await wheelOver('ltr', 0, -1000);
+    await expect.poll(left).toBe(0);
+    expect(await scrollY()).toBe(top);
+
+    // Keyboard selection reveals the tab it selects.
+    await list.getByRole('tab', { selected: true }).focus();
+    await page.keyboard.press('End');
+    await expect(list.getByRole('tab').last()).toHaveAttribute('aria-selected', 'true');
+    await expect.poll(left).toBe(range);
+
+    const rtl = page.locator('[data-lab-wheel="rtl"]').getByRole('tablist');
+    await wheelOver('rtl', 0, 120);
+    await expect.poll(() => rtl.evaluate((node) => node.scrollLeft)).toBe(-120);
+    expect(await scrollY()).toBe(top);
+
+    const fits = page.locator('[data-lab-wheel="fits"]').getByRole('tablist');
+    await expect(fits).not.toHaveAttribute('data-overflowing');
+    await wheelOver('fits', 0, 200);
+    await expect.poll(scrollY).toBeGreaterThan(top);
+  });
+
   test('UIC-TABS-2.7 pages the list with scroll buttons that stay out of the tab order', async ({
     page,
     lab,
