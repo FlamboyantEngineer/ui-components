@@ -6,6 +6,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { getElementByIdFrom } from '../../utils/owner-window.js';
 import {
   formatOutlineNumber,
   type FormatOutlineNumberOptions,
@@ -75,9 +76,12 @@ function isPlainClick(event: MouseEvent) {
   );
 }
 
-/** Scrolls the heading into view and moves focus to it when it can take focus. */
-function revealHeading(document: Document, id: string) {
-  const target = document.getElementById(id);
+/**
+ * Scrolls the heading into view and moves focus to it when it can take focus. The heading is looked
+ * up in the tree `scope` is in (a shadow root, else its document), as tracking looks it up.
+ */
+function revealHeading(scope: Node, id: string) {
+  const target = getElementByIdFrom(scope, id);
   if (!target) return;
   target.scrollIntoView({ block: 'start' });
   if (target.hasAttribute('tabindex')) target.focus({ preventScroll: true });
@@ -190,7 +194,7 @@ export function Outline(props: OutlineProps) {
       if (!isPlainClick(event)) return;
       event.preventDefault();
       onNavigate?.(headingId);
-      revealHeading(event.currentTarget.ownerDocument, headingId);
+      revealHeading(props.viewportRef?.current ?? event.currentTarget, headingId);
     },
   };
   const hasNotice = roots.length === 0 && (isPending || !isEmptyNode(emptyMessage));

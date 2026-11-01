@@ -49,7 +49,7 @@ test.describe('Outline lab', () => {
     await expect(current).toHaveText('1 Welcome');
 
     await outline.getByRole('link', { name: '3.3.1 Viewpoints' }).click();
-    await expect(page.locator('#guide-viewpoints')).toBeFocused();
+    await expect(demo.locator('#guide-viewpoints')).toBeFocused();
     await expect(demo.locator('[data-lab-followed]')).toHaveText('guide-viewpoints');
     await expect(current).toHaveText('3.3.1 Viewpoints');
     expect(page.url()).not.toContain('#guide-viewpoints');
@@ -60,9 +60,9 @@ test.describe('Outline lab', () => {
 
     await outline.getByRole('link', { name: '2.2 By air' }).focus();
     await page.keyboard.press('Enter');
-    await expect(page.locator('#guide-air')).toBeFocused();
+    await expect(demo.locator('#guide-air')).toBeFocused();
     await expect(current).toHaveText('2.2 By air');
-    const offset = await page
+    const offset = await demo
       .locator('#guide-air')
       .evaluate(
         (heading) =>
@@ -70,6 +70,25 @@ test.describe('Outline lab', () => {
           (heading.closest('[role="region"]') as HTMLElement).getBoundingClientRect().top,
       );
     expect(Math.round(offset)).toBe(40);
+  });
+
+  test('UIC-OUTLINE-2.2 UIC-OUTLINE-3.1 follows and jumps to headings inside a shadow root', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('outline');
+    const demo = page.locator('[data-lab-demo="shadow-reader"]');
+    const outline = demo.getByRole('navigation', { name: 'Embedded guide' });
+    const current = outline.locator('[aria-current="location"]');
+    await expect(current).toHaveText('1 Welcome');
+    await outline.getByRole('link', { name: '3.3.1 Viewpoints' }).click();
+    await expect(demo.locator('#guide-viewpoints')).toBeFocused();
+    await expect(current).toHaveText('3.3.1 Viewpoints');
+    const outer = page.locator('[data-lab-demo="reader"]');
+    await expect(outer.getByRole('region', { name: 'Guide text' })).toHaveJSProperty(
+      'scrollTop',
+      0,
+    );
   });
 
   test('UIC-OUTLINE-4.1 UIC-OUTLINE-4.2 UIC-OUTLINE-5.1 collapses sections from the keyboard and the caller', async ({
