@@ -271,6 +271,31 @@ describe('links', () => {
     await userEvent.click(screen.getByRole('link', { name: 'Next' }));
     expect(navigate).toHaveBeenCalledWith('/next', undefined);
   });
+
+  it('UIC-PROVIDER-5.2 merges navigate and useHref through nested providers', async () => {
+    const outer = vi.fn();
+    const inner = vi.fn();
+    const useOuterHref = (href: string) => `#outer${href}`;
+    render(
+      <UiProvider navigate={outer} useHref={useOuterHref}>
+        <UiProvider navigate={inner}>
+          <Link href="/inner">Inner</Link>
+        </UiProvider>
+        <UiProvider useHref={(href) => `#app${href}`}>
+          <Link href="/hrefed">Hrefed</Link>
+        </UiProvider>
+      </UiProvider>,
+    );
+    const innerLink = screen.getByRole('link', { name: 'Inner' });
+    expect(innerLink).toHaveAttribute('href', '#outer/inner');
+    await userEvent.click(innerLink);
+    expect(inner).toHaveBeenCalledWith('/inner', undefined);
+    const hrefed = screen.getByRole('link', { name: 'Hrefed' });
+    expect(hrefed).toHaveAttribute('href', '#app/hrefed');
+    await userEvent.click(hrefed);
+    expect(outer).toHaveBeenCalledWith('/hrefed', undefined);
+    expect(inner).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('storage', () => {

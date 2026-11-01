@@ -66,7 +66,7 @@ Verification: `src/components/popover/popover.test.tsx`, `e2e/popover.spec.ts`
 
 ### UIC-POPOVER-3.1 - Title
 
-`title` shall render as the dialog's level-2 heading in the `ui-popover__title` slot of a `ui-popover__header` row and name the dialog, unless `aria-label` or `aria-labelledby` names it instead. A popover without a title takes its name from either.
+`title` shall render as the dialog's level-2 heading in the `ui-popover__title` slot of a `ui-popover__header` row and name the dialog, unless `aria-label` or `aria-labelledby` names it instead. A popover without a title takes its name from either. The body publishes the title's heading level (2) to its content, so automatic headings in it, such as a `SectionHeader`, `Card` or `Disclosure` title, start at level 3 wherever the dialog was opened ([UIC-SECTION-HEADER-2.1](SECTION-HEADER.md#uic-section-header-21---automatic-heading-levels)).
 
 Implementation: `src/components/popover/popover.tsx`
 Verification: `src/components/popover/popover.test.tsx`, `e2e/popover.spec.ts`

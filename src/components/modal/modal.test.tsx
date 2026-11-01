@@ -7,6 +7,7 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { Portal, PortalContainerProvider } from '../portal/portal.js';
+import { Section, SectionHeader } from '../section-header/section-header.js';
 import { Modal, ModalTrigger, isModalPrimaryShortcut, type ModalProps } from './modal.js';
 
 function deferred() {
@@ -1176,5 +1177,20 @@ describe('Modal', () => {
     expect(root).toHaveAttribute('data-category', 'spreadsheet');
     expect(screen.getByRole('dialog')).toHaveAttribute('id', 'hooks-dialog');
     expectHooksMatchSpec(document.body, 'MODAL', { callerAttributes: ['data-category'] });
+  });
+
+  it('UIC-MODAL-4.3 starts headings in its body below its title wherever it opens', async () => {
+    render(
+      <Section title="Trips" headingLevel={4}>
+        <ModalTrigger defaultOpen>
+          <Button>Details</Button>
+          <Modal title="Details">
+            <SectionHeader title="Stops" />
+          </Modal>
+        </ModalTrigger>
+      </Section>,
+    );
+    expect(await screen.findByRole('heading', { name: 'Details' })).toHaveProperty('tagName', 'H2');
+    expect(screen.getByRole('heading', { name: 'Stops' })).toHaveProperty('tagName', 'H3');
   });
 });

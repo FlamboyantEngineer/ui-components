@@ -8,6 +8,7 @@ import { Button } from '../button/button.js';
 import { PortalContainerProvider } from '../portal/portal.js';
 import { Modal, ModalTrigger } from '../modal/modal.js';
 import { Drawer, DrawerTrigger, type DrawerProps } from './drawer.js';
+import { Section, SectionHeader } from '../section-header/section-header.js';
 
 type ObserverCallback = (entries: Array<{ intersectionRatio: number }>) => void;
 
@@ -432,5 +433,20 @@ describe('Drawer', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'Sort' })).toHaveFocus(), {
       timeout: 3000,
     });
+  });
+
+  it('UIC-DRAWER-4.2 starts headings in its body below its title wherever it opens', async () => {
+    render(
+      <Section title="Trips" headingLevel={4}>
+        <DrawerTrigger defaultOpen>
+          <Button>Details</Button>
+          <Drawer title="Details">
+            <SectionHeader title="Stops" />
+          </Drawer>
+        </DrawerTrigger>
+      </Section>,
+    );
+    expect(await screen.findByRole('heading', { name: 'Details' })).toHaveProperty('tagName', 'H2');
+    expect(screen.getByRole('heading', { name: 'Stops' })).toHaveProperty('tagName', 'H3');
   });
 });

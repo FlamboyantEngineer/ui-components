@@ -57,9 +57,9 @@ Verification: `src/components/section-header/section-header.test.tsx`, `e2e/sect
 
 ### UIC-SECTION-HEADER-2.1 - Automatic heading levels
 
-A `SectionHeader`, `Section` or titled [Card](CARD.md) without `headingLevel` shall take one level below the nearest enclosing `Section` or titled card, down to 6, and level 3 outside any. A `Section` or titled card publishes its own level to its content, so nesting follows the document outline without counting levels; an explicit `headingLevel` sets the level of that heading and of the levels below it. A host sets the level of top-level sections by providing `HeadingLevelContext` (the level of the heading above them), and its own headings follow with `useHeadingLevel(level)`, which returns `level` when given and the automatic level otherwise.
+A `SectionHeader`, `Section` or titled [Card](CARD.md) without `headingLevel` shall take one level below the nearest enclosing `Section` or titled card, down to 6, and level 3 outside any. A `Section` or titled card publishes its own level to its content, so nesting follows the document outline without counting levels; an explicit `headingLevel` sets the level of that heading and of the levels below it. A host sets the level of top-level sections by providing `HeadingLevelContext` (the level of the heading above them), and its own headings follow with `useHeadingLevel(level)`, which returns `level` when given and the automatic level otherwise. The body of a `Modal`, `Drawer` or `Popover` publishes its dialog title's level, 2, so sections in a dialog start at 3 wherever the dialog was opened.
 
-Implementation: `src/components/section-header/heading-level.ts`, `src/components/section-header/section-header.tsx`, `src/components/card/card.tsx`
+Implementation: `src/core/heading-level.ts`, `src/components/section-header/section-header.tsx`, `src/components/card/card.tsx`
 Verification: `src/components/section-header/section-header.test.tsx`, `e2e/section-header.spec.ts`
 
 ### UIC-SECTION-HEADER-2.2 - Collapsible section

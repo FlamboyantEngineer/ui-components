@@ -243,8 +243,15 @@ export function UiProvider({
       strings: isSameText ? parent.strings : compileStrings(merged, resolvedLocale),
     };
   }, [parent.messages, parent.locale, parent.strings, messages, resolvedLocale]);
+  // Each field merges over the outer provider's, as every other option does.
   const router = useMemo(
-    () => (navigate ? { navigate, useHref } : parent.router),
+    () =>
+      navigate || useHref
+        ? {
+            navigate: navigate ?? parent.router.navigate,
+            useHref: useHref ?? parent.router.useHref,
+          }
+        : parent.router,
     [navigate, useHref, parent.router],
   );
   const clock = useMemo(

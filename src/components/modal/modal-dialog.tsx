@@ -25,6 +25,7 @@ import { useModalActions, type ModalActions } from './use-modal-actions.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { modalHooks as hooks } from './modal-hooks.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
+import { HeadingLevelContext, dialogTitleLevel } from '../../core/heading-level.js';
 
 type ModalDialogProps = Omit<
   ModalProps,
@@ -73,7 +74,9 @@ function ModalBody({
   if (children === undefined || children === null) return null;
   return (
     <div ref={ref} {...hooks.slot('body')}>
-      {typeof children === 'function' ? children(renderProps) : children}
+      <HeadingLevelContext value={dialogTitleLevel}>
+        {typeof children === 'function' ? children(renderProps) : children}
+      </HeadingLevelContext>
     </div>
   );
 }

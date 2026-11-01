@@ -15,10 +15,14 @@ import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { mergeProps } from '../../utils/merge-props.js';
 import { useExpandGlyph } from '../expand-toggle/expand-toggle.js';
 import { Stack, type LayoutContainmentProps, type LayoutSpace } from '../layout/layout.js';
-import { HeadingLevelContext, useHeadingLevel, type HeadingLevel } from './heading-level.js';
+import {
+  HeadingLevelContext,
+  useHeadingLevel,
+  type HeadingLevel,
+} from '../../core/heading-level.js';
 
-export { HeadingLevelContext, useHeadingLevel } from './heading-level.js';
-export type { HeadingLevel } from './heading-level.js';
+export { HeadingLevelContext, useHeadingLevel } from '../../core/heading-level.js';
+export type { HeadingLevel } from '../../core/heading-level.js';
 
 export interface SectionHeaderProps extends BaseProps {
   /** The heading text. */

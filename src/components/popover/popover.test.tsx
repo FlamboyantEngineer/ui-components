@@ -6,6 +6,7 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Button } from '../button/button.js';
 import { PortalContainerProvider } from '../portal/portal.js';
 import { Popover, PopoverTrigger, type PopoverProps } from './popover.js';
+import { Section, SectionHeader } from '../section-header/section-header.js';
 
 /** A page with a field, a trigger and the popover it opens. */
 function Page({ triggerProps = {}, ...props }: Partial<PopoverProps> & { triggerProps?: object }) {
@@ -302,5 +303,20 @@ describe('Popover', () => {
       </>,
     );
     expect(screen.getByRole('dialog', { name: 'Brush size' })).toHaveClass('ui-popover__dialog');
+  });
+
+  it('UIC-POPOVER-3.1 starts headings in its body below its title wherever it opens', async () => {
+    render(
+      <Section title="Trips" headingLevel={4}>
+        <PopoverTrigger defaultOpen>
+          <Button>Details</Button>
+          <Popover title="Details">
+            <SectionHeader title="Stops" />
+          </Popover>
+        </PopoverTrigger>
+      </Section>,
+    );
+    expect(await screen.findByRole('heading', { name: 'Details' })).toHaveProperty('tagName', 'H2');
+    expect(screen.getByRole('heading', { name: 'Stops' })).toHaveProperty('tagName', 'H3');
   });
 });
