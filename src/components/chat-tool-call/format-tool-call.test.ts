@@ -35,6 +35,18 @@ describe('formatToolValue', () => {
     expect(formatToolValue('Sunny, 24 degrees')).toBe('Sunny, 24 degrees');
   });
 
+  it('UIC-CHAT-TOOL-CALL-2.1 keeps every literal of JSON text as written while re-indenting', () => {
+    expect(formatToolValue('{"id": 12345678901234567890}')).toBe(
+      '{\n  "id": 12345678901234567890\n}',
+    );
+    expect(formatToolValue('[1.0,-0,1e2,2E-3]')).toBe('[\n  1.0,\n  -0,\n  1e2,\n  2E-3\n]');
+    expect(formatToolValue('{"a":1,"a":2}')).toBe('{\n  "a": 1,\n  "a": 2\n}');
+    expect(formatToolValue('{"text":"\\u0041 \\/"}')).toBe('{\n  "text": "\\u0041 \\/"\n}');
+    expect(formatToolValue('{"empty":{},"none":[]}')).toBe('{\n  "empty": {},\n  "none": []\n}');
+    expect(formatToolValue('[1,]')).toBe('[1,]');
+    expect(formatToolValue('{"a":1} trailing')).toBe('{"a":1} trailing');
+  });
+
   it('UIC-CHAT-TOOL-CALL-2.1 falls back to String for values JSON cannot hold', () => {
     const cycle: Record<string, unknown> = { name: 'loop' };
     cycle.self = cycle;

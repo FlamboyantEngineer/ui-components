@@ -106,6 +106,20 @@ test.describe('Chat Tool Call lab', () => {
     }).toPass();
   });
 
+  test('UIC-CHAT-TOOL-CALL-2.1 re-indents JSON text without changing its literals', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-tool-call');
+    const call = page.locator('[data-lab-demo="json-text"]');
+    await expect(call.getByRole('group', { name: 'Arguments' })).toHaveText(
+      '{\n  "orderId": 12345678901234567890,\n  "ratio": 1.0\n}',
+    );
+    await expect(call.getByRole('group', { name: 'Result' })).toHaveText(
+      '{\n  "offset": -0,\n  "total": 1e2,\n  "note": "first",\n  "note": "second"\n}',
+    );
+  });
+
   test('UIC-CHAT-TOOL-CALL-4.1 offers only the decisions the host handles', async ({
     page,
     lab,

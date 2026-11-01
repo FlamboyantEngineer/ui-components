@@ -235,6 +235,21 @@ mountLab(
       </div>
     </LabSection>
     <LabSection
+      title="JSON text as sent"
+      description="Arguments and a result that arrive as JSON text are re-indented without being read into values, so a large id, 1.0, -0, 1e2 and a repeated key show exactly as the tool sent them."
+    >
+      <ChatToolCall
+        id="json-text"
+        name="lookup_order"
+        status="succeeded"
+        args='{"orderId":12345678901234567890,"ratio":1.0}'
+        result='{"offset":-0,"total":1e2,"note":"first","note":"second"}'
+        durationMs={400}
+        defaultExpanded
+        data-lab-demo="json-text"
+      />
+    </LabSection>
+    <LabSection
       title="Long label"
       description="A label too long for one line wraps beside the status glyph, which stays on the first line, and the status, duration and badge follow its last word."
     >
