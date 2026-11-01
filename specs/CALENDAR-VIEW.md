@@ -39,6 +39,13 @@ Events shall be placed on days and hours in `timeZone` (the runtime's by default
 Implementation: `src/components/calendar-view/calendar-layout.ts`, `src/components/calendar-view/use-calendar-format.ts`, `src/components/calendar-view/calendar-days.ts`
 Verification: `src/components/calendar-view/calendar-view.test.tsx`, `src/components/calendar-view/calendar-view-ssr.test.tsx`, `src/components/calendar-view/calendar-layout.test.ts`, `src/components/calendar-view/calendar-days.test.ts`
 
+### UIC-CALENDAR-VIEW-1.6 - Planning range
+
+The calendar shall support the days from `0002-01-01` to `9998-12-31`, a year inside each end of the ISO 8601 calendar, so every day of a week or month around a supported day is a real date. A `date` or `defaultDate` outside that range shows its nearer end, and moving past an end by the toolbar or the keyboard keeps the focused day at the end without calling `onDateChange`. Every week shows seven distinct days with one tab stop.
+
+Implementation: `src/utils/planning-dates.ts`, `src/components/calendar-view/calendar-view.tsx`
+Verification: `src/utils/planning-dates.test.ts`, `src/components/calendar-view/calendar-view-planning-range.test.tsx`, `e2e/calendar-view.spec.ts`
+
 ## UIC-CALENDAR-VIEW-2 - Events
 
 ### UIC-CALENDAR-VIEW-2.1 - Event data

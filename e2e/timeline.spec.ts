@@ -218,6 +218,36 @@ test.describe('Timeline lab', () => {
     });
   }
 
+  test('UIC-TIMELINE-1.2 UIC-TIMELINE-2.1 UIC-TIMELINE-2.2 stops at the end of the supported range', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('timeline');
+    const end = page.locator('[data-lab-demo="range-end"]');
+    const wrap = end.getByRole('button', { name: /^Wrap-up/ });
+    await expect(end.getByRole('button', { name: /^Last day/ })).toBeVisible();
+    await expect(end.getByRole('button', { name: /^Past the range/ })).toHaveCount(0);
+    const body = await end.locator('.ui-timeline__scale-cell').last().boundingBox();
+    const before = requireDefined(await wrap.boundingBox());
+    expect(Math.round(before.width)).toBe(3 * 32);
+    await wrap.focus();
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('Shift+ArrowRight');
+    const moved = requireDefined(await wrap.boundingBox());
+    expect(Math.round(moved.x - before.x)).toBe(32);
+    expect(Math.round(moved.width)).toBe(3 * 32);
+    // The bar now ends with the last day, a full day wide at the end of the scale.
+    expect(Math.round(moved.x + moved.width)).toBe(Math.round((body?.x ?? 0) + (body?.width ?? 0)));
+    await page.mouse.move(moved.x + moved.width / 2, moved.y + moved.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(moved.x + moved.width / 2 + 5 * 32, moved.y + moved.height / 2, {
+      steps: 5,
+    });
+    await page.mouse.up();
+    expect(requireDefined(await wrap.boundingBox()).x).toBeCloseTo(moved.x, 0);
+  });
+
   test('UIC-TIMELINE-2.2 UIC-TIMELINE-2.4 edits by keyboard and selects items', async ({
     page,
     lab,

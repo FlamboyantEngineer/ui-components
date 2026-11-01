@@ -3,6 +3,7 @@
 
 import { clamp } from '../../utils/clamp.js';
 import type { Key, Tone } from '../../core/props.js';
+import { isPlanningDate, planningDateRange } from '../../utils/planning-dates.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import {
   addTimeUnits,
@@ -116,10 +117,11 @@ export const timelineScales: Readonly<Record<TimelineScale, ScalePlan>> = {
   quarter: { dayWidth: 1.5, major: 'year', minor: 'quarter' },
 };
 
-/** Whether a text is a real `YYYY-MM-DD` date. */
-function isTimelineDate(text: string | undefined): text is string {
-  return text !== undefined && floorToTimeUnit(text, 'day') === text;
-}
+/**
+ * Whether a text is a real `YYYY-MM-DD` date inside the supported planning range, where the units
+ * around it and the day after it are real dates too.
+ */
+const isTimelineDate = isPlanningDate;
 
 function countDays(from: string, to: string): number {
   return Math.round((Date.parse(to) - Date.parse(from)) / dayLength);
@@ -256,11 +258,13 @@ export function resolveKeyboardChange(
   if (key.shiftKey) {
     if (item.kind === 'milestone') return null;
     const end = addTimeUnits(item.end, unit, direction);
+    if (!isTimelineDate(end)) return null;
     return { id: item.id, start: item.start, end: end < item.start ? item.start : end };
   }
   const start = addTimeUnits(item.start, unit, direction);
   const end = addTimeUnits(item.end, 'day', countDays(item.start, start));
-  return { id: item.id, start, end };
+  // A move past the supported planning range is refused, keeping the item where it is.
+  return isTimelineDate(start) && isTimelineDate(end) ? { id: item.id, start, end } : null;
 }
 
 /** The change a pointer drag of `days` whole days asks for, by what it grabbed. */
@@ -269,16 +273,24 @@ export function resolveDragChange(
   edge: TimelineDragEdge,
   days: number,
 ): TimelineItemChange {
-  const shift = (date: string) => addTimeUnits(date, 'day', days);
+  // A drag stops at the ends of the supported planning range.
+  const earliest = countDays(item.start, planningDateRange.start);
+  const latest = countDays(item.end, planningDateRange.end);
+  const shift = (date: string, least: number, most: number) =>
+    addTimeUnits(date, 'day', Math.min(Math.max(days, least), most));
   if (edge === 'start') {
-    const start = shift(item.start);
+    const start = shift(item.start, earliest, Infinity);
     return { id: item.id, start: start > item.end ? item.end : start, end: item.end };
   }
   if (edge === 'end') {
-    const end = shift(item.end);
+    const end = shift(item.end, -Infinity, latest);
     return { id: item.id, start: item.start, end: end < item.start ? item.start : end };
   }
-  return { id: item.id, start: shift(item.start), end: shift(item.end) };
+  return {
+    id: item.id,
+    start: shift(item.start, earliest, latest),
+    end: shift(item.end, earliest, latest),
+  };
 }
 
 /** A dependency is in conflict when the item that follows starts before the one it follows ends. */

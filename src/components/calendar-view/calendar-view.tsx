@@ -5,7 +5,8 @@ import { ChevronLeftGlyph, ChevronRightGlyph } from '../../core/glyphs.js';
 // days the reader navigates by keyboard, holding all-day bars, timed events and `+n more` lists.
 
 import { useId, useMemo, type ReactNode } from 'react';
-import { parseIsoDate, useLocale } from '../../primitives/index.js';
+import { useLocale } from '../../primitives/index.js';
+import { toPlanningDate } from '../../utils/planning-dates.js';
 import { useGetNow, useNow, useTimeZone } from '../../core/clock.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { BaseProps, Key, Tone, RefProps } from '../../core/props.js';
@@ -212,7 +213,9 @@ export function CalendarView({
       if (next !== null) onDateChange?.(next);
     },
   );
-  const focused = parseIsoDate(focusedText ?? '')?.toString() ?? today;
+  // Days outside the supported planning range move to its nearer end, so a week or month around
+  // the focused day is always made of real days.
+  const focused = toPlanningDate(focusedText) ?? toPlanningDate(today);
   const root = { ...rest, ...hooks.root({ className, props: rest, data: { view: mode } }) };
   // Without a date the calendar opens on today, which a server render and its hydration cannot
   // know: the calendar draws once the clock may be read.
@@ -223,7 +226,10 @@ export function CalendarView({
         {...{ events, mode, views: allowed, focused, today, maxEvents, onEventAction, renderDay }}
         minEventMinutes={minEventMinutes}
         timeZone={zone}
-        onFocusedChange={setFocused}
+        onFocusedChange={(next) => {
+          const day = toPlanningDate(next);
+          if (day !== null && day !== focused) setFocused(day);
+        }}
         onModeChange={setMode}
         getToday={() => getDayOf(readNow().getTime(), zone)}
       />
