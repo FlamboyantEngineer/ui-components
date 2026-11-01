@@ -18,6 +18,7 @@ import {
   toAriaControlProps,
   useFieldControl,
   type FieldControlProps,
+  type FieldErrorSource,
   type FieldInputProps,
   type FieldState,
 } from '../field/field.js';
@@ -69,6 +70,7 @@ type SliderValue = number | [number, number];
 export function useSliderField<T extends SliderValue, P extends SliderFieldProps<T>>(
   props: P,
   initialValue: T,
+  errorSources?: readonly FieldErrorSource<T>[],
 ) {
   const grid: SliderGrid = {
     minValue: props.minValue ?? 0,
@@ -85,6 +87,7 @@ export function useSliderField<T extends SliderValue, P extends SliderFieldProps
   };
   const control = useFieldControl<T, P>(own, {
     initialValue: normalizeSliderValue(initialValue, grid),
+    errorSources,
   });
   // The value the owner or the field holds, before it is snapped.
   const held = props.value ?? control.state.value;
@@ -99,7 +102,6 @@ export function useSliderField<T extends SliderValue, P extends SliderFieldProps
 /** The props `SliderControl` passes on to the slider and its thumbs. */
 type SliderOwnProps<T> = Pick<
   SliderFieldProps<T>,
-  | 'name'
   | 'onChangeEnd'
   | 'minValue'
   | 'maxValue'
@@ -121,6 +123,8 @@ interface SliderControlProps<T extends SliderValue> {
   fillOffset?: number | undefined;
   /** Each thumb's own name, read before the label; a single thumb has none. */
   thumbLabels: readonly (string | undefined)[];
+  /** The form name each thumb submits its value under. */
+  thumbNames: readonly (string | undefined)[];
   /** Adjusts a new value against the previous one before the field takes it. */
   normalize?: ((next: T, previous: T) => T) | undefined;
 }
@@ -194,9 +198,10 @@ export function SliderControl<T extends SliderValue>({
   valueLabel,
   fillOffset,
   thumbLabels,
+  thumbNames,
   normalize = (next) => next,
 }: SliderControlProps<T>) {
-  const { name, onChangeEnd, ...aria } = rest;
+  const { onChangeEnd, ...aria } = rest;
   const inputRef = useObjectRef<HTMLInputElement>(control.ref);
   // The value set during this interaction; the field state's value is the last render's.
   const valueRef = useLatest(state.value);
@@ -244,7 +249,7 @@ export function SliderControl<T extends SliderValue>({
             key={index}
             {...hooks.slot('thumb')}
             index={index}
-            name={name}
+            name={thumbNames[index]}
             aria-label={thumbLabels[index]}
             inputRef={index === 0 ? inputRef : undefined}
             // React Aria reports a thumb invalid only through this deprecated prop.

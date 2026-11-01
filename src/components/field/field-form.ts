@@ -8,6 +8,7 @@ import { flushSync } from 'react-dom';
 import type { SlotRegistry } from '../../utils/slot-registry.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { useStableArray } from '../../utils/use-stable-array.js';
+import { isOwnFieldTarget } from './field-root.js';
 import { useFieldScope } from './field-scope.js';
 import { fieldChangeHold, type FieldChangeHold, type FieldState } from './field-state.js';
 import { isFieldValueEqual } from './field-value.js';
@@ -172,6 +173,8 @@ export function useFieldFormBinding(
     const root = slots.read('root');
     if (!root) return undefined;
     const onInvalid = (event: Event) => {
+      // A field nested inside this one, such as in its description, reports its own control.
+      if (!isOwnFieldTarget(root, event.target)) return;
       const current = latest.current.state;
       current.revealValidation();
       if (isInForm && event.target === slots.read('control') && isFieldBlocking(current)) {

@@ -281,6 +281,12 @@ function UndoToolbar() {
       </div>
       <SampleField label="Fruit" options={{ defaultValue: 'Fig' }} data-lab-field="fruit" />
       <SampleField label="City" options={{ defaultValue: 'Oslo' }} data-lab-field="city" />
+      <SampleField
+        label="Dish"
+        options={{ defaultValue: 'Soup' }}
+        description={<SampleField label="Note" options={{ defaultValue: '' }} />}
+        data-lab-field="dish"
+      />
       <LabOutput name="Toolbar">{last}</LabOutput>
     </>
   );
@@ -419,7 +425,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Undo and redo"
-      description="Ctrl+Z and Ctrl+Shift+Z (or Ctrl+Y) inside a field, or the toolbar, change only the focused field."
+      description="Ctrl+Z and Ctrl+Shift+Z (or Ctrl+Y) inside a field, or the toolbar, change only the focused field: the note inside the dish's description undoes itself, never the dish."
     >
       <UndoToolbar />
     </LabSection>

@@ -208,9 +208,9 @@ Verification: `src/components/field/field-validation.test.tsx`, `src/components/
 
 ### UIC-FIELD-3.10 - Native constraint validation
 
-`validationBehavior` (the nearest form's, else `aria`) shall decide whether the browser sees the field's validation. In the `native` behavior, while the value has an error or is being checked, the field gives its control element, when it takes part in constraint validation (an input, a text area), the message as its custom validity, and clears it otherwise, so `checkValidity()` fails and the browser blocks a native submit. An `invalid` event at the control shows the field's validation; inside a form the field prevents the browser's own message. In the `aria` behavior the field leaves the control's validity alone.
+`validationBehavior` (the nearest form's, else `aria`) shall decide whether the browser sees the field's validation. In the `native` behavior, while the value has an error or is being checked, the field gives its control element, when it takes part in constraint validation (an input, a text area), the message as its custom validity, and clears it otherwise, so `checkValidity()` fails and the browser blocks a native submit. An `invalid` event at the control shows the field's validation; inside a form the field prevents the browser's own message. An `invalid` event inside a field nested in it (in its description, decoration or a custom control) is that field's alone. In the `aria` behavior the field leaves the control's validity alone.
 
-Implementation: `src/components/field/field-form.ts`, `src/components/field/field-state.ts`
+Implementation: `src/components/field/field-form.ts`, `src/components/field/field-root.ts`, `src/components/field/field-state.ts`
 Verification: `src/components/field/field-form.test.tsx`
 
 ### UIC-FIELD-3.11 - Draft issues
@@ -254,16 +254,16 @@ Verification: `src/components/field/field-history.test.ts`, `src/components/fiel
 
 ### UIC-FIELD-5.2 - Shortcuts
 
-Ctrl+Z or Cmd+Z pressed inside a field shall undo that field, and Ctrl+Shift+Z, Cmd+Shift+Z or Ctrl+Y redo it, preventing the browser's default. On a layout whose letters are not Latin, the key in the letter's place on a US layout counts (`readCommandKey`, [UIC-SHORTCUT-1.8](SHORTCUT.md)), so Control with `я` on the Z key undoes. Only the field holding focus changes. A chord with nothing to undo or redo, one already handled, one pressed in a menu the field opened, or one that belongs to an input method composition (`isComposing`, or key code 229) is left alone.
+Ctrl+Z or Cmd+Z pressed inside a field shall undo that field, and Ctrl+Shift+Z, Cmd+Shift+Z or Ctrl+Y redo it, preventing the browser's default. On a layout whose letters are not Latin, the key in the letter's place on a US layout counts (`readCommandKey`, [UIC-SHORTCUT-1.8](SHORTCUT.md)), so Control with `я` on the Z key undoes. Only the field holding focus changes: a chord pressed in a field nested inside another (in its description, decoration or a custom control) is the inner field's alone, and with nothing to undo there it is left to the browser, not applied to the outer field. A chord with nothing to undo or redo, one already handled, one pressed in a menu the field opened, or one that belongs to an input method composition (`isComposing`, or key code 229) is left alone.
 
-Implementation: `src/components/field/field-undo.ts`, `src/components/field/field.tsx`
+Implementation: `src/components/field/field-undo.ts`, `src/components/field/field-root.ts`, `src/components/field/field.tsx`
 Verification: `src/components/field/field-undo.test.tsx`, `e2e/field.spec.ts`
 
 ### UIC-FIELD-5.3 - Undo registry
 
 Each mounted field shall register its undo on its root element. `getFieldUndo(element)` returns the undo of the nearest field at or above `element` (`canUndo`, `canRedo`, `undo()`, `redo()`), or `null` outside any field, so a host's shortcut handler passes the focused element and changes only that field. No event reaches the other fields.
 
-Implementation: `src/components/field/field-undo.ts`, `src/components/field/field.tsx`
+Implementation: `src/components/field/field-undo.ts`, `src/components/field/field-root.ts`, `src/components/field/field.tsx`
 Verification: `src/components/field/field-undo.test.tsx`, `e2e/field.spec.ts`
 
 ### UIC-FIELD-5.4 - Removing a registration

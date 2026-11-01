@@ -23,6 +23,8 @@ function OwnedField({ form }: { form: string }) {
   );
 }
 
+const warning = { severity: 'warning', message: 'Check the spelling.' } as const;
+
 function resetForm(id: string) {
   const form = document.getElementById(id) as HTMLFormElement;
   fireEvent.reset(form);
@@ -118,6 +120,28 @@ describe('Field in a form', () => {
     });
     expect(invalid.defaultPrevented).toBe(false);
     expect(root(container)).toHaveAttribute('data-validation', 'invalid');
+  });
+
+  it('UIC-FIELD-3.10 leaves an invalid event of a field nested in it to that field', () => {
+    const native = { validationBehavior: 'native', validationMode: 'submit' } as const;
+    const { container } = render(
+      <form aria-label="Order">
+        <TextField
+          label="Fruit"
+          options={{ ...native, defaultValue: 'Fig', validate: () => warning }}
+          description={
+            <TextField label="Note" options={{ ...native, defaultValue: '', isRequired: true }} />
+          }
+        />
+      </form>,
+    );
+    const [outer, inner] = container.querySelectorAll<HTMLElement>('.ui-field');
+    const note = screen.getByRole<HTMLInputElement>('textbox', { name: 'Note' });
+    act(() => {
+      note.dispatchEvent(new Event('invalid', { cancelable: true }));
+    });
+    expect(inner).toHaveAttribute('data-validation', 'invalid');
+    expect(outer).toHaveAttribute('data-validation', 'valid');
   });
 
   it('UIC-FIELD-2.6 resets with the form its control belongs to now', async () => {

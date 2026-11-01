@@ -28,6 +28,7 @@ import { useFieldFocus } from './field-focus.js';
 import { focusControl, useFieldFormBinding } from './field-form.js';
 import { FieldRestoreButton } from './field-restore-button.js';
 import type { FieldIssue, FieldState, FieldValidation } from './field-state.js';
+import { useFieldRoot } from './field-root.js';
 import { useFieldUndo } from './field-undo.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { findOwnerDocument } from '../../utils/owner-window.js';
@@ -209,6 +210,7 @@ export function Field<T>({
   const ids = useFieldIds(id);
   const [slots] = useState<FieldSlots>(() => createSlotRegistry());
   const getRoot = useCallback(() => slots.read('root'), [slots]);
+  useFieldRoot(getRoot);
   const onKeyDown = useFieldUndo(getRoot, state);
   const focus = useFieldLeave(state, slots, commitOnBlur);
   useFieldFormBinding(state, slots, label);

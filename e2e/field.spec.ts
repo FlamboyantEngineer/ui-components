@@ -196,6 +196,15 @@ test.describe('Field lab', () => {
     await page.getByRole('button', { name: 'Redo' }).click();
     await expect(city).toHaveValue('Oslox');
     await expect(fruit).toHaveValue('Figs');
+
+    // A field in another field's description keeps its chords to itself.
+    const dish = field(page, 'dish').getByRole('textbox', { name: 'Dish' });
+    const note = field(page, 'dish').getByRole('textbox', { name: 'Note' });
+    await dish.fill('Soups');
+    await note.fill('hot');
+    await page.keyboard.press('ControlOrMeta+z');
+    await expect(note).toHaveValue('');
+    await expect(dish).toHaveValue('Soups');
   });
 
   test('UIC-FIELD-6.3 UIC-FIELD-6.4 opens the field menu from a right click, the keyboard and its button', async ({
