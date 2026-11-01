@@ -3,19 +3,21 @@
 import {
   Children,
   isValidElement,
-  useEffect,
   useId,
+  useLayoutEffect,
   useRef,
+  type FocusEvent,
   type KeyboardEvent,
   type ReactNode,
-  type RefObject,
 } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { containsComposed, getComposedActiveElement } from '../../utils/focus-target.js';
 import { isEditableTarget } from '../../utils/is-editable-target.js';
+import { isHTMLElement, isNode } from '../../utils/is-element.js';
 import {
   CarouselControls,
   CarouselPaginationButtons,
@@ -62,20 +64,50 @@ function resolveSlideKey(event: KeyboardEvent, direction: 'ltr' | 'rtl'): -1 | 1
   return event.key === forward ? 1 : event.key === backward ? -1 : 0;
 }
 
-/** Moves focus to the shown slide after a change made while focus was inside the slide it hid. */
-function useSlideFocus(index: number) {
+/** A slide's key: the child's own key, else its position. */
+function toSlideKey(slide: unknown, position: number) {
+  return isValidElement(slide) && slide.key !== null ? slide.key : position;
+}
+
+/** Whether `element` was hidden or removed, rather than left by the reader. */
+function isHiddenOrGone(element: Element) {
+  return !element.isConnected || element.closest('[hidden], [inert]') !== null;
+}
+
+/**
+ * Keeps focus in the carousel when the slide holding it stops being shown, however that happens:
+ * a move, a new controlled index, or the slide's removal. While focus is inside a slide (deep
+ * focus, through shadow roots too), a change of the shown slide moves focus to the newly shown one
+ * if focus was lost with the old one. Focus that left the slides (for a control, or elsewhere on
+ * the page) is never taken back.
+ */
+function useSlideFocus(shownKey: unknown) {
   const viewportRef = useRef<HTMLDivElement>(null);
-  const pending = useRef(false);
-  useEffect(() => {
-    if (!pending.current) return;
-    pending.current = false;
-    viewportRef.current?.querySelector<HTMLElement>(`:scope > [data-current]`)?.focus();
-  }, [index]);
-  const markIfFocusInside = () => {
+  const isFocusInside = useRef(false);
+  useLayoutEffect(() => {
     const viewport = viewportRef.current;
-    pending.current = viewport?.contains(viewport.ownerDocument.activeElement) ?? false;
+    if (!viewport || !isFocusInside.current) return;
+    const shown = [...viewport.children].find((slide) => slide.hasAttribute('data-current'));
+    const active = getComposedActiveElement(viewport);
+    if (!isHTMLElement(shown) || containsComposed(shown, active)) return;
+    const isLost =
+      active === null ||
+      active === viewport.ownerDocument.body ||
+      containsComposed(viewport, active);
+    if (isLost) shown.focus();
+  }, [shownKey]);
+  const focusHandlers = {
+    onFocus: () => {
+      isFocusInside.current = true;
+    },
+    onBlur: (event: FocusEvent<HTMLDivElement>) => {
+      const next = event.relatedTarget;
+      if (isNode(next) && containsComposed(event.currentTarget, next)) return;
+      if (next === null && isHiddenOrGone(event.target)) return;
+      isFocusInside.current = false;
+    },
   };
-  return { viewportRef, markIfFocusInside };
+  return { viewportRef, focusHandlers };
 }
 
 /** The shown slide, kept within the slides, and the moves between slides. */
@@ -88,15 +120,12 @@ function useCarouselIndex({
 }: Pick<CarouselProps, 'index' | 'defaultIndex' | 'onIndexChange' | 'loop'> & { count: number }) {
   const [requested, setIndex] = useControllableState(index, defaultIndex, onIndexChange);
   const current = clamp(Math.trunc(requested) || 0, 0, Math.max(0, count - 1));
-  const { viewportRef, markIfFocusInside } = useSlideFocus(current);
   const goTo = (next: number) => {
     if (next === current || next < 0 || next >= count) return;
-    markIfFocusInside();
     setIndex(next);
   };
   return {
     index: current,
-    viewportRef,
     goTo,
     step: (delta: -1 | 1) => goTo(loop ? (current + delta + count) % count : current + delta),
     canGoPrevious: loop || current > 0,
@@ -110,18 +139,18 @@ function CarouselViewport({
   slides,
   index,
   isRotating,
-  viewportRef,
 }: {
   id: string;
   slides: ReturnType<typeof Children.toArray>;
   index: number;
   isRotating: boolean;
-  viewportRef: RefObject<HTMLDivElement | null>;
 }) {
   const strings = useUiStrings();
+  const { viewportRef, focusHandlers } = useSlideFocus(toSlideKey(slides[index], index));
   return (
     <div
       {...hooks.slot('viewport')}
+      {...focusHandlers}
       ref={viewportRef}
       id={id}
       aria-live={isRotating ? 'off' : 'polite'}
@@ -130,7 +159,7 @@ function CarouselViewport({
         const isCurrent = position === index;
         return (
           <div
-            key={isValidElement(slide) && slide.key !== null ? slide.key : position}
+            key={toSlideKey(slide, position)}
             {...hooks.slot('slide', { current: isCurrent })}
             role="group"
             aria-roledescription={strings.slide}
@@ -205,7 +234,6 @@ export function Carousel({
         slides={slides}
         index={nav.index}
         isRotating={rotation.isRotating}
-        viewportRef={nav.viewportRef}
       />
       {isNavigable && pagination !== 'none' ? (
         <CarouselPaginationButtons

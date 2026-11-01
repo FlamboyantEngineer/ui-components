@@ -68,6 +68,27 @@ test.describe('Carousel lab', () => {
     await expect(current).toHaveAccessibleName('4 of 4');
   });
 
+  test('UIC-CAROUSEL-2.2 keeps focus when the page moves or removes the focused slide', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('carousel');
+    const demo = page.locator('[data-lab-demo="host-changes"]');
+    const current = demo.locator('.ui-carousel__slide[data-current]');
+    await demo.getByRole('button', { name: 'Show the next city in one second' }).click();
+    await current.getByRole('link', { name: 'More' }).focus();
+    await page.clock.runFor(1000);
+    await expect(current).toHaveAccessibleName('2 of 4');
+    await expect(current).toBeFocused();
+    await demo.getByRole('button', { name: 'Remove the shown city in one second' }).click();
+    await current.getByRole('link', { name: 'More' }).focus();
+    await page.clock.runFor(1000);
+    await expect(current).toHaveAccessibleName('2 of 3');
+    await expect(current).toContainText('Kyoto');
+    await expect(current).toBeFocused();
+  });
+
   test('UIC-CAROUSEL-3.1 UIC-CAROUSEL-3.2 UIC-CAROUSEL-3.3 rotates, pauses on hover and stops', async ({
     page,
     lab,

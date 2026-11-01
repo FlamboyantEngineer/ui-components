@@ -263,6 +263,82 @@ describe('Carousel', () => {
     expect(screen.getByRole('button', { name: 'Next slide' })).toHaveFocus();
   });
 
+  it('UIC-CAROUSEL-2.2 moves focus when the host shows another slide', () => {
+    const { container, rerender } = render(
+      <Carousel aria-label="Cities" index={0}>
+        {slides()}
+      </Carousel>,
+    );
+    act(() => screen.getByRole('link', { name: 'Read about Lisbon' }).focus());
+    rerender(
+      <Carousel aria-label="Cities" index={1}>
+        {slides()}
+      </Carousel>,
+    );
+    expect(container.querySelector('.ui-carousel__slide[data-current]')).toHaveFocus();
+    expect(shown(container)).toBe('Oslo');
+  });
+
+  it.each([
+    ['the first', 'Lisbon', 0, 'Oslo'],
+    ['the last', 'Quito', 3, 'Kyoto'],
+  ])(
+    'UIC-CAROUSEL-2.2 moves focus to the next shown slide when %s focused slide is removed',
+    (_, removed, index, next) => {
+      const without = slides().filter((slide) => slide.key !== removed);
+      const { container, rerender } = render(
+        <Carousel aria-label="Cities" defaultIndex={index}>
+          {slides()}
+        </Carousel>,
+      );
+      act(() => screen.getByRole('link', { name: `Read about ${removed}` }).focus());
+      rerender(
+        <Carousel aria-label="Cities" defaultIndex={index}>
+          {without}
+        </Carousel>,
+      );
+      expect(shown(container)).toBe(next);
+      expect(container.querySelector('.ui-carousel__slide[data-current]')).toHaveFocus();
+    },
+  );
+
+  it('UIC-CAROUSEL-2.2 forgets a refused move once focus leaves the carousel', async () => {
+    const user = userEvent.setup();
+    const carousel = (index: number) => (
+      <>
+        <Carousel aria-label="Cities" index={index} onIndexChange={() => {}}>
+          {slides()}
+        </Carousel>
+        <button type="button">After</button>
+      </>
+    );
+    const { container, rerender } = render(carousel(0));
+    screen.getByRole('link', { name: 'Read about Lisbon' }).focus();
+    await user.keyboard('{ArrowRight}');
+    expect(shown(container)).toBe('Lisbon');
+    await user.click(screen.getByRole('button', { name: 'After' }));
+    rerender(carousel(1));
+    expect(shown(container)).toBe('Oslo');
+    expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
+  });
+
+  it('UIC-CAROUSEL-2.2 keeps focus in a carousel inside a shadow root', async () => {
+    const user = userEvent.setup();
+    const host = document.body.appendChild(document.createElement('div'));
+    const shadow = host.attachShadow({ mode: 'open' });
+    const container = shadow.appendChild(document.createElement('div'));
+    try {
+      render(<Carousel aria-label="Cities">{slides()}</Carousel>, { container });
+      within(container).getByRole('link', { name: 'Read about Lisbon' }).focus();
+      await user.keyboard('{ArrowRight}');
+      const current = container.querySelector('.ui-carousel__slide[data-current]');
+      expect(current).toHaveAttribute('aria-label', '2 of 4');
+      expect(shadow.activeElement).toBe(current);
+    } finally {
+      host.remove();
+    }
+  });
+
   it('UIC-CAROUSEL-3.1 advances on its own, wrapping, with the live region off', () => {
     mockReducedMotion(false);
     vi.useFakeTimers();

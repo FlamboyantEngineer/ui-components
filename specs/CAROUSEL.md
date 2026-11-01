@@ -43,7 +43,7 @@ Verification: `src/components/carousel/carousel.test.tsx`, `e2e/carousel.spec.ts
 
 ### UIC-CAROUSEL-2.2 - Focus follows a hidden slide
 
-When the shown slide changes while focus is inside the slide being hidden, focus shall move to the newly shown slide (focusable with `tabIndex="-1"`), so it is never lost to the page. Focus on a control stays there.
+When the shown slide changes while focus is inside the slide being hidden, focus shall move to the newly shown slide (focusable with `tabIndex="-1"`), so it is never lost to the page. This holds however the shown slide changes: a move of the reader's, a new controlled `index` from the host, or the removal of the focused slide (the first, the last, or one whose index stays the same), and for focus deep inside the slide, also within a shadow root. Focus on a control stays there, and once focus has left the slides for anywhere else, a later change of the shown slide does not take it back.
 
 Implementation: `src/components/carousel/carousel.tsx`
 Verification: `src/components/carousel/carousel.test.tsx`, `e2e/carousel.spec.ts`
