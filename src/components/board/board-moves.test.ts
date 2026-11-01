@@ -25,11 +25,10 @@ const tasks: Task[] = [
   { id: 'lost', column: 'elsewhere', lane: 'north' },
 ];
 
-function layoutOf(options: { lanes?: boolean; collapsed?: string[] } = {}) {
+function layoutOf(options: { lanes?: boolean } = {}) {
   return createBoardLayout({
     columns: ['todo', 'doing', 'done'],
     lanes: options.lanes ? ['north', 'south'] : [null],
-    collapsedColumns: new Set(options.collapsed ?? []),
     items: tasks,
     getKey: (task) => task.id,
     getColumn: (task) => task.column,
@@ -112,8 +111,8 @@ describe('board moves', () => {
     ).toEqual({ key: 'a', column: 'done', lane: 'north', targetKey: null, position: 'after' });
   });
 
-  it('UIC-BOARD-2.3 resolves keyboard moves within a cell and across open columns', () => {
-    const layout = layoutOf({ collapsed: ['doing'] });
+  it('UIC-BOARD-2.3 resolves keyboard moves within a cell and to the neighbouring column', () => {
+    const layout = layoutOf();
     expect(resolveBoardKeyboardMove(layout, { key: 'b', direction: 'up' })).toEqual({
       key: 'b',
       column: 'todo',
@@ -125,20 +124,27 @@ describe('board moves', () => {
     expect(resolveBoardKeyboardMove(layout, { key: 'a', direction: 'up' })).toBeNull();
     expect(resolveBoardKeyboardMove(layout, { key: 'c', direction: 'down' })).toBeNull();
     expect(resolveBoardKeyboardMove(layout, { key: 'a', direction: 'previous' })).toBeNull();
-    // The collapsed column is skipped; the card keeps its place, clamped to the end.
+    // The card keeps its place in the next column, collapsed or not, clamped to the end.
     expect(resolveBoardKeyboardMove(layout, { key: 'a', direction: 'next' })).toEqual({
       key: 'a',
-      column: 'done',
+      column: 'doing',
       lane: null,
-      targetKey: 'e',
+      targetKey: 'd',
       position: 'before',
     });
     expect(resolveBoardKeyboardMove(layout, { key: 'c', direction: 'next' })).toEqual({
       key: 'c',
+      column: 'doing',
+      lane: null,
+      targetKey: 'd',
+      position: 'after',
+    });
+    expect(resolveBoardKeyboardMove(layout, { key: 'd', direction: 'next' })).toEqual({
+      key: 'd',
       column: 'done',
       lane: null,
       targetKey: 'e',
-      position: 'after',
+      position: 'before',
     });
     expect(resolveBoardKeyboardMove(layout, { key: 'zz', direction: 'next' })).toBeUndefined();
   });

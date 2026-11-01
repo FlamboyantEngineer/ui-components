@@ -14,6 +14,7 @@ import {
   Board,
   applyBoardMove,
   applyColumnMove,
+  type BoardCardState,
   type BoardColumn,
   type BoardLane,
   type BoardMove,
@@ -60,7 +61,9 @@ const place = (task: Task, cell: { column: Key; lane: Key | null }): Task => ({
   lane: cell.lane === null ? task.lane : String(cell.lane),
 });
 
-function TaskCard({ task }: { task: Task }) {
+/** A card's title and tag; in a collapsed column, the title alone, which the stylesheet clamps. */
+function TaskCard({ task, isColumnCollapsed }: { task: Task } & BoardCardState) {
+  if (isColumnCollapsed) return <span>{task.title}</span>;
   return (
     <>
       <span>{task.title}</span>
@@ -73,7 +76,7 @@ function TaskCard({ task }: { task: Task }) {
   );
 }
 
-const renderCard = (task: Task) => <TaskCard task={task} />;
+const renderCard = (task: Task, state: BoardCardState) => <TaskCard task={task} {...state} />;
 const getColumn = (task: Task) => task.column;
 const getLane = (task: Task) => task.lane;
 const getTextValue = (task: Task) => task.title;

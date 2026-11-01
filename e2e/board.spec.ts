@@ -50,9 +50,15 @@ test.describe('Board lab', () => {
     await expect(empty.locator('.ui-board__empty')).toHaveText('No cards');
     const collapsed = cell('collapsed');
     await expect(collapsed.locator('.ui-board__column[data-collapsed]')).toHaveCount(1);
-    await expect(collapsed.getByRole('grid', { name: 'Doing' })).toHaveCount(0);
+    await expect(collapsed.getByRole('grid', { name: 'Doing' }).getByRole('row')).toHaveText([
+      'Trim the hedge',
+      'Fit a spice shelf',
+    ]);
     await collapsed.getByRole('button', { name: 'Expand Doing' }).click();
-    await expect(collapsed.getByRole('grid', { name: 'Doing' })).toBeVisible();
+    await expect(collapsed.getByRole('grid', { name: 'Doing' }).getByRole('row')).toHaveText([
+      'Trim the hedge',
+      'Fit a spice shelfBlocked',
+    ]);
     await lab.expectAccessible();
   });
 
@@ -368,5 +374,90 @@ test.describe('Board lab', () => {
     );
     expect(await titles(board)).toEqual(['Doing', 'Review', 'Done', 'To do']);
     await expect(header('To do')).toHaveAttribute('data-collapsed', 'true');
+  });
+
+  test("UIC-BOARD-1.4 draws a collapsed column's cards within its width, at 44px and wider", async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('board');
+    const fits = async (name: string, width: number) => {
+      const board = demo(page, name).locator('.ui-board');
+      const cells = await board.locator('.ui-board__cell[data-collapsed]').evaluateAll((nodes) =>
+        nodes.map((cell) => {
+          const box = cell.getBoundingClientRect();
+          const cards = [...cell.querySelectorAll('.ui-board__card')].map((card) => {
+            const inner = card.getBoundingClientRect();
+            return {
+              inside: inner.left >= box.left - 0.5 && inner.right <= box.right + 0.5,
+              clipped: card.scrollWidth <= card.clientWidth,
+            };
+          });
+          return { width: box.width, cards };
+        }),
+      );
+      expect(cells.length).toBeGreaterThan(0);
+      for (const cell of cells) {
+        expect(Math.round(cell.width)).toBe(width);
+        for (const card of cell.cards) expect(card).toEqual({ inside: true, clipped: true });
+      }
+      return cells.flatMap((cell) => cell.cards).length;
+    };
+    const board = demo(page, 'lanes');
+    await board.getByRole('button', { name: 'Collapse To do' }).click();
+    expect(await fits('lanes', 44)).toBe(3);
+    await expect(board.getByRole('row', { name: 'Order seeds' })).toBeVisible();
+    await expect(board.locator('.ui-board__cell[data-collapsed] .ui-board__add')).toHaveCount(0);
+    // A host widens collapsed columns; the header and the cards follow.
+    await page.addStyleTag({
+      content:
+        '.ui-board__column[data-collapsed], .ui-board__cell[data-collapsed] { width: 110px; }',
+    });
+    expect(await fits('lanes', 110)).toBe(3);
+    // A collapsed lane still hides its cells, and the columns stay aligned across lanes.
+    await board.getByRole('button', { name: 'Collapse Kitchen' }).click();
+    expect(await fits('lanes', 110)).toBe(2);
+    await lab.expectAccessible('[data-lab-demo="lanes"]');
+  });
+
+  test('UIC-BOARD-2.2 UIC-BOARD-2.3 moves cards into and out of a collapsed column', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('board');
+    const board = demo(page, 'moves');
+    await board.getByRole('button', { name: 'Collapse Review' }).click();
+    await cards(board, 'Doing')
+      .first()
+      .dragTo(board.getByRole('grid', { name: 'Review' }), { targetPosition: { x: 20, y: 80 } });
+    await expect(cards(board, 'Review')).toHaveCount(2);
+    const moved = cards(board, 'Review').last();
+    await expect(moved).toBeVisible();
+    await moved.focus();
+    await page.keyboard.press('Alt+ArrowRight');
+    await expect(cards(board, 'Review')).toHaveCount(1);
+    await page.keyboard.press('Alt+ArrowLeft');
+    await expect(cards(board, 'Review')).toHaveCount(2);
+    await expect(board.locator('.ui-board__column[data-collapsed]')).toHaveCount(1);
+  });
+
+  test('UIC-BOARD-1.4 UIC-BOARD-1.7 keeps a collapsed virtualized cell rendering its cards in view', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('board');
+    const board = demo(page, 'virtualized');
+    const grid = board.getByRole('grid', { name: 'To do' });
+    await grid.evaluate((element) => element.scrollTo(0, element.scrollHeight / 2));
+    const top = await grid.evaluate((element) => element.scrollTop);
+    await board.getByRole('button', { name: 'Collapse To do' }).click();
+    await expect(grid).toHaveAttribute('data-virtualized', 'true');
+    const count = await grid.getByRole('row').count();
+    expect(count).toBeGreaterThan(0);
+    expect(count).toBeLessThan(60);
+    await board.getByRole('button', { name: 'Expand To do' }).click();
+    expect(Math.abs((await grid.evaluate((element) => element.scrollTop)) - top)).toBeLessThan(400);
+    await grid.evaluate((element) => element.scrollTo(0, element.scrollHeight));
+    await expect(grid.getByRole('row', { name: 'Inventory item 500' })).toBeVisible();
   });
 });
