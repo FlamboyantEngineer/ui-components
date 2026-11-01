@@ -82,6 +82,77 @@ describe('resolveLineGeometry', () => {
     ]);
   });
 
+  it.each([
+    ['an unreadable date', ['2026-01-01', '2026-01-02', 'not-a-date']],
+    ['a number on a date axis', ['2026-01-01', '2026-01-02', 7]],
+    ['a text value on a number axis', [1, 2, '2026-01-03']],
+    ['a number that is not finite', [1, 2, Number.NaN]],
+  ] as const)('UIC-CHART-6.3 leaves %s out of the value axis', (_, xs) => {
+    const geometry = resolveLineGeometry({
+      ...base,
+      series: [
+        {
+          series: 0,
+          id: 0,
+          points: [
+            { x: xs[0], y: 1 },
+            { x: xs[1], y: 2 },
+            { x: xs[2], y: 1e9 },
+          ],
+        },
+      ],
+    });
+    expect(geometry.yTicks.at(-1)?.value).toBe(2);
+    expect(geometry.lines[0]?.points.map((point) => point.y)).toEqual([60, 10]);
+  });
+
+  it('UIC-CHART-6.2 UIC-CHART-6.3 keeps a missing value at a readable x as a break', () => {
+    const geometry = resolveLineGeometry({
+      ...base,
+      series: [
+        {
+          series: 0,
+          id: 0,
+          points: [
+            { x: 0, y: 4 },
+            { x: 1, y: Number.NaN },
+            { x: 2, y: 2 },
+            { x: 'late', y: 100 },
+          ],
+        },
+      ],
+    });
+    expect(geometry.yTicks.at(-1)?.value).toBe(4);
+    expect(geometry.lines[0]?.line.match(/M/g)).toHaveLength(2);
+  });
+
+  it('UIC-CHART-6.3 keeps a fixed range and an all-unreadable series apart from this', () => {
+    const fixed = createLineValueScale(
+      {
+        ...base,
+        maxValue: 50,
+        series: [
+          {
+            series: 0,
+            id: 0,
+            points: [
+              { x: 0, y: 1 },
+              { x: 'late', y: 1e9 },
+            ],
+          },
+        ],
+      },
+      { top: 10, right: 110, bottom: 110, left: 10 },
+    );
+    expect(fixed.domain).toEqual([0, 50]);
+    const unreadable = resolveLineGeometry({
+      ...base,
+      series: [{ series: 0, id: 0, points: [{ x: 'late', y: 1e9 }] }],
+    });
+    expect(unreadable.lines[0]?.points).toEqual([]);
+    expect(unreadable.yTicks.at(-1)?.value).toBeLessThanOrEqual(1);
+  });
+
   it('UIC-CHART-6.3 keeps values beyond a fixed range at its edges', () => {
     const geometry = resolveLineGeometry({
       ...base,

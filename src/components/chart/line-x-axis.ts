@@ -51,10 +51,27 @@ function findExtent(values: readonly LineChartX[], read: (value: LineChartX) => 
   return extent;
 }
 
+/** Reads x values as dates in `timeZone`; anything else is unreadable. */
+const createTimeReader = (timeZone: string) => (value: LineChartX) =>
+  typeof value === 'string' ? readTimeInstant(value, timeZone) : Number.NaN;
+
+/** Reads x values as numbers; anything else is unreadable. */
+const readNumber = (value: LineChartX) => (typeof value === 'number' ? value : Number.NaN);
+
+/**
+ * How a line chart reads its x values, as `createLineXAxis` does: the kind follows the first value,
+ * and a value it cannot read is `NaN`.
+ */
+export function createLineXReader(
+  values: readonly LineChartX[],
+  timeZone: string,
+): (value: LineChartX) => number {
+  return typeof values[0] === 'number' ? readNumber : createTimeReader(timeZone);
+}
+
 function createTimeAxis(options: LineXAxisOptions): LineXAxis {
   const { range, timeZone, locale, tickCount } = options;
-  const read = (value: LineChartX) =>
-    typeof value === 'string' ? readTimeInstant(value, timeZone) : Number.NaN;
+  const read = createTimeReader(timeZone);
   const extent = findExtent(options.values, read) as readonly [string, string] | undefined;
   const scale = createTimeScale({ domain: extent ?? ['', ''], range, timeZone, locale });
   const date = getDateTimeFormat(locale, { dateStyle: 'medium', timeZone });
@@ -76,7 +93,7 @@ function createTimeAxis(options: LineXAxisOptions): LineXAxis {
 }
 
 function createNumberAxis(options: LineXAxisOptions): LineXAxis {
-  const read = (value: LineChartX) => (typeof value === 'number' ? value : Number.NaN);
+  const read = readNumber;
   const extent = findExtent(options.values, read) as readonly [number, number] | undefined;
   const scale = createLinearScale({
     domain: extent ?? [0, 0],
