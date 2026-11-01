@@ -561,7 +561,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Filter in the list header"
-      description="Click the text field above the list and type: it keeps focus and narrows the cities. Escape first puts back a filter you have not confirmed with Enter, and the list stays open; Escape on a confirmed filter closes the list and returns to the combobox."
+      description="Click the text field above the list and type: it keeps focus and narrows the cities. Escape first puts back a filter you have not confirmed with Enter, and the list stays open; Escape on a confirmed filter closes the list and returns to the combobox. The header ends 6px below the field, with no empty message line, populated or empty."
     >
       <HeaderFilter />
     </LabSection>
