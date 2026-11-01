@@ -76,6 +76,27 @@ describe('RecordHeader', { timeout: 15_000 }, () => {
     expect(onTitleChange).toHaveBeenCalledWith('Wire cooling rack');
   });
 
+  it('UIC-RECORD-HEADER-1.3 keeps a title draft with the record it was typed for', async () => {
+    const user = userEvent.setup();
+    const saveA = vi.fn();
+    const saveB = vi.fn();
+    const { rerender } = render(
+      <RecordHeader identifier="REC-A" title="Record A" onTitleChange={saveA} />,
+    );
+    await user.click(screen.getByRole('button', { name: /^Edit Title/ }));
+    await user.keyboard('{Control>}a{/Control}Draft for A');
+    rerender(<RecordHeader identifier="REC-A" title="Record A renamed" onTitleChange={saveA} />);
+    expect(screen.getByRole('textbox', { name: 'Title' })).toHaveValue('Draft for A');
+    rerender(<RecordHeader identifier="REC-B" title="Record B" onTitleChange={saveB} />);
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Edit Title/ })).toHaveTextContent('Record B');
+    await user.click(screen.getByRole('button', { name: /^Edit Title/ }));
+    expect(screen.getByRole('textbox', { name: 'Title' })).toHaveValue('Record B');
+    await user.keyboard('{Enter}');
+    expect(saveA).not.toHaveBeenCalled();
+    expect(saveB).not.toHaveBeenCalled();
+  });
+
   it('UIC-RECORD-HEADER-1.3 shows a placeholder for an empty editable title', () => {
     render(
       <RecordHeader

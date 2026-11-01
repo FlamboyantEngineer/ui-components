@@ -68,27 +68,37 @@ const states: TransitionMenuState[] = [
 
 /** A requirement's header: an editable title that saves after a moment, its state and actions. */
 function RequirementHeader() {
-  const [title, setTitle] = useState('Cooling rack holds twelve loaves');
+  const [titles, setTitles] = useState<Record<string, string>>({
+    'REQ-42': 'Cooling rack holds twelve loaves',
+    'REQ-43': 'Proofing basket lined with linen',
+  });
+  const [identifier, setIdentifier] = useState('REQ-42');
   const [state, setState] = useState<Key>('open');
   const [log, setLog] = useState('Nothing yet');
-  const saveTitle = (next: string) =>
+  // Each save names the record it was asked for, so a save still running after the header moves
+  // on lands on its own record.
+  const saveTitle = (record: string) => (next: string) =>
     new Promise<void>((resolve, reject) => {
       window.setTimeout(() => {
         if (!next.trim()) {
           reject(new Error('A title is required.'));
           return;
         }
-        setTitle(next);
+        setTitles((current) => ({ ...current, [record]: next }));
         resolve();
       }, 400);
     });
+  const nextRecord = identifier === 'REQ-42' ? 'REQ-43' : 'REQ-42';
   return (
     <div data-lab-demo="requirement">
+      <button type="button" onClick={() => setIdentifier(nextRecord)}>
+        Show {nextRecord}
+      </button>
       <RecordHeader
-        identifier="REQ-42"
+        identifier={identifier}
         icon={FolderGlyph}
-        title={title}
-        onTitleChange={saveTitle}
+        title={titles[identifier] ?? ''}
+        onTitleChange={saveTitle(identifier)}
         headingLevel={3}
         status={
           <TransitionMenu
@@ -138,7 +148,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="A requirement"
-      description="Copy the identifier, rename the title in place (an empty title is refused), move the state and use the actions."
+      description="Copy the identifier, rename the title in place (an empty title is refused), move the state and use the actions. Show the other record while a rename saves: the save lands on its own record, and the header starts the other record's title afresh."
     >
       <RequirementHeader />
     </LabSection>
