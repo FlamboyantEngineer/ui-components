@@ -16,7 +16,7 @@ import { stackAnnotationCards } from './stack-cards.js';
 export interface AnnotationCardState {
   /** The annotation is the active one. */
   isActive: boolean;
-  /** Its anchor is gone: it has no rectangles and no target element in the layer. */
+  /** Its anchor is gone: it has no rectangles and no target element in the layer; a target scrolled or clipped out of view is not gone. */
   isOrphaned: boolean;
 }
 
@@ -86,12 +86,9 @@ export function AnnotationMargin({
   const { geometry, cards, register } = useMarginGeometry(margin, layer);
   const byId = new Map(anchors.map((anchor) => [anchor.annotation.id, anchor.annotation]));
   const placements = stackAnnotationCards(
-    anchors.map(({ annotation, rects }) => ({
+    anchors.map(({ annotation, top }) => ({
       id: annotation.id,
-      anchorTop:
-        rects.length === 0
-          ? null
-          : rects.reduce((top, rect) => Math.min(top, rect.top), Infinity) - geometry.offset,
+      anchorTop: top === null ? null : top - geometry.offset,
       height: geometry.heights.get(annotation.id) ?? 0,
     })),
     { currentKey, gap },

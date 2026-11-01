@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { toAnchorTop } from './anchor-geometry.js';
 import { AnnotationContext } from './annotation-context.js';
 import { AnnotationMargin } from './annotation-margin.js';
 
@@ -14,7 +15,7 @@ describe('AnnotationMargin', () => {
     render(
       <AnnotationContext
         value={{
-          anchors: [{ annotation: { id: 'note' }, rects }],
+          anchors: [{ annotation: { id: 'note' }, rects, top: toAnchorTop(rects) }],
           currentKey: null,
           setCurrentKey: () => {},
           layer: null,

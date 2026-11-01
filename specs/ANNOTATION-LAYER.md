@@ -32,11 +32,18 @@ The layer shall measure its target elements again, and so redraw their marks and
 Implementation: `src/components/annotation-layer/annotation-layer.tsx`, `src/components/annotation-layer/observe-targets.ts`
 Verification: `src/components/annotation-layer/annotation-layer.test.tsx`, `e2e/annotation-layer.spec.ts`
 
+### UIC-ANNOTATION-LAYER-1.5 - Clipped anchors
+
+An anchor measured from a target element shall show only what the elements between the target and the layer let show: each of its boxes is cut to the area inside the border and scrollbars of every such element whose `overflow` clips (anything other than `visible`, on each axis on its own), and a box none of which shows is left out. The marks and hit testing use the same visible parts, so a press on content over a clipped part activates nothing. An anchor scrolled or clipped wholly out of view draws no mark and cannot be pressed, but keeps its annotation: its card is not orphaned and stays level with where the anchor is (the top of its visible parts, else of its boxes). Scrolling it back into view draws it again. The layer's own overflow clips its marks as it clips its content, and caller `rects` are drawn as given.
+
+Implementation: `src/components/annotation-layer/anchor-clip.ts`, `src/components/annotation-layer/anchor-geometry.ts`, `src/components/annotation-layer/annotation-layer.tsx`
+Verification: `src/components/annotation-layer/annotation-layer.test.tsx`, `e2e/annotation-layer.spec.ts`
+
 ## UIC-ANNOTATION-LAYER-2 - Margin
 
 ### UIC-ANNOTATION-LAYER-2.1 - Cards
 
-`AnnotationMargin` shall render a `ui-annotation-layer__margin` element (`role="list"`, named by the caller's labelling props or the provider's `annotations` string) holding one `ui-annotation-layer__card` (`role="listitem"`) per annotation of the layer around it, in the order of their anchors from the top and then the annotations without an anchor. Each card holds what `renderCard(annotation, { isActive, isOrphaned })` returns and publishes `data-active` for the active annotation and `data-orphaned` for one without an anchor. A margin outside an `AnnotationLayer` throws.
+`AnnotationMargin` shall render a `ui-annotation-layer__margin` element (`role="list"`, named by the caller's labelling props or the provider's `annotations` string) holding one `ui-annotation-layer__card` (`role="listitem"`) per annotation of the layer around it, in the order of their anchors from the top and then the annotations without an anchor. Each card holds what `renderCard(annotation, { isActive, isOrphaned })` returns and publishes `data-active` for the active annotation and `data-orphaned` for one without an anchor (a target scrolled or clipped out of view still is one, UIC-ANNOTATION-LAYER-1.5). A margin outside an `AnnotationLayer` throws.
 
 Numeric and text IDs, such as `1` and `'1'`, identify distinct entries, for the cards and for the layer's marks; removing one preserves the other entry's rendered card and marks.
 
@@ -49,7 +56,7 @@ Verification: `src/components/annotation-layer/annotation-layer.test.tsx`, `e2e/
 
 Finding an anchor’s first rectangle shall use a reduction without allocating a list of tops or depending on an argument limit.
 
-Implementation: `src/components/annotation-layer/stack-cards.ts`, `src/components/annotation-layer/annotation-margin.tsx`
+Implementation: `src/components/annotation-layer/stack-cards.ts`, `src/components/annotation-layer/annotation-margin.tsx`, `src/components/annotation-layer/anchor-geometry.ts`
 Verification: `src/components/annotation-layer/annotation-margin.test.tsx`, `src/components/annotation-layer/stack-cards.test.ts`, `src/components/annotation-layer/annotation-layer.test.tsx`, `e2e/annotation-layer.spec.ts`
 
 ### UIC-ANNOTATION-LAYER-2.3 - Measuring
