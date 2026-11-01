@@ -12,7 +12,6 @@ export {
   OverlayTriggerStateContext,
   Popover,
   PopoverContext,
-  PreviewTrigger,
   Sheet,
   SheetBackdrop,
   SheetContent,
@@ -29,7 +28,7 @@ export {
   UNSTABLE_ToastRegion,
   UNSTABLE_ToastStateContext,
 } from 'react-aria-components';
-export { useOverlayTriggerState, useTooltipTriggerState } from 'react-stately';
+export { useOverlayTriggerState } from 'react-stately';
 export type {
   Placement,
   QueuedToast,

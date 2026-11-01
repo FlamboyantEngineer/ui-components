@@ -22,14 +22,17 @@ async function retainedIcons(contents: string) {
 }
 
 describe('icon tree shaking', () => {
-  it('UIC-ICON-1.1 retains no default icons for a Button-only entry point', async () => {
+  // Button draws the external-link glyph itself, after the label of a link that opens a new tab
+  // (UIC-BUTTON-1.9), so that glyph is the only one a Button keeps.
+  it('UIC-ICON-1.1 retains only the glyph Button draws itself for a Button-only entry point', async () => {
     expect(
       await retainedIcons("export { Button } from './src/components/button/index.ts'"),
-    ).toEqual([]);
+    ).toEqual(['arrowTopRightOnSquarePath']);
   });
 
   it('UIC-ICON-1.1 retains only the requested icon through the package root', async () => {
     expect(await retainedIcons("export { Button, PlusGlyph } from './src/index.ts'")).toEqual([
+      'arrowTopRightOnSquarePath',
       'plusPath',
     ]);
   });
