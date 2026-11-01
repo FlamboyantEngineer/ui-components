@@ -1,5 +1,7 @@
 // Which facet values a facet list shows: matched by the search, selected first, folded past a limit.
 
+import { normalizeMatchText } from '../text-match/match-ranges.js';
+
 /** One value of a facet. */
 export interface FacetListOption {
   /** The stored value. */
@@ -39,9 +41,9 @@ export function listFacetOptions({
   limit,
   isExpanded,
 }: FacetOptionsQuery): FacetOptions {
-  const needle = query.trim().toLowerCase();
+  const needle = normalizeMatchText(query.trim());
   const matches = needle
-    ? options.filter((option) => option.label.toLowerCase().includes(needle))
+    ? options.filter((option) => normalizeMatchText(option.label).includes(needle))
     : [...options];
   const first = new Set(firstValues ?? []);
   const ordered = [

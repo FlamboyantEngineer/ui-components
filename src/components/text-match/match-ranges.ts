@@ -61,6 +61,15 @@ export function findWordMatches(text: string, term: string): number[] {
   return positions;
 }
 
+/**
+ * Text as matching compares it without case: composed (NFC), lower case and composed again, so a
+ * letter written with combining marks equals its composed form and `ẞ` equals `ß`. Unlike
+ * `normalizeMatchText`, it keeps accents and separators, for comparing whole labels.
+ */
+export function foldMatchCase(text: string): string {
+  return text.normalize('NFC').toLowerCase().normalize('NFC');
+}
+
 /** One character cluster as matching sees it: composed or accent-free, lower case, separators as spaces. */
 function foldCluster(cluster: string, ignoreAccents: boolean): string {
   const base = ignoreAccents

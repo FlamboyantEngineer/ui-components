@@ -144,7 +144,11 @@ function Multiple() {
 }
 
 function Creatable() {
-  const [options, setOptions] = useState<ComboboxOption[]>(cities.slice(0, 5));
+  // Zürich is written with a combining mark: typing it composed finds it and offers no Add row.
+  const [options, setOptions] = useState<ComboboxOption[]>(() => [
+    ...cities.slice(0, 5),
+    { id: 'zurich', label: 'Zu\u0308rich' },
+  ]);
   const [chosen, setChosen] = useState<Key | null>(null);
   return (
     <>
@@ -482,7 +486,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Adding an option"
-      description="Text that no option has as label offers an Add row, which adds the city and selects it."
+      description="Text that no option has as label offers an Add row, which adds the city and selects it. Zürich is listed with a combining mark, so typing zürich offers no Add row."
     >
       <Creatable />
     </LabSection>

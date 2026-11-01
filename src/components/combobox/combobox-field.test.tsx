@@ -3,7 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { Combobox, type ComboboxItem } from './combobox.js';
 import { flattenPickerItems } from '../field/field.js';
-import { findCompletion, findFirstOptionKey } from './combobox-options.js';
+import { findCompletion, findFirstOptionKey, hasOptionLabelled } from './combobox-options.js';
 
 const fruit: ComboboxItem[] = [
   { id: 'grape', label: 'Grape' },
@@ -126,6 +126,15 @@ describe('Combobox entry', () => {
     expect(findCompletion(options, 'apr')).toBeNull();
     expect(findCompletion(options, 'apple')).toBeNull();
     expect(findCompletion(options, '')).toBeNull();
+    // A label written with combining marks completes a composed prefix, keeping the typed text.
+    const decomposed = [{ id: 'creme', label: 'Cre\u0300me fraîche' }];
+    expect(findCompletion(decomposed, 'crè')).toEqual({
+      typed: 'crè',
+      text: 'crème fraîche',
+      key: 'creme',
+    });
+    expect(hasOptionLabelled(decomposed, ' CRÈME FRAÎCHE ')).toBe(true);
+    expect(hasOptionLabelled(decomposed, 'creme fraiche')).toBe(false);
     const collection = {
       *[Symbol.iterator]() {
         yield { key: 'citrus', type: 'section' };

@@ -263,9 +263,16 @@ test.describe('Combobox lab', () => {
       'Oslo',
       'Cairo',
       'Quito',
+      'Zu\u0308rich',
       'Kyoto',
       'Add “ky”',
     ]);
+    // Zürich is written with a combining mark; typed composed, it is already listed.
+    await page.keyboard.press('Control+A');
+    await page.keyboard.type('ZÜRICH');
+    await expect(input).toHaveValue('ZÜRICH');
+    await expect(page.getByRole('listbox')).toBeVisible();
+    await expect(page.locator('.ui-combobox__create')).toHaveCount(0);
   });
 
   test('UIC-COMBOBOX-3.4 keeps the caret of an edit inside the text', async ({ page, lab }) => {

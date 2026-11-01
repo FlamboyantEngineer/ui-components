@@ -31,6 +31,17 @@ describe('listFacetOptions', () => {
     expect(listFacetOptions({ ...base, query: 'zz' }).matchCount).toBe(0);
   });
 
+  it('UIC-FACET-LIST-1.3 matches values whatever their composition and case', () => {
+    const spelled = [
+      { value: 'quebec', label: 'Que\u0301bec' },
+      { value: 'strasse', label: 'Hauptstraße' },
+    ];
+    const search = (query: string) =>
+      labels(listFacetOptions({ ...base, options: spelled, query }));
+    expect(search('QUÉBEC')).toEqual(['Que\u0301bec']);
+    expect(search('STRAẞE')).toEqual(['Hauptstraße']);
+  });
+
   it('UIC-FACET-LIST-1.5 lists the first values first, in option order', () => {
     expect(labels(listFacetOptions({ ...base, firstValues: ['perth', 'oslo'] }))).toEqual([
       'Oslo',
