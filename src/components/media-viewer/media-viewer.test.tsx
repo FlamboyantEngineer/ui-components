@@ -217,6 +217,19 @@ describe('MediaViewer', () => {
     });
   });
 
+  it('UIC-MEDIA-VIEWER-1.3 shows the type glyph once a thumbnail fails', () => {
+    render(<Viewer />);
+    const strip = screen.getByRole('group', { name: 'Thumbnails' });
+    const harbour = within(strip).getByRole('button', { name: 'Harbour.jpg' });
+    const image = harbour.querySelector('img') as HTMLImageElement;
+    expect(image).toHaveAttribute('loading', 'lazy');
+    fireEvent.error(image);
+    expect(harbour.querySelector('img')).toBeNull();
+    expect(harbour.querySelector('[data-glyph="image"]')).toHaveClass(
+      'ui-media-viewer__thumbnail-icon',
+    );
+  });
+
   it('UIC-MEDIA-VIEWER-1.4 moves with the arrow keys and zooms with + and -', async () => {
     const user = userEvent.setup();
     render(<Viewer />);

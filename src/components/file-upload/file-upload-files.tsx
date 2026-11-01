@@ -14,6 +14,7 @@ import { Button } from '../button/button.js';
 import { Icon } from '../icon/icon.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import { ProgressBar } from '../progress-bar/progress-bar.js';
+import { FallbackImage } from '../../utils/fallback-image.js';
 
 /** How a listed file differs from a list the owner compares against: `added` by an edit. */
 export type FileUploadChange = 'added';
@@ -127,11 +128,22 @@ function FilePreview({
   const url = useImageUrl(item.file) ?? item.previewUrl;
   const custom = renderFilePreview?.(item);
   if (!isEmptyNode(custom)) return <div {...hooks.slot('file-media')}>{custom}</div>;
-  if (url) return <img {...hooks.slot('file-preview')} src={url} alt="" />;
-  return (
+  const glyph = (
     <Icon
       icon={getFileGlyph(item.type ?? item.file?.type)}
       className={hooks.slotClass('file-icon')}
+    />
+  );
+  if (!url) return glyph;
+  // Decoded only near the view and off the main thread; one the browser cannot decode shows the glyph.
+  return (
+    <FallbackImage
+      {...hooks.slot('file-preview')}
+      src={url}
+      alt=""
+      loading="lazy"
+      decoding="async"
+      fallback={glyph}
     />
   );
 }

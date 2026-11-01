@@ -11,6 +11,7 @@ import { Button } from '../button/button.js';
 import { Icon } from '../icon/icon.js';
 import { Link } from '../link/link.js';
 import { ZoomControl } from '../zoom-control/zoom-control.js';
+import { FallbackImage } from '../../utils/fallback-image.js';
 
 /** One file a media viewer shows: an image it draws itself, or another file the caller renders. */
 export interface MediaViewerItem {
@@ -133,6 +134,9 @@ export function MediaThumbnails({
     <div {...hooks.slot('thumbnails')} role="group" aria-label={strings.thumbnails}>
       {items.map((item) => {
         const url = item.thumbnailUrl ?? (isImageItem(item) ? item.src : undefined);
+        const glyph = (
+          <Icon icon={getFileGlyph(item.type)} className={hooks.slotClass('thumbnail-icon')} />
+        );
         return (
           <Button
             key={toKeyIdentity(item.id)}
@@ -143,16 +147,18 @@ export function MediaThumbnails({
             onPress={() => onSelect(item.id)}
           >
             {url ? (
-              // Thumbnails out of the strip's view wait until it scrolls them near.
-              <img
+              // Thumbnails out of the strip's view wait until it scrolls them near; a failed one
+              // shows the type glyph.
+              <FallbackImage
                 {...hooks.slot('thumbnail-image')}
                 src={url}
                 alt=""
                 loading="lazy"
                 decoding="async"
+                fallback={glyph}
               />
             ) : (
-              <Icon icon={getFileGlyph(item.type)} className={hooks.slotClass('thumbnail-icon')} />
+              glyph
             )}
           </Button>
         );
