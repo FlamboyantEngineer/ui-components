@@ -50,6 +50,8 @@ type DragKind = 'select' | 'fill';
 /** What a gesture started from; a change to any of them ends it. */
 interface DragOrigin<T> {
   kind: DragKind;
+  /** The pointer that pressed; only it extends, ends or cancels the gesture. */
+  pointerId: number;
   mode: TableCellSelectionMode;
   grid: CellGrid<T>;
   range: TableCellRange | null;
@@ -93,7 +95,7 @@ function useCellDrag<T extends TableRow>(options: CellPointerOptions<T>) {
   const begin = (kind: DragKind, event: PointerEvent<HTMLElement>) => {
     stop.current?.();
     const { mode, grid, range } = latestRef.current;
-    drag.current = { kind, mode, grid, range };
+    drag.current = { kind, pointerId: event.pointerId, mode, grid, range };
     const end = (shouldCommit: boolean) => {
       stop.current = null;
       finish(shouldCommit);
@@ -105,9 +107,9 @@ function useCellDrag<T extends TableRow>(options: CellPointerOptions<T>) {
       onCancel: () => end(false),
     });
   };
-  const extend = (position: TableCellPosition) => {
+  const extend = (position: TableCellPosition, pointerId: number) => {
     const { grid, range, bounds, setRange } = latestRef.current;
-    if (!drag.current || !range) return;
+    if (drag.current?.pointerId !== pointerId || !range) return;
     if (drag.current.kind === 'select') {
       setRange({ anchor: range.anchor, focus: position });
       return;
@@ -175,7 +177,7 @@ export function useCellPointer<T extends TableRow>(options: CellPointerOptions<T
   const onPointerOver = (event: PointerEvent<HTMLElement>) => {
     const cell = findDataCell(event.target, event.currentTarget);
     const position = cell ? readCellPosition(grid, cell) : null;
-    if (position) drag.extend(position);
+    if (position) drag.extend(position, event.pointerId);
   };
   return {
     fillBounds: drag.fillBounds,

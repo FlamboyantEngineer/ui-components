@@ -491,7 +491,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Spreadsheet mode"
-      description="Select ranges with Shift, copy and paste, type to edit, fill with the handle or Ctrl+D and Ctrl+R, Delete to clear. Cancelling a fill leaves the cells unchanged. In the one-cell table, the Organic switches keep their presses: toggling one selects no cell."
+      description="Select ranges with Shift, copy and paste, type to edit, fill with the handle or Ctrl+D and Ctrl+R, Delete to clear. Cancelling a fill leaves the cells unchanged. On a touch screen, only the finger that started a fill or range drag moves it; a second finger resting on a cell changes nothing. In the one-cell table, the Organic switches keep their presses: toggling one selects no cell."
     >
       <Spreadsheet />
     </LabSection>

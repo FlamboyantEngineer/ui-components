@@ -120,6 +120,21 @@ export function Stepper({
   );
 }
 
+/** A scrub: where it started, the value it last set and the one before, and whether it lost control. */
+interface ScrubGesture {
+  x: number;
+  travelled: number;
+  start: number | null;
+  value: number | null;
+  previous: number | null;
+  isLost: boolean;
+}
+
+/** Whether the field holds a value the scrub set: its latest, or the one before while that renders. */
+function isScrubValue(value: number | null, gesture: ScrubGesture): boolean {
+  return Object.is(value, gesture.value) || Object.is(value, gesture.previous);
+}
+
 /**
  * A handle that steps the value as it is dragged sideways: one step every few pixels, toward the
  * end of the line (right in left-to-right text), by `largeStep` with Shift and `smallStep` with Alt.
@@ -134,16 +149,26 @@ export function NumberScrubber({
   steps: NumberSteps;
 }) {
   const { direction } = useLocale();
-  const drag = usePointerDrag<
-    HTMLSpanElement,
-    { x: number; travelled: number; value: number | null }
-  >({
+  const drag = usePointerDrag<HTMLSpanElement, ScrubGesture>({
     isDisabled: isLocked(state),
     onStart: (event) => {
       event.preventDefault();
-      return { x: event.clientX, travelled: 0, value: state.value };
+      const { value } = state;
+      return {
+        x: event.clientX,
+        travelled: 0,
+        start: value,
+        value,
+        previous: value,
+        isLost: false,
+      };
     },
     onMove: (event, current) => {
+      // A value the gesture neither set nor is still drawing came from the host: it wins.
+      if (current.isLost || !isScrubValue(state.value, current)) {
+        current.isLost = true;
+        return;
+      }
       const travelled =
         current.travelled + (event.clientX - current.x) * (direction === 'rtl' ? -1 : 1);
       const count = Math.trunc(travelled / pixelsPerStep);
@@ -152,12 +177,15 @@ export function NumberScrubber({
       Object.assign(current, {
         x: event.clientX,
         travelled: travelled - count * pixelsPerStep,
+        previous: count === 0 ? current.previous : current.value,
         value,
       });
       if (count !== 0) state.setValue(value);
     },
-    onEnd: () => {
-      if (!isLocked(state)) state.commit();
+    onEnd: (_event, current, isCancelled) => {
+      if (current.isLost || isLocked(state)) return;
+      if (isCancelled) state.setValue(current.start);
+      else state.commit();
     },
   });
   return (

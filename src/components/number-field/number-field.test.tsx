@@ -15,6 +15,19 @@ function message(container: HTMLElement) {
   return container.querySelector('.ui-field__message')?.textContent;
 }
 
+/**
+ * Fires one pointer event with its pointer id: user-event drives a single mouse and cannot cancel
+ * a pointer, which these scrub tests need.
+ */
+function pointer(
+  type: 'pointerDown' | 'pointerMove' | 'pointerUp' | 'pointerCancel',
+  target: Element,
+  clientX: number,
+  pointerId = 3,
+) {
+  fireEvent[type](target, { clientX, pointerId, button: 0, isPrimary: true });
+}
+
 function SavedField(props: Omit<NumberFieldProps, 'label'>) {
   const [saved, setSaved] = useState<number | null>(4);
   return <NumberField label="Weight" committedValue={saved} onCommit={setSaved} {...props} />;
@@ -598,6 +611,59 @@ describe('NumberField', () => {
       expect(onCommit).toHaveBeenCalledExactlyOnceWith(8);
     },
   );
+
+  it('UIC-NUMBER-FIELD-3.3 puts the start value back on a cancelled scrub and follows only its pointer', () => {
+    const onChange = vi.fn();
+    const onCommit = vi.fn();
+    const { container } = render(
+      <NumberField
+        label="Weight"
+        defaultValue={4}
+        showScrubber
+        onChange={onChange}
+        onCommit={onCommit}
+      />,
+    );
+    const scrubber = container.querySelector('.ui-number-field__scrubber') as HTMLElement;
+    const input = screen.getByRole('textbox');
+    pointer('pointerDown', scrubber, 100);
+    pointer('pointerMove', scrubber, 112);
+    expect(input).toHaveValue('7');
+    pointer('pointerMove', scrubber, 140, 9);
+    pointer('pointerUp', scrubber, 140, 9);
+    expect(input).toHaveValue('7');
+    expect(onCommit).not.toHaveBeenCalled();
+    pointer('pointerCancel', scrubber, 112);
+    expect(input).toHaveValue('4');
+    expect(onChange).toHaveBeenLastCalledWith(4);
+    expect(onCommit).not.toHaveBeenCalled();
+    pointer('pointerDown', scrubber, 100);
+    pointer('pointerMove', scrubber, 104);
+    pointer('pointerUp', scrubber, 104);
+    expect(input).toHaveValue('5');
+    expect(onCommit).toHaveBeenCalledExactlyOnceWith(5);
+  });
+
+  it('UIC-NUMBER-FIELD-3.3 abandons a scrub when the host replaces the value', () => {
+    const onChange = vi.fn();
+    const onCommit = vi.fn();
+    const props = { label: 'Weight', showScrubber: true, onChange, onCommit };
+    const { container, rerender } = render(<NumberField {...props} value={4} />);
+    const scrubber = container.querySelector('.ui-number-field__scrubber') as HTMLElement;
+    pointer('pointerDown', scrubber, 100);
+    pointer('pointerMove', scrubber, 104);
+    expect(onChange).toHaveBeenLastCalledWith(5);
+    rerender(<NumberField {...props} value={5} />);
+    pointer('pointerMove', scrubber, 108);
+    expect(onChange).toHaveBeenLastCalledWith(6);
+    rerender(<NumberField {...props} value={40} />);
+    onChange.mockClear();
+    pointer('pointerMove', scrubber, 140);
+    pointer('pointerUp', scrubber, 140);
+    expect(screen.getByRole('textbox')).toHaveValue('40');
+    expect(onChange).not.toHaveBeenCalled();
+    expect(onCommit).not.toHaveBeenCalled();
+  });
 
   it('UIC-NUMBER-FIELD-3.3 scrubs toward the end of the line and not while locked', async () => {
     const user = userEvent.setup();
