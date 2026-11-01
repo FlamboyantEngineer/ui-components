@@ -121,7 +121,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Custom matching"
-      description="The host's filter matches whole words only: “wid” matches nothing, “width” keeps Width."
+      description="The host's filter matches whole words only: “wid” matches nothing, “width” keeps Width, and a lone “/”, which holds no terms, still reaches the filter."
     >
       <div data-lab-whole-words style={{ width: 360 }}>
         <WholeWords />

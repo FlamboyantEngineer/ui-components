@@ -269,4 +269,36 @@ describe('PropertyScope', () => {
     expect(rowByLabel('Grape')).toHaveAttribute('hidden');
     expect(document.querySelector('.ui-property-card')).not.toHaveAttribute('hidden');
   });
+
+  it('UIC-PROPERTY-SCOPE-1.6 calls the filter for a nonblank query that holds no terms', () => {
+    const filter = vi.fn((text: string, query: string) => query === '-' && text.includes('Width'));
+    function Scope({ query }: { query: string }) {
+      return (
+        <PropertyScope query={query} filter={filter}>
+          <PropertySection title="Size">
+            <PropertyGroup heading="Box">
+              <PropertyRow label="Width">1</PropertyRow>
+              <PropertyRow label="Height">2</PropertyRow>
+            </PropertyGroup>
+          </PropertySection>
+        </PropertyScope>
+      );
+    }
+    const { rerender } = render(<Scope query="/" />);
+    expect(filter).toHaveBeenCalledWith('Size Box Width', '/');
+    expect(rowByLabel('Width')).toHaveAttribute('hidden');
+    expect(rowByLabel('Height')).toHaveAttribute('hidden');
+    expect(document.querySelector('.ui-property-section')).toHaveAttribute('hidden');
+    expect(screen.getByRole('status')).toHaveTextContent('/');
+    rerender(<Scope query="_ / " />);
+    expect(screen.getByRole('status')).toHaveTextContent('_ /');
+    rerender(<Scope query="-" />);
+    expect(rowByLabel('Width')).not.toHaveAttribute('hidden');
+    expect(rowByLabel('Height')).toHaveAttribute('hidden');
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
+    filter.mockClear();
+    rerender(<Scope query="  " />);
+    expect(filter).not.toHaveBeenCalled();
+    expect(rowByLabel('Height')).not.toHaveAttribute('hidden');
+  });
 });

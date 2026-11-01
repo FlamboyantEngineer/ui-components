@@ -23,8 +23,13 @@ export type PropertyScopeFilter = (text: string, query: string) => boolean;
 
 /** What one level of a property panel hands to the parts inside it. */
 interface PropertyScopeValue {
-  /** The active query's normalized terms; empty while nothing filters. */
+  /** The query's normalized terms, which the default matching needs every one of. */
   terms: readonly string[];
+  /**
+   * Whether a query is active: one with terms, or with the caller's filter any nonblank one, even
+   * one such as `/` that holds no terms.
+   */
+  isFiltering: boolean;
   /** The query as typed. */
   query: string;
   /** The caller's matching, when it replaces the terms'. */
@@ -48,6 +53,7 @@ interface PropertyScopeLevel {
 
 export const PropertyScopeContext = createContext<PropertyScopeValue>({
   terms: [],
+  isFiltering: false,
   query: '',
   filter: undefined,
   path: '',
@@ -108,7 +114,7 @@ export function usePropertyScopeLevel(text: string | undefined): PropertyScopeLe
     () => ({ ...parent, path: joinScopeText([parent.path, text]), report }),
     [parent, text, report],
   );
-  return { parent, value, total, isFiltering: parent.terms.length > 0 };
+  return { parent, value, total, isFiltering: parent.isFiltering };
 }
 
 /**
@@ -119,7 +125,7 @@ export function matchesPropertyScope(
   scope: PropertyScopeValue,
   texts: ReadonlyArray<string | undefined>,
 ): boolean {
-  if (scope.terms.length === 0) return true;
+  if (!scope.isFiltering) return true;
   const text = joinScopeText([scope.path, ...texts]);
   return scope.filter ? scope.filter(text, scope.query) : textMatchesTerms(text, scope.terms);
 }

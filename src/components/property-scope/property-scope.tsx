@@ -44,12 +44,13 @@ export function PropertyScope({
 }: PropertyScopeProps) {
   const strings = useUiStrings();
   const terms = useMemo(() => splitMatchTerms(query), [query]);
+  const isFiltering = filter ? query.trim() !== '' : terms.length > 0;
   const { report, total } = usePropertyTallies();
   const value = useMemo(
-    () => ({ terms, query, filter, path: '', report }),
-    [terms, query, filter, report],
+    () => ({ terms, isFiltering, query, filter, path: '', report }),
+    [terms, isFiltering, query, filter, report],
   );
-  const hasNoMatch = terms.length > 0 && total.matches === 0;
+  const hasNoMatch = isFiltering && total.matches === 0;
 
   return (
     <div {...rest} {...hooks.root({ className })}>

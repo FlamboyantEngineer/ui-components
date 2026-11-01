@@ -86,6 +86,9 @@ test.describe('Property Scope lab', () => {
     await search.fill('width');
     await expect(row(area, 'Width')).toBeVisible();
     await expect(row(area, 'Height')).toBeHidden();
+    await search.fill('/');
+    await expect(row(area, 'Width')).toBeHidden();
+    await expect(area.locator('.ui-property-scope__status')).toContainText('No properties match');
     await lab.expectAccessible('[data-lab-whole-words]');
   });
 });

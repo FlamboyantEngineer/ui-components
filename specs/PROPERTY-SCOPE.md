@@ -41,7 +41,7 @@ Verification: `src/components/property-scope/property-scope.test.tsx`
 
 ### UIC-PROPERTY-SCOPE-1.6 - Custom matching
 
-With `filter`, a row shall match while `filter(text, query)` returns true, where `text` joins the texts [UIC-PROPERTY-SCOPE-1.1](#uic-property-scope-11---matching-rows) names with single spaces and `query` is the query as typed, in place of holding every term; a card's name is matched the same way. A blank query still filters nothing, and marks still show the query's terms.
+With `filter`, a row shall match while `filter(text, query)` returns true, where `text` joins the texts [UIC-PROPERTY-SCOPE-1.1](#uic-property-scope-11---matching-rows) names with single spaces and `query` is the query as typed, in place of holding every term; a card's name is matched the same way. Any nonblank query is then active, also one such as `/`, `_` or `-` that holds no terms, for rows, cards, containers and the no-match message alike; a blank query still filters nothing, and marks still show the query's terms.
 
 Implementation: `src/components/property-scope/property-scope.tsx`, `src/components/property-scope/scope-tally.ts`
 Verification: `src/components/property-scope/property-scope.test.tsx`, `e2e/property-scope.spec.ts`
