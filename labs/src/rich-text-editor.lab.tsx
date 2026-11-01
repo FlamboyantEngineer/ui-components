@@ -16,6 +16,7 @@ import {
   ShiftingEditor,
   LockedChromeEditor,
   LongDocumentEditor,
+  PreviewLabelsEditor,
   shortNote,
   taskNote,
 } from './rich-text-editor-cases.js';
@@ -72,6 +73,14 @@ mountLab(
       description="Type a slash and a command label or keyword; equally good matches keep their menu order."
     >
       <FullEditor />
+    </LabSection>
+    <LabSection
+      title="Block type labels"
+      description={
+        'FormatToolbar blockTypeLabels="preview" draws each block type in the select the way its block looks; the editor above keeps the plain labels with glyphs. Open the select: Heading 1 is largest, Code block is monospaced, and the button still names the current type in plain text.'
+      }
+    >
+      <PreviewLabelsEditor />
     </LabSection>
     <LabSection
       title="Block handle controls"

@@ -20,7 +20,7 @@ export type {
   RichTextSchemaOptions,
 } from './rich-text-editor.js';
 export { FormatToolbar } from './format-toolbar.js';
-export type { FormatToolbarProps } from './format-toolbar.js';
+export type { BlockTypeLabels, FormatToolbarProps } from './format-toolbar.js';
 export { SelectionToolbar } from './selection-toolbar.js';
 export type { SelectionToolbarProps } from './selection-toolbar.js';
 export { InsertMenu, InsertMenuButton } from './insert-menu.js';

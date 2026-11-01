@@ -137,6 +137,41 @@ describe('FormatToolbar', () => {
     expect(trigger).toHaveTextContent('Heading 3');
   });
 
+  it('UIC-RICH-TEXT-EDITOR-6.2 previews each block type in its option, for the schema at hand', async () => {
+    const schema = createRichTextSchema({ nodes: { codeBlock: null } });
+    const { user, value } = renderEditor({
+      schema,
+      defaultValue: note,
+      toolbar: <FormatToolbar blockTypeLabels="preview" />,
+      children: <ViewProbe />,
+    });
+    selectRange(2);
+    const trigger = within(toolbar()).getByRole('button', { name: /Block type/ });
+    expect(trigger).toHaveTextContent('Text');
+    await user.click(trigger);
+    const options = screen.getAllByRole('option');
+    expect(options.map((option) => option.textContent)).toEqual([
+      'Text',
+      'Heading 1',
+      'Heading 2',
+      'Heading 3',
+    ]);
+    expect(screen.getByRole('option', { name: 'Text' })).toHaveAttribute('aria-selected', 'true');
+    const previews = document.querySelectorAll('.ui-format-toolbar__block-preview');
+    expect([...previews].map((preview) => preview.getAttribute('data-block'))).toEqual([
+      'paragraph',
+      'heading-1',
+      'heading-2',
+      'heading-3',
+    ]);
+    expect(options[0]?.querySelector('.ui-glyph')).toBeNull();
+    await user.keyboard('{ArrowDown}{ArrowDown}{Enter}');
+    expect(value()?.content?.[0]).toMatchObject({ type: 'heading', attrs: { level: 2 } });
+    expect(trigger).toHaveTextContent('Heading 2');
+    expect(trigger.querySelector('.ui-format-toolbar__block-preview')).toBeNull();
+    expectHooksMatchSpec(document.body, 'RICH-TEXT-EDITOR');
+  });
+
   it('UIC-RICH-TEXT-EDITOR-6.3 links the selection from the link editor and removes the link', async () => {
     const { user, value, container } = renderEditor({
       defaultValue: note,
