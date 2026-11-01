@@ -31,8 +31,9 @@ const incomplete: Readonly<Record<FieldType, FilterCondition>> = {
   text: { field: 'title', operator: 'starts-with', value: '' },
   number: { field: 'pages', operator: 'at-least', value: null },
   date: { field: 'published', operator: 'between', value: null },
-  choice: { field: 'genre', operator: 'none-of', value: [] },
-  person: { field: 'readers', operator: 'any-of', value: [] },
+  // Saved without their lists: the editor shows an empty list to fill.
+  choice: { field: 'genre', operator: 'none-of', value: null },
+  person: { field: 'readers', operator: 'any-of', value: null },
   boolean: { field: 'isAvailable', operator: 'equals', value: null },
 };
 
@@ -94,7 +95,7 @@ mountLab(
   <>
     <LabSection
       title="Field types"
-      description="One filter per field type, complete and missing its value. A filter missing its value reads only its field and operator and filters nothing."
+      description="One filter per field type, complete and missing its value. A filter missing its value reads only its field and operator and filters nothing; the choice and person ones hold no list at all, and their editors open on an empty one."
     >
       <StateMatrix
         axes={{ type: types, state: ['complete', 'incomplete'] }}

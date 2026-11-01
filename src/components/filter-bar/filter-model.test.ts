@@ -8,6 +8,7 @@ import {
   getFilterOperators,
   getFilterValueKind,
   isFilterConditionComplete,
+  readFilterValue,
   type FilterField,
 } from './filter-model.js';
 
@@ -108,6 +109,41 @@ describe('filter model', () => {
       changeFilterOperator(condition, number, 'between').value,
     );
     expect(createFilterCondition(choice).value).not.toBe(createFilterCondition(choice).value);
+  });
+
+  it('UIC-FILTER-BAR-1.2 reads a value of another shape as its empty value', () => {
+    expect(readFilterValue({ field: 'genre', operator: 'any-of', value: null }, choice)).toEqual(
+      [],
+    );
+    expect(
+      readFilterValue({ field: 'reader', operator: 'any-of', value: ['jon', 3] as never }, person),
+    ).toEqual(['jon']);
+    expect(readFilterValue({ field: 'pages', operator: 'equals', value: 'x' }, number)).toBeNull();
+    expect(readFilterValue({ field: 'pages', operator: 'between', value: null }, number)).toEqual({
+      min: null,
+      max: null,
+    });
+    expect(readFilterValue({ field: 'title', operator: 'contains', value: 3 }, text)).toBe('');
+    expect(
+      readFilterValue({ field: 'available', operator: 'equals', value: 'yes' }, boolean),
+    ).toBeNull();
+    const kept = { field: 'title', operator: 'contains', value: 'sea' } as const;
+    expect(readFilterValue(kept, text)).toBe('sea');
+  });
+
+  it('UIC-FILTER-BAR-1.2 leaves a condition incomplete when its value or operator no longer fits', () => {
+    // The field changed from number to choice while the condition held 3.
+    expect(
+      isFilterConditionComplete({ field: 'genre', operator: 'any-of', value: 3 }, choice),
+    ).toBe(false);
+    expect(
+      isFilterConditionComplete({ field: 'genre', operator: 'any-of', value: null }, choice),
+    ).toBe(false);
+    // The field no longer offers the operator.
+    const narrowed = { ...number, operators: ['equals' as const] };
+    expect(
+      isFilterConditionComplete({ field: 'pages', operator: 'at-least', value: 3 }, narrowed),
+    ).toBe(false);
   });
 
   it('UIC-FILTER-BAR-1.2 keeps the value across operators of the same shape', () => {

@@ -346,6 +346,25 @@ describe('ConditionBuilder', () => {
     expectHooksMatchSpec(document.body, 'CONDITION-BUILDER', { slots: ['message'] });
   });
 
+  it('UIC-CONDITION-BUILDER-1.3 draws a rule whose list value is null as incomplete', async () => {
+    const user = userEvent.setup();
+    const onValue = vi.fn();
+    const stale: ConditionGroup = {
+      type: 'group',
+      id: 'root',
+      combinator: 'and',
+      rules: [{ type: 'rule', id: 'genre', field: 'genre', operator: 'any-of', value: null }],
+    };
+    render(<Controlled defaultValue={stale} onValue={onValue} />);
+    const item = rule('Rule 1');
+    expect(item).toHaveAttribute('data-incomplete', 'true');
+    await user.click(within(item).getByRole('button', { name: /Value/ }));
+    await user.click(await screen.findByRole('option', { name: 'Travel' }));
+    const next = onValue.mock.lastCall?.[0] as ConditionGroup;
+    expect(next.rules[0]).toMatchObject({ value: ['travel'] });
+    expect(item).not.toHaveAttribute('data-incomplete');
+  });
+
   it('UIC-CONDITION-BUILDER-1.3 draws only the field select of a rule on an unknown field', () => {
     render(
       <ConditionBuilder
