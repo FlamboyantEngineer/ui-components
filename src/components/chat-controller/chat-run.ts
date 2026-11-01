@@ -197,9 +197,10 @@ export function startRun(
 }
 
 /**
- * Records the reader's response on the part `id` while it waits for them. An awaited part hands
- * the response to `waitFor`; any other continues its reply (`continues`) once nothing else waits,
- * or once the running reply ends.
+ * Records the reader's response on the part `id` while it waits for them and the response fits it
+ * (a decision on a call, answers to a card); any other response changes nothing and resumes no
+ * one. An awaited part hands the response to `waitFor`; any other continues its reply
+ * (`continues`) once nothing else waits, or once the running reply ends.
  */
 export function respond(
   engine: ChatEngineContext,
@@ -208,7 +209,7 @@ export function respond(
   const { id, response, continues } = answer;
   if (engine.run) flushRun(engine, engine.run);
   const { messages } = engine.store.get();
-  const index = findAwaitingMessage(messages, id);
+  const index = findAwaitingMessage(messages, id, response);
   const message = messages[index];
   if (!message) return;
   updateMessage(engine, message.id, (current) => recordResponse(current, id, response));

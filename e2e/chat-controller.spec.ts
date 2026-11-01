@@ -82,6 +82,17 @@ test.describe('Chat Controller lab', () => {
       'Waiting for your approval…',
     );
     await lab.expectAccessible();
+    await page.getByRole('button', { name: 'Send the wrong kind of response' }).click();
+    await expect(page.getByRole('region', { name: 'Event log' })).toContainText(
+      'Sent the wrong kind of response',
+    );
+    await expect(page.getByRole('region', { name: 'Event log' })).not.toContainText(
+      'waitFor(call-',
+    );
+    await expect(lastMessage(page).locator('.ui-chat-tool-call')).toHaveAttribute(
+      'data-status',
+      'approval-requested',
+    );
     await approval.getByRole('button', { name: /Approve/ }).click();
     await expect(lastMessage(page)).toContainText('Done: the old spring menu is gone.');
     await expect(lastMessage(page).locator('.ui-chat-tool-call')).toHaveAttribute(

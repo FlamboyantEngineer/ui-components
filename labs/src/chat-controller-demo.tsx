@@ -5,6 +5,7 @@ import { Button } from '../../src/components/button/button.js';
 import { ChatStatusLine } from '../../src/components/chat-activity/index.js';
 import { ChatAttachmentList } from '../../src/components/chat-attachment/chat-attachment.js';
 import {
+  isAwaitingReader,
   useChatController,
   type ChatQueuedMessage,
   type ChatSendFunction,
@@ -140,6 +141,8 @@ export function ChatControllerDemo() {
   });
   const { props } = chat;
   const reply = props.messages.at(-1);
+  // The part that waits for the reader, which a wiring mistake could answer with the other kind.
+  const waiting = reply?.parts.find(isAwaitingReader);
   const isThinking = props.isPending && reply?.authorId === helperId && reply.parts.length === 0;
   const hasUploaded = props.attachments.some((entry) => entry.status === 'complete');
   return (
@@ -216,6 +219,18 @@ export function ChatControllerDemo() {
                 onPress={chat.retry}
               >
                 Retry the last turn
+              </Button>
+              <Button
+                size="sm"
+                isDisabled={waiting === undefined}
+                onPress={() => {
+                  if (!waiting?.id) return;
+                  append(`Sent the wrong kind of response to ${waiting.id}`);
+                  if (waiting.type === 'question') props.onApprove(waiting.id);
+                  else props.onAnswerQuestion(waiting.id, []);
+                }}
+              >
+                Send the wrong kind of response
               </Button>
             </Cluster>
           </Stack>
