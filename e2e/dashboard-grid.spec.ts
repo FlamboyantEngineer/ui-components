@@ -221,6 +221,14 @@ test.describe('Dashboard Grid lab', () => {
       .locator('.ui-dashboard-grid__tile')
       .evaluateAll((tiles) => tiles.map((tile) => Math.round(tile.getBoundingClientRect().top)));
     expect(new Set(tops).size).toBe(3);
+    // Three 100 pixel columns and two 12 pixel gaps need 324 pixels: 320 holds two.
+    const tight = matrixCell(page, 'mode=editing width=tight').locator('.ui-dashboard-grid');
+    await expect(tight).toHaveAttribute('data-reflowed', 'true');
+    const tracks = await tight.evaluate((grid) =>
+      getComputedStyle(grid).gridTemplateColumns.split(' ').map(Number.parseFloat),
+    );
+    expect(tracks).toHaveLength(2);
+    for (const track of tracks) expect(track).toBeGreaterThanOrEqual(100);
     await lab.expectAccessible();
   });
 

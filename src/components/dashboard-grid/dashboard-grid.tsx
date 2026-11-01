@@ -23,13 +23,14 @@ import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import {
   dashboardLayoutCodec,
+  fitColumns,
   normalizeDashboardLayout,
   reflowDashboardLayout,
   toColumnCount,
   type DashboardGridItem,
 } from './dashboard-layout.js';
 import type { CellStep, TileMoveKind } from './use-tile-move.js';
-import { isSameCells, useTileMoves } from './use-tile-moves.js';
+import { isSameCells, readGap, useTileMoves } from './use-tile-moves.js';
 
 export type { DashboardGridItem } from './dashboard-layout.js';
 
@@ -132,11 +133,17 @@ function useDashboardLayout(
   return { layout, commit, owner };
 }
 
-/** How many columns fit: the layout's own, or fewer below `minColumnWidth` per column. */
+/**
+ * How many columns fit: the layout's own, or fewer below `minColumnWidth` per column once the gaps
+ * between them are counted.
+ */
 function useShownColumns(element: Element | null, columns: number, minColumnWidth?: number) {
+  // The content box: the grid's padding and border hold no column.
   const width = useElementSize(element, { enabled: minColumnWidth !== undefined })?.width ?? 0;
-  if (minColumnWidth === undefined || !(minColumnWidth > 0) || width <= 0) return columns;
-  return Math.min(columns, Math.max(1, Math.floor(width / minColumnWidth)));
+  if (minColumnWidth === undefined || !(minColumnWidth > 0) || width <= 0 || !element) {
+    return columns;
+  }
+  return Math.min(columns, fitColumns(width, minColumnWidth, readGap(element, 'columnGap')));
 }
 
 interface DashboardGridCellProps {

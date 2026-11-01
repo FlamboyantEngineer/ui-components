@@ -494,6 +494,22 @@ describe('DashboardGrid', () => {
     expectHooksMatchSpec(document.body, 'DASHBOARD-GRID');
   });
 
+  it('UIC-DASHBOARD-GRID-3.1 counts the column gap when it fits columns', () => {
+    const sheet = document.createElement('style');
+    sheet.textContent = '.ui-dashboard-grid { column-gap: 12px; }';
+    document.head.append(sheet);
+    try {
+      // Six 100 pixel columns need 660 pixels with five 12 pixel gaps: 600 holds five.
+      stubGridWidth(600);
+      render(<Board minColumnWidth={100} />);
+      expect(screen.getByRole('group', { name: 'Overview' }).style.gridTemplateColumns).toBe(
+        'repeat(5, minmax(0, 1fr))',
+      );
+    } finally {
+      sheet.remove();
+    }
+  });
+
   it('UIC-DASHBOARD-GRID-1.3 appends caller classes and forwards ids, refs and data attributes', () => {
     const ref = { current: null as HTMLDivElement | null };
     const tileRef = { current: null as HTMLDivElement | null };

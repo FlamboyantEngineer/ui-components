@@ -80,7 +80,7 @@ Verification: `src/components/dashboard-grid/dashboard-grid-external.test.tsx`, 
 
 ### UIC-DASHBOARD-GRID-3.1 - Fewer columns when narrow
 
-With `minColumnWidth`, a grid whose measured width holds fewer than `columns` columns of that width shall show as many as fit (at least one) and publish `data-reflowed`: each tile's column and span scale in proportion to the new count (spanning at least one column) and the tiles settle in reading order. A reflowed grid is read only: it shows no handles and reports no layout changes, so the layout keeps its full column count.
+With `minColumnWidth`, a grid whose measured content width (its padding and border excluded) holds fewer than `columns` columns of that width, counting the grid's column gap between each two, shall show as many as fit (at least one; a measurement a hair short of a whole fit still fits it) and publish `data-reflowed`: each tile's column and span scale in proportion to the new count (spanning at least one column) and the tiles settle in reading order. A reflowed grid is read only: it shows no handles and reports no layout changes, so the layout keeps its full column count.
 
 Implementation: `src/components/dashboard-grid/dashboard-grid.tsx`, `src/components/dashboard-grid/dashboard-layout.ts`
 Verification: `src/components/dashboard-grid/dashboard-layout.test.ts`, `src/components/dashboard-grid/dashboard-grid.test.tsx`, `e2e/dashboard-grid.spec.ts`

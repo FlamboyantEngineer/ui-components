@@ -26,7 +26,7 @@ interface GestureSession {
 }
 
 /** A grid gap in pixels, 0 when it cannot be read. */
-function readGap(element: Element, property: 'columnGap' | 'rowGap'): number {
+export function readGap(element: Element, property: 'columnGap' | 'rowGap'): number {
   const value = Number.parseFloat(getOwnerWindow(element).getComputedStyle(element)[property]);
   return Number.isFinite(value) ? value : 0;
 }
