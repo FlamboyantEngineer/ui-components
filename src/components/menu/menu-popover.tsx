@@ -124,23 +124,29 @@ function useMenuFollow(isSubmenu: boolean, isNonModal: boolean, props: MenuOverl
   });
   useLayoutEffect(() => {
     if (!isActive || !isOpen) return;
-    // A layout effect, so this capture listener sees each scroll before React Aria's.
+    // A layout effect, so this capture listener sees each scroll before React Aria's. The page's
+    // scroll bubbles back to the window after React Aria's listener, which ends the guard, so a
+    // close the reader asks for in the same task (Escape) still closes. A scroll that does not
+    // bubble ends the guard after the task.
     const view = getOwnerWindow(triggerRef.current);
     let timer: ReturnType<typeof setTimeout> | undefined;
+    const onScrolled = () => {
+      clearTimeout(timer);
+      isPageScrolling.current = false;
+    };
     const onScroll = (event: Event) => {
       isPageScrolling.current = !(event.target instanceof view.Element);
       if (!isPageScrolling.current) return;
       clearTimeout(timer);
-      timer = setTimeout(() => {
-        isPageScrolling.current = false;
-      });
+      timer = setTimeout(onScrolled);
     };
     const options = { capture: true, passive: true };
     view.addEventListener('scroll', onScroll, options);
+    view.addEventListener('scroll', onScrolled, { passive: true });
     return () => {
-      clearTimeout(timer);
-      isPageScrolling.current = false;
+      onScrolled();
       view.removeEventListener('scroll', onScroll, options);
+      view.removeEventListener('scroll', onScrolled);
     };
   }, [isActive, isOpen, triggerRef]);
   if (isSubmenu) return {};
