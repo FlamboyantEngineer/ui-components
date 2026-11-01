@@ -79,3 +79,70 @@ test.describe('Query Field lab', () => {
     await expect(demo.locator('[data-lab-submitted] li')).toHaveCount(1);
   });
 });
+
+test.describe('Query Field suggestions', () => {
+  test('UIC-COMPLETION-LIST-1.2 UIC-QUERY-FIELD-1.2 sizes suggestions to their content and tints each kind', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('query-field');
+    const input = page.getByRole('textbox', { name: 'Query, short suggestions' });
+    await input.click();
+    await page.keyboard.type('n');
+    const list = page.locator('.ui-completion-list');
+    const keyword = list.getByRole('option', { name: /NOT/ });
+    await expect(keyword).toBeVisible();
+    const tag = (option: typeof keyword) =>
+      option.evaluate((node) => {
+        const style = getComputedStyle(node, '::before');
+        return { color: style.color, width: parseFloat(style.width) };
+      });
+    const geometry = (option: typeof keyword) =>
+      option.evaluate((node) => {
+        const label = node.querySelector('.ui-completion-list__label');
+        return (label?.getBoundingClientRect().left ?? 0) - node.getBoundingClientRect().left;
+      });
+    // The kind is a tag only as wide as its word, not a fixed column.
+    const keywordTag = await tag(keyword);
+    expect(keywordTag.width).toBeLessThan(56);
+    expect(await geometry(keyword)).toBeLessThan(64);
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Backspace');
+    await page.keyboard.type('g');
+    const field = list.getByRole('option', { name: /genre/ });
+    await expect(field).toBeVisible();
+    const box = await list.boundingBox();
+    expect(box?.width).toBeLessThan(200);
+    expect((await tag(field)).color).not.toBe(keywordTag.color);
+    await page.keyboard.press('Escape');
+
+    // Long names wrap inside the viewport-bound list while long descriptions truncate.
+    const long = page.getByRole('textbox', { name: 'Query, long suggestions' });
+    await long.click();
+    await page.keyboard.type('t');
+    const described = list.getByRole('option', { name: /first-publication/ });
+    await expect(described).toBeVisible();
+    const longBox = await list.boundingBox();
+    expect(longBox?.width).toBeLessThanOrEqual(420);
+    const truncated = await described
+      .locator('.ui-completion-list__description')
+      .evaluate((node) => node.scrollWidth > node.clientWidth);
+    expect(truncated).toBe(true);
+    await lab.expectAccessible();
+  });
+
+  test('UIC-COMPLETION-LIST-1.2 keeps no kind column for options without kinds', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('completion-list');
+    await page.locator('[data-lab-editor="labels-none"]').focus();
+    const option = page.getByRole('option', { name: 'Lisbon' });
+    await expect(option).toBeVisible();
+    const inset = await option.evaluate((node) => {
+      const label = node.querySelector('.ui-completion-list__label');
+      return (label?.getBoundingClientRect().left ?? 0) - node.getBoundingClientRect().left;
+    });
+    expect(inset).toBeLessThanOrEqual(8);
+  });
+});

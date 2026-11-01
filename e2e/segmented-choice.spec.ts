@@ -321,7 +321,7 @@ test('UIC-SEGMENTED-CHOICE-1.3 keeps descenders and accents whole in labels and 
     await unclip('');
     // Inside the frame, away from its rounded corners, the drawing is the same with nothing clipped.
     const changed = await page.evaluate(
-      async ([first, second]) => {
+      async ({ first, second }) => {
         const read = async (data: string) => {
           const image = new Image();
           image.src = `data:image/png;base64,${data}`;
@@ -345,7 +345,7 @@ test('UIC-SEGMENTED-CHOICE-1.3 keeps descenders and accents whole in labels and 
         }
         return count;
       },
-      [clipped, whole],
+      { first: clipped, second: whole },
     );
     expect(changed, size).toBe(0);
   }
