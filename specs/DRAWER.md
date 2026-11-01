@@ -8,7 +8,7 @@
 
 `DrawerTrigger` shall hold one pressable trigger, such as a `Button`, and a `Drawer`, and add no element of its own; pressing the trigger opens the drawer. `isOpen` with `onOpenChange`, on the trigger or on a drawer outside a trigger, controls it, `defaultOpen` opens it at first, and `onOpenChange` reports each change the reader asks for. While open the drawer renders, in an overlay at the end of the document body, the `ui-drawer` overlay covering the page, the `ui-drawer__backdrop`, the `ui-drawer__panel` that slides and the `ui-drawer__dialog` element with `role="dialog"` filling it. A closed drawer renders nothing.
 
-Implementation: `src/components/drawer/drawer.tsx`
+Implementation: `src/components/drawer/drawer.tsx`, `src/components/portal/portal.tsx`, `src/components/modal/modal-presentations.tsx`
 Verification: `src/components/drawer/drawer.test.tsx`, `e2e/drawer.spec.ts`
 
 ### UIC-DRAWER-1.2 - Position
@@ -27,7 +27,7 @@ Verification: `src/components/drawer/drawer.test.tsx`, `e2e/drawer.spec.ts`
 
 ### UIC-DRAWER-1.4 - Layering
 
-The overlay shall carry the z-index of the `drawer` overlay layer ([UIC-PORTAL-2.2](PORTAL.md#uic-portal-22---stacking)) as a functional inline style, so modals, popovers, menus, tooltips and toasts opened from a drawer stack above it; a `layerZIndex` from `PortalContainerProvider` or `PortalHost` applies.
+The overlay shall carry the z-index of its overlay layer ([UIC-PORTAL-2.2](PORTAL.md#uic-portal-22---stacking)) as a functional inline style, so modals, popovers, menus, tooltips and toasts opened from a drawer stack above it; a `layerZIndex` from `PortalContainerProvider` or `PortalHost` applies. The layer is `drawer`, raised to the layer of the overlay the drawer is rendered in when that one stacks higher: a drawer opened from a modal's content takes the `modal` layer and, rendered after the modal, paints above its scrim and panel, as does a drawer opened from inside that drawer (and a `DockPanel`'s overlay drawer in a modal). `layer` sets it explicitly.
 
 Implementation: `src/components/drawer/drawer.tsx`
 Verification: `src/components/drawer/drawer.test.tsx`, `e2e/drawer.spec.ts`

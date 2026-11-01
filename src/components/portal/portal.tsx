@@ -121,6 +121,29 @@ export function useLayerZIndex(layer: OverlayLayer): number {
   return useContext(PortalContext).zIndex[layer];
 }
 
+/** The layer of the overlay the content renders in, when one says so. */
+const OverlayLayerContext = createContext<OverlayLayer | undefined>(undefined);
+
+/** Marks content as rendering in an overlay on `layer`, for overlays opened inside it. */
+export function OverlayLayerScope({
+  layer,
+  children,
+}: {
+  layer: OverlayLayer;
+  children: ReactNode;
+}) {
+  return <OverlayLayerContext value={layer}>{children}</OverlayLayerContext>;
+}
+
+/**
+ * `layer`, raised to the layer of the overlay the caller renders in when that one stacks higher, so
+ * an overlay opened from inside another never paints beneath it.
+ */
+export function useStackedLayer(layer: OverlayLayer): OverlayLayer {
+  const enclosing = useContext(OverlayLayerContext);
+  return enclosing && isLayerAbove(enclosing, layer) ? enclosing : layer;
+}
+
 /**
  * The container portals under the nearest provider render into: `undefined` for the document body,
  * `null` while the chosen one is not ready. For components whose building block portals itself.

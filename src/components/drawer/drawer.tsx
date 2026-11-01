@@ -17,7 +17,8 @@ import { useUiStrings } from '../../core/provider.js';
 import { stopConsumedEscape } from '../../utils/consumed-escape.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Button } from '../button/button.js';
-import { useLayerZIndex } from '../portal/portal.js';
+import { OverlayLayerScope, useLayerZIndex, useStackedLayer } from '../portal/portal.js';
+import type { OverlayLayer } from '../portal/layers.js';
 
 /** A pressable trigger and the `Drawer` it opens. */
 export interface DrawerTriggerProps extends OpenStateProps {
@@ -62,6 +63,11 @@ export interface DrawerProps extends OpenStateProps, OverlayDismissProps, BasePr
   snapPoints?: ReadonlyArray<number | string> | undefined;
   /** Refuses Escape, outside presses, swiping it away and the close button. */
   isDismissDisabled?: boolean | undefined;
+  /**
+   * The overlay layer, which sets the z-index. Defaults to `drawer`, raised to the layer of the
+   * overlay it is rendered in, such as a modal's, when that one stacks higher.
+   */
+  layer?: OverlayLayer | undefined;
 }
 
 interface DrawerHeaderProps extends Pick<DrawerProps, 'title' | 'showCloseButton'> {
@@ -123,11 +129,14 @@ export function Drawer({
   shouldCloseOnInteractOutside,
   isDismissDisabled = false,
   snapPoints,
+  layer,
   id,
   className,
   ...rest
 }: DrawerProps) {
-  const zIndex = useLayerZIndex('drawer');
+  const stackedLayer = useStackedLayer('drawer');
+  const resolvedLayer = layer ?? stackedLayer;
+  const zIndex = useLayerZIndex(resolvedLayer);
   // React Aria's sheet offers no keyboard-only refusal, so a refused Escape stops at the dialog, as
   // does one the content already handled.
   const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
@@ -166,7 +175,9 @@ export function Drawer({
               />
               {children === undefined || children === null ? null : (
                 <div {...hooks.slot('body')}>
-                  {typeof children === 'function' ? children({ close }) : children}
+                  <OverlayLayerScope layer={resolvedLayer}>
+                    {typeof children === 'function' ? children({ close }) : children}
+                  </OverlayLayerScope>
                 </div>
               )}
               {isEmptyNode(footer) ? null : <div {...hooks.slot('footer')}>{footer}</div>}

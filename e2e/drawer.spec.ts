@@ -217,6 +217,45 @@ test.describe('Drawer lab', () => {
     await expect(page.locator('[data-lab-output="choice"]')).toHaveText('Kyoto');
   });
 
+  test('UIC-DRAWER-1.4 stacks a drawer opened from a modal above the modal', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('drawer');
+    await page.getByRole('button', { name: 'Trip settings' }).click();
+    await page
+      .getByRole('dialog', { name: 'Trip settings' })
+      .getByRole('button', { name: 'Pick a city' })
+      .click();
+    const drawer = page.getByRole('dialog', { name: 'Cities' });
+    await expect(drawer).toBeFocused();
+    await expect(page.locator('.ui-drawer__panel[data-entering]')).toHaveCount(0);
+    const panel = await boxOf(page.locator('.ui-drawer__panel'));
+    const dialog = await boxOf(page.locator('.ui-modal__panel'));
+    // The drawer makes the dialog inert, which hit testing skips; lift it to compare paint order.
+    const hits = await page.evaluate(
+      (points) => {
+        const inert = [...document.querySelectorAll<HTMLElement>('[inert]')];
+        for (const element of inert) element.inert = false;
+        const owners = points.map(
+          ({ x, y }) =>
+            document.elementFromPoint(x, y)?.closest('.ui-drawer, .ui-modal')?.classList[0] ?? '',
+        );
+        for (const element of inert) element.inert = true;
+        return owners;
+      },
+      [
+        { x: panel.x + panel.width / 2, y: panel.y + panel.height / 2 },
+        { x: dialog.x + 8, y: dialog.y + 8 },
+      ],
+    );
+    // The drawer's panel, and its backdrop over the dialog's panel.
+    expect(hits).toEqual(['ui-drawer', 'ui-drawer']);
+    await page.keyboard.press('Escape');
+    await expect(drawer).toHaveCount(0);
+    await expect(page.getByRole('dialog', { name: 'Trip settings' })).toBeVisible();
+  });
+
   test('UIC-DRAWER-2.1 stays open on an Escape its content handled', async ({ page, lab }) => {
     await lab.open('drawer');
     await page.getByRole('button', { name: 'Search drawer' }).click();

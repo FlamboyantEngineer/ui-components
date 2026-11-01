@@ -15,7 +15,7 @@ import { dataAttributes, type HookProps } from '../../core/hooks.js';
 import type { Placement } from '../../core/props.js';
 import { useEnterExit } from '../../utils/use-enter-exit.js';
 import { PopoverPanel } from '../popover/popover.js';
-import { Portal, useLayerZIndex } from '../portal/portal.js';
+import { OverlayLayerScope, Portal, useLayerZIndex } from '../portal/portal.js';
 import { ModalShownContext, retainedStyle } from './modal-retained.js';
 import { DEFAULT_OVERLAY_GUTTER, POPOVER_OFFSET } from '../../utils/overlay-defaults.js';
 import { modalHooks as hooks } from './modal-hooks.js';
@@ -257,12 +257,26 @@ export function ModalPresentation({
   placement,
   isFloating,
   isRetained,
+  children,
   ...presentation
 }: ModalPresentationChoiceProps) {
-  if (placement) return <AnchoredModal {...presentation} placement={placement} />;
+  // Overlays opened from the dialog, such as a drawer, stack at least on its layer.
+  const content = (
+    <OverlayLayerScope layer={placement ? 'dropdown' : 'modal'}>{children}</OverlayLayerScope>
+  );
+  if (placement)
+    return (
+      <AnchoredModal {...presentation} placement={placement}>
+        {content}
+      </AnchoredModal>
+    );
   if (isFloating) {
-    const { state, rootProps, children } = presentation;
-    return <FloatingModal {...{ state, rootProps, children, isRetained }} />;
+    const { state, rootProps } = presentation;
+    return <FloatingModal {...{ state, rootProps, isRetained }}>{content}</FloatingModal>;
   }
-  return isRetained ? <RetainedModal {...presentation} /> : <BlockingModal {...presentation} />;
+  return isRetained ? (
+    <RetainedModal {...presentation}>{content}</RetainedModal>
+  ) : (
+    <BlockingModal {...presentation}>{content}</BlockingModal>
+  );
 }
