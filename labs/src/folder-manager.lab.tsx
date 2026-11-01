@@ -367,6 +367,45 @@ function MovingWhileNamed() {
   );
 }
 
+/** The host lowers the depth limit or starts loading while a new folder is being named. */
+function RulesWhileNaming() {
+  const [last, setLast] = useState('none');
+  const [maxDepth, setMaxDepth] = useState(3);
+  const [isLoading, setLoading] = useState(false);
+  const { folders, callbacks } = useFolders(0, setLast);
+  // The delay leaves time to start a folder inside Citrus and type before the rule changes.
+  const later = (change: () => void) => window.setTimeout(change, 1500);
+  return (
+    <div data-lab-demo="rules">
+      <Button size="sm" onPress={() => later(() => setMaxDepth(2))}>
+        Lower the depth limit in a moment
+      </Button>
+      <Button size="sm" onPress={() => later(() => setLoading(true))}>
+        Start loading in a moment
+      </Button>
+      <Button
+        size="sm"
+        onPress={() => {
+          setMaxDepth(3);
+          setLoading(false);
+        }}
+      >
+        Restore the rules
+      </Button>
+      <FolderManager
+        aria-label="Ruled folders"
+        folders={folders}
+        defaultSelectedKey="citrus"
+        maxDepth={maxDepth}
+        isPending={isLoading}
+        {...callbacks}
+      />
+      <LabOutput name="Rules">{`depth ${maxDepth}${isLoading ? ', loading' : ''}`}</LabOutput>
+      <LabOutput name="Rules action">{last}</LabOutput>
+    </div>
+  );
+}
+
 /** A panel closed while its manager waits: the slow answer selects nothing once it is gone. */
 function ClosingPanel() {
   const [isOpen, setOpen] = useState(true);
@@ -421,6 +460,12 @@ mountLab(
       description="Press the button, then rename Citrus or start a folder inside it and type: when Citrus moves into Herbs, the name field follows it with the typed text and keeps focus."
     >
       <MovingWhileNamed />
+    </LabSection>
+    <LabSection
+      title="Rules changed while naming"
+      description="Press a button, then start a folder inside Citrus and type: once the depth limit drops to 2, or loading starts, Enter creates nothing and the text stays, with the depth limit saying why. Restore the rules and press Enter in the field to create it."
+    >
+      <RulesWhileNaming />
     </LabSection>
     <LabSection
       title="Several folders"

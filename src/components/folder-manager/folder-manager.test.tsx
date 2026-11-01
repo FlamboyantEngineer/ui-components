@@ -690,6 +690,59 @@ describe('FolderManager', () => {
     expect(field).toHaveFocus();
   });
 
+  it('UIC-FOLDER-MANAGER-2.7 checks the depth limit again when a new folder is submitted', async () => {
+    const user = userEvent.setup();
+    const onCreate = vi.fn();
+    const flat: Folder[] = [
+      { id: 'alpha', name: 'Alpha' },
+      { id: 'blue', name: 'Blue' },
+    ];
+    const nested: Folder[] = [
+      { id: 'blue', name: 'Blue', children: [{ id: 'alpha', name: 'Alpha' }] },
+    ];
+    const props = { 'aria-label': 'Folders', defaultSelectedKey: 'alpha', onCreate };
+    const { rerender } = render(<FolderManager<Folder> folders={flat} maxDepth={2} {...props} />);
+    await user.click(screen.getByRole('button', { name: 'New folder' }));
+    await user.keyboard('Too deep');
+    rerender(<FolderManager<Folder> folders={flat} maxDepth={1} {...props} />);
+    await user.keyboard('{Enter}');
+    expect(onCreate).not.toHaveBeenCalled();
+    expect(screen.getByRole('alert')).toHaveTextContent('Folders cannot be nested.');
+    const field = screen.getByRole('textbox', { name: 'New folder name' });
+    expect(field).toHaveValue('Too deep');
+    act(() => field.blur());
+    expect(onCreate).not.toHaveBeenCalled();
+    expect(screen.getByRole('textbox', { name: 'New folder name' })).toHaveValue('Too deep');
+    rerender(<FolderManager<Folder> folders={nested} maxDepth={2} {...props} />);
+    act(() => screen.getByRole('textbox', { name: 'New folder name' }).focus());
+    await user.keyboard('{Enter}');
+    expect(onCreate).not.toHaveBeenCalled();
+    rerender(<FolderManager<Folder> folders={flat} maxDepth={2} {...props} />);
+    act(() => screen.getByRole('textbox', { name: 'New folder name' }).focus());
+    await user.keyboard('{Enter}');
+    expect(onCreate).toHaveBeenCalledExactlyOnceWith({ name: 'Too deep', parentKey: 'alpha' });
+  });
+
+  it('UIC-FOLDER-MANAGER-1.4 holds a submitted name while the folders load', async () => {
+    const user = userEvent.setup();
+    const onCreate = vi.fn();
+    const props = { 'aria-label': 'Folders', defaultSelectedKey: 'citrus', onCreate };
+    const { rerender } = render(<FolderManager<Folder> folders={sample} {...props} />);
+    await user.click(screen.getByRole('button', { name: 'New folder' }));
+    await user.keyboard('Limes');
+    rerender(<FolderManager<Folder> folders={sample} isPending {...props} />);
+    const field = screen.getByRole('textbox', { name: 'New folder name' });
+    expect(field).toHaveAttribute('aria-busy', 'true');
+    await user.keyboard('{Enter}');
+    act(() => field.blur());
+    expect(onCreate).not.toHaveBeenCalled();
+    expect(screen.getByRole('textbox', { name: 'New folder name' })).toHaveValue('Limes');
+    rerender(<FolderManager<Folder> folders={sample} {...props} />);
+    act(() => screen.getByRole('textbox', { name: 'New folder name' }).focus());
+    await user.keyboard('{Enter}');
+    expect(onCreate).toHaveBeenCalledExactlyOnceWith({ name: 'Limes', parentKey: 'citrus' });
+  });
+
   it('UIC-FOLDER-MANAGER-4.1 forwards ref to its root', () => {
     const ref = createRef<HTMLDivElement>();
     const { container } = render(<Manager ref={ref} />);

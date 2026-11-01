@@ -316,6 +316,34 @@ test.describe('Folder Manager lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-FOLDER-MANAGER-1.4 UIC-FOLDER-MANAGER-2.7 checks loading and the depth limit when a name is submitted', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('folder-manager');
+    const demo = page.locator('[data-lab-demo="rules"]');
+    const output = demo.locator('[data-lab-output="Rules action"]');
+    const field = demo.getByRole('textbox', { name: 'New folder name' });
+    await demo.getByRole('button', { name: 'Lower the depth limit in a moment' }).click();
+    await demo.getByRole('button', { name: 'New folder' }).click();
+    await page.keyboard.type('Limes');
+    await page.clock.runFor(1500);
+    await expect(demo.locator('[data-lab-output="Rules"]')).toHaveText('depth 2');
+    await field.press('Enter');
+    await expect(demo.getByRole('alert')).toHaveText('Folders nest at most 2 levels deep.');
+    await expect(field).toHaveValue('Limes');
+    await demo.getByRole('button', { name: 'Start loading in a moment' }).click();
+    await page.clock.runFor(1500);
+    await expect(demo.locator('[data-lab-output="Rules"]')).toHaveText('depth 2, loading');
+    await expect(field).toHaveAttribute('aria-busy', 'true');
+    await demo.getByRole('button', { name: 'Restore the rules' }).click();
+    await expect(output).toHaveText('none');
+    await field.press('Enter');
+    await expect(output).toHaveText('created Limes');
+    await page.clock.resume();
+  });
+
   test('UIC-FOLDER-MANAGER-5.1 loads subfolders on demand and retries a failed load', async ({
     page,
     lab,
