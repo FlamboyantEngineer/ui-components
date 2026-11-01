@@ -288,13 +288,15 @@ export function ProjectedToolbar() {
 }
 
 /**
- * A source fetched as bytes, opening at its second page with the sidebar open on the outline, and
- * named destinations.
+ * A source fetched as bytes, opening at its second page with the sidebar open on the outline, named
+ * destinations, and a caller page that wins over a destination still being looked up.
  */
 export function SidebarReader() {
   const [bytes, setBytes] = useState<ArrayBuffer | null>(null);
   const [destination, setDestination] = useState<string | null>(null);
   const [page, setPage] = useState(0);
+  // The caller takes the page over once it asks for the first page, and follows the reader then.
+  const [requestedPage, setRequestedPage] = useState<number | undefined>(undefined);
   useEffect(() => {
     let isCurrent = true;
     void fetch(sampleUrl)
@@ -315,6 +317,9 @@ export function SidebarReader() {
         <Button size="sm" onPress={() => setDestination('varieties')}>
           Go to varieties
         </Button>{' '}
+        <Button size="sm" variant="secondary" onPress={() => setRequestedPage(0)}>
+          Back to the first page
+        </Button>{' '}
         Page: <output data-lab-output="page">{page + 1}</output>
       </p>
       <div style={{ height: 460, maxWidth: 1000 }}>
@@ -326,8 +331,10 @@ export function SidebarReader() {
           defaultSidebarOpen
           defaultPage={1}
           destination={destination}
+          page={requestedPage}
           onPageChange={(pageIndex) => {
             setPage(pageIndex);
+            setRequestedPage((current) => (current === undefined ? undefined : pageIndex));
             // A reader who moves on may ask for the same destination again.
             setDestination(null);
           }}

@@ -585,6 +585,20 @@ test.describe('PDF Viewer lab', () => {
     const scale = (await box(third)).width / 420;
     expectNear((await box(scroller)).y + 12 - (await box(third)).y, 47 * scale, 2);
 
+    // The caller's page, asked for while a destination is still being looked up, wins.
+    // Both presses land in one script, a task apart, well within the engine worker's round trip.
+    await reader.evaluate(async (root) => {
+      const press = (name: string) =>
+        [...root.querySelectorAll('button')].find((button) => button.textContent === name)?.click();
+      press('Go to varieties');
+      await new Promise((resolve) => setTimeout(resolve));
+      press('Back to the first page');
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    });
+    await expect(field).toHaveValue('1');
+
+    await tree.getByRole('row', { name: 'Markets' }).click();
+    await expect(field).toHaveValue('3');
     await reader.getByRole('tab', { name: 'Pages' }).click();
     const thumbnails = reader.getByRole('listbox', { name: 'Pages' });
     await expect(thumbnails.getByRole('option', { name: 'Page 3' })).toHaveAttribute(

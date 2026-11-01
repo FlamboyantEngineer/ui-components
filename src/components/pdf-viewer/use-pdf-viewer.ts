@@ -65,10 +65,10 @@ export function usePdfViewer<V extends PdfViewport, C extends PdfTextContent>(
   });
   const { scale } = zoom;
   const search = usePdfSearch({ ...props, loaded, pages });
-  const navigation = { ...props, document: loaded, isReady, scale, pageCount, scrollerRef, pages };
-  const { goTo } = usePdfNavigation(navigation);
+  const position = { ...props, document: loaded, isReady, scale, pageCount, scrollerRef, pages };
+  const navigation = usePdfNavigation({ ...position, search });
   usePageViewports({ ...props, loaded: view, nearPages: pages.nearPages, scale });
-  const links = usePdfLinks({ view, destination: props.destination, goTo, pages });
+  const links = usePdfLinks({ view, destination: props.destination, navigation, pages });
   const menu = usePdfContextMenu({
     ...props,
     loaded: view,
