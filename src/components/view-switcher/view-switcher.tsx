@@ -24,11 +24,13 @@ import { Tab, TabList, Tabs } from '../tabs/tabs.js';
 import { listTabbables } from '../../utils/tabbable.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import {
+  closedViewDialog,
   listViewActions,
+  resolveViewDialog,
   type ViewActionContext,
   type ViewActionHandlers,
 } from './view-actions.js';
-import { ViewDialogs, type ViewDialog } from './view-dialogs.js';
+import { ViewDialogs, type ViewDialog, type ViewDialogRequest } from './view-dialogs.js';
 
 /** One saved view of a collection. */
 export interface ViewSwitcherView {
@@ -262,6 +264,21 @@ function TabPanelLink({ panelRef }: { panelRef: RefObject<HTMLDivElement | null>
 }
 
 /**
+ * The dialog a view's action opened, with the action it runs now. A dialog whose view or action is
+ * gone closes, and stays closed if the action comes back.
+ */
+function useViewDialog(resolve: (request: ViewDialogRequest) => ViewDialog | null) {
+  const [request, setRequest] = useState<ViewDialogRequest | null>(null);
+  const resolved = request && resolve(request);
+  if (request?.isOpen && !resolved) setRequest({ ...request, isOpen: false });
+  return {
+    dialog: resolved ?? (request && closedViewDialog(request)),
+    open: setRequest,
+    close: () => setRequest((open) => open && { ...open, isOpen: false }),
+  };
+}
+
+/**
  * Names and switches the saved views of a collection, as tabs or a menu. The selected view shows a
  * modified mark while its settings differ from its saved ones; its actions save, save as a new
  * view, reset, rename, make it the default view or delete it, each tab also offering its own.
@@ -272,18 +289,21 @@ export function ViewSwitcher(props: ViewSwitcherProps) {
   const strings = useUiStrings();
   const panelRef = useRef<HTMLDivElement>(null);
   const { selected, selectedKey, select: setSelectedKey } = useSelectedView(props);
-  const [dialog, setDialog] = useState<ViewDialog | null>(null);
+  const canDelete = views.length > 1;
+  const labelOf = (key: Key) => views.find((view) => view.id === key)?.label;
+  const dialogs = useViewDialog((request) =>
+    resolveViewDialog(request, { handlers: props, selectedKey, canDelete }, labelOf),
+  );
   const context: ViewActionContext = {
     handlers: props,
     strings,
     selectedKey,
     isDirty,
     defaultViewKey,
-    canDelete: views.length > 1,
-    openDialog: setDialog,
+    canDelete,
+    openDialog: dialogs.open,
   };
-  const getActions = (key: Key) =>
-    listViewActions(key, views.find((view) => view.id === key)?.label ?? String(key), context);
+  const getActions = (key: Key) => listViewActions(key, labelOf(key) ?? String(key), context);
   const selectedActions = selected ? getActions(selected.id) : [];
   const actions =
     selected && selectedActions.length > 0 ? (
@@ -322,10 +342,7 @@ export function ViewSwitcher(props: ViewSwitcherProps) {
       >
         {props.children}
       </div>
-      <ViewDialogs
-        dialog={dialog}
-        onClose={() => setDialog((open) => open && { ...open, isOpen: false })}
-      />
+      <ViewDialogs dialog={dialogs.dialog} onClose={dialogs.close} />
     </div>
   );
 }

@@ -3,17 +3,26 @@
 // The dialogs a view switcher opens from a view's actions: naming a view, and confirming a deletion.
 
 import { useState } from 'react';
+import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Modal } from '../modal/modal.js';
 import { TextField } from '../text-field/text-field.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 
-/** A dialog a view switcher opens: what it does, and the name it starts from. */
+/**
+ * A dialog a view switcher opens, by what it does and the view it acts on, never by a callback: the
+ * switcher looks its action up afresh on every render.
+ */
+export type ViewDialogRequest =
+  | { type: 'save-as'; label: string; isOpen: boolean }
+  | { type: 'rename' | 'delete'; key: Key; label: string; isOpen: boolean };
+
+type NameSubmit = (label: string) => void | Promise<unknown>;
+
+/** An open dialog with the current action it runs. */
 export type ViewDialog =
   | { type: 'save-as' | 'rename'; label: string; isOpen: boolean; onSubmit: NameSubmit }
   | { type: 'delete'; label: string; isOpen: boolean; onSubmit: () => void | Promise<unknown> };
-
-type NameSubmit = (label: string) => void | Promise<unknown>;
 
 interface ViewDialogsProps {
   /** The open dialog, which stays set while it closes. */

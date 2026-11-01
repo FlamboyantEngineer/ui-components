@@ -67,6 +67,13 @@ Verification: `src/components/view-switcher/view-switcher.test.tsx`, `e2e/view-s
 Implementation: `src/components/view-switcher/view-switcher.tsx`
 Verification: `src/components/view-switcher/view-switcher.test.tsx`
 
+### UIC-VIEW-SWITCHER-1.10 - Open dialogs follow the views
+
+A dialog opened by an action shall keep the action and the view it acts on, not a callback: on every render it runs the current handler with the view's current label. When the handler is removed, the view leaves `views`, saving as a new view loses its selected view, or a deletion would remove the last view, the dialog closes and does not reopen if the handler or view comes back. A save, rename or deletion already started keeps its own outcome, and closing applies only to its own opening (UIC-VIEW-SWITCHER-1.5).
+
+Implementation: `src/components/view-switcher/view-switcher.tsx`, `src/components/view-switcher/view-actions.ts`, `src/components/view-switcher/view-dialogs.tsx`
+Verification: `src/components/view-switcher/view-switcher.test.tsx`
+
 ## UIC-VIEW-SWITCHER-2 - Accessibility
 
 ### UIC-VIEW-SWITCHER-2.1 - Names and keyboard

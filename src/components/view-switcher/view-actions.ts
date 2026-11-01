@@ -13,7 +13,7 @@ import { joinMenuGroups } from '../menu/menu-groups.js';
 import type { Key } from '../../core/props.js';
 import type { UiStrings } from '../../core/strings.js';
 import type { MenuEntry, MenuItemEntry } from '../menu/menu.js';
-import type { ViewDialog } from './view-dialogs.js';
+import type { ViewDialog, ViewDialogRequest } from './view-dialogs.js';
 
 /** The callbacks of the actions a view switcher's owner takes. */
 export interface ViewActionHandlers {
@@ -34,7 +34,7 @@ export interface ViewActionContext {
   defaultViewKey: Key | null;
   /** The only view left cannot be deleted. */
   canDelete: boolean;
-  openDialog: (dialog: ViewDialog) => void;
+  openDialog: (dialog: ViewDialogRequest) => void;
 }
 
 /** Save, save as and reset: they act on the current settings, so only on the selected view. */
@@ -51,8 +51,7 @@ function listSettingsActions(key: Key, context: ViewActionContext): MenuItemEntr
       id: 'save-as',
       label: strings.saveViewAs,
       icon: PlusGlyph,
-      onAction: () =>
-        context.openDialog({ type: 'save-as', label: '', isOpen: true, onSubmit: onSaveAs }),
+      onAction: () => context.openDialog({ type: 'save-as', label: '', isOpen: true }),
     });
   }
   if (onReset && isDirty) {
@@ -76,13 +75,7 @@ export function listViewActions(key: Key, label: string, context: ViewActionCont
       id: 'rename',
       label: strings.rename,
       icon: EditGlyph,
-      onAction: () =>
-        openDialog({
-          type: 'rename',
-          label,
-          isOpen: true,
-          onSubmit: (name) => onRename(key, name),
-        }),
+      onAction: () => openDialog({ type: 'rename', key, label, isOpen: true }),
     });
   }
   if (onDefaultViewChange && key !== context.defaultViewKey) {
@@ -101,10 +94,53 @@ export function listViewActions(key: Key, label: string, context: ViewActionCont
           icon: DeleteGlyph,
           tone: 'danger',
           isDisabled: !context.canDelete,
-          onAction: () =>
-            openDialog({ type: 'delete', label, isOpen: true, onSubmit: () => onDelete(key) }),
+          onAction: () => openDialog({ type: 'delete', key, label, isOpen: true }),
         },
       ]
     : [];
   return joinMenuGroups([listSettingsActions(key, context), naming, removal]);
+}
+
+/**
+ * The open dialog with the action it runs now: the current handler for its view, while that view is
+ * still listed and the action still allowed (saving as a new view needs a selected view, deleting
+ * one needs another view left). Null when the action is gone, so the dialog closes.
+ */
+export function resolveViewDialog(
+  request: ViewDialogRequest,
+  {
+    handlers,
+    selectedKey,
+    canDelete,
+  }: Pick<ViewActionContext, 'handlers' | 'selectedKey' | 'canDelete'>,
+  labelOf: (key: Key) => string | undefined,
+): ViewDialog | null {
+  const { isOpen } = request;
+  if (request.type === 'save-as') {
+    const { onSaveAs } = handlers;
+    return onSaveAs && selectedKey !== null
+      ? { type: 'save-as', label: request.label, isOpen, onSubmit: onSaveAs }
+      : null;
+  }
+  const { key } = request;
+  const label = labelOf(key);
+  if (label === undefined) return null;
+  if (request.type === 'rename') {
+    const { onRename } = handlers;
+    return onRename
+      ? { type: 'rename', label, isOpen, onSubmit: (name) => onRename(key, name) }
+      : null;
+  }
+  const { onDelete } = handlers;
+  return onDelete && canDelete
+    ? { type: 'delete', label, isOpen, onSubmit: () => onDelete(key) }
+    : null;
+}
+
+/** A dialog whose action is gone, kept for its closing: it shows its name and runs nothing. */
+export function closedViewDialog(request: ViewDialogRequest): ViewDialog {
+  const onSubmit = () => undefined;
+  return request.type === 'delete'
+    ? { type: 'delete', label: request.label, isOpen: false, onSubmit }
+    : { type: request.type, label: request.label, isOpen: false, onSubmit };
 }

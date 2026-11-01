@@ -405,4 +405,98 @@ describe('ViewSwitcher', { timeout: 20_000 }, () => {
     const panel = screen.getByRole('tabpanel', { name: 'Baking' });
     expect(requireDefined(tabs()[2])).toHaveAttribute('aria-controls', panel.id);
   });
+
+  describe('UIC-VIEW-SWITCHER-1.10 revalidates an open dialog', () => {
+    const two = views.slice(0, 2);
+    type Handlers = Partial<
+      Pick<Parameters<typeof ViewSwitcher>[0], 'onRename' | 'onDelete' | 'onSaveAs' | 'views'>
+    >;
+    function mountSwitcher(handlers: Handlers) {
+      const { rerender } = render(
+        <ViewSwitcher defaultSelectedKey="all" {...handlers} views={handlers.views ?? two} />,
+      );
+      return (next: Handlers) =>
+        rerender(<ViewSwitcher defaultSelectedKey="all" {...next} views={next.views ?? two} />);
+    }
+
+    it.each([
+      ['rename', 'Rename', 'dialog'],
+      ['delete', 'Delete', 'alertdialog'],
+    ] as const)(
+      'closes the %s dialog when its handler goes, and keeps it closed',
+      async (_, action, role) => {
+        const handler = vi.fn();
+        const props = action === 'Rename' ? { onRename: handler } : { onDelete: handler };
+        const update = mountSwitcher(props);
+        await chooseAction('All recipes', action);
+        expect(screen.getByRole(role)).toBeInTheDocument();
+        update({});
+        await waitFor(() => expect(screen.queryByRole(role)).not.toBeInTheDocument());
+        update(props);
+        expect(screen.queryByRole(role)).not.toBeInTheDocument();
+        expect(handler).not.toHaveBeenCalled();
+      },
+    );
+
+    it('closes a dialog whose view is gone, and the delete dialog when one view is left', async () => {
+      const onRename = vi.fn();
+      const onDelete = vi.fn();
+      const update = mountSwitcher({ onRename, onDelete });
+      await chooseAction('All recipes', 'Rename');
+      update({ onRename, onDelete, views: views.slice(1, 3) });
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+      update({ onRename, onDelete });
+      fireEvent.contextMenu(requireDefined(tabs()[0]));
+      await userEvent.click(await screen.findByRole('menuitem', { name: 'Delete' }));
+      expect(screen.getByRole('alertdialog', { name: 'Delete All recipes?' })).toBeInTheDocument();
+      update({ onRename, onDelete, views: views.slice(0, 1) });
+      await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
+      expect(onRename).not.toHaveBeenCalled();
+      expect(onDelete).not.toHaveBeenCalled();
+    });
+
+    it('runs the current handler and the current label for a dialog still valid', async () => {
+      const first = vi.fn();
+      const second = vi.fn();
+      const onSaveAs = vi.fn();
+      const update = mountSwitcher({ onDelete: first, onSaveAs });
+      await chooseAction('All recipes', 'Delete');
+      update({
+        onDelete: second,
+        onSaveAs,
+        views: [{ id: 'all', label: 'Every recipe' }, views[1] as ViewSwitcherView],
+      });
+      const dialog = screen.getByRole('alertdialog', { name: 'Delete Every recipe?' });
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
+      expect(first).not.toHaveBeenCalled();
+      expect(second).toHaveBeenCalledWith('all');
+      await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
+
+      const replaced = vi.fn();
+      await chooseAction('Every recipe', 'Save as new view');
+      update({ onSaveAs: replaced });
+      const field = screen.getByRole('textbox', { name: /^View name/ });
+      await userEvent.type(field, 'Weekend{Enter}');
+      expect(onSaveAs).not.toHaveBeenCalled();
+      expect(replaced).toHaveBeenCalledWith('Weekend');
+    });
+
+    it('keeps a started deletion apart from a later dialog', async () => {
+      const pending = deferred();
+      const onDelete = vi.fn(() => pending.promise);
+      const onRename = vi.fn();
+      const update = mountSwitcher({ onDelete, onRename });
+      await chooseAction('All recipes', 'Delete');
+      await userEvent.click(
+        within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Delete' }),
+      );
+      expect(onDelete).toHaveBeenCalledTimes(1);
+      update({ onDelete, onRename, views: views.slice(1, 3) });
+      await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
+      await chooseAction('Quick meals', 'Rename');
+      await act(async () => pending.resolve());
+      expect(screen.getByRole('dialog', { name: 'Rename view' })).toBeInTheDocument();
+      expect(onDelete).toHaveBeenCalledTimes(1);
+    });
+  });
 });
