@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { resolvePortPoint, routeDiagramEdge } from './edge-route.js';
+import {
+  resolvePortPoint,
+  routeDiagramEdge,
+  type DiagramEdgeEnd,
+  type DiagramPortSide,
+  type DiagramRect,
+} from './edge-route.js';
 
 const left = { x: 0, y: 0, width: 100, height: 40 };
 const right = { x: 200, y: 0, width: 100, height: 40 };
@@ -60,6 +66,89 @@ describe('routeDiagramEdge', () => {
       routing: 'orthogonal',
     });
     expect(around.path).toBe('M 100 20 L 120 20 L 120 70 L 320 70 L 320 120 L 300 120');
+  });
+
+  describe('UIC-DIAGRAM-CANVAS-2.1 orthogonal detours', () => {
+    const end = (rect: DiagramRect, side: DiagramPortSide): DiagramEdgeEnd => ({
+      rect,
+      port: { side, position: 0.5 },
+    });
+    const pointsOf = (path: string) =>
+      [...path.matchAll(/[ML] (-?[\d.]+) (-?[\d.]+)/g)].map(([, x, y]) => ({
+        x: Number(x),
+        y: Number(y),
+      }));
+    const runsInside = (
+      a: { x: number; y: number },
+      b: { x: number; y: number },
+      rect: DiagramRect,
+    ) =>
+      Math.min(a.x, b.x) < rect.x + rect.width &&
+      Math.max(a.x, b.x) > rect.x &&
+      Math.min(a.y, b.y) < rect.y + rect.height &&
+      Math.max(a.y, b.y) > rect.y;
+    /** Checks that the route clears both boxes and leaves and reaches each port along its side. */
+    function expectDetour(
+      source: DiagramEdgeEnd,
+      target: DiagramEdgeEnd,
+      targetSide = target.port?.side,
+    ) {
+      const route = routeDiagramEdge({ source, target, routing: 'orthogonal' });
+      const points = pointsOf(route.path);
+      for (const [index, point] of points.slice(1).entries()) {
+        const before = points[index] ?? point;
+        expect(before.x === point.x || before.y === point.y).toBe(true);
+        expect(runsInside(before, point, source.rect)).toBe(false);
+        expect(runsInside(before, point, target.rect)).toBe(false);
+      }
+      const [first, second] = points;
+      const [last, beforeLast] = [points.at(-1), points.at(-2)];
+      const normal = { top: [0, -1], right: [1, 0], bottom: [0, 1], left: [-1, 0] } as const;
+      const [sx, sy] = normal[source.port?.side ?? 'right'];
+      const [tx, ty] = normal[targetSide ?? 'left'];
+      expect(Math.sign((second?.x ?? 0) - (first?.x ?? 0))).toBe(sx);
+      expect(Math.sign((second?.y ?? 0) - (first?.y ?? 0))).toBe(sy);
+      expect(Math.sign((beforeLast?.x ?? 0) - (last?.x ?? 0))).toBe(tx);
+      expect(Math.sign((beforeLast?.y ?? 0) - (last?.y ?? 0))).toBe(ty);
+      return route;
+    }
+    const a = { x: 0, y: 0, width: 100, height: 50 };
+    const b = { x: 200, y: 0, width: 100, height: 50 };
+
+    it('goes around the target for aligned ports on the same side', () => {
+      const route = expectDetour(end(a, 'right'), end(b, 'right'));
+      expect(route.path).toBe('M 100 25 L 120 25 L 120 -20 L 320 -20 L 320 25 L 300 25');
+      expect(route.arrow).toBe('M 300 25 L 308 21 L 308 29 Z');
+      expect(route.label).toEqual({ x: 220, y: -20 });
+    });
+
+    it('clears the boxes for offset, reversed and vertical placements', () => {
+      expectDetour(end(a, 'right'), end({ ...b, y: 30 }, 'right'));
+      expectDetour(end(b, 'left'), end(a, 'left'));
+      expectDetour(end(b, 'right'), end(a, 'right'));
+      expectDetour(end(a, 'left'), end({ ...b, y: -20 }, 'left'));
+      const top = { x: 0, y: 0, width: 50, height: 100 };
+      const bottom = { x: 0, y: 200, width: 50, height: 100 };
+      expect(expectDetour(end(top, 'bottom'), end(bottom, 'bottom')).path).toBe(
+        'M 25 100 L 25 120 L -20 120 L -20 320 L 25 320 L 25 300',
+      );
+      expectDetour(end(bottom, 'top'), end({ ...top, x: 30 }, 'top'));
+      expectDetour(end(top, 'top'), end(bottom, 'bottom'));
+    });
+
+    it('takes a lane outside overlapping boxes and reaches zero-size preview ends', () => {
+      const route = routeDiagramEdge({
+        source: end(a, 'right'),
+        target: end({ x: 60, y: 10, width: 100, height: 50 }, 'left'),
+        routing: 'orthogonal',
+      });
+      const lanes = pointsOf(route.path).slice(2, -2);
+      expect(lanes.every((point) => point.y <= -20 || point.y >= 80)).toBe(true);
+      const preview = { rect: { x: -80, y: 25, width: 0, height: 0 } };
+      expect(expectDetour(end(a, 'right'), preview, 'right').path).toBe(
+        'M 100 25 L 120 25 L 120 -20 L -60 -20 L -60 25 L -80 25',
+      );
+    });
   });
 
   it('UIC-DIAGRAM-CANVAS-2.1 turns one corner between a horizontal and a vertical side', () => {

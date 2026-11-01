@@ -1,5 +1,6 @@
 import { requireDefined } from '../../utils/require-defined.js';
 import { isShallowEqual } from '../../utils/is-shallow-equal.js';
+import { findOrthogonalCorners } from './orthogonal-route.js';
 /** How an edge runs between its ends: a straight line, horizontal and vertical runs, or a curve. */
 export type DiagramEdgeRouting = 'straight' | 'orthogonal' | 'bezier';
 
@@ -63,7 +64,6 @@ const normals: Record<DiagramPortSide, DiagramPoint> = {
 
 const arrowLength = 8;
 const arrowHalfWidth = 4;
-const orthogonalGap = 20;
 const loopHeight = 48;
 
 const add = (a: DiagramPoint, b: DiagramPoint, scale = 1) => ({
@@ -220,44 +220,6 @@ function routeLoop(rect: DiagramRect): DiagramRoute {
   );
 }
 
-/** The corners of an orthogonal route between two anchors that leave their sides. */
-function findOrthogonalCorners(from: Anchor, to: Anchor): DiagramPoint[] {
-  const a = from.normal ?? normals.right;
-  const b = to.normal ?? normals.left;
-  const start = add(from.point, a, orthogonalGap);
-  const end = add(to.point, b, orthogonalGap);
-  const middle = { x: (from.point.x + to.point.x) / 2, y: (from.point.y + to.point.y) / 2 };
-  const isHorizontal = (normal: DiagramPoint) => normal.y === 0;
-  if (isHorizontal(a) && isHorizontal(b)) {
-    const isAhead = (end.x - start.x) * a.x >= 0 && a.x !== b.x;
-    if (isAhead)
-      return [
-        { x: middle.x, y: from.point.y },
-        { x: middle.x, y: to.point.y },
-      ];
-    return [start, { x: start.x, y: middle.y }, { x: end.x, y: middle.y }, end];
-  }
-  if (!isHorizontal(a) && !isHorizontal(b)) {
-    const isAhead = (end.y - start.y) * a.y >= 0 && a.y !== b.y;
-    if (isAhead)
-      return [
-        { x: from.point.x, y: middle.y },
-        { x: to.point.x, y: middle.y },
-      ];
-    return [start, { x: middle.x, y: start.y }, { x: middle.x, y: end.y }, end];
-  }
-  const corner = isHorizontal(a)
-    ? { x: to.point.x, y: from.point.y }
-    : { x: from.point.x, y: to.point.y };
-  const fits =
-    (corner.x - from.point.x) * a.x + (corner.y - from.point.y) * a.y > 0 &&
-    (corner.x - to.point.x) * b.x + (corner.y - to.point.y) * b.y > 0;
-  if (fits) return [corner];
-  return isHorizontal(a)
-    ? [start, { x: start.x, y: end.y }, end]
-    : [start, { x: end.x, y: start.y }, end];
-}
-
 /** Drops repeated points and points in the middle of a straight run. */
 function simplifyPolyline(points: readonly DiagramPoint[]): DiagramPoint[] {
   const distinct = points.filter(
@@ -321,5 +283,13 @@ export function routeDiagramEdge(options: DiagramRouteOptions): DiagramRoute {
   const anchors = resolveSideAnchors(options);
   if (routing === 'bezier') return routeBezier(anchors);
   const [from, to] = anchors;
-  return routePolyline([from.point, ...findOrthogonalCorners(from, to), to.point]);
+  return routePolyline([
+    from.point,
+    ...findOrthogonalCorners(
+      { point: from.point, normal: from.normal ?? normals.right },
+      { point: to.point, normal: to.normal ?? normals.left },
+      [source.rect, target.rect],
+    ),
+    to.point,
+  ]);
 }

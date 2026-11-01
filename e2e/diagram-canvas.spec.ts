@@ -165,6 +165,28 @@ test.describe('Diagram Canvas lab', () => {
     await expect(view).not.toContainText('at 100%');
   });
 
+  test('UIC-DIAGRAM-CANVAS-2.1 routes same-side ports around both parts', async ({ page, lab }) => {
+    await lab.open('diagram-canvas');
+    const canvas = page.locator('[data-lab-field="same-side"]');
+    await canvas.scrollIntoViewIfNeeded();
+    for (const [label, part] of [
+      ['back', 'Return'],
+      ['drop', 'Lower'],
+    ] as const) {
+      const labelBox = requireDefined(await canvas.getByText(label, { exact: true }).boundingBox());
+      const partBox = requireDefined(
+        await canvas.getByRole('group', { name: part, exact: true }).boundingBox(),
+      );
+      const middle = { x: labelBox.x + labelBox.width / 2, y: labelBox.y + labelBox.height / 2 };
+      const isInside =
+        middle.x > partBox.x &&
+        middle.x < partBox.x + partBox.width &&
+        middle.y > partBox.y &&
+        middle.y < partBox.y + partBox.height;
+      expect(isInside).toBe(false);
+    }
+  });
+
   test('UIC-DIAGRAM-CANVAS-3.5 centres the view from the minimap', async ({ page, lab }) => {
     await lab.open('diagram-canvas');
     await viewportBox(page);

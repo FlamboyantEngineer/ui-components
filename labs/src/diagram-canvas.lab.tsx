@@ -390,6 +390,64 @@ function ScrollingNodes() {
   );
 }
 
+const sameSideNodes: DiagramNode[] = [
+  {
+    id: 'feed',
+    x: 0,
+    y: 0,
+    width: 120,
+    height: 48,
+    label: 'Feed',
+    ports: [{ id: 'out', side: 'right', label: 'out' }],
+  },
+  {
+    id: 'return',
+    x: 220,
+    y: 0,
+    width: 120,
+    height: 48,
+    label: 'Return',
+    ports: [{ id: 'in', side: 'right', label: 'in' }],
+  },
+  {
+    id: 'upper',
+    x: 0,
+    y: 140,
+    width: 120,
+    height: 48,
+    label: 'Upper',
+    ports: [{ id: 'down', side: 'bottom', label: 'down' }],
+  },
+  {
+    id: 'lower',
+    x: 0,
+    y: 260,
+    width: 120,
+    height: 48,
+    label: 'Lower',
+    ports: [{ id: 'down', side: 'bottom', label: 'down' }],
+  },
+];
+
+const sameSideEdges: DiagramEdge[] = [
+  {
+    id: 'loop-back',
+    source: 'feed',
+    target: 'return',
+    sourcePort: 'out',
+    targetPort: 'in',
+    label: 'back',
+  },
+  {
+    id: 'drop',
+    source: 'upper',
+    target: 'lower',
+    sourcePort: 'down',
+    targetPort: 'down',
+    label: 'drop',
+  },
+];
+
 function Modules() {
   const [selection, setSelection] = useState<Selection>(new Set<Key>());
   return (
@@ -436,6 +494,18 @@ mountLab(
       description="The wheel over the log's entries scrolls them while they can scroll that way, then pans the view at their end. Ctrl or Command with the wheel zooms even over the entries. Wheel lines and pages count as pixels."
     >
       <ScrollingNodes />
+    </LabSection>
+    <LabSection
+      title="Ports on the same side"
+      description="Orthogonal edges between ports on the same side detour around both parts, here between two right ports in a row and two bottom ports in a column, instead of running through the other part."
+    >
+      <DiagramCanvas
+        aria-label="Same side ports"
+        data-lab-field="same-side"
+        nodes={sameSideNodes}
+        edges={sameSideEdges}
+        routing="orthogonal"
+      />
     </LabSection>
     <LabSection
       title="Read only graph"
