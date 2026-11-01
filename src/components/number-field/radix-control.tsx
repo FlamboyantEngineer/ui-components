@@ -24,6 +24,7 @@ import {
   NumberAdornment,
   NumberScrubber,
   numberFieldHooks as hooks,
+  toModifiedPressProps,
   type NumberSteps,
 } from './number-field-parts.js';
 import { formatRadixNumber, parseRadixNumber, type NumberFieldRadix } from './radix-number.js';
@@ -98,6 +99,48 @@ function useRadixEntry({ state, radix, config, steps }: RadixControlProps) {
   return { draft, setDraft, finish, step, onKeyDown };
 }
 
+/**
+ * A radix step button: by `step` when pressed (`onStep()`), or by a modifier's step with Shift or
+ * Alt (`onStep(size)`), and disabled when the value cannot move further.
+ */
+function RadixStepper({
+  direction,
+  state,
+  steps,
+  controlId,
+  labelledBy,
+  onStep,
+}: {
+  direction: 1 | -1;
+  state: FieldState<number | null>;
+  steps: NumberSteps;
+  controlId: string;
+  labelledBy?: string | undefined;
+  onStep: (size?: number) => void;
+}) {
+  const strings = useUiStrings();
+  const slot = direction === 1 ? 'increment' : 'decrement';
+  const bound = direction === 1 ? steps.maxValue : steps.minValue;
+  const atBound =
+    state.value !== null &&
+    bound !== undefined &&
+    (direction === 1 ? state.value >= bound : state.value <= bound);
+  return (
+    <AriaButton
+      {...hooks.slot(slot)}
+      aria-label={direction === 1 ? strings.numberIncrease : strings.numberDecrease}
+      aria-labelledby={`${controlId}-${slot} ${labelledBy ?? controlId}`}
+      id={`${controlId}-${slot}`}
+      isDisabled={state.isDisabled || state.isReadOnly || atBound}
+      excludeFromTabOrder
+      {...toModifiedPressProps(state, steps, onStep)}
+      onPress={() => onStep()}
+    >
+      <Glyph icon={direction === 1 ? PlusGlyph : MinusGlyph} />
+    </AriaButton>
+  );
+}
+
 /** A radix spinbutton on a text-field building block; numeric value and stepping stay base independent. */
 export function RadixControl(props: RadixControlProps) {
   const { state, control, config, steps } = props;
@@ -114,32 +157,20 @@ export function RadixControl(props: RadixControlProps) {
     name,
   } = config;
   const [input, inputRef] = useForwardedRef<HTMLInputElement>(control.ref);
-  const strings = useUiStrings();
   const entry = useRadixEntry(props);
-  const stepper = (direction: 1 | -1) => {
-    const slot = direction === 1 ? 'increment' : 'decrement';
-    const bound = direction === 1 ? maxValue : minValue;
-    const atBound =
-      state.value !== null &&
-      bound !== undefined &&
-      (direction === 1 ? state.value >= bound : state.value <= bound);
-    return (
-      <AriaButton
-        {...hooks.slot(slot)}
-        aria-label={direction === 1 ? strings.numberIncrease : strings.numberDecrease}
-        aria-labelledby={`${control.id}-${slot} ${control['aria-labelledby'] ?? control.id}`}
-        id={`${control.id}-${slot}`}
-        isDisabled={state.isDisabled || state.isReadOnly || atBound}
-        excludeFromTabOrder
-        onPress={() => {
-          entry.step(direction);
-          input.current?.focus();
-        }}
-      >
-        <Glyph icon={direction === 1 ? PlusGlyph : MinusGlyph} />
-      </AriaButton>
-    );
-  };
+  const stepper = (direction: 1 | -1) => (
+    <RadixStepper
+      direction={direction}
+      state={state}
+      steps={steps}
+      controlId={control.id}
+      labelledBy={control['aria-labelledby']}
+      onStep={(size) => {
+        entry.step(direction, size);
+        input.current?.focus();
+      }}
+    />
+  );
   return (
     <AriaTextField
       {...toAriaControlProps(control)}

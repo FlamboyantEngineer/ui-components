@@ -12,7 +12,9 @@ import {
   NumberAdornment,
   NumberScrubber,
   Stepper,
+  addStep,
   createModifierStepHandler,
+  toModifiedPressProps,
   numberFieldHooks as hooks,
   type NumberSteps,
 } from './number-field-parts.js';
@@ -76,7 +78,14 @@ function useNumberEntry(state: FieldState<number | null>, options: NumberEntryOp
       }
     },
   });
-  return { commit, toInputProps };
+  /** A step button's Shift or Alt press steps the number the input shows and commits it. */
+  const toModifiedPress = (input: NumberInputState, direction: 1 | -1) =>
+    toModifiedPressProps(state, steps, (size) => {
+      const draft = Number.isNaN(input.numberValue) ? null : input.numberValue;
+      state.setValue(addStep(draft, direction * size, steps));
+      state.commit();
+    });
+  return { commit, toInputProps, toModifiedPress };
 }
 
 export function DecimalControl({ state, control, config, steps }: DecimalControlProps) {
@@ -105,7 +114,11 @@ export function DecimalControl({ state, control, config, steps }: DecimalControl
       {({ state: inputState }) => (
         <Group {...hooks.slot('group')}>
           {hideStepper ? null : (
-            <Stepper slot="decrement" labelledBy={control['aria-labelledby']} />
+            <Stepper
+              slot="decrement"
+              labelledBy={control['aria-labelledby']}
+              modifiedPress={entry.toModifiedPress(inputState, -1)}
+            />
           )}
           {showScrubber ? <NumberScrubber state={state} steps={steps} /> : null}
           <NumberAdornment side="start">{startAdornment}</NumberAdornment>
@@ -119,7 +132,11 @@ export function DecimalControl({ state, control, config, steps }: DecimalControl
           />
           <NumberAdornment side="end">{endAdornment}</NumberAdornment>
           {hideStepper ? null : (
-            <Stepper slot="increment" labelledBy={control['aria-labelledby']} />
+            <Stepper
+              slot="increment"
+              labelledBy={control['aria-labelledby']}
+              modifiedPress={entry.toModifiedPress(inputState, 1)}
+            />
           )}
         </Group>
       )}

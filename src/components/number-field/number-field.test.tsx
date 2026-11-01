@@ -498,6 +498,83 @@ describe('NumberField', () => {
     expect(onCommit).toHaveBeenLastCalledWith(12.5);
   });
 
+  it.each([10, 16] as const)(
+    'UIC-NUMBER-FIELD-3.2 steps by the modifier step when a step button is pressed with Shift or Alt (radix %i)',
+    async (radix) => {
+      const user = userEvent.setup();
+      const onCommit = vi.fn();
+      render(
+        <NumberField
+          label="Weight"
+          radix={radix}
+          defaultValue={4}
+          maxValue={40}
+          smallStep={radix === 10 ? 0.5 : 2}
+          largeStep={10}
+          onCommit={onCommit}
+        />,
+      );
+      const input = screen.getByRole(radix === 10 ? 'textbox' : 'spinbutton');
+      const increase = screen.getByRole('button', { name: /Increase/ });
+      const decrease = screen.getByRole('button', { name: /Decrease/ });
+      const shown = (value: number) => (radix === 10 ? String(value) : `0x${value.toString(16)}`);
+      await user.keyboard('{Shift>}');
+      await user.click(increase);
+      await user.click(increase);
+      await user.keyboard('{/Shift}');
+      expect(input).toHaveValue(shown(24));
+      expect(onCommit).toHaveBeenLastCalledWith(24);
+      expect(onCommit).toHaveBeenCalledTimes(2);
+      await user.keyboard('{Alt>}');
+      await user.click(decrease);
+      await user.keyboard('{/Alt}');
+      const altered = radix === 10 ? 23.5 : 22;
+      expect(input).toHaveValue(shown(altered));
+      // Shift wins over Alt.
+      await user.keyboard('{Shift>}{Alt>}');
+      await user.click(increase);
+      await user.keyboard('{/Alt}{/Shift}');
+      expect(onCommit).toHaveBeenLastCalledWith(altered + 10);
+      // A plain press keeps `step`, onto its grid.
+      await user.click(decrease);
+      expect(onCommit).toHaveBeenLastCalledWith(radix === 10 ? 33 : 31);
+      // The range bounds a modified step.
+      await user.keyboard('{Shift>}');
+      await user.click(increase);
+      await user.keyboard('{/Shift}');
+      expect(onCommit).toHaveBeenLastCalledWith(40);
+    },
+  );
+
+  it('UIC-NUMBER-FIELD-3.2 steps the typed text with a modified step button, and refuses it while locked or without the step', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    const { rerender } = render(
+      <NumberField label="Weight" defaultValue={5} largeStep={10} onCommit={onCommit} />,
+    );
+    const input = screen.getByRole('textbox');
+    await user.clear(input);
+    await user.type(input, '20');
+    await user.keyboard('{Shift>}');
+    await user.click(screen.getByRole('button', { name: /Increase/ }));
+    await user.keyboard('{/Shift}');
+    expect(input).toHaveValue('30');
+    expect(onCommit).toHaveBeenLastCalledWith(30);
+    // Without smallStep, Alt with a press does nothing, as Alt with an arrow does.
+    await user.keyboard('{Alt>}');
+    await user.click(screen.getByRole('button', { name: /Increase/ }));
+    await user.keyboard('{/Alt}');
+    expect(input).toHaveValue('30');
+    rerender(
+      <NumberField label="Weight" value={30} largeStep={10} isReadOnly onCommit={onCommit} />,
+    );
+    await user.keyboard('{Shift>}');
+    await user.click(screen.getByRole('button', { name: /Increase/ }));
+    await user.keyboard('{/Shift}');
+    expect(input).toHaveValue('30');
+    expect(onCommit).toHaveBeenCalledTimes(1);
+  });
+
   it('UIC-NUMBER-FIELD-2.2 keeps a large whole number on Enter and blur', async () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();
