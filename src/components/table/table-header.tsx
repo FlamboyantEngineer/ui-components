@@ -150,6 +150,7 @@ function getHeaderState<T>(
   const sortIndex = model.sort.findIndex((descriptor) => descriptor.column === column.id);
   return {
     width: resolveColumnWidth(column, readOwn(model.widths, column.id)),
+    isVirtualized: structure.isVirtualized,
     isRowHeader: getRowHeaderColumns(structure.columns).includes(column),
     pin,
     pinOffset: pin ? readOwn(model.pinOffsets, column.id) : undefined,

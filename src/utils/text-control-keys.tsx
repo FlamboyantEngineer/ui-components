@@ -44,7 +44,8 @@ interface KeyHandlers<E> {
 /**
  * A row or cell element's props that leave a text control's keys to it: React Aria's capture,
  * which walks the row's controls, skips them, and they stop at the element, so the collection's
- * navigation and typeahead never take them. Tab and Escape pass.
+ * navigation and typeahead never take them. Tab, Escape and modified Enter pass to enclosing
+ * shortcuts; modified Enter still skips the collection's own handlers.
  */
 export function keepTextControlKeys<E extends Element, P extends KeyHandlers<E>>(props: P): P {
   const { onKeyDownCapture, onKeyDown } = props;
@@ -55,6 +56,7 @@ export function keepTextControlKeys<E extends Element, P extends KeyHandlers<E>>
     },
     onKeyDown: (event: KeyboardEvent<E>) => {
       if (!isTextControlKey(event)) return onKeyDown?.(event);
+      if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) return;
       event.stopPropagation();
     },
   };

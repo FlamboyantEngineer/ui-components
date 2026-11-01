@@ -6,7 +6,7 @@ import {
   SortNoneGlyph,
   type GlyphComponent,
 } from '../../core/glyphs.js';
-import type { ReactNode } from 'react';
+import { isValidElement, type JSX, type ReactNode, type SyntheticEvent } from 'react';
 import { Column, ColumnResizer } from '../../primitives/index.js';
 import type { SortDirection } from '../../core/props.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
@@ -20,10 +20,13 @@ import type { TableColumnDrag } from './use-column-reorder.js';
 import type { TableColumn, TableColumnPin } from './table-rows.js';
 import { getPinStyle } from './table-structure.js';
 import { FreeControls } from '../../utils/free-controls.js';
+import { keepTextControlKeys } from '../../utils/text-control-keys.js';
+import { isInteractiveTarget } from '../../utils/is-interactive-target.js';
 
 /** What a data column header shows beyond the column's own declaration. */
 export interface TableColumnHeaderState {
   width: TableColumnSize;
+  isVirtualized: boolean;
   isRowHeader: boolean;
   pin: TableColumnPin | undefined;
   /** The pinned header's distance from its edge, in pixels. */
@@ -46,6 +49,36 @@ const sortGlyphs: Readonly<Record<SortDirection | 'none', GlyphComponent>> = {
   none: SortNoneGlyph,
 };
 
+/** A nested control starts no press on the sortable header around it. */
+function stopControlPress(event: SyntheticEvent<HTMLElement>) {
+  if (isInteractiveTarget(event.target, event.currentTarget)) event.stopPropagation();
+}
+
+function TableColumnLabel({ children }: { children: ReactNode }) {
+  return (
+    <span
+      onPointerDown={stopControlPress}
+      onMouseDown={stopControlPress}
+      onTouchStart={stopControlPress}
+      onClick={stopControlPress}
+    >
+      <FreeControls>{children}</FreeControls>
+    </span>
+  );
+}
+
+/** Leaves a nested field's caret and input keys to the field before grid capture runs. */
+function renderColumnElement(isVirtualized: boolean) {
+  return (props: JSX.IntrinsicElements['th' | 'div']) => {
+    const keyed = keepTextControlKeys(props);
+    return isVirtualized ? (
+      <div {...(keyed as JSX.IntrinsicElements['div'])} />
+    ) : (
+      <th {...(keyed as JSX.IntrinsicElements['th'])} />
+    );
+  };
+}
+
 /**
  * One data column header: its content (the label, which drags a reorderable column, the sort glyph
  * and the filter button), which takes another column dropped on it, and the resizer, with its pin,
@@ -59,7 +92,8 @@ export function DataColumn<T>({
   state: TableColumnHeaderState;
 }) {
   const strings = useUiStrings();
-  const hasControls = column.allowsResizing === true || state.filter !== null;
+  const hasControls =
+    column.allowsResizing === true || state.filter !== null || isValidElement(column.header);
   const isReorderable = column.allowsReordering === true;
   const {
     ref: dragRef,
@@ -79,6 +113,7 @@ export function DataColumn<T>({
       textValue={getColumnText(column)}
       isRowHeader={state.isRowHeader}
       allowsSorting={column.allowsSorting}
+      render={renderColumnElement(state.isVirtualized)}
       width={state.width}
       {...getColumnBounds(column)}
       // Focusable children: focus the header itself so Enter still sorts.
@@ -98,7 +133,7 @@ export function DataColumn<T>({
     >
       <div ref={dragRef} {...targetProps} {...hooks.slot('column-content')}>
         <span {...(isReorderable ? sourceProps : {})} {...hooks.slot('column-label')}>
-          <FreeControls>{column.header}</FreeControls>
+          <TableColumnLabel>{column.header}</TableColumnLabel>
         </span>
         {column.allowsSorting ? (
           <Icon

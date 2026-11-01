@@ -45,6 +45,8 @@ export const tableHooks = createHooks('table', [
   'footer',
   'footer-row',
   'footer-cell',
+  'action-row',
+  'action-cell',
   'pagination',
   'selection-bar',
   'bulk-edit',

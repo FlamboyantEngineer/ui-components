@@ -67,6 +67,32 @@ describe('Table', { timeout: 15_000 }, () => {
     await user.keyboard('{/Shift}');
     expect(onSelectionChange).toHaveBeenLastCalledWith(new Set([1, '1', 'a b', 'ab']));
   });
+  it('UIC-TABLE-1.7 keeps trailing actions reachable without selecting a row', async () => {
+    const user = userEvent.setup();
+    const add = vi.fn();
+    const select = vi.fn();
+    const action = vi.fn();
+    const { container } = render(
+      <Table
+        aria-label="Items"
+        rows={fruit}
+        columns={columns}
+        selectionMode="single"
+        onSelectionChange={select}
+        onRowAction={action}
+        trailingContent={<Button onPress={add}>Add item</Button>}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Add item' }));
+    expect(add).toHaveBeenCalledTimes(1);
+    expect(select).not.toHaveBeenCalled();
+    expect(action).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Add item' }).closest('td')).toHaveAttribute(
+      'colspan',
+      '3',
+    );
+    expectHooksMatchSpec(container, 'TABLE', { slots: ['action-row', 'action-cell'] });
+  });
   it('UIC-TABLE-1.1 renders one row per item and one cell per column as React nodes', () => {
     const { container } = render(
       <Table

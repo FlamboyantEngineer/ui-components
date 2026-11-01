@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, type MouseEvent, type ReactNode, type RefObject } from 'react';
+import { useId, useMemo, type MouseEvent, type ReactNode, type RefObject } from 'react';
 import { Popover, useHover, usePress } from '../../primitives/index.js';
 import { PopoverPresence } from '../popover/popover.js';
 import type { AriaLabellingProps } from '../../core/events.js';
@@ -216,6 +216,12 @@ export function ControlCompletionList({
   renderCompletion,
   className,
 }: ControlCompletionListProps) {
+  // A parent layout update must not restart the position pause while it is being resumed.
+  // Every lookup, including a caret move with equal matches, supplies a new options array.
+  const items = useMemo(
+    () => model.options.map((option, index) => ({ ...option, id: index })),
+    [model.options],
+  );
   return (
     <CompletionList
       id={listId}
@@ -223,7 +229,7 @@ export function ControlCompletionList({
       isOpen={model.isOpen}
       onOpenChange={(open) => (open ? undefined : model.close())}
       anchorRef={anchorRef}
-      items={model.options.map((option, index) => ({ ...option, id: index }))}
+      items={items}
       activeKey={model.activeIndex}
       onActiveKeyChange={(key) => model.setActiveIndex(Number(key))}
       onAction={(key) => {

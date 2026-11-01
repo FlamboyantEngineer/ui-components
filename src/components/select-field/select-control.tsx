@@ -51,6 +51,7 @@ function useListProps(
     (Boolean(search) || isFilterableLength(flattenPickerItems(props.options).length));
   return {
     items: model.listed,
+    popoverProps: props.popoverProps,
     isMultiple: props.isMultiple,
     blockedKeys: model.blockedKeys,
     renderOption: props.renderOption,

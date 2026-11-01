@@ -133,8 +133,10 @@ Verification: `src/components/code-editor/code-editor.test.tsx`, `src/components
 
 With `completions`, the text area shall autocomplete from a list (`aria-autocomplete="list"`, `aria-haspopup="listbox"`), and typing or moving the caret by key or pointer in an editable editor shall open the list of matches, and Ctrl+Space open it whatever the word before the caret, an empty word matching every completion. The list is a [Completion List](COMPLETION-LIST.md) (a listbox named by the provider string `suggestions`, with its own hooks) with its first option active, each option showing its label and description. While open, `aria-controls` names the list and `aria-activedescendant` the active option, which carries `aria-selected="true"` and `data-focused`. The text area keeps its text box role, which takes no other role, and keeps focus. The editor runs the shared completions engine ([UIC-COMPLETION-LIST-2](COMPLETION-LIST.md#uic-completion-list-2---completions-engine)).
 
+Controlled updates through a collection such as a table cell shall keep the same text area, focus and caret. Input-triggered completions shall look up the typed text once the controlled cell update has committed, while that edit still owns the same text and caret, before the engine reconciles replaced text. Narrowing an open list shall keep it open without waiting for another animation frame. A later input, caret move, loss of focus, unmount, replacement source or locked editor cancels the deferred lookup.
+
 Implementation: `src/components/code-editor/use-code-completion.ts`, `src/components/code-editor/code-editor.tsx`, `src/components/code-editor/code-area.tsx`, `src/components/completion-list/completion-list.tsx`, `src/components/completion-list/use-completions.ts`, `src/core/strings.ts`
-Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-editor.spec.ts`
+Verification: `src/components/code-editor/code-editor.test.tsx`, `src/components/code-editor/code-table-completion.test.tsx`, `e2e/code-editor.spec.ts`
 
 ### UIC-CODE-EDITOR-4.3 - Choosing
 
@@ -152,7 +154,7 @@ Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-edito
 
 ### UIC-CODE-EDITOR-4.5 - Position
 
-The list shall open in a non-modal React Aria popover (the Completion List's root, also `ui-code-editor__popover`) on the `dropdown` overlay layer, at a caret marker (`ui-code-editor__caret`) placed in the highlighted copy while the list is open: below the caret line, or above it when there is more room there, kept inside the viewport. It follows the caret as the reader types and as the text area scrolls.
+The list shall open in a non-modal React Aria popover (the Completion List's root, also `ui-code-editor__popover`) on the `dropdown` overlay layer, at a caret marker (`ui-code-editor__caret`) placed in the highlighted copy while the list is open: below the caret line, or above it when there is more room there, kept inside the viewport. It follows the caret as the reader types and as the text area scrolls. When an input lookup follows a controlled-value commit, positioning shall measure the newly committed caret marker before the next paint.
 
 Implementation: `src/components/completion-list/completion-list.tsx`, `src/components/code-editor/code-layers.tsx`
 Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-editor.spec.ts`

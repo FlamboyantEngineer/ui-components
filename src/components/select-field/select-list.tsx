@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, type FocusEvent, type ReactNode } from 'react';
+import type { BaseProps } from '../../core/props.js';
 import {
   Autocomplete,
   Input,
@@ -29,6 +30,7 @@ interface SelectListMore {
 }
 
 export interface SelectListProps extends SelectOptionsDisplay {
+  popoverProps?: BaseProps | undefined;
   /** The options and groups, in display order. */
   items: readonly SelectFieldItem[];
   /** Draws a filter input above the options. */
@@ -111,7 +113,8 @@ export function SelectList(props: SelectListProps) {
     <>
       <PopoverPresence />
       <Popover
-        {...hooks.slot('popover', { layer: 'dropdown' })}
+        {...props.popoverProps}
+        {...hooks.slot('popover', { layer: 'dropdown' }, props.popoverProps?.className)}
         offset={DEFAULT_DROPDOWN_OFFSET}
         containerPadding={DEFAULT_OVERLAY_GUTTER}
         style={style}

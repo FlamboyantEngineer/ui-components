@@ -338,6 +338,15 @@ Icon choices use the ordinary `ui-select-field` root and slots, append the calle
 Implementation: `src/components/select-field/select-field.tsx`
 Verification: `src/components/select-field/select-icons.test.tsx`
 
+## UIC-SELECT-FIELD-12 - Popup attributes
+
+### UIC-SELECT-FIELD-12.1 - Popup attributes
+
+`popoverProps` shall forward caller attributes and class names to the portalled list or tree popover without moving them onto the field. Library hook classes, layer and mode remain authoritative. A caller popup ID shall remain distinct from the inner tree dialog's accessibility ID; trigger ownership, dismissal and focus restoration remain unchanged.
+
+Implementation: `src/components/select-field/select-list.tsx`, `src/components/select-field/tree-select-popover.tsx`
+Verification: `src/components/select-field/select-popup.test.tsx`, `e2e/select-field.spec.ts`
+
 ## Hooks
 
 | Hook                                  | Kind      | Values                                     | Description                                                              |

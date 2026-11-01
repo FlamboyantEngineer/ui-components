@@ -167,6 +167,7 @@ export function useCodeEditor(options: CodeEditorOptions): CodeEditorModel {
   const applyEdit = useCodeEdits({ inputRef: layers.input, value, onChange });
   const snippet = useCodeSnippet(layers.input);
   const completion = useCodeCompletion({
+    value,
     completions: options.completions,
     inputRef: layers.input,
     isLocked,

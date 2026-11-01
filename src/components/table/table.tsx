@@ -58,6 +58,8 @@ export interface TableProps<T extends TableRow>
     TableGroupingProps<T>,
     TableSpreadsheetProps<T>,
     RefProps<HTMLDivElement> {
+  /** Ordinary content in a full-width final row, outside row selection and actions. */
+  trailingContent?: ReactNode;
   /** The data columns, in declared order. */
   columns: readonly TableColumn<T>[];
   /** The rows, each with an `id` unique in the table, nested rows included. */
@@ -142,7 +144,7 @@ const virtualRowHeights: Readonly<Record<TableSize, number>> = { md: 40, sm: 32 
 
 type TableGridElementOptions<T extends TableRow> = Pick<
   TableProps<T>,
-  'rows' | 'getChildRows' | 'columnGroups'
+  'rows' | 'getChildRows' | 'columnGroups' | 'trailingContent'
 > & { rowHeight: number };
 
 /** What the header row shows, from the grid and the table's own props. */
@@ -216,8 +218,15 @@ function TableGridElement<T extends TableRow>({
     >
       <TableHeader structure={structure} model={header} />
       <TableBody {...body} />
-      {body.status === null && hasTableFooter(structure) ? (
-        <TableFooter structure={structure} rows={view.presentedRows} pinOffsets={grid.pinOffsets} />
+      {(body.status === null && hasTableFooter(structure)) ||
+      options.trailingContent !== undefined ? (
+        <TableFooter
+          structure={structure}
+          rows={view.presentedRows}
+          pinOffsets={grid.pinOffsets}
+          trailingContent={options.trailingContent}
+          showSummary={body.status === null}
+        />
       ) : null}
     </AriaTable>
   );

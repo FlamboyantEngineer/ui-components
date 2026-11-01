@@ -52,6 +52,13 @@ Verification: `src/components/table/table-row.test.tsx`, `e2e/table.spec.ts`
 Implementation: `src/components/table/table-row.tsx`, `src/components/table/table-data-cell.tsx`, `src/components/table/table-structure.ts`, `src/components/table/table-footer.tsx`, `src/components/table/table-group-row.tsx`, `src/components/table/use-table-grid.ts`
 Verification: `src/components/table/table.test.tsx`, `e2e/table.spec.ts`
 
+### UIC-TABLE-1.7 - Trailing actions
+
+`trailingContent` shall render ordinary controls in one full-width final row, after any summary, including while the body shows a notice. Its controls stay focusable without selecting, dragging or activating a data row. Summary cells keep their existing behavior and notices still hide the summary. Omitting the prop leaves the table unchanged.
+
+Implementation: `src/components/table/table.tsx`, `src/components/table/table-footer.tsx`
+Verification: `src/components/table/table.test.tsx`, `src/components/table/table-footer.test.tsx`, `e2e/table.spec.ts`
+
 ## UIC-TABLE-2 - Sorting and filtering
 
 ### UIC-TABLE-2.1 - Sort cycle
@@ -151,8 +158,10 @@ Verification: `src/components/table/table.test.tsx`
 
 A control inside a cell (a row action, a selection checkbox, a cell's own content or a detail row's content) shall keep focus when it takes it, by keyboard, pointer or `focus()`, in flat and nested rows: the cell becomes the grid's focused cell, so the grid never moves focus to another row or cell. The control keeps focus and its element while it turns pending or unavailable (`focusableWhenDisabled`) and while rows are added around it with stable row IDs, and the arrow keys move on from its cell when it is not a text control. A text control in a cell (a text input, a slider or select, a text area, editable content, or an element with role `textbox` or `combobox`) keeps every key but Tab and Escape: the arrow keys, Home, End and typed characters are its own, and neither the grid's navigation nor its typeahead take them.
 
-Implementation: `src/components/table/table-row.tsx`, `src/components/table/table-data-cell.tsx`, `src/utils/text-control-keys.tsx`
-Verification: `src/components/table/table-cell-focus.test.tsx`, `e2e/table.spec.ts`, `src/utils/text-control-keys.test.tsx`
+A text control inside a column header shall keep the same editing keys, without sorting or navigating the grid. Pointer activation of a nested control shall run only the control. Control+Enter and Meta+Enter skip the collection's handlers and reach enclosing shortcuts; plain Enter remains with the field. Focusing and activating the column header directly shall still sort an enabled sortable column.
+
+Implementation: `src/components/table/table-row.tsx`, `src/components/table/table-data-cell.tsx`, `src/components/table/table-column.tsx`, `src/utils/text-control-keys.tsx`
+Verification: `src/components/table/table-cell-focus.test.tsx`, `src/components/table/table-column-controls.test.tsx`, `e2e/table.spec.ts`, `src/utils/text-control-keys.test.tsx`
 
 ## UIC-TABLE-4 - Column sizing
 
@@ -616,6 +625,8 @@ Verification: `src/components/table/table-bulk-edit.test.tsx`, `e2e/table.spec.t
 | `ui-table__footer`               | slot      |                                | The summary row group (React Aria's table footer).                             |
 | `ui-table__footer-row`           | slot      |                                | The summary row.                                                               |
 | `ui-table__footer-cell`          | slot      |                                | One summary cell.                                                              |
+| `ui-table__action-row`           | slot      |                                | The final nonselectable ordinary-content row.                                  |
+| `ui-table__action-cell`          | slot      |                                | Its full-width content cell.                                                   |
 | `ui-table__pagination`           | slot      |                                | The page navigation under a paginated grid (also `ui-pagination`).             |
 | `ui-table__selection-bar`        | slot      |                                | The bar above the grid while rows are selected (also `ui-action-row`).         |
 | `ui-table__bulk-edit`            | slot      |                                | The bulk edit dialog (also `ui-modal`).                                        |

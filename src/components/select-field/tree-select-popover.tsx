@@ -16,7 +16,7 @@ import { selectFieldHooks as hooks } from './select-field-hooks.js';
 
 interface TreeSelectPopoverProps<T extends TreeItemData> extends Pick<
   SelectTreeFieldProps<T, 'single' | 'multiple'>,
-  'items' | 'getTextValue' | 'hasChildItems' | 'onLoadChildren'
+  'items' | 'getTextValue' | 'hasChildItems' | 'onLoadChildren' | 'popoverProps'
 > {
   /** The field's label, which names the dialog, the search and the tree. */
   label: string;
@@ -130,9 +130,12 @@ function TreeSelectDialog<T extends TreeItemData>({
  * empty and the tree opens at the chosen nodes every time.
  */
 export function TreeSelectPopover<T extends TreeItemData>(props: TreeSelectPopoverProps<T>) {
+  const { id, ...popoverProps } = props.popoverProps ?? {};
   return (
     <PopoverPanel
-      {...hooks.slot('popover', { mode: 'tree' })}
+      {...popoverProps}
+      {...hooks.slot('popover', { mode: 'tree', layer: 'dropdown' }, popoverProps.className)}
+      render={id === undefined ? undefined : (panel) => <div {...panel} id={id} />}
       placement="bottom start"
       offset={DEFAULT_DROPDOWN_OFFSET}
       style={triggerWidthProperty}

@@ -1,6 +1,7 @@
 'use client';
 
 import type { Ref } from 'react';
+import type { BaseProps } from '../../core/props.js';
 import type { OpenStateProps } from '../../core/events.js';
 import {
   Field,
@@ -52,6 +53,8 @@ export interface SelectTreeFieldProps<
   name?: string | undefined;
   /** Receives the trigger button, the field's focusable control, while it is on the page. */
   triggerRef?: Ref<HTMLButtonElement> | undefined;
+  /** Attributes and hook classes for the portalled popover, independent of the field. */
+  popoverProps?: BaseProps | undefined;
 }
 
 /**

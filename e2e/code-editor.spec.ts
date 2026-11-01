@@ -18,6 +18,22 @@ async function box(locator: Locator) {
 }
 
 test.describe('Code Editor lab', () => {
+  test('UIC-CODE-EDITOR-4.2 keeps completions while a controlled table cell updates', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('code-editor');
+    const source = page.getByRole('textbox', { name: 'Cell expression', exact: true });
+    await source.fill('');
+    await source.pressSequentially('fru');
+    await expect(source).toHaveValue('fru');
+    await expect(source).toBeFocused();
+    await expect(page.getByRole('option', { name: 'fruit.count', exact: true })).toBeVisible();
+    await source.press('Tab');
+    await expect(source).toHaveValue('fruit.count');
+    await expect(source).toBeFocused();
+  });
+
   test('UIC-CODE-EDITOR-7.2 UIC-CODE-EDITOR-7.3 replaces literal Unicode ranges without shifting source offsets', async ({
     page,
     lab,

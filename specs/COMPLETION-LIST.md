@@ -81,7 +81,7 @@ Verification: `src/components/completion-list/trigger-completions.test.ts`, `e2e
 A lookup and the list it opens shall belong to the text they were looked up for: the engine's own edits and caret moves carry them along (UIC-COMPLETION-LIST-2.2), but a value the control is given from outside, such as a controlled replacement, a reset or a recalled message, closes the list and discards a pending answer, which then shows nothing. Inserting checks again that the control still holds that text, and closes the list instead of editing when it does not, so an answer for earlier text never replaces part of the new one. Rendering the control again with the same value keeps the list as it is. TextField, MessageComposer and CodeEditor share this behaviour.
 
 Implementation: `src/components/completion-list/use-completions.ts`
-Verification: `src/components/text-field/use-text-field-input.test.tsx`, `src/components/message-composer/message-composer.test.tsx`, `src/components/code-editor/code-editor.test.tsx`, `e2e/completion-list.spec.ts`
+Verification: `src/components/text-field/use-text-field-input.test.tsx`, `src/components/message-composer/message-composer.test.tsx`, `src/components/code-editor/code-editor.test.tsx`, `src/components/code-editor/code-table-completion.test.tsx`, `e2e/completion-list.spec.ts`
 
 ### UIC-COMPLETION-LIST-2.7 - Replaced source
 

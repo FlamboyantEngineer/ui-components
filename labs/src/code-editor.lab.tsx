@@ -15,6 +15,7 @@ import type {
   CompletionSource,
 } from '../../src/components/completion-list/completion-list.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { CompletingCell } from './table-control-cases.js';
 
 const keywords = new Set(['let', 'if', 'else', 'return', 'pick', 'and', 'or', 'not']);
 const parts = /(\/\/[^\n]*|"(?:\\.|[^"\\])*"?|\d+(?:\.\d+)?|[A-Za-z_][\w.]*|\s+|.)/g;
@@ -391,6 +392,12 @@ mountLab(
         description="The caller checks the brackets on every change; the list and the gutter follow."
       >
         <CheckedEditor />
+      </LabSection>
+      <LabSection
+        title="Completions in a table cell"
+        description="Type fru in the cell and accept fruit.count with Tab; the caller owns the expression outside the table."
+      >
+        <CompletingCell />
       </LabSection>
       <LabSection
         title="Completions"

@@ -27,6 +27,22 @@ async function width(locator: Locator): Promise<number> {
 }
 
 test.describe('Select Field lab', () => {
+  test('UIC-SELECT-FIELD-12.1 forwards caller popup attributes and restores focus on dismissal', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('select-field');
+    const field = page.locator('[data-lab-field="short"]');
+    const trigger = field.locator('.ui-select-field__trigger');
+    await trigger.click();
+    const popup = page.locator('.ui-select-field__popover[data-popup-density="compact"]');
+    await expect(popup).toBeVisible();
+    await expect(field).not.toHaveAttribute('data-popup-density');
+    await page.keyboard.press('Escape');
+    await expect(popup).toBeHidden();
+    await expect(trigger).toBeFocused();
+  });
+
   test('UIC-SELECT-FIELD-1.1 UIC-SELECT-FIELD-1.3 UIC-SELECT-FIELD-2.1 UIC-SELECT-FIELD-2.3 draws every layout and state', async ({
     page,
     lab,

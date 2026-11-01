@@ -1,6 +1,8 @@
 'use client';
 
-import type { RefObject } from 'react';
+import { useLayoutEffect, useRef, type RefObject } from 'react';
+import { isFocused } from '../../utils/focus-target.js';
+import { isShallowEqual } from '../../utils/is-shallow-equal.js';
 import {
   useCompletions,
   type Completion,
@@ -14,12 +16,89 @@ import { findCompletionQuery, indentInsertion, parseSnippet } from './completion
 import type { CodeSnippetSession } from './use-code-snippet.js';
 
 interface CodeCompletionOptions {
+  value: string;
   completions: Completions | undefined;
   inputRef: RefObject<HTMLTextAreaElement | null>;
   /** A read-only or disabled editor offers nothing. */
   isLocked: boolean;
   applyEdit: (edit: CodeEdit) => void;
   snippet: CodeSnippetSession;
+}
+
+interface PendingInput {
+  input: HTMLTextAreaElement;
+  previousValue: string;
+  value: string;
+  selectionStart: number;
+  selectionEnd: number;
+  source: Completions | undefined;
+}
+
+function isSameInputSource(left: Completions | undefined, right: Completions | undefined) {
+  if (left === right) return true;
+  if (!left || !right || typeof left === 'function' || typeof right === 'function') return false;
+  return (
+    left.length === right.length &&
+    left.every((option, index) => isShallowEqual(option, right[index]))
+  );
+}
+
+/** Retargets an input session at the controlled commit, before the engine checks for replacements. */
+function useInputCompletionCommit(options: CodeCompletionOptions) {
+  const pending = useRef<PendingInput | null>(null);
+  const trackRef = useRef<CompletionsModel['track'] | null>(null);
+  useLayoutEffect(() => {
+    const edit = pending.current;
+    if (!edit) return;
+    const input = options.inputRef.current;
+    if (
+      input !== edit.input ||
+      !isFocused(input) ||
+      options.isLocked ||
+      !isSameInputSource(edit.source, options.completions)
+    ) {
+      pending.current = null;
+      return;
+    }
+    // A collection may first commit the editor's own state with its previous controlled props.
+    if (options.value !== edit.value) {
+      if (options.value !== edit.previousValue) pending.current = null;
+      return;
+    }
+    pending.current = null;
+    if (
+      input.value === edit.value &&
+      input.selectionStart === edit.selectionStart &&
+      input.selectionEnd === edit.selectionEnd
+    )
+      trackRef.current?.('input');
+  });
+  useLayoutEffect(
+    () => () => {
+      pending.current = null;
+      trackRef.current = null;
+    },
+    [],
+  );
+  return {
+    trackRef,
+    capture() {
+      const input = options.inputRef.current;
+      if (!input) return;
+      const { value, selectionStart, selectionEnd } = input;
+      pending.current = {
+        input,
+        previousValue: options.value,
+        value,
+        selectionStart,
+        selectionEnd,
+        source: options.completions,
+      };
+    },
+    cancel() {
+      pending.current = null;
+    },
+  };
 }
 
 /** Inserts a completion over the text it replaces, selecting its first field or the end. */
@@ -51,11 +130,32 @@ function insertCompletion(
  * identifier-like word before the caret, inserting snippets with their fields as editor edits.
  */
 export function useCodeCompletion(options: CodeCompletionOptions): CompletionsModel {
-  return useCompletions({
+  // This hook's layout effect precedes the shared engine's replaced-text reconciliation.
+  const { trackRef, capture, cancel } = useInputCompletionCommit(options);
+  const completion = useCompletions({
     completions: options.completions,
     inputRef: options.inputRef,
     isLocked: options.isLocked,
     findQuery: findCompletionQuery,
     insert: (option, range) => insertCompletion(option, range, options),
   });
+  useLayoutEffect(() => {
+    trackRef.current = completion.track;
+  });
+  return {
+    ...completion,
+    track(reason) {
+      if (reason === 'input') return capture();
+      cancel();
+      completion.track(reason);
+    },
+    close() {
+      cancel();
+      completion.close();
+    },
+    handleKeyDown(event) {
+      cancel();
+      return completion.handleKeyDown(event);
+    },
+  };
 }

@@ -427,7 +427,12 @@ mountLab(
         description="The trigger fits its widest complete option label, capped at the column width."
       >
         <div data-lab-column="320" style={{ width: 320 }}>
-          <SelectField label="Short" options={fruit.slice(0, 2)} data-lab-field="short" />
+          <SelectField
+            label="Short"
+            options={fruit.slice(0, 2)}
+            data-lab-field="short"
+            popoverProps={{ 'data-popup-density': 'compact' }}
+          />
           <SelectField
             label="Long"
             options={[

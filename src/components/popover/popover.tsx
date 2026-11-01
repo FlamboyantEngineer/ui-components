@@ -1,7 +1,15 @@
 'use client';
 
 import { CloseGlyph } from '../../core/glyphs.js';
-import { useContext, useState, type CSSProperties, type ReactNode, type RefObject } from 'react';
+import {
+  useContext,
+  useState,
+  type CSSProperties,
+  type JSX,
+  type ReactElement,
+  type ReactNode,
+  type RefObject,
+} from 'react';
 import {
   Dialog,
   DialogTrigger,
@@ -40,6 +48,8 @@ interface PopoverPanelProps
     OverlayPositionProps,
     Omit<OverlayDismissProps, 'isDismissable'>,
     Pick<OpenStateProps, 'isOpen' | 'onOpenChange'> {
+  /** Internal panel composition, preserving a caller DOM id independently of a dialog's id. */
+  render?: ((props: JSX.IntrinsicElements['div']) => ReactElement) | undefined;
   /** The element it is placed against, outside a trigger or instead of the trigger. */
   triggerRef?: RefObject<Element | null> | undefined;
   /** Leaves the page outside reachable, visible to assistive technology and scrollable. */
