@@ -5,6 +5,7 @@ import { Dialog, Link } from '../../primitives/index.js';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Button } from '../button/button.js';
+import { Tooltip } from '../tooltip/tooltip.js';
 import { HoverCard, HoverCardTrigger, type HoverCardProps } from './hover-card.js';
 
 type TriggerOptions = Omit<Parameters<typeof HoverCardTrigger>[0], 'children'>;
@@ -78,6 +79,35 @@ describe('HoverCard', () => {
     vi.useRealTimers();
     vi.unstubAllGlobals();
   });
+
+  it.each(['button hint', 'tooltip'])(
+    'UIC-HOVER-CARD-1.1 opens the card from a trigger that has its own %s',
+    async (kind) => {
+      const lisbon =
+        kind === 'tooltip' ? (
+          <Tooltip content="City page">
+            <Button>Lisbon</Button>
+          </Tooltip>
+        ) : (
+          <Button tooltip="City page">Lisbon</Button>
+        );
+      render(
+        <HoverCardTrigger>
+          {lisbon}
+          <HoverCard aria-label="About Lisbon">
+            <p>Capital of Portugal.</p>
+          </HoverCard>
+        </HoverCardTrigger>,
+      );
+      expect(trigger()).toHaveAttribute('aria-haspopup', 'dialog');
+      await hover(user, trigger());
+      await advance(1000);
+      const dialog = screen.getByRole('dialog', { name: 'About Lisbon' });
+      expect(trigger()).toHaveAttribute('aria-expanded', 'true');
+      expect(trigger()).toHaveAttribute('aria-describedby', expect.stringContaining(dialog.id));
+      expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+    },
+  );
 
   it('UIC-HOVER-CARD-1.1 UIC-HOVER-CARD-2.1 UIC-HOVER-CARD-2.3 opens a named card that describes its trigger', async () => {
     const onPress = vi.fn();

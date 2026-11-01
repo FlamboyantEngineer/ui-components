@@ -116,6 +116,24 @@ function ControlledAndDisabled() {
   );
 }
 
+/** A trigger with a hint of its own still opens the card, on hover and on keyboard focus. */
+function HintedTrigger() {
+  const city = cities[2] as City;
+  return (
+    <div data-lab-demo="hinted-trigger">
+      <HoverCardTrigger>
+        <Button size="sm" tooltip="Open the city page" shortcut="Mod+K">
+          {city.name}
+        </Button>
+        <HoverCard aria-label={`About ${city.name}`}>
+          <p>{city.note}</p>
+          <Button size="sm">Save {city.name}</Button>
+        </HoverCard>
+      </HoverCardTrigger>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -162,6 +180,12 @@ mountLab(
       description="The page shows and hides the first card; the second trigger is disabled and opens nothing."
     >
       <ControlledAndDisabled />
+    </LabSection>
+    <LabSection
+      title="A trigger with its own hint"
+      description="The Kyoto button has a tooltip and a shortcut of its own; inside the hover card trigger they yield, so the card opens on hover and focus."
+    >
+      <HintedTrigger />
     </LabSection>
   </>,
 );
