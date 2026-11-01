@@ -2,7 +2,13 @@
 
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { MinusGlyph, PlusGlyph, ScrubGlyph } from '../../core/glyphs.js';
-import { useId, type KeyboardEvent, type ReactNode } from 'react';
+import {
+  useId,
+  type KeyboardEvent,
+  type MouseEvent,
+  type PointerEvent,
+  type ReactNode,
+} from 'react';
 import { Button as AriaButton, useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { Glyph } from '../../core/provider.js';
@@ -83,6 +89,55 @@ export function createModifierStepHandler(state: FieldState<number | null>, step
   };
 }
 
+/** The modifier keys of an event, and the calls that take it from React Aria's press handling. */
+interface ModifiedEvent {
+  shiftKey: boolean;
+  altKey: boolean;
+  preventDefault(): void;
+  stopPropagation(): void;
+}
+
+/**
+ * Capture handlers that take a step button's press with Shift or Alt held from React Aria, which
+ * would step by `step`, and step by `largeStep` or `smallStep` instead, once per press, through
+ * `onStep(size)`. They follow the arrows' rules: Shift wins over Alt, and without the matching
+ * prop, or while read-only or disabled, a modified press does nothing. Plain presses pass through.
+ */
+export function toModifiedPressProps(
+  state: FieldState<number | null>,
+  steps: NumberSteps,
+  onStep: (size: number) => void,
+) {
+  const take = (event: ModifiedEvent) => {
+    if (!event.shiftKey && !event.altKey) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const size = modifierStep(event, steps);
+    if (size !== undefined && !isLocked(state)) onStep(size);
+  };
+  const block = (event: ModifiedEvent) => {
+    if (!event.shiftKey && !event.altKey) return;
+    event.preventDefault();
+    event.stopPropagation();
+  };
+  return {
+    onPointerDownCapture: (event: PointerEvent<HTMLButtonElement>) => {
+      if (event.button === 0) take(event);
+    },
+    // Keeps focus where it was, as React Aria's steppers do.
+    onMouseDownCapture: (event: MouseEvent<HTMLButtonElement>) => {
+      if (event.button === 0 && (event.shiftKey || event.altKey)) event.preventDefault();
+    },
+    onClickCapture: block,
+    onKeyDownCapture: (event: KeyboardEvent<HTMLButtonElement>) => {
+      if (event.key === 'Enter' || event.key === ' ') take(event);
+    },
+    onKeyUpCapture: (event: KeyboardEvent<HTMLButtonElement>) => {
+      if (event.key === 'Enter' || event.key === ' ') block(event);
+    },
+  };
+}
+
 /** Host content before or after the input; content that renders nothing draws no slot. */
 export function NumberAdornment({
   side,
@@ -103,14 +158,18 @@ export function NumberAdornment({
 export function Stepper({
   slot,
   labelledBy,
+  modifiedPress,
 }: {
   slot: 'decrement' | 'increment';
   labelledBy?: string | undefined;
+  /** The capture handlers of a press with Shift or Alt held (`toModifiedPressProps`). */
+  modifiedPress: ReturnType<typeof toModifiedPressProps>;
 }) {
   const id = useId();
   return (
     <AriaButton
       slot={slot}
+      {...modifiedPress}
       {...hooks.slot(slot)}
       id={id}
       aria-labelledby={labelledBy ? `${id} ${labelledBy}` : undefined}
