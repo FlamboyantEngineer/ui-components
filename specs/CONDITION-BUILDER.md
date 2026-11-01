@@ -6,7 +6,7 @@
 
 ### UIC-CONDITION-BUILDER-1.1 - Plain tree value
 
-The value shall be a root group `{ type: 'group', id, combinator, rules }` whose `combinator` is `and` or `or` and whose `rules` hold, in order, rules `{ type: 'rule', id, field, operator, value }` (a [Filter Bar](FILTER-BAR.md) condition with an id) and nested groups. `value` with `onChange` controls the tree and `defaultValue` starts an uncontrolled one, an empty `and` group by default; `onChange` receives a new tree after each change and every node keeps its id. Nodes the builder adds get ids unique within it.
+The value shall be a root group `{ type: 'group', id, combinator, rules }` whose `combinator` is `and` or `or` and whose `rules` hold, in order, rules `{ type: 'rule', id, field, operator, value }` (a [Filter Bar](FILTER-BAR.md) condition with an id) and nested groups. `value` with `onChange` controls the tree and `defaultValue` starts an uncontrolled one, an empty `and` group by default; `onChange` receives a new tree after each change and every node keeps its id. Nodes the builder adds, and every node of a copy it makes, get ids unique within the document that no node of the current tree holds, so a tree saved from an earlier page, restored or controlled, never shares an id with a node added after it; the builder never takes a render id for a data id without that check.
 
 Implementation: `src/components/condition-builder/condition-builder.tsx`, `src/components/condition-builder/condition-tree.ts`
 Verification: `src/components/condition-builder/condition-builder.test.tsx`, `src/components/condition-builder/condition-tree.test.ts`

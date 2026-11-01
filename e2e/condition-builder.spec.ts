@@ -74,4 +74,19 @@ test.describe('Condition Builder lab', () => {
     await expect(value).not.toContainText('"available"');
     await lab.expectAccessible();
   });
+
+  test('UIC-CONDITION-BUILDER-1.1 keeps ids unique after a saved tree is restored', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('condition-builder');
+    const demo = page.locator('[data-lab-demo="saved"]');
+    const addRule = () => demo.getByRole('button', { name: 'Add rule' }).last().click();
+    await addRule();
+    await demo.getByRole('button', { name: 'Save the tree' }).click();
+    await demo.getByRole('button', { name: 'Restore the saved tree' }).click();
+    await addRule();
+    await addRule();
+    await expect(demo.locator('[data-lab-unique]')).toHaveText(/^(\d+) of \1 ids unique$/);
+  });
 });

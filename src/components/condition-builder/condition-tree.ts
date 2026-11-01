@@ -82,6 +82,11 @@ export function moveConditionNode(root: ConditionGroup, id: string, delta: -1 | 
   });
 }
 
+/** The ids of `node` and every node in it. */
+export function listConditionIds(node: ConditionNode): string[] {
+  return node.type === 'rule' ? [node.id] : [node.id, ...node.rules.flatMap(listConditionIds)];
+}
+
 /** A copy of `node` and everything in it under new ids. */
 export function copyConditionNode(node: ConditionNode, createId: () => string): ConditionNode {
   if (node.type === 'rule') return { ...node, id: createId() };

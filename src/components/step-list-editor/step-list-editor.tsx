@@ -74,7 +74,8 @@ function useStepActions(options: {
   const focusStep = (id: string, part: StepFocusPart) =>
     requestFocus(() => findFocusPart(findStepElement(root.current, id), part));
   const insertAt = (index: number, values: StepListEditorStep['values'] = {}) => {
-    const step = { id: createId(), values };
+    // The new id skips every id in the list, such as ids a restored list kept from an earlier page.
+    const step = { id: createId(steps.map((item) => item.id))(), values };
     setSteps(insertStep(steps, index, step));
     focusStep(step.id, 'field');
   };
