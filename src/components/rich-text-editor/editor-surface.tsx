@@ -51,18 +51,30 @@ export interface SyncedEditorOptions<T> {
   isEqual?: ((value: T, shown: T) => boolean) | undefined;
   /** The state once a new value replaces the shown document. Defaults to a fresh `parse`. */
   replace?: ((state: EditorState, value: T) => EditorState) | undefined;
+  /**
+   * Whose value the document shows. Another owner (`Object.is`) starts a fresh `parse`, with an
+   * empty history, even when its value equals the shown one, so undo never reaches another owner's
+   * text.
+   */
+  owner?: unknown;
 }
 
 /**
  * The engine state, kept in step with a value: an edit reports the new value, and a value that
  * differs from the shown document (a controlled change, a restore, a clear, a sent message) replaces
- * it, by `replace`. The rich-text editor and the rich composer share it, each with its own value.
+ * it, by `replace`; another `owner` starts afresh. The rich-text editor and the rich composer share
+ * it, each with its own value.
  */
 export function useSyncedEditorState<T>(options: SyncedEditorOptions<T>): SyncedEditor {
   const { schema, value, parse, serialize, isEqual = Object.is } = options;
   const [state, setState] = useState(() => parse(value));
   const [shown, setShown] = useState(value);
-  if (state.schema !== schema) {
+  const [owner, setOwner] = useState(options.owner);
+  if (!Object.is(owner, options.owner)) {
+    setOwner(options.owner);
+    setShown(value);
+    setState(parse(value));
+  } else if (state.schema !== schema) {
     setState(parse(value));
   } else if (value !== shown) {
     setShown(value);

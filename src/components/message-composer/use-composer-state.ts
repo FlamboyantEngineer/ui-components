@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { usePersistentState, type PersistCodec } from '../../core/provider.js';
+import { usePersistentState, useUiStorage, type PersistCodec } from '../../core/provider.js';
+import { useShallowStable } from '../../utils/use-shallow-stable.js';
 import { useDraftSubmission, type Submitter } from '../../utils/use-draft-submission.js';
 
 /** How a composer reads its value as text and turns text back into its value. */
@@ -53,6 +54,11 @@ export interface ComposerState<T> {
   submitNow: () => void;
   /** Steps through the history, or asks to edit the last message; whether the key was used. */
   recall: (direction: RecallDirection) => boolean;
+  /**
+   * Whose text the input shows: a new object for another `persistKey`, another storage or another
+   * edit, even when its text is the same, so an editor starts a fresh undo history for it.
+   */
+  owner: object;
 }
 
 /** The history entry the composer shows, by its index, and its text as shown. */
@@ -138,6 +144,11 @@ export function useComposerState<T>(options: ComposerStateOptions<T>): ComposerS
   });
   const isEditing = editValue !== undefined;
   const value = isEditing ? edit : draft;
+  const owner = useShallowStable({
+    persistKey: options.persistKey,
+    storage: useUiStorage(),
+    editValue,
+  });
   const text = format.toText(value);
   const hasContent = Boolean(options.allowsEmptySubmit) || text.trim() !== '';
   const canSubmit = !options.isBlocked && !submission.isSubmitting && hasContent;
@@ -176,5 +187,6 @@ export function useComposerState<T>(options: ComposerStateOptions<T>): ComposerS
       submission.send(value, true, options.onSubmitNow);
     },
     recall,
+    owner,
   };
 }

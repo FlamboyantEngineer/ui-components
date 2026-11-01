@@ -45,12 +45,14 @@ const placeholderClass = hooks.slotClass('placeholder');
 /**
  * The engine state, kept in step with the composer's message: an edit reports the new message, and
  * a message that differs from the shown document (sent, recalled, edited, restored) replaces it
- * with a fresh history and the caret at the end.
+ * with a fresh history and the caret at the end. Another owner of the message (draft key, storage
+ * or edit) starts a fresh history too, even when its text is the same.
  */
-function useComposerEditorState(
-  value: MessageComposerMessage,
-  onChange: (value: MessageComposerMessage) => void,
-) {
+function useComposerEditorState({
+  value,
+  setValue: onChange,
+  owner,
+}: Pick<ComposerState<MessageComposerMessage>, 'value' | 'setValue' | 'owner'>) {
   const plugins = useMemo(() => createComposerPlugins(composerSchema), []);
   return useSyncedEditorState({
     schema: composerSchema,
@@ -59,6 +61,7 @@ function useComposerEditorState(
     parse: (message) => createComposerState(parseComposerMessage(message), plugins),
     serialize: serializeComposerDocument,
     isEqual: isSameMessage,
+    owner,
   });
 }
 
@@ -89,7 +92,7 @@ function usePasteHandlers(props: RichMessageComposerProps) {
 export function RichComposerEditor(editor: RichComposerEditorProps) {
   const { props, state } = editor;
   const isEditable = !props.isDisabled;
-  const synced = useComposerEditorState(state.value, state.setValue);
+  const synced = useComposerEditorState(state);
   const paste = usePasteHandlers(props);
   const editable = useEditable(isEditable);
   const { placeholder } = props;
