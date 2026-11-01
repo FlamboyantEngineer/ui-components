@@ -32,6 +32,13 @@ test.describe('Form lab', () => {
     await expect(guests).toBeFocused();
     await guests.fill('3');
     await booking.getByText('Main', { exact: true }).click();
+    // The house rules start unchecked, not mixed, and block booking until ticked.
+    const rules = booking.getByRole('checkbox', { name: 'Accept the house rules' });
+    await expect(rules).not.toBeChecked();
+    await expect(rules).not.toBeChecked({ indeterminate: true });
+    await booking.getByRole('button', { name: 'Book' }).click();
+    await expect(output(page, 'Booking')).toHaveText('none');
+    await expect(rules).toBeFocused();
     await booking.getByText('Accept the house rules', { exact: true }).click();
     await booking.getByRole('button', { name: 'Book' }).click();
     await expect(output(page, 'Booking')).toHaveText(

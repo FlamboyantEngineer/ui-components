@@ -223,6 +223,43 @@ test.describe('Boolean Field lab', () => {
     await form.getByRole('button', { name: 'Save' }).click();
     await expect(output(page, 'Submitted')).toHaveText('ripe=true fresh=false');
   });
+
+  test('UIC-BOOLEAN-FIELD-1.1 starts a two-state control false and a choice unset, required either way', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('boolean-field');
+    for (const variant of ['checkbox', 'switch', 'toggle-button']) {
+      await expect(cell(page, variant, 'required').locator('.ui-boolean-field')).toHaveAttribute(
+        'data-value',
+        'false',
+      );
+    }
+    await expect(cell(page, 'checkbox', 'required').getByRole('checkbox')).not.toBeChecked({
+      indeterminate: true,
+    });
+    await expect(cell(page, 'checkbox', 'required').getByRole('checkbox')).not.toBeChecked();
+    await expect(cell(page, 'segmented', 'required').locator('.ui-boolean-field')).toHaveAttribute(
+      'data-value',
+      'unset',
+    );
+    const consent = field(page, 'required-consent');
+    const box = consent.getByRole('checkbox', { name: 'Accept the terms' });
+    await expect(box).not.toBeChecked();
+    await expect(box).not.toBeChecked({ indeterminate: true });
+    await expect(consent).toHaveAttribute('data-validation', 'invalid');
+    await consent.locator('.ui-field__label').click();
+    await expect(consent).toHaveAttribute('data-validation', 'valid');
+    await consent.locator('.ui-field__label').click();
+    await expect(box).not.toBeChecked();
+    await expect(box).not.toBeChecked({ indeterminate: true });
+    await expect(consent).toHaveAttribute('data-validation', 'invalid');
+    const choice = field(page, 'required-choice');
+    await expect(choice.getByRole('radio', { checked: true })).toHaveCount(0);
+    await choice.getByText('Keep private').click();
+    await expect(choice).toHaveAttribute('data-validation', 'valid');
+    await lab.expectAccessible();
+  });
 });
 
 test('UIC-BOOLEAN-FIELD-3.5 UIC-SEGMENTED-CHOICE-1.3 keeps the False label glyphs inside the segmented label', async ({

@@ -27,14 +27,23 @@ export interface BooleanFieldProps extends FieldInputProps<boolean | null> {
   name?: string | undefined;
 }
 
+/** The variants that show only on and off unless `allowsUnset` adds the unset state. */
+const twoStateVariants = new Set<BooleanFieldVariant>(['checkbox', 'switch', 'toggle-button']);
+
+function isNotTrue(value: boolean | null): boolean {
+  return value !== true;
+}
+
 function serialize(value: boolean | null): string {
   return value === null ? 'unset' : String(value);
 }
 
 /**
  * A field for a true-or-false value, drawn as a checkbox, a switch, two named segments, a select or
- * a toggle button. It may also hold no value (`null`): required, it is then invalid; with
- * `allowsUnset`, pressing returns to it.
+ * a toggle button. A checkbox, switch or toggle button starts false and, required, asks for true
+ * (consent). The segmented and dropdown variants, and any variant with `allowsUnset`, start unset
+ * (`null`) and, required, ask for a value, false included; with `allowsUnset`, pressing returns to
+ * unset.
  */
 export function BooleanField({
   variant = 'checkbox',
@@ -45,9 +54,12 @@ export function BooleanField({
   ...props
 }: BooleanFieldProps) {
   const strings = useUiStrings();
+  const isTwoState = !allowsUnset && twoStateVariants.has(variant);
   const { state, field } = useFieldControl(props, {
-    initialValue: null,
+    initialValue: isTwoState ? false : null,
     emptyValue: allowsUnset ? null : undefined,
+    // A two-state control asks for consent when required: only true fills it.
+    isEmpty: isTwoState ? isNotTrue : undefined,
   });
   const labels = {
     true: trueLabel ?? strings.valueTrue,
