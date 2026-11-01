@@ -261,7 +261,8 @@
 .ui-table__column[data-kind='actions'] .ui-table__column-label,
 .ui-chat-tool-call[data-variant='row']:is([data-status='succeeded'], [data-status='failed'])
   :is(.ui-chat-tool-call__status, .ui-chat-tool-call__duration),
-.ui-emoji-picker__categories .ui-tabs__label {
+.ui-emoji-picker__categories .ui-tabs__label,
+.ui-field[data-message-display='tooltip'] .ui-field__message {
   position: absolute;
   width: 1px;
   height: 1px;

@@ -23,6 +23,7 @@ export type {
   FieldIssue,
   FieldIssues,
   FieldChangeLayout,
+  FieldMessageDisplay,
   FieldDensity,
   FieldLabelLayout,
   FieldLayoutProps,

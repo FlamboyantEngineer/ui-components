@@ -104,6 +104,7 @@ const layoutKeys = new Set<string>([
   'size',
   'density',
   'changeLayout',
+  'messageDisplay',
   'description',
   'help',
   'decoration',

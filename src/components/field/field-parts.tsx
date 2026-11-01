@@ -56,6 +56,7 @@ export const fieldHooks = createHooks('field', [
   'decoration',
   'description',
   'message',
+  'message-tooltip',
 ]);
 
 const controlSizes: readonly ControlSize[] = ['xs', 'sm', 'md', 'lg'];
@@ -151,7 +152,7 @@ export function FieldLabel({
   );
 }
 
-function severityOf({ status }: FieldValidation): FieldSeverity | null {
+export function severityOf({ status }: FieldValidation): FieldSeverity | null {
   if (status === 'invalid') return 'error';
   return status === 'warning' ? 'warning' : null;
 }
