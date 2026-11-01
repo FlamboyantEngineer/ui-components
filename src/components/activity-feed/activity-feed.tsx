@@ -9,7 +9,6 @@ import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { capitalizeText } from '../../utils/relative-time.js';
-import { requireDefined } from '../../utils/require-defined.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { Attribution, type AttributionProps } from '../attribution/attribution.js';
 import { Avatar, getDisplayName, type AvatarIdentity } from '../avatar/avatar.js';
@@ -145,13 +144,15 @@ function DayGroups({
     locale,
     unknownLabel: capitalizeText(strings.unknownTime, locale),
   });
+  // A group is the nth run of its day, not its first entry: an event added to or removed from the
+  // start of a day keeps the day's other entries mounted.
+  const runs = new Map<string, number>();
   return groups.map((group, index) => {
     const headingId = `${baseId}-${index}`;
+    const run = runs.get(group.day) ?? 0;
+    runs.set(group.day, run + 1);
     return (
-      <li
-        key={`${group.day}:${toKeyIdentity(requireDefined(group.items[0]).id)}`}
-        {...hooks.slot('group')}
-      >
+      <li key={`${group.day}:${run}`} {...hooks.slot('group')}>
         <Heading {...hooks.slot('day')} id={headingId}>
           {group.label}
         </Heading>
