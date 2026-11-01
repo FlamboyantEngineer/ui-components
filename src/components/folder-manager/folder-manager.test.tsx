@@ -617,6 +617,79 @@ describe('FolderManager', () => {
     expect(onCreate).toHaveBeenCalledWith({ name: 'Draft text', parentKey: 'alpha' });
   });
 
+  it('UIC-FOLDER-MANAGER-2.3 leaves focus where the reader moved it while a rename was pending', async () => {
+    const user = userEvent.setup();
+    let resolve = () => {};
+    const onRename = () =>
+      new Promise<void>((done) => {
+        resolve = done;
+      });
+    render(
+      <>
+        <FolderManager<Folder>
+          aria-label="Folders"
+          folders={sample}
+          defaultSelectedKey="vegetables"
+          onRename={onRename}
+        />
+        <button type="button">After</button>
+      </>,
+    );
+    await user.click(screen.getByRole('button', { name: 'Rename' }));
+    await user.keyboard('Greens{Enter}');
+    await user.click(screen.getByRole('button', { name: 'After' }));
+    await act(async () => resolve());
+    expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
+  });
+
+  it('UIC-FOLDER-MANAGER-2.2 drops focus waiting for a new row once the reader moves elsewhere', async () => {
+    const user = userEvent.setup();
+    const created: Folder[] = [...sample, { id: 'new', name: 'Fresh' }];
+    const props = { 'aria-label': 'Folders', onCreate: () => 'new', onRename: () => {} };
+    const { rerender } = render(
+      <>
+        <FolderManager<Folder> folders={sample} {...props} />
+        <button type="button">After</button>
+      </>,
+    );
+    await user.click(screen.getByRole('button', { name: 'New folder' }));
+    await user.keyboard('Fresh{Enter}');
+    await user.click(screen.getByRole('button', { name: 'After' }));
+    rerender(
+      <>
+        <FolderManager<Folder> folders={created} {...props} />
+        <button type="button">After</button>
+      </>,
+    );
+    // The row arrives through a mutation observer, which reports in a microtask.
+    await act(() => Promise.resolve());
+    expect(row('Fresh')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
+  });
+
+  it('UIC-FOLDER-MANAGER-2.2 focuses a late new row while focus is still the manager’s, unless a new edit began', async () => {
+    const user = userEvent.setup();
+    const created: Folder[] = [...sample, { id: 'new', name: 'Fresh' }];
+    const props = { 'aria-label': 'Folders', onCreate: () => 'new', onRename: () => {} };
+    const { rerender, unmount } = render(<FolderManager<Folder> folders={sample} {...props} />);
+    await user.click(screen.getByRole('button', { name: 'New folder' }));
+    await user.keyboard('Fresh{Enter}');
+    rerender(<FolderManager<Folder> folders={created} {...props} />);
+    await waitFor(() => expect(row('Fresh')).toHaveFocus());
+    unmount();
+    const { rerender: again } = render(
+      <FolderManager<Folder> folders={sample} defaultSelectedKey="vegetables" {...props} />,
+    );
+    await user.click(screen.getByRole('button', { name: 'New folder' }));
+    await user.keyboard('Fresh{Enter}');
+    await user.click(row('Citrus'));
+    await user.keyboard('{F2}');
+    const field = screen.getByRole('textbox', { name: 'Rename Citrus' });
+    again(<FolderManager<Folder> folders={created} defaultSelectedKey="vegetables" {...props} />);
+    await act(() => Promise.resolve());
+    expect(field).toHaveFocus();
+  });
+
   it('UIC-FOLDER-MANAGER-4.1 forwards ref to its root', () => {
     const ref = createRef<HTMLDivElement>();
     const { container } = render(<Manager ref={ref} />);

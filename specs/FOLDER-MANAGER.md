@@ -66,9 +66,11 @@ Verification: `src/components/folder-manager/folder-manager.test.tsx`, `e2e/fold
 
 While the promise of `onCreate` or `onRename` is pending, the name field shall be read-only and `aria-busy`, and further submits do nothing, so a held Enter creates one folder. A rejection keeps the field open with the typed name and shows the error's message, or the provider string `actionFailed`, in an `InlineError` alert (`ui-folder-manager__message`) that describes the field, which is then invalid; Enter retries the same name.
 
+When an edit or delete ends, focus moves to its row (UIC-FOLDER-MANAGER-2.2, 2.3, 2.6) only while the manager still owns it: focus inside the manager, or fallen to the page with the name field or row that left. Focus the reader moved elsewhere while the promise was pending, or while the row was still to arrive in `folders`, stays where it is, and a new edit drops a row still awaited.
+
 A create, rename or delete whose promise settles after the manager has unmounted shall settle nothing in the interface: it calls no `onSelectionChange`, moves no focus and shows no message, and a manager mounted in its place does not take it up. The host's work goes on as it started.
 
-Implementation: `src/components/folder-manager/use-folder-actions.ts`, `src/components/folder-manager/folder-manager-parts.tsx`, `src/components/folder-manager/folder-manager.tsx`, `src/utils/use-lifetime-signal.ts`
+Implementation: `src/components/folder-manager/use-folder-actions.ts`, `src/components/folder-manager/use-folder-tree.ts`, `src/components/folder-manager/use-folder-manager.ts`, `src/components/folder-manager/folder-manager-parts.tsx`, `src/components/folder-manager/folder-manager.tsx`, `src/utils/use-lifetime-signal.ts`
 Verification: `src/components/folder-manager/folder-manager.test.tsx`, `src/components/folder-manager/folder-manager-lifetime.test.tsx`, `e2e/folder-manager.spec.ts`
 
 ### UIC-FOLDER-MANAGER-2.6 - Deleting a folder
