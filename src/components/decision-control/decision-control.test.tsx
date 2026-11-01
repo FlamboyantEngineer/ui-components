@@ -76,6 +76,11 @@ describe('DecisionControl', { timeout: 15_000 }, () => {
       <DecisionControl onSubmit={() => {}} options={votes} comment="none" />,
     );
     expect(comment()).not.toBeRequired();
+    expect(comment()).toHaveAttribute('rows', '2');
+    expect(comment().closest('.ui-decision-control__comment')).toHaveAttribute(
+      'data-density',
+      'compact',
+    );
     await userEvent.click(screen.getByRole('radio', { name: '−1' }));
     expect(comment()).toBeRequired();
     await userEvent.click(screen.getByRole('radio', { name: '+2' }));

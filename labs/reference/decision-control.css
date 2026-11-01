@@ -6,11 +6,12 @@
   font-size: var(--ref-font-size-md);
 }
 
-.ui-decision-control__form {
+/* Scoped under the root to win over the shared form's wider gap, which loads after this file. */
+.ui-decision-control .ui-decision-control__form {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 8px;
+  gap: 6px;
 }
 
 .ui-decision-control__label {
