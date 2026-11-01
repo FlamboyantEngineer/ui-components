@@ -168,6 +168,25 @@ describe('table grouping helpers', () => {
     });
   });
 
+  it('UIC-TABLE-13.1 orders computed groups by their compareValues, keyed by value, empty last', () => {
+    const order = ['Herb', 'Fruit'];
+    const grouping = {
+      id: 'kind',
+      label: 'Kind',
+      getValue: (row: Item) => row.kind,
+      compareValues: (left: unknown, right: unknown) =>
+        order.indexOf(String(left)) - order.indexOf(String(right)),
+    };
+    const tree = groupTableNodes(nodes, resolveGroupings([grouping], columns, []), {
+      locale: 'en-US',
+    });
+    expect(describe2(tree)).toEqual([
+      { 'ui-table-group:kind=Herb': ['b'], count: 1 },
+      { 'ui-table-group:kind=Fruit': ['a', 'd'], count: 2 },
+      { 'ui-table-group:kind=': ['c'], count: 1 },
+    ]);
+  });
+
   it('UIC-TABLE-13.1 UIC-TABLE-13.5 nests groupings under unique path keys and follows the sort direction', () => {
     const tree = groupTableNodes(
       nodes,

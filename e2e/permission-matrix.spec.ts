@@ -96,6 +96,35 @@ test.describe('Permission Matrix lab', () => {
     );
   });
 
+  test('UIC-PERMISSION-MATRIX-1.8 keeps the focused group checkbox and collapsed groups on their groups when groups reorder', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('permission-matrix');
+    const editor = demo(page, 'editor');
+    await editor.getByRole('button', { name: /^Collapse .*Photos/ }).click();
+    await expect(editor.getByRole('checkbox', { name: 'Upload photos for Editor' })).toHaveCount(0);
+    await editor.getByRole('button', { name: 'Reverse groups in 1.5 seconds' }).click();
+    await toggle(editor, 'All Recipes for Editor');
+    const recipes = editor.getByRole('checkbox', { name: 'All Recipes for Editor' });
+    await expect(recipes).toBeFocused();
+    await expect(editor.locator('[data-lab-output]')).toHaveText(
+      'Granted Read recipes, Write recipes, Publish recipes for Editor',
+    );
+    await expect(editor.getByRole('checkbox').first()).toHaveAccessibleName(
+      'All Settings for Administrator',
+    );
+    await expect(recipes).toBeFocused();
+    await expect(editor.getByRole('checkbox', { name: 'Upload photos for Editor' })).toHaveCount(0);
+    await expect(
+      editor.getByRole('checkbox', { name: 'Edit site settings for Editor' }),
+    ).toBeVisible();
+    await page.keyboard.press('Space');
+    await expect(editor.locator('[data-lab-output]')).toHaveText(
+      'Revoked Read recipes, Write recipes, Publish recipes for Editor',
+    );
+  });
+
   test('UIC-PERMISSION-MATRIX-1.7 renders a window of 600 permissions and grants in it', async ({
     page,
     lab,
