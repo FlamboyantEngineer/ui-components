@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useId, useState } from 'react';
+import { useCallback, useId, useMemo, useState } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, ControlSize, Key } from '../../core/props.js';
@@ -19,6 +19,7 @@ import {
   type RemoteLoader,
   type RemotePage,
 } from '../../utils/use-remote-search.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { UserIdentity, type UserIdentitySize } from '../user-identity/user-identity.js';
 
 /** A person or a group the picker lists. */
@@ -91,39 +92,73 @@ function toOption(person: PeoplePickerPerson): ComboboxOption {
   };
 }
 
+type People = ReadonlyMap<Key, PeoplePickerPerson>;
+
+const noPeople: readonly PeoplePickerPerson[] = [];
+
+/** The caller's people by id; the current user wins over a known person, who wins over a recent one. */
+function toGivenPeople({
+  currentUser,
+  knownPeople = [],
+  recent = [],
+}: Pick<PeoplePickerProps, 'currentUser' | 'knownPeople' | 'recent'>): People {
+  const given = new Map<Key, PeoplePickerPerson>();
+  for (const person of [...recent, ...knownPeople, ...(currentUser ? [currentUser] : [])]) {
+    given.set(person.id, person);
+  }
+  return given;
+}
+
 /**
- * The people listed before a search, each once: the current user, the known people, then the recent
+ * What the picker knows of each person: the copy the latest search returned, else the caller's.
+ * A search's copy is the newest, so it stays while the picker is mounted. Every row, label, chip
+ * and disabled state reads this one copy.
+ */
+function useKnownPeople(given: People) {
+  const [found, setFound] = useState<People>(() => new Map());
+  const people = useMemo(() => new Map([...given, ...found]), [given, found]);
+  const learn = useCallback((page: readonly PeoplePickerPerson[]) => {
+    setFound((known) => new Map([...known, ...page.map((person) => [person.id, person] as const)]));
+  }, []);
+  return { people, learn };
+}
+
+/**
+ * The ids listed before a search, each once: the current user, the known people, then the recent
  * ones under a heading.
  */
 function toIdleItems(
-  people: Pick<PeoplePickerProps, 'currentUser' | 'knownPeople' | 'recent'>,
+  sources: Pick<PeoplePickerProps, 'currentUser' | 'knownPeople' | 'recent'>,
+  people: People,
   section: { id: string; label: string },
 ): ComboboxItem[] {
-  const { currentUser, knownPeople = [], recent = [] } = people;
+  const { currentUser, knownPeople = [], recent = [] } = sources;
+  const option = (id: Key) => toOption(requireDefined(people.get(id)));
   const known = knownPeople.filter((person) => person.id !== currentUser?.id);
   const listed = new Set([currentUser?.id, ...known.map((person) => person.id)]);
   const others = recent.filter((person) => !listed.has(person.id));
   return [
-    ...(currentUser ? [toOption(currentUser)] : []),
-    ...known.map(toOption),
-    ...(others.length > 0 ? [{ ...section, options: others.map(toOption) }] : []),
+    ...(currentUser ? [option(currentUser.id)] : []),
+    ...known.map((person) => option(person.id)),
+    ...(others.length > 0
+      ? [{ ...section, options: others.map((person) => option(person.id)) }]
+      : []),
   ];
 }
 
-/** The caller's loader as the combobox's, remembering every person a search returns. */
-function usePeopleSearch(loadItems: PeoplePickerLoader) {
-  const [found, setFound] = useState<ReadonlyMap<Key, PeoplePickerPerson>>(() => new Map());
-  const load = useCallback<ComboboxLoader>(
+/** The caller's loader as the combobox's, telling `learn` every person a search returns. */
+function usePeopleSearch(
+  loadItems: PeoplePickerLoader,
+  learn: (found: readonly PeoplePickerPerson[]) => void,
+) {
+  return useCallback<ComboboxLoader>(
     async (query, signal, cursor) => {
       const page = await loadRemotePage(loadItems, { query, signal, cursor });
-      if (!signal.aborted) {
-        setFound((known) => new Map([...known, ...page.items.map((p) => [p.id, p] as const)]));
-      }
+      if (!signal.aborted) learn(page.items);
       return { items: page.items.map(toOption), cursor: page.cursor };
     },
-    [loadItems],
+    [loadItems, learn],
   );
-  return { found, load };
 }
 
 function PersonRow({
@@ -163,29 +198,30 @@ function PersonRow({
 export function PeoplePicker<M extends ComboboxSelectionMode = 'single'>({
   loadItems,
   currentUser,
-  recent = [],
-  knownPeople = [],
+  recent = noPeople,
+  knownPeople = noPeople,
   size = 'md',
   className,
   ...rest
 }: PeoplePickerProps<M>) {
   const strings = useUiStrings();
   const sectionId = useId();
-  const { found, load } = usePeopleSearch(loadItems);
-  const people = new Map(found);
-  for (const person of [...recent, ...knownPeople, ...(currentUser ? [currentUser] : [])]) {
-    people.set(person.id, person);
-  }
+  const sources = { currentUser, knownPeople, recent };
+  const given = useMemo(
+    () => toGivenPeople({ currentUser, knownPeople, recent }),
+    [currentUser, knownPeople, recent],
+  );
+  const { people, learn } = useKnownPeople(given);
+  const load = usePeopleSearch(loadItems, learn);
+  const knownOptions = useMemo(() => Array.from(people.values(), toOption), [people]);
   return (
     <Combobox<M>
       {...rest}
       className={mergeClassNames(hooks.className, className)}
       size={size}
       loadItems={load}
-      items={toIdleItems(
-        { currentUser, knownPeople, recent },
-        { id: sectionId, label: strings.recentPeople },
-      )}
+      items={toIdleItems(sources, people, { id: sectionId, label: strings.recentPeople })}
+      knownOptions={knownOptions}
       renderOption={(option) => {
         const person = people.get(option.id);
         return person ? (

@@ -97,6 +97,36 @@ function Reviewers() {
   );
 }
 
+/** A record saved before Eli's account was restored, so a search returns a newer copy. */
+const savedEli: PeoplePickerPerson = {
+  id: 'eli',
+  name: 'Eli Brandt (old record)',
+  isDisabled: true,
+  disabledReason: 'Account inactive when saved',
+};
+
+function Handover() {
+  const [owner, setOwner] = useState<Key | null>(null);
+  return (
+    <>
+      <PeoplePicker
+        label="Handover owner"
+        description="Search for someone, then search again and restore Dara: the picker still knows her."
+        knownPeople={[savedEli]}
+        loadItems={searchDirectory}
+        value={owner}
+        onChange={setOwner}
+      />
+      <p>
+        <button type="button" onClick={() => setOwner('dara')}>
+          Restore Dara
+        </button>{' '}
+        Owner: <output data-lab-output="owner">{owner === null ? 'none' : String(owner)}</output>
+      </p>
+    </>
+  );
+}
+
 mountLab(
   <>
     <LabSection title="Sizes and states" description="Each cell is a live people picker.">
@@ -141,6 +171,12 @@ mountLab(
         defaultValue={savedWatchers.map((person) => person.id)}
         knownPeople={savedWatchers}
       />
+    </LabSection>
+    <LabSection
+      title="Restoring a chosen person"
+      description="A value set from outside names a person an earlier search returned, and a search's newer copy of a saved person replaces the saved one everywhere."
+    >
+      <Handover />
     </LabSection>
     <LabSection
       title="Required, with a short delay"

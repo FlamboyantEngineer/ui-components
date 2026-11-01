@@ -148,6 +148,13 @@ A native reset of the form the combobox submits with shall apply once every list
 Implementation: `src/components/combobox/combobox.tsx`, `src/components/combobox/combobox-reset.tsx`, `src/utils/use-native-reset.ts`
 Verification: `src/components/combobox/combobox.test.tsx`
 
+### UIC-COMBOBOX-3.7 - Known options
+
+`knownOptions` shall name chosen ids the suggestions do not list now, such as the results of an earlier search: a chip shows the known option's label and icon, and a single combobox's input shows its label once the list is closed. A listed suggestion with the same id names it instead, and the known options are never listed: they join React Aria's collection only while the list is closed. An id neither names still shows itself on a chip and empties a single input.
+
+Implementation: `src/components/combobox/combobox.tsx`, `src/components/combobox/combobox-options.ts`, `src/components/combobox/combobox-chips.tsx`
+Verification: `src/components/combobox/combobox-chips.test.tsx`, `src/components/people-picker/people-picker.test.tsx`
+
 ## UIC-COMBOBOX-4 - Long lists and option content
 
 ### UIC-COMBOBOX-4.1 - Virtualized list

@@ -19,22 +19,27 @@ export interface ComboboxChipsProps {
   label: string;
   /** The options the suggestions list now, to label the chips. */
   options: readonly ComboboxOption[];
+  /** Options that name chosen ids the suggestions do not list now. */
+  known: readonly ComboboxOption[];
   size: TagGroupSize;
   /** Chips offer a remove button and answer Delete and Backspace. */
   isEditable: boolean;
 }
 
 /**
- * The chosen options, in value order. An option the suggestions no longer list (the caller filtered
- * it out) keeps the label it last had; a key no suggestion ever listed shows itself.
+ * The chosen options, in value order. An option the suggestions no longer list is named by the known
+ * option with its id, or keeps the label it last had; a key neither ever named shows itself.
  */
-function useChosenOptions(options: readonly ComboboxOption[]): ComboboxOption[] {
+function useChosenOptions(
+  options: readonly ComboboxOption[],
+  known: readonly ComboboxOption[],
+): ComboboxOption[] {
   const state = useContext(ComboBoxStateContext);
   const [remembered, setRemembered] = useState<ReadonlyMap<Key, ComboboxOption>>(new Map());
   const keys = Array.isArray(state?.value)
     ? (state.value as readonly Key[]).map(fromCollectionKey)
     : [];
-  const listed = new Map(options.map((option) => [option.id, option]));
+  const listed = new Map([...known, ...options].map((option) => [option.id, option]));
   const next = new Map<Key, ComboboxOption>();
   for (const key of keys) {
     const option = listed.get(key) ?? remembered.get(key);
@@ -91,10 +96,10 @@ export function useChipsLabel({ label, aria, isEnabled }: ChipsLabelOptions) {
  * A multiple combobox's chosen options as removable chips, each with its option's icon, in the
  * library's `TagGroup` before the input: the arrow keys move between chips, and the remove button, Delete or Backspace removes one.
  */
-export function ComboboxChips({ label, options, size, isEditable }: ComboboxChipsProps) {
+export function ComboboxChips({ label, options, known, size, isEditable }: ComboboxChipsProps) {
   const state = useContext(ComboBoxStateContext);
   const strings = useUiStrings();
-  const chosen = useChosenOptions(options);
+  const chosen = useChosenOptions(options, known);
   if (!state || chosen.length === 0) return null;
   const onRemove = (removed: Set<Key>) =>
     state.setValue(

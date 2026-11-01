@@ -36,7 +36,7 @@ interface ComboboxFieldProps {
   /** Neither disabled nor read-only. */
   isEditable: boolean;
   /** A multiple combobox's label text and options, to show its chosen options as chips; else `null`. */
-  chips: Pick<ComboboxChipsProps, 'label' | 'options'> | null;
+  chips: Pick<ComboboxChipsProps, 'label' | 'options' | 'known'> | null;
   /** Inline completion, or `null` when off. */
   completion: InlineCompletion | null;
   /** The input element, for the combobox's own use, and the ref to put on it. */

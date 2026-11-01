@@ -5,7 +5,13 @@ import { useFilter } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { OpenStateProps } from '../../core/events.js';
 import { flattenPickerItems, usePickerEmptyContent } from '../field/field.js';
-import type { ComboboxCompletion, ComboboxItem } from './combobox-options.js';
+import {
+  withKnownOptions,
+  type ComboboxCompletion,
+  type ComboboxItem,
+  type ComboboxOption,
+} from './combobox-options.js';
+import { encodeComboboxItems } from './combobox-values.js';
 import { useComboboxSearch, type ComboboxLoader } from './combobox-search.js';
 
 interface InputTextOptions {
@@ -18,6 +24,7 @@ interface InputTextOptions {
 export interface ComboboxModelOptions extends OpenStateProps, InputTextOptions {
   items?: Iterable<ComboboxItem> | undefined;
   defaultItems?: Iterable<ComboboxItem> | undefined;
+  knownOptions?: Iterable<ComboboxOption> | undefined;
   loadItems?: ComboboxLoader | undefined;
   minSearchLength?: number | undefined;
   searchDelay?: number | undefined;
@@ -111,4 +118,23 @@ export function useComboboxModel(options: ComboboxModelOptions) {
     loading: search ? more : { onLoadMore: options.onLoadMore, isLoading: options.isLoading },
     renderEmpty,
   };
+}
+
+/**
+ * The suggestions with their ids encoded for React Aria, the caller's known options, and the
+ * collection React Aria reads: the suggestions, joined by the known options while the list is
+ * closed, so a chosen id the suggestions leave out keeps its label in the input.
+ */
+export function useComboboxCollection(
+  model: { isOpen: boolean; suggestions: readonly ComboboxItem[] },
+  knownOptions: Iterable<ComboboxOption> | undefined,
+) {
+  const { isOpen, suggestions: given } = model;
+  const suggestions = useMemo(() => encodeComboboxItems(given), [given]);
+  const known = useMemo(() => Array.from(knownOptions ?? []), [knownOptions]);
+  const collection = useMemo(
+    () => (isOpen ? suggestions : encodeComboboxItems(withKnownOptions(given, known))),
+    [isOpen, given, suggestions, known],
+  );
+  return { suggestions, known, collection };
 }
