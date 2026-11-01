@@ -6,6 +6,7 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { Tooltip } from '../tooltip/tooltip.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { TruncationTooltip } from './truncation-tooltip.js';
 
 const FULL_TEXT = 'Quarterly report for the northern region.pdf';
@@ -63,6 +64,27 @@ describe('TruncationTooltip', () => {
     expect(text).not.toHaveAttribute('aria-label');
     expect(tooltip()).toBeNull();
     expectHooksMatchSpec(container, 'TRUNCATION-TOOLTIP');
+  });
+
+  it('UIC-TRUNCATION-TOOLTIP-1.5 copies the text into the panel without ids, refs or reachable controls', async () => {
+    const linkRef = vi.fn();
+    render(
+      <TruncationTooltip>
+        <a id="report-link" href="#report" ref={linkRef}>
+          {FULL_TEXT}
+        </a>
+      </TruncationTooltip>,
+    );
+    const link = screen.getByRole('link', { name: FULL_TEXT });
+    setBox(requireDefined(link.parentElement), { cut: true });
+    await rest(link);
+    await advance(500);
+    const panel = requireDefined(tooltip());
+    expect(panel).toHaveTextContent(FULL_TEXT);
+    expect(panel.querySelector('[id]')).toBeNull();
+    expect(panel.querySelector('a')?.closest('[inert]')).not.toBeNull();
+    expect(document.querySelectorAll('#report-link')).toHaveLength(1);
+    expect(linkRef).toHaveBeenCalledTimes(1);
   });
 
   it('UIC-TRUNCATION-TOOLTIP-1.2 UIC-TRUNCATION-TOOLTIP-1.5 shows the full text after the delay only when cut', async () => {

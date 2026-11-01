@@ -6,6 +6,7 @@ import {
   useEffect,
   useId,
   useLayoutEffect,
+  useRef,
   useState,
   type PointerEvent,
   type ReactNode,
@@ -143,6 +144,29 @@ function ExpandControl({
   );
 }
 
+/**
+ * The panel's copy of the text: an inert, hidden copy of the page's elements without their ids, so
+ * the panel keeps the text's markup (such as its direction) but owns no second instance of the
+ * children's ids, refs or focusable controls.
+ */
+function PanelText({
+  sourceRef,
+  children,
+}: {
+  sourceRef: RefObject<HTMLElement | null>;
+  children: ReactNode;
+}) {
+  const copyRef = useRef<HTMLSpanElement>(null);
+  useLayoutEffect(() => {
+    const copy = copyRef.current;
+    const source = sourceRef.current;
+    if (!copy || !source) return;
+    copy.replaceChildren(...Array.from(source.childNodes, (node) => node.cloneNode(true)));
+    for (const element of copy.querySelectorAll('[id]')) element.removeAttribute('id');
+  }, [sourceRef, children]);
+  return <span ref={copyRef} aria-hidden="true" inert />;
+}
+
 /** The text's pointer handlers: rest to open after `delay`, leave or press to close. */
 function createPointerHandlers(state: ManualTooltipState, delay: number) {
   const { schedule, close } = state;
@@ -214,7 +238,7 @@ export function TruncationTooltip({
         className={hooks.slotClass('panel')}
         placement={placement}
       >
-        {children}
+        <PanelText sourceRef={ref}>{children}</PanelText>
       </ManualTooltip>
     </>
   );

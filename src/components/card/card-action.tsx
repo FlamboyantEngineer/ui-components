@@ -118,13 +118,18 @@ function repeatClick(action: HTMLElement, event: ReactMouseEvent<HTMLElement>) {
 
 /** The action element the card registers, and the root click handler that forwards to it. */
 export function useCardAction(options: CardActionOptions): CardAction {
-  const action = useRef<HTMLElement | null>(null);
+  // Every element registered, in order: the first one still mounted is the action.
+  const registered = useRef<HTMLElement[]>([]);
   const isActionable = hasCardAction(options);
   const actionRef = useCallback((node: HTMLElement | null) => {
-    action.current = node;
+    if (!node) return undefined;
+    registered.current.push(node);
+    return () => {
+      registered.current = registered.current.filter((entry) => entry !== node);
+    };
   }, []);
   const onClick = (event: ReactMouseEvent<HTMLElement>) => {
-    const element = action.current;
+    const element = registered.current.find((entry) => entry.isConnected);
     if (!isActionable || !element || event.defaultPrevented) return;
     // React bubbles clicks out of portals; content portalled out of the card is not the card.
     if (!isElement(event.target) || !event.currentTarget.contains(event.target)) return;

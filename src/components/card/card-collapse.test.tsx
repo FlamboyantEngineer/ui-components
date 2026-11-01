@@ -245,6 +245,30 @@ describe('Card adaptive presentation', () => {
     expect(screen.getByRole('button', { name: 'Water' })).toBeInTheDocument();
   });
 
+  it('UIC-CARD-3.2 UIC-CARD-7.2 still presses the card from its body after the cut title tooltip closes', async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    render(
+      <Card title="A long orchard row title" onAction={onAction} presentationSteps={steps}>
+        <p>Body notes</p>
+      </Card>,
+    );
+    await resize(cardRoot(), 260);
+    expect(cardRoot()).toHaveAttribute('data-presentation', 'compact');
+    const text = requireDefined(cardRoot().querySelector<HTMLElement>('.ui-truncation-tooltip'));
+    Object.defineProperty(text, 'clientWidth', { configurable: true, value: 100 });
+    Object.defineProperty(text, 'scrollWidth', { configurable: true, value: 240 });
+    await user.hover(text);
+    const tooltip = await screen.findByRole('tooltip', {}, { timeout: 2000 });
+    expect(tooltip).toHaveTextContent('A long orchard row title');
+    expect(tooltip.querySelector('[id]')).toBeNull();
+    expect(tooltip.querySelector('button')?.closest('[inert]')).not.toBeNull();
+    await user.unhover(text);
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+    await user.click(screen.getByText('Body notes'));
+    expect(onAction).toHaveBeenCalledTimes(1);
+  });
+
   it('UIC-CARD-7.2 hides secondary regions and actions behind More when compact', async () => {
     const user = userEvent.setup();
     const { container } = render(<RecordCard presentationSteps={steps} />);
