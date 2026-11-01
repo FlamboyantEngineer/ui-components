@@ -350,9 +350,11 @@ describe('HoverCard', () => {
     unmount();
 
     // An uncontrolled card that opened stays closed once the trigger is enabled again.
-    const uncontrolled = render(preview({ defaultOpen: true, isDisabled: true }));
+    const { rerender: rerenderUncontrolled } = render(
+      preview({ defaultOpen: true, isDisabled: true }),
+    );
     expect(card()).toBeNull();
-    uncontrolled.rerender(preview({ defaultOpen: true }));
+    rerenderUncontrolled(preview({ defaultOpen: true }));
     await advance(1000);
     expect(card()).toBeNull();
   });

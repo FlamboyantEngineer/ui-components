@@ -296,9 +296,11 @@ describe('Tooltip', () => {
     unmount();
 
     // An uncontrolled hint that opened stays closed once it is enabled again.
-    const uncontrolled = render(hint({ defaultOpen: true, isDisabled: true }));
+    const { rerender: rerenderUncontrolled } = render(
+      hint({ defaultOpen: true, isDisabled: true }),
+    );
     expect(tooltip()).toBeNull();
-    uncontrolled.rerender(hint({ defaultOpen: true }));
+    rerenderUncontrolled(hint({ defaultOpen: true }));
     expect(tooltip()).toBeNull();
   });
 
