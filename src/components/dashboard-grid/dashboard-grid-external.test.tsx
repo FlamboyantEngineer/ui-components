@@ -45,6 +45,13 @@ function expectNothingMoving() {
     expect(group).not.toHaveAttribute('data-moving');
 }
 
+/** Cancels a pointer as the browser does; jsdom's events carry no pointer ID of their own. */
+function cancelPointer(pointerId: number) {
+  act(() => {
+    window.dispatchEvent(Object.assign(new MouseEvent('pointercancel'), { pointerId }));
+  });
+}
+
 const moved = { move: { y: 1 }, resize: { h: 2 } } as const;
 
 describe('DashboardGrid layout changes during a gesture', () => {
@@ -192,5 +199,43 @@ describe('DashboardGrid layout changes during a gesture', () => {
     expect(onLayoutChange).not.toHaveBeenCalled();
     expect(JSON.parse(storage.getItem('second') ?? '[]')).toEqual([tileA, companion]);
     expect(storage.getItem('first')).toBeNull();
+  });
+
+  it.each([
+    ['mouse', 'MouseLeft'],
+    ['touch', 'TouchA'],
+  ])('UIC-DASHBOARD-GRID-2.2 drops a %s drag the browser cancels', async (pointerName, key) => {
+    const user = userEvent.setup();
+    const onLayoutChange = vi.fn();
+    render(grid(start, { onLayoutChange }));
+    let pointerId = -1;
+    // The handle stops its press from bubbling, so the test reads the pointer on the way down.
+    window.addEventListener('pointerdown', (event) => (pointerId = event.pointerId), {
+      once: true,
+      capture: true,
+    });
+    const target = screen.getByRole('button', { name: 'Move Tile a' });
+    await user.pointer([
+      { keys: `[${key}>]`, target, coords: { pageX: 0, pageY: 0 } },
+      {
+        pointerName: pointerName === 'mouse' ? 'mouse' : key,
+        target,
+        coords: { pageX: 0, pageY: 160 },
+      },
+    ]);
+    const tile = screen.getByRole('group', { name: 'Tile a' });
+    expect(tile).toHaveAttribute('data-moving', 'true');
+    // Another pointer ending changes nothing.
+    cancelPointer(pointerId + 50);
+    expect(tile).toHaveAttribute('data-moving', 'true');
+    cancelPointer(pointerId);
+    expectNothingMoving();
+    await user.pointer({ keys: `[/${key}]` });
+    expect(onLayoutChange).not.toHaveBeenCalled();
+    expect(screen.getByRole('status')).toHaveTextContent('');
+    // A new press moves the tile, and its release keeps it.
+    await dragDown(user, 'Move');
+    await user.pointer({ keys: '[/MouseLeft]' });
+    expect(onLayoutChange).toHaveBeenCalledExactlyOnceWith([{ ...tileA, y: 1 }, tileC]);
   });
 });
