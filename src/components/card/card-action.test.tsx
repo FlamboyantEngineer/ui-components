@@ -3,7 +3,6 @@ import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { NumberField } from '../number-field/number-field.js';
 import { SignaturePad } from '../signature-pad/signature-pad.js';
-import { Slider } from '../slider/slider.js';
 import { Card } from './card.js';
 import { CardAction } from './card-parts.js';
 
@@ -100,7 +99,7 @@ describe('Card background clicks', () => {
     const onAction = vi.fn();
     const { container } = render(
       <Card title="Mixer" onAction={onAction}>
-        <Slider label="Volume" defaultValue={4} maxValue={10} />
+        <NumberField display="slider" label="Volume" defaultValue={4} maxValue={10} />
         <NumberField label="Gain" defaultValue={2} showScrubber />
         <SignaturePad label="Signature" />
         <p>Background</p>
@@ -108,8 +107,8 @@ describe('Card background clicks', () => {
     );
     const background = screen.getByText('Background');
     for (const surface of [
-      '.ui-slider__thumb',
-      '.ui-slider__track',
+      '.ui-number-field__thumb',
+      '.ui-number-field__track',
       '.ui-number-field__scrubber',
       '.ui-signature-pad__surface',
     ]) {

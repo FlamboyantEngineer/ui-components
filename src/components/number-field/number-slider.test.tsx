@@ -5,7 +5,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Fieldset } from '../field/field.js';
 import { Form } from '../form/form.js';
-import { RangeSlider, Slider, keepThumbsApart, type RangeValue } from './slider.js';
+import { NumberField, type NumberRange } from './number-field.js';
+import { keepThumbsApart } from './thumb-spacing.js';
 import { chooseFieldMenuItem } from '../../../test/field-fixtures.js';
 
 function root(container: HTMLElement) {
@@ -17,17 +18,18 @@ function thumbs() {
 }
 
 function thumbOf(input: HTMLElement) {
-  return input.closest<HTMLElement>('.ui-slider__thumb');
+  return input.closest<HTMLElement>('.ui-number-field__thumb');
 }
 
-describe('Slider', () => {
-  it('UIC-SLIDER-1.1 is a field around a slider that starts at the minimum and commits each move', async () => {
+describe('NumberField slider display', () => {
+  it('UIC-NUMBER-FIELD-5.1 is a field around a slider that starts at the minimum and commits each move', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     const onCommit = vi.fn();
     const onChangeEnd = vi.fn();
     const { container } = render(
-      <Slider
+      <NumberField
+        display="slider"
         label="Volume"
         minValue={10}
         onChange={onChange}
@@ -35,9 +37,10 @@ describe('Slider', () => {
         onChangeEnd={onChangeEnd}
       />,
     );
-    expect(root(container)).toHaveClass('ui-field', 'ui-slider');
+    expect(root(container)).toHaveClass('ui-field', 'ui-number-field');
+    expect(root(container)).toHaveAttribute('data-display', 'slider');
     const group = screen.getByRole('group', { name: 'Volume' });
-    expect(group).toHaveClass('ui-slider__box');
+    expect(group).toHaveClass('ui-number-field__slider');
     const [thumb] = thumbs();
     expect(thumb).toHaveValue('10');
     await user.tab();
@@ -47,16 +50,17 @@ describe('Slider', () => {
     expect(onCommit).toHaveBeenLastCalledWith(11);
     expect(onChangeEnd).toHaveBeenLastCalledWith(11);
     expect(thumb).toHaveValue('11');
-    expectHooksMatchSpec(container, 'SLIDER', {
-      slots: ['box', 'output', 'track', 'fill', 'thumb'],
+    expectHooksMatchSpec(container, 'NUMBER-FIELD', {
+      slots: ['slider', 'output', 'track', 'fill', 'thumb'],
     });
     expectHooksMatchSpec(container, 'FIELD', { slots: ['label', 'control', 'message'] });
   });
 
-  it('UIC-SLIDER-1.2 keeps the value within its range and step and formats it', async () => {
+  it('UIC-NUMBER-FIELD-5.2 keeps the value within its range and step and formats it', async () => {
     const user = userEvent.setup();
     render(
-      <Slider
+      <NumberField
+        display="slider"
         label="Opacity"
         minValue={0}
         maxValue={1}
@@ -76,31 +80,44 @@ describe('Slider', () => {
     expect(thumb).toHaveAttribute('aria-valuetext', '100%');
   });
 
-  it('UIC-SLIDER-1.2 validates and submits the value it shows, snapped, clamped and in order', () => {
+  it('UIC-NUMBER-FIELD-5.2 validates and submits the value it shows, snapped, clamped and in order', () => {
     const seen: unknown[] = [];
     const validate = (value: unknown) => {
       seen.push(value);
       return null;
     };
-    const { rerender } = render(<Slider label="Level" value={200} validate={validate} />);
+    const { rerender } = render(
+      <NumberField display="slider" label="Level" value={200} validate={validate} />,
+    );
     expect(seen.at(-1)).toBe(100);
     expect(thumbs()[0]).toHaveValue('100');
-    rerender(<Slider label="Level" value={33} step={10} validate={validate} />);
+    rerender(
+      <NumberField display="slider" label="Level" value={33} step={10} validate={validate} />,
+    );
     expect(seen.at(-1)).toBe(30);
     expect(thumbs()[0]).toHaveValue('30');
-    rerender(<RangeSlider label="Level" value={[80, 20]} validate={validate} />);
+    rerender(
+      <NumberField range display="slider" label="Level" value={[80, 20]} validate={validate} />,
+    );
     expect(seen.at(-1)).toEqual([20, 80]);
     expect(thumbs().map((thumb) => thumb.value)).toEqual(['20', '80']);
   });
 
-  it('UIC-SLIDER-1.2 moves a held value onto a narrowed range as a change', () => {
+  it('UIC-NUMBER-FIELD-5.2 moves a held value onto a narrowed range as a change', () => {
     const onChange = vi.fn();
     const onCommit = vi.fn();
     const { container, rerender } = render(
-      <Slider label="Level" defaultValue={80} onChange={onChange} onCommit={onCommit} />,
+      <NumberField
+        display="slider"
+        label="Level"
+        defaultValue={80}
+        onChange={onChange}
+        onCommit={onCommit}
+      />,
     );
     rerender(
-      <Slider
+      <NumberField
+        display="slider"
         label="Level"
         defaultValue={80}
         maxValue={50}
@@ -114,26 +131,43 @@ describe('Slider', () => {
     expect(root(container)).toHaveAttribute('data-dirty', 'true');
   });
 
-  it('UIC-SLIDER-1.2 moves a non-finite value onto the grid as a change', () => {
+  it('UIC-NUMBER-FIELD-5.2 moves a non-finite value onto the grid as a change', () => {
     const onChange = vi.fn();
     const { rerender } = render(
-      <Slider label="Level" minValue={10} value={Number.NaN} onChange={onChange} />,
+      <NumberField
+        display="slider"
+        label="Level"
+        minValue={10}
+        value={Number.NaN}
+        onChange={onChange}
+      />,
     );
     expect(onChange).toHaveBeenLastCalledWith(10);
     expect(thumbs()[0]).toHaveValue('10');
-    rerender(<RangeSlider label="Level" value={[20, Infinity]} onChange={onChange} />);
+    rerender(
+      <NumberField
+        range
+        display="slider"
+        label="Level"
+        value={[20, Infinity]}
+        onChange={onChange}
+      />,
+    );
     expect(onChange).toHaveBeenLastCalledWith([20, 100]);
     expect(thumbs().map((thumb) => thumb.value)).toEqual(['20', '100']);
   });
 
-  it('UIC-SLIDER-1.3 sizes the fill from the minimum or the fill offset and positions the thumb', () => {
-    const { container, rerender } = render(<Slider label="Volume" defaultValue={30} />);
-    const fill = container.querySelector<HTMLElement>('.ui-slider__fill');
+  it('UIC-NUMBER-FIELD-5.3 sizes the fill from the minimum or the fill offset and positions the thumb', () => {
+    const { container, rerender } = render(
+      <NumberField display="slider" label="Volume" defaultValue={30} />,
+    );
+    const fill = container.querySelector<HTMLElement>('.ui-number-field__fill');
     expect(fill?.style.insetInlineStart).toBe('0%');
     expect(fill?.style.width).toBe('30%');
     expect(thumbOf(thumbs()[0] as HTMLElement)?.style.left).toBe('30%');
     rerender(
-      <Slider
+      <NumberField
+        display="slider"
         key="balance"
         label="Balance"
         minValue={-50}
@@ -142,55 +176,71 @@ describe('Slider', () => {
         defaultValue={-20}
       />,
     );
-    const offset = container.querySelector<HTMLElement>('.ui-slider__fill');
+    const offset = container.querySelector<HTMLElement>('.ui-number-field__fill');
     expect(offset?.style.insetInlineStart).toBe('30%');
     expect(offset?.style.width).toBe('20%');
   });
 
-  it('UIC-SLIDER-1.4 shows the value in an output, on each thumb or nowhere', () => {
-    const { container, rerender } = render(<Slider label="Volume" defaultValue={40} />);
+  it('UIC-NUMBER-FIELD-5.4 shows the value in an output, on each thumb or nowhere', () => {
+    const { container, rerender } = render(
+      <NumberField display="slider" label="Volume" defaultValue={40} />,
+    );
     expect(root(container)).toHaveAttribute('data-value-label', 'output');
     const output = container.querySelector('output');
-    expect(output).toHaveClass('ui-slider__output');
+    expect(output).toHaveClass('ui-number-field__output');
     expect(output).toHaveTextContent('40');
     expect(output).toHaveAttribute('for', thumbs()[0]?.id);
-    rerender(<Slider label="Volume" defaultValue={40} valueLabel="thumb" />);
+    rerender(<NumberField display="slider" label="Volume" defaultValue={40} valueLabel="thumb" />);
     expect(root(container)).toHaveAttribute('data-value-label', 'thumb');
     expect(container.querySelector('output')).toBeNull();
-    const label = container.querySelector('.ui-slider__thumb-label');
+    const label = container.querySelector('.ui-number-field__thumb-label');
     expect(label).toHaveTextContent('40');
     expect(label).toHaveAttribute('aria-hidden', 'true');
     expect(thumbs()[0]).toHaveAccessibleName('Volume');
-    expectHooksMatchSpec(container, 'SLIDER', { slots: ['thumb-label'] });
-    rerender(<Slider label="Volume" defaultValue={40} valueLabel="none" />);
-    expect(container.querySelector('output, .ui-slider__thumb-label')).toBeNull();
+    expectHooksMatchSpec(container, 'NUMBER-FIELD', { slots: ['thumb-label'] });
+    rerender(<NumberField display="slider" label="Volume" defaultValue={40} valueLabel="none" />);
+    expect(container.querySelector('output, .ui-number-field__thumb-label')).toBeNull();
   });
 
-  it('UIC-SLIDER-1.5 draws marks with labels at their values, in range up to the value', () => {
+  it('UIC-NUMBER-FIELD-5.5 draws marks with labels at their values, in range up to the value', () => {
     const marks = [{ value: 0, label: 'Quiet' }, { value: 50 }, { value: 100, label: 'Loud' }];
     const { container, rerender } = render(
-      <Slider label="Volume" defaultValue={50} marks={marks} />,
+      <NumberField display="slider" label="Volume" defaultValue={50} marks={marks} />,
     );
-    const drawn = [...container.querySelectorAll<HTMLElement>('.ui-slider__mark')];
+    const drawn = [...container.querySelectorAll<HTMLElement>('.ui-number-field__mark')];
     expect(drawn.map((mark) => mark.style.insetInlineStart)).toEqual(['0%', '50%', '100%']);
     expect(drawn.map((mark) => mark.hasAttribute('data-in-range'))).toEqual([true, true, false]);
     expect(drawn.map((mark) => mark.textContent)).toEqual(['Quiet', '', 'Loud']);
     expect(drawn[0]).toHaveAttribute('aria-hidden', 'true');
-    expect(drawn[0]?.parentElement).toHaveClass('ui-slider__track');
-    expectHooksMatchSpec(container, 'SLIDER', { slots: ['mark', 'mark-label'] });
-    rerender(<Slider label="Volume" defaultValue={50} marks={marks} orientation="vertical" />);
-    const vertical = container.querySelectorAll<HTMLElement>('.ui-slider__mark');
+    expect(drawn[0]?.parentElement).toHaveClass('ui-number-field__track');
+    expectHooksMatchSpec(container, 'NUMBER-FIELD', { slots: ['mark', 'mark-label'] });
+    rerender(
+      <NumberField
+        display="slider"
+        label="Volume"
+        defaultValue={50}
+        marks={marks}
+        orientation="vertical"
+      />,
+    );
+    const vertical = container.querySelectorAll<HTMLElement>('.ui-number-field__mark');
     expect([...vertical].map((mark) => mark.style.bottom)).toEqual(['0%', '50%', '100%']);
   });
 
-  it('UIC-SLIDER-1.6 lays out vertically, steps on the vertical axis and publishes its size', async () => {
+  it('UIC-NUMBER-FIELD-5.6 lays out vertically, steps on the vertical axis and publishes its size', async () => {
     const user = userEvent.setup();
     const { container } = render(
-      <Slider label="Level" orientation="vertical" size="lg" defaultValue={5} />,
+      <NumberField
+        display="slider"
+        label="Level"
+        orientation="vertical"
+        size="lg"
+        defaultValue={5}
+      />,
     );
     expect(root(container)).toHaveAttribute('data-size', 'lg');
-    for (const part of ['box', 'track', 'fill', 'output']) {
-      expect(container.querySelector(`.ui-slider__${part}`)).toHaveAttribute(
+    for (const part of ['slider', 'track', 'fill', 'output']) {
+      expect(container.querySelector(`.ui-number-field__${part}`)).toHaveAttribute(
         'data-orientation',
         'vertical',
       );
@@ -200,12 +250,13 @@ describe('Slider', () => {
     await user.tab();
     await user.keyboard('{ArrowUp}{ArrowUp}{ArrowDown}');
     expect(thumb).toHaveValue('6');
-    expectHooksMatchSpec(container, 'SLIDER');
+    expectHooksMatchSpec(container, 'NUMBER-FIELD');
   });
 
-  it('UIC-SLIDER-1.7 forwards the class name, data attributes and id', () => {
+  it('UIC-NUMBER-FIELD-5.7 forwards the class name, data attributes and id', () => {
     const { container } = render(
-      <Slider
+      <NumberField
+        display="slider"
         id="volume"
         label="Volume"
         className="wide"
@@ -213,24 +264,25 @@ describe('Slider', () => {
         aria-details="volume-help"
       />,
     );
-    expect(root(container)).toHaveClass('ui-slider', 'wide');
+    expect(root(container)).toHaveClass('ui-number-field', 'wide');
     expect(root(container)).toHaveAttribute('id', 'volume');
     expect(root(container)).toHaveAttribute('data-test', 'slider');
     expect(screen.getByRole('group')).toHaveAttribute('id', 'volume-control');
     expect(thumbs()[0]).toHaveAttribute('id', 'volume-control-0');
     expect(thumbs()[0]).toHaveAttribute('aria-details', 'volume-help');
-    expectHooksMatchSpec(container, 'SLIDER', { callerAttributes: ['data-test'] });
+    expectHooksMatchSpec(container, 'NUMBER-FIELD', { callerAttributes: ['data-test'] });
   });
 
-  it('UIC-SLIDER-2.1 names and describes each thumb and reports an invalid value', async () => {
+  it('UIC-NUMBER-FIELD-6.1 names and describes each thumb and reports an invalid value', async () => {
     const user = userEvent.setup();
     render(
-      <Slider
+      <NumberField
+        display="slider"
         label="Volume"
         description="Loudness of alerts."
         defaultValue={90}
         validate={(value) =>
-          value > 80 ? { severity: 'error', message: 'Too loud for alerts.' } : null
+          (value ?? 0) > 80 ? { severity: 'error', message: 'Too loud for alerts.' } : null
         }
       />,
     );
@@ -246,9 +298,9 @@ describe('Slider', () => {
     expect(thumb).not.toHaveAttribute('aria-invalid');
   });
 
-  it('UIC-SLIDER-2.2 steps with the arrows, Page keys, Shift and Home and End, and shows keyboard focus', async () => {
+  it('UIC-NUMBER-FIELD-6.2 steps with the arrows, Page keys, Shift and Home and End, and shows keyboard focus', async () => {
     const user = userEvent.setup();
-    render(<Slider label="Volume" defaultValue={50} />);
+    render(<NumberField display="slider" label="Volume" defaultValue={50} />);
     const [thumb] = thumbs();
     await user.tab();
     expect(thumbOf(thumb as HTMLElement)).toHaveAttribute('data-focus-visible', 'true');
@@ -269,20 +321,23 @@ describe('Slider', () => {
     expect(thumb).toHaveValue('0');
   });
 
-  it('UIC-SLIDER-2.3 disables its thumbs and refuses changes while read-only', async () => {
+  it('UIC-NUMBER-FIELD-6.3 disables its thumbs and refuses changes while read-only', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     const onChangeEnd = vi.fn();
-    const { container, rerender } = render(<Slider label="Volume" defaultValue={50} isDisabled />);
+    const { container, rerender } = render(
+      <NumberField display="slider" label="Volume" defaultValue={50} isDisabled />,
+    );
     expect(thumbs()[0]).toBeDisabled();
-    for (const part of ['box', 'track', 'fill', 'output', 'thumb']) {
-      expect(container.querySelector(`.ui-slider__${part}`)).toHaveAttribute(
+    for (const part of ['slider', 'track', 'fill', 'output', 'thumb']) {
+      expect(container.querySelector(`.ui-number-field__${part}`)).toHaveAttribute(
         'data-disabled',
         'true',
       );
     }
     rerender(
-      <Slider
+      <NumberField
+        display="slider"
         label="Volume"
         defaultValue={50}
         isReadOnly
@@ -301,16 +356,17 @@ describe('Slider', () => {
     expect(root(container)).toHaveAttribute('data-readonly', 'true');
   });
 
-  it('UIC-SLIDER-3.1 shows validation, restores, undoes and sets the default from the menu', async () => {
+  it('UIC-NUMBER-FIELD-7.1 shows validation, restores, undoes and sets the default from the menu', async () => {
     const user = userEvent.setup();
     const { container } = render(
-      <Slider
+      <NumberField
+        display="slider"
         label="Volume"
         committedValue={20}
         defaultValue={50}
         menu={['set-default']}
         validate={(value) =>
-          value > 20 ? { severity: 'warning', message: 'Louder than usual.' } : null
+          (value ?? 0) > 20 ? { severity: 'warning', message: 'Louder than usual.' } : null
         }
       />,
     );
@@ -330,7 +386,7 @@ describe('Slider', () => {
     expect(thumb).toHaveValue('50');
   });
 
-  it('UIC-SLIDER-3.2 submits under its names, blocks an invalid submit and follows a disabled fieldset', async () => {
+  it('UIC-NUMBER-FIELD-7.2 submits under its names, blocks an invalid submit and follows a disabled fieldset', async () => {
     const user = userEvent.setup();
     let submitted: string[][] = [];
     const onSubmit = vi.fn((event: React.FormEvent<HTMLFormElement>) => {
@@ -340,8 +396,10 @@ describe('Slider', () => {
     });
     const { rerender } = render(
       <Form aria-label="Filter" validationBehavior="aria" onSubmit={onSubmit}>
-        <Slider label="Volume" name="volume" defaultValue={30} />
-        <RangeSlider
+        <NumberField display="slider" label="Volume" name="volume" defaultValue={30} />
+        <NumberField
+          range
+          display="slider"
           label="Price"
           startName="price-from"
           endName="price-to"
@@ -362,21 +420,23 @@ describe('Slider', () => {
     rerender(
       <Form aria-label="Filter">
         <Fieldset legend="Sound" isDisabled>
-          <Slider label="Volume" name="volume" defaultValue={30} />
+          <NumberField display="slider" label="Volume" name="volume" defaultValue={30} />
         </Fieldset>
       </Form>,
     );
     expect(screen.getByRole('slider', { name: 'Volume' })).toBeDisabled();
   });
 
-  it('UIC-SLIDER-3.2 shows the errors a form gives under either end name until that end moves', async () => {
+  it('UIC-NUMBER-FIELD-7.2 shows the errors a form gives under either end name until that end moves', async () => {
     const user = userEvent.setup();
     render(
       <Form
         aria-label="Filter"
         validationErrors={{ 'price-from': 'Too low.', 'price-to': 'Too high.' }}
       >
-        <RangeSlider
+        <NumberField
+          range
+          display="slider"
           label="Price"
           startName="price-from"
           endName="price-to"
@@ -391,13 +451,16 @@ describe('Slider', () => {
     expect(screen.getByText('Too high.')).toBeInTheDocument();
   });
 
-  it('UIC-SLIDER-3.2 gives the first thumb the custom validity of the native behavior', () => {
+  it('UIC-NUMBER-FIELD-7.2 gives the first thumb the custom validity of the native behavior', () => {
     render(
       <Form aria-label="Sound">
-        <Slider
+        <NumberField
+          display="slider"
           label="Volume"
           defaultValue={90}
-          validate={(value) => (value > 80 ? { severity: 'error', message: 'Too loud.' } : null)}
+          validate={(value) =>
+            (value ?? 0) > 80 ? { severity: 'error', message: 'Too loud.' } : null
+          }
         />
       </Form>,
     );
@@ -406,12 +469,15 @@ describe('Slider', () => {
   });
 });
 
-describe('RangeSlider', () => {
-  it('UIC-SLIDER-4.1 UIC-SLIDER-4.4 draws two named thumbs over the whole range by default', async () => {
+describe('NumberField range', () => {
+  it('UIC-NUMBER-FIELD-8.1 UIC-NUMBER-FIELD-8.4 draws two named thumbs over the whole range by default', async () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();
-    const { container } = render(<RangeSlider label="Price" maxValue={200} onCommit={onCommit} />);
-    expect(root(container)).toHaveClass('ui-field', 'ui-slider', 'ui-range-slider');
+    const { container } = render(
+      <NumberField range display="slider" label="Price" maxValue={200} onCommit={onCommit} />,
+    );
+    expect(root(container)).toHaveClass('ui-field', 'ui-number-field');
+    expect(root(container)).toHaveAttribute('data-range');
     const [start, end] = thumbs();
     expect(start).toHaveAccessibleName('Minimum Price');
     expect(end).toHaveAccessibleName('Maximum Price');
@@ -421,31 +487,33 @@ describe('RangeSlider', () => {
     await user.tab();
     await user.keyboard('{PageUp}');
     expect(onCommit).toHaveBeenLastCalledWith([20, 200]);
-    const fill = container.querySelector<HTMLElement>('.ui-slider__fill');
+    const fill = container.querySelector<HTMLElement>('.ui-number-field__fill');
     expect(fill?.style.insetInlineStart).toBe('10%');
     expect(fill?.style.width).toBe('90%');
-    expectHooksMatchSpec(container, 'SLIDER', {
-      slots: ['box', 'output', 'track', 'fill', 'thumb'],
+    expectHooksMatchSpec(container, 'NUMBER-FIELD', {
+      slots: ['slider', 'output', 'track', 'fill', 'thumb'],
     });
   });
 
-  it('UIC-SLIDER-4.1 marks the range between the thumbs', () => {
+  it('UIC-NUMBER-FIELD-8.1 marks the range between the thumbs', () => {
     const { container } = render(
-      <RangeSlider
+      <NumberField
+        range
+        display="slider"
         label="Price"
         defaultValue={[20, 60]}
         marks={[{ value: 0 }, { value: 40 }, { value: 80 }]}
       />,
     );
-    const marks = [...container.querySelectorAll('.ui-slider__mark')];
+    const marks = [...container.querySelectorAll('.ui-number-field__mark')];
     expect(marks.map((mark) => mark.hasAttribute('data-in-range'))).toEqual([false, true, false]);
   });
 
-  it('UIC-SLIDER-4.2 stops each thumb at the other', async () => {
+  it('UIC-NUMBER-FIELD-8.2 stops each thumb at the other', async () => {
     const user = userEvent.setup();
     function Controlled() {
-      const [value, setValue] = useState<RangeValue>([40, 45]);
-      return <RangeSlider label="Price" value={value} onChange={setValue} />;
+      const [value, setValue] = useState<NumberRange>([40, 45]);
+      return <NumberField range display="slider" label="Price" value={value} onChange={setValue} />;
     }
     render(<Controlled />);
     const [start, end] = thumbs();
@@ -461,11 +529,13 @@ describe('RangeSlider', () => {
     expect(end).toHaveValue('45');
   });
 
-  it('UIC-SLIDER-4.3 keeps the thumbs a number of steps apart', async () => {
+  it('UIC-NUMBER-FIELD-8.3 keeps the thumbs a number of steps apart', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     render(
-      <RangeSlider
+      <NumberField
+        range
+        display="slider"
         label="Price"
         step={5}
         minStepsBetweenThumbs={2}
@@ -485,12 +555,14 @@ describe('RangeSlider', () => {
     expect(end).toHaveValue('60');
   });
 
-  it('UIC-SLIDER-4.3 keeps a spaced fractional range on the step grid', async () => {
+  it('UIC-NUMBER-FIELD-8.3 keeps a spaced fractional range on the step grid', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     const onChangeEnd = vi.fn();
     render(
-      <RangeSlider
+      <NumberField
+        range
+        display="slider"
         label="Share"
         minValue={0}
         maxValue={1}
@@ -508,7 +580,7 @@ describe('RangeSlider', () => {
     expect(thumbs().map((thumb) => thumb.value)).toEqual(['0.2', '0.3']);
   });
 
-  it('UIC-SLIDER-4.3 holds back the thumb that moved', () => {
+  it('UIC-NUMBER-FIELD-8.3 holds back the thumb that moved', () => {
     const bounds = { distance: 10, minValue: 0, maxValue: 100 };
     expect(keepThumbsApart([55, 60], [40, 60], bounds)).toEqual([50, 60]);
     expect(keepThumbsApart([40, 45], [40, 60], bounds)).toEqual([40, 50]);
@@ -518,7 +590,7 @@ describe('RangeSlider', () => {
     expect(keepThumbsApart([95, 99], [95, 100], bounds)).toEqual([95, 100]);
   });
 
-  it('UIC-SLIDER-4.3 moves thumbs already too close one step at a time, never closer', () => {
+  it('UIC-NUMBER-FIELD-8.3 moves thumbs already too close one step at a time, never closer', () => {
     const bounds = { distance: 20, minValue: 0, maxValue: 100 };
     expect(keepThumbsApart([45, 51], [45, 50], bounds)).toEqual([45, 51]);
     expect(keepThumbsApart([44, 50], [45, 50], bounds)).toEqual([44, 50]);

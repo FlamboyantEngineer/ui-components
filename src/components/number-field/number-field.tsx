@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 import { useLocale, useNumberFormatter } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
@@ -17,6 +17,12 @@ import { TextNumberControl } from './text-number-control.js';
 import { createQuantityCodec, createRadixCodec } from './number-codecs.js';
 import { formatRadixNumber, type NumberFieldRadix } from './radix-number.js';
 import type { NumberFieldUnits } from './unit-number.js';
+import {
+  NumberRangeField,
+  NumberSliderField,
+  type NumberRangeFieldProps,
+  type NumberSliderFieldProps,
+} from './number-slider.js';
 import { DecimalControl } from './decimal-control.js';
 import { numberFieldHooks as hooks, type NumberSteps } from './number-field-parts.js';
 
@@ -40,6 +46,10 @@ export type NumberFieldTextInputProps = Pick<
 
 export interface NumberFieldProps
   extends FieldInputProps<number | null>, NumberFieldTextInputProps {
+  /** Holds a range with `true` (`NumberRangeFieldProps`); a single number otherwise. */
+  range?: false | undefined;
+  /** A number input (`field`, the default); `slider` draws a track (`NumberSliderFieldProps`). */
+  display?: 'field' | undefined;
   /** Number base. Nondecimal bases edit integers and show 0b, 0o or 0x prefixes. Defaults to 10. */
   radix?: NumberFieldRadix | undefined;
   /** The smallest value. */
@@ -185,12 +195,13 @@ function NumberControl({ state, control, steps, config, radix, units }: NumberCo
 }
 
 /**
- * A field for a number, parsed and formatted for the locale, with steppers. It commits when focus
- * leaves the field, on Enter and on each step, and reports a value outside its range or off its
- * step. Adornments sit inside its frame; Shift and Alt step by larger and smaller amounts, and a
- * scrub handle steps by dragging.
+ * The number input display: a number parsed and formatted for the locale, with steppers. It commits
+ * when focus leaves the field, on Enter and on each step, and reports a value outside its range or
+ * off its step. Adornments sit inside its frame; Shift and Alt step by larger and smaller amounts,
+ * and a scrub handle steps by dragging. A non-finite value reaches the controls as empty, as the
+ * field judges it.
  */
-export function NumberField({
+function NumberEntryField({
   radix = 10,
   placeholder,
   autoComplete,
@@ -228,7 +239,6 @@ export function NumberField({
         strings,
       }),
   });
-  // A non-finite value reaches the controls as empty, as the field judges it.
   const state = isReadableNumber(held.value) ? held : { ...held, value: null };
   const steps: NumberSteps = { step: step ?? 1, smallStep, largeStep, minValue, maxValue };
   const data = {
@@ -272,3 +282,27 @@ export function NumberField({
 }
 
 export type { NumberFieldRadix } from './radix-number.js';
+
+/**
+ * A field for a number or, with `range`, a range (a start and an end), drawn as number inputs or,
+ * with `display="slider"`, as a track with a thumb per value.
+ */
+export function NumberField(props: NumberRangeFieldProps): ReactElement;
+export function NumberField(props: NumberSliderFieldProps): ReactElement;
+export function NumberField(props: NumberFieldProps): ReactElement;
+export function NumberField(
+  props: NumberFieldProps | NumberSliderFieldProps | NumberRangeFieldProps,
+): ReactElement {
+  if (props.range) return <NumberRangeField {...props} />;
+  if (props.display === 'slider') return <NumberSliderField {...props} />;
+  const { range: _range, display: _display, ...entry } = props;
+  return <NumberEntryField {...entry} />;
+}
+
+export type {
+  NumberFieldDisplay,
+  NumberRange,
+  NumberRangeFieldProps,
+  NumberSliderFieldProps,
+} from './number-slider.js';
+export type { NumberFieldMark, NumberFieldValueLabel } from './number-slider-parts.js';

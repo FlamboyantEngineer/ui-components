@@ -14,7 +14,7 @@
 }
 
 /*
- * The slider follows the control's size, as Slider does: track and thumb grow from xs to lg, and
+ * The slider follows the control's size, as the NumberField slider display does: track and thumb grow from xs to lg, and
  * its width with them. Its height matches the buttons beside it, so the thumb lines up with their
  * glyphs and the whole height stays a pointer target.
  */

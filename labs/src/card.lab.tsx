@@ -5,8 +5,7 @@ import { Card, type CardVariant } from '../../src/components/card/card.js';
 import type { Density } from '../../src/core/props.js';
 import { CardAction, CardGrid, CardGridItem, CardTitle } from '../../src/components/card/index.js';
 import { Button } from '../../src/components/button/button.js';
-import { NumberField } from '../../src/components/number-field/number-field.js';
-import { Slider } from '../../src/components/slider/slider.js';
+import { NumberField } from '../../src/components/number-field/index.js';
 import { Section } from '../../src/components/section-header/section-header.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import {
@@ -115,7 +114,13 @@ function GestureDemo() {
   return (
     <div data-lab-demo="gestures" style={{ width: 320 }}>
       <Card title="Mixer" onAction={() => setOpened((count) => count + 1)}>
-        <Slider label="Volume" value={level} onChange={setLevel} maxValue={10} />
+        <NumberField
+          display="slider"
+          label="Volume"
+          value={level}
+          onChange={setLevel}
+          maxValue={10}
+        />
         <NumberField label="Gain" defaultValue={2} showScrubber />
         <p>Press here to open the mixer.</p>
       </Card>

@@ -208,3 +208,300 @@
 .ui-number-field[data-adornment-placement='value'] .ui-number-field__end {
   flex: 1 1 auto;
 }
+
+/*
+ * Slider display: a 4 pixel track with a round thumb per value, the output after the track, marks
+ * below.
+ */
+.ui-number-field {
+  --ref-number-field-track: 4px;
+  --ref-number-field-thumb: 16px;
+}
+
+.ui-number-field[data-size='xs'] {
+  --ref-number-field-track: 2px;
+  --ref-number-field-thumb: 10px;
+}
+
+.ui-number-field[data-size='sm'] {
+  --ref-number-field-track: 2px;
+  --ref-number-field-thumb: 12px;
+}
+
+.ui-number-field[data-size='lg'] {
+  --ref-number-field-track: 6px;
+  --ref-number-field-thumb: 20px;
+}
+
+.ui-number-field__slider {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  padding: 8px calc(var(--ref-number-field-thumb) / 2);
+}
+
+.ui-number-field__slider:has(.ui-number-field__mark-label) {
+  padding-bottom: 24px;
+}
+
+.ui-number-field__slider[data-orientation='vertical'] {
+  flex: none;
+  flex-direction: column-reverse;
+  align-items: flex-start;
+  padding: calc(var(--ref-number-field-thumb) / 2) 8px;
+}
+
+.ui-number-field__slider[data-orientation='vertical']:has(.ui-number-field__mark-label) {
+  padding-bottom: calc(var(--ref-number-field-thumb) / 2);
+  padding-inline-end: 56px;
+}
+
+/* A fixed width, so a longer value never shortens the track. */
+.ui-number-field__output {
+  flex: none;
+  order: 1;
+  width: 6ch;
+  color: var(--ref-text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ui-number-field[data-range] .ui-number-field__output {
+  width: 11ch;
+}
+
+.ui-number-field__slider[data-orientation='vertical'] .ui-number-field__output {
+  order: 0;
+  width: auto;
+}
+
+.ui-number-field__track {
+  flex: 1 1 auto;
+  height: var(--ref-number-field-track);
+  border-radius: var(--ref-radius-full);
+  background: var(--ref-border);
+}
+
+/* A taller press target than the drawn track. */
+.ui-number-field__track::after {
+  content: '';
+  position: absolute;
+  inset: calc(var(--ref-number-field-thumb) / -2) 0;
+}
+
+.ui-number-field__track[data-orientation='vertical'] {
+  flex: none;
+  width: var(--ref-number-field-track);
+  height: 160px;
+}
+
+.ui-number-field__track[data-orientation='vertical']::after {
+  inset: 0 calc(var(--ref-number-field-thumb) / -2);
+}
+
+.ui-number-field__fill {
+  border-radius: inherit;
+  background: var(--ref-accent);
+}
+
+.ui-number-field__mark {
+  top: 50%;
+  width: 0;
+  height: 0;
+}
+
+.ui-number-field__mark::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -1px;
+  width: 2px;
+  height: 8px;
+  border-radius: var(--ref-radius-xs);
+  background: var(--ref-border-strong);
+}
+
+.ui-number-field__mark[data-in-range]::before {
+  background: var(--ref-accent-ink);
+}
+
+.ui-number-field__mark-label {
+  position: absolute;
+  top: calc(var(--ref-number-field-thumb) / 2 + 4px);
+  left: 0;
+  translate: -50% 0;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-xs);
+  white-space: nowrap;
+}
+
+.ui-number-field__track[data-orientation='vertical'] .ui-number-field__mark {
+  top: auto;
+  left: 50%;
+}
+
+.ui-number-field__track[data-orientation='vertical'] .ui-number-field__mark::before {
+  top: -1px;
+  left: -4px;
+  width: 8px;
+  height: 2px;
+}
+
+.ui-number-field__track[data-orientation='vertical'] .ui-number-field__mark-label {
+  top: 0;
+  left: calc(var(--ref-number-field-thumb) / 2 + 6px);
+  translate: 0 -50%;
+}
+
+.ui-number-field__thumb {
+  z-index: 1;
+  top: 50%;
+  box-sizing: border-box;
+  width: var(--ref-number-field-thumb);
+  height: var(--ref-number-field-thumb);
+  border: 2px solid var(--ref-accent);
+  border-radius: 50%;
+  background: var(--ref-canvas);
+  box-shadow: var(--ref-shadow);
+  cursor: grab;
+}
+
+.ui-number-field__track[data-orientation='vertical'] .ui-number-field__thumb {
+  left: 50%;
+}
+
+.ui-number-field__thumb[data-hovered] {
+  border-color: var(--ref-accent-ink);
+}
+
+.ui-number-field__thumb[data-dragging] {
+  border-color: var(--ref-accent-ink);
+  cursor: grabbing;
+}
+
+.ui-number-field__thumb[data-focus-visible] {
+  outline: var(--ref-focus-ring);
+  outline-offset: 2px;
+}
+
+.ui-number-field__thumb-label {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  translate: -50% 0;
+  padding: 2px 6px;
+  border-radius: var(--ref-radius);
+  background: var(--ref-text);
+  color: var(--ref-canvas);
+  font-size: var(--ref-font-size-xs);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--ref-duration-fast);
+}
+
+.ui-number-field__track[data-orientation='vertical'] .ui-number-field__thumb-label {
+  bottom: auto;
+  top: 50%;
+  left: calc(100% + 6px);
+  translate: 0 -50%;
+}
+
+.ui-number-field__thumb:is([data-hovered], [data-focus-visible], [data-dragging])
+  .ui-number-field__thumb-label {
+  opacity: 1;
+}
+
+.ui-number-field[data-dirty] .ui-number-field__slider {
+  outline: var(--ref-dirty-outline);
+  outline-offset: 4px;
+  border-radius: var(--ref-radius);
+}
+
+.ui-number-field[data-validation='invalid'] .ui-number-field__thumb {
+  border-color: var(--ref-danger);
+}
+
+.ui-number-field[data-readonly] .ui-number-field__thumb {
+  border-style: dashed;
+  cursor: default;
+}
+
+/* A disabled slider display dims its track and output only; its label keeps full contrast. */
+.ui-number-field__slider[data-disabled] {
+  opacity: var(--ref-disabled-opacity);
+}
+
+.ui-number-field__slider[data-disabled] .ui-number-field__thumb {
+  cursor: not-allowed;
+}
+
+/*
+ * Value inputs: a framed input per value (a range's start and end around a dash), before the
+ * track when a slider shows its value in inputs.
+ */
+.ui-number-field__endpoints {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.ui-number-field__endpoints:has(+ .ui-number-field__slider) {
+  flex: none;
+}
+
+.ui-number-field__endpoint {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  box-sizing: border-box;
+  height: var(--ref-field-height);
+  border: 1px solid var(--ref-field-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-field-fill);
+}
+
+.ui-number-field__endpoints:has(+ .ui-number-field__slider) .ui-number-field__endpoint {
+  flex: none;
+}
+
+.ui-number-field__endpoints:has(+ .ui-number-field__slider) .ui-number-field__input {
+  width: 6ch;
+}
+
+.ui-number-field__endpoint:focus-within {
+  border-color: var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
+}
+
+.ui-number-field[data-dirty] .ui-number-field__endpoint {
+  border-color: var(--ref-dirty);
+}
+
+.ui-number-field[data-validation='invalid'] .ui-number-field__endpoint {
+  border-color: var(--ref-danger);
+}
+
+.ui-number-field[data-validation='warning'] .ui-number-field__endpoint {
+  border-color: var(--ref-warning);
+}
+
+.ui-number-field[data-disabled] .ui-number-field__endpoint {
+  background: var(--ref-field-fill-inactive);
+  color: var(--ref-muted);
+}
+
+.ui-number-field[data-readonly] .ui-number-field__endpoint {
+  border-style: dashed;
+  background: var(--ref-field-fill-inactive);
+}
+
+.ui-number-field__separator {
+  flex: none;
+  color: var(--ref-muted);
+}

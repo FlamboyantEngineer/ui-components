@@ -12,7 +12,7 @@ import {
 import { Checkbox } from '../../src/components/checkbox/index.js';
 import { Link } from '../../src/components/link/index.js';
 import { ProgressBar } from '../../src/components/progress-bar/progress-bar.js';
-import { Slider } from '../../src/components/slider/slider.js';
+import { NumberField } from '../../src/components/number-field/index.js';
 import { TextField } from '../../src/components/text-field/index.js';
 import { requireDefined } from './require-defined.js';
 
@@ -135,7 +135,8 @@ export function ResizablePane() {
   const [width, setWidth] = useState(520);
   return (
     <div data-lab-demo="pane">
-      <Slider
+      <NumberField
+        display="slider"
         label="Pane width"
         minValue={56}
         maxValue={640}
@@ -224,7 +225,8 @@ export function TopRowGrid({ dir, initialWidth }: { dir?: 'rtl'; initialWidth: n
   const name = dir === 'rtl' ? 'top-row-rtl' : 'top-row';
   return (
     <div data-lab-demo={name} dir={dir}>
-      <Slider
+      <NumberField
+        display="slider"
         label={dir === 'rtl' ? 'Grid width, right to left' : 'Grid width'}
         minValue={160}
         maxValue={720}

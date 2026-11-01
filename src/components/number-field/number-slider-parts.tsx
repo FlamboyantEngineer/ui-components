@@ -10,7 +10,7 @@ import {
   SliderThumb,
   SliderTrack,
 } from '../../primitives/index.js';
-import { createHooks } from '../../core/hooks.js';
+import { numberFieldHooks } from './number-field-parts.js';
 import type { Orientation } from '../../core/props.js';
 import { clamp } from '../../utils/clamp.js';
 import {
@@ -25,10 +25,13 @@ import {
 import { normalizeSliderValue, type SliderGrid } from './slider-values.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 
-/** Where the value shows: in an output beside the track, in a label on each thumb, or nowhere. */
-export type SliderValueLabel = 'output' | 'thumb' | 'none';
+/**
+ * Where a slider shows its value: in an output beside the track, in a number input per thumb that
+ * edits it, in a label on each thumb, or nowhere.
+ */
+export type NumberFieldValueLabel = 'output' | 'input' | 'thumb' | 'none';
 
-export interface SliderMark {
+export interface NumberFieldMark {
   /** Where the mark sits on the track. */
   value: number;
   /** Text drawn at the mark; a mark without one draws only its tick. */
@@ -55,9 +58,9 @@ export interface SliderFieldProps<T> extends Omit<FieldInputProps<T>, 'isRequire
   /** Called with the value when a drag or a key press that moves a thumb ends. */
   onChangeEnd?: ((value: T) => void) | undefined;
   /** Marks along the track, each with an optional label. */
-  marks?: readonly SliderMark[] | undefined;
+  marks?: readonly NumberFieldMark[] | undefined;
   /** Where the value shows. Defaults to `output`. */
-  valueLabel?: SliderValueLabel | undefined;
+  valueLabel?: NumberFieldValueLabel | undefined;
 }
 
 type SliderValue = number | [number, number];
@@ -100,7 +103,7 @@ export function useSliderField<T extends SliderValue, P extends SliderFieldProps
 }
 
 /** The props `SliderControl` passes on to the slider and its thumbs. */
-type SliderOwnProps<T> = Pick<
+export type SliderOwnProps<T> = Pick<
   SliderFieldProps<T>,
   | 'onChangeEnd'
   | 'minValue'
@@ -117,8 +120,8 @@ interface SliderControlProps<T extends SliderValue> {
   /** The field label. It names the group, and each thumb with the thumb's own name before it. */
   label: string;
   rest: SliderOwnProps<T>;
-  marks: readonly SliderMark[];
-  valueLabel: SliderValueLabel;
+  marks: readonly NumberFieldMark[];
+  valueLabel: NumberFieldValueLabel;
   /** The value the fill starts from, for a single thumb. */
   fillOffset?: number | undefined;
   /** Each thumb's own name, read before the label; a single thumb has none. */
@@ -138,18 +141,7 @@ interface TrackBounds {
   high: number;
 }
 
-export const sliderHooks = createHooks('slider', [
-  'box',
-  'output',
-  'track',
-  'fill',
-  'mark',
-  'mark-label',
-  'thumb',
-  'thumb-label',
-]);
-
-const hooks = sliderHooks;
+const hooks = numberFieldHooks;
 
 function toValues(value: SliderValue): number[] {
   return Array.isArray(value) ? value : [value];
@@ -166,7 +158,7 @@ function resolveFill(
   return { low: Math.min(origin, value), high: Math.max(origin, value) };
 }
 
-function Mark({ mark, bounds }: { mark: SliderMark; bounds: TrackBounds }) {
+function Mark({ mark, bounds }: { mark: NumberFieldMark; bounds: TrackBounds }) {
   const span = bounds.maxValue - bounds.minValue || 1;
   const percent = `${clamp((mark.value - bounds.minValue) / span, 0, 1) * 100}%`;
   const isInRange = mark.value >= bounds.low && mark.value <= bounds.high;
@@ -220,7 +212,7 @@ export function SliderControl<T extends SliderValue>({
   return (
     <AriaSlider<T>
       {...aria}
-      {...hooks.slot('box')}
+      {...hooks.slot('slider')}
       id={field.id}
       // The group carries the label text: React Aria names each thumb after the group's own name.
       aria-label={label}

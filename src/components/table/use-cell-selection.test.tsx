@@ -5,7 +5,6 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { NumberField } from '../number-field/number-field.js';
-import { Slider } from '../slider/slider.js';
 import { Table, type TableProps } from './table.js';
 import type { TableColumn } from './table-rows.js';
 import type { TableCellEdit } from './use-cell-editing.js';
@@ -182,7 +181,12 @@ describe('Table spreadsheet mode', { timeout: 20_000 }, () => {
         header: 'Note',
         renderCell: (row) => (
           <>
-            <Slider label={`Level ${row.name}`} defaultValue={row.count} maxValue={10} />
+            <NumberField
+              display="slider"
+              label={`Level ${row.name}`}
+              defaultValue={row.count}
+              maxValue={10}
+            />
             <NumberField label={`Amount ${row.name}`} defaultValue={row.count} showScrubber />
           </>
         ),
@@ -191,8 +195,8 @@ describe('Table spreadsheet mode', { timeout: 20_000 }, () => {
     render(<Sheet columns={withSurfaces} onSelectedRangeChange={onSelectedRangeChange} />);
     const note = cell('Pear', 'note');
     for (const surface of [
-      '.ui-slider__thumb',
-      '.ui-slider__track',
+      '.ui-number-field__thumb',
+      '.ui-number-field__track',
       '.ui-number-field__scrubber',
     ]) {
       const target = requireDefined(note.querySelector<HTMLElement>(surface));

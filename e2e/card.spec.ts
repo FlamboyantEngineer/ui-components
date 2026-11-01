@@ -8,8 +8,8 @@ test.describe('Card lab', () => {
   }) => {
     await lab.open('card');
     const demo = page.locator('[data-lab-demo="gestures"]');
-    const thumb = demo.locator('.ui-slider__thumb');
-    const track = demo.locator('.ui-slider__track');
+    const thumb = demo.locator('.ui-number-field__thumb');
+    const track = demo.locator('.ui-number-field__track');
     const text = demo.getByText('Press here to open the mixer.');
     await demo.scrollIntoViewIfNeeded();
     const [from, along, away] = [

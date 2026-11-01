@@ -145,7 +145,7 @@ import { createConditionMatcher } from '${manifest.name}/condition-builder';
 import { createFilterMatcher } from '${manifest.name}/filter-bar';
 import { reduceChatStream } from '${manifest.name}/chat-controller';
 import { findBoxAtPoint } from '${manifest.name}/pdf-viewer';
-import { keepThumbsApart } from '${manifest.name}/slider';
+import { keepThumbsApart } from '${manifest.name}/number-field';
 import { findNextZoomLevel } from '${manifest.name}/zoom-control';
 
 export default function Page() {
