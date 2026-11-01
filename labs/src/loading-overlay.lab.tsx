@@ -262,6 +262,61 @@ function FullscreenDemo() {
   );
 }
 
+/**
+ * A region whose Edit button opens a dialog with a menu. Refresh reloads the list for three
+ * seconds while the dialog stays usable; Save closes the dialog and starts the refresh at once.
+ */
+function DialogFromRegion() {
+  const [isLoading, setLoading] = useState(false);
+  const [isOpen, setOpen] = useState(false);
+  const [last, setLast] = useState('none');
+  useEffect(() => {
+    if (!isLoading) return undefined;
+    const timer = window.setTimeout(() => setLoading(false), 3000);
+    return () => window.clearTimeout(timer);
+  }, [isLoading]);
+  return (
+    <div data-lab-demo="dialog-from-region">
+      <LoadingRegion isLoading={isLoading} label="Refreshing the list">
+        <Button onPress={() => setOpen(true)}>Edit the list</Button>
+        <Modal
+          title="Edit the list"
+          isOpen={isOpen}
+          onOpenChange={setOpen}
+          primaryAction={{
+            label: 'Save',
+            onPress: (close) => {
+              close();
+              setLoading(true);
+            },
+          }}
+          data-lab-modal="from-region"
+        >
+          <p>
+            <Button onPress={() => setLoading(true)}>Refresh the list</Button>
+          </p>
+          <MenuTrigger>
+            <Button>Sort</Button>
+            <MenuPopover>
+              <Menu
+                aria-label="Sort"
+                items={[
+                  { id: 'name', label: 'By name' },
+                  { id: 'date', label: 'By date' },
+                ]}
+                onAction={(key) => setLast(String(key))}
+              />
+            </MenuPopover>
+          </MenuTrigger>
+        </Modal>
+      </LoadingRegion>
+      <p>
+        Sorted: <output data-lab-output="sorted">{last}</output>
+      </p>
+    </div>
+  );
+}
+
 /** A dialog whose Save shows a full-screen cover for two seconds over it. */
 function SavingFromDialog() {
   const [isSaving, setSaving] = useState(false);
@@ -369,6 +424,12 @@ mountLab(
       description="A full-screen overlay covers the viewport from the overlay layer until you press Escape."
     >
       <FullscreenDemo />
+    </LabSection>
+    <LabSection
+      title="Dialog opened from a loading region"
+      description="Open Edit the list, press Refresh the list, then open Sort: the dialog and its menu stay usable while the list beneath reloads. Press Save instead: the dialog closes as the list reloads, focus waits on the region and returns to Edit the list once it is ready."
+    >
+      <DialogFromRegion />
     </LabSection>
     <LabSection
       title="Full screen over a dialog"

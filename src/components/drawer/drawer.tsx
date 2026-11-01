@@ -1,7 +1,7 @@
 'use client';
 
 import { CloseGlyph } from '../../core/glyphs.js';
-import type { KeyboardEvent, ReactNode } from 'react';
+import { useRef, useState, type KeyboardEvent, type ReactNode, type RefObject } from 'react';
 import {
   Heading,
   DialogContext,
@@ -20,7 +20,16 @@ import { stopConsumedEscape } from '../../utils/consumed-escape.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Button } from '../button/button.js';
 import { DialogEnteringContext } from '../../utils/dialog-entering.js';
-import { OverlayLayerScope, useLayerZIndex, useStackedLayer } from '../portal/portal.js';
+import {
+  OverlayLayerScope,
+  useLayerZIndex,
+  usePortalContainer,
+  useStackedLayer,
+} from '../portal/portal.js';
+import { AvailableLoadingBoundary, useHoldFocusOnLeave } from '../../core/loading-boundary.js';
+import { getDeepActiveElement } from '../../utils/focus-target.js';
+import { getOwnerDocument } from '../../utils/owner-window.js';
+import { isHTMLElement } from '../../utils/is-element.js';
 import type { OverlayLayer } from '../portal/layers.js';
 import { HeadingLevelContext, dialogTitleLevel } from '../../core/heading-level.js';
 
@@ -116,13 +125,29 @@ export function DrawerTrigger({ children, ...openState }: DrawerTriggerProps) {
 }
 
 /**
- * Publishes the sheet's entrance as React Aria defers it for the dialog (until the panel has slid
- * in), so a field with `autoFocus` waits for it too.
+ * What a drawer gives its content while it shows: the sheet's entrance as React Aria defers it for
+ * the dialog (until the panel has slid in), so a field with `autoFocus` waits for it too, and an
+ * available loading boundary. Closing while the content it was opened from loads, focus waits on
+ * that content's boundary to return to the opener.
  */
-function DrawerEntrance({ children }: { children: ReactNode }) {
+function DrawerOpening({
+  overlayRef,
+  children,
+}: {
+  overlayRef: RefObject<HTMLDivElement | null>;
+  children: ReactNode;
+}) {
   const dialog = useSlottedContext(DialogContext);
+  const container = usePortalContainer();
+  const [opener] = useState(() => getDeepActiveElement(getOwnerDocument(container)));
+  useHoldFocusOnLeave(
+    () => overlayRef.current,
+    () => (isHTMLElement(opener) ? opener : null),
+  );
   return (
-    <DialogEnteringContext value={dialog?.isEntering ?? false}>{children}</DialogEnteringContext>
+    <DialogEnteringContext value={dialog?.isEntering ?? false}>
+      <AvailableLoadingBoundary>{children}</AvailableLoadingBoundary>
+    </DialogEnteringContext>
   );
 }
 
@@ -149,6 +174,7 @@ export function Drawer({
   className,
   ...rest
 }: DrawerProps) {
+  const overlayRef = useRef<HTMLDivElement>(null);
   const stackedLayer = useStackedLayer('drawer');
   const resolvedLayer = layer ?? stackedLayer;
   const zIndex = useLayerZIndex(resolvedLayer);
@@ -171,8 +197,9 @@ export function Drawer({
         isDismissable && (shouldCloseOnInteractOutside?.(element) ?? true)
       }
       style={{ zIndex }}
+      ref={overlayRef}
     >
-      <DrawerEntrance>
+      <DrawerOpening overlayRef={overlayRef}>
         <SheetBackdrop className={hooks.slotClass('backdrop')} />
         <Sheet className={hooks.slotClass('panel')}>
           <SheetContent
@@ -203,7 +230,7 @@ export function Drawer({
             )}
           </SheetContent>
         </Sheet>
-      </DrawerEntrance>
+      </DrawerOpening>
     </SheetOverlay>
   );
 }
