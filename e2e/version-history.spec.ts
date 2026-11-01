@@ -89,6 +89,31 @@ test.describe('Version History lab', () => {
     await page.keyboard.press('Escape');
   });
 
+  test('UIC-VERSION-HISTORY-1.4 UIC-VERSION-HISTORY-1.5 drops a version that leaves the list', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('version-history');
+    const demo = page.locator('[data-lab-demo="recipe"]');
+    const rows = demo.getByRole('row');
+    const compare = demo.getByRole('button', { name: 'Compare' });
+    await rows.nth(0).locator('.ui-list-view-item__checkbox').click();
+    await rows.nth(2).locator('.ui-list-view-item__checkbox').click();
+    await expect(compare).toBeEnabled();
+    await demo.getByRole('button', { name: 'Remove Original in 2 seconds' }).click();
+    await rows.nth(2).getByRole('button', { name: 'Actions for Original' }).click();
+    await page.getByRole('menuitem', { name: 'Restore this version' }).click();
+    const dialog = page.getByRole('alertdialog', { name: 'Restore Original?' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toBeHidden();
+    await expect(rows).toHaveCount(2);
+    await expect(compare).toBeDisabled();
+    // Focus does not fall to the page: it returns to the history.
+    await expect
+      .poll(() => demo.evaluate((element) => element.contains(document.activeElement)))
+      .toBe(true);
+  });
+
   test('UIC-VERSION-HISTORY-1.6 names a version', async ({ page, lab }) => {
     await lab.open('version-history');
     const demo = page.locator('[data-lab-demo="recipe"]');
