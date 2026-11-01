@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -40,6 +40,47 @@ describe('ColorField formats and channels', () => {
     expect(onChange).toHaveBeenLastCalledWith('#3366997d');
     expect(within(dialog).getByRole('textbox', { name: 'Alpha' })).toBeInTheDocument();
     expectHooksMatchSpec(document.body, 'COLOR-FIELD', { slots: ['slider', 'channel'] });
+  });
+
+  it('UIC-COLOR-FIELD-3.2 labels each input visibly and steps the channel under the wheel', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <ColorField
+        label="Tint"
+        format="rgba"
+        defaultValue="rgba(51, 102, 153, 0.5)"
+        onChange={onChange}
+      />,
+    );
+    const dialog = await openPicker(user);
+    const marks = [...dialog.querySelectorAll('.ui-color-field__channel-label [aria-hidden]')];
+    expect(marks.map((mark) => mark.textContent)).toEqual(['R', 'G', 'B', 'A']);
+    const green = within(dialog).getByRole('textbox', { name: 'Green' });
+    expect(fireEvent.wheel(green, { deltaY: -100 })).toBe(false);
+    expect(green).toHaveValue('103');
+    expect(onChange).toHaveBeenLastCalledWith('#33679980');
+    fireEvent.wheel(green, { deltaY: 1, deltaMode: 1 });
+    fireEvent.wheel(green, { deltaY: 3, deltaMode: 1 });
+    expect(green).toHaveValue('102');
+    // A zoom gesture and a sideways wheel stay the browser's.
+    expect(fireEvent.wheel(green, { deltaY: -100, ctrlKey: true })).toBe(true);
+    expect(fireEvent.wheel(green, { deltaX: 100, deltaY: 10 })).toBe(true);
+    expect(green).toHaveValue('102');
+    expect(within(dialog).getByRole('textbox', { name: 'Red' })).toHaveValue('51');
+    expect(within(dialog).getByRole('textbox', { name: 'Alpha' })).toHaveValue('50%');
+  });
+
+  it('UIC-COLOR-FIELD-3.2 marks the hex input with #', async () => {
+    const user = userEvent.setup();
+    render(<ColorField label="Accent" defaultValue="#336699" />);
+    const dialog = await openPicker(user);
+    const hex = within(dialog).getByRole('textbox', { name: 'Hex color' });
+    expect(
+      dialog.querySelector('.ui-color-field__hex .ui-color-field__channel-label'),
+    ).toHaveTextContent('#Hex color');
+    fireEvent.wheel(hex, { deltaY: -100 });
+    expect(hex).toHaveValue('#336699');
   });
 
   it('UIC-COLOR-FIELD-3.2 edits the channels of the format as numbers', async () => {

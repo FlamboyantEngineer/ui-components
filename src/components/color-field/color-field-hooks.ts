@@ -7,6 +7,7 @@ export const colorFieldHooks = createHooks('color-field', [
   'channels',
   'hex',
   'channel',
+  'channel-label',
   'input',
   'trigger',
   'swatch',

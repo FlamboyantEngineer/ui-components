@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, type RefObject } from 'react';
+import { isZoomWheel } from '../../utils/use-wheel-steps.js';
 
 interface ThumbWheelOptions {
   /** The viewport the thumb scrolls. */
@@ -34,14 +35,6 @@ function canScrollBy(element: HTMLElement, { left, top, rtl }: ScrollStep): bool
     (left < 0 && element.scrollLeft > lowestLeft + edgeTolerance) ||
     (left > 0 && element.scrollLeft < highestLeft - edgeTolerance)
   );
-}
-
-/**
- * Whether a wheel event is a browser zoom gesture: the wheel with Ctrl or Meta held, which a
- * trackpad pinch also reports as Ctrl and the wheel.
- */
-function isZoomWheel(event: WheelEvent): boolean {
-  return event.ctrlKey || event.metaKey;
 }
 
 /**

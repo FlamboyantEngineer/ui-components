@@ -74,7 +74,7 @@ function Formats() {
         format={format}
         onFormatChange={setFormat}
         formats={['hex', 'hexa', 'rgb', 'rgba', 'hsla']}
-        description="Switch the format in the picker; the value keeps its alpha as #rrggbbaa."
+        description="Switch the format in the picker; the value keeps its alpha as #rrggbbaa. Each input is labelled by its channel's initial; roll the wheel over a channel to step it."
         onCommit={(value) => setCommitted(value ?? 'empty')}
         data-lab-field="formats"
       />
