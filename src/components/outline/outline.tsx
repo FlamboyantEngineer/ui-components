@@ -7,6 +7,8 @@ import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { getElementByIdFrom } from '../../utils/owner-window.js';
+import { containsComposed } from '../../utils/composed-focus.js';
+import { scrollToStartWithin } from '../../utils/scroll-geometry.js';
 import {
   formatOutlineNumber,
   type FormatOutlineNumberOptions,
@@ -80,12 +82,14 @@ function isPlainClick(event: MouseEvent) {
 
 /**
  * Scrolls the heading into view and moves focus to it when it can take focus. The heading is looked
- * up in the tree `scope` is in (a shadow root, else its document), as tracking looks it up.
+ * up in the tree `scope` is in (a shadow root, else its document), as tracking looks it up. Inside
+ * the outline's viewport only that viewport, and the scrollers within it, move; the page stays.
  */
-function revealHeading(scope: Node, id: string) {
+function revealHeading(scope: Node, id: string, viewport: HTMLElement | null) {
   const target = getElementByIdFrom(scope, id);
   if (!target) return;
-  target.scrollIntoView({ block: 'start' });
+  if (viewport && containsComposed(viewport, target)) scrollToStartWithin(target, viewport);
+  else target.scrollIntoView({ block: 'start' });
   if (target.hasAttribute('tabindex')) target.focus({ preventScroll: true });
 }
 
@@ -199,7 +203,8 @@ export function Outline(props: OutlineProps) {
       if (!isPlainClick(event)) return;
       event.preventDefault();
       onNavigate?.(headingId);
-      revealHeading(props.viewportRef?.current ?? event.currentTarget, headingId);
+      const viewport = props.viewportRef?.current ?? null;
+      revealHeading(viewport ?? event.currentTarget, headingId, viewport);
     },
   };
   const hasNotice = roots.length === 0 && (isPending || !isEmptyNode(emptyMessage));

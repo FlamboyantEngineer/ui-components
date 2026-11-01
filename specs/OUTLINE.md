@@ -29,8 +29,8 @@ Verification: `src/components/outline/outline.test.tsx`, `e2e/outline.spec.ts`
 
 `isPending` shall set `aria-busy="true"` and `data-pending` on the outline. An outline without headings shows a small [Empty State](EMPTY-STATE.md) (also `ui-outline__empty`): a loading one reading the provider's `loading` string while pending, else `emptyMessage`, and nothing without it.
 
-Implementation: `src/components/outline/outline.tsx`
-Verification: `src/components/outline/outline.test.tsx`, `e2e/outline.spec.ts`
+Implementation: `src/components/outline/outline.tsx`, `src/utils/scroll-geometry.ts`
+Verification: `src/components/outline/outline.test.tsx`, `src/utils/scroll-geometry.test.ts`, `e2e/outline.spec.ts`
 
 ## UIC-OUTLINE-2 - Current heading
 
@@ -52,7 +52,7 @@ Verification: `src/components/outline/outline.test.tsx`, `e2e/outline.spec.ts`
 
 ### UIC-OUTLINE-3.1 - Following an entry
 
-Following an entry's link with a plain primary click or Enter shall call `onNavigate(id)`, then scroll the element with that id into view, looked up in the tree of `viewportRef`'s element or, without one, of the outline's link (its shadow root, else its document), (`scrollIntoView({ block: 'start' })`) and, when the element has a `tabindex`, move focus to it without scrolling again, instead of the browser's fragment navigation; the address does not change. A click with a modifier key or another button keeps the browser's behaviour (a new tab, a copied address), as does a click a handler already prevented.
+Following an entry's link with a plain primary click or Enter shall call `onNavigate(id)`, then scroll the element with that id into view, looked up in the tree of `viewportRef`'s element or, without one, of the outline's link (its shadow root, else its document), and, when the element has a `tabindex`, move focus to it without scrolling again, instead of the browser's fragment navigation; the address does not change. When `viewportRef`'s element holds the heading, only that element and the scrollers inside it move (`scrollToStartWithin`): each brings the heading to its start, its `scroll-margin-top` below the scroller's `scroll-padding-top`, measured in the scroller's own pixels under an ancestor scale, and following the scroller's `scroll-behavior`; the page and every scroller outside the viewport keep their positions. Without a viewport, or when it does not hold the heading, the heading scrolls with `scrollIntoView({ block: 'start' })`. A click with a modifier key or another button keeps the browser's behaviour (a new tab, a copied address), as does a click a handler already prevented.
 
 Implementation: `src/components/outline/outline.tsx`
 Verification: `src/components/outline/outline.test.tsx`, `e2e/outline.spec.ts`
