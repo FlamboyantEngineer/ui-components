@@ -16,6 +16,13 @@
   outline: none;
 }
 
+/* A name alone flows with the sentence: inline on its baseline, wrapping like the words around it.
+   Triggers that hold an avatar or an identity keep the centred inline-flex box above. */
+.ui-user-card-trigger:where(:not(.ui-avatar, :has(.ui-avatar, .ui-user-identity))) {
+  display: inline;
+  vertical-align: baseline;
+}
+
 .ui-user-card-trigger[data-hovered]:not(.ui-avatar) {
   text-decoration: underline;
 }

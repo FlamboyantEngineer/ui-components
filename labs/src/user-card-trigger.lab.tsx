@@ -137,6 +137,35 @@ function HoverCards() {
   );
 }
 
+const inlineNames = ['Lena Ortiz', 'Tom Li', 'Priya Nair'] as const;
+const textSizes = { small: '0.8125rem', body: '1rem', large: '1.375rem' } as const;
+
+/** Names inside running text, in a narrow column so the sentence wraps, at three text sizes. */
+function InlineNames() {
+  const card = (name: string) => <UserCard name={name} description="Research team" />;
+  return (
+    <div>
+      {Object.entries(textSizes).map(([size, fontSize]) => (
+        <p key={size} data-lab-sentence={size} style={{ maxWidth: '16em', fontSize }}>
+          Photos by{' '}
+          <UserCardTrigger card={card(inlineNames[0])} data-lab-inline-name="">
+            {inlineNames[0]}
+          </UserCardTrigger>
+          , captions by{' '}
+          <UserCardTrigger card={card(inlineNames[1])} trigger="hover" data-lab-inline-name="">
+            {inlineNames[1]}
+          </UserCardTrigger>{' '}
+          and layout by{' '}
+          <UserCardTrigger card={card(inlineNames[2])} data-lab-inline-name="">
+            {inlineNames[2]}
+          </UserCardTrigger>{' '}
+          for the spring issue.
+        </p>
+      ))}
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -150,6 +179,12 @@ mountLab(
       description="Rest the pointer on a person or Tab to them: the card opens after a short delay without taking focus, stays open while the pointer moves into it, and Tab enters it. One card loads its details on opening; another is opened from outside."
     >
       <HoverCards />
+    </LabSection>
+    <LabSection
+      title="Names in a sentence"
+      description="A name alone sits on the sentence's baseline and wraps with it, at small, body and large text, by click or hover. Avatar and identity triggers stay centred."
+    >
+      <InlineNames />
     </LabSection>
   </>,
 );

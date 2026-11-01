@@ -30,6 +30,69 @@ test.describe('User Card Trigger lab', () => {
     await expect(card).toHaveCount(0);
   });
 
+  test('UIC-USER-CARD-TRIGGER-1.1 sets a name alone on the sentence baseline and keeps avatars centred', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('user-card-trigger');
+    for (const size of ['small', 'body', 'large']) {
+      const sentence = page.locator(`[data-lab-sentence="${size}"]`);
+      await expect(sentence.locator('[data-lab-inline-name]')).toHaveCount(3);
+      const shifts = await sentence.evaluate((paragraph) => {
+        const charRects = (node: Text) =>
+          [...node.data].flatMap((character, index) => {
+            if (!character.trim()) return [];
+            const range = document.createRange();
+            range.setStart(node, index);
+            range.setEnd(node, index + 1);
+            return [range.getBoundingClientRect()];
+          });
+        const walker = document.createTreeWalker(paragraph, NodeFilter.SHOW_TEXT);
+        const words: DOMRect[] = [];
+        const names: DOMRect[] = [];
+        for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+          const text = node as Text;
+          (text.parentElement?.closest('[data-lab-inline-name]') ? names : words).push(
+            ...charRects(text),
+          );
+        }
+        return names.map((name) => {
+          const sameLine = words.filter(
+            (word) =>
+              word.top < name.bottom - name.height / 2 && word.bottom > name.top + name.height / 2,
+          );
+          return sameLine.length === 0
+            ? Number.POSITIVE_INFINITY
+            : Math.max(...sameLine.map((word) => Math.abs(word.bottom - name.bottom)));
+        });
+      });
+      for (const shift of shifts) expect(shift, size).toBeLessThanOrEqual(0.5);
+      const lines = await sentence.evaluate((paragraph) =>
+        Math.round(
+          paragraph.getBoundingClientRect().height /
+            parseFloat(getComputedStyle(paragraph).lineHeight),
+        ),
+      );
+      expect(lines, size).toBeGreaterThan(1);
+    }
+    const name = page.locator('[data-lab-sentence="body"] [data-lab-inline-name]').first();
+    await name.focus();
+    await expect(name).toHaveAttribute('data-focus-visible', 'true');
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('dialog', { name: 'Lena Ortiz' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    for (const trigger of ['avatar', 'identity']) {
+      expect(
+        await page
+          .locator(`[data-lab-trigger="${trigger}"]`)
+          .evaluate((node) => [
+            getComputedStyle(node).display,
+            getComputedStyle(node).verticalAlign,
+          ]),
+      ).toEqual(['inline-flex', 'middle']);
+    }
+  });
+
   test('UIC-USER-CARD-1.4 closes the card before reporting an action', async ({ page, lab }) => {
     await lab.open('user-card-trigger');
     const trigger = page.locator('[data-lab-trigger="identity"]');
