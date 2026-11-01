@@ -20,7 +20,7 @@ Verification: `src/components/facet-list/facet-list.test.tsx`, `e2e/facet-list.s
 
 ### UIC-FACET-LIST-1.3 - Search
 
-A `filterable` list (by default, one with more than 10 options) shall start with a [Search Field](SEARCH-FIELD.md) (`ui-facet-list__search`) named by the provider string `filterLabel` from the label, which narrows the options to those whose label contains the query, ignoring case, shows every match whatever the limit, and shows the provider string `noResults` (`ui-facet-list__empty`) when none matches. Ticked values hidden by the search stay ticked. The query narrows the options only while the field shows: when the list stops being filterable (its options shrink to 10 or fewer by default), every option shows again and folds as usual.
+A `filterable` list (by default, one with more than 10 options) shall start with a [Search Field](SEARCH-FIELD.md) (`ui-facet-list__search`) named by the provider string `filterLabel` from the label, which narrows the options to those whose label contains the query, ignoring case and composition as [Text Match](TEXT-MATCH.md) normalizes text, shows every match whatever the limit, and shows the provider string `noResults` (`ui-facet-list__empty`) when none matches. Ticked values hidden by the search stay ticked. The query narrows the options only while the field shows: when the list stops being filterable (its options shrink to 10 or fewer by default), every option shows again and folds as usual.
 
 Implementation: `src/components/facet-list/facet-list.tsx`, `src/components/facet-list/facet-options.ts`
 Verification: `src/components/facet-list/facet-list.test.tsx`, `src/components/facet-list/facet-options.test.ts`, `e2e/facet-list.spec.ts`

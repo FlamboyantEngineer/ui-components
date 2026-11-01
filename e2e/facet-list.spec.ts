@@ -37,6 +37,9 @@ test.describe('Facet List lab', () => {
     await demo.locator('.ui-facet-list__option', { hasText: 'Cork' }).click();
     await expect(demo.getByRole('checkbox', { name: 'Cork, 12' })).toBeChecked();
     await expect(demo.locator('[data-lab-value]')).toHaveText('oslo, cork');
+    // Québec is written with a combining accent; a composed, upper-case search finds it.
+    await demo.getByRole('searchbox', { name: 'Filter city' }).fill('QUÉBEC');
+    await expect(boxes).toHaveCount(1);
     await demo.getByRole('searchbox', { name: 'Filter city' }).fill('');
     await expect(boxes.first()).toHaveAccessibleName('Oslo, 96');
     await page.getByRole('heading', { name: 'Narrowing a list' }).click();

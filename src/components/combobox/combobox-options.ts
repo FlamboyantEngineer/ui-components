@@ -1,6 +1,7 @@
 import type { Key } from '../../core/props.js';
 import type { PickerItem, PickerOption, PickerSection } from '../field/field.js';
 import { flattenPickerItems } from '../field/field-picker-items.js';
+import { foldMatchCase } from '../text-match/match-ranges.js';
 
 /** One suggestion; its label is written to the input when chosen. */
 export type ComboboxOption = PickerOption;
@@ -26,10 +27,26 @@ interface OptionCollection {
   getChildren?(key: Key): Iterable<{ key: Key; type: string }>;
 }
 
-/** Whether an option's label is `text`, ignoring case and surrounding spaces. */
+/**
+ * Whether an option's label is `text`, ignoring case, surrounding spaces and whether letters are
+ * written composed or with combining marks.
+ */
 export function hasOptionLabelled(options: readonly ComboboxOption[], text: string): boolean {
-  const wanted = text.trim().toLocaleLowerCase();
-  return options.some((option) => option.label.toLocaleLowerCase() === wanted);
+  const wanted = foldMatchCase(text.trim());
+  return options.some((option) => foldMatchCase(option.label) === wanted);
+}
+
+/**
+ * How many code units at the start of `label` read as `prefix` once both are folded, or -1 when
+ * the label does not start with it.
+ */
+function matchPrefixLength(label: string, prefix: string): number {
+  const wanted = foldMatchCase(prefix);
+  if (!foldMatchCase(label).startsWith(wanted)) return -1;
+  for (let end = 1; end <= label.length; end += 1) {
+    if (foldMatchCase(label.slice(0, end)) === wanted) return end;
+  }
+  return -1;
 }
 
 /**
@@ -41,15 +58,14 @@ export function findCompletion(
   typed: string,
 ): ComboboxCompletion | null {
   if (!typed) return null;
-  const prefix = typed.toLocaleLowerCase();
-  const option = options.find(
-    (candidate) =>
-      !candidate.isDisabled &&
-      candidate.label.length > typed.length &&
-      candidate.label.toLocaleLowerCase().startsWith(prefix),
-  );
-  if (!option) return null;
-  return { typed, text: typed + option.label.slice(typed.length), key: option.id };
+  for (const option of options) {
+    if (option.isDisabled) continue;
+    const length = matchPrefixLength(option.label, typed);
+    if (length > 0 && option.label.length > length) {
+      return { typed, text: typed + option.label.slice(length), key: option.id };
+    }
+  }
+  return null;
 }
 
 /** The key of the first item of a collection that `isDisabled` lets through, inside sections too. */

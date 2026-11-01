@@ -9,6 +9,11 @@ import {
   type TableRow,
 } from './table-rows.js';
 import { toLocalDay } from '../../utils/local-day.js';
+import {
+  normalizeMatchText,
+  splitMatchTerms,
+  textMatchesTerms,
+} from '../text-match/match-ranges.js';
 
 /**
  * How a column filters: `text` keeps cells containing the text, `number` and `date` keep cells
@@ -67,8 +72,8 @@ function toDay(value: TableCellValue): string | null {
 }
 
 function testText(text: string): CellTest {
-  const needle = text.trim().toLowerCase();
-  return (value) => isTextValue(value) && String(value).toLowerCase().includes(needle);
+  const needle = normalizeMatchText(text.trim());
+  return (value) => isTextValue(value) && normalizeMatchText(String(value)).includes(needle);
 }
 
 function testNumber({ min, max }: TableNumberRange): CellTest {
@@ -123,7 +128,7 @@ export function createRowMatcher<T extends TableRow>(
   columns: readonly FilterColumn<T>[],
   filter: TableFilter,
 ): ((row: T) => boolean) | null {
-  const terms = (filter.query ?? '').toLowerCase().split(/\s+/).filter(Boolean);
+  const terms = splitMatchTerms(filter.query ?? '');
   const tests = Object.entries(filter.columns ?? {}).flatMap(([id, value]) => {
     const column = columns.find((candidate) => candidate.id === id);
     const test = createCellTest(value);
@@ -131,9 +136,8 @@ export function createRowMatcher<T extends TableRow>(
   });
   if (terms.length === 0 && tests.length === 0) return null;
   return (row) => {
-    const text = terms.length > 0 ? getRowText(row, columns).toLowerCase() : '';
     return (
-      terms.every((term) => text.includes(term)) &&
+      (terms.length === 0 || textMatchesTerms(getRowText(row, columns), terms)) &&
       tests.every(({ column, test }) => test(getCellValue(row, column)))
     );
   };

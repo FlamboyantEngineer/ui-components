@@ -10,7 +10,8 @@ const cities: readonly FacetListOption[] = [
   { value: 'nairobi', label: 'Nairobi', count: 74 },
   { value: 'lima', label: 'Lima', count: 61 },
   { value: 'hanoi', label: 'Hanoi', count: 52 },
-  { value: 'quebec', label: 'Quebec', count: 40 },
+  // Written with a combining accent, as some sources deliver it: a search for québec still finds it.
+  { value: 'quebec', label: 'Que\u0301bec', count: 40 },
   { value: 'tbilisi', label: 'Tbilisi', count: 33 },
   { value: 'perth', label: 'Perth', count: 21 },
   { value: 'cork', label: 'Cork', count: 12 },
@@ -53,7 +54,7 @@ mountLab(
   <>
     <LabSection
       title="Modes"
-      description="A short facet, a folded facet with a show more button, a facet with a search field, and one listing the ticked values first. Counts are formatted for the locale; a value without a count shows none."
+      description="A short facet, a folded facet with a show more button, a facet with a search field (Québec, written with a combining accent, answers a search typed with a composed one), and one listing the ticked values first. Counts are formatted for the locale; a value without a count shows none."
     >
       <StateMatrix
         axes={{ mode: Object.keys(modes) as Array<keyof typeof modes> }}

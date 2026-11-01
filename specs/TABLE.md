@@ -112,7 +112,7 @@ Verification: `src/components/table/table-column-filter.test.tsx`, `e2e/table.sp
 
 ### UIC-TABLE-2.9 - Filter matching
 
-The table shall match filters with small pure functions: a query term matches the text of a row's string and number values in any column; a `text` value keeps cells whose text contains it, ignoring case; a `number` range keeps number cells within its bounds, either of which may be open; a date range keeps cells holding a date, or text starting with a `YYYY-MM-DD` date, on or between its days, a date read as its four-digit local day in years 1 to 9999 and as no day outside them or when invalid; a `set` value keeps cells whose value is one of its values. Empty text, an empty set and a range with no bound filter nothing and are dropped from the filter object.
+The table shall match filters with small pure functions: a query term matches the text of a row's string and number values in any column; a `text` value keeps cells whose text contains it, ignoring case and composition as [Text Match](TEXT-MATCH.md) normalizes text (UIC-TEXT-MATCH-1.1), as the query's terms do; a `number` range keeps number cells within its bounds, either of which may be open; a date range keeps cells holding a date, or text starting with a `YYYY-MM-DD` date, on or between its days, a date read as its four-digit local day in years 1 to 9999 and as no day outside them or when invalid; a `set` value keeps cells whose value is one of its values. Empty text, an empty set and a range with no bound filter nothing and are dropped from the filter object.
 
 Implementation: `src/components/table/table-filters.ts`
 Verification: `src/components/table/table-filters.test.ts`

@@ -26,6 +26,7 @@ const fields: Record<string, FilterField> = {
     options: [
       { value: 'maria', label: 'Maria Santos', description: 'Editor' },
       { value: 'jon', label: 'Jon Berg' },
+      { value: 'zoe', label: 'Zoe\u0308 Adler' },
     ],
   },
   available: { id: 'available', label: 'Available', type: 'boolean' },
@@ -227,6 +228,19 @@ describe('FilterConditionFields', () => {
       operator: 'none-of',
       value: ['maria'],
     });
+  });
+
+  it('UIC-FILTER-BAR-2.2 searches people whatever the composition and case of their names', async () => {
+    const user = userEvent.setup();
+    render(
+      <Editor
+        initial={{ field: 'readers', operator: 'any-of', value: [] }}
+        labelLayout="control-only"
+      />,
+    );
+    await user.type(screen.getByRole('combobox', { name: 'Value' }), 'ZOË');
+    await act(() => new Promise((resolve) => setTimeout(resolve, 400)));
+    expect(await screen.findByRole('option', { name: /Adler/ })).toBeInTheDocument();
   });
 
   it('UIC-FILTER-BAR-2.2 names the chosen people of a person value before any search', () => {

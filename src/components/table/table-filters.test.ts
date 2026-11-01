@@ -36,6 +36,20 @@ describe('table filter helpers', () => {
     expect(ids(filterTableRows(fruit, columns, { columns: { weight: '' } }))).toEqual(ids(fruit));
   });
 
+  it('UIC-TABLE-2.9 matches text and query terms whatever their composition and case', () => {
+    const spelled: Fruit[] = [
+      { id: 'nfd', name: 'Cre\u0300me brule\u0301e', colour: 'Gold', weight: 1, picked: 'soon' },
+      { id: 'sharp', name: 'STRAẞE', colour: 'Grey', weight: 2, picked: 'soon' },
+    ];
+    const matching = (filter: Parameters<typeof filterTableRows>[2]) =>
+      ids(filterTableRows(spelled, columns, filter));
+    expect(matching({ columns: { name: 'CRÈME' } })).toEqual(['nfd']);
+    expect(matching({ query: 'brûlée crème' })).toEqual([]);
+    expect(matching({ query: 'brulée crème' })).toEqual(['nfd']);
+    expect(matching({ columns: { name: 'straße' } })).toEqual(['sharp']);
+    expect(matching({ query: 'straße' })).toEqual(['sharp']);
+  });
+
   it('UIC-TABLE-2.9 keeps number cells inside a range with open bounds', () => {
     const within = (min?: number | null, max?: number | null) =>
       ids(filterTableRows(fruit, columns, { columns: { weight: { min, max } } }));

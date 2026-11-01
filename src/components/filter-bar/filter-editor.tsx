@@ -24,6 +24,7 @@ import {
   type FilterField,
   type FilterValue,
 } from './filter-model.js';
+import { normalizeMatchText } from '../text-match/match-ranges.js';
 
 /** Whether the editor's controls draw their labels or are only named by them. */
 export type FilterEditorLabelLayout = 'label-control' | 'control-only';
@@ -57,9 +58,9 @@ function toPeople(options: FilterField['options']): PeoplePickerPerson[] {
 function usePeopleLoader({ options }: FilterField): PeoplePickerLoader {
   return useCallback(
     (query: string) => {
-      const needle = query.trim().toLowerCase();
+      const needle = normalizeMatchText(query.trim());
       const people = toPeople(options).filter((person) =>
-        person.name.toLowerCase().includes(needle),
+        normalizeMatchText(person.name).includes(needle),
       );
       return Promise.resolve(people);
     },
