@@ -5,7 +5,8 @@
   gap: 6px;
 }
 
-.ui-comment-composer__field {
+/* Scoped under the root to win over the field's own width, which loads after this file. */
+.ui-comment-composer .ui-comment-composer__field {
   width: 100%;
 }
 

@@ -174,4 +174,97 @@ test.describe('Comment Thread lab', () => {
     await expect(page.getByRole('group', { name: 'Comment thread' }).first()).toBeVisible();
     await lab.expectAccessible();
   });
+
+  test('UIC-COMMENT-THREAD-1.3 UIC-COMMENT-THREAD-2.3 replies and edits with mentions, emoji and reactions', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('comment-thread');
+    const thread = page.locator('[data-lab-thread="mentions"]');
+    const box = thread.getByRole('textbox', { name: 'Reply' });
+    await box.click();
+    await page.keyboard.type('Thanks @Ma');
+    await expect(page.getByRole('option', { name: /Maria Santos/ })).toBeVisible();
+    await page.keyboard.press('Enter');
+    await page.keyboard.type('will do ');
+    await thread.getByRole('button', { name: 'Insert emoji' }).click();
+    await page
+      .getByRole('dialog', { name: 'Emoji picker' })
+      .getByRole('row', { name: 'grinning face' })
+      .first()
+      .click();
+    await expect(box).toContainText('😀');
+    await thread.getByRole('button', { name: 'Send' }).click();
+    const posted = thread.getByRole('article').last();
+    await expect(posted).toContainText('Thanks Maria Santos will do 😀');
+    await expect(posted.locator('.ui-chat-parts__token[data-kind="mention"]')).toHaveText(
+      'Maria Santos',
+    );
+    // The edit starts from the comment's mentions and keeps them.
+    await posted.getByRole('button', { name: 'Comment actions' }).click();
+    await page.getByRole('menuitem', { name: 'Edit' }).click();
+    const editor = thread.getByRole('textbox', { name: 'Edit comment' });
+    await expect(editor.locator('.ui-composer-pill, [data-kind="mention"]').first()).toContainText(
+      'Maria Santos',
+    );
+    await editor.press('End');
+    await page.keyboard.type(' today');
+    await page.keyboard.press('Enter');
+    await expect(posted).toContainText('Thanks Maria Santos will do 😀 today');
+    await expect(posted).toContainText('Edited');
+    await expect(posted.locator('.ui-chat-parts__token[data-kind="mention"]')).toHaveText(
+      'Maria Santos',
+    );
+    // A new reaction counts one, and pressing it again takes it back.
+    await posted.getByRole('button', { name: 'Add reaction' }).click();
+    await page
+      .getByRole('dialog', { name: 'Emoji picker' })
+      .getByRole('row', { name: 'grinning face' })
+      .first()
+      .click();
+    const reaction = posted.getByRole('button', { name: /^😀 1/ });
+    await expect(reaction).toHaveAttribute('aria-pressed', 'true');
+    await reaction.click();
+    await expect(posted.getByRole('button', { name: /^😀/ })).toHaveCount(0);
+    await lab.expectAccessible('[data-lab-thread="mentions"]');
+  });
+
+  test('UIC-COMMENT-THREAD-2.1 lines the bodies up under the names in a compact thread', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('comment-thread');
+    for (const name of ['live', 'mentions']) {
+      const layout = await page.locator(`[data-lab-thread="${name}"]`).evaluate((thread) => {
+        const articles = [...thread.querySelectorAll('article')];
+        const offsets = articles.map((article) => {
+          const nameBox = article.querySelector('.ui-user-identity__name')?.getBoundingClientRect();
+          const body = article.querySelector('.ui-comment-thread-reply__body');
+          const range = document.createRange();
+          if (body) range.selectNodeContents(body);
+          const text = range.getClientRects()[0];
+          return Math.abs((text?.left ?? 0) - (nameBox?.left ?? 0));
+        });
+        const gaps = articles
+          .slice(1)
+          .map(
+            (article, index) =>
+              article.getBoundingClientRect().top -
+              (articles[index]?.getBoundingClientRect().bottom ?? 0),
+          );
+        const composer = thread.querySelector('.ui-comment-thread__composer');
+        const field = composer?.querySelector('.ui-field, .ui-message-composer');
+        return {
+          offset: Math.max(...offsets),
+          gap: Math.max(0, ...gaps),
+          composerFill:
+            (field?.getBoundingClientRect().width ?? 0) /
+            (composer?.getBoundingClientRect().width ?? 1),
+        };
+      });
+      expect(layout.offset, name).toBeLessThan(1.5);
+      expect(layout.gap, name).toBeLessThanOrEqual(10);
+      expect(layout.composerFill, name).toBeGreaterThan(0.99);
+    }
+  });
 });
