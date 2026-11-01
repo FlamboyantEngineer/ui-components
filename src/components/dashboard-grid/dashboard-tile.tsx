@@ -41,9 +41,11 @@ function TileHandle({ grid, kind, label, minColumnSpan, minRowSpan }: TileHandle
     minColumnSpan,
     minRowSpan,
     measureStep: grid.measureStep,
-    onPreview: (next, origin) => grid.preview({ origin, next, kind }),
-    onCommit: (isKeyboard) => {
-      const item = grid.commit(isKeyboard);
+    onStart: grid.begin,
+    onPreview: (next, origin, session) => grid.preview({ session, origin, next, kind }),
+    onAbandon: grid.abandon,
+    onCommit: (session, isKeyboard) => {
+      const item = grid.commit(session, isKeyboard);
       if (!item) return;
       grid.announce(
         kind === 'move'

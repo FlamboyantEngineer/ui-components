@@ -1,7 +1,8 @@
 'use client';
 
-import { useRef, type DOMAttributes } from 'react';
+import { useEffect, useRef, type DOMAttributes } from 'react';
 import { useLocale, useMove } from '../../primitives/index.js';
+import { useLatest } from '../../utils/use-latest.js';
 import type { DashboardGridItem } from './dashboard-layout.js';
 
 /** `move` shifts a tile; `resize` changes its span from its bottom end corner. */
@@ -23,10 +24,14 @@ interface TileMoveOptions {
   minRowSpan: number;
   /** Reads the cell step when a pointer move starts. */
   measureStep: () => CellStep;
+  /** Starts a gesture session and returns it; a session the grid ends never previews again. */
+  onStart: () => number;
   /** Shows where the tile would go, from the tile as it was when the gesture started. */
-  onPreview: (next: DashboardGridItem, origin: DashboardGridItem) => void;
-  /** Keeps the last preview; `isKeyboard` for a move made with the arrow keys. */
-  onCommit: (isKeyboard: boolean) => void;
+  onPreview: (next: DashboardGridItem, origin: DashboardGridItem, session: number) => void;
+  /** Keeps the session's last preview; `isKeyboard` for a move made with the arrow keys. */
+  onCommit: (session: number, isKeyboard: boolean) => void;
+  /** Ends the session without keeping it: the handle unmounted mid-gesture. */
+  onAbandon: (session: number) => void;
 }
 
 interface Cells {
@@ -35,6 +40,7 @@ interface Cells {
 }
 
 interface MoveStart {
+  session: number;
   origin: DashboardGridItem;
   step: CellStep;
   deltaX: number;
@@ -77,6 +83,7 @@ export function useTileMove(options: TileMoveOptions): DOMAttributes<HTMLButtonE
   const { moveProps } = useMove({
     onMoveStart: () => {
       start.current = {
+        session: options.onStart(),
         origin: options.item,
         step: options.measureStep(),
         deltaX: 0,
@@ -96,12 +103,24 @@ export function useTileMove(options: TileMoveOptions): DOMAttributes<HTMLButtonE
       };
       if (active.cells?.x === cells.x && active.cells.y === cells.y) return;
       active.cells = cells;
-      options.onPreview(resolveMovedItem({ origin: active.origin, cells }, options), active.origin);
+      const next = resolveMovedItem({ origin: active.origin, cells }, options);
+      options.onPreview(next, active.origin, active.session);
     },
     onMoveEnd: (event) => {
+      const active = start.current;
       start.current = null;
-      options.onCommit(event.pointerType === 'keyboard');
+      if (active) options.onCommit(active.session, event.pointerType === 'keyboard');
     },
   });
+  // A handle that unmounts mid-gesture ends it: its pointer can never commit afterwards.
+  const latestAbandon = useLatest(options.onAbandon);
+  useEffect(
+    () => () => {
+      const active = start.current;
+      start.current = null;
+      if (active) latestAbandon.current(active.session);
+    },
+    [latestAbandon],
+  );
   return moveProps;
 }
