@@ -336,7 +336,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Large amounts"
-      description="Two equal finite amounts keep equal slices and table shares even when their total exceeds the numeric range."
+      description="Two equal finite amounts keep equal slices and table shares even when their total exceeds the numeric range, and stacked bars keep equal lengths; an axis label past the largest number reads as infinity."
     >
       <DonutChart
         label="Large amounts"
@@ -346,6 +346,18 @@ mountLab(
         ]}
         formatOptions={{ notation: 'scientific' }}
       />
+      <div style={box(360)}>
+        <BarChart
+          label="Large stacked amounts"
+          categories={['Upper', 'Lower']}
+          series={[
+            { id: 'first', label: 'First', values: [Number.MAX_VALUE, -Number.MAX_VALUE] },
+            { id: 'second', label: 'Second', values: [Number.MAX_VALUE, -1] },
+          ]}
+          layout="stacked"
+          height={200}
+        />
+      </div>
     </LabSection>
     <LabSection
       title="States"

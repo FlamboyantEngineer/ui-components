@@ -3,6 +3,7 @@
 import type { Orientation } from '../../core/props.js';
 import { createBandScale, type BandScale } from '../../utils/band-scale.js';
 import { createLinearScale, type LinearScale } from '../../utils/linear-scale.js';
+import { getNumberFormat } from '../../utils/intl-format.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import type { Key } from '../../core/props.js';
 import { createPlaceIdentities, toValueIdentity } from './chart-identity.js';
@@ -69,16 +70,70 @@ const valueTickSpacing = { vertical: 40, horizontal: 80 } as const;
 /** The share of a category's band left between its grouped bars. */
 const groupPadding = 0.1;
 
-/** The lowest and highest ends the bars reach, always including zero. */
-function findValueExtent(input: BarGeometryInput): [number, number] {
+/** The scale in units, and the unit, behind each value scale over divided values. */
+const unitScales = new WeakMap<LinearScale, { scale: LinearScale; unit: number }>();
+
+/** Room the nice domain and its ticks need beyond the values, as a power of two. */
+const niceHeadroom = 8;
+
+/**
+ * The power of two the bars' values are divided by before they are summed and scaled: 1, unless
+ * a stack of the largest value, with room for a nice domain, would pass the largest number. Dividing
+ * by a power of two keeps every value's digits, so the bars keep their proportions.
+ */
+function findValueUnit(input: BarGeometryInput): number {
+  let largest = 0;
+  for (const { values } of input.series) {
+    for (const value of values) {
+      if (Number.isFinite(value)) largest = Math.max(largest, Math.abs(value));
+    }
+  }
+  const room = input.series.length * niceHeadroom;
+  let unit = 1;
+  while (!Number.isFinite((largest / unit) * room)) unit *= 2;
+  return unit;
+}
+
+/**
+ * A scale over values divided by `unit`, read and labelled in the values themselves. A tick past
+ * the largest number reads as the number format's infinity.
+ */
+function toUnitScale(
+  scale: LinearScale,
+  unit: number,
+  { locale, formatOptions }: Pick<BarGeometryInput, 'locale' | 'formatOptions'>,
+): LinearScale {
+  const labels = getNumberFormat(
+    locale,
+    formatOptions ?? { notation: 'scientific', maximumSignificantDigits: 3 },
+  );
+  const format = (value: number) => labels.format(value);
+  const scaled: LinearScale = {
+    domain: [scale.domain[0] * unit, scale.domain[1] * unit],
+    range: scale.range,
+    map: (value) => scale.map(value / unit),
+    invert: (position) => scale.invert(position) * unit,
+    ticks: () =>
+      scale
+        .ticks()
+        .map((tick) => ({ ...tick, value: tick.value * unit, label: format(tick.value * unit) })),
+    format,
+  };
+  unitScales.set(scaled, { scale, unit });
+  return scaled;
+}
+
+/** The lowest and highest ends the bars reach, in `unit`s, always including zero. */
+function findValueExtent(input: BarGeometryInput, unit: number): [number, number] {
   let low = 0;
   let high = 0;
   input.categories.forEach((_, index) => {
     let above = 0;
     let below = 0;
     for (const { values } of input.series) {
-      const value = values[index];
-      if (value === undefined || !Number.isFinite(value)) continue;
+      const given = values[index];
+      if (given === undefined || !Number.isFinite(given)) continue;
+      const value = given / unit;
       if (input.layout === 'grouped') {
         low = Math.min(low, value);
         high = Math.max(high, value);
@@ -97,8 +152,9 @@ export function createBarValueScale(input: BarGeometryInput, plot: ChartBox): Li
   const valueRange: [number, number] = isVertical
     ? [plot.bottom, plot.top]
     : [plot.left, plot.right];
-  return createLinearScale({
-    domain: findValueExtent(input),
+  const unit = findValueUnit(input);
+  const scale = createLinearScale({
+    domain: findValueExtent(input, unit),
     range: valueRange,
     nice: true,
     locale: input.locale,
@@ -108,6 +164,7 @@ export function createBarValueScale(input: BarGeometryInput, plot: ChartBox): Li
       valueTickSpacing[input.orientation],
     ),
   });
+  return unit === 1 ? scale : toUnitScale(scale, unit, input);
 }
 
 /**
@@ -130,6 +187,9 @@ export function resolveBarGeometry(input: BarGeometryInput, valueScale?: LinearS
     padding: groupPadding,
   });
   const isGrouped = input.layout === 'grouped';
+  // Stacks sum values in the scale's units, which never overflow.
+  const { scale: unitScale, unit } = unitScales.get(values) ?? { scale: values, unit: 1 };
+  const toPosition = (units: number) => unitScale.map(units);
   const bars: BarRect[] = [];
   const placeOf = createPlaceIdentities();
   input.categories.forEach((category, index) => {
@@ -139,9 +199,10 @@ export function resolveBarGeometry(input: BarGeometryInput, valueScale?: LinearS
       const value = seriesValues[index];
       if (value === undefined || !Number.isFinite(value)) continue;
       const side = value >= 0 ? 'above' : 'below';
+      const units = value / unit;
       const base = isGrouped ? 0 : stack[side];
-      stack[side] = base + value;
-      const ends = [values.map(base), values.map(base + value)];
+      stack[side] = base + units;
+      const ends = [toPosition(base), toPosition(base + units)];
       const start = bands.map(category) + (isGrouped ? groups.map(String(series)) : 0);
       const breadth = isGrouped ? groups.bandwidth : bands.bandwidth;
       const low = Math.min(...ends);
