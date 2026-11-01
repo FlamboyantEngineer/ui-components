@@ -24,6 +24,11 @@ export interface ChartPoint {
   key: string;
   series: number;
   index: number;
+  /**
+   * Where the value sits along the axis the series share, compared across series: a line's read x
+   * (a number or a time). Defaults to `index`, a bar's category.
+   */
+  position?: number | undefined;
 }
 
 /** The props a drawn value's element takes to join the chart's focus order and tooltip. */
@@ -75,7 +80,7 @@ function findAcross(points: readonly ChartPoint[], from: ChartPoint, step: 1 | -
   for (const point of points) {
     const distance = (point.series - from.series) * step;
     if (distance <= 0 || distance > seriesDistance) continue;
-    const proximity = Math.abs(point.index - from.index);
+    const proximity = Math.abs((point.position ?? point.index) - (from.position ?? from.index));
     if (distance < seriesDistance || proximity < pointDistance) {
       target = point;
       seriesDistance = distance;

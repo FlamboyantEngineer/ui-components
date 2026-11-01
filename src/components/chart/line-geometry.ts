@@ -48,6 +48,8 @@ interface LinePoint {
   series: number;
   /** Its position among its series' drawn values, in x order. */
   index: number;
+  /** Its read x, a number or a time, which keyboard moves between series compare. */
+  position: number;
   at: LineChartX;
   value: number;
   x: number;
@@ -107,7 +109,7 @@ function layOutSeries(
     .sort((a, b) => a.at - b.at);
   const runs: LinePoint[][] = [[]];
   const drawn: LinePoint[] = [];
-  for (const { point } of ordered) {
+  for (const { point, at } of ordered) {
     if (!Number.isFinite(point.y)) {
       runs.push([]);
       continue;
@@ -116,6 +118,7 @@ function layOutSeries(
       key: `${series}:${drawn.length}`,
       series,
       index: drawn.length,
+      position: at,
       at: point.x,
       value: point.y,
       x: roundCoordinate(scales.xAxis.map(point.x)),
