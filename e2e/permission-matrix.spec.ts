@@ -8,6 +8,44 @@ const toggle = (scope: Locator, name: string) =>
     .locator('label', { has: scope.page().getByRole('checkbox', { name, exact: true }) })
     .click();
 
+/**
+ * How far each rendered checkbox's centre sits from its column's centre and from its row's
+ * middle, the largest over the rendered rows, and how many checkboxes were measured.
+ */
+const checkboxOffsets = (root: Locator) =>
+  root.evaluate((element) => {
+    const columns = [...element.querySelectorAll('[role="columnheader"]')].map((header) =>
+      header.getBoundingClientRect(),
+    );
+    let across = 0;
+    let down = 0;
+    let count = 0;
+    for (const row of element.querySelectorAll('[role="row"]')) {
+      const rowBox = row.getBoundingClientRect();
+      if (rowBox.height === 0) continue;
+      for (const box of row.querySelectorAll('.ui-checkbox__box')) {
+        const rect = box.getBoundingClientRect();
+        const centre = rect.left + rect.width / 2;
+        const column = columns.find((header) => header.left <= centre && centre <= header.right);
+        if (!column) continue;
+        across = Math.max(across, Math.abs(centre - (column.left + column.width / 2)));
+        down = Math.max(
+          down,
+          Math.abs(rect.top + rect.height / 2 - (rowBox.top + rowBox.height / 2)),
+        );
+        count += 1;
+      }
+    }
+    return { across, down, count };
+  });
+
+const expectAligned = async (root: Locator, where: string) => {
+  const offsets = await checkboxOffsets(root);
+  expect(offsets.count, where).toBeGreaterThan(8);
+  expect(offsets.across, where).toBeLessThan(1);
+  expect(offsets.down, where).toBeLessThan(1);
+};
+
 test.describe('Permission Matrix lab', () => {
   test('UIC-PERMISSION-MATRIX-1.1 UIC-PERMISSION-MATRIX-1.2 UIC-PERMISSION-MATRIX-1.3 UIC-PERMISSION-MATRIX-2.2 UIC-PERMISSION-MATRIX-2.4 UIC-PERMISSION-MATRIX-3.1 shows groups, inherited, read-only and dirty cells', async ({
     page,
@@ -148,5 +186,29 @@ test.describe('Permission Matrix lab', () => {
     );
     expect(await grid.getByRole('row').count()).toBeLessThan(60);
     await lab.expectAccessible('[data-lab-demo="virtualized"]');
+  });
+
+  test('UIC-PERMISSION-MATRIX-1.7 centres every checkbox in its role column and row', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('permission-matrix');
+    await expectAligned(demo(page, 'editor'), 'not virtualized');
+    const root = demo(page, 'virtualized');
+    // Grant, group and inherited (read-only role) checkboxes, checked and dirty.
+    await toggle(root, 'Recipes task 1 for Editor');
+    await expectAligned(root, 'virtualized');
+    const scroll = root.locator('.ui-table__scroll');
+    await scroll.evaluate((node) => node.scrollTo({ top: node.scrollHeight / 2 }));
+    await expect(root.getByRole('rowheader', { name: /task 3\d\d$/ }).first()).toBeInViewport();
+    await expectAligned(root, 'after scrolling');
+    await scroll.evaluate((node) => node.scrollTo({ top: node.scrollHeight }));
+    await expect(root.getByRole('rowheader', { name: 'Settings task 600' })).toBeVisible();
+    await expectAligned(root, 'at the end');
+    await root.evaluate((node) => {
+      node.setAttribute('dir', 'rtl');
+      (node as HTMLElement).style.width = '720px';
+    });
+    await expectAligned(root, 'right to left, narrower');
   });
 });

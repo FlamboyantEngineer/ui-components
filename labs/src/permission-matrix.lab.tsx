@@ -151,7 +151,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Virtualized"
-      description="600 permissions in three groups; only the rows in view are rendered."
+      description="600 permissions in three groups; only the rows in view are rendered. Grant and group checkboxes centre in their role columns and rows as in the matrix above, while scrolling too."
     >
       <div data-lab-demo="virtualized" style={{ height: 320 }}>
         <PermissionMatrix

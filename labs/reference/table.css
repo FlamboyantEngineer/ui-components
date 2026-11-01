@@ -314,7 +314,21 @@
   align-items: center;
   height: 100%;
 }
-.ui-table[data-virtualized] :is(.ui-table__column, .ui-table__cell)[data-align='end'] {
+/*
+ * Virtualized cells are flex boxes, not table cells: they centre their content in the row
+ * themselves, and place it by the column's alignment, since text-align leaves a control (a
+ * checkbox) where it is.
+ */
+.ui-table[data-virtualized] :is(.ui-table__group-cell, .ui-table__aggregate-cell) {
+  display: flex;
+  align-items: center;
+}
+.ui-table[data-virtualized]
+  :is(.ui-table__column, .ui-table__cell, .ui-table__aggregate-cell)[data-align='center'] {
+  justify-content: center;
+}
+.ui-table[data-virtualized]
+  :is(.ui-table__column, .ui-table__cell, .ui-table__aggregate-cell)[data-align='end'] {
   justify-content: flex-end;
 }
 

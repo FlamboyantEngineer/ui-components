@@ -276,7 +276,7 @@ Verification: `src/components/table/table.test.tsx`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-7.3 - Virtualization
 
-`virtualized` shall render the grid through React Aria's `Virtualizer` with its table layout and publish `data-virtualized` on the root: only the rows in view of the scroll area, plus a small buffer and the summary row ([UIC-TABLE-12.1](#uic-table-121---summary-row)), are in the document, at `rowHeight` pixels each (40 by default, 32 at size `sm`), and scrolling reaches the last row. The stylesheet bounds the scroll area's height.
+`virtualized` shall render the grid through React Aria's `Virtualizer` with its table layout and publish `data-virtualized` on the root: only the rows in view of the scroll area, plus a small buffer and the summary row ([UIC-TABLE-12.1](#uic-table-121---summary-row)), are in the document, at `rowHeight` pixels each (40 by default, 32 at size `sm`), and scrolling reaches the last row. The stylesheet bounds the scroll area's height. Its cells are not table cells, so the reference stylesheet centres their content in the row and places it by the column's `align`, controls included.
 
 Implementation: `src/components/table/table.tsx`, `src/components/table/table-virtualizer.tsx`, `src/components/table/use-table-grid.ts`
 Verification: `src/components/table/table.test.tsx`, `e2e/table.spec.ts`
