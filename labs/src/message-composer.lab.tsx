@@ -235,6 +235,29 @@ function Recalling() {
   );
 }
 
+/** A composer its host disables a second after a press, as a send in flight does. */
+function DisabledWhilePicking() {
+  const [isDisabled, setIsDisabled] = useState(false);
+  return (
+    <div data-lab-case="disabled-while-picking">
+      <p>
+        <Button size="sm" onPress={() => window.setTimeout(() => setIsDisabled(true), 1000)}>
+          Disable in a second
+        </Button>{' '}
+        <Button size="sm" onPress={() => setIsDisabled(false)}>
+          Enable
+        </Button>
+      </p>
+      <MessageComposer
+        aria-label="Lockable message"
+        isDisabled={isDisabled}
+        onSubmit={() => undefined}
+        startControls={<MessageComposerEmojiButton />}
+      />
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -261,6 +284,12 @@ mountLab(
     >
       <Replying />
       <Queueing />
+    </LabSection>
+    <LabSection
+      title="Disabled while picking"
+      description="Press Disable in a second, then open the emoji picker: when the composer turns disabled the picker closes and inserts nothing, and enabling the composer again leaves it closed."
+    >
+      <DisabledWhilePicking />
     </LabSection>
     <LabSection
       title="Recalling earlier prompts"

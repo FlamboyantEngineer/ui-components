@@ -631,4 +631,22 @@ test.describe('Message Composer lab', () => {
     await page.keyboard.type('!');
     await expect(input).toHaveValue('Lunch🍕!?');
   });
+
+  test('UIC-MESSAGE-COMPOSER-1.4 closes the emoji picker for good when the composer turns disabled', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('message-composer');
+    const demo = page.locator('[data-lab-case="disabled-while-picking"]');
+    await demo.getByRole('button', { name: 'Disable in a second' }).click();
+    const emoji = demo.getByRole('button', { name: 'Insert emoji' });
+    await emoji.click();
+    await expect(page.getByRole('dialog', { name: 'Emoji picker' })).toBeVisible();
+    await expect(emoji).toBeDisabled();
+    await expect(page.getByRole('dialog', { name: 'Emoji picker' })).toHaveCount(0);
+    await demo.getByRole('button', { name: 'Enable' }).click();
+    await expect(emoji).toBeEnabled();
+    await expect(page.getByRole('dialog', { name: 'Emoji picker' })).toHaveCount(0);
+    await expect(demo.getByRole('textbox', { name: 'Lockable message' })).toHaveValue('');
+  });
 });

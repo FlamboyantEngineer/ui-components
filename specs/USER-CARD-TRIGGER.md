@@ -27,10 +27,10 @@ Verification: `src/components/user-card-trigger/user-card-trigger.test.tsx`, `e2
 
 ### UIC-USER-CARD-TRIGGER-1.4 - Controlled open state
 
-`isOpen` with `onOpenChange` shall control whether the card is open, and `defaultOpen` shall open it at first when uncontrolled, in either trigger mode. `onOpenChange` reports each change the reader asks for, such as a press, Escape or the hover delays running out.
+`isOpen` with `onOpenChange` shall control whether the card is open, and `defaultOpen` shall open it at first when uncontrolled, in either trigger mode. `onOpenChange` reports each change the reader asks for, such as a press, Escape or the hover delays running out. A card open when the trigger turns disabled, in either mode, closes through `onOpenChange(false)`, once, focus leaving it as on a dismiss, and stays closed when the trigger is enabled again; a controlled card is drawn closed while disabled.
 
-Implementation: `src/components/user-card-trigger/user-card-trigger.tsx`
-Verification: `src/components/user-card-trigger/user-card-trigger.test.tsx`, `e2e/user-card-trigger.spec.ts`
+Implementation: `src/components/user-card-trigger/user-card-trigger.tsx`, `src/utils/use-close-when-locked.ts`
+Verification: `src/components/user-card-trigger/user-card-trigger.test.tsx`, `src/components/user-card-trigger/user-card-trigger-locking.test.tsx`, `e2e/user-card-trigger.spec.ts`
 
 ### UIC-USER-CARD-TRIGGER-1.5 - Without a card
 

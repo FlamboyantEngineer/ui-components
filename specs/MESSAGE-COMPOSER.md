@@ -29,10 +29,10 @@ Verification: `src/components/message-composer/message-composer.test.tsx`, `e2e/
 
 ### UIC-MESSAGE-COMPOSER-1.4 - Disabled
 
-With `isDisabled`, the root shall publish `data-disabled`, the text area is natively disabled, the send and Cancel buttons and the built-in controls (the "+", attach and emoji buttons, selects and toggles) are disabled, and dropped or pasted files are ignored.
+With `isDisabled`, the root shall publish `data-disabled`, the text area is natively disabled, the send and Cancel buttons and the built-in controls (the "+", attach and emoji buttons, selects and toggles) are disabled, and dropped or pasted files are ignored. An emoji picker open when the composer turns disabled closes for good ([UIC-EMOJI-PICKER-3.1](EMOJI-PICKER.md#uic-emoji-picker-31---popover)), and text or pills a control inserts while disabled are refused, in both the plain and the rich composer.
 
-Implementation: `src/components/message-composer/composer-frame.tsx`, `src/components/message-composer/use-message-composer.ts`, `src/components/message-composer/composer-tools.tsx`, `src/components/message-composer/composer-menu.tsx`
-Verification: `src/components/message-composer/message-composer.test.tsx`, `src/components/message-composer/composer-menu.test.tsx`
+Implementation: `src/components/message-composer/composer-frame.tsx`, `src/components/message-composer/use-message-composer.ts`, `src/components/message-composer/rich/rich-message-composer.tsx`, `src/components/message-composer/composer-tools.tsx`, `src/components/message-composer/composer-menu.tsx`
+Verification: `src/components/message-composer/message-composer.test.tsx`, `src/components/message-composer/composer-menu.test.tsx`, `src/components/message-composer/composer-insert-locking.test.tsx`
 
 ### UIC-MESSAGE-COMPOSER-1.5 - Attachments and controls
 

@@ -80,10 +80,10 @@ Verification: `src/components/emoji-picker/emoji-picker.test.tsx`, `e2e/emoji-pi
 
 ### UIC-EMOJI-PICKER-3.1 - Popover
 
-`EmojiPickerTrigger` shall make the button it wraps open an `EmojiPicker` in a popover in the `ui-emoji-picker__popover` slot, with focus in the search field. The popover sits on the `dropdown` overlay layer ([UIC-PORTAL-2.2](PORTAL.md#uic-portal-22---stacking)): it publishes `data-layer="dropdown"` and takes the z-index of `useLayerZIndex('dropdown')`. Choosing an emoji or pressing Escape shall close it and return focus to the button (the picker closes only this popover, never an overlay around the trigger); a press outside shall close it. Its other props reach the picker.
+`EmojiPickerTrigger` shall make the button it wraps open an `EmojiPicker` in a popover in the `ui-emoji-picker__popover` slot, with focus in the search field. The popover sits on the `dropdown` overlay layer ([UIC-PORTAL-2.2](PORTAL.md#uic-portal-22---stacking)): it publishes `data-layer="dropdown"` and takes the z-index of `useLayerZIndex('dropdown')`. Choosing an emoji or pressing Escape shall close it and return focus to the button (the picker closes only this popover, never an overlay around the trigger); a press outside shall close it. With `isDisabled` it opens nothing, and a picker open when it turns disabled closes and stays closed when it is enabled again, choosing nothing meanwhile; the wrapped button should be disabled too. Its other props reach the picker.
 
-Implementation: `src/components/emoji-picker/emoji-picker.tsx`
-Verification: `src/components/emoji-picker/emoji-picker.test.tsx`, `e2e/emoji-picker.spec.ts`
+Implementation: `src/components/emoji-picker/emoji-picker.tsx`, `src/utils/use-close-when-locked.ts`
+Verification: `src/components/emoji-picker/emoji-picker.test.tsx`, `src/components/emoji-picker/emoji-picker-trigger-locking.test.tsx`, `e2e/emoji-picker.spec.ts`
 
 ### UIC-EMOJI-PICKER-3.2 - Accessibility
 
