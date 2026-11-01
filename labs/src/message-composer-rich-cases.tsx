@@ -42,7 +42,11 @@ const samples: Record<(typeof contents)[number], MessageComposerMessage> = {
       { start: 21, end: 31, kind: 'command', id: 'summarize', label: 'summarize' },
     ],
   },
-  'code block': { text: 'Try this:\n```\nconst total = items.length;\n```', tokens: [] },
+  // The code holds a fence of its own, so the block is fenced with four backticks.
+  'code block': {
+    text: 'Try this:\n````md\nconst total = items.length;\n```\n````',
+    tokens: [],
+  },
 };
 
 /** A file attached to the message, as a chip that removes it. */
@@ -187,7 +191,7 @@ export function RichComposerSections() {
     <>
       <LabSection
         title="Rich states"
-        description="The rich composer (from the message-composer/rich entry point) empty with its placeholder, with a mention and a command as pills, and with a code block; ready, pending with Stop, disabled, and editing."
+        description="The rich composer (from the message-composer/rich entry point) empty with its placeholder, with a mention and a command as pills, and with a code block that holds a fence of its own; ready, pending with Stop, disabled, and editing."
       >
         <StateMatrix
           axes={{ content: contents, status: statuses }}

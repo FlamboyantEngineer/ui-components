@@ -102,7 +102,7 @@ test.describe('Message Composer lab', () => {
       }),
     ).toHaveAttribute('aria-multiline', 'true');
     await expect(richCell(page, 'code block', 'ready').locator('pre')).toHaveText(
-      'const total = items.length;',
+      'const total = items.length;\n```',
     );
     await lab.expectAccessible();
   });
