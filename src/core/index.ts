@@ -161,6 +161,7 @@ export {
   GlobeGlyph,
   WrenchGlyph,
   SparklesGlyph,
+  ClipboardGlyph,
 } from './glyphs.js';
 export type { GlyphComponent, GlyphComponentProps, GlyphMap, GlyphName } from './glyphs.js';
 export type { UiMessages, UiStrings } from './strings.js';

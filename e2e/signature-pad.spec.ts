@@ -262,4 +262,37 @@ test.describe('Signature Pad lab', () => {
     await field.getByRole('radio', { name: 'Image' }).click();
     await expect(preview).toHaveCount(0);
   });
+  test('UIC-SIGNATURE-PAD-1.6 shows aligned icon controls that name themselves in tooltips', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('signature-pad');
+    const field = page.locator('[data-lab-field="live"]');
+    const undo = field.getByRole('button', { name: 'Undo stroke' });
+    await expect(undo).toHaveAttribute('data-content', 'icon');
+    await field.getByRole('radio', { name: 'Draw' }).focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(field.getByRole('radio', { name: 'Type' })).toBeFocused();
+    await expect(
+      page.locator('.ui-tooltip:not([data-exiting])', { hasText: 'Type' }),
+    ).toBeVisible();
+    await field.getByRole('radio', { name: 'Image' }).click();
+    const actions = field.locator('.ui-signature-pad__actions .ui-button');
+    await expect(actions).toHaveCount(3);
+    const boxes = await actions.evaluateAll((nodes) =>
+      nodes.map((node) => {
+        const box = node.getBoundingClientRect();
+        return { top: Math.round(box.top), height: Math.round(box.height), width: box.width };
+      }),
+    );
+    expect(new Set(boxes.map((box) => box.top)).size).toBe(1);
+    expect(new Set(boxes.map((box) => box.height)).size).toBe(1);
+    expect(boxes.every((box) => box.width >= 24)).toBe(true);
+    await field.getByRole('button', { name: 'Upload image' }).focus();
+    await page.keyboard.press('Tab');
+    await expect(field.getByRole('button', { name: 'Paste image' })).toBeFocused();
+    await expect(
+      page.locator('.ui-tooltip:not([data-exiting])', { hasText: 'Paste image' }),
+    ).toBeVisible();
+  });
 });

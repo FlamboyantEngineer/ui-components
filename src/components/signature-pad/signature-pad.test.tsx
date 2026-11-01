@@ -478,6 +478,35 @@ describe('SignaturePad', () => {
     expect(screen.getByRole('radio', { name: 'Draw' })).toBeDisabled();
   });
 
+  it('UIC-SIGNATURE-PAD-1.6 shows its modes and actions as named icon buttons with tooltips on focus', async () => {
+    const user = userEvent.setup();
+    const { container, unmount } = render(
+      <SignaturePad label="Signature" defaultValue={drawing} />,
+    );
+    for (const name of ['Draw', 'Type', 'Image']) {
+      const mode = screen.getByRole('radio', { name });
+      expect(
+        mode.closest('.ui-segmented-choice__segment')?.querySelector('.ui-segmented-choice__label'),
+      ).toBeNull();
+    }
+    for (const name of ['Undo stroke', 'Clear']) {
+      const button = screen.getByRole('button', { name });
+      expect(button).toHaveAttribute('data-content', 'icon');
+      expect(button).not.toHaveTextContent(name);
+    }
+    expect(container.querySelectorAll('.ui-signature-pad__actions .ui-button__label')).toHaveLength(
+      0,
+    );
+    unmount();
+    render(<SignaturePad label="Signature" modes={['image']} />);
+    for (const name of ['Upload image', 'Paste image', 'Clear']) {
+      expect(screen.getByRole('button', { name })).toHaveAttribute('data-content', 'icon');
+    }
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Upload image' })).toHaveFocus();
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('Upload image');
+  });
+
   it('UIC-SIGNATURE-PAD-1.5 appends the caller class and forwards id and data attributes', () => {
     const { container } = render(
       <SignaturePad label="Signature" className="caller" id="sign" data-testid="probe" />,

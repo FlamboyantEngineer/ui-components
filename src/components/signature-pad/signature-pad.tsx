@@ -11,6 +11,7 @@ import {
   type FieldInputProps,
   type FieldState,
 } from '../field/field.js';
+import { EditGlyph, ImageGlyph, ItalicGlyph } from '../../core/glyphs.js';
 import { SegmentedChoice } from '../segmented-choice/segmented-choice.js';
 import type { SignatureValue } from './signature-path.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
@@ -133,6 +134,7 @@ function SignatureControls(props: SignatureControlsProps) {
     type: strings.signatureType,
     image: strings.signatureImage,
   };
+  const icons = { draw: EditGlyph, type: ItalicGlyph, image: ImageGlyph } as const;
   return (
     <>
       {modes ? (
@@ -141,7 +143,12 @@ function SignatureControls(props: SignatureControlsProps) {
           aria-label={strings.signatureMethod}
           size="sm"
           sizing="content"
-          options={modes.map((entry) => ({ value: entry, label: labels[entry] }))}
+          iconOnly
+          options={modes.map((entry) => ({
+            value: entry,
+            label: labels[entry],
+            icon: icons[entry],
+          }))}
           value={mode}
           isReadOnly={state.isReadOnly}
           isDisabled={state.isDisabled}

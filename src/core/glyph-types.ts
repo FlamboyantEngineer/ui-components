@@ -125,6 +125,7 @@ export type GlyphName =
   | 'terminal'
   | 'globe'
   | 'wrench'
-  | 'sparkles';
+  | 'sparkles'
+  | 'clipboard';
 
 export type GlyphMap = Record<GlyphName, GlyphComponent>;

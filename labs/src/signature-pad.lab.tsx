@@ -181,7 +181,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Modes"
-      description="A drawn signature, a typed one, an image one, and a pad that offers drawing only."
+      description="A drawn signature, a typed one, an image one, and a pad that offers drawing only. The modes and actions are icon buttons; hover or focus one for its name."
     >
       <StateMatrix
         axes={{ mode: modes }}

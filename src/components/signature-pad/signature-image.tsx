@@ -1,6 +1,6 @@
 'use client';
 
-import { DeleteGlyph, UploadGlyph } from '../../core/glyphs.js';
+import { ClipboardGlyph, DeleteGlyph, UploadGlyph } from '../../core/glyphs.js';
 import { useEffect, useId, useMemo, useRef, useState, type RefObject } from 'react';
 import { FileTrigger, useLocale } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -79,7 +79,7 @@ function useImageIntake(
 /**
  * The image mode's area: an image named by the field's label that shows the signature image (its
  * aspect ratio and transparency kept by the host stylesheet), or a hint while empty, then Upload
- * image, Paste image and Clear. A paste anywhere in it takes the clipboard's first image.
+ * image, Paste image and Clear as icon buttons. A paste anywhere in it takes the clipboard's first image.
  */
 export function SignatureImageArea(props: SignatureImageAreaProps) {
   const { control, image, isEditable } = props;
@@ -124,25 +124,30 @@ export function SignatureImageArea(props: SignatureImageAreaProps) {
             if (file) void take(file);
           }}
         >
-          <Button size="sm" startIcon={UploadGlyph} isDisabled={!isEditable}>
-            {strings.uploadSignatureImage}
-          </Button>
+          <Button
+            size="sm"
+            icon={UploadGlyph}
+            label={strings.uploadSignatureImage}
+            tooltip={strings.uploadSignatureImage}
+            isDisabled={!isEditable}
+          />
         </FileTrigger>
         <Button
           size="sm"
+          icon={ClipboardGlyph}
+          label={strings.pasteSignatureImage}
+          tooltip={strings.pasteSignatureImage}
           isDisabled={!isEditable}
           onPress={async () => take(await readClipboardImage(surface.current))}
-        >
-          {strings.pasteSignatureImage}
-        </Button>
+        />
         <Button
           size="sm"
-          startIcon={DeleteGlyph}
+          icon={DeleteGlyph}
+          label={strings.clear}
+          tooltip={strings.clear}
           isDisabled={!isEditable || image === null}
           onPress={clear}
-        >
-          {strings.clear}
-        </Button>
+        />
       </div>
       <p {...hooks.slot('image-message')} role="status">
         {message}
