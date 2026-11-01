@@ -263,6 +263,64 @@ describe('DiagramCanvas', () => {
     expect(contentOf(container).style.transform).toBe('translate(25px, -5px) scale(1)');
   });
 
+  it('UIC-DIAGRAM-CANVAS-3.1 UIC-DIAGRAM-CANVAS-3.2 leaves wheels and keys that controls inside take, and counts wheel lines and pages', async () => {
+    stubViewportSize(400, 300);
+    const onViewportChange = vi.fn();
+    const { container } = render(
+      <DiagramCanvas
+        nodes={pipeNodes}
+        edges={pipeEdges}
+        defaultViewport={{ x: 0, y: 0, zoom: 100 }}
+        onViewportChange={onViewportChange}
+        renderNode={(item) => (
+          <>
+            {item.label}
+            {item.id === 'pump' ? (
+              <>
+                <textarea aria-label="Notes" defaultValue="" />
+                <button
+                  type="button"
+                  onKeyDown={(event) => {
+                    if (event.key === '+') event.preventDefault();
+                  }}
+                >
+                  Count
+                </button>
+              </>
+            ) : null}
+          </>
+        )}
+      />,
+    );
+    const notes = screen.getByRole('textbox', { name: 'Notes' });
+    Object.defineProperties(notes, {
+      scrollHeight: { configurable: true, value: 400 },
+      clientHeight: { configurable: true, value: 100 },
+    });
+    fireEvent.wheel(notes, { deltaY: 120 });
+    expect(onViewportChange).not.toHaveBeenCalled();
+    notes.scrollTop = 300;
+    fireEvent.wheel(notes, { deltaY: 120 });
+    expect(onViewportChange).toHaveBeenLastCalledWith({ x: 0, y: -120, zoom: 100 });
+    fireEvent.wheel(notes, { deltaY: -40 });
+    expect(onViewportChange).toHaveBeenCalledTimes(1);
+
+    const consumed = (event: WheelEvent) => event.preventDefault();
+    notes.addEventListener('wheel', consumed);
+    fireEvent.wheel(notes, { deltaY: 120, ctrlKey: true });
+    expect(onViewportChange).toHaveBeenCalledTimes(1);
+    notes.removeEventListener('wheel', consumed);
+
+    fireEvent.wheel(viewportOf(container), { deltaY: 3, deltaMode: 1 });
+    expect(onViewportChange).toHaveBeenLastCalledWith({ x: 0, y: -168, zoom: 100 });
+    fireEvent.wheel(viewportOf(container), { deltaX: 1, deltaMode: 2 });
+    expect(onViewportChange).toHaveBeenLastCalledWith({ x: -400, y: -168, zoom: 100 });
+
+    screen.getByRole('button', { name: 'Count' }).focus();
+    await userEvent.keyboard('{Shift>}+{/Shift}');
+    expect(onViewportChange).toHaveBeenCalledTimes(3);
+  });
+
   it('UIC-DIAGRAM-CANVAS-3.1 follows a controlled viewport', () => {
     const onViewportChange = vi.fn();
     const { container } = render(

@@ -186,7 +186,8 @@ function DiagramViewportArea<T>({
   const { marquee, pointerProps } = useBackgroundPointer(controller, selectionMode);
   const { dropProps, isDropTarget } = usePaletteDrop({ ref, palette });
   const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
-    if (isEditableTarget(event.target, '[role="slider"]')) return;
+    // A control inside that handled the key keeps it.
+    if (event.defaultPrevented || isEditableTarget(event.target, '[role="slider"]')) return;
     if (event.altKey || event.ctrlKey || event.metaKey) return;
     if (event.key === '+' || event.key === '=') stepZoom(1);
     else if (event.key === '-') stepZoom(-1);

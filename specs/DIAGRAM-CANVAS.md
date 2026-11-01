@@ -63,14 +63,14 @@ Verification: `src/components/diagram-canvas/edge-route.test.ts`, `src/component
 
 ### UIC-DIAGRAM-CANVAS-3.1 - Panning
 
-The viewport (`{ x, y, zoom }`: the pan offset in screen pixels and the zoom in percent) shall be `viewport` (controlled) or held from `defaultViewport`, and every change calls `onViewportChange`. Dragging the background pans the view, and so does the wheel without a modifier.
+The viewport (`{ x, y, zoom }`: the pan offset in screen pixels and the zoom in percent) shall be `viewport` (controlled) or held from `defaultViewport`, and every change calls `onViewportChange`. Dragging the background pans the view, and so does the wheel without a modifier. The wheel counts its steps in pixels, a line as 16 pixels and a page as the viewport's size. A wheel that a scrollable element inside a node can still scroll in its direction, or that a handler inside already consumed, belongs to that element and leaves the view alone; at the element's end the wheel pans again.
 
-Implementation: `src/components/diagram-canvas/use-diagram-viewport.ts`, `src/components/diagram-canvas/use-background-pointer.ts`
+Implementation: `src/components/diagram-canvas/use-diagram-viewport.ts`, `src/components/diagram-canvas/use-background-pointer.ts`, `src/utils/wheel-scroll.ts`
 Verification: `src/components/diagram-canvas/diagram-canvas.test.tsx`, `e2e/diagram-canvas.spec.ts`
 
 ### UIC-DIAGRAM-CANVAS-3.2 - Zooming
 
-The wheel with Ctrl or Command shall zoom around the pointer; the toolbar's [Zoom Control](ZOOM-CONTROL.md) (`ui-diagram-canvas__zoom`, resetting to 100%) and the `+` and `-` keys anywhere in the viewport, except in a field, a slider or editable content inside a node, step through its levels around the middle of the view. The zoom stays between 25% and 400%.
+The wheel with Ctrl or Command shall zoom around the pointer, even over a scrollable element inside a node, unless a handler inside consumed it; the toolbar's [Zoom Control](ZOOM-CONTROL.md) (`ui-diagram-canvas__zoom`, resetting to 100%) and the `+` and `-` keys anywhere in the viewport, except in a field, a slider or editable content inside a node or when a control inside already consumed the key, step through its levels around the middle of the view. The zoom stays between 25% and 400%.
 
 Implementation: `src/components/diagram-canvas/use-diagram-viewport.ts`, `src/components/diagram-canvas/diagram-toolbar.tsx`, `src/components/diagram-canvas/diagram-canvas.tsx`, `src/utils/is-editable-target.ts`
 Verification: `src/components/diagram-canvas/diagram-canvas.test.tsx`, `src/components/diagram-canvas/diagram-model.test.ts`, `e2e/diagram-canvas.spec.ts`

@@ -6,6 +6,7 @@ import { useControllableState } from '../../core/controllable-state.js';
 import { clamp } from '../../utils/clamp.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { useElementSize } from '../../utils/use-element-size.js';
+import { findWheelScroller, toWheelPixels } from '../../utils/wheel-scroll.js';
 import { defaultZoomLevels, findNextZoomLevel } from '../zoom-control/zoom-control.js';
 import { fitDiagramViewport, zoomDiagramViewport, type DiagramViewport } from './diagram-model.js';
 import type { DiagramPoint, DiagramRect } from './edge-route.js';
@@ -53,7 +54,12 @@ function revealAxis(offset: number, [start, end]: [number, number], size: number
   return offset;
 }
 
-/** The wheel pans the view, or zooms it around the pointer with Ctrl or Command. */
+/**
+ * The wheel pans the view, or zooms it around the pointer with Ctrl or Command, in pixels whatever
+ * unit it comes in. A wheel a control inside already handled (its default prevented) is left alone,
+ * and so is a pan that a scrollable element under the pointer, such as a text area in a node, can
+ * still take; once that element reaches its end, the view pans.
+ */
 function useWheel(element: HTMLElement | null, state: DiagramViewportState): void {
   const latest = useLatest(state);
   useEffect(() => {
@@ -61,15 +67,19 @@ function useWheel(element: HTMLElement | null, state: DiagramViewportState): voi
     // React registers wheel listeners as passive, so only a native listener can keep the page from
     // scrolling or zooming.
     const onWheel = (event: WheelEvent) => {
+      if (event.defaultPrevented) return;
+      const { viewport, setViewport, zoomTo, size } = latest.current;
+      const step = toWheelPixels(event, size ?? { width: 0, height: 0 });
+      const isZoom = event.ctrlKey || event.metaKey;
+      if (!isZoom && findWheelScroller(event.target, element, step)) return;
       event.preventDefault();
-      const { viewport, setViewport, zoomTo } = latest.current;
-      if (event.ctrlKey || event.metaKey) {
+      if (isZoom) {
         const box = element.getBoundingClientRect();
         const at = { x: event.clientX - box.left, y: event.clientY - box.top };
-        zoomTo(viewport.zoom * 2 ** (-event.deltaY * wheelZoomRate), at);
+        zoomTo(viewport.zoom * 2 ** (-step.y * wheelZoomRate), at);
         return;
       }
-      setViewport({ ...viewport, x: viewport.x - event.deltaX, y: viewport.y - event.deltaY });
+      setViewport({ ...viewport, x: viewport.x - step.x, y: viewport.y - step.y });
     };
     element.addEventListener('wheel', onWheel, { passive: false });
     return () => element.removeEventListener('wheel', onWheel);

@@ -139,6 +139,32 @@ test.describe('Diagram Canvas lab', () => {
     await expect(output(page, 'zoom')).toHaveText('75%');
   });
 
+  test('UIC-DIAGRAM-CANVAS-3.1 UIC-DIAGRAM-CANVAS-3.2 leaves the wheel to a scrollable control until its end', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('diagram-canvas');
+    const log = page.locator('[data-lab-field="log"]');
+    await log.scrollIntoViewIfNeeded();
+    const view = output(page, 'log-view');
+    await expect(view).toHaveText('0,0 at 100%');
+    const entries = log.getByRole('textbox', { name: 'Log entries' });
+    const centre = await centreOf(entries);
+    await page.mouse.move(centre.x, centre.y);
+    await page.mouse.wheel(0, 30);
+    await expect.poll(() => entries.evaluate((node) => node.scrollTop)).toBeGreaterThan(0);
+    await expect(view).toHaveText('0,0 at 100%');
+    await entries.evaluate((node) => {
+      node.scrollTop = node.scrollHeight;
+    });
+    await page.mouse.wheel(0, 30);
+    await expect(view).toHaveText('0,-30 at 100%');
+    await page.keyboard.down('Control');
+    await page.mouse.wheel(0, -100);
+    await page.keyboard.up('Control');
+    await expect(view).not.toContainText('at 100%');
+  });
+
   test('UIC-DIAGRAM-CANVAS-3.5 centres the view from the minimap', async ({ page, lab }) => {
     await lab.open('diagram-canvas');
     await viewportBox(page);

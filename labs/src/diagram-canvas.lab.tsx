@@ -356,6 +356,40 @@ function NodeControls() {
   );
 }
 
+const logLines = Array.from({ length: 12 }, (_, index) => `Reading ${index + 1}: steady`).join(
+  '\n',
+);
+
+const logNodes: DiagramNode[] = [
+  { id: 'log', x: 20, y: 20, width: 220, height: 120, label: 'Log' },
+];
+
+function ScrollingNodes() {
+  const [viewport, setViewport] = useState<DiagramViewport>({ x: 0, y: 0, zoom: 100 });
+  return (
+    <>
+      <DiagramCanvas
+        aria-label="Log"
+        data-lab-field="log"
+        nodes={logNodes}
+        edges={[]}
+        viewport={viewport}
+        onViewportChange={setViewport}
+        renderNode={(node) => (
+          <>
+            <strong>{node.label}</strong>
+            <textarea aria-label={`${node.label} entries`} rows={3} defaultValue={logLines} />
+          </>
+        )}
+      />
+      <Output
+        name="log-view"
+        value={`${Math.round(viewport.x)},${Math.round(viewport.y)} at ${Math.round(viewport.zoom)}%`}
+      />
+    </>
+  );
+}
+
 function Modules() {
   const [selection, setSelection] = useState<Selection>(new Set<Key>());
   return (
@@ -396,6 +430,12 @@ mountLab(
       description="Each node holds a text field and a button. Pressing the button runs its action and dragging in the field selects text; neither moves the node. Drag the node by its title to move it."
     >
       <NodeControls />
+    </LabSection>
+    <LabSection
+      title="Scrolling inside nodes"
+      description="The wheel over the log's entries scrolls them while they can scroll that way, then pans the view at their end. Ctrl or Command with the wheel zooms even over the entries. Wheel lines and pages count as pixels."
+    >
+      <ScrollingNodes />
     </LabSection>
     <LabSection
       title="Read only graph"
