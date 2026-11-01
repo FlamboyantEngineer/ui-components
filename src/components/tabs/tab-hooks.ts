@@ -4,6 +4,8 @@ import { createHooks } from '../../core/hooks.js';
 export const tabsHooks = createHooks('tabs', [
   'bar',
   'list',
+  'owner',
+  'action',
   'scroll-button',
   'overflow',
   'add',
