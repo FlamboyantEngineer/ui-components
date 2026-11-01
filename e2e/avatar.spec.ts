@@ -64,7 +64,7 @@ test.describe('Avatar lab', () => {
         family: 'avatar-main',
       })
         .locator(`.ui-avatar`)
-        .evaluate((node) => getComputedStyle(node).borderTopColor);
+        .evaluate((node) => getComputedStyle(node, '::after').borderTopColor);
       expect(ring).toBe(fill);
     }
     expect(fills.size).toBe(8);
@@ -192,6 +192,46 @@ test.describe('Avatar lab', () => {
         },
       ),
     ).toBeVisible();
+  });
+
+  test('UIC-AVATAR-2.2 draws the outline over a surface that fills the whole box', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('avatar');
+    for (const shape of ['circle', 'rounded', 'square']) {
+      for (const content of ['picture', 'initials', 'group']) {
+        const avatar = matrixCell(page, `shape=${shape} content=${content} variant=outlined`, {
+          family: 'avatar-main',
+        }).locator('.ui-avatar');
+        const geometry = await avatar.evaluate((root) => {
+          const surface = root.querySelector('.ui-avatar__surface');
+          const outer = root.getBoundingClientRect();
+          const inner = surface?.getBoundingClientRect();
+          const ring = getComputedStyle(root, '::after');
+          return {
+            insets: inner
+              ? [
+                  inner.left - outer.left,
+                  inner.top - outer.top,
+                  outer.right - inner.right,
+                  outer.bottom - inner.bottom,
+                ]
+              : [],
+            rootBorder: getComputedStyle(root).borderTopWidth,
+            ring: ring.borderTopWidth,
+            ringRadius: ring.borderTopLeftRadius,
+            rootRadius: getComputedStyle(root).borderTopLeftRadius,
+            width: outer.width,
+          };
+        });
+        expect(geometry.insets, `${shape} ${content}`).toEqual([0, 0, 0, 0]);
+        expect(geometry.rootBorder).toBe('0px');
+        expect(geometry.ring).toBe('2px');
+        expect(geometry.ringRadius).toBe(geometry.rootRadius);
+        expect(geometry.width).toBe(40);
+      }
+    }
   });
 
   test('UIC-AVATAR-1.5 UIC-AVATAR-1.6 reports each loading status and keeps picture attributes', async ({
