@@ -1,7 +1,7 @@
 'use client';
 
 import { DeleteGlyph, EditGlyph } from '../../core/glyphs.js';
-import { useContext, useRef, useState, type ReactNode, type Ref } from 'react';
+import { useContext, useLayoutEffect, useRef, useState, type ReactNode, type Ref } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -14,13 +14,22 @@ import type { MenuEntry } from '../menu/menu.js';
 import { UserIdentity } from '../user-identity/user-identity.js';
 import { CommentThreadContext } from './comment-thread-context.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { isFocusLost } from '../../utils/focus-target.js';
+import { isThenable } from '../../utils/is-thenable.js';
+import { toErrorMessage } from '../../utils/to-error-message.js';
+import { InlineError } from '../inline-error/inline-error.js';
 
 /** What a comment hands the editor that replaces its body while the reader edits it. */
 export interface CommentEditorOptions {
   /** The comment's `text`, where the edit starts. */
   defaultValue: string;
-  /** Saves the edited text through `onEdit` and closes the editor. */
-  onSubmit: (text: string) => void;
+  /**
+   * Saves the edited text through `onEdit` and closes the editor once it succeeds. While `onEdit`'s
+   * promise is pending the editor stays open; when it throws or rejects, the editor stays open with
+   * the failure shown, and this call throws or returns a rejected promise so the editor keeps its
+   * text. A custom editor handles that rejection, as `CommentComposer` does.
+   */
+  onSubmit: (text: string) => void | Promise<unknown>;
   /** Closes the editor without saving. */
   onCancel: () => void;
 }
@@ -46,10 +55,17 @@ export interface CommentThreadReplyProps
   actions?: readonly MenuEntry[] | undefined;
   /** Called with the `id` of a caller action chosen in the menu. */
   onAction?: ((key: Key) => void) | undefined;
-  /** Offers Edit in the menu, which swaps the body for an editor; called with the saved text. */
-  onEdit?: ((text: string) => void) | undefined;
-  /** Offers Delete in the menu, which asks for confirmation before calling it. */
-  onDelete?: (() => void) | undefined;
+  /**
+   * Offers Edit in the menu, which swaps the body for an editor; called with the saved text. A
+   * returned promise keeps the editor open until it settles: it closes once it resolves, and stays
+   * open with the failure when it rejects.
+   */
+  onEdit?: ((text: string) => void | Promise<unknown>) | undefined;
+  /**
+   * Offers Delete in the menu, which asks for confirmation before calling it. A returned promise
+   * keeps the confirmation pending until it resolves, and open with the failure when it rejects.
+   */
+  onDelete?: (() => void | Promise<unknown>) | undefined;
   /** Renders the editor in place of the default `CommentComposer`, for mentions or rich text. */
   renderEditor?: ((options: CommentEditorOptions) => ReactNode) | undefined;
 }
@@ -62,6 +78,7 @@ const hooks = createHooks('comment-thread-reply', [
   'actions',
   'body',
   'editor',
+  'error',
   'reactions',
 ]);
 
@@ -144,6 +161,8 @@ function CommentMenu({
 }) {
   const strings = useUiStrings();
   const [isConfirming, setIsConfirming] = useState(false);
+  // A confirmation whose Delete is withdrawn ends, rather than coming back with it.
+  if (isConfirming && !onDelete) setIsConfirming(false);
   const entries = useMenuEntries({ actions, onEdit, onDelete });
   if (entries.length === 0) return null;
   const runAction = (key: Key) => {
@@ -175,8 +194,9 @@ function CommentMenu({
           primaryAction={{
             label: strings.delete,
             onPress: (close) => {
-              onDelete();
-              close();
+              const result = onDelete();
+              if (!isThenable(result)) return close();
+              return Promise.resolve(result).then(close);
             },
           }}
         />
@@ -185,15 +205,57 @@ function CommentMenu({
   );
 }
 
-/** Whether the reply is being edited; closing the editor returns focus to the reply's menu. */
-function useReplyEditing() {
-  const [isEditing, setIsEditing] = useState(false);
+/** An open editor: each opening, and each save, is its own, so a late save only settles its own. */
+interface EditSession {
+  /** Why the last save failed. */
+  failure: string | null;
+}
+
+/**
+ * The open editor, while the reply can be edited: one whose Edit is withdrawn, or whose thread turns
+ * read-only, ends with its draft and does not come back with the permission. A save closes the
+ * editor once `onEdit` succeeds and keeps it open with the failure when it fails. When the editor
+ * closes and takes the focus with it, the focus returns to the reply's menu.
+ */
+function useReplyEditing(onEdit: CommentThreadReplyProps['onEdit'], canEdit: boolean) {
+  const strings = useUiStrings();
+  const [session, setSession] = useState<EditSession | null>(null);
+  if (session && !canEdit) setSession(null);
+  const isEditing = session !== null && canEdit;
   const menuRef = useRef<HTMLButtonElement | HTMLAnchorElement>(null);
-  const closeEditor = () => {
-    setIsEditing(false);
-    menuRef.current?.focus();
+  const wasEditing = useRef(false);
+  useLayoutEffect(() => {
+    const menu = menuRef.current;
+    if (wasEditing.current && !isEditing && menu && isFocusLost(menu)) menu.focus();
+    wasEditing.current = isEditing;
+  }, [isEditing]);
+  const save = (edited: string) => {
+    if (!onEdit) return;
+    const current: EditSession = { failure: null };
+    setSession(current);
+    const settle = (failure: string | null) =>
+      setSession((open) => (open === current ? (failure === null ? null : { failure }) : open));
+    const fail = (error: unknown) => {
+      settle(toErrorMessage(error, strings.actionFailed));
+      throw error;
+    };
+    let result: void | Promise<unknown>;
+    try {
+      result = onEdit(edited);
+    } catch (error) {
+      return fail(error);
+    }
+    if (!isThenable(result)) return settle(null);
+    return Promise.resolve(result).then(() => settle(null), fail);
   };
-  return { isEditing, openEditor: () => setIsEditing(true), closeEditor, menuRef };
+  return {
+    isEditing,
+    failure: session?.failure ?? null,
+    openEditor: () => setSession({ failure: null }),
+    closeEditor: () => setSession(null),
+    save,
+    menuRef,
+  };
 }
 
 /**
@@ -219,9 +281,15 @@ export function CommentThreadReply({
   ...rest
 }: CommentThreadReplyProps) {
   const { isReadOnly } = useContext(CommentThreadContext);
-  const { isEditing, openEditor, closeEditor, menuRef } = useReplyEditing();
+  const {
+    isEditing: editing,
+    failure,
+    openEditor,
+    closeEditor,
+    save,
+    menuRef,
+  } = useReplyEditing(onEdit, onEdit !== undefined && !isReadOnly);
   const strings = useUiStrings();
-  const editing = isEditing && !isReadOnly;
   return (
     <article
       {...rest}
@@ -248,14 +316,10 @@ export function CommentThreadReply({
       </div>
       {editing ? (
         <div {...hooks.slot('editor')}>
-          {renderEditor({
-            defaultValue: text,
-            onSubmit: (edited) => {
-              closeEditor();
-              onEdit?.(edited);
-            },
-            onCancel: closeEditor,
-          })}
+          {renderEditor({ defaultValue: text, onSubmit: save, onCancel: closeEditor })}
+          {failure === null ? null : (
+            <InlineError className={hooks.slotClass('error')}>{failure}</InlineError>
+          )}
         </div>
       ) : (
         <div {...hooks.slot('body')}>{children ?? text}</div>

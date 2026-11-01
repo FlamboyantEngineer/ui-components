@@ -88,6 +88,7 @@ function renderComments(comments: readonly LabComment[]) {
 function LiveThread() {
   const [comments, setComments] = useState(opening);
   const [failNext, setFailNext] = useState(false);
+  const [canChange, setCanChange] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastAction, setLastAction] = useState('nothing yet');
   const update = (id: number, change: (comment: LabComment) => LabComment) =>
@@ -104,10 +105,26 @@ function LiveThread() {
     ]);
     return undefined;
   };
+  // Edits and deletes reach the host after a moment, and fail while the failure switch is on.
+  const settle = (change: () => void) =>
+    new Promise<void>((resolve, reject) =>
+      setTimeout(() => {
+        if (failNext) {
+          reject(new Error('The change could not be saved. Try again.'));
+          return;
+        }
+        change();
+        resolve();
+      }, 600),
+    );
+  const isMine = (comment: LabComment) => canChange && comment.author === maria;
   return (
     <div>
       <Switch isSelected={failNext} onChange={setFailNext}>
-        Fail the next reply
+        Fail the next reply, edit or delete
+      </Switch>{' '}
+      <Switch isSelected={canChange} onChange={setCanChange}>
+        Allow changing my comments
       </Switch>
       <CommentThread
         quote={quote}
@@ -127,13 +144,19 @@ function LiveThread() {
             actions={[{ id: 'copy-link', label: 'Copy link', icon: LinkGlyph }]}
             onAction={(key) => setLastAction(`${String(key)} on comment ${comment.id}`)}
             onEdit={
-              comment.author === maria
-                ? (text) => update(comment.id, (current) => ({ ...current, text, isEdited: true }))
+              isMine(comment)
+                ? (text) =>
+                    settle(() =>
+                      update(comment.id, (current) => ({ ...current, text, isEdited: true })),
+                    )
                 : undefined
             }
             onDelete={
-              comment.author === maria
-                ? () => setComments((list) => list.filter((item) => item.id !== comment.id))
+              isMine(comment)
+                ? () =>
+                    settle(() =>
+                      setComments((list) => list.filter((item) => item.id !== comment.id)),
+                    )
                 : undefined
             }
             reactions={
@@ -220,7 +243,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Live"
-      description="Reply (Ctrl+Enter sends), react, edit or delete your own comments from their menu, copy a link, and resolve or reopen. Switch on the failure to see the error and the kept draft."
+      description="Reply (Ctrl+Enter sends), react, edit or delete your own comments from their menu, copy a link, and resolve or reopen. Edits and deletes take a moment to save: the editor or the confirmation stays open, pending, until they do. Switch on the failure to see the error and the kept draft or edit. Switch off changing your comments while editing or confirming: the editor or confirmation ends, and does not come back when you switch it on."
     >
       <LiveThread />
     </LabSection>

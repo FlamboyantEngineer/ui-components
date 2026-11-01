@@ -112,6 +112,36 @@ test.describe('Comment Thread lab', () => {
     await expect(thread.getByRole('article', { name: 'Maria Santos' })).toHaveCount(0);
   });
 
+  test('UIC-COMMENT-THREAD-2.3 UIC-COMMENT-THREAD-2.7 keeps a failed edit and ends an edit whose permission goes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('comment-thread');
+    const thread = page.locator('[data-lab-thread="live"]');
+    const own = thread.getByRole('article', { name: 'Maria Santos' });
+    const menu = own.getByRole('button', { name: 'Comment actions' });
+    await page.getByRole('switch', { name: 'Fail the next reply' }).focus();
+    await page.keyboard.press('Space');
+    await menu.click();
+    await page.getByRole('menuitem', { name: 'Edit' }).click();
+    const editor = own.getByRole('textbox', { name: 'Edit comment' });
+    await editor.fill('Monday or Tuesday.');
+    await own.getByRole('button', { name: 'Save' }).click();
+    await expect(own.getByRole('button', { name: 'Save' })).toHaveAttribute('data-pending', 'true');
+    await expect(own.getByRole('alert')).toHaveText('The change could not be saved. Try again.');
+    await expect(editor).toHaveValue('Monday or Tuesday.');
+
+    const allow = page.getByRole('switch', { name: 'Allow changing my comments' });
+    await allow.focus();
+    await page.keyboard.press('Space');
+    await expect(editor).toHaveCount(0);
+    await expect(own.locator('.ui-comment-thread-reply__body')).toHaveText(
+      'Monday works for the kitchen.',
+    );
+    await page.keyboard.press('Space');
+    await expect(own.getByRole('textbox')).toHaveCount(0);
+  });
+
   test('UIC-COMMENT-THREAD-2.1 reacts and renders caller content', async ({ page, lab }) => {
     await lab.open('comment-thread');
     const first = page.locator('[data-lab-thread="live"]').getByRole('article').first();
