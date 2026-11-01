@@ -235,15 +235,16 @@ mountLab(
     </LabSection>
     <LabSection
       title="Long thread"
-      description="Seven comments showing the opening one and the latest two; the button reveals the rest and focuses the first revealed reply."
+      description="Seven comments showing the opening one and the latest two; the button reveals the rest and focuses the first revealed reply. The replies come in a fragment, and count one by one."
     >
       <CommentThread visibleReplies={2} data-lab-thread="long">
-        {renderComments(longThread)}
+        {renderComments(longThread.slice(0, 1))}
+        <>{renderComments(longThread.slice(1))}</>
       </CommentThread>
     </LabSection>
     <LabSection
       title="Live"
-      description="Reply (Ctrl+Enter sends), react, edit or delete your own comments from their menu, copy a link, and resolve or reopen. Edits and deletes take a moment to save: the editor or the confirmation stays open, pending, until they do. Switch on the failure to see the error and the kept draft or edit. Switch off changing your comments while editing or confirming: the editor or confirmation ends, and does not come back when you switch it on."
+      description="Reply (Ctrl+Enter sends), react, edit or delete your own comments from their menu, copy a link, and resolve or reopen: an unsent reply waits, hidden, while the thread is resolved. Edits and deletes take a moment to save: the editor or the confirmation stays open, pending, until they do. Switch on the failure to see the error and the kept draft or edit. Switch off changing your comments while editing or confirming: the editor or confirmation ends, and does not come back when you switch it on."
     >
       <LiveThread />
     </LabSection>

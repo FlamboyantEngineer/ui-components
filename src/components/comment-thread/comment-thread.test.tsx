@@ -103,7 +103,8 @@ describe('CommentThread', () => {
     expect(onResolvedChange).toHaveBeenLastCalledWith(true);
     expect(thread).toHaveAttribute('data-resolved', 'true');
     expect(thread.querySelector('.ui-comment-thread__status')).toHaveTextContent('Resolved');
-    expect(thread.querySelector('.ui-comment-thread__composer')).toBeNull();
+    expect(thread.querySelector('.ui-comment-thread__composer')).not.toBeVisible();
+    expect(screen.queryByRole('textbox', { name: 'Reply' })).not.toBeInTheDocument();
     expect(bodies()).toHaveLength(2);
     expectHooksMatchSpec(container, 'COMMENT-THREAD', { slots: ['status', 'resolve'] });
     await userEvent.click(screen.getByRole('button', { name: 'Reopen' }));

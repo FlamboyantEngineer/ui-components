@@ -6,17 +6,17 @@
 
 ### UIC-COMMENT-THREAD-1.1 - Comments and anchor
 
-`CommentThread` shall render a `ui-comment-thread` element holding, in order: a `ui-comment-thread__header` when it has a quote, a resolved badge or a resolve button; the comments; the error; and the composer. `quote` renders in a `<blockquote>` in the `ui-comment-thread__quote` slot. The children, the opening comment first, render as an ordered list (`ui-comment-thread__comments`), each child in a `ui-comment-thread__item` list item; a thread without children draws no list.
+`CommentThread` shall render a `ui-comment-thread` element holding, in order: a `ui-comment-thread__header` when it has a quote, a resolved badge or a resolve button; the comments; the error; and the composer. `quote` renders in a `<blockquote>` in the `ui-comment-thread__quote` slot. The children, the opening comment first, render as an ordered list (`ui-comment-thread__comments`), each child in a `ui-comment-thread__item` list item; the children of a fragment, at any depth, count as children of their own, each keeping its identity, and a thread without children, or with only empty fragments, draws no list.
 
 Implementation: `src/components/comment-thread/comment-thread.tsx`
-Verification: `src/components/comment-thread/comment-thread.test.tsx`, `e2e/comment-thread.spec.ts`
+Verification: `src/components/comment-thread/comment-thread.test.tsx`, `src/components/comment-thread/comment-thread-drafts.test.tsx`, `src/utils/flatten-children.test.tsx`, `e2e/comment-thread.spec.ts`
 
 ### UIC-COMMENT-THREAD-1.2 - Default composer
 
 With `onReply`, the thread shall end with a `CommentComposer` in the `ui-comment-thread__composer` slot whose submitted text goes to `onReply`, with the composer's pending and failure behaviour ([UIC-COMMENT-COMPOSER-1.3](COMMENT-COMPOSER.md#uic-comment-composer-13---pending-submits)). It is named and submits with the provider's `reply` string, or, in a thread without comments, is named by `addComment` and submits with `comment`. Without `onReply` or `composer` there is no composer slot.
 
 Implementation: `src/components/comment-thread/comment-thread.tsx`, `src/core/strings/content.ts`
-Verification: `src/components/comment-thread/comment-thread.test.tsx`, `e2e/comment-thread.spec.ts`
+Verification: `src/components/comment-thread/comment-thread.test.tsx`, `src/components/comment-thread/comment-thread-drafts.test.tsx`, `e2e/comment-thread.spec.ts`
 
 ### UIC-COMMENT-THREAD-1.3 - Caller composer
 
@@ -27,7 +27,7 @@ Verification: `src/components/comment-thread/comment-thread.test.tsx`
 
 ### UIC-COMMENT-THREAD-1.4 - Resolve and reopen
 
-The resolved state shall be controlled by `isResolved` or start at `defaultResolved`. While resolved, the root carries `data-resolved`, the header shows a success `Badge` in `ui-comment-thread__status` reading the provider's `resolved` string, and the composer is hidden: replying needs the thread reopened. With `onResolvedChange`, the header has a ghost `Button` in `ui-comment-thread__resolve`, reading `resolve` with the `check` glyph, or `reopen` with the `undo` glyph while resolved, that flips the state and reports it.
+The resolved state shall be controlled by `isResolved` or start at `defaultResolved`. While resolved, the root carries `data-resolved`, the header shows a success `Badge` in `ui-comment-thread__status` reading the provider's `resolved` string, and the composer is hidden: replying needs the thread reopened ([UIC-COMMENT-THREAD-1.9](#uic-comment-thread-19---replies-outlast-a-closed-thread)). With `onResolvedChange`, the header has a ghost `Button` in `ui-comment-thread__resolve`, reading `resolve` with the `check` glyph, or `reopen` with the `undo` glyph while resolved, that flips the state and reports it.
 
 Implementation: `src/components/comment-thread/comment-thread.tsx`
 Verification: `src/components/comment-thread/comment-thread.test.tsx`, `e2e/comment-thread.spec.ts`
@@ -37,7 +37,7 @@ Verification: `src/components/comment-thread/comment-thread.test.tsx`, `e2e/comm
 With `visibleReplies`, a thread with more replies than that shall show the opening comment, then a `ui-comment-thread__more` list item holding a ghost `Button` (`ui-comment-thread__show-more`) that reads the provider's `showMoreReplies` string with the number of hidden replies, then the latest `visibleReplies` replies. Pressing it shows every reply and moves focus to the first revealed reply's list item, which takes focus programmatically only.
 
 Implementation: `src/components/comment-thread/comment-thread.tsx`
-Verification: `src/components/comment-thread/comment-thread.test.tsx`, `e2e/comment-thread.spec.ts`
+Verification: `src/components/comment-thread/comment-thread.test.tsx`, `src/components/comment-thread/comment-thread-drafts.test.tsx`, `src/utils/flatten-children.test.tsx`, `e2e/comment-thread.spec.ts`
 
 ### UIC-COMMENT-THREAD-1.6 - Read-only and selected
 
@@ -59,6 +59,13 @@ The root shall be a `role="group"` named by `aria-label` or `aria-labelledby`, e
 
 Implementation: `src/components/comment-thread/comment-thread.tsx`
 Verification: `src/components/comment-thread/comment-thread.test.tsx`, `e2e/comment-thread.spec.ts`
+
+### UIC-COMMENT-THREAD-1.9 - Replies outlast a closed thread
+
+Once the thread has drawn its composer, the composer shall stay mounted while the thread is resolved or read-only, its slot carrying `hidden`, so an unsent reply in the default composer, the state of a caller's composer and a pending reply all return when replying is possible again. A resolve or a read-only spell neither submits, clears nor cancels the draft, and a reply sent before it settles as before: once accepted it clears the draft only while the draft is still the text it sent ([UIC-COMMENT-COMPOSER-1.3](COMMENT-COMPOSER.md#uic-comment-composer-13---pending-submits)). Each thread keeps its own draft. A thread that is resolved or read-only from the start draws no composer until replying is possible.
+
+Implementation: `src/components/comment-thread/comment-thread.tsx`
+Verification: `src/components/comment-thread/comment-thread-drafts.test.tsx`, `e2e/comment-thread.spec.ts`
 
 ## UIC-COMMENT-THREAD-2 - Comments
 
