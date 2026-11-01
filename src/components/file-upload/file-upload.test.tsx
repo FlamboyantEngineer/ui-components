@@ -755,6 +755,35 @@ describe('FileUpload', () => {
       await waitFor(() => expect(revokeObjectURL).toHaveBeenCalledWith('blob:photo'));
     });
 
+    it('UIC-FILE-UPLOAD-3.5 loads thumbnails lazily and shows the type glyph once one fails', () => {
+      const listed: FileUploadItem[] = [
+        { id: 'scan', name: 'scan.heic', type: 'image/heic', previewUrl: '/thumbs/scan.heic' },
+      ];
+      const { container, rerender } = render(
+        <FileUpload label="Attachments" files={listed} onSelect={() => {}} />,
+      );
+      const preview = container.querySelector('.ui-file-upload__file-preview') as HTMLImageElement;
+      expect(preview).toHaveAttribute('loading', 'lazy');
+      expect(preview).toHaveAttribute('decoding', 'async');
+      fireEvent.error(preview);
+      expect(container.querySelector('.ui-file-upload__file-preview')).toBeNull();
+      expect(container.querySelector('.ui-file-upload__file-icon')).toHaveAttribute(
+        'data-glyph',
+        'image',
+      );
+      rerender(
+        <FileUpload
+          label="Attachments"
+          files={[{ ...requireDefined(listed[0]), previewUrl: '/thumbs/scan.jpg' }]}
+          onSelect={() => {}}
+        />,
+      );
+      expect(container.querySelector('.ui-file-upload__file-preview')).toHaveAttribute(
+        'src',
+        '/thumbs/scan.jpg',
+      );
+    });
+
     it('UIC-FILE-UPLOAD-3.5 keeps a thumbnail URL through a Strict Mode remount', async () => {
       const createObjectURL = vi.fn(() => 'blob:photo');
       const revokeObjectURL = vi.fn();

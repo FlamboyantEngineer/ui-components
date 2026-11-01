@@ -149,6 +149,34 @@ test.describe('File Upload lab', () => {
     );
   });
 
+  test('UIC-FILE-UPLOAD-3.5 UIC-FILE-UPLOAD-3.7 loads thumbnails lazily and shows the glyph for one it cannot decode', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('file-upload');
+    const box = page.locator('[data-lab-demo="many-photos"]');
+    const rows = box.locator('.ui-file-upload__file');
+    await expect(rows).toHaveCount(40);
+    await box.scrollIntoViewIfNeeded();
+    const broken = rows.filter({ hasText: 'Photo 3.heic' });
+    await expect(broken.locator('.ui-file-upload__file-preview')).toHaveCount(0);
+    await expect(broken.locator('.ui-file-upload__file-icon')).toHaveAttribute(
+      'data-glyph',
+      'image',
+    );
+    const first = rows.nth(0).locator('.ui-file-upload__file-preview');
+    await expect
+      .poll(() => first.evaluate((image: HTMLImageElement) => image.naturalWidth))
+      .toBe(32);
+    const last = rows.nth(39).locator('.ui-file-upload__file-preview');
+    await expect(last).toHaveAttribute('loading', 'lazy');
+    await expect(last).toHaveAttribute('decoding', 'async');
+    await last.scrollIntoViewIfNeeded();
+    await expect
+      .poll(() => last.evaluate((image: HTMLImageElement) => image.naturalWidth))
+      .toBe(32);
+  });
+
   test('UIC-FILE-UPLOAD-2.8 shows during a drag whether the drop zone would accept the files', async ({
     page,
     lab,

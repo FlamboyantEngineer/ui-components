@@ -25,6 +25,7 @@ import {
   type SkinTone,
 } from './emoji-catalog.js';
 import { emojiPickerHooks as hooks } from './emoji-picker-hooks.js';
+import { FallbackImage } from '../../utils/fallback-image.js';
 
 interface EmojiGridProps extends BaseProps {
   /** The visible label that names the grid. */
@@ -82,8 +83,16 @@ export function EmojiContent({
   renderEmoji,
 }: Pick<EmojiGridProps, 'skinTone' | 'renderEmoji'> & { entry: EmojiEntry }) {
   if (entry.kind === 'custom') {
+    // A custom emoji whose image fails shows its shortcode instead.
     return (
-      <img {...hooks.slot('image')} src={entry.emoji.src} alt="" loading="lazy" draggable={false} />
+      <FallbackImage
+        {...hooks.slot('image')}
+        src={entry.emoji.src}
+        alt=""
+        loading="lazy"
+        draggable={false}
+        fallback={`:${entry.emoji.shortcode}:`}
+      />
     );
   }
   const unicode = applySkinTone(entry.emoji, skinTone);

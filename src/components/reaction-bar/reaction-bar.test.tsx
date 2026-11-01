@@ -1,5 +1,5 @@
 import { createRef } from 'react';
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -60,6 +60,24 @@ describe('ReactionBar', () => {
     expect(image).toHaveAttribute('src', '/otter.png');
     expect(image).toHaveAttribute('alt', '');
     expectHooksMatchSpec(container, 'REACTION-BAR', { slots: 'all' });
+  });
+
+  it('UIC-REACTION-BAR-1.1 draws the shortcode once a custom emoji image fails, and a new image again', () => {
+    const { container, rerender } = render(
+      <ReactionBar reactions={reactions} customEmoji={[otter]} onToggle={() => {}} />,
+    );
+    const emoji = () => container.querySelectorAll('.ui-reaction-bar__emoji')[2];
+    fireEvent.error(emoji()?.querySelector('img') as HTMLImageElement);
+    expect(emoji()?.querySelector('img')).toBeNull();
+    expect(emoji()).toHaveTextContent(':otter:');
+    rerender(
+      <ReactionBar
+        reactions={reactions}
+        customEmoji={[{ ...otter, src: '/otter-new.png' }]}
+        onToggle={() => {}}
+      />,
+    );
+    expect(emoji()?.querySelector('img')).toHaveAttribute('src', '/otter-new.png');
   });
 
   it('UIC-REACTION-BAR-1.2 names each chip by its emoji, count and the first people who reacted', () => {

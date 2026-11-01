@@ -10,6 +10,7 @@ import { useLocale } from '../../primitives/index.js';
 import { Button } from '../button/button.js';
 import { EmojiPickerTrigger, type EmojiPickerProps } from '../emoji-picker/emoji-picker.js';
 import { Tooltip } from '../tooltip/tooltip.js';
+import { FallbackImage } from '../../utils/fallback-image.js';
 
 /** The reactions with one emoji. */
 export interface ReactionEntry {
@@ -76,7 +77,17 @@ function ReactionChip({ reaction, customEmoji, maxNames, onToggle }: ReactionChi
         focusableWhenDisabled
       >
         <span {...hooks.slot('emoji')}>
-          {custom ? <img {...hooks.slot('image')} src={custom.src} alt="" /> : reaction.emoji}
+          {custom ? (
+            // A custom emoji whose image fails shows its shortcode instead.
+            <FallbackImage
+              {...hooks.slot('image')}
+              src={custom.src}
+              alt=""
+              fallback={reaction.emoji}
+            />
+          ) : (
+            reaction.emoji
+          )}
         </span>
         <span {...hooks.slot('count')}>{formatCount(reaction.count, locale)}</span>
       </Button>

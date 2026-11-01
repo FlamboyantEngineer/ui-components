@@ -197,6 +197,18 @@ describe('EmojiPicker', { timeout: 15_000 }, () => {
     expect(drawn?.dataset.glyphText).toBe('👋🏿');
   });
 
+  it('UIC-EMOJI-PICKER-1.3 loads custom images lazily and shows the shortcode once one fails', async () => {
+    await renderPicker({ recentEmoji: [':otter:'], customEmoji: [otter] });
+    const cell = within(screen.getByRole('grid', { name: 'Recently used' })).getByRole('row', {
+      name: 'Happy otter',
+    });
+    const image = cell.querySelector('img') as HTMLImageElement;
+    expect(image).toHaveAttribute('loading', 'lazy');
+    fireEvent.error(image);
+    expect(cell.querySelector('img')).toBeNull();
+    expect(cell).toHaveTextContent(':otter:');
+  });
+
   it('UIC-EMOJI-PICKER-1.6 renders only the emoji in view of a virtualized grid and reaches the last', async () => {
     vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(304);
     vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(160);

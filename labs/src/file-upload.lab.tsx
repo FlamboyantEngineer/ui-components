@@ -247,6 +247,33 @@ function SlowCheck() {
   );
 }
 
+const palette = ['#3b82f6', '#16a34a', '#f59e0b', '#db2777', '#7c3aed', '#0891b2'];
+
+/** Forty photos to scroll through; the third cannot be decoded and shows the image glyph. */
+const photos: FileUploadItem[] = Array.from({ length: 40 }, (_, index) => ({
+  id: `photo-${index + 1}`,
+  name: index === 2 ? 'Photo 3.heic' : `Photo ${index + 1}.svg`,
+  type: index === 2 ? 'image/heic' : 'image/svg+xml',
+  size: 24_000 + index * 1_000,
+  previewUrl:
+    index === 2 ? 'data:image/heic;base64,AAAA' : swatch(palette[index % palette.length] ?? 'gray'),
+}));
+
+function ManyPhotos() {
+  return (
+    // Lab-only frame: keeps the long list in a short, keyboard-scrollable box.
+    <div
+      role="region"
+      aria-label="Photos"
+      tabIndex={0}
+      style={{ maxHeight: 240, overflow: 'auto' }}
+      data-lab-demo="many-photos"
+    >
+      <FileUpload label="Photos" files={photos} onSelect={() => {}} onRemove={() => {}} />
+    </div>
+  );
+}
+
 function FolderUpload() {
   const upload = useSimulatedUpload();
   return (
@@ -309,6 +336,12 @@ mountLab(
       description="Choose or drop a folder: every file in it, through its subfolders, is listed in entry order."
     >
       <FolderUpload />
+    </LabSection>
+    <LabSection
+      title="Many images"
+      description="Forty listed photos in a short scrolling box: their thumbnails load only as they scroll near. Photo 3 is a format the browser cannot decode and shows the image glyph instead."
+    >
+      <ManyPhotos />
     </LabSection>
     <LabSection
       title="In a form"
