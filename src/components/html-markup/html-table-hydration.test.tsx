@@ -94,3 +94,48 @@ describe('HtmlMarkup table structure', () => {
     });
   }
 });
+
+/** Shapes whose server HTML a browser could rebuild differently, without care. */
+const reparsed = {
+  'link in a link': '<a href="/">x<b><a href="/">y</a></b></a>',
+  'heading reopened inside a heading': '<h1><p><h1>',
+  'list item fostered into a list item': '<li>A<table><li>B</li></table>C',
+  'term fostered into a term': '<dl><dt>A<table><dt>B</table></dl>',
+  'link fostered into a link': '<a href="/">A<table><a href="/x">B</a></table></a>',
+  'heading fostered into a heading': '<h1>A<table><h2>B</h2></table></h1>',
+  'heading fostered into a span': '<h1><span>A<table><h2>B</h2></table></span></h1>',
+  'description in a paragraph': '<p>A<dd>B<dt>C',
+};
+
+describe('HtmlMarkup structure through server HTML', () => {
+  it('UIC-HTML-MARKUP-1.2 keeps a fostered element that would close its new parent as content', () => {
+    expect(clean(reparsed['list item fostered into a list item'])).toBe(
+      '<li>AB<table></table>C</li>',
+    );
+    expect(clean(reparsed['term fostered into a term'])).toBe(
+      '<dl><dt>AB<table></table></dt></dl>',
+    );
+    expect(clean(reparsed['link fostered into a link'])).toBe('<a href="/">AB<table></table></a>');
+    expect(clean(reparsed['heading fostered into a heading'])).toBe('<h1>AB<table></table></h1>');
+    expect(clean(reparsed['heading fostered into a span'])).toBe(
+      '<h1><span>A<h2>B</h2><table></table></span></h1>',
+    );
+    expect(clean(reparsed['description in a paragraph'])).toBe('<p>A</p><dd>B</dd><dt>C</dt>');
+    expect(clean('<ul><li>A<table><td><li>B</li></td></table></li></ul>')).toBe(
+      '<ul><li>A<table><tbody><tr><td><li>B</li></td></tr></tbody></table></li></ul>',
+    );
+  });
+
+  for (const [name, markup] of Object.entries(reparsed)) {
+    it(`UIC-HTML-MARKUP-1.2 parses the server HTML of a ${name} back to the same tree`, async () => {
+      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      const view = renderToString(<HtmlMarkup markup={markup} />);
+      const host = document.createElement('div');
+      host.innerHTML = view;
+      expect(host.innerHTML).toBe(view);
+      const { errors } = await hydrate(markup);
+      expect(errors).toEqual([]);
+      expect(consoleError).not.toHaveBeenCalled();
+    });
+  }
+});

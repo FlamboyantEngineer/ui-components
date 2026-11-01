@@ -143,7 +143,7 @@ function filterNodes(nodes: readonly RawNode[], policy: HtmlPolicy): HtmlNode[] 
       level.output.push(Object.freeze({ type: 'text', text: node }));
       continue;
     }
-    const isAllowed = elements.has(node.tag);
+    const isAllowed = !node.isUnwrapped && elements.has(node.tag);
     levels.push({
       iterator: node.children[Symbol.iterator](),
       output: isAllowed ? [] : level.output,

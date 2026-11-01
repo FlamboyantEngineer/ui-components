@@ -155,6 +155,19 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Misnested structure"
+      description="A list item or heading written inside a table, and a description inside a paragraph, are placed so that the server HTML parses back to the same tree: a fostered element that would close its new parent keeps only its content."
+    >
+      <HtmlMarkup
+        data-lab-misnested
+        markup={
+          '<ul><li>Pears<table><li>Plums</li></table>Figs</li></ul>' +
+          '<h3>Orchard<table><h4>Rows</h4></table></h3>' +
+          '<dl><dt>Harvest</dt><dd><p>Autumn<dd>Late autumn</dl>'
+        }
+      />
+    </LabSection>
+    <LabSection
       title="Large unbalanced input"
       description="A tag that never ends, nesting and stray closing tags read in time proportional to their length."
     >
