@@ -158,6 +158,39 @@ test.describe('Annotation Layer lab', () => {
     await expect(demo.locator('[data-lab-active]')).toHaveText('fold');
   });
 
+  test('UIC-ANNOTATION-LAYER-1.2 UIC-ANNOTATION-LAYER-1.3 aligns and hits a mark on a zoomed surface', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('annotation-layer');
+    const demo = page.locator('[data-lab-demo="zoomed"]');
+    const phrase = demo.locator('#zoomed-glaze');
+    const mark = demo.locator('.ui-annotation-layer__mark');
+    const card = demo.locator('.ui-annotation-layer__card');
+    const active = demo.locator('[data-lab-active]');
+    for (const zoom of ['Stretch 150% by 200%', 'Zoom 150%', 'Actual size']) {
+      await demo.getByRole('button', { name: zoom }).click();
+      await expect(demo.locator(`[data-lab-zoom="${zoom}"]`)).toBeVisible();
+      await expect
+        .poll(async () => {
+          const [target, drawn] = [await boxOf(phrase), await boxOf(mark)];
+          return [drawn.x - target.x, drawn.y - target.y, drawn.width - target.width].map(
+            (difference) => Math.abs(difference) < 1,
+          );
+        })
+        .toEqual([true, true, true]);
+      const target = await boxOf(phrase);
+      expect(Math.abs((await boxOf(card)).y - target.y)).toBeLessThan(1);
+      // Just past the phrase's left and bottom edges hits nothing; just inside them, the note.
+      await page.mouse.click(target.x - 3, target.y + target.height / 2);
+      await page.mouse.click(target.x + target.width / 2, target.y + target.height + 3);
+      await expect(active).toHaveText('none');
+      await page.mouse.click(target.x + 2, target.y + target.height - 2);
+      await expect(active).toHaveText('glaze');
+      await demo.getByRole('button', { name: 'Clear' }).click();
+    }
+  });
+
   test('is accessible', async ({ lab }) => {
     await lab.open('annotation-layer');
     await lab.expectAccessible();

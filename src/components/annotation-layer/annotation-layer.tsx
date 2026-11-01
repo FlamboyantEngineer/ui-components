@@ -20,7 +20,7 @@ import { observeTargets } from './observe-targets.js';
 import {
   findAnnotationAt,
   findTargets,
-  getLayerOrigin,
+  getLayerFrame,
   isSameMeasurement,
   measureTargets,
   type Annotation,
@@ -142,11 +142,8 @@ export function AnnotationLayer({
   );
   const onClick = (event: MouseEvent) => {
     if (!layer || (event.target as Element).closest(`.${hooks.slotClass('margin')}`)) return;
-    const origin = getLayerOrigin(layer);
-    const hit = findAnnotationAt(anchors, {
-      x: event.clientX - origin.left,
-      y: event.clientY - origin.top,
-    });
+    const point = getLayerFrame(layer).toLocalPoint(event.clientX, event.clientY);
+    const hit = findAnnotationAt(anchors, point);
     if (hit !== null && hit !== active) setActive(hit);
   };
 

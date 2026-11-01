@@ -12,6 +12,7 @@ import type { Key } from '../../src/core/props.js';
 import { requireDefined } from './require-defined.js';
 import { ShadowRootApp } from './shadow-root-host.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { ZoomedReview } from './annotation-layer-cases.js';
 
 const maria = { name: 'Maria Santos', colorKey: 'maria' };
 const jon = { name: 'Jon Berg', colorKey: 'jon' };
@@ -241,6 +242,12 @@ mountLab(
       description="The steps scroll inside the layer, and their own button adds a step above the note without the layer rendering. The highlight follows the phrase, and pressing the phrase makes its note active."
     >
       <ScrollingReview />
+    </LabSection>
+    <LabSection
+      title="Zoomed surface"
+      description="The layer sits on a surface zoomed with a CSS scale, the same or different across and down. The highlight covers the phrase exactly, pressing the phrase up to its edges makes its note active, and the card stays level with it."
+    >
+      <ZoomedReview />
     </LabSection>
     <LabSection
       title="Numeric and text IDs"

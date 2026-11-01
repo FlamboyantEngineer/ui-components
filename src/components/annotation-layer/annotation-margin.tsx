@@ -9,7 +9,7 @@ import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useResizeObserver } from '../../utils/use-resize-observer.js';
 import { useAnnotationContext } from './annotation-context.js';
 import { annotationLayerHooks as hooks } from './annotation-hooks.js';
-import { getLayerOrigin, type Annotation } from './anchor-geometry.js';
+import { getLayerFrame, type Annotation } from './anchor-geometry.js';
 import { stackAnnotationCards } from './stack-cards.js';
 
 /** What a card shows about its annotation. */
@@ -54,8 +54,8 @@ function useMarginGeometry(margin: HTMLElement | null, layer: HTMLElement | null
     if (!margin || !layer) return;
     const heights = new Map<Key, number>();
     for (const [id, card] of cards.current) heights.set(id, card.offsetHeight);
-    const offset =
-      margin.getBoundingClientRect().top + margin.clientTop - getLayerOrigin(layer).top;
+    const box = margin.getBoundingClientRect();
+    const offset = getLayerFrame(layer).toLocalPoint(box.left, box.top).y + margin.clientTop;
     const next = { offset, heights };
     setGeometry((current) => (isSameGeometry(current, next) ? current : next));
   };

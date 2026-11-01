@@ -28,12 +28,42 @@ export interface AnchoredAnnotation {
   rects: readonly AnnotationRect[];
 }
 
-/** Where the layer's content starts in the viewport: inside its border, before its scroll. */
-export function getLayerOrigin(layer: Element): { top: number; left: number } {
+/** A point in the layer's content coordinates. */
+export interface LayerPoint {
+  x: number;
+  y: number;
+}
+
+/**
+ * Maps viewport coordinates into the layer's content coordinates: from the top left corner inside
+ * its border, before its scroll, in its own CSS pixels. A scale its ancestors apply, the same or
+ * different across and down, is divided out; a rotation or skew is not supported.
+ */
+export interface LayerFrame {
+  toLocalPoint(x: number, y: number): LayerPoint;
+  toLocalRect(box: { top: number; left: number; width: number; height: number }): AnnotationRect;
+}
+
+/** The scale from the layer's own CSS pixels to viewport pixels, 1 for an unlaid-out side. */
+function toScale(viewportSize: number, ownSize: number): number {
+  return viewportSize > 0 && ownSize > 0 ? viewportSize / ownSize : 1;
+}
+
+/** The layer's frame as laid out now. */
+export function getLayerFrame(layer: HTMLElement): LayerFrame {
   const box = layer.getBoundingClientRect();
+  const scaleX = toScale(box.width, layer.offsetWidth);
+  const scaleY = toScale(box.height, layer.offsetHeight);
+  const toLocalPoint = (x: number, y: number) => ({
+    x: (x - box.left) / scaleX - layer.clientLeft + layer.scrollLeft,
+    y: (y - box.top) / scaleY - layer.clientTop + layer.scrollTop,
+  });
   return {
-    top: box.top + layer.clientTop - layer.scrollTop,
-    left: box.left + layer.clientLeft - layer.scrollLeft,
+    toLocalPoint,
+    toLocalRect: (rect) => {
+      const { x, y } = toLocalPoint(rect.left, rect.top);
+      return { top: y, left: x, width: rect.width / scaleX, height: rect.height / scaleY };
+    },
   };
 }
 
@@ -48,23 +78,15 @@ export function findTargets(layer: Element, annotations: readonly Annotation[]):
   return targets;
 }
 
-/** The boxes of each target element inside the layer, by annotation id. */
+/** The boxes of each target element inside the layer, by annotation id, in its content coordinates. */
 export function measureTargets(
-  layer: Element,
+  layer: HTMLElement,
   annotations: readonly Annotation[],
 ): Map<Key, AnnotationRect[]> {
-  const origin = getLayerOrigin(layer);
+  const frame = getLayerFrame(layer);
   const measured = new Map<Key, AnnotationRect[]>();
   for (const [id, element] of findTargets(layer, annotations)) {
-    measured.set(
-      id,
-      Array.from(element.getClientRects(), (box) => ({
-        top: box.top - origin.top,
-        left: box.left - origin.left,
-        width: box.width,
-        height: box.height,
-      })),
-    );
+    measured.set(id, Array.from(element.getClientRects(), frame.toLocalRect));
   }
   return measured;
 }
