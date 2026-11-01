@@ -257,6 +257,23 @@ test.describe('Folder Manager lab', () => {
     await expect(page.locator('[data-lab-output="Selection"]')).toHaveText('vegetables');
   });
 
+  test('UIC-FOLDER-MANAGER-6.2 refuses a delete while a selected nested folder is locked', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('folder-manager');
+    const manager = page.locator('[data-lab-manager="locked"]');
+    await expect(manager.getByRole('button', { name: 'Delete' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+    await row(manager, 'Lemons').focus();
+    await page.keyboard.press('Delete');
+    await expect(manager.getByRole('alert')).toHaveText('Lemons are locked.');
+    await expect(page.locator('[data-lab-output="Locked action"]')).toHaveText('none');
+    expect(await rowNames(manager)).toContain('Fruit');
+  });
+
   test('UIC-FOLDER-MANAGER-5.1 loads subfolders on demand and retries a failed load', async ({
     page,
     lab,

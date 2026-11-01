@@ -51,8 +51,11 @@ export interface FolderActions<T extends FolderItem> {
   /** Ends the edit with `name`: a blank or unchanged name abandons it. */
   submit(name: string): Promise<void>;
   cancel(): void;
-  /** Deletes the folders, in order, stopping at the first refusal. */
-  remove(folders: readonly T[]): Promise<void>;
+  /**
+   * Deletes `targets`, in order, stopping at the first refusal. Every folder of `checked` (the
+   * targets and the selected folders inside them) is asked for a blocked reason first.
+   */
+  remove(targets: readonly T[], checked?: readonly T[]): Promise<void>;
 }
 
 /** Runs an edit's callback; resolves to the folder to select and focus once it ends. */
@@ -164,8 +167,8 @@ export function useFolderActions<T extends FolderItem>({
     }
   };
 
-  const remove = async (targets: readonly T[]) => {
-    const reason = targets.map((folder) => getDeleteBlockedReason?.(folder)).find(Boolean);
+  const remove = async (targets: readonly T[], checked: readonly T[] = targets) => {
+    const reason = checked.map((folder) => getDeleteBlockedReason?.(folder)).find(Boolean);
     if (reason) return setMessage(reason);
     const parentKey = findFolderPath(folders, targets[0]?.id ?? null).at(-2)?.id ?? null;
     setDeleting(true);

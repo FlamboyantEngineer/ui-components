@@ -319,6 +319,26 @@ function AnyFolderKeys() {
   );
 }
 
+/** A locked folder selected inside another selected folder blocks the whole delete. */
+function LockedInsideSelection() {
+  const [last, setLast] = useState('none');
+  const { folders, callbacks } = useFolders(0, setLast);
+  return (
+    <>
+      <FolderManager
+        aria-label="Locked folders"
+        folders={folders}
+        selectionMode="multiple"
+        defaultSelectedKeys={['fruit', 'lemons']}
+        getDeleteBlockedReason={(folder) => (folder.id === 'lemons' ? 'Lemons are locked.' : null)}
+        data-lab-manager="locked"
+        {...callbacks}
+      />
+      <LabOutput name="Locked action">{last}</LabOutput>
+    </>
+  );
+}
+
 /** A panel closed while its manager waits: the slow answer selects nothing once it is gone. */
 function ClosingPanel() {
   const [isOpen, setOpen] = useState(true);
@@ -373,6 +393,12 @@ mountLab(
       description="Ctrl or Shift with a click, or Shift with the arrow keys, selects several folders. onSelectionChange reports them as a Set of keys. Delete removes them all; right-click for Move to. Folders already at the destination stay there, and the depth limit includes every selected subfolder."
     >
       <SeveralFolders />
+    </LabSection>
+    <LabSection
+      title="Locked folder inside a selection"
+      description="Fruit and Lemons are selected and Lemons is locked: Delete is disabled with the reason, and the Delete key shows it without deleting Fruit."
+    >
+      <LockedInsideSelection />
     </LabSection>
     <LabSection
       title="Subfolders on demand"
