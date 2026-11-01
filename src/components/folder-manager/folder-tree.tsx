@@ -17,11 +17,12 @@ import { FolderNameInput, folderManagerHooks as hooks } from './folder-manager-p
 import {
   findFolderPath,
   folderDraftKey,
-  folderRootKey,
+  fromFolderRowKey,
   getFolderHeight,
   type FolderItem,
   type FolderNode,
 } from './folder-model.js';
+import { planFolderMoves } from './folder-moves.js';
 import type { FolderManagerModel } from './use-folder-manager.js';
 import { isElement } from '../../utils/is-element.js';
 
@@ -43,7 +44,7 @@ interface FolderTreeProps<T extends FolderItem> {
   onMenuAction: (key: Key) => void;
 }
 
-/** The selected folder keys a tree selection stands for: never the root or draft rows. */
+/** The selected folder keys a tree selection of row keys stands for: never the root or draft rows. */
 function toFolderKeys<T extends FolderItem>(keys: Selection, nodes: readonly FolderNode<T>[]) {
   const chosen =
     keys === 'all'
@@ -52,7 +53,10 @@ function toFolderKeys<T extends FolderItem>(keys: Selection, nodes: readonly Fol
           (node) => node.id,
         )
       : [...keys];
-  return chosen.filter((key) => key !== folderRootKey && key !== folderDraftKey);
+  return chosen.flatMap((key) => {
+    const folderKey = fromFolderRowKey(key);
+    return folderKey === null ? [] : [folderKey];
+  });
 }
 
 /**
@@ -90,8 +94,21 @@ function canNest<T extends FolderItem>(
   if (parent === null) return rootLabel === undefined;
   if (parent.kind === 'draft' || !node.folder) return false;
   if (maxDepth === undefined) return true;
-  const depth = parent.kind === 'root' ? 0 : findFolderPath(folders, parent.id).length;
+  const depth = parent.folder ? findFolderPath(folders, parent.folder.id).length : 0;
   return depth + getFolderHeight(node.folder) <= maxDepth;
+}
+
+/**
+ * A tree move between row keys as the owner's folder moves: a drop inside the root row goes to the
+ * end of the top level.
+ */
+function toFolderMoves<T extends FolderItem>(folders: readonly T[], move: TreeMove): TreeMove[] {
+  const key = fromFolderRowKey(move.key);
+  const moving = key === null ? undefined : findFolderPath(folders, key).at(-1);
+  if (!moving) return [];
+  const targetKey = fromFolderRowKey(move.targetKey);
+  if (targetKey === null) return planFolderMoves(folders, [moving], null);
+  return [{ key: moving.id, targetKey, position: move.position }];
 }
 
 /** Reordering, when the owner applies moves: folders move unless the manager is busy. */
@@ -99,12 +116,14 @@ function reorderOf<T extends FolderItem>(
   tree: Pick<FolderTreeProps<T>, 'folders' | 'rootLabel' | 'maxDepth' | 'onMove'>,
   isBusy: boolean,
 ): TreeProps<FolderNode<T>>['reorder'] {
-  const { onMove } = tree;
+  const { onMove, folders } = tree;
   if (!onMove) return undefined;
   return {
     canMove: (node) => node.kind === 'folder' && !isBusy,
     canMoveInto: (node, parent) => canNest(node, parent, tree),
-    onMove,
+    onMove: (move) => {
+      for (const folderMove of toFolderMoves(folders, move)) onMove(folderMove);
+    },
   };
 }
 
@@ -140,10 +159,11 @@ function useFolderKeys<T extends FolderItem>(model: FolderManagerModel<T>, entri
 /** A branch whose subfolders failed to load: the reason and a retry, in the row's meta slot. */
 function createLoadErrorRenderer<T extends FolderItem>(loads: FolderManagerModel<T>['loads']) {
   return (node: FolderNode<T>) => {
-    const error = loads.errorOf(node.id);
-    if (!error) return null;
+    const key = node.folder?.id;
+    const error = key === undefined ? null : loads.errorOf(key);
+    if (key === undefined || !error) return null;
     return (
-      <InlineError className={hooks.slotClass('load-error')} onRetry={() => loads.load(node.id)}>
+      <InlineError className={hooks.slotClass('load-error')} onRetry={() => loads.load(key)}>
         {error}
       </InlineError>
     );
@@ -200,7 +220,7 @@ export function FolderTree<T extends FolderItem>({
             renderLabel={renderLabel}
             renderMeta={createLoadErrorRenderer(loads)}
             hasChildItems={(node) => node.isLazy}
-            isItemPending={(node) => loads.isLoading(node.id)}
+            isItemPending={(node) => node.folder !== null && loads.isLoading(node.folder.id)}
             selectionMode={tree.selectionMode}
             selectionBehavior="replace"
             disallowEmptySelection={!isMultiple}
