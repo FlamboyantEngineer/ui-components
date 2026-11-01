@@ -499,6 +499,7 @@
   "noMatchingVersions": "Aucune version ne correspond aux filtres.",
   "downloadFile": "Télécharger {name}",
   "previewUnavailable": "Aucun aperçu n’est disponible pour ce fichier.",
+  "imageLoadFailed": "Impossible de charger « {name} ».",
   "thumbnails": "Miniatures",
   "mediaStage": "{name}, visionneuse",
   "gridSizePicker": "Taille du tableau",

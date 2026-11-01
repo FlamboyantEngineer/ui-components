@@ -28,7 +28,7 @@ if (!referenceOnly) {
   rmSync(outdir, { recursive: true, force: true });
 
   // Files the labs load at runtime, shipped with the bundles so the static labs work offline:
-  // the PDF engine and its worker with their license, and the sample documents.
+  // the PDF engine and its worker with their license, and the sample documents and image.
   const resolvePackage = createRequire(import.meta.url).resolve;
   const staticFiles = {
     'vendor/pdf.min.mjs': resolvePackage('pdfjs-dist/build/pdf.min.mjs'),
@@ -36,6 +36,7 @@ if (!referenceOnly) {
     'vendor/LICENSE': resolvePackage('pdfjs-dist/LICENSE'),
     'samples/seasonal-report.pdf': join(labsDir, 'samples', 'seasonal-report.pdf'),
     'samples/seasonal-report-locked.pdf': join(labsDir, 'samples', 'seasonal-report-locked.pdf'),
+    'samples/landscape.svg': join(labsDir, 'samples', 'landscape.svg'),
   };
   for (const [target, source] of Object.entries(staticFiles)) {
     mkdirSync(dirname(join(outdir, target)), { recursive: true });

@@ -499,6 +499,7 @@
   "noMatchingVersions": "Ninguna versión coincide con los filtros.",
   "downloadFile": "Descargar {name}",
   "previewUnavailable": "No hay vista previa disponible para este archivo.",
+  "imageLoadFailed": "No se pudo cargar «{name}».",
   "thumbnails": "Miniaturas",
   "mediaStage": "{name}, visor",
   "gridSizePicker": "Tamaño de la tabla",
