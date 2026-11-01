@@ -294,6 +294,38 @@ test.describe('Tabs lab', () => {
     await expect.poll(scrollY).toBeGreaterThan(top);
   });
 
+  test('UIC-TABS-1.2 renames a tab live from another field and keeps its key, selection and panel', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tabs');
+    const demo = page.locator('[data-lab-demo="live-rename"]');
+    const list = demo.getByRole('tablist', { name: 'Pages' });
+    const field = demo.getByRole('textbox', { name: 'Selected tab name' });
+    await list.getByRole('tab', { name: 'Budget' }).click();
+    const tab = list.getByRole('tab', { selected: true });
+    const id = await tab.getAttribute('id');
+    await demo.getByRole('textbox', { name: 'Draft for Budget' }).fill('Rent and travel');
+    await field.fill('');
+    await expect(tab).toHaveAccessibleName('Untitled');
+    await field.pressSequentially('Costs');
+    await expect(field).toBeFocused();
+    await expect(tab).toHaveAccessibleName('Costs');
+    await expect(tab).toHaveAttribute('aria-selected', 'true');
+    expect(await tab.getAttribute('id')).toBe(id);
+    await expect(demo.getByRole('textbox', { name: 'Draft for Costs' })).toHaveValue(
+      'Rent and travel',
+    );
+    await expect(demo.locator('[data-lab-output="live-rename"]')).toHaveText('Key page-2: Costs');
+
+    await demo.getByRole('button', { name: 'Use a long name' }).click();
+    await expect(list).toHaveAttribute('data-overflowing', 'true');
+    await demo.getByRole('button', { name: 'Use a short name' }).click();
+    await expect(tab).toHaveAccessibleName('Q3');
+    await expect(list).not.toHaveAttribute('data-overflowing');
+    await lab.expectAccessible();
+  });
+
   test('UIC-TABS-2.7 pages the list with scroll buttons that stay out of the tab order', async ({
     page,
     lab,

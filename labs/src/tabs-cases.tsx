@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
+import { TextField } from '../../src/components/text-field/text-field.js';
 import type { MenuEntry } from '../../src/components/menu/menu.js';
 import { Tab, TabList, TabPanel, Tabs, type TabMove } from '../../src/components/tabs/tabs.js';
 
@@ -317,6 +318,71 @@ export function SwitchingTabs() {
         ))}
       </Tabs>
       <p data-lab-output="switching">Times: {names.join(', ')}</p>
+    </div>
+  );
+}
+
+interface Page {
+  id: string;
+  name: string;
+}
+
+const PAGES: Page[] = [
+  { id: 'page-1', name: 'Notes' },
+  { id: 'page-2', name: 'Budget' },
+  { id: 'page-3', name: 'Itinerary' },
+];
+
+const longPageName = 'Itinerary for the long weekend by the coast';
+
+/** The name a tab shows: an empty name falls back to Untitled so the tab keeps a label. */
+function tabName(name: string): string {
+  return name.trim() === '' ? 'Untitled' : name;
+}
+
+/**
+ * A field beside the tabs renames the selected tab as the reader types. Each tab keeps its key, so
+ * its selection and its panel's draft survive every keystroke.
+ */
+export function LiveRenameTabs() {
+  const [pages, setPages] = useState(PAGES);
+  const [selected, setSelected] = useState<Key>('page-1');
+  const current = pages.find((page) => page.id === selected) ?? pages[0];
+  const rename = (name: string) =>
+    setPages((all) => all.map((page) => (page.id === current?.id ? { ...page, name } : page)));
+  return (
+    <div data-lab-demo="live-rename" style={{ display: 'grid', gap: 12, width: 360 }}>
+      <TextField
+        label="Selected tab name"
+        description="Renames the selected tab as you type. An empty name shows Untitled."
+        value={current?.name ?? ''}
+        onChange={rename}
+      />
+      <p style={{ display: 'flex', gap: 8, margin: 0 }}>
+        <Button size="sm" onPress={() => rename(longPageName)}>
+          Use a long name
+        </Button>
+        <Button size="sm" onPress={() => rename('Q3')}>
+          Use a short name
+        </Button>
+      </p>
+      <Tabs selectedKey={selected} onSelectionChange={setSelected}>
+        <TabList aria-label="Pages">
+          {pages.map((page) => (
+            <Tab key={page.id} id={page.id}>
+              {tabName(page.name)}
+            </Tab>
+          ))}
+        </TabList>
+        {pages.map((page) => (
+          <TabPanel key={page.id} id={page.id}>
+            <TextField label={`Draft for ${tabName(page.name)}`} multiline />
+          </TabPanel>
+        ))}
+      </Tabs>
+      <p data-lab-output="live-rename">
+        Key {String(selected)}: {tabName(current?.name ?? '')}
+      </p>
     </div>
   );
 }
