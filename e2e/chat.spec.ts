@@ -427,6 +427,27 @@ test.describe('Chat lab', () => {
     await expect(pair.locator('.ui-chat__banner')).toHaveCount(0);
   });
 
+  test('UIC-CHAT-2.4 ends a reply whose message is deleted and keeps its words', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat');
+    const pair = section(page, 'Between two people');
+    await message(pair, 'pair-1b').hover();
+    await message(pair, 'pair-1b').getByRole('button', { name: 'Reply' }).click();
+    await expect(composer(pair)).toBeFocused();
+    await page.keyboard.type('Never mind');
+    await expect(pair.locator('.ui-chat__banner')).toContainText('Replying to');
+    await message(pair, 'pair-1b').hover();
+    await message(pair, 'pair-1b').getByRole('button', { name: 'Delete' }).click();
+    await page
+      .getByRole('alertdialog', { name: 'Delete message?' })
+      .getByRole('button', { name: 'Delete' })
+      .click();
+    await expect(pair.locator('.ui-chat__banner')).toHaveCount(0);
+    await expect(composer(pair)).toHaveText('Never mind');
+  });
+
   test('UIC-CHAT-3.1 keeps the draft of a conversation across a reload', async ({ page, lab }) => {
     await lab.open('chat');
     const pair = section(page, 'Between two people');

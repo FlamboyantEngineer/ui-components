@@ -164,18 +164,32 @@ function useEditValue({ state, messages, options }: ChatComposerProps) {
 }
 
 /**
- * The edit, kept only while the queued message or message it edits is still there. Once that is
- * gone (sent from the queue, removed or deleted) the edit ends, and the composer sends as usual.
+ * The edit and the reply, each kept only while what it targets is still there. Once the queued
+ * message or message an edit edits is gone (sent from the queue, removed or deleted), or the message
+ * a reply quotes is removed or deleted, it ends: the composer keeps its text and sends as usual, and
+ * the target coming back does not bring it back.
  */
-function useLiveEdit(props: ChatComposerProps) {
+function useLiveTargets(props: ChatComposerProps) {
   const editValue = useEditValue(props);
-  const { state } = props;
-  const isGone = state.editing !== null && editValue === undefined;
-  const { cancelEdit } = state;
+  const { state, messages } = props;
+  const isEditGone = state.editing !== null && editValue === undefined;
+  const isReplyGone =
+    state.replyingId !== null &&
+    !messages.some((message) => message.id === state.replyingId && !message.isDeleted);
+  const { cancelEdit, cancelReply } = state;
   useEffect(() => {
-    if (isGone) cancelEdit();
-  }, [isGone, cancelEdit]);
-  return { editValue, props: isGone ? { ...props, state: { ...state, editing: null } } : props };
+    if (isEditGone) cancelEdit();
+  }, [isEditGone, cancelEdit]);
+  useEffect(() => {
+    if (isReplyGone) cancelReply();
+  }, [isReplyGone, cancelReply]);
+  if (!isEditGone && !isReplyGone) return { editValue, props };
+  const live = {
+    ...state,
+    editing: isEditGone ? null : state.editing,
+    replyingId: isReplyGone ? null : state.replyingId,
+  };
+  return { editValue, props: { ...props, state: live } };
 }
 
 /** The banner above the input: the message being replied to, or what is being edited. */
@@ -290,7 +304,7 @@ function allowsEmptySubmit({ options }: ChatComposerProps) {
  * controls below the input, and Stop.
  */
 export function ChatComposer(given: ChatComposerProps) {
-  const { editValue, props } = useLiveEdit(given);
+  const { editValue, props } = useLiveTargets(given);
   const { options, state, isAssistantChat } = props;
   const { setComposer, cancelEdit } = state;
   const bannerId = useId();
