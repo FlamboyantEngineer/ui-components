@@ -169,24 +169,29 @@ function useCellDragAndDrop(
 /** Text widgets a host draws in a card, which keep the arrow keys for their caret. */
 const textWidgets = '[role="textbox"], [role="combobox"]';
 
-/**
- * Whether a keydown belongs to the card row handling it: the row's own, or from a widget in the
- * card, but not from a nested collection's row (such as a card of a board drawn in the card) or a
- * text control, which keep their keys.
- */
-function isCardKey(event: KeyboardEvent<HTMLElement>): boolean {
+/** The keys a text control in a card leaves to the grid: moving focus out and closing. */
+const passedKeys = new Set(['Tab', 'Escape']);
+
+/** Whether a keydown's target is in a nested collection's row, such as a board drawn in the card. */
+function isNestedKey(event: KeyboardEvent<HTMLElement>): boolean {
   const { target, currentTarget } = event;
-  return (
-    isElement(target) &&
-    target.closest('[role="row"]') === currentTarget &&
-    !isEditableTarget(target, textWidgets)
-  );
+  return !isElement(target) || target.closest('[role="row"]') !== currentTarget;
 }
 
 /**
- * Draws a card's row. While the board takes card moves, a move chord skips React Aria's row
- * capture, which would move focus between the card's widgets first, and reaches the board on the way
- * back up, after a widget in the card has had it and left it alone (not `preventDefault`).
+ * Whether a keydown belongs to a text control inside the card: its caret keys, move chords and
+ * characters, which the row's navigation, the board's moves and the grid's typeahead leave to it.
+ */
+function isTextKey(event: KeyboardEvent<HTMLElement>): boolean {
+  return !passedKeys.has(event.key) && isEditableTarget(event.target, textWidgets);
+}
+
+/**
+ * Draws a card's row. React Aria's row capture, which moves focus between the card's controls, does
+ * not take a text control's key, a key from a nested collection's row, or (while the board takes
+ * card moves) a move chord. A text control's key stops at the row, so neither the board nor the
+ * grid's navigation and typeahead take it, and its default editing goes ahead; Tab and Escape pass. A move chord reaches the board on
+ * the way back up, after a widget in the card has had it and left it alone (not `preventDefault`).
  */
 function createCardRow(
   key: Key,
@@ -200,11 +205,17 @@ function createCardRow(
       {...domProps}
       aria-keyshortcuts={keyShortcuts}
       onKeyDownCapture={(event) => {
+        if (isTextKey(event) || isNestedKey(event)) return;
         if (onCardKeyDown && isMoveChord(event) && event.key.startsWith('Arrow')) return;
         domProps.onKeyDownCapture?.(event);
       }}
       onKeyDown={(event) => {
-        if (!event.defaultPrevented && isCardKey(event) && onCardKeyDown?.(event, key)) return;
+        if (isTextKey(event)) {
+          event.stopPropagation();
+          return;
+        }
+        const isOwn = !event.defaultPrevented && !isNestedKey(event);
+        if (isOwn && onCardKeyDown?.(event, key)) return;
         domProps.onKeyDown?.(event);
       }}
     />
