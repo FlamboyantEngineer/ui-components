@@ -228,7 +228,7 @@
 .ui-table__state-row {
   outline: none;
 }
-.ui-table__grid[data-allows-dragging] .ui-table__row {
+.ui-table[data-reordering] .ui-table__row {
   cursor: grab;
 }
 .ui-table__row[data-hovered] {

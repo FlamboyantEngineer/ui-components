@@ -763,6 +763,35 @@ test.describe('Table lab', () => {
     await lab.expectAccessible('[data-lab="grouping"]');
   });
 
+  test('UIC-TABLE-5.1 keeps the table mounted when reordering or grouping turns off and on', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('table');
+    const root = section(page, 'reorder');
+    const table = root.locator('.ui-table');
+    const banana = root.getByRole('row', { name: 'Banana' });
+    // A mark on an element survives only while the element stays mounted.
+    await banana.evaluate((row) => row.setAttribute('data-lab-mark', ''));
+    await root
+      .locator('.ui-table__grid')
+      .evaluate((grid) => grid.setAttribute('data-lab-mark', ''));
+    await expect(table).toHaveAttribute('data-reordering', 'true');
+    await root.getByRole('button', { name: 'Arrange' }).click();
+    await expect(table).not.toHaveAttribute('data-reordering');
+    await expect(root.locator('.ui-table__drag-handle')).toHaveCount(0);
+    await expect(banana).toHaveAttribute('data-lab-mark', '');
+    await root.getByRole('button', { name: 'Arrange' }).click();
+    await expect(banana.locator('.ui-table__drag-handle')).toBeVisible();
+    await expect(banana).toHaveAttribute('data-lab-mark', '');
+    await root.getByRole('button', { name: 'Group by colour' }).click();
+    await expect(table).not.toHaveAttribute('data-reordering');
+    await expect(root.locator('.ui-table__group-row').first()).toBeVisible();
+    await root.getByRole('button', { name: 'Group by colour' }).click();
+    await expect(table).toHaveAttribute('data-reordering', 'true');
+    await expect(root.locator('.ui-table__grid')).toHaveAttribute('data-lab-mark', '');
+  });
+
   test('UIC-TABLE-13.1 keeps groups of numbers, booleans and text with the same text apart', async ({
     page,
     lab,

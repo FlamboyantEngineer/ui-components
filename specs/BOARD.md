@@ -87,7 +87,7 @@ Verification: `src/components/board/board-moves.test.ts`
 
 ### UIC-BOARD-2.2 - Drag and drop
 
-With `onMove`, the reader shall move a card within its cell, to another column or to another lane by pointer drag and drop, or by keyboard and assistive technology from the card's [DragHandle](DRAG-HANDLE.md) (`ui-board__card-handle`), through React Aria's `useDragAndDrop` on every cell. Each accepted drop reports one `onMove({ key, column, lane, targetKey, position })`: the card `key` lands in the cell of `column` and `lane` (`null` without lanes), before or after the card `targetKey`, or with `targetKey: null` in a cell holding no other card. A drop on a card rather than beside it, or one that leaves the card where it is, is refused. Cards carry a media type of their own board, so another board refuses them. The dragged card publishes `data-dragging`, a cell or card under a drop `data-drop-target`, and the landing spot between cards is a `ui-board__drop-indicator` with `data-position` (`before`, `after`) and `data-drop-target`. Without `onMove` no card drags.
+With `onMove`, the reader shall move a card within its cell, to another column or to another lane by pointer drag and drop, or by keyboard and assistive technology from the card's [DragHandle](DRAG-HANDLE.md) (`ui-board__card-handle`), through React Aria's `useDragAndDrop` on every cell. Each accepted drop reports one `onMove({ key, column, lane, targetKey, position })`: the card `key` lands in the cell of `column` and `lane` (`null` without lanes), before or after the card `targetKey`, or with `targetKey: null` in a cell holding no other card. A drop on a card rather than beside it, or one that leaves the card where it is, is refused. Cards carry a media type of their own board, so another board refuses them. The dragged card publishes `data-dragging`, a cell or card under a drop `data-drop-target`, and the landing spot between cards is a `ui-board__drop-indicator` with `data-position` (`before`, `after`) and `data-drop-target`. While the board takes moves, each cell's grid list publishes `data-reordering`. Without `onMove` no card drags. Adding or removing `onMove` keeps every card mounted, with its focus, scroll position and selection: React Aria's drag and drop stays wired on every cell and is disabled without `onMove`, so `data-allows-dragging` stays on the cards and stylesheets key drag styles off `data-reordering`.
 
 Implementation: `src/components/board/use-board-drag.ts`, `src/components/board/board-moves.ts`, `src/components/board/board-cell.tsx`
 Verification: `src/components/board/board.test.tsx`, `src/components/board/board-moves.test.ts`, `e2e/board.spec.ts`
@@ -162,6 +162,7 @@ Verification: `src/components/board/board.test.tsx`, `e2e/board.spec.ts`
 | `ui-board__empty`           | slot      |                   | The empty state of a cell without cards (also `ui-empty-state`).                     |
 | `ui-board__add`             | slot      |                   | A cell's add-card button (also `ui-button`).                                         |
 | `data-virtualized`          | state     | `true`            | Cells render only the cards in view.                                                 |
+| `data-reordering`           | state     | `true`            | A cell's grid list while the board takes moves.                                      |
 | `data-collapsed`            | state     | `true`            | A collapsed column (header and cells) or lane.                                       |
 | `data-over-limit`           | state     | `true`            | A column (header and cells) holding more cards than its limit.                       |
 | `data-dragging`             | state     | `true`            | A column header or card being dragged.                                               |
@@ -175,7 +176,7 @@ Verification: `src/components/board/board.test.tsx`, `e2e/board.spec.ts`
 | `data-focus-visible-within` | state     | `true`            | Keyboard focus inside a card (React Aria).                                           |
 | `data-hovered`              | state     | `true`            | Pointer over a card (React Aria).                                                    |
 | `data-pressed`              | state     | `true`            | A card is pressed (React Aria).                                                      |
-| `data-allows-dragging`      | state     | `true`            | A card the reader can drag (React Aria).                                             |
+| `data-allows-dragging`      | state     | `true`            | React Aria's drag support, on every card: use `data-reordering`.                     |
 | `data-layout`               | state     | `stack`           | A cell's layout (React Aria).                                                        |
 | `data-orientation`          | state     | `vertical`        | A cell's orientation (React Aria).                                                   |
 | `data-collection`           | state     |                   | React Aria's collection marker, on the cells' lists and cards.                       |

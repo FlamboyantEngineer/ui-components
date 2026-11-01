@@ -154,7 +154,7 @@ Verification: `src/components/list-row/list-view.test.tsx`, `e2e/list-row.spec.t
 
 ### UIC-LIST-ROW-3.5 - Drag and drop
 
-With `reorder`, the reader shall reorder rows by drag and drop, by pointer or by keyboard from a row's drag handle (React Aria's `useDragAndDrop`), and each drop shall report one `reorder.onMove({ keys, targetKey, position })` with `position` `before` or `after`. The list never reorders its rows itself: the owner applies the move and renders the new order. A drop on a row, or beside one of the dragged rows, is refused. While the list reorders, each row draws a [DragHandle](DRAG-HANDLE.md) in the `ui-list-view-item__drag-handle` slot first and publishes `data-allows-dragging`; the dragged row carries `data-dragging`, and the landing spot between rows is a `ui-list-view__drop-indicator` row with `data-position` (`before`, `after`) and `data-drop-target`. A list without `reorder` draws no drag affordance; turning it on or off remounts the rows. Rows in `disabledKeys` when the drop lands, including rows disabled after the drag started, are left out of the move, and a drop with no row left reports nothing.
+With `reorder`, the reader shall reorder rows by drag and drop, by pointer or by keyboard from a row's drag handle (React Aria's `useDragAndDrop`), and each drop shall report one `reorder.onMove({ keys, targetKey, position })` with `position` `before` or `after`. The list never reorders its rows itself: the owner applies the move and renders the new order. A drop on a row, or beside one of the dragged rows, is refused. While the list reorders, it publishes `data-reordering` and each row draws a [DragHandle](DRAG-HANDLE.md) in the `ui-list-view-item__drag-handle` slot first; the dragged row carries `data-dragging`, and the landing spot between rows is a `ui-list-view__drop-indicator` row with `data-position` (`before`, `after`) and `data-drop-target`. A list without `reorder` draws no drag affordance and no row is draggable. Turning `reorder` on or off keeps every row mounted, with its focus, scroll position and selection: React Aria's drag and drop stays wired and is disabled while the list does not reorder, so `data-allows-dragging` stays on the rows and stylesheets key reordering styles off `data-reordering`. Rows in `disabledKeys` when the drop lands, including rows disabled after the drag started, are left out of the move, and a drop with no row left reports nothing.
 
 Implementation: `src/components/list-row/list-view.tsx`, `src/utils/use-reorder-drag-and-drop.ts`, `labs/reference/list-row.css`
 Verification: `src/components/list-row/list-view.test.tsx`, `e2e/list-row.spec.ts`
@@ -202,6 +202,7 @@ Verification: `e2e/list-row.spec.ts`
 | `ui-list-view__drop-indicator`   | slot      |                            | Where dragged rows would land, between rows.                       |
 | `ui-list-view__loader`           | slot      |                            | The loading row after the rows while more load.                    |
 | `data-sticky-headers`            | state     | `true`                     | Section headers stay in view while their rows scroll.              |
+| `data-reordering`                | state     | `true`                     | The list reorders its rows now (`reorder` is set).                 |
 | `data-position`                  | attribute | `before`, `after`          | Which side of its row a drop indicator stands for.                 |
 | `ui-list-view-item`              | root      |                            | A row (`role="row"`).                                              |
 | `ui-list-view-item__drag-handle` | slot      |                            | The row's drag handle (also `ui-drag-handle`).                     |
@@ -211,7 +212,7 @@ Verification: `e2e/list-row.spec.ts`
 | `ui-list-view-section__header`   | slot      |                            | The section's header row.                                          |
 | `data-selected`                  | state     | `true`                     | A selected row (React Aria).                                       |
 | `data-selection-mode`            | state     | `single`, `multiple`       | The list's selection mode, on rows (React Aria).                   |
-| `data-allows-dragging`           | state     | `true`                     | A row the reader can drag (React Aria).                            |
+| `data-allows-dragging`           | state     | `true`                     | React Aria's drag support, on every row: use `data-reordering`.    |
 | `data-dragging`                  | state     | `true`                     | A row being dragged (React Aria).                                  |
 | `data-drop-target`               | state     | `true`                     | The list, a row or a drop indicator is the drop target.            |
 | `data-focus-visible-within`      | state     | `true`                     | Keyboard focus inside a row (React Aria).                          |

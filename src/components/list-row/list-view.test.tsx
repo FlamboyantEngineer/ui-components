@@ -72,6 +72,34 @@ describe('ListView', () => {
     await waitFor(() => expect(screen.getByRole('row', { name: 'Banana' })).toHaveFocus());
   });
 
+  it('UIC-LIST-ROW-3.5 keeps the same rows mounted while reorder turns on and off', async () => {
+    const user = userEvent.setup();
+    const list = (reorder: boolean) => (
+      <ListView
+        aria-label="Fruit"
+        items={fruit}
+        reorder={reorder ? { onMove: vi.fn() } : undefined}
+      >
+        {(item) => <ListViewItem title={item.name} />}
+      </ListView>
+    );
+    const { rerender } = render(list(false));
+    const banana = screen.getByRole('row', { name: 'Banana' });
+    await user.click(banana);
+    expect(screen.getByRole('grid')).not.toHaveAttribute('data-reordering');
+    rerender(list(true));
+    expect(screen.getByRole('row', { name: 'Banana' })).toBe(banana);
+    expect(banana).toHaveFocus();
+    expect(screen.getByRole('grid')).toHaveAttribute('data-reordering', 'true');
+    expect(banana.querySelector('.ui-list-view-item__drag-handle')).not.toBeNull();
+    rerender(list(false));
+    expect(screen.getByRole('row', { name: 'Banana' })).toBe(banana);
+    expect(banana).toHaveFocus();
+    expect(screen.getByRole('grid')).not.toHaveAttribute('data-reordering');
+    expect(banana.querySelector('.ui-list-view-item__drag-handle')).toBeNull();
+    expect(banana).not.toHaveAttribute('draggable');
+  });
+
   it('UIC-LIST-ROW-3.3 retains one-shot selected and disabled key iterables across rerenders', () => {
     const selectedKeys = (function* () {
       yield 'apple';
@@ -429,6 +457,7 @@ describe('ListView', () => {
   it('UIC-LIST-ROW-3.5 draws a drag handle on rows the list lets the reader drag', () => {
     const { container } = render(<Reorderable onMove={vi.fn()} />);
     const rows = screen.getAllByRole('row');
+    expect(screen.getByRole('grid')).toHaveAttribute('data-reordering', 'true');
     expect(rows[0]).toHaveAttribute('data-allows-dragging', 'true');
     const handle = rows[0]?.querySelector('.ui-list-view-item__drag-handle');
     expect(handle).toHaveClass('ui-drag-handle');
@@ -494,7 +523,8 @@ describe('ListView', () => {
         {(item) => <ListViewItem title={item.name} />}
       </ListView>,
     );
-    expect(screen.getAllByRole('row')[0]).not.toHaveAttribute('data-allows-dragging');
+    expect(screen.getByRole('grid')).not.toHaveAttribute('data-reordering');
+    expect(screen.getAllByRole('row')[0]).not.toHaveAttribute('draggable');
     expect(document.querySelector('.ui-list-view-item__drag-handle')).toBeNull();
   });
 

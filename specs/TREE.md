@@ -216,6 +216,7 @@ Verification: `src/components/tree/tree-rename-eligibility.test.tsx`, `e2e/tree.
 | `data-expand-glyph`       | attribute | `chevron`, `plus-minus` | The expand button's glyphs.                                                   |
 | `data-wrap`               | state     | `true`                  | Labels may wrap.                                                              |
 | `data-virtualized`        | state     | `true`                  | Only the rows in view render.                                                 |
+| `data-reordering`         | state     | `true`                  | The tree reorders its rows now (`reorder` is set).                            |
 | `data-pending`            | state     | `true`                  | Items are loading.                                                            |
 | `data-current`            | state     | `true`                  | The current row.                                                              |
 | `data-indeterminate`      | state     | `true`                  | A row that is not selected while some of its descendants are.                 |
@@ -225,7 +226,7 @@ Verification: `src/components/tree/tree-rename-eligibility.test.tsx`, `e2e/tree.
 | `data-focused`            | state     | `true`                  | The tree, a row or a button has focus (React Aria).                           |
 | `data-focus-visible`      | state     | `true`                  | Keyboard focus (React Aria).                                                  |
 | `data-selection-mode`     | state     | `single`, `multiple`    | The selection mode (React Aria).                                              |
-| `data-allows-dragging`    | state     | `true`                  | The tree or row allows dragging (React Aria).                                 |
+| `data-allows-dragging`    | state     | `true`                  | React Aria's drag support, on the tree and rows: use `data-reordering`.       |
 | `data-drop-target`        | state     | `true`                  | The tree, a row or a drop indicator is the current drop target.               |
 | `data-expanded`           | state     | `true`                  | An expanded row (React Aria).                                                 |
 | `data-has-child-items`    | state     | `true`                  | A row with children (React Aria).                                             |

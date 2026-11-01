@@ -15,6 +15,7 @@ import { splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps, Key, Size, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
+import { useKeptCollectionAttributes } from '../../utils/use-kept-collection-attributes.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import type { ActionRowAction } from '../action-row/action-row.js';
 import { Pagination } from '../pagination/pagination.js';
@@ -183,12 +184,17 @@ function TableGridElement<T extends TableRow>({
 }) {
   const { ariaProps, view, reordering, onRowAction, body, structure } = grid;
   const header = createHeaderModel(grid, options);
-  const { dragAndDropHooks } = useDragAndDrop<T>(grid.dragAndDrop);
+  // React Aria keeps the hooks a table mounts with, so they stay and are disabled while it does
+  // not reorder: turning reordering or grouping on and off keeps the rows mounted.
+  const { dragAndDropHooks } = useDragAndDrop<T>({
+    ...grid.dragAndDrop,
+    isDisabled: reordering === null,
+  });
+  const gridRef = useKeptCollectionAttributes<HTMLTableElement>(ariaProps);
   return (
     <AriaTable
       {...ariaProps}
-      // React Aria keeps drag and drop hooks for a table's lifetime: remount when reorder toggles.
-      key={reordering ? 'reorder' : 'static'}
+      ref={gridRef}
       className={hooks.slotClass('grid')}
       // A static table's group row needs column tracks; a virtualized one places its cells itself.
       render={
@@ -205,7 +211,7 @@ function TableGridElement<T extends TableRow>({
         view.sort.onSortChange({ ...descriptor, column: fromCollectionKey(descriptor.column) })
       }
       onRowAction={onRowAction}
-      dragAndDropHooks={reordering ? dragAndDropHooks : undefined}
+      dragAndDropHooks={dragAndDropHooks}
     >
       <TableHeader structure={structure} model={header} />
       <TableBody {...body} />
@@ -248,7 +254,7 @@ export function Table<T extends TableRow>({
       {...hooks.root({
         className,
         props: dataAttributes,
-        data: { size, stickyHeader, virtualized },
+        data: { size, stickyHeader, virtualized, reordering: grid.reordering !== null },
       })}
       id={id}
       ref={ref}

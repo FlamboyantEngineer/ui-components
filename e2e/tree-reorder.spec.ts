@@ -26,6 +26,27 @@ test.describe('Tree reordering', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-TREE-REORDER-1.1 keeps the rows mounted when reordering turns off and on', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tree');
+    const area = page.locator('[data-lab-reorder="siblings"]');
+    const tree = area.getByRole('treegrid');
+    const lisbon = tree.getByRole('row', { name: 'Lisbon.pdf' });
+    // A mark on the row element survives only while the row stays mounted.
+    await lisbon.evaluate((row) => row.setAttribute('data-lab-mark', ''));
+    await expect(tree).toHaveAttribute('data-reordering', 'true');
+    await area.getByRole('button', { name: 'Arrange' }).click();
+    await expect(tree).not.toHaveAttribute('data-reordering');
+    await expect(lisbon).not.toHaveAttribute('draggable');
+    await expect(area.locator('.ui-tree__drag-handle')).toHaveCount(0);
+    await expect(lisbon).toHaveAttribute('data-lab-mark', '');
+    await area.getByRole('button', { name: 'Arrange' }).click();
+    await expect(lisbon).toHaveAttribute('draggable', 'true');
+    await expect(lisbon).toHaveAttribute('data-lab-mark', '');
+  });
+
   test('UIC-TREE-REORDER-1.2 moves a row by pointer drag and drop', async ({ page, lab }) => {
     await lab.open('tree');
     const tree = page.locator('[data-lab-reorder="siblings"]');

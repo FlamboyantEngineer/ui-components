@@ -8,6 +8,7 @@ import {
 } from '../../src/core/glyphs.js';
 import { useState, type CSSProperties } from 'react';
 import { Badge } from '../../src/components/badge/badge.js';
+import { Button } from '../../src/components/button/button.js';
 import { DropdownMenu } from '../../src/components/dropdown-menu/dropdown-menu.js';
 import {
   Board,
@@ -143,8 +144,12 @@ function MovingBoard() {
   const [items, setItems] = useState(tasks);
   const [order, setOrder] = useState(columns);
   const [output, setOutput] = useState('No move yet');
+  const [arranging, setArranging] = useState(true);
   return (
     <div style={frame} data-lab-demo="moves">
+      <Button size="sm" isSelected={arranging} onPress={() => setArranging(!arranging)}>
+        Arrange
+      </Button>
       <Board
         aria-label="Chores"
         columns={order}
@@ -152,10 +157,14 @@ function MovingBoard() {
         getColumn={getColumn}
         getTextValue={getTextValue}
         renderCard={renderCard}
-        onMove={(move) => {
-          setOutput(describeMove(move, items));
-          setItems(applyBoardMove(items, move, place));
-        }}
+        onMove={
+          arranging
+            ? (move) => {
+                setOutput(describeMove(move, items));
+                setItems(applyBoardMove(items, move, place));
+              }
+            : undefined
+        }
         onColumnMove={(move) => {
           setOutput(
             `Last column move: ${String(move.key)} ${move.position} ${String(move.targetKey)}`,
@@ -282,7 +291,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Moving cards and columns"
-      description="Drag cards within and between columns, or press Alt+Arrow keys on a card; drag a column header or press Alt+ArrowLeft and Alt+ArrowRight on its handle. Focus follows a moved item until you act elsewhere. Doing holds at most two cards. Every cell adds cards, and each column header ends with a menu that sorts or clears the column."
+      description="Drag cards within and between columns, or press Alt+Arrow keys on a card; drag a column header or press Alt+ArrowLeft and Alt+ArrowRight on its handle. Focus follows a moved item until you act elsewhere. Doing holds at most two cards. Every cell adds cards, and each column header ends with a menu that sorts or clears the column. Arrange turns card moves off and on; the cards stay as they are."
     >
       <MovingBoard />
     </LabSection>

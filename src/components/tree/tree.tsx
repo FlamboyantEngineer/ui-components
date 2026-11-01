@@ -10,6 +10,7 @@ import { useMemo } from 'react';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { useCarriedFocus } from '../../utils/use-carried-focus.js';
+import { useKeptCollectionAttributes } from '../../utils/use-kept-collection-attributes.js';
 import { TextMatchProvider } from '../text-match/text-match.js';
 import { TreeEmptyState } from './tree-item.js';
 import { createTreeAriaKeys } from './tree-aria-keys.js';
@@ -28,9 +29,6 @@ export type {
 export { useTreeLoads } from './use-tree-loads.js';
 export type { TreeLoads } from './use-tree-loads.js';
 
-/** The drag and drop options of a tree that does not reorder: neither draggable nor droppable. */
-const noDragAndDrop = {};
-
 /**
  * A hierarchy of rows built on React Aria's `Tree`: expand and collapse, selection with optional
  * checkboxes and propagation, keyboard navigation and typeahead, filtering, link rows, optional
@@ -38,8 +36,18 @@ const noDragAndDrop = {};
  * row, in-place renaming and opt-in reordering. Items are plain data; render callbacks draw them.
  */
 export function Tree<T extends TreeItemData>(props: TreeProps<T>) {
-  const { root, aria, state, items, expansion, selection, reordering, keys, ...model } =
-    useTreeModel(props);
+  const {
+    root,
+    aria,
+    state,
+    items,
+    expansion,
+    selection,
+    reordering,
+    dragAndDrop,
+    keys,
+    ...model
+  } = useTreeModel(props);
   const { isPending, emptyMessage, disabledKeys } = state;
   const ariaKeys = createTreeAriaKeys({
     selection: selection.props,
@@ -48,16 +56,18 @@ export function Tree<T extends TreeItemData>(props: TreeProps<T>) {
     onAction: aria.onAction,
   });
   const hasEmptyState = isPending || !isEmptyNode(emptyMessage);
-  const { dragAndDropHooks } = useDragAndDrop<T>(reordering?.dragAndDrop ?? noDragAndDrop);
-  // Turning virtualization or reordering on or off mounts React Aria's tree afresh.
-  const carried = useCarriedFocus<HTMLDivElement>(
-    `${String(root.rowHeight === null)} ${String(!!reordering)}`,
+  // React Aria keeps the hooks a tree mounts with, so they stay and are disabled while it does not
+  // reorder: turning reordering on and off keeps the rows mounted.
+  const { dragAndDropHooks } = useDragAndDrop<T>({ ...dragAndDrop, isDisabled: !reordering });
+  // Turning virtualization on or off mounts React Aria's tree afresh.
+  const carried = useCarriedFocus<HTMLDivElement>(String(root.rowHeight === null));
+  const described = useKeptCollectionAttributes<HTMLDivElement>(aria);
+  const ref = useMemo(
+    () => mergeRefs(carried, described, root.ref),
+    [carried, described, root.ref],
   );
-  const ref = useMemo(() => mergeRefs(carried, root.ref), [carried, root.ref]);
   const tree = (
     <AriaTree
-      // React Aria keeps drag and drop hooks for the tree's lifetime: remount when reordering toggles.
-      key={reordering ? 'reorderable' : 'fixed'}
       {...aria}
       {...ariaKeys}
       {...hooks.root({ className: root.className, props: aria, data: root.data })}
@@ -69,7 +79,7 @@ export function Tree<T extends TreeItemData>(props: TreeProps<T>) {
           ? () => <TreeEmptyState isPending={isPending} emptyMessage={emptyMessage} />
           : undefined
       }
-      dragAndDropHooks={reordering ? dragAndDropHooks : undefined}
+      dragAndDropHooks={dragAndDropHooks}
       render={(domProps) => (
         <div
           {...domProps}
