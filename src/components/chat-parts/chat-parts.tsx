@@ -1,5 +1,6 @@
 'use client';
 
+import { readOwn } from '../../utils/read-own.js';
 import type { ReactNode } from 'react';
 import type { BaseProps } from '../../core/props.js';
 import { ChatSteps } from '../chat-activity/chat-activity.js';
@@ -146,7 +147,7 @@ function StepsView({ item, isRunning, context }: StepsViewProps) {
       isRunning={isRunning}
       title={findStepsTitle(item.steps)}
       actions={summarizeSteps(item.steps)}
-      isExpanded={expansion.expanded[item.key] ?? (isCallingReader || undefined)}
+      isExpanded={readOwn(expansion.expanded, item.key) ?? (isCallingReader || undefined)}
       onExpandedChange={(isExpanded) => expansion.setExpanded(item.key, isExpanded)}
       expandsAutomatically={context.expandsActivity}
     >

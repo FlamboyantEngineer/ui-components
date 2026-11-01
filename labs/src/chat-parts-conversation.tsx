@@ -206,6 +206,19 @@ export function ToolRenderers() {
         onDeny={() => decideBooking('denied')}
       />
       <Button onPress={() => setBooking(bookingCall)}>Ask again</Button>
+      <ChatParts
+        parts={[
+          {
+            type: 'tool-call',
+            id: 'call-to-string',
+            name: 'toString',
+            label: 'Convert the notes to text',
+            status: 'succeeded',
+          },
+        ]}
+        messageId="renderer-own-key"
+        toolRenderers={{ get_weather: forecastRenderer }}
+      />
     </Stack>
   );
 }

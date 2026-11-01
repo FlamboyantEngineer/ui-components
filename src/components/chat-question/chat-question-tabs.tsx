@@ -13,6 +13,7 @@ import {
   type ChatQuestionItem,
   type QuestionDraft,
 } from './chat-question-model.js';
+import { readOwn } from '../../utils/read-own.js';
 
 interface QuestionTabsProps {
   questions: readonly ChatQuestionItem[];
@@ -55,7 +56,7 @@ export function QuestionTabs({
     >
       <TabList aria-label={strings.questionSteps} scrollButtons>
         {questions.map((item, index) => {
-          const isAnswered = isQuestionAnswered(item, drafts[item.id]);
+          const isAnswered = isQuestionAnswered(item, readOwn(drafts, item.id));
           return (
             <Tab
               key={item.id}

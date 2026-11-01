@@ -64,10 +64,10 @@ Verification: `src/components/chat-question/chat-question.test.tsx`, `src/compon
 
 ### UIC-CHAT-QUESTION-2.1 - Answers
 
-A question shall count as answered once it has an option chosen or Other chosen, and words whenever Other is chosen; a `none` question once it has words (text that is not only white space). The answer of a question is a `ChatQuestionAnswer`: its `questionId`, the chosen options' ids in `optionIds` in the order they are offered, and, when Other is chosen or the question is `none`, the trimmed words in `otherText`.
+A question shall count as answered once it has an option chosen or Other chosen, and words whenever Other is chosen; a `none` question once it has words (text that is not only white space). The answer of a question is a `ChatQuestionAnswer`: its `questionId`, the chosen options' ids in `optionIds` in the order they are offered, and, when Other is chosen or the question is `none`, the trimmed words in `otherText`. Question ids are the caller's own keys: any string, including one that names an `Object` member such as `constructor`, `__proto__` or `toString`, keeps its own draft and answer.
 
 Implementation: `src/components/chat-question/chat-question-model.ts`
-Verification: `src/components/chat-question/chat-question-model.test.ts`, `src/components/chat-question/chat-question.test.tsx`
+Verification: `src/components/chat-question/chat-question-model.test.ts`, `src/components/chat-question/chat-question.test.tsx`, `src/components/chat-parts/chat-part-own-keys.test.tsx`
 
 ### UIC-CHAT-QUESTION-2.2 - Submit
 

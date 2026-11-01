@@ -157,7 +157,10 @@ test.describe('Chat Parts lab', () => {
     const renderers = demo(page, 'tool-renderers');
     const forecast = renderers.locator('.ui-chat-tool-call [data-lab-forecast="porto"]');
     await expect(forecast).toContainText('Sunny, 24 °C');
-    await expect(renderers.locator('.ui-chat-tool-call')).toHaveCount(1);
+    await expect(renderers.locator('.ui-chat-tool-call')).toHaveCount(2);
+    await expect(
+      renderers.locator('.ui-chat-tool-call').filter({ hasText: 'Convert the notes to text' }),
+    ).toBeVisible();
     const booking = renderers.getByRole('region', { name: 'Train booking' });
     await booking.getByRole('button', { name: 'Book it' }).click();
     await expect(booking).toHaveAttribute('data-lab-booking', 'approved');

@@ -82,10 +82,10 @@ Verification: `src/components/chat-parts/chat-part-view.test.tsx`
 
 ### UIC-CHAT-PARTS-3.3 - Tool renderers
 
-`toolRenderers` shall map a tool's `name` to a `ChatToolRenderer` whose `render(call, handlers)` draws that tool's calls: in place of the card's body by default (the card keeps its title, status, error and approval), or in place of the whole card with `replaces: 'card'`. `handlers` holds the call's `onApprove`, `onDeny(reason?)` and `onAlwaysAllow`, bound to the call, each present only when `ChatParts` has the callback.
+`toolRenderers` shall map a tool's `name` to a `ChatToolRenderer` whose `render(call, handlers)` draws that tool's calls: in place of the card's body by default (the card keeps its title, status, error and approval), or in place of the whole card with `replaces: 'card'`. `handlers` holds the call's `onApprove`, `onDeny(reason?)` and `onAlwaysAllow`, bound to the call, each present only when `ChatParts` has the callback. Tool names, part ids and message ids are looked up as own keys, so a tool named after an `Object` member, such as `constructor`, `__proto__` or `toString`, uses only a renderer registered under that name and otherwise draws the standard card.
 
 Implementation: `src/components/chat-parts/chat-part-view.tsx`, `src/components/chat-parts/chat-parts.tsx`
-Verification: `src/components/chat-parts/chat-part-view.test.tsx`, `e2e/chat-parts.spec.ts`
+Verification: `src/components/chat-parts/chat-part-view.test.tsx`, `src/components/chat-parts/chat-part-own-keys.test.tsx`, `e2e/chat-parts.spec.ts`
 
 ### UIC-CHAT-PARTS-3.4 - Questions
 
