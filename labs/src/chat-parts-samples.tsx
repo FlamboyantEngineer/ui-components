@@ -72,6 +72,18 @@ export const referenceTokens: ChatTextToken[] = labRecords.map((record) =>
   }),
 );
 
+/** A reference inside a Markdown link: its chip shows without a link of its own. */
+export const linkedReferenceText = 'See [the plans for TRIP-4](https://example.com/plans) first.';
+
+export const linkedReferenceTokens: ChatTextToken[] = labRecords.slice(0, 1).map((record) =>
+  tokenOver(linkedReferenceText, record.label, {
+    kind: 'reference',
+    id: record.id,
+    label: record.label,
+    recordType: record.recordType,
+  }),
+);
+
 export const linesText =
   'Saturday: the river walk\nSunday: the market, then lunch\n\nBack by 18:00';
 

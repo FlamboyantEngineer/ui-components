@@ -11,6 +11,8 @@ import {
   partTypes,
   renderLabPart,
   searchCall,
+  linkedReferenceText,
+  linkedReferenceTokens,
   literalText,
   literalTokens,
   textTokens,
@@ -88,6 +90,7 @@ const textCases = {
   references: { text: referenceText, tokens: referenceTokens },
   lines: { text: linesText, tokens: undefined },
   literal: { text: literalText, tokens: literalTokens },
+  linked: { text: linkedReferenceText, tokens: linkedReferenceTokens },
 };
 
 mountLab(
@@ -114,11 +117,11 @@ mountLab(
     </LabSection>
     <LabSection
       title="Text and tokens"
-      description="Text renders as Markdown by default, or as written with its line breaks in plain format. Mention and command tokens show as pills in both; a token inside code stays as written. Record references show as record chips whose name, link and preview come from the host's getReference lookup by id, a missing and a restricted record among them. Text holding characters that look like the token markers keeps them as text: only real tokens become pills."
+      description="Text renders as Markdown by default, or as written with its line breaks in plain format. Mention and command tokens show as pills in both; a token inside code stays as written. Record references show as record chips whose name, link and preview come from the host's getReference lookup by id, a missing and a restricted record among them. Text holding characters that look like the token markers keeps them as text: only real tokens become pills. A record reference inside a Markdown link shows its chip without a link of its own, so links never nest."
     >
       <StateMatrix
         axes={{
-          content: ['tokens', 'references', 'lines', 'literal'],
+          content: ['tokens', 'references', 'lines', 'literal', 'linked'],
           format: ['markdown', 'plain'],
         }}
         render={({ content, format }) => (

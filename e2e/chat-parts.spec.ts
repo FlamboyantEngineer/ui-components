@@ -46,6 +46,14 @@ test.describe('Chat Parts lab', () => {
       await expect(chips.nth(2)).toHaveText('Missing item');
       await expect(chips.nth(3)).toHaveText('Restricted item');
     }
+    const linked = matrixCell(page, 'content=linked format=markdown');
+    const outer = linked.getByRole('link', { name: /^the plans for TRIP-4/ });
+    await expect(outer).toHaveAttribute('href', 'https://example.com/plans');
+    await expect(outer.locator('.ui-chat-parts__token[data-kind="reference"]')).toHaveCount(1);
+    await expect(outer.locator('a')).toHaveCount(0);
+    await expect(
+      matrixCell(page, 'content=linked format=plain').locator('.ui-chat-parts__token a'),
+    ).toHaveCount(1);
     await lab.expectAccessible('[data-lab-section="Text and tokens"]');
   });
 
