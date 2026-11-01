@@ -27,6 +27,7 @@ export {
   resetLocalTimeZone,
   setLocalTimeZone,
   startOfWeek,
+  Time,
   toCalendarDate,
   toCalendarDateTime,
   toZoned,

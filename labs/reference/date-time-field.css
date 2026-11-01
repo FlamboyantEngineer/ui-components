@@ -346,6 +346,85 @@
   text-decoration: none;
 }
 
+.ui-date-time-field__time-range {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.ui-date-time-field__time-columns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding-block: 8px;
+}
+
+.ui-date-time-field__time-label {
+  flex: 0 0 100%;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-date-time-field__calendar + .ui-date-time-field__time-columns,
+.ui-date-time-field__calendar + .ui-date-time-field__time-range {
+  margin-top: 8px;
+  border-top: 1px solid var(--ref-border);
+}
+
+.ui-date-time-field__time-column {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 48px;
+  height: 168px;
+  padding: 2px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius-sm);
+  outline: none;
+}
+
+.ui-date-time-field__time-column[data-focus-visible] {
+  outline: var(--ref-focus-ring);
+  outline-offset: 1px;
+}
+
+.ui-date-time-field__time-column[data-unit='dayPeriod'] {
+  width: max-content;
+  min-width: 48px;
+}
+
+.ui-date-time-field__time-option {
+  flex: none;
+  padding: 4px 6px;
+  border-radius: var(--ref-radius-sm);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  cursor: default;
+  outline: none;
+}
+
+.ui-date-time-field__time-option[data-hovered],
+.ui-date-time-field__time-option[data-focused] {
+  background: var(--ref-hover);
+}
+
+.ui-date-time-field__time-option[data-focus-visible] {
+  outline: var(--ref-focus-ring);
+  outline-offset: -2px;
+}
+
+.ui-date-time-field__time-option[data-selected] {
+  background: var(--ref-selected);
+}
+
+.ui-date-time-field__time-option[data-disabled] {
+  color: var(--ref-muted);
+  opacity: var(--ref-disabled-opacity);
+}
+
 .ui-date-time-field__actions {
   display: flex;
   justify-content: flex-end;

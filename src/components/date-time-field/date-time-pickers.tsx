@@ -49,6 +49,7 @@ import {
   type DateTimeFieldMode,
   type DateValueOptions,
 } from './date-values.js';
+import { DatePickerTime, DateRangePickerTime, TimePicker } from './date-time-time-picker.js';
 import { dateTimeFieldHooks as hooks } from './date-time-field-hooks.js';
 
 /** How the pickers edit and offer values, beyond the value itself. */
@@ -71,7 +72,7 @@ export interface DateControlSettings extends DateValueOptions {
 }
 
 /** What every picker of a date-time field receives. */
-interface DatePickerControlProps {
+export interface DatePickerControlProps {
   control: FieldControlProps;
   state: FieldState<DateFieldValue>;
   mode: DateTimeFieldMode;
@@ -224,6 +225,7 @@ export function DateControl(props: DatePickerControlProps) {
     <DatePicker<DateValue>
       {...useDatePickerProps(props)}
       {...useBoundValues(props)}
+      shouldCloseOnSelect={single === 'date'}
       placeholderValue={usePlaceholderValue(props)}
       value={value}
       onChange={(next) => onPick(next ? formatIsoDate(next, granularity) : null)}
@@ -240,6 +242,7 @@ export function DateControl(props: DatePickerControlProps) {
             heading={settings.calendarHeading}
           />
         </Calendar>
+        {single === 'date-time' ? <DatePickerTime {...props} /> : null}
       </CalendarPopover>
     </DatePicker>
   );
@@ -264,6 +267,7 @@ export function DateRangeControl(props: DatePickerControlProps) {
     <DateRangePicker<DateValue>
       {...useDatePickerProps(props)}
       {...useBoundValues(props)}
+      shouldCloseOnSelect={single === 'date'}
       placeholderValue={usePlaceholderValue(props)}
       value={value}
       onChange={(next) => {
@@ -289,12 +293,13 @@ export function DateRangeControl(props: DatePickerControlProps) {
             heading={settings.calendarHeading}
           />
         </RangeCalendar>
+        {single === 'date-time' ? <DateRangePickerTime {...props} /> : null}
       </CalendarPopover>
     </DateRangePicker>
   );
 }
 
-/** A time of day typed in segments, with no picker. */
+/** A time of day typed in segments, or picked from the time columns of the clock button's popover. */
 export function TimeControl(props: DatePickerControlProps) {
   const { state, bounds, settings, onPick } = props;
   const granularity = settings.granularity ?? 'minute';
@@ -317,6 +322,7 @@ export function TimeControl(props: DatePickerControlProps) {
         <DateDraftScope state={state} root={groupRoot}>
           <Segments />
         </DateDraftScope>
+        <TimePicker {...props} />
       </div>
     </TimeField>
   );
