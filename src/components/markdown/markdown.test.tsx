@@ -209,7 +209,9 @@ describe('Markdown', () => {
     expect(screen.getByRole('figure', { name: 'Chart' })).toHaveTextContent('pie');
     expect(screen.queryByRole('img')).not.toBeInTheDocument();
     expect(screen.getByTitle('Bold')).toHaveTextContent('kept');
-    expect(renderNode).toHaveBeenCalledWith(expect.objectContaining({ type: 'image' }), null);
+    expect(renderNode).toHaveBeenCalledWith(expect.objectContaining({ type: 'image' }), null, {
+      isInteractive: false,
+    });
   });
 
   it('UIC-MARKDOWN-2.9 renders a parsed document shared with an outline', () => {

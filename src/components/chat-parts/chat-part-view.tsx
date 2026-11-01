@@ -18,7 +18,8 @@ import type {
 } from './chat-part.js';
 import type { ChatPartsProps, ChatToolCallHandlers } from './chat-parts.js';
 import { chatPartsHooks as hooks } from './chat-parts-hooks.js';
-import { ChatTextPartView, type MarkdownNodeRenderer } from './chat-text-part.js';
+import type { MarkdownRenderNode } from '../markdown/markdown-place.js';
+import { ChatTextPartView } from './chat-text-part.js';
 import type { PartsExpansion } from './use-parts-expansion.js';
 import { readOwn } from '../../utils/read-own.js';
 
@@ -39,7 +40,7 @@ export interface PartContext extends Pick<
   | 'expandsActivity'
 > {
   textFormat: ChatTextFormat;
-  renderNode: MarkdownNodeRenderer;
+  renderNode: MarkdownRenderNode;
   /** The DOM id of a part: its id, prefixed by the message's. */
   toDomId: (id: string) => string;
   expansion: PartsExpansion;

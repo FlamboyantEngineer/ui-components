@@ -38,10 +38,10 @@ Verification: `src/components/chat-parts/chat-text-part.test.tsx`, `e2e/chat-par
 
 ### UIC-CHAT-PARTS-2.2 - Code blocks and citations
 
-The Markdown of every text part shall draw fenced and indented code as `CodeBlock` ([UIC-CODE-BLOCK-4.1](CODE-BLOCK.md#uic-code-block-41---code-block-override)) and `[n]` markers as `ChatCitation`s of the sources of the message's `sources` parts, taken in order across those parts ([UIC-CHAT-SOURCES-3.1](CHAT-SOURCES.md#uic-chat-sources-31---citation-override)). With `onApplyCode`, each fenced block shows Apply, which calls `onApplyCode` with the block's value and a code part made from the fence (`{ type: 'code', code, language }`). These overrides stay the same objects while the sources' content (each source compared field by field, with no serialisation) and the presence of `onApplyCode` stay the same, so a streaming message keeps its finished blocks ([UIC-MARKDOWN-2.12](MARKDOWN.md#uic-markdown-212---finished-blocks)), and Apply calls the latest `onApplyCode`.
+The Markdown of every text part shall draw fenced and indented code as `CodeBlock` ([UIC-CODE-BLOCK-4.1](CODE-BLOCK.md#uic-code-block-41---code-block-override)) and `[n]` markers as `ChatCitation`s of the sources of the message's `sources` parts, taken in order across those parts ([UIC-CHAT-SOURCES-3.1](CHAT-SOURCES.md#uic-chat-sources-31---citation-override)); a marker inside a link or a task label stays text, so no link or button nests in another. With `onApplyCode`, each fenced block shows Apply, which calls `onApplyCode` with the block's value and a code part made from the fence (`{ type: 'code', code, language }`). These overrides stay the same objects while the sources' content (each source compared field by field, with no serialisation) and the presence of `onApplyCode` stay the same, so a streaming message keeps its finished blocks ([UIC-MARKDOWN-2.12](MARKDOWN.md#uic-markdown-212---finished-blocks)), and Apply calls the latest `onApplyCode`.
 
 Implementation: `src/components/chat-parts/chat-text-part.tsx`
-Verification: `src/components/chat-parts/chat-text-part.test.tsx`, `e2e/chat-parts.spec.ts`
+Verification: `src/components/chat-parts/chat-text-part.test.tsx`, `src/components/chat-sources/markdown-citation-places.test.tsx`, `e2e/chat-parts.spec.ts`
 
 ### UIC-CHAT-PARTS-2.3 - Plain text
 

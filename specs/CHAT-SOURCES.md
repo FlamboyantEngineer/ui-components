@@ -59,10 +59,10 @@ Verification: `src/components/chat-sources/chat-citation.test.tsx`
 
 ### UIC-CHAT-SOURCES-3.1 - Citation override
 
-`createCitationOverride(sources)` shall return a `renderNode` for [Markdown](MARKDOWN.md) that splits each text node at its markers, `[n]` or `[n, m, …]` for several, whose every number is between 1 and the number of sources, and draws each number as a `ChatCitation` of `sources[n - 1]`, the text between them through [Text Match](TEXT-MATCH.md). A marker with a number outside that range stays text, as do markers in code, and other nodes keep their default rendering.
+`createCitationOverride(sources)` shall return a `renderNode` for [Markdown](MARKDOWN.md) that splits each text node at its markers, `[n]` or `[n, m, …]` for several, whose every number is between 1 and the number of sources, and draws each number as a `ChatCitation` of `sources[n - 1]`, the text between them through [Text Match](TEXT-MATCH.md). A marker with a number outside that range stays text, as do markers in code and markers inside a link or a task item's label (the `isInteractive` place [UIC-MARKDOWN-2.8](MARKDOWN.md#uic-markdown-28---node-overrides) reports), where a citation's link or button would nest in another interactive element; other nodes keep their default rendering. Server markup with such a marker therefore hydrates without a mismatch.
 
 Implementation: `src/components/chat-sources/markdown-citations.tsx`
-Verification: `src/components/chat-sources/markdown-citations.test.tsx`, `e2e/chat-sources.spec.ts`
+Verification: `src/components/chat-sources/markdown-citations.test.tsx`, `src/components/chat-sources/markdown-citation-places.test.tsx`, `e2e/chat-sources.spec.ts`
 
 ## Hooks
 

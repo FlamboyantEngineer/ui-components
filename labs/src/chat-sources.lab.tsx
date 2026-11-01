@@ -40,6 +40,10 @@ const answer = [
   '- Pack light layers [3] and **comfortable shoes** [1, 3].',
   '',
   'A marker without a source, such as [7], stays text, and so does `list[1]` in code.',
+  '',
+  'A marker inside a link, as in [the timetable [2]](https://example.com/timetable), stays text, so the link holds no other link.',
+  '',
+  '- [x] Booked the train [2]',
 ].join('\n');
 
 function AnswerDemo() {
@@ -84,7 +88,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Answer with citations"
-      description="createCitationOverride turns the [n] markers of a Markdown answer into citations of its sources, listed below it. Unknown numbers and code stay text."
+      description="createCitationOverride turns the [n] markers of a Markdown answer into citations of its sources, listed below it. Unknown numbers and code stay text, as do markers inside a link or a task label, where a citation's link or button cannot nest."
     >
       <AnswerDemo />
     </LabSection>

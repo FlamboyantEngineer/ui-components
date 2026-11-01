@@ -6,6 +6,7 @@ import { useStableArray } from '../../utils/use-stable-array.js';
 import { createCitationOverride } from '../chat-sources/chat-sources.js';
 import { createCodeBlockOverride } from '../code-block/code-block.js';
 import { Markdown, type MarkdownNode } from '../markdown/markdown.js';
+import type { MarkdownNodePlace, MarkdownRenderNode } from '../markdown/markdown-place.js';
 import { RecordLabel, type RecordLabelResolver } from '../record-label/record-label.js';
 import { TextMatch } from '../text-match/text-match.js';
 import type {
@@ -23,14 +24,11 @@ import {
   writeTokenSource,
 } from './chat-text-tokens.js';
 
-/** A Markdown `renderNode`. */
-export type MarkdownNodeRenderer = (node: MarkdownNode, children: ReactNode) => ReactNode;
-
 interface ChatTextPartViewProps {
   part: ChatTextPart;
   format: ChatTextFormat;
   /** The message's Markdown overrides, stable across renders. */
-  renderNode: MarkdownNodeRenderer;
+  renderNode: MarkdownRenderNode;
   /** How a record reference's chip shows its record. */
   getReference?: RecordLabelResolver | undefined;
 }
@@ -89,19 +87,20 @@ function createTokenOverride({
   getReference,
 }: {
   tokens: readonly ChatTextToken[];
-  renderNode: MarkdownNodeRenderer;
+  renderNode: MarkdownRenderNode;
   getReference: RecordLabelResolver | undefined;
-}): MarkdownNodeRenderer {
-  return (node, children) => {
-    if (node.type !== 'text') return renderNode(node, children);
+}): MarkdownRenderNode {
+  return (node, children, place) => {
+    if (node.type !== 'text') return renderNode(node, children, place);
     const pieces = splitTokenMarkers(node.text, tokens.length);
-    if (pieces.every((piece) => typeof piece === 'string')) return renderNode(node, children);
+    if (pieces.every((piece) => typeof piece === 'string'))
+      return renderNode(node, children, place);
     return pieces.map((piece, at) =>
       typeof piece === 'number' ? (
         <TokenPill key={at} token={requireDefined(tokens[piece])} getReference={getReference} />
       ) : (
         <Fragment key={at}>
-          {renderNode({ type: 'text', text: piece }, null) ?? <TextMatch>{piece}</TextMatch>}
+          {renderNode({ type: 'text', text: piece }, null, place) ?? <TextMatch>{piece}</TextMatch>}
         </Fragment>
       ),
     );
@@ -157,7 +156,7 @@ export function ChatTextPartView({
 export function usePartsRenderNode(
   parts: readonly ChatPart[],
   onApplyCode: ((code: string, part: ChatCodePart) => void) | undefined,
-): MarkdownNodeRenderer {
+): MarkdownRenderNode {
   const sources = useStableArray(
     parts.flatMap((part) => (part.type === 'sources' ? part.sources : [])),
   );
@@ -175,6 +174,7 @@ export function usePartsRenderNode(
         : undefined,
     });
     const cite = createCitationOverride(sources);
-    return (node: MarkdownNode) => code(node) ?? cite(node);
+    return (node: MarkdownNode, children: ReactNode, place: MarkdownNodePlace) =>
+      code(node) ?? cite(node, children, place);
   }, [sources, hasApply, latestApply]);
 }

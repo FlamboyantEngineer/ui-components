@@ -1,5 +1,6 @@
 export { Markdown } from './markdown.js';
 export type { MarkdownProps } from './markdown.js';
+export type { MarkdownNodePlace, MarkdownRenderNode } from './markdown-place.js';
 export { parseMarkdown } from './parse-markdown.js';
 export { listMarkdownHeadings } from './markdown-headings.js';
 export type {
