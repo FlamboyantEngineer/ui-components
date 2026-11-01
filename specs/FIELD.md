@@ -220,6 +220,13 @@ A control that shows something that has not become the value, such as a date typ
 Implementation: `src/components/field/field-state.ts`
 Verification: `src/components/field/field-state.test.tsx`, `src/components/form/form-validity.test.tsx`
 
+### UIC-FIELD-3.12 - Revealed before focus
+
+When its form moves focus to a field (a blocked submit, `validate()`, a blocker's or a problem's `focus()`, or the first `invalid` event of a blocked native submit), the field shall first call its scope's `reveal`, applying the updates it makes at once, so a container that hides the field (a collapsed disclosure, a filter) shows it before the control takes focus. A container that can hide its content gives the fields inside a scope through `useRevealScope`, whose `reveal` runs the enclosing scope's first.
+
+Implementation: `src/components/field/field-scope.ts`, `src/components/field/field-form.ts`, `src/components/form/form.tsx`
+Verification: `src/components/property-panel/property-section.test.tsx`
+
 ## UIC-FIELD-4 - Restore
 
 ### UIC-FIELD-4.1 - Restoring a field

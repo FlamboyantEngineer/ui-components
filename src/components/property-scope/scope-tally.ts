@@ -43,6 +43,8 @@ interface PropertyScopeValue {
   path: string;
   /** Records a part's tally under its key and returns the function that removes it. */
   report: (key: symbol, tally: PropertyTally) => () => void;
+  /** Lifts the query, so a field a filtered-out row holds can take focus. */
+  reveal: () => void;
 }
 
 interface PropertyScopeLevel {
@@ -65,6 +67,7 @@ export const PropertyScopeContext = createContext<PropertyScopeValue>({
   filter: undefined,
   path: '',
   report: () => () => undefined,
+  reveal: () => undefined,
 });
 
 function sumTallies(tallies: Iterable<PropertyTally>): PropertyTally {

@@ -35,6 +35,13 @@ interface ScopedExpansion {
   onExpandedChange: (isExpanded: boolean) => void;
 }
 
+/** A part's disclosure state, and the way to open it to reveal a field inside, query or not. */
+interface RevealableExpansion {
+  expansion: ScopedExpansion;
+  /** Opens the part unless it is open: its own state, or through `onExpandedChange` when controlled. */
+  reveal: () => void;
+}
+
 /**
  * Disclosure state for a part that follows its caller, its stored value or the user, and that a
  * query opens: while one is active the part shows `isExpandedWhileFiltering` and ignores presses,
@@ -47,18 +54,26 @@ export function useScopedExpansion({
   defaultExpanded,
   onExpandedChange,
   persistKey,
-}: ScopedExpansionOptions): ScopedExpansion {
+}: ScopedExpansionOptions): RevealableExpansion {
   const [ownExpanded, setOwnExpanded] = usePersistentState(
     isExpanded === undefined ? persistKey : undefined,
     defaultExpanded,
     { codec: booleanCodec },
   );
+  const change = (next: boolean) => {
+    setOwnExpanded(next);
+    onExpandedChange?.(next);
+  };
   return {
-    isExpanded: isFiltering ? isExpandedWhileFiltering : (isExpanded ?? ownExpanded),
-    onExpandedChange(next) {
-      if (isFiltering) return;
-      setOwnExpanded(next);
-      onExpandedChange?.(next);
+    expansion: {
+      isExpanded: isFiltering ? isExpandedWhileFiltering : (isExpanded ?? ownExpanded),
+      onExpandedChange(next) {
+        if (!isFiltering) change(next);
+      },
+    },
+    // The open state the part returns to once a query lifts.
+    reveal: () => {
+      if (!(isExpanded ?? ownExpanded)) change(true);
     },
   };
 }
@@ -74,7 +89,7 @@ export function useSectionExpansion({
   onExpandedChange,
   persistKey,
   ...options
-}: ScopedExpansionOptions & { id: Key | undefined }): ScopedExpansion {
+}: ScopedExpansionOptions & { id: Key | undefined }): RevealableExpansion {
   const group = useContext(DisclosureGroupStateContext);
   const generatedId = useId();
   const key = id ?? generatedId;

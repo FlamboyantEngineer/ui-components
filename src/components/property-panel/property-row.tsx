@@ -1,6 +1,7 @@
 'use client';
 
 import { useContext, useId, type ReactNode } from 'react';
+import { FieldScopeContext, useRevealScope } from '../field/field.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
@@ -119,6 +120,10 @@ export function PropertyRow({
     isOverridden,
     isPending: false,
   });
+  // A field in a row the query hides lifts the query before it takes focus.
+  const fieldScope = useRevealScope(() => {
+    if (!isMatch) scope.reveal();
+  });
   const generatedId = useId();
   const labelId = `${id ?? generatedId}-label`;
   const data = { overridden: isOverridden, required: isRequired, wide };
@@ -134,7 +139,7 @@ export function PropertyRow({
         ) : null}
       </RowLabel>
       <RowControl labelId={labelId} htmlFor={htmlFor} unit={unit} hint={hint}>
-        {children}
+        <FieldScopeContext value={fieldScope}>{children}</FieldScopeContext>
       </RowControl>
       {isEmptyNode(description) ? null : <div {...hooks.slot('description')}>{description}</div>}
       {isEmptyNode(actions) ? null : <div {...hooks.slot('actions')}>{actions}</div>}

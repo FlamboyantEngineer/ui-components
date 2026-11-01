@@ -10,6 +10,9 @@ import { useState, type ReactNode } from 'react';
 import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import { Switch } from '../../src/components/switch/switch.js';
+import { Form } from '../../src/components/form/form.js';
+import { TextField } from '../../src/components/text-field/text-field.js';
+import { PropertyFilter } from '../../src/components/property-filter/property-filter.js';
 import {
   PropertyCard,
   PropertyGroup,
@@ -229,6 +232,39 @@ function SwitchingPanel() {
   );
 }
 
+/** A form whose required field sits in a filtered row of a closed section; submitting reveals it. */
+function RevealingForm() {
+  const [sent, setSent] = useState(false);
+  return (
+    <div data-lab-revealing style={{ width: widths.wide }}>
+      <Form
+        aria-label="Page setup"
+        onSubmit={(event) => {
+          event.preventDefault();
+          setSent(true);
+        }}
+      >
+        <PropertyFilter aria-label="Page setup" defaultQuery="Copies">
+          <PropertySection title="Page" defaultExpanded={false}>
+            <PropertyRow label="Title">
+              <TextField label="Title" name="title" isRequired />
+            </PropertyRow>
+          </PropertySection>
+          <PropertySection title="Print">
+            <PropertyRow label="Copies">
+              <TextField label="Copies" name="copies" defaultValue="2" isRequired />
+            </PropertyRow>
+          </PropertySection>
+        </PropertyFilter>
+        <Button type="submit" size="sm">
+          Save
+        </Button>
+        <p data-lab-output>{sent ? 'Saved' : 'Not saved'}</p>
+      </Form>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -324,6 +360,12 @@ mountLab(
       description="The switch makes the panel open its sections one at a time, or hands them back their own state; a draft typed in Title survives both ways."
     >
       <SwitchingPanel />
+    </LabSection>
+    <LabSection
+      title="Revealing an invalid field"
+      description="Title is required but sits in a closed section the query hides; Save lifts the query, opens the section and focuses Title."
+    >
+      <RevealingForm />
     </LabSection>
     <LabSection
       title="Locked panels"

@@ -46,6 +46,13 @@ With `filter`, a row shall match while `filter(text, query)` returns true, where
 Implementation: `src/components/property-scope/property-scope.tsx`, `src/components/property-scope/scope-tally.ts`
 Verification: `src/components/property-scope/property-scope.test.tsx`, `e2e/property-scope.spec.ts`
 
+### UIC-PROPERTY-SCOPE-1.7 - Lifting the query
+
+When a field in a row the query hides is about to take focus ([UIC-PROPERTY-PANEL-2.8](PROPERTY-PANEL.md#uic-property-panel-28---revealing-a-field)), the scope shall lift the query: nothing filters and no text is marked until the query changes, and `onClear`, when given, is called so the host can empty its search box. [Property Filter](PROPERTY-FILTER.md) empties its own query.
+
+Implementation: `src/components/property-scope/property-scope.tsx`, `src/components/property-scope/scope-tally.ts`, `src/components/property-panel/property-row.tsx`
+Verification: `src/components/property-panel/property-section.test.tsx`
+
 ## Hooks
 
 | Hook                        | Kind | Values | Description                                     |

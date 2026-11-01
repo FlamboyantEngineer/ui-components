@@ -1,7 +1,8 @@
 'use client';
 
-import { useMemo, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
+import { useLatest } from '../../utils/use-latest.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
@@ -45,17 +46,32 @@ export function PropertyScope({
 }: PropertyScopeProps) {
   const strings = useUiStrings();
   const terms = useMemo(() => splitMatchTerms(query), [query]);
-  const isFiltering = filter ? query.trim() !== '' : terms.length > 0;
+  // A query lifted to reveal a field stays lifted until the query changes.
+  const [liftedQuery, setLiftedQuery] = useState<string | null>(null);
+  const isLifted = liftedQuery === query;
+  const isFiltering = !isLifted && (filter ? query.trim() !== '' : terms.length > 0);
   const { report, total } = usePropertyTallies();
+  const latestClear = useLatest(onClear);
   const value = useMemo(
-    () => ({ terms, isFiltering, query, filter, path: '', report }),
-    [terms, isFiltering, query, filter, report],
+    () => ({
+      terms,
+      isFiltering,
+      query,
+      filter,
+      path: '',
+      report,
+      reveal: () => {
+        setLiftedQuery(query);
+        latestClear.current?.();
+      },
+    }),
+    [terms, isFiltering, query, filter, report, latestClear],
   );
   const hasNoMatch = hasNoPropertyMatch(isFiltering, total);
 
   return (
     <div {...rest} {...hooks.root({ className })}>
-      <TextMatchProvider query={query}>
+      <TextMatchProvider query={isLifted ? '' : query}>
         <PropertyScopeContext value={value}>{children}</PropertyScopeContext>
       </TextMatchProvider>
       <div {...hooks.slot('status')} role="status">

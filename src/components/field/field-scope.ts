@@ -2,7 +2,8 @@
 
 // What an enclosing form or fieldset gives the fields inside it.
 
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useMemo } from 'react';
+import { useLatest } from '../../utils/use-latest.js';
 import type { FieldIssue, FieldValidation } from './field-validation.js';
 
 /**
@@ -56,6 +57,11 @@ export interface FieldScope {
   onIssuesChange?: (() => void) | undefined;
   /** Called after a registered field's realtime validation, or whether it is disabled, changes. */
   onValidityChange?: (() => void) | undefined;
+  /**
+   * Shows a field inside that an enclosing container hides, before it takes focus: opens the
+   * collapsed sections and cards around it and lifts a filter that hides it.
+   */
+  reveal?: (() => void) | undefined;
 }
 
 /** The scope of the nearest form or fieldset; empty outside both. */
@@ -72,4 +78,23 @@ export function useFieldScope(): FieldScope {
 export function useScopedDisabled(isDisabled: boolean | undefined): boolean {
   const scope = useFieldScope();
   return Boolean(isDisabled || scope.isDisabled);
+}
+
+/**
+ * The scope a container that can hide its content gives the fields inside: the enclosing scope,
+ * whose `reveal` also runs `reveal` here, after the containers around this one.
+ */
+export function useRevealScope(reveal: () => void): FieldScope {
+  const parent = useFieldScope();
+  const latest = useLatest(reveal);
+  return useMemo(
+    () => ({
+      ...parent,
+      reveal: () => {
+        parent.reveal?.();
+        latest.current();
+      },
+    }),
+    [parent, latest],
+  );
 }

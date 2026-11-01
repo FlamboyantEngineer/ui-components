@@ -4,6 +4,7 @@
 // a native reset.
 
 import { useEffect, useState } from 'react';
+import { flushSync } from 'react-dom';
 import type { SlotRegistry } from '../../utils/slot-registry.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { useStableArray } from '../../utils/use-stable-array.js';
@@ -118,8 +119,8 @@ export function useFieldFormBinding(
   slots: FieldSlots,
   label: string,
 ): void {
-  const { register, onIssuesChange, onValidityChange } = useFieldScope();
-  const latest = useLatest({ state, label });
+  const { register, onIssuesChange, onValidityChange, reveal } = useFieldScope();
+  const latest = useLatest({ state, label, reveal });
   const issues = useStableArray(
     state.issues.map(({ severity, message }) => ({ severity, message })),
   );
@@ -139,7 +140,12 @@ export function useFieldFormBinding(
       getElement: () => slots.read('root'),
       isBlocking: () => isFieldBlocking(latest.current.state),
       revealValidation: () => latest.current.state.revealValidation(),
-      focus: () => focusControl(slots.read('control')),
+      focus: () => {
+        // Opens what hides the field first, so the control can take focus.
+        const { reveal: show } = latest.current;
+        if (show) flushSync(show);
+        focusControl(slots.read('control'));
+      },
       getLabel: () => latest.current.label,
       getIssues: () => latest.current.state.issues,
       getRealtimeValidation: () => latest.current.state.realtimeValidation,

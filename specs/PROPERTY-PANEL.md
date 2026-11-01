@@ -90,6 +90,13 @@ A row with `isOverridden` (a value set here rather than inherited) shall publish
 Implementation: `src/components/property-panel/property-disclosure.tsx`, `src/components/property-panel/property-section.tsx`, `src/components/property-panel/property-card.tsx`, `src/components/property-panel/property-row.tsx`, `src/core/strings.ts`
 Verification: `src/components/property-panel/property-section.test.tsx`, `src/components/property-panel/property-card.test.tsx`
 
+### UIC-PROPERTY-PANEL-2.8 - Revealing a field
+
+Before a [Form](FORM.md) moves focus to a field inside a property panel (a blocked submit, `validate()`, a blocker's or a problem's `focus()`), the containers that hide it shall show it, through the field scope's `reveal` ([UIC-FIELD-3.12](FIELD.md#uic-field-312---revealed-before-focus)): each collapsed section or card around it opens, outermost first, and a row the query hides lifts the query ([UIC-PROPERTY-SCOPE-1.7](PROPERTY-SCOPE.md#uic-property-scope-17---lifting-the-query)). An uncontrolled section or card opens itself and reports it through `onExpandedChange`; a controlled one asks its owner through `onExpandedChange(true)`, and one the panel opens asks the panel, which reports the new keys. A field that is already visible opens nothing. The fields keep their values and validation whether hidden or shown, and a section hidden by its own `hidden` stays hidden.
+
+Implementation: `src/components/property-panel/property-disclosure.tsx`, `src/components/property-panel/property-section.tsx`, `src/components/property-panel/property-card.tsx`, `src/components/property-panel/property-row.tsx`, `src/components/field/field-scope.ts`, `src/components/field/field-form.ts`
+Verification: `src/components/property-panel/property-section.test.tsx`, `e2e/property-panel.spec.ts`
+
 ## UIC-PROPERTY-PANEL-3 - Rows and groups
 
 ### UIC-PROPERTY-PANEL-3.1 - Row structure

@@ -8,6 +8,7 @@ import {
   DisclosurePanel,
   Heading,
 } from '../../primitives/index.js';
+import { FieldScopeContext, useRevealScope } from '../field/field.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
@@ -95,7 +96,7 @@ export function PropertySection({
     matches: hidden ? 0 : total.matches,
     isPending: !hidden && total.isPending,
   });
-  const expansion = useSectionExpansion({
+  const { expansion, reveal } = useSectionExpansion({
     id,
     isFiltering,
     isExpandedWhileFiltering: true,
@@ -104,6 +105,7 @@ export function PropertySection({
     onExpandedChange,
     persistKey,
   });
+  const fieldScope = useRevealScope(reveal);
   const glyph = useExpandGlyph(expansion.isExpanded);
   const shownCount = count ?? (total.count > 0 ? total.count : undefined);
 
@@ -137,7 +139,9 @@ export function PropertySection({
           {isEmptyNode(description) ? null : (
             <div {...hooks.slot('description')}>{description}</div>
           )}
-          <PropertyScopeContext value={level.value}>{children}</PropertyScopeContext>
+          <FieldScopeContext value={fieldScope}>
+            <PropertyScopeContext value={level.value}>{children}</PropertyScopeContext>
+          </FieldScopeContext>
         </DisclosurePanel>
       </Disclosure>
     </DisclosureGroupStateContext>

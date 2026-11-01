@@ -191,6 +191,30 @@ test.describe('Property Panel lab', () => {
     await lab.expectAccessible('[data-lab-switching]');
   });
 
+  test('UIC-PROPERTY-PANEL-2.8 reveals and focuses an invalid field that a query and a closed section hide', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('property-panel');
+    const form = page.locator('[data-lab-revealing]');
+    const title = form.getByRole('textbox', { name: /^Title/ });
+    await expect(title).toBeHidden();
+    await form.getByRole('button', { name: 'Save' }).click();
+    await expect(title).toBeVisible();
+    await expect(title).toBeFocused();
+    await expect(form.getByRole('searchbox')).toHaveValue('');
+    await expect(form.getByRole('button', { name: /^Page/ })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    await expect(form.locator('[data-lab-output]')).toHaveText('Not saved');
+    await title.fill('Report');
+    // Enter submits from the field; a click would land after its error leaves, moving the button.
+    await title.press('Enter');
+    await expect(form.locator('[data-lab-output]')).toHaveText('Saved');
+    await lab.expectAccessible('[data-lab-revealing]');
+  });
+
   test('UIC-PROPERTY-PANEL-1.5 locks every field of a disabled or read-only panel', async ({
     page,
     lab,

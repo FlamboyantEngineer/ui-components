@@ -10,6 +10,12 @@ import { Button } from '../button/button.js';
 import { PropertyCard } from './property-card.js';
 import { PropertyRow } from './property-row.js';
 import { PropertySection } from './property-section.js';
+import { PropertyGroup, PropertyPanel } from './property-panel.js';
+import { Form, useFormValidity } from '../form/form.js';
+import { TextField } from '../text-field/text-field.js';
+import { PropertyFilter } from '../property-filter/property-filter.js';
+import { PropertyScope } from '../property-scope/property-scope.js';
+import type { ReactNode } from 'react';
 
 function glyph(trigger: HTMLElement) {
   return trigger.querySelector('[data-glyph]')?.getAttribute('data-glyph');
@@ -253,5 +259,147 @@ describe('PropertySection', () => {
     );
     expect(root).not.toHaveAttribute('data-overridden');
     expect(screen.queryByRole('img')).not.toBeInTheDocument();
+  });
+});
+
+describe('UIC-PROPERTY-PANEL-2.8 UIC-PROPERTY-SCOPE-1.7 UIC-FIELD-3.12 reveals a field before focusing it', () => {
+  function Sizes({ hideIn }: { hideIn: 'none' | 'section' | 'card' }) {
+    const width = <TextField label="Width" name="width" isRequired />;
+    return (
+      <PropertySection title="Size" defaultExpanded={hideIn !== 'section'}>
+        <PropertyGroup heading="Box">
+          {hideIn === 'card' ? (
+            <PropertyCard name="Frame">
+              <PropertyRow label="Width">{width}</PropertyRow>
+            </PropertyCard>
+          ) : (
+            <PropertyRow label="Width">{width}</PropertyRow>
+          )}
+          <PropertyRow label="Height">
+            <TextField label="Height" name="height" defaultValue="2" isRequired />
+          </PropertyRow>
+        </PropertyGroup>
+      </PropertySection>
+    );
+  }
+  function Validate() {
+    const validity = useFormValidity();
+    return (
+      <button type="button" onClick={() => validity?.validate()}>
+        Check
+      </button>
+    );
+  }
+  function Settings({ children, onSubmit }: { children: ReactNode; onSubmit?: () => void }) {
+    return (
+      <Form
+        aria-label="Settings"
+        validationBehavior="aria"
+        onSubmit={(event) => {
+          event.preventDefault();
+          onSubmit?.();
+        }}
+      >
+        {children}
+        <Validate />
+        <button type="submit">Submit</button>
+      </Form>
+    );
+  }
+  const width = () => screen.getByRole('textbox', { name: /^Width/, hidden: true });
+  const expectRevealed = () => {
+    expect(width()).toHaveFocus();
+    expect(width().closest('[hidden]')).toBeNull();
+    expect(width().closest('[aria-hidden="true"]')).toBeNull();
+  };
+
+  it.each([
+    ['a filter', 'filter'],
+    ['a collapsed section', 'section'],
+    ['a collapsed card', 'card'],
+  ] as const)('opens %s on submit and on validate()', async (_, hideIn) => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    const panel = (
+      <PropertyFilter aria-label="Shape" defaultQuery={hideIn === 'filter' ? 'Height' : ''}>
+        <Sizes hideIn={hideIn === 'filter' ? 'none' : hideIn} />
+      </PropertyFilter>
+    );
+    const { unmount } = render(<Settings onSubmit={onSubmit}>{panel}</Settings>);
+    expect(width().closest('[hidden], [aria-hidden="true"]')).not.toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+    expectRevealed();
+    expect(onSubmit).not.toHaveBeenCalled();
+    if (hideIn === 'filter') {
+      expect(screen.getByRole('searchbox')).toHaveValue('');
+    } else {
+      const trigger = screen.getByRole('button', { name: hideIn === 'card' ? /^Frame/ : /^Size/ });
+      expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    }
+    await user.type(width(), '4');
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    unmount();
+
+    render(<Settings>{panel}</Settings>);
+    await user.click(screen.getByRole('button', { name: 'Check' }));
+    expectRevealed();
+  });
+
+  it('asks a controlled section and a host-owned query through their callbacks', async () => {
+    const user = userEvent.setup();
+    const onExpandedChange = vi.fn();
+    const onClear = vi.fn();
+    render(
+      <Settings>
+        <PropertyPanel aria-label="Shape">
+          <PropertyScope query="Height" onClear={onClear}>
+            <PropertySection title="Size" isExpanded={false} onExpandedChange={onExpandedChange}>
+              <PropertyRow label="Width">
+                <TextField label="Width" isRequired />
+              </PropertyRow>
+              <PropertyRow label="Height">
+                <TextField label="Height" isRequired />
+              </PropertyRow>
+            </PropertySection>
+          </PropertyScope>
+        </PropertyPanel>
+      </Settings>,
+    );
+    await user.click(screen.getByRole('button', { name: 'Check' }));
+    expect(onClear).toHaveBeenCalledTimes(1);
+    expect(onExpandedChange).toHaveBeenCalledWith(true);
+    // The owner keeps the section closed; the query stays lifted until it changes.
+    expect(screen.getByRole('button', { name: /^Size/ })).toHaveAttribute('aria-expanded', 'false');
+    expect(width().closest('.ui-property-row')).not.toHaveAttribute('hidden');
+  });
+
+  it('focuses the first blocker in document order and leaves visible fields alone', async () => {
+    const user = userEvent.setup();
+    render(
+      <Settings>
+        <PropertyPanel aria-label="Shape">
+          <PropertySection title="Visible">
+            <PropertyRow label="Name">
+              <TextField label="Name" isRequired />
+            </PropertyRow>
+          </PropertySection>
+          <PropertySection title="Closed" defaultExpanded={false}>
+            <PropertyRow label="Width">
+              <TextField label="Width" isRequired />
+            </PropertyRow>
+          </PropertySection>
+        </PropertyPanel>
+      </Settings>,
+    );
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+    expect(screen.getByRole('textbox', { name: /^Name/ })).toHaveFocus();
+    expect(screen.getByRole('button', { name: /^Closed/ })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+    await user.type(screen.getByRole('textbox', { name: /^Name/ }), 'Box');
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+    expectRevealed();
   });
 });

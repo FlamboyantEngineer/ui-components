@@ -7,6 +7,7 @@ import {
   DisclosureGroupStateContext,
   DisclosurePanel,
 } from '../../primitives/index.js';
+import { FieldScopeContext, useRevealScope } from '../field/field.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
@@ -76,13 +77,14 @@ export function PropertyCard({
     isOverridden: overridden,
     isPending: total.isPending,
   });
-  const expansion = useScopedExpansion({
+  const { expansion, reveal } = useScopedExpansion({
     isFiltering,
     isExpandedWhileFiltering: isMatch,
     isExpanded,
     defaultExpanded,
     onExpandedChange,
   });
+  const fieldScope = useRevealScope(reveal);
   const glyph = useExpandGlyph(expansion.isExpanded);
 
   return (
@@ -107,7 +109,9 @@ export function PropertyCard({
           {isEmptyNode(actions) ? null : <div {...hooks.slot('actions')}>{actions}</div>}
         </div>
         <DisclosurePanel className={hooks.slotClass('body')}>
-          <PropertyScopeContext value={level.value}>{children}</PropertyScopeContext>
+          <FieldScopeContext value={fieldScope}>
+            <PropertyScopeContext value={level.value}>{children}</PropertyScopeContext>
+          </FieldScopeContext>
         </DisclosurePanel>
       </Disclosure>
     </DisclosureGroupStateContext>
