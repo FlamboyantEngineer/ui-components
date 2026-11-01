@@ -178,6 +178,87 @@ describe('LineChart', () => {
     expect(document.activeElement).toHaveAccessibleName('Weekly, Mar 30, 2026: 2');
   });
 
+  it('UIC-CHART-6.4 keeps numeric table rows with every series hidden', async () => {
+    const user = userEvent.setup();
+    const sampled = [
+      {
+        id: 'a',
+        label: 'Alpha',
+        points: [
+          { x: 0, y: 1 },
+          { x: 100, y: 3 },
+        ],
+      },
+      {
+        id: 'b',
+        label: 'Blue',
+        points: [
+          { x: 0, y: 2 },
+          { x: 1, y: 4 },
+          { x: 100, y: 5 },
+        ],
+      },
+    ];
+    const rows = () =>
+      within(screen.getByRole('table'))
+        .getAllByRole('row')
+        .map((row) => row.textContent);
+    const expected = ['CategoryAlphaBlue', '012', '14', '10035'];
+    const { rerender } = render(
+      <LineChart
+        aria-label="Samples"
+        series={sampled}
+        defaultHiddenKeys={['a', 'b']}
+        defaultView="table"
+      />,
+    );
+    expect(rows()).toEqual(expected);
+    rerender(
+      <LineChart
+        aria-label="Samples"
+        series={sampled}
+        hiddenKeys={new Set(['a'])}
+        defaultView="table"
+      />,
+    );
+    expect(rows()).toEqual(expected);
+    // Hiding the last drawn series while the chart shows, then switching views, keeps the rows.
+    rerender(
+      <LineChart
+        aria-label="Samples"
+        series={sampled}
+        hiddenKeys={new Set(['a', 'b'])}
+        defaultView="table"
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Show as table' }));
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Show as table' }));
+    expect(rows()).toEqual(expected);
+  });
+
+  it('UIC-CHART-6.4 keeps date table rows with every series hidden', () => {
+    const { rerender } = render(
+      <LineChart aria-label="Defects" series={defects} timeZone="UTC" defaultView="table" />,
+    );
+    const rows = () =>
+      within(screen.getByRole('table'))
+        .getAllByRole('row')
+        .map((row) => row.textContent);
+    const shown = rows();
+    rerender(
+      <LineChart
+        aria-label="Defects"
+        series={defects}
+        timeZone="UTC"
+        defaultView="table"
+        hiddenKeys={new Set(defects.map((entry) => entry.id))}
+      />,
+    );
+    expect(rows()).toEqual(shown);
+    expect(shown.length).toBeGreaterThan(1);
+  });
+
   it('UIC-CHART-4.5 summarises the drawn values and marks a chart without any', () => {
     const { rerender } = render(<LineChart aria-label="Defects" series={defects} timeZone="UTC" />);
     expect(screen.getByRole('figure')).toHaveAccessibleDescription(
