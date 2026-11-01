@@ -227,5 +227,13 @@ mountLab(
         <MergeView aria-label="Shadow merge" base={base} ours={ours} theirs={theirs} />
       </ShadowRootApp>
     </LabSection>
+    <LabSection
+      title="Right to left"
+      description="In a right-to-left page the panes run from the right, and the current conflict is marked on the start edge of its lines. Step to the next conflict to mark it."
+    >
+      <div dir="rtl" data-lab-demo="rtl">
+        <MergeView aria-label="Right to left merge" base={base} ours={ours} theirs={theirs} />
+      </div>
+    </LabSection>
   </>,
 );

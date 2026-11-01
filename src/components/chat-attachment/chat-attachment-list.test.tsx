@@ -1,8 +1,9 @@
-import { act, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { ShadowHost, deepActive, inShadow } from '../../../test/shadow-fixtures.js';
 import { ChatAttachmentList, type ChatAttachmentData } from './chat-attachment.js';
 
 const attachments: ChatAttachmentData[] = [
@@ -146,6 +147,26 @@ describe('ChatAttachmentList', () => {
     await user.click(screen.getByRole('button', { name: 'Remove Menu.pdf' }));
     expect(screen.queryByRole('list')).not.toBeInTheDocument();
     await waitFor(() => expect(screen.getByRole('textbox', { name: 'Message' })).toHaveFocus());
+  });
+
+  it('UIC-CHAT-ATTACHMENT-2.4 moves the focus to the next attachment inside a shadow root', async () => {
+    render(
+      <ShadowHost name="composer">
+        <Composer initial={attachments.slice(0, 3)} keepList />
+      </ShadowHost>,
+    );
+    const remove = await waitFor(() =>
+      inShadow('composer').getByRole('button', { name: 'Remove Menu.pdf' }),
+    );
+    act(() => remove.focus());
+    // React Aria presses need its shadow DOM flag, off in unit tests (UIC-PORTAL-1.8).
+    // eslint-disable-next-line testing-library/prefer-user-event
+    fireEvent.click(remove);
+    await waitFor(() =>
+      expect(deepActive()).toBe(
+        inShadow('composer').getByRole('button', { name: 'Remove Tower.jpg' }),
+      ),
+    );
   });
 
   it('UIC-CHAT-ATTACHMENT-2.5 appends the caller class and forwards the id and data attributes', () => {

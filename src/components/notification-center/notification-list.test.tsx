@@ -1,9 +1,10 @@
 import { SuccessGlyph } from '../../core/glyphs.js';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { useState } from 'react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { ShadowHost, deepActive, inShadow } from '../../../test/shadow-fixtures.js';
 import { Section } from '../section-header/section-header.js';
 import { NotificationList, type NotificationItem } from './notification-list.js';
 
@@ -232,6 +233,24 @@ describe('NotificationList', () => {
     render(<Inbox filter="unread" />);
     await user.click(within(row('Jon Berg replied')).getByRole('button', { name: 'Mark as read' }));
     await waitFor(() => expect(screen.getByRole('radio', { name: /^Unread/ })).toHaveFocus());
+  });
+
+  it('UIC-NOTIFICATION-CENTER-1.4 moves focus to a neighbour when a focused row leaves a shadow root', async () => {
+    const listed = items.slice(2, 4);
+    const view = (shown: NotificationItem[]) => (
+      <ShadowHost name="inbox">
+        <NotificationList items={shown} getNow={getNow} onDismiss={() => {}} />
+      </ShadowHost>
+    );
+    const { rerender } = render(view(listed));
+    const dismissButtons = await waitFor(() =>
+      inShadow('inbox').getAllByRole('button', { name: 'Dismiss' }),
+    );
+    act(() => dismissButtons[0]?.focus());
+    rerender(view(listed.slice(1)));
+    await waitFor(() =>
+      expect(deepActive()).toBe(inShadow('inbox').getByRole('button', { name: 'Dismiss' })),
+    );
   });
 
   it('UIC-NOTIFICATION-CENTER-1.5 filters to unread notifications', async () => {

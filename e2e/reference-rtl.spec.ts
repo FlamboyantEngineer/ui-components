@@ -74,4 +74,26 @@ test.describe('reference stylesheet right to left', () => {
     await expect(connector).toHaveCSS('margin-left', '0px');
     await lab.expectAccessible('[data-lab-demo="rtl"]');
   });
+
+  test('UIC-LABS-3.1 marks duplicate mapping columns on the start edge and fades skeletons toward the end', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('mapping-table');
+    const duplicate = page
+      .locator(
+        '[data-lab-demo="rtl"] .ui-mapping-table__row[data-duplicate] > .ui-mapping-table__column',
+      )
+      .first();
+    await expect(duplicate).toHaveCSS('box-shadow', / -3px 0px 0px 0px inset$/);
+    await lab.expectAccessible('[data-lab-demo="rtl"]');
+
+    await lab.open('card');
+    const skeleton = page.locator('[data-lab-demo="rtl"] .ui-card__skeleton');
+    await expect(skeleton).toHaveCSS('mask-image', /^linear-gradient\(to left,/);
+
+    await lab.open('user-card');
+    const loading = page.locator('[data-lab-demo="rtl"] .ui-user-card__skeleton');
+    await expect(loading).toHaveCSS('mask-image', /^linear-gradient\(to left,/);
+  });
 });

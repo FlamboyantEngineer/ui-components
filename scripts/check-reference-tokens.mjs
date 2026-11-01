@@ -151,11 +151,14 @@ for (const declaration of declarations) {
       `${where(declaration)}: line height "${lineHeight}" in px outside a code view; use a unitless or rem line height`,
     );
   }
-  // Single-line inputs and option rows sit on the control scale, which grows with the root size.
+  // Single-line inputs and option rows sit on the control scale, which grows with the root size. A
+  // height built on a token (less a border) follows the scale; multi-line fields grow with content.
   if (
     /^(?:min-)?height$/.test(property) &&
     /\d+px/.test(value) &&
-    /(?:\binput|__search-input|__option|__editor)(?![\w-])[^\s>+~]*$/.test(selector)
+    !/var\(--ref-/.test(value) &&
+    !/\[data-multiline\]/.test(selector) &&
+    /(?:\binput|__(?:search-)?input|__option|__editor)(?![\w-])[^\s>+~]*$/.test(selector)
   ) {
     problems.push(
       `${where(declaration)}: ${property} "${value}" sizes an input or option row in px; use --ref-control-height-<size>`,

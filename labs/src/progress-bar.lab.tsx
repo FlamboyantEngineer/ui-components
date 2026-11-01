@@ -173,5 +173,14 @@ mountLab(
     <ProgressSegmentCases />
     <ProgressRingCases />
     <ProgressMeterCases />
+    <LabSection
+      title="Right to left"
+      description="In a right-to-left page the fill starts at the right edge, and the indeterminate fill travels left, with the reading."
+    >
+      <div dir="rtl" style={{ display: 'grid', gap: 12, width: 200 }} data-lab-demo="rtl">
+        <ProgressBar label="Uploading" value={40} showValueLabel />
+        <ProgressBar label="Uploading" isIndeterminate />
+      </div>
+    </LabSection>
   </>,
 );

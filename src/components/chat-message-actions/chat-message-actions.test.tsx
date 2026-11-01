@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { Modal } from '../modal/modal.js';
 import {
   ChatMessageActions,
   type ChatFeedback,
@@ -300,6 +301,26 @@ describe('ChatMessageActions', () => {
     await user.type(await screen.findByRole('searchbox'), 'otter');
     await user.click(await screen.findByRole('row', { name: 'Happy otter' }));
     expect(onReact).toHaveBeenLastCalledWith(':otter:');
+  });
+
+  it('UIC-CHAT-MESSAGE-ACTIONS-3.4 reacts from the picker inside an open Modal and leaves the Modal open', async () => {
+    const user = userEvent.setup();
+    const onReact = vi.fn();
+    const onOpenChange = vi.fn();
+    render(
+      <Modal title="Thread" isOpen onOpenChange={onOpenChange}>
+        <ChatMessageActions onReact={onReact} loadEmoji={loadEmoji} />
+      </Modal>,
+    );
+    await user.click(screen.getByRole('button', { name: 'Add reaction' }));
+    await screen.findByRole('dialog', { name: 'Emoji picker' });
+    await user.click(await screen.findByRole('row', { name: 'party popper' }));
+    expect(onReact).toHaveBeenCalledWith('🎉');
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: 'Emoji picker' })).not.toBeInTheDocument(),
+    );
+    expect(screen.getByRole('dialog', { name: 'Thread' })).toBeInTheDocument();
+    expect(onOpenChange).not.toHaveBeenCalled();
   });
 
   it('UIC-CHAT-MESSAGE-ACTIONS-3.3 deletes after the reader confirms', async () => {

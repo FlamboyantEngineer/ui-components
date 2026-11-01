@@ -1,12 +1,14 @@
 import { EditGlyph } from '../../core/glyphs.js';
-import { act, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { ShadowHost, deepActive, inShadow } from '../../../test/shadow-fixtures.js';
 import { Avatar } from '../avatar/avatar.js';
 import { Button } from '../button/button.js';
 import { Modal, ModalTrigger } from '../modal/modal.js';
+import { PortalHost } from '../portal/portal.js';
 import { UserCard } from '../user-card/user-card.js';
 import { UserCardTrigger } from './user-card-trigger.js';
 
@@ -287,6 +289,33 @@ describe('UserCardTrigger opening', () => {
     await advance(1000);
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(trigger).toHaveFocus();
+  });
+
+  it('UIC-USER-CARD-1.4 UIC-USER-CARD-TRIGGER-1.3 returns focus from a hover card action inside a shadow root', async () => {
+    const onAction = vi.fn();
+    render(
+      <ShadowHost name="people">
+        <PortalHost>
+          <UserCardTrigger
+            trigger="hover"
+            defaultOpen
+            card={<UserCard name="Maria Santos" actions={actions} onAction={onAction} />}
+          >
+            <Avatar name="Maria Santos" size="sm" />
+          </UserCardTrigger>
+        </PortalHost>
+      </ShadowHost>,
+    );
+    const message = await waitFor(() =>
+      inShadow('people').getByRole('button', { name: 'Message' }),
+    );
+    act(() => message.focus());
+    // React Aria presses need its shadow DOM flag, off in unit tests (UIC-PORTAL-1.8).
+    // eslint-disable-next-line testing-library/prefer-user-event
+    fireEvent.click(message);
+    expect(onAction).toHaveBeenCalledWith('message');
+    await waitFor(() => expect(inShadow('people').queryByRole('dialog')).not.toBeInTheDocument());
+    expect(deepActive()).toBe(inShadow('people').getByRole('button', { name: 'Maria Santos' }));
   });
 
   it('UIC-USER-CARD-TRIGGER-1.3 stays closed while disabled', async () => {

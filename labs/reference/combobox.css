@@ -267,7 +267,7 @@
 
 .ui-combobox:has(.ui-combobox__chips) .ui-combobox__input {
   flex-basis: 4rem;
-  min-height: 22px;
+  min-height: 1.375rem;
 }
 
 .ui-combobox__create {

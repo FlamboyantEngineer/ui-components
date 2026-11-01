@@ -101,5 +101,14 @@ mountLab(
     >
       <InModal />
     </LabSection>
+    <LabSection
+      title="Right to left"
+      description="In a right-to-left page the picture sits on the right and the loading skeleton fades toward the left, the end side."
+    >
+      <div dir="rtl" style={{ display: 'flex', gap: 16 }} data-lab-demo="rtl">
+        <UserCard name="Maria Santos" {...contentProps('details and actions')} />
+        <UserCard name="Maria Santos" {...contentProps('loading')} />
+      </div>
+    </LabSection>
   </>,
 );

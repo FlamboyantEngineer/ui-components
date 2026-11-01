@@ -139,9 +139,12 @@ function ModalOpening({
 }: ModalOpeningProps) {
   // The dialog has no element yet: the opener is focused in its portal container's document.
   const container = usePortalContainer();
-  const [opener] = useState(() =>
-    returnsToOpener ? getDeepActiveElement(getOwnerDocument(container)) : null,
-  );
+  const [opener] = useState(() => {
+    const active = getDeepActiveElement(getOwnerDocument(container));
+    // React Aria's own restoration cannot see an opener inside a shadow root.
+    const isShadowed = active !== null && active.getRootNode() !== active.ownerDocument;
+    return returnsToOpener || isShadowed ? active : null;
+  });
   useFocusReturn({ containerRef: dialogRef, finalFocus, fallback: opener });
   useExitComplete(onExitComplete);
   return null;

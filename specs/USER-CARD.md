@@ -27,10 +27,10 @@ Verification: `src/components/user-card/user-card.test.tsx`, `src/components/use
 
 ### UIC-USER-CARD-1.4 - Actions
 
-`actions` shall draw a `ui-user-card__actions` group holding one small `Button` per action, in order, in the `ui-user-card__action` slot, labelled by the action's `label` with its optional `icon` before it. Pressing an action shall call `onAction` once with the action's `id`. In a card that a `UserCardTrigger` opened, on press or on hover, the card closes first (reported through `onOpenChange`) and focus returns to the trigger when the card held it. A card rendered anywhere else closes nothing, not even an overlay it sits in, such as a modal. Without actions there is no group.
+`actions` shall draw a `ui-user-card__actions` group holding one small `Button` per action, in order, in the `ui-user-card__action` slot, labelled by the action's `label` with its optional `icon` before it. Pressing an action shall call `onAction` once with the action's `id`. In a card that a `UserCardTrigger` opened, on press or on hover, the card closes first (reported through `onOpenChange`) and focus returns to the trigger when the card held it, including when the trigger and card render inside a shadow root. A card rendered anywhere else closes nothing, not even an overlay it sits in, such as a modal. Without actions there is no group.
 
 Implementation: `src/components/user-card/user-card.tsx`
-Verification: `src/components/user-card/user-card.test.tsx`, `e2e/user-card.spec.ts`, `e2e/user-card-trigger.spec.ts`
+Verification: `src/components/user-card/user-card.test.tsx`, `src/components/user-card-trigger/user-card-trigger.test.tsx`, `e2e/user-card.spec.ts`, `e2e/user-card-trigger.spec.ts`
 
 ### UIC-USER-CARD-1.5 - Accessibility
 

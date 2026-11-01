@@ -92,7 +92,7 @@ Verification: `src/components/chat-attachment/chat-attachment-list.test.tsx`, `e
 
 ### UIC-CHAT-ATTACHMENT-2.4 - Focus after removal
 
-When the owner drops a removed attachment and the focus went with its remove button, focus shall move to the next attachment's remove button, else the previous one's, else to `finalFocus` (a ref or a function returning the element, such as the composer's input), also when the owner stops rendering the list with that removal.
+When the owner drops a removed attachment and the focus went with its remove button, focus shall move to the next attachment's remove button, else the previous one's, else to `finalFocus` (a ref or a function returning the element, such as the composer's input), also when the owner stops rendering the list with that removal and when the list renders inside a shadow root.
 
 Implementation: `src/components/chat-attachment/chat-attachment-list.tsx`, `src/components/chat-attachment/chat-attachment.tsx`, `src/utils/use-removal-focus.ts`
 Verification: `src/components/chat-attachment/chat-attachment-list.test.tsx`, `e2e/chat-attachment.spec.ts`

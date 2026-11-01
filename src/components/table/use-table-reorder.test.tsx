@@ -1,4 +1,4 @@
-import { createEvent, fireEvent, render, renderHook, screen } from '@testing-library/react';
+import { act, createEvent, fireEvent, render, renderHook, screen } from '@testing-library/react';
 import { type UserEvent, userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -203,6 +203,30 @@ describe('Table reordering', { timeout: 15_000 }, () => {
     await user.keyboard('{Alt>}{ArrowDown}{/Alt}{Alt>}{ArrowUp}{/Alt}');
     expect(onMove).not.toHaveBeenCalled();
     expect(note).toHaveFocus();
+  });
+
+  it("UIC-TABLE-5.3 leaves Alt+Arrow to the table's own cell editor in a reorderable table", async () => {
+    const user = userEvent.setup();
+    const onMove = vi.fn();
+    render(
+      <Table
+        aria-label="Tasks"
+        rows={tasks}
+        columns={[
+          { id: 'title', header: 'Title' },
+          { id: 'id', header: 'Code', allowsEditing: true },
+        ]}
+        reorder={{ onMove }}
+        onCellEdit={vi.fn()}
+      />,
+    );
+    act(() => screen.getByRole('gridcell', { name: 'dry' }).focus());
+    await user.keyboard('{F2}');
+    const editor = screen.getByRole('textbox', { name: 'Code' });
+    expect(editor).toHaveFocus();
+    await user.keyboard('{Alt>}{ArrowDown}{/Alt}{Alt>}{ArrowUp}{/Alt}');
+    expect(onMove).not.toHaveBeenCalled();
+    expect(editor).toHaveFocus();
   });
 
   it('UIC-TABLE-5.5 drags a row by its handle only', async () => {

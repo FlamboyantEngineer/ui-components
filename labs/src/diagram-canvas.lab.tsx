@@ -592,5 +592,20 @@ mountLab(
     >
       <Modules />
     </LabSection>
+    <LabSection
+      title="Right to left"
+      description="In a right-to-left page the outline's selected item is marked on its right edge, the start side."
+    >
+      <div dir="rtl" style={small} data-lab-demo="rtl">
+        <DiagramCanvas
+          aria-label="Sample, right to left"
+          nodes={sampleNodes}
+          edges={sampleEdges}
+          defaultSelectedKeys={['b']}
+          defaultView="outline"
+          showMinimap={false}
+        />
+      </div>
+    </LabSection>
   </>,
 );

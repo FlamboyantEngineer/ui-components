@@ -2,7 +2,7 @@ import { ModalConfirmationCases } from './modal-confirmation-cases.js';
 import { useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Modal, ModalTrigger, type ModalProps } from '../../src/components/modal/modal.js';
-import { Portal } from '../../src/components/portal/portal.js';
+import { Portal, PortalHost } from '../../src/components/portal/portal.js';
 import { Shortcut } from '../../src/components/shortcut/shortcut.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { ModalFocusCases } from './modal-focus-cases.js';
@@ -476,5 +476,22 @@ mountLab(
       </LabSection>
     </div>
     <ModalConfirmationCases />
+    <LabSection
+      title="Right to left"
+      description="In a right-to-left page the dialog's header puts the title on the right and the close button on the left, and the footer's actions run from the left."
+    >
+      <div dir="rtl" data-lab-demo="rtl">
+        <PortalHost>
+          <Opener
+            title="Choose a city"
+            showCloseButton
+            primaryAction={{ label: 'Apply' }}
+            secondaryAction={{ label: 'Discard', onPress: (close) => close() }}
+          >
+            Lisbon, Oslo or Kyoto.
+          </Opener>
+        </PortalHost>
+      </div>
+    </LabSection>
   </>,
 );

@@ -441,5 +441,15 @@ mountLab(
         </div>
       </ShadowRootApp>
     </LabSection>
+    <LabSection
+      title="Right to left"
+      description="In a right-to-left page the loading skeleton fades toward the left, the end side."
+    >
+      <div dir="rtl" style={{ width: 220 }} data-lab-demo="rtl">
+        <Card title="Lighthouse" isLoading footer="Updated today">
+          Open on weekends from April to October.
+        </Card>
+      </div>
+    </LabSection>
   </>,
 );

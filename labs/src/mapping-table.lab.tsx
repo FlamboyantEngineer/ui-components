@@ -118,5 +118,19 @@ mountLab(
         />
       </div>
     </LabSection>
+    <LabSection
+      title="Right to left"
+      description="In a right-to-left page a column whose target is chosen twice is marked on its right edge, the start side."
+    >
+      <div dir="rtl" style={column} data-lab-demo="rtl">
+        <MappingTable
+          aria-label="Mapping, right to left"
+          columns={columns}
+          targets={targets}
+          defaultValue={states.duplicate}
+          getSuggestion={suggestTarget}
+        />
+      </div>
+    </LabSection>
   </>,
 );

@@ -296,5 +296,17 @@ mountLab(
         <RedlineCompare aria-label="Shadow notes" oldBlocks={draftNotes} newBlocks={finalNotes} />
       </ShadowRootApp>
     </LabSection>
+    <LabSection
+      title="Right to left"
+      description="In a right-to-left page the current change is marked on its right edge, the start side. Step to the next change to mark it."
+    >
+      <div dir="rtl" data-lab-demo="rtl">
+        <RedlineCompare
+          aria-label="Notes, right to left"
+          oldBlocks={draftNotes}
+          newBlocks={finalNotes}
+        />
+      </div>
+    </LabSection>
   </>,
 );

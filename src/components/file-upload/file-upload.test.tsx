@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { StrictMode, useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { ShadowHost, deepActive, inShadow } from '../../../test/shadow-fixtures.js';
 import { UiProvider } from '../../core/provider.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import {
@@ -458,6 +459,37 @@ describe('FileUpload', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'Remove a.txt' })).toHaveFocus());
     await user.keyboard('{Enter}');
     await waitFor(() => expect(screen.getByRole('button', { name: 'Attach' })).toHaveFocus());
+  });
+
+  it('UIC-FILE-UPLOAD-3.4 keeps keyboard focus in the upload inside a shadow root', async () => {
+    function Owner() {
+      const [listed, setListed] = useState(items.slice(0, 3));
+      return (
+        <FileUpload
+          label="Attach"
+          files={listed}
+          onSelect={() => {}}
+          onRemove={(id) => setListed((current) => current.filter((item) => item.id !== id))}
+        />
+      );
+    }
+    render(
+      <ShadowHost name="upload">
+        <Owner />
+      </ShadowHost>,
+    );
+    const remove = await waitFor(() =>
+      inShadow('upload').getByRole('button', { name: 'Remove Photo.png' }),
+    );
+    act(() => remove.focus());
+    // React Aria presses need its shadow DOM flag, off in unit tests (UIC-PORTAL-1.8).
+    // eslint-disable-next-line testing-library/prefer-user-event
+    fireEvent.click(remove);
+    await waitFor(() =>
+      expect(deepActive()).toBe(
+        inShadow('upload').getByRole('button', { name: 'Remove Notes.txt' }),
+      ),
+    );
   });
 
   it('UIC-FILE-UPLOAD-4.1 appends the caller class and forwards the id and data attributes', () => {

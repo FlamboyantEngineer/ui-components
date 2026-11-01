@@ -109,20 +109,24 @@ describe('reference token check', () => {
 .ui-card__title { line-height: 20px; }
 .ui-card__label { font: var(--ref-font-size-sm)/20px var(--ref-font); }
 .ui-card__search-input { height: 28px; }
-.ui-card__option { min-height: 28px; }`,
+.ui-card__option { min-height: 28px; }
+.ui-card__input { min-height: 22px; }`,
       },
       type,
     );
     expect(result.status).toBe(1);
     expect(result.stderr.match(/in px outside a code view/g)).toHaveLength(2);
-    expect(result.stderr.match(/sizes an input or option row in px/g)).toHaveLength(2);
+    expect(result.stderr.match(/sizes an input or option row in px/g)).toHaveLength(3);
+    expect(result.stderr).toContain('min-height "22px" sizes an input');
     const valid = check(
       {
         'card.css': `${common}
 .ui-card__title { line-height: 1.25rem; }
 .ui-card__code { line-height: 20px; font-family: var(--ref-mono); }
 .ui-card__search-input { height: var(--ref-control-height-md); }
-.ui-card__option { min-height: 1.75rem; }`,
+.ui-card__option { min-height: 1.75rem; }
+.ui-card__input { height: calc(var(--ref-control-height-md) - 2px); }
+.ui-card[data-multiline] .ui-card__input { min-height: 64px; }`,
       },
       type,
     );
