@@ -9,7 +9,7 @@ import {
   type FieldStateName,
 } from './field-states.js';
 
-interface Place {
+export interface Place {
   id: string;
   name: string;
   children?: Place[];
@@ -17,7 +17,7 @@ interface Place {
   isLazy?: boolean;
 }
 
-const places: Place[] = [
+export const places: Place[] = [
   {
     id: 'europe',
     name: 'Europe',
@@ -56,7 +56,7 @@ const places: Place[] = [
   },
 ];
 
-const getTextValue = (place: Place) => place.name;
+export const getTextValue = (place: Place) => place.name;
 const modes = ['single', 'multiple'] as const;
 const displays = ['label', 'path'] as const;
 

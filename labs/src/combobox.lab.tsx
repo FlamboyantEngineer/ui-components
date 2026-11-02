@@ -18,6 +18,8 @@ import {
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabForm, MountOnDemand } from './lab-form.js';
+import { LabOutput } from './lab-output.js';
 import { NarrowRows } from './combobox-narrow-cases.js';
 import { ShadowRootApp } from './shadow-root-host.js';
 
@@ -406,6 +408,98 @@ function RememberedChips() {
   );
 }
 
+const triggers = ['input', 'focus', 'manual'] as const;
+const emptyLists = ['shown', 'suppressed'] as const;
+
+/**
+ * One opening rule: when the list opens (`menuTrigger`) and whether a query that matches nothing
+ * still opens it to say so (`allowsEmptyCollection`). Each open change shows below.
+ */
+function OpeningRule({
+  trigger,
+  emptyList,
+}: {
+  trigger: (typeof triggers)[number];
+  emptyList: (typeof emptyLists)[number];
+}) {
+  const [changes, setChanges] = useState<string[]>([]);
+  return (
+    <>
+      <Combobox
+        label={`Fruit, ${trigger}, empty ${emptyList}`}
+        defaultItems={fruit}
+        menuTrigger={trigger}
+        allowsEmptyCollection={emptyList === 'shown'}
+        onOpenChange={(isOpen) =>
+          setChanges((list) => [...list.slice(-3), isOpen ? 'open' : 'closed'])
+        }
+      />
+      <LabOutput name={`Opened ${trigger} ${emptyList}`}>{changes.join(', ') || 'none'}</LabOutput>
+    </>
+  );
+}
+
+/** A list open from its first render, uncontrolled: the reader closes it like any other. */
+function InitiallyOpen() {
+  const [changes, setChanges] = useState<string[]>([]);
+  return (
+    <MountOnDemand label="an initially open combobox">
+      <Combobox
+        label="Fruit, open at first"
+        defaultItems={fruit}
+        defaultOpen
+        onOpenChange={(isOpen) => setChanges((list) => [...list, isOpen ? 'open' : 'closed'])}
+      />
+      <LabOutput name="Opened at first">{changes.join(', ') || 'none'}</LabOutput>
+    </MountOnDemand>
+  );
+}
+
+/** Earlier search results the current suggestions no longer list, named by the caller. */
+const archivedTypes: ComboboxOption[] = [
+  { id: 'ledger', label: 'Ledger', icon: FileGlyph },
+  { id: 'archive', label: 'Archive', icon: FolderGlyph },
+];
+
+/**
+ * Chosen ids the suggestions do not list: `knownOptions` names them, with their icons, in the
+ * input and the chips, without offering them as suggestions.
+ */
+function KnownOptions() {
+  const [single, setSingle] = useState<Key | null>('ledger');
+  const [several, setSeveral] = useState<Key[]>(['ledger', 'archive']);
+  return (
+    <div data-lab-demo="known-options">
+      <Combobox
+        label="Saved type"
+        items={fileTypes}
+        knownOptions={archivedTypes}
+        value={single}
+        onChange={setSingle}
+      />
+      <Combobox
+        label="Saved types"
+        selectionMode="multiple"
+        items={fileTypes}
+        knownOptions={archivedTypes}
+        value={several}
+        onChange={setSeveral}
+      />
+      <LabOutput name="Known single">{single === null ? 'none' : String(single)}</LabOutput>
+      <LabOutput name="Known several">{several.map(String).join(', ') || 'none'}</LabOutput>
+    </div>
+  );
+}
+
+/** A required, named pick: the form submits the chosen id and refuses to submit without one. */
+function RequiredPick() {
+  return (
+    <LabForm label="Fruit order">
+      <Combobox label="Fruit to order" name="fruit" defaultItems={fruit} isRequired />
+    </LabForm>
+  );
+}
+
 /** The cities each chips case starts with: none, one, or enough to wrap in a narrow column. */
 const chipValues: Record<string, string[]> = {
   none: [],
@@ -570,6 +664,28 @@ mountLab(
       description="The list opens and closes from outside; the input can be focused through its ref."
     >
       <ControlledOpen />
+    </LabSection>
+    <LabSection
+      title="Opening rules"
+      description="Type a query that matches nothing, such as zz, in each: an input list opens as you type, a focus list opens as the input takes focus, and a manual list opens only from the button or Arrow Down, never from typing. A suppressed empty list stays closed instead of saying nothing matches. Each open change shows below its picker."
+    >
+      <StateMatrix
+        axes={{ empty: emptyLists, trigger: triggers }}
+        render={({ trigger, empty }) => <OpeningRule trigger={trigger} emptyList={empty} />}
+      />
+      <InitiallyOpen />
+    </LabSection>
+    <LabSection
+      title="Known options"
+      description="Ledger and Archive are chosen but missing from the suggestions: knownOptions names them, with their icons, in the input and the chips, and opening the lists offers only the current suggestions."
+    >
+      <KnownOptions />
+    </LabSection>
+    <LabSection
+      title="Required pick in a form"
+      description="Submit with nothing picked: the browser blocks it. Pick a fruit and submit: the form sends its id under fruit; Reset clears it."
+    >
+      <RequiredPick />
     </LabSection>
     <LabSection title="Chips with icons" description="Each chip leads with its option's icon.">
       <Combobox
