@@ -20,6 +20,7 @@ import { layoutTimeline } from './timeline-layout.js';
 import { collectGroupKeys, flattenTimelineRows, type TimelineRow } from './timeline-rows.js';
 import { TimelineTable } from './timeline-table.js';
 import type { TimelineItemMenu } from './timeline-item-menu.js';
+import type { TimelineRowColumnEntry } from './timeline-row-columns.js';
 
 export type {
   TimelineDependency,
@@ -32,6 +33,12 @@ export type {
 } from './timeline-geometry.js';
 export type { TimelineRow } from './timeline-rows.js';
 export type { TimelineItemMenu } from './timeline-item-menu.js';
+export type {
+  TimelineRowColumn,
+  TimelineRowColumnEntry,
+  TimelineRowColumnKind,
+  TimelineRowContext,
+} from './timeline-row-columns.js';
 
 /** `chart` draws the items on the time scale; `table` lists them in a table. */
 export type TimelineView = 'chart' | 'table';
@@ -75,6 +82,11 @@ export interface TimelineProps
   itemMenu?: TimelineItemMenu | undefined;
   /** Called with the key of the entry chosen in an item's menu, and that item. */
   onItemMenuAction?: ((key: Key, item: TimelineItem) => void) | undefined;
+  /**
+   * Properties shown beside each row's name in the chart, in this order: the built-in `duration`
+   * and `dependencies`, or the host's own columns. Defaults to none, the names alone.
+   */
+  rowColumns?: readonly TimelineRowColumnEntry[] | undefined;
 }
 
 type StoredSelection = ReadonlySet<Key> | 'all';
@@ -149,6 +161,15 @@ function useRowExpansion(props: ExpansionProps, rows: readonly TimelineRow[]) {
   return { expanded, change };
 }
 
+const noColumns: readonly TimelineRowColumnEntry[] = [];
+
+/** Each row's own items, in item order. */
+function groupByRow(items: readonly TimelineItem[]) {
+  const byRow = new Map<Key, TimelineItem[]>();
+  for (const item of items) byRow.set(item.rowId, [...(byRow.get(item.rowId) ?? []), item]);
+  return byRow;
+}
+
 /** How the chart selects, edits and expands, from the timeline's state and callbacks. */
 function toChartActions(
   selection: ReturnType<typeof useItemSelection>,
@@ -185,6 +206,7 @@ export function Timeline({
   onItemChange,
   itemMenu,
   onItemMenuAction,
+  rowColumns = noColumns,
   expandedKeys,
   defaultExpandedKeys,
   onExpandedChange,
@@ -245,6 +267,8 @@ export function Timeline({
           rowHeight={rowHeight}
           today={day}
           actions={actions}
+          rowColumns={rowColumns}
+          itemsByRow={groupByRow(items)}
         />
       ) : null}
     </div>

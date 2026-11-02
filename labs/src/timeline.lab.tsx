@@ -15,6 +15,7 @@ import { UiProvider } from '../../src/core/provider.js';
 import { requireDefined } from './require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { TaskEditingDemo } from './timeline-tasks.js';
+import { RowPropertiesDemo } from './timeline-row-properties.js';
 
 const today = '2026-03-11';
 
@@ -431,6 +432,12 @@ mountLab(
       description="Nested groups that collapse, a locked milestone, drag and keyboard editing (arrows move by the zoom unit, Shift and arrows change the end; with Control, Alt or Meta the arrows do nothing), multiple selection, and the table view of the same items. Dependencies name their predecessors even when those rows are hidden. Cancelling a drag discards its draft dates, and so does switching to the table or collapsing the bar's group while dragging. Select one at a time keeps only the first selected item shown as selected, and the next press starts from it. Postpone demolition moves Strip kitchen two weeks later, as another person's edit would: press it from the keyboard while dragging Strip kitchen and the drag is given up, so releasing it changes nothing."
     >
       <PlanDemo />
+    </LabSection>
+    <LabSection
+      title="Row properties"
+      description="Duration, Dependencies and a host Status column beside the row names, turned on and off and shown in that order. A row with one item shows its own values; Raised beds holds two items, so it shows their count rather than a misleading total; the Site work group and the empty Pond row show nothing; Open day is a milestone. Long names give way to the values with an ellipsis, and moving an item updates its row."
+    >
+      <RowPropertiesDemo />
     </LabSection>
     <LabSection
       title="Task menus and editor"

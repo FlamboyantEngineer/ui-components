@@ -21,6 +21,11 @@ import { TimelineItemButton } from './timeline-item.js';
 import type { TimelineItemMenuOptions } from './timeline-item-menu.js';
 import type { TimelineLayout } from './timeline-layout.js';
 import type { VisibleRow } from './timeline-rows.js';
+import {
+  TimelineRowHeadings,
+  TimelineRowValues,
+  type TimelineRowColumnEntry,
+} from './timeline-row-columns.js';
 
 /** How the chart selects items, edits them and expands groups. */
 export interface TimelineChartActions {
@@ -43,21 +48,33 @@ interface TimelineChartProps {
   /** The day the today marker marks, or `null` for no marker. */
   today: string | null;
   actions: TimelineChartActions;
+  /** The row properties beside the row names, and each row's own items they read. */
+  rowColumns: readonly TimelineRowColumnEntry[];
+  itemsByRow: ReadonlyMap<Key, readonly TimelineItem[]>;
 }
 
-interface RowListProps {
+interface RowListProps extends Pick<TimelineChartProps, 'rowColumns' | 'itemsByRow'> {
   rows: readonly VisibleRow[];
+  layout: TimelineLayout;
   rowHeight: number;
   labelId: (index: number) => string;
   onExpandedChange: (id: Key, isExpanded: boolean) => void;
 }
 
 /** The row names at the start, pinned to the viewport's start while the chart scrolls sideways. */
-function TimelineRowList({ rows, rowHeight, labelId, onExpandedChange }: RowListProps) {
+function TimelineRowList({
+  rows,
+  layout,
+  rowHeight,
+  labelId,
+  onExpandedChange,
+  rowColumns,
+  itemsByRow,
+}: RowListProps) {
   const isRtl = useLocale().direction === 'rtl';
   return (
     <div
-      {...hooks.slot('list')}
+      {...hooks.slot('list', { columns: rowColumns.length > 0 })}
       style={{ position: 'sticky', ...toInlineStart(0, isRtl), zIndex: 1 }}
     >
       {rows.map(({ row, level, hasChildren, isExpanded }, index) => (
@@ -76,6 +93,11 @@ function TimelineRowList({ rows, rowHeight, labelId, onExpandedChange }: RowList
           <span {...hooks.slot('row-name')} id={labelId(index)}>
             {row.label}
           </span>
+          <TimelineRowValues
+            columns={rowColumns}
+            context={{ row, items: itemsByRow.get(row.id) ?? [], isGroup: hasChildren }}
+            predecessors={layout.predecessors}
+          />
         </div>
       ))}
     </div>
@@ -165,6 +187,8 @@ export function TimelineChart({
   rowHeight,
   today,
   actions,
+  rowColumns,
+  itemsByRow,
 }: TimelineChartProps) {
   const isRtl = useLocale().direction === 'rtl';
   const baseId = useId();
@@ -173,12 +197,17 @@ export function TimelineChart({
     <div {...hooks.slot('viewport')}>
       <div {...hooks.slot('canvas')} style={{ gridTemplateColumns: `auto ${axis.width}px` }}>
         <div
-          {...hooks.slot('corner')}
+          {...hooks.slot('corner', { columns: rowColumns.length > 0 })}
           style={{ position: 'sticky', top: 0, ...toInlineStart(0, isRtl), zIndex: 3 }}
-        />
+        >
+          <TimelineRowHeadings columns={rowColumns} />
+        </div>
         <TimelineHeader axis={axis} scale={scale} />
         <TimelineRowList
           rows={rows}
+          layout={layout}
+          rowColumns={rowColumns}
+          itemsByRow={itemsByRow}
           rowHeight={rowHeight}
           labelId={labelId}
           onExpandedChange={actions.onExpandedChange}
