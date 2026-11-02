@@ -43,6 +43,30 @@ const initialMessages: ChatMessageData[] = [
   },
 ];
 
+/** A message from before the conversation loaded, which Add an older message puts first. */
+const olderMessage: ChatMessageData = {
+  id: 'older-question',
+  authorId: readerId,
+  createdAt: '2026-04-19T18:00:00.000Z',
+  parts: [{ type: 'text', text: 'Earlier: do you have a slow cooker recipe?' }],
+};
+
+/** Another conversation, which Load the soup conversation replaces this one with. */
+const soupConversation: ChatMessageData[] = [
+  {
+    id: 'soup-question',
+    authorId: readerId,
+    createdAt: '2026-04-18T12:00:00.000Z',
+    parts: [{ type: 'text', text: 'Which soup keeps best for lunches?' }],
+  },
+  {
+    id: 'soup-answer',
+    authorId: helperId,
+    createdAt: '2026-04-18T12:00:04.000Z',
+    parts: [{ type: 'text', text: 'Lentil soup: it thickens overnight and reheats well.' }],
+  },
+];
+
 /** Uploads in a second, a quarter at a time; a file named `broken…` fails its first upload. */
 const failedOnce = new Set<string>();
 const fakeUpload: ChatUploadFunction = (file, { signal, onProgress }) =>
@@ -212,6 +236,28 @@ export function ChatControllerDemo() {
               </Button>
               <Button size="sm" onPress={() => chat.resetConversation()}>
                 Clear the conversation
+              </Button>
+              <Button
+                size="sm"
+                isDisabled={!chat.isPending}
+                onPress={() => chat.sendNow('Make it vegetarian')}
+              >
+                Send now: Make it vegetarian
+              </Button>
+              <Button
+                size="sm"
+                onPress={() =>
+                  chat.updateMessages((messages) =>
+                    messages.some((message) => message.id === olderMessage.id)
+                      ? messages
+                      : [olderMessage, ...messages],
+                  )
+                }
+              >
+                Add an older message
+              </Button>
+              <Button size="sm" onPress={() => chat.resetConversation(soupConversation)}>
+                Load the soup conversation
               </Button>
               <Button
                 size="sm"

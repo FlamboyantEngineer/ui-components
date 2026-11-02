@@ -162,3 +162,80 @@ test.describe('Chat Controller lab', () => {
     await expect(transcript(page).getByText('Queued question')).toHaveCount(0);
   });
 });
+
+test.describe('Chat Controller lab: conversation commands', () => {
+  const queue = (page: Page) => page.getByRole('list', { name: 'Queued messages' });
+  const attachFile = (page: Page, name: string) =>
+    demo(page)
+      .getByLabel('Attach files')
+      .setInputFiles({ name, mimeType: 'text/plain', buffer: Buffer.from('Beans, onion, cumin.') });
+  const fileChip = (page: Page, name: string) =>
+    demo(page).locator('.ui-chat-attachment').filter({ hasText: name });
+
+  test('UIC-CHAT-CONTROLLER-2.5 sends a message now, ahead of the queue, while a reply runs', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-controller');
+    await sendMessage(page, 'First question');
+    await expect(lastMessage(page)).toContainText('Soak');
+    await sendMessage(page, 'Queued question');
+    await expect(queue(page).getByRole('listitem')).toHaveCount(1);
+    await demo(page).getByRole('button', { name: 'Send now: Make it vegetarian' }).click();
+    await expect(transcript(page).getByText('Make it vegetarian')).toBeVisible();
+    await expect(queue(page).getByRole('listitem')).toHaveCount(1);
+    await expect(transcript(page).getByText('Queued question')).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByRole('list', { name: 'Sent prompts' }).getByRole('listitem')).toHaveText(
+      ['What can you cook with beans?', 'First question', 'Make it vegetarian', 'Queued question'],
+    );
+  });
+
+  test('UIC-CHAT-CONTROLLER-5.3 edits the conversation while a reply streams and keeps the queue and uploads', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-controller');
+    await sendMessage(page, 'First question');
+    await expect(lastMessage(page)).toContainText('Soak');
+    await sendMessage(page, 'Queued question');
+    await attachFile(page, 'pantry.txt');
+    await demo(page).getByRole('button', { name: 'Add an older message' }).click();
+    await expect(transcript(page).getByRole('article').first()).toContainText(
+      'Earlier: do you have a slow cooker recipe?',
+    );
+    await expect(demo(page).getByRole('button', { name: 'Stop' })).toBeEnabled();
+    await expect(queue(page).getByRole('listitem')).toHaveCount(1);
+    await expect(fileChip(page, 'pantry.txt')).toHaveAttribute('data-status', 'complete');
+    await expect(transcript(page).getByText('Queued question')).toBeVisible({ timeout: 20_000 });
+    await expect(
+      transcript(page)
+        .getByText(/season at the end/)
+        .first(),
+    ).toBeVisible();
+  });
+
+  test('UIC-CHAT-CONTROLLER-5.3 loads another conversation during a reply and an upload', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-controller');
+    await sendMessage(page, 'First question');
+    await expect(lastMessage(page)).toContainText('Soak');
+    await sendMessage(page, 'Queued question');
+    await attachFile(page, 'pantry.txt');
+    await expect(fileChip(page, 'pantry.txt')).toHaveAttribute('data-status', 'uploading');
+    await demo(page).getByRole('button', { name: 'Load the soup conversation' }).click();
+    await expect(transcript(page).getByRole('article')).toHaveCount(2);
+    await expect(transcript(page)).toContainText('Which soup keeps best for lunches?');
+    await expect(transcript(page)).toContainText('Lentil soup');
+    await expect(queue(page)).toHaveCount(0);
+    await expect(fileChip(page, 'pantry.txt')).toHaveCount(0);
+    await expect(demo(page).getByRole('button', { name: 'Stop' })).toBeDisabled();
+    await sendMessage(page, 'And for dinner?');
+    await expect(demo(page).getByRole('button', { name: 'Stop' })).toBeDisabled({
+      timeout: 20_000,
+    });
+    await expect(transcript(page).getByRole('article')).toHaveCount(4);
+    await expect(transcript(page).getByText('Queued question')).toHaveCount(0);
+  });
+});

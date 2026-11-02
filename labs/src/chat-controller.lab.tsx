@@ -41,7 +41,7 @@ mountLab(
   <>
     <LabSection
       title="Fake agent"
-      description="Pick a behaviour and send a message. Messages sent while a reply runs wait in the queue; approvals and questions answer through the cards, and Send the wrong kind of response (a decision for a question, answers for an approval) changes nothing; files named broken… fail their first upload. Streamed deltas reach the chat once per frame, however fast they arrive."
+      description="Pick a behaviour and send a message. Messages sent while a reply runs wait in the queue; approvals and questions answer through the cards, and Send the wrong kind of response (a decision for a question, answers for an approval) changes nothing; files named broken… fail their first upload. Send now stops the running reply and sends its message ahead of the queue, which follows once that reply ends. Add an older message edits the conversation through updateMessages while a reply streams, keeping the reply, the queue and the uploads. Load the soup conversation replaces it through resetConversation with another history, dropping the running reply, the queue and the files. Streamed deltas reach the chat once per frame, however fast they arrive."
     >
       <ChatControllerDemo />
     </LabSection>
