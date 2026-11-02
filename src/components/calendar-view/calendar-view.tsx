@@ -20,7 +20,7 @@ import { readEvents } from './calendar-layout.js';
 import { calendarViewHooks as hooks } from './calendar-view-hooks.js';
 import { useCalendarFormat } from './use-calendar-format.js';
 import { useCalendarGrid } from './use-calendar-grid.js';
-import type { CalendarEventChange } from './calendar-event-handles.js';
+import type { CalendarEventChange, CalendarEventDragMode } from './calendar-event-handles.js';
 import { useEventChanges } from './use-event-changes.js';
 import type { CalendarEventMenuEntry } from './calendar-event-menu.js';
 
@@ -111,8 +111,14 @@ export interface CalendarViewProps extends BaseProps, RefProps<HTMLDivElement> {
     | ((event: CalendarViewEvent) => readonly CalendarEventMenuEntry[])
     | undefined;
   /**
-   * Whether the reader may make a change to an event: `edit` it in the editor, `move` it or
-   * `resize` it by its handles. Asked only while `onEventChange` is given, for events not marked
+   * What dragging an editable event does: `move` (the default) drags the event to move it, keeping
+   * its length, and its end edge to change its end; `resize` drags its start edge and its end edge
+   * to change each alone. No handle is drawn: the edges are invisible targets with their own focus.
+   */
+  eventDragMode?: CalendarEventDragMode | undefined;
+  /**
+   * Whether the reader may make a change to an event: `edit` it in the editor, `move` it, or
+   * `resize` it by its start or end edge. Asked only while `onEventChange` is given, for events not marked
    * `isReadOnly`. Defaults to allowing every change.
    */
   canChangeEvent?: ((event: CalendarViewEvent, change: CalendarEventChange) => boolean) | undefined;
@@ -228,6 +234,7 @@ export function CalendarView({
   onEventAction,
   onEventChange,
   canChangeEvent,
+  eventDragMode = 'move',
   eventMenu = defaultEventMenu,
   onEventMenuAction,
   renderDay,
@@ -258,7 +265,7 @@ export function CalendarView({
     <div {...root}>
       <CalendarContent
         {...{ events, mode, views: allowed, focused, today, maxEvents, onEventAction, renderDay }}
-        {...{ onEventChange, canChangeEvent, eventMenu, onEventMenuAction }}
+        {...{ onEventChange, canChangeEvent, eventMenu, onEventMenuAction, eventDragMode }}
         minEventMinutes={minEventMinutes}
         timeZone={zone}
         onFocusedChange={(next) => {
@@ -280,6 +287,7 @@ function CalendarContent(
       'onEventAction' | 'renderDay' | 'onEventChange' | 'onEventMenuAction' | 'canChangeEvent'
     > & {
       eventMenu: NonNullable<CalendarViewProps['eventMenu']>;
+      eventDragMode: CalendarEventDragMode;
       mode: CalendarViewMode;
       focused: string;
       /** Today in the calendar's zone; `null` until the clock may be read. */

@@ -137,71 +137,77 @@ Verification: `src/components/calendar-view/calendar-event-menu.test.tsx`, `src/
 
 ## UIC-CALENDAR-VIEW-6 - Moving and resizing events
 
-### UIC-CALENDAR-VIEW-6.1 - Handles
+### UIC-CALENDAR-VIEW-6.1 - Drag modes
 
-The reader may change an event while `onEventChange` is given, the event is not `isReadOnly`, and `canChangeEvent`, when given, allows the change (`edit`, `move` or `resize`); the editor (UIC-CALENDAR-VIEW-5) asks for `edit`. An event the reader may move or resize shall sit in a frame (`ui-calendar-view__event-frame`) that carries its place, holding a move handle (`ui-calendar-view__event-move`, the drag-handle glyph) before the event's button and a resize handle (`ui-calendar-view__event-resize`) after it, named by the provider's `moveEvent` and `resizeEvent` strings with the event's title. The move handle sits on the event's first part and the resize handle on its last, so an event drawn across weeks or days has one of each; a resize handle shows only on a bar across days or a block on the week's time grid, not on a timed event in a month cell, and no handle shows in a crowded day's `+n more` list. A handle is in the Tab sequence with its event, and pressing it neither opens the event nor changes it.
+The reader may change an event while `onEventChange` is given, the event is not `isReadOnly`, and `canChangeEvent`, when given, allows the change (`edit`, `move`, or `resize` for either end); the editor (UIC-CALENDAR-VIEW-5) asks for `edit`. `eventDragMode` chooses what dragging does, and no handle is drawn in either mode:
+
+- `move` (the default): the event's button itself drags to move the event (`data-movable`), and its end edge changes its end.
+- `resize`: its start edge changes its start and its end edge its end; the event itself does not move.
+
+| `ui-calendar-view__event-frame` | slot | | An event with start or end edges, and its edges. |
 
 Implementation: `src/components/calendar-view/calendar-event-handles.tsx`, `src/components/calendar-view/calendar-event.tsx`, `src/components/calendar-view/use-event-changes.ts`
 Verification: `src/components/calendar-view/calendar-event-handles.test.tsx`, `e2e/calendar-view-dragging.spec.ts`
 
 ### UIC-CALENDAR-VIEW-6.2 - Pointer drags
 
-Dragging a handle with the primary pointer shall follow the day under the pointer and, on the week's time grid, its minute, snapped to 15 minutes from where the drag began. A move shifts the whole event, every part of it, by those days and wall-clock minutes and keeps its elapsed length; a resize shifts its end only, never before its start day for an all-day event or 15 minutes after its start for a timed one. A bar moves and resizes by whole days. While dragging, the event's handle publishes `data-dragging` and a preview of the event where it would land is drawn (`ui-calendar-view__event` with `data-preview`, hidden from assistive technology). Releasing calls `onEventChange` once with the changed event and the event as it was, unless nothing changed. Escape, a cancelled or lost pointer, a change of the event by the host, or the handle leaving (as when the event stops being changeable) abandons the drag without calling it. Times are written in the form of the event's start (UIC-CALENDAR-VIEW-5.2), and a move keeps the wall-clock start across a change of the clocks.
+A press with the primary pointer becomes a drag once it travels 4 pixels; the drag then follows the day under the pointer and, on the week's time grid, its minute, snapped to 15 minutes from where it began. A move shifts the whole event, every part of it, by those days and wall-clock minutes and keeps its elapsed length; a start or end drag shifts that end only, never past the other: an all-day event keeps at least its one day, a timed event 15 minutes, and an event without an end is given one when its start moves. A bar changes by whole days. While dragging, the dragged event or edge publishes `data-dragging` and a preview of the event where it would land is drawn (`ui-calendar-view__event` with `data-preview`, hidden from assistive technology). Releasing calls `onEventChange` once with the changed event and the event as it was, unless nothing changed, and the release is not a click: it neither opens the editor nor calls `onEventAction`. A press that never became a drag is a click (UIC-CALENDAR-VIEW-2.2), and a secondary press opens the event's menu. Escape, a cancelled or lost pointer, a change of the event by the host, or the event or edge leaving (as when the event stops being changeable) abandons the drag without calling it. Times are written in the form of the event's start (UIC-CALENDAR-VIEW-5.2), and a move keeps the wall-clock start across a change of the clocks.
 
 Implementation: `src/components/calendar-view/calendar-event-handles.tsx`, `src/components/calendar-view/calendar-event-change.ts`
 Verification: `src/components/calendar-view/calendar-event-change.test.ts`, `e2e/calendar-view-dragging.spec.ts`
 
 ### UIC-CALENDAR-VIEW-6.3 - Keyboard
 
-On a focused handle ArrowLeft and ArrowRight shall shift the event (or its end) a day, mirrored right to left, and ArrowUp and ArrowDown 15 minutes on the week's time grid or a week on a bar, calling `onEventChange` for each step. The event's new start day becomes the focused day, and focus stays on the same handle of the event wherever it is drawn again.
+On a focused movable event (the `move` mode) or a focused edge, ArrowLeft and ArrowRight shall shift the event, or that end, a day, mirrored right to left, and ArrowUp and ArrowDown 15 minutes on the week's time grid or a week on a bar, calling `onEventChange` for each step. The event's new start day becomes the focused day, and focus stays on the same event or edge wherever it is drawn again. Edges show the focus ring while focused.
 
-Implementation: `src/components/calendar-view/calendar-event-handles.tsx`
+Implementation: `src/components/calendar-view/calendar-event-handles.tsx`, `src/components/calendar-view/calendar-event.tsx`
 Verification: `src/components/calendar-view/calendar-event-handles.test.tsx`, `e2e/calendar-view-dragging.spec.ts`
 
 ## Hooks
 
-| Hook                             | Kind      | Values                                            | Description                                           |
-| -------------------------------- | --------- | ------------------------------------------------- | ----------------------------------------------------- |
-| `ui-calendar-view`               | root      |                                                   | The calendar.                                         |
-| `ui-calendar-view__toolbar`      | slot      |                                                   | The navigation and view controls.                     |
-| `ui-calendar-view__today`        | slot      |                                                   | The Today button (also `ui-button`).                  |
-| `ui-calendar-view__previous`     | slot      |                                                   | The previous month or week button (also `ui-button`). |
-| `ui-calendar-view__next`         | slot      |                                                   | The next month or week button (also `ui-button`).     |
-| `ui-calendar-view__title`        | slot      |                                                   | The period on show.                                   |
-| `ui-calendar-view__views`        | slot      |                                                   | The choice of view (also `ui-segmented-choice`).      |
-| `ui-calendar-view__grid`         | slot      |                                                   | The grid of days (`role="grid"`).                     |
-| `ui-calendar-view__weekdays`     | slot      |                                                   | The row of column headers.                            |
-| `ui-calendar-view__weekday`      | slot      |                                                   | A column header.                                      |
-| `ui-calendar-view__week`         | slot      |                                                   | A row of days.                                        |
-| `ui-calendar-view__gutter`       | slot      |                                                   | The week view's leading column of labels.             |
-| `ui-calendar-view__hour`         | slot      |                                                   | An hour label of the time grid.                       |
-| `ui-calendar-view__day`          | slot      |                                                   | A day cell (`role="gridcell"`).                       |
-| `ui-calendar-view__day-number`   | slot      |                                                   | The day of the month.                                 |
-| `ui-calendar-view__day-content`  | slot      |                                                   | The caller's `renderDay` content.                     |
-| `ui-calendar-view__events`       | slot      |                                                   | A month cell's events.                                |
-| `ui-calendar-view__all-day`      | slot      |                                                   | A week day's bars, and the gutter's all-day label.    |
-| `ui-calendar-view__timed`        | slot      |                                                   | A week day's time grid, and the gutter's hours.       |
-| `ui-calendar-view__event`        | slot      |                                                   | An event button.                                      |
-| `ui-calendar-view__event-time`   | slot      |                                                   | An event's start time or time range.                  |
-| `ui-calendar-view__event-title`  | slot      |                                                   | An event's title.                                     |
-| `ui-calendar-view__spacer`       | slot      |                                                   | An empty or taken lane of a day.                      |
-| `ui-calendar-view__more`         | slot      |                                                   | A crowded day's `+n more` button (also `ui-button`).  |
-| `ui-calendar-view__more-list`    | slot      |                                                   | The events listed in the `+n more` popover.           |
-| `ui-calendar-view__editor`       | slot      |                                                   | The event editor (also `ui-modal`).                   |
-| `ui-calendar-view__event-frame`  | slot      |                                                   | A movable or resizable event and its handles.         |
-| `ui-calendar-view__event-move`   | slot      |                                                   | An event's move handle.                               |
-| `ui-calendar-view__event-resize` | slot      |                                                   | An event's resize handle.                             |
-| `data-view`                      | attribute | `month`, `week`                                   | The view on show.                                     |
-| `data-tone`                      | attribute | `neutral`, `info`, `success`, `warning`, `danger` | An event's emphasis.                                  |
-| `data-date`                      | state     |                                                   | A day cell's date, as `YYYY-MM-DD`.                   |
-| `data-today`                     | state     | `true`                                            | Today's cell, and in the week view its column header. |
-| `data-outside-month`             | state     | `true`                                            | A day of a neighbouring month in the month view.      |
-| `data-all-day`                   | state     | `true`                                            | An all-day event.                                     |
-| `data-continues-before`          | state     | `true`                                            | An event that started in an earlier week or day.      |
-| `data-continues-after`           | state     | `true`                                            | An event that goes on into a later week or day.       |
-| `data-preview`                   | state     | `true`                                            | Where a dragged event would land.                     |
-| `data-dragging`                  | state     | `true`                                            | A handle being dragged.                               |
-| `data-hovered`                   | state     | `true`                                            | Pointer over an event (React Aria).                   |
-| `data-pressed`                   | state     | `true`                                            | An event is pressed (React Aria).                     |
-| `data-focused`                   | state     | `true`                                            | An event has focus (React Aria).                      |
-| `data-focus-visible`             | state     | `true`                                            | An event has keyboard focus (React Aria).             |
+| Hook                            | Kind      | Values                                            | Description                                           |
+| ------------------------------- | --------- | ------------------------------------------------- | ----------------------------------------------------- |
+| `ui-calendar-view`              | root      |                                                   | The calendar.                                         |
+| `ui-calendar-view__toolbar`     | slot      |                                                   | The navigation and view controls.                     |
+| `ui-calendar-view__today`       | slot      |                                                   | The Today button (also `ui-button`).                  |
+| `ui-calendar-view__previous`    | slot      |                                                   | The previous month or week button (also `ui-button`). |
+| `ui-calendar-view__next`        | slot      |                                                   | The next month or week button (also `ui-button`).     |
+| `ui-calendar-view__title`       | slot      |                                                   | The period on show.                                   |
+| `ui-calendar-view__views`       | slot      |                                                   | The choice of view (also `ui-segmented-choice`).      |
+| `ui-calendar-view__grid`        | slot      |                                                   | The grid of days (`role="grid"`).                     |
+| `ui-calendar-view__weekdays`    | slot      |                                                   | The row of column headers.                            |
+| `ui-calendar-view__weekday`     | slot      |                                                   | A column header.                                      |
+| `ui-calendar-view__week`        | slot      |                                                   | A row of days.                                        |
+| `ui-calendar-view__gutter`      | slot      |                                                   | The week view's leading column of labels.             |
+| `ui-calendar-view__hour`        | slot      |                                                   | An hour label of the time grid.                       |
+| `ui-calendar-view__day`         | slot      |                                                   | A day cell (`role="gridcell"`).                       |
+| `ui-calendar-view__day-number`  | slot      |                                                   | The day of the month.                                 |
+| `ui-calendar-view__day-content` | slot      |                                                   | The caller's `renderDay` content.                     |
+| `ui-calendar-view__events`      | slot      |                                                   | A month cell's events.                                |
+| `ui-calendar-view__all-day`     | slot      |                                                   | A week day's bars, and the gutter's all-day label.    |
+| `ui-calendar-view__timed`       | slot      |                                                   | A week day's time grid, and the gutter's hours.       |
+| `ui-calendar-view__event`       | slot      |                                                   | An event button.                                      |
+| `ui-calendar-view__event-time`  | slot      |                                                   | An event's start time or time range.                  |
+| `ui-calendar-view__event-title` | slot      |                                                   | An event's title.                                     |
+| `ui-calendar-view__spacer`      | slot      |                                                   | An empty or taken lane of a day.                      |
+| `ui-calendar-view__more`        | slot      |                                                   | A crowded day's `+n more` button (also `ui-button`).  |
+| `ui-calendar-view__more-list`   | slot      |                                                   | The events listed in the `+n more` popover.           |
+| `ui-calendar-view__editor`      | slot      |                                                   | The event editor (also `ui-modal`).                   |
+| `ui-calendar-view__event-frame` | slot      |                                                   | An event with start or end edges, and its edges.      |
+| `ui-calendar-view__event-start` | slot      |                                                   | An event's start edge, an invisible drag target.      |
+| `ui-calendar-view__event-end`   | slot      |                                                   | An event's end edge, an invisible drag target.        |
+| `data-view`                     | attribute | `month`, `week`                                   | The view on show.                                     |
+| `data-tone`                     | attribute | `neutral`, `info`, `success`, `warning`, `danger` | An event's emphasis.                                  |
+| `data-date`                     | state     |                                                   | A day cell's date, as `YYYY-MM-DD`.                   |
+| `data-today`                    | state     | `true`                                            | Today's cell, and in the week view its column header. |
+| `data-outside-month`            | state     | `true`                                            | A day of a neighbouring month in the month view.      |
+| `data-all-day`                  | state     | `true`                                            | An all-day event.                                     |
+| `data-continues-before`         | state     | `true`                                            | An event that started in an earlier week or day.      |
+| `data-continues-after`          | state     | `true`                                            | An event that goes on into a later week or day.       |
+| `data-preview`                  | state     | `true`                                            | Where a dragged event would land.                     |
+| `data-dragging`                 | state     | `true`                                            | An event or edge being dragged.                       |
+| `data-movable`                  | state     | `true`                                            | An event that drags to move.                          |
+| `data-hovered`                  | state     | `true`                                            | Pointer over an event (React Aria).                   |
+| `data-pressed`                  | state     | `true`                                            | An event is pressed (React Aria).                     |
+| `data-focused`                  | state     | `true`                                            | An event has focus (React Aria).                      |
+| `data-focus-visible`            | state     | `true`                                            | An event has keyboard focus (React Aria).             |

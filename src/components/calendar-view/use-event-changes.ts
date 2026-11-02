@@ -1,11 +1,15 @@
 'use client';
 
 // A calendar's event changes: whether the host allows each, the event menus and editor, and the
-// move and resize handles (specs/CALENDAR-VIEW.md, UIC-CALENDAR-VIEW-5 and 6).
+// event drags (specs/CALENDAR-VIEW.md, UIC-CALENDAR-VIEW-5 and 6).
 
 import { useCallback, type RefObject } from 'react';
 import { useEventEditing } from './calendar-event-editor.js';
-import { useEventHandles, type CalendarEventChange } from './calendar-event-handles.js';
+import {
+  useEventHandles,
+  type CalendarEventChange,
+  type CalendarEventDragMode,
+} from './calendar-event-handles.js';
 import type { PlacedEvent } from './calendar-layout.js';
 import type { CalendarViewEvent, CalendarViewMode, CalendarViewProps } from './calendar-view.js';
 import { dayCellSelector } from './use-calendar-grid.js';
@@ -33,6 +37,7 @@ export function useEventChanges(
     'onEventChange' | 'canChangeEvent' | 'onEventMenuAction' | 'timeZone'
   > & {
     eventMenu: NonNullable<CalendarViewProps['eventMenu']>;
+    eventDragMode: CalendarEventDragMode;
     mode: CalendarViewMode;
     timeZone: string;
     onFocusedChange: (date: string) => void;
@@ -44,6 +49,7 @@ export function useEventChanges(
   const handles = useEventHandles({
     events: placed,
     mode,
+    dragMode: props.eventDragMode,
     timeZone,
     onEventChange: props.onEventChange,
     allows,
