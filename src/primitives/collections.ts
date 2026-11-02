@@ -36,9 +36,11 @@ export {
   TagGroup,
   TagList,
   Tree,
+  TreeHeader,
   TreeItem,
   TreeItemContent,
   TreeLoadMoreItem,
+  TreeSection,
   Virtualizer,
   WaterfallLayout,
 } from 'react-aria-components';

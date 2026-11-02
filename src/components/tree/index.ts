@@ -7,6 +7,7 @@ export type {
   TreeMarks,
   TreeNewMark,
   TreeProps,
+  TreeSectionData,
   TreeSelectedMark,
   TreeSize,
   TreeVariant,

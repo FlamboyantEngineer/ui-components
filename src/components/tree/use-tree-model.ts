@@ -5,7 +5,14 @@ import type { Key } from '../../core/props.js';
 import { readTreeChildren } from '../../utils/tree-reorder.js';
 import { walkTree } from '../../utils/walk-tree.js';
 import { useTreeItemRenderer } from './tree-item.js';
-import type { TreeItemData, TreeMarks, TreeProps, TreeSize } from './tree-props.js';
+import { toCollectionKey } from '../../utils/to-collection-key.js';
+import type {
+  TreeItemData,
+  TreeMarks,
+  TreeProps,
+  TreeSectionData,
+  TreeSize,
+} from './tree-props.js';
 import { useTreeExpansion } from './use-tree-expansion.js';
 import { useTreeFilter } from './use-tree-filter.js';
 import { useTreeKeyDown } from './use-tree-key-down.js';
@@ -35,6 +42,7 @@ function splitTreeProps<T extends TreeItemData>({
   items,
   getTextValue,
   getChildren = readTreeChildren,
+  getSection,
   hasChildItems,
   isItemPending,
   getHref,
@@ -92,7 +100,7 @@ function splitTreeProps<T extends TreeItemData>({
   const expansion = { expandedKeys, defaultExpandedKeys, onExpandedChange, persistKey };
   const state = { items, isPending, emptyMessage, reorder, onItemKeyDown, disabledKeys };
   const selection = { selectionPropagation, selectedKeys, defaultSelectedKeys, onSelectionChange };
-  const features = { checkboxSelection, selection, filterText, filter, onLoadChildren };
+  const features = { checkboxSelection, selection, filterText, filter, onLoadChildren, getSection };
   const data = {
     size,
     variant,
@@ -101,14 +109,11 @@ function splitTreeProps<T extends TreeItemData>({
     wrap,
     pending: isPending,
     virtualized,
-    reordering: reorder !== undefined,
+    reordering: reorder !== undefined && !getSection,
+    sectioned: getSection !== undefined,
   };
-  const root = {
-    className,
-    ref,
-    data,
-    rowHeight: virtualized ? (rowHeight ?? virtualRowHeights[size]) : null,
-  };
+  const height = virtualized ? (rowHeight ?? virtualRowHeights[size]) : null;
+  const root = { className, ref, data, rowHeight: height };
   return { row, expansion, state, features, rename: { onRename, canRename }, root, aria };
 }
 
@@ -147,6 +152,36 @@ function useOwnerLoads<T extends TreeItemData>(
   return onLoadChildren ? loads : null;
 }
 
+/** A section of the tree as it draws it: its heading and its top-level items, in order. */
+export interface TreeShownSection<T> {
+  /** The collection key of the section, apart from every item key. */
+  id: string;
+  section: TreeSectionData;
+  items: readonly T[];
+}
+
+/** The top-level rows without a section, then each section with its rows in first-item order. */
+function groupSections<T extends TreeItemData>(
+  items: readonly T[],
+  getSection: (item: T) => TreeSectionData | undefined,
+): { loose: T[]; sections: TreeShownSection<T>[] } {
+  const loose: T[] = [];
+  const sections = new Map<string, { section: TreeSectionData; items: T[] }>();
+  for (const item of items) {
+    const section = getSection(item);
+    if (!section) {
+      loose.push(item);
+      continue;
+    }
+    // Item keys are URI-encoded, which never holds a colon.
+    const id = `section:${toCollectionKey(section.id)}`;
+    const group = sections.get(id) ?? { section, items: [] };
+    group.items.push(item);
+    sections.set(id, group);
+  }
+  return { loose, sections: [...sections].map(([id, group]) => ({ id, ...group })) };
+}
+
 /** Everything the tree draws from its props: the rows shown, their selection and their keys. */
 export function useTreeModel<T extends TreeItemData>(props: TreeProps<T>) {
   const { row, expansion: expansionOptions, state, features, ...parts } = splitTreeProps(props);
@@ -159,7 +194,8 @@ export function useTreeModel<T extends TreeItemData>(props: TreeProps<T>) {
     filter: features.filter,
     expansion: useTreeExpansion(expansionOptions),
   });
-  const { reorder } = state;
+  // A sectioned tree does not reorder (UIC-TREE-8.1).
+  const reorder = features.getSection ? undefined : state.reorder;
   const disabledKeys = useMemo(
     () => (state.disabledKeys ? new Set(state.disabledKeys) : undefined),
     [state.disabledKeys],
@@ -200,11 +236,17 @@ export function useTreeModel<T extends TreeItemData>(props: TreeProps<T>) {
     rename,
     loads,
   });
+  const { getSection } = features;
+  const shown = useMemo(
+    () => (getSection ? groupSections(items, getSection) : null),
+    [items, getSection],
+  );
   const dependencies = useMemo(() => [renderItem], [renderItem]);
   return {
     ...parts,
     state: { ...state, disabledKeys },
     items,
+    shown,
     expansion,
     selection,
     reordering,

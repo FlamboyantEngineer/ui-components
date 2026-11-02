@@ -201,11 +201,24 @@ The rename shall act on the row the owner draws now, found by its key among the 
 Implementation: `src/components/tree/use-tree-rename.tsx`, `src/components/tree/tree.tsx`, `src/components/tree/use-tree-model.ts`
 Verification: `src/components/tree/tree-rename-eligibility.test.tsx`, `e2e/tree.spec.ts`
 
+## UIC-TREE-8 - Category sections
+
+### UIC-TREE-8.1 - Sections under heading rows
+
+With `getSection`, the tree shall group its top-level items into category sections: each section is a React Aria row group named by its heading row (`aria-labelledby`), whose row header holds the section's `label`. Sections come in the order of their first item, each with its items in their order; top-level items without a section show first, outside any section. Section identities are their `id`s, so two sections with the same label stay apart, and a section with no shown items is not drawn. The heading row is a structural label: it takes no focus, selection, action, expansion or typeahead, has no `aria-level`, and does not change its items' depth, so their first level is still 1. Arrow keys, Home, End and typeahead run across the sections as across one list of rows, and selecting all selects the items of every section. The tree publishes `data-sectioned`.
+
+Filtering, expansion, selection, the current and disabled rows, loading and empty states, lazy children, wrapping, row metadata and actions work as in a tree without sections; a section whose items the filter hides is not drawn. A virtualized tree gives a heading row the row height. A sectioned tree does not reorder: `reorder` is ignored while `getSection` is set.
+
+Implementation: `src/components/tree/tree.tsx`, `src/components/tree/use-tree-model.ts`, `src/components/tree/tree-section.tsx`, `labs/reference/tree.css`
+Verification: `src/components/tree/tree-sections.test.tsx`, `e2e/tree-sections.spec.ts`
+
 ## Hooks
 
 | Hook                      | Kind      | Values                                      | Description                                                                    |
 | ------------------------- | --------- | ------------------------------------------- | ------------------------------------------------------------------------------ |
 | `ui-tree`                 | root      |                                             | The tree grid element.                                                         |
+| `ui-tree__section`        | slot      |                                             | A category section's row group (UIC-TREE-8.1).                                 |
+| `ui-tree__section-header` | slot      |                                             | A category section's heading row.                                              |
 | `ui-tree__item`           | slot      |                                             | A row.                                                                         |
 | `ui-tree__drag-handle`    | slot      |                                             | The row's drag handle, in a reorderable tree (also `ui-drag-handle`).          |
 | `ui-tree__expand`         | slot      |                                             | The expand button of a row with children.                                      |
@@ -231,6 +244,7 @@ Verification: `src/components/tree/tree-rename-eligibility.test.tsx`, `e2e/tree.
 | `data-wrap`               | state     | `true`                                      | Labels may wrap.                                                               |
 | `data-virtualized`        | state     | `true`                                      | Only the rows in view render.                                                  |
 | `data-reordering`         | state     | `true`                                      | The tree reorders its rows now (`reorder` is set).                             |
+| `data-sectioned`          | state     | `true`                                      | Top-level rows are grouped in category sections (`getSection` is set).         |
 | `data-pending`            | state     | `true`                                      | Items are loading.                                                             |
 | `data-current`            | state     | `true`                                      | The current row.                                                               |
 | `data-new`                | state     | `true`                                      | A row the owner marks as new.                                                  |

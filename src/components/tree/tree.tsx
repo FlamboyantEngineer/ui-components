@@ -16,6 +16,7 @@ import { useCarriedFocus } from '../../utils/use-carried-focus.js';
 import { useKeptCollectionAttributes } from '../../utils/use-kept-collection-attributes.js';
 import { TextMatchProvider } from '../text-match/text-match.js';
 import { TreeEmptyState } from './tree-item.js';
+import { useTreeChildren } from './tree-section.js';
 import { createTreeAriaKeys } from './tree-aria-keys.js';
 import { treeHooks as hooks } from './tree-hooks.js';
 import type { TreeItemData, TreeProps } from './tree-props.js';
@@ -29,6 +30,7 @@ export type {
   TreeMarks,
   TreeNewMark,
   TreeProps,
+  TreeSectionData,
   TreeSelectedMark,
   TreeSize,
   TreeVariant,
@@ -36,11 +38,14 @@ export type {
 export { useTreeLoads } from './use-tree-loads.js';
 export type { TreeLoads } from './use-tree-loads.js';
 
+/** A virtualized tree's row height, which its section heading rows take too. */
+const toLayoutOptions = (rowHeight: number) => ({ rowHeight, headingHeight: rowHeight });
+
 /**
  * A hierarchy of rows built on React Aria's `Tree`: expand and collapse, selection with optional
  * checkboxes and propagation, keyboard navigation and typeahead, filtering, link rows, optional
  * persisted expansion, children loaded on demand, loading and empty notices, an actions slot per
- * row, in-place renaming and opt-in reordering. Items are plain data; render callbacks draw them.
+ * row, in-place renaming, opt-in reordering and category sections under heading rows. Items are plain data; render callbacks draw them.
  */
 export function Tree<T extends TreeItemData>(props: TreeProps<T>) {
   const isBoundary = useContext(PrimaryActionKeysContext);
@@ -49,6 +54,7 @@ export function Tree<T extends TreeItemData>(props: TreeProps<T>) {
     aria,
     state,
     items,
+    shown,
     expansion,
     selection,
     reordering,
@@ -56,6 +62,7 @@ export function Tree<T extends TreeItemData>(props: TreeProps<T>) {
     keys,
     ...model
   } = useTreeModel(props);
+  const children = useTreeChildren(shown, model.renderItem, model.dependencies);
   const { isPending, emptyMessage, disabledKeys } = state;
   const ariaKeys = createTreeAriaKeys({
     selection: selection.props,
@@ -80,7 +87,7 @@ export function Tree<T extends TreeItemData>(props: TreeProps<T>) {
       {...ariaKeys}
       {...hooks.root({ className: root.className, props: aria, data: root.data })}
       ref={ref}
-      items={items}
+      items={shown ? undefined : items}
       dependencies={model.dependencies}
       renderEmptyState={
         hasEmptyState
@@ -108,7 +115,7 @@ export function Tree<T extends TreeItemData>(props: TreeProps<T>) {
         />
       )}
     >
-      {model.renderItem}
+      {children}
     </AriaTree>
   );
   // Always drawn, so a filter starting or ending keeps the tree mounted; without one it passes through.
@@ -119,7 +126,7 @@ export function Tree<T extends TreeItemData>(props: TreeProps<T>) {
   );
   if (root.rowHeight === null) return matched;
   return (
-    <Virtualizer layout={ListLayout} layoutOptions={{ rowHeight: root.rowHeight }}>
+    <Virtualizer layout={ListLayout} layoutOptions={toLayoutOptions(root.rowHeight)}>
       {matched}
     </Virtualizer>
   );
