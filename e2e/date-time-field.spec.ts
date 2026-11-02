@@ -72,6 +72,52 @@ test.describe('Date Time Field lab', () => {
     );
   });
 
+  test('UIC-DATE-TIME-FIELD-2.1 leaves the page scrollable with the calendar open and closes on an outside press', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('date-time-field');
+    const arrival = field(page, 'scroll-page');
+    await arrival.scrollIntoViewIfNeeded();
+    const group = arrival.getByRole('group', { name: 'Arrival' });
+    await arrival.getByRole('button', { name: /Calendar/ }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    const gap = async () =>
+      Math.round(
+        requireDefined(await dialog.boundingBox()).y - requireDefined(await group.boundingBox()).y,
+      );
+    const offset = await gap();
+    const top = await page.evaluate(() => window.scrollY);
+    const box = requireDefined(await dialog.boundingBox());
+    await page.mouse.move(box.x + box.width + 40, box.y + 10);
+    await page.mouse.wheel(0, 120);
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(top);
+    await expect(dialog).toBeVisible();
+    await expect.poll(gap).toBe(offset);
+    // The calendar still picks after the scroll.
+    await dialog.getByRole('button', { name: /April 15, 2026/ }).click();
+    await expect(dialog).toBeHidden();
+    await expect(group.getByRole('spinbutton', { name: /^day/ })).toHaveText('15');
+
+    await arrival.getByRole('button', { name: /Calendar/ }).click();
+    await expect(dialog).toBeVisible();
+    await page.mouse.click(5, 5);
+    await expect(dialog).toBeHidden();
+
+    // A scroll of a box holding the field scrolls the box and closes the calendar.
+    const scrollBox = page.locator('[data-lab-scroll-box]');
+    await field(page, 'scroll-box')
+      .getByRole('button', { name: /Calendar/ })
+      .click();
+    await expect(dialog).toBeVisible();
+    const boxRect = requireDefined(await scrollBox.boundingBox());
+    await page.mouse.move(boxRect.x + boxRect.width - 20, boxRect.y + boxRect.height - 10);
+    await page.mouse.wheel(0, 60);
+    await expect.poll(() => scrollBox.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+    await expect(dialog).toBeHidden();
+  });
+
   test('UIC-DATE-TIME-FIELD-1.4 keeps a typed value outside the bounds uncommitted and refuses outside days', async ({
     page,
     lab,
