@@ -21,7 +21,8 @@ import {
  * else from the values in the rows.
  */
 export type TableColumnFilter =
-  { type: 'text' | 'number' | 'date' } | { type: 'set'; options?: readonly string[] | undefined };
+  | { type: 'text' | 'number' | 'date' }
+  | { type: 'set'; options?: readonly string[] | undefined };
 
 /** A range a `number` column filter keeps; either bound may be open. */
 export interface TableNumberRange {

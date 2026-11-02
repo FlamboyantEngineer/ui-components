@@ -36,6 +36,9 @@ export interface TableColumnHeaderState {
   /** Previews and keeps a static table's resize; a virtualized table's goes through React Aria. */
   onResize: (width: number) => void;
   onResizeEnd: (width: number) => void;
+  onResizeCancel: () => void;
+  /** Who keeps the widths; a resize begun for another owner is cancelled. */
+  widthsOwner: object;
   sortDirection: SortDirection | undefined;
   /** The column's place in a sort by several columns, from 1. */
   sortPriority: number | undefined;
@@ -109,6 +112,8 @@ function ColumnResize<T>({
       {...getColumnBounds(column)}
       onResize={state.onResize}
       onResizeEnd={state.onResizeEnd}
+      onResizeCancel={state.onResizeCancel}
+      owner={state.widthsOwner}
     />
   );
 }
