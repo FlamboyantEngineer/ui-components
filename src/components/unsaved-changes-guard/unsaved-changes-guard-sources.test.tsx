@@ -24,8 +24,25 @@ function deferred() {
   return { promise, resolve, reject };
 }
 
+/**
+ * An editor that its own Save or Discard, once finished, leaves clean; an action it is given later
+ * stands for newer work, so the editor is dirty again until that action runs.
+ */
 function Source(props: UnsavedChangesOptions) {
-  useUnsavedChanges(props);
+  const [finished, setFinished] = useState<unknown>(null);
+  const track = (action: UnsavedChangesOptions['onSave']) =>
+    action &&
+    (async () => {
+      await action();
+      setFinished(() => action);
+    });
+  const isDone = finished !== null && (finished === props.onSave || finished === props.onDiscard);
+  useUnsavedChanges({
+    ...props,
+    isDirty: Boolean(props.isDirty) && !isDone,
+    onSave: track(props.onSave),
+    onDiscard: track(props.onDiscard),
+  });
   return null;
 }
 
@@ -212,6 +229,52 @@ describe('UnsavedChangesGuard sources', () => {
     expect(await settled(result)).toBe('pending');
     expect(notesSave).not.toHaveBeenCalled();
     await waitFor(() => expect(actionNames()).toEqual(['Stay', 'Discard']));
+  });
+
+  it.each([
+    ['Save', 'onSave', false],
+    ['Discard', 'onDiscard', false],
+    ['Save', 'onSave', true],
+    ['Discard', 'onDiscard', true],
+  ] as const)(
+    'UIC-UNSAVED-CHANGES-GUARD-2.7 UIC-UNSAVED-CHANGES-GUARD-3.1 asks again when a source gets newer work while its own %s runs (%s, nested %s)',
+    async (choice, action, isNested) => {
+      const user = userEvent.setup();
+      const first = deferred();
+      const calls: string[] = [];
+      const { leave, update } = setup(
+        { Profile: { isDirty: true, [action]: () => first.promise } },
+        { isNested },
+      );
+      const result = leave();
+      await screen.findByRole('alertdialog');
+      await user.click(screen.getByRole('button', { name: choice }));
+      // Revision 2 arrives from elsewhere while revision 1 is being handled.
+      update({ Profile: { isDirty: true, [action]: () => void calls.push('revision 2') } });
+      await act(async () => first.resolve());
+      expect(await settled(result)).toBe('pending');
+      expect(screen.getByRole('alertdialog')).toBeVisible();
+      expect(listed()).toBe('Profile');
+      expect(calls).toEqual([]);
+      await user.click(screen.getByRole('button', { name: choice }));
+      await expect(result).resolves.toBe(true);
+      expect(calls).toEqual(['revision 2']);
+    },
+  );
+
+  it('UIC-UNSAVED-CHANGES-GUARD-2.7 leaves when an action covers the work, however often the source rerenders', async () => {
+    const user = userEvent.setup();
+    const first = deferred();
+    const onSave = () => first.promise;
+    const { leave, update } = setup({ Profile: { isDirty: true, onSave } });
+    const result = leave();
+    await screen.findByRole('alertdialog');
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    // The same work rendered again: the source's options change identity, not its action.
+    update({ Profile: { isDirty: true, onSave } });
+    update({ Profile: { isDirty: true, onSave } });
+    await act(async () => first.resolve());
+    await expect(result).resolves.toBe(true);
   });
 
   it.each([

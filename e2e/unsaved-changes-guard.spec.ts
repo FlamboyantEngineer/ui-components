@@ -160,17 +160,43 @@ test.describe('Unsaved Changes Guard lab', () => {
     await expect(demo.locator('[data-lab-answer]')).toHaveText('Left');
   });
 
+  test('UIC-UNSAVED-CHANGES-GUARD-2.7 asks again about newer work that arrived while Save ran', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('unsaved-changes-guard');
+    await page.clock.pauseAt(Date.now() + 10_000);
+    const demo = page.locator('[data-lab-demo="newer-work"]');
+    await demo.getByRole('button', { name: 'Leave the document' }).click();
+    const dialog = page.getByRole('alertdialog', { name: 'Unsaved changes' });
+    await expect(dialog).toContainText('Shared document, revision 1');
+    await dialog.getByRole('button', { name: 'Save' }).click();
+    await page.clock.runFor(2000);
+    await expect(demo.locator('[data-lab-answer]')).toHaveText('Not asked, saved revision 1');
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toContainText('Shared document, revision 2');
+    await dialog.getByRole('button', { name: 'Save' }).click();
+    await page.clock.runFor(300);
+    await expect(demo.locator('[data-lab-answer]')).toHaveText('Left, saved revision 2');
+    await expect(dialog).toBeHidden();
+  });
+
   test('UIC-UNSAVED-CHANGES-GUARD-2.6 closes the question a clean leave replaces', async ({
     page,
     lab,
   }) => {
     await page.clock.install();
     await lab.open('unsaved-changes-guard');
+    // A paused clock, so the second leave cannot ask before the save elsewhere has rendered.
+    await page.clock.pauseAt(Date.now() + 10_000);
     const demo = page.locator('[data-lab-demo="saved-elsewhere"]');
     await demo.getByRole('button', { name: 'Leave, then save elsewhere' }).click();
     const dialog = page.getByRole('alertdialog', { name: 'Unsaved changes' });
     await expect(dialog).toBeVisible();
     await page.clock.runFor(1000);
+    // The save elsewhere has rendered before the second leave asks.
+    await expect(dialog.getByRole('listitem')).toHaveCount(0);
     await page.clock.runFor(100);
     await expect(demo.locator('[data-lab-answers]')).toHaveText('First Stayed · Second Left');
     await expect(dialog).toBeHidden();

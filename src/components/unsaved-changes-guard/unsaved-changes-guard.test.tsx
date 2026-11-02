@@ -23,8 +23,25 @@ function deferred() {
   return { promise, resolve, reject };
 }
 
+/**
+ * An editor that its own Save or Discard, once finished, leaves clean; an action it is given later
+ * stands for newer work, so the editor is dirty again until that action runs.
+ */
 function Source(props: UnsavedChangesOptions) {
-  useUnsavedChanges(props);
+  const [finished, setFinished] = useState<unknown>(null);
+  const track = (action: UnsavedChangesOptions['onSave']) =>
+    action &&
+    (async () => {
+      await action();
+      setFinished(() => action);
+    });
+  const isDone = finished !== null && (finished === props.onSave || finished === props.onDiscard);
+  useUnsavedChanges({
+    ...props,
+    isDirty: Boolean(props.isDirty) && !isDone,
+    onSave: track(props.onSave),
+    onDiscard: track(props.onDiscard),
+  });
   return null;
 }
 

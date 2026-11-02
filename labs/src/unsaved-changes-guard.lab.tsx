@@ -46,10 +46,11 @@ function DirtyNote() {
 
 /** One question per cell: a dirty source that can or cannot save, with or without a label. */
 function QuestionCell({ canSave, isLabelled }: { canSave: boolean; isLabelled: boolean }) {
+  const [isDirty, setDirty] = useState(true);
   useUnsavedChanges({
-    isDirty: true,
+    isDirty,
     label: isLabelled ? 'Recipe notes' : undefined,
-    onSave: canSave ? () => wait(300) : undefined,
+    onSave: canSave ? () => wait(300).then(() => setDirty(false)) : undefined,
   });
   const { confirmLeave } = useUnsavedChangesGuard();
   const [answer, setAnswer] = useState('Not asked');
@@ -164,7 +165,12 @@ function NestedGuards() {
 function ReplacedQuestion() {
   const { confirmLeave } = useUnsavedChangesGuard();
   const [answers, setAnswers] = useState<string[]>([]);
-  useUnsavedChanges({ isDirty: true, label: 'Trip plan', onSave: () => wait(2000) });
+  const [isDirty, setDirty] = useState(true);
+  useUnsavedChanges({
+    isDirty,
+    label: 'Trip plan',
+    onSave: () => wait(2000).then(() => setDirty(false)),
+  });
   const ask = (title: string) =>
     void confirmLeave({ title }).then((ok) =>
       setAnswers((list) => [...list, `${title} ${ok ? 'Left' : 'Stayed'}`]),
@@ -189,11 +195,12 @@ function ReplacedQuestion() {
 function ChangingSource() {
   const { confirmLeave } = useUnsavedChangesGuard();
   const [isOffline, setOffline] = useState(false);
+  const [isDirty, setDirty] = useState(true);
   const [answer, setAnswer] = useState('Not asked');
   useUnsavedChanges({
-    isDirty: true,
+    isDirty,
     label: 'Packing list',
-    onSave: isOffline ? undefined : () => wait(300),
+    onSave: isOffline ? undefined : () => wait(300).then(() => setDirty(false)),
   });
   return (
     <div data-lab-demo="changing">
@@ -201,6 +208,7 @@ function ChangingSource() {
         size="sm"
         onPress={() => {
           setOffline(false);
+          setDirty(true);
           setTimeout(() => setOffline(true), 1000);
           void confirmLeave().then((ok) => setAnswer(ok ? 'Left' : 'Stayed'));
         }}
@@ -239,6 +247,44 @@ function SavedElsewhere() {
         Leave, then save elsewhere
       </Button>{' '}
       <output data-lab-answers="">{answers.join(' · ') || 'Not asked'}</output>
+    </div>
+  );
+}
+
+/**
+ * Newer work while Save runs: revision 1 takes two seconds to save, and a second after Save starts
+ * an update from elsewhere brings revision 2. The question stays open and asks about it again.
+ */
+function NewerWork() {
+  const { confirmLeave } = useUnsavedChangesGuard();
+  const [version, setVersion] = useState(1);
+  const [saved, setSaved] = useState(0);
+  const [answer, setAnswer] = useState('Not asked');
+  useUnsavedChanges({
+    isDirty: version !== saved,
+    label: `Shared document, revision ${version}`,
+    onSave: async () => {
+      const saving = version;
+      if (saving === 1) setTimeout(() => setVersion(2), 1000);
+      await wait(saving === 1 ? 2000 : 300);
+      setSaved(saving);
+    },
+  });
+  return (
+    <div data-lab-demo="newer-work">
+      <Button
+        size="sm"
+        onPress={() => {
+          setVersion(1);
+          setSaved(0);
+          void confirmLeave().then((ok) => setAnswer(ok ? 'Left' : 'Stayed'));
+        }}
+      >
+        Leave the document
+      </Button>{' '}
+      <output data-lab-answer="">
+        {answer}, saved revision {saved}
+      </output>
     </div>
   );
 }
@@ -296,6 +342,14 @@ mountLab(
     >
       <UnsavedChangesGuard shouldConfirmUnload={false}>
         <SavedElsewhere />
+      </UnsavedChangesGuard>
+    </LabSection>
+    <LabSection
+      title="Newer work during Save"
+      description="Press the button, then Save: a second later revision 2 arrives from elsewhere while revision 1 saves. When that save ends the question stays open, now listing revision 2; Save again to save it and leave."
+    >
+      <UnsavedChangesGuard shouldConfirmUnload={false}>
+        <NewerWork />
       </UnsavedChangesGuard>
     </LabSection>
   </>,
