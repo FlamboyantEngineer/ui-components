@@ -363,7 +363,7 @@
   pointer-events: auto;
 }
 
-/* The marks lie inside the thumb, where the marked blocks lie in view. */
+/* The marks lie along the whole track, where the marked blocks lie in the document, over the thumb. */
 .ui-rich-text-editor__scroll-marker {
   position: absolute;
   inset-inline: 0;

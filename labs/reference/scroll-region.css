@@ -154,6 +154,13 @@
   bottom: 0;
 }
 
+/* A thumb drawn at its exact length, however short, takes the pointer a little past its ends. */
+.ui-scroll-region__thumb[data-exact]::before {
+  position: absolute;
+  inset: -8px 0;
+  content: '';
+}
+
 .ui-scroll-region__thumb:is(:hover, :focus-visible) {
   opacity: 1;
 }

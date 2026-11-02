@@ -5,7 +5,6 @@ import type { EditorView } from 'prosemirror-view';
 import { useEffect, useState, type RefObject } from 'react';
 import {
   OverlayScrollbars,
-  getThumbSpan,
   type OverlayMetrics,
   useOverlayMetrics,
   useSharedViewportObserver,
@@ -64,29 +63,26 @@ function measureMarks(
 }
 
 /**
- * The marks drawn inside the thumb: the view's top, middle and bottom fall at the thumb's top,
- * middle and bottom, so a block's mark sits in the thumb as far down as the block sits in view.
- * Blocks out of view draw none; one partly in view draws its visible part.
+ * The marks along the whole track, on the thumb's own scale: a point a share of the content down
+ * lies that share down the track. The thumb, drawn without a minimum length, covers exactly the
+ * content in view, so a block's mark lies as far down the thumb as the block lies down the view,
+ * and marks out of view stay on the track above and below it.
  */
-function placeInThumb(marks: readonly TrackMark[], metrics: OverlayMetrics) {
-  const page = Math.max(0, metrics.height - metrics.header);
-  const max = Math.max(0, metrics.contentHeight - metrics.height);
-  const thumb = getThumbSpan({ track: metrics.trackY, page, max, value: metrics.top });
-  if (metrics.height <= 0) return [];
-  const toThumb = (y: number) =>
-    thumb.offset +
-    (Math.min(Math.max(y - metrics.top, 0), metrics.height) / metrics.height) * thumb.size;
-  return marks.flatMap((mark) => {
-    if (mark.bottom <= metrics.top || mark.top >= metrics.top + metrics.height) return [];
-    const top = toThumb(mark.top);
-    return [{ top, height: toThumb(mark.bottom) - top, severity: mark.severity }];
-  });
+function placeOnTrack(marks: readonly TrackMark[], metrics: OverlayMetrics) {
+  if (metrics.contentHeight <= 0) return [];
+  const scale = metrics.trackY / metrics.contentHeight;
+  return marks.map((mark) => ({
+    top: mark.top * scale,
+    height: (mark.bottom - mark.top) * scale,
+    severity: mark.severity,
+  }));
 }
 
 /**
  * The shared overlay scrollbars over the editor's surface, with the host's block markers painted
- * in the vertical thumb, where the blocks in view lie. They draw only while the surface overflows the height its host gives it;
- * the document's own keys, the caret and the wheel keep scrolling it natively.
+ * along the vertical track, which the thumb moves past. They draw only while the surface overflows
+ * the height its host gives it; the document's own keys, the caret and the wheel keep scrolling it
+ * natively.
  */
 export function SurfaceScrollbars({ surfaceRef, surfaceId, markers }: SurfaceScrollbarsProps) {
   const observer = useSharedViewportObserver(surfaceRef);
@@ -133,7 +129,8 @@ export function SurfaceScrollbars({ surfaceRef, surfaceId, markers }: SurfaceScr
         drawX={false}
         drawY={metrics.contentHeight > metrics.height + 1}
         isVisible
-        verticalMarks={placeInThumb(marks, metrics).map((mark, index) => (
+        isVerticalExact
+        verticalMarks={placeOnTrack(marks, metrics).map((mark, index) => (
           <span
             key={index}
             {...hooks.slot('scroll-marker', { severity: mark.severity })}
