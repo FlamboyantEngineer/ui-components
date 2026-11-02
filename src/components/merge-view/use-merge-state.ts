@@ -44,10 +44,9 @@ const finalBreak = /(?:\r\n|\r|\n)$/;
 
 function createInitialState(blocks: readonly MergeBlock[]): MergeState {
   const conflicts = blocks.filter((block) => block.conflict !== null).length;
-  const states = Array.from(
-    { length: conflicts },
-    (): ConflictState => ({ resolution: 'unresolved' }),
-  );
+  const states = Array.from({ length: conflicts }, (): ConflictState => ({
+    resolution: 'unresolved',
+  }));
   return { states, current: null };
 }
 

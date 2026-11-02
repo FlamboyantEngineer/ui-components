@@ -14,12 +14,7 @@ import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 
 /** A region around the frame's main content that `AppFrameContent` can fill from anywhere below. */
 export type AppFrameRegion =
-  | 'top-bar'
-  | 'navigation'
-  | 'start-panel'
-  | 'end-panel'
-  | 'bottom-panel'
-  | 'status-bar';
+  'top-bar' | 'navigation' | 'start-panel' | 'end-panel' | 'bottom-panel' | 'status-bar';
 
 /** A part of the band that `AppFrameBandContent` can fill from anywhere below the frame. */
 export type AppFrameBandSlot = 'leading' | 'status' | 'tools' | 'actions';

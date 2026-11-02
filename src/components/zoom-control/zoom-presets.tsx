@@ -37,11 +37,10 @@ export function ZoomPresetMenu({
 }: ZoomPresetMenuProps) {
   const strings = useUiStrings();
   if (presets.length === 0) return null;
-  const items = presets.map(
-    (preset): MenuItemEntry =>
-      typeof preset === 'number'
-        ? { id: preset, label: formatter.format(preset) }
-        : { id: preset.id, label: preset.label },
+  const items = presets.map((preset): MenuItemEntry =>
+    typeof preset === 'number'
+      ? { id: preset, label: formatter.format(preset) }
+      : { id: preset.id, label: preset.label },
   );
   return (
     <DropdownMenu

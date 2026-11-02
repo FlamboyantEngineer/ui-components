@@ -28,7 +28,9 @@ describe('Chat composer', () => {
     expect(container.querySelector('.ui-chat__composer')).toHaveClass('ui-message-composer');
     expect(box()).toHaveAttribute('aria-placeholder', 'Message the group');
     await user.click(box());
-    await user.keyboard('@an{Enter}see you{Enter}');
+    await user.keyboard('@an');
+    await screen.findByRole('listbox');
+    await user.keyboard('{Enter}see you{Enter}');
     expect(onSend).toHaveBeenCalledWith('@Ana Lopez see you', [
       { start: 0, end: 10, ...ana, label: '@Ana Lopez' },
     ]);

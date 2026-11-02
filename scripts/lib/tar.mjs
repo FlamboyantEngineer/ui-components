@@ -100,7 +100,7 @@ function paxPath(data) {
 export function extractTarGz(archive, dir) {
   const buffer = gunzipSync(readFileSync(archive));
   let nextPath;
-  for (let offset = 0; offset + BLOCK <= buffer.length; ) {
+  for (let offset = 0; offset + BLOCK <= buffer.length;) {
     const header = buffer.subarray(offset, offset + BLOCK);
     if (header.every((byte) => byte === 0)) break;
     const size = Number.parseInt(readText(header, 124, 12).trim() || '0', 8);

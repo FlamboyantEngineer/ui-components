@@ -40,8 +40,7 @@ import { dateTimeFieldHooks as hooks } from './date-time-field-hooks.js';
  * time), a `{ start, end }` range of them for a range mode.
  */
 export type DateTimeFieldValue<M extends DateTimeFieldMode = 'date'> = M extends
-  | 'date-range'
-  | 'date-time-range'
+  'date-range' | 'date-time-range'
   ? DateRangeValue | null
   : string | null;
 

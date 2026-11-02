@@ -27,10 +27,7 @@ export type FieldDensity = Extract<Density, 'default' | 'compact'>;
 export type FieldChangeLayout = 'inline' | 'stacked' | 'hidden';
 
 export type FieldLabelLayout =
-  | 'control-label'
-  | 'label-control'
-  | 'label-colon-control'
-  | 'control-only';
+  'control-label' | 'label-control' | 'label-colon-control' | 'control-only';
 
 /** The id, name, description and state attributes a field gives its control. */
 export interface FieldControlProps {

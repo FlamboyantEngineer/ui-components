@@ -85,8 +85,7 @@ export interface ChatPartsProps extends BaseProps {
   onAlwaysAllow?: ((callId: string) => void) | undefined;
   /** Receives the reader's answers to a question part; a promise is awaited. Without it, read-only. */
   onAnswerQuestion?:
-    | ((questionId: string, answers: ChatQuestionAnswer[]) => void | Promise<unknown>)
-    | undefined;
+    ((questionId: string, answers: ChatQuestionAnswer[]) => void | Promise<unknown>) | undefined;
   /** Dismisses a question part; shows Dismiss. A returned promise is awaited. */
   onDismissQuestion?: ((questionId: string) => void | Promise<unknown>) | undefined;
   /** How a question part's tabs mark an answered question: `icon` (the default) or `style`. */

@@ -25,8 +25,7 @@ export interface OverlayBoundary {
 
 /** An `absolute` overlay's offset parent: an element to measure, or its rect and scroll offsets. */
 export type OverlayOffsetParent =
-  | HTMLElement
-  | { rect: OverlayRect; scrollLeft: number; scrollTop: number };
+  HTMLElement | { rect: OverlayRect; scrollLeft: number; scrollTop: number };
 
 export interface OverlayGeometryOptions {
   gap?: number | undefined;

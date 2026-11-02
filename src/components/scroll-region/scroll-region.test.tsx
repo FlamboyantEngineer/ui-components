@@ -832,6 +832,7 @@ describe('ScrollRegion', () => {
       const viewport = requireDefined(document.getElementById('log'));
       const track = () => container.querySelector('.ui-scroll-region__track');
       fireEvent.scroll(viewport);
+      flushFrames();
       act(() => requireDefined(thumb('log')).focus());
       act(() => {
         vi.advanceTimersByTime(1000);

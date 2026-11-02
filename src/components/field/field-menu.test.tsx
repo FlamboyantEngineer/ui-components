@@ -241,6 +241,7 @@ describe('Field menu', () => {
     expect(helpTooltip()).not.toBeInTheDocument();
     await openMenu(user);
     await user.keyboard('{ArrowUp}{Enter}');
+    await waitFor(() => expect(input).toHaveFocus());
     await findHelpTooltip();
     // Escape hides it and goes no further: the typed value stays.
     await user.keyboard('{Escape}');

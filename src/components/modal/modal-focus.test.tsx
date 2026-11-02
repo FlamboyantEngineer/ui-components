@@ -116,7 +116,8 @@ describe('Modal focus targets', () => {
 
   it('UIC-MODAL-3.4 UIC-PORTAL-1.7 returns focus from a floating dialog to the opener focused in its portal container document', async () => {
     // A frame stands in for a popup window the host renders into through a portal container: it
-    // keeps its own focused element while the script's document focuses another.
+    // keeps its own focused element while the script's document reports another. jsdom moves
+    // focus out of a frame when its parent focuses an element, so the parent's is stubbed.
     const frame = document.body.appendChild(document.createElement('iframe'));
     const owner = frame.contentDocument;
     if (!owner) throw new Error('The frame has no document');
@@ -137,7 +138,7 @@ describe('Modal focus targets', () => {
     const view = render(<Popup isOpen={false} />, { container: host });
     const opener = within(host).getByRole('button', { name: 'Open' });
     act(() => opener.focus());
-    act(() => elsewhere.focus());
+    vi.spyOn(document, 'activeElement', 'get').mockReturnValue(elsewhere);
     view.rerender(<Popup isOpen />);
     await waitFor(() => expect(owner.querySelector('[role="dialog"]')).not.toBeNull());
     view.rerender(<Popup isOpen={false} />);

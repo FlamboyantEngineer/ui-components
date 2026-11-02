@@ -15,8 +15,7 @@ export type ResizeObserverTarget =
 
 /** The targets, or a function returning them that is called after every commit. */
 export type ResizeObserverTargets =
-  | readonly ResizeObserverTarget[]
-  | (() => readonly ResizeObserverTarget[]);
+  readonly ResizeObserverTarget[] | (() => readonly ResizeObserverTarget[]);
 
 type OwnerWindow = Window & typeof globalThis;
 

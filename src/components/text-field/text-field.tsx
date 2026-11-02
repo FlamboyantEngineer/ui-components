@@ -67,8 +67,7 @@ export interface TextFieldProps
   completions?: readonly Completion[] | CompletionSource | undefined;
   /** Draws a completion's content in the list instead of its label and description. */
   renderCompletion?:
-    | ((completion: Completion, state: CompletionListItemState) => ReactNode)
-    | undefined;
+    ((completion: Completion, state: CompletionListItemState) => ReactNode) | undefined;
   /** Receives the single-line input while it is on the page. */
   inputRef?: Ref<HTMLInputElement> | undefined;
   /** Receives the multiline text area while it is on the page. */
