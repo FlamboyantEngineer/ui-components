@@ -4,6 +4,7 @@ import { ChatHeader } from '../../src/components/chat/index.js';
 import { ChatAssistantCases, ChatTypingWhileStreamingCases } from './chat-assistant-cases.js';
 import { ChatCaretCases } from './chat-caret-cases.js';
 import { ChatChromeCases } from './chat-chrome-cases.js';
+import { ChatComposerOptionsCases } from './chat-composer-options-cases.js';
 import { ChatDisplayCases } from './chat-display-cases.js';
 import { ChatEverythingCases } from './chat-everything-cases.js';
 import { ChatGroupCases } from './chat-group-cases.js';
@@ -60,6 +61,7 @@ mountLab(
     <ChatThinkingStyles />
     <ChatInlineOptionsCases />
     <ChatHostCases />
+    <ChatComposerOptionsCases />
     <ChatReferenceCases />
     <ChatSidebarCases />
     <ChatPeopleCases />
