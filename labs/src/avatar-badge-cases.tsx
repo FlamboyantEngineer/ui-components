@@ -19,7 +19,7 @@ const flag = (
   </svg>
 );
 
-const badges = {
+export const badges = {
   flag: { badge: flag, badgeLabel: 'France' },
   glyph: { badge: <Glyph icon={StarGlyph} />, badgeLabel: 'Team lead' },
   text: { badge: '2', badgeLabel: 'Second shift' },

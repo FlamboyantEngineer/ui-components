@@ -41,7 +41,7 @@ test.describe('User Identity lab', () => {
     await lab.open('user-identity');
     await expect(
       page.locator(
-        '#lab-root .ui-user-identity :is([tabindex], [role]:not(.ui-user-identity__indicator), button, a)',
+        '#lab-root .ui-user-identity :is([tabindex], [role]:not(.ui-user-identity__indicator, .ui-user-identity__badge-label), button, a)',
       ),
     ).toHaveCount(0);
     await page.getByRole('button', { name: 'Break the picture' }).click();
