@@ -266,4 +266,70 @@ test.describe('Chat Message Actions lab', () => {
     await expect(question).toContainText('Message deleted');
     await expect(log(page, 'conversation')).toContainText('delete question');
   });
+
+  test('UIC-CHAT-TRANSCRIPT-2.12 UIC-CHAT-MESSAGE-ACTIONS-3.2 UIC-CHAT-MESSAGE-ACTIONS-4.1 shows reactions at the bottom right of each message', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-message-actions');
+    const pick = async (name: string) => {
+      const search = page.getByRole('searchbox', { name: 'Search emoji' });
+      await expect(search).toBeFocused();
+      await search.fill(name);
+      await page.keyboard.press('Enter');
+      await expect(search).toBeHidden();
+    };
+    const chips = (id: string) =>
+      message(page, id).locator('.ui-chat-message__reactions .ui-reaction-bar__reaction');
+    // From the received message's context menu.
+    const ana = message(page, 'ana');
+    await ana.scrollIntoViewIfNeeded();
+    await ana.getByText('I can meet you at the river at noon.').click({ button: 'right' });
+    await page
+      .getByRole('menu', { name: 'Message actions' })
+      .getByRole('menuitem', { name: 'Add reaction' })
+      .click();
+    await pick('party popper');
+    await expect(log(page, 'conversation')).toHaveText('react 🎉 on ana');
+    await expect(chips('ana')).toHaveCount(2);
+    await expect(chips('ana').nth(1)).toHaveAttribute('aria-pressed', 'true');
+    // From the sent message's bar, after an edit: the reaction stays with that message.
+    const question = message(page, 'question');
+    await question.getByText('Which tram goes to the castle?').click({ button: 'right' });
+    await page.getByRole('menuitem', { name: 'Edit' }).click();
+    await question.getByRole('button', { name: 'Save' }).click();
+    await question.hover();
+    await question
+      .locator('.ui-chat-message-actions')
+      .getByRole('button', { name: 'Add reaction' })
+      .click();
+    await pick('party popper');
+    await expect(log(page, 'conversation')).toContainText('react 🎉 on question');
+    await expect(chips('question')).toHaveCount(2);
+    await expect(chips('ana')).toHaveCount(2);
+    // A chip takes the reaction back, and the next press adds it again.
+    await chips('question').nth(1).click();
+    await expect(log(page, 'conversation')).toContainText('take back 🎉 on question');
+    await expect(chips('question')).toHaveCount(1);
+    await chips('ana').first().click();
+    await expect(chips('ana').first()).toHaveAttribute('aria-pressed', 'true');
+    // Every message sets its reactions at its bottom right, under the content and the footer.
+    for (const id of ['question', 'ana']) {
+      const placement = await message(page, id).evaluate((node) => {
+        const box = (selector: string) => node.querySelector(selector)?.getBoundingClientRect();
+        const content = box('.ui-chat-message__content');
+        const chips = [
+          ...node.querySelectorAll('.ui-chat-message__reactions .ui-reaction-bar > *'),
+        ];
+        const last = chips.at(-1)?.getBoundingClientRect();
+        const reactions = box('.ui-chat-message__reactions');
+        return {
+          below: (reactions?.top ?? 0) >= (content?.bottom ?? 0) - 0.5,
+          atEnd: Math.abs((last?.right ?? 0) - (reactions?.right ?? 0)) <= 1,
+          withinMessage: (reactions?.right ?? 0) <= (content?.right ?? 0) + 0.5,
+        };
+      });
+      expect(placement).toEqual({ below: true, atEnd: true, withinMessage: true });
+    }
+  });
 });
