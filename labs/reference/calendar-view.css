@@ -259,3 +259,8 @@
 .ui-calendar-view__timed .ui-calendar-view__event:not([data-tone='neutral']) {
   border-inline-start-color: var(--ref-tone);
 }
+
+/* The event editor's fields take the dialog's width. */
+.ui-calendar-view__editor .ui-modal__body > * {
+  inline-size: 100%;
+}

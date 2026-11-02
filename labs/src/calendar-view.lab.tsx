@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from 'react';
+import { useRef, useState, type CSSProperties } from 'react';
 import { Badge } from '../../src/components/badge/badge.js';
 import {
   CalendarView,
@@ -8,6 +8,8 @@ import {
 } from '../../src/components/calendar-view/calendar-view.js';
 import { Button } from '../../src/components/button/button.js';
 import { Checkbox } from '../../src/components/checkbox/checkbox.js';
+import type { CalendarEventMenuEntry } from '../../src/components/calendar-view/index.js';
+import type { Key } from '../../src/core/props.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { fr } from '../../src/core/locales/index.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
@@ -43,6 +45,72 @@ const crowded: CalendarViewEvent[] = [
   { id: '1', title: 'Interview', start: '2026-03-18T11:00', end: '2026-03-18T12:00' },
   { id: 'retro', title: 'Retrospective', start: '2026-03-18T15:00', end: '2026-03-18T16:00' },
 ];
+
+const editable: CalendarViewEvent[] = [
+  ...crowded.map((event) =>
+    event.id === 'release' ? { ...event, title: 'Release 2.4 (locked)', isReadOnly: true } : event,
+  ),
+];
+
+const editMenu: CalendarEventMenuEntry[] = [
+  'edit',
+  { id: 'duplicate', label: 'Duplicate' },
+  { type: 'separator', id: 'host-actions' },
+  { id: 'delete', label: 'Delete' },
+];
+
+/**
+ * A host that owns its events and applies every change: Edit opens the editor, Duplicate and
+ * Delete are its own entries, and a button removes Design review two seconds later, so the reader can
+ * open its menu or editor first.
+ */
+function EditableCalendar() {
+  const [items, setItems] = useState(editable);
+  const [view, setView] = useState<CalendarViewMode>('month');
+  const [log, setLog] = useState('No change yet');
+  const copies = useRef(0);
+  const act = (key: Key, event: CalendarViewEvent) => {
+    if (key === 'duplicate') {
+      copies.current += 1;
+      const id = `${String(event.id)}-copy-${copies.current}`;
+      setItems((current) => [...current, { ...event, id, title: `${event.title} (copy)` }]);
+    }
+    if (key === 'delete') setItems((current) => current.filter((item) => item.id !== event.id));
+    setLog(`${String(key)} on ${event.title}`);
+  };
+  return (
+    <div style={frame(900)} data-lab-demo="editing">
+      <p>
+        <Button
+          size="sm"
+          onPress={() =>
+            window.setTimeout(
+              () => setItems((current) => current.filter((item) => item.id !== 'review')),
+              2000,
+            )
+          }
+        >
+          Remove Design review in two seconds
+        </Button>
+      </p>
+      <CalendarView
+        events={items}
+        timeZone="UTC"
+        getNow={getNow}
+        defaultDate="2026-03-18"
+        view={view}
+        onViewChange={setView}
+        eventMenu={editMenu}
+        onEventMenuAction={act}
+        onEventChange={(next, previous) => {
+          setItems((current) => current.map((item) => (item.id === previous.id ? next : item)));
+          setLog(`Saved ${next.title}: ${next.start} to ${next.end ?? next.start}`);
+        }}
+      />
+      <output data-lab-output>{log}</output>
+    </div>
+  );
+}
 
 const holidays = new Set(['2026-03-17', '2026-04-03']);
 
@@ -265,6 +333,12 @@ mountLab(
       description="Move by month or week, back to today and between views; arrow keys, Home, End, PageUp and PageDown move between days. Press an event to open it, or +n more to list a crowded day. Each day shows its workload or a holiday."
     >
       <InteractiveCalendar />
+    </LabSection>
+    <LabSection
+      title="Event menus and editor"
+      description="Right-click an event, long-press it, or focus it and press Shift+F10 (or the Context Menu key): Edit opens a dialog with the event's title, all-day state and start and end, Duplicate and Delete are the host's own entries. Save is disabled while the title is blank or the end comes before the start; Cancel and Escape keep the event. Release 2.4 is locked, so its menu has no Edit. Events behind +n more on 18 March have the same menu. Open Design review's menu or editor, then remove it with the button: the menu or editor closes and focus goes to its day."
+    >
+      <EditableCalendar />
     </LabSection>
     <LabSection
       title="Allowed views"

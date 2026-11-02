@@ -5,3 +5,4 @@ export type {
   CalendarViewMode,
   CalendarViewProps,
 } from './calendar-view.js';
+export type { CalendarEventAction, CalendarEventMenuEntry } from './calendar-event-menu.js';
