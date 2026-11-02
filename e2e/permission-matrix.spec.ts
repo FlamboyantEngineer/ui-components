@@ -95,6 +95,31 @@ test.describe('Permission Matrix lab', () => {
     await expect(editor.locator('.ui-permission-matrix__grant[data-dirty]')).toHaveCount(0);
   });
 
+  test('UIC-PERMISSION-MATRIX-2.4 applies a change made outside the matrix', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('permission-matrix');
+    const editor = demo(page, 'editor');
+    const output = editor.locator('[data-lab-output]');
+    await editor.getByRole('button', { name: 'Grant all Photos to Guest' }).click();
+    await expect(output).toHaveText(
+      'Applied outside: Granted Upload photos, Delete photos for Guest',
+    );
+    await expect(editor.getByRole('checkbox', { name: 'All Photos for Guest' })).toBeChecked();
+    await editor.getByRole('button', { name: 'Revoke all Recipes from Editor' }).click();
+    await expect(output).toHaveText(
+      'Applied outside: Revoked Read recipes, Write recipes, Publish recipes for Editor',
+    );
+    await expect(
+      editor.getByRole('checkbox', { name: 'All Recipes for Editor' }),
+    ).not.toBeChecked();
+    // Grants the changes do not name stay.
+    await expect(editor.getByRole('checkbox', { name: 'Upload photos for Editor' })).toBeChecked();
+    await expect(editor.getByRole('checkbox', { name: 'Read recipes for Reviewer' })).toBeChecked();
+    await expect(editor.locator('.ui-permission-matrix__grant[data-dirty]')).toHaveCount(4);
+  });
+
   test('UIC-PERMISSION-MATRIX-3.1 moves between checkboxes and toggles them from the keyboard', async ({
     page,
     lab,
