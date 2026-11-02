@@ -33,6 +33,13 @@ import {
   ShareWeights,
 } from './table-content-contracts.js';
 import { RepeatedSelection } from './table-selection-cases.js';
+import {
+  ControlledLayout,
+  ControlledMultipleSort,
+  SecondTreeColumn,
+  SeededTable,
+  SelectionModes,
+} from './table-owned-cases.js';
 
 function TrailingActions() {
   const [count, setCount] = useState(0);
@@ -392,10 +399,11 @@ mountLab(
     </LabSection>
     <LabSection
       title="Selection and row actions"
-      description="Checkboxes, select all, a disabled row and an actions column."
+      description="Checkboxes, select all, a disabled row and an actions column. The last table switches between single selection, single required selection (disallowEmptySelection: the selected row cannot be cleared), multiple selection that toggles each pressed row, and multiple selection that replaces the selection on a press (selectionBehavior replace; Ctrl or Shift extends it); the selected keys are shown below it."
     >
       <Selection />
       <RepeatedSelection />
+      <SelectionModes />
     </LabSection>
     <LabSection
       title="A control in a header"
@@ -470,9 +478,11 @@ mountLab(
     </LabSection>
     <LabSection
       title="Sorting by several columns"
-      description="Shift with a header press adds a column to the sort; headers show their priority."
+      description="Shift with a header press adds a column to the sort; headers show their priority. Below, the host owns the sort (sortDescriptors) and orders the rows itself with sortTableRows: the buttons set or clear it from outside, and header presses report back."
     >
       <MultipleSort />
+      <h3>Sorted by the host</h3>
+      <ControlledMultipleSort />
     </LabSection>
     <LabSection
       title="Sorting by language"
@@ -482,23 +492,29 @@ mountLab(
     </LabSection>
     <LabSection
       title="Column filters"
-      description="Text, set, number and date filters from each header, beside the search box."
+      description="Text, set, number and date filters from each header, beside the search box. The caller below owns the filter and filters its rows with filterTableRows, as the table would. The last table starts with defaultFilter (search e, Kind Fruit) and defaultColumnLayout (Colour first, Weight hidden), then owns both."
     >
       <ColumnFilters />
       <h3>Filtered by the caller</h3>
       <CallerFilter />
+      <h3>Arranged and filtered at first</h3>
+      <SeededTable />
     </LabSection>
     <LabSection
       title="Column layout"
-      description="Pinned name and price, groups, a columns menu and draggable headers, persisted across remounts."
+      description="Pinned name and price, groups, a columns menu and draggable headers, persisted across remounts. Below, the host owns the layout (columnLayout): the buttons reorder, hide and reset columns from outside, and the columns menu and header moves report back."
     >
       <ColumnLayout />
+      <h3>Arranged by the host</h3>
+      <ControlledLayout />
     </LabSection>
     <LabSection
       title="Nested rows"
-      description="Expand with the chevron or ArrowRight; sorting keeps sibling order stable, and filtering retains the places above a deep match. The place filter lists collapsed places too."
+      description="Expand with the chevron or ArrowRight; sorting keeps sibling order stable, and filtering retains the places above a deep match. The place filter lists collapsed places too. The garden plan below puts its expand buttons in its second column with treeColumn."
     >
       <NestedRows />
+      <h3>Expand buttons in the second column</h3>
+      <SecondTreeColumn />
     </LabSection>
     <LabSection
       title="Nested row actions"
