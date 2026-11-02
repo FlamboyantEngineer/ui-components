@@ -96,6 +96,39 @@ function Picker() {
   );
 }
 
+/** One tag at a time, removable, with a tag that disables itself rather than through the group. */
+function SinglePick() {
+  const [items, setItems] = useState([
+    { id: 'kale', name: 'Kale', isDisabled: false },
+    { id: 'leek', name: 'Leek (sold out)', isDisabled: true },
+    { id: 'okra', name: 'Okra', isDisabled: false },
+    { id: 'pea', name: 'Pea', isDisabled: false },
+  ]);
+  const [selected, setSelected] = useState<Selection | Iterable<Key>>(new Set<Key>(['kale']));
+  const names = selected === 'all' ? ['all'] : [...selected].map(String);
+  return (
+    <>
+      <TagGroup
+        aria-label="Vegetable of the week"
+        items={items}
+        selectionMode="single"
+        selectedKeys={selected}
+        onSelectionChange={setSelected}
+        onRemove={(keys) => setItems((current) => current.filter((item) => !keys.has(item.id)))}
+        data-lab-field="single"
+      >
+        {(item) => (
+          <Tag id={item.id} isDisabled={item.isDisabled}>
+            {item.name}
+          </Tag>
+        )}
+      </TagGroup>
+      <LabOutput name="Picked">{names.join(', ') || 'none'}</LabOutput>
+      <LabOutput name="Vegetables">{items.map((item) => item.name).join(', ')}</LabOutput>
+    </>
+  );
+}
+
 function Marked() {
   return (
     <TagGroup aria-label="Cities" tone="neutral" onRemove={() => {}} data-lab-field="marked">
@@ -182,6 +215,12 @@ mountLab(
       description="Pick several tags; at least one stays selected. Initial controlled selection comes from a one-shot generator."
     >
       <Picker />
+    </LabSection>
+    <LabSection
+      title="Single selection and a disabled tag"
+      description="Pick one vegetable at a time: picking another replaces it. Leek disables itself with isDisabled on its Tag, not through the group: it cannot be picked, focused or removed and draws no remove button, while the other tags still pick and remove."
+    >
+      <SinglePick />
     </LabSection>
     <LabSection
       title="Tag tones and caller attributes"

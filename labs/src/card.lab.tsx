@@ -12,9 +12,11 @@ import {
   CollapsibleGrid,
   CollapsibleRecords,
   CustomHeaderCard,
+  LockedCollapse,
   ResizablePane,
   TopRowGrid,
 } from './card-collapse-cases.js';
+import { CardGridDataCases } from './card-grid-data-cases.js';
 import { RowMenu } from './row-menu.js';
 import { ShadowRootApp } from './shadow-root-host.js';
 
@@ -447,6 +449,12 @@ mountLab(
       <CustomHeaderCard />
     </LabSection>
     <LabSection
+      title="Locked collapsing"
+      description="isToggleDisabled locks the collapse toggle of a record and of a custom-header card without disabling the cards: their buttons and fields stay usable. Unlock to collapse them again."
+    >
+      <LockedCollapse />
+    </LabSection>
+    <LabSection
       title="Adaptive cards in a resizable pane"
       description="Narrow the pane with the slider or its grip: the cards turn compact, then show a few characters. The plus button at the end of the title row is not a menu: it shows what the smaller card hides (description, metadata, actions, and in the minimal card the badge and toggle) in place, below the title row, and turns into a minus. Press it again, or Escape in a revealed field, to hide them; focus returns to it."
     >
@@ -490,5 +498,6 @@ mountLab(
         </Card>
       </div>
     </LabSection>
+    <CardGridDataCases />
   </>,
 );

@@ -67,7 +67,7 @@ Verification: `src/components/tag-group/tag-group.test.tsx`, `e2e/tag-group.spec
 A tag with `isDisabled`, or listed in the group's `disabledKeys`, shall publish `data-disabled`, leave the tab order and arrow-key path, and draw no remove button.
 
 Implementation: `src/components/tag-group/tag-group.tsx`
-Verification: `src/components/tag-group/tag-group.test.tsx`
+Verification: `src/components/tag-group/tag-group.test.tsx`, `e2e/tag-group.spec.ts`
 
 ### UIC-TAG-GROUP-2.4 - Selection
 
@@ -76,7 +76,7 @@ With `selectionMode` (`single` or `multiple`), pressing a tag shall select it: `
 One-shot generators supplied for selected, initial or disabled keys keep their values across unrelated rerenders. Controlled updates preserve the primitive's range-selection anchor; mutable Sets and arrays still reflect membership changes.
 
 Implementation: `src/components/tag-group/tag-group.tsx`
-Verification: `src/components/tag-group/tag-group.test.tsx`
+Verification: `src/components/tag-group/tag-group.test.tsx`, `e2e/tag-group.spec.ts`
 
 ## Hooks
 

@@ -11,6 +11,7 @@ import {
   type CardPresentationSteps,
 } from '../../src/components/card/index.js';
 import { Checkbox } from '../../src/components/checkbox/index.js';
+import { Switch } from '../../src/components/switch/switch.js';
 import { Link } from '../../src/components/link/index.js';
 import { ProgressBar } from '../../src/components/progress-bar/progress-bar.js';
 import { NumberField } from '../../src/components/number-field/index.js';
@@ -42,8 +43,10 @@ function RowCard({
   defaultExpanded,
   onExpandedChange,
   presentationSteps,
+  isToggleDisabled,
 }: {
   row: { name: string; short: string; done: number };
+  isToggleDisabled?: boolean | undefined;
   isExpanded?: boolean | undefined;
   defaultExpanded?: boolean | undefined;
   onExpandedChange?: ((isExpanded: boolean) => void) | undefined;
@@ -71,6 +74,7 @@ function RowCard({
       defaultExpanded={defaultExpanded}
       onExpandedChange={onExpandedChange}
       presentationSteps={presentationSteps}
+      isToggleDisabled={isToggleDisabled}
       fullWidth
     >
       <TextField label="Notes" defaultValue="" />
@@ -123,6 +127,32 @@ export function CustomHeaderCard() {
         }
       >
         <p>Sections: overview, harvest, sales, staffing, outlook.</p>
+      </Card>
+    </div>
+  );
+}
+
+/** A switch that locks and unlocks collapsing, leaving the cards' own controls usable. */
+export function LockedCollapse() {
+  const [isLocked, setLocked] = useState(true);
+  return (
+    <div data-lab-demo="locked-collapse" style={{ display: 'grid', gap: 12, maxWidth: 560 }}>
+      <Switch isSelected={isLocked} onChange={setLocked}>
+        Lock collapsing
+      </Switch>
+      <RowCard row={{ name: 'Orchard row 9', short: 'R9', done: 60 }} isToggleDisabled={isLocked} />
+      <Card
+        isCollapsible
+        isToggleDisabled={isLocked}
+        summary="Two of four sections reviewed"
+        header={
+          <>
+            <CardTitle>Spring report</CardTitle>
+            <Button size="sm">Share</Button>
+          </>
+        }
+      >
+        <TextField label="Reviewer" defaultValue="" />
       </Card>
     </div>
   );

@@ -1,6 +1,31 @@
 import { expect, test } from './fixtures.js';
 
 test.describe('Carousel lab', () => {
+  test('UIC-CAROUSEL-1.2 starts an uncontrolled carousel at its default index', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('carousel');
+    const demo = page.locator('[data-lab-demo="default-index"]');
+    const carousel = demo.getByRole('region', { name: 'Cities from a chosen start' });
+    const current = carousel.locator('.ui-carousel__slide[data-current]');
+    const moves = demo.locator('[data-lab-output="moves"]');
+    await expect(current).toHaveAccessibleName('3 of 4');
+    await expect(current).toContainText('Kyoto');
+    await expect(moves).toHaveText('none');
+    await carousel.getByRole('button', { name: 'Next slide' }).click();
+    await expect(current).toContainText('Quito');
+    await carousel.getByRole('button', { name: 'Previous slide' }).click();
+    await expect(moves).toHaveText('Quito, Kyoto');
+    await demo.getByRole('radio', { name: 'Oslo' }).click();
+    await expect(current).toHaveAccessibleName('2 of 4');
+    await expect(moves).toHaveText('none');
+    await carousel.getByRole('button', { name: 'Next slide' }).click();
+    await demo.getByRole('button', { name: 'Start over' }).click();
+    await expect(current).toContainText('Oslo');
+    await expect(moves).toHaveText('none');
+  });
+
   test('UIC-CAROUSEL-1.1 UIC-CAROUSEL-1.2 UIC-CAROUSEL-4.1 shows one named slide and moves with the buttons', async ({
     page,
     lab,

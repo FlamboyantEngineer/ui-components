@@ -577,6 +577,35 @@ describe('CardGrid', () => {
     expectHooksMatchSpec(container, 'CARD', { slots: ['loader'] });
   });
 
+  it('UIC-CARD-5.2 asks for more cards only while none are loading', () => {
+    // An observer that reports the loader in view as soon as it watches it.
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        constructor(private readonly report: (entries: { isIntersecting: boolean }[]) => void) {}
+        observe() {
+          this.report([{ isIntersecting: true }]);
+        }
+        disconnect() {}
+      },
+    );
+    const onLoadMore = vi.fn();
+    const grid = (isLoading: boolean, count: number) => (
+      <CardGrid aria-label="Cities" isLoading={isLoading} onLoadMore={onLoadMore}>
+        {['Lisbon', 'Oslo', 'Quito'].slice(0, count).map((name) => (
+          <CardGridItem key={name} id={name} textValue={name}>
+            <Card title={name} role="group" />
+          </CardGridItem>
+        ))}
+      </CardGrid>
+    );
+    const { rerender } = render(grid(true, 1));
+    rerender(grid(true, 2));
+    expect(onLoadMore).not.toHaveBeenCalled();
+    rerender(grid(false, 3));
+    expect(onLoadMore).toHaveBeenCalled();
+  });
+
   // Laying out a virtual grid in jsdom is slow on a busy machine.
   it('UIC-CARD-5.2 renders only the cards in view when virtualized', { timeout: 15_000 }, () => {
     const sizes = { clientWidth: 600, clientHeight: 300 };

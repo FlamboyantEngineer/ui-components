@@ -340,3 +340,91 @@ test('UIC-LIST-ROW-3.1 UIC-LIST-ROW-3.2 UIC-LIST-ROW-3.5 leaves the caret and ar
   await expect(servings).toHaveValue('3');
   await lab.expectAccessible('[data-lab-section="Fields in rows"]');
 });
+
+test('UIC-LIST-ROW-3.6 shows the empty list, then loads pages without repeating a request', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('list-row');
+  const demo = page.locator('[data-lab-demo="paged-notes"]');
+  const output = (name: string) => demo.locator(`[data-lab-output="${name}"]`);
+  await expect(output('empty')).toHaveText('No notes yet. Fetch them.');
+  await demo.getByRole('button', { name: 'Fetch notes' }).click();
+  await expect(demo.locator('.ui-list-view__loader')).toContainText('Loading');
+  const deliver = demo.getByRole('button', { name: 'Deliver page' });
+  const list = demo.getByRole('grid', { name: 'Notes' });
+  // Scrolled to its end, the list asks for one more page; while it loads, it asks for no more.
+  for (const [shown, requests] of [
+    ['5', '1'],
+    ['10', '2'],
+  ] as const) {
+    await deliver.click();
+    await expect(output('shown')).toHaveText(shown);
+    await list.evaluate((node) => {
+      node.scrollTop = node.scrollHeight;
+    });
+    await expect(output('loading')).toHaveText('true');
+    await expect(output('requests')).toHaveText(requests);
+  }
+  await deliver.click();
+  await expect(output('shown')).toHaveText('15');
+  await expect(output('loading')).toHaveText('false');
+  await expect(demo.locator('.ui-list-view__loader')).toHaveCount(0);
+});
+
+test('UIC-LIST-ROW-3.1 UIC-LIST-ROW-3.4 redraws stable rows and sections when their dependencies change', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('list-row');
+  const demo = page.locator('[data-lab-demo="dependent-list"]');
+  const basil = demo.getByRole('row', { name: /Basil/ });
+  await expect(basil).not.toContainText('Summer');
+  await demo.getByRole('switch', { name: 'Show seasons' }).press('Space');
+  await expect(basil).toContainText('Summer');
+  await expect(demo.getByRole('row', { name: /Parsnip/ })).toContainText('Winter');
+});
+
+test('UIC-LIST-ROW-3.3 starts selected and keeps one row selected', async ({ page, lab }) => {
+  await lab.open('list-row');
+  const demo = page.locator('[data-lab-demo="required-selection"]');
+  const list = demo.getByRole('grid', { name: 'Herb of the week' });
+  const chives = list.getByRole('row', { name: 'Chives' });
+  await expect(chives).toHaveAttribute('aria-selected', 'true');
+  await chives.click();
+  await expect(chives).toHaveAttribute('aria-selected', 'true');
+  await list.getByRole('row', { name: 'Mint' }).click();
+  await expect(demo.locator('[data-lab-output="selected"]')).toHaveText('mint');
+  await expect(chives).toHaveAttribute('aria-selected', 'false');
+});
+
+test('UIC-LIST-ROW-3.1 UIC-LIST-ROW-3.2 types to rich rows by textValue and logs their actions', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('list-row');
+  const demo = page.locator('[data-lab-demo="action-log"]');
+  const list = demo.getByRole('grid', { name: 'Herbs to cut' });
+  await list.getByRole('row', { name: 'Basil' }).focus();
+  await page.keyboard.press('d');
+  await expect(list.getByRole('row', { name: 'Dill' })).toBeFocused();
+  await page.keyboard.press('Enter');
+  await list.getByRole('row', { name: 'Thyme' }).click();
+  await expect(demo.locator('[data-lab-output="actions"]')).toHaveText('dill, thyme');
+  await lab.expectAccessible('[data-lab-demo="action-log"]');
+});
+
+test('UIC-LIST-ROW-2.3 opens a link row in a new tab and reports middle clicks', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('list-row');
+  const demo = page.locator('[data-lab-demo="new-tab-row"]');
+  const link = demo.getByRole('link', { name: 'Planting guide (opens in a new tab)' });
+  await expect(link).toHaveAttribute('target', '_blank');
+  await expect(link).toHaveAttribute('rel', /help/);
+  await expect(link).toHaveAttribute('rel', /noopener/);
+  await expect(link).toHaveAttribute('href', '#planting-guide');
+  await link.click({ button: 'middle' });
+  await expect(demo.locator('[data-lab-output="aux"]')).toHaveText('1');
+});

@@ -74,7 +74,7 @@ Verification: `src/components/list-row/list-row.test.tsx`, `e2e/list-row.spec.ts
 A link row shall render its link through the provider's link renderer with `href`, `target` and `rel`; `target="_blank"` adds `noopener` and `noreferrer` to the caller's `rel`, as a [Link](LINK.md#uic-link-22---new-tabs) does. `onPress` shall run when the link is followed and `onAuxPress` on a middle-button click. The row never cancels a click, so modifier clicks keep their browser behaviour.
 
 Implementation: `src/components/list-row/list-row.tsx`
-Verification: `src/components/list-row/list-row.test.tsx`
+Verification: `src/components/list-row/list-row.test.tsx`, `e2e/list-row.spec.ts`
 
 ### UIC-LIST-ROW-2.4 - Row text
 
