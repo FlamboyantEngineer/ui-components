@@ -93,7 +93,7 @@ export interface CalendarViewProps extends BaseProps, RefProps<HTMLDivElement> {
    * target. Defaults to 30.
    */
   minEventMinutes?: number | undefined;
-  /** Called with the key of the event the reader presses. */
+  /** Called with the key of the event the reader presses, before an editable event opens its editor. */
   onEventAction?: ((key: Key) => void) | undefined;
   /**
    * Called with an event the reader changed and the event as it was, such as from the event
