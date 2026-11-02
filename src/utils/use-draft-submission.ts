@@ -35,6 +35,11 @@ interface Submission<T> {
    * draft once the host has accepted it.
    */
   send: (value: T, clearsDraft: boolean, submitter?: Submitter<T>) => void;
+  /**
+   * Changes the draft as the reader does. A message sent before empties the draft only while no
+   * such change came since, even one that typed the same words again.
+   */
+  setDraft: (next: T) => void;
 }
 
 /**
@@ -50,7 +55,8 @@ const isSameOwner = (a: DraftOwner, b: DraftOwner) => a.key === b.key && a.stora
 
 /**
  * Sends through `onSubmit`, or the submitter a send names. A promise it returns holds sending from the same draft until it
- * settles: once it resolves the draft empties, unless the reader has changed it since, and where
+ * settles: once it resolves the draft empties, unless the reader has changed it since through the
+ * returned `setDraft` (even back to the same words) or it no longer holds the words sent, and where
  * the draft is another owner's now (the key or the storage adapter changed, or the composer
  * unmounted) only the stored draft it was sent from empties. A throw or a rejection keeps the draft
  * and goes to `onSubmitError`, or is rethrown without it.
@@ -65,6 +71,7 @@ export function useDraftSubmission<T>(options: SubmissionOptions<T>): Submission
   const latestOwner = useLatest(owner);
   const [waiting, setWaiting] = useState<readonly DraftOwner[]>([]);
   const inFlight = useRef<DraftOwner[]>([]);
+  const revision = useRef(0);
   const beginSubmission = useLifetimeSignal();
 
   const fail = (error: unknown) => {
@@ -72,11 +79,16 @@ export function useDraftSubmission<T>(options: SubmissionOptions<T>): Submission
     if (!onSubmitError) throw error;
     onSubmitError(error);
   };
-  const clear = (from: DraftOwner, sent: string, signal: AbortSignal) => {
+  const clear = (
+    from: DraftOwner,
+    sent: { text: string; revision: number },
+    signal: AbortSignal,
+  ) => {
     const { empty, codec, draft, setDraft } = latest.current;
     if (!signal.aborted && isSameOwner(latestOwner.current, from)) {
-      if (codec.stringify(draft) === sent) setDraft(empty);
-    } else if (from.key !== undefined && from.storage?.getItem(from.key) === sent) {
+      if (revision.current === sent.revision && codec.stringify(draft) === sent.text)
+        setDraft(empty);
+    } else if (from.key !== undefined && from.storage?.getItem(from.key) === sent.text) {
       from.storage.setItem(from.key, codec.stringify(empty));
     }
   };
@@ -100,7 +112,7 @@ export function useDraftSubmission<T>(options: SubmissionOptions<T>): Submission
       if (clearsDraft) options.setDraft(options.empty);
       return;
     }
-    const sent = options.codec.stringify(value);
+    const sent = { text: options.codec.stringify(value), revision: revision.current };
     const signal = beginSubmission();
     track(owner, true);
     void Promise.resolve(result).then(
@@ -114,5 +126,9 @@ export function useDraftSubmission<T>(options: SubmissionOptions<T>): Submission
       },
     );
   };
-  return { isSubmitting: waiting.some((entry) => isSameOwner(entry, owner)), send };
+  const setDraft = (next: T) => {
+    revision.current += 1;
+    options.setDraft(next);
+  };
+  return { isSubmitting: waiting.some((entry) => isSameOwner(entry, owner)), send, setDraft };
 }

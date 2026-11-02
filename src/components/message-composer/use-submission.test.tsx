@@ -98,6 +98,17 @@ describe('MessageComposer sending', () => {
     expect(input()).toHaveValue('Hello again');
   });
 
+  it('UIC-MESSAGE-COMPOSER-3.9 keeps the same words typed again while the host decides', async () => {
+    const user = userEvent.setup();
+    const accepted = deferred();
+    render(<MessageComposer onSubmit={() => accepted.promise} />);
+    await user.type(input(), 'Hello{Enter}');
+    await user.clear(input());
+    await user.type(input(), 'Hello');
+    await act(async () => accepted.resolve());
+    expect(input()).toHaveValue('Hello');
+  });
+
   it('UIC-MESSAGE-COMPOSER-3.9 settles a message in the draft it was sent from', async () => {
     const user = userEvent.setup();
     const storage = createMemoryStorage();

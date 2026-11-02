@@ -12,7 +12,10 @@ interface ChatEditing {
 /** The chat's own state about one conversation. */
 interface ChatOwnState {
   conversationId: string | undefined;
-  /** Counts each edit or reply the reader starts or leaves, so a late acceptance ends only its own. */
+  /**
+   * Counts each edit or reply the reader starts or leaves, across conversations too, so a late
+   * acceptance ends only its own: a conversation shown again never reuses an earlier session.
+   */
   session: number;
   editing: ChatEditing | null;
   replyingId: string | null;
@@ -41,10 +44,10 @@ export interface ChatState extends Omit<ChatOwnState, 'conversationId'> {
   focusComposer: () => void;
 }
 
-function createState(conversationId: string | undefined): ChatOwnState {
+function createState(conversationId: string | undefined, session: number): ChatOwnState {
   return {
     conversationId,
-    session: 0,
+    session,
     editing: null,
     replyingId: null,
     jumpedId: undefined,
@@ -57,7 +60,7 @@ function createState(conversationId: string | undefined): ChatOwnState {
  * conversation changes. The commands keep their identities, so the messages need not re-render.
  */
 export function useChatState(conversationId: string | undefined): ChatState {
-  const [own, setOwn] = useState(() => createState(conversationId));
+  const [own, setOwn] = useState(() => createState(conversationId, 0));
   const composerRef = useRef<HTMLDivElement>(null);
   // The editor detaches and reattaches its ref on each render, after the layout effects of the
   // queue above it; keeping the last text box lets those effects still find it.
@@ -66,7 +69,8 @@ export function useChatState(conversationId: string | undefined): ChatState {
   }, []);
   let current = own;
   if (own.conversationId !== conversationId) {
-    current = createState(conversationId);
+    // The count goes on, so an acceptance from an earlier visit cannot match a later session.
+    current = createState(conversationId, own.session + 1);
     setOwn(current);
   }
   // Focus moves at once, and again once an overlay that ran the command, such as a context menu,

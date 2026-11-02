@@ -86,6 +86,52 @@ describe('Chat edit and reply sessions', () => {
     expect(box()).toHaveTextContent(/^Draft$/);
   });
 
+  it('UIC-CHAT-2.5 keeps an edit reopened after leaving the conversation and coming back', async () => {
+    for (const outcome of ['resolve', 'reject'] as const) {
+      const first = deferred();
+      const onEdit = vi.fn().mockReturnValueOnce(first.promise).mockReturnValue(undefined);
+      const { user, rerenderWith, unmount } = renderChat({
+        messages,
+        onEdit,
+        conversationId: 'a',
+        onSendError: () => undefined,
+      });
+      await startEdit(user);
+      await user.keyboard(' one{Enter}');
+      rerenderWith({ messages, onEdit, conversationId: 'b', onSendError: () => undefined });
+      rerenderWith({ messages, onEdit, conversationId: 'a', onSendError: () => undefined });
+      await startEdit(user);
+      // The same target and the same words, in a new edit session.
+      await user.keyboard(' one');
+      await act(async () =>
+        outcome === 'resolve' ? first.resolve() : first.reject(new Error('offline')),
+      );
+      expect(banner()).toHaveTextContent('Editing your message');
+      expect(box()).toHaveTextContent('Draft one');
+      unmount();
+    }
+  });
+
+  it('UIC-CHAT-2.4 keeps a reply reopened after leaving the conversation and coming back', async () => {
+    const first = deferred();
+    const onReply = vi.fn(() => first.promise);
+    const { user, rerenderWith } = renderChat({ messages, onReply, conversationId: 'a' });
+    const reply = async () => {
+      await user.hover(article('m2'));
+      await user.click(within(article('m2')).getByRole('button', { name: 'Reply' }));
+      await waitFor(() => expect(box()).toHaveFocus());
+    };
+    await reply();
+    await user.keyboard('Sure{Enter}');
+    rerenderWith({ messages, onReply, conversationId: 'b' });
+    rerenderWith({ messages, onReply, conversationId: 'a' });
+    await reply();
+    await user.keyboard('{Control>}a{/Control}Sure');
+    await act(async () => first.resolve());
+    expect(banner()).toHaveTextContent('Replying to');
+    expect(box()).toHaveTextContent(/^Sure$/);
+  });
+
   it('UIC-CHAT-2.4 keeps a reply whose words changed while it waited', async () => {
     const first = deferred();
     const onReply = vi.fn(() => first.promise);
