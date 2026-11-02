@@ -31,7 +31,9 @@ interface CalendarDayCellProps {
 
 /** The events of `events` that cover `day`. */
 export function findDayEvents(events: readonly PlacedEvent[], day: string): PlacedEvent[] {
-  return events.filter((placed) => placed.startDay <= day && placed.endDay >= day);
+  return events.filter(
+    (placed) => !placed.isPreview && placed.startDay <= day && placed.endDay >= day,
+  );
 }
 
 /**

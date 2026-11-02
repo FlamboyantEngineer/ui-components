@@ -11,6 +11,12 @@ import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useEventMenu, type CalendarEventMenuContext } from './calendar-event-menu.js';
+import {
+  EventHandle,
+  readGestures,
+  type CalendarEventHandlesContext,
+  type EventPlacement,
+} from './calendar-event-handles.js';
 import type { PlacedEvent, WeekSegment } from './calendar-layout.js';
 import { calendarViewHooks as hooks } from './calendar-view-hooks.js';
 import type { CalendarFormat } from './use-calendar-format.js';
@@ -24,6 +30,8 @@ export interface CalendarEventContext {
   menu: CalendarEventMenuContext;
   /** Records an event's button while it is on show, until the returned cleanup runs. */
   register: (id: Key, element: HTMLElement) => () => void;
+  /** The move and resize handles' contract with the calendar. */
+  handles: CalendarEventHandlesContext;
 }
 
 interface CalendarEventButtonProps {
@@ -33,6 +41,8 @@ interface CalendarEventButtonProps {
   isTabbable: boolean;
   /** The time shown before the title: the start, the range, or none. */
   time: 'start' | 'range' | 'none';
+  /** Where it is drawn: a bar across days, a block on a time grid, or in a crowded day's list. */
+  placement: EventPlacement | 'list';
   continuesBefore?: boolean | undefined;
   continuesAfter?: boolean | undefined;
   /** Its geometry: a bar's width across days, or a timed block's place in its day. */
@@ -98,52 +108,118 @@ function useEventButtonRef(id: Key, register: CalendarEventContext['register']) 
   return useMemo(() => mergeRefs(handoff, record), [handoff, record]);
 }
 
+/** A rendered event's key: its id's, apart from the preview of the same event being dragged. */
+export function toEventKey(placed: PlacedEvent): string {
+  const identity = toKeyIdentity(placed.event.id);
+  return placed.isPreview ? `preview:${identity}` : identity;
+}
+
+/** The time and title an event shows, hidden from assistive technology behind its name. */
+function EventText({
+  placed,
+  time,
+  context,
+}: Pick<CalendarEventButtonProps, 'placed' | 'time' | 'context'>) {
+  const shown = formatTime(placed, time, context.format);
+  return (
+    <>
+      {shown ? (
+        <span aria-hidden="true" {...hooks.slot('event-time')}>
+          {shown}
+        </span>
+      ) : null}
+      <span aria-hidden="true" {...hooks.slot('event-title')}>
+        {placed.event.title}
+      </span>
+    </>
+  );
+}
+
+function readData(placed: PlacedEvent, continuesBefore: boolean, continuesAfter: boolean) {
+  return {
+    allDay: placed.isAllDay,
+    tone: placed.event.tone ?? 'neutral',
+    continuesBefore,
+    continuesAfter,
+  };
+}
+
 /**
  * One event: a button showing its title, after its time when asked, and named by its title and when
  * it happens; a press calls `onEventAction` with its key, and a context menu request opens the
- * event's menu.
+ * event's menu. An editable event sits in a frame with its move and resize handles; the preview of
+ * a dragged event is drawn without a button.
  */
-export function CalendarEventButton({
+export function CalendarEventButton(props: CalendarEventButtonProps) {
+  const { placed, time, context, style } = props;
+  const before = props.continuesBefore ?? false;
+  const after = props.continuesAfter ?? false;
+  if (!placed.isPreview) return <EventButton {...props} />;
+  return (
+    <div
+      aria-hidden="true"
+      {...hooks.slot('event', { ...readData(placed, before, after), preview: true })}
+      style={style}
+    >
+      <EventText placed={placed} time={time} context={context} />
+    </div>
+  );
+}
+
+function EventButton({
   placed,
   context,
   isTabbable,
   time,
+  placement,
   continuesBefore = false,
   continuesAfter = false,
   style,
 }: CalendarEventButtonProps) {
   const strings = useUiStrings();
   const { event } = placed;
-  const shown = formatTime(placed, time, context.format);
   const ref = useEventButtonRef(event.id, context.register);
   const eventMenu = useEventMenu(event, context.menu, ref);
-  const data = {
-    allDay: placed.isAllDay,
-    tone: event.tone ?? 'neutral',
-    continuesBefore,
-    continuesAfter,
-  };
+  const gestures = readGestures(
+    placed,
+    { placement, continuesBefore, continuesAfter },
+    context.handles,
+  );
+  const handle = (gesture: (typeof gestures)[number]) =>
+    gestures.includes(gesture) && placement !== 'list' ? (
+      <EventHandle
+        placed={placed}
+        gesture={gesture}
+        placement={placement}
+        context={context.handles}
+        isTabbable={isTabbable}
+      />
+    ) : null;
+  const button = (
+    <AriaButton
+      {...eventMenu.targetProps}
+      {...hooks.slot('event', readData(placed, continuesBefore, continuesAfter))}
+      excludeFromTabOrder={!isTabbable}
+      style={gestures.length > 0 ? undefined : style}
+      onPress={() => context.onEventAction?.(event.id)}
+    >
+      <EventText placed={placed} time={time} context={context} />
+      <VisuallyHidden elementType="span">
+        {strings.calendarEvent(event.title, context.format.formatWhen(placed))}
+      </VisuallyHidden>
+    </AriaButton>
+  );
   return (
     <>
-      <AriaButton
-        {...eventMenu.targetProps}
-        {...hooks.slot('event', data)}
-        excludeFromTabOrder={!isTabbable}
-        style={style}
-        onPress={() => context.onEventAction?.(event.id)}
-      >
-        {shown ? (
-          <span aria-hidden="true" {...hooks.slot('event-time')}>
-            {shown}
-          </span>
-        ) : null}
-        <span aria-hidden="true" {...hooks.slot('event-title')}>
-          {event.title}
-        </span>
-        <VisuallyHidden elementType="span">
-          {strings.calendarEvent(event.title, context.format.formatWhen(placed))}
-        </VisuallyHidden>
-      </AriaButton>
+      {gestures.length > 0 ? (
+        <div {...hooks.slot('event-frame', { allDay: placed.isAllDay })} style={style}>
+          {handle('move')}
+          {button}
+          {handle('resize')}
+        </div>
+      ) : (
+        button
+      )}
       {eventMenu.menu}
     </>
   );
@@ -177,6 +253,7 @@ export function CalendarMoreEvents({
               context={context}
               isTabbable
               time="start"
+              placement="list"
             />
           ))}
         </div>
@@ -205,11 +282,12 @@ export function CalendarEventLanes({
       return <div key={`spacer:${lane}`} aria-hidden="true" {...hooks.slot('spacer')} />;
     return (
       <CalendarEventButton
-        key={toKeyIdentity(segment.placed.event.id)}
+        key={toEventKey(segment.placed)}
         placed={segment.placed}
         context={context}
         isTabbable={isTabbable}
         time={time}
+        placement="bar"
         continuesBefore={segment.continuesBefore}
         continuesAfter={segment.continuesAfter}
         style={{ width: `${segment.span * 100}%` }}

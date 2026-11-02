@@ -62,7 +62,9 @@ function MonthDay({ date, column, segments, visibleLanes, events, day, event }: 
         />
         {covering.length > shown.length ? (
           <CalendarMoreEvents
-            events={covering.map((segment) => segment.placed)}
+            events={covering.flatMap((segment) =>
+              segment.placed.isPreview ? [] : [segment.placed],
+            )}
             hidden={covering.length - shown.length}
             dayLabel={day.format.formatDay(date)}
             isTabbable={isActive}

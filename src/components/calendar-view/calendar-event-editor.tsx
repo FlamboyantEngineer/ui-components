@@ -164,6 +164,8 @@ interface EventEditingOptions {
   onEventChange: ((next: CalendarViewEvent, previous: CalendarViewEvent) => void) | undefined;
   eventMenu: CalendarEventMenuContext['entries'];
   onEventMenuAction: CalendarEventMenuContext['onAction'];
+  /** Whether the host lets the reader edit the event. */
+  isEditable: (event: CalendarViewEvent) => boolean;
   /** The focused day's cell, where focus goes when the edited event left the view. */
   findDayCell: () => HTMLElement | null;
   /** Shows the day a saved event now starts on, when it moved. */
@@ -178,13 +180,9 @@ interface EventEditingOptions {
  * the focused day.
  */
 export function useEventEditing(options: EventEditingOptions) {
-  const { events, timeZone, onEventChange, eventMenu, onEventMenuAction } = options;
+  const { events, timeZone, onEventChange, eventMenu, onEventMenuAction, isEditable } = options;
   const [editing, setEditing] = useState<{ id: Key; draft: EventDraft } | null>(null);
   const { register, find } = useEventButtons();
-  const isEditable = useCallback(
-    (event: CalendarViewEvent) => onEventChange !== undefined && event.isReadOnly !== true,
-    [onEventChange],
-  );
   const menu = useMemo<CalendarEventMenuContext>(
     () => ({
       entries: eventMenu,

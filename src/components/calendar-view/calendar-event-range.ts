@@ -72,7 +72,7 @@ function isAnchored(text: string): boolean {
  * A date-time the editor wrote, in the form of the event's start: kept zoned when the start names
  * its offset or zone, else as the wall clock in the calendar's zone, as the event gave it.
  */
-function toEventText(text: string, like: string, timeZone: string): string {
+export function toEventText(text: string, like: string, timeZone: string): string {
   if (isAnchored(like)) return text;
   const value = parseIsoDateTime(text, timeZone);
   return value ? formatIsoDate(toCalendarDateTime(value)) : text;

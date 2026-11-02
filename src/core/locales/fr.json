@@ -557,6 +557,8 @@
   "editEvent": "Modifier l’événement",
   "eventTitle": "Titre",
   "eventWhen": "Quand",
+  "moveEvent": "Déplacer {title}",
+  "resizeEvent": "Redimensionner {title}",
   "carousel": "carrousel",
   "slide": "diapositive",
   "previousSlide": "Diapositive précédente",

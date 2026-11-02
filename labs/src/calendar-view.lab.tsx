@@ -112,6 +112,54 @@ function EditableCalendar() {
   );
 }
 
+const draggable: CalendarViewEvent[] = [
+  { id: 'standup', title: 'Standup', start: '2026-11-02T09:00', end: '2026-11-02T09:30' },
+  { id: 'night-shift', title: 'Night shift', start: '2026-10-31T22:00', end: '2026-11-01T06:00' },
+  { id: 'offsite', title: 'Offsite', start: '2026-11-03', end: '2026-11-05', tone: 'info' },
+  {
+    id: 'fixed',
+    title: 'Fixed-length review',
+    start: '2026-11-04T13:00',
+    end: '2026-11-04T14:00',
+    tone: 'warning',
+  },
+  {
+    id: 'locked',
+    title: 'Locked audit',
+    start: '2026-11-05T10:00',
+    end: '2026-11-05T11:30',
+    tone: 'danger',
+    isReadOnly: true,
+  },
+  { id: 'deadline', title: 'Deadline', start: '2026-11-06' },
+];
+
+/**
+ * Editable events in New York, the week the clocks go back: each moves by its handle and resizes
+ * by its end, except the read-only Locked audit and Fixed-length review, which only moves.
+ */
+function DraggableCalendar() {
+  const [items, setItems] = useState(draggable);
+  const [log, setLog] = useState('No change yet');
+  return (
+    <div style={frame(900)} data-lab-demo="dragging">
+      <CalendarView
+        events={items}
+        timeZone="America/New_York"
+        getNow={getNow}
+        defaultDate="2026-11-02"
+        defaultView="week"
+        canChangeEvent={(event, change) => !(event.id === 'fixed' && change === 'resize')}
+        onEventChange={(next, previous) => {
+          setItems((current) => current.map((item) => (item.id === previous.id ? next : item)));
+          setLog(`${next.title}: ${next.start} to ${next.end ?? next.start}`);
+        }}
+      />
+      <output data-lab-output>{log}</output>
+    </div>
+  );
+}
+
 const holidays = new Set(['2026-03-17', '2026-04-03']);
 
 function renderWorkload(day: CalendarViewDay) {
@@ -339,6 +387,12 @@ mountLab(
       description="Right-click an event, long-press it, or focus it and press Shift+F10 (or the Context Menu key): Edit opens a dialog with the event's title, all-day state and start and end, Duplicate and Delete are the host's own entries. Save is disabled while the title is blank or the end comes before the start; Cancel and Escape keep the event. Release 2.4 is locked, so its menu has no Edit. Events behind +n more on 18 March have the same menu. Open Design review's menu or editor, then remove it with the button: the menu or editor closes and focus goes to its day."
     >
       <EditableCalendar />
+    </LabSection>
+    <LabSection
+      title="Moving and resizing"
+      description="Editable events show a grip that moves them and an end that resizes them; dragging shows a dashed preview where the event would land, and releasing hands the change to the host. Timed events snap to 15 minutes. Focus a handle (Tab from the focused day) and use the arrow keys: Left and Right move a day, Up and Down 15 minutes on the time grid or a week on a bar. Escape or a cancelled pointer abandons a drag. Night shift crosses midnight and the clocks going back on 1 November keep its wall-clock times when moved; Offsite is a multi-day bar moved as one event; Fixed-length review only moves; Locked audit is read-only and shows no handles."
+    >
+      <DraggableCalendar />
     </LabSection>
     <LabSection
       title="Allowed views"

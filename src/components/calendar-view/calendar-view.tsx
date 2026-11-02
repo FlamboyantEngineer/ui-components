@@ -19,8 +19,9 @@ import { getDayOf, getWeekDays, isSameMonth, shiftDay } from './calendar-days.js
 import { readEvents } from './calendar-layout.js';
 import { calendarViewHooks as hooks } from './calendar-view-hooks.js';
 import { useCalendarFormat } from './use-calendar-format.js';
-import { dayCellSelector, useCalendarGrid } from './use-calendar-grid.js';
-import { useEventEditing } from './calendar-event-editor.js';
+import { useCalendarGrid } from './use-calendar-grid.js';
+import type { CalendarEventChange } from './calendar-event-handles.js';
+import { useEventChanges } from './use-event-changes.js';
 import type { CalendarEventMenuEntry } from './calendar-event-menu.js';
 
 /** The period a calendar view shows. */
@@ -109,6 +110,12 @@ export interface CalendarViewProps extends BaseProps, RefProps<HTMLDivElement> {
     | readonly CalendarEventMenuEntry[]
     | ((event: CalendarViewEvent) => readonly CalendarEventMenuEntry[])
     | undefined;
+  /**
+   * Whether the reader may make a change to an event: `edit` it in the editor, `move` it or
+   * `resize` it by its handles. Asked only while `onEventChange` is given, for events not marked
+   * `isReadOnly`. Defaults to allowing every change.
+   */
+  canChangeEvent?: ((event: CalendarViewEvent, change: CalendarEventChange) => boolean) | undefined;
   /** Called with the key of the event menu entry the reader chose, Edit included, and its event. */
   onEventMenuAction?: ((key: Key, event: CalendarViewEvent) => void) | undefined;
   /** Draws extra content in each day cell, such as a marker or a count. */
@@ -220,6 +227,7 @@ export function CalendarView({
   minEventMinutes = 30,
   onEventAction,
   onEventChange,
+  canChangeEvent,
   eventMenu = defaultEventMenu,
   onEventMenuAction,
   renderDay,
@@ -250,7 +258,7 @@ export function CalendarView({
     <div {...root}>
       <CalendarContent
         {...{ events, mode, views: allowed, focused, today, maxEvents, onEventAction, renderDay }}
-        {...{ onEventChange, eventMenu, onEventMenuAction }}
+        {...{ onEventChange, canChangeEvent, eventMenu, onEventMenuAction }}
         minEventMinutes={minEventMinutes}
         timeZone={zone}
         onFocusedChange={(next) => {
@@ -269,7 +277,7 @@ function CalendarContent(
   props: Required<Pick<CalendarViewProps, 'events' | 'views' | 'maxEvents' | 'minEventMinutes'>> &
     Pick<
       CalendarViewProps,
-      'onEventAction' | 'renderDay' | 'onEventChange' | 'onEventMenuAction'
+      'onEventAction' | 'renderDay' | 'onEventChange' | 'onEventMenuAction' | 'canChangeEvent'
     > & {
       eventMenu: NonNullable<CalendarViewProps['eventMenu']>;
       mode: CalendarViewMode;
@@ -301,18 +309,15 @@ function CalendarContent(
         ? getToday()
         : shiftDay(focused, { [mode === 'month' ? 'months' : 'weeks']: direction }),
     );
-  const editing = useEventEditing({
-    events: placed,
-    timeZone,
-    onEventChange: props.onEventChange,
-    eventMenu: props.eventMenu,
-    onEventMenuAction: props.onEventMenuAction,
-    findDayCell: () =>
-      grid.ref.current?.querySelector<HTMLElement>(`${dayCellSelector}[tabindex="0"]`) ?? null,
-    onMoved: onFocusedChange,
-  });
+  const changes = useEventChanges(props, { placed, gridRef: grid.ref });
   const day = { focused, today, format, renderDay };
-  const event = { format, onEventAction, menu: editing.menu, register: editing.register };
+  const event = {
+    format,
+    onEventAction,
+    menu: changes.menu,
+    register: changes.register,
+    handles: changes.handles,
+  };
   return (
     <>
       <CalendarToolbar
@@ -325,7 +330,7 @@ function CalendarContent(
       />
       {mode === 'month' ? (
         <CalendarMonth
-          events={placed}
+          events={changes.drawn}
           grid={grid}
           titleId={titleId}
           maxEvents={maxEvents}
@@ -334,7 +339,7 @@ function CalendarContent(
         />
       ) : (
         <CalendarWeek
-          events={placed}
+          events={changes.drawn}
           grid={grid}
           titleId={titleId}
           timeZone={timeZone}
@@ -343,7 +348,7 @@ function CalendarContent(
           event={event}
         />
       )}
-      {editing.editor}
+      {changes.editor}
     </>
   );
 }
