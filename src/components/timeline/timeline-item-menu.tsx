@@ -16,8 +16,7 @@ import type { TimelineItem } from './timeline-geometry.js';
 
 /** The entries of an item's menu, or a function of the item that returns them. */
 export type TimelineItemMenu =
-  | readonly MenuEntry[]
-  | ((item: TimelineItem) => readonly MenuEntry[]);
+  readonly MenuEntry[] | ((item: TimelineItem) => readonly MenuEntry[]);
 
 /** The item menu options a timeline hands its items. */
 export interface TimelineItemMenuOptions {

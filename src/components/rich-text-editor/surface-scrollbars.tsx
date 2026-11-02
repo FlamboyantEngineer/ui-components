@@ -5,7 +5,6 @@ import type { EditorView } from 'prosemirror-view';
 import { useEffect, useState, type RefObject } from 'react';
 import {
   OverlayScrollbars,
-  type OverlayMetrics,
   useOverlayMetrics,
   useSharedViewportObserver,
 } from '../scroll-region/scroll-region.js';
@@ -22,10 +21,10 @@ interface SurfaceScrollbarsProps {
   markers: readonly PlacedMarker[];
 }
 
-/** A marker's blocks' span in the surface's scrolled content, in the surface's own pixels. */
+/** A marker's span along the track, as fractions of the document's height. */
 interface TrackMark {
   top: number;
-  bottom: number;
+  height: number;
   severity: FieldSeverity;
 }
 
@@ -35,54 +34,39 @@ function isSameMarks(previous: readonly TrackMark[], next: readonly TrackMark[])
     previous.every(
       (mark, index) =>
         mark.top === next[index]?.top &&
-        mark.bottom === next[index]?.bottom &&
+        mark.height === next[index]?.height &&
         mark.severity === next[index]?.severity,
     )
   );
 }
 
 /**
- * Where each marker's blocks lie in the surface's scrolled content, measured in the surface's own
- * pixels so the marks stay put under an ancestor `transform: scale()`. None while the surface does
- * not scroll.
+ * Where each marker's blocks lie in the surface's whole scrolled height, measured in the
+ * surface's own pixels so the marks stay put under an ancestor `transform: scale()`. None while
+ * the surface does not scroll.
  */
 function measureMarks(
   view: EditorView,
   surface: HTMLElement,
   markers: readonly PlacedMarker[],
 ): TrackMark[] {
-  if (surface.scrollHeight <= surface.clientHeight) return [];
+  const height = surface.scrollHeight;
+  if (height <= surface.clientHeight) return [];
   return markers.flatMap((marker) => {
     const first = view.nodeDOM(marker.from);
     const last = view.nodeDOM(marker.last);
     if (!isHTMLElement(first) || !isHTMLElement(last)) return [];
-    const end = measureInScroller(last, surface);
     const top = measureInScroller(first, surface).top;
-    return [{ top, bottom: end.top + end.height, severity: marker.severity }];
+    const end = measureInScroller(last, surface);
+    const bottom = end.top + end.height;
+    return [{ top: top / height, height: (bottom - top) / height, severity: marker.severity }];
   });
 }
 
 /**
- * The marks along the whole track, on the thumb's own scale: a point a share of the content down
- * lies that share down the track. The thumb, drawn without a minimum length, covers exactly the
- * content in view, so a block's mark lies as far down the thumb as the block lies down the view,
- * and marks out of view stay on the track above and below it.
- */
-function placeOnTrack(marks: readonly TrackMark[], metrics: OverlayMetrics) {
-  if (metrics.contentHeight <= 0) return [];
-  const scale = metrics.trackY / metrics.contentHeight;
-  return marks.map((mark) => ({
-    top: mark.top * scale,
-    height: (mark.bottom - mark.top) * scale,
-    severity: mark.severity,
-  }));
-}
-
-/**
  * The shared overlay scrollbars over the editor's surface, with the host's block markers painted
- * along the vertical track, which the thumb moves past. They draw only while the surface overflows
- * the height its host gives it; the document's own keys, the caret and the wheel keep scrolling it
- * natively.
+ * in the vertical track. They draw only while the surface overflows the height its host gives it;
+ * the document's own keys, the caret and the wheel keep scrolling it natively.
  */
 export function SurfaceScrollbars({ surfaceRef, surfaceId, markers }: SurfaceScrollbarsProps) {
   const observer = useSharedViewportObserver(surfaceRef);
@@ -129,13 +113,12 @@ export function SurfaceScrollbars({ surfaceRef, surfaceId, markers }: SurfaceScr
         drawX={false}
         drawY={metrics.contentHeight > metrics.height + 1}
         isVisible
-        isVerticalExact
-        verticalMarks={placeOnTrack(marks, metrics).map((mark, index) => (
+        verticalMarks={marks.map((mark, index) => (
           <span
             key={index}
             {...hooks.slot('scroll-marker', { severity: mark.severity })}
             aria-hidden="true"
-            style={{ top: mark.top, height: mark.height }}
+            style={{ top: `${mark.top * 100}%`, height: `${mark.height * 100}%` }}
           />
         ))}
       />

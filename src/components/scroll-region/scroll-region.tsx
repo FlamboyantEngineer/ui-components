@@ -324,8 +324,8 @@ export function ScrollRegion({
 
 export { useScrollSpy } from './use-scroll-spy.js';
 
-export { OverlayScrollbars, getThumbSpan } from './overlay-scrollbars.js';
-export { useOverlayMetrics, type OverlayMetrics } from './use-overlay-metrics.js';
+export { OverlayScrollbars } from './overlay-scrollbars.js';
+export { useOverlayMetrics } from './use-overlay-metrics.js';
 export { useSharedViewportObserver } from './use-shared-viewport-observer.js';
 
 export {
