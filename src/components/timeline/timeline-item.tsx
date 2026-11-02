@@ -9,9 +9,12 @@ import {
   readTimelineProgress,
   resolveKeyboardChange,
   toInlineStart,
+  type TimelineItem,
   type TimelineItemChange,
   type TimelineScale,
 } from './timeline-geometry.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import { AvatarGroup } from '../avatar-group/avatar-group.js';
 import { timelineHooks as hooks } from './timeline-hooks.js';
 import { useItemMenu, type TimelineItemMenuOptions } from './timeline-item-menu.js';
 import type { ItemPredecessors, PlacedItem } from './timeline-layout.js';
@@ -55,9 +58,26 @@ function useItemDescription(
     progress === undefined ? '' : strings.timelineProgress(percent.format(progress)),
     predecessors ? strings.timelineDependsOn(predecessors.names) : '',
     predecessors?.hasConflict ? strings.timelineConflict : '',
+    placed.item.assignees?.length
+      ? strings.timelineAssignedTo(placed.item.assignees.map((person) => person.name))
+      : '',
     isEditable ? strings.timelineKeyboardHint(read.kind) : '',
   ];
   return parts.filter(Boolean).join('. ');
+}
+
+/** The avatars of an item's assignees, decorative: the item's description names them. */
+function ItemAssignees({ people }: { people: TimelineItem['assignees'] }) {
+  if (!people?.length) return null;
+  return (
+    <span {...hooks.slot('assignees')} aria-hidden="true">
+      <AvatarGroup
+        people={people.map((person) => ({ ...person, id: toKeyIdentity(person.id) }))}
+        size="xs"
+        maxVisible={2}
+      />
+    </span>
+  );
 }
 
 /**
@@ -113,7 +133,6 @@ export function TimelineItemButton({
           width: isBar ? right - left : undefined,
           touchAction: isEditable ? 'none' : undefined,
         }}
-        aria-label={item.label}
         aria-describedby={descriptionId}
         aria-pressed={selection.isSelectable ? selection.isSelected : undefined}
         onClick={() => {
@@ -126,6 +145,7 @@ export function TimelineItemButton({
           <span {...hooks.slot('progress')} style={{ width: `${progress * 100}%` }} />
         )}
         <span {...hooks.slot('item-label')}>{item.label}</span>
+        <ItemAssignees people={item.assignees} />
         {isBar && isEditable ? (
           <>
             <span {...hooks.slot('handle', { edge: 'start' })} />

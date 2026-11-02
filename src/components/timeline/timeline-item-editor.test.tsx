@@ -134,3 +134,69 @@ describe('TimelineItemEditor drafts', () => {
     );
   });
 });
+
+const ana = { id: 'ana', name: 'Ana Lima' };
+const leo = { id: 'leo', name: 'Leo Park' };
+
+describe('Timeline assignees and links', () => {
+  it('UIC-TIMELINE-1.12 names an item’s assignees and links its name in the table', () => {
+    const assigned: TimelineItem[] = [
+      { ...measure, assignees: [ana, leo], href: '/tasks/measure' },
+      { id: 'tile', rowId: 'survey', label: 'Order tiles', start: '2026-03-09', end: '2026-03-10' },
+    ];
+    const props = {
+      'aria-label': 'Plan',
+      rows: [{ id: 'survey', label: 'Survey' }],
+      items: assigned,
+      range: { start: '2026-03-01', end: '2026-03-31' },
+    };
+    const { container, rerender } = render(
+      <UiProvider locale="en-US">
+        <Timeline {...props} />
+      </UiProvider>,
+    );
+    expect(screen.getByRole('button', { name: 'Measure rooms' })).toHaveAccessibleDescription(
+      /Assigned to Ana Lima and Leo Park/,
+    );
+    expect(screen.getByRole('button', { name: 'Order tiles' })).not.toHaveAccessibleDescription(
+      /Assigned/,
+    );
+    expect(container.querySelectorAll('.ui-timeline__assignees')).toHaveLength(1);
+    rerender(
+      <UiProvider locale="en-US">
+        <Timeline {...props} view="table" />
+      </UiProvider>,
+    );
+    expect(screen.getByRole('columnheader', { name: /Assignees/ })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Measure rooms' })).toHaveAttribute(
+      'href',
+      '/tasks/measure',
+    );
+    expect(screen.getByRole('row', { name: /Order tiles/ })).toHaveTextContent('Unassigned');
+  });
+
+  it('UIC-TIMELINE-1.12 UIC-TIMELINE-2.6 links the item and saves its chosen assignees', async () => {
+    const user = userEvent.setup();
+    const onSave = vi.fn();
+    render(
+      <TimelineItemEditor
+        item={{ ...measure, assignees: [ana], href: '/tasks/measure' }}
+        assignablePeople={[ana, leo]}
+        onSave={onSave}
+        onClose={() => {}}
+      />,
+    );
+    expect(screen.getByRole('link', { name: 'Open Measure rooms' })).toHaveAttribute(
+      'href',
+      '/tasks/measure',
+    );
+    await user.click(screen.getByRole('button', { name: /Remove Ana Lima/ }));
+    const picker = screen.getByRole('combobox', { name: 'Assignees' });
+    await user.type(picker, 'Leo');
+    await user.click(await screen.findByRole('option', { name: /Leo Park/ }));
+    // Escape closes the open list first, then Save submits.
+    await user.keyboard('{Escape}');
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ assignees: [leo] }));
+  });
+});

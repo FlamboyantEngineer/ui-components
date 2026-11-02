@@ -37,6 +37,14 @@ export interface TimelineStrings {
   timelineDatesField: string;
   /** Labels the item editor's day field, for a milestone. */
   timelineDayField: string;
+  /** Names the people an item is assigned to. */
+  timelineAssignedTo: (names: readonly string[]) => string;
+  /** Tells that an item is assigned to nobody. */
+  timelineUnassigned: string;
+  /** Heads the table view's column of assignees, and labels the item editor's assignees field. */
+  timelineAssigneesColumn: string;
+  /** Names the link to an item's own page, from the item's name. */
+  timelineOpenItem: (item: string) => string;
 }
 
 /** The module's text, with the message values each text function reads its arguments as. */
@@ -49,4 +57,6 @@ export const timelineStrings = defineStrings<TimelineStrings>({
   timelineQuarter: (quarter) => ({ quarter }),
   timelineItemActions: (item) => ({ item }),
   timelineEditItem: (item) => ({ item }),
+  timelineAssignedTo: (names) => ({ names }),
+  timelineOpenItem: (item) => ({ item }),
 });

@@ -191,6 +191,19 @@
   text-overflow: ellipsis;
 }
 
+/* A bar's assignees sit at its end, after the label, which gives way to them. */
+.ui-timeline__item-label {
+  min-width: 0;
+}
+
+.ui-timeline__assignees {
+  display: flex;
+  position: relative;
+  flex: none;
+  margin-inline-start: auto;
+  padding-inline-start: 4px;
+}
+
 .ui-timeline__handle {
   position: absolute;
   inset-block: 0;
@@ -247,16 +260,28 @@
   overflow: visible;
 }
 
+/* A milestone's assignees sit before its diamond, its label after it. */
+.ui-timeline__item[data-kind='milestone'] .ui-timeline__assignees {
+  position: absolute;
+  inset-inline-end: 20px;
+  margin: 0;
+  padding: 0;
+}
+
 .ui-timeline__table {
   max-height: 24rem;
 }
 
-/* The item editor: a narrow modal whose fields stack in one column. */
-.ui-timeline-item-editor {
-  max-width: 440px;
+/* The item editor: a narrow modal panel whose fields stack in one column. */
+.ui-timeline-item-editor .ui-modal__panel {
+  width: min(440px, 100%);
 }
 
 .ui-timeline-item-editor__form {
   display: grid;
   gap: 4px;
+}
+
+.ui-timeline-item-editor__link {
+  justify-self: start;
 }

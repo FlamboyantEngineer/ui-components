@@ -2,6 +2,60 @@ import { expect, test, matrixCell } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 test.describe('Timeline lab', () => {
+  test('UIC-TIMELINE-1.12 UIC-TIMELINE-2.6 shows, edits and keeps assignees and links task cards', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('timeline');
+    const demo = page.locator('[data-lab-demo="task-menus"]');
+    const timeline = demo.getByRole('group', { name: 'Garden plan' });
+    const sow = timeline.getByRole('button', { name: 'Sow seeds' });
+    await sow.scrollIntoViewIfNeeded();
+    await expect(sow).toHaveAccessibleDescription(/Assigned to Ana Lima and Leo Park/);
+    const avatars = sow.locator('.ui-timeline__assignees');
+    const [bar, group] = await Promise.all([sow.boundingBox(), avatars.boundingBox()]);
+    expect((group?.x ?? 0) + (group?.width ?? 0)).toBeLessThanOrEqual(
+      (bar?.x ?? 0) + (bar?.width ?? 0),
+    );
+    await expect(
+      timeline.getByRole('button', { name: 'Lay gravel' }).locator('.ui-timeline__assignees'),
+    ).toHaveCount(0);
+    // The menu links the task card.
+    await sow.click({ button: 'right' });
+    await expect(page.getByRole('menuitem', { name: 'Open task card' })).toHaveAttribute(
+      'href',
+      '#tasks/sow',
+    );
+    await page.getByRole('menuitem', { name: 'Edit' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Edit Sow seeds' });
+    await expect(dialog.getByRole('link', { name: 'Open Sow seeds' })).toHaveAttribute(
+      'href',
+      '#tasks/sow',
+    );
+    // Reassign: Ana off, Sam on.
+    await dialog.getByRole('button', { name: /Remove Ana Lima/ }).click();
+    const picker = dialog.getByRole('combobox', { name: 'Assignees' });
+    await picker.fill('Sam');
+    await page.getByRole('option', { name: /Sam Ortiz/ }).click();
+    await page.keyboard.press('Escape');
+    await dialog.getByRole('button', { name: 'Save' }).click();
+    await expect(dialog).toBeHidden();
+    await expect(sow).toHaveAccessibleDescription(/Assigned to Leo Park and Sam Ortiz/);
+    // A move keeps them.
+    await sow.focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(sow).toHaveAccessibleDescription(/Mar 13, 2026 to Mar 17, 2026/);
+    await expect(sow).toHaveAccessibleDescription(/Assigned to Leo Park and Sam Ortiz/);
+    // The table names them, links the task card and marks the unassigned item.
+    await demo.getByRole('radio', { name: 'Table' }).click();
+    await expect(demo.getByRole('link', { name: 'Sow seeds' })).toHaveAttribute(
+      'href',
+      '#tasks/sow',
+    );
+    await expect(demo.getByRole('row', { name: /Lay gravel/ })).toContainText('Unassigned');
+    await lab.expectAccessible('[data-lab-demo="task-menus"]');
+  });
+
   test('UIC-TIMELINE-2.5 UIC-TIMELINE-2.6 edits an item from its context menu in a modal editor', async ({
     page,
     lab,
@@ -17,7 +71,12 @@ test.describe('Timeline lab', () => {
     await dig.click({ button: 'right' });
     const menu = page.getByRole('menu', { name: 'Dig beds actions' });
     await expect(menu).toBeVisible();
-    await expect(menu.getByRole('menuitem')).toHaveText(['Edit', 'Mark complete', 'Remove']);
+    await expect(menu.getByRole('menuitem')).toHaveText([
+      'Open task card',
+      'Edit',
+      'Mark complete',
+      'Remove',
+    ]);
     await lab.expectAccessible('.ui-menu-popover');
     await menu.getByRole('menuitem', { name: 'Edit' }).click();
     const dialog = page.getByRole('dialog', { name: 'Edit Dig beds' });
@@ -84,9 +143,9 @@ test.describe('Timeline lab', () => {
       'Q3',
       'Q4',
     ]);
-    const progress = day.locator(
-      '.ui-timeline__item[aria-label="Chopping"] .ui-timeline__progress',
-    );
+    const progress = day
+      .getByRole('button', { name: 'Chopping' })
+      .locator('.ui-timeline__progress');
     expect(Math.round((await progress.boundingBox())?.width ?? 0)).toBe(5 * 16 - 1);
     await lab.expectAccessible();
   });
