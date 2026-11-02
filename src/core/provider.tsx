@@ -356,29 +356,38 @@ export function usePersistentState<T>(
   const { codec, writeDelay = 0 } = options;
   const adapter = useUiStorage();
   const storage = key === undefined ? undefined : adapter;
-  // Plain state does not belong to an adapter; persisted state belongs to both adapter and key.
-  const read = (): T => {
+  // Plain state does not belong to an adapter; persisted state belongs to both adapter and key. The
+  // stored text read comes along, so a later read can tell whether the store changed since.
+  const read = (): { value: T; raw: string | null } => {
     const fallback = () =>
       typeof initialValue === 'function' ? (initialValue as () => T)() : initialValue;
-    if (key === undefined || storage === undefined) return fallback();
+    if (key === undefined || storage === undefined) return { value: fallback(), raw: null };
     const raw = storage.getItem(key);
-    if (raw === null) return fallback();
+    if (raw === null) return { value: fallback(), raw };
     try {
-      return codec.parse(raw);
+      return { value: codec.parse(raw), raw };
     } catch {
-      return fallback();
+      return { value: fallback(), raw };
     }
   };
 
-  const [state, setState] = useState(() => ({ key, storage, value: read() }));
+  const [state, setState] = useState(() => ({ key, storage, ...read() }));
   let current = state;
   if (state.key !== key || state.storage !== storage) {
-    current = { key, storage, value: read() };
+    current = { key, storage, ...read() };
     setState(current);
   }
 
-  const latestRef = useLatest({ ...current, codec, writeDelay });
+  const latestRef = useLatest({ ...current, codec, writeDelay, read });
   const delayed = useDelayedWrite(current);
+  // The last owner's pending change lands in its layout cleanup, after the new owner was read in
+  // render. A new adapter over the same backing store then holds newer text than that read, so the
+  // new owner reads again before paint and keeps what was written.
+  useLayoutEffect(() => {
+    const { key, storage, raw, read } = latestRef.current;
+    if (key === undefined || storage === undefined || storage.getItem(key) === raw) return;
+    setState({ key, storage, ...read() });
+  }, [key, storage, latestRef]);
 
   const setValue = useCallback<Dispatch<SetStateAction<T>>>(
     (action) => {
@@ -390,7 +399,7 @@ export function usePersistentState<T>(
         delayed.schedule(write, writeDelay);
         if (writeDelay <= 0) delayed.flush();
       }
-      setState({ key, storage, value: next });
+      setState({ key, storage, value: next, raw: latestRef.current.raw });
     },
     [latestRef, delayed],
   );

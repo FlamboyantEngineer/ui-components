@@ -6,7 +6,7 @@ import type { UiStrings } from '../../src/core/strings.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { ProviderClock } from './provider-clock-cases.js';
 import { PausedShortcut } from './provider-overlay-cases.js';
-import { OptionalOptions, StorageSwitch } from './provider-storage-cases.js';
+import { OptionalOptions, StorageSwitch, WrappedStorage } from './provider-storage-cases.js';
 
 const replacedGlyphs = Object.fromEntries(glyphNames.map((name) => [name, SquareGlyph]));
 
@@ -222,6 +222,12 @@ mountLab(
       description="Switch adapters and keys without remounting the counter. Each stored value stays with its own adapter and key."
     >
       <StorageSwitch />
+    </LabSection>
+    <LabSection
+      title="Storage wrapped anew"
+      description="The provider gets a new adapter over the same storage on every render. Type, then rerender the provider within 300ms: the note keeps your text."
+    >
+      <WrappedStorage />
     </LabSection>
     <LabSection
       title="Options that come and go"

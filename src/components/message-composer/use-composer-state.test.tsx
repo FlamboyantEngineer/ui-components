@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
-import { createMemoryStorage } from '../../core/storage.js';
+import { createMemoryStorage, createSafeStorage } from '../../core/storage.js';
 import { MessageComposer, type MessageComposerProps } from './message-composer.js';
 
 const input = () => screen.getByRole<HTMLTextAreaElement>('textbox');
@@ -120,6 +120,27 @@ describe('MessageComposer conversations', () => {
     await user.keyboard(' and stove');
     await vi.waitFor(() => expect(setItem).toHaveBeenCalledTimes(2));
     expect(storage.getItem('draft')).toBe('{"text":"Pack the tent and stove","tokens":[]}');
+  });
+
+  it('UIC-MESSAGE-COMPOSER-3.6 keeps typed text when the provider wraps the same storage anew', async () => {
+    const user = userEvent.setup();
+    const backing = createMemoryStorage();
+    function Conversation({ pass }: { pass: number }) {
+      // A host that wraps its storage inline hands the provider a new adapter on every render.
+      return (
+        <UiProvider storage={createSafeStorage(backing)}>
+          <MessageComposer persistKey="draft" onSubmit={() => undefined} data-pass={pass} />
+        </UiProvider>
+      );
+    }
+    const { rerender } = render(<Conversation pass={1} />);
+    await user.click(input());
+    await user.keyboard('Pack the tent');
+    rerender(<Conversation pass={2} />);
+    expect(input()).toHaveValue('Pack the tent');
+    expect(backing.getItem('draft')).toBe('{"text":"Pack the tent","tokens":[]}');
+    await user.keyboard(' and stove');
+    expect(input()).toHaveValue('Pack the tent and stove');
   });
 
   it('UIC-MESSAGE-COMPOSER-3.6 keeps the draft in the provider storage per key', async () => {
