@@ -535,6 +535,58 @@ test.describe('Board lab', () => {
     await expect(grid.getByRole('row', { name: 'Inventory item 500' })).toBeVisible();
   });
 
+  test('UIC-BOARD-1.1 UIC-BOARD-1.4 keeps a nested board inside its card and its own styles', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('board');
+    const nested = demo(page, 'nested');
+    const outer = nested.getByRole('group', { name: 'Rooms' });
+    const inner = nested.getByRole('group', { name: 'Hall steps' });
+    const card = outer.locator('.ui-board__card').first();
+    const geometry = async () =>
+      inner.evaluate((board) => {
+        const host = board.closest('.ui-board__card')?.getBoundingClientRect();
+        const box = board.getBoundingClientRect();
+        const headers = [...board.querySelectorAll('.ui-board__column')].map((header) =>
+          header.getBoundingClientRect(),
+        );
+        const view = { left: box.left, right: box.left + board.clientWidth };
+        return {
+          inside: Boolean(host && box.left >= host.left - 0.5 && box.right <= host.right + 0.5),
+          // Headers past the board's edge are scrolled out of its own view, not drawn over.
+          scrolls: board.scrollWidth > board.clientWidth,
+          firstHeaderInView: (headers[0]?.left ?? 0) >= view.left - 0.5,
+        };
+      });
+    expect(await geometry()).toEqual({ inside: true, scrolls: true, firstHeaderInView: true });
+    // The card is as tall as its content: the board and the output below it.
+    const [cardBox, outputBox] = await Promise.all([
+      card.boundingBox(),
+      card.locator('[data-lab-output]').boundingBox(),
+    ]);
+    expect((outputBox?.y ?? 0) + (outputBox?.height ?? 0)).toBeLessThanOrEqual(
+      (cardBox?.y ?? 0) + (cardBox?.height ?? 0),
+    );
+    // The board scrolls its own columns: the Done column comes into its view.
+    await inner.evaluate((board) => board.scrollTo({ left: board.scrollWidth }));
+    const done = inner.locator('.ui-board__column').nth(1);
+    const [doneBox, innerBox] = await Promise.all([done.boundingBox(), inner.boundingBox()]);
+    expect((doneBox?.x ?? 0) + (doneBox?.width ?? 0)).toBeLessThanOrEqual(
+      (innerBox?.x ?? 0) + (innerBox?.width ?? 0) + 0.5,
+    );
+    // Collapsing the outer column restyles its own cards, not the inner board's.
+    await outer.getByRole('button', { name: 'Collapse To do' }).first().click();
+    await expect(card).toHaveAttribute('data-collapsed', 'true');
+    await expect(inner.locator('.ui-board__card[data-collapsed]')).toHaveCount(0);
+    expect(
+      await inner
+        .locator('.ui-board__card')
+        .first()
+        .evaluate((node) => getComputedStyle(node).flexDirection),
+    ).toBe('row');
+  });
+
   test('UIC-BOARD-2.3 moves a nested board card on its own board', async ({ page, lab }) => {
     await lab.open('board');
     const nested = demo(page, 'nested');

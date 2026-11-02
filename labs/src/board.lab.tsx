@@ -454,7 +454,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Nested boards and fields"
-      description="A card that draws a board of its own, and a card with a notes field. Alt+Arrow keys on a card move it on the board it belongs to, even where both boards use the same card keys. In the notes field, the arrow keys, Alt+Arrow keys and typing stay with the field."
+      description="A card that draws a board of its own, kept inside the card: it scrolls its own columns sideways, and collapsing the outer column restyles only the outer cards. A card with a notes field. Alt+Arrow keys on a card move it on the board it belongs to, even where both boards use the same card keys. In the notes field, the arrow keys, Alt+Arrow keys and typing stay with the field."
     >
       <NestedBoards />
     </LabSection>
