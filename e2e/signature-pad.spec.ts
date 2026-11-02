@@ -296,3 +296,65 @@ test.describe('Signature Pad lab', () => {
     ).toBeVisible();
   });
 });
+
+test('UIC-SIGNATURE-PAD-4.2 refuses an image over the caller limit and keeps the signature on file', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('signature-pad');
+  const demo = page.locator('[data-lab-demo="image-limit"]');
+  const committed = demo.locator('[data-lab-output="committed"]');
+  const fromLink = async (sample: string) => {
+    const href = requireDefined(
+      await demo.locator(`[data-lab-sample="${sample}"]`).getAttribute('href'),
+    );
+    return Buffer.from(href.slice(href.indexOf(',') + 1), 'base64');
+  };
+  const upload = async (name: string, buffer: Buffer) => {
+    const chooser = page.waitForEvent('filechooser');
+    await demo.getByRole('button', { name: 'Upload image' }).click();
+    await (await chooser).setFiles({ name, mimeType: 'image/png', buffer });
+  };
+  const small = await fromLink('small');
+  const large = await fromLink('large');
+  expect(small.length).toBeLessThan(1024);
+  expect(large.length).toBeGreaterThan(1024);
+  expect(large.length).toBeLessThan(64 * 1024);
+  await expect(demo.locator('[data-lab-output="limit"]')).toHaveText('1024 bytes');
+  const onFile = `image/png 96×32, ${String(small.length)} bytes`;
+  await expect(committed).toHaveText(onFile);
+
+  await upload('large-signature.png', large);
+  await expect(demo.locator('.ui-signature-pad__image-message')).toHaveText(
+    'Choose an image of 1.0 KB or less.',
+  );
+  await expect(committed).toHaveText(onFile);
+
+  await demo.getByRole('img', { name: 'Signature on file' }).evaluate(
+    (node, bytes) => {
+      const transfer = new DataTransfer();
+      transfer.items.add(new File([new Uint8Array(bytes)], 'pasted.png', { type: 'image/png' }));
+      node.dispatchEvent(
+        new ClipboardEvent('paste', { clipboardData: transfer, bubbles: true, cancelable: true }),
+      );
+    },
+    [...large],
+  );
+  await expect(demo.locator('.ui-signature-pad__image-message')).toHaveText(
+    'Choose an image of 1.0 KB or less.',
+  );
+  await expect(committed).toHaveText(onFile);
+
+  await upload('sign.png', tinyPng);
+  await expect(committed).toHaveText(`image/png 2×1, ${String(tinyPng.length)} bytes`);
+  await expect(demo.locator('.ui-signature-pad__image-message')).toBeEmpty();
+
+  await demo
+    .getByRole('radiogroup', { name: 'Largest image' })
+    .getByRole('radio', { name: '64 KB' })
+    .click();
+  await expect(demo.locator('[data-lab-output="limit"]')).toHaveText('65536 bytes');
+  await upload('large-signature.png', large);
+  await expect(committed).toHaveText(`image/png 120×60, ${String(large.length)} bytes`);
+  await lab.expectAccessible('[data-lab-demo="image-limit"]');
+});

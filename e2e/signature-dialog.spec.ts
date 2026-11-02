@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test';
 import { expect, matrixCell, test } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 async function settled(page: Page) {
   const overlay = page.locator('.ui-modal.ui-signature-dialog');
@@ -153,5 +154,57 @@ test.describe('Signature Dialog lab', () => {
     await page.locator('[data-lab-open="change"]').click();
     await settled(page);
     await lab.expectAccessible('.ui-modal');
+  });
+});
+
+test.describe('Signature Dialog sizes and mounting', () => {
+  test('UIC-SIGNATURE-DIALOG-1.1 takes every modal size and its own confirm label', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('signature-dialog');
+    const viewport = requireDefined(page.viewportSize());
+    let previous = 0;
+    for (const size of ['sm', 'md', 'lg', 'xl', 'full']) {
+      for (const content of ['short', 'long']) {
+        const opener = matrixCell(page, `size=${size} content=${content}`).getByRole('button');
+        await opener.click();
+        const dialog = page.getByRole('dialog', { name: `Sign the bake sheet, ${size}` });
+        await settled(page);
+        const box = requireDefined(await dialog.boundingBox());
+        if (content === 'short') expect(box.width).toBeGreaterThan(previous);
+        previous = box.width;
+        expect(box.height).toBeLessThanOrEqual(viewport.height);
+        if (size === 'full') expect(box.width).toBeGreaterThan(viewport.width - 48);
+        const body = dialog.locator('.ui-modal__body');
+        const scrolls = await body.evaluate((node) => node.scrollHeight > node.clientHeight);
+        expect(scrolls).toBe(content === 'long');
+        await expect(dialog.getByRole('button', { name: 'Sign and serve' })).toBeVisible();
+        await page.keyboard.press('Escape');
+        await expect(dialog).toHaveCount(0);
+        await expect(opener).toBeFocused();
+      }
+    }
+  });
+
+  test('UIC-SIGNATURE-DIALOG-1.1 opens on mount with defaultOpen, closes and opens again', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('signature-dialog');
+    const demo = page.locator('[data-lab-demo="open-on-mount"]');
+    const dialog = page.getByRole('dialog', { name: 'Sign the opening checklist' });
+    await expect(dialog).toHaveCount(0);
+    await demo.getByRole('button', { name: 'Mount the dialog open' }).click();
+    await settled(page);
+    await expect(dialog.getByRole('button', { name: 'Sign the checklist' })).toBeVisible();
+    await lab.expectAccessible('.ui-signature-dialog');
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(demo.locator('[data-lab-output="dialog"]')).toHaveText('closed');
+    await demo.getByRole('button', { name: 'Mount the dialog open' }).click();
+    await settled(page);
+    await expect(demo.locator('[data-lab-output="dialog"]')).toHaveText('open');
+    await expect(demo.locator('[data-lab-output="mounts"]')).toHaveText('2');
   });
 });

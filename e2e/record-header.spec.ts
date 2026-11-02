@@ -83,3 +83,27 @@ test.describe('Record Header lab', () => {
     await expect(title.locator('.ui-inline-edit__value')).toHaveText('Rack for rye');
   });
 });
+
+test('UIC-RECORD-HEADER-1.3 an empty editable title shows its prompt until a title is saved', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('record-header');
+  const demo = page.locator('[data-lab-demo="untitled"]');
+  const heading = demo.getByRole('heading', { level: 3 });
+  const prompt = heading.locator('.ui-inline-edit__placeholder');
+  const value = heading.locator('.ui-inline-edit__value');
+  await expect(prompt).toHaveText('Name this recipe');
+  await expect(value).toHaveCount(0);
+  await heading.getByRole('button', { name: /^Edit Title/ }).click();
+  await page.keyboard.type('Plum crumble');
+  await page.keyboard.press('Enter');
+  await expect(value).toHaveText('Plum crumble');
+  await expect(demo.getByRole('heading', { name: 'Plum crumble', level: 3 })).toBeVisible();
+  await expect(demo.locator('[data-lab-output="title"]')).toHaveText('"Plum crumble"');
+  await expect(prompt).toHaveCount(0);
+  await demo.getByRole('button', { name: 'Clear the title' }).click();
+  await expect(prompt).toHaveText('Name this recipe');
+  await expect(demo.locator('[data-lab-output="title"]')).toHaveText('""');
+  await lab.expectAccessible('[data-lab-demo="untitled"]');
+});

@@ -4,7 +4,6 @@ import { Form } from '../../src/components/form/form.js';
 import {
   SignaturePad,
   type DrawnSignature,
-  type ImageSignature,
   type SignaturePadMenuIcons,
   type SignaturePadMode,
   type SignatureValue,
@@ -15,6 +14,8 @@ import {
   formatSignatureSvg,
 } from '../../src/components/signature-pad/index.js';
 import { SvgMarkup } from '../../src/components/svg-markup/svg-markup.js';
+import { SignaturePadLimitCases } from './signature-pad-limit-cases.js';
+import { imageSignature } from './signature-samples.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 import {
@@ -30,15 +31,6 @@ const tail = 'M360 150 Q400 60 440 130 Q470 180 520 70';
 const underline = 'M60 175 L540 165';
 
 const signature: DrawnSignature = { kind: 'drawn', width: 600, height: 200, paths: [loop, tail] };
-
-/** A small transparent PNG of a wavy signature, as an image signature holds it. */
-const imageSignature: ImageSignature = {
-  kind: 'image',
-  src: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAAgCAYAAADtwH1UAAAA1ElEQVR42u2Y2w3EIAwEKeNKSFnpv4m7CqJg3+IHzEr5isDWDrIxYyCEEEIIIbSXPtf9ffpwJ9H8lRAAbgCgNCYLeBvzZ/6thq2GUBL4TCLqZC0AOgN3JeeFpAKuNsYKOxSCJbgi0dk9VMbM7JMKwRpUbYjqcKQfMM8iT7B/kvSszY5XDkBXI73xtiglinIS3asGtdXXlFs01KjrZMT19W1gLHeljBioqkzQ5YaqXQwpa/5JhpR+wOORq8HTcpXJ+kgIA6HjSxDf4j6JeQA4GwBC2+oHOV2NzjMN4EUAAAAASUVORK5CYII=',
-  type: 'image/png',
-  width: 96,
-  height: 32,
-};
 
 const samples: SampleValues<SignatureValue | null> = {
   value: signature,
@@ -294,5 +286,6 @@ mountLab(
     >
       <BlankValue />
     </LabSection>
+    <SignaturePadLimitCases />
   </>,
 );
