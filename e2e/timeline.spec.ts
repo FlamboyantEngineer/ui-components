@@ -90,6 +90,58 @@ test.describe('Timeline lab', () => {
     await lab.expectAccessible('[data-lab-demo="task-menus"]');
   });
 
+  test('UIC-TIMELINE-2.6 starts a new draft for each opening, even one during the closing editor exit', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('timeline');
+    // A slow exit keeps the closing editor drawn while the item opens again.
+    await page.addStyleTag({
+      content:
+        '@keyframes lab-leave { to { opacity: 0.99; } } .ui-modal[data-exiting] { animation: lab-leave 3s linear; }',
+    });
+    const demo = page.locator('[data-lab-demo="task-menus"]');
+    const timeline = demo.getByRole('group', { name: 'Garden plan' });
+    const log = demo.locator('[data-lab-log="task-menus"]');
+    const editor = page.locator('.ui-timeline-item-editor');
+    const dig = timeline.getByRole('button', { name: /^Dig/ });
+    /** Opens the item's editor from its menu, without the pointer, so the exiting editor allows it. */
+    const openEditor = async () => {
+      await dig.dispatchEvent('contextmenu', { button: 2 });
+      const menu = page.getByRole('menu', { name: /actions$/ });
+      await expect(menu).toBeVisible();
+      await menu.getByRole('menuitem', { name: 'Edit' }).dispatchEvent('click');
+    };
+    await dig.scrollIntoViewIfNeeded();
+    await openEditor();
+    const name = page.getByRole('dialog', { name: 'Edit Dig beds' }).getByRole('textbox', {
+      name: 'Name',
+    });
+    await name.fill('Cancelled draft');
+    await page.getByRole('dialog').getByRole('button', { name: 'Cancel' }).click();
+    await expect(editor).toHaveAttribute('data-exiting', 'true');
+    // Reopened during the exit: the field shows the item, not the cancelled draft.
+    await openEditor();
+    const again = page.getByRole('dialog', { name: 'Edit Dig beds' }).getByRole('textbox', {
+      name: 'Name',
+    });
+    await expect(again).toHaveValue('Dig beds');
+    await again.fill('Dig beds once');
+    await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
+    await expect(log).toHaveText('Last action: saved Dig beds once');
+    await expect(editor).toHaveAttribute('data-exiting', 'true');
+    // Saved, then reopened during the exit: the new opening saves too.
+    await openEditor();
+    const third = page.getByRole('dialog', { name: 'Edit Dig beds once' }).getByRole('textbox', {
+      name: 'Name',
+    });
+    await expect(third).toHaveValue('Dig beds once');
+    await third.fill('Dig beds twice');
+    await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
+    await expect(log).toHaveText('Last action: saved Dig beds twice');
+    await expect(timeline.getByRole('button', { name: 'Dig beds twice' })).toBeVisible();
+  });
+
   test('UIC-TIMELINE-2.5 UIC-TIMELINE-2.6 edits an item from its context menu in a modal editor', async ({
     page,
     lab,

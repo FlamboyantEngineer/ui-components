@@ -179,7 +179,8 @@ function ItemForm({ item, people, formRef, onSave }: ItemFormProps) {
  * milestone), a bar's progress and, given the assignable people, its assignees; a link to the
  * item's own page when it has one. Save checks the fields and hands the edit to the host once;
  * Cancel and Escape leave the item as it was. A read-only item opens with read-only fields and no
- * Save. The draft belongs to the item it opened on, by id.
+ * Save. Each opening owns its draft: reopening, even the same item while the editor is still
+ * closing, starts a new draft from the item as it is then, which saves once.
  */
 export function TimelineItemEditor({
   item,
@@ -192,6 +193,11 @@ export function TimelineItemEditor({
   // The last item stays drawn while the editor closes.
   const [shown, setShown] = useState(item);
   if (item !== null && item !== shown) setShown(item);
+  // Each opening counts, so the form a closing editor keeps drawn is never taken for the next one.
+  const [opening, setOpening] = useState({ isOpen: item !== null, count: 0 });
+  if (opening.isOpen !== (item !== null)) {
+    setOpening({ isOpen: item !== null, count: opening.count + (item === null ? 0 : 1) });
+  }
   const formRef = useRef<HTMLFormElement>(null);
   const isReadOnly = Boolean(shown?.isReadOnly);
   const label = shown?.label ?? '';
@@ -212,7 +218,7 @@ export function TimelineItemEditor({
     >
       {shown ? (
         <ItemForm
-          key={toKeyIdentity(shown.id)}
+          key={`${opening.count}:${toKeyIdentity(shown.id)}`}
           item={shown}
           people={assignablePeople}
           formRef={formRef}
