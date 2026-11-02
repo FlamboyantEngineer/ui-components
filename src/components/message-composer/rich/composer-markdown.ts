@@ -12,7 +12,9 @@ const backtickRun = /`+/g;
 
 /** A fence longer than every run of backticks in `code`, so no line of it closes the block. */
 function toFence(code: string): string {
-  const longest = Math.max(0, ...Array.from(code.matchAll(backtickRun), ([run]) => run.length));
+  // Counted run by run: spreading every run into `Math.max` overflows the argument limit.
+  let longest = 0;
+  for (const [run] of code.matchAll(backtickRun)) longest = Math.max(longest, run.length);
   return '`'.repeat(Math.max(3, longest + 1));
 }
 
