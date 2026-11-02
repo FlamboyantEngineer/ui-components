@@ -2,6 +2,7 @@ import { MinusGlyph, PlusGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { ZoomControl, type ZoomPreset } from '../../src/components/zoom-control/zoom-control.js';
+import { ZoomControlFormatCases } from './zoom-control-format-cases.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { defaultZoomLevels, findNextZoomLevel } from '../../src/components/zoom-control/index.js';
 import { LabHelperCalls } from './lab-helper-calls.js';
@@ -217,5 +218,6 @@ mountLab(
         ]}
       />
     </LabSection>
+    <ZoomControlFormatCases />
   </>,
 );

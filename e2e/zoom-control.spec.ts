@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, familySelector, test, matrixCell } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 test.describe('Zoom Control lab', () => {
@@ -185,4 +185,51 @@ test('UIC-ZOOM-CONTROL-1.3 shows the zoom level helpers in a host-side snippet',
   await expect(call('findNextZoomLevel(defaultZoomLevels, 110, 1)')).toHaveText('125');
   await expect(call('findNextZoomLevel(defaultZoomLevels, 110, -1)')).toHaveText('100');
   await expect(call('findNextZoomLevel(defaultZoomLevels, 400, 1)')).toHaveText('undefined');
+});
+
+test.describe('Zoom Control formats', () => {
+  test('UIC-ZOOM-CONTROL-1.5 formats fractional values per locale and reports raw requests', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('zoom-control');
+    const demo = page.locator('[data-lab-demo="formatted-zoom"]');
+    const part = (locale: string) => {
+      const root = demo.locator(`[data-lab-locale="${locale}"]`);
+      return {
+        root,
+        value: root.locator('output.ui-zoom-control__value'),
+        slider: root.getByRole('slider'),
+        requests: root.locator('[data-lab-output="requests"]'),
+      };
+    };
+    const english = part('en-US');
+    const german = part('de-DE');
+    const expectText = async (locale: ReturnType<typeof part>, text: string) => {
+      await expect(locale.value).toHaveText(text);
+      // The same text, including the locale's non-breaking spaces.
+      expect(await locale.slider.getAttribute('aria-valuetext')).toBe(
+        await locale.value.textContent(),
+      );
+    };
+    await expectText(english, '137.5%');
+    await expectText(german, '137,5 %');
+    await demo.getByRole('radio', { name: 'whole' }).press('Space');
+    await expectText(english, '138%');
+    await expectText(german, '138 %');
+    await demo.getByRole('radio', { name: 'words' }).press('Space');
+    await expectText(english, '137.5 percent');
+    await expectText(german, '137,5 Prozent');
+
+    await demo.getByRole('radio', { name: 'whole' }).press('Space');
+    await english.root.getByRole('button', { name: 'Zoom out' }).click();
+    await english.root.getByRole('button', { name: 'Zoom out' }).click();
+    await expectText(english, '67%');
+    await expect(english.requests).toHaveText('100, 66.67');
+    await german.slider.focus();
+    await page.keyboard.press('ArrowLeft');
+    await expectText(german, '100 %');
+    await expect(german.requests).toHaveText('100');
+    await lab.expectAccessible(familySelector('zoom-control-format-cases'));
+  });
 });

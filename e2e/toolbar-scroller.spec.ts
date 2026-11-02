@@ -1,5 +1,5 @@
 import type { Locator } from '@playwright/test';
-import { cellSelector, expect, test } from './fixtures.js';
+import { cellSelector, expect, familySelector, test } from './fixtures.js';
 
 function cell(direction: string, buttons: string, position: string) {
   return cellSelector(`direction=${direction} buttons=${buttons} position=${position}`);
@@ -227,5 +227,34 @@ test.describe('Toolbar Scroller lab', () => {
     await expect(demo.locator('.ui-toolbar-scroller')).toHaveAttribute('data-overflow', 'scroll');
     await expect(find).toBeFocused();
     await lab.expectAccessible();
+  });
+
+  test('UIC-TOOLBAR-SCROLLER-3.2 keeps a disabled tool from running in the strip and the menu', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('toolbar-scroller');
+    const demo = page.locator('[data-lab-demo="disabled-tool"]');
+    const toolbar = demo.getByRole('toolbar', { name: 'Formatting with a disabled tool' });
+    const last = demo.locator('[data-lab-output="last"]');
+    const disable = demo.getByRole('switch', { name: 'Disable Link' });
+    await toolbar.locator('.ui-toolbar-scroller__overflow button').click();
+    const link = page.getByRole('menuitem', { name: 'Link' });
+    await expect(link).toHaveAttribute('aria-disabled', 'true');
+    await page.keyboard.press('Escape');
+    await disable.press('Space');
+    await toolbar.locator('.ui-toolbar-scroller__overflow button').click();
+    await page.getByRole('menuitem', { name: 'Link' }).click();
+    await expect(last).toHaveText('Link from the menu');
+
+    await demo.getByRole('radio', { name: 'Wide' }).press('Space');
+    await expect(toolbar.locator('.ui-toolbar-scroller__overflow')).toHaveCount(0);
+    const button = toolbar.getByRole('button', { name: 'Link' });
+    await disable.press('Space');
+    await expect(button).toBeDisabled();
+    await disable.press('Space');
+    await button.click();
+    await expect(last).toHaveText('Link from the strip');
+    await lab.expectAccessible(familySelector('toolbar-scroller-cases'));
   });
 });

@@ -1,4 +1,4 @@
-import { cellSelector, expect, test } from './fixtures.js';
+import { cellSelector, expect, familySelector, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 const cell = (id: string) => `${cellSelector(id)} .ui-wizard`;
@@ -202,5 +202,39 @@ test.describe('Wizard lab', () => {
     await expect(page.locator('.ui-modal[data-entering]')).toHaveCount(0);
     await lab.expectAccessible('.ui-modal');
     await page.keyboard.press('Escape');
+  });
+
+  test('UIC-WIZARD-2.3 UIC-WIZARD-2.7 recovers from a rejected check and a rejected finish', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('wizard');
+    const demo = page.locator('[data-lab-demo="failing-wizard"]');
+    const wizard = demo.locator('.ui-wizard');
+    const attempts = demo.locator('[data-lab-output="attempts"]');
+    const street = demo.getByRole('textbox', { name: 'Street' });
+    await street.fill('12 Harbour Road');
+    await demo.getByRole('button', { name: 'Next' }).click();
+    await expect(wizard).toHaveAttribute('data-pending', 'true');
+    await expect(demo.locator('.ui-wizard__error')).toHaveText(
+      'The address service is unreachable.',
+    );
+    await expect(wizard).not.toHaveAttribute('data-pending');
+    await expect(street).toHaveValue('12 Harbour Road');
+    await expect(attempts).toHaveText('check failed');
+
+    await demo.getByRole('switch', { name: 'Fail the address check' }).press('Space');
+    await demo.getByRole('button', { name: 'Next' }).click();
+    await expect(demo.getByText('Deliver to 12 Harbour Road.')).toBeVisible();
+    await expect(demo.locator('.ui-wizard__error')).toHaveCount(0);
+
+    await demo.getByRole('button', { name: 'Place order' }).click();
+    await expect(demo.locator('.ui-wizard__error')).toHaveText('The order could not be placed.');
+    await expect(wizard).not.toHaveAttribute('data-finished');
+    await demo.getByRole('switch', { name: 'Fail the finish' }).press('Space');
+    await demo.getByRole('button', { name: 'Place order' }).click();
+    await expect(wizard).toHaveAttribute('data-finished', 'true');
+    await expect(attempts).toHaveText('check failed, check passed, finish failed, finished');
+    await lab.expectAccessible(familySelector('wizard-failure-cases'));
   });
 });

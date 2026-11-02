@@ -4,6 +4,7 @@ import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { Wizard, type WizardStep } from '../../src/components/wizard/wizard.js';
+import { WizardFailureCases } from './wizard-failure-cases.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 interface Project {
@@ -356,5 +357,6 @@ mountLab(
         ]}
       />
     </LabSection>
+    <WizardFailureCases />
   </>,
 );

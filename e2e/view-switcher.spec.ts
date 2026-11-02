@@ -1,4 +1,4 @@
-import { cellSelector, expect, test } from './fixtures.js';
+import { cellSelector, expect, familySelector, test } from './fixtures.js';
 
 const cell = (id: string) => `${cellSelector(id)} .ui-view-switcher`;
 
@@ -191,5 +191,26 @@ test.describe('View Switcher lab', () => {
         .evaluate((tab) => tab.getBoundingClientRect().width);
     expect(await tabWidth('modified')).toBeCloseTo(await tabWidth('none'), 0);
     expect(await tabWidth('both')).toBeCloseTo(await tabWidth('default'), 0);
+  });
+
+  test('UIC-VIEW-SWITCHER-1.2 starts at defaultSelectedKey until mounted again', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('view-switcher');
+    const demo = page.locator('[data-lab-demo="starting-view"]');
+    const tab = (name: string) => demo.getByRole('tab', { name: new RegExp(`^${name}`) });
+    await expect(tab('My recipes')).toHaveAttribute('aria-selected', 'true');
+    await tab('Quick meals').click();
+    await expect(tab('Quick meals')).toHaveAttribute('aria-selected', 'true');
+    await expect(demo.locator('[data-lab-output="selections"]')).toHaveText('quick');
+    await demo.getByRole('button', { name: 'Render again' }).click();
+    await expect(demo.locator('[data-lab-output="mount"]')).toHaveText('mount 1, render 2');
+    await expect(tab('Quick meals')).toHaveAttribute('aria-selected', 'true');
+    await demo.getByRole('button', { name: 'Mount again' }).click();
+    await expect(demo.locator('[data-lab-output="mount"]')).toHaveText('mount 2, render 2');
+    await expect(tab('My recipes')).toHaveAttribute('aria-selected', 'true');
+    await expect(demo.locator('[data-lab-output="selections"]')).toHaveText('none');
+    await lab.expectAccessible(familySelector('view-switcher-cases'));
   });
 });
