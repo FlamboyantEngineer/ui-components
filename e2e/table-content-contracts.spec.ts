@@ -48,6 +48,37 @@ for (const virtualized of [false, true]) {
   });
 }
 
+for (const virtualized of [false, true]) {
+  test(`UIC-TABLE-4.5 content tracks keep their layout width under an ancestor scale or zoom (${virtualized ? 'virtualized' : 'standard'})`, async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('table');
+    const demo = page.locator('[data-lab="content-widths"]');
+    if (virtualized)
+      await demo.getByRole('button', { name: 'Use virtualized layout', exact: true }).click();
+    const name = demo.getByRole('columnheader', { name: /^Name/ });
+    const layoutWidth = () => name.evaluate((cell) => (cell as HTMLElement).offsetWidth);
+    await expect.poll(layoutWidth).toBeGreaterThanOrEqual(80);
+    const settled = await layoutWidth();
+    for (const [label, factor] of [
+      ['Scale 0.5', 0.5],
+      ['Scale 2', 2],
+      ['Zoom 1.5', 1.5],
+    ] as const) {
+      await demo.getByRole('radio', { name: label }).click();
+      // Measured again under the scale, as after a content change, the track keeps its width.
+      await demo.getByRole('button', { name: 'Change content', exact: true }).click();
+      await expect.poll(layoutWidth).toBeGreaterThan(settled + 100);
+      await demo.getByRole('button', { name: 'Change content', exact: true }).click();
+      await expect.poll(layoutWidth).toBe(settled);
+      expect(Math.abs((await width(name)) - settled * factor)).toBeLessThan(2);
+    }
+    await demo.getByRole('radio', { name: 'Scale 1' }).click();
+    await expect.poll(layoutWidth).toBe(settled);
+  });
+}
+
 test('UIC-TABLE-4.3 UIC-TABLE-4.5 a resized content track stays fixed after updates and remounting', async ({
   page,
   lab,

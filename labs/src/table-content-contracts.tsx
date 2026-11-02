@@ -1,9 +1,22 @@
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { Button } from '../../src/components/button/index.js';
+import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { Table, applyTableMove } from '../../src/components/table/index.js';
 
-/** Content tracks beside an omitted-width flexible track, with bounded and persisted resizing. */
+/** The ancestor scales the content widths demo offers: content widths stay the same in each. */
+const scales: Record<string, CSSProperties> = {
+  half: { transform: 'scale(0.5)', transformOrigin: '0 0' },
+  none: {},
+  double: { transform: 'scale(2)', transformOrigin: '0 0' },
+  zoom: { zoom: 1.5 },
+};
+
+/**
+ * Content tracks beside an omitted-width flexible track, with bounded and persisted resizing,
+ * under an ancestor scale or zoom.
+ */
 export function ContentWidths() {
+  const [scale, setScale] = useState('none');
   const [long, setLong] = useState(false);
   const [wideHeader, setWideHeader] = useState(false);
   const [mounted, setMounted] = useState(true);
@@ -28,7 +41,20 @@ export function ContentWidths() {
       <Button onPress={() => setMounted((value) => !value)}>
         {mounted ? 'Unmount content table' : 'Mount content table'}
       </Button>
-      <div style={{ height: virtualized ? 240 : undefined }}>
+      <SegmentedChoice
+        aria-label="Ancestor scale"
+        size="sm"
+        sizing="content"
+        options={[
+          { value: 'half', label: 'Scale 0.5' },
+          { value: 'none', label: 'Scale 1' },
+          { value: 'double', label: 'Scale 2' },
+          { value: 'zoom', label: 'Zoom 1.5' },
+        ]}
+        value={scale}
+        onChange={(value) => setScale(String(value))}
+      />
+      <div style={{ height: virtualized ? 240 : undefined, ...scales[scale] }}>
         {mounted ? (
           <Table
             aria-label="Content widths"
