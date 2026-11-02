@@ -171,6 +171,13 @@ function SavedFilter() {
   );
 }
 
+/** The room each Glyph room row gives its group. */
+const glyphRoom = {
+  content: undefined,
+  equal: { width: 'max-content', maxWidth: '100%' },
+  narrow: { width: 260 },
+} as const;
+
 mountLab(
   <>
     <LabSection
@@ -355,16 +362,17 @@ mountLab(
     </LabSection>
     <LabSection
       title="Glyph room"
-      description="Descenders, accents and counts keep their whole glyphs at every size and in narrow equal-width segments: the labels and count badges clip only sideways, where a long label ends in an ellipsis."
+      description="Descenders, accents and counts keep their whole glyphs at every size. Content-sized and equal segments show every label and count in full: equal segments as wide as the widest. Only the deliberately narrow row, equal segments squeezed into 260 pixels, clips its labels sideways, where a long label ends in an ellipsis."
     >
       <StateMatrix
-        axes={{ segments: ['content', 'equal'], size: ['xs', ...sizes] }}
+        axes={{ size: ['xs', ...sizes], segments: ['content', 'equal', 'narrow'] }}
         render={({ segments, size }) => (
-          <div style={segments === 'equal' ? { width: 220 } : undefined}>
+          // Equal segments size to their widest label; the narrow row gives them less room.
+          <div style={glyphRoom[segments]}>
             <SegmentedChoice
               aria-label={`Glyphs, ${segments}, ${size}`}
               size={size}
-              sizing={segments}
+              sizing={segments === 'content' ? 'content' : 'equal'}
               defaultValue="typography"
               data-lab-glyphs={`${segments}-${size}`}
               options={[
