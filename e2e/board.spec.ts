@@ -8,6 +8,35 @@ const cards = (board: Locator, column: string) =>
 const titles = (board: Locator) => board.locator('.ui-board__column-title').allTextContents();
 
 test.describe('Board lab', () => {
+  test('UIC-BOARD-1.1 lines every card up with its column header', async ({ page, lab }) => {
+    await lab.open('board');
+    const mismatches = await page.evaluate(() => {
+      const found: string[] = [];
+      for (const card of document.querySelectorAll('.ui-board__card')) {
+        const cell = card.closest('.ui-board__cell');
+        const board = card.closest('.ui-board');
+        if (!cell?.parentElement || !board) continue;
+        const cells = [...cell.parentElement.children].filter((child) =>
+          child.classList.contains('ui-board__cell'),
+        );
+        const headers = [...board.querySelectorAll('.ui-board__column')].filter(
+          (header) => header.closest('.ui-board') === board,
+        );
+        const header = headers[cells.indexOf(cell)];
+        if (!header) continue;
+        const a = card.getBoundingClientRect();
+        const b = header.getBoundingClientRect();
+        if (Math.abs(a.left - b.left) > 0.5 || Math.abs(a.right - b.right) > 0.5) {
+          found.push(`${board.getAttribute('aria-label')}: ${card.textContent?.slice(0, 20)}`);
+        }
+      }
+      return found;
+    });
+    expect(mismatches).toEqual([]);
+    // Every lab board has cards to compare, collapsed columns, lanes and right to left included.
+    expect(await page.locator('.ui-board__card').count()).toBeGreaterThan(20);
+  });
+
   test('UIC-BOARD-1.1 returns focus to a menu button in a card as its menu closes', async ({
     page,
     lab,

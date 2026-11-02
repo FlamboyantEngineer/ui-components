@@ -386,7 +386,7 @@ mountLab(
   <>
     <LabSection
       title="States"
-      description="Columns with cards and drag handles, empty cells, a column over its limit, and collapsed columns: one compressed to its icon, and one without an icon that keeps its chevron. A collapsed toggle shows its column's title and count in a tooltip."
+      description="Columns with cards and drag handles, each card as wide as its column header, empty cells, a column over its limit, and collapsed columns: one compressed to its icon, and one without an icon that keeps its chevron. A collapsed toggle shows its column's title and count in a tooltip."
     >
       <StateMatrix
         axes={{ state: Object.keys(states) as Array<keyof typeof states> }}
