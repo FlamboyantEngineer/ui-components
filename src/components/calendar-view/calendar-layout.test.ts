@@ -107,7 +107,11 @@ describe('calendar layout', () => {
       'retreat',
       'fair',
     ]);
-    expect(layoutWeek([], placed, { spansOnly: false })).toEqual({ segments: [], laneCount: 0 });
+    expect(layoutWeek([], placed, { spansOnly: false })).toEqual({
+      segments: [],
+      laneCount: 0,
+      previews: [],
+    });
   });
 
   it('UIC-CALENDAR-VIEW-2.4 keeps a lane for the hidden count when a day is crowded', () => {
@@ -150,6 +154,39 @@ describe('calendar layout', () => {
       ['c', 0, 12.5],
     ]);
     expect(next[0]?.continuesBefore).toBe(true);
+  });
+
+  it('UIC-CALENDAR-VIEW-6.2 draws a preview first and over the others, packed with nothing', () => {
+    const [review, trip, ...rest] = readEvents(
+      [
+        { id: 'review', title: 'Review', start: '2026-03-18T09:00', end: '2026-03-18T11:00' },
+        { id: 'trip', title: 'Trip', start: '2026-03-17', end: '2026-03-19' },
+        { id: 'call', title: 'Call', start: '2026-03-18T10:00', end: '2026-03-18T12:00' },
+        { id: 'fair', title: 'Fair', start: '2026-03-16', end: '2026-03-18' },
+      ],
+      'UTC',
+    );
+    const preview = (placed: typeof review) => (placed ? [{ ...placed, isPreview: true }] : []);
+    const settled = [review, trip, ...rest].flatMap((placed) => (placed ? [placed] : []));
+    const days = getWeekDays(day('2026-03-18'), 'en-US');
+    const week = layoutWeek(days, settled, { spansOnly: true });
+    const dragging = layoutWeek(days, [...settled, ...preview(trip)], { spansOnly: true });
+    expect(ids(dragging.segments)).toEqual(ids(week.segments));
+    expect(dragging.laneCount).toBe(week.laneCount);
+    expect(ids(dragging.previews)).toEqual([['trip', 2, 3, 0]]);
+    const at = (blocks: ReturnType<typeof layoutDay>) =>
+      blocks.map((block) => [
+        block.placed.event.id,
+        block.placed.isPreview,
+        block.left,
+        block.width,
+      ]);
+    const options = { timeZone: 'UTC', minMinutes: 0 };
+    const blocks = layoutDay(day('2026-03-18'), [...settled, ...preview(review)], options);
+    expect(at(blocks)).toEqual([
+      ...at(layoutDay(day('2026-03-18'), settled, options)),
+      ['review', true, 0, 100],
+    ]);
   });
 
   it('UIC-CALENDAR-VIEW-2.5 draws short events at least the least length and packs what is drawn', () => {

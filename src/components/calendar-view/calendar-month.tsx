@@ -33,11 +33,13 @@ interface MonthDayProps extends Omit<CalendarMonthProps, 'grid' | 'titleId'> {
   date: string;
   column: number;
   segments: readonly WeekSegment[];
+  previews: readonly WeekSegment[];
   visibleLanes: number;
 }
 
 /** One day of the month: its bars lane by lane, spacers where a lane is taken or empty, then `+n more`. */
-function MonthDay({ date, column, segments, visibleLanes, events, day, event }: MonthDayProps) {
+function MonthDay(props: MonthDayProps) {
+  const { date, column, segments, previews, visibleLanes, events, day, event } = props;
   const covering = findColumnSegments(segments, column);
   const shown = covering.filter((segment) => segment.lane < visibleLanes);
   const laneCount = findMaximum(shown, (segment) => segment.lane + 1, 0);
@@ -51,9 +53,10 @@ function MonthDay({ date, column, segments, visibleLanes, events, day, event }: 
       isOutsideMonth={isOutsideMonth}
       showNumber
     >
-      <div {...hooks.slot('events')}>
+      <div {...hooks.slot('events')} style={{ position: 'relative' }}>
         <CalendarEventLanes
           segments={shown}
+          previews={previews}
           column={column}
           laneCount={laneCount}
           context={event}
@@ -62,9 +65,7 @@ function MonthDay({ date, column, segments, visibleLanes, events, day, event }: 
         />
         {covering.length > shown.length ? (
           <CalendarMoreEvents
-            events={covering.flatMap((segment) =>
-              segment.placed.isPreview ? [] : [segment.placed],
-            )}
+            events={covering.map((segment) => segment.placed)}
             hidden={covering.length - shown.length}
             dayLabel={day.format.formatDay(date)}
             isTabbable={isActive}
@@ -78,12 +79,12 @@ function MonthDay({ date, column, segments, visibleLanes, events, day, event }: 
 
 /** One week row of the month, its events packed into lanes across its days. */
 function MonthWeek(
-  props: Omit<MonthDayProps, 'date' | 'column' | 'segments' | 'visibleLanes'> & {
+  props: Omit<MonthDayProps, 'date' | 'column' | 'segments' | 'previews' | 'visibleLanes'> & {
     days: string[];
   },
 ) {
   const { days, ...rest } = props;
-  const { segments } = layoutWeek(days, rest.events, { spansOnly: false });
+  const { segments, previews } = layoutWeek(days, rest.events, { spansOnly: false });
   const visibleLanes = countVisibleLanes(segments, rest.maxEvents);
   return (
     <div role="row" {...hooks.slot('week')}>
@@ -94,6 +95,7 @@ function MonthWeek(
           date={date}
           column={column}
           segments={segments}
+          previews={previews}
           visibleLanes={visibleLanes}
         />
       ))}

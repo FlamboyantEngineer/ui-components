@@ -33,6 +33,20 @@ async function expectSettled(event: Locator) {
   await expect(event).toHaveCSS('opacity', '1');
 }
 
+async function boxOf(locator: Locator) {
+  return requireDefined(await locator.boundingBox());
+}
+
+async function boxesOf(page: Page, titles: string[]) {
+  return Promise.all(titles.map((title) => boxOf(eventNamed(page, title))));
+}
+
+/** The preview sits at the inline start of the day's time grid, whatever it crosses. */
+async function expectStart(preview: Locator, column: { x: number }) {
+  await expect(preview).toHaveCount(1);
+  expect(Math.abs((await boxOf(preview)).x - column.x)).toBeLessThan(2);
+}
+
 const eventNamed = (page: Page, title: string) =>
   demo(page).getByRole('button', { name: new RegExp(`^${title},`) });
 const editor = (page: Page) => page.getByRole('dialog', { name: 'Edit event' });
@@ -167,6 +181,73 @@ test.describe('Calendar View dragging', () => {
     await page.mouse.up();
     await expect(output(page)).toHaveText('Offsite: 2026-11-09 to 2026-11-11');
     await expect(editor(page)).toHaveCount(0);
+  });
+
+  test('UIC-CALENDAR-VIEW-6.2 keeps the preview of a moving block at the start of its day and the others in place until release', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('calendar-view');
+    const grid = demo(page);
+    const preview = grid.locator('.ui-calendar-view__event[data-preview]');
+    const pairing = eventNamed(page, 'Pairing');
+    await pairing.scrollIntoViewIfNeeded();
+    const settled = await boxesOf(page, ['Pairing', 'Interview', 'Fixed-length review']);
+    const wednesday = await boxOf(timed(page, '2026-11-04'));
+    const hour = wednesday.height / 24;
+    const from = await center(pairing);
+    // Down two hours, across Interview: the preview stays at the day's start, nothing repacks.
+    await dragTo(page, pairing, { x: from.x, y: from.y + hour });
+    await expectStart(preview, wednesday);
+    await page.mouse.move(from.x, from.y + 2 * hour, { steps: 4 });
+    await expectStart(preview, wednesday);
+    expect(await boxesOf(page, ['Pairing', 'Interview', 'Fixed-length review'])).toEqual(settled);
+    // Over to Thursday, across Locked audit.
+    const thursday = await boxOf(timed(page, '2026-11-05'));
+    const locked = await boxOf(eventNamed(page, 'Locked audit'));
+    await page.mouse.move(thursday.x + thursday.width / 2, locked.y + locked.height / 2, {
+      steps: 6,
+    });
+    await expectStart(preview, thursday);
+    expect(await boxOf(eventNamed(page, 'Locked audit'))).toEqual(locked);
+    await page.mouse.up();
+    await expect(output(page)).toHaveText('Pairing: 2026-11-05T09:45 to 2026-11-05T11:45');
+    // Released, the moved event is packed beside Locked audit as usual.
+    const moved = await boxOf(pairing);
+    expect(moved.width).toBeLessThan(thursday.width * 0.75);
+  });
+
+  test('UIC-CALENDAR-VIEW-6.2 keeps the preview of a resized bar on the first row until release, cancelled or declined', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('calendar-view');
+    const grid = demo(page);
+    await grid.getByRole('radio', { name: 'Start and end' }).click();
+    const preview = grid.locator('.ui-calendar-view__event[data-preview]');
+    const sprint = eventNamed(page, 'Sprint');
+    await sprint.scrollIntoViewIfNeeded();
+    const settled = await boxesOf(page, ['Sprint', 'Offsite', 'Deadline']);
+    const firstRow = await boxOf(day(page, '2026-11-04').locator('.ui-calendar-view__all-day'));
+    const end = grid.getByRole('button', { name: 'Change end of Sprint' });
+    await dragTo(page, end, day(page, '2026-11-07').locator('.ui-calendar-view__all-day'));
+    await expect(preview).toHaveCount(1);
+    expect(Math.abs((await boxOf(preview)).y - firstRow.y)).toBeLessThan(2);
+    expect(await boxesOf(page, ['Sprint', 'Offsite', 'Deadline'])).toEqual(settled);
+    await page.keyboard.press('Escape');
+    await page.mouse.up();
+    await expect(preview).toHaveCount(0);
+    expect(await boxesOf(page, ['Sprint', 'Offsite', 'Deadline'])).toEqual(settled);
+
+    // A host that keeps the event as it was: the bar returns to its place.
+    await grid.getByText('Decline changes').click();
+    const start = grid.getByRole('button', { name: 'Change start of Sprint' });
+    await dragTo(page, start, day(page, '2026-11-02').locator('.ui-calendar-view__all-day'));
+    expect(Math.abs((await boxOf(preview)).y - firstRow.y)).toBeLessThan(2);
+    await page.mouse.up();
+    await expect(output(page)).toHaveText('Declined Sprint: 2026-11-02 to 2026-11-06');
+    await expect(preview).toHaveCount(0);
+    expect(await boxesOf(page, ['Sprint', 'Offsite', 'Deadline'])).toEqual(settled);
   });
 
   test('UIC-CALENDAR-VIEW-6.3 steps events by keyboard across the night the clocks go back', async ({

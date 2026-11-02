@@ -33,6 +33,7 @@ interface WeekDayProps extends Pick<
   date: string;
   column: number;
   segments: readonly WeekSegment[];
+  previews: readonly WeekSegment[];
   laneCount: number;
 }
 
@@ -67,6 +68,7 @@ function WeekDay({
   date,
   column,
   segments,
+  previews,
   laneCount,
   events,
   timeZone,
@@ -85,9 +87,10 @@ function WeekDay({
       isOutsideMonth={false}
       showNumber={false}
     >
-      <div {...hooks.slot('all-day')}>
+      <div {...hooks.slot('all-day')} style={{ position: 'relative' }}>
         <CalendarEventLanes
           segments={segments}
+          previews={previews}
           column={column}
           laneCount={laneCount}
           context={event}
@@ -124,7 +127,7 @@ function WeekDay({
 export function CalendarWeek({ grid, titleId, ...rest }: CalendarWeekProps) {
   const { ref, onKeyDown, onFocus } = grid;
   const days = getWeekDays(rest.day.focused, rest.day.format.locale);
-  const { segments, laneCount } = layoutWeek(days, rest.events, { spansOnly: true });
+  const { segments, laneCount, previews } = layoutWeek(days, rest.events, { spansOnly: true });
   return (
     <div
       ref={ref}
@@ -158,6 +161,7 @@ export function CalendarWeek({ grid, titleId, ...rest }: CalendarWeekProps) {
             date={date}
             column={column}
             segments={segments}
+            previews={previews}
             laneCount={laneCount}
           />
         ))}

@@ -108,33 +108,45 @@ function findFreeLane(lanes: boolean[][], column: number, span: number): number 
   return lanes.length - 1;
 }
 
+/** The columns of a week an event covers, and whether it goes on past either end of the week. */
+function readWeekSpan(placed: PlacedEvent, days: readonly string[]) {
+  const continuesBefore = placed.startDay < (days[0] ?? '');
+  const continuesAfter = placed.endDay > (days.at(-1) ?? '');
+  const column = continuesBefore ? 0 : days.indexOf(placed.startDay);
+  const end = continuesAfter ? 6 : days.indexOf(placed.endDay);
+  return { column, span: end - column + 1, continuesBefore, continuesAfter };
+}
+
 /**
  * The events of a week as bars packed into lanes: each event takes the first lane free across the
  * days it covers in the week. With `spansOnly`, events within one day that are not all-day are left
- * out (a week view draws them in its time grid).
+ * out (a week view draws them in its time grid). A preview takes no lane: it is drawn over the first
+ * lane, so the bars, the dragged one among them, keep their lanes while it moves.
  */
 export function layoutWeek(
   days: readonly string[],
   events: readonly PlacedEvent[],
   { spansOnly }: { spansOnly: boolean },
-): { segments: WeekSegment[]; laneCount: number } {
+): { segments: WeekSegment[]; laneCount: number; previews: WeekSegment[] } {
   const [first, last] = [days[0], days.at(-1)];
-  if (!first || !last) return { segments: [], laneCount: 0 };
+  if (!first || !last) return { segments: [], laneCount: 0, previews: [] };
   const inWeek = events.filter(
     (placed) => (!spansOnly || placed.isSpan) && placed.startDay <= last && placed.endDay >= first,
   );
   const lanes: boolean[][] = [];
-  const segments = [...inWeek].sort(compareEvents).map((placed) => {
-    const continuesBefore = placed.startDay < first;
-    const continuesAfter = placed.endDay > last;
-    const column = continuesBefore ? 0 : days.indexOf(placed.startDay);
-    const end = continuesAfter ? 6 : days.indexOf(placed.endDay);
-    const span = end - column + 1;
-    const lane = findFreeLane(lanes, column, span);
-    lanes[lane]?.fill(true, column, column + span);
-    return { placed, column, span, lane, continuesBefore, continuesAfter };
-  });
-  return { segments, laneCount: lanes.length };
+  const segments = inWeek
+    .filter((placed) => !placed.isPreview)
+    .sort(compareEvents)
+    .map((placed) => {
+      const { column, span, ...ends } = readWeekSpan(placed, days);
+      const lane = findFreeLane(lanes, column, span);
+      lanes[lane]?.fill(true, column, column + span);
+      return { placed, column, span, lane, ...ends };
+    });
+  const previews = inWeek
+    .filter((placed) => placed.isPreview)
+    .map((placed) => ({ placed, lane: 0, ...readWeekSpan(placed, days) }));
+  return { segments, laneCount: lanes.length, previews };
 }
 
 /** The segments that cover a column. */
@@ -193,7 +205,8 @@ const dayMs = 86_400_000;
  * place; an event whose end reads earlier than its start, running back through a repeated hour,
  * keeps its elapsed length from its start. Each event is drawn at least `minMinutes` of the ruler
  * tall (short of the day's end), and events are packed by what is drawn, so a short event never
- * covers the next one and the two passes of a repeated hour sit side by side.
+ * covers the next one and the two passes of a repeated hour sit side by side. A preview packs with
+ * nothing, so the events, the dragged one among them, keep their places while it moves.
  */
 export function layoutDay(
   day: string,
@@ -205,7 +218,7 @@ export function layoutDay(
   const to = getDayStart(shiftDay(day, { days: 1 }), timeZone);
   const place = (instant: number) =>
     instant >= to ? 100 : (getWallHours(instant, timeZone) / 24) * 100;
-  const blocks = events
+  const shown = events
     .filter(
       (placed) =>
         !placed.isSpan && placed.start < to && (placed.end > from || placed.start >= from),
@@ -224,7 +237,9 @@ export function layoutDay(
         continuesBefore: placed.start < from,
         continuesAfter: placed.end > to,
       };
-    })
+    });
+  const blocks = shown
+    .filter((block) => !block.placed.isPreview)
     // Packed in the order drawn: by place on the ruler, the taller first, then by instant. During a
     // repeated hour a later instant can sit higher on the ruler than an earlier one.
     .sort(
@@ -234,5 +249,9 @@ export function layoutDay(
         first.placed.start - second.placed.start ||
         second.placed.end - first.placed.end,
     );
-  return packColumns(blocks);
+  // A preview is drawn last, over the day's whole width from its inline start, packed with nothing.
+  const previews = shown
+    .filter((block) => block.placed.isPreview)
+    .map((block) => ({ ...block, left: 0, width: 100 }));
+  return [...packColumns(blocks), ...previews];
 }
