@@ -5,6 +5,21 @@ import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
 import { UserCard } from '../../src/components/user-card/user-card.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { samplePicture } from './people-samples.js';
+import { badges } from './avatar-badge-cases.js';
+import {
+  badgePlacements,
+  identityOptionProps,
+  identityOptions,
+  identityShapes,
+} from './identity-options.js';
+
+const statuses = ['active', 'away', 'busy', 'idle'] as const;
+const statusTexts: Record<(typeof statuses)[number], string> = {
+  active: 'In the office',
+  away: 'Away until 14:00',
+  busy: 'In a meeting',
+  idle: 'Back soon',
+};
 
 const contents = [
   'name only',
@@ -85,6 +100,60 @@ mountLab(
             kind={avatar === 'group' ? 'group' : 'person'}
             src={avatar === 'picture' ? samplePicture : undefined}
             {...contentProps(content)}
+          />
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Every status"
+      description="Each presence status with the provider's default words and with the caller's own statusLabel; the indicator and the status row follow the status."
+    >
+      <StateMatrix
+        axes={{ label: ['default', 'caller'], status: statuses }}
+        render={({ label, status }) => (
+          <UserCard
+            name="Lena Ortiz"
+            description="Research"
+            status={status}
+            statusLabel={label === 'caller' ? statusTexts[status] : undefined}
+          />
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Avatar options"
+      description="Each shape against initials given by the caller (MF), a stable colour key, an explicit colour slot in a six-colour palette, and a picture with a sharper candidate for dense screens, loaded lazily."
+    >
+      <StateMatrix
+        axes={{ option: identityOptions, shape: identityShapes }}
+        render={({ option, shape }) => (
+          <UserCard
+            name="Maria Santos"
+            description={option}
+            shape={shape}
+            {...identityOptionProps(option)}
+          />
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Corner badges"
+      description="A flag in each logical corner, labelled (its words follow the name) or decorative, without a status and with one. The card shows its status in its own row rather than on the avatar, so the avatar's status corner stays free and a badge keeps the corner it asks for, bottom-end included."
+    >
+      <StateMatrix
+        axes={{
+          badge: ['labelled', 'decorative'],
+          status: ['none', 'active'],
+          placement: badgePlacements,
+        }}
+        render={({ badge, status, placement }) => (
+          <UserCard
+            name="Maria Santos"
+            description="Lisbon office"
+            status={status === 'none' ? undefined : status}
+            badge={badges.flag.badge}
+            badgeLabel={badge === 'labelled' ? badges.flag.badgeLabel : undefined}
+            badgePlacement={placement}
           />
         )}
       />

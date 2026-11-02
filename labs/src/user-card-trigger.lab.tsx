@@ -8,6 +8,7 @@ import { UserCardTrigger } from '../../src/components/user-card-trigger/user-car
 import { UserIdentity } from '../../src/components/user-identity/user-identity.js';
 import { LabSection, mountLab } from './chrome/index.js';
 import { samplePicture, samplePeople } from './people-samples.js';
+import { HoverCommand, InitiallyOpen, LateCard, TimedHover } from './user-card-trigger-cases.js';
 
 const actions = [
   { id: 'message', label: 'Message', icon: EditGlyph },
@@ -185,6 +186,30 @@ mountLab(
       description="A name alone sits on the sentence's baseline and wraps with it, at small, body and large text, by click or hover. Avatar and identity triggers stay centred."
     >
       <InlineNames />
+    </LabSection>
+    <LabSection
+      title="Hover timings"
+      description="Pick how long the card waits to open and to close, then hover the name or Tab to it: the card opens after the open delay and closes after the close delay once the pointer and focus leave. Each open change shows below."
+    >
+      <TimedHover />
+    </LabSection>
+    <LabSection
+      title="Open at first"
+      description="Mount a trigger whose card opens on its first render, uncontrolled: Escape or a press outside closes it like any other."
+    >
+      <InitiallyOpen />
+    </LabSection>
+    <LabSection
+      title="A card that comes later"
+      description="Without a card the trigger is a plain button: pressing it runs onPress. Attach the card, then focus the name before two seconds pass: the same button keeps focus, and a press now opens the card. Removing the card makes it a plain button again."
+    >
+      <LateCard />
+    </LabSection>
+    <LabSection
+      title="Press beside a hover preview"
+      description="Hover or focus the name to preview the card; a click, Enter or Space runs the trigger's own command instead of opening a dialog. Disable the trigger, then hover it before two seconds pass: locking closes the card, and enabling leaves it closed."
+    >
+      <HoverCommand />
     </LabSection>
   </>,
 );
