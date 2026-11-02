@@ -5,6 +5,7 @@ export type {
   FourSideField,
   FourSidePropertyStripLink,
   FourSidePropertyStripProps,
+  FourSideValueAlign,
   FourSideValues,
   LogicalBoxAxis,
   LogicalBoxSide,

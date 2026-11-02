@@ -28,6 +28,9 @@ export type LogicalBoxAxis = 'block' | 'inline';
 /** What linked sides share: one edit sets `all` four sides, or the side and its opposite (`pairs`). */
 export type FourSidePropertyStripLink = 'all' | 'pairs';
 
+/** Where the side controls' values sit in their boxes. */
+export type FourSideValueAlign = 'start' | 'center' | 'end';
+
 /** A value for some or all of the sides. */
 export type FourSideValues<S extends string, T> = Readonly<Partial<Record<S, T>>>;
 
@@ -51,6 +54,11 @@ interface FourSideOptions<S extends string, A extends string, T> extends Omit<
   defaultValue?: FourSideValues<S, T> | undefined;
   /** Called with every side's value when one changes. */
   onChange?: ((value: FourSideValues<S, T>) => void) | undefined;
+  /**
+   * Where each side control's value sits in its box, published for the stylesheet: `start`,
+   * `center` or `end`, in the reading direction. Without it, the controls keep their own alignment.
+   */
+  valueAlign?: FourSideValueAlign | undefined;
   /**
    * Offers toggles that link the sides: one for all four, or one for each opposite pair, so one
    * edit sets all four or the side and its opposite.
@@ -197,7 +205,7 @@ function LinkBrackets({
  */
 export function FourSidePropertyStrip<T = string>(props: FourSidePropertyStripProps<T>) {
   const { sides: mode, renderSide, value, defaultValue, onChange, className, ...row } = props;
-  const { link, linked: linkedProp, defaultLinked, onLinkedChange, ...rest } = row;
+  const { link, linked: linkedProp, defaultLinked, onLinkedChange, valueAlign, ...rest } = row;
   const strings = useUiStrings();
   const [values, setValues] = useControllableState<FourSideValues<string, T>>(
     value,
@@ -223,7 +231,7 @@ export function FourSidePropertyStrip<T = string>(props: FourSidePropertyStripPr
   return (
     <PropertyRow
       {...rest}
-      {...dataAttributes({ link })}
+      {...dataAttributes({ link, valueAlign })}
       className={mergeClassNames(hooks.className, className)}
       keywords={sides.map(nameOf)}
     >

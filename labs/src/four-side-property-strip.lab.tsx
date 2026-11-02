@@ -4,6 +4,7 @@ import {
   type BoxAxis,
   type BoxSide,
   type FourSidePropertyStripLink,
+  type FourSideValueAlign,
 } from '../../src/components/four-side-property-strip/four-side-property-strip.js';
 import { PropertyPanel } from '../../src/components/property-panel/property-panel.js';
 import { PropertyScope } from '../../src/components/property-scope/property-scope.js';
@@ -195,6 +196,76 @@ function Logical({ direction }: { direction: 'ltr' | 'rtl' }) {
   );
 }
 
+const alignments = ['default', 'start', 'center', 'end'] as const;
+const alignShapes = ['physical pairs', 'logical all', 'right to left', 'narrow'] as const;
+
+/** Negative, decimal, short and long values, to align in each side's box. */
+const alignValues = { top: '-12.5', bottom: '0.25', left: '4', right: '1024' };
+
+/** A strip whose values sit where `align` says, in several shapes and control widths. */
+function Aligned({
+  align,
+  shape,
+}: {
+  align: (typeof alignments)[number];
+  shape: (typeof alignShapes)[number];
+}) {
+  const valueAlign: FourSideValueAlign | undefined = align === 'default' ? undefined : align;
+  const name = `Offset ${align} ${shape}`;
+  const input = (
+    side: string,
+    field: { value: string | undefined; onChange: (v: string) => void },
+  ) => (
+    <input
+      aria-label={`${name} ${side}`}
+      value={field.value ?? ''}
+      size={shape === 'narrow' ? 5 : 7}
+      onChange={(event) => field.onChange(event.target.value)}
+    />
+  );
+  const width = shape === 'narrow' ? 260 : 400;
+  if (shape === 'physical pairs') {
+    return (
+      <div data-lab-column={width} style={{ width }}>
+        <PropertyPanel aria-label={name}>
+          <FourSidePropertyStrip
+            label="Offset"
+            unit="px"
+            valueAlign={valueAlign}
+            link="pairs"
+            defaultLinked={['horizontal']}
+            defaultValue={alignValues}
+            renderSide={input}
+          />
+        </PropertyPanel>
+      </div>
+    );
+  }
+  const isRtl = shape === 'right to left';
+  return (
+    <UiProvider locale={isRtl ? 'ar-EG' : 'en-US'}>
+      <div dir={isRtl ? 'rtl' : 'ltr'} data-lab-column={width} style={{ width }}>
+        <PropertyPanel aria-label={name}>
+          <FourSidePropertyStrip
+            label="Offset"
+            sides="logical"
+            unit="px"
+            valueAlign={valueAlign}
+            link="all"
+            defaultValue={{
+              'block-start': alignValues.top,
+              'block-end': alignValues.bottom,
+              'inline-start': alignValues.left,
+              'inline-end': alignValues.right,
+            }}
+            renderSide={input}
+          />
+        </PropertyPanel>
+      </div>
+    </UiProvider>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -251,6 +322,15 @@ mountLab(
       <StateMatrix
         axes={{ link: ['pairs', 'all'], direction: ['ltr', 'rtl'] }}
         render={({ link, direction }) => <LinkedLogical link={link} direction={direction} />}
+      />
+    </LabSection>
+    <LabSection
+      title="Value alignment"
+      description="valueAlign places each side's value at the start, centre or end of its box, in the reading direction; without it, the controls keep their own alignment. Negative, decimal and long values, linked pairs and all sides, flow-relative sides right to left and narrow controls."
+    >
+      <StateMatrix
+        axes={{ align: alignments, shape: alignShapes }}
+        render={({ align, shape }) => <Aligned align={align} shape={shape} />}
       />
     </LabSection>
     <LabSection
