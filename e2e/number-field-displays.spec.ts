@@ -77,6 +77,61 @@ test.describe('Number Field display choices', () => {
     ).toBeLessThanOrEqual(1);
   });
 
+  test("UIC-NUMBER-FIELD-3.1 draws the unit in the number's type and on its baseline", async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('number-field');
+    const cells = page.locator('table[data-lab-matrix="quantity placement size"] td');
+    await expect(cells).toHaveCount(40);
+    const mismatches = await cells.evaluateAll((nodes) => {
+      const centre = (rect: DOMRect) => rect.top + rect.height / 2;
+      const textRect = (node: Element) => {
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        return range.getBoundingClientRect();
+      };
+      const type = (node: Element) => {
+        const style = getComputedStyle(node);
+        return [
+          style.fontFamily,
+          style.fontSize,
+          style.fontWeight,
+          style.fontStyle,
+          style.lineHeight,
+          style.color,
+          style.fontVariantNumeric,
+        ].join('|');
+      };
+      return nodes.flatMap((cell) => {
+        const id = cell.getAttribute('data-lab-cell') ?? '';
+        const input = cell.querySelector('.ui-number-field__input');
+        const unit = cell.querySelector('.ui-number-field__end');
+        if (!input || !unit) return [`${id}: missing parts`];
+        const problems: string[] = [];
+        if (type(input) !== type(unit)) problems.push(`${id}: ${type(input)} vs ${type(unit)}`);
+        // The input draws its text centred in its box, as the unit does: equal centres, one baseline.
+        const offset = Math.abs(centre(input.getBoundingClientRect()) - centre(textRect(unit)));
+        if (offset > 1) problems.push(`${id}: baseline off by ${offset}`);
+        const sizer = cell.querySelector('.ui-number-field__sizer');
+        if (sizer) {
+          if (type(sizer).split('|')[1] !== type(input).split('|')[1])
+            problems.push(`${id}: sizer`);
+          // About a space between the number and the unit after it.
+          const gap = textRect(unit).left - textRect(sizer).right;
+          const space = Number.parseFloat(getComputedStyle(unit).fontSize) * 0.25;
+          if (gap < space - 1 || gap > space + 1) problems.push(`${id}: gap ${gap}`);
+        }
+        return problems;
+      });
+    });
+    expect(mismatches).toEqual([]);
+    // German grouping reads with the unit too.
+    await expect(
+      page.locator('[data-lab-field="unit-locale"]').getByRole('textbox', { name: 'Gewicht' }),
+    ).toHaveValue('1.234,5');
+  });
+
   for (const size of ['xs', 'sm', 'md', 'lg'] as const) {
     test(`UIC-NUMBER-FIELD-3.3 draws every display choice at ${size}`, async ({ page, lab }) => {
       await lab.open('number-field');
