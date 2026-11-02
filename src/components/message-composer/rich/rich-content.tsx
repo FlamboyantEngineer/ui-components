@@ -4,8 +4,21 @@ import {
   ProseMirrorDoc,
   useEditorEventCallback,
   useEditorEventListener,
+  useEditorState,
 } from '@handlewithcare/react-prosemirror';
-import { useCallback, useLayoutEffect, useState, type FocusEvent, type RefObject } from 'react';
+import type { EditorView } from 'prosemirror-view';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FocusEvent,
+  type RefObject,
+} from 'react';
+import { useLatest } from '../../../utils/use-latest.js';
+import { readTextSelection, type MessageComposerRange } from './composer-edits.js';
 import { useFocusRing, useHover } from '../../../primitives/index.js';
 import { useUiStrings } from '../../../core/provider.js';
 import { mergeProps } from '../../../utils/merge-props.js';
@@ -65,12 +78,38 @@ function useEditorHandle(handleRef: RefObject<RichEditorHandle | null>) {
     insertPillAtCaret(view, pill),
   );
   const focus = useEditorEventCallback((view) => view.focus());
+  const withView = useEditorEventCallback((view, run: (view: EditorView) => unknown) => run(view));
   useLayoutEffect(() => {
-    handleRef.current = { insertText, insertPill, addPill, focus };
+    handleRef.current = {
+      insertText,
+      insertPill,
+      addPill,
+      focus,
+      withView: withView as RichEditorHandle['withView'],
+    };
     return () => {
       handleRef.current = null;
     };
-  }, [handleRef, insertText, insertPill, addPill, focus]);
+  }, [handleRef, insertText, insertPill, addPill, focus, withView]);
+}
+
+/**
+ * Reports the selection in the message's text to `onSelectionChange` after each render that moved
+ * it, whether the reader, an edit or a value from outside moved it.
+ */
+function useSelectionReport(
+  onSelectionChange: RichComposerEditorProps['props']['onSelectionChange'],
+) {
+  const state = useEditorState();
+  const range = useMemo(() => readTextSelection(state), [state]);
+  const reported = useRef<MessageComposerRange | null>(null);
+  const latest = useLatest(onSelectionChange);
+  useEffect(() => {
+    const last = reported.current;
+    if (last && last.start === range.start && last.end === range.end) return;
+    reported.current = range;
+    latest.current?.(range);
+  }, [range, latest]);
 }
 
 /** A key the composer used: the editor and the caller's handlers do not see it. */
@@ -121,7 +160,15 @@ function renderMention(item: CompletionListItem) {
   );
 }
 
-/** The mention or command list, against the composer's root. */
+/** What the list shows without options: that the answer is loading, failed or found nothing. */
+function useEmptyState(completions: RichCompletions) {
+  const strings = useUiStrings();
+  if (completions.status === 'pending') return () => strings.loading;
+  if (completions.status === 'error') return () => strings.actionFailed;
+  return () => strings.noResults;
+}
+
+/** The completion list, against the composer's root. */
 function RichCompletionList({
   completions,
   rootRef,
@@ -129,10 +176,12 @@ function RichCompletionList({
   completions: RichCompletions;
   rootRef: RefObject<HTMLDivElement | null>;
 }) {
+  const renderEmptyState = useEmptyState(completions);
   return (
     <CompletionList
       id={completions.listId}
       className={hooks.slotClass('completions')}
+      aria-label={completions.label}
       isOpen={completions.isOpen}
       onOpenChange={(open) => (open ? undefined : completions.close())}
       onShownChange={completions.setShown}
@@ -145,6 +194,7 @@ function RichCompletionList({
         if (item) completions.choose(item);
       }}
       renderItem={completions.kind === 'mention' ? renderMention : undefined}
+      renderEmptyState={renderEmptyState}
     />
   );
 }
@@ -154,16 +204,21 @@ export function RichComposerContent(editor: RichComposerEditorProps) {
   const { props, state, rootRef } = editor;
   const strings = useUiStrings();
   const isEditable = !props.isDisabled;
-  const hasCompletions = Boolean(props.mentions?.length || props.commands?.length);
+  const hasCompletions = Boolean(
+    props.mentions?.length || props.commands?.length || props.triggers?.length,
+  );
   const completions = useRichCompletions({
     mentions: props.mentions,
     commands: props.commands,
+    triggers: props.triggers,
     isEditable,
+    owner: state.owner,
   });
   const [status, setStatus] = useState('');
   const [contentRef, docRef] = useForwardedRef(props.ref);
   useRowLimits(contentRef, props.minRows ?? 1, props.maxRows ?? 8);
   useEditorHandle(editor.handleRef);
+  useSelectionReport(props.onSelectionChange);
   const actions = { ...state, keys: editor.keys, onCancel: props.onCancel };
   useRichKeys(completions, actions, (label) => setStatus(strings.removedFromMessage(label)));
   const focus = useFocusRing({ isTextInput: true });
@@ -189,6 +244,7 @@ export function RichComposerContent(editor: RichComposerEditorProps) {
         {...toComposerLabelling(props, strings.message)}
         {...(hasCompletions ? completions.contentAttributes : {})}
         {...hooks.slot('input', data)}
+        id={props.inputId}
         ref={docRef}
         role="textbox"
         aria-multiline="true"

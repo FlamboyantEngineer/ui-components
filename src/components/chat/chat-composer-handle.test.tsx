@@ -230,4 +230,43 @@ describe('Chat composer handle', () => {
     rerenderWith({ onSend: undefined });
     expect(insert()).toBe('unavailable');
   });
+
+  it('UIC-CHAT-3.12 reads and replaces the composer selection for the shown conversation only, and forwards the composer id, paste and triggers', async () => {
+    const onComposerPaste = vi.fn(() => undefined);
+    const onComposerSelectionChange = vi.fn();
+    const { user, handle, rerenderWith } = renderHostChat({
+      conversationId: 'plans',
+      composerInputId: 'chat-input',
+      onComposerPaste,
+      onComposerSelectionChange,
+      triggers: [{ id: 'tools', character: '$', getCompletions: () => [] }],
+    });
+    expect(box()).toHaveAttribute('id', 'chat-input');
+    await user.click(box());
+    await user.keyboard('Plan the day');
+    expect(onComposerSelectionChange).toHaveBeenLastCalledWith({ start: 12, end: 12 });
+    let result: string | undefined;
+    act(() => {
+      handle.current?.setSelection({ start: 5, end: 8 });
+      result = handle.current?.replaceSelection({
+        text: '@Ana Lopez',
+        tokens: [{ ...ana, start: 0, end: 10 }],
+      });
+    });
+    expect(result).toBe('applied');
+    expect(handle.current?.getDraft()).toEqual({
+      conversationId: 'plans',
+      text: 'Plan @Ana Lopez day',
+      tokens: [{ ...ana, start: 5, end: 15 }],
+    });
+    expect(handle.current?.getSelection()).toEqual({ start: 15, end: 15 });
+    expect(handle.current?.getSelection({ conversationId: 'other' })).toBeNull();
+    expect(
+      handle.current?.replaceRange({ start: 0, end: 0 }, 'x', { conversationId: 'other' }),
+    ).toBe('other-conversation');
+    // A handle kept from before the chat switched serves its own conversation only.
+    const stale = handle.current;
+    rerenderWith({ conversationId: 'next' });
+    expect(stale?.setSelection({ start: 0, end: 0 })).toBe('other-conversation');
+  });
 });

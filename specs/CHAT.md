@@ -185,6 +185,20 @@ Verification: `src/components/chat/chat-composer.test.tsx`, `src/components/chat
 Implementation: `src/components/chat/chat-composer-handle.ts`, `src/components/chat/chat-composer.tsx`
 Verification: `src/components/chat/chat-composer-handle.test.tsx`, `e2e/chat-host.spec.ts`
 
+### UIC-CHAT-3.12 - Composer selection, paste and triggers
+
+The chat shall forward the rich composer's range contract ([UIC-MESSAGE-COMPOSER-4.11](MESSAGE-COMPOSER.md#uic-message-composer-411---selection-and-ranges) to [4.13](MESSAGE-COMPOSER.md#uic-message-composer-413---host-triggers)):
+
+- `composerInputId` is the composer's text box id, apart from the chat's `id`.
+- `triggers` are the host's own trigger vocabularies.
+- `onComposerPaste` is the composer's `onPaste`.
+- `onComposerSelectionChange` is its `onSelectionChange`.
+
+The `ChatComposerHandle` adds `getSelection`, `setSelection`, `replaceRange` and `replaceSelection`. Each takes `{ conversationId }` as `insertToken` does. A fragment's tokens may carry their labels as `onSend` sends them, trigger included. When the chat no longer shows the handle's conversation, or the one asked for, `getSelection` returns `null` and the others return `other-conversation`. Otherwise they return what the composer returns.
+
+Implementation: `src/components/chat/chat-composer-handle.ts`, `src/components/chat/chat-composer.tsx`
+Verification: `src/components/chat/chat-composer-handle.test.tsx`
+
 ## UIC-CHAT-4 - Activity and receipts
 
 ### UIC-CHAT-4.1 - Typing

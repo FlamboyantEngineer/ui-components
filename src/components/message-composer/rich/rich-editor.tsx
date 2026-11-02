@@ -20,6 +20,8 @@ import { createComposerPlugins, createComposerState, pastePlainText } from './co
 import { parseComposerMessage, serializeComposerDocument } from './composer-markdown.js';
 import { ComposerPillContext, composerNodeViews } from './composer-pill.js';
 import { composerSchema, type PillAttributes } from './composer-schema.js';
+import { replaceShownMessage } from './composer-edits.js';
+import { createPendingPastePlugin, pasteThroughHost } from './composer-paste.js';
 import { RichComposerContent } from './rich-content.js';
 import type { RichMessageComposerProps } from './rich-message-composer.js';
 
@@ -30,6 +32,8 @@ export interface RichEditorHandle {
   /** Adds a pill at the caret, or after the selection, as its own undo step. */
   addPill: (pill: PillAttributes) => void;
   focus: () => void;
+  /** Reads or edits through the mounted editor's view. */
+  withView: <T>(run: (view: EditorView) => T) => T;
 }
 
 export interface RichComposerEditorProps {
@@ -53,27 +57,47 @@ function useComposerEditorState({
   setValue: onChange,
   owner,
 }: Pick<ComposerState<MessageComposerMessage>, 'value' | 'setValue' | 'owner'>) {
-  const plugins = useMemo(() => createComposerPlugins(composerSchema), []);
+  const plugins = useMemo(
+    () => [...createComposerPlugins(composerSchema), createPendingPastePlugin()],
+    [],
+  );
+  const parse = (message: MessageComposerMessage) =>
+    createComposerState(parseComposerMessage(message), plugins);
   return useSyncedEditorState({
     schema: composerSchema,
     value,
     onChange,
-    parse: (message) => createComposerState(parseComposerMessage(message), plugins),
+    parse,
     serialize: serializeComposerDocument,
     isEqual: isSameMessage,
+    // A value from outside keeps the selection's place in the text (UIC-MESSAGE-COMPOSER-4.11).
+    replace: (current, message) => replaceShownMessage(current, parse(message)),
     owner,
   });
 }
 
-/** Pasted files go to `onAttach`; pasted text goes in as plain text, keeping its spacing. */
-function usePasteHandlers(props: RichMessageComposerProps) {
-  const latest = useLatest(props);
+/**
+ * Pasted files go to `onAttach`; pasted text goes to the host's `onPaste` first, then in as plain
+ * text, keeping its spacing.
+ */
+function usePasteHandlers(
+  props: RichMessageComposerProps,
+  state: ComposerState<MessageComposerMessage>,
+) {
+  const latest = useLatest({ props, state });
   const handlePaste = useCallback(
     (view: EditorView, event: ClipboardEvent) => {
-      const { isDisabled, onAttach } = latest.current;
+      const { isDisabled, onAttach, onPaste } = latest.current.props;
       if (attachPastedFiles(event, isDisabled ? undefined : onAttach)) return true;
       const text = event.clipboardData?.getData('text/plain') ?? '';
       if (!text) return false;
+      const { owner } = latest.current.state;
+      // A late answer edits only the draft it was pasted into, while the composer still takes edits.
+      const isCurrent = () => {
+        const now = latest.current;
+        return now.state.owner === owner && !now.props.isDisabled && !now.state.isSubmitting;
+      };
+      if (onPaste && pasteThroughHost(view, text, { onPaste, isCurrent })) return true;
       pastePlainText(view, text);
       return true;
     },
@@ -82,7 +106,7 @@ function usePasteHandlers(props: RichMessageComposerProps) {
   // Dropped files are the composer's to attach; the document keeps only dropped text.
   const handleDrop = useCallback(
     (_view: EditorView, event: DragEvent) =>
-      Boolean(latest.current.onAttach) && (event.dataTransfer?.files.length ?? 0) > 0,
+      Boolean(latest.current.props.onAttach) && (event.dataTransfer?.files.length ?? 0) > 0,
     [latest],
   );
   return { handlePaste, handleDrop };
@@ -93,7 +117,7 @@ export function RichComposerEditor(editor: RichComposerEditorProps) {
   const { props, state } = editor;
   const isEditable = !props.isDisabled;
   const synced = useComposerEditorState(state);
-  const paste = usePasteHandlers(props);
+  const paste = usePasteHandlers(props, state);
   const editable = useEditable(isEditable);
   const { placeholder } = props;
   const decorations = useCallback(
@@ -101,8 +125,8 @@ export function RichComposerEditor(editor: RichComposerEditorProps) {
     [placeholder],
   );
   const pills = useMemo(
-    () => ({ getReference: props.getReference, isEditable }),
-    [props.getReference, isEditable],
+    () => ({ getReference: props.getReference, isEditable, triggers: props.triggers }),
+    [props.getReference, isEditable, props.triggers],
   );
   return (
     <ComposerPillContext value={pills}>

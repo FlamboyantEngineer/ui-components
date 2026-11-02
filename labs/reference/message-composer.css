@@ -131,6 +131,12 @@
   font-weight: inherit;
 }
 
+/* A host token's icon, before its label. */
+.ui-message-composer__pill-icon {
+  margin-inline-end: 3px;
+  vertical-align: -0.125em;
+}
+
 .ui-message-composer__code-block {
   margin: 2px 0;
   padding: 4px 8px;

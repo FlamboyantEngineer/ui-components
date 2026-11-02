@@ -22,6 +22,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { triggerWidthProperty, useLayerZIndex } from '../portal/portal.js';
+import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
 import type { Completion } from './completion-match.js';
 import { getCompletionOptionId } from './completion-option-id.js';
 import { useActiveCompletion } from './use-active-completion.js';
@@ -32,6 +33,8 @@ import { DEFAULT_POINT_OFFSET } from '../../utils/overlay-defaults.js';
 /** A completion with the key the editor moves and acts on. */
 export interface CompletionListItem extends Completion {
   id: Key;
+  /** An imported icon component or rendered element before the label. */
+  icon?: IconSource;
 }
 
 /** What an item's renderer knows about it. */
@@ -83,6 +86,7 @@ interface ControlCompletionListProps {
 const hooks = createHooks('completion-list', [
   'listbox',
   'option',
+  'icon',
   'label',
   'description',
   'documentation',
@@ -146,6 +150,9 @@ function CompletionOption({
         props.renderItem(item, { isActive })
       ) : (
         <>
+          {item.icon ? (
+            <Icon {...toIconProps(item.icon)} className={hooks.slotClass('icon')} />
+          ) : null}
           <span {...hooks.slot('label')}>{item.label}</span>
           {/* The space keeps the label and the description apart in the option's name. */}
           {item.description ? ' ' : null}

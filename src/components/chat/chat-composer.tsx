@@ -26,7 +26,8 @@ import {
   type MessageComposerHandle,
   type RichMessageComposerProps,
 } from '../message-composer/rich/rich-message-composer.js';
-import { useChatComposerHandle, type ChatDraftOptions } from './chat-composer-handle.js';
+import type { ChatDraftOptions } from './chat-composer-handle.js';
+import { toComposerDraftProps, useChatComposerHandle } from './chat-composer-handle.js';
 import { chatHooks as hooks } from './chat-hooks.js';
 import {
   findLastOwnText,
@@ -351,6 +352,7 @@ export function ChatComposer(given: ChatComposerProps) {
         mentions={mentions}
         commands={options.commands}
         getReference={options.getReference}
+        {...toComposerDraftProps(options)}
         history={isAssistantChat ? options.history : undefined}
         onEditLast={toEditLast(props)}
         persistKey={options.conversationId ? `chat-draft:${options.conversationId}` : undefined}

@@ -2,7 +2,12 @@
 import { useEffect, useImperativeHandle, type Ref, type RefObject } from 'react';
 import { useLatest } from '../../utils/use-latest.js';
 import type { ChatTextToken } from '../chat-parts/chat-parts.js';
-import type { MessageComposerHandle } from '../message-composer/rich/rich-message-composer.js';
+import type {
+  MessageComposerContent,
+  MessageComposerHandle,
+  MessageComposerRange,
+  RichMessageComposerProps,
+} from '../message-composer/rich/rich-message-composer.js';
 import { toComposerTokens, toDisplayTokens } from './chat-model.js';
 
 /**
@@ -27,6 +32,22 @@ export interface ChatComposerInsertOptions {
   conversationId?: string | undefined;
 }
 
+/**
+ * What a selection or range edit did: `applied`, or why it changed nothing: as for `insertToken`,
+ * or `invalid` for a range outside the shown message's text.
+ */
+export type ChatComposerEditResult =
+  | 'applied'
+  | 'other-conversation'
+  | 'disabled'
+  | 'editing'
+  | 'submitting'
+  | 'unavailable'
+  | 'invalid';
+
+/** What replaces a range of the composer's text: plain text, or text with its own tokens. */
+export type ChatComposerContent = string | { text: string; tokens: readonly ChatTextToken[] };
+
 /** What a host's own controls call on a chat's composer, through `composerHandleRef`. */
 export interface ChatComposerHandle {
   /**
@@ -40,6 +61,27 @@ export interface ChatComposerHandle {
   ) => ChatComposerInsertResult;
   /** The shown conversation's draft as it is now. */
   getDraft: () => ChatDraft;
+  /**
+   * The composer's selection in its shown message's text (`MessageComposerHandle`), or `null` for
+   * another conversation or without a composer.
+   */
+  getSelection: (options?: ChatComposerInsertOptions) => MessageComposerRange | null;
+  /** Selects a range of the composer's shown message without taking focus. */
+  setSelection: (
+    range: MessageComposerRange,
+    options?: ChatComposerInsertOptions,
+  ) => ChatComposerEditResult;
+  /** Replaces a range of the draft's text with text or a fragment, as one undo step. */
+  replaceRange: (
+    range: MessageComposerRange,
+    content: ChatComposerContent,
+    options?: ChatComposerInsertOptions,
+  ) => ChatComposerEditResult;
+  /** Replaces the composer's selection, or where it was when it lost focus. */
+  replaceSelection: (
+    content: ChatComposerContent,
+    options?: ChatComposerInsertOptions,
+  ) => ChatComposerEditResult;
 }
 
 /** The chat props for the host's own controls outside the chat. */
@@ -48,6 +90,24 @@ export interface ChatDraftOptions {
   composerHandleRef?: Ref<ChatComposerHandle> | undefined;
   /** Called with the conversation's draft when it loads and after each edit, as when a pill is added or removed. */
   onDraftChange?: ((draft: ChatDraft) => void) | undefined;
+  /** The composer's text box id, apart from the chat's own `id`. */
+  composerInputId?: string | undefined;
+  /** The composer's `onPaste`: sees text pasted into the composer first (`RichMessageComposer`). */
+  onComposerPaste?: RichMessageComposerProps['onPaste'];
+  /** The composer's `onSelectionChange`: the selection in the shown message's text. */
+  onComposerSelectionChange?: RichMessageComposerProps['onSelectionChange'];
+  /** Host vocabularies for the composer, each opened by its own character (`RichMessageComposer`). */
+  triggers?: RichMessageComposerProps['triggers'];
+}
+
+/** The composer props that `ChatDraftOptions` forwards. */
+export function toComposerDraftProps(options: ChatDraftOptions) {
+  return {
+    inputId: options.composerInputId,
+    onPaste: options.onComposerPaste,
+    onSelectionChange: options.onComposerSelectionChange,
+    triggers: options.triggers,
+  };
 }
 
 interface ChatComposerHandleOptions {
@@ -70,6 +130,12 @@ function readChatDraft(
   return { conversationId, ...toChatDraft(composer?.getDraft() ?? { text: '', tokens: [] }) };
 }
 
+/** Content as the composer takes it: tokens by their bare labels. */
+export function toComposerContent(content: ChatComposerContent): MessageComposerContent {
+  if (typeof content === 'string') return content;
+  return { text: content.text, tokens: toComposerTokens(content.tokens) };
+}
+
 /**
  * Gives `handleRef` a handle bound to the shown conversation, and reports the draft to
  * `onDraftChange` when it loads (on mount and on each change of conversation); the composer's
@@ -78,9 +144,22 @@ function readChatDraft(
 export function useChatComposerHandle(options: ChatComposerHandleOptions) {
   const { handleRef, composerRef, conversationId } = options;
   const latest = useLatest(options);
-  useImperativeHandle(
-    handleRef,
-    () => ({
+  useImperativeHandle(handleRef, () => {
+    /** The composer, while the chat shows the conversation asked for and the handle's own. */
+    const reach = (insert: ChatComposerInsertOptions | undefined) => {
+      const shown = latest.current.conversationId;
+      const asked = insert?.conversationId ?? conversationId;
+      if (shown !== conversationId || asked !== shown) return 'other-conversation' as const;
+      return composerRef.current ?? ('unavailable' as const);
+    };
+    const edit = (
+      insert: ChatComposerInsertOptions | undefined,
+      run: (composer: MessageComposerHandle) => ChatComposerEditResult,
+    ): ChatComposerEditResult => {
+      const composer = reach(insert);
+      return typeof composer === 'string' ? composer : run(composer);
+    };
+    return {
       insertToken: (token, insert) => {
         const shown = latest.current.conversationId;
         const asked = insert?.conversationId ?? conversationId;
@@ -93,9 +172,17 @@ export function useChatComposerHandle(options: ChatComposerHandleOptions) {
         return result;
       },
       getDraft: () => readChatDraft(composerRef.current, latest.current.conversationId),
-    }),
-    [conversationId, composerRef, latest],
-  );
+      getSelection: (insert) => {
+        const composer = reach(insert);
+        return typeof composer === 'string' ? null : composer.getSelection();
+      },
+      setSelection: (range, insert) => edit(insert, (composer) => composer.setSelection(range)),
+      replaceRange: (range, content, insert) =>
+        edit(insert, (composer) => composer.replaceRange(range, toComposerContent(content))),
+      replaceSelection: (content, insert) =>
+        edit(insert, (composer) => composer.replaceSelection(toComposerContent(content))),
+    };
+  }, [conversationId, composerRef, latest]);
   useEffect(() => {
     const composer = composerRef.current;
     if (composer) latest.current.onDraftChange?.(readChatDraft(composer, conversationId));

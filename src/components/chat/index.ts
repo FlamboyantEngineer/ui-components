@@ -1,5 +1,7 @@
 export { Chat, ChatHeader } from './chat.js';
 export type {
+  ChatComposerContent,
+  ChatComposerEditResult,
   ChatComposerHandle,
   ChatComposerInsertOptions,
   ChatComposerInsertResult,

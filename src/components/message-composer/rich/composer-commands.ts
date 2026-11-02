@@ -20,10 +20,10 @@ import {
   TextSelection,
   type Command,
   type Plugin,
+  type Transaction,
 } from 'prosemirror-state';
 import type { EditorView } from 'prosemirror-view';
-import { tokenTriggers } from '../composer-message.js';
-import type { PillAttributes } from './composer-schema.js';
+import { toPillText, type PillAttributes } from './composer-schema.js';
 
 /** Whether the caret or selection is in a code block. */
 export function isInCode(state: EditorState): boolean {
@@ -81,7 +81,7 @@ export function insertPillAtSelection(view: EditorView, pill: PillAttributes): v
     replaceWithPill(view, state.selection, pill);
     return;
   }
-  const text = `${tokenTriggers[pill.kind]}${pill.label} `;
+  const text = `${toPillText(pill)} `;
   view.dispatch(state.tr.insertText(text).scrollIntoView());
 }
 
@@ -197,15 +197,18 @@ export function createComposerState(doc: Node, plugins: readonly Plugin[]): Edit
  * Pastes text as it was copied: in a code block as one run, elsewhere a line per paragraph,
  * keeping every space and tab. Formatting from HTML is dropped, since only the plain text is read.
  */
-export function pastePlainText(view: EditorView, text: string): void {
-  const { state } = view;
+export function createPlainPaste(state: EditorState, text: string): Transaction {
   const lines = text.replace(/\r\n?/g, '\n').split('\n');
   const paragraph = state.schema.nodes.paragraph;
   if (isInCode(state) || lines.length === 1 || !paragraph) {
-    view.dispatch(state.tr.insertText(lines.join('\n')).scrollIntoView());
-    return;
+    return state.tr.insertText(lines.join('\n')).scrollIntoView();
   }
   const blocks = lines.map((line) => paragraph.create(null, line ? state.schema.text(line) : null));
   const slice = new Slice(Fragment.from(blocks), 1, 1);
-  view.dispatch(state.tr.replaceSelection(slice).scrollIntoView());
+  return state.tr.replaceSelection(slice).scrollIntoView();
+}
+
+/** Pastes text as it was copied (`createPlainPaste`). */
+export function pastePlainText(view: EditorView, text: string): void {
+  view.dispatch(createPlainPaste(view.state, text));
 }

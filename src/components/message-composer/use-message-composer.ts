@@ -111,6 +111,7 @@ export function useMessageComposer(props: MessageComposerProps): MessageComposer
   const inputProps: MessageComposerModel['inputProps'] = {
     ...(completions ? completion.inputProps : {}),
     ...toComposerLabelling(props, strings.message),
+    id: props.inputId,
     ref: textAreaRef,
     value: state.value,
     rows: minRows,

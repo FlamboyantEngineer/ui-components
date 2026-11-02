@@ -46,6 +46,8 @@ export interface MessageComposerSharedProps
   isDisabled?: boolean | undefined;
   /** Shown while the text is empty. */
   placeholder?: string | undefined;
+  /** The text box's own id, apart from the root's `id`, for a label or a host that finds it. */
+  inputId?: string | undefined;
   /**
    * The chords that send while idle, queue while a reply runs and send at once. On a touch screen
    * Enter breaks the line.

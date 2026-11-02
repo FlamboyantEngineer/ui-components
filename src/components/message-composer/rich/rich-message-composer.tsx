@@ -14,9 +14,25 @@ import type { MessageComposerSharedProps } from '../message-composer.js';
 import { useComposerState, type ComposerFormat } from '../use-composer-state.js';
 import type { PillAttributes } from './composer-schema.js';
 import { RichComposerEditor, type RichEditorHandle } from './rich-editor.js';
+import type { MessageComposerRange } from './composer-edits.js';
+import type { MessageComposerTrigger } from './composer-triggers.js';
+import type { MessageComposerPaste, MessageComposerPasteResult } from './composer-paste.js';
 import { useComposerHandle, type MessageComposerHandle } from './use-composer-handle.js';
 
-export type { MessageComposerHandle, MessageComposerInsertResult } from './use-composer-handle.js';
+export type {
+  MessageComposerContent,
+  MessageComposerEditResult,
+  MessageComposerHandle,
+  MessageComposerInsertResult,
+  MessageComposerRefusal,
+} from './use-composer-handle.js';
+export type { MessageComposerRange } from './composer-edits.js';
+export type {
+  MessageComposerSuggestion,
+  MessageComposerTrigger,
+  MessageComposerTriggerContext,
+} from './composer-triggers.js';
+export type { MessageComposerPaste, MessageComposerPasteResult } from './composer-paste.js';
 
 /** A person `@` can mention: shown with their avatar in the list, then as a pill. */
 export interface MessageComposerMention extends Pick<
@@ -63,14 +79,35 @@ export interface RichMessageComposerProps extends MessageComposerSharedProps {
   mentions?: readonly MessageComposerMention[] | undefined;
   /** The commands `/` inserts. */
   commands?: readonly MessageComposerCommand[] | undefined;
+  /**
+   * The host's own triggers, each a character that opens its vocabulary from a source answered at
+   * once or later; one with the character `@` or `/` takes its place from `mentions` or `commands`.
+   * Keep the array and its sources stable: a new source asks again.
+   */
+  triggers?: readonly MessageComposerTrigger[] | undefined;
   /** Looks up how a record reference's chip shows its record: name, icon, link, preview or unavailability. */
   getReference?: RecordLabelResolver | undefined;
   onFocus?: ((event: FocusEvent<HTMLDivElement>) => void) | undefined;
   onBlur?: ((event: FocusEvent<HTMLDivElement>) => void) | undefined;
   /** The editable text box. */
   ref?: Ref<HTMLDivElement> | undefined;
-  /** Receives `insertToken` and `getDraft`, for the host's own controls outside the composer. */
+  /**
+   * Receives the handle for the host's own controls outside the composer: insertion, the draft,
+   * the selection and range replacement.
+   */
   handleRef?: Ref<MessageComposerHandle> | undefined;
+  /**
+   * Called with the selection, or the caret as a collapsed range, in the shown message's text
+   * whenever it changes, by an edit too.
+   */
+  onSelectionChange?: ((range: MessageComposerRange) => void) | undefined;
+  /**
+   * Sees pasted text first, with the range it replaces: answer nothing to paste it as plain text,
+   * `null` to refuse it, a fragment to paste in its place, or a promise of one: the plain text then
+   * goes in at once and the fragment replaces it once it resolves, if the pasted text is still
+   * there unchanged in the same draft.
+   */
+  onPaste?: ((paste: MessageComposerPaste) => MessageComposerPasteResult) | undefined;
 }
 
 const richFormat: ComposerFormat<MessageComposerMessage> = {

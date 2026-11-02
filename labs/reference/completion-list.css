@@ -120,6 +120,13 @@
   line-height: 1.5;
 }
 
+.ui-completion-list__icon {
+  grid-column: 1;
+  align-self: center;
+  margin-inline-end: 6px;
+  color: var(--ref-muted);
+}
+
 .ui-completion-list__label {
   grid-column: 2;
   min-width: 0;

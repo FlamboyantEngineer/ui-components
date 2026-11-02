@@ -2,7 +2,12 @@
 
 import type { Node } from 'prosemirror-model';
 import type { MessageComposerMessage, MessageComposerToken } from '../composer-message.js';
-import { composerSchema as schema, getPillText, type PillAttributes } from './composer-schema.js';
+import {
+  composerSchema as schema,
+  getPillText,
+  toPillText,
+  type PillAttributes,
+} from './composer-schema.js';
 
 // A fence is three or more backticks; the opening one may name a language, and a run of at least
 // as many backticks alone on a line closes it, as in CommonMark.
@@ -11,16 +16,22 @@ const backtickLine = /^`+$/;
 const backtickRun = /`+/g;
 
 /** A fence longer than every run of backticks in `code`, so no line of it closes the block. */
-function toFence(code: string): string {
+export function toFence(code: string): string {
   // Counted run by run: spreading every run into `Math.max` overflows the argument limit.
   let longest = 0;
   for (const [run] of code.matchAll(backtickRun)) longest = Math.max(longest, run.length);
   return '`'.repeat(Math.max(3, longest + 1));
 }
 
-/** A pill's token without its range: `recordType` only when the pill has one. */
-function toPillToken({ kind, id, label, recordType }: PillAttributes) {
-  return { kind, id, label, ...(recordType === undefined ? {} : { recordType }) };
+/** A pill's token without its range: `recordType` and `trigger` only when the pill has them. */
+function toPillToken({ kind, id, label, recordType, trigger }: PillAttributes) {
+  return {
+    kind,
+    id,
+    label,
+    ...(recordType === undefined ? {} : { recordType }),
+    ...(trigger === undefined ? {} : { trigger }),
+  };
 }
 
 /** Lines of text written one after another, with the tokens placed in them. */
@@ -92,7 +103,10 @@ function parseLine(line: string, start: number, tokens: MessageComposerToken[]) 
     const offset = token.start - start;
     if (offset < at) continue;
     if (offset > at) children.push(schema.text(line.slice(at, offset)));
-    children.push(schema.node('pill', toPillToken(token)));
+    const pill: PillAttributes = toPillToken(token);
+    const text = line.slice(offset, token.end - start);
+    // The pill keeps the raw text the token covers when it is not the trigger and label.
+    children.push(schema.node('pill', text === toPillText(pill) ? pill : { ...pill, text }));
     at = token.end - start;
   }
   if (at < line.length) children.push(schema.text(line.slice(at)));

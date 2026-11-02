@@ -8,19 +8,24 @@ import type { CodeBlockData } from '../code-block/code-block.js';
 /** How a text part renders: as Markdown, or as plain text with its line breaks. */
 export type ChatTextFormat = 'markdown' | 'plain';
 
-/** A mention, command or record reference the composer inserted, as a range of the part's text. */
+/**
+ * A mention, command, record reference or host trigger entry the composer inserted, as a range of
+ * the part's text.
+ */
 export interface ChatTextToken {
   /** Where the token starts in `text`, in UTF-16 code units. */
   start: number;
   /** Where the token ends in `text` (exclusive). */
   end: number;
-  kind: 'mention' | 'command' | 'reference';
-  /** The participant's, command's or referenced record's id. */
+  kind: 'mention' | 'command' | 'reference' | 'trigger';
+  /** The participant's, command's, referenced record's or trigger entry's id. */
   id: string;
   /** The text the pill shows; a reference's chip identifier. */
   label: string;
   /** A reference's record kind or scope, as the host names it. */
   recordType?: string | undefined;
+  /** The `id` of the host trigger whose vocabulary a `trigger` token came from. */
+  trigger?: string | undefined;
 }
 
 /** Text: Markdown by default, streamed in while `status` is `streaming`. */

@@ -7,6 +7,7 @@ export const composerHooks = createHooks('message-composer', [
   'input',
   'placeholder',
   'pill',
+  'pill-icon',
   'code-block',
   'footer',
   'start',

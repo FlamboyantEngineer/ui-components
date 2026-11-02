@@ -5,13 +5,23 @@ import { Schema, type Node, type NodeSpec } from 'prosemirror-model';
 import { composerHooks as hooks } from '../composer-hooks.js';
 import { tokenTriggers, type MessageComposerToken } from '../composer-message.js';
 
-/** What a pill node carries. */
-export type PillAttributes = Pick<MessageComposerToken, 'kind' | 'id' | 'label' | 'recordType'>;
+/**
+ * What a pill node carries: its token, and the raw `text` it stands for in the message when that is
+ * not its trigger character and label, as for a host trigger's entry.
+ */
+export type PillAttributes = Pick<
+  MessageComposerToken,
+  'kind' | 'id' | 'label' | 'recordType' | 'trigger'
+> & { text?: string | undefined };
 
-/** A pill's text: its trigger character and its label, such as `@Maria Santos`; a reference's label. */
+/** A pill's raw text: its own, or its trigger character and label (`@Maria Santos`); a reference's label. */
+export function toPillText({ kind, label, text }: PillAttributes): string {
+  return text || `${tokenTriggers[kind]}${label}`;
+}
+
+/** A pill node's raw text in the message. */
 export function getPillText(node: Node): string {
-  const { kind, label } = node.attrs as PillAttributes;
-  return `${tokenTriggers[kind]}${label}`;
+  return toPillText(node.attrs as PillAttributes);
 }
 
 const pill: NodeSpec = {
@@ -25,6 +35,8 @@ const pill: NodeSpec = {
     id: { default: '' },
     label: { default: '' },
     recordType: { default: undefined },
+    trigger: { default: undefined },
+    text: { default: undefined },
   },
   leafText: getPillText,
   toDOM: (node) => [

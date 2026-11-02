@@ -38,6 +38,8 @@ export { ChatHeader } from './chat-header.js';
 export type { ChatHeaderProps } from './chat-header.js';
 export type { ChatMessageTextHandler } from './chat-composer.js';
 export type {
+  ChatComposerContent,
+  ChatComposerEditResult,
   ChatComposerHandle,
   ChatComposerInsertOptions,
   ChatComposerInsertResult,

@@ -73,7 +73,7 @@ export function toExcerpt(text: string): string {
   return line.length > excerptLength ? `${line.slice(0, excerptLength - 1).trimEnd()}…` : line;
 }
 
-const triggers = { mention: '@', command: '/', reference: '' } as const;
+const triggers = { mention: '@', command: '/', reference: '', trigger: '' } as const;
 
 /**
  * Tokens as a message shows them: the composer names a pill by its bare label (`Ana Lopez`), while
@@ -83,7 +83,9 @@ const triggers = { mention: '@', command: '/', reference: '' } as const;
 export function toDisplayTokens(tokens: readonly ChatTextToken[]): ChatTextToken[] {
   return tokens.map((token) => {
     const trigger = triggers[token.kind];
-    return token.label.startsWith(trigger) ? token : { ...token, label: trigger + token.label };
+    return !trigger || token.label.startsWith(trigger)
+      ? token
+      : { ...token, label: trigger + token.label };
   });
 }
 

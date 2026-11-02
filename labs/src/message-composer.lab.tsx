@@ -26,6 +26,7 @@ import {
 } from './message-composer-rich-cases.js';
 import { ComposerControlsSection, labApprovalModes } from './message-composer-controls-cases.js';
 import { createLabComposerMenu, ComposerMenuSection } from './message-composer-menu-cases.js';
+import { RangeComposerSections } from './message-composer-range-cases.js';
 import { ReferenceComposerSection } from './message-composer-reference-cases.js';
 import { ComposerShortcutSection } from './message-composer-shortcut-cases.js';
 import { TeamChatSection } from './message-composer-team-cases.js';
@@ -299,6 +300,7 @@ mountLab(
     </LabSection>
     <RichComposerSections />
     <ReferenceComposerSection />
+    <RangeComposerSections />
     <TeamChatSection />
     <WorkspaceComposerSection />
     <LabSection

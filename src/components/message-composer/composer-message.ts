@@ -4,8 +4,11 @@
 import type { PersistCodec } from '../../core/provider.js';
 import { createJsonCodec } from '../../utils/json-codec.js';
 
-/** What a pill in the message stands for: a person, a command, or a record the host names. */
-export type MessageComposerTokenKind = 'mention' | 'command' | 'reference';
+/**
+ * What a pill in the message stands for: a person, a command, a record the host names, or an
+ * entry of one of the host's own trigger vocabularies (`trigger`).
+ */
+export type MessageComposerTokenKind = 'mention' | 'command' | 'reference' | 'trigger';
 
 /** A mention, command or record reference in the message's text, by its range. */
 export interface MessageComposerToken {
@@ -20,6 +23,8 @@ export interface MessageComposerToken {
   label: string;
   /** A reference's record kind or scope, as the host names it. */
   recordType?: string | undefined;
+  /** The `id` of the host trigger whose vocabulary a `trigger` token came from. */
+  trigger?: string | undefined;
 }
 
 /** A composed message: Markdown text, and the pills in it as token ranges. */
@@ -28,11 +33,15 @@ export interface MessageComposerMessage {
   tokens: MessageComposerToken[];
 }
 
-/** The character that opens a token's completions and starts its text; a reference has none. */
+/**
+ * The character that opens a built-in token's completions and starts its text; a reference has
+ * none, and a host trigger's token keeps the text it was inserted with.
+ */
 export const tokenTriggers: Readonly<Record<MessageComposerTokenKind, string>> = {
   mention: '@',
   command: '/',
   reference: '',
+  trigger: '',
 };
 
 const tokenKinds: ReadonlySet<unknown> = new Set(Object.keys(tokenTriggers));
@@ -47,7 +56,8 @@ function isToken(value: unknown): value is MessageComposerToken {
     tokenKinds.has(token.kind) &&
     typeof token.id === 'string' &&
     typeof token.label === 'string' &&
-    (token.recordType === undefined || typeof token.recordType === 'string')
+    (token.recordType === undefined || typeof token.recordType === 'string') &&
+    (token.trigger === undefined || typeof token.trigger === 'string')
   );
 }
 
@@ -69,7 +79,8 @@ function isSameToken(a: MessageComposerToken, b: MessageComposerToken): boolean 
     a.kind === b.kind &&
     a.id === b.id &&
     a.label === b.label &&
-    a.recordType === b.recordType
+    a.recordType === b.recordType &&
+    a.trigger === b.trigger
   );
 }
 

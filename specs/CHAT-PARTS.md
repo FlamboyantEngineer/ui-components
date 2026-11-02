@@ -52,7 +52,7 @@ Verification: `src/components/chat-parts/chat-text-part.test.tsx`, `e2e/chat-par
 
 ### UIC-CHAT-PARTS-2.4 - Mention and command tokens
 
-Each of a text part's `tokens` shall show its `label` as a pill (`ui-chat-parts__token`, `data-kind` `mention` or `command`) in place of the range of `text` it covers, in both formats. In Markdown the pill takes the place of the token's text wherever Markdown reads it as text, inside emphasis, links and lists as elsewhere, and text beside it keeps its citations; where Markdown shows the source as written (code, a link's target, an image), the token's text stays as written. Tokens outside the text or overlapping an earlier token are ignored. Only the listed tokens become pills: any other text, including characters that look like the markers that carry tokens through Markdown (written as is or as entities), stays text, in text, code and links alike, and never adds or hides a token. Each token's marker stays a few characters long however many such characters or tokens the text holds, so the Markdown source grows in proportion to the text. Tokens are compared field by field, so a host that rebuilds the array on each render keeps the Markdown overrides.
+Each of a text part's `tokens` shall show its `label` as a pill (`ui-chat-parts__token`, `data-kind` `mention`, `command` or `trigger`, the last for an entry of a host's own trigger vocabulary) in place of the range of `text` it covers, in both formats. In Markdown the pill takes the place of the token's text wherever Markdown reads it as text, inside emphasis, links and lists as elsewhere, and text beside it keeps its citations; where Markdown shows the source as written (code, a link's target, an image), the token's text stays as written. Tokens outside the text or overlapping an earlier token are ignored. Only the listed tokens become pills: any other text, including characters that look like the markers that carry tokens through Markdown (written as is or as entities), stays text, in text, code and links alike, and never adds or hides a token. Each token's marker stays a few characters long however many such characters or tokens the text holds, so the Markdown source grows in proportion to the text. Tokens are compared field by field, so a host that rebuilds the array on each render keeps the Markdown overrides.
 
 Implementation: `src/components/chat-parts/chat-text-part.tsx`, `src/components/chat-parts/chat-text-tokens.ts`
 Verification: `src/components/chat-parts/chat-text-part.test.tsx`, `src/components/chat-parts/chat-text-tokens.test.ts`, `src/components/chat-parts/chat-text-token-literals.test.tsx`, `e2e/chat-parts.spec.ts`
@@ -179,12 +179,12 @@ Verification: `src/components/chat-parts/chat-parts.test.tsx`
 
 ## Hooks
 
-| Hook                        | Kind      | Values                            | Description                                                                  |
-| --------------------------- | --------- | --------------------------------- | ---------------------------------------------------------------------------- |
-| `ui-chat-parts`             | root      |                                   | The parts' `<div>`.                                                          |
-| `ui-chat-parts__text`       | slot      |                                   | A text part: the Markdown root (also `ui-markdown`) or a plain-text `<div>`. |
-| `ui-chat-parts__token`      | slot      |                                   | A token's pill: a mention's or command's label, or a reference's chip.       |
-| `ui-chat-parts__diff`       | slot      |                                   | A diff part: its title and its `TextDiff`.                                   |
-| `ui-chat-parts__diff-title` | slot      |                                   | A diff part's title.                                                         |
-| `data-format`               | attribute | `markdown`, `plain`               | On a text part: how it renders.                                              |
-| `data-kind`                 | attribute | `mention`, `command`, `reference` | On a token: what it stands for.                                              |
+| Hook                        | Kind      | Values                                       | Description                                                                  |
+| --------------------------- | --------- | -------------------------------------------- | ---------------------------------------------------------------------------- |
+| `ui-chat-parts`             | root      |                                              | The parts' `<div>`.                                                          |
+| `ui-chat-parts__text`       | slot      |                                              | A text part: the Markdown root (also `ui-markdown`) or a plain-text `<div>`. |
+| `ui-chat-parts__token`      | slot      |                                              | A token's pill: a mention's or command's label, or a reference's chip.       |
+| `ui-chat-parts__diff`       | slot      |                                              | A diff part: its title and its `TextDiff`.                                   |
+| `ui-chat-parts__diff-title` | slot      |                                              | A diff part's title.                                                         |
+| `data-format`               | attribute | `markdown`, `plain`                          | On a text part: how it renders.                                              |
+| `data-kind`                 | attribute | `mention`, `command`, `reference`, `trigger` | On a token: what it stands for.                                              |
