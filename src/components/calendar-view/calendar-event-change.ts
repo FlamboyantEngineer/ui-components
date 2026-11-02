@@ -2,6 +2,7 @@
 // (specs/CALENDAR-VIEW.md, UIC-CALENDAR-VIEW-6).
 
 import { formatIsoDate, fromDate, toCalendarDateTime, toZoned } from '../../primitives/index.js';
+import { isFreeEditKey, type EditKey } from '../../utils/is-free-edit-key.js';
 import { shiftDay } from './calendar-days.js';
 import { toEventText } from './calendar-event-range.js';
 import type { PlacedEvent } from './calendar-layout.js';
@@ -21,6 +22,9 @@ export interface EventChange {
   gesture: CalendarEventGesture;
   shift: EventShift;
 }
+
+/** The snap of a dragged timed event, and its keyboard step, in minutes. */
+export const snapMinutes = 15;
 
 /** The least a start or end drag leaves a timed event, in minutes. */
 export const leastChangeMinutes = 15;
@@ -108,4 +112,27 @@ export function changeEvent(
     ? changeAllDay(placed, gesture, shift.days)
     : changeTimed(placed, change, timeZone);
   return next.start === placed.event.start && next.end === placed.event.end ? null : next;
+}
+
+/**
+ * The shift one arrow key asks for: Left and Right a day (mirrored right to left); Up and Down
+ * `snapMinutes` on a time grid, else a week. A bar changes by whole days only. Only plain arrows
+ * step: an arrow with Shift, Control, Alt or Meta is a shortcut of the browser or the host, and a
+ * composing or handled key belongs to whoever has it.
+ */
+export function readKeyShift(
+  key: EditKey & { key: string; shiftKey: boolean },
+  placement: 'bar' | 'block',
+  isRtl: boolean,
+): EventShift | null {
+  if (key.shiftKey || !isFreeEditKey(key)) return null;
+  const forward = isRtl ? 'ArrowLeft' : 'ArrowRight';
+  const back = isRtl ? 'ArrowRight' : 'ArrowLeft';
+  if (key.key === forward) return { days: 1, minutes: 0 };
+  if (key.key === back) return { days: -1, minutes: 0 };
+  const step = key.key === 'ArrowDown' ? 1 : key.key === 'ArrowUp' ? -1 : 0;
+  if (step === 0) return null;
+  return placement === 'block'
+    ? { days: 0, minutes: step * snapMinutes }
+    : { days: step * 7, minutes: 0 };
 }

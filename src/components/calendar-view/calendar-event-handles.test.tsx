@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -96,6 +96,37 @@ describe('CalendarView event drags', () => {
     expect(onEventChange).toHaveBeenLastCalledWith(
       expect.objectContaining({ start: '2026-03-26', end: '2026-03-26' }),
       expect.objectContaining({ end: '2026-03-27' }),
+    );
+  });
+
+  it('UIC-CALENDAR-VIEW-6.3 steps only on plain arrows, not on shortcuts, composition or handled keys', async () => {
+    const user = userEvent.setup();
+    const onEventChange = vi.fn();
+    render(<Calendar onEventChange={onEventChange} defaultView="week" />);
+    for (const target of [eventButton('Design review'), button('Change end of Design review')]) {
+      target.focus();
+      for (const chord of ['Control', 'Alt', 'Meta', 'Shift']) {
+        await user.keyboard(`{${chord}>}{ArrowRight}{ArrowDown}{/${chord}}`);
+      }
+      // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot mark a key as composing.
+      fireEvent.keyDown(target, { key: 'ArrowDown', isComposing: true });
+      // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot send key code 229.
+      fireEvent.keyDown(target, { key: 'ArrowDown', keyCode: 229 });
+      const handled = new KeyboardEvent('keydown', {
+        key: 'ArrowDown',
+        bubbles: true,
+        cancelable: true,
+      });
+      handled.preventDefault();
+      target.dispatchEvent(handled);
+      expect(onEventChange).not.toHaveBeenCalled();
+      expect(target).toHaveFocus();
+    }
+    eventButton('Design review').focus();
+    await user.keyboard('{ArrowDown}');
+    expect(onEventChange).toHaveBeenLastCalledWith(
+      { ...events[0], start: '2026-03-18T14:15', end: '2026-03-18T15:45' },
+      events[0],
     );
   });
 
