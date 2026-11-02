@@ -2,15 +2,18 @@
 // Verifies that the reference stylesheet draws on one token set (UIC-LABS-3.5): partials use the
 // base tokens instead of literal colours, radii, type, focus rings, state opacity and durations;
 // every token is defined once, used, and not a literal copy of another; component-scoped tokens
-// carry their partial's name. A state rule never sizes or places a box (UIC-LABS-3.6), and a
-// control takes its height from the control scale at every size (UIC-LABS-3.7). Containers and
-// container queries are named (UIC-LABS-3.1). A literal z-index stays on the in-page scale.
+// carry their partial's name. Every other custom property is a measured --ui-* property a spec
+// declares or a listed third-party interop variable used only in its partial. A state rule never
+// sizes or places a box (UIC-LABS-3.6), and a control takes its height from the control scale at
+// every size (UIC-LABS-3.7). Containers and container queries are named (UIC-LABS-3.1). A literal
+// z-index stays on the in-page scale.
 
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { option, reportProblems, root } from './lib/script.mjs';
 
 const referenceDir = option('dir', join(root, 'labs', 'reference'));
+const specsDir = join(root, 'specs');
 const exemptMarker = 'token-exempt:';
 const layoutExemptMarker = 'layout-exempt:';
 const problems = [];
@@ -117,7 +120,13 @@ const isTokenBlock = ({ file, selector }) =>
 for (const declaration of declarations) {
   const { selector, property, isExempt, isLayoutExempt } = declaration;
   const value = declaration.value.replace(/\s*!important$/, '');
-  if (isTokenBlock(declaration) || property.startsWith('--')) continue;
+  if (isTokenBlock(declaration)) continue;
+  // A partial's own token draws its colour from the base too; its uses are checked by property.
+  if (property.startsWith('--')) {
+    if (!isExempt && colourLiteral.test(value))
+      problems.push(`${where(declaration)}: literal colour in ${property}; use a colour token`);
+    continue;
+  }
   const isStateRule = transientState.test(selector.replace(/:not\([^)]*\)/g, ''));
   if (isStateRule && layoutProperty.test(property) && !isLayoutExempt) {
     problems.push(
@@ -283,33 +292,87 @@ for (const declaration of declarations) {
   }
 }
 
-// Every token is defined, used, scoped by name and not a literal copy of another.
+// Every custom property is an authored token (`--ref-*`), a measured property a component publishes
+// (`--ui-*`, declared by a spec) or an interop variable of a third-party engine, kept to its partial.
+// Authored tokens are defined, used, scoped by name and not a literal copy of another.
+const measured = new Set(
+  readdirSync(specsDir)
+    .filter((file) => file.endsWith('.md'))
+    .flatMap((file) =>
+      [
+        ...readFileSync(join(specsDir, file), 'utf8').matchAll(
+          /^\|\s*`(--ui-[\w-]+)`\s*\|\s*property\s*\|/gm,
+        ),
+      ].map((match) => match[1]),
+    ),
+);
+const reactAriaDisclosure = ['disclosure.css', 'chat-activity.css'];
+const pdfTextLayer = ['pdf-viewer.css'];
+const interop = new Map([
+  // React Aria's DisclosurePanel measures its content's height.
+  ['--disclosure-panel-height', reactAriaDisclosure],
+  // PDF.js sizes and turns each text run of its text layer from these.
+  ['--total-scale-factor', pdfTextLayer],
+  ['--scale-round-x', pdfTextLayer],
+  ['--scale-round-y', pdfTextLayer],
+  ['--min-font-size', pdfTextLayer],
+  ['--font-height', pdfTextLayer],
+  ['--scale-x', pdfTextLayer],
+  ['--rotate', pdfTextLayer],
+]);
 const defined = new Map();
 for (const declaration of declarations) {
-  if (!declaration.property.startsWith('--ref-')) continue;
+  if (!declaration.property.startsWith('--')) continue;
   const entries = defined.get(declaration.property) ?? [];
   entries.push(declaration);
   defined.set(declaration.property, entries);
 }
-const used = new Set(
-  files.flatMap((file) =>
-    [
-      ...stripComments(readFileSync(join(referenceDir, file), 'utf8')).matchAll(
-        /var\(\s*(--ref-[\w-]+)/g,
-      ),
-    ].map((match) => match[1]),
-  ),
-);
+const used = new Map();
+for (const file of files) {
+  const css = stripComments(readFileSync(join(referenceDir, file), 'utf8'));
+  for (const match of css.matchAll(/var\(\s*(--[\w-]+)/g)) {
+    const line = css.slice(0, match.index).split('\n').length;
+    used.set(match[1], [...(used.get(match[1]) ?? []), { file, line }]);
+  }
+}
 const baseTokens = new Set(
   [...defined]
-    .filter(([, entries]) => entries.some((entry) => entry.file === 'base.css'))
+    .filter(
+      ([name, entries]) =>
+        name.startsWith('--ref-') && entries.some((entry) => entry.file === 'base.css'),
+    )
     .map(([name]) => name),
 );
 
-for (const name of used) {
-  if (!defined.has(name)) problems.push(`${name} is used but never defined`);
+const occurrences = new Map(used);
+for (const [name, entries] of defined)
+  occurrences.set(name, [...(occurrences.get(name) ?? []), ...entries]);
+for (const [name, places] of occurrences) {
+  if (name.startsWith('--ref-')) continue;
+  const at = where(places[0]);
+  if (name.startsWith('--ui-')) {
+    if (!measured.has(name))
+      problems.push(`${at}: ${name} is not a measured property any spec declares`);
+    if (defined.has(name))
+      problems.push(
+        `${where(defined.get(name)[0])}: ${name} is published by a component; the stylesheet only reads it`,
+      );
+  } else if (interop.has(name)) {
+    const stray = places.find((place) => !interop.get(name).includes(place.file));
+    if (stray)
+      problems.push(
+        `${where(stray)}: ${name} belongs to a third-party engine; use it only in ${interop.get(name).join(', ')}`,
+      );
+  } else {
+    problems.push(`${at}: ${name} is outside the reference namespaces; name it --ref-<owner>-…`);
+  }
+}
+for (const [name, uses] of used) {
+  if (name.startsWith('--ref-') && !defined.has(name))
+    problems.push(`${where(uses[0])}: ${name} is used but never defined`);
 }
 for (const [name, entries] of defined) {
+  if (!name.startsWith('--ref-')) continue;
   if (!used.has(name)) problems.push(`${where(entries[0])}: ${name} is defined but never used`);
   if (baseTokens.has(name)) continue;
   const owners = new Set(entries.map((entry) => entry.file.replace(/\.css$/, '')));

@@ -36,29 +36,29 @@ p.ui-tree-compare__summary {
 
 .ui-tree-compare__count {
   padding: 0 8px;
-  --tree-compare-tone: var(--ref-border-strong);
+  --ref-tree-compare-tone: var(--ref-border-strong);
   border: 1px solid
-    color-mix(in srgb, var(--tree-compare-tone) var(--ref-tint-border), var(--ref-border));
+    color-mix(in srgb, var(--ref-tree-compare-tone) var(--ref-tint-border), var(--ref-border));
   border-radius: var(--ref-radius);
-  background: color-mix(in srgb, var(--tree-compare-tone) var(--ref-tint-subtle), transparent);
+  background: color-mix(in srgb, var(--ref-tree-compare-tone) var(--ref-tint-subtle), transparent);
   font-size: var(--ref-font-size-sm);
   line-height: 1.25rem;
 }
 
 .ui-tree-compare__count[data-change='added'] {
-  --tree-compare-tone: var(--ref-success);
+  --ref-tree-compare-tone: var(--ref-success);
 }
 
 .ui-tree-compare__count[data-change='removed'] {
-  --tree-compare-tone: var(--ref-danger);
+  --ref-tree-compare-tone: var(--ref-danger);
 }
 
 .ui-tree-compare__count[data-change='changed'] {
-  --tree-compare-tone: var(--ref-warning);
+  --ref-tree-compare-tone: var(--ref-warning);
 }
 
 .ui-tree-compare__count[data-change='moved'] {
-  --tree-compare-tone: var(--ref-info);
+  --ref-tree-compare-tone: var(--ref-info);
 }
 
 .ui-tree-compare__changes-only {

@@ -5,13 +5,13 @@
   max-width: 100%;
   margin: 0 0 12px;
   padding: 10px 12px;
-  --problem-list-tone: var(--ref-border-strong);
+  --ref-problem-list-tone: var(--ref-border-strong);
   border: 1px solid
-    color-mix(in srgb, var(--problem-list-tone) var(--ref-tint-border), var(--ref-border));
+    color-mix(in srgb, var(--ref-problem-list-tone) var(--ref-tint-border), var(--ref-border));
   border-radius: var(--ref-radius);
   background: color-mix(
     in srgb,
-    var(--problem-list-tone) var(--ref-tint-subtle),
+    var(--ref-problem-list-tone) var(--ref-tint-subtle),
     var(--ref-surface)
   );
   color: var(--ref-text);
@@ -19,15 +19,15 @@
 }
 
 .ui-problem-list[data-severity='error'] {
-  --problem-list-tone: var(--ref-danger);
+  --ref-problem-list-tone: var(--ref-danger);
 }
 
 .ui-problem-list[data-severity='warning'] {
-  --problem-list-tone: var(--ref-warning);
+  --ref-problem-list-tone: var(--ref-warning);
 }
 
 .ui-problem-list[data-empty] {
-  --problem-list-tone: var(--ref-success);
+  --ref-problem-list-tone: var(--ref-success);
 }
 
 .ui-problem-list__title {

@@ -84,34 +84,34 @@
 
 /* The bar's thickness and grip by size: md is the default; xs stays a usable 6px target. */
 .ui-resize-handle {
-  --resize-handle-thickness: 10px;
-  --resize-handle-grip-thickness: 2px;
-  --resize-handle-grip-length: 40px;
+  --ref-split-view-handle-thickness: 10px;
+  --ref-split-view-handle-grip-thickness: 2px;
+  --ref-split-view-handle-grip-length: 40px;
 }
 .ui-resize-handle[data-size='xs'] {
-  --resize-handle-thickness: 6px;
-  --resize-handle-grip-thickness: 2px;
-  --resize-handle-grip-length: 24px;
+  --ref-split-view-handle-thickness: 6px;
+  --ref-split-view-handle-grip-thickness: 2px;
+  --ref-split-view-handle-grip-length: 24px;
 }
 .ui-resize-handle[data-size='sm'] {
-  --resize-handle-thickness: 8px;
-  --resize-handle-grip-thickness: 2px;
-  --resize-handle-grip-length: 32px;
+  --ref-split-view-handle-thickness: 8px;
+  --ref-split-view-handle-grip-thickness: 2px;
+  --ref-split-view-handle-grip-length: 32px;
 }
 .ui-resize-handle[data-size='lg'] {
-  --resize-handle-thickness: 14px;
-  --resize-handle-grip-thickness: 4px;
-  --resize-handle-grip-length: 56px;
+  --ref-split-view-handle-thickness: 14px;
+  --ref-split-view-handle-grip-thickness: 4px;
+  --ref-split-view-handle-grip-length: 56px;
 }
 
 .ui-resize-handle[data-orientation='vertical'] {
-  width: var(--resize-handle-thickness);
+  width: var(--ref-split-view-handle-thickness);
   cursor: col-resize;
   border-inline: 1px solid var(--ref-border);
 }
 
 .ui-resize-handle[data-orientation='horizontal'] {
-  height: var(--resize-handle-thickness);
+  height: var(--ref-split-view-handle-thickness);
   cursor: row-resize;
   border-block: 1px solid var(--ref-border);
 }
@@ -122,13 +122,13 @@
 }
 
 .ui-resize-handle[data-orientation='vertical'] .ui-resize-handle__grip {
-  width: var(--resize-handle-grip-thickness);
-  height: var(--resize-handle-grip-length);
+  width: var(--ref-split-view-handle-grip-thickness);
+  height: var(--ref-split-view-handle-grip-length);
 }
 
 .ui-resize-handle[data-orientation='horizontal'] .ui-resize-handle__grip {
-  width: var(--resize-handle-grip-length);
-  height: var(--resize-handle-grip-thickness);
+  width: var(--ref-split-view-handle-grip-length);
+  height: var(--ref-split-view-handle-grip-thickness);
 }
 
 .ui-resize-handle:is(:hover, :focus-visible, [data-resizing]) .ui-resize-handle__grip {

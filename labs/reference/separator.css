@@ -61,9 +61,9 @@
  */
 
 :where(.ui-separator) {
-  --separator-wave: var(--ref-border);
-  --separator-wave-across: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 6'%3E%3Cpath d='M-1 4.12L-0.5 3.58L0 3L0.5 2.42L1 1.88L1.5 1.41L2 1.05L2.5 0.83L3 0.75L3.5 0.83L4 1.05L4.5 1.41L5 1.88L5.5 2.42L6 3L6.5 3.58L7 4.12L7.5 4.59L8 4.95L8.5 5.17L9 5.25L9.5 5.17L10 4.95L10.5 4.59L11 4.13L11.5 3.58L12 3L12.5 2.42L13 1.88' fill='none' stroke='black' stroke-width='1.25'/%3E%3C/svg%3E");
-  --separator-wave-down: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 6 12'%3E%3Cpath d='M4.12 -1L3.58 -0.5L3 0L2.42 0.5L1.88 1L1.41 1.5L1.05 2L0.83 2.5L0.75 3L0.83 3.5L1.05 4L1.41 4.5L1.88 5L2.42 5.5L3 6L3.58 6.5L4.12 7L4.59 7.5L4.95 8L5.17 8.5L5.25 9L5.17 9.5L4.95 10L4.59 10.5L4.13 11L3.58 11.5L3 12L2.42 12.5L1.88 13' fill='none' stroke='black' stroke-width='1.25'/%3E%3C/svg%3E");
+  --ref-separator-wave: var(--ref-border);
+  --ref-separator-wave-across: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 6'%3E%3Cpath d='M-1 4.12L-0.5 3.58L0 3L0.5 2.42L1 1.88L1.5 1.41L2 1.05L2.5 0.83L3 0.75L3.5 0.83L4 1.05L4.5 1.41L5 1.88L5.5 2.42L6 3L6.5 3.58L7 4.12L7.5 4.59L8 4.95L8.5 5.17L9 5.25L9.5 5.17L10 4.95L10.5 4.59L11 4.13L11.5 3.58L12 3L12.5 2.42L13 1.88' fill='none' stroke='black' stroke-width='1.25'/%3E%3C/svg%3E"); /* token-exempt: a mask's alpha, not a colour */
+  --ref-separator-wave-down: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 6 12'%3E%3Cpath d='M4.12 -1L3.58 -0.5L3 0L2.42 0.5L1.88 1L1.41 1.5L1.05 2L0.83 2.5L0.75 3L0.83 3.5L1.05 4L1.41 4.5L1.88 5L2.42 5.5L3 6L3.58 6.5L4.12 7L4.59 7.5L4.95 8L5.17 8.5L5.25 9L5.17 9.5L4.95 10L4.59 10.5L4.13 11L3.58 11.5L3 12L2.42 12.5L1.88 13' fill='none' stroke='black' stroke-width='1.25'/%3E%3C/svg%3E"); /* token-exempt: a mask's alpha, not a colour */
 }
 
 :where(
@@ -73,8 +73,8 @@
   > :is(.ui-separator__start-line, .ui-separator__end-line) {
   block-size: 6px;
   border-width: 0;
-  background: var(--separator-wave);
-  mask: var(--separator-wave-across) 0 0 / 12px 6px repeat-x;
+  background: var(--ref-separator-wave);
+  mask: var(--ref-separator-wave-across) 0 0 / 12px 6px repeat-x;
 }
 
 :where(
@@ -84,8 +84,8 @@
   > :is(.ui-separator__start-line, .ui-separator__end-line) {
   inline-size: 6px;
   border-width: 0;
-  background: var(--separator-wave);
-  mask: var(--separator-wave-down) 0 0 / 6px 12px repeat-y;
+  background: var(--ref-separator-wave);
+  mask: var(--ref-separator-wave-down) 0 0 / 6px 12px repeat-y;
 }
 
 /* Labelled separators: the lines grow; the one on the label's side keeps a short inset. */
@@ -170,15 +170,15 @@
 }
 
 .ui-separator[data-label-position='start'] {
-  --separator-label-align: start;
+  --ref-separator-label-align: start;
 }
 
 .ui-separator[data-label-position='center'] {
-  --separator-label-align: center;
+  --ref-separator-label-align: center;
 }
 
 .ui-separator[data-label-position='end'] {
-  --separator-label-align: end;
+  --ref-separator-label-align: end;
 }
 
 .ui-separator[data-orientation='horizontal']:is(
@@ -186,7 +186,7 @@
     [data-label-placement='after']
   )
   > .ui-separator__label {
-  justify-self: var(--separator-label-align);
+  justify-self: var(--ref-separator-label-align);
 }
 
 .ui-separator[data-orientation='vertical']:is(
@@ -194,5 +194,5 @@
     [data-label-placement='after']
   )
   > .ui-separator__label {
-  align-self: var(--separator-label-align);
+  align-self: var(--ref-separator-label-align);
 }

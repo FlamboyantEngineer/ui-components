@@ -11,16 +11,20 @@
 }
 
 .ui-condition-builder__group:not([data-depth='1']) {
-  --condition-group-tone: var(--ref-accent);
+  --ref-condition-builder-group-tone: var(--ref-accent);
   padding: 8px 10px;
   border: 1px solid
-    color-mix(in srgb, var(--condition-group-tone) var(--ref-tint-border), var(--ref-border));
+    color-mix(
+      in srgb,
+      var(--ref-condition-builder-group-tone) var(--ref-tint-border),
+      var(--ref-border)
+    );
   border-radius: var(--ref-radius);
   background: var(--ref-surface);
 }
 
 .ui-condition-builder__group[data-combinator='or']:not([data-depth='1']) {
-  --condition-group-tone: var(--ref-warning);
+  --ref-condition-builder-group-tone: var(--ref-warning);
 }
 
 .ui-condition-builder__group-header {
