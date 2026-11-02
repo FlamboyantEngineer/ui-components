@@ -1,10 +1,62 @@
-import type { Locator } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 
 async function box(locator: Locator) {
   const rect = await locator.boundingBox();
   if (!rect) throw new Error('element has no box');
   return rect;
+}
+
+/**
+ * The inked rows of each pixel column of `element` drawn `zoom` times larger, read from a
+ * screenshot: the ink-weighted middle row of every column and the column's ink, against the
+ * background colour of the top-left pixel. Sizes are in CSS pixels of the unzoomed line.
+ */
+async function traceLine(page: Page, element: Locator, zoom: number) {
+  await element.evaluate((node, scale) => {
+    (node as HTMLElement).style.zoom = String(scale);
+  }, zoom);
+  const png = (await element.screenshot()).toString('base64');
+  await element.evaluate((node) => {
+    (node as HTMLElement).style.zoom = '';
+  });
+  return page.evaluate(
+    async ({ data, scale }) => {
+      const image = new Image();
+      image.src = `data:image/png;base64,${data}`;
+      await image.decode();
+      const canvas = document.createElement('canvas');
+      canvas.width = image.width;
+      canvas.height = image.height;
+      const context = canvas.getContext('2d');
+      if (!context) throw new Error('no 2d context');
+      context.drawImage(image, 0, 0);
+      const { data: pixels, width, height } = context.getImageData(0, 0, image.width, image.height);
+      const ink = (x: number, y: number) => {
+        const at = (y * width + x) * 4;
+        const back = [255, 255, 255];
+        return (
+          Math.abs((pixels[at] ?? 0) - (back[0] ?? 0)) +
+          Math.abs((pixels[at + 1] ?? 0) - (back[1] ?? 0)) +
+          Math.abs((pixels[at + 2] ?? 0) - (back[2] ?? 0))
+        );
+      };
+      return Array.from({ length: width }, (_, x) => {
+        let weight = 0;
+        let sum = 0;
+        for (let y = 0; y < height; y += 1) {
+          weight += ink(x, y);
+          sum += ink(x, y) * y;
+        }
+        return {
+          x: (x + 0.5) / scale,
+          middle: weight ? (sum / weight + 0.5) / scale : null,
+          ink: weight,
+        };
+      });
+    },
+    { data: png, scale: zoom },
+  );
 }
 
 test.describe('Separator lab', () => {
@@ -102,9 +154,7 @@ test.describe('Separator lab', () => {
     const across = await box(horizontal);
     expect(across.width).toBe(200);
     expect(across.height).toBe(6);
-    expect(await horizontal.evaluate((node) => getComputedStyle(node).backgroundImage)).toContain(
-      'radial-gradient',
-    );
+    expect(await horizontal.evaluate((node) => getComputedStyle(node).maskImage)).toContain('svg');
     const vertical = matrixCell(page, 'orientation=vertical variant=wiggly').getByRole('separator');
     const down = await box(vertical);
     expect(down.width).toBe(6);
@@ -113,6 +163,37 @@ test.describe('Separator lab', () => {
       '.ui-separator__start-line',
     );
     expect((await box(line)).height).toBe(6);
+  });
+
+  test('UIC-SEPARATOR-1.3 draws the wiggly line as one unbroken sine wave, at 1x and enlarged', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('separator');
+    const rule = matrixCell(page, 'orientation=horizontal variant=wiggly').getByRole('separator');
+    for (const zoom of [1, 4]) {
+      // The outermost columns may be cut by the screenshot's rounding of a fractional box.
+      const columns = (await traceLine(page, rule, zoom)).slice(1, -1);
+      // Every column carries ink: no gaps or seams where the 12px tiles meet.
+      expect(
+        columns.filter((column) => column.middle === null),
+        `zoom ${zoom}`,
+      ).toEqual([]);
+      // The line follows y = 3 − 2.25·sin(2πx / 12) across its whole length.
+      const tolerance = zoom === 1 ? 1.25 : 0.35;
+      for (const { x, middle } of columns) {
+        const expected = 3 - 2.25 * Math.sin((2 * Math.PI * x) / 12);
+        expect(Math.abs((middle ?? 0) - expected), `zoom ${zoom} at x=${x}`).toBeLessThan(
+          tolerance,
+        );
+      }
+      // The crests and troughs keep one height along the line.
+      const crests = columns.filter(({ x }) => Math.abs(((x - 3) % 12) - 0) < 0.6 / zoom + 0.01);
+      const spread = crests.map(({ middle }) => middle ?? 0);
+      expect(Math.max(...spread) - Math.min(...spread), `zoom ${zoom}`).toBeLessThan(
+        zoom === 1 ? 0.75 : 0.25,
+      );
+    }
   });
 
   test('UIC-SEPARATOR-1.3 draws a labelled wiggly separator on its lines only, clear of its label', async ({
@@ -140,9 +221,7 @@ test.describe('Separator lab', () => {
       const lines = rule.locator(':is(.ui-separator__start-line, .ui-separator__end-line)');
       for (const line of await lines.all()) {
         if (!(await line.isVisible())) continue;
-        expect(await line.evaluate((node) => getComputedStyle(node).backgroundImage)).toContain(
-          'radial-gradient',
-        );
+        expect(await line.evaluate((node) => getComputedStyle(node).maskImage)).toContain('svg');
         const drawn = await box(line);
         const apart =
           drawn.x + drawn.width <= label.x ||

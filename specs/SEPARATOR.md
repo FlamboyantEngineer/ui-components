@@ -20,7 +20,7 @@ Verification: `src/components/separator/separator.test.tsx`, `e2e/separator.spec
 
 ### UIC-SEPARATOR-1.3 - Line styles
 
-`variant` shall publish `data-variant`: `solid` (the default), `dashed`, `dotted` or `wiggly`. The stylesheet draws the line in that style, on a labelled separator's start and end lines too; a wiggly line is a wave along the line's axis, in either orientation, drawn on the line itself (an unlabelled separator, or a labelled one's start and end lines) so it never paints over or hides the label.
+`variant` shall publish `data-variant`: `solid` (the default), `dashed`, `dotted` or `wiggly`. The stylesheet draws the line in that style, on a labelled separator's start and end lines too; a wiggly line is a smooth sine wave along the line's axis (12px long and 6px across in the reference sheet, which repeats one wavelength of the curve without seams), in either orientation, drawn on the line itself (an unlabelled separator, or a labelled one's start and end lines) so it never paints over or hides the label.
 
 Implementation: `src/components/separator/separator.tsx`, `labs/reference/separator.css`
 Verification: `src/components/separator/separator.test.tsx`, `e2e/separator.spec.ts`

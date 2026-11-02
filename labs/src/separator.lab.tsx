@@ -172,6 +172,22 @@ mountLab(
           />
         )}
       />
+      <StateMatrix
+        axes={{ length: ['short', 'long'], orientation: orientations }}
+        caption="Wiggly lines, short and long, without a label"
+        render={({ length, orientation }) => {
+          const size = length === 'short' ? 30 : 320;
+          return orientation === 'horizontal' ? (
+            <div style={{ inlineSize: size }}>
+              <Separator variant="wiggly" />
+            </div>
+          ) : (
+            <div style={{ ...row, minInlineSize: 0, blockSize: size }}>
+              <Separator orientation="vertical" variant="wiggly" />
+            </div>
+          );
+        }}
+      />
       <div dir="rtl">
         <StateMatrix
           axes={{ direction: ['rtl'], orientation: orientations, placement: placements }}
