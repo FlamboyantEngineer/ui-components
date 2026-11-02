@@ -42,6 +42,10 @@ function renderColours(storage: UiStorage, props: Partial<TableProps<Colour>> = 
 
 const nameHeader = () => screen.getByRole('columnheader', { name: /^Name/ });
 
+/** The column tracks a static table draws (UIC-TABLE-4.6): selection, Name, then Hex. */
+const tracks = (index = 0) =>
+  screen.getAllByRole('grid')[index]?.style.getPropertyValue('--ui-table-columns');
+
 async function resizeName(keys: string) {
   const user = userEvent.setup({ delay: null });
   nameHeader().focus();
@@ -56,7 +60,7 @@ describe('Table column widths', { timeout: 15_000 }, () => {
     const onColumnWidthsChange = vi.fn();
     renderColours(createMemoryStorage(), { onColumnWidthsChange });
     await resizeName('{ArrowRight}');
-    expect(nameHeader().style.width).toBe('130px');
+    expect(tracks()).toBe('44px 130px minmax(75px, 1fr)');
     expect(onColumnWidthsChange).toHaveBeenCalledTimes(1);
     expect(onColumnWidthsChange).toHaveBeenCalledWith({ name: 130, hex: '1fr' });
   });
@@ -64,7 +68,7 @@ describe('Table column widths', { timeout: 15_000 }, () => {
   it('UIC-TABLE-4.2 keeps a keyboard resize inside the column bounds', async () => {
     renderColours(createMemoryStorage());
     await resizeName('{ArrowRight}{ArrowRight}{ArrowRight}{ArrowRight}');
-    expect(nameHeader().style.width).toBe('150px');
+    expect(tracks()).toBe('44px 150px minmax(75px, 1fr)');
   });
 
   it('UIC-TABLE-4.3 persists resized widths under the key and restores them on mount', async () => {
@@ -74,16 +78,16 @@ describe('Table column widths', { timeout: 15_000 }, () => {
     expect(JSON.parse(storage.getItem('colours.widths') ?? '{}')).toMatchObject({ name: 110 });
     view.unmount();
     renderColours(storage, { persistKey: 'colours.widths' });
-    expect(nameHeader().style.width).toBe('110px');
+    expect(tracks()).toBe('44px 110px minmax(75px, 1fr)');
   });
 
   it('UIC-TABLE-4.3 ignores unusable stored widths', () => {
     const storage = createMemoryStorage();
     storage.setItem('colours.widths', JSON.stringify({ name: 'wide', hex: 0, other: 90 }));
     renderColours(storage, { persistKey: 'colours.widths' });
-    expect(nameHeader().style.width).toBe('120px');
+    expect(tracks()).toBe('44px 120px minmax(75px, 1fr)');
     storage.setItem('broken', '{not json');
     renderColours(storage, { persistKey: 'broken' });
-    expect(screen.getAllByRole('columnheader', { name: /^Name/ })[1]?.style.width).toBe('120px');
+    expect(tracks(1)).toBe('44px 120px minmax(75px, 1fr)');
   });
 });

@@ -23,6 +23,10 @@ interface ColumnWidths {
   widths: TableColumnWidths;
   onResize: (widths: Map<Key, unknown>) => void;
   onResizeEnd: (widths: Map<Key, unknown>) => void;
+  /** Previews one data column at a pixel width while a static table's column is resized. */
+  resizeColumn: (id: string, width: number) => void;
+  /** Keeps a data column's resized width and reports the data columns' widths once. */
+  endColumnResize: (id: string, width: number) => void;
 }
 
 function restoreColumnKeys(widths: Map<Key, unknown>): Map<Key, unknown> {
@@ -51,9 +55,27 @@ export function useColumnWidths(options: ColumnWidthsOptions): ColumnWidths {
     onColumnWidthsChange?.(next);
   };
 
+  const kept = pickColumnWidths(stored, columns);
+  /** Every data column's width with one resized: kept, else declared; content stays unstored. */
+  const withResized = (id: string, width: number) =>
+    pickColumnWidths(
+      new Map<unknown, unknown>([
+        ...columns.map((column) => [column.id, column.width ?? '1fr'] as const),
+        ...Object.entries(kept),
+        [id, width],
+      ]),
+      columns,
+    );
   return {
-    widths: live ?? pickColumnWidths(stored, columns),
+    widths: live ?? kept,
     onResize: (widths) => setLive(pickColumnWidths(restoreColumnKeys(widths), columns)),
     onResizeEnd,
+    resizeColumn: (id, width) => setLive(withResized(id, width)),
+    endColumnResize: (id, width) => {
+      const next = withResized(id, width);
+      setStored(next);
+      setLive(null);
+      onColumnWidthsChange?.(next);
+    },
   };
 }

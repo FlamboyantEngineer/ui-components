@@ -6,7 +6,7 @@ import {
   SortNoneGlyph,
   type GlyphComponent,
 } from '../../core/glyphs.js';
-import { isValidElement, type JSX, type ReactNode, type SyntheticEvent } from 'react';
+import { isValidElement, useId, type JSX, type ReactNode, type SyntheticEvent } from 'react';
 import { Column, ColumnResizer } from '../../primitives/index.js';
 import type { SortDirection } from '../../core/props.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
@@ -20,6 +20,7 @@ import type { TableColumnDrag } from './use-column-reorder.js';
 import type { TableColumn, TableColumnPin } from './table-rows.js';
 import { getPinStyle } from './table-structure.js';
 import { FreeControls } from '../../utils/free-controls.js';
+import { TableColumnResizer } from './table-column-resizer.js';
 import { keepTextControlKeys } from '../../utils/text-control-keys.js';
 import { isInteractiveTarget } from '../../utils/is-interactive-target.js';
 
@@ -32,6 +33,9 @@ export interface TableColumnHeaderState {
   pin: TableColumnPin | undefined;
   /** The pinned header's distance from its edge, in pixels. */
   pinOffset: number | undefined;
+  /** Previews and keeps a static table's resize; a virtualized table's goes through React Aria. */
+  onResize: (width: number) => void;
+  onResizeEnd: (width: number) => void;
   sortDirection: SortDirection | undefined;
   /** The column's place in a sort by several columns, from 1. */
   sortPriority: number | undefined;
@@ -81,6 +85,35 @@ function renderColumnElement(isVirtualized: boolean) {
 }
 
 /**
+ * A resizable column's resizer: the table's own over a static table's CSS grid tracks, React
+ * Aria's over a virtualized table's measured layout.
+ */
+function ColumnResize<T>({
+  column,
+  state,
+  columnLabelId,
+}: {
+  column: TableColumn<T>;
+  state: TableColumnHeaderState;
+  columnLabelId: string;
+}) {
+  const strings = useUiStrings();
+  if (state.isVirtualized) {
+    return <ColumnResizer className={hooks.slotClass('resizer')} aria-label={strings.resize} />;
+  }
+  return (
+    <TableColumnResizer
+      label={strings.resize}
+      columnLabelId={columnLabelId}
+      width={typeof state.width === 'number' ? state.width : null}
+      {...getColumnBounds(column)}
+      onResize={state.onResize}
+      onResizeEnd={state.onResizeEnd}
+    />
+  );
+}
+
+/**
  * One data column header: its content (the label, which drags a reorderable column, the sort glyph
  * and the filter button), which takes another column dropped on it, and the resizer, with its pin,
  * sort, filter and drop states.
@@ -92,7 +125,7 @@ export function DataColumn<T>({
   column: TableColumn<T>;
   state: TableColumnHeaderState;
 }) {
-  const strings = useUiStrings();
+  const labelId = useId();
   const hasControls =
     column.allowsResizing === true || state.filter !== null || isValidElement(column.header);
   const isReorderable = column.allowsReordering === true;
@@ -134,7 +167,7 @@ export function DataColumn<T>({
       })}
     >
       <div ref={dragRef} {...targetProps} {...hooks.slot('column-content')}>
-        <span {...(isReorderable ? sourceProps : {})} {...hooks.slot('column-label')}>
+        <span id={labelId} {...(isReorderable ? sourceProps : {})} {...hooks.slot('column-label')}>
           <TableColumnLabel>{column.header}</TableColumnLabel>
         </span>
         {column.allowsSorting ? (
@@ -147,7 +180,7 @@ export function DataColumn<T>({
         {state.filter}
       </div>
       {column.allowsResizing ? (
-        <ColumnResizer className={hooks.slotClass('resizer')} aria-label={strings.resize} />
+        <ColumnResize column={column} state={state} columnLabelId={labelId} />
       ) : null}
       {state.probe}
     </Column>

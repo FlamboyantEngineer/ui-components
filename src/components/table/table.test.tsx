@@ -31,6 +31,8 @@ const columns: TableColumn<Fruit>[] = [
 
 const names = () => screen.getAllByRole('rowheader').map((cell) => cell.textContent);
 const header = (name: string) => screen.getByRole('columnheader', { name: new RegExp(`^${name}`) });
+/** The column tracks a static table draws (UIC-TABLE-4.6). */
+const tracks = () => screen.getByRole('grid').style.getPropertyValue('--ui-table-columns');
 
 // Full React Aria tables driven by userEvent are slow in jsdom on a busy machine.
 describe('Table', { timeout: 15_000 }, () => {
@@ -46,7 +48,7 @@ describe('Table', { timeout: 15_000 }, () => {
       />,
     );
     expect(header('Name')).toHaveAttribute('data-sizing', 'content');
-    expect(header('Name').style.width).toBe('100px');
+    expect(tracks()).toBe('100px minmax(75px, 1fr)');
     expect(header('Colour')).toHaveAttribute('data-sizing', 'flex');
     expect(names()).toEqual(['Banana', 'Apple', 'Cherry']);
     expectHooksMatchSpec(container, 'TABLE');
@@ -505,7 +507,7 @@ describe('Table', { timeout: 15_000 }, () => {
         )}
       />,
     );
-    expect(header('Actions').style.width).toBe('72px');
+    expect(tracks()).toMatch(/ 72px$/);
     await user.click(screen.getByRole('button', { name: 'Edit Apple' }));
     expect(onEdit).toHaveBeenCalledWith('apple');
     expect(onRowAction).not.toHaveBeenCalled();
@@ -535,9 +537,7 @@ describe('Table', { timeout: 15_000 }, () => {
         selectionMode="multiple"
       />,
     );
-    expect(header('Name').style.width).toBe('160px');
-    expect(header('Weight').style.width).toBe('90px');
-    expect((screen.getAllByRole('columnheader')[0] as HTMLElement).style.width).toBe('44px');
+    expect(tracks()).toBe('44px 160px 90px');
     const resizer = screen.getByRole('slider', { name: /^Resize Name/ });
     expect(resizer).toHaveAttribute('min', '100');
     expect(resizer).toHaveAttribute('max', '300');

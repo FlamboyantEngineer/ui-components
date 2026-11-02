@@ -1,6 +1,7 @@
 import { useState, type CSSProperties } from 'react';
 import { Button } from '../../src/components/button/index.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
+import { SplitView } from '../../src/components/split-view/index.js';
 import { Table, applyTableMove } from '../../src/components/table/index.js';
 
 /** The ancestor scales the content widths demo offers: content widths stay the same in each. */
@@ -120,6 +121,41 @@ export function GroupedReordering() {
       <output role="status" aria-label="Grouped move">
         {last}
       </output>
+    </div>
+  );
+}
+
+const fluidRows = [
+  { id: 'pear', name: 'Pear crate inspection', state: 'Open' },
+  { id: 'lime', name: 'Lime delivery', state: 'Done' },
+];
+
+/**
+ * A fluid table beside a resizable pane: its flexible Name column follows the pane's CSS width as
+ * the separator moves, in the same frame.
+ */
+export function FluidColumns() {
+  return (
+    <div data-lab="fluid-columns" style={{ height: 220 }}>
+      <SplitView
+        panes={[{ id: 'fluid-side' }, { id: 'fluid-table' }]}
+        defaultSize={30}
+        separatorLabel="Resize the side panel"
+      >
+        {[
+          <div key="side">Side panel</div>,
+          <div key="table" data-lab-fluid-space style={{ minWidth: 0 }}>
+            <Table
+              aria-label="Fluid columns"
+              rows={fluidRows}
+              columns={[
+                { id: 'name', header: 'Name', minWidth: 200, allowsResizing: true },
+                { id: 'state', header: 'State', width: 100 },
+              ]}
+            />
+          </div>,
+        ]}
+      </SplitView>
     </div>
   );
 }
