@@ -13,8 +13,6 @@ import type {
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 
-export type StatusLightTone = Tone;
-
 export type StatusLightSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 
 export interface StatusLightProps
@@ -22,7 +20,7 @@ export interface StatusLightProps
   /** The visible label. Defaults to the presence label of `status`, if any. */
   children?: ReactNode;
   /** The status's tone. Defaults to `neutral`. */
-  tone?: StatusLightTone | undefined;
+  tone?: Tone | undefined;
   /** A presence state, published for the stylesheet and labelled from the provider's strings. */
   status?: PresenceStatus | undefined;
   /** Dot and text size. Defaults to `md`. */

@@ -2,11 +2,11 @@
 
 import type { RefObject } from 'react';
 import { FormulaGlyph } from '../../core/glyphs.js';
-import type { Key } from '../../core/props.js';
+import type { Key, ControlSize } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { getOwnerWindow } from '../../utils/owner-window.js';
 import type { Completion } from '../completion-list/completion-list.js';
-import type { ButtonSize } from '../button/button.js';
+
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import { formulaBarHooks as hooks } from './formula-bar-hooks.js';
 
@@ -65,7 +65,7 @@ export function FormulaBarFunctions({
   editorRef: RefObject<HTMLTextAreaElement | null>;
   draft: { text: string; setDraft: (value: string) => void };
   /** The button's size. */
-  size: ButtonSize;
+  size: ControlSize;
 }) {
   const strings = useUiStrings();
   const onInsert = useFunctionInsertion(editorRef, draft);

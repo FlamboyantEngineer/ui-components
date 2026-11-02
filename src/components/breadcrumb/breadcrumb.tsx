@@ -16,7 +16,7 @@ import {
   Link as AriaLink,
   useLocale,
 } from '../../primitives/index.js';
-import type { BaseProps, Key, NativeProps, Size, RefProps } from '../../core/props.js';
+import type { BaseProps, Key, NativeProps, RefProps, ControlSize } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
@@ -35,8 +35,6 @@ import {
   type CrumbOverflow,
 } from './crumb-overflow.js';
 import { breadcrumbHooks as hooks } from './breadcrumb-hooks.js';
-
-export type BreadcrumbSize = Extract<Size, 'xs' | 'sm' | 'md' | 'lg'>;
 
 /** `truncate` lets labels ellipsize; `menu` collapses middle crumbs into a menu after the first. */
 export type BreadcrumbOverflow = 'truncate' | 'menu';
@@ -67,7 +65,7 @@ export interface BreadcrumbProps
   /** The trail, from the outermost container to the current page (the last item). */
   items: readonly BreadcrumbItem[];
   /** Type scale. Defaults to `md`. */
-  size?: BreadcrumbSize | undefined;
+  size?: ControlSize | undefined;
   /**
    * Decorative icon between crumbs. Defaults to a chevron pointing along the reading direction;
    * `null` or `false` draws none.

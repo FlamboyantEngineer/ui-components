@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
-import type { BaseProps, RefProps } from '../../core/props.js';
+import type { BaseProps, RefProps, ControlSize } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { normalizeCount } from '../../utils/count.js';
@@ -12,7 +12,6 @@ import {
   usePendingAction,
   type ButtonProps,
   Button,
-  type ButtonSize,
   type ButtonVariant,
 } from '../button/button.js';
 
@@ -35,7 +34,7 @@ export interface LoadMoreProps
   /** Emphasis. Defaults to `secondary`. */
   variant?: ButtonVariant | undefined;
   /** Block size. Defaults to `sm`. */
-  size?: ButtonSize | undefined;
+  size?: ControlSize | undefined;
   /** Also request the next page whenever the control is in view and idle, for endless scrolling. */
   autoLoad?: boolean | undefined;
   /**

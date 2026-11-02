@@ -9,7 +9,6 @@ export type {
   ComboboxProps,
   ComboboxSection,
   ComboboxSelectionMode,
-  ComboboxSize,
   ComboboxValue,
   ComboboxVariant,
 } from './combobox.js';

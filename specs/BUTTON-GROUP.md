@@ -1,6 +1,6 @@
 # Button Group
 
-`ButtonGroup` holds a few related [Buttons](BUTTON.md), [Icon Buttons](BUTTON.md) or [Dropdown Menu](DROPDOWN-MENU.md) triggers in one labelled group, built on React Aria's `Group`. Its `density` spaces them apart or joins them into one attached control, `orientation` lays them out in a row or a column, and `justified` shares the group's length between them. Every button keeps its own tab stop; a row of tools that is one tab stop with arrow-key focus is a toolbar ([Action Row](ACTION-ROW.md), [Toolbar Scroller](TOOLBAR-SCROLLER.md)).
+`ButtonGroup` holds a few related [Buttons](BUTTON.md), [Icon Buttons](BUTTON.md) or [Dropdown Menu](DROPDOWN-MENU.md) triggers in one labelled group, built on React Aria's `Group`. Its `density` spaces them apart and `attached` joins them into one control, `orientation` lays them out in a row or a column, and `justified` shares the group's length between them. Every button keeps its own tab stop; a row of tools that is one tab stop with arrow-key focus is a toolbar ([Action Row](ACTION-ROW.md), [Toolbar Scroller](TOOLBAR-SCROLLER.md)).
 
 ## UIC-BUTTON-GROUP-1 - Group
 
@@ -11,9 +11,9 @@
 Implementation: `src/components/button-group/button-group.tsx`
 Verification: `src/components/button-group/button-group.test.tsx`, `e2e/button-group.spec.ts`
 
-### UIC-BUTTON-GROUP-1.2 - Density
+### UIC-BUTTON-GROUP-1.2 - Density and attached buttons
 
-`density` shall publish `data-density`: `default` (the default) and `compact` space the buttons apart, and `attached` joins them into one control. The reference sheet draws 8 and 2 pixel gaps, and for `attached` no gap, one shared border between neighbours and rounded corners only at the group's ends. On a shared edge a hovered button is drawn above its resting neighbours, a selected button above a hovered one, so its whole border shows at rest and while a neighbour is hovered, and a keyboard-focused button above all, so its focus ring is never covered, in either orientation and direction, enabled or disabled.
+`density` shall publish `data-density`: `default` (the default) and `compact` space the buttons apart, and the reference sheet draws 8 and 2 pixel gaps. `attached` shall publish `data-attached` and join the buttons into one control: the reference sheet draws no gap, one shared border between neighbours and rounded corners only at the group's ends. On a shared edge a hovered button is drawn above its resting neighbours, a selected button above a hovered one, so its whole border shows at rest and while a neighbour is hovered, and a keyboard-focused button above all, so its focus ring is never covered, in either orientation and direction, enabled or disabled.
 
 Implementation: `src/components/button-group/button-group.tsx`, `labs/reference/button-group.css`
 Verification: `src/components/button-group/button-group.test.tsx`, `e2e/button-group.spec.ts`
@@ -34,12 +34,13 @@ Verification: `src/components/button-group/button-group.test.tsx`, `e2e/button-g
 
 ## Hooks
 
-| Hook                 | Kind      | Values                           | Description                                      |
-| -------------------- | --------- | -------------------------------- | ------------------------------------------------ |
-| `ui-button-group`    | root      |                                  | The group (`<div role="group">`).                |
-| `data-density`       | attribute | `default`, `compact`, `attached` | How close the buttons sit.                       |
-| `data-orientation`   | attribute | `horizontal`, `vertical`         | Row or column.                                   |
-| `data-justified`     | state     | `true`                           | The buttons share the group's length equally.    |
-| `data-hovered`       | state     | `true`                           | The pointer is over the group (React Aria).      |
-| `data-focus-within`  | state     | `true`                           | Focus is inside the group (React Aria).          |
-| `data-focus-visible` | state     | `true`                           | Keyboard focus is inside the group (React Aria). |
+| Hook                 | Kind      | Values                   | Description                                      |
+| -------------------- | --------- | ------------------------ | ------------------------------------------------ |
+| `ui-button-group`    | root      |                          | The group (`<div role="group">`).                |
+| `data-density`       | attribute | `default`, `compact`     | How far apart spaced buttons sit.                |
+| `data-attached`      | state     | `true`                   | The buttons are joined into one control.         |
+| `data-orientation`   | attribute | `horizontal`, `vertical` | Row or column.                                   |
+| `data-justified`     | state     | `true`                   | The buttons share the group's length equally.    |
+| `data-hovered`       | state     | `true`                   | The pointer is over the group (React Aria).      |
+| `data-focus-within`  | state     | `true`                   | Focus is inside the group (React Aria).          |
+| `data-focus-visible` | state     | `true`                   | Keyboard focus is inside the group (React Aria). |

@@ -7,9 +7,6 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Density, Orientation, RefProps } from '../../core/props.js';
 import type { ElementRender } from '../../utils/render-element.js';
 
-/** `default` and `compact` space the buttons apart; `attached` joins them into one control. */
-export type ButtonGroupDensity = Extract<Density, 'default' | 'compact'> | 'attached';
-
 /** The states a button group passes to `render` with its root's props. */
 export interface ButtonGroupRenderState {
   /** The pointer is over the group. */
@@ -25,8 +22,10 @@ export interface ButtonGroupProps extends BaseProps, AriaLabellingProps, RefProp
   children?: ReactNode;
   /** Lays the buttons out in a row or a column. Defaults to `horizontal`. */
   orientation?: Orientation | undefined;
-  /** How close the buttons sit. Defaults to `default`. */
-  density?: ButtonGroupDensity | undefined;
+  /** How far apart spaced buttons sit. Defaults to `default`. */
+  density?: Extract<Density, 'default' | 'compact'> | undefined;
+  /** Joins the buttons into one control, with no gap and shared borders. */
+  attached?: boolean | undefined;
   /** The buttons share the group's length equally. */
   justified?: boolean | undefined;
   /** Replaces the root `<div>` with the caller's own, given its props and the group's state. */
@@ -43,6 +42,7 @@ const hooks = createHooks('button-group');
 export function ButtonGroup({
   orientation = 'horizontal',
   density = 'default',
+  attached = false,
   justified = false,
   className,
   ...rest
@@ -50,7 +50,11 @@ export function ButtonGroup({
   return (
     <Group
       {...rest}
-      {...hooks.root({ className, props: rest, data: { orientation, density, justified } })}
+      {...hooks.root({
+        className,
+        props: rest,
+        data: { orientation, density, attached, justified },
+      })}
     />
   );
 }

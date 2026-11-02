@@ -1,20 +1,14 @@
 import { ErrorGlyph, InfoGlyph, SuccessGlyph, WarningGlyph } from '../../src/core/glyphs.js';
 import { useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import {
-  Modal,
-  confirm,
-  alert,
-  prompt,
-  type ModalTone,
-  ModalTrigger,
-} from '../../src/components/modal/modal.js';
+import { Modal, confirm, alert, prompt, ModalTrigger } from '../../src/components/modal/modal.js';
 import { Icon } from '../../src/components/icon/icon.js';
 import {
   ModalHost,
   createModalController,
 } from '../../src/components/modal-controller/modal-controller.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
+import type { Tone } from '../../src/core/props.js';
 
 const controller = createModalController();
 const tones = ['neutral', 'danger'] as const;
@@ -122,7 +116,7 @@ const newsTones = ['info', 'success', 'warning', 'danger'] as const;
 const icons = ['default', 'error', 'none'] as const;
 
 /** A dialog with a news tone and its default, error or no icon. */
-function News({ tone, icon }: { tone: ModalTone; icon: (typeof icons)[number] }) {
+function News({ tone, icon }: { tone: Tone; icon: (typeof icons)[number] }) {
   const [open, setOpen] = useState(false);
   return (
     <>

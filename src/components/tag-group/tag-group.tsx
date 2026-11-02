@@ -18,8 +18,6 @@ import { FreeControls } from '../../utils/free-controls.js';
 
 export type TagGroupSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 
-export type TagTone = Tone;
-
 export interface TagGroupProps<T extends object>
   extends BaseProps, RefProps<HTMLDivElement>, AriaLabellingProps, SelectionProps {
   /** The data to render a tag for each of, with `children` as a function. */
@@ -31,7 +29,7 @@ export interface TagGroupProps<T extends object>
   /** Scale. Defaults to `md`. */
   size?: TagGroupSize | undefined;
   /** The tone of every tag that sets none. Defaults to `neutral`. */
-  tone?: TagTone | undefined;
+  tone?: Tone | undefined;
   /** Shown in the list while it holds no tag. */
   renderEmptyState?: (() => ReactNode) | undefined;
 }
@@ -47,12 +45,12 @@ export interface TagProps extends Omit<BaseProps, 'id'>, RefProps<HTMLDivElement
   /** Leaves the tag out of the keyboard path and of removal. */
   isDisabled?: boolean | undefined;
   /** The tag's tone. Defaults to the group's. */
-  tone?: TagTone | undefined;
+  tone?: Tone | undefined;
 }
 
 const hooks = createHooks('tag-group', ['list', 'tag', 'label', 'remove', 'empty']);
 
-const ToneContext = createContext<TagTone>('neutral');
+const ToneContext = createContext<Tone>('neutral');
 
 /**
  * A focusable collection of tags (React Aria `TagGroup`): the arrow keys move between tags, and with

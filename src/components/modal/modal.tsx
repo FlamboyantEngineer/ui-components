@@ -12,9 +12,6 @@ import { ModalPresentation, resolveDismissal, useModalOpenState } from './modal-
 import { useRetention } from './modal-retained.js';
 import { modalHooks as hooks } from './modal-hooks.js';
 
-/** Emphasis of the dialog: `danger` marks a destructive decision; the others its kind of news. */
-export type ModalTone = Tone;
-
 /** Dialog width, which the host stylesheet maps to a length; `full` fills the viewport. */
 export type ModalSize = Extract<Size, 'sm' | 'md' | 'lg' | 'xl'> | 'full';
 
@@ -100,8 +97,8 @@ export interface ModalProps
   status?: ReactNode;
   /** An urgent footer message, shown instead of `status` and of an action's failure. */
   error?: ReactNode;
-  /** Defaults to `neutral`. */
-  tone?: ModalTone | undefined;
+  /** Emphasis of the dialog: `danger` marks a destructive decision; the others its kind of news. Defaults to `neutral`. */
+  tone?: Tone | undefined;
   /** Defaults to `md`. */
   size?: ModalSize | undefined;
   /** Defaults to `block`. */

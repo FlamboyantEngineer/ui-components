@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, expectTypeOf, it } from 'vitest';
@@ -23,6 +23,14 @@ import type { ScrollRegionProps } from '../src/components/scroll-region/scroll-r
 import type { DescriptionListProps } from '../src/components/description-list/description-list.js';
 import type { SeparatorProps } from '../src/components/separator/separator.js';
 import type { Ref } from 'react';
+import type { ButtonProps } from '../src/components/button/button.js';
+import type { ButtonGroupProps } from '../src/components/button-group/button-group.js';
+import type { BannerProps } from '../src/components/banner/banner.js';
+import type { ComboboxProps } from '../src/components/combobox/combobox.js';
+import type { ModalProps } from '../src/components/modal/modal.js';
+import type { SegmentedChoiceProps } from '../src/components/segmented-choice/segmented-choice.js';
+import type { ToolbarRowGroupProps } from '../src/components/layout/toolbar-row.js';
+import type { ControlSize, Density, Tone } from '../src/core/props.js';
 import type { IconProps } from '../src/components/icon/icon.js';
 import type { BadgeProps } from '../src/components/badge/badge.js';
 import type { CheckboxProps } from '../src/components/checkbox/checkbox.js';
@@ -172,5 +180,40 @@ describe('public declarations', () => {
     expectTypeOf<CardProps['ref']>().toEqualTypeOf<Ref<HTMLElement> | undefined>();
     expectTypeOf<TagGroupProps<object>['ref']>().toEqualTypeOf<Ref<HTMLDivElement> | undefined>();
     expectTypeOf<TagProps['ref']>().toEqualTypeOf<Ref<HTMLDivElement> | undefined>();
+  });
+
+  it('UIC-COMPOSITION-2.6 names the shared vocabulary directly', () => {
+    expectTypeOf<ButtonProps['size']>().toEqualTypeOf<ControlSize | undefined>();
+    expectTypeOf<SegmentedChoiceProps['size']>().toEqualTypeOf<ControlSize | undefined>();
+    expectTypeOf<ComboboxProps['size']>().toEqualTypeOf<ControlSize | undefined>();
+    expectTypeOf<BadgeProps['tone']>().toEqualTypeOf<Tone | undefined>();
+    expectTypeOf<BannerProps['tone']>().toEqualTypeOf<Tone | undefined>();
+    expectTypeOf<ModalProps['tone']>().toEqualTypeOf<Tone | undefined>();
+    expectTypeOf<StatusLightProps['tone']>().toEqualTypeOf<Tone | undefined>();
+    expectTypeOf<TagProps['tone']>().toEqualTypeOf<Tone | undefined>();
+    expectTypeOf<ButtonGroupProps['density']>().toEqualTypeOf<
+      Extract<Density, 'default' | 'compact'> | undefined
+    >();
+    expectTypeOf<ButtonGroupProps['attached']>().toEqualTypeOf<boolean | undefined>();
+    expectTypeOf<ToolbarRowGroupProps['attached']>().toEqualTypeOf<boolean | undefined>();
+    expectTypeOf<ToolbarRowGroupProps>().not.toHaveProperty('density');
+
+    const renames: string[] = [];
+    const visit = (dir: string) => {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const path = join(dir, entry.name);
+        if (entry.isDirectory()) visit(path);
+        else if (/\.tsx?$/.test(entry.name) && path !== join('src', 'core', 'props.ts')) {
+          const text = readFileSync(path, 'utf8');
+          for (const match of text.matchAll(
+            /export type (\w+) = (?:ControlSize|Tone|Density|Size|Key|Orientation);/g,
+          )) {
+            renames.push(`${path}: ${match[1]}`);
+          }
+        }
+      }
+    };
+    visit('src');
+    expect(renames).toEqual([]);
   });
 });

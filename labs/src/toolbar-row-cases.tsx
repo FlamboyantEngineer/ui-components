@@ -17,7 +17,6 @@ import {
   ToolbarRow,
   ToolbarRowGroup,
   ToolbarRowSeparator,
-  type ToolbarRowGroupDensity,
   type ToolbarRowOverflow,
 } from '../../src/components/layout/index.js';
 import { Stack } from '../../src/components/layout/layout.js';
@@ -32,7 +31,7 @@ const frameStyle = (width: number): CSSProperties => ({
 function KitchenTools({ name, overflow }: { name: string; overflow: ToolbarRowOverflow }) {
   return (
     <ToolbarRow aria-label={name} overflow={overflow} justify="start" space="xs">
-      <ToolbarRowGroup aria-label={`History, ${name}`} density="attached">
+      <ToolbarRowGroup aria-label={`History, ${name}`} attached>
         <Button icon={UndoGlyph} label="Undo" size="sm" />
         <Button icon={RedoGlyph} label="Redo" size="sm" />
       </ToolbarRowGroup>
@@ -71,7 +70,7 @@ export function ToolbarOverflow() {
 
 /** Attached and regular groups, in both orientations. */
 export function AttachedGroups() {
-  const densities: readonly ToolbarRowGroupDensity[] = ['default', 'attached'];
+  const densities = ['default', 'attached'] as const;
   return (
     <StateMatrix
       axes={{ density: densities, orientation: ['horizontal', 'vertical'] }}
@@ -81,7 +80,10 @@ export function AttachedGroups() {
           orientation={orientation}
           justify="start"
         >
-          <ToolbarRowGroup aria-label={`Zoom steps, ${density}, ${orientation}`} density={density}>
+          <ToolbarRowGroup
+            aria-label={`Zoom steps, ${density}, ${orientation}`}
+            attached={density === 'attached'}
+          >
             <Button icon={MinusGlyph} label="Zoom out" size="sm" />
             <Button icon={RefreshGlyph} label="Reset zoom" size="sm" />
             <Button icon={PlusGlyph} label="Zoom in" size="sm" />

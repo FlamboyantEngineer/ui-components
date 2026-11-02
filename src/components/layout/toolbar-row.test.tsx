@@ -228,7 +228,7 @@ describe('ToolbarRow', () => {
     const user = userEvent.setup();
     const { container } = render(
       <ToolbarRow aria-label="Text">
-        <ToolbarRowGroup aria-label="Alignment" density="attached">
+        <ToolbarRowGroup aria-label="Alignment" attached>
           <button type="button">Left</button>
           <button type="button">Centre</button>
         </ToolbarRowGroup>
@@ -238,13 +238,11 @@ describe('ToolbarRow', () => {
       </ToolbarRow>,
     );
     expect(screen.getByRole('group', { name: 'Alignment' })).toHaveAttribute(
-      'data-density',
-      'attached',
+      'data-attached',
+      'true',
     );
-    expect(screen.getByRole('group', { name: 'History' })).toHaveAttribute(
-      'data-density',
-      'default',
-    );
+    expect(screen.getByRole('group', { name: 'History' })).not.toHaveAttribute('data-attached');
+    expect(screen.getByRole('group', { name: 'History' })).not.toHaveAttribute('data-density');
     await user.click(screen.getByRole('button', { name: 'Left' }));
     await user.keyboard('{ArrowRight}');
     expect(screen.getByRole('button', { name: 'Centre' })).toHaveFocus();

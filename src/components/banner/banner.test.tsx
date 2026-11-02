@@ -6,9 +6,10 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { useEnterExit } from '../../utils/use-enter-exit.js';
-import { Banner, type BannerTone } from './banner.js';
+import { Banner } from './banner.js';
+import type { Tone } from '../../core/props.js';
 
-const tones: BannerTone[] = ['neutral', 'info', 'success', 'warning', 'danger'];
+const tones: Tone[] = ['neutral', 'info', 'success', 'warning', 'danger'];
 
 describe('Banner', () => {
   it('UIC-BANNER-1.1 renders title, rich description and actions in order', () => {
@@ -48,7 +49,7 @@ describe('Banner', () => {
     expect(container.querySelector('.ui-banner__icon')).toBeNull();
     const expected = { info: 'info', success: 'success', warning: 'warning', danger: 'error' };
     for (const [tone, glyph] of Object.entries(expected)) {
-      rerender(<Banner tone={tone as BannerTone} description="Note" />);
+      rerender(<Banner tone={tone as Tone} description="Note" />);
       const icon = container.querySelector('.ui-banner__icon');
       expect(container.firstElementChild).toHaveAttribute('data-tone', tone);
       expect(icon).toHaveClass('ui-icon');

@@ -8,7 +8,7 @@ import {
 } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Orientation, Size, RefProps } from '../../core/props.js';
+import type { BaseProps, Orientation, RefProps, ControlSize } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { formatCount, normalizeCount } from '../../utils/count.js';
 import type { ElementRender } from '../../utils/render-element.js';
@@ -26,8 +26,6 @@ import type { PendingChangeHandler } from './pending-change.js';
 import { FieldFormValue, useScopedDisabled } from '../field/field.js';
 
 export type { SegmentedChoiceSelectionMode, SegmentedChoiceValue } from './choice-selection.js';
-
-export type SegmentedChoiceSize = Extract<Size, 'xs' | 'sm' | 'md' | 'lg'>;
 
 /** `equal` divides the available width evenly; `content` sizes each segment to its label. */
 export type SegmentedChoiceSizing = 'equal' | 'content';
@@ -79,7 +77,7 @@ export interface SegmentedChoiceProps<M extends SegmentedChoiceSelectionMode = '
   /** Lays the segments out in a row or a column. Defaults to `horizontal`. */
   orientation?: Orientation | undefined;
   /** Segment block size. Defaults to `md`. */
-  size?: SegmentedChoiceSize | undefined;
+  size?: ControlSize | undefined;
   /** How segments share the width. Defaults to `equal`. */
   sizing?: SegmentedChoiceSizing | undefined;
   /** Each segment shows only its icon, named by its label, which its tooltip shows. */
@@ -94,7 +92,7 @@ export interface SegmentedChoiceProps<M extends SegmentedChoiceSelectionMode = '
 
 interface SegmentProps {
   option: SegmentedChoiceOption;
-  size: SegmentedChoiceSize;
+  size: ControlSize;
   iconOnly: boolean;
   countMax: number;
 }

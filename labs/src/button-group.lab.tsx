@@ -4,7 +4,12 @@ import { ButtonGroup } from '../../src/components/button-group/button-group.js';
 import { DropdownMenu } from '../../src/components/dropdown-menu/dropdown-menu.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
-const densities = ['default', 'compact', 'attached'] as const;
+const spacings = ['default', 'compact', 'attached'] as const;
+
+/** A spacing axis value as props: `attached` joins the buttons, the others are densities. */
+function spacingProps(spacing: (typeof spacings)[number]) {
+  return spacing === 'attached' ? { attached: true } : { density: spacing };
+}
 const orientations = ['horizontal', 'vertical'] as const;
 
 mountLab(
@@ -14,11 +19,11 @@ mountLab(
       description="Three buttons at each density and orientation. Attached buttons share one border and round only the group's ends."
     >
       <StateMatrix
-        axes={{ density: densities, orientation: orientations }}
+        axes={{ density: spacings, orientation: orientations }}
         render={({ density, orientation }) => (
           <ButtonGroup
             aria-label={`Alignment ${density} ${orientation}`}
-            density={density}
+            {...spacingProps(density)}
             orientation={orientation}
           >
             <Button>Left</Button>
@@ -33,11 +38,11 @@ mountLab(
       description="A cluster of icon buttons with a menu trigger; tab through it to see each keep its own tab stop."
     >
       <StateMatrix
-        axes={{ density: densities, orientation: orientations }}
+        axes={{ density: spacings, orientation: orientations }}
         render={({ density, orientation }) => (
           <ButtonGroup
             aria-label={`History ${density} ${orientation}`}
-            density={density}
+            {...spacingProps(density)}
             orientation={orientation}
           >
             <Button icon={UndoGlyph} label="Undo" tooltip="Undo" />
@@ -67,7 +72,7 @@ mountLab(
           <div dir={layout === 'right to left' ? 'rtl' : undefined}>
             <ButtonGroup
               aria-label={`Size ${selected} ${layout}`}
-              density="attached"
+              attached
               orientation={layout === 'vertical' ? 'vertical' : 'horizontal'}
             >
               {['Small', 'Medium', 'Large'].map((size, index) => (
@@ -89,7 +94,7 @@ mountLab(
       description="In a 360px column, the buttons share the group's width equally."
     >
       <div style={{ width: 360 }} data-lab-case="justified">
-        <ButtonGroup aria-label="Period" density="attached" justified>
+        <ButtonGroup aria-label="Period" attached justified>
           <Button>Day</Button>
           <Button>Week</Button>
           <Button>Month</Button>
@@ -124,7 +129,7 @@ mountLab(
         </ButtonGroup>
         <ButtonGroup
           aria-label="Zoom"
-          density="attached"
+          attached
           render={(props) => <div {...props} data-lab-swapped="" />}
         >
           <Button>Zoom out</Button>

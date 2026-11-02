@@ -2,13 +2,13 @@
 
 import { InfoGlyph, SuccessGlyph, WarningGlyph } from '../../core/glyphs.js';
 import { useId, useRef, type ReactNode } from 'react';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Icon, type IconSource } from '../icon/icon.js';
 import { toIconProps } from '../icon/icon.js';
 import type { ModalController } from '../modal-controller/modal-controller.js';
-import { Modal, type ModalAction, type ModalProps, type ModalTone } from './modal.js';
+import { Modal, type ModalAction, type ModalProps } from './modal.js';
 import { modalHooks as hooks } from './modal-hooks.js';
 
 export interface ModalConfirmationProps
@@ -24,7 +24,7 @@ export interface ModalConfirmationProps
   /** More content under the message. */
   children?: ReactNode;
   /** Defaults to `neutral`. */
-  tone?: ModalTone | undefined;
+  tone?: Tone | undefined;
   /** Drawn before the title; defaults to the tone's glyph for `info`, `success` and `warning`. */
   icon?: IconSource;
   /** Defaults to the provider's `confirm` string. */
@@ -49,7 +49,7 @@ export type ConfirmOptions = Omit<
   'isOpen' | 'defaultOpen' | 'onOpenChange' | 'onCancel'
 >;
 
-const toneGlyphs: Partial<Record<ModalTone, IconSource>> = {
+const toneGlyphs: Partial<Record<Tone, IconSource>> = {
   info: InfoGlyph,
   success: SuccessGlyph,
   warning: WarningGlyph,
