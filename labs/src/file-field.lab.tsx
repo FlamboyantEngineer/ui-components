@@ -251,9 +251,20 @@ const longName: FileFieldItem = {
 const committedFiles = [report, harbour, notes, longName];
 const widths = { narrow: 260, wide: 420 } as const;
 
-/** Committed files with three removed, in a narrow and a wide column, each put back by its button. */
-function RemovedFiles({ width }: { width: keyof typeof widths }) {
-  const [value, setValue] = useState<FileFieldItem[]>([report]);
+/**
+ * Committed files with three removed, or all four, in a narrow and a wide column, under a title or
+ * without one, each put back by its button.
+ */
+function RemovedFiles({
+  width,
+  title,
+  kept,
+}: {
+  width: keyof typeof widths;
+  title: 'shown' | 'hidden';
+  kept: 'one' | 'none';
+}) {
+  const [value, setValue] = useState<FileFieldItem[]>(kept === 'one' ? [report] : []);
   return (
     <div style={{ width: widths[width] }}>
       <FileField
@@ -262,8 +273,9 @@ function RemovedFiles({ width }: { width: keyof typeof widths }) {
         value={value}
         onChange={setValue}
         committedValue={committedFiles}
+        hideRemovedLabel={title === 'hidden'}
         onSelect={() => {}}
-        data-lab-field={`removed-${width}`}
+        data-lab-field={`removed-${width}${title === 'hidden' ? '-untitled' : ''}${kept === 'none' ? '-all' : ''}`}
       />
     </div>
   );
@@ -282,11 +294,17 @@ mountLab(
     </LabSection>
     <LabSection
       title="Removed files"
-      description="Three committed files removed, one with a long name: they follow the held files under a Removed files title, laid out like the file rows with their size and, where they have one, a download link. Each restore button puts its file back."
+      description="Three committed files removed, one with a long name: they follow the held files under a Removed files title, laid out like the file rows with their size and, where they have one, a download link. Each restore button puts its file back. The title is optional: without it the removed files stack right below the held ones. With none kept, every file is removed and only the removed files show."
     >
       <StateMatrix
-        axes={{ width: ['narrow', 'wide'] }}
-        render={({ width }) => <RemovedFiles width={width} />}
+        axes={{
+          width: ['narrow', 'wide'] as const,
+          title: ['shown', 'hidden'] as const,
+          kept: ['one', 'none'] as const,
+        }}
+        render={({ width, title, kept }) => (
+          <RemovedFiles width={width} title={title} kept={kept} />
+        )}
       />
     </LabSection>
     <LabSection
