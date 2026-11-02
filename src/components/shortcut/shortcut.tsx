@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useSyncExternalStore, type ReactNode } from 'react';
+import { createContext, Fragment, use, useSyncExternalStore, type ReactNode } from 'react';
 import { Keyboard } from '../../primitives/index.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
@@ -17,6 +17,18 @@ import {
   type ShortcutSequence,
 } from './shortcut-format.js';
 
+/**
+ * How a shortcut draws its keys: each in a keycap (`keycaps`), or as quiet inline text such as
+ * `Ctrl+Shift+K` or `⌘⇧K` (`text`). Published as `data-appearance` for the stylesheet.
+ */
+export type ShortcutAppearance = 'keycaps' | 'text';
+
+/**
+ * The appearance of every shortcut inside it that sets none, such as those of menu items and
+ * button tooltips. Defaults to `keycaps`.
+ */
+export const ShortcutAppearanceContext = createContext<ShortcutAppearance>('keycaps');
+
 export interface ShortcutProps extends BaseProps {
   /**
    * The chord, such as `Ctrl+Shift+K` (`Ctrl` is Command on macOS) or `{ key, modifiers }`, or a
@@ -27,6 +39,8 @@ export interface ShortcutProps extends BaseProps {
   platform?: ShortcutPlatform | undefined;
   /** Draw only the keycaps, for a control that already describes the chord. */
   decorative?: boolean | undefined;
+  /** Keycaps or quiet text. Defaults to the nearest `ShortcutAppearanceContext`, else `keycaps`. */
+  appearance?: ShortcutAppearance | undefined;
 }
 
 /** One entry of a key legend: the keys, then what they do. */
@@ -43,6 +57,8 @@ export interface KeyHintsProps
   hints: readonly KeyHint[];
   /** The notation of every shortcut. Defaults to the detected platform. */
   platform?: ShortcutPlatform | undefined;
+  /** The appearance of every shortcut. Defaults to the nearest `ShortcutAppearanceContext`. */
+  appearance?: ShortcutAppearance | undefined;
 }
 
 const hooks = createHooks('shortcut', ['keys', 'chord', 'key', 'text']);
@@ -57,7 +73,7 @@ export function useDetectedPlatform(): ShortcutPlatform {
   return useSyncExternalStore(subscribeToNothing, getShortcutPlatform, getServerPlatform);
 }
 
-/** One chord's keycaps with the platform separator between them. */
+/** One chord's keys, as keycaps or text, with the platform separator between them. */
 function Keycaps({ keys, separator }: { keys: readonly string[]; separator: string }) {
   return keys.map((label, index) => (
     <Fragment key={index}>
@@ -71,8 +87,16 @@ function Keycaps({ keys, separator }: { keys: readonly string[]; separator: stri
  * A keyboard chord or key sequence in the reader's platform notation, with readable text for
  * assistive technology.
  */
-export function Shortcut({ chord, platform, decorative, className, ...rest }: ShortcutProps) {
+export function Shortcut({
+  chord,
+  platform,
+  decorative,
+  appearance,
+  className,
+  ...rest
+}: ShortcutProps) {
   const strings = useUiStrings();
+  const inherited = use(ShortcutAppearanceContext);
   const detected = useDetectedPlatform();
   const resolved = platform ?? detected;
   const steps = formatShortcutSteps(chord, resolved);
@@ -80,7 +104,13 @@ export function Shortcut({ chord, platform, decorative, className, ...rest }: Sh
   if (!first) return null;
   const separator = getShortcutKeySeparator(resolved);
   return (
-    <Keyboard {...rest} {...hooks.root({ className, data: { platform: resolved } })}>
+    <Keyboard
+      {...rest}
+      {...hooks.root({
+        className,
+        data: { platform: resolved, appearance: appearance ?? inherited },
+      })}
+    >
       <span {...hooks.slot('keys')} aria-hidden="true">
         {steps.length === 1 ? (
           <Keycaps keys={first} separator={separator} />
@@ -109,7 +139,7 @@ export function Shortcut({ chord, platform, decorative, className, ...rest }: Sh
 }
 
 /** A key legend such as `↑↓ move · Enter select`, drawn on one metadata line. */
-export function KeyHints({ hints, platform, className, ...rest }: KeyHintsProps) {
+export function KeyHints({ hints, platform, appearance, className, ...rest }: KeyHintsProps) {
   return (
     <MetaLine
       {...rest}
@@ -117,7 +147,7 @@ export function KeyHints({ hints, platform, className, ...rest }: KeyHintsProps)
       items={hints.map((hint, index) => (
         <span key={index} {...hintHooks.slot('hint')}>
           {hint.keys.map((key, keyIndex) => (
-            <Shortcut key={keyIndex} chord={key} platform={platform} />
+            <Shortcut key={keyIndex} chord={key} platform={platform} appearance={appearance} />
           ))}{' '}
           <span {...hintHooks.slot('action')}>{hint.action}</span>
         </span>

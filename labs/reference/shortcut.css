@@ -42,9 +42,39 @@
   white-space: nowrap;
 }
 
+/* Text appearance: the same keys as quiet inline text, without keycaps. */
+
+.ui-shortcut[data-appearance='text'] {
+  color: var(--ref-muted);
+}
+
+.ui-shortcut[data-appearance='text'] .ui-shortcut__keys,
+.ui-shortcut[data-appearance='text'] .ui-shortcut__chord {
+  gap: 0;
+}
+
+.ui-shortcut[data-appearance='text'] .ui-shortcut__keys:has(> .ui-shortcut__chord) {
+  gap: 0.5em;
+}
+
+.ui-shortcut[data-appearance='text'] .ui-shortcut__key {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+}
+
 /* A shortcut in a tooltip, such as a button's, takes the tooltip's colours. */
 
-.ui-tooltip .ui-shortcut__key {
+.ui-tooltip .ui-shortcut[data-appearance='text'] {
+  color: inherit;
+  opacity: 0.8;
+}
+
+.ui-tooltip .ui-shortcut[data-appearance='keycaps'] .ui-shortcut__key {
   border-color: currentColor;
   background: transparent;
   color: inherit;

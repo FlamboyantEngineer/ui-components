@@ -7,7 +7,7 @@ import { MenuTrigger } from '../menu/menu.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
-import { KeyHints, Shortcut } from './shortcut.js';
+import { KeyHints, Shortcut, ShortcutAppearanceContext } from './shortcut.js';
 import { getShortcutPlatform } from './shortcut-format.js';
 
 afterEach(() => vi.unstubAllGlobals());
@@ -212,5 +212,59 @@ describe('KeyHints', () => {
     render(<KeyHints hints={hints} platform="mac" aria-label="Composer keys" />);
     const legend = screen.getByRole('group', { name: 'Composer keys' });
     expect(legend).toHaveClass('ui-key-hints');
+  });
+});
+
+describe('Shortcut appearance', () => {
+  it('UIC-SHORTCUT-2.5 publishes keycaps by default and text when asked, with the same keys and words', () => {
+    const { container, rerender } = render(
+      <Shortcut chord={['Ctrl+K', 'Ctrl+C']} platform="mac" />,
+    );
+    const root = container.firstElementChild as HTMLElement;
+    expect(root).toHaveAttribute('data-appearance', 'keycaps');
+    const keycaps = root.innerHTML;
+    rerender(<Shortcut chord={['Ctrl+K', 'Ctrl+C']} platform="mac" appearance="text" />);
+    expect(root).toHaveAttribute('data-appearance', 'text');
+    expect(root.innerHTML).toBe(keycaps);
+    expect(root.querySelector('.ui-shortcut__keys')).toHaveTextContent('⌘K ⌘C');
+    expect(root.querySelector('.ui-shortcut__text')).toHaveTextContent('Command K, then Command C');
+    expectHooksMatchSpec(container, 'SHORTCUT');
+  });
+
+  it('UIC-SHORTCUT-2.5 takes the appearance of its context unless it sets its own, as key hints and menu items do', async () => {
+    const user = userEvent.setup();
+    render(
+      <ShortcutAppearanceContext value="text">
+        <Shortcut chord="Ctrl+S" platform="linux" />
+        <Shortcut chord="Ctrl+P" platform="linux" appearance="keycaps" />
+        <KeyHints hints={[{ keys: ['Enter'], action: 'select' }]} platform="linux" />
+        <KeyHints
+          hints={[{ keys: ['Escape'], action: 'close' }]}
+          platform="linux"
+          appearance="keycaps"
+        />
+        <MenuTrigger>
+          <Button>Actions</Button>
+          <Popover>
+            <Menu>
+              <MenuItem id="save">
+                <Text slot="label">Save</Text>
+                <Shortcut chord="Ctrl+S" platform="linux" />
+              </MenuItem>
+            </Menu>
+          </Popover>
+        </MenuTrigger>
+      </ShortcutAppearanceContext>,
+    );
+    const shortcuts = document.querySelectorAll('.ui-shortcut');
+    expect([...shortcuts].map((shortcut) => shortcut.getAttribute('data-appearance'))).toEqual([
+      'text',
+      'keycaps',
+      'text',
+      'keycaps',
+    ]);
+    await user.click(screen.getByRole('button', { name: 'Actions' }));
+    const item = within(await screen.findByRole('menu')).getByRole('menuitem');
+    expect(item.querySelector('.ui-shortcut')).toHaveAttribute('data-appearance', 'text');
   });
 });

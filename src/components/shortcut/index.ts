@@ -1,5 +1,5 @@
-export { KeyHints, Shortcut } from './shortcut.js';
-export type { KeyHint, KeyHintsProps, ShortcutProps } from './shortcut.js';
+export { KeyHints, Shortcut, ShortcutAppearanceContext } from './shortcut.js';
+export type { KeyHint, KeyHintsProps, ShortcutAppearance, ShortcutProps } from './shortcut.js';
 export {
   detectShortcutPlatform,
   formatAriaKeyShortcuts,
