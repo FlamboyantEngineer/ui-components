@@ -94,6 +94,8 @@ Verification: `src/components/comment-thread/comment-thread-reply.test.tsx`, `e2
 
 Edit shall replace the body and the reactions with an editor in `ui-comment-thread-reply__editor`, the root carrying `data-editing`: by default a focused `CommentComposer` holding `text`, named by the provider's `editComment` string and submitting with `save`; or what `renderEditor` returns, given `defaultValue`, `onSubmit` and `onCancel`. Submitting calls `onEdit` with the text and closes the editor once it succeeds: at once when `onEdit` returns, or once its promise resolves, the editor staying open meanwhile (the default editor pending and refusing a second save). When `onEdit` throws or its promise rejects, the editor stays open with the edited text and shows the error's message, or the provider's `actionFailed` string, as an `InlineError` alert in `ui-comment-thread-reply__error` until the next save; `onSubmit` then throws or rejects, so the editor keeps its text, and a caller editor handles that rejection as `CommentComposer` does. A save settles only the editor it came from: one that has closed, or ended and opened again, is not reopened or closed by it. Cancelling (Cancel or Escape) closes the editor unchanged. When the closing editor takes the focus with it, the focus returns to the comment menu button.
 
+Repeated edit, save and cancel sessions shall keep the reply's React lifecycle intact, and reopening the editor starts from the current `text`, discarding an earlier cancelled draft.
+
 Implementation: `src/components/comment-thread/comment-thread-reply.tsx`
 Verification: `src/components/comment-thread/comment-thread-reply.test.tsx`, `src/components/comment-thread/comment-thread-reply-mutations.test.tsx`, `e2e/comment-thread.spec.ts`
 

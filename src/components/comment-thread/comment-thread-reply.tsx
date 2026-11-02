@@ -273,7 +273,8 @@ export function CommentThreadReply({
   onAction,
   onEdit,
   onDelete,
-  renderEditor = DefaultEditor,
+  // Rendered as an element, so its hooks belong to the editor and not to the reply.
+  renderEditor = (options) => <DefaultEditor {...options} />,
   fallbackAfterDays,
   getNow,
   timeZone,

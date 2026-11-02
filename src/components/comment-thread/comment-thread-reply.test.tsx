@@ -19,6 +19,41 @@ beforeAll(() => {
 });
 
 describe('CommentThreadReply', () => {
+  it('UIC-COMMENT-THREAD-2.3 reopens the default editor without changing hook order', async () => {
+    const user = userEvent.setup();
+    const errors = vi.spyOn(console, 'error');
+    const onEdit = vi.fn();
+    render(<CommentThreadReply author={ana} time={null} text="First draft" onEdit={onEdit} />);
+    const trigger = screen.getByRole('button', { name: 'Comment actions' });
+    await user.click(trigger);
+    await user.click(await screen.findByRole('menuitem', { name: 'Edit' }));
+    const first = await screen.findByRole('textbox', { name: 'Edit comment' });
+    await user.clear(first);
+    await user.type(first, 'Discarded draft');
+    await user.keyboard('{Escape}');
+    expect(onEdit).not.toHaveBeenCalled();
+    await waitFor(() => expect(trigger).toHaveFocus());
+
+    await user.click(trigger);
+    await user.click(await screen.findByRole('menuitem', { name: 'Edit' }));
+    const second = await screen.findByRole('textbox', { name: 'Edit comment' });
+    expect(second).toHaveValue('First draft');
+    await user.clear(second);
+    await user.type(second, 'Saved draft');
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    expect(onEdit).toHaveBeenCalledExactlyOnceWith('Saved draft');
+    await waitFor(() => expect(trigger).toHaveFocus());
+    expect(
+      errors.mock.calls.filter((args) =>
+        args.some(
+          (value) =>
+            typeof value === 'string' &&
+            /order of Hooks|Rendered (more|fewer) hooks|Invalid hook call/.test(value),
+        ),
+      ),
+    ).toEqual([]);
+  });
+
   it('UIC-COMMENT-THREAD-2.1 draws the author, a live time, the edited marker and the body', () => {
     const time = '2026-04-20T10:25:00';
     const { container } = render(
