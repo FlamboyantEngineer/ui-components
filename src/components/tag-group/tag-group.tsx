@@ -5,7 +5,7 @@ import { createContext, useContext, type ReactElement, type ReactNode } from 're
 import { Tag as AriaTag, TagGroup as AriaTagGroup, TagList } from '../../primitives/index.js';
 import type { AriaLabellingProps, SelectionProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key, Size, Tone } from '../../core/props.js';
+import type { BaseProps, Key, Size, Tone, RefProps } from '../../core/props.js';
 import {
   fromCollectionSelection,
   toCollectionSelectionProps,
@@ -21,7 +21,7 @@ export type TagGroupSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 export type TagTone = Tone;
 
 export interface TagGroupProps<T extends object>
-  extends BaseProps, AriaLabellingProps, SelectionProps {
+  extends BaseProps, RefProps<HTMLDivElement>, AriaLabellingProps, SelectionProps {
   /** The data to render a tag for each of, with `children` as a function. */
   items?: Iterable<T> | undefined;
   /** The tags: `Tag` elements, or a function that renders the `Tag` of each of `items`. */
@@ -37,7 +37,7 @@ export interface TagGroupProps<T extends object>
 }
 
 // A tag's `id` is its collection key, which may also be a number.
-export interface TagProps extends Omit<BaseProps, 'id'> {
+export interface TagProps extends Omit<BaseProps, 'id'>, RefProps<HTMLDivElement> {
   /** The tag's key in the group. */
   id?: Key | undefined;
   /** The tag's content. Give `textValue` when it is not plain text. */

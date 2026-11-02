@@ -168,3 +168,12 @@ describe('InlineError', () => {
     expect(root).not.toHaveAttribute('data-pending');
   });
 });
+
+describe('InlineError root ref', () => {
+  it('UIC-INLINE-ERROR-1.5 forwards ref to its root', () => {
+    const ref = { current: null as HTMLDivElement | null };
+    const { container } = render(<InlineError ref={ref}>Unavailable</InlineError>);
+    expect(ref.current).not.toBeNull();
+    expect(ref.current).toBe(container.querySelector('.ui-inline-error'));
+  });
+});

@@ -84,7 +84,7 @@ Verification: `src/components/card/card.test.tsx`
 
 ### UIC-CARD-2.5 - Hooks and caller attributes
 
-`Card` shall carry the hooks below, append the caller's `className`, forward caller `data-*` attributes, `id` and `hidden` to its root, and keep its own hook values over caller attributes of the same name.
+`Card` shall carry the hooks below, append the caller's `className`, forward caller `data-*` attributes, `id`, `ref` and `hidden` to its `<section>` root, and keep its own hook values over caller attributes of the same name.
 
 Implementation: `src/components/card/card.tsx`
 Verification: `src/components/card/card.test.tsx`

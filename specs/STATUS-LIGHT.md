@@ -41,7 +41,7 @@ Verification: `src/components/status-light/status-light.test.tsx`, `e2e/status-l
 
 ### UIC-STATUS-LIGHT-1.6 - Hooks and caller attributes
 
-`StatusLight` shall carry the hooks below, append the caller's `className`, and forward `id` and caller `data-*` attributes to its root; caller attributes never replace a hook attribute.
+`StatusLight` shall carry the hooks below, append the caller's `className`, and forward `id`, `ref` and caller `data-*` attributes to its `<span>` root; caller attributes never replace a hook attribute.
 
 Implementation: `src/components/status-light/status-light.tsx`
 Verification: `src/components/status-light/status-light.test.tsx`

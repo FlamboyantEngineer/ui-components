@@ -27,7 +27,7 @@ Verification: `src/components/separator/separator.test.tsx`, `e2e/separator.spec
 
 ### UIC-SEPARATOR-1.4 - Hooks and caller attributes
 
-`Separator` shall carry the hooks below, append the caller's `className`, forward `id`, caller `data-*` attributes, `aria-label` and `aria-labelledby`, and keep its own hook values over caller attributes of the same name.
+`Separator` shall carry the hooks below, append the caller's `className`, forward `id`, `ref` (the rendered `hr`, `li` or `div`), caller `data-*` attributes, `aria-label` and `aria-labelledby`, and keep its own hook values over caller attributes of the same name.
 
 Implementation: `src/components/separator/separator.tsx`
 Verification: `src/components/separator/separator.test.tsx`

@@ -148,3 +148,19 @@ describe('SkeletonText', () => {
     expect(root.querySelector('[data-animated]')).toBeNull();
   });
 });
+
+describe('Skeleton root ref', () => {
+  it('UIC-SKELETON-1.4 forwards ref to its root', () => {
+    const ref = { current: null as HTMLDivElement | null };
+    const text = { current: null as HTMLDivElement | null };
+    const { container } = render(
+      <>
+        <Skeleton ref={ref} />
+        <SkeletonText ref={text} />
+      </>,
+    );
+    expect(ref.current).not.toBeNull();
+    expect(ref.current).toBe(container.querySelector('.ui-skeleton'));
+    expect(text.current).toBe(container.querySelector('.ui-skeleton-text'));
+  });
+});

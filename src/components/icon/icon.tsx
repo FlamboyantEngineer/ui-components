@@ -3,7 +3,7 @@
 import type { ReactElement, ReactNode } from 'react';
 import type { GlyphComponent } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Size } from '../../core/props.js';
+import type { BaseProps, Size, RefProps } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
 import { toImageProps } from './icon-props.js';
 
@@ -13,7 +13,7 @@ export type IconSize = Extract<Size, 'sm' | 'md' | 'lg'> | 'inherit';
 /** An imported icon component or a rendered element. */
 export type IconSource = GlyphComponent | ReactElement | null | undefined | false;
 
-export interface IconProps extends BaseProps {
+export interface IconProps extends BaseProps, RefProps<HTMLSpanElement> {
   /** An imported icon component. Built-in glyph components honor provider overrides. */
   icon?: GlyphComponent | undefined;
   /** Any icon node (an SVG element, an image), used when no `icon` is given. */

@@ -848,3 +848,17 @@ describe('CardGrid', () => {
     expect(onOpen).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('Card root ref', () => {
+  it('UIC-CARD-2.5 forwards ref to its root', () => {
+    const ref = { current: null as HTMLElement | null };
+    const { container } = render(
+      <Card ref={ref} title="Harbour">
+        Ferries
+      </Card>,
+    );
+    expect(ref.current).not.toBeNull();
+    expect(ref.current).toBe(container.querySelector('.ui-card'));
+    expect(ref.current?.tagName).toBe('SECTION');
+  });
+});

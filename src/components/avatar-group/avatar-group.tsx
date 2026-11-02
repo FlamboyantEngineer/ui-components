@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import type { BaseProps, Size } from '../../core/props.js';
+import type { BaseProps, Size, RefProps } from '../../core/props.js';
 import { assignOccurrenceKeys } from '../../utils/stable-keys.js';
 import type { AvatarIdentity, AvatarProps } from '../avatar/avatar.js';
 import { AvatarGroupPeople } from './avatar-group-people.js';
@@ -22,7 +22,10 @@ export type AvatarGroupAction = 'none' | 'list';
 export type AvatarGroupOverflow = 'count' | 'menu';
 
 export interface AvatarGroupProps
-  extends BaseProps, Pick<AvatarProps, 'colorCount' | 'variant' | 'nameTooltip' | 'cardTrigger'> {
+  extends
+    BaseProps,
+    RefProps<HTMLSpanElement>,
+    Pick<AvatarProps, 'colorCount' | 'variant' | 'nameTooltip' | 'cardTrigger'> {
   /** The people in display order, including optional presence status. */
   people: readonly AvatarGroupPerson[];
   /** Maximum visible people; the rest join the overflow count. Defaults to all. */

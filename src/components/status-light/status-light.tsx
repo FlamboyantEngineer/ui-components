@@ -2,7 +2,14 @@
 
 import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, NativeProps, PresenceStatus, Size, Tone } from '../../core/props.js';
+import type {
+  BaseProps,
+  NativeProps,
+  PresenceStatus,
+  Size,
+  Tone,
+  RefProps,
+} from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 
@@ -10,7 +17,8 @@ export type StatusLightTone = Tone;
 
 export type StatusLightSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 
-export interface StatusLightProps extends BaseProps, Pick<NativeProps<'span'>, 'aria-label'> {
+export interface StatusLightProps
+  extends BaseProps, RefProps<HTMLSpanElement>, Pick<NativeProps<'span'>, 'aria-label'> {
   /** The visible label. Defaults to the presence label of `status`, if any. */
   children?: ReactNode;
   /** The status's tone. Defaults to `neutral`. */

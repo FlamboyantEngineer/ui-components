@@ -4,13 +4,13 @@ import type { ReactNode, Ref } from 'react';
 import { Switch as AriaSwitch, FormContext, useSlottedContext } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, ControlSize } from '../../core/props.js';
+import type { BaseProps, ControlSize, RefProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { useInputRef, useResetHeldValue } from '../../utils/use-reset-held-value.js';
 import type { FieldValidationBehavior } from '../field/field.js';
 import { useScopedDisabled } from '../field/field.js';
 
-export interface SwitchProps extends BaseProps, AriaLabellingProps {
+export interface SwitchProps extends BaseProps, RefProps<HTMLLabelElement>, AriaLabellingProps {
   /** Whether the switch is on, controlled. */
   isSelected?: boolean | undefined;
   /** Whether the switch starts on, uncontrolled. */

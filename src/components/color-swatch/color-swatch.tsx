@@ -3,10 +3,10 @@
 import { ColorSwatch as AriaColorSwatch, parseColor } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks, measuredProperty } from '../../core/hooks.js';
-import type { BaseProps, Size } from '../../core/props.js';
+import type { BaseProps, Size, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 
-export interface ColorSwatchProps extends BaseProps, AriaLabellingProps {
+export interface ColorSwatchProps extends BaseProps, RefProps<HTMLDivElement>, AriaLabellingProps {
   /**
    * A hex, `rgb()`, `hsl()` or `hsb()` colour string. Nothing, empty text or a colour in another
    * notation draws an empty swatch.

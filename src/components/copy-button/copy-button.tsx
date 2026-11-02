@@ -3,7 +3,7 @@
 import { CheckGlyph, CopyGlyph, ErrorGlyph } from '../../core/glyphs.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useClipboard, type CopyStatus } from '../../utils/use-clipboard.js';
 import { useLatestSettledCount } from '../../utils/use-latest-settled-count.js';
@@ -16,7 +16,10 @@ import {
 import { REANNOUNCE_MARK } from '../../utils/reannounce.js';
 
 export interface CopyButtonProps
-  extends Pick<ButtonProps, 'variant' | 'size' | 'isDisabled'>, BaseProps {
+  extends
+    Pick<ButtonProps, 'variant' | 'size' | 'isDisabled'>,
+    BaseProps,
+    RefProps<HTMLSpanElement> {
   /** The text to copy, exactly as given. */
   value: string;
   /** Names the button. Defaults to the provider's `copy` string. */
@@ -46,6 +49,7 @@ export function CopyButton({
   isDisabled: isDisabledProp,
   className,
   id,
+  ref,
   ...rest
 }: CopyButtonProps) {
   const strings = useUiStrings();
@@ -74,6 +78,7 @@ export function CopyButton({
         },
       })}
       id={id}
+      ref={ref}
     >
       <Button
         className={hooks.slotClass('button')}

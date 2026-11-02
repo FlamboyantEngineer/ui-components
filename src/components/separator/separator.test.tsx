@@ -231,3 +231,13 @@ describe('Separator', () => {
     expectHooksMatchSpec(document.body, 'MENU');
   });
 });
+
+describe('Separator root ref', () => {
+  it('UIC-SEPARATOR-1.4 forwards ref to its root', () => {
+    const ref = { current: null as HTMLElement | null };
+    const { container } = render(<Separator ref={ref} />);
+    expect(ref.current).not.toBeNull();
+    expect(ref.current).toBe(container.querySelector('.ui-separator'));
+    expect(ref.current?.tagName).toBe('HR');
+  });
+});

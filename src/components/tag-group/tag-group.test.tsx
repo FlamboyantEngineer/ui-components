@@ -501,3 +501,20 @@ describe('TagGroup', () => {
     expect(tag('Pear')).toHaveAttribute('aria-selected', 'true');
   });
 });
+
+describe('TagGroup root ref', () => {
+  it('UIC-TAG-GROUP-1.6 forwards ref to its root', () => {
+    const ref = { current: null as HTMLDivElement | null };
+    const tag = { current: null as HTMLDivElement | null };
+    const { container } = render(
+      <TagGroup ref={ref} aria-label="Filters">
+        <Tag ref={tag} id="fig">
+          Fig
+        </Tag>
+      </TagGroup>,
+    );
+    expect(ref.current).not.toBeNull();
+    expect(ref.current).toBe(container.querySelector('.ui-tag-group'));
+    expect(tag.current).toBe(container.querySelector('.ui-tag-group__tag'));
+  });
+});

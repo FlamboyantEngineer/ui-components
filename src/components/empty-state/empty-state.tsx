@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, NativeProps, Size } from '../../core/props.js';
+import type { BaseProps, NativeProps, Size, RefProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Icon, type IconSource } from '../icon/icon.js';
 import { toIconProps } from '../icon/icon.js';
@@ -13,7 +13,8 @@ export type EmptyStateVariant = 'empty' | 'loading' | 'error';
 
 export type EmptyStateSize = Extract<Size, 'sm' | 'md'>;
 
-export interface EmptyStateProps extends BaseProps, Pick<NativeProps<'section'>, 'hidden'> {
+export interface EmptyStateProps
+  extends BaseProps, RefProps<HTMLElement>, Pick<NativeProps<'section'>, 'hidden'> {
   /** One line on what is missing, what is loading or what the reader can do next. */
   description: ReactNode;
   /** An optional heading over the description. */

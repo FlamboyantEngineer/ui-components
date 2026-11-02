@@ -146,3 +146,14 @@ describe('EmptyState', () => {
     expect(container.querySelector('.ui-empty-state__actions')).toBeNull();
   });
 });
+
+describe('EmptyState root ref', () => {
+  it('UIC-EMPTY-STATE-1.6 forwards ref to its root', () => {
+    const ref = { current: null as HTMLElement | null };
+    const { container } = render(
+      <EmptyState ref={ref} title="No rows" description="Add a row to start." />,
+    );
+    expect(ref.current).not.toBeNull();
+    expect(ref.current).toBe(container.querySelector('.ui-empty-state'));
+  });
+});

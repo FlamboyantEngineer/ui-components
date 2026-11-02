@@ -184,3 +184,19 @@ describe('Switch', () => {
     expect(readPantry()).toEqual([['lights', 'on']]);
   });
 });
+
+describe('Switch root ref', () => {
+  it('UIC-SWITCH-1.4 forwards ref to its root', () => {
+    const ref = { current: null as HTMLLabelElement | null };
+    const input = { current: null as HTMLInputElement | null };
+    const { container } = render(
+      <Switch ref={ref} inputRef={input}>
+        Wi-Fi
+      </Switch>,
+    );
+    expect(ref.current).not.toBeNull();
+    expect(ref.current).toBe(container.querySelector('.ui-switch'));
+    expect(ref.current?.tagName).toBe('LABEL');
+    expect(input.current).toBe(screen.getByRole('switch', { name: 'Wi-Fi' }));
+  });
+});

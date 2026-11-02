@@ -34,7 +34,7 @@ Verification: `src/components/attribution/attribution.test.tsx`, `e2e/attributio
 
 ### UIC-ATTRIBUTION-1.5 - Hooks and caller attributes
 
-`Attribution` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes and `id` to its root.
+`Attribution` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes, `id` and `ref` to its `<span>` root.
 
 Implementation: `src/components/attribution/attribution.tsx`
 Verification: `src/components/attribution/attribution.test.tsx`

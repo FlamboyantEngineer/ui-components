@@ -4,7 +4,7 @@ import { createContext, Fragment, use, useSyncExternalStore, type ReactNode } fr
 import { Keyboard } from '../../primitives/index.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { MetaLine, type MetaLineProps } from '../meta-line/meta-line.js';
 import {
@@ -29,7 +29,7 @@ export type ShortcutAppearance = 'keycaps' | 'text';
  */
 export const ShortcutAppearanceContext = createContext<ShortcutAppearance>('keycaps');
 
-export interface ShortcutProps extends BaseProps {
+export interface ShortcutProps extends BaseProps, RefProps<HTMLElement> {
   /**
    * The chord, such as `Ctrl+Shift+K` (`Ctrl` is Command on macOS) or `{ key, modifiers }`, or a
    * sequence of chords pressed one after another, such as `['G', 'I']`.

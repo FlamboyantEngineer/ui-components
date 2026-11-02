@@ -22,6 +22,14 @@ import type { OverflowListProps } from '../src/components/overflow-list/overflow
 import type { ScrollRegionProps } from '../src/components/scroll-region/scroll-region.js';
 import type { DescriptionListProps } from '../src/components/description-list/description-list.js';
 import type { SeparatorProps } from '../src/components/separator/separator.js';
+import type { Ref } from 'react';
+import type { IconProps } from '../src/components/icon/icon.js';
+import type { BadgeProps } from '../src/components/badge/badge.js';
+import type { CheckboxProps } from '../src/components/checkbox/checkbox.js';
+import type { SwitchProps } from '../src/components/switch/switch.js';
+import type { CardProps } from '../src/components/card/card.js';
+import type { StatusLightProps } from '../src/components/status-light/status-light.js';
+import type { TagGroupProps, TagProps } from '../src/components/tag-group/tag-group.js';
 import type { VisuallyHiddenProps } from '../src/components/visually-hidden/visually-hidden.js';
 
 // Package names built from parts so the repository scan in primitives.test.ts skips this file.
@@ -151,5 +159,18 @@ describe('public declarations', () => {
       (event: PrimitivePressEvent) => void
     >();
     expectTypeOf<ElementRender<'div', { isOpen: boolean }>>().toBeFunction();
+  });
+
+  it('UIC-COMPOSITION-2.5 types each root ref with its root element', () => {
+    expectTypeOf<IconProps['ref']>().toEqualTypeOf<Ref<HTMLSpanElement> | undefined>();
+    expectTypeOf<BadgeProps['ref']>().toEqualTypeOf<Ref<HTMLSpanElement> | undefined>();
+    expectTypeOf<StatusLightProps['ref']>().toEqualTypeOf<Ref<HTMLSpanElement> | undefined>();
+    expectTypeOf<CheckboxProps['ref']>().toEqualTypeOf<Ref<HTMLLabelElement> | undefined>();
+    expectTypeOf<CheckboxProps['inputRef']>().toEqualTypeOf<Ref<HTMLInputElement> | undefined>();
+    expectTypeOf<SwitchProps['ref']>().toEqualTypeOf<Ref<HTMLLabelElement> | undefined>();
+    expectTypeOf<SwitchProps['inputRef']>().toEqualTypeOf<Ref<HTMLInputElement> | undefined>();
+    expectTypeOf<CardProps['ref']>().toEqualTypeOf<Ref<HTMLElement> | undefined>();
+    expectTypeOf<TagGroupProps<object>['ref']>().toEqualTypeOf<Ref<HTMLDivElement> | undefined>();
+    expectTypeOf<TagProps['ref']>().toEqualTypeOf<Ref<HTMLDivElement> | undefined>();
   });
 });

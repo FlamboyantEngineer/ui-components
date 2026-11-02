@@ -41,7 +41,7 @@ Verification: `src/components/empty-state/empty-state.test.tsx`
 
 ### UIC-EMPTY-STATE-1.6 - Hooks and caller attributes
 
-`EmptyState` shall carry the hooks below, append the caller's `className`, forward caller `data-*` attributes, `id` and `hidden` to its root, and keep its own hook values over caller attributes of the same name.
+`EmptyState` shall carry the hooks below, append the caller's `className`, forward caller `data-*` attributes, `id`, `ref` and `hidden` to its `<section>` root, and keep its own hook values over caller attributes of the same name.
 
 Implementation: `src/components/empty-state/empty-state.tsx`
 Verification: `src/components/empty-state/empty-state.test.tsx`

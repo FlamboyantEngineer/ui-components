@@ -2,8 +2,9 @@
 
 import { useContext, useId, useState, type ReactNode } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
-import type { BaseProps, Density, NativeProps } from '../../core/props.js';
+import type { BaseProps, Density, NativeProps, RefProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import {
   HeadingLevelContext,
   useHeadingLevel,
@@ -37,6 +38,7 @@ export type CardVariant = 'default' | 'panel';
 export interface CardProps
   extends
     BaseProps,
+    RefProps<HTMLElement>,
     CardActionOptions,
     Pick<NativeProps<'section'>, 'hidden' | 'role' | 'aria-label' | 'aria-labelledby'> {
   /** Surface. Defaults to `default`. */
@@ -189,6 +191,12 @@ function toRootData(
   };
 }
 
+/** The card's root element, measured by the card and handed to the caller's `ref` too. */
+function useCardRoot(ref: CardProps['ref']) {
+  const [root, setRoot] = useState<HTMLElement | null>(null);
+  return [root, useMergedRefs(setRoot, ref)] as const;
+}
+
 /**
  * A framed container for a self-contained group of content: optional media, an optional header, a
  * body and a footer. With `href` or `onAction` the whole card is a link or press target whose title
@@ -197,11 +205,11 @@ function toRootData(
  * the space its container gives it.
  */
 export function Card(props: CardProps) {
-  const { title, header, media, children, footer, isLoading = false } = props;
+  const { title, header, media, children, footer, isLoading = false, ref } = props;
   const titleId = useId();
   const level = useHeadingLevel(props.headingLevel);
   const parentLevel = useContext(HeadingLevelContext);
-  const [root, setRoot] = useState<HTMLElement | null>(null);
+  const [root, rootRef] = useCardRoot(ref);
   const [slottedTitle, setSlottedTitle] = useState<HTMLElement | null>(null);
   const options = toActionOptions(props);
   const { isActionable, actionRef, onClick, onPointerDownCapture } = useCardAction(options);
@@ -225,7 +233,7 @@ export function Card(props: CardProps) {
         props,
         data: toRootData(props, { isActionable, presentation, collapse }),
       })}
-      ref={setRoot}
+      ref={rootRef}
       id={props.id}
       hidden={props.hidden}
       role={props.role}

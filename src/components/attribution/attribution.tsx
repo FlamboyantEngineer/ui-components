@@ -2,7 +2,7 @@
 
 import { Fragment, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Avatar, getDisplayName, type AvatarIdentity } from '../avatar/avatar.js';
 import { RelativeTime, type RelativeTimeProps } from '../relative-time/relative-time.js';
@@ -15,6 +15,7 @@ import { isTimeFirst, parseAttributionTemplate } from './attribution-template.js
 export interface AttributionProps
   extends
     BaseProps,
+    RefProps<HTMLSpanElement>,
     Pick<RelativeTimeProps, 'fallbackAfterDays' | 'getNow' | 'timeZone' | 'showTooltip'> {
   /** When it happened: an ISO 8601 date or date and time. */
   time: string | null | undefined;

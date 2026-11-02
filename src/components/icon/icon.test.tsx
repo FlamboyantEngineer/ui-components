@@ -131,3 +131,12 @@ describe('Icon', () => {
     expectHooksMatchSpec(container, 'ICON');
   });
 });
+
+describe('Icon root ref', () => {
+  it('UIC-ICON-1.4 forwards ref to its root', () => {
+    const ref = { current: null as HTMLSpanElement | null };
+    const { container } = render(<Icon ref={ref} icon={CloseGlyph} />);
+    expect(ref.current).not.toBeNull();
+    expect(ref.current).toBe(container.querySelector('.ui-icon'));
+  });
+});

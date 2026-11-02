@@ -27,7 +27,7 @@ Verification: `src/components/color-swatch/color-swatch.test.tsx`, `e2e/color-sw
 
 ### UIC-COLOR-SWATCH-1.4 - Hooks and caller attributes
 
-`ColorSwatch` shall carry the hooks below, append the caller's `className` and forward caller `data-*` attributes and `id` to its root.
+`ColorSwatch` shall carry the hooks below, append the caller's `className` and forward caller `data-*` attributes, `id` and `ref` to its `<div>` root.
 
 Implementation: `src/components/color-swatch/color-swatch.tsx`
 Verification: `src/components/color-swatch/color-swatch.test.tsx`

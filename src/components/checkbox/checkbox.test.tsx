@@ -280,3 +280,19 @@ describe('Checkbox', () => {
     expect(screen.getByRole('checkbox', { name: 'Sealed' })).toBeChecked();
   });
 });
+
+describe('Checkbox root ref', () => {
+  it('UIC-CHECKBOX-1.4 forwards ref to its root', () => {
+    const ref = { current: null as HTMLLabelElement | null };
+    const input = { current: null as HTMLInputElement | null };
+    const { container } = render(
+      <Checkbox ref={ref} inputRef={input}>
+        Subscribe
+      </Checkbox>,
+    );
+    expect(ref.current).not.toBeNull();
+    expect(ref.current).toBe(container.querySelector('.ui-checkbox'));
+    expect(ref.current?.tagName).toBe('LABEL');
+    expect(input.current).toBe(screen.getByRole('checkbox', { name: 'Subscribe' }));
+  });
+});

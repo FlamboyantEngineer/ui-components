@@ -78,7 +78,7 @@ Verification: `src/components/shortcut/shortcut.test.tsx`, `e2e/shortcut.spec.ts
 
 ### UIC-SHORTCUT-2.3 - Hooks and caller attributes
 
-`Shortcut` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes and `id` to its root.
+`Shortcut` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes, `id` and `ref` to its `<kbd>` root.
 
 Implementation: `src/components/shortcut/shortcut.tsx`
 Verification: `src/components/shortcut/shortcut.test.tsx`

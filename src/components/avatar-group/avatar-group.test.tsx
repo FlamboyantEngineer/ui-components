@@ -160,3 +160,12 @@ describe('AvatarGroup', () => {
     expect(container.querySelector('.ui-avatar-group')).toHaveAttribute('aria-hidden', 'true');
   });
 });
+
+describe('AvatarGroup root ref', () => {
+  it('UIC-AVATAR-GROUP-2.3 forwards ref to its root', () => {
+    const ref = { current: null as HTMLSpanElement | null };
+    const { container } = render(<AvatarGroup ref={ref} people={people.slice(0, 2)} />);
+    expect(ref.current).not.toBeNull();
+    expect(ref.current).toBe(container.querySelector('.ui-avatar-group'));
+  });
+});

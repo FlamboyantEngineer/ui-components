@@ -191,3 +191,12 @@ describe('CopyButton', () => {
     expect(button).not.toHaveAttribute('data-disabled');
   });
 });
+
+describe('CopyButton root ref', () => {
+  it('UIC-COPY-BUTTON-1.4 forwards ref to its root', () => {
+    const ref = { current: null as HTMLSpanElement | null };
+    const { container } = render(<CopyButton ref={ref} value="City" />);
+    expect(ref.current).not.toBeNull();
+    expect(ref.current).toBe(container.querySelector('.ui-copy-button'));
+  });
+});

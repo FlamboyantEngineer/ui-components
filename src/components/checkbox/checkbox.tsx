@@ -5,14 +5,14 @@ import type { ReactNode, Ref } from 'react';
 import { Checkbox as AriaCheckbox } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, ControlSize } from '../../core/props.js';
+import type { BaseProps, ControlSize, RefProps } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { useInputRef, useResetHeldValue } from '../../utils/use-reset-held-value.js';
 import type { FieldValidationBehavior } from '../field/field.js';
 import { useScopedDisabled } from '../field/field.js';
 
-export interface CheckboxProps extends BaseProps, AriaLabellingProps {
+export interface CheckboxProps extends BaseProps, RefProps<HTMLLabelElement>, AriaLabellingProps {
   /** Whether the box is ticked, controlled. */
   isSelected?: boolean | undefined;
   /** Whether the box starts ticked, uncontrolled. */
