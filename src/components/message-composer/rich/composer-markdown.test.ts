@@ -75,6 +75,19 @@ describe('rich composer Markdown', () => {
     expect(texts).toEqual(['```\nx', 'after']);
   });
 
+  it('UIC-MESSAGE-COMPOSER-4.2 fences code with very many backtick runs, or one long run', () => {
+    for (const [body, fence] of [
+      ['x` '.repeat(150_000), '```'],
+      ['`'.repeat(20_000), '`'.repeat(20_001)],
+    ]) {
+      const text = `${fence}\n${body}\n${fence}`;
+      const saved = serializeComposerDocument(parseComposerMessage({ text, tokens: [] }));
+      expect(saved.text).toBe(text);
+      const code = [parseComposerMessage(saved).child(0)].map((block) => block.textContent);
+      expect(code).toEqual([body]);
+    }
+  });
+
   it('UIC-MESSAGE-COMPOSER-4.9 reads and writes references with their identity, record type and edits around them', () => {
     const references: MessageComposerMessage = {
       text: 'TRIP-4 and NOTE-12\nTRIP-4',
