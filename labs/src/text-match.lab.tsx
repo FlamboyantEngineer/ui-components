@@ -8,6 +8,7 @@ import {
   textMatchesTerms,
 } from '../../src/components/text-match/index.js';
 import { TextMatch, TextMatchProvider } from '../../src/components/text-match/text-match.js';
+import { TextMatchNestedCases } from './text-match-nested-cases.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { LabHelperCalls } from './lab-helper-calls.js';
 
@@ -152,5 +153,6 @@ mountLab(
         ]}
       />
     </LabSection>
+    <TextMatchNestedCases />
   </>,
 );

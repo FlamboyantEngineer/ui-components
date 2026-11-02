@@ -1,4 +1,4 @@
-import { cellSelector, expect, matrixCell, test } from './fixtures.js';
+import { cellSelector, expect, familySelector, matrixCell, test } from './fixtures.js';
 
 test.describe('Text Match lab', () => {
   test('UIC-TEXT-MATCH-2.1 UIC-TEXT-MATCH-1.3 marks substrings or words for each query', async ({
@@ -94,4 +94,33 @@ test('UIC-TEXT-MATCH-1.1 UIC-TEXT-MATCH-1.2 UIC-TEXT-MATCH-1.3 shows the exporte
   );
   await expect(call("findWordMatches('tea, steam, teapot', 'tea')")).toHaveText('[0,12]');
   await expect(call("isWordMatchAt('steam', 1, 'tea')")).toHaveText('false');
+});
+
+test.describe('Text Match nested providers', () => {
+  test('UIC-TEXT-MATCH-2.3 inherits the outer search without remounting the labels', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('text-match');
+    const demo = page.locator('[data-lab-demo="nested-providers"]');
+    const marks = demo.locator('mark');
+    const outer = demo.locator('[data-lab-output="outer registered"]');
+    const inner = demo.locator('[data-lab-output="inner registered"]');
+    await expect(marks).toHaveText(['lait']);
+    await expect(outer).toHaveText('0');
+    await expect(inner).toHaveText('3');
+    await demo.getByRole('textbox', { name: 'Note' }).fill('Order before ten');
+
+    await demo.getByRole('switch', { name: 'Inherit the outer search' }).press('Space');
+    await expect(marks).toHaveText(['Café', 'Café', 'Cafe']);
+    await expect(outer).toHaveText('3');
+    await expect(inner).toHaveText('0');
+    await expect(demo.getByRole('textbox', { name: 'Note' })).toHaveValue('Order before ten');
+
+    await demo.getByRole('switch', { name: 'Inherit the outer search' }).press('Space');
+    await expect(marks).toHaveText(['lait']);
+    await expect(inner).toHaveText('3');
+    await expect(demo.getByRole('textbox', { name: 'Note' })).toHaveValue('Order before ten');
+    await lab.expectAccessible(familySelector('text-match-nested-cases'));
+  });
 });

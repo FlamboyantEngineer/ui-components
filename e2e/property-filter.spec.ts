@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, familySelector, test, matrixCell } from './fixtures.js';
 
 function panel(page: Page): Locator {
   return matrixCell(page, 'layout=responsive width=wide');
@@ -99,5 +99,64 @@ test.describe('Property Filter lab', () => {
     await expect(words.getByRole('textbox', { name: 'Orientation' })).toBeVisible();
     await expect(words.getByRole('textbox', { name: 'Paper size' })).toBeHidden();
     await lab.expectAccessible('[data-lab-word-start]');
+  });
+
+  test('UIC-PROPERTY-FILTER-1.3 passes disabled and read-only to every field', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('property-filter');
+    const demo = page.locator('[data-lab-demo="field-state"]');
+    const paper = demo.getByRole('textbox', { name: 'Paper size' });
+    await expect(paper).toBeEditable();
+    await demo.getByRole('radio', { name: 'disabled' }).press('Space');
+    await expect(paper).toBeDisabled();
+    await demo.getByRole('radio', { name: 'read-only' }).press('Space');
+    await expect(paper).toBeEnabled();
+    await expect(paper).toHaveAttribute('readonly', '');
+    const search = demo.getByRole('searchbox', { name: 'Filter locked settings' });
+    await search.fill('font');
+    await expect(demo.getByRole('textbox', { name: 'Paper size' })).toBeHidden();
+    await expect(demo.getByRole('textbox', { name: 'Font size' })).toHaveAttribute('readonly', '');
+  });
+
+  test('UIC-PROPERTY-FILTER-1.4 keeps the host expansion and edits through a query', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('property-filter');
+    const demo = page.locator('[data-lab-demo="accordion"]');
+    const expanded = demo.locator('[data-lab-output="expanded"]');
+    await expect(expanded).toHaveText('page');
+    await demo.getByRole('button', { name: 'Text styles' }).click();
+    await expect(expanded).toHaveText('text');
+    await expect(demo.getByRole('button', { name: 'Page setup' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+    const search = demo.getByRole('searchbox', { name: 'Filter accordion settings' });
+    await search.fill('paper');
+    const paper = demo.getByRole('textbox', { name: 'Paper size' });
+    await expect(paper).toBeVisible();
+    await expect(expanded).toHaveText('text');
+    await paper.fill('Letter');
+    await paper.press('Tab');
+    await search.fill('');
+    await expect(paper).toBeHidden();
+    await expect(expanded).toHaveText('text');
+    await demo.getByRole('button', { name: 'Page setup' }).click();
+    await expect(expanded).toHaveText('page');
+    await expect(paper).toHaveValue('Letter');
+
+    const seeded = page.locator('[data-lab-demo="seeded"]');
+    const seededSearch = seeded.getByRole('searchbox', { name: 'Filter seeded settings' });
+    await expect(seededSearch).toHaveValue('margin');
+    await expect(seeded.getByRole('textbox', { name: 'Margins' })).toBeVisible();
+    await expect(seeded.getByRole('textbox', { name: 'Font', exact: true })).toBeHidden();
+    await seededSearch.fill('');
+    await expect(seeded.getByRole('textbox', { name: 'Margins' })).toBeHidden();
+    await expect(seeded.getByRole('textbox', { name: 'Font', exact: true })).toBeVisible();
+    await expect(seeded.locator('[data-lab-output="expanded"]')).toHaveText('text');
+    await lab.expectAccessible(familySelector('property-filter-host-cases'));
   });
 });

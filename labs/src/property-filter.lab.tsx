@@ -6,6 +6,7 @@ import {
   PropertySection,
   type PropertyPanelLabelLayout,
 } from '../../src/components/property-panel/property-panel.js';
+import { PropertyFilterHostCases } from './property-filter-host-cases.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { TextSetting } from './property-text-setting.js';
 
@@ -97,5 +98,6 @@ mountLab(
         </div>
       </div>
     </LabSection>
+    <PropertyFilterHostCases />
   </>,
 );
