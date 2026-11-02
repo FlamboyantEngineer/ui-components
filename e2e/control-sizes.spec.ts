@@ -1,3 +1,4 @@
+import type { Page } from '@playwright/test';
 import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
@@ -23,12 +24,9 @@ const boxes: Record<string, string> = {
   'choice-group': '.ui-choice__button',
 };
 
-test('UIC-LABS-3.7 every control takes the height of its size, not of its content or type', async ({
-  page,
-  lab,
-}) => {
-  await lab.open('control-sizes');
-  const cells = await page.locator('td[data-lab-cell*="control="]').evaluateAll(
+/** Each control cell's box height and the height its size's token gives now. */
+async function measureCells(page: Page) {
+  return page.locator('td[data-lab-cell*="control="]').evaluateAll(
     (tds, selectors) =>
       tds.map((td) => {
         const address = td.getAttribute('data-lab-cell') ?? '';
@@ -36,27 +34,64 @@ test('UIC-LABS-3.7 every control takes the height of its size, not of its conten
         const size = /size=(\S+)/.exec(address)?.[1] ?? '';
         const box = td.querySelector(selectors[control] ?? ':not(*)');
         const scale = getComputedStyle(document.documentElement);
+        const token = scale.getPropertyValue(`--ref-control-height-${size}`).trim();
         return {
           address,
           control,
           size,
           height: box ? Math.round(box.getBoundingClientRect().height) : null,
-          // The scale is in rem, so it follows the reader's font size.
-          expected:
-            Number.parseFloat(scale.getPropertyValue(`--ref-control-height-${size}`)) *
-            Number.parseFloat(scale.fontSize),
+          // The scale is in rem, so it follows the reader's font size; an override may use pixels.
+          expected: token.endsWith('px')
+            ? Number.parseFloat(token)
+            : Number.parseFloat(token) * Number.parseFloat(scale.fontSize),
         };
       }),
     boxes,
   );
+}
+
+/** The cells whose box is not the height of their size. */
+function offSize(cells: Awaited<ReturnType<typeof measureCells>>) {
+  return cells
+    .filter(({ height, expected }) => height !== null && height !== expected)
+    .map(({ address, height, expected }) => `${address}: ${height}px, not ${expected}px`);
+}
+
+test('UIC-LABS-3.7 every control takes the height of its size, not of its content or type', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('control-sizes');
+  const cells = await measureCells(page);
   expect(cells.length).toBe(Object.keys(boxes).length * 3 * 4);
   const missing = cells.filter(({ height }) => height === null).map(({ address }) => address);
   expect(missing, 'cells without their control').toEqual([]);
-  const wrong = cells
-    .filter(({ height, expected }) => height !== null && height !== expected)
-    .map(({ address, height, expected }) => `${address}: ${height}px, not ${expected}px`);
-  expect(wrong, 'controls off their size').toEqual([]);
+  expect(offSize(cells), 'controls off their size').toEqual([]);
   await lab.expectAccessible();
+});
+
+test('UIC-LABS-3.7 overriding the control scale moves every control of that size', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('control-sizes');
+  await page.evaluate(() => {
+    const root = document.documentElement.style;
+    for (const [size, height] of [
+      ['xs', 30],
+      ['sm', 34],
+      ['md', 38],
+      ['lg', 42],
+    ] as const)
+      root.setProperty(`--ref-control-height-${size}`, `${String(height)}px`);
+  });
+  const cells = await measureCells(page);
+  // The rows of checkboxes and switches grow from a min-height and keep their own boxes.
+  const framed = cells.filter(
+    ({ control }) =>
+      !['checkbox', 'choice-group-multiple', 'switch', 'choice-group'].includes(control),
+  );
+  expect(offSize(framed), 'controls off the overridden scale').toEqual([]);
 });
 
 test('UIC-LABS-3.7 distinguishes surrounding type and keeps field samples compact', async ({

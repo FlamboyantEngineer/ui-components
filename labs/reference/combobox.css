@@ -2,7 +2,6 @@
 
 .ui-combobox,
 .ui-combobox__popover {
-  --ref-combobox-height: var(--ref-control-height-md);
   font-size: var(--ref-font-size-md);
 }
 
@@ -30,7 +29,7 @@
   gap: 4px;
   box-sizing: border-box;
   min-width: 0;
-  min-height: var(--ref-combobox-height);
+  min-height: var(--ref-control-height);
   padding-block: 0;
   padding-inline: 8px 4px;
   border: 1px solid var(--ref-field-border);
@@ -40,19 +39,16 @@
 
 .ui-combobox[data-size='xs'],
 .ui-combobox__popover[data-size='xs'] {
-  --ref-combobox-height: var(--ref-control-height-xs);
   font-size: var(--ref-font-size-xs);
 }
 
 .ui-combobox[data-size='sm'],
 .ui-combobox__popover[data-size='sm'] {
-  --ref-combobox-height: var(--ref-control-height-sm);
   font-size: var(--ref-font-size-sm);
 }
 
 .ui-combobox[data-size='lg'],
 .ui-combobox__popover[data-size='lg'] {
-  --ref-combobox-height: var(--ref-control-height-lg);
   font-size: var(--ref-font-size);
 }
 
@@ -110,8 +106,8 @@
 
 .ui-combobox :is(.ui-combobox__clear.ui-button[data-content='icon'], .ui-combobox__button) {
   flex: none;
-  width: calc(var(--ref-combobox-height) - 6px);
-  height: calc(var(--ref-combobox-height) - 6px);
+  width: calc(var(--ref-control-height) - 6px);
+  height: calc(var(--ref-control-height) - 6px);
 }
 
 .ui-combobox__button {
@@ -215,7 +211,7 @@
   align-items: center;
   column-gap: 8px;
   box-sizing: border-box;
-  min-height: var(--ref-combobox-height);
+  min-height: var(--ref-control-height);
   padding: 2px 8px;
   border-radius: var(--ref-radius-sm);
   cursor: default;
@@ -294,7 +290,7 @@
   display: flex;
   align-items: center;
   box-sizing: border-box;
-  min-height: var(--ref-combobox-height);
+  min-height: var(--ref-control-height);
   padding: 2px 8px;
   border-radius: var(--ref-radius-sm);
   color: var(--ref-accent-ink);
@@ -310,7 +306,7 @@
   display: flex;
   align-items: center;
   box-sizing: border-box;
-  min-height: var(--ref-combobox-height);
+  min-height: var(--ref-control-height);
   padding: 2px 8px;
   color: var(--ref-muted);
 }
@@ -319,7 +315,7 @@
   display: flex;
   align-items: center;
   box-sizing: border-box;
-  min-height: var(--ref-combobox-height);
+  min-height: var(--ref-control-height);
   padding: 2px 8px;
   color: var(--ref-muted);
 }

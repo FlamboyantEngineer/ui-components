@@ -5,7 +5,6 @@
  * are as tall as a control of that size, and the buttons a step smaller.
  */
 .ui-formula-bar {
-  --ref-formula-bar-height: var(--ref-control-height-md);
   --ref-formula-bar-line: 18px;
   --ref-formula-bar-glyph: 18px;
   display: flex;
@@ -23,7 +22,6 @@
 }
 
 .ui-formula-bar[data-size='xs'] {
-  --ref-formula-bar-height: var(--ref-control-height-xs);
   font-size: var(--ref-font-size-xs);
   --ref-formula-bar-line: 14px;
   --ref-formula-bar-glyph: 14px;
@@ -31,14 +29,12 @@
 }
 
 .ui-formula-bar[data-size='sm'] {
-  --ref-formula-bar-height: var(--ref-control-height-sm);
   font-size: var(--ref-font-size-sm);
   --ref-formula-bar-line: 16px;
   --ref-formula-bar-glyph: 16px;
 }
 
 .ui-formula-bar[data-size='lg'] {
-  --ref-formula-bar-height: var(--ref-control-height-lg);
   font-size: var(--ref-font-size);
   --ref-formula-bar-line: 20px;
   --ref-formula-bar-glyph: 20px;
@@ -48,8 +44,8 @@
 .ui-formula-bar__reference {
   box-sizing: border-box;
   flex: none;
-  width: calc(2 * var(--ref-formula-bar-height) + 8px);
-  height: var(--ref-formula-bar-height);
+  width: calc(2 * var(--ref-control-height) + 8px);
+  height: var(--ref-control-height);
   padding: 0 6px;
   border: 1px solid var(--ref-field-border);
   border-radius: var(--ref-radius);
@@ -108,11 +104,11 @@
 }
 
 .ui-formula-bar .ui-formula-bar__editor[data-single-line] .ui-code-editor__surface {
-  height: calc(var(--ref-formula-bar-height) - 2px);
+  height: calc(var(--ref-control-height) - 2px);
 }
 
 .ui-formula-bar__editor :is(.ui-code-editor__highlight, .ui-code-editor__input) {
-  padding-block: calc((var(--ref-formula-bar-height) - 2px - var(--ref-formula-bar-line)) / 2);
+  padding-block: calc((var(--ref-control-height) - 2px - var(--ref-formula-bar-line)) / 2);
   font: inherit;
   font-family: var(--ref-mono);
   line-height: var(--ref-formula-bar-line);

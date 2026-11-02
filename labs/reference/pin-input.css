@@ -8,8 +8,8 @@
 
 .ui-pin-input__cell {
   box-sizing: border-box;
-  width: calc(var(--ref-field-height) + 4px);
-  height: calc(var(--ref-field-height) + 8px);
+  width: calc(var(--ref-control-height) + 4px);
+  height: calc(var(--ref-control-height) + 8px);
   padding: 0;
   border: 1px solid var(--ref-field-border);
   border-radius: var(--ref-radius);

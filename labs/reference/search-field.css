@@ -1,7 +1,6 @@
 /* Search Field: glyph, input and clear button in one frame as tall as a control of its size. */
 
 .ui-search-field {
-  --ref-search-field-height: var(--ref-control-height-md);
   display: inline-flex;
   flex-direction: column;
   gap: 4px;
@@ -13,17 +12,14 @@
 }
 
 .ui-search-field[data-size='xs'] {
-  --ref-search-field-height: var(--ref-control-height-xs);
   font-size: var(--ref-font-size-xs);
 }
 
 .ui-search-field[data-size='sm'] {
-  --ref-search-field-height: var(--ref-control-height-sm);
   font-size: var(--ref-font-size-sm);
 }
 
 .ui-search-field[data-size='lg'] {
-  --ref-search-field-height: var(--ref-control-height-lg);
   font-size: var(--ref-font-size);
 }
 
@@ -33,7 +29,7 @@
   align-items: center;
   gap: 6px;
   box-sizing: border-box;
-  height: var(--ref-search-field-height);
+  height: var(--ref-control-height);
   padding: 0 4px 0 8px;
   border: 1px solid var(--ref-field-border);
   border-radius: var(--ref-radius);
@@ -101,8 +97,8 @@
 
 /* The clear button fits inside the frame at every size. */
 .ui-search-field .ui-search-field__clear.ui-button[data-content='icon'] {
-  width: calc(var(--ref-search-field-height) - 6px);
-  height: calc(var(--ref-search-field-height) - 6px);
+  width: calc(var(--ref-control-height) - 6px);
+  height: calc(var(--ref-control-height) - 6px);
 }
 
 .ui-search-field__label {
