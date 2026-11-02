@@ -112,7 +112,7 @@ Verification: `src/components/signature-pad/signature-image.test.tsx`, `e2e/sign
 
 ### UIC-SIGNATURE-PAD-4.2 - Upload and paste
 
-The image mode's actions (`ui-signature-pad__actions`, icon buttons as in UIC-SIGNATURE-PAD-1.6) shall be Upload image (`uploadSignatureImage`), which opens the file chooser for PNG, JPEG, WebP and GIF images; Paste image (`pasteSignatureImage`), which reads the first image the clipboard holds through the asynchronous Clipboard API; and Clear, disabled while the area is empty. A paste anywhere in `ui-signature-pad__image` (the area once clicked, or one of its buttons focused) takes the first image file it carries. A taken image becomes the value and is committed: an `ImageSignature` whose `src` is the file read as a `data:` URL, with the file's `type` and the image's natural `width` and `height` in pixels. The value holds no object URL or other temporary browser resource, so it needs no clean-up and serializes as it is; a file read after a later one was chosen, or after the image mode left, is dropped.
+The image mode's actions (`ui-signature-pad__actions`, icon buttons as in UIC-SIGNATURE-PAD-1.6) shall be Upload image (`uploadSignatureImage`), which opens the file chooser for PNG, JPEG, WebP and GIF images; Paste image (`pasteSignatureImage`), which reads the first image the clipboard holds through the asynchronous Clipboard API; and Clear, disabled while the area is empty. A paste anywhere in `ui-signature-pad__image` (the area once clicked, or one of its buttons focused) takes the first image file it carries. A taken image becomes the value and is committed: an `ImageSignature` whose `src` is the file read as a `data:` URL, with the file's `type` and the image's natural `width` and `height` in pixels. The value holds no object URL or other temporary browser resource, so it needs no clean-up and serializes as it is; a file read after a later one was chosen, after the image was deleted, or after the image mode left, is dropped. The file chooser's hidden input stays mounted in every mode, so the field menu (UIC-SIGNATURE-PAD-5.1) opens it from the same user action.
 
 Implementation: `src/components/signature-pad/signature-image.tsx`, `src/components/signature-pad/signature-image-file.ts`, `src/core/strings/field.ts`
 Verification: `src/components/signature-pad/signature-image.test.tsx`, `e2e/signature-pad.spec.ts`
@@ -130,6 +130,29 @@ An image value shall follow the field like the other kinds: it is empty when its
 
 Implementation: `src/components/signature-pad/signature-pad.tsx`, `src/components/signature-pad/signature-image.tsx`
 Verification: `src/components/signature-pad/signature-image.test.tsx`, `e2e/signature-pad.spec.ts`
+
+## UIC-SIGNATURE-PAD-5 - Field menu
+
+### UIC-SIGNATURE-PAD-5.1 - Pad actions
+
+The field menu (UIC-FIELD-6) shall list the pad's actions before the caller's `menu` (Clear and Reset by default), after a separator, each only while it applies: Upload image and Paste image while the image mode is offered and either shows or the pad holds no signature, so taking an image never replaces a signature given another way; Delete image (`deleteSignatureImage`) while an image is held, in place of the field's Clear, which would do the same; and Undo stroke while a drawing is held. They run the same paths as the pad's buttons: Upload image and Paste image show the image mode first, then open the file chooser within the menu's user action or read the clipboard, with the checks, limits, messages and dropped stale reads of UIC-SIGNATURE-PAD-4.2 and UIC-SIGNATURE-PAD-4.3, so a cancelled or refused file keeps the signature; Delete image and Undo stroke commit the result, a drawing left with no stroke being `null`. `onMenuAction` hears only the caller's entries. An empty caller `menu` still leaves the browser's context menu alone.
+
+Implementation: `src/components/signature-pad/signature-pad-menu.ts`, `src/components/signature-pad/signature-image.tsx`, `src/core/strings/field.ts`
+Verification: `src/components/signature-pad/signature-pad-menu.test.tsx`, `e2e/signature-pad.spec.ts`
+
+### UIC-SIGNATURE-PAD-5.2 - Opening the menu
+
+The menu shall open anywhere in the field, from the drawing area, the image area and the typed name's input alike, with a secondary click, a long touch, Shift+F10 or the Context Menu key, and return focus to the field's control when it closes (UIC-FIELD-6). A native paste in the image mode still takes the pasted image (UIC-SIGNATURE-PAD-4.2).
+
+Implementation: `src/components/field/field-menu.tsx`, `src/components/signature-pad/signature-pad.tsx`
+Verification: `src/components/signature-pad/signature-pad-menu.test.tsx`, `e2e/signature-pad.spec.ts`
+
+### UIC-SIGNATURE-PAD-5.3 - Locked fields
+
+While the field is read-only, the pad's actions shall show disabled, like the field's Clear; while it is disabled, no menu opens.
+
+Implementation: `src/components/signature-pad/signature-pad-menu.ts`
+Verification: `src/components/signature-pad/signature-pad-menu.test.tsx`, `e2e/signature-pad.spec.ts`
 
 ## Hooks
 

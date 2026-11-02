@@ -490,6 +490,7 @@
   "signatureImage": "Image",
   "uploadSignatureImage": "Upload image",
   "pasteSignatureImage": "Paste image",
+  "deleteSignatureImage": "Delete image",
   "signatureImageEmpty": "No image yet. Upload or paste one.",
   "signatureImageType": "Choose a PNG, JPEG, WebP or GIF image.",
   "signatureImageSize": "Choose an image of {size} or less.",
