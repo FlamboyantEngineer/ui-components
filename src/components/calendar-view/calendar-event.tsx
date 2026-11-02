@@ -54,6 +54,8 @@ interface CalendarEventButtonProps {
 interface CalendarEventLanesProps {
   /** The bars that may start in this day's column. */
   segments: readonly WeekSegment[];
+  /** The previews of dragged bars that may start in this day's column, drawn over its first lane. */
+  previews: readonly WeekSegment[];
   column: number;
   laneCount: number;
   context: CalendarEventContext;
@@ -288,17 +290,40 @@ export function CalendarMoreEvents({
 
 /**
  * A day's bars, lane by lane: the bar that starts in its column, else a spacer where a bar from an
- * earlier day passes or the lane is empty, so the lanes line up across the week.
+ * earlier day passes or the lane is empty, so the lanes line up across the week. The preview of a
+ * dragged bar that starts in the column is drawn over the first lane, taking none, so no bar moves
+ * while it does.
  */
 export function CalendarEventLanes({
   segments,
+  previews,
   column,
   laneCount,
   context,
   isTabbable,
   time,
 }: CalendarEventLanesProps) {
-  return Array.from({ length: laneCount }, (_, lane) => {
+  const overlays = previews
+    .filter((segment) => segment.column === column)
+    .map((segment) => (
+      <CalendarEventButton
+        key={toEventKey(segment.placed)}
+        placed={segment.placed}
+        context={context}
+        isTabbable={false}
+        time={time}
+        placement="bar"
+        continuesBefore={segment.continuesBefore}
+        continuesAfter={segment.continuesAfter}
+        style={{
+          position: 'absolute',
+          insetBlockStart: 0,
+          insetInlineStart: 0,
+          width: `${segment.span * 100}%`,
+        }}
+      />
+    ));
+  const lanes = Array.from({ length: laneCount }, (_, lane) => {
     const segment = segments.find((entry) => entry.lane === lane && entry.column === column);
     // Spacers are keyed by lane and bars by event, so a repacked lane never hands an event's
     // button, and the focus on it, to another event.
@@ -318,4 +343,5 @@ export function CalendarEventLanes({
       />
     );
   });
+  return [...lanes, ...overlays];
 }

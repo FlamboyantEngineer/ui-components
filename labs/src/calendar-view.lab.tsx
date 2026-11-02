@@ -168,6 +168,10 @@ const draggable: CalendarViewEvent[] = [
     isReadOnly: true,
   },
   { id: 'deadline', title: 'Deadline', start: '2026-11-06' },
+  // A crowded Wednesday: blocks side by side and bars in two lanes.
+  { id: 'pairing', title: 'Pairing', start: '2026-11-04T12:30', end: '2026-11-04T14:30' },
+  { id: 'interview', title: 'Interview', start: '2026-11-04T13:30', end: '2026-11-04T15:00' },
+  { id: 'sprint', title: 'Sprint', start: '2026-11-04', end: '2026-11-06', tone: 'success' },
 ];
 
 /**
@@ -178,6 +182,7 @@ function DraggableCalendar() {
   const [items, setItems] = useState(draggable);
   const [log, setLog] = useState('No change yet');
   const [dragMode, setDragMode] = useState<CalendarEventDragMode>('move');
+  const [isDeclining, setDeclining] = useState(false);
   return (
     <div style={frame(900)} data-lab-demo="dragging">
       <SegmentedChoice
@@ -193,6 +198,9 @@ function DraggableCalendar() {
           if (value === 'move' || value === 'resize') setDragMode(value);
         }}
       />
+      <Checkbox isSelected={isDeclining} onChange={setDeclining}>
+        Decline changes
+      </Checkbox>
       <CalendarView
         eventDragMode={dragMode}
         events={items}
@@ -202,8 +210,13 @@ function DraggableCalendar() {
         defaultView="week"
         canChangeEvent={(event, change) => !(event.id === 'fixed' && change === 'resize')}
         onEventChange={(next, previous) => {
+          const when = `${next.title}: ${next.start} to ${next.end ?? next.start}`;
+          if (isDeclining) {
+            setLog(`Declined ${when}`);
+            return;
+          }
           setItems((current) => current.map((item) => (item.id === previous.id ? next : item)));
-          setLog(`${next.title}: ${next.start} to ${next.end ?? next.start}`);
+          setLog(when);
         }}
       />
       <output data-lab-output>{log}</output>
@@ -447,7 +460,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Moving and resizing"
-      description="Pick a drag mode; no handle is drawn. Move and end: drag an event to move it, keeping its length, and drag its end edge (the right edge of a bar, the bottom of a block) to change its end. Start and end: drag its start edge or its end edge to change that end alone; the event itself does not move. Dragging, by the event or either edge, fades the event where it stands and shows a dashed preview where it would land, timed events snap to 15 minutes, and a click without dragging opens the editor. With the keyboard, focus an event (Move and end) or Tab to an edge and use the arrow keys: Left and Right a day, Up and Down 15 minutes on the time grid or a week on a bar. Escape or a cancelled pointer abandons a drag. Night shift crosses midnight and the clocks going back on 1 November; Offsite is a multi-day bar changed as one event; Fixed-length review only moves; Locked audit is read-only."
+      description="Pick a drag mode; no handle is drawn. Move and end: drag an event to move it, keeping its length, and drag its end edge (the right edge of a bar, the bottom of a block) to change its end. Start and end: drag its start edge or its end edge to change that end alone; the event itself does not move. Dragging, by the event or either edge, fades the event where it stands and shows a dashed preview where it would land, timed events snap to 15 minutes, and a click without dragging opens the editor. With the keyboard, focus an event (Move and end) or Tab to an edge and use the arrow keys: Left and Right a day, Up and Down 15 minutes on the time grid or a week on a bar. While held, the preview sits at the left of its day or on the first row of bars, over the others, which keep their places; the events are packed as usual once it is released. Escape or a cancelled pointer abandons a drag, and with Decline changes the host keeps each event as it was. Wednesday is crowded with blocks side by side and two rows of bars. Night shift crosses midnight and the clocks going back on 1 November; Offsite is a multi-day bar changed as one event; Fixed-length review only moves; Locked audit is read-only."
     >
       <DraggableCalendar />
     </LabSection>
