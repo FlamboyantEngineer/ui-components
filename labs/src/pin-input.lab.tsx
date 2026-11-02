@@ -14,6 +14,16 @@ import {
 
 const types = ['numeric', 'alphanumeric', 'alphabetic'] as const satisfies readonly PinInputType[];
 const looks = ['plain', 'masked', 'placeholder'] as const;
+const sizes = ['xs', 'sm', 'md', 'lg'] as const;
+const sizeStates = ['filled', 'partial', 'masked', 'invalid', 'disabled'] as const;
+const wrongCode = () => ({ severity: 'error' as const, message: 'That code is wrong.' });
+const sizeSample: Record<(typeof sizeStates)[number], string> = {
+  filled: '4071',
+  partial: '40',
+  masked: '4071',
+  invalid: '4071',
+  disabled: '4071',
+};
 
 const samples: SampleValues<string> = {
   value: '2468',
@@ -164,6 +174,34 @@ mountLab(
           />
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Sizes"
+      description="Each size of the shared control scale against filled, partly filled, masked, invalid and disabled cells. Click a cell to see its focus ring at that size; the narrow column wraps a long label."
+    >
+      <StateMatrix
+        axes={{ size: sizes, state: sizeStates }}
+        render={({ size, state }) => (
+          <PinInput
+            label={`Code, ${size}, ${state}`}
+            size={size}
+            length={4}
+            mask={state === 'masked'}
+            defaultValue={sizeSample[state]}
+            validate={state === 'invalid' ? wrongCode : undefined}
+            validationMode="immediate"
+            isDisabled={state === 'disabled'}
+          />
+        )}
+      />
+      <div style={{ inlineSize: '10rem' }} data-lab-demo="narrow-pin">
+        <PinInput
+          label="Verification code sent to the address on file"
+          size="lg"
+          length={6}
+          defaultValue="123"
+        />
+      </div>
     </LabSection>
     <LabSection
       title="One-time code"

@@ -12,6 +12,7 @@ import { TriggeredNote } from './completion-list-note.js';
 import { ReloadedTextSection, SwitchedSourceSection } from './completion-list-reload.js';
 import { PortalHost } from '../../src/components/portal/index.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabOutput } from './lab-output.js';
 import { ShadowRootApp } from './shadow-root-host.js';
 
 const contents = ['labels', 'descriptions', 'documentation', 'drawn'] as const;
@@ -107,23 +108,30 @@ function extraOptions(extra: (typeof extras)[number], count: number): ListOption
 
 /**
  * An input that owns its list: it filters the items, moves the active option with the arrow keys,
- * names it in `aria-activedescendant` and inserts it on Enter, as any editor does.
+ * names it in `aria-activedescendant` and inserts it on Enter or Tab, as any editor does. It asks
+ * for the list with `isOpen`, but names and inserts an option only once `onShownChange` reports
+ * the list on screen, a frame later; a key pressed before then inserts nothing. With
+ * `showsHandshake`, it prints what it asked for, what is shown and what the last key did.
  */
 function DemoEditor({
   label,
   items,
   options,
   cell,
+  showsHandshake = false,
 }: {
   label: string;
   items: readonly CompletionListItem[];
   options: ListOptions | ((count: number) => ListOptions);
   cell: string;
+  showsHandshake?: boolean;
 }) {
   const anchorRef = useRef<HTMLInputElement>(null);
   const listId = useId();
   const [value, setValue] = useState('');
   const [isOpen, setIsOpen] = useState(false);
+  const [isShown, setIsShown] = useState(false);
+  const [lastKey, setLastKey] = useState('none yet');
   const [activeIndex, setActiveIndex] = useState(0);
   const shown = items.filter((item) => item.label.toLowerCase().includes(value.toLowerCase()));
   const active = shown[Math.min(activeIndex, shown.length - 1)];
@@ -132,15 +140,28 @@ function DemoEditor({
     if (item) setValue(item.label);
     setIsOpen(false);
   };
+  const isInserting = (key: string) => key === 'Enter' || key === 'Tab';
   const onKeyDown = (event: KeyboardEvent) => {
     const move = { ArrowDown: 1, ArrowUp: -1 }[event.key];
-    if (!isOpen || (!move && event.key !== 'Enter' && event.key !== 'Escape')) return;
-    event.preventDefault();
-    if (move && shown.length > 0) {
-      setActiveIndex((index) => (index + move + shown.length) % shown.length);
-    } else if (event.key === 'Enter' && active) insert(active.id);
-    else if (event.key === 'Escape') setIsOpen(false);
+    if (isInserting(event.key)) {
+      // Before the list is on screen, even in the frame after it was asked for, a key inserts
+      // nothing; with nothing to insert, Tab moves on.
+      if (!isShown || !active) {
+        setLastKey(`${event.key} with no list shown, nothing inserted`);
+        return;
+      }
+      event.preventDefault();
+      setLastKey(`${event.key} inserted ${active.label}`);
+      insert(active.id);
+    } else if (isOpen && move) {
+      event.preventDefault();
+      if (shown.length > 0) setActiveIndex((index) => (index + move + shown.length) % shown.length);
+    } else if (isOpen && event.key === 'Escape') {
+      event.preventDefault();
+      setIsOpen(false);
+    }
   };
+
   const extra = typeof options === 'function' ? options(shown.length) : options;
   return (
     <>
@@ -150,11 +171,11 @@ function DemoEditor({
         value={value}
         // An input that drives a list is a combobox; the list stays in the editor's hands.
         role="combobox"
-        aria-expanded={isOpen}
+        aria-expanded={isShown}
         aria-autocomplete="list"
-        aria-controls={isOpen ? listId : undefined}
+        aria-controls={isShown ? listId : undefined}
         aria-activedescendant={
-          isOpen && active ? getCompletionOptionId(listId, active.id) : undefined
+          isShown && active ? getCompletionOptionId(listId, active.id) : undefined
         }
         data-lab-editor={cell}
         onFocus={() => setIsOpen(true)}
@@ -171,6 +192,7 @@ function DemoEditor({
         id={listId}
         isOpen={isOpen}
         onOpenChange={setIsOpen}
+        onShownChange={setIsShown}
         anchorRef={anchorRef}
         items={shown}
         activeKey={active?.id ?? null}
@@ -178,6 +200,13 @@ function DemoEditor({
         onAction={insert}
         data-lab-list={cell}
       />
+      {showsHandshake ? (
+        <>
+          <LabOutput name="Requested open">{String(isOpen)}</LabOutput>
+          <LabOutput name="Shown">{String(isShown)}</LabOutput>
+          <LabOutput name="Last key">{lastKey}</LabOutput>
+        </>
+      ) : null}
     </>
   );
 }
@@ -240,6 +269,18 @@ mountLab(
           ),
         })}
         cell="long"
+      />
+    </LabSection>
+    <LabSection
+      title="Asked for, then shown"
+      description="The editor asks for the list on focus, but the list comes on screen a frame later, once focus-driven scrolling settles; onShownChange reports it. Until then the editor names no active option, and an Enter or Tab pressed before then inserts nothing (Tab moves on). The outputs show what the editor asked for, what is on screen and what the last key did."
+    >
+      <DemoEditor
+        label="Handshake city"
+        items={cities}
+        options={{}}
+        cell="handshake"
+        showsHandshake
       />
     </LabSection>
     <LabSection

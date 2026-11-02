@@ -6,7 +6,11 @@ import { TextField } from '../../src/components/text-field/text-field.js';
 import { Glyph } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
-import { DialogSuggestingField, EditorDrivenField } from './text-field-editor-cases.js';
+import {
+  DialogSuggestingField,
+  EditorDrivenField,
+  MultilineEditorBridge,
+} from './text-field-editor-cases.js';
 import {
   fieldLayouts,
   fieldStates,
@@ -341,6 +345,31 @@ mountLab(
         data-lab-field="password"
       />
     </LabSection>
+    <LabSection
+      title="Input types"
+      description="Each field renders a native input of its type, named after it: a search box, a phone number, and a password without the reveal button beside the one above."
+    >
+      <TextField
+        label="Search (type search)"
+        type="search"
+        defaultValue="tea"
+        data-lab-field="type-search"
+      />
+      <TextField
+        label="Phone (type tel)"
+        type="tel"
+        defaultValue="+1 555 0100"
+        autoComplete="tel"
+        data-lab-field="type-tel"
+      />
+      <TextField
+        label="PIN (type password, no reveal)"
+        type="password"
+        defaultValue="2468"
+        autoComplete="off"
+        data-lab-field="type-password"
+      />
+    </LabSection>
     <LabSection title="Growing notes" description="Grows from 2 to 5 rows, then scrolls.">
       <TextField label="Notes" multiline minRows={2} maxRows={5} data-lab-field="grow" />
     </LabSection>
@@ -399,6 +428,12 @@ mountLab(
       description="The caller's suggestions open in a dialog after a short load: the input declares a dialog popup and stays busy until the people arrive."
     >
       <DialogSuggestingField />
+    </LabSection>
+    <LabSection
+      title="Editor event bridge"
+      description="The text area's beforeinput and composition events reach the caller through controlProps, and textAreaRef holds the text area: Select the note focuses it and selects its text. Typing still changes the field's value."
+    >
+      <MultilineEditorBridge />
     </LabSection>
   </>,
 );
