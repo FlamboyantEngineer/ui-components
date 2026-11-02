@@ -28,13 +28,20 @@ function toThemeChoice(theme: string): ThemeChoice {
 /** The chrome's draft values and the actions that commit them. */
 type ChromeState = ReturnType<typeof useChromeState>;
 
+/**
+ * The bar stays above the lab's content as the page scrolls (in-page z-indexes reach 4), and below
+ * every overlay layer, whose default scale starts at the backdrop's 100, so a full-screen modal,
+ * drawer or menu covers it rather than sitting under it.
+ */
+const chromeZIndex = 99;
+
 export const chromeStyles = `
 :host {
   all: initial;
   display: block;
   position: sticky;
   top: 0;
-  z-index: 2147483647;
+  z-index: ${chromeZIndex};
   color-scheme: light dark;
   font: 13px/1.4 system-ui, -apple-system, 'Segoe UI', sans-serif;
 }

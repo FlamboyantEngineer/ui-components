@@ -40,6 +40,48 @@ test.describe('Media Viewer lab', () => {
     await expect(page.locator('.ui-media-viewer__previous')).toHaveCount(0);
   });
 
+  for (const width of [1280, 360]) {
+    test(`UIC-MEDIA-VIEWER-1.1 opens above the lab's sticky bar at ${width} pixels wide`, async ({
+      page,
+      lab,
+    }) => {
+      await page.setViewportSize({ width, height: 640 });
+      await lab.open('media-viewer');
+      // Scrolled, so the sticky bar sits over the page's top edge.
+      const opener = page.locator('[data-lab-open="mixed-first"]');
+      await opener.scrollIntoViewIfNeeded();
+      await page.mouse.wheel(0, 200);
+      await opener.click();
+      await settled(page);
+      const dialog = page.getByRole('dialog');
+      const controls = [
+        dialog.locator('.ui-modal__title'),
+        dialog.getByRole('button', { name: /^Close/ }),
+        dialog.getByRole('button', { name: 'Next' }),
+        dialog.getByRole('link', { name: /Download/ }),
+      ];
+      for (const control of controls) {
+        await expect(control).toBeVisible();
+        // The point under the control's centre belongs to it, not to the bar.
+        const hit = await control.evaluate((node) => {
+          const box = node.getBoundingClientRect();
+          const frame = node.closest('.ui-modal__dialog')?.getBoundingClientRect();
+          const top = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+          // Inside the viewer's frame, not cut off at a narrow width, and the topmost thing there.
+          const inside =
+            !!frame && box.width > 0 && box.left >= frame.left && box.right <= frame.right + 0.5;
+          return inside && top !== null && node.contains(top);
+        });
+        expect(hit, await control.evaluate((node) => node.outerHTML.slice(0, 80))).toBe(true);
+      }
+      await dialog.getByRole('button', { name: 'Next' }).click();
+      await expect(dialog.locator('.ui-media-viewer__counter')).toHaveText(/^2 of /);
+      await page.keyboard.press('Escape');
+      await expect(page.locator('.ui-media-viewer')).toHaveCount(0);
+      await expect(opener).toBeFocused();
+    });
+  }
+
   test('UIC-MEDIA-VIEWER-1.3 UIC-MEDIA-VIEWER-1.4 moves with thumbnails and arrow keys', async ({
     page,
     lab,
