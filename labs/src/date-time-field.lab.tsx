@@ -365,7 +365,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Time picker"
-      description="Hour, minute, second and AM/PM columns: press an option or roll the wheel over a column, without typing. A time field opens them from its clock button; a date and time, or a range, shows them under the calendar. Options outside the bounds are disabled."
+      description="Set a time without typing. Roll the wheel over an hour, minute, second or AM/PM segment, or use a time field's up and down buttons, which step the part focused last. A date and time, or a range, also shows hour and minute columns under the calendar, in the same popup. Options outside the bounds are disabled."
     >
       <TimePickers />
     </LabSection>
