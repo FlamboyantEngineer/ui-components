@@ -19,7 +19,9 @@ import { getDayOf, getWeekDays, isSameMonth, shiftDay } from './calendar-days.js
 import { readEvents } from './calendar-layout.js';
 import { calendarViewHooks as hooks } from './calendar-view-hooks.js';
 import { useCalendarFormat } from './use-calendar-format.js';
-import { useCalendarGrid } from './use-calendar-grid.js';
+import { dayCellSelector, useCalendarGrid } from './use-calendar-grid.js';
+import { useEventEditing } from './calendar-event-editor.js';
+import type { CalendarEventMenuEntry } from './calendar-event-menu.js';
 
 /** The period a calendar view shows. */
 export type CalendarViewMode = 'month' | 'week';
@@ -37,6 +39,8 @@ export interface CalendarViewEvent {
   end?: string | undefined;
   /** Semantic emphasis, published as `data-tone`. Defaults to `neutral`. */
   tone?: Tone | undefined;
+  /** Keeps the reader from changing the event, even when the calendar takes changes. */
+  isReadOnly?: boolean | undefined;
 }
 
 /** A day as `renderDay` receives it. */
@@ -90,6 +94,23 @@ export interface CalendarViewProps extends BaseProps, RefProps<HTMLDivElement> {
   minEventMinutes?: number | undefined;
   /** Called with the key of the event the reader presses. */
   onEventAction?: ((key: Key) => void) | undefined;
+  /**
+   * Called with an event the reader changed and the event as it was, such as from the event
+   * editor. The host owns the events: the calendar shows the change once `events` holds it. Without
+   * it, or for an event marked `isReadOnly`, the reader cannot change events.
+   */
+  onEventChange?: ((next: CalendarViewEvent, previous: CalendarViewEvent) => void) | undefined;
+  /**
+   * The entries of each event's context menu, or a function of the event that returns them:
+   * `'edit'` for the built-in Edit, which opens the event editor while the event is editable, and
+   * any menu entry. No entry leaves the browser's menu. Defaults to `['edit']`.
+   */
+  eventMenu?:
+    | readonly CalendarEventMenuEntry[]
+    | ((event: CalendarViewEvent) => readonly CalendarEventMenuEntry[])
+    | undefined;
+  /** Called with the key of the event menu entry the reader chose, Edit included, and its event. */
+  onEventMenuAction?: ((key: Key, event: CalendarViewEvent) => void) | undefined;
   /** Draws extra content in each day cell, such as a marker or a count. */
   renderDay?: ((day: CalendarViewDay) => ReactNode) | undefined;
   /** The clock that decides today. Defaults to the provider's, else the current time. */
@@ -97,6 +118,8 @@ export interface CalendarViewProps extends BaseProps, RefProps<HTMLDivElement> {
 }
 
 const allViews: readonly CalendarViewMode[] = ['month', 'week'];
+
+const defaultEventMenu: readonly CalendarEventMenuEntry[] = ['edit'];
 
 /** The allowed views: `views` without repeats or unknown views, or both when none is left. */
 function toAllowedViews(views: readonly CalendarViewMode[]): readonly CalendarViewMode[] {
@@ -196,6 +219,9 @@ export function CalendarView({
   maxEvents = 3,
   minEventMinutes = 30,
   onEventAction,
+  onEventChange,
+  eventMenu = defaultEventMenu,
+  onEventMenuAction,
   renderDay,
   getNow,
   className,
@@ -224,6 +250,7 @@ export function CalendarView({
     <div {...root}>
       <CalendarContent
         {...{ events, mode, views: allowed, focused, today, maxEvents, onEventAction, renderDay }}
+        {...{ onEventChange, eventMenu, onEventMenuAction }}
         minEventMinutes={minEventMinutes}
         timeZone={zone}
         onFocusedChange={(next) => {
@@ -240,7 +267,11 @@ export function CalendarView({
 /** The toolbar and the grid of a calendar whose focused day is known. */
 function CalendarContent(
   props: Required<Pick<CalendarViewProps, 'events' | 'views' | 'maxEvents' | 'minEventMinutes'>> &
-    Pick<CalendarViewProps, 'onEventAction' | 'renderDay'> & {
+    Pick<
+      CalendarViewProps,
+      'onEventAction' | 'renderDay' | 'onEventChange' | 'onEventMenuAction'
+    > & {
+      eventMenu: NonNullable<CalendarViewProps['eventMenu']>;
       mode: CalendarViewMode;
       focused: string;
       /** Today in the calendar's zone; `null` until the clock may be read. */
@@ -270,8 +301,18 @@ function CalendarContent(
         ? getToday()
         : shiftDay(focused, { [mode === 'month' ? 'months' : 'weeks']: direction }),
     );
+  const editing = useEventEditing({
+    events: placed,
+    timeZone,
+    onEventChange: props.onEventChange,
+    eventMenu: props.eventMenu,
+    onEventMenuAction: props.onEventMenuAction,
+    findDayCell: () =>
+      grid.ref.current?.querySelector<HTMLElement>(`${dayCellSelector}[tabindex="0"]`) ?? null,
+    onMoved: onFocusedChange,
+  });
   const day = { focused, today, format, renderDay };
-  const event = { format, onEventAction };
+  const event = { format, onEventAction, menu: editing.menu, register: editing.register };
   return (
     <>
       <CalendarToolbar
@@ -302,6 +343,7 @@ function CalendarContent(
           event={event}
         />
       )}
+      {editing.editor}
     </>
   );
 }

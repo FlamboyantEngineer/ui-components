@@ -27,6 +27,14 @@ export interface PlanningStrings {
   moreEvents: (count: number) => string;
   /** Names a calendar event by its title and when it happens. */
   calendarEvent: (title: string, when: string) => string;
+  /** Names a calendar event's context menu, by the event's title. */
+  eventActions: (title: string) => string;
+  /** Titles the dialog that edits a calendar event. */
+  editEvent: string;
+  /** Labels the title field of the calendar event editor. */
+  eventTitle: string;
+  /** Labels the start and end field of the calendar event editor. */
+  eventWhen: string;
 }
 
 /** Whether a count is over its limit, within it, or has none. */
@@ -44,4 +52,5 @@ export const planningStrings = defineStrings<PlanningStrings>({
   nextRange: (unit) => ({ unit }),
   moreEvents: (count) => ({ count }),
   calendarEvent: (title, when) => ({ title, when }),
+  eventActions: (title) => ({ title }),
 });

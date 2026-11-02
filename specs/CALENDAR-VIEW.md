@@ -50,7 +50,7 @@ Verification: `src/utils/planning-dates.test.ts`, `src/components/calendar-view/
 
 ### UIC-CALENDAR-VIEW-2.1 - Event data
 
-Each event shall have an `id`, a `title` and a `start`: a `YYYY-MM-DD` date makes it an all-day event, an ISO 8601 date-time a timed one. `end` is the last day of an all-day event, inclusive, or the end of a timed event, exclusive; without it an all-day event lasts its start day and a timed event an hour. An end before the start is read as the start. Events whose start is neither are left out. Numeric and text IDs with the same spelling identify distinct events, retaining their rendered identity and callback keys when reordered in the week view or a crowded-day list. `tone` (`neutral` by default) is published as `data-tone`.
+Each event shall have an `id`, a `title` and a `start`, and may be marked `isReadOnly` (UIC-CALENDAR-VIEW-5.1): a `YYYY-MM-DD` date makes it an all-day event, an ISO 8601 date-time a timed one. `end` is the last day of an all-day event, inclusive, or the end of a timed event, exclusive; without it an all-day event lasts its start day and a timed event an hour. An end before the start is read as the start. Events whose start is neither are left out. Numeric and text IDs with the same spelling identify distinct events, retaining their rendered identity and callback keys when reordered in the week view or a crowded-day list. `tone` (`neutral` by default) is published as `data-tone`.
 
 Implementation: `src/components/calendar-view/calendar-layout.ts`, `src/components/calendar-view/calendar-event.tsx`
 Verification: `src/components/calendar-view/calendar-layout.test.ts`, `src/components/calendar-view/calendar-view.test.tsx`
@@ -115,6 +115,26 @@ Verification: `src/components/calendar-view/calendar-view.test.tsx`, `src/compon
 Implementation: `src/components/calendar-view/calendar-view.tsx`, `src/components/calendar-view/calendar-view-hooks.ts`
 Verification: `src/components/calendar-view/calendar-view.test.tsx`
 
+## UIC-CALENDAR-VIEW-5 - Event menus and editing
+
+### UIC-CALENDAR-VIEW-5.1 - Event menus
+
+Each event button shall be a context menu target (`ContextMenu`): a secondary click or long touch on the event opens its menu at the pointer, and the Context Menu key or Shift+F10 on the focused event below it, in the month and week views and in a crowded day's `+n more` list. The menu, named by the provider's `eventActions` string with the event's title, lists `eventMenu`, `['edit']` by default, or what a function of the event returns: `'edit'` adds the built-in Edit (the provider's `edit` string) only while the event is editable, and any other menu entry shows as given. With no entry left the event keeps the browser's menu. Choosing Edit opens the event editor; every chosen entry, Edit included, then calls `onEventMenuAction` with its key and the event. A menu whose event leaves the view closes with its button; one whose entries all go closes. The day keys still reach the grid from an event.
+
+An event is editable while `onEventChange` is given and the event is not `isReadOnly`.
+
+Implementation: `src/components/calendar-view/calendar-event-menu.tsx`, `src/components/calendar-view/calendar-event.tsx`, `src/components/calendar-view/calendar-view.tsx`
+Verification: `src/components/calendar-view/calendar-event-menu.test.tsx`, `e2e/calendar-view-editing.spec.ts`
+
+### UIC-CALENDAR-VIEW-5.2 - Event editor
+
+Edit shall open a modal (`Modal`, `ui-calendar-view__editor`) titled by the provider's `editEvent` string, holding the event's title (a required `TextField`), an all-day `Checkbox` and its start and end (a required `DateTimeField`: a `date-range` for an all-day event, a `date-time-range` in the calendar's `timeZone` for a timed one, an hour after the start when it has no end). Ticking all-day keeps the days the range covers; unticking it gives those days 09:00 and 10:00. Save is disabled while the title is blank or the range is incomplete or ends before it starts; it calls `onEventChange` with the event with the trimmed title, the all-day state and the range, and the event as it was, then closes. A timed event keeps its start's form: a wall-clock start stays a wall-clock text in the calendar's zone, a start with an offset or zone takes the editor's zoned text. When the saved event starts on another day, that day becomes the focused day. Cancel, the close button and Escape close without calling it; focus stays inside the dialog while it is open. The host owns the events: the calendar shows the change once `events` holds it.
+
+The editor follows its event by `id`: fields the reader has not changed show the host's latest values, and changed fields keep the reader's draft. It closes, without calling `onEventChange`, when the event leaves `events` or stops being editable. On closing, focus returns to the event's button, else to the focused day's cell.
+
+Implementation: `src/components/calendar-view/calendar-event-editor.tsx`, `src/components/calendar-view/calendar-event-range.ts`
+Verification: `src/components/calendar-view/calendar-event-menu.test.tsx`, `src/components/calendar-view/calendar-event-range.test.ts`, `e2e/calendar-view-editing.spec.ts`
+
 ## Hooks
 
 | Hook                            | Kind      | Values                                            | Description                                           |
@@ -144,6 +164,7 @@ Verification: `src/components/calendar-view/calendar-view.test.tsx`
 | `ui-calendar-view__spacer`      | slot      |                                                   | An empty or taken lane of a day.                      |
 | `ui-calendar-view__more`        | slot      |                                                   | A crowded day's `+n more` button (also `ui-button`).  |
 | `ui-calendar-view__more-list`   | slot      |                                                   | The events listed in the `+n more` popover.           |
+| `ui-calendar-view__editor`      | slot      |                                                   | The event editor (also `ui-modal`).                   |
 | `data-view`                     | attribute | `month`, `week`                                   | The view on show.                                     |
 | `data-tone`                     | attribute | `neutral`, `info`, `success`, `warning`, `danger` | An event's emphasis.                                  |
 | `data-date`                     | state     |                                                   | A day cell's date, as `YYYY-MM-DD`.                   |

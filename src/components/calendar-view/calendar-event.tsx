@@ -1,14 +1,16 @@
 'use client';
 
 import { isFocused } from '../../utils/focus-target.js';
-import { useLayoutEffect, useRef, type CSSProperties } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useRef, type CSSProperties } from 'react';
 import { Button as AriaButton } from '../../primitives/index.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { Popover, PopoverTrigger } from '../popover/popover.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
+import { mergeRefs } from '../../utils/merge-props.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import { useEventMenu, type CalendarEventMenuContext } from './calendar-event-menu.js';
 import type { PlacedEvent, WeekSegment } from './calendar-layout.js';
 import { calendarViewHooks as hooks } from './calendar-view-hooks.js';
 import type { CalendarFormat } from './use-calendar-format.js';
@@ -18,6 +20,10 @@ import { dayCellSelector } from './use-calendar-grid.js';
 export interface CalendarEventContext {
   format: CalendarFormat;
   onEventAction: ((key: Key) => void) | undefined;
+  /** The event menus' entries and actions. */
+  menu: CalendarEventMenuContext;
+  /** Records an event's button while it is on show, until the returned cleanup runs. */
+  register: (id: Key, element: HTMLElement) => () => void;
 }
 
 interface CalendarEventButtonProps {
@@ -68,7 +74,7 @@ function formatTime(
  * button) hands focus to its day cell rather than dropping it on the page.
  */
 function useFocusHandoff() {
-  const ref = useRef<HTMLButtonElement>(null);
+  const ref = useRef<HTMLElement>(null);
   useLayoutEffect(() => {
     // The button and its tree, read before the button leaves it.
     const button = ref.current;
@@ -82,9 +88,20 @@ function useFocusHandoff() {
   return ref;
 }
 
+/** The button's ref: the focus handoff, the calendar's record of it, and its context menu target. */
+function useEventButtonRef(id: Key, register: CalendarEventContext['register']) {
+  const handoff = useFocusHandoff();
+  const record = useCallback(
+    (element: HTMLElement | null) => (element ? register(id, element) : undefined),
+    [register, id],
+  );
+  return useMemo(() => mergeRefs(handoff, record), [handoff, record]);
+}
+
 /**
  * One event: a button showing its title, after its time when asked, and named by its title and when
- * it happens; a press calls `onEventAction` with its key.
+ * it happens; a press calls `onEventAction` with its key, and a context menu request opens the
+ * event's menu.
  */
 export function CalendarEventButton({
   placed,
@@ -98,7 +115,8 @@ export function CalendarEventButton({
   const strings = useUiStrings();
   const { event } = placed;
   const shown = formatTime(placed, time, context.format);
-  const ref = useFocusHandoff();
+  const ref = useEventButtonRef(event.id, context.register);
+  const eventMenu = useEventMenu(event, context.menu, ref);
   const data = {
     allDay: placed.isAllDay,
     tone: event.tone ?? 'neutral',
@@ -106,25 +124,28 @@ export function CalendarEventButton({
     continuesAfter,
   };
   return (
-    <AriaButton
-      {...hooks.slot('event', data)}
-      ref={ref}
-      excludeFromTabOrder={!isTabbable}
-      style={style}
-      onPress={() => context.onEventAction?.(event.id)}
-    >
-      {shown ? (
-        <span aria-hidden="true" {...hooks.slot('event-time')}>
-          {shown}
+    <>
+      <AriaButton
+        {...eventMenu.targetProps}
+        {...hooks.slot('event', data)}
+        excludeFromTabOrder={!isTabbable}
+        style={style}
+        onPress={() => context.onEventAction?.(event.id)}
+      >
+        {shown ? (
+          <span aria-hidden="true" {...hooks.slot('event-time')}>
+            {shown}
+          </span>
+        ) : null}
+        <span aria-hidden="true" {...hooks.slot('event-title')}>
+          {event.title}
         </span>
-      ) : null}
-      <span aria-hidden="true" {...hooks.slot('event-title')}>
-        {event.title}
-      </span>
-      <VisuallyHidden elementType="span">
-        {strings.calendarEvent(event.title, context.format.formatWhen(placed))}
-      </VisuallyHidden>
-    </AriaButton>
+        <VisuallyHidden elementType="span">
+          {strings.calendarEvent(event.title, context.format.formatWhen(placed))}
+        </VisuallyHidden>
+      </AriaButton>
+      {eventMenu.menu}
+    </>
   );
 }
 
