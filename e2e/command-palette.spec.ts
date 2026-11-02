@@ -80,11 +80,16 @@ test.describe('Command Palette lab', () => {
     await expect(palette(page)).toHaveCount(0);
   });
 
-  test('UIC-COMMAND-PALETTE-1.1 fades out over half a second with focus already back on the page', async ({
+  test('UIC-COMMAND-PALETTE-1.1 fades out over a quarter second with focus already back on the page', async ({
     page,
     lab,
   }) => {
     await lab.open('command-palette');
+    // Plays animations at a quarter speed, so the 250ms fade lasts a second of wall time and the
+    // checks below run while it plays; its own duration stays 250ms.
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send('Animation.enable');
+    await cdp.send('Animation.setPlaybackRate', { playbackRate: 0.25 });
     const opener = section(page, 'Document shortcut').getByRole('button', { name: 'Commands' });
     for (const how of ['Escape', 'outside', 'command'] as const) {
       await opener.click();
@@ -104,7 +109,7 @@ test.describe('Command Palette lab', () => {
       await expect(overlay).toHaveAttribute('data-exiting', 'true');
       await expect(overlay).toHaveCSS('pointer-events', 'none');
       expect(await overlay.evaluate((node) => (node as HTMLElement).inert)).toBe(true);
-      // One fade of half a second, running now.
+      // One fade of a quarter second, running now.
       const fade = await overlay.evaluate((node) =>
         node.getAnimations().map((animation) => ({
           name: (animation as CSSAnimation).animationName,
@@ -112,15 +117,17 @@ test.describe('Command Palette lab', () => {
           state: animation.playState,
         })),
       );
-      expect(fade).toEqual([{ name: 'ref-command-palette-out', duration: 500, state: 'running' }]);
-      await expect(overlay).toHaveCount(0, { timeout: 2000 });
+      expect(fade).toEqual([{ name: 'ref-command-palette-out', duration: 250, state: 'running' }]);
+      await expect(overlay).toHaveCount(0, { timeout: 4000 });
       const gone = await page.evaluate(() => performance.now());
-      expect(gone - closed).toBeGreaterThan(400);
-      expect(gone - closed).toBeLessThan(1500);
+      // The overlay leaves when its fade ends (a second at quarter speed), not on a longer timer.
+      expect(gone - closed).toBeGreaterThan(800);
+      expect(gone - closed).toBeLessThan(2500);
       await expect(opener).toBeFocused();
     }
 
     // Under reduced motion the palette leaves at once.
+    await cdp.send('Animation.setPlaybackRate', { playbackRate: 1 });
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await opener.click();
     await expect(palette(page).getByRole('searchbox')).toBeFocused();

@@ -327,7 +327,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Reopened while closing"
-      description="Every palette fades out over half a second, while focus is already back on the page. Type, close this one with its chord and reopen it before the fade ends: the search starts again from its default text instead of keeping what was typed."
+      description="Every palette fades out over a quarter second, while focus is already back on the page. Type, close this one with its chord and reopen it before the fade ends: the search starts again from its default text instead of keeping what was typed."
     >
       <SlowExitPalette />
     </LabSection>
