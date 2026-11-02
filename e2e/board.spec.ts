@@ -287,6 +287,69 @@ test.describe('Board lab', () => {
     await lab.expectAccessible('[data-lab-demo="lanes"]');
   });
 
+  test('UIC-BOARD-1.1 scrolls a narrow board sideways under its overlay thumb', async ({
+    page,
+    lab,
+  }) => {
+    await page.setViewportSize({ width: 640, height: 900 });
+    await lab.open('board');
+    const frame = demo(page, 'moves');
+    const board = frame.locator('.ui-board').first();
+    const viewport = board.locator('.ui-board__viewport > .ui-scroll-region__viewport');
+    const thumb = board.locator(
+      '.ui-board__viewport > .ui-scroll-region__track > .ui-scroll-region__thumb[data-orientation="horizontal"]',
+    );
+    // The board keeps to its container; its columns overflow its viewport, not the page.
+    const [frameBox, boardBox] = await Promise.all([frame.boundingBox(), board.boundingBox()]);
+    expect((boardBox?.width ?? 0) - (frameBox?.width ?? 0)).toBeLessThanOrEqual(0.5);
+    expect(await viewport.evaluate((view) => view.scrollWidth > view.clientWidth)).toBe(true);
+    // The overlay thumb takes no layout room: no native scrollbar below the cells.
+    expect(
+      await viewport.evaluate((view: HTMLElement) => view.offsetHeight - view.clientHeight),
+    ).toBe(0);
+    await expect(thumb).toBeVisible();
+    const before = (await thumb.boundingBox())?.x ?? 0;
+    await viewport.evaluate((view) => view.scrollTo({ left: view.scrollWidth }));
+    await expect.poll(async () => (await thumb.boundingBox())?.x ?? 0).toBeGreaterThan(before + 20);
+  });
+
+  test('UIC-BOARD-1.7 draws an overlay thumb over a virtualized list that tracks and drags it', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('board');
+    const grid = demo(page, 'virtualized').getByRole('grid', { name: 'To do' });
+    const frame = demo(page, 'virtualized').locator('.ui-board__list', {
+      has: page.getByRole('grid', { name: 'To do' }),
+    });
+    const thumb = frame.locator('.ui-scroll-region__thumb[data-orientation="vertical"]');
+    await grid.scrollIntoViewIfNeeded();
+    await expect(thumb).toBeVisible();
+    await expect(thumb).toHaveAttribute('aria-controls', (await grid.getAttribute('id')) ?? '');
+    // The list hides its native scrollbar; the thumb lies over the list's edge.
+    expect(await grid.evaluate((list: HTMLElement) => list.offsetWidth - list.clientWidth)).toBe(0);
+    const [gridBox, thumbBox] = await Promise.all([grid.boundingBox(), thumb.boundingBox()]);
+    expect((thumbBox?.x ?? 0) + (thumbBox?.width ?? 0)).toBeLessThanOrEqual(
+      (gridBox?.x ?? 0) + (gridBox?.width ?? 0) + 0.5,
+    );
+    expect(thumbBox?.y ?? 0).toBeGreaterThanOrEqual((gridBox?.y ?? 0) - 0.5);
+    // It tracks the list's own scrolling…
+    await grid.evaluate((list) => list.scrollTo(0, list.scrollHeight / 2));
+    await expect
+      .poll(async () => (await thumb.boundingBox())?.y ?? 0)
+      .toBeGreaterThan((thumbBox?.y ?? 0) + 40);
+    // …and dragging it scrolls the list.
+    const top = await grid.evaluate((list) => list.scrollTop);
+    const box = await thumb.boundingBox();
+    const x = (box?.x ?? 0) + (box?.width ?? 0) / 2;
+    const y = (box?.y ?? 0) + (box?.height ?? 0) / 2;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x, y + 60, { steps: 4 });
+    await page.mouse.up();
+    expect(await grid.evaluate((list) => list.scrollTop)).toBeGreaterThan(top + 100);
+  });
+
   test('UIC-BOARD-1.7 renders only the cards in view of a long cell', async ({ page, lab }) => {
     await lab.open('board');
     const grid = demo(page, 'virtualized').getByRole('grid', { name: 'To do' });
@@ -305,7 +368,10 @@ test.describe('Board lab', () => {
     await lab.open('board');
     const board = demo(page, 'virtualized');
     const grid = board.getByRole('grid', { name: 'To do' });
+    const first = (await grid.getByRole('row').first().textContent()) ?? '';
     await grid.evaluate((element) => element.scrollTo(0, 2000));
+    // Wait for the list to render the cards now in view before picking one.
+    await expect(grid.getByRole('row', { name: first, exact: true })).toHaveCount(0);
     const card = grid.getByRole('row').nth(3);
     const name = (await card.textContent()) ?? '';
     const named = grid.getByRole('row', { name, exact: true });
@@ -551,11 +617,12 @@ test.describe('Board lab', () => {
         const headers = [...board.querySelectorAll('.ui-board__column')].map((header) =>
           header.getBoundingClientRect(),
         );
-        const view = { left: box.left, right: box.left + board.clientWidth };
+        const viewport = board.querySelector('.ui-scroll-region__viewport');
+        const view = { left: box.left, right: box.left + (viewport?.clientWidth ?? 0) };
         return {
           inside: Boolean(host && box.left >= host.left - 0.5 && box.right <= host.right + 0.5),
           // Headers past the board's edge are scrolled out of its own view, not drawn over.
-          scrolls: board.scrollWidth > board.clientWidth,
+          scrolls: (viewport?.scrollWidth ?? 0) > (viewport?.clientWidth ?? 0),
           firstHeaderInView: (headers[0]?.left ?? 0) >= view.left - 0.5,
         };
       });
@@ -569,7 +636,8 @@ test.describe('Board lab', () => {
       (cardBox?.y ?? 0) + (cardBox?.height ?? 0),
     );
     // The board scrolls its own columns: the Done column comes into its view.
-    await inner.evaluate((board) => board.scrollTo({ left: board.scrollWidth }));
+    const innerViewport = inner.locator('.ui-scroll-region__viewport').first();
+    await innerViewport.evaluate((view) => view.scrollTo({ left: view.scrollWidth }));
     const done = inner.locator('.ui-board__column').nth(1);
     const [doneBox, innerBox] = await Promise.all([done.boundingBox(), inner.boundingBox()]);
     expect((doneBox?.x ?? 0) + (doneBox?.width ?? 0)).toBeLessThanOrEqual(

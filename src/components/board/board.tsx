@@ -14,6 +14,7 @@ import type { BoardCardKeyDown, BoardCardReveal } from './board-cell.js';
 import { BoardColumnHeader } from './board-column-header.js';
 import type { IconSource } from '../icon/icon.js';
 import { boardHooks as hooks } from './board-hooks.js';
+import { ScrollRegion } from '../scroll-region/scroll-region.js';
 import { BoardCells, BoardLaneGroup } from './board-lane.js';
 import {
   resolveBoardKeyboardMove,
@@ -283,20 +284,27 @@ export function Board<T extends { id: Key }>({
       {...rest}
       {...hooks.root({ className, props: rest, data: { virtualized } })}
     >
-      <BoardColumnHeaders {...{ model, onColumnMove, renderColumnActions, focus }} />
-      {lanes ? (
-        lanes.map((lane, index) => (
-          <BoardLaneGroup
-            key={toKeyIdentity(lane.id)}
-            model={model}
-            lane={lane}
-            index={index}
-            options={options}
-          />
-        ))
-      ) : (
-        <BoardCells model={model} lane={null} options={options} />
-      )}
+      <ScrollRegion
+        axis="x"
+        scrollbar="overlay"
+        tabIndex={-1}
+        className={hooks.slotClass('viewport')}
+      >
+        <BoardColumnHeaders {...{ model, onColumnMove, renderColumnActions, focus }} />
+        {lanes ? (
+          lanes.map((lane, index) => (
+            <BoardLaneGroup
+              key={toKeyIdentity(lane.id)}
+              model={model}
+              lane={lane}
+              index={index}
+              options={options}
+            />
+          ))
+        ) : (
+          <BoardCells model={model} lane={null} options={options} />
+        )}
+      </ScrollRegion>
     </div>
   );
 }

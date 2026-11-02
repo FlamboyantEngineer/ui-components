@@ -65,3 +65,17 @@ describe('Board virtualization toggle', () => {
     expect(row).toHaveFocus();
   });
 });
+
+describe('Board scroll frames', () => {
+  it('UIC-BOARD-1.1 UIC-BOARD-1.7 sets the rows in a sideways viewport and each list in a frame', () => {
+    const { rerender } = render(<NoteBoard virtualized={false} />);
+    const grid = screen.getByRole('grid', { name: 'Open' });
+    expect(grid.closest('.ui-board__viewport')).toHaveClass('ui-scroll-region');
+    const frame = grid.parentElement;
+    expect(frame).toHaveClass('ui-board__list');
+    expect(frame).not.toHaveAttribute('data-virtualized');
+    rerender(<NoteBoard virtualized />);
+    expect(screen.getByRole('grid', { name: 'Open' }).parentElement).toBe(frame);
+    expect(frame).toHaveAttribute('data-virtualized', 'true');
+  });
+});

@@ -55,7 +55,7 @@ const tasks: Task[] = [
   { id: 'pond', title: 'Clean the pond', column: 'done', lane: 'garden' },
 ];
 
-const frame: CSSProperties = { maxWidth: '100%', overflowX: 'auto' };
+const frame: CSSProperties = { maxWidth: '100%' };
 
 const place = (task: Task, cell: { column: Key; lane: Key | null }): Task => ({
   ...task,
@@ -386,7 +386,7 @@ mountLab(
   <>
     <LabSection
       title="States"
-      description="Columns with cards and drag handles, each card as wide as its column header, empty cells, a column over its limit, and collapsed columns: one compressed to its icon, and one without an icon that keeps its chevron. A collapsed toggle shows its column's title and count in a tooltip."
+      description="Columns with cards and drag handles, each card as wide as its column header, scrolling sideways under an overlay thumb when the page is narrow, empty cells, a column over its limit, and collapsed columns: one compressed to its icon, and one without an icon that keeps its chevron. A collapsed toggle shows its column's title and count in a tooltip."
     >
       <StateMatrix
         axes={{ state: Object.keys(states) as Array<keyof typeof states> }}
@@ -436,7 +436,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Long columns"
-      description="Five hundred cards, virtualized: each cell renders only the cards in view. Virtualize turns virtualization off and on; the cards in view, their focus and their state stay as they are."
+      description="Five hundred cards, virtualized: each cell renders only the cards in view and scrolls under an overlay thumb. Virtualize turns virtualization off and on; the cards in view, their focus and their state stay as they are."
     >
       <LongBoard />
     </LabSection>

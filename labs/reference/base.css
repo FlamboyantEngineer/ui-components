@@ -275,6 +275,7 @@
 /* Hidden scrollbars: strips that scroll by drag, wheel or their own controls draw no scrollbar. */
 .ui-code-editor__input,
 .ui-rich-text-editor__surface,
+.ui-board__cards[data-virtualized],
 .ui-dock-panel__launchers,
 .ui-tabs__list,
 .ui-toolbar-row[data-overflow='scroll'] > .ui-toolbar-row__strip,
@@ -284,6 +285,7 @@
 }
 .ui-code-editor__input::-webkit-scrollbar,
 .ui-rich-text-editor__surface::-webkit-scrollbar,
+.ui-board__cards[data-virtualized]::-webkit-scrollbar,
 .ui-dock-panel__launchers::-webkit-scrollbar,
 .ui-tabs__list::-webkit-scrollbar,
 .ui-toolbar-row[data-overflow='scroll'] > .ui-toolbar-row__strip::-webkit-scrollbar,
