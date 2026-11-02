@@ -124,7 +124,9 @@ function useMenuFollow(isSubmenu: boolean, isNonModal: boolean, props: MenuOverl
     isOpen: isOpen && !isSubmenu,
     target: props.getTargetRect,
   });
-  const isScrollCloseIgnored = useScrollCloseGuard(isActive && isOpen, triggerRef);
+  const isScrollCloseIgnored = useScrollCloseGuard(isActive && isOpen, triggerRef, {
+    followsPage: true,
+  });
   if (isSubmenu) return {};
   if (!isActive) return { shouldUpdatePosition };
   return {

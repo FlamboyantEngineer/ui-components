@@ -35,6 +35,7 @@ import { Button } from '../button/button.js';
 import { useLayerZIndex } from '../portal/portal.js';
 import { PopoverPresence } from './popover-presence.js';
 import { usePopoverGutter } from './use-popover-gutter.js';
+import { useScrollGuardedState } from './use-scroll-guarded-state.js';
 import { POPOVER_ARROW_OFFSET, POPOVER_OFFSET } from '../../utils/overlay-defaults.js';
 import { HeadingLevelContext, dialogTitleLevel } from '../../core/heading-level.js';
 import { FormBoundary } from '../../utils/form-boundary.js';
@@ -167,8 +168,14 @@ export function PopoverPanel({
   const zIndex = useLayerZIndex('dropdown');
   const [panel, setPanel] = useState<HTMLElement | null>(null);
   const gutter = usePopoverGutter(panel);
+  const guarded = useScrollGuardedState({
+    isOpen: rest.isOpen,
+    onOpenChange: rest.onOpenChange,
+    triggerRef: rest.triggerRef,
+    isNonModal: rest.isNonModal ?? false,
+  });
   return (
-    <>
+    <OverlayTriggerStateContext value={guarded.state}>
       {isHint ? null : (
         <PopoverPresence
           isOpen={rest.isOpen}
@@ -178,6 +185,7 @@ export function PopoverPanel({
       )}
       <AriaPopover
         {...rest}
+        onOpenChange={guarded.onOpenChange}
         style={({ placement }) => ({
           ...style,
           zIndex,
@@ -188,7 +196,7 @@ export function PopoverPanel({
         {arrowClassName ? <OverlayArrow className={arrowClassName} /> : null}
         <FormBoundary>{children}</FormBoundary>
       </AriaPopover>
-    </>
+    </OverlayTriggerStateContext>
   );
 }
 

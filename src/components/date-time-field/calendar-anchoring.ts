@@ -24,7 +24,7 @@ export function useCalendarAnchoring() {
   const triggerRef = useSlottedContext(PopoverContext)?.triggerRef ?? noTrigger;
   const surface = useRef<HTMLElement>(null);
   const isOpen = state?.isOpen ?? false;
-  const isScrollCloseIgnored = useScrollCloseGuard(isOpen, triggerRef);
+  const isScrollCloseIgnored = useScrollCloseGuard(isOpen, triggerRef, { followsPage: true });
   const shouldUpdatePosition = useFollowAnchor({ anchorRef: triggerRef, isOpen });
   useInteractOutside({
     ref: surface,

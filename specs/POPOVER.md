@@ -57,10 +57,10 @@ Verification: `src/components/popover/popover.test.tsx`, `e2e/popover.spec.ts`
 
 ### UIC-POPOVER-2.3 - Blocking the page
 
-While a popover is open, the content outside it shall be hidden from assistive technology and inert, and page scrolling locked. With `isNonModal`, the popover leaves the page visible to assistive technology, reachable by the pointer and scrollable; an outside press does not close it by itself, but it closes when focus leaves both the popover and its own `PopoverTrigger` opener, or when the page scrolls.
+While a popover is open, the content outside it shall be hidden from assistive technology and inert, and page scrolling locked. With `isNonModal`, the popover leaves the page visible to assistive technology, reachable by the pointer and scrollable; an outside press does not close it by itself, but it closes when focus leaves both the popover and its own `PopoverTrigger` opener, or when the page or an element holding its trigger scrolls after it opened. A scroll finished before it opened, whose event arrives later with the position unchanged, leaves the new panel and its focus alone, and does not keep a later Escape or outside press from closing it.
 
-Implementation: `src/components/popover/popover.tsx`
-Verification: `src/components/popover/popover.test.tsx`, `e2e/popover.spec.ts`
+Implementation: `src/components/popover/popover.tsx`, `src/components/popover/use-scroll-guarded-state.ts`, `src/utils/use-scroll-close-guard.ts`
+Verification: `src/components/popover/popover.test.tsx`, `src/components/popover/popover-scroll.test.tsx`, `e2e/popover.spec.ts`
 
 ## UIC-POPOVER-3 - Content
 
