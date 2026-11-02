@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import type { ReactElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { DateTimeField } from './date-time-field.js';
 
 function renderInLocale(element: ReactElement) {
@@ -21,33 +22,35 @@ function roll(element: HTMLElement, deltaY: number) {
   return fireEvent.wheel(element, { deltaY, deltaMode: 0 });
 }
 
-describe('DateTimeField time columns', () => {
-  it('UIC-DATE-TIME-FIELD-4.6 picks a time with the pointer and the wheel, and keeps the popover open', async () => {
-    const user = userEvent.setup();
+function segment(name: RegExp) {
+  return screen.getByRole('spinbutton', { name });
+}
+
+describe('DateTimeField time stepping', () => {
+  it('UIC-DATE-TIME-FIELD-4.6 steps a time segment with the wheel, without a popover', () => {
     const onCommit = vi.fn();
-    renderInLocale(<DateTimeField label="Start" mode="time" hourCycle={24} onCommit={onCommit} />);
-    await user.click(screen.getByRole('button', { name: 'Choose time' }));
-    const group = screen.getByRole('group', { name: 'Time' });
-    expect(
-      within(group)
-        .getAllByRole('listbox')
-        .map((list) => list.getAttribute('aria-label')),
-    ).toEqual(['Hours', 'Minutes']);
-    await user.click(option(column('Hours'), '09'));
-    expect(onCommit).toHaveBeenLastCalledWith('09:00');
-    await user.click(option(column('Minutes'), '30'));
-    expect(onCommit).toHaveBeenLastCalledWith('09:30');
-    expect(option(column('Minutes'), '30')).toHaveAttribute('aria-selected', 'true');
-    expect(roll(column('Minutes'), 100)).toBe(false);
+    renderInLocale(
+      <DateTimeField
+        label="Start"
+        mode="time"
+        hourCycle={24}
+        defaultValue="09:30"
+        onCommit={onCommit}
+      />,
+    );
+    expect(screen.queryByRole('button', { name: /time/i })).not.toBeInTheDocument();
+    expect(roll(segment(/minute/i), -100)).toBe(false);
     expect(onCommit).toHaveBeenLastCalledWith('09:31');
-    roll(column('Hours'), -100);
+    expect(segment(/minute/i)).toHaveFocus();
+    roll(segment(/hour/i), 100);
     expect(onCommit).toHaveBeenLastCalledWith('08:31');
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
-    await user.keyboard('{Escape}');
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    // A mostly sideways or zoom wheel is left to the browser.
+    expect(roll(segment(/hour/i), 0)).toBe(true);
+    expect(fireEvent.wheel(segment(/hour/i), { deltaY: -100, ctrlKey: true })).toBe(true);
+    expect(onCommit).toHaveBeenCalledTimes(2);
   });
 
-  it('UIC-DATE-TIME-FIELD-4.6 honours the bounds, the 12 hour cycle and seconds', async () => {
+  it('UIC-DATE-TIME-FIELD-4.6 steps the time segment focused last with the later and earlier buttons', async () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();
     renderInLocale(
@@ -56,35 +59,68 @@ describe('DateTimeField time columns', () => {
         mode="time"
         hourCycle={12}
         granularity="second"
-        minValue="09:30"
-        maxValue="21:00"
         defaultValue="09:45:10"
         onCommit={onCommit}
       />,
     );
-    await user.click(screen.getByRole('button', { name: 'Choose time' }));
-    const hours = column('Hours');
-    expect(option(hours, '8')).toHaveAttribute('aria-disabled', 'true');
-    expect(option(hours, '9')).toHaveAttribute('aria-selected', 'true');
-    expect(option(column('Minutes'), '29')).toHaveAttribute('aria-disabled', 'true');
-    expect(column('Seconds')).toBeInTheDocument();
-    await user.click(option(column('AM/PM'), 'PM'));
-    expect(onCommit).toHaveBeenLastCalledWith('21:00:00');
-    expect(option(column('Hours'), '10')).toHaveAttribute('aria-disabled', 'true');
+    const later = screen.getByRole('button', { name: 'Later' });
+    const earlier = screen.getByRole('button', { name: 'Earlier' });
+    expect(later).toHaveAttribute('tabindex', '-1');
+    await user.click(later);
+    expect(onCommit).toHaveBeenLastCalledWith('10:45:10');
+    await user.click(segment(/second/i));
+    await user.click(earlier);
+    expect(onCommit).toHaveBeenLastCalledWith('10:45:09');
+    expect(segment(/second/i)).toHaveFocus();
+    await user.click(segment(/AM\/PM/i));
+    await user.click(later);
+    expect(onCommit).toHaveBeenLastCalledWith('22:45:09');
   });
 
-  it('UIC-DATE-TIME-FIELD-4.6 offers no time picker while read-only or disabled', () => {
+  it('UIC-DATE-TIME-FIELD-4.6 steps the time of a date and time with the wheel, not its date', () => {
+    const onCommit = vi.fn();
+    renderInLocale(
+      <DateTimeField
+        label="Call"
+        mode="date-time"
+        hourCycle={24}
+        defaultValue="2026-04-13T12:00"
+        onCommit={onCommit}
+      />,
+    );
+    roll(segment(/hour/i), -100);
+    expect(onCommit).toHaveBeenLastCalledWith('2026-04-13T13:00');
+    expect(roll(segment(/day/i), -100)).toBe(true);
+    expect(onCommit).toHaveBeenCalledOnce();
+  });
+
+  it('UIC-DATE-TIME-FIELD-4.6 steps nothing while read-only or disabled', () => {
+    const onCommit = vi.fn();
     renderInLocale(
       <>
-        <DateTimeField label="Locked" mode="time" isReadOnly defaultValue="09:00" />
+        <DateTimeField
+          label="Locked"
+          mode="time"
+          isReadOnly
+          defaultValue="09:00"
+          onCommit={onCommit}
+        />
         <DateTimeField label="Off" mode="time" isDisabled defaultValue="09:00" />
       </>,
     );
-    for (const button of screen.getAllByRole('button', { name: 'Choose time' })) {
+    for (const button of [
+      ...screen.getAllByRole('button', { name: 'Later' }),
+      ...screen.getAllByRole('button', { name: 'Earlier' }),
+    ]) {
       expect(button).toBeDisabled();
     }
+    const [hour] = screen.getAllByRole('spinbutton', { name: /hour/i });
+    expect(roll(requireDefined(hour), -100)).toBe(true);
+    expect(onCommit).not.toHaveBeenCalled();
   });
+});
 
+describe('DateTimeField time columns', () => {
   it('UIC-DATE-TIME-FIELD-4.6 sets the time of a date and time, zoned, under the calendar', async () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();

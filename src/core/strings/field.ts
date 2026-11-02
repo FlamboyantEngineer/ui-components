@@ -121,8 +121,10 @@ export interface FieldStrings {
   today: string;
   /** A date field action that picks the current date and time. */
   now: string;
-  /** Names the button that opens a time field's time columns. */
-  chooseTime: string;
+  /** Names a time field's button that steps its chosen part, such as the hour, one step later. */
+  timeLater: string;
+  /** Names a time field's button that steps its chosen part one step earlier. */
+  timeEarlier: string;
   /** Names the time columns of a time or a date and time. */
   timeOfDay: string;
   /** Names the time columns of a range's start. */

@@ -336,60 +336,40 @@ test('UIC-DATE-TIME-FIELD-1.1 keeps the label beside the control and a range ins
 test.describe('Date Time Field time picker', () => {
   const time = (page: Page) => page.locator('[data-lab-output="Time"]');
 
-  test('UIC-DATE-TIME-FIELD-4.6 picks a time with the pointer and the wheel, without scrolling the page', async ({
+  test('UIC-DATE-TIME-FIELD-4.6 steps time segments with the wheel and the step buttons, without scrolling the page', async ({
     page,
     lab,
   }) => {
     await lab.open('date-time-field');
     const opening = field(page, 'time-picker');
     await opening.scrollIntoViewIfNeeded();
-    await opening.getByRole('button', { name: 'Choose time' }).click();
-    const dialog = page.getByRole('dialog');
-    const hours = dialog.getByRole('listbox', { name: 'Hours' });
-    const minutes = dialog.getByRole('listbox', { name: 'Minutes' });
-    await expect(hours.getByRole('option', { name: '09' })).toHaveAttribute(
-      'aria-selected',
-      'true',
-    );
-    await expect(hours.getByRole('option', { name: '09' })).toBeInViewport();
-    await hours.getByRole('option', { name: '11' }).click();
-    await expect(time(page)).toHaveText('"11:30"');
+    await expect(opening.getByRole('dialog')).toHaveCount(0);
+    const minute = opening.getByRole('spinbutton', { name: /minute/i });
     const scrollY = await page.evaluate(() => window.scrollY);
-    const column = await minutes.boundingBox();
-    await page.mouse.move(
-      requireDefined(column).x + requireDefined(column).width / 2,
-      requireDefined(column).y + requireDefined(column).height / 2,
-    );
+    const box = requireDefined(await minute.boundingBox());
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.wheel(0, -100);
+    await expect(time(page)).toHaveText('"09:31"');
+    await expect(minute).toBeFocused();
     await page.mouse.wheel(0, 100);
-    await expect(time(page)).toHaveText('"11:31"');
-    await page.mouse.wheel(0, -100);
-    await page.mouse.wheel(0, -100);
-    await expect(time(page)).toHaveText('"11:29"');
+    await page.mouse.wheel(0, 100);
+    await expect(time(page)).toHaveText('"09:29"');
     expect(await page.evaluate(() => window.scrollY)).toBe(scrollY);
-    await expect(minutes.getByRole('option', { name: '29' })).toBeInViewport();
-    await expect(dialog).toBeVisible();
-    await lab.expectAccessible('.ui-date-time-field__popover');
-    await page.keyboard.press('Escape');
-    await expect(dialog).toHaveCount(0);
+    await opening.getByRole('button', { name: 'Later' }).click();
+    await expect(time(page)).toHaveText('"09:30"');
+    await expect(minute).toBeFocused();
+    const steps = requireDefined(await opening.locator('.ui-date-time-field__steps').boundingBox());
+    const frame = requireDefined(await opening.locator('.ui-date-time-field__group').boundingBox());
+    expect(steps.y).toBeGreaterThanOrEqual(frame.y);
+    expect(steps.y + steps.height).toBeLessThanOrEqual(frame.y + frame.height);
+    await lab.expectAccessible('[data-lab-field="time-picker"]');
   });
 
-  test('UIC-DATE-TIME-FIELD-4.6 disables times outside the bounds and sets a range end under the calendar', async ({
+  test('UIC-DATE-TIME-FIELD-4.6 shows time columns under the calendar of a range, within the bounds', async ({
     page,
     lab,
   }) => {
     await lab.open('date-time-field');
-    await field(page, 'time-bounded').getByRole('button', { name: 'Choose time' }).click();
-    const dialog = page.getByRole('dialog');
-    await expect(
-      dialog.getByRole('listbox', { name: 'Hours' }).getByRole('option', { name: '7' }),
-    ).toHaveAttribute('aria-disabled', 'true');
-    await dialog
-      .getByRole('listbox', { name: 'AM/PM' })
-      .getByRole('option', { name: 'PM' })
-      .click();
-    // 8:15 PM is past the 6:30 PM bound, so the pick moves to the latest allowed time.
-    await expect(time(page)).toHaveText('"18:30:00"');
-    await page.keyboard.press('Escape');
     await field(page, 'range-picker')
       .getByRole('button', { name: /Calendar/ })
       .click();

@@ -35,4 +35,6 @@ export const dateTimeFieldHooks = createHooks('date-time-field', [
   'time-column',
   'time-option',
   'time-range',
+  'steps',
+  'step',
 ]);

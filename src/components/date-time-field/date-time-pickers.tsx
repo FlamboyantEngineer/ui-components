@@ -12,8 +12,6 @@ import {
   toZoned,
   Button as AriaButton,
   Calendar,
-  DateInput,
-  DateSegment,
   DatePicker,
   DateRangePicker,
   Group,
@@ -22,19 +20,18 @@ import {
   type DateValue,
 } from '../../primitives/index.js';
 import type { DateTimeFieldDateState } from './date-time-field.js';
-import { useMemo, useRef, type ReactNode } from 'react';
+import { useMemo, useRef, useState, type FocusEvent, type ReactNode } from 'react';
 import type { SlotRef } from '../../utils/slot-registry.js';
 import { useToday } from '../../core/clock.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { Glyph } from '../../core/provider.js';
-import { normalizeIntlSpaces } from '../../utils/intl-format.js';
 import {
   FieldPreviousValue,
   toAriaControlProps,
   type FieldControlProps,
   type FieldState,
 } from '../field/field.js';
-import { DateDraftScope, DraftAwareSegment } from './date-draft.js';
+import { DateDraftScope } from './date-draft.js';
 import {
   CalendarBody,
   CalendarPopover,
@@ -49,7 +46,9 @@ import {
   type DateTimeFieldMode,
   type DateValueOptions,
 } from './date-values.js';
-import { DatePickerTime, DateRangePickerTime, TimePicker } from './date-time-time-picker.js';
+import { DatePickerTime, DateRangePickerTime } from './date-time-time-picker.js';
+import { isTimeUnit, TimeStepButtons, type TimeUnit } from './time-segment-steps.js';
+import { Segments } from './date-segments.js';
 import { dateTimeFieldHooks as hooks } from './date-time-field-hooks.js';
 
 /** How the pickers edit and offer values, beyond the value itself. */
@@ -189,20 +188,6 @@ function DateGroup({
   );
 }
 
-function Segments({ slot }: { slot?: 'start' | 'end' }) {
-  return (
-    <DateInput slot={slot} className={hooks.slotClass('input')}>
-      {(segment) => (
-        <DraftAwareSegment segment={segment} slot={slot}>
-          <DateSegment segment={segment} className={hooks.slotClass('segment')}>
-            {({ text }) => normalizeIntlSpaces(text, '\u00a0')}
-          </DateSegment>
-        </DraftAwareSegment>
-      )}
-    </DateInput>
-  );
-}
-
 function CalendarButton() {
   return (
     <AriaButton className={hooks.slotClass('button')}>
@@ -299,7 +284,10 @@ export function DateRangeControl(props: DatePickerControlProps) {
   );
 }
 
-/** A time of day typed in segments, or picked from the time columns of the clock button's popover. */
+/**
+ * A time of day typed in segments, or stepped by the wheel over a segment or by the later and
+ * earlier buttons, which step the time segment focused last.
+ */
 export function TimeControl(props: DatePickerControlProps) {
   const { state, bounds, settings, onPick } = props;
   const granularity = settings.granularity ?? 'minute';
@@ -308,6 +296,11 @@ export function TimeControl(props: DatePickerControlProps) {
   const value = useMemo(() => parseIsoTime(text), [text]);
   const minValue = useMemo(() => parseIsoTime(bounds.minValue), [bounds.minValue]);
   const maxValue = useMemo(() => parseIsoTime(bounds.maxValue), [bounds.maxValue]);
+  const [unit, setUnit] = useState<TimeUnit>('hour');
+  const followFocus = (event: FocusEvent) => {
+    const type = event.target.getAttribute('data-type');
+    if (isTimeUnit(type)) setUnit(type);
+  };
   return (
     <TimeField
       {...pickerProps(props)}
@@ -317,12 +310,12 @@ export function TimeControl(props: DatePickerControlProps) {
       maxValue={maxValue}
       onChange={(next) => onPick(next ? formatIsoDate(next, granularity) : null)}
     >
-      <div {...hooks.slot('group')} ref={groupRef}>
+      <div {...hooks.slot('group')} ref={groupRef} onFocus={followFocus}>
         <PreviousValue previous={props.previous} />
         <DateDraftScope state={state} root={groupRoot}>
           <Segments />
         </DateDraftScope>
-        <TimePicker {...props} />
+        <TimeStepButtons unit={unit} />
       </div>
     </TimeField>
   );

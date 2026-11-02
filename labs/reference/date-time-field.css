@@ -37,7 +37,7 @@
 }
 
 .ui-date-time-field[data-mode='time'] .ui-date-time-field__group {
-  padding-inline-end: 8px;
+  padding-inline-end: 1px;
 }
 
 .ui-date-time-field__group:is([data-focus-within], :focus-within) {
@@ -135,6 +135,46 @@
 .ui-date-time-field__button[data-disabled] {
   color: var(--ref-muted);
   cursor: not-allowed;
+}
+
+/* A time field's later and earlier buttons: a narrow pair stacked in the frame's height. */
+.ui-date-time-field__steps {
+  display: inline-flex;
+  flex: none;
+  flex-direction: column;
+  align-self: stretch;
+  margin-inline-start: 4px;
+  padding-block: 1px;
+}
+
+.ui-date-time-field__step {
+  display: grid;
+  flex: 1 1 0;
+  place-items: center;
+  width: 16px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--ref-radius-xs);
+  background: none;
+  color: var(--ref-muted);
+  cursor: pointer;
+  outline: none;
+}
+
+.ui-date-time-field__step .ui-glyph {
+  width: var(--ref-icon-size-sm);
+  height: var(--ref-icon-size-sm);
+}
+
+.ui-date-time-field__step:is([data-hovered], [data-pressed]) {
+  background: var(--ref-hover);
+  color: inherit;
+}
+
+.ui-date-time-field__step[data-disabled] {
+  cursor: not-allowed;
+  opacity: var(--ref-disabled-opacity);
 }
 
 .ui-date-time-field__popover {
