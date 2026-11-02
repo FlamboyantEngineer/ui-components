@@ -77,3 +77,35 @@ test.describe('Display Options lab', () => {
     await lab.expectAccessible();
   });
 });
+
+test('UIC-DISPLAY-OPTIONS-1.1 starts from a seeded default value and owns it after', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('display-options');
+  const demo = page.locator('[data-lab-demo="seeded-display"]');
+  const table = demo.locator('[data-lab-output="table"]');
+  const reported = demo.locator('[data-lab-output="reported"]');
+  await expect(table.locator('thead th')).toHaveText(['Author', 'Title', 'Cooking time']);
+  await expect(table).toHaveAttribute('data-density', 'compact');
+  await expect(reported).toHaveText('nothing yet');
+
+  await demo.getByRole('button', { name: 'Seeded display' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Display options' });
+  await expect(dialog.getByRole('button', { name: /Group by/ })).toContainText('Author');
+  await expect(dialog.getByRole('button', { name: /Sort by/ })).toContainText('Title');
+  await expect(dialog.getByRole('radio', { name: 'Descending' })).toBeChecked();
+  await expect(dialog.getByRole('radio', { name: 'Compact' })).toBeChecked();
+  await dialog.getByRole('radio', { name: 'Comfortable' }).click();
+  await expect(reported).toContainText('"density":"comfortable"');
+  await expect(reported).toContainText('"groupBy":"author"');
+  await expect(table).toHaveAttribute('data-density', 'comfortable');
+  await page.keyboard.press('Escape');
+
+  await demo.getByRole('button', { name: 'Mount again' }).click();
+  await expect(reported).toHaveText('nothing yet');
+  await expect(table).toHaveAttribute('data-density', 'compact');
+  await demo.getByRole('button', { name: 'Seeded display' }).click();
+  await expect(dialog.getByRole('radio', { name: 'Compact' })).toBeChecked();
+  await lab.expectAccessible('.ui-display-options__popover');
+});

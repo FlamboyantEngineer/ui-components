@@ -56,6 +56,10 @@ export const acceptedIncomplete: Readonly<Record<string, Readonly<Record<string,
     'label-content-name-mismatch':
       'A segment with a count is named "Open, 3", which holds its visible text "Open 3".',
   },
+  'display-options': {
+    'th-has-data-cells':
+      "A grouped recipe table heads each group with a rowgroup header spanning every column above the group's rows; axe cannot map a spanning rowgroup header to its cells.",
+  },
   'notification-center': {
     'label-content-name-mismatch':
       'A filter segment with a count is named "Unread, 3", which holds its visible text.',

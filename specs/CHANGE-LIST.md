@@ -53,7 +53,7 @@ Verification: `src/components/change-list/change-list.test.tsx`, `e2e/change-lis
 With no changes, `ChangeList` shall render what `renderEmptyState` returns, `null` included, else a small [Empty State](EMPTY-STATE.md) reading the provider's `noChanges` string, instead of the list.
 
 Implementation: `src/components/change-list/change-list.tsx`, `src/core/strings/history.ts`
-Verification: `src/components/change-list/change-list.test.tsx`
+Verification: `src/components/change-list/change-list.test.tsx`, `e2e/change-list.spec.ts`
 
 ### UIC-CHANGE-LIST-1.8 - Hooks and caller attributes
 

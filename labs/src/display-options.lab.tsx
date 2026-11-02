@@ -4,6 +4,7 @@ import {
   type DisplayOptionsValue,
 } from '../../src/components/display-options/display-options.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { DisplayOptionsSeededCases } from './display-options-seeded-cases.js';
 import { RecipeTable, recipeProperties, recipes } from './recipe-samples.js';
 
 const startingValue: DisplayOptionsValue = {
@@ -54,5 +55,6 @@ mountLab(
     >
       <RecipeDisplay />
     </LabSection>
+    <DisplayOptionsSeededCases />
   </>,
 );

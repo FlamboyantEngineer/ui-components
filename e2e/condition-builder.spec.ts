@@ -175,3 +175,26 @@ test.describe('Condition Builder lab', () => {
     await lab.expectAccessible();
   });
 });
+
+test('UIC-CONDITION-BUILDER-2.2 the one-shot and compiled matchers agree as the tree changes', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('condition-builder');
+  const demo = page.locator('[data-lab-demo="matchers"]');
+  const matching = demo.locator('tbody tr', { hasText: 'matches' }).locator('th');
+  await expect(matching).toHaveText(['Bread Without Haste']);
+  await expect(demo.locator('[data-lab-book="Bread Without Haste"] td')).toHaveText([
+    'matches',
+    'matches',
+  ]);
+  await expect(demo.locator('[data-lab-output="agree"]')).toHaveText('yes');
+  // The first combinator is the root group's: All becomes Any.
+  await demo.getByRole('radio', { name: 'Any' }).first().click();
+  await expect(demo.locator('[data-lab-output="matched"]')).not.toHaveText('1 of 8');
+  const count = await matching.count();
+  expect(count).toBeGreaterThan(1);
+  await expect(demo.locator('[data-lab-output="matched"]')).toHaveText(`${String(count)} of 8`);
+  await expect(demo.locator('[data-lab-output="agree"]')).toHaveText('yes');
+  await lab.expectAccessible('[data-lab-demo="matchers"]');
+});

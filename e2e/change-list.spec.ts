@@ -87,3 +87,53 @@ test.describe('Change List lab', () => {
     await lab.expectAccessible();
   });
 });
+
+test.describe('Change List host cases', () => {
+  test.use({ timezoneId: 'Asia/Tokyo' });
+
+  test('UIC-CHANGE-LIST-1.6 reads who-and-when times in the chosen zone and threshold', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('change-list');
+    const demo = page.locator('[data-lab-demo="change-zones"]');
+    const time = (label: string) =>
+      demo.locator('.ui-change-list__change', { hasText: label }).locator('time');
+    await expect(time('Status')).toHaveText('Yesterday');
+    await expect(time('Servings')).toHaveText('3 days ago');
+    await demo
+      .getByRole('radiogroup', { name: 'Provider time zone' })
+      .getByRole('radio', { name: 'London' })
+      .click();
+    await expect(time('Status')).toHaveText('2 days ago');
+    await demo
+      .getByRole('radiogroup', { name: 'Override time zone' })
+      .getByRole('radio', { name: 'Los Angeles' })
+      .click();
+    await expect(time('Status')).toHaveText('Yesterday');
+    await demo
+      .getByRole('radiogroup', { name: 'Dates after (days)' })
+      .getByRole('radio', { name: '1' })
+      .click();
+    await expect(time('Status')).toHaveText(/^Apr 19, 2026, 3:00\sPM$/);
+    await expect(time('Servings')).toHaveText(/^Apr 17, 2026, 5:00\sAM$/);
+    await lab.expectAccessible('[data-lab-demo="change-zones"]');
+  });
+
+  test('UIC-CHANGE-LIST-1.7 draws the caller empty state and its action', async ({ page, lab }) => {
+    await lab.open('change-list');
+    const demo = page.locator('[data-lab-demo="change-empty"]');
+    await expect(
+      demo.getByRole('heading', { name: 'Nothing changed yet', level: 3 }),
+    ).toBeVisible();
+    await demo.getByRole('button', { name: 'Change the servings' }).click();
+    await expect(demo.locator('[data-lab-output="changes"]')).toHaveText('1');
+    await expect(demo.locator('.ui-change-list__change')).toHaveCount(1);
+    await expect(demo.getByRole('heading', { name: 'Nothing changed yet' })).toHaveCount(0);
+    await demo.getByRole('button', { name: 'Undo every change' }).click();
+    await expect(
+      demo.getByRole('heading', { name: 'Nothing changed yet', level: 3 }),
+    ).toBeVisible();
+    await lab.expectAccessible('[data-lab-demo="change-empty"]');
+  });
+});

@@ -30,7 +30,7 @@ Verification: `src/components/chart/chart.test.tsx`, `e2e/chart.spec.ts`
 `Chart` and every chart built on it shall carry the hooks below, append the caller's `className`, and forward `id`, `ref` and caller `data-*` attributes to the root; caller attributes never replace a hook attribute. `isEmpty` publishes `data-empty` on the root. `BarChart`, `LineChart` and `DonutChart` render `Chart` with their own root class (`ui-bar-chart`, `ui-line-chart`, `ui-donut-chart`) alongside `ui-chart`.
 
 Implementation: `src/components/chart/chart.tsx`, `src/components/chart/bar-chart.tsx`, `src/components/chart/line-chart.tsx`, `src/components/chart/donut-chart.tsx`
-Verification: `src/components/chart/chart.test.tsx`, `src/components/chart/bar-chart.test.tsx`
+Verification: `src/components/chart/chart.test.tsx`, `src/components/chart/bar-chart.test.tsx`, `e2e/chart.spec.ts`
 
 ## UIC-CHART-2 - Legend
 
