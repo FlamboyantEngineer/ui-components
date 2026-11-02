@@ -13,6 +13,7 @@ import {
 import { Button } from '../../src/components/button/button.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { ControlledSelection, GridAndViewport, RouteHelper } from './diagram-canvas-cases.js';
 
 interface Part {
   kind: string;
@@ -555,6 +556,24 @@ mountLab(
       description="Drag parts on the 10 pixel grid or move them with the arrow keys (Shift for larger steps); Shift-drag the background for a marquee; drag from a port, or press a port then a part, to connect; press or drag a palette item to add a part; Delete removes. Leaving edit mode discards unfinished moves and connections, and so does a part that goes mid-drag: press Remove selected in 2 seconds, then drag a selected part or its port until it goes. A connection started from a port, by click or keyboard, is given up too when its part or port goes or the outline is shown, and does not come back with the diagram. Selecting and panning still work. Cancelled drags discard their drafts. The wheel pans, Ctrl or Command with the wheel zooms."
     >
       <Plant />
+    </LabSection>
+    <LabSection
+      title="Grid snapping and starting view"
+      description="Grid size snaps moved blocks: Off (0) keeps every pixel and the arrow keys move one pixel, the 10 pixel default and 25 pixels step the keys by the grid and snap where a move lands, so 25 then one step at 10 lands on 40. The canvas starts at its own pan and zoom (defaultViewport, 150%) instead of fitting the blocks, then follows wheel, keys and toolbar on its own; the lines below read the positions and the view."
+    >
+      <GridAndViewport />
+    </LabSection>
+    <LabSection
+      title="Selection and view from outside"
+      description="The host owns the selection (selectedKeys) and the view (view with onViewChange): the buttons select from outside, the canvas's own presses and the outline's toggle report back, and the same selection shows in the diagram and the outline."
+    >
+      <ControlledSelection />
+    </LabSection>
+    <LabSection
+      title="Edge routing helper"
+      description="The exported routeDiagramEdge drawn by the host: two edges between the same boxes, one each way, shifted by the chosen offset to the right of travel so they stay apart, for each route. The lines below show the path data it returns."
+    >
+      <RouteHelper />
     </LabSection>
     <LabSection
       title="Controls in nodes"
