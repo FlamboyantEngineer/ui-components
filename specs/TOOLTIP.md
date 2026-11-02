@@ -20,9 +20,9 @@ Verification: `src/components/tooltip/tooltip.test.tsx`, `src/utils/use-pointer-
 
 ### UIC-TOOLTIP-1.3 - Closing
 
-The panel shall close when the pointer leaves the trigger (after `closeDelay`, 500 milliseconds by default, so the reader can move onto the hint), when the trigger loses focus, when it is pressed (unless `shouldCloseOnPress` is false) and when Escape is pressed. Escape keeps focus on the trigger, and a pending hover opening is cancelled when the pointer leaves.
+The panel shall close when the pointer leaves the trigger (after `closeDelay`, 500 milliseconds by default, so the reader can move onto the hint), when the trigger loses focus, when it is pressed (unless `shouldCloseOnPress` is false) and when Escape is pressed. Closing a tooltip shall leave Escape available to the owning surface rather than consume the key globally. The tooltip does not move focus itself; a surface that also handles Escape applies its own focus rule. A pending hover opening is cancelled when the pointer leaves.
 
-Implementation: `src/components/tooltip/tooltip.tsx`
+Implementation: `src/components/tooltip/tooltip.tsx`, `src/components/tooltip/tooltip-escape.tsx`
 Verification: `src/components/tooltip/tooltip.test.tsx`, `e2e/tooltip.spec.ts`
 
 ### UIC-TOOLTIP-1.4 - Description
@@ -34,7 +34,7 @@ Verification: `src/components/tooltip/tooltip.test.tsx`
 
 ### UIC-TOOLTIP-1.5 - Placement
 
-`placement` (`top` by default, or any `Placement` such as `bottom`, `start` or `end top`) shall choose the preferred side; the panel flips to the opposite side when it does not fit and stays inside the viewport, 8 pixels from the trigger to leave room for the arrow. The panel and its `ui-tooltip__arrow` publish the resolved side in `data-placement`. The panel of `Tooltip` and of `AnchoredTooltip` sits on the `tooltip` overlay layer ([UIC-PORTAL-2.2](PORTAL.md#uic-portal-22---stacking)): it publishes `data-layer="tooltip"` and takes its inline z-index from `useLayerZIndex('tooltip')` instead of React Aria's 100000, so it stacks above menus and below toasts and a provider's `layerZIndex` applies. An anchored tooltip remains on the accessible top layer while a modal is open; the modal does not make its hint inert or hide it from assistive technology.
+`placement` (`top` by default, or any `Placement` such as `bottom`, `start` or `end top`) shall choose the preferred side; the panel flips to the opposite side when it does not fit and stays inside the viewport, 8 pixels from the trigger to leave room for the arrow. `Tooltip` uses React Aria's whole CSS pixel positioning: document coordinates are floored after adding the 8-pixel offset, so fractional trigger edges can make the drawn gap less than one pixel smaller. The panel and its `ui-tooltip__arrow` publish the resolved side in `data-placement`. The panel of `Tooltip` and of `AnchoredTooltip` sits on the `tooltip` overlay layer ([UIC-PORTAL-2.2](PORTAL.md#uic-portal-22---stacking)): it publishes `data-layer="tooltip"` and takes its inline z-index from `useLayerZIndex('tooltip')` instead of React Aria's 100000, so it stacks above menus and below toasts and a provider's `layerZIndex` applies. An anchored tooltip remains on the accessible top layer while a modal is open; the modal does not make its hint inert or hide it from assistive technology.
 
 Implementation: `src/components/tooltip/tooltip.tsx`
 Verification: `src/components/tooltip/tooltip.test.tsx`, `e2e/tooltip.spec.ts`

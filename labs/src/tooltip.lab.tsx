@@ -38,8 +38,32 @@ function LockedHint() {
   );
 }
 
+function EscapeOwnerHint() {
+  const [escapes, setEscapes] = useState(0);
+  return (
+    <div
+      data-lab-demo="escape-owner"
+      onKeyDown={(event) => {
+        if (event.key === 'Escape') setEscapes((previous) => previous + 1);
+      }}
+    >
+      <Button>Before the hint</Button>
+      <Tooltip content="A hint for the command">
+        <Button>Hinted command</Button>
+      </Tooltip>
+      <output data-lab-output="owner-escapes">{escapes}</output>
+    </div>
+  );
+}
+
 mountLab(
   <>
+    <LabSection
+      title="Escape ownership"
+      description="Closing a hint leaves the same Escape available to its owning surface."
+    >
+      <EscapeOwnerHint />
+    </LabSection>
     <LabSection
       title="Variants and states"
       description="Each variant at rest and open. Hover or focus a resting trigger to open its hint."

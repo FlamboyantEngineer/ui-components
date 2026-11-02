@@ -63,8 +63,12 @@ describe('MenuPopover and SubmenuTrigger', () => {
     await screen.findByRole('menuitem', { name: 'Cherry' });
     fireEvent.scroll(document);
     expect(screen.getAllByRole('menu')).toHaveLength(2);
-    // The popover cannot follow a trigger inside a scrolled element, so the menu closes.
-    fireEvent.scroll(screen.getByRole('region', { name: 'List' }));
+    const scroller = screen.getByRole('region', { name: 'List' });
+    fireEvent.scroll(scroller);
+    expect(screen.getAllByRole('menu')).toHaveLength(2);
+    // A queued event with opening offsets is harmless; a later genuine scroll closes the menu.
+    scroller.scrollTop = 24;
+    fireEvent.scroll(scroller);
     await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
   });
 

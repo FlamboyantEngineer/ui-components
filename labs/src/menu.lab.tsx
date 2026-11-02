@@ -407,8 +407,42 @@ function SwitchedPresentationMenu() {
   );
 }
 
+function HintedScrollingMenu() {
+  const [changes, setChanges] = useState<string[]>([]);
+  return (
+    <div data-lab-demo="hinted-scrolling-menu">
+      <div
+        role="region"
+        aria-label="Hinted menu scroller"
+        style={{ height: 180, overflow: 'auto' }}
+      >
+        <div style={{ height: 320 }}>Scroll to the choices below.</div>
+        <MenuTrigger onOpenChange={(open) => setChanges((previous) => [...previous, String(open)])}>
+          <Button tooltip="Choose an action">Hinted choices</Button>
+          <MenuPopover>
+            <Menu
+              aria-label="Hinted choices"
+              items={[
+                { id: 'first', label: 'First choice' },
+                { id: 'second', label: 'Second choice' },
+              ]}
+            />
+          </MenuPopover>
+        </MenuTrigger>
+      </div>
+      <LabOutput name="hinted-menu-changes">{changes.join(', ')}</LabOutput>
+    </div>
+  );
+}
+
 mountLab(
   <>
+    <LabSection
+      title="Hinted scrolling trigger"
+      description="The first press opens the menu after revealing its trigger; Escape closes it."
+    >
+      <HintedScrollingMenu />
+    </LabSection>
     <LabSection
       title="Items by size"
       description="Each item kind in a standalone menu at every size. Rows, icons and shortcuts follow the menu size."

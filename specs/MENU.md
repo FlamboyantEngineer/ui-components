@@ -131,6 +131,8 @@ Verification: `src/components/menu/menu.test.tsx`, `e2e/menu.spec.ts`
 Implementation: `src/components/menu/menu-popover.tsx`, `labs/reference/menu.css`
 Verification: `src/components/menu/menu-popover.test.tsx`, `e2e/menu.spec.ts`
 
+A first press that reveals the trigger inside a scrolling ancestor shall open the menu. A queued scroll event for offsets already present at opening shall not close it; changing an ancestor’s scroll offsets after opening shall still close it. A hinted trigger follows the same rule.
+
 ### UIC-MENU-4.4 - Layers
 
 `MenuPopover` shall sit on the overlay layer `layer` ([PORTAL.md](PORTAL.md)), `dropdown` by default, publish it in `data-layer` and take its z-index from `useLayerZIndex`, so a provider's `layerZIndex` applies and a menu stacks above `modal` content and below `tooltip` and `toast` content. A submenu popover takes the layer of the menu popover that opens it.

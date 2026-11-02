@@ -75,6 +75,15 @@ const MenuLayerContext = createContext<PortalProps['layer']>(undefined);
 const MenuNonModalContext = createContext(true);
 const MenuSurfaceContext = createContext<Set<HTMLElement> | null>(null);
 
+/** The offsets at opening distinguish a queued reveal scroll from a later scroll. */
+function ancestorScrollOffsets(anchor: Element | null) {
+  const positions = new Map<Element, { left: number; top: number }>();
+  for (let element = anchor; element; element = element.parentElement) {
+    positions.set(element, { left: element.scrollLeft, top: element.scrollTop });
+  }
+  return positions;
+}
+
 /** Portalled submenus belong to the same outside-press boundary as their parent menu. */
 function useMenuSurface({ ref, isNonModal, shouldCloseOnInteractOutside }: MenuOverlayProps) {
   const state = useContext(RootMenuTriggerStateContext);
@@ -120,7 +129,7 @@ function useMenuFollow(isSubmenu: boolean, isNonModal: boolean, props: MenuOverl
   const setOpen = props.onOpenChange ?? state?.setOpen;
   const triggerRef = props.triggerRef ?? popover?.triggerRef ?? noTrigger;
   const isActive = isNonModal && !isSubmenu;
-  const isPageScrolling = useRef(false);
+  const ignoreScrollClose = useRef(false);
   const shouldUpdatePosition = useFollowAnchor({
     anchorRef: triggerRef,
     isOpen: isOpen && !isSubmenu,
@@ -133,14 +142,21 @@ function useMenuFollow(isSubmenu: boolean, isNonModal: boolean, props: MenuOverl
     // close the reader asks for in the same task (Escape) still closes. A scroll that does not
     // bubble ends the guard after the task.
     const view = getOwnerWindow(triggerRef.current);
+    const positions = ancestorScrollOffsets(triggerRef.current);
     let timer: ReturnType<typeof setTimeout> | undefined;
     const onScrolled = () => {
       clearTimeout(timer);
-      isPageScrolling.current = false;
+      ignoreScrollClose.current = false;
     };
     const onScroll = (event: Event) => {
-      isPageScrolling.current = !(event.target instanceof view.Element);
-      if (!isPageScrolling.current) return;
+      const target = event.target;
+      const previous = target instanceof view.Element ? positions.get(target) : undefined;
+      ignoreScrollClose.current =
+        !(target instanceof view.Element) ||
+        Boolean(
+          previous && target.scrollLeft === previous.left && target.scrollTop === previous.top,
+        );
+      if (!ignoreScrollClose.current) return;
       clearTimeout(timer);
       timer = setTimeout(onScrolled);
     };
@@ -158,7 +174,7 @@ function useMenuFollow(isSubmenu: boolean, isNonModal: boolean, props: MenuOverl
   return {
     isOpen,
     onOpenChange: (open: boolean) => {
-      if (open || !isPageScrolling.current) setOpen?.(open);
+      if (open || !ignoreScrollClose.current) setOpen?.(open);
     },
     shouldUpdatePosition,
   };

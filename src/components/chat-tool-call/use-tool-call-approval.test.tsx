@@ -35,13 +35,13 @@ describe('ChatToolCall approval keys', () => {
     await user.keyboard('{Escape}');
     expect(screen.getByRole('button', { name: 'Deny' })).toHaveFocus();
     expect(onKeyDown).not.toHaveBeenCalled();
-    // The first Escape on Deny closes the tooltip its keyboard focus opened; the next goes on.
+    // On Deny, closing its hint leaves the same Escape available to the owning surface.
     expect(await screen.findByRole('tooltip')).toHaveTextContent('Escape');
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
-    expect(onKeyDown).not.toHaveBeenCalled();
-    await user.keyboard('{Escape}');
     expect(onKeyDown).toHaveBeenCalledTimes(1);
+    await user.keyboard('{Escape}');
+    expect(onKeyDown).toHaveBeenCalledTimes(2);
   });
 
   it('UIC-CHAT-TOOL-CALL-4.3 sends the denial with Ctrl+Enter and cancels it with Escape', async () => {

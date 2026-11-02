@@ -27,6 +27,25 @@ async function topmostAt(page: Page, box: { x: number; y: number; width: number;
 }
 
 test.describe('Menu lab', () => {
+  test('UIC-MENU-4.3 hinted first press opens after ancestor scrolling', async ({ page, lab }) => {
+    await lab.open('menu');
+    const demo = page.locator('[data-lab-demo="hinted-scrolling-menu"]');
+    const trigger = demo.getByRole('button', { name: 'Hinted choices', exact: true });
+    await trigger.click();
+    await expect(page.getByRole('menu', { name: 'Hinted choices', exact: true })).toBeVisible();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('menu', { name: 'Hinted choices', exact: true })).toHaveCount(0);
+    await expect(trigger).toBeFocused();
+    await expect(demo.locator('[data-lab-output="hinted-menu-changes"]')).toHaveText('true, false');
+    await trigger.click();
+    await expect(page.getByRole('menu', { name: 'Hinted choices', exact: true })).toBeVisible();
+    await demo.getByRole('region', { name: 'Hinted menu scroller' }).evaluate((element) => {
+      element.scrollTop -= 8;
+    });
+    await expect(page.getByRole('menu', { name: 'Hinted choices', exact: true })).toHaveCount(0);
+  });
+
   test('UIC-MENU-4.3 a repeated pointer press closes the trigger menu once', async ({
     page,
     lab,

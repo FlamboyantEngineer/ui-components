@@ -54,6 +54,28 @@ describe('Tooltip', () => {
     vi.unstubAllGlobals();
   });
 
+  it('UIC-TOOLTIP-1.3 leaves Escape available to its owning surface', async () => {
+    const onEscape = vi.fn();
+    render(
+      <div
+        onKeyDown={(event) => {
+          if (event.key === 'Escape') onEscape();
+        }}
+      >
+        <Tooltip content="Command hint">
+          <Button>Command</Button>
+        </Tooltip>
+      </div>,
+    );
+    const trigger = screen.getByRole('button', { name: 'Command' });
+    await tabTo(trigger);
+    expect(tooltip()).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    expect(tooltip()).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
+    expect(onEscape).toHaveBeenCalledTimes(1);
+  });
+
   it('UIC-TOOLTIP-1.1 UIC-TOOLTIP-1.2 opens after the hover delay in a portalled tooltip panel', async () => {
     const { container } = render(
       <Tooltip content="Save changes">
