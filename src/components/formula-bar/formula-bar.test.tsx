@@ -18,6 +18,11 @@ const tokenize: CodeTokenizer = (source) =>
 const referenceBox = () => screen.getByRole('textbox', { name: 'Cell reference' });
 const contentBox = () => screen.getByRole('textbox', { name: 'Cell content' });
 
+const functions = [
+  { label: 'SUM', description: 'Adds the values' },
+  { label: 'AVERAGE', description: 'Averages the values', insertText: 'AVG' },
+];
+
 /** A grid of contents the bar edits, as a caller holds it. */
 function Sheet(props: { onCommit?: (value: string, cell: CellCoordinates) => void }) {
   const [cells, setCells] = useState<Record<string, string>>({ '0:0': '=B1*2', '0:1': '21' });
@@ -40,6 +45,70 @@ function Sheet(props: { onCommit?: (value: string, cell: CellCoordinates) => voi
 }
 
 describe('FormulaBar', () => {
+  it('UIC-FORMULA-BAR-3.5 inserts a chosen function at the caret without committing', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    const { container } = render(
+      <FormulaBar
+        cell={{ row: 0, column: 0 }}
+        value="=B1*2"
+        functions={functions}
+        onCommit={onCommit}
+      />,
+    );
+    expect(container.querySelector('.ui-formula-bar__glyph')).toBeNull();
+    const button = screen.getByRole('button', { name: 'Insert function' });
+    expect(button).toHaveClass('ui-formula-bar__functions', 'ui-dropdown-menu');
+    expectHooksMatchSpec(container, 'FORMULA-BAR', {
+      slots: ['reference', 'status', 'cancel', 'confirm', 'functions', 'editor'],
+    });
+    const box = contentBox() as HTMLTextAreaElement;
+    await user.click(box);
+    box.setSelectionRange(1, 3);
+    await user.click(button);
+    const option = screen.getByRole('menuitem', { name: /SUM/ });
+    expect(option).toHaveTextContent('Adds the values');
+    await user.click(option);
+    expect(contentBox()).toHaveValue('=SUM(B1)*2');
+    await vi.waitFor(() => expect(contentBox()).toHaveFocus());
+    expect([box.selectionStart, box.selectionEnd]).toEqual([7, 7]);
+    expect(container.firstElementChild).toHaveAttribute('data-dirty', 'true');
+    expect(onCommit).not.toHaveBeenCalled();
+    // The keyboard opens the menu too, and insertText takes the place of the label.
+    box.setSelectionRange(8, 8);
+    button.focus();
+    await user.keyboard('{Enter}');
+    await user.keyboard('{ArrowDown}{Enter}');
+    expect(contentBox()).toHaveValue('=SUM(B1)AVG()*2');
+    await user.keyboard('{Enter}');
+    expect(onCommit).toHaveBeenCalledWith('=SUM(B1)AVG()*2', { row: 0, column: 0 });
+  });
+
+  it('UIC-FORMULA-BAR-3.5 starts an empty content with = and closes the list on Escape', async () => {
+    const user = userEvent.setup();
+    render(<FormulaBar cell={{ row: 0, column: 0 }} value="" functions={functions} />);
+    const button = screen.getByRole('button', { name: 'Insert function' });
+    await user.click(button);
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    await vi.waitFor(() => expect(button).toHaveFocus());
+    await user.click(button);
+    await user.click(screen.getByRole('menuitem', { name: /SUM/ }));
+    expect(contentBox()).toHaveValue('=SUM()');
+  });
+
+  it('UIC-FORMULA-BAR-3.5 disables the function button while locked or read-only', () => {
+    const { rerender } = render(<FormulaBar cell={null} value="" functions={functions} />);
+    const button = () => screen.getByRole('button', { name: 'Insert function' });
+    expect(button()).toBeDisabled();
+    rerender(<FormulaBar cell={{ row: 0, column: 0 }} value="" functions={functions} isReadOnly />);
+    expect(button()).toBeDisabled();
+    rerender(<FormulaBar cell={{ row: 0, column: 0 }} value="" functions={functions} isDisabled />);
+    expect(button()).toBeDisabled();
+    rerender(<FormulaBar cell={{ row: 0, column: 0 }} value="" functions={functions} />);
+    expect(button()).toBeEnabled();
+  });
+
   it('UIC-FORMULA-BAR-2.1 UIC-FORMULA-BAR-3.1 shows the active cell and its raw content', () => {
     const { container } = render(<Sheet />);
     expect(referenceBox()).toHaveValue('A1');

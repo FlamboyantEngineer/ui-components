@@ -601,6 +601,7 @@
   "formulaInvalidReference": "Aucune cellule nommée {text}",
   "formulaResult": "Résultat",
   "formulaKeysHint": "Entrée valide, Échap annule.",
+  "formulaFunctions": "Insérer une fonction",
   "relationItems": "Éléments",
   "related": "Liés",
   "relationCount": "{count, plural, =0 {Aucune relation} one {# relation} other {# relations}}",

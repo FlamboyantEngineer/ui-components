@@ -38,7 +38,7 @@ Verification: `src/components/formula-bar/formula-bar.test.tsx`, `e2e/formula-ba
 
 ### UIC-FORMULA-BAR-3.1 - One-line content editor
 
-After the cancel and confirm buttons and the decorative `formula` glyph (`ui-formula-bar__glyph`), the bar shall draw a single-line `CodeEditor` (`ui-formula-bar__editor`, `multiline={false}`) named by the provider's `formulaCellContent` string, holding `value`, the active cell's raw content, with the caller's `tokenize`, `completions` and `placeholder`. Edits stay in a draft until committed; a new `cell` or `value` starts the draft over and discards the old one, so returning to an earlier cell or value, directly or through no active cell, shows its `value` again rather than the abandoned draft. Rendering again with the same cell and value keeps the draft. While the draft differs from `value` the root publishes `data-dirty`. With `isReadOnly` the content is selectable but refuses edits; with `isDisabled`, or while `cell` is null, the editor is disabled and the root publishes `data-disabled`.
+After the cancel and confirm buttons and the fₓ mark (the `formula` glyph: decorative as `ui-formula-bar__glyph`, or the function button of UIC-FORMULA-BAR-3.5), the bar shall draw a single-line `CodeEditor` (`ui-formula-bar__editor`, `multiline={false}`) named by the provider's `formulaCellContent` string, holding `value`, the active cell's raw content, with the caller's `tokenize`, `completions` and `placeholder`. Edits stay in a draft until committed; a new `cell` or `value` starts the draft over and discards the old one, so returning to an earlier cell or value, directly or through no active cell, shows its `value` again rather than the abandoned draft. Rendering again with the same cell and value keeps the draft. While the draft differs from `value` the root publishes `data-dirty`. With `isReadOnly` the content is selectable but refuses edits; with `isDisabled`, or while `cell` is null, the editor is disabled and the root publishes `data-disabled`.
 
 Implementation: `src/components/formula-bar/formula-bar.tsx`
 Verification: `src/components/formula-bar/formula-bar.test.tsx`, `e2e/formula-bar.spec.ts`
@@ -62,6 +62,13 @@ Verification: `src/components/formula-bar/formula-bar.test.tsx`, `e2e/formula-ba
 With `showActions={false}` the bar shall draw neither the cancel nor the confirm button and keep no room for them; Enter and Escape in the editor still commit and cancel as in UIC-FORMULA-BAR-3.2, with the same composition guard and the same locked, read-only and dirty rules, and the editor's description gains the provider string `formulaKeysHint` ("Enter confirms, Escape cancels."), after the result, so a reader learns the keys the missing buttons stood for. `showActions` defaults to true.
 
 Implementation: `src/components/formula-bar/formula-bar.tsx`
+Verification: `src/components/formula-bar/formula-bar.test.tsx`, `e2e/formula-bar.spec.ts`
+
+### UIC-FORMULA-BAR-3.5 - Inserting a function
+
+With `functions` (completions such as `{ label: 'SUM', description }`), the fₓ mark shall be an icon-only menu button (`ui-formula-bar__functions`, also `ui-dropdown-menu`) named by the provider's `formulaFunctions` string, whose menu lists each function by its label and description, operable by pointer and keyboard, closing on Escape with focus back on the button. Choosing one inserts its `insertText`, or else its `label`, followed by brackets into the draft at the editor's selection: selected text goes inside the brackets, and an empty content starts with `=`. Focus then returns to the editor with the caret after the bracketed text, and nothing is committed: the draft is dirty until Enter or Confirm. The button is disabled while the bar is locked (`isDisabled`, or no active `cell`) or read-only. Without `functions` the mark stays the decorative `ui-formula-bar__glyph`. The bar evaluates nothing, so the caller decides which functions to offer.
+
+Implementation: `src/components/formula-bar/formula-bar.tsx`, `src/components/formula-bar/formula-bar-functions.tsx`
 Verification: `src/components/formula-bar/formula-bar.test.tsx`, `e2e/formula-bar.spec.ts`
 
 ## UIC-FORMULA-BAR-4 - Accessibility and hooks
@@ -89,7 +96,8 @@ Verification: `src/components/formula-bar/formula-bar.test.tsx`
 | `ui-formula-bar__status`    | slot  |        | The visually hidden status that reads a refused reference.        |
 | `ui-formula-bar__cancel`    | slot  |        | The button that restores the content (also `ui-button`).          |
 | `ui-formula-bar__confirm`   | slot  |        | The button that commits the content (also `ui-button`).           |
-| `ui-formula-bar__glyph`     | slot  |        | The decorative formula glyph.                                     |
+| `ui-formula-bar__glyph`     | slot  |        | The decorative fₓ glyph, without `functions`.                     |
+| `ui-formula-bar__functions` | slot  |        | The fₓ button listing `functions` (also `ui-dropdown-menu`).      |
 | `ui-formula-bar__editor`    | slot  |        | The single-line code editor (also `ui-code-editor`).              |
 | `ui-formula-bar__result`    | slot  |        | The caller's evaluation of the content.                           |
 | `data-dirty`                | state | `true` | On the root while the content differs from the cell's.            |

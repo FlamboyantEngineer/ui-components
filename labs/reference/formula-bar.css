@@ -34,7 +34,11 @@
   outline: var(--ref-focus-ring-thin);
 }
 
-.ui-formula-bar[data-dirty] .ui-formula-bar__editor.ui-code-editor {
+.ui-formula-bar[data-dirty] .ui-formula-bar__functions {
+  flex: none;
+}
+
+.ui-formula-bar__editor.ui-code-editor {
   border-color: var(--ref-dirty);
 }
 
@@ -62,6 +66,10 @@
   height: 18px;
   padding-inline: 2px;
   color: var(--ref-muted);
+}
+
+.ui-formula-bar__functions {
+  flex: none;
 }
 
 .ui-formula-bar__editor.ui-code-editor {
