@@ -72,7 +72,7 @@ export function QuestionTabs({
       </TabList>
       <span {...hooks.slot('progress')}>
         <span aria-hidden="true">{strings.questionCounter(step + 1, questions.length)}</span>
-        <VisuallyHidden elementType="span">
+        <VisuallyHidden as="span">
           {strings.questionProgress(step + 1, questions.length)}
         </VisuallyHidden>
       </span>

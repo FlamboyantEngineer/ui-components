@@ -11,9 +11,9 @@
 Implementation: `src/components/visually-hidden/visually-hidden.tsx`
 Verification: `src/components/visually-hidden/visually-hidden.test.tsx`, `e2e/visually-hidden.spec.ts`
 
-### UIC-VISUALLY-HIDDEN-1.2 - Element type
+### UIC-VISUALLY-HIDDEN-1.2 - Element
 
-`elementType` (`div` by default, or `span`) shall choose the element it renders, a `<span>` inside phrasing content (a sentence, a button label), so the markup stays valid.
+`as` (`div` by default, or `span`; [UIC-COMPOSITION-1.3](COMPOSITION.md#uic-composition-13---native-tag)) shall choose the element it renders, a `<span>` inside phrasing content (a sentence, a button label), so the markup stays valid.
 
 Implementation: `src/components/visually-hidden/visually-hidden.tsx`
 Verification: `src/components/visually-hidden/visually-hidden.test.tsx`, `e2e/visually-hidden.spec.ts`
@@ -50,7 +50,7 @@ Verification: `src/components/visually-hidden/visually-hidden.test.tsx`, `e2e/vi
 
 ## Hooks
 
-| Hook                 | Kind  | Values | Description                                                        |
-| -------------------- | ----- | ------ | ------------------------------------------------------------------ |
-| `ui-visually-hidden` | root  |        | The hidden element: a `<div>`, or the element `elementType` names. |
-| `data-focus-within`  | state | `true` | Focusable content is shown while it or a descendant has focus.     |
+| Hook                 | Kind  | Values | Description                                                    |
+| -------------------- | ----- | ------ | -------------------------------------------------------------- |
+| `ui-visually-hidden` | root  |        | The hidden element: a `<div>`, or the element `as` names.      |
+| `data-focus-within`  | state | `true` | Focusable content is shown while it or a descendant has focus. |

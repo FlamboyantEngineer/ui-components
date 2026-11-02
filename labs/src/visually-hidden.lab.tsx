@@ -15,13 +15,13 @@ function RecipeActions({ name }: { name: string }) {
     <li data-lab-recipe={name}>
       <span>{name}</span>{' '}
       <Button variant="ghost" size="sm" content="parts" startIcon={EditGlyph}>
-        <VisuallyHidden elementType="span">Edit {name}</VisuallyHidden>
+        <VisuallyHidden as="span">Edit {name}</VisuallyHidden>
       </Button>
       <Button variant="ghost" size="sm" content="parts" startIcon={CopyGlyph}>
-        <VisuallyHidden elementType="span">Duplicate {name}</VisuallyHidden>
+        <VisuallyHidden as="span">Duplicate {name}</VisuallyHidden>
       </Button>
       <Button variant="ghost" size="sm" content="parts" startIcon={DeleteGlyph}>
-        <VisuallyHidden elementType="span">Delete {name}</VisuallyHidden>
+        <VisuallyHidden as="span">Delete {name}</VisuallyHidden>
       </Button>
     </li>
   );
@@ -31,7 +31,7 @@ function Rating({ stars }: { stars: number }) {
   return (
     <span data-lab-rating={stars}>
       <span aria-hidden="true">{'★'.repeat(stars) + '☆'.repeat(5 - stars)}</span>
-      <VisuallyHidden elementType="span">{`${stars} out of 5 stars`}</VisuallyHidden>
+      <VisuallyHidden as="span">{`${stars} out of 5 stars`}</VisuallyHidden>
     </span>
   );
 }
@@ -71,11 +71,11 @@ mountLab(
       description="Hidden text in a div or a span, and focusable content that shows while it has focus. Tab to the links to reveal them."
     >
       <StateMatrix
-        axes={{ elementType: ['div', 'span'], isFocusable: ['false', 'true'] }}
-        render={({ elementType, isFocusable }) => (
+        axes={{ as: ['div', 'span'], isFocusable: ['false', 'true'] }}
+        render={({ as, isFocusable }) => (
           <div>
             Apples, 4 €
-            <VisuallyHidden elementType={elementType} isFocusable={isFocusable === 'true'}>
+            <VisuallyHidden as={as} isFocusable={isFocusable === 'true'}>
               {isFocusable === 'true' ? (
                 <a href="#lab-price-notes">Price notes</a>
               ) : (

@@ -34,7 +34,7 @@ export interface SeparatorProps
   /** `horizontal` (the default) separates blocks; `vertical` separates inline items. */
   orientation?: Orientation | undefined;
   /** The element for an unlabelled horizontal rule. Defaults to `hr`; otherwise a `<div>`. */
-  elementType?: SeparatorElement | undefined;
+  as?: SeparatorElement | undefined;
   /** Line style. Defaults to `solid`. */
   variant?: SeparatorVariant | undefined;
   /** Content drawn across the line, between a start and an end line; it names the separator. */
@@ -62,12 +62,12 @@ interface DrawOptions extends Pick<SeparatorProps, 'render' | 'decorative'> {
 
 const hooks = createHooks('separator', ['start-line', 'label', 'end-line']);
 
-/** `elementType` or an `<hr>`, which turns into a `<div>` when it cannot hold the rule. */
+/** `as` or an `<hr>`, which turns into a `<div>` when it cannot hold the rule. */
 function resolveElement(
-  elementType: SeparatorElement | undefined,
+  as: SeparatorElement | undefined,
   { orientation, isLabelled }: { orientation: Orientation; isLabelled: boolean },
 ): string {
-  const element = elementType ?? 'hr';
+  const element = as ?? 'hr';
   return element === 'hr' && (isLabelled || orientation === 'vertical') ? 'div' : element;
 }
 
@@ -115,14 +115,14 @@ export function Separator({
   labelPosition = 'center',
   labelPlacement = 'across',
   decorative = false,
-  elementType,
+  as,
   render,
   className,
   ...rest
 }: SeparatorProps) {
   const labelId = useId();
   const isLabelled = !isEmptyNode(label);
-  const element = resolveElement(elementType, { orientation, isLabelled });
+  const element = resolveElement(as, { orientation, isLabelled });
   const isNamedByLabel =
     isLabelled && !decorative && !rest['aria-label'] && !rest['aria-labelledby'];
   const parts = isLabelled ? <SeparatorParts label={label} labelId={labelId} /> : null;

@@ -110,7 +110,7 @@ function Entry({ entry, status, ...attribution }: EntryProps) {
           {status === 'upcoming' ? (
             <>
               {' '}
-              <VisuallyHidden elementType="span">{strings.upcomingState}</VisuallyHidden>
+              <VisuallyHidden as="span">{strings.upcomingState}</VisuallyHidden>
             </>
           ) : null}
           {hasAttribution ? (

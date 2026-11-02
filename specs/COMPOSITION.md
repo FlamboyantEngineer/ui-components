@@ -18,6 +18,13 @@ A library-owned element that the caller may swap shall take `render(props, state
 Implementation: `src/utils/render-element.ts`, `src/components/overflow-list/overflow-list.tsx`
 Verification: `src/utils/render-element.test.tsx`, `src/components/overflow-list/overflow-list.test.tsx`, `e2e/overflow-list.spec.ts`
 
+### UIC-COMPOSITION-1.3 - Native tag
+
+A component that lets the caller choose its native tag shall take it as `as`, typed with the tags it allows and defaulting to its semantic tag, as the layout primitives (`Stack`, `Cluster`, `Grid`, `GridItem`), `Separator` and `VisuallyHidden` do; no component spells it `elementType`. Native attributes and the ref belong to the chosen element. `render` stays for composing the caller's own element and reading render state: where a component takes both, `render` receives the finished props of the element `as` chose and its element replaces it.
+
+Implementation: `src/components/layout/layout.tsx`, `src/components/separator/separator.tsx`, `src/components/visually-hidden/visually-hidden.tsx`
+Verification: `test/public-types.test.ts`
+
 ## UIC-COMPOSITION-2 - Merging props
 
 ### UIC-COMPOSITION-2.1 - Props

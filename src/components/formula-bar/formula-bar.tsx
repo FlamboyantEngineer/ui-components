@@ -169,7 +169,7 @@ function FormulaBarReference({
         }}
         onKeyDown={onKeyDown}
       />
-      <VisuallyHidden elementType="span" className={hooks.slotClass('status')} role="status">
+      <VisuallyHidden as="span" className={hooks.slotClass('status')} role="status">
         {refused === null ? '' : strings.formulaInvalidReference(refused)}
       </VisuallyHidden>
     </>
@@ -191,7 +191,7 @@ function FormulaBarButtons(props: {
   const strings = useUiStrings();
   if (props.hintId) {
     return (
-      <VisuallyHidden elementType="span" id={props.hintId}>
+      <VisuallyHidden as="span" id={props.hintId}>
         {strings.formulaKeysHint}
       </VisuallyHidden>
     );
@@ -223,7 +223,7 @@ function FormulaBarResult({ id, result }: { id: string; result: string }) {
   const strings = useUiStrings();
   return (
     <span {...hooks.slot('result')} id={id}>
-      <VisuallyHidden elementType="span">{strings.formulaResult}</VisuallyHidden> {result}
+      <VisuallyHidden as="span">{strings.formulaResult}</VisuallyHidden> {result}
     </span>
   );
 }

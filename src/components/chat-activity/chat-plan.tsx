@@ -77,7 +77,7 @@ function ChatPlanItem({ step }: { step: ChatPlanStep }) {
         <Glyph icon={statusGlyphs[status]} className={hooks.slotClass('glyph')} />
       )}
       <span {...hooks.slot('label')}>{step.label}</span>{' '}
-      <VisuallyHidden elementType="span">{strings.chatPlanStepStatus(status)}</VisuallyHidden>
+      <VisuallyHidden as="span">{strings.chatPlanStepStatus(status)}</VisuallyHidden>
     </li>
   );
 }

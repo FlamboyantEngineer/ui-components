@@ -52,7 +52,7 @@ export function PermissionRoleHeader({ role }: { role: PermissionMatrixRole }) {
       {isReadOnly ? (
         <>
           <Glyph icon={LockGlyph} className={hooks.slotClass('lock')} />
-          <VisuallyHidden elementType="span">{`, ${strings.readOnlyRole}`}</VisuallyHidden>
+          <VisuallyHidden as="span">{`, ${strings.readOnlyRole}`}</VisuallyHidden>
         </>
       ) : null}
     </span>

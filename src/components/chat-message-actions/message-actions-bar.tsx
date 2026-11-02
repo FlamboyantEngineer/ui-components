@@ -76,7 +76,7 @@ function CopyCommand({ state }: { state: MessageCommands }) {
         className={actionHooks.slotClass('copy')}
         onPress={(event) => state.copy(event.target)}
       />
-      <VisuallyHidden elementType="span" role="status" className={actionHooks.slotClass('status')}>
+      <VisuallyHidden as="span" role="status" className={actionHooks.slotClass('status')}>
         {announcements[state.copyStatus]}
         {state.copyStatus !== 'idle' && state.copies % 2 === 0 ? REANNOUNCE_MARK : null}
       </VisuallyHidden>

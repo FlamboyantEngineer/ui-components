@@ -65,7 +65,7 @@ export function CalendarDayCell({
       data-date={day}
       {...hooks.slot('day', { today: isToday, outsideMonth: isOutsideMonth })}
     >
-      <VisuallyHidden elementType="span">{format.formatDay(day)}</VisuallyHidden>
+      <VisuallyHidden as="span">{format.formatDay(day)}</VisuallyHidden>
       {showNumber ? (
         <span aria-hidden="true" {...hooks.slot('day-number')}>
           {format.formatDayNumber(day)}

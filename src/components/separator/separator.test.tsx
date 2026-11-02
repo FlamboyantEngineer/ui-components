@@ -31,8 +31,8 @@ describe('Separator', () => {
     expectHooksMatchSpec(container, 'SEPARATOR');
   });
 
-  it('UIC-SEPARATOR-1.1 renders the element elementType names', () => {
-    render(<Separator elementType="div" />);
+  it('UIC-SEPARATOR-1.1 renders the element `as` names', () => {
+    render(<Separator as="div" />);
     const rule = screen.getByRole('separator');
     expect(rule.tagName).toBe('DIV');
     expect(rule).toHaveAttribute('role', 'separator');

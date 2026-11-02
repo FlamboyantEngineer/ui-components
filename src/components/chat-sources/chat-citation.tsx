@@ -36,9 +36,7 @@ export function ChatCitation({ source, index, className, id, ...rest }: ChatCita
       <span {...hooks.slot('marker')} aria-hidden="true">
         {`[${index}]`}
       </span>
-      <VisuallyHidden elementType="span">
-        {strings.chatCitationLabel(index, source.title)}
-      </VisuallyHidden>
+      <VisuallyHidden as="span">{strings.chatCitationLabel(index, source.title)}</VisuallyHidden>
     </>
   );
   return (

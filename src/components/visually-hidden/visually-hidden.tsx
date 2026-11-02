@@ -15,7 +15,7 @@ export interface VisuallyHiddenProps
   /** The content only assistive technology perceives. */
   children?: ReactNode;
   /** The element to render. Defaults to `div`. */
-  elementType?: VisuallyHiddenElement | undefined;
+  as?: VisuallyHiddenElement | undefined;
   /** Shows the content while it or a descendant has focus, as a skip link does. */
   isFocusable?: boolean | undefined;
 }
@@ -26,7 +26,12 @@ const hooks = createHooks('visually-hidden');
  * Content only assistive technology perceives, such as the name of an icon-only control. With
  * `isFocusable` it shows while it or a descendant has focus, as a skip link does.
  */
-export function VisuallyHidden({ className, isFocusable = false, ...rest }: VisuallyHiddenProps) {
+export function VisuallyHidden({
+  as,
+  className,
+  isFocusable = false,
+  ...rest
+}: VisuallyHiddenProps) {
   const [isFocusWithin, setFocusWithin] = useState(false);
   const { focusWithinProps } = useFocusWithin({
     isDisabled: !isFocusable,
@@ -41,6 +46,7 @@ export function VisuallyHidden({ className, isFocusable = false, ...rest }: Visu
     <AriaVisuallyHidden
       {...mergeProps(rest, focusWithinProps)}
       {...hookProps}
+      elementType={as}
       isFocusable={isFocusable}
     />
   );

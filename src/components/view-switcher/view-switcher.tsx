@@ -96,7 +96,7 @@ function ViewLabel({
           {' '}
           <span {...hooks.slot('default')}>
             <Glyph icon={StarGlyph} />
-            <VisuallyHidden elementType="span">{strings.defaultView}</VisuallyHidden>
+            <VisuallyHidden as="span">{strings.defaultView}</VisuallyHidden>
           </span>
         </>
       ) : null}
@@ -104,7 +104,7 @@ function ViewLabel({
         <>
           {' '}
           <span {...hooks.slot('modified')}>
-            <VisuallyHidden elementType="span">{strings.viewModified}</VisuallyHidden>
+            <VisuallyHidden as="span">{strings.viewModified}</VisuallyHidden>
           </span>
         </>
       ) : null}

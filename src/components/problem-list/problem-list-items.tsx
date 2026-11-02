@@ -53,9 +53,7 @@ function ProblemText({ problem }: { problem: ShownProblem }) {
         icon={{ error: ErrorGlyph, warning: WarningGlyph, info: InfoGlyph }[problem.severity]}
         className={hooks.slotClass('icon')}
       />
-      <VisuallyHidden elementType="span">
-        {strings.problemSeverityLead(problem.severity)}
-      </VisuallyHidden>{' '}
+      <VisuallyHidden as="span">{strings.problemSeverityLead(problem.severity)}</VisuallyHidden>{' '}
       {problem.label ? (
         <>
           <span {...hooks.slot('label')}>{problem.label}</span>{' '}

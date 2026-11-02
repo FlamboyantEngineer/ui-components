@@ -136,11 +136,7 @@ export function ChatQuestion({
       {status === 'answered' ? <QuestionSummary questions={questions} answers={answers} /> : null}
       {status === 'dismissed' ? <QuestionDismissal question={first} /> : null}
       {isPending ? (
-        <VisuallyHidden
-          elementType="span"
-          className={hooks.slotClass('announcement')}
-          role="status"
-        >
+        <VisuallyHidden as="span" className={hooks.slotClass('announcement')} role="status">
           {isAnnounced ? name : null}
         </VisuallyHidden>
       ) : null}

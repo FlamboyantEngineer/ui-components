@@ -51,7 +51,7 @@ function RelationMark({ label, glyph }: { label: string; glyph: GlyphComponent |
   return (
     <span {...hooks.slot('mark')}>
       <Glyph icon={glyph ?? CheckGlyph} />
-      <VisuallyHidden elementType="span">{label}</VisuallyHidden>
+      <VisuallyHidden as="span">{label}</VisuallyHidden>
     </span>
   );
 }

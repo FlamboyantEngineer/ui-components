@@ -79,7 +79,7 @@ export function CopyButton({
           });
         }}
       />
-      <VisuallyHidden elementType="span" className={hooks.slotClass('status')} role="status">
+      <VisuallyHidden as="span" className={hooks.slotClass('status')} role="status">
         {announcements[status]}
         {status !== 'idle' && settled % 2 === 0 ? REANNOUNCE_MARK : null}
       </VisuallyHidden>

@@ -79,7 +79,7 @@ function GroupLabel<T>(props: {
       <span className={hooks.slotClass('group-count')} aria-hidden="true">
         {props.format.format(count)}
       </span>{' '}
-      <VisuallyHidden elementType="span" id={`${props.labelId}-count`}>
+      <VisuallyHidden as="span" id={`${props.labelId}-count`}>
         {strings.itemCount(count)}
       </VisuallyHidden>
     </>

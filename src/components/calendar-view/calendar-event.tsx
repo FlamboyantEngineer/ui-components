@@ -230,7 +230,7 @@ function EventButton({
       }}
     >
       <EventText placed={placed} time={time} context={context} />
-      <VisuallyHidden elementType="span">
+      <VisuallyHidden as="span">
         {strings.calendarEvent(event.title, context.format.formatWhen(placed))}
       </VisuallyHidden>
     </AriaButton>

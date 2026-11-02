@@ -186,7 +186,7 @@ function AppFrameLayout({
       role={isEmbedded ? 'group' : undefined}
       aria-label={isEmbedded ? label : undefined}
     >
-      <VisuallyHidden elementType="span" isFocusable>
+      <VisuallyHidden as="span" isFocusable>
         <a {...hooks.slot('skip-link')} href={`#${mainId}`} onClick={skipToMain}>
           {strings.skipToMainContent}
         </a>

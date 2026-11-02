@@ -129,7 +129,7 @@ export function RecordLabelText({
         </>
       ) : null}
       {hiddenText === undefined ? null : (
-        <VisuallyHidden elementType="span" className={hooks.slotClass('accessible-label')}>
+        <VisuallyHidden as="span" className={hooks.slotClass('accessible-label')}>
           {hiddenText}
         </VisuallyHidden>
       )}

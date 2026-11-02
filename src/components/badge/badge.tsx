@@ -104,7 +104,7 @@ function isAriaHidden(value: NativeProps<'span'>['aria-hidden']): boolean {
 /** Text only assistive technology reads, in place of a visible label that differs from it. */
 function AccessibleLabel({ children }: { children: string }) {
   return (
-    <VisuallyHidden elementType="span" className={hooks.slotClass('accessible-label')}>
+    <VisuallyHidden as="span" className={hooks.slotClass('accessible-label')}>
       {children}
     </VisuallyHidden>
   );

@@ -167,7 +167,7 @@ function InlineEditRead({
         else event.continuePropagation();
       }}
     >
-      <VisuallyHidden elementType="span" id={nameId}>
+      <VisuallyHidden as="span" id={nameId}>
         {strings.editValue(label)}
       </VisuallyHidden>
       {content}

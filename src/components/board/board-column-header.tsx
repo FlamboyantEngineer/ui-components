@@ -117,11 +117,11 @@ function ColumnHeaderLabel({
             ? formatCount(count, locale)
             : strings.cardCountOfLimit(count, limit)}
         </span>
-        <VisuallyHidden elementType="span">{strings.cardCount(count, limit)}</VisuallyHidden>
+        <VisuallyHidden as="span">{strings.cardCount(count, limit)}</VisuallyHidden>
       </span>
     </>
   );
-  return isCollapsed ? <VisuallyHidden elementType="span">{label}</VisuallyHidden> : label;
+  return isCollapsed ? <VisuallyHidden as="span">{label}</VisuallyHidden> : label;
 }
 
 /**

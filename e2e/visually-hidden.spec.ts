@@ -13,18 +13,18 @@ test.describe('Visually Hidden lab', () => {
     lab,
   }) => {
     await lab.open('visually-hidden');
-    for (const elementType of ['div', 'span']) {
-      const cell = matrixCell(page, `elementType=${elementType} isFocusable=false`);
+    for (const as of ['div', 'span']) {
+      const cell = matrixCell(page, `as=${as} isFocusable=false`);
       const hidden = cell.locator('.ui-visually-hidden');
-      expect(await hidden.evaluate((node) => node.tagName.toLowerCase())).toBe(elementType);
+      expect(await hidden.evaluate((node) => node.tagName.toLowerCase())).toBe(as);
       await expect(hidden).toHaveText('per kilogram');
       const rect = await box(hidden);
       expect(rect.width).toBeLessThanOrEqual(1);
       expect(rect.height).toBeLessThanOrEqual(1);
       expect(await cell.ariaSnapshot()).toContain('Apples, 4 € per kilogram');
     }
-    const plainCell = await box(matrixCell(page, 'elementType=span isFocusable=false'));
-    const focusCell = await box(matrixCell(page, 'elementType=span isFocusable=true'));
+    const plainCell = await box(matrixCell(page, 'as=span isFocusable=false'));
+    const focusCell = await box(matrixCell(page, 'as=span isFocusable=true'));
     expect(Math.abs(plainCell.height - focusCell.height)).toBeLessThanOrEqual(1);
   });
 
@@ -80,7 +80,7 @@ test.describe('Visually Hidden lab', () => {
     lab,
   }) => {
     await lab.open('visually-hidden');
-    const cell = matrixCell(page, 'elementType=div isFocusable=true');
+    const cell = matrixCell(page, 'as=div isFocusable=true');
     const hidden = cell.locator('.ui-visually-hidden');
     await cell.getByRole('link', { name: 'Price notes' }).focus();
     await expect(hidden).toHaveAttribute('data-focus-within', 'true');
