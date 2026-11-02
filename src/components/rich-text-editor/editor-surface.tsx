@@ -14,6 +14,8 @@ import type { RichTextDocument } from './rich-text-document.js';
 import {
   RichTextEditorContext,
   richTextEditorHooks as hooks,
+  getGutter,
+  type GutterControls,
   type RichTextEditorContextValue,
 } from './rich-text-context.js';
 import { defaultMarks } from './default-schema.js';
@@ -159,11 +161,15 @@ export function EditorSurface(props: EditorSurfaceProps) {
   const { state, dispatchTransaction } = props.editor;
   const surfaceRef = useRef<HTMLDivElement>(null);
   const [contentAttributes, setContentAttributes] = useState<ContentAttributes>({});
-  const [gutterHolders, setGutterHolders] = useState(0);
-  const reserveGutter = useCallback(() => {
-    setGutterHolders((count) => count + 1);
-    return () => setGutterHolders((count) => count - 1);
+  const [gutterHolders, setGutterHolders] = useState<readonly GutterControls[]>([]);
+  const reserveGutter = useCallback((controls: GutterControls) => {
+    setGutterHolders((holders) => [...holders, controls]);
+    return () => setGutterHolders((holders) => holders.filter((holder) => holder !== controls));
   }, []);
+  const gutter = getGutter({
+    grip: gutterHolders.some((holder) => holder.grip),
+    menu: gutterHolders.some((holder) => holder.menu),
+  });
   const isDisabled = Boolean(content.disabled);
   const isEditable = !content.readOnly && !isDisabled;
   const context = useMemo<RichTextEditorContextValue>(
@@ -192,7 +198,7 @@ export function EditorSurface(props: EditorSurfaceProps) {
           )}
           <div {...hooks.slot('body')} style={{ position: 'relative' }}>
             <div
-              {...hooks.slot('surface', { gutter: gutterHolders > 0 })}
+              {...hooks.slot('surface', { gutter })}
               ref={surfaceRef}
               id={surfaceId}
               style={{ position: 'relative' }}

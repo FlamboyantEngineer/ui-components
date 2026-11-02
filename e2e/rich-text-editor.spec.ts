@@ -450,6 +450,49 @@ test.describe('Rich Text Editor lab', () => {
     await expect(none.locator('p').first()).toHaveText('Wash the plums.');
   });
 
+  test('UIC-RICH-TEXT-EDITOR-9.4 keeps a gutter only as wide as the chosen controls', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('rich-text-editor');
+    const inset = (name: string) =>
+      content(page, name).evaluate(
+        (node) =>
+          node.getBoundingClientRect().left -
+          (node.closest('.ui-rich-text-editor__surface')?.getBoundingClientRect().left ?? 0),
+      );
+    const insets = {
+      both: await inset('handle-grip-menu'),
+      grip: await inset('handle-grip'),
+      menu: await inset('handle-menu'),
+      neither: await inset('handle-neither'),
+      none: await inset('handle-none'),
+    };
+    expect(insets.neither).toBe(insets.none);
+    expect(insets.grip).toBeGreaterThan(insets.none);
+    expect(insets.menu).toBeGreaterThan(insets.none);
+    expect(insets.grip).toBeLessThan(insets.both - 10);
+    expect(insets.menu).toBeLessThan(insets.both - 10);
+    for (const name of ['handle-grip-menu', 'handle-grip', 'handle-menu']) {
+      const surface = editor(page, name).locator('.ui-rich-text-editor__surface');
+      // The narrow editor scrolls: the last block wraps below the fold.
+      await surface.evaluate((node) => node.scrollTo({ top: node.scrollHeight }));
+      const last = content(page, name).locator('p').last();
+      await last.hover();
+      const handle = editor(page, name).locator('.ui-block-handle');
+      await expect(handle).toBeVisible();
+      const [handleBox, textBox, surfaceBox] = await Promise.all([
+        handle.boundingBox(),
+        last.boundingBox(),
+        surface.boundingBox(),
+      ]);
+      if (!handleBox || !textBox || !surfaceBox) throw new Error('no box');
+      expect(handleBox.x).toBeGreaterThanOrEqual(surfaceBox.x);
+      expect(handleBox.x + handleBox.width).toBeLessThanOrEqual(textBox.x);
+      expect(Math.abs(handleBox.y - textBox.y)).toBeLessThan(textBox.height);
+    }
+  });
+
   test('UIC-RICH-TEXT-EDITOR-6.2 previews block types in the select and applies one', async ({
     page,
     lab,
@@ -595,14 +638,16 @@ test.describe('Rich Text Editor lab', () => {
     expect(Math.abs(mark - rows)).toBeLessThan(0.002);
     await box.locator('p').first().click();
     await page.keyboard.press('ControlOrMeta+End');
-    // The caret's row scrolls into the surface's view.
+    // The caret, at the end of the last row, scrolls into the surface's view.
     await expect
       .poll(() =>
         surface.evaluate((node) => {
+          const selection = node.ownerDocument.getSelection();
           const last = node.querySelector('.ui-rich-text-editor__content > p:last-child');
-          const row = last?.getBoundingClientRect();
+          if (!selection?.rangeCount || !last?.contains(selection.focusNode)) return false;
+          const caret = selection.getRangeAt(0).getBoundingClientRect();
           const view = node.getBoundingClientRect();
-          return Boolean(row && row.bottom <= view.bottom + 1 && row.top >= view.top - 1);
+          return caret.bottom <= view.bottom + 1 && caret.top >= view.top - 1;
         }),
       )
       .toBe(true);

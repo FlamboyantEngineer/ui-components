@@ -230,13 +230,15 @@ export function PreviewLabelsEditor() {
   );
 }
 
-/** Three short steps to move around. */
+/** Short steps to move around; the last ones wrap and scroll in a narrow editor. */
 const recipeSteps: RichTextDocument = {
   type: 'doc',
   content: [
     paragraph(text('Wash the plums.')),
     paragraph(text('Halve them and take out the stones.')),
     paragraph(text('Bake for 20 minutes.')),
+    paragraph(text('Let them cool on a rack before you spoon the crumble over the top.')),
+    paragraph(text('Serve warm with cream.')),
   ],
 };
 
@@ -244,12 +246,25 @@ const handleChoices = [
   { name: 'grip-menu', label: 'Grip and menu', grip: true, menu: true },
   { name: 'grip', label: 'Grip only', grip: true, menu: false },
   { name: 'menu', label: 'Menu only', grip: false, menu: true },
+  { name: 'neither', label: 'Neither control', grip: false, menu: false },
 ] as const;
 
-/** The block handle's controls side by side, and an editor that leaves the handle out. */
+/**
+ * The block handle's controls side by side in narrow editors that scroll, each with a gutter as
+ * wide as its controls, and an editor that leaves the handle out.
+ */
 export function BlockHandleChoices() {
   return (
-    <div style={{ display: 'grid', gap: 12 }}>
+    <div
+      style={{
+        display: 'grid',
+        gap: 12,
+        gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+      }}
+    >
+      <style>
+        {'[data-lab-editor^="handle-"] .ui-rich-text-editor__surface { max-height: 140px; }'}
+      </style>
       {handleChoices.map(({ name, label, grip, menu }) => (
         <RichTextEditor
           key={name}
