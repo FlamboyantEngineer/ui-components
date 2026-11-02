@@ -67,6 +67,16 @@ describe('Board collapsed columns', () => {
     expect(doing.closest('.ui-board__cell')).toHaveAttribute('data-collapsed', 'true');
     expect(cardNames('Doing')).toEqual(['Bake bread (narrow)', 'Boil jam (narrow)']);
     expect(cardNames('To do')).toEqual(['Make soup']);
+    // The collapsed column's cards and their content carry the state; the open column's do not.
+    for (const row of within(doing).getAllByRole('row')) {
+      expect(row).toHaveAttribute('data-collapsed', 'true');
+      expect(row.querySelector('.ui-board__card-content')).toHaveAttribute(
+        'data-collapsed',
+        'true',
+      );
+    }
+    const open = screen.getByRole('grid', { name: 'To do' });
+    expect(within(open).getByRole('row')).not.toHaveAttribute('data-collapsed');
     expect(renderCard).toHaveBeenCalledWith(tasks[0], { isColumnCollapsed: false });
     // A collapsed cell draws no add-card button, and without cards no empty state.
     expect(screen.getAllByRole('button', { name: 'Add card' })).toHaveLength(1);

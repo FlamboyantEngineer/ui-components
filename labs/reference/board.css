@@ -152,7 +152,7 @@
  * which wraps anywhere and is clamped to three lines, so nothing overflows into the next column.
  */
 
-.ui-board__cell[data-collapsed] .ui-board__card {
+.ui-board__card[data-collapsed] {
   flex-direction: column;
   align-items: stretch;
   min-width: 0;
@@ -160,7 +160,7 @@
   overflow: hidden;
 }
 
-.ui-board__cell[data-collapsed] .ui-board__card-content {
+.ui-board__card-content[data-collapsed] {
   display: -webkit-box;
   overflow: hidden;
   font-size: var(--ref-font-size-sm);
@@ -237,6 +237,17 @@
   justify-content: space-between;
   gap: 4px 8px;
   min-width: 0;
+}
+
+/*
+ * A board inside a card stays inside it: it takes the card's width and scrolls its own columns
+ * sideways when they need more room, rather than widening the card or crossing its border.
+ */
+.ui-board__card-content .ui-board {
+  flex: 1 1 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 /*

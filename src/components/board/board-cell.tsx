@@ -290,7 +290,7 @@ function BoardCards<T extends { id: Key }>({
         <GridListItem
           id={toCollectionKey(item.id)}
           textValue={getTextValue(item)}
-          {...hooks.slot('card', { keyIdentity: toKeyIdentity(item.id) })}
+          {...hooks.slot('card', { keyIdentity: toKeyIdentity(item.id), collapsed: isCollapsed })}
           render={createCardRow(item.id, options)}
         >
           {({ allowsDragging }) => (
@@ -298,7 +298,10 @@ function BoardCards<T extends { id: Key }>({
               {allowsDragging && drag ? (
                 <DragHandle className={hooks.slotClass('card-handle')} />
               ) : null}
-              <div ref={keepControlFocusReturn} {...hooks.slot('card-content')}>
+              <div
+                ref={keepControlFocusReturn}
+                {...hooks.slot('card-content', { collapsed: isCollapsed })}
+              >
                 {renderCard(item, cardState)}
               </div>
             </>
