@@ -233,6 +233,97 @@ test.describe('Media Viewer lab', () => {
       .toBeGreaterThan(0);
   });
 
+  test('UIC-MEDIA-VIEWER-1.3 keeps each thumbnail and its outline inside its own frame', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('media-viewer');
+    await page.locator('[data-lab-open="mixed-first"]').click();
+    await settled(page);
+    const strip = page.getByRole('group', { name: 'Thumbnails' });
+    const buttons = strip.getByRole('button');
+    await expect(buttons).toHaveCount(5);
+    // The photo whose thumbnail fails to decode shows the image glyph instead.
+    await expect(
+      strip.getByRole('button', { name: 'Tower.svg' }).locator('.ui-media-viewer__thumbnail-icon'),
+    ).toBeVisible();
+    // Rapid selection changes keep one current thumbnail.
+    for (const name of ['Notes.txt', 'Seasonal report.pdf', 'Files.zip', 'Tower.svg']) {
+      await strip.getByRole('button', { name }).click();
+    }
+    await expect(title(page)).toHaveText('Tower.svg');
+    await expect(strip.locator('[aria-current="true"]')).toHaveAccessibleName('Tower.svg');
+    await strip.getByRole('button', { name: 'Files.zip' }).focus();
+    await page.keyboard.press('Enter');
+    await expect(title(page)).toHaveText('Files.zip');
+    const frames = await buttons.evaluateAll((nodes) =>
+      nodes.map((node) => {
+        const frame = node.getBoundingClientRect();
+        // A frame without content measures as NaN and fails the bounds below.
+        const content = node.firstElementChild?.getBoundingClientRect() ?? new DOMRect(NaN, NaN);
+        return {
+          left: frame.left,
+          right: frame.right,
+          top: frame.top,
+          bottom: frame.bottom,
+          content: {
+            left: content.left,
+            right: content.right,
+            top: content.top,
+            bottom: content.bottom,
+            centre: (content.left + content.right) / 2 - (frame.left + frame.right) / 2,
+          },
+        };
+      }),
+    );
+    const height = (frames[0]?.bottom ?? 0) - (frames[0]?.top ?? 0);
+    for (const [index, frame] of frames.entries()) {
+      const content = frame.content;
+      expect(content.left).toBeGreaterThanOrEqual(frame.left);
+      expect(content.right).toBeLessThanOrEqual(frame.right);
+      expect(content.top).toBeGreaterThanOrEqual(frame.top);
+      expect(content.bottom).toBeLessThanOrEqual(frame.bottom);
+      expect(Math.abs(content.centre)).toBeLessThanOrEqual(1);
+      expect(frame.bottom - frame.top).toBe(height);
+      const next = frames[index + 1];
+      // The selection border and focus halo stay apart from the next frame.
+      if (next) expect(next.left - frame.right).toBeGreaterThanOrEqual(4);
+    }
+  });
+
+  test('UIC-MEDIA-VIEWER-1.3 scrolls a large strip with the wheel and never vertically', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('media-viewer');
+    await page.locator('[data-lab-open="large"]').click();
+    await settled(page);
+    const strip = page.getByRole('group', { name: 'Thumbnails' });
+    await expect(strip.getByRole('button')).toHaveCount(100);
+    const size = () =>
+      strip.evaluate((node) => ({
+        clientHeight: node.clientHeight,
+        scrollHeight: node.scrollHeight,
+        scrollLeft: node.scrollLeft,
+        maxLeft: node.scrollWidth - node.clientWidth,
+      }));
+    const start = await size();
+    expect(start.scrollHeight).toBeLessThanOrEqual(start.clientHeight);
+    expect(start.maxLeft).toBeGreaterThan(0);
+    const box = await strip.boundingBox();
+    if (!box) throw new Error('The strip has no box.');
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.wheel(0, 300);
+    await expect.poll(async () => (await size()).scrollLeft).toBeGreaterThan(0);
+    // At the end the wheel stays with the strip, and the last photo is reachable.
+    for (let step = 0; step < 40; step += 1) await page.mouse.wheel(0, 1000);
+    await expect.poll(async () => (await size()).scrollLeft).toBe(start.maxLeft);
+    const last = strip.getByRole('button', { name: 'Photo 100.svg' });
+    await expect(last).toBeInViewport();
+    await last.click();
+    await expect(title(page)).toHaveText('Photo 100.svg');
+  });
+
   test('UIC-MEDIA-VIEWER-2.4 shows a failed image with Retry and loads the URL the page refreshes', async ({
     page,
     lab,

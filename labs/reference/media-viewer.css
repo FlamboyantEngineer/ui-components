@@ -141,20 +141,35 @@
   background: var(--ref-hover);
 }
 
+/*
+ * The strip keeps its own height: thumbnails, their outlines and the horizontal scrollbar fit in it,
+ * so it never scrolls vertically and the wheel moves it sideways.
+ */
 .ui-media-viewer__thumbnails {
   display: flex;
+  flex: none;
   gap: 6px;
-  overflow-x: auto;
-  padding: 2px;
+  padding: 4px;
+  overflow: auto hidden;
 }
 
-.ui-media-viewer__thumbnail {
+/* Each thumbnail is a fixed frame that centres and clips its preview or glyph, over the button's size. */
+.ui-media-viewer .ui-media-viewer__thumbnail {
+  display: inline-flex;
   flex: none;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 64px;
+  height: 48px;
+  min-width: 0;
+  min-height: 0;
   padding: 2px;
+  overflow: hidden;
   border: 2px solid transparent;
 }
 
-.ui-media-viewer__thumbnail[aria-current='true'] {
+.ui-media-viewer .ui-media-viewer__thumbnail[aria-current='true'] {
   border-color: var(--ref-accent);
 }
 
@@ -167,10 +182,8 @@
 }
 
 .ui-media-viewer__thumbnail-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 56px;
-  height: 40px;
+  flex: none;
+  width: 24px;
+  height: 24px;
   color: var(--ref-muted);
 }
