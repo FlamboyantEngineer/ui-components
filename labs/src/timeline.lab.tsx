@@ -16,6 +16,7 @@ import { requireDefined } from './require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { TaskEditingDemo } from './timeline-tasks.js';
 import { RowPropertiesDemo } from './timeline-row-properties.js';
+import { ControlledExpansion, RowHeightAndSelection } from './timeline-owned-cases.js';
 
 const today = '2026-03-11';
 
@@ -432,6 +433,18 @@ mountLab(
       description="Nested groups that collapse, a locked milestone, drag and keyboard editing (arrows move by the zoom unit, Shift and arrows change the end; with Control, Alt or Meta the arrows do nothing), multiple selection, and the table view of the same items. Dependencies name their predecessors even when those rows are hidden. Cancelling a drag discards its draft dates, and so does switching to the table or collapsing the bar's group while dragging. Select one at a time keeps only the first selected item shown as selected, and the next press starts from it. Postpone demolition moves Strip kitchen two weeks later, as another person's edit would: press it from the keyboard while dragging Strip kitchen and the drag is given up, so releasing it changes nothing."
     >
       <PlanDemo />
+    </LabSection>
+    <LabSection
+      title="Expansion owned by the host"
+      description="expandedKeys and onExpandedChange: the buttons open and close the groups from outside, the toggles in the row list report back to the same set, and the table view reads it too, so switching views keeps the groups as they were."
+    >
+      <ControlledExpansion />
+    </LabSection>
+    <LabSection
+      title="Row height and selection modes"
+      description="rowHeight 52 makes every row label, chart row, bar, row property and dependency connector follow the taller rows. Selection None (the default) gives items no pressed state and pressing them selects nothing, while arrows still move them; Single and Multiple select by press."
+    >
+      <RowHeightAndSelection />
     </LabSection>
     <LabSection
       title="Row properties"
