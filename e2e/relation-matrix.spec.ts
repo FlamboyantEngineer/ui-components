@@ -33,6 +33,86 @@ test.describe('Relation Matrix lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-RELATION-MATRIX-2.4 UIC-RELATION-MATRIX-2.5 edits relations, rows and columns from context menus', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('relation-matrix');
+    const section = demo(page, 'editable');
+    const matrix = section.getByRole('grid', { name: 'Editable requirements by test' });
+    const output = section.locator('[data-lab-output]');
+    const rowHeader = (index: number) => matrix.getByRole('rowheader').nth(index);
+    // An empty cell: set Blocked, drawn with a cross.
+    await cell(matrix, 0, 1).click({ button: 'right' });
+    const menu = page.getByRole('menu', {
+      name: 'Relation of Requirement 1: Sign in with a passkey and Test 2: Expired reset link',
+    });
+    await expect(menu.getByRole('menuitem', { name: 'Remove relation' })).toBeDisabled();
+    await menu.getByRole('menuitemcheckbox', { name: 'Blocked' }).click();
+    await expect(cell(matrix, 0, 1)).toHaveAttribute('data-kind', 'blocked');
+    await expect(cell(matrix, 0, 1).locator('[data-glyph="close"]')).toBeVisible();
+    await expect(rowHeader(0)).toContainText('2 relations');
+    await expect(cell(matrix, 0, 1)).toBeFocused();
+    // From the keyboard: change it, then remove it.
+    await page.keyboard.press('Shift+F10');
+    await page.getByRole('menuitemcheckbox', { name: 'Partly verifies' }).click();
+    await expect(cell(matrix, 0, 1)).toHaveAttribute('data-kind', 'partial');
+    await page.keyboard.press('Shift+F10');
+    await page.getByRole('menuitem', { name: 'Remove relation' }).click();
+    await expect(cell(matrix, 0, 1)).not.toHaveAttribute('data-related');
+    await expect(rowHeader(0)).toContainText('1 relation');
+    await expect(output).toHaveText('req-1 × test-2: removed');
+
+    // Rows: the first cannot move up; move it down, insert one above, then remove it.
+    await rowHeader(0).click({ button: 'right' });
+    await expect(page.getByRole('menuitem', { name: 'Move up' })).toBeDisabled();
+    await page.getByRole('menuitem', { name: 'Move down' }).click();
+    await expect(rowHeader(1)).toContainText('Requirement 1');
+    await expect(rowHeader(1)).toBeFocused();
+    await page.keyboard.press('Shift+F10');
+    await page.getByRole('menuitem', { name: 'Insert above' }).click();
+    await expect(rowHeader(1)).toContainText('New requirement 1');
+    await expect(rowHeader(1)).toContainText('No relations');
+    await rowHeader(2).click({ button: 'right' });
+    await page
+      .getByRole('menuitem', { name: 'Remove Requirement 1: Sign in with a passkey' })
+      .click();
+    await expect(matrix.getByRole('rowheader')).toHaveCount(4);
+    await expect(matrix.getByRole('columnheader').nth(1)).toContainText('No relations');
+    await expect(matrix.locator('[tabindex="0"]')).toBeFocused();
+
+    // Columns: insert one to the right of the first, then the last cannot move right.
+    const columnHeader = (index: number) => matrix.getByRole('columnheader').nth(index + 1);
+    await columnHeader(0).click({ button: 'right' });
+    await page.getByRole('menuitem', { name: 'Insert right' }).click();
+    await expect(columnHeader(1)).toContainText('New test 2');
+    await columnHeader(4).click({ button: 'right' });
+    await expect(page.getByRole('menuitem', { name: 'Move right' })).toBeDisabled();
+    await page.getByRole('menuitem', { name: 'Move left' }).click();
+    await expect(columnHeader(3)).toContainText('Test 4');
+    await expect(output).toHaveText('column test-4: move-before');
+  });
+
+  test('UIC-RELATION-MATRIX-2.4 edits a cell of a windowed matrix far from the start', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('relation-matrix');
+    const matrix = demo(page, 'large').getByRole('grid', { name: 'Large matrix' });
+    await matrix.evaluate((node) => {
+      node.scrollTop = 32 * 1500;
+      node.scrollLeft = 72 * 300;
+    });
+    const target = matrix.locator('[role="row"][aria-rowindex="1503"] > [aria-colindex="303"]');
+    await expect(target).toBeVisible();
+    await target.click({ button: 'right' });
+    await expect(
+      page.getByRole('menu', { name: 'Relation of Requirement 1502 and Test 302' }),
+    ).toBeVisible();
+    await page.getByRole('menuitemcheckbox', { name: 'Blocked' }).click();
+    await expect(target).toHaveAttribute('data-kind', 'blocked');
+  });
+
   test('UIC-RELATION-MATRIX-2.1 UIC-RELATION-MATRIX-2.2 moves by keyboard and toggles relations', async ({
     page,
     lab,

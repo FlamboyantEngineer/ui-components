@@ -7,7 +7,7 @@
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useMemo, useRef } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps, Key, Tone, RefProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { relationMatrixHooks as hooks } from './relation-matrix-hooks.js';
 import { RelationMatrixHeader } from './relation-matrix-header.js';
@@ -17,29 +17,22 @@ import type { MatrixPosition } from './matrix-navigation.js';
 import { useMatrixNavigation } from './use-matrix-navigation.js';
 import { useMatrixWindow } from './use-matrix-window.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
+import {
+  useMatrixMenu,
+  type RelationMatrixAxisAction,
+  type RelationMatrixAxisOperation,
+  type RelationMatrixCell,
+  type RelationMatrixItem,
+  type RelationMatrixKind,
+} from './relation-matrix-menu.js';
 
-/** An item on one axis of the matrix. */
-export interface RelationMatrixItem {
-  id: Key;
-  /** The header text. */
-  label: string;
-}
-
-/** A kind of relation: how its mark reads and the tone the stylesheet draws it in. */
-export interface RelationMatrixKind {
-  id: string;
-  /** Read in place of the mark, such as `Verifies`. */
-  label: string;
-  /** Published as the cell's `data-tone`. Defaults to `neutral`. */
-  tone?: Tone | undefined;
-}
-
-/** The cell an action happened on, with the relation it holds, if any. */
-export interface RelationMatrixCell {
-  row: Key;
-  column: Key;
-  relation: RelationMatrixRelation | null;
-}
+export type {
+  RelationMatrixAxisAction,
+  RelationMatrixAxisOperation,
+  RelationMatrixCell,
+  RelationMatrixItem,
+  RelationMatrixKind,
+} from './relation-matrix-menu.js';
 
 /** How the stylesheet fits long column labels: turned on their side, or cut. */
 export type RelationMatrixColumnLabels = 'rotated' | 'truncated';
@@ -60,6 +53,18 @@ export interface RelationMatrixProps
   columnLabels?: RelationMatrixColumnLabels | undefined;
   /** Called when a body cell is pressed or Enter or Space is pressed on it, to add or remove a relation. */
   onCellAction?: ((cell: RelationMatrixCell) => void) | undefined;
+  /**
+   * Gives every body cell a context menu that sets its relation to one of `kinds` or removes it,
+   * and is called with the cell and the relation it should hold (`null` to remove it).
+   */
+  onRelationChange?: ((cell: RelationMatrixCell) => void) | undefined;
+  /**
+   * Gives every row and column header a context menu that moves its item, inserts one beside it or
+   * removes it, and is called with the chosen action for the owner to apply.
+   */
+  onAxisAction?: ((action: RelationMatrixAxisAction) => void) | undefined;
+  /** The header actions `onAxisAction` offers. Defaults to all: `move`, `insert` and `remove`. */
+  axisActions?: readonly RelationMatrixAxisOperation[] | undefined;
   /** Renders only the rows and columns in view; the stylesheet must bound the matrix's size. */
   virtualized?: boolean | undefined;
   /** The height of every row in pixels, while virtualized. Defaults to 32. */
@@ -68,6 +73,7 @@ export interface RelationMatrixProps
   columnWidth?: number | undefined;
 }
 
+const allAxisActions: readonly RelationMatrixAxisOperation[] = ['move', 'insert', 'remove'];
 const defaultRowHeight = 32;
 const defaultColumnWidth = 32;
 
@@ -115,6 +121,9 @@ export function RelationMatrix({
   rowsLabel,
   columnLabels = 'rotated',
   onCellAction,
+  onRelationChange,
+  onAxisAction,
+  axisActions = allAxisActions,
   virtualized = false,
   rowHeight = defaultRowHeight,
   columnWidth = defaultColumnWidth,
@@ -146,6 +155,10 @@ export function RelationMatrix({
     ...{ root, header, corner, virtualized, ...counts, rowHeight, columnWidth },
     focus: navigation.focus,
   });
+  const menus = useMatrixMenu(
+    { root, rows, columns, index, kinds, onRelationChange, onAxisAction, axisActions },
+    { ownRef: setRoot, onKeyDown: navigation.gridProps.onKeyDown },
+  );
   const context: RelationMatrixRowContext = {
     ...{ columns, indices: view.columns, tracks: view.tracks, index, kinds: kindMap },
     ...{ focus: navigation.focus, isFocusWithin: navigation.isFocusWithin },
@@ -153,7 +166,6 @@ export function RelationMatrix({
   };
   return (
     <div
-      ref={setRoot}
       role="grid"
       aria-rowcount={rows.length + 1}
       aria-colcount={columns.length + 1}
@@ -164,6 +176,7 @@ export function RelationMatrix({
         data: { columnLabels, virtualized, actionable: Boolean(onCellAction) },
       })}
       {...navigation.gridProps}
+      {...menus.targetProps}
       onScroll={view.onScroll}
     >
       <RelationMatrixHeader
@@ -172,6 +185,7 @@ export function RelationMatrix({
         {...{ focus: navigation.focus, isFocusWithin: navigation.isFocusWithin }}
       />
       <RelationMatrixBody {...{ rows, rowIndices: view.rows, context }} />
+      {menus.menu}
     </div>
   );
 }

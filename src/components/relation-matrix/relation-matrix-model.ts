@@ -59,3 +59,17 @@ export function toggleRelation(
   if (cell.kind !== undefined) added.kind = cell.kind;
   return [...relations, added];
 }
+
+/**
+ * `relations` with the relation of one cell replaced by `cell.relation`, or removed when it is
+ * `null`: an owner's way to apply a change from the cell menu.
+ */
+export function setRelation(
+  relations: readonly RelationMatrixRelation[],
+  cell: { row: Key; column: Key; relation: RelationMatrixRelation | null },
+): RelationMatrixRelation[] {
+  const others = relations.filter(
+    (relation) => relation.row !== cell.row || relation.column !== cell.column,
+  );
+  return cell.relation ? [...others, cell.relation] : others;
+}

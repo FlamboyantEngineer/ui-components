@@ -7,6 +7,14 @@ export interface RelationStrings {
   related: string;
   /** A row's or column's relation count in a relation matrix. */
   relationCount: (count: number) => string;
+  /** Names the context menu of a relation matrix cell by its row and column items. */
+  relationCellActions: (row: string, column: string) => string;
+  /** Removes the relation of a relation matrix cell. */
+  removeRelation: string;
+  /** Names the context menu of a relation matrix row or column header by its item. */
+  relationItemActions: (item: string) => string;
+  /** Inserts an item beside a relation matrix row or column, on the side named. */
+  insertRelationItem: (side: 'above' | 'below' | 'left' | 'right') => string;
   /** Names the column of permissions in a permission matrix. */
   permissions: string;
   /** Names a permission matrix checkbox by its permission, its role and whether it is inherited. */
@@ -34,6 +42,9 @@ export interface RelationStrings {
 /** The module's text, with the message values each text function reads its arguments as. */
 export const relationStrings = defineStrings<RelationStrings>({
   relationCount: (count) => ({ count }),
+  relationCellActions: (row, column) => ({ row, column }),
+  relationItemActions: (item) => ({ item }),
+  insertRelationItem: (side) => ({ side }),
   permissionGrant: (permission, role, isInherited) => ({ permission, role, isInherited }),
   permissionGroupGrant: (group, role) => ({ group, role }),
   upstreamOf: (item) => ({ item }),

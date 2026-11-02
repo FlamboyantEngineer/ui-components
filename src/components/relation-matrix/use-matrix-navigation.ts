@@ -37,7 +37,7 @@ interface MatrixNavigation {
   focus: MatrixPosition;
   isFocusWithin: boolean;
   gridProps: {
-    onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => void;
+    onKeyDown: (event: KeyboardEvent<HTMLElement>) => void;
     onFocus: (event: FocusEvent<HTMLDivElement>) => void;
     onBlur: (event: FocusEvent<HTMLDivElement>) => void;
   };
@@ -48,7 +48,7 @@ const actionKeys = new Set(['Enter', ' ']);
 const defaultPage = 10;
 
 /** The selector of the cell at `position`, through the grid's row and column indices. */
-function selectMatrixCell({ row, column }: MatrixPosition): string {
+export function selectMatrixCell({ row, column }: MatrixPosition): string {
   return `[role="row"][aria-rowindex="${row + 2}"] > [aria-colindex="${column + 2}"]`;
 }
 
@@ -61,7 +61,7 @@ function measurePage(root: HTMLElement, cell: Element | null): number {
 }
 
 /** The position of the grid cell holding `target`, read from its row and column indices. */
-function readPosition(target: EventTarget): MatrixPosition | null {
+export function readPosition(target: EventTarget): MatrixPosition | null {
   if (!isElement(target)) return null;
   const cell = target.closest('[aria-colindex]');
   const row = cell?.parentElement?.closest('[role="row"]');
@@ -137,7 +137,7 @@ export function useMatrixNavigation({
     cell.focus({ preventScroll: true });
     revealCell(root.current, cell, focus);
   });
-  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+  const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     const from = readPosition(event.target);
     if (event.altKey || from === null) return;
     const pageSize = measurePage(event.currentTarget, event.target as Element);
