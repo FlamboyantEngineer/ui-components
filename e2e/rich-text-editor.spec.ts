@@ -687,120 +687,6 @@ test.describe('Rich Text Editor lab', () => {
     await expect(field).toHaveAttribute('data-dirty', 'true');
   });
 
-  test('UIC-RICH-TEXT-EDITOR-12.2 UIC-SCROLL-REGION-2.2 marks the whole track on the exact thumb scale', async ({
-    page,
-    lab,
-  }) => {
-    await lab.open('rich-text-editor');
-    const field = editor(page, 'long');
-    const box = content(page, 'long');
-    const surface = field.locator('.ui-rich-text-editor__surface');
-    const thumb = field.locator('.ui-scroll-region__thumb');
-    await field.scrollIntoViewIfNeeded();
-    /** Scrolls the surface so `row`'s top lies `offset` pixels below the surface's top. */
-    const scrollRow = (row: number, offset: number) =>
-      surface.evaluate(
-        (node, [index, gap]) => {
-          const rows = node.querySelectorAll('.ui-rich-text-editor__content > p');
-          const target = rows[index ?? 0]?.getBoundingClientRect().top ?? 0;
-          const view = node.getBoundingClientRect();
-          const scale = view.height / (node as HTMLElement).offsetHeight;
-          node.scrollTop += (target - view.top - (gap ?? 0)) / scale;
-        },
-        [row, offset],
-      );
-    /** The marks' and the thumb's inline geometry, in the track's own pixels. */
-    const geometry = () =>
-      field.evaluate((node) => {
-        const read = (element: Element) => {
-          const style = (element as HTMLElement).style;
-          return { top: parseFloat(style.top), height: parseFloat(style.height) };
-        };
-        const thumbNode = node.querySelector('.ui-scroll-region__thumb') as HTMLElement;
-        const surfaceNode = node.querySelector('.ui-rich-text-editor__surface') as HTMLElement;
-        return {
-          thumb: read(thumbNode),
-          track: thumbNode.parentElement?.clientHeight ?? 0,
-          share: surfaceNode.clientHeight / surfaceNode.scrollHeight,
-          marks: [...node.querySelectorAll('.ui-rich-text-editor__scroll-marker')].map((mark) => ({
-            ...read(mark),
-            severity: mark.getAttribute('data-severity'),
-          })),
-        };
-      });
-    /** Where row `index`'s middle lies down the view, as a share of the view's height. */
-    const shareInView = (index: number) =>
-      surface.evaluate((node, row) => {
-        const target = node.querySelectorAll('.ui-rich-text-editor__content > p')[row];
-        const rect = target?.getBoundingClientRect() ?? { top: 0, height: 0 };
-        const view = node.getBoundingClientRect();
-        const scale = view.height / (node as HTMLElement).offsetHeight;
-        const top = view.top + node.clientTop * scale;
-        return (rect.top + rect.height / 2 - top) / (node.clientHeight * scale);
-      }, index);
-    /** Row `index`'s mark lies as far down the thumb as the row lies down the view. */
-    const expectAligned = async (index: number, severity: string) => {
-      await expect
-        .poll(async () => {
-          const [{ thumb: span, marks }, share] = await Promise.all([
-            geometry(),
-            shareInView(index),
-          ]);
-          const expected = span.top + share * span.height;
-          return marks.some(
-            (mark) =>
-              mark.severity === severity &&
-              Math.abs(mark.top + mark.height / 2 - expected) < 0.25 &&
-              mark.top + mark.height / 2 > span.top &&
-              mark.top + mark.height / 2 < span.top + span.height,
-          );
-        })
-        .toBe(true);
-    };
-    await expect(thumb).toHaveAttribute('data-exact', 'true');
-    // A thousand rows: the thumb is exactly the view's share of the track, under 24 pixels.
-    const start = await geometry();
-    expect(Math.abs(start.thumb.height - start.share * start.track)).toBeLessThan(0.5);
-    expect(start.thumb.height).toBeLessThan(24);
-    // Every marker shows along the track from the start, before any marked row is in view.
-    expect(start.marks.length).toBeGreaterThan(2);
-    expect(start.marks.map((mark) => mark.severity)).toContain('warning');
-    // Row 120 centred in view: its mark sits mid-thumb; near the top and the bottom of the view,
-    // it sits near the thumb's top and bottom.
-    const viewHeight = await surface.evaluate((node) => node.clientHeight);
-    const rowHeight = (await box.locator('p').nth(119).boundingBox())?.height ?? 0;
-    await scrollRow(119, (viewHeight - rowHeight) / 2);
-    await expect.poll(() => shareInView(119)).toBeCloseTo(0.5, 2);
-    await expectAligned(119, 'error');
-    await scrollRow(119, 4);
-    await expectAligned(119, 'error');
-    await scrollRow(119, viewHeight - rowHeight - 4);
-    await expectAligned(119, 'error');
-    // Scrolling moves the thumb past the marks, which stay where they were.
-    await scrollRow(600, 0);
-    await expect
-      .poll(async () => (await geometry()).thumb.top)
-      .toBeGreaterThan(start.thumb.top + 50);
-    expect((await geometry()).marks).toEqual(start.marks);
-    // Under an ancestor scale the mark still lies where its row lies in view.
-    await field.evaluate((node) => {
-      (node as HTMLElement).style.transform = 'scale(0.75)';
-      (node as HTMLElement).style.transformOrigin = 'top left';
-    });
-    await scrollRow(480, 60);
-    await expectAligned(480, 'error');
-    // The extended hit area drags the short thumb from just past its end.
-    const thumbBox = await thumb.boundingBox();
-    const x = (thumbBox?.x ?? 0) + (thumbBox?.width ?? 0) / 2;
-    const y = (thumbBox?.y ?? 0) + (thumbBox?.height ?? 0) + 4;
-    const before = await surface.evaluate((node) => node.scrollTop);
-    await page.mouse.move(x, y);
-    await page.mouse.down();
-    await page.mouse.move(x, y + 30, { steps: 4 });
-    await page.mouse.up();
-    expect(await surface.evaluate((node) => node.scrollTop)).toBeGreaterThan(before + 500);
-  });
-
   test('UIC-RICH-TEXT-EDITOR-12.1 UIC-RICH-TEXT-EDITOR-12.2 scrolls a long document inside the editor with marked rows', async ({
     page,
     lab,
@@ -813,13 +699,24 @@ test.describe('Rich Text Editor lab', () => {
     expect(await surface.evaluate((node) => node.clientHeight)).toBe(360);
     expect((await field.boundingBox())?.height).toBeLessThan(600);
     await expect(field.locator('.ui-scroll-region__thumb')).toHaveCount(1);
-    // Every marker shows along the track, in view or not.
-    const count = await markers.count();
-    expect(count).toBeGreaterThan(2);
+    await expect(markers).toHaveCount(4);
+    expect(
+      await markers.evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-severity'))),
+    ).toEqual(['error', 'error', 'warning', 'warning']);
     const flagged = box.locator('p').nth(480);
     await expect(flagged).toHaveAttribute('data-severity', 'error');
     await expect(flagged).toHaveAttribute('aria-description', 'Blight reported: inspect this row.');
     await expect(box.locator('p').nth(749)).toHaveAttribute('data-severity', 'warning');
+    // The second marker spans rows 481 and 482, at their place in the whole document.
+    const [mark, rows] = await Promise.all([
+      markers.nth(1).evaluate((node) => parseFloat((node as HTMLElement).style.top) / 100),
+      surface.evaluate((node) => {
+        const row = node.querySelectorAll('.ui-rich-text-editor__content > p')[480];
+        const top = (row?.getBoundingClientRect().top ?? 0) - node.getBoundingClientRect().top;
+        return (top + node.scrollTop) / node.scrollHeight;
+      }),
+    ]);
+    expect(Math.abs(mark - rows)).toBeLessThan(0.002);
     await box.locator('p').first().click();
     await page.keyboard.press('ControlOrMeta+End');
     // The caret, at the end of the last row, scrolls into the surface's view.
@@ -836,10 +733,10 @@ test.describe('Rich Text Editor lab', () => {
       )
       .toBe(true);
     await page.keyboard.type(' Blight.');
-    await expect(markers).toHaveCount(count + 1);
+    await expect(markers).toHaveCount(5);
     await expect(box.locator('p').last()).toHaveAttribute('data-severity', 'error');
     await page.keyboard.press('ControlOrMeta+z');
-    await expect(markers).toHaveCount(count);
+    await expect(markers).toHaveCount(4);
     await page.keyboard.press('ControlOrMeta+Home');
     await expect.poll(() => surface.evaluate((node) => node.scrollTop)).toBeLessThan(20);
   });

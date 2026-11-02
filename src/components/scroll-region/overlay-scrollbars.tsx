@@ -25,14 +25,8 @@ import { MIN_THUMB_SIZE, THUMB_ARROW_STEP } from './scroll-region-defaults.js';
 interface OverlayScrollbarsProps {
   /** Tab order of the thumbs; native editable viewports already provide keyboard scrolling. */
   tabIndex?: 0 | -1 | undefined;
-  /** Decorations inside the vertical track, drawn over the thumb. */
+  /** Decorations inside the vertical track, behind the thumb. */
   verticalMarks?: ReactNode;
-  /**
-   * Draws the vertical thumb at the visible share of the content with no minimum length, on the
-   * same scale as marks placed by their share of the content; it carries `data-exact`, so a
-   * stylesheet can widen its hit area instead.
-   */
-  isVerticalExact?: boolean | undefined;
   /** The natively scrolling viewport the thumbs scroll. */
   viewport: RefObject<HTMLElement | null>;
   /** The viewport's id, which each thumb controls. */
@@ -62,8 +56,6 @@ interface ThumbProps {
   value: number;
   /** The viewport is right to left, so horizontal positions run from 0 down to `-max`. */
   rtl: boolean;
-  /** The thumb spans exactly the visible share, with no minimum length. */
-  isExact?: boolean | undefined;
   /** Called after the thumb scrolled the viewport. */
   onScrolled: () => void;
 }
@@ -167,51 +159,23 @@ function useThumbDrag(thumb: ThumbProps, travel: number) {
   });
 }
 
-/**
- * The thumb's length and its offset from the track's start, in the track's pixels: as long as the
- * visible share of the content, but at least `minSize` (`MIN_THUMB_SIZE` by default), and as far
- * along its travel as the scroll position is along `max`. With no minimum, a point a share `f` down
- * the content lies `f` down the track, and the thumb covers exactly the content in view.
- */
-export function getThumbSpan({
-  track,
-  page,
-  max,
-  value,
-  minSize = MIN_THUMB_SIZE,
-}: {
-  track: number;
-  page: number;
-  max: number;
-  value: number;
-  minSize?: number | undefined;
-}): { size: number; offset: number } {
-  const size = max > 0 ? Math.min(track, Math.max(minSize, (track * page) / (max + page))) : track;
-  const offset = max > 0 ? (clamp(value, 0, max) / max) * (track - size) : 0;
-  return { size, offset };
-}
-
 function OverlayThumb({ onFocusChange, ...props }: ThumbProps & FocusProps) {
-  const { orientation, viewport, viewportId, track, page, max, value, rtl, isExact } = props;
+  const { orientation, viewport, viewportId, track, page, max, value, rtl } = props;
   const strings = useUiStrings();
   const thumb = useFocusHandback(viewport, onFocusChange);
   useThumbWheel(thumb, { viewport, page, rtl });
   const vertical = orientation === 'vertical';
-  const { size, offset } = getThumbSpan({
-    track,
-    page,
-    max,
-    value,
-    minSize: isExact ? 0 : undefined,
-  });
+  const size =
+    max > 0 ? Math.min(track, Math.max(MIN_THUMB_SIZE, (track * page) / (max + page))) : track;
   const travel = track - size;
   const position = clamp(value, 0, max);
+  const offset = max > 0 ? (position / max) * travel : 0;
   const dragHandlers = useThumbDrag(props, travel);
 
   return (
     <div
       ref={thumb}
-      {...hooks.slot('thumb', { orientation, exact: isExact })}
+      {...hooks.slot('thumb', { orientation })}
       role="scrollbar"
       aria-label={vertical ? strings.scrollVertically : strings.scrollHorizontally}
       aria-controls={viewportId}
@@ -293,7 +257,6 @@ export function OverlayScrollbars({
   drawY,
   isVisible,
   verticalMarks,
-  isVerticalExact,
   tabIndex,
 }: OverlayScrollbarsProps) {
   const { metrics, schedule, verticalTrackRef, horizontalTrackRef } = measurement;
@@ -313,7 +276,6 @@ export function OverlayScrollbars({
         <OverlayTrack
           {...shared}
           marks={verticalMarks}
-          isExact={isVerticalExact}
           orientation="vertical"
           trackRef={verticalTrackRef}
           track={metrics.trackY}
