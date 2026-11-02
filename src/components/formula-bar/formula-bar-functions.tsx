@@ -6,6 +6,7 @@ import type { Key } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { getOwnerWindow } from '../../utils/owner-window.js';
 import type { Completion } from '../completion-list/completion-list.js';
+import type { ButtonSize } from '../button/button.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import { formulaBarHooks as hooks } from './formula-bar-hooks.js';
 
@@ -56,12 +57,15 @@ export function FormulaBarFunctions({
   isDisabled,
   editorRef,
   draft,
+  size,
 }: {
   functions: readonly Completion[] | undefined;
   isDisabled: boolean;
   /** The content editor's text area, whose selection the call replaces. */
   editorRef: RefObject<HTMLTextAreaElement | null>;
   draft: { text: string; setDraft: (value: string) => void };
+  /** The button's size. */
+  size: ButtonSize;
 }) {
   const strings = useUiStrings();
   const onInsert = useFunctionInsertion(editorRef, draft);
@@ -81,7 +85,7 @@ export function FormulaBarFunctions({
       icon={FormulaGlyph}
       label={strings.formulaFunctions}
       variant="ghost"
-      size="sm"
+      size={size}
       menuSize="sm"
       className={hooks.slotClass('functions')}
       isDisabled={isDisabled}

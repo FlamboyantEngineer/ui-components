@@ -11,7 +11,7 @@ import {
 } from 'react';
 import { Input } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, ControlSize } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import {
   formatCellReference,
@@ -66,7 +66,12 @@ export interface FormulaBarProps extends BaseProps, AriaLabellingProps {
    * commit and cancel, and the content's description says so.
    */
   showActions?: boolean | undefined;
+  /** The bar's control size, which its reference box, content and buttons follow. Defaults to `md`. */
+  size?: ControlSize | undefined;
 }
+
+/** The size of the bar's buttons, a step below the bar's own, as an icon button beside a field. */
+const actionSizes = { xs: 'xs', sm: 'xs', md: 'sm', lg: 'md' } as const;
 
 /** Space-separated ids for an ARIA id list, or undefined when there are none. */
 const joinIds = (...ids: (string | null)[]) => ids.filter(Boolean).join(' ') || undefined;
@@ -181,6 +186,7 @@ function FormulaBarButtons(props: {
   onCancel: () => void;
   onConfirm: () => void;
   hintId: string | null;
+  size: ControlSize;
 }) {
   const strings = useUiStrings();
   if (props.hintId) {
@@ -194,7 +200,7 @@ function FormulaBarButtons(props: {
     <>
       <Button
         icon={CloseGlyph}
-        size="sm"
+        size={actionSizes[props.size]}
         label={strings.cancel}
         className={hooks.slotClass('cancel')}
         isDisabled={!props.canCancel}
@@ -202,7 +208,7 @@ function FormulaBarButtons(props: {
       />
       <Button
         icon={CheckGlyph}
-        size="sm"
+        size={actionSizes[props.size]}
         label={strings.confirm}
         className={hooks.slotClass('confirm')}
         isDisabled={!props.canCommit}
@@ -290,6 +296,7 @@ export function FormulaBar({
   isReadOnly = false,
   isDisabled = false,
   showActions = true,
+  size = 'md',
   className,
   ...rest
 }: FormulaBarProps) {
@@ -301,12 +308,12 @@ export function FormulaBar({
   const editorRef = useRef<HTMLTextAreaElement>(null);
   // An empty result, such as an empty cell's, takes no room and describes nothing.
   const result = evaluate && cell ? evaluate(text, cell) : '';
-  const labelledBy = rest['aria-labelledby'];
+  const data = { size, dirty: isDirty, disabled: isLocked };
   return (
     <div
       {...rest}
-      {...hooks.root({ className, props: rest, data: { dirty: isDirty, disabled: isLocked } })}
-      aria-label={rest['aria-label'] ?? (labelledBy ? undefined : strings.formulaBar)}
+      {...hooks.root({ className, props: rest, data })}
+      aria-label={rest['aria-label'] ?? (rest['aria-labelledby'] ? undefined : strings.formulaBar)}
       role="group"
     >
       <FormulaBarReference
@@ -322,12 +329,14 @@ export function FormulaBar({
         onCancel={cancel}
         onConfirm={commit}
         hintId={showActions ? null : hintId}
+        size={size}
       />
       <FormulaBarFunctions
         functions={functions}
         isDisabled={isLocked || isReadOnly}
         editorRef={editorRef}
         draft={{ text, setDraft }}
+        size={actionSizes[size]}
       />
       <CodeEditor
         ref={editorRef}

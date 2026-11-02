@@ -187,6 +187,39 @@ function CancelConfirm() {
   );
 }
 
+const sizes = ['xs', 'sm', 'md', 'lg'] as const;
+
+/** One working bar of a size: edits commit into its own saved value and show in its output. */
+function SizedBar({
+  size,
+  showActions,
+  width,
+}: {
+  size: (typeof sizes)[number];
+  showActions: boolean;
+  width: 360 | 280;
+}) {
+  const [saved, setSaved] = useState('=B2*C2');
+  return (
+    <div style={{ width }}>
+      <FormulaBar
+        aria-label={`Formula bar, ${size}, ${showActions ? 'buttons' : 'keys only'}, ${width}px`}
+        size={size}
+        cell={{ row: 1, column: 3 }}
+        value={saved}
+        tokenize={tokenizeFormula}
+        completions={formulaFunctions}
+        functions={formulaFunctions}
+        evaluate={(value, at) => evaluateAt(value, sampleCells, at)}
+        showActions={showActions}
+        onCommit={setSaved}
+        data-lab-size={size}
+      />
+      <output data-lab-output={`size-${size}`}>{`Saved ${saved}`}</output>
+    </div>
+  );
+}
+
 /** A bar inside a form: Enter in either box never submits it (UIC-FORMULA-BAR-2.2). */
 function FormBar() {
   const [cell, setCell] = useState<CellCoordinates>({ row: 0, column: 0 });
@@ -251,6 +284,21 @@ mountLab(
               isDisabled={mode === 'disabled'}
             />
           </div>
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Sizes"
+      description="size xs, sm, md (the default) and lg: the reference box, the content, fₓ, Cancel and Confirm and the result follow the bar's size, with the buttons a step smaller than the boxes. Each bar works: edit the formula, pick a function from fₓ, then Confirm or press Enter to save it. Shown with and without the buttons, 360px wide and in a narrower 280px column."
+    >
+      <StateMatrix
+        axes={{ size: sizes, layout: ['buttons', 'keys only', 'buttons, 280px'] }}
+        render={({ size, layout }) => (
+          <SizedBar
+            size={size}
+            showActions={layout !== 'keys only'}
+            width={layout === 'buttons, 280px' ? 280 : 360}
+          />
         )}
       />
     </LabSection>
