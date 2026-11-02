@@ -250,3 +250,13 @@
 .ui-timeline__table {
   max-height: 24rem;
 }
+
+/* The item editor: a narrow modal whose fields stack in one column. */
+.ui-timeline-item-editor {
+  max-width: 440px;
+}
+
+.ui-timeline-item-editor__form {
+  display: grid;
+  gap: 4px;
+}

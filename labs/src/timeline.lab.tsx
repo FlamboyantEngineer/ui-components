@@ -14,6 +14,7 @@ import type { Key } from '../../src/core/props.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { requireDefined } from './require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { TaskEditingDemo } from './timeline-tasks.js';
 
 const today = '2026-03-11';
 
@@ -430,6 +431,12 @@ mountLab(
       description="Nested groups that collapse, a locked milestone, drag and keyboard editing (arrows move by the zoom unit, Shift and arrows change the end; with Control, Alt or Meta the arrows do nothing), multiple selection, and the table view of the same items. Dependencies name their predecessors even when those rows are hidden. Cancelling a drag discards its draft dates, and so does switching to the table or collapsing the bar's group while dragging. Select one at a time keeps only the first selected item shown as selected, and the next press starts from it. Postpone demolition moves Strip kitchen two weeks later, as another person's edit would: press it from the keyboard while dragging Strip kitchen and the drag is given up, so releasing it changes nothing."
     >
       <PlanDemo />
+    </LabSection>
+    <LabSection
+      title="Task menus and editor"
+      description="A secondary click, a long touch, Shift+F10 or the Context Menu key on an item opens its menu. Edit opens the item editor with its name, dates and progress (a milestone's day); Save checks the fields and applies the edit once, Cancel or Escape leaves the item as it was. Mark complete fills the progress and Remove takes the item out. Lay gravel is read-only: its menu only views its details, in read-only fields. The table view shows the same items."
+    >
+      <TaskEditingDemo />
     </LabSection>
   </>,
 );

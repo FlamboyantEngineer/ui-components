@@ -18,6 +18,7 @@ import {
 import { TimelineHeader } from './timeline-header.js';
 import { timelineHooks as hooks } from './timeline-hooks.js';
 import { TimelineItemButton } from './timeline-item.js';
+import type { TimelineItemMenuOptions } from './timeline-item-menu.js';
 import type { TimelineLayout } from './timeline-layout.js';
 import type { VisibleRow } from './timeline-rows.js';
 
@@ -30,6 +31,7 @@ export interface TimelineChartActions {
   onDraft: (change: TimelineItemChange | null) => void;
   onCommit: (change: TimelineItemChange) => void;
   onExpandedChange: (id: Key, isExpanded: boolean) => void;
+  itemMenu: TimelineItemMenuOptions;
 }
 
 interface TimelineChartProps {
@@ -213,6 +215,7 @@ export function TimelineChart({
                     isSelected: actions.selectedKeys.has(placed.item.id),
                     onToggle: actions.onToggleSelection,
                   }}
+                  menu={actions.itemMenu}
                   onDraft={actions.onDraft}
                   onCommit={actions.onCommit}
                 />
