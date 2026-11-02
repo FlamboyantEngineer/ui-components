@@ -4,6 +4,7 @@ import {
   type ApprovalPanelApprover,
 } from '../../src/components/approval-panel/approval-panel.js';
 import { DecisionControl } from '../../src/components/decision-control/decision-control.js';
+import { ApprovalPanelZoneCases } from './approval-panel-zone-cases.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { samplePicture } from './people-samples.js';
 
@@ -130,5 +131,6 @@ mountLab(
     >
       <DecideDemo />
     </LabSection>
+    <ApprovalPanelZoneCases />
   </>,
 );

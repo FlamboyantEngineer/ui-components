@@ -135,3 +135,62 @@ test.describe('Comment Composer lab', () => {
     await lab.expectAccessible();
   });
 });
+
+test.describe('Comment Composer host cases', () => {
+  test('UIC-COMMENT-COMPOSER-1.5 UIC-COMMENT-COMPOSER-1.3 a page-owned draft keeps the host edit over a pending submit', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('comment-composer');
+    const demo = page.locator('[data-lab-demo="host-draft"]');
+    const box = demo.getByRole('textbox', { name: 'Reply' });
+    const draft = demo.locator('[data-lab-output="draft"]');
+    const submits = demo.locator('[data-lab-output="submits"] li');
+    await expect(box).toHaveAttribute('placeholder', 'Write a reply to Maria');
+
+    await demo.getByRole('button', { name: 'Replace the draft' }).click();
+    await expect(box).toHaveValue('Looks good to me.');
+    await expect(draft).toHaveText('"Looks good to me."');
+    await box.press('ControlOrMeta+Enter');
+    await expect(submits).toHaveText(['sent: Looks good to me.']);
+    await demo.getByRole('button', { name: 'Reset the draft' }).click();
+    await box.fill('A newer thought');
+    await expect(submits).toHaveText(['sent: Looks good to me.', 'saved: Looks good to me.']);
+    // The submitted draft is no longer the draft, so the success leaves the host's text.
+    await expect(box).toHaveValue('A newer thought');
+
+    await demo
+      .getByRole('radiogroup', { name: 'Submit' })
+      .getByRole('radio', { name: 'fails' })
+      .click();
+    await box.press('ControlOrMeta+Enter');
+    await expect(submits.last()).toHaveText('failed: A newer thought');
+    await expect(box).toHaveValue('A newer thought');
+    await expect(draft).toHaveText('"A newer thought"');
+
+    await demo
+      .getByRole('radiogroup', { name: 'Submit' })
+      .getByRole('radio', { name: 'succeeds' })
+      .click();
+    await box.press('ControlOrMeta+Enter');
+    await expect(submits.last()).toHaveText('saved: A newer thought');
+    await expect(box).toHaveValue('');
+    await expect(draft).toHaveText('""');
+    await lab.expectAccessible('[data-lab-demo="host-draft"]');
+  });
+
+  test('UIC-COMMENT-COMPOSER-1.7 UIC-COMMENT-COMPOSER-1.1 focuses its text box as it mounts', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('comment-composer');
+    const demo = page.locator('[data-lab-demo="focus-on-mount"]');
+    await demo.getByRole('button', { name: 'Reply' }).click();
+    const box = demo.getByRole('textbox', { name: 'Quick reply' });
+    await expect(box).toBeFocused();
+    await expect(box).toHaveAttribute('placeholder', 'Say something kind');
+    await page.keyboard.type('Thanks!');
+    await page.keyboard.press('ControlOrMeta+Enter');
+    await expect(box).toHaveCount(0);
+  });
+});

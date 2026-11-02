@@ -5,6 +5,7 @@ import { CommentThread } from '../../src/components/comment-thread/comment-threa
 import { CommentThreadReply } from '../../src/components/comment-thread/index.js';
 import { ReactionBar, type ReactionEntry } from '../../src/components/reaction-bar/reaction-bar.js';
 import { Switch } from '../../src/components/switch/switch.js';
+import { CommentThreadZoneCases } from './comment-thread-zone-cases.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { MentionThread } from './comment-thread-mentions.js';
 import { samplePicture } from './people-samples.js';
@@ -350,5 +351,6 @@ mountLab(
     >
       <CallerContent />
     </LabSection>
+    <CommentThreadZoneCases />
   </>,
 );

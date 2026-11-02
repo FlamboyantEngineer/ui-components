@@ -67,3 +67,39 @@ test.describe('Approval Panel lab', () => {
     await lab.expectAccessible();
   });
 });
+
+test.describe('Approval Panel time zones', () => {
+  test.use({ timezoneId: 'Asia/Tokyo' });
+
+  test('UIC-APPROVAL-PANEL-1.4 reads decision times in the chosen zone and threshold', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('approval-panel');
+    const demo = page.locator('[data-lab-demo="approval-zones"]');
+    const time = (name: string) =>
+      demo
+        .locator('.ui-approval-panel__approver', { hasText: name })
+        .locator('.ui-approval-panel__time');
+    const choose = (group: string, name: string) =>
+      demo.getByRole('radiogroup', { name: group }).getByRole('radio', { name }).click();
+    await expect(time('Maria Santos')).toHaveText('Yesterday');
+    await expect(time('Jon Berg')).toHaveText('3 days ago');
+
+    await choose('Provider time zone', 'London');
+    await expect(time('Maria Santos')).toHaveText('2 days ago');
+    await expect(time('Jon Berg')).toHaveText('4 days ago');
+
+    await choose('Dates after', '2 days');
+    await expect(time('Maria Santos')).toHaveText(/^Apr 19, 2026, 11:00\sPM$/);
+    await expect(time('Jon Berg')).toHaveText(/^Apr 17, 2026, 1:00\sPM$/);
+
+    await choose('Override time zone', 'UTC');
+    await expect(time('Maria Santos')).toHaveText('Yesterday');
+    await expect(time('Jon Berg')).toHaveText(/^Apr 17, 2026, 12:00\sPM$/);
+
+    await choose('Dates after', '1 day');
+    await expect(time('Maria Santos')).toHaveText(/^Apr 19, 2026, 10:00\sPM$/);
+    await lab.expectAccessible('[data-lab-demo="approval-zones"]');
+  });
+});

@@ -100,3 +100,53 @@ test.describe('Activity Feed lab', () => {
     await lab.expectAccessible();
   });
 });
+
+test.describe('Activity Feed host cases', () => {
+  // A device zone unlike every sample zone, so only the provider and the override decide.
+  test.use({ timezoneId: 'Asia/Tokyo' });
+
+  test('UIC-ACTIVITY-FEED-1.3 UIC-ACTIVITY-FEED-1.2 groups days and reads times in the chosen zone', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('activity-feed');
+    const demo = page.locator('[data-lab-demo="feed-zones"]');
+    const headings = demo.getByRole('heading', { level: 3 });
+    const pears = demo.locator('.ui-activity-feed__entry', { hasText: 'Pears' });
+    await expect(headings).toHaveText(['Today', 'Yesterday']);
+    await expect(pears.locator('.ui-activity-feed__time')).toHaveText('Yesterday');
+
+    await demo
+      .getByRole('radiogroup', { name: 'Provider time zone' })
+      .getByRole('radio', { name: 'London' })
+      .click();
+    await expect(headings).toHaveText(['Today', 'Yesterday', 'Sunday, April 19, 2026']);
+    await expect(pears.locator('.ui-activity-feed__time')).toHaveText('2 days ago');
+
+    await demo
+      .getByRole('radiogroup', { name: 'Override time zone' })
+      .getByRole('radio', { name: 'Los Angeles' })
+      .click();
+    await expect(demo.locator('[data-lab-output="zone"]')).toHaveText('America/Los_Angeles');
+    await expect(headings).toHaveText(['Today', 'Yesterday']);
+    await expect(pears.locator('.ui-activity-feed__time')).toHaveText('Yesterday');
+    await lab.expectAccessible('[data-lab-demo="feed-zones"]');
+  });
+
+  test('UIC-ACTIVITY-FEED-1.3 UIC-ACTIVITY-FEED-2.3 takes a heading level and draws the caller empty state', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('activity-feed');
+    const demo = page.locator('[data-lab-demo="feed-host"]');
+    await expect(demo.getByRole('heading', { name: 'Kitchen log', level: 3 })).toBeVisible();
+    await expect(demo.getByRole('heading', { name: 'Nothing cooked yet', level: 3 })).toBeVisible();
+    await demo.getByRole('button', { name: 'Log a sample event' }).click();
+    await expect(demo.getByRole('heading', { name: 'Today', level: 3 })).toBeVisible();
+    await expect(demo.locator('[data-lab-output="events"]')).toHaveText('1');
+    await expect(demo.getByRole('heading', { name: 'Nothing cooked yet' })).toHaveCount(0);
+    await demo.getByRole('button', { name: 'Clear the log' }).click();
+    await expect(demo.getByRole('heading', { name: 'Nothing cooked yet', level: 3 })).toBeVisible();
+    await lab.expectAccessible('[data-lab-demo="feed-host"]');
+  });
+});
