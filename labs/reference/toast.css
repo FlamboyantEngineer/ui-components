@@ -39,12 +39,13 @@
   gap: 8px;
   box-sizing: border-box;
   padding: 10px 10px 10px 12px;
-  --toast-tone: var(--ref-info);
-  border: 1px solid color-mix(in srgb, var(--toast-tone) var(--ref-tint-border), var(--ref-border));
+  --ref-toast-tone: var(--ref-info);
+  border: 1px solid
+    color-mix(in srgb, var(--ref-toast-tone) var(--ref-tint-border), var(--ref-border));
   border-radius: var(--ref-radius);
   background: linear-gradient(
-      color-mix(in srgb, var(--toast-tone) var(--ref-tint-subtle), transparent),
-      color-mix(in srgb, var(--toast-tone) var(--ref-tint-subtle), transparent)
+      color-mix(in srgb, var(--ref-toast-tone) var(--ref-tint-subtle), transparent),
+      color-mix(in srgb, var(--ref-toast-tone) var(--ref-tint-subtle), transparent)
     )
     var(--ref-raised);
   box-shadow: var(--ref-shadow);
@@ -111,7 +112,7 @@
 }
 
 .ui-toast:is([data-tone='success'], [data-tone='warning'], [data-tone='danger']) {
-  --toast-tone: var(--ref-tone);
+  --ref-toast-tone: var(--ref-tone);
 }
 
 .ui-toast__icon {

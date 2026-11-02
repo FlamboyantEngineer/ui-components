@@ -19,29 +19,29 @@
  * glyphs and the whole height stays a pointer target.
  */
 .ui-zoom-control {
-  --zoom-slider-width: 96px;
-  --zoom-slider-track: 4px;
-  --zoom-slider-thumb: 14px;
+  --ref-zoom-control-slider-width: 96px;
+  --ref-zoom-control-slider-track: 4px;
+  --ref-zoom-control-slider-thumb: 14px;
 }
 .ui-zoom-control[data-size='xs'] {
-  --zoom-slider-width: 72px;
-  --zoom-slider-track: 2px;
-  --zoom-slider-thumb: 10px;
+  --ref-zoom-control-slider-width: 72px;
+  --ref-zoom-control-slider-track: 2px;
+  --ref-zoom-control-slider-thumb: 10px;
 }
 .ui-zoom-control[data-size='md'] {
-  --zoom-slider-width: 112px;
-  --zoom-slider-track: 4px;
-  --zoom-slider-thumb: 16px;
+  --ref-zoom-control-slider-width: 112px;
+  --ref-zoom-control-slider-track: 4px;
+  --ref-zoom-control-slider-thumb: 16px;
 }
 .ui-zoom-control[data-size='lg'] {
-  --zoom-slider-width: 136px;
-  --zoom-slider-track: 6px;
-  --zoom-slider-thumb: 20px;
+  --ref-zoom-control-slider-width: 136px;
+  --ref-zoom-control-slider-track: 6px;
+  --ref-zoom-control-slider-thumb: 20px;
 }
 
 .ui-zoom-control__slider {
   box-sizing: border-box;
-  width: var(--zoom-slider-width);
+  width: var(--ref-zoom-control-slider-width);
   height: var(--ref-control-height);
   margin: 0 4px;
   padding: 0;
@@ -58,20 +58,22 @@
   cursor: default;
 }
 .ui-zoom-control__slider::-webkit-slider-runnable-track {
-  height: var(--zoom-slider-track);
+  height: var(--ref-zoom-control-slider-track);
   border-radius: var(--ref-radius-full);
   background: var(--ref-border-strong);
 }
 .ui-zoom-control__slider::-moz-range-track {
-  height: var(--zoom-slider-track);
+  height: var(--ref-zoom-control-slider-track);
   border-radius: var(--ref-radius-full);
   background: var(--ref-border-strong);
 }
 .ui-zoom-control__slider::-webkit-slider-thumb {
   box-sizing: border-box;
-  width: var(--zoom-slider-thumb);
-  height: var(--zoom-slider-thumb);
-  margin-top: calc((var(--zoom-slider-track) - var(--zoom-slider-thumb)) / 2);
+  width: var(--ref-zoom-control-slider-thumb);
+  height: var(--ref-zoom-control-slider-thumb);
+  margin-top: calc(
+    (var(--ref-zoom-control-slider-track) - var(--ref-zoom-control-slider-thumb)) / 2
+  );
   border: 2px solid var(--ref-accent);
   border-radius: 50%;
   appearance: none;
@@ -79,8 +81,8 @@
 }
 .ui-zoom-control__slider::-moz-range-thumb {
   box-sizing: border-box;
-  width: var(--zoom-slider-thumb);
-  height: var(--zoom-slider-thumb);
+  width: var(--ref-zoom-control-slider-thumb);
+  height: var(--ref-zoom-control-slider-thumb);
   border: 2px solid var(--ref-accent);
   border-radius: 50%;
   background: var(--ref-raised);

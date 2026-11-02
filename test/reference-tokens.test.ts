@@ -51,7 +51,7 @@ describe('reference token check', () => {
     const result = check({
       'card.css': `.ui-card__header { z-index: 4; }
 .ui-card__shield { z-index: 1000; }
-.ui-card__stack { z-index: calc(10 - var(--ui-card-index)); }`,
+.ui-card__stack { z-index: calc(10 - var(--ui-toast-index)); }`,
     });
     expect(result.status).toBe(1);
     expect(result.stderr).toContain('card.css:2: z-index 1000 is above the in-page scale');
@@ -280,6 +280,62 @@ ${common}`,
     expect(unnamed.status).toBe(1);
     expect(unnamed.stderr).toContain('card.css:1: an unnamed container');
     expect(unnamed.stderr).toContain('card.css:2: a container query without a name');
+  });
+
+  it('UIC-LABS-3.5 rejects custom properties outside the reference namespaces', () => {
+    const result = check({
+      'card.css': `.ui-card { --unscoped-theme: red; color: var(--misspelled-token); }
+.ui-card__handle { --resize-handle-thickness: 10px; inline-size: var(--resize-handle-thickness); }`,
+    });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(
+      'card.css:1: --unscoped-theme is outside the reference namespaces; name it --ref-<owner>-',
+    );
+    expect(result.stderr).toContain(
+      'card.css:1: --misspelled-token is outside the reference namespaces',
+    );
+    expect(result.stderr).toContain(
+      'card.css:2: --resize-handle-thickness is outside the reference namespaces',
+    );
+  });
+
+  it('UIC-LABS-3.5 reads only measured properties a spec declares, and never defines them', () => {
+    const result = check({
+      'card.css': `.ui-card { inline-size: var(--ui-trigger-width); block-size: var(--ui-card-height); }
+.ui-card__body { --ui-trigger-width: 4px; }`,
+    });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(
+      '--ui-card-height is not a measured property any spec declares',
+    );
+    expect(result.stderr).not.toContain('--ui-trigger-width is not a measured property');
+    expect(result.stderr).toContain(
+      'card.css:2: --ui-trigger-width is published by a component; the stylesheet only reads it',
+    );
+  });
+
+  it('UIC-LABS-3.5 keeps third-party interop variables to the partials that style the engine', () => {
+    const result = check({
+      'pdf-viewer.css': `.ui-pdf-viewer__text-layer { --total-scale-factor: var(--ui-pdf-viewer-scale); font-size: calc(var(--total-scale-factor) * var(--min-font-size)); }`,
+      'card.css': `.ui-card { block-size: var(--disclosure-panel-height); inline-size: calc(var(--min-font-size) * 1px); }`,
+    });
+    expect(result.status).toBe(1);
+    expect(result.stderr).not.toContain('reference/pdf-viewer.css');
+    expect(result.stderr).toContain(
+      'card.css:1: --disclosure-panel-height belongs to a third-party engine; use it only in disclosure.css, chat-activity.css',
+    );
+    expect(result.stderr).toContain('card.css:1: --min-font-size belongs to a third-party engine');
+  });
+
+  it("UIC-LABS-3.5 rejects a literal colour in a partial's own token", () => {
+    const result = check({
+      'card.css': `.ui-card { --ref-card-tone: #ff0000; --ref-card-mask: url("data:image/svg+xml,stroke='black'"); /* token-exempt: a mask's alpha */ color: var(--ref-card-tone); mask: var(--ref-card-mask); }`,
+    });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(
+      'card.css:1: literal colour in --ref-card-tone; use a colour token',
+    );
+    expect(result.stderr).not.toContain('--ref-card-mask');
   });
 
   it('UIC-LABS-3.5 rejects unused, undefined, misnamed and duplicated tokens', () => {
