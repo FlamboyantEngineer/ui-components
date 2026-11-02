@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, familySelector, test, matrixCell } from './fixtures.js';
 
 function cell(page: Page, id: string): Locator {
   return matrixCell(page, id);
@@ -298,4 +298,55 @@ test('UIC-PROPERTY-PANEL-2.2 draws the section count quieter than the title', as
     return color;
   });
   expect(badge.color).toBe(muted);
+});
+
+test.describe('Property Panel host cases', () => {
+  test('UIC-PROPERTY-PANEL-2.1 UIC-PROPERTY-PANEL-2.6 lets the page own a section and a card', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('property-panel');
+    const demo = page.locator('[data-lab-demo="owned-disclosures"]');
+    const colours = demo.getByRole('button', { name: /^Colours \d/ });
+    const shadow = demo.getByRole('button', { name: /^Shadow/ });
+    await expect(colours).toHaveAttribute('aria-expanded', 'true');
+    await expect(shadow).toHaveAttribute('aria-expanded', 'false');
+    await shadow.click();
+    await expect(demo.locator('[data-lab-output="shadow"]')).toHaveText('open');
+    await expect(demo.getByRole('textbox', { name: 'Blur' })).toBeVisible();
+    await colours.click();
+    await expect(colours).toHaveAttribute('aria-expanded', 'false');
+    await expect(demo.locator('[data-lab-output="requests"]')).toHaveText(
+      'shadow: open, colours: close',
+    );
+    await demo.getByRole('button', { name: 'Open colours from the page' }).click();
+    await expect(colours).toHaveAttribute('aria-expanded', 'true');
+    await demo.getByRole('button', { name: 'Close shadow from the page' }).click();
+    await expect(shadow).toHaveAttribute('aria-expanded', 'false');
+    await expect(demo.getByRole('textbox', { name: 'Blur' })).toBeHidden();
+    await expect(demo.locator('[data-lab-output="requests"]')).toHaveText(
+      'shadow: open, colours: close',
+    );
+  });
+
+  test('UIC-PROPERTY-PANEL-2.5 keeps a hidden section mounted with its draft', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('property-panel');
+    const demo = page.locator('[data-lab-demo="hidden-section"]');
+    const cache = demo.getByRole('textbox', { name: 'Cache size' });
+    await cache.fill('256');
+    await demo.getByRole('button', { name: 'Hide advanced' }).click();
+    await expect(cache).toBeHidden();
+    await expect(demo.getByRole('button', { name: /^Advanced \d/ })).toBeHidden();
+    await demo.getByRole('textbox', { name: 'Title' }).focus();
+    await page.keyboard.press('Tab');
+    expect(
+      await page.evaluate(() => document.activeElement?.closest('[hidden]') ?? null),
+    ).toBeNull();
+    await demo.getByRole('button', { name: 'Show advanced' }).click();
+    await expect(cache).toHaveValue('256');
+    await lab.expectAccessible(familySelector('property-panel-host-cases'));
+  });
 });

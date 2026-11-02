@@ -37,14 +37,14 @@ Verification: `src/components/projection/projection.test.tsx`, `e2e/projection.s
 Projected content shall render in the outlet's place in the React tree, so it reads React context from the outlet's ancestors, not from the declaring component's.
 
 Implementation: `src/components/projection/projection.tsx`
-Verification: `src/components/projection/projection.test.tsx`
+Verification: `src/components/projection/projection.test.tsx`, `e2e/projection.spec.ts`
 
 ### UIC-PROJECTION-1.6 - Without a provider
 
 Without a `ProjectionProvider` above, `ProjectionContent` shall render its children in place and `ProjectionOutlet` its fallback, so a component that projects its tools still works in isolation.
 
 Implementation: `src/components/projection/projection.tsx`
-Verification: `src/components/projection/projection.test.tsx`
+Verification: `src/components/projection/projection.test.tsx`, `e2e/projection.spec.ts`
 
 ### UIC-PROJECTION-1.7 - Scoped providers
 

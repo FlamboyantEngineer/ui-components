@@ -23,7 +23,7 @@ Verification: `src/components/property-filter/property-filter.test.tsx`, `e2e/pr
 The panel's root shall carry `ui-property-filter` beside the panel's hooks, append the caller's `className`, and take `id`, caller `data-*` attributes and `labelLayout` as a `PropertyPanel` does.
 
 Implementation: `src/components/property-filter/property-filter.tsx`
-Verification: `src/components/property-filter/property-filter.test.tsx`
+Verification: `src/components/property-filter/property-filter.test.tsx`, `e2e/property-filter.spec.ts`
 
 ### UIC-PROPERTY-FILTER-1.4 - Controlled query and matching
 

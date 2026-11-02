@@ -24,6 +24,7 @@ import {
   PropertyStripCell,
   type PropertyPanelLabelLayout,
 } from '../../src/components/property-panel/property-panel.js';
+import { PropertyPanelHostCases } from './property-panel-host-cases.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { TextSetting } from './property-text-setting.js';
 
@@ -389,5 +390,6 @@ mountLab(
         )}
       />
     </LabSection>
+    <PropertyPanelHostCases />
   </>,
 );

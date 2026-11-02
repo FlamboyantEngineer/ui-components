@@ -1,4 +1,4 @@
-import { cellSelector, expect, test } from './fixtures.js';
+import { cellSelector, expect, familySelector, test } from './fixtures.js';
 
 test.describe('Projection lab', () => {
   test('UIC-PROJECTION-1.1 UIC-PROJECTION-1.3 UIC-PROJECTION-1.4 renders the latest declaration or the fallback', async ({
@@ -82,5 +82,43 @@ test.describe('Projection lab', () => {
     await takeover.uncheck();
     await expect(notes.getByRole('textbox', { name: 'Draft note' })).toHaveValue('Draft');
     await lab.expectAccessible();
+  });
+
+  test('UIC-PROJECTION-1.6 renders in place and shows the fallback without a provider', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('projection');
+    const demo = page.locator('[data-lab-demo="standalone"]');
+    await expect(
+      demo.locator('[data-lab-in-place]').getByRole('button', { name: 'Crop' }),
+    ).toBeVisible();
+    await expect(demo.locator('[data-lab-outlet]')).toHaveText('Outlet: No tools here');
+  });
+
+  test('UIC-PROJECTION-1.5 reads context at the outlet', async ({ page, lab }) => {
+    await lab.open('projection');
+    const demo = page.locator('[data-lab-demo="outlet-context"]');
+    await expect(demo.locator('[data-lab-output="place"]')).toHaveText('Read from the outlet');
+    await expect(demo.locator('[data-lab-output="place"]')).toHaveCount(1);
+  });
+
+  test('UIC-PROJECTION-1.4 moves a publisher between slots and keeps its state', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('projection');
+    const demo = page.locator('[data-lab-demo="moving-publisher"]');
+    const left = demo.locator('[data-lab-panel="left"]');
+    const right = demo.locator('[data-lab-panel="right"]');
+    await left.getByRole('button', { name: 'Count (0)' }).click();
+    await expect(left).toHaveText('Left panel: Count (1)');
+    await expect(right).toHaveText('Right panel: Empty');
+    await demo.getByRole('radio', { name: 'Right panel' }).press('Space');
+    await expect(left).toHaveText('Left panel: Empty');
+    await expect(right).toHaveText('Right panel: Count (1)');
+    await right.getByRole('button', { name: 'Count (1)' }).click();
+    await expect(right).toHaveText('Right panel: Count (2)');
+    await lab.expectAccessible(familySelector('projection-host-cases'));
   });
 });
