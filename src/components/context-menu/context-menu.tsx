@@ -31,7 +31,11 @@ import { useCloseOnSecondaryPress } from './menu-state.js';
 
 export { useContextMenuTarget } from './context-menu-target.js';
 export type { ContextMenuTargetProps } from './context-menu-target.js';
-export { createMenuController, useMenuController } from './menu-controller.js';
+export {
+  createMenuController,
+  useMenuController,
+  useMenuControllerState,
+} from './menu-controller.js';
 export type { MenuController } from './menu-controller.js';
 
 export interface ContextMenuProps extends BaseProps {

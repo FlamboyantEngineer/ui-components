@@ -94,6 +94,22 @@ The root shall be a group (`role="group"`) named by `aria-label` or `aria-labell
 Implementation: `src/components/dashboard-grid/dashboard-grid.tsx`, `src/components/dashboard-grid/dashboard-tile.tsx`
 Verification: `src/components/dashboard-grid/dashboard-grid.test.tsx`, `e2e/dashboard-grid.spec.ts`
 
+## UIC-DASHBOARD-GRID-5 - Context menus
+
+### UIC-DASHBOARD-GRID-5.1 - Tile menu
+
+With `tileMenu`, each tile shall be a context menu target ([CONTEXT-MENU.md](CONTEXT-MENU.md)): a secondary click or long touch on it, or Shift+F10 or the Context Menu key in it, opens a menu named by the provider's `tileActions` string with the tile's label, listing the entries in the caller's order. `tileMenu` lists the built-in `move`, `resize` and `remove` by name and any menu entries, or is a function of the tile's layout item that returns them. The built-in actions show only while the grid is editable (edit mode, not reflowed), named by `moveTile`, `resizeTile` and `removeTile` with the tile's label: Move and Resize focus the tile's handle, where the arrow keys move or resize it (UIC-DASHBOARD-GRID-2.2, UIC-DASHBOARD-GRID-2.3); Remove commits the layout without the tile through `onLayoutChange` (and the provider storage when uncontrolled) and announces `tileRemoved`. `onTileAction` then hears every chosen entry with the tile's current layout item. A tile with nothing to list keeps the browser's menu. A secondary click on a handle starts no drag, and a control inside a tile that is its own context menu target, such as a field, keeps its own menu: the innermost target opens.
+
+Implementation: `src/components/dashboard-grid/dashboard-grid-menu.tsx`, `src/components/dashboard-grid/dashboard-tile.tsx`, `src/core/strings/dashboard.ts`
+Verification: `src/components/dashboard-grid/dashboard-grid-menu.test.tsx`, `e2e/dashboard-grid-menu.spec.ts`
+
+### UIC-DASHBOARD-GRID-5.2 - Empty space menu
+
+With `spaceMenu`, a secondary click or long touch on the grid outside every tile shall open those entries in a menu named by the provider's `gridSpaceActions` string, and `onSpaceAction` hears the chosen entry with the cell the menu opened on (`x` and `y` from 0, the column kept inside the shown columns and counted from the inline start, so right to left from the right edge), such as for adding a tile there. A request on a tile keeps the tile's menu or the browser's.
+
+Implementation: `src/components/dashboard-grid/dashboard-grid-menu.tsx`, `src/components/dashboard-grid/dashboard-grid.tsx`, `src/components/context-menu/context-menu-target.ts`
+Verification: `src/components/dashboard-grid/dashboard-grid-menu.test.tsx`, `e2e/dashboard-grid-menu.spec.ts`
+
 ## Hooks
 
 | Hook                              | Kind  | Values | Description                                                |

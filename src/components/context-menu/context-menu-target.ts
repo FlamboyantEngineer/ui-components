@@ -38,6 +38,11 @@ interface ContextMenuTargetOptions {
    * a menu about that control, such as a field's. By default the control keeps the browser's menu.
    */
   opensInsideText?: boolean | undefined;
+  /**
+   * Whether a request from `target` inside the target opens its menu; one it refuses keeps the
+   * browser's own menu, as if the target were not there. Defaults to every request.
+   */
+  accepts?: ((target: EventTarget) => boolean) | undefined;
   /** The target's own props, which keep working. */
   own: ContextMenuTargetProps;
   /** Receives the target element. */
@@ -126,6 +131,7 @@ function useLongPress(options: ContextMenuTargetOptions, suppressUntil: RefObjec
       own.onPointerDownCapture?.(event);
       cancel();
       if (isDisabled || event.pointerType !== 'touch' || isFromPortal(event)) return;
+      if (options.accepts && !options.accepts(event.target)) return;
       if (!options.opensInsideText && isTextInside(event.target, event.currentTarget)) return;
       const { nativeEvent, clientX: x, clientY: y, pointerId, currentTarget } = event;
       pressOwners.set(nativeEvent, currentTarget);
@@ -165,7 +171,8 @@ function useLongPress(options: ContextMenuTargetOptions, suppressUntil: RefObjec
 export function useContextMenuTarget(
   options: ContextMenuTargetOptions,
 ): ContextMenuTargetProps & { ref: RefCallback<HTMLElement> } {
-  const { controller, isDisabled, opensInsideText = false, own, targetRef } = options;
+  const { controller, opensInsideText = false, own, targetRef } = options;
+  const accepts = options.accepts ?? (() => true);
   const suppressUntil = useRef(0);
   const { cancel, ...pointerHandlers } = useLongPress(options, suppressUntil);
   const ownRef = own.ref;
@@ -175,7 +182,7 @@ export function useContextMenuTarget(
     ref,
     onContextMenu(event) {
       own.onContextMenu?.(event);
-      if (isDisabled || isFromPortal(event)) return;
+      if (options.isDisabled || isFromPortal(event) || !accepts(event.target)) return;
       // The target or something inside it handled the request and kept the browser's menu away.
       if (event.defaultPrevented) {
         cancel();
@@ -192,7 +199,8 @@ export function useContextMenuTarget(
     },
     onKeyDownCapture(event) {
       own.onKeyDownCapture?.(event);
-      if (isDisabled || !isKeyboardContextMenu(event) || isFromPortal(event)) return;
+      if (options.isDisabled || !isKeyboardContextMenu(event) || isFromPortal(event)) return;
+      if (!accepts(event.target)) return;
       if (!opensInsideText && isTextInside(event.target, event.currentTarget)) return;
       const { nativeEvent, currentTarget } = event;
       keyOwners.set(nativeEvent, currentTarget);
@@ -208,8 +216,8 @@ export function useContextMenuTarget(
     },
     onKeyDown(event) {
       own.onKeyDown?.(event);
-      if (isDisabled || event.defaultPrevented || !isKeyboardContextMenu(event)) return;
-      if (isFromPortal(event)) return;
+      if (options.isDisabled || event.defaultPrevented || !isKeyboardContextMenu(event)) return;
+      if (isFromPortal(event) || !accepts(event.target)) return;
       // A text control inside the target keeps the key for its own editing menu.
       if (!opensInsideText && isTextInside(event.target, event.currentTarget)) return;
       event.preventDefault();

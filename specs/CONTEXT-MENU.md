@@ -48,10 +48,10 @@ Verification: `src/components/context-menu/context-menu-target.test.tsx`, `src/c
 
 ### UIC-CONTEXT-MENU-1.7 - Requests handled elsewhere
 
-A secondary click, long touch or key whose default the target's own handler, or a handler on an element inside the target, prevented shall open no menu: a cancelled touch opens nothing when its delay ends and leaves the browser's later events alone, and a cancelled secondary click also drops a pending long press. Each of the target's own handlers runs once per event. A long touch on nested targets opens only the innermost target's menu, as a secondary click does.
+A secondary click, long touch or key whose default the target's own handler, or a handler on an element inside the target, prevented shall open no menu: a cancelled touch opens nothing when its delay ends and leaves the browser's later events alone, and a cancelled secondary click also drops a pending long press. Each of the target's own handlers runs once per event. A long touch on nested targets opens only the innermost target's menu, as a secondary click does. A target built with `useContextMenuTarget` and an `accepts` test opens nothing for a request whose event target that test refuses, such as one on a tile inside a grid whose menu is only for its empty space, and leaves that request's default alone, so the browser's menu or an outer target's still opens.
 
 Implementation: `src/components/context-menu/context-menu-target.ts`
-Verification: `src/components/context-menu/context-menu-cancel.test.tsx`, `e2e/context-menu.spec.ts`
+Verification: `src/components/context-menu/context-menu-cancel.test.tsx`, `src/components/dashboard-grid/dashboard-grid-menu.test.tsx`, `e2e/context-menu.spec.ts`
 
 ### UIC-CONTEXT-MENU-1.8 - Non-modal menus
 

@@ -16,6 +16,7 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { usePersistentState } from '../../core/provider.js';
+import { isElement } from '../../utils/is-element.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { useElementSize } from '../../utils/use-element-size.js';
 import { useLatest } from '../../utils/use-latest.js';
@@ -30,9 +31,16 @@ import {
   type DashboardGridItem,
 } from './dashboard-layout.js';
 import type { CellStep, TileMoveKind } from './use-tile-move.js';
+import type { MenuEntry } from '../menu/menu.js';
+import {
+  useGridMenus,
+  type DashboardTileMenuEntry,
+  type DashboardTileMenuOptions,
+} from './dashboard-grid-menu.js';
 import { isSameCells, readGap, useTileMoves } from './use-tile-moves.js';
 
 export type { DashboardGridItem } from './dashboard-layout.js';
+export type { DashboardTileAction, DashboardTileMenuEntry } from './dashboard-grid-menu.js';
 
 export interface DashboardGridProps
   extends BaseProps, AriaLabellingProps, RefProps<HTMLDivElement> {
@@ -52,6 +60,21 @@ export interface DashboardGridProps
   rowHeight?: number | undefined;
   /** Shows each tile's move and resize handles. */
   isEditing?: boolean | undefined;
+  /**
+   * Each tile's context menu: the built-in `move`, `resize` and `remove` by name (offered in edit
+   * mode only) and any menu entries, or a function of the tile's layout item that returns them.
+   * Keep it stable, as each new value draws every tile again. Defaults to no menu.
+   */
+  tileMenu?:
+    | readonly DashboardTileMenuEntry[]
+    | ((item: DashboardGridItem) => readonly DashboardTileMenuEntry[])
+    | undefined;
+  /** Called with the chosen tile menu entry and the tile's item, after a built-in action ran. */
+  onTileAction?: ((key: Key, item: DashboardGridItem) => void) | undefined;
+  /** The context menu of the grid's empty space, such as an action that adds a tile there. */
+  spaceMenu?: readonly MenuEntry[] | undefined;
+  /** Called with the chosen empty space entry and the cell the menu opened on, from 0. */
+  onSpaceAction?: ((key: Key, cell: { x: number; y: number }) => void) | undefined;
   /** Renders the tile of a layout item, usually a `DashboardTile`. */
   children: (item: DashboardGridItem) => ReactNode;
 }
@@ -60,6 +83,10 @@ export interface DashboardGridProps
 interface DashboardGridShared {
   columns: number;
   isEditing: boolean;
+  /** The tile menu's entries and the host's action callback, or `null` for no menu. */
+  menu: DashboardTileMenuOptions | null;
+  /** Takes a tile out of the layout, as the tile menu's Remove does. */
+  remove: (id: Key) => void;
   /** The handle to focus again after a keyboard move, once the tiles have rendered. */
   refocus: RefObject<{ id: Key; kind: TileMoveKind } | null>;
   measureStep: () => CellStep;
@@ -100,6 +127,13 @@ export const dashboardGridHooks = createHooks('dashboard-grid', [
   'resize',
   'status',
 ]);
+
+const tileSelector = `.${dashboardGridHooks.slotClass('tile')}`;
+
+/** Whether a target sits in a tile, its own or a nested grid's. */
+function isInTile(target: EventTarget): boolean {
+  return isElement(target) && target.closest(tileSelector) !== null;
+}
 
 const DashboardGridContext = createContext<DashboardGridTileState | null>(null);
 
@@ -195,6 +229,70 @@ const DashboardGridCell = memo(
 );
 
 /**
+ * What the tiles share (the same object while the grid's options are) with the tile menu and
+ * Remove, and the grid root's ref and empty space menu.
+ */
+function useGridShared(
+  options: Parameters<typeof useGridMenus>[0],
+  grid: {
+    element: HTMLDivElement | null;
+    setElement: (element: HTMLDivElement | null) => void;
+    ref: DashboardGridProps['ref'];
+    committed: Parameters<typeof useGridMenus>[1]['committed'];
+    handlers: Omit<DashboardGridShared, 'columns' | 'isEditing' | 'announce' | 'menu' | 'remove'>;
+    columns: number;
+    shownColumns: number;
+    editable: boolean;
+    setMessage: (message: string) => void;
+  },
+) {
+  const { handlers, columns, editable, setMessage, ref, setElement } = grid;
+  const menus = useGridMenus(options, {
+    element: grid.element,
+    committed: grid.committed,
+    columns: grid.shownColumns,
+    measureStep: handlers.measureStep,
+    isInTile,
+  });
+  const { menu, remove } = menus;
+  const shared = useMemo(
+    () => ({ ...handlers, columns, isEditing: editable, announce: setMessage, menu, remove }),
+    [handlers, columns, editable, setMessage, menu, remove],
+  );
+  const { ref: spaceRef, ...spaceProps } = menus.targetProps;
+  const rootRef = useMemo(
+    () => mergeRefs<HTMLDivElement>(ref, setElement, spaceRef),
+    [ref, setElement, spaceRef],
+  );
+  return { shared, rootRef, spaceProps, spaceMenu: menus.spaceMenu };
+}
+
+/** The tiles in reading order, each placed where the shown layout puts it. */
+function DashboardGridCells({
+  order,
+  shown,
+  moving,
+  ...cell
+}: Pick<DashboardGridCellProps, 'shared' | 'render'> & {
+  order: readonly DashboardGridItem[];
+  shown: readonly DashboardGridItem[];
+  moving: { id: Key; kind: TileMoveKind } | null | undefined;
+}) {
+  const positions = new Map(shown.map((item) => [item.id, item]));
+  return order.map((entry) => {
+    const item = positions.get(entry.id) ?? entry;
+    return (
+      <DashboardGridCell
+        {...cell}
+        key={toKeyIdentity(item.id)}
+        item={item}
+        moving={moving?.id === item.id ? moving.kind : null}
+      />
+    );
+  });
+}
+
+/**
  * A grid of tiles on whole columns and rows, each placed by plain `{ id, x, y, w, h }` data. In
  * edit mode every tile shows a move handle and a resize handle that work by pointer drag and by
  * the arrow keys; a tile moved or grown onto others pushes them down. Below `minColumnWidth` per
@@ -209,6 +307,10 @@ export function DashboardGrid({
   minColumnWidth,
   rowHeight = 80,
   isEditing = false,
+  tileMenu,
+  onTileAction,
+  spaceMenu: spaceEntries,
+  onSpaceAction,
   children,
   className,
   ref,
@@ -216,7 +318,6 @@ export function DashboardGrid({
 }: DashboardGridProps) {
   const columns = toColumnCount(columnsProp);
   const [element, setElement] = useState<HTMLDivElement | null>(null);
-  const rootRef = useMemo(() => mergeRefs(ref, setElement), [ref]);
   const committed = useDashboardLayout(
     { layout, defaultLayout, onLayoutChange, persistKey },
     columns,
@@ -236,11 +337,10 @@ export function DashboardGrid({
     columns,
     shownColumns,
   });
-  const positions = new Map(shown.map((item) => [item.id, item]));
   const rows = findMaximum(shown, (item) => item.y + item.h, 1);
-  const shared = useMemo(
-    () => ({ ...handlers, columns, isEditing: editable, announce: setMessage }),
-    [handlers, columns, editable],
+  const { shared, rootRef, spaceProps, spaceMenu } = useGridShared(
+    { tileMenu, onTileAction, spaceMenu: spaceEntries, onSpaceAction },
+    { element, setElement, ref, committed, handlers, columns, shownColumns, editable, setMessage },
   );
   const style = {
     gridTemplateColumns: `repeat(${shownColumns}, minmax(0, 1fr))`,
@@ -253,22 +353,19 @@ export function DashboardGrid({
         className,
         data: { editing: editable, reflowed: isReflowed },
       })}
+      {...spaceProps}
       ref={rootRef}
       role="group"
       style={style}
     >
-      {order.map((entry) => {
-        const item = positions.get(entry.id) ?? entry;
-        return (
-          <DashboardGridCell
-            key={toKeyIdentity(item.id)}
-            shared={shared}
-            item={item}
-            moving={moving?.id === item.id ? moving.kind : null}
-            render={children}
-          />
-        );
-      })}
+      <DashboardGridCells
+        order={order}
+        shown={shown}
+        shared={shared}
+        moving={moving}
+        render={children}
+      />
+      {spaceMenu}
       <VisuallyHidden>
         <div {...dashboardGridHooks.slot('status')} role="status">
           {message}

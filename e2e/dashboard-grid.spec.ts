@@ -28,7 +28,7 @@ test.describe('Dashboard Grid lab', () => {
     await expect(tile).not.toHaveAttribute('data-moving');
     await page.mouse.up();
     await expect(layout(page)).toHaveText(
-      'visitors 0,0 3×1; orders 3,0 3×1; results 6,0 6×3; crates 0,1 6×3; notes 6,3 6×1',
+      'visitors 0,0 3×1; orders 3,0 3×1; results 6,0 6×3; crates 0,1 6×3; notes 6,3 4×1',
     );
     await demo.getByRole('button', { name: 'Edit layout' }).press('Enter');
     await expect(tile).not.toHaveAttribute('data-moving');
@@ -78,7 +78,7 @@ test.describe('Dashboard Grid lab', () => {
     );
     await page.mouse.up();
     await expect(layout(page)).toHaveText(
-      'visitors 3,0 3×1; orders 3,1 3×1; results 6,0 6×3; crates 0,2 6×3; notes 6,3 6×1',
+      'visitors 3,0 3×1; orders 3,1 3×1; results 6,0 6×3; crates 0,2 6×3; notes 6,3 4×1',
     );
     await expect(grid.locator('[data-moving]')).toHaveCount(0);
   });
@@ -170,7 +170,7 @@ test.describe('Dashboard Grid lab', () => {
     await resize.focus();
     await page.keyboard.press('ArrowRight');
     await expect(layout(page)).toHaveText(
-      'visitors 0,0 4×1; orders 3,1 3×1; results 6,0 6×3; crates 0,2 6×3; notes 6,3 6×1',
+      'visitors 0,0 4×1; orders 3,1 3×1; results 6,0 6×3; crates 0,2 6×3; notes 6,3 4×1',
     );
     const status = grid.getByRole('status');
     await expect(status).toHaveText('Visitors resized to 4 columns by 1 row');

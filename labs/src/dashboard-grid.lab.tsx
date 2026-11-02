@@ -7,7 +7,9 @@ import { DonutChart } from '../../src/components/chart/index.js';
 import {
   DashboardGrid,
   type DashboardGridItem,
+  type DashboardTileMenuEntry,
 } from '../../src/components/dashboard-grid/dashboard-grid.js';
+import { TextField } from '../../src/components/text-field/text-field.js';
 import { DashboardTile } from '../../src/components/dashboard-grid/index.js';
 import { StatTile } from '../../src/components/stat-tile/stat-tile.js';
 import { useUiStorage } from '../../src/core/provider.js';
@@ -27,7 +29,7 @@ const overview: DashboardGridItem[] = [
   { id: 'orders', x: 3, y: 0, w: 3, h: 1 },
   { id: 'results', x: 6, y: 0, w: 6, h: 3 },
   { id: 'crates', x: 0, y: 1, w: 6, h: 3 },
-  { id: 'notes', x: 6, y: 3, w: 6, h: 1 },
+  { id: 'notes', x: 6, y: 3, w: 4, h: 1 },
 ];
 
 const small: DashboardGridItem[] = [
@@ -80,10 +82,39 @@ function TileContent({ id }: { id: string }) {
   }
 }
 
-/** An editable overview: an edit toggle, the layout printed as it changes. */
+/** The tile menu: the built-in layout actions, then the host's own Full width. */
+const overviewTileMenu: readonly DashboardTileMenuEntry[] = [
+  'move',
+  'resize',
+  'remove',
+  { type: 'separator', id: 'host' },
+  { id: 'full-width', label: 'Full width' },
+];
+
+/** The empty space menu: add a note tile where the menu opened. */
+const overviewSpaceMenu = [{ id: 'add-note', label: 'Add a note here' }];
+
+/** A note tile added from the empty space menu: its field keeps its own context menu. */
+function NoteTile({ id }: { id: string }) {
+  return (
+    <Card title={`Note ${id.slice(5)}`}>
+      <TextField label="Note" defaultValue="Draft" />
+    </Card>
+  );
+}
+
+/** A tile's title: the sample's, or the added note's. */
+const titleOf = (id: string) =>
+  id.startsWith('note-') ? `Note ${id.slice(5)}` : requireDefined(titles[id]);
+
+/**
+ * An editable overview: an edit toggle, tile and empty space menus that change the layout, and
+ * the layout printed as it changes.
+ */
 function EditableOverview() {
   const [layout, setLayout] = useState(overview);
   const [isEditing, setEditing] = useState(true);
+  const [notes, setNotes] = useState(0);
   return (
     <div data-lab-demo="overview">
       <Button onPress={() => setEditing(!isEditing)}>
@@ -95,13 +126,32 @@ function EditableOverview() {
         onLayoutChange={setLayout}
         isEditing={isEditing}
         rowHeight={112}
+        tileMenu={overviewTileMenu}
+        onTileAction={(key, target) => {
+          if (key !== 'full-width') return;
+          setLayout(
+            layout.map((item) => (item.id === target.id ? { ...item, x: 0, w: 12 } : item)),
+          );
+        }}
+        spaceMenu={overviewSpaceMenu}
+        onSpaceAction={(_key, cell) => {
+          setNotes(notes + 1);
+          setLayout([
+            ...layout,
+            { id: `note-${notes + 1}`, x: Math.min(cell.x, 10), y: cell.y, w: 2, h: 1 },
+          ]);
+        }}
       >
         {(item) => (
           <DashboardTile
-            label={requireDefined(titles[item.id])}
+            label={titleOf(String(item.id))}
             minColumnSpan={item.id === 'crates' || item.id === 'results' ? 3 : 2}
           >
-            <TileContent id={String(item.id)} />
+            {String(item.id).startsWith('note-') ? (
+              <NoteTile id={String(item.id)} />
+            ) : (
+              <TileContent id={String(item.id)} />
+            )}
           </DashboardTile>
         )}
       </DashboardGrid>
@@ -242,7 +292,7 @@ mountLab(
   <>
     <LabSection
       title="Edit mode"
-      description="Each tile shows a move grip at the middle of its top edge and a diagonal resize arrow at its end corner, ghost buttons laid over the tile: toggle Done editing and Edit layout to see the content keep its place. Drag them, or focus one and press the arrow keys (plain arrows only: with Shift, Alt, Control or Meta they do nothing); tiles in the way move down, and a resize stops at the last column. Leaving edit mode, reflowing to a narrow layout or a pointer the browser cancels (such as a touch it takes over for scrolling) discards an unfinished pointer move or resize."
+      description="Right-click a tile, or press Shift+F10 in it, for Move, Resize and Remove (in edit mode) and Full width; right-click the empty space below the tiles to add a note there, whose field keeps its own menu. Each tile shows a move grip at the middle of its top edge and a diagonal resize arrow at its end corner, ghost buttons laid over the tile: toggle Done editing and Edit layout to see the content keep its place. Drag them, or focus one and press the arrow keys (plain arrows only: with Shift, Alt, Control or Meta they do nothing); tiles in the way move down, and a resize stops at the last column. Leaving edit mode, reflowing to a narrow layout or a pointer the browser cancels (such as a touch it takes over for scrolling) discards an unfinished pointer move or resize."
     >
       <EditableOverview />
     </LabSection>
