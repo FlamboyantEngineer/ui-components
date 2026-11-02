@@ -46,12 +46,35 @@ test.describe('Signature Pad field menu', () => {
     await expect(output(page, 'image')).toHaveText('none');
   });
 
-  test('UIC-SIGNATURE-PAD-5.1 UIC-SIGNATURE-PAD-5.2 uploads an image into an empty pad from the keyboard menu', async ({
+  test('UIC-SIGNATURE-PAD-5.1 follows the mode chosen, empty or not, and never switches it', async ({
     page,
     lab,
   }) => {
     await lab.open('signature-pad');
-    const empty = pad(page, 'empty');
+    const empty = pad(page, 'empty-draw');
+    await empty.locator('.ui-signature-pad__canvas').click({ button: 'right' });
+    expect(await names(page)).toEqual(['Clear', 'Reset']);
+    await page.keyboard.press('Escape');
+    await empty.getByRole('radio', { name: 'Type' }).click();
+    await empty.getByRole('textbox').click({ button: 'right' });
+    expect(await names(page)).toEqual(['Clear', 'Reset']);
+    await page.keyboard.press('Escape');
+    await empty.getByRole('radio', { name: 'Image' }).click();
+    await empty.getByRole('img', { name: 'Signature' }).click({ button: 'right' });
+    expect(await names(page)).toEqual(['Upload image', 'Paste image', 'Clear', 'Reset']);
+    await page.keyboard.press('Escape');
+    await empty.getByRole('radio', { name: 'Draw' }).click();
+    await empty.locator('.ui-signature-pad__canvas').click({ button: 'right' });
+    expect(await names(page)).toEqual(['Clear', 'Reset']);
+    await expect(empty).toHaveAttribute('data-mode', 'draw');
+  });
+
+  test('UIC-SIGNATURE-PAD-5.1 UIC-SIGNATURE-PAD-5.2 uploads an image into an empty image mode from the keyboard menu', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('signature-pad');
+    const empty = pad(page, 'empty-image');
     await empty.getByRole('img', { name: 'Signature' }).focus();
     await page.keyboard.press('Shift+F10');
     expect(await names(page)).toEqual(['Upload image', 'Paste image', 'Clear', 'Reset']);
@@ -63,8 +86,7 @@ test.describe('Signature Pad field menu', () => {
       await chooser
     ).setFiles({ name: 'note.txt', mimeType: 'text/plain', buffer: Buffer.from('hi') });
     await expect(empty.getByRole('status')).toHaveText('Choose a PNG, JPEG, WebP or GIF image.');
-    await expect(output(page, 'empty')).toHaveText('nothing yet');
-    await expect(empty).toHaveAttribute('data-mode', 'image');
+    await expect(output(page, 'empty-image')).toHaveText('nothing yet');
     // The browser's own contextmenu event right after the key is ignored, so open by key again.
     // Wait for the chooser before opening the menu, so the browser intercepts it by then.
     const again = page.waitForEvent('filechooser');
@@ -73,7 +95,7 @@ test.describe('Signature Pad field menu', () => {
     await expect(menuOf(page).getByRole('menuitem', { name: 'Upload image' })).toBeFocused();
     await page.keyboard.press('Enter');
     await (await again).setFiles({ name: 'sign.png', mimeType: 'image/png', buffer: tinyPng });
-    await expect(output(page, 'empty')).toHaveText('image');
+    await expect(output(page, 'empty-image')).toHaveText('image');
   });
 
   test('UIC-SIGNATURE-PAD-5.1 UIC-SIGNATURE-PAD-5.2 opens from a typed name with the keyboard, with no image intake', async ({

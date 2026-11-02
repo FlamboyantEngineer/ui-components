@@ -43,6 +43,24 @@
   flex: none;
 }
 
+/* An icon-only state chip: a round badge holding its glyph, ringed while focused. */
+.ui-comment-thread__status[data-icon-only] {
+  display: inline-flex;
+  border-radius: var(--ref-radius-full);
+}
+.ui-comment-thread__status[data-icon-only] .ui-badge {
+  justify-content: center;
+  min-width: 18px;
+  padding: 0;
+}
+.ui-comment-thread__status[data-icon-only] .ui-badge__label {
+  display: none;
+}
+.ui-comment-thread__status[data-icon-only]:focus-visible {
+  outline: var(--ref-focus-ring);
+  outline-offset: 2px;
+}
+
 .ui-comment-thread__resolve {
   margin-inline-start: auto;
 }

@@ -11,6 +11,8 @@ import { flattenChildren } from '../../utils/flatten-children.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Badge } from '../badge/badge.js';
 import { Button } from '../button/button.js';
+import { Focusable } from '../../primitives/index.js';
+import { Tooltip } from '../tooltip/tooltip.js';
 import {
   CommentComposer,
   type CommentComposerProps,
@@ -32,6 +34,11 @@ export interface CommentThreadProps
   onResolvedChange?: ((isResolved: boolean) => void) | undefined;
   /** Shows Resolve and Reopen as icon buttons, named by their label, which their tooltip shows. */
   resolveIconOnly?: boolean | undefined;
+  /**
+   * Shows the thread's state chips, such as Resolved, as icon-only chips: each is named by its
+   * label, which a tooltip shows on hover and keyboard focus. Defaults to text chips.
+   */
+  statusIconOnly?: boolean | undefined;
   /** Indents every reply, whole, under the opening comment. */
   indentReplies?: boolean | undefined;
   /** Shows the comments without the composer, the resolve button or the comments' menus. */
@@ -111,16 +118,50 @@ function CommentList({
   );
 }
 
-/** The quote, the resolved badge and the resolve button, when there is any of them. */
+/**
+ * The Resolved state chip: a text badge, or an icon-only one named by its label, focusable so the
+ * tooltip that shows the label reaches keyboard readers too. It is an image, not a button.
+ */
+function ResolvedStatus({ iconOnly }: { iconOnly: boolean | undefined }) {
+  const strings = useUiStrings();
+  if (!iconOnly) {
+    return (
+      <Badge tone="success" size="sm" className={hooks.slotClass('status')}>
+        {strings.resolved}
+      </Badge>
+    );
+  }
+  return (
+    <Tooltip content={strings.resolved}>
+      <Focusable>
+        <span
+          {...hooks.slot('status', { iconOnly: true })}
+          role="img"
+          aria-label={strings.resolved}
+          aria-describedby=""
+          tabIndex={0}
+        >
+          <Badge tone="success" size="sm" startIcon={CheckGlyph} aria-hidden>
+            {null}
+          </Badge>
+        </span>
+      </Focusable>
+    </Tooltip>
+  );
+}
+
+/** The quote, the resolved chip and the resolve button, when there is any of them. */
 function CommentThreadHeader({
   quote,
   isResolved,
   onToggle,
   iconOnly,
+  statusIconOnly,
 }: Pick<CommentThreadProps, 'quote'> & {
   isResolved: boolean;
   onToggle: (() => void) | null;
   iconOnly: boolean;
+  statusIconOnly: boolean | undefined;
 }) {
   const strings = useUiStrings();
   const label = isResolved ? strings.reopen : strings.resolve;
@@ -129,11 +170,7 @@ function CommentThreadHeader({
   return (
     <div {...hooks.slot('header')}>
       {isEmptyNode(quote) ? null : <blockquote {...hooks.slot('quote')}>{quote}</blockquote>}
-      {isResolved ? (
-        <Badge tone="success" size="sm" className={hooks.slotClass('status')}>
-          {strings.resolved}
-        </Badge>
-      ) : null}
+      {isResolved ? <ResolvedStatus iconOnly={statusIconOnly} /> : null}
       {onToggle ? (
         <Button
           variant="ghost"
@@ -186,6 +223,7 @@ export function CommentThread({
   defaultResolved = false,
   onResolvedChange,
   resolveIconOnly = false,
+  statusIconOnly,
   indentReplies = false,
   isReadOnly = false,
   isSelected = false,
@@ -231,6 +269,7 @@ export function CommentThread({
           isResolved={resolved}
           onToggle={onResolvedChange && !isReadOnly ? () => setResolved(!resolved) : null}
           iconOnly={resolveIconOnly}
+          statusIconOnly={statusIconOnly}
         />
         <CommentList visibleReplies={visibleReplies} comments={comments} />
         {isEmptyNode(error) ? null : (
