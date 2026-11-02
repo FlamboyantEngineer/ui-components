@@ -350,6 +350,55 @@ test.describe('Board lab', () => {
     expect(await grid.evaluate((list) => list.scrollTop)).toBeGreaterThan(top + 100);
   });
 
+  test('UIC-BOARD-1.7 routes the wheel to the list it is over and to the page elsewhere', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('board');
+    const board = demo(page, 'virtualized');
+    const grid = board.getByRole('grid', { name: 'To do' });
+    const thumb = board
+      .locator('.ui-board__list', { has: page.getByRole('grid', { name: 'To do' }) })
+      .locator('.ui-scroll-region__thumb[data-orientation="vertical"]');
+    const pageTop = () => page.evaluate(() => window.scrollY);
+    const listTop = () => grid.evaluate((list) => list.scrollTop);
+    /** Centres the list in the window, then wheels over a point of `target` read afterwards. */
+    const wheelOver = async (target: Locator, deltaY: number, at = { x: 0.5, y: 0.5 }) => {
+      await grid.evaluate((list) => list.scrollIntoView({ block: 'center' }));
+      const box = await target.boundingBox();
+      await page.mouse.move(
+        (box?.x ?? 0) + (box?.width ?? 0) * at.x,
+        (box?.y ?? 0) + (box?.height ?? 0) * at.y,
+      );
+      const before = { page: await pageTop(), list: await listTop() };
+      await page.mouse.wheel(0, deltaY);
+      return before;
+    };
+    // The board's sideways viewport contains only sideways chaining.
+    await expect(board.locator('.ui-board__viewport > .ui-scroll-region__viewport')).toHaveCSS(
+      'overscroll-behavior-y',
+      'auto',
+    );
+    // Over the board, outside any list, the wheel scrolls the page.
+    let before = await wheelOver(board.locator('.ui-board__column').first(), 200);
+    await expect.poll(pageTop).toBeGreaterThan(before.page + 100);
+    // Over a list that can move, it scrolls the list and leaves the page alone.
+    before = await wheelOver(grid, 300);
+    await expect.poll(listTop).toBeGreaterThan(before.list + 100);
+    expect(await pageTop()).toBe(before.page);
+    // Over the overlay thumb it scrolls the list too.
+    before = await wheelOver(thumb, 300);
+    await expect.poll(listTop).toBeGreaterThan(before.list + 100);
+    expect(await pageTop()).toBe(before.page);
+    // Once the list is at its end, the wheel over it, and then outside the board, scrolls the page.
+    await grid.evaluate((list) => list.scrollTo(0, list.scrollHeight));
+    await expect.poll(listTop).toBeGreaterThan(1000);
+    before = await wheelOver(grid, 200);
+    await expect.poll(pageTop).toBeGreaterThan(before.page + 100);
+    before = await wheelOver(board, 200, { x: 0.5, y: -0.2 });
+    await expect.poll(pageTop).toBeGreaterThan(before.page + 100);
+  });
+
   test('UIC-BOARD-1.7 renders only the cards in view of a long cell', async ({ page, lab }) => {
     await lab.open('board');
     const grid = demo(page, 'virtualized').getByRole('grid', { name: 'To do' });

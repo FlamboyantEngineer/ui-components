@@ -24,6 +24,15 @@
   overscroll-behavior: contain;
 }
 
+/* Chaining stops only on the axes that scroll: the page still scrolls across a sideways region. */
+.ui-scroll-region[data-axis='x'] > .ui-scroll-region__viewport {
+  overscroll-behavior: contain auto;
+}
+
+.ui-scroll-region[data-axis='y'] > .ui-scroll-region__viewport {
+  overscroll-behavior: auto contain;
+}
+
 .ui-scroll-region[data-overscroll='auto'] > .ui-scroll-region__viewport {
   overscroll-behavior: auto;
 }
