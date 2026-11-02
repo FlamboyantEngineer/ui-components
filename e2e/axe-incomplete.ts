@@ -40,6 +40,10 @@ export const acceptedIncomplete: Readonly<Record<string, Readonly<Record<string,
     'form-field-multiple-labels':
       "The checkbox has the field's label and React Aria's wrapping label; aria-labelledby names it by the field's.",
   },
+  field: {
+    'form-field-multiple-labels':
+      "The custom reminder control's switch has the field's label and React Aria's wrapping label; aria-labelledby names it by the field's.",
+  },
   switch: {
     'form-field-multiple-labels':
       "The Boolean Field switches beside the bare ones have the field's label and React Aria's wrapping label; aria-labelledby names them by the field's.",
