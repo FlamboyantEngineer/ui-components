@@ -152,6 +152,7 @@ function EditableOverview() {
           <DashboardTile
             label={titleOf(String(item.id))}
             minColumnSpan={item.id === 'crates' || item.id === 'results' ? 3 : 2}
+            minRowSpan={item.id === 'crates' ? 2 : 1}
           >
             {String(item.id).startsWith('note-') ? (
               <NoteTile id={String(item.id)} />
@@ -298,7 +299,7 @@ mountLab(
   <>
     <LabSection
       title="Edit mode"
-      description="Right-click a tile, or press Shift+F10 in it, for Move, Resize and Remove (in edit mode) and Full width: the host gives Move and Remove icons, which built-in actions lack by default, and Resize and Full width stay without, every label in line; right-click the empty space below the tiles to add a note there, whose field keeps its own menu. Each tile shows a move grip at the middle of its top edge and a diagonal resize arrow at its end corner, ghost buttons laid over the tile: toggle Done editing and Edit layout to see the content keep its place. Drag them, or focus one and press the arrow keys (plain arrows only: with Shift, Alt, Control or Meta they do nothing); tiles in the way move down, and a resize stops at the last column. Leaving edit mode, reflowing to a narrow layout or a pointer the browser cancels (such as a touch it takes over for scrolling) discards an unfinished pointer move or resize."
+      description="Right-click a tile, or press Shift+F10 in it, for Move, Resize and Remove (in edit mode) and Full width: the host gives Move and Remove icons, which built-in actions lack by default, and Resize and Full width stay without, every label in line; right-click the empty space below the tiles to add a note there, whose field keeps its own menu. Each tile shows a move grip at the middle of its top edge and a diagonal resize arrow at its end corner, ghost buttons laid over the tile: toggle Done editing and Edit layout to see the content keep its place. Drag them, or focus one and press the arrow keys (plain arrows only: with Shift, Alt, Control or Meta they do nothing); tiles in the way move down, and a resize stops at the last column. Each tile also stops at its minimum: Crates by quarter and Run results keep at least 3 columns and the others 2, and Crates by quarter keeps at least 2 rows (`minRowSpan`), by pointer or keyboard; the line under the grid shows each tile's committed column, row, width and height. Leaving edit mode, reflowing to a narrow layout or a pointer the browser cancels (such as a touch it takes over for scrolling) discards an unfinished pointer move or resize."
     >
       <EditableOverview />
     </LabSection>

@@ -186,6 +186,31 @@ test.describe('Dashboard Grid lab', () => {
     await expect(move).toBeFocused();
   });
 
+  test('UIC-DASHBOARD-GRID-2.3 keeps a tile at its minimum rows by keyboard and pointer', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('dashboard-grid');
+    const grid = overview(page).getByRole('group', { name: 'Overview' });
+    const resize = grid.getByRole('button', { name: 'Resize Crates by quarter' });
+    await resize.focus();
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.press('ArrowUp');
+    await expect(layout(page)).toContainText('crates 0,1 6×2');
+    await expect(grid.getByRole('status')).toHaveText(
+      'Crates by quarter resized to 6 columns by 2 rows',
+    );
+    await page.keyboard.press('ArrowDown');
+    await expect(layout(page)).toContainText('crates 0,1 6×3');
+    await resize.scrollIntoViewIfNeeded();
+    const bounds = requireDefined(await resize.boundingBox());
+    await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(bounds.x + bounds.width / 2, bounds.y - 400, { steps: 6 });
+    await page.mouse.up();
+    await expect(layout(page)).toContainText('crates 0,1 6×2');
+  });
+
   test('UIC-DASHBOARD-GRID-2.2 UIC-DASHBOARD-GRID-2.3 leaves modified arrow keys alone', async ({
     page,
     lab,
