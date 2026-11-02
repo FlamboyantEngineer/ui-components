@@ -24,6 +24,18 @@
   flex: none;
 }
 
+/* The caller's disclaimer: a quiet line under the composer that wraps in a narrow panel. */
+.ui-chat__disclaimer {
+  flex: none;
+  min-width: 0;
+  padding-inline: 4px;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-xs);
+  line-height: 1.4;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
 /* Nobody types: the indicator stays in the page for its announcements and takes no room. */
 .ui-chat__typing {
   flex: none;

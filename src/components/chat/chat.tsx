@@ -1,5 +1,6 @@
 'use client';
 
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { readOwn } from '../../utils/read-own.js';
 import { useMemo, type ReactNode } from 'react';
 import { useTimeZone } from '../../core/clock.js';
@@ -81,6 +82,11 @@ export interface ChatProps
   headerActions?: ReactNode;
   /** Offers the search within the conversation in the header; shows the header. */
   showSearch?: boolean | undefined;
+  /**
+   * A short note under the composer that stays with the conversation, such as how far to trust an
+   * assistant's answers. The caller writes and translates it; without it nothing is drawn.
+   */
+  disclaimer?: ReactNode;
 }
 
 interface ChatModel {
@@ -155,8 +161,8 @@ function useHeaderStatus({ props, participants }: Omit<ChatModel, 'context'>) {
  * A whole conversation from the host's messages and callbacks: an optional header with the
  * participants, search and the host's controls; the transcript with date separators, grouping, the
  * unread divider, read receipts and each message's parts and commands, and in a reply that streams
- * what the assistant is thinking or doing; who is typing; the queue of follow-ups; and the rich
- * composer, with an optional model picker among its tools. It serves assistant chats (streaming, tool calls, approvals, questions)
+ * what the assistant is thinking or doing; who is typing; the queue of follow-ups; the rich
+ * composer, with an optional model picker among its tools; and an optional disclaimer under it. It serves assistant chats (streaming, tool calls, approvals, questions)
  * and chats between people alike, and holds no conversation state of its own: spread a
  * `useChatController`'s `props` into it, or pass your own.
  */
@@ -226,6 +232,9 @@ export function Chat(props: ChatProps) {
         currentUserId={currentUserId}
         isAssistantChat={isAssistantChat}
       />
+      {isEmptyNode(props.disclaimer) ? null : (
+        <div {...hooks.slot('disclaimer')}>{props.disclaimer}</div>
+      )}
     </div>
   );
 }

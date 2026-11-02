@@ -30,12 +30,12 @@ export default defineConfig({
     // Layout that leans on newer CSS also runs in WebKit.
     { name: 'webkit', use: { ...devices['Desktop Safari'] }, testMatch: /steps-narrow\.spec\.ts$/ },
     // Dock panel geometry leans on writing modes and pointer capture, and tree section rows on
-    // React Aria's row groups, and the rich composer's ranges on its own selection model, which
-    // Firefox draws and edits its own way.
+    // React Aria's row groups, the rich composer's ranges on its own selection model, and the chat's
+    // disclaimer on how text wraps beside the composer, which Firefox draws and edits its own way.
     {
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
-      testMatch: /(dock-panel|tree-sections|message-composer-ranges)\.spec\.ts$/,
+      testMatch: /(dock-panel|tree-sections|message-composer-ranges|chat-disclaimer)\.spec\.ts$/,
     },
     // Focus scrolling that only phones show runs in mobile WebKit.
     {

@@ -44,6 +44,9 @@ const commands = [
   { id: 'budget', label: 'budget', description: 'Keep an eye on costs' },
 ];
 
+/** The host's own note under the composer; the library adds no wording of its own. */
+export const labDisclaimer = 'AI can make mistakes. Check important information.';
+
 /** The live assistant: the behaviour picker, the chat, and what the host received. */
 function AssistantDemo() {
   const [behaviour, setBehaviour] = useState<AgentBehaviour>('answer');
@@ -86,6 +89,7 @@ function AssistantDemo() {
           composerEndControls={<ChatModelPicker {...modelPicker} />}
           toolRenderers={{ get_weather: forecastRenderer }}
           renderPart={renderLabPart}
+          disclaimer={labDisclaimer}
           {...createReplyHandlers(controller.updateMessages, record)}
         />
       </div>
@@ -102,7 +106,7 @@ export function ChatAssistantCases() {
   return (
     <LabSection
       title="Assistant, live"
-      description="A fake trip planner streams through useChatController. Pick what it does with your next message: an answer whose reasoning and tool calls fold into steps (the forecast uses a custom tool renderer) with a live status line, then streamed Markdown with a table, code (Copy and Apply) and citations with their sources; a booking awaited in the stream, or a cancellation answered by a new turn (Approve, Deny with a reason, Always allow); a card of three questions with previews; a plan that advances, then a diff and a terminal block; or a reply that fails once (Retry). Stop ends a reply and keeps its text; messages sent while it runs wait in the queue above the composer, where you can edit or remove them. Attach files (a file named broken… fails its first upload, and one named huge… is refused before it starts: Retry), press Up in the empty composer to recall earlier prompts, type / for a command, and copy or rate a reply with reasons. The model picker beside the send button chooses the model and effort of your next message, and each reply names the ones it was sent with."
+      description="A fake trip planner streams through useChatController. Pick what it does with your next message: an answer whose reasoning and tool calls fold into steps (the forecast uses a custom tool renderer) with a live status line, then streamed Markdown with a table, code (Copy and Apply) and citations with their sources; a booking awaited in the stream, or a cancellation answered by a new turn (Approve, Deny with a reason, Always allow); a card of three questions with previews; a plan that advances, then a diff and a terminal block; or a reply that fails once (Retry). The host's disclaimer sits under the composer, in view whether the conversation is empty or streaming. Stop ends a reply and keeps its text; messages sent while it runs wait in the queue above the composer, where you can edit or remove them. Attach files (a file named broken… fails its first upload, and one named huge… is refused before it starts: Retry), press Up in the empty composer to recall earlier prompts, type / for a command, and copy or rate a reply with reasons. The model picker beside the send button chooses the model and effort of your next message, and each reply names the ones it was sent with."
     >
       <AssistantDemo />
     </LabSection>

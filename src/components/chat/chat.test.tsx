@@ -101,6 +101,43 @@ describe('Chat', () => {
     });
   });
 
+  it("UIC-CHAT-1.9 draws the caller's disclaimer last, under the composer and outside the feed", () => {
+    const note = 'AI can make mistakes. Check important information.';
+    const { container } = renderChat({ ...assistantChat, disclaimer: note });
+    const root = container.querySelector('.ui-chat') as HTMLElement;
+    const last = root.lastElementChild as HTMLElement;
+    expect(last).toHaveClass('ui-chat__disclaimer');
+    expect(last).toHaveTextContent(note);
+    expect(last.previousElementSibling).toHaveClass('ui-message-composer');
+    expect(within(screen.getByRole('feed')).queryByText(note)).not.toBeInTheDocument();
+    // Ordinary content: no live region announces it again as replies stream.
+    expect(last.closest('[aria-live], [role="status"], [role="alert"], [role="log"]')).toBeNull();
+    expect(last.querySelector('[aria-live]')).toBeNull();
+    expectHooksMatchSpec(container, 'CHAT', {
+      slots: ['transcript', 'typing', 'composer', 'disclaimer'],
+    });
+  });
+
+  it('UIC-CHAT-1.9 draws nothing without a disclaimer', () => {
+    for (const disclaimer of [undefined, null, false, '']) {
+      const { container, unmount } = renderChat({ ...assistantChat, disclaimer });
+      expect(container.querySelector('.ui-chat__disclaimer')).toBeNull();
+      unmount();
+    }
+  });
+
+  it('UIC-CHAT-1.9 keeps the disclaimer in an empty conversation and without a composer', () => {
+    const { container } = renderChat({
+      ...assistantChat,
+      messages: [],
+      onSend: undefined,
+      emptyState: 'Ask anything',
+      disclaimer: <a href="#terms">How answers are made</a>,
+    });
+    const disclaimer = container.querySelector('.ui-chat__disclaimer') as HTMLElement;
+    expect(within(disclaimer).getByRole('link', { name: 'How answers are made' })).toBeVisible();
+  });
+
   it('UIC-CHAT-1.2 names the feed by the caller, else the title, else the provider string', () => {
     const { rerenderWith } = renderChat({ 'aria-label': 'Team chat', title: 'Hikers' });
     expect(screen.getByRole('feed', { name: 'Team chat' })).toBeInTheDocument();
