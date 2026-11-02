@@ -206,12 +206,14 @@ function EventButton({
       />
     ) : null;
   const hasEdges = gestures.edges.length > 0;
+  // Every part of the event shows that it is being dragged, by its body or by either edge.
+  const isDragged = context.handles.dragged === toKeyIdentity(event.id);
   const data = readData(placed, continuesBefore, continuesAfter);
   const button = (
     <AriaButton
       {...eventMenu.targetProps}
       {...drag.pointer}
-      {...hooks.slot('event', { ...data, movable: gestures.move, dragging: drag.isDragging })}
+      {...hooks.slot('event', { ...data, movable: gestures.move, dragging: isDragged })}
       excludeFromTabOrder={!isTabbable}
       style={hasEdges ? undefined : style}
       onKeyDown={(key) => {

@@ -43,6 +43,12 @@ export type CalendarEventDragMode = 'move' | 'resize';
 /** The change of an event the host is asked to allow: editing it, moving it, or moving an end. */
 export type CalendarEventChange = 'edit' | 'move' | 'resize';
 
+/** A drag in progress: the event as it is, and the event where it would land, if it changed. */
+export interface EventDrag {
+  event: CalendarViewEvent;
+  next: CalendarViewEvent | null;
+}
+
 /** What every event's drags need from its calendar. */
 export interface CalendarEventHandlesContext {
   mode: CalendarViewMode;
@@ -50,8 +56,13 @@ export interface CalendarEventHandlesContext {
   timeZone: string;
   /** Whether the host lets the reader make the change. */
   allows: (event: CalendarViewEvent, change: CalendarEventChange) => boolean;
-  /** Shows where a dragged event would land, or nothing. */
-  preview: (next: CalendarViewEvent | null) => void;
+  /**
+   * Starts or updates a drag of `event` with where it would land (`null` while that is where it
+   * is), or ends it.
+   */
+  preview: (drag: EventDrag | null) => void;
+  /** The key identity of the event being dragged, past the drag threshold, or `null`. */
+  dragged: string | null;
   /** Hands the host a changed event; a keyboard step then keeps focus on what it stepped. */
   commit: (
     next: CalendarViewEvent,
@@ -228,7 +239,7 @@ export function useEventDrag(options: EventDragOptions) {
       const place = readPlace(state.grid, move.clientX, move.clientY);
       if (!place) return;
       state.shift = readShift(state.origin, place, state.shift);
-      context.preview(change(state.shift));
+      context.preview({ event, next: change(state.shift) });
     },
     onEnd: (_release, state, isCancelled) => {
       setDragging(false);
@@ -345,7 +356,8 @@ interface EventHandlesOptions {
  */
 export function useEventHandles(options: EventHandlesOptions) {
   const { events, mode, dragMode, timeZone, onEventChange, allows, onMoved } = options;
-  const [preview, setPreview] = useState<CalendarViewEvent | null>(null);
+  const [drag, setDrag] = useState<EventDrag | null>(null);
+  const dragged = drag ? toKeyIdentity(drag.event.id) : null;
   const refocus = useRef<{ identity: string; gesture: CalendarEventGesture } | null>(null);
   const context = useMemo<CalendarEventHandlesContext>(
     () => ({
@@ -353,7 +365,8 @@ export function useEventHandles(options: EventHandlesOptions) {
       dragMode,
       timeZone,
       allows,
-      preview: setPreview,
+      preview: setDrag,
+      dragged,
       refocus,
       commit: (next, previous, gesture) => {
         if (gesture) refocus.current = { identity: toKeyIdentity(next.id), gesture };
@@ -362,11 +375,11 @@ export function useEventHandles(options: EventHandlesOptions) {
         if (gesture && placed) onMoved(placed.startDay);
       },
     }),
-    [mode, dragMode, timeZone, allows, onEventChange, onMoved],
+    [mode, dragMode, timeZone, allows, dragged, onEventChange, onMoved],
   );
   const drawn = useMemo(() => {
-    const [placed] = preview ? readEvents([preview], timeZone) : [];
+    const [placed] = drag?.next ? readEvents([drag.next], timeZone) : [];
     return placed ? [...events, { ...placed, isPreview: true }] : events;
-  }, [events, preview, timeZone]);
+  }, [events, drag, timeZone]);
   return { context, drawn };
 }
