@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, PresenceStatus, Size } from '../../core/props.js';
+import type { BaseProps, PresenceStatus, Size, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { toImageProps } from '../icon/icon.js';
@@ -20,7 +20,12 @@ import {
 export type UserIdentitySize = Extract<Size, 'xs' | 'sm' | 'md' | 'lg'>;
 
 export interface UserIdentityProps
-  extends AvatarIdentity, AvatarBadgeProps, Pick<AvatarProps, 'colorCount'>, BaseProps {
+  extends
+    AvatarIdentity,
+    AvatarBadgeProps,
+    Pick<AvatarProps, 'colorCount'>,
+    BaseProps,
+    RefProps<HTMLSpanElement> {
   /** A secondary line under the name: an email, a role, a timestamp. Blank values draw no line. */
   description?: ReactNode;
   /** Content after the name on the same line, such as a badge. */

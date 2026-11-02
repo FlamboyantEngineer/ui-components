@@ -41,7 +41,7 @@ Verification: `src/components/user-identity/user-identity.test.tsx`, `e2e/user-i
 
 ### UIC-USER-IDENTITY-1.6 - Hooks and caller attributes
 
-`UserIdentity` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes and `id` to its root.
+`UserIdentity` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes, `id` and `ref` to its `<span>` root.
 
 Implementation: `src/components/user-identity/user-identity.tsx`
 Verification: `src/components/user-identity/user-identity.test.tsx`

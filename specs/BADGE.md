@@ -41,7 +41,7 @@ Verification: `src/components/badge/badge.test.tsx`
 
 ### UIC-BADGE-1.6 - Hooks and caller attributes
 
-`Badge` shall carry the hooks below, append the caller's `className`, forward caller `data-*` attributes, `id`, `hidden` and `aria-hidden`, read `aria-label` as [UIC-BADGE-1.8](#uic-badge-18---accessible-label), [UIC-BADGE-3.2](#uic-badge-32---accessible-count) and [UIC-BADGE-4.1](#uic-badge-41---dot-marker) say, and keep its own hook values over caller attributes of the same name.
+`Badge` shall carry the hooks below, append the caller's `className`, forward caller `data-*` attributes, `id`, `ref` (its `<span>` root), `hidden` and `aria-hidden`, read `aria-label` as [UIC-BADGE-1.8](#uic-badge-18---accessible-label), [UIC-BADGE-3.2](#uic-badge-32---accessible-count) and [UIC-BADGE-4.1](#uic-badge-41---dot-marker) say, and keep its own hook values over caller attributes of the same name.
 
 Implementation: `src/components/badge/badge.tsx`
 Verification: `src/components/badge/badge.test.tsx`

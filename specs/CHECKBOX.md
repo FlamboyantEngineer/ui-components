@@ -27,7 +27,7 @@ Verification: `src/components/checkbox/checkbox.test.tsx`, `e2e/checkbox.spec.ts
 
 ### UIC-CHECKBOX-1.4 - Hooks and caller attributes
 
-`Checkbox` shall carry the hooks below, append the caller's `className` to its root and forward caller `data-*` attributes to it. `size` (`xs`, `sm`, `md` by default, `lg`) shall publish `data-size` on the root, so a stylesheet sizes the box and gives the row the height of that size on the control scale.
+`Checkbox` shall carry the hooks below, append the caller's `className` to its root and forward caller `data-*` attributes and `ref` to it: `ref` is the `<label>` root, while `inputRef` stays the native input. `size` (`xs`, `sm`, `md` by default, `lg`) shall publish `data-size` on the root, so a stylesheet sizes the box and gives the row the height of that size on the control scale.
 
 Implementation: `src/components/checkbox/checkbox.tsx`
 Verification: `src/components/checkbox/checkbox.test.tsx`

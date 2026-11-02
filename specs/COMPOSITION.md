@@ -55,6 +55,13 @@ A component shall declare the native props it takes. Most list them one by one (
 Implementation: `src/core/props.ts`
 Verification: `test/public-types.test.ts`
 
+### UIC-COMPOSITION-2.5 - Root refs
+
+A component that renders a root element of its own shall declare its `ref` through `RefProps<E>`, typed with that root's element, and forward it to that root, merging it with any ref of its own (UIC-COMPOSITION-2.2). A ref that reaches another element is declared on its own beside it, such as the `inputRef` of [Checkbox](CHECKBOX.md) and [Switch](SWITCH.md), whose `ref` is their `<label>` root. Providers, triggers and other components that render no element of their own take no `ref`.
+
+Implementation: `src/core/props.ts`
+Verification: `test/public-types.test.ts`
+
 ## UIC-COMPOSITION-3 - Slots
 
 ### UIC-COMPOSITION-3.1 - Slot props

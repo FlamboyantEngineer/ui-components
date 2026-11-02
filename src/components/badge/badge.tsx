@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, NativeProps, Size, Tone } from '../../core/props.js';
+import type { BaseProps, NativeProps, Size, Tone, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { formatCount, normalizeCount } from '../../utils/count.js';
@@ -21,7 +21,10 @@ export type BadgeVariant = 'subtle' | 'solid' | 'status';
 export type BadgePlacement = 'inline' | 'overlay';
 
 interface BadgeCommonProps
-  extends BaseProps, Pick<NativeProps<'span'>, 'hidden' | 'aria-hidden' | 'aria-label'> {
+  extends
+    BaseProps,
+    RefProps<HTMLSpanElement>,
+    Pick<NativeProps<'span'>, 'hidden' | 'aria-hidden' | 'aria-label'> {
   /** The value's tone. Defaults to `neutral`. */
   tone?: BadgeTone | undefined;
   /** Scale. Defaults to `md`. */

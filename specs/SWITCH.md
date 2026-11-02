@@ -27,7 +27,7 @@ Verification: `src/components/switch/switch.test.tsx`, `e2e/switch.spec.ts`
 
 ### UIC-SWITCH-1.4 - Hooks and caller attributes
 
-`Switch` shall carry the hooks below, append the caller's `className` to its root and forward caller `data-*` attributes to it. `size` (`xs`, `sm`, `md` by default, `lg`) shall publish `data-size` on the root, so a stylesheet gives the row the height of that size on the control scale and sizes the track and thumb with it: the reference sheet draws 22×12, 26×14, 30×18 and 34×20 pixel tracks with 6, 8, 10 and 12 pixel thumbs that keep the same inset at either end, the one geometry a bare switch and a Boolean Field's switch share.
+`Switch` shall carry the hooks below, append the caller's `className` to its root and forward caller `data-*` attributes and `ref` to it: `ref` is the `<label>` root, while `inputRef` stays the native input. `size` (`xs`, `sm`, `md` by default, `lg`) shall publish `data-size` on the root, so a stylesheet gives the row the height of that size on the control scale and sizes the track and thumb with it: the reference sheet draws 22×12, 26×14, 30×18 and 34×20 pixel tracks with 6, 8, 10 and 12 pixel thumbs that keep the same inset at either end, the one geometry a bare switch and a Boolean Field's switch share.
 
 Implementation: `src/components/switch/switch.tsx`
 Verification: `src/components/switch/switch.test.tsx`, `e2e/switch.spec.ts`

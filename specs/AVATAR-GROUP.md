@@ -36,7 +36,7 @@ Verification: `src/components/avatar-group/avatar-group.test.tsx`, `e2e/avatar-g
 
 ### UIC-AVATAR-GROUP-2.3 - Hooks and caller attributes
 
-`AvatarGroup` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes and `id` to its root.
+`AvatarGroup` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes, `id` and `ref` to its `<span>` root.
 
 Implementation: `src/components/avatar-group/avatar-group.tsx`
 Verification: `src/components/avatar-group/avatar-group.test.tsx`

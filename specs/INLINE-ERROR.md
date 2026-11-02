@@ -34,7 +34,7 @@ Verification: `src/components/inline-error/inline-error.test.tsx`
 
 ### UIC-INLINE-ERROR-1.5 - Hidden, hooks and caller attributes
 
-`hidden` shall hide the error with the native `hidden` attribute while keeping the same element mounted. `InlineError` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes and `id` to its root.
+`hidden` shall hide the error with the native `hidden` attribute while keeping the same element mounted. `InlineError` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes, `id` and `ref` to its `<div>` root.
 
 Implementation: `src/components/inline-error/inline-error.tsx`
 Verification: `src/components/inline-error/inline-error.test.tsx`

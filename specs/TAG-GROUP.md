@@ -41,7 +41,7 @@ Verification: `src/components/tag-group/tag-group.test.tsx`, `e2e/tag-group.spec
 
 ### UIC-TAG-GROUP-1.6 - Hooks and caller attributes
 
-`TagGroup` shall carry the hooks below, append the caller's `className` and forward caller `data-*` attributes and `id` to its root. `Tag` appends its `className` and forwards caller `data-*` attributes to its row, so a caller can mark a tag (for example `data-change="added"`); hook values win over caller attributes of the same name.
+`TagGroup` shall carry the hooks below, append the caller's `className` and forward caller `data-*` attributes, `id` and `ref` to its `<div>` root. `Tag` appends its `className` and forwards caller `data-*` attributes and `ref` to its row, so a caller can mark a tag (for example `data-change="added"`); hook values win over caller attributes of the same name.
 
 Implementation: `src/components/tag-group/tag-group.tsx`
 Verification: `src/components/tag-group/tag-group.test.tsx`

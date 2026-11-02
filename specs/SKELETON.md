@@ -27,7 +27,7 @@ Verification: `src/components/skeleton/skeleton.test.tsx`, `e2e/skeleton.spec.ts
 
 ### UIC-SKELETON-1.4 - Hooks and caller attributes
 
-`Skeleton` and `SkeletonText` shall carry the hooks below, append the caller's `className`, and forward `id` and caller `data-*` attributes to their root; caller attributes never replace a hook attribute.
+`Skeleton` and `SkeletonText` shall carry the hooks below, append the caller's `className`, and forward `id`, `ref` and caller `data-*` attributes to their `<div>` root; caller attributes never replace a hook attribute.
 
 Implementation: `src/components/skeleton/skeleton.tsx`
 Verification: `src/components/skeleton/skeleton.test.tsx`

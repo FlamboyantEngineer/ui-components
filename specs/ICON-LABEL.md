@@ -34,7 +34,7 @@ Verification: `src/components/icon-label/icon-label.test.tsx`
 
 ### UIC-ICON-LABEL-1.5 - Hooks and caller attributes
 
-`IconLabel` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes and `id` to its root.
+`IconLabel` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes, `id` and `ref` to its `<span>` root.
 
 Implementation: `src/components/icon-label/icon-label.tsx`
 Verification: `src/components/icon-label/icon-label.test.tsx`

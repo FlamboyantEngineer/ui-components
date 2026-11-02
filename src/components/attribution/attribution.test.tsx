@@ -155,3 +155,14 @@ describe('Attribution', () => {
     expect(container.querySelector('[tabindex="0"]')).toHaveClass('ui-attribution__time');
   });
 });
+
+describe('Attribution root ref', () => {
+  it('UIC-ATTRIBUTION-1.5 forwards ref to its root', () => {
+    const ref = { current: null as HTMLSpanElement | null };
+    const { container } = render(
+      <Attribution ref={ref} time={fiveMinutesAgo} person={maria} getNow={getNow} />,
+    );
+    expect(ref.current).not.toBeNull();
+    expect(ref.current).toBe(container.querySelector('.ui-attribution'));
+  });
+});

@@ -268,3 +268,13 @@ describe('Shortcut appearance', () => {
     expect(item.querySelector('.ui-shortcut')).toHaveAttribute('data-appearance', 'text');
   });
 });
+
+describe('Shortcut root ref', () => {
+  it('UIC-SHORTCUT-2.3 forwards ref to its root', () => {
+    const ref = { current: null as HTMLElement | null };
+    const { container } = render(<Shortcut ref={ref} chord="Ctrl+K" platform="windows" />);
+    expect(ref.current).not.toBeNull();
+    expect(ref.current).toBe(container.querySelector('.ui-shortcut'));
+    expect(ref.current?.tagName).toBe('KBD');
+  });
+});

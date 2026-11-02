@@ -4,7 +4,7 @@ import { ErrorGlyph } from '../../core/glyphs.js';
 import { getToneGlyph } from '../../core/tone-glyphs.js';
 import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, NativeProps, Tone } from '../../core/props.js';
+import type { BaseProps, NativeProps, Tone, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { Icon } from '../icon/icon.js';
@@ -12,7 +12,8 @@ import { Icon } from '../icon/icon.js';
 /** `danger` for a failure, `warning` for a problem that does not block, `success` for a passed check. */
 export type InlineErrorTone = Extract<Tone, 'danger' | 'warning' | 'success'>;
 
-export interface InlineErrorProps extends BaseProps, Pick<NativeProps<'div'>, 'hidden'> {
+export interface InlineErrorProps
+  extends BaseProps, RefProps<HTMLDivElement>, Pick<NativeProps<'div'>, 'hidden'> {
   /** The failure or validation message: text, a paragraph or a list. */
   children: ReactNode;
   /** Draws a recovery button. When it returns a promise, the button is pending until it settles. */

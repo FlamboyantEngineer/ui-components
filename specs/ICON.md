@@ -27,7 +27,7 @@ Verification: `src/components/icon/icon.test.tsx`, `e2e/icon.spec.ts`
 
 ### UIC-ICON-1.4 - Hooks and caller attributes
 
-`Icon` shall carry the hooks below, append the caller's `className`, forward caller `data-*` attributes and `id`, and publish the built-in component's `glyphName` in `data-glyph` when present.
+`Icon` shall carry the hooks below, append the caller's `className`, forward caller `data-*` attributes, `id` and `ref` to its `<span>` root, and publish the built-in component's `glyphName` in `data-glyph` when present.
 
 Implementation: `src/components/icon/icon.tsx`
 Verification: `src/components/icon/icon.test.tsx`

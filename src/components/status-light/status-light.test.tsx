@@ -123,3 +123,12 @@ describe('StatusLight', () => {
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 });
+
+describe('StatusLight root ref', () => {
+  it('UIC-STATUS-LIGHT-1.6 forwards ref to its root', () => {
+    const ref = { current: null as HTMLSpanElement | null };
+    const { container } = render(<StatusLight ref={ref}>Running</StatusLight>);
+    expect(ref.current).not.toBeNull();
+    expect(ref.current).toBe(container.querySelector('.ui-status-light'));
+  });
+});

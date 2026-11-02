@@ -113,3 +113,12 @@ describe('IconLabel', () => {
     expectHooksMatchSpec(container, 'ICON-LABEL');
   });
 });
+
+describe('IconLabel root ref', () => {
+  it('UIC-ICON-LABEL-1.5 forwards ref to its root', () => {
+    const ref = { current: null as HTMLSpanElement | null };
+    const { container } = render(<IconLabel ref={ref} icon={InfoGlyph} label="Details" />);
+    expect(ref.current).not.toBeNull();
+    expect(ref.current).toBe(container.querySelector('.ui-icon-label'));
+  });
+});

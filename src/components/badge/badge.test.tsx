@@ -328,3 +328,12 @@ describe('Badge', () => {
     expect(root()).toBeEmptyDOMElement();
   });
 });
+
+describe('Badge root ref', () => {
+  it('UIC-BADGE-1.6 forwards ref to its root', () => {
+    const ref = { current: null as HTMLSpanElement | null };
+    const { container } = render(<Badge ref={ref}>Seasonal</Badge>);
+    expect(ref.current).not.toBeNull();
+    expect(ref.current).toBe(container.querySelector('.ui-badge'));
+  });
+});

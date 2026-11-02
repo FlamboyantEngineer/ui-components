@@ -29,7 +29,7 @@ Verification: `src/components/copy-button/copy-button.test.tsx`, `e2e/copy-butto
 
 ### UIC-COPY-BUTTON-1.4 - Options, hooks and caller attributes
 
-`variant` (`ghost` by default, as for an icon button), `size` (`md` by default) and `isDisabled` (or the disabled state a component around supplies, as for a Button) shall pass to the Icon Button, which publishes its own hooks in the `ui-copy-button__button` slot, and the root publishes the same resolved values as `data-variant`, `data-size` and `data-disabled`, so a stylesheet styles the whole control from its root as it does a Button; a disabled button never copies. `CopyButton` shall carry the hooks below on its `<span>` root, append the caller's `className`, forward caller `data-*` attributes and `id` to the root, and keep its own hook values over caller attributes of the same name.
+`variant` (`ghost` by default, as for an icon button), `size` (`md` by default) and `isDisabled` (or the disabled state a component around supplies, as for a Button) shall pass to the Icon Button, which publishes its own hooks in the `ui-copy-button__button` slot, and the root publishes the same resolved values as `data-variant`, `data-size` and `data-disabled`, so a stylesheet styles the whole control from its root as it does a Button; a disabled button never copies. `CopyButton` shall carry the hooks below on its `<span>` root, append the caller's `className`, forward caller `data-*` attributes, `id` and `ref` to the root, and keep its own hook values over caller attributes of the same name.
 
 Implementation: `src/components/copy-button/copy-button.tsx`
 Verification: `src/components/copy-button/copy-button.test.tsx`, `e2e/copy-button.spec.ts`

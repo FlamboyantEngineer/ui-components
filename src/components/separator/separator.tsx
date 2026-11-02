@@ -4,7 +4,7 @@ import { createElement, useId, type JSX, type ReactNode } from 'react';
 import { Separator as AriaSeparator } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Orientation } from '../../core/props.js';
+import type { BaseProps, Orientation, RefProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import type { ElementRender } from '../../utils/render-element.js';
 
@@ -30,7 +30,10 @@ export interface SeparatorRenderState {
 }
 
 export interface SeparatorProps
-  extends BaseProps, Pick<AriaLabellingProps, 'aria-label' | 'aria-labelledby'> {
+  extends
+    BaseProps,
+    RefProps<HTMLElement>,
+    Pick<AriaLabellingProps, 'aria-label' | 'aria-labelledby'> {
   /** `horizontal` (the default) separates blocks; `vertical` separates inline items. */
   orientation?: Orientation | undefined;
   /** The element for an unlabelled horizontal rule. Defaults to `hr`; otherwise a `<div>`. */

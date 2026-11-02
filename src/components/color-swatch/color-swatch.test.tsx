@@ -110,3 +110,12 @@ describe('ColorSwatch', () => {
     expectHooksMatchSpec(container, 'COLOR-SWATCH', { callerAttributes: ['data-test'] });
   });
 });
+
+describe('ColorSwatch root ref', () => {
+  it('UIC-COLOR-SWATCH-1.4 forwards ref to its root', () => {
+    const ref = { current: null as HTMLDivElement | null };
+    const { container } = render(<ColorSwatch ref={ref} color="#336699" />);
+    expect(ref.current).not.toBeNull();
+    expect(ref.current).toBe(container.querySelector('.ui-color-swatch'));
+  });
+});

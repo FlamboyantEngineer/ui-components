@@ -176,3 +176,12 @@ describe('UserIdentity', () => {
     expectHooksMatchSpec(container, 'USER-IDENTITY');
   });
 });
+
+describe('UserIdentity root ref', () => {
+  it('UIC-USER-IDENTITY-1.6 forwards ref to its root', () => {
+    const ref = { current: null as HTMLSpanElement | null };
+    const { container } = render(<UserIdentity ref={ref} name="Maria Santos" />);
+    expect(ref.current).not.toBeNull();
+    expect(ref.current).toBe(container.querySelector('.ui-user-identity'));
+  });
+});

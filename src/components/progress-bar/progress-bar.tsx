@@ -70,7 +70,7 @@ export interface ProgressBarProps
 
 export type SpinnerSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 
-export interface SpinnerProps extends BaseProps {
+export interface SpinnerProps extends BaseProps, RefProps<HTMLSpanElement> {
   /** Box size. Defaults to `md`. */
   size?: SpinnerSize | undefined;
   /** Names a standalone spinner, which then is an indeterminate progress bar. Without it, decorative. */

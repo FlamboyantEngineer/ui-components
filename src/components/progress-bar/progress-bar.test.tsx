@@ -230,3 +230,12 @@ describe('Spinner', () => {
     expect(meter.querySelector('.ui-progress-bar__value')).toHaveTextContent('40%');
   });
 });
+
+describe('Spinner root ref', () => {
+  it('UIC-PROGRESS-BAR-2.1 forwards ref to its root', () => {
+    const ref = { current: null as HTMLSpanElement | null };
+    const { container } = render(<Spinner ref={ref} />);
+    expect(ref.current).not.toBeNull();
+    expect(ref.current).toBe(container.querySelector('.ui-spinner'));
+  });
+});

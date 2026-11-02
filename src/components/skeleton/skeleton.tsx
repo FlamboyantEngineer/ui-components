@@ -3,14 +3,14 @@
 import type { ReactNode } from 'react';
 import { LoadingBoundaryProvider } from '../../core/loading-boundary.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { normalizeCount } from '../../utils/count.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 
 /** `text` is a line of text, `rectangle` a block such as media, `circle` a round avatar. */
 export type SkeletonShape = 'text' | 'rectangle' | 'circle';
 
-export interface SkeletonProps extends BaseProps {
+export interface SkeletonProps extends BaseProps, RefProps<HTMLDivElement> {
   /** The placeholder's shape. Defaults to `rectangle`. */
   shape?: SkeletonShape | undefined;
   /** Whether the content is loading. Defaults to `true`. */
@@ -24,7 +24,8 @@ export interface SkeletonProps extends BaseProps {
   children?: ReactNode;
 }
 
-export interface SkeletonTextProps extends BaseProps, Pick<SkeletonProps, 'animated'> {
+export interface SkeletonTextProps
+  extends BaseProps, RefProps<HTMLDivElement>, Pick<SkeletonProps, 'animated'> {
   /** The number of placeholder lines, at least one. Defaults to 3. */
   lines?: number | undefined;
 }
