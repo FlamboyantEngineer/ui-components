@@ -43,10 +43,10 @@ Verification: `src/components/button/button.test.tsx`, `e2e/button.spec.ts`
 
 ### UIC-BUTTON-1.6 - Tooltip
 
-`tooltip` shall show its content in a [Tooltip](TOOLTIP.md) for the button, opened by hover and keyboard focus, without wrapping the `<button>` in another element. A pending button still shows it. A natively disabled button receives no hover or focus and so shows no tooltip; with `focusableWhenDisabled` it does, which explains why a command is unavailable. A tooltip or shortcut that comes or goes, or a hint that changes, keeps the same `<button>` or link element, its ref, its content and its focus; a hint that goes while open closes its tooltip. A button inside a caller's own `Tooltip` or `HoverCard` trigger, with a hint or without, leaves that trigger to the caller: its own hint yields, so the caller's tooltip or card opens on hover, focus and long press and the button keeps the caller's `aria-haspopup`, `aria-expanded` and description.
+`tooltip` shall show its content in a [Tooltip](TOOLTIP.md) for the button, opened by hover and keyboard focus, without wrapping the `<button>` in another element. A pending button still shows it, on the first pointer entry after keyboard use too, as does a Hover Card around a pending button. A natively disabled button receives no hover or focus and so shows no tooltip; with `focusableWhenDisabled` it does, which explains why a command is unavailable. A tooltip or shortcut that comes or goes, or a hint that changes, keeps the same `<button>` or link element, its ref, its content and its focus; a hint that goes while open closes its tooltip. A button inside a caller's own `Tooltip` or `HoverCard` trigger, with a hint or without, leaves that trigger to the caller: its own hint yields, so the caller's tooltip or card opens on hover, focus and long press and the button keeps the caller's `aria-haspopup`, `aria-expanded` and description.
 
 Implementation: `src/components/button/button.tsx`, `src/components/tooltip/tooltip.tsx`, `src/components/tooltip/caller-trigger.ts`
-Verification: `src/components/button/button.test.tsx`, `e2e/tooltip.spec.ts`
+Verification: `src/components/button/button.test.tsx`, `src/components/button/button-pending-hover.test.tsx`, `e2e/tooltip.spec.ts`
 
 ### UIC-BUTTON-1.7 - Keyboard shortcut
 
