@@ -144,6 +144,54 @@ test.describe('Formula Bar lab', () => {
     await expect(sheet.root.locator('.ui-formula-bar')).not.toHaveAttribute('data-dirty');
   });
 
+  test('UIC-FORMULA-BAR-3.5 inserts a function from the fₓ list into the draft', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('formula-bar');
+    const sheet = spreadsheet(page);
+    await sheet.cell(5, 'C').click();
+    await expect(sheet.content).toHaveValue('1.5');
+    await sheet.content.click();
+    await page.keyboard.press('Control+a');
+    const fx = sheet.root.getByRole('button', { name: 'Insert function' });
+    await fx.click();
+    const menu = page.getByRole('menu');
+    await expect(menu.getByRole('menuitem')).toHaveText([/^SUM/, /^AVERAGE/, /^MIN/, /^MAX/]);
+    await menu.getByRole('menuitem', { name: /^MAX/ }).click();
+    // The call wraps the selection, focus is back in the content inside the brackets, and nothing
+    // is committed yet.
+    await expect(sheet.content).toHaveValue('MAX(1.5)');
+    await expect(sheet.content).toBeFocused();
+    await expect(sheet.root.locator('.ui-formula-bar')).toHaveAttribute('data-dirty', 'true');
+    await expect(sheet.output).toHaveText('Last commit: none');
+    await page.keyboard.type(',2');
+    await expect(sheet.content).toHaveValue('MAX(1.5,2)');
+    await page.keyboard.press('Escape');
+    await expect(sheet.content).toHaveValue('1.5');
+    // By keyboard: open the list, pick SUM, and confirm it.
+    await page.keyboard.press('End');
+    await fx.focus();
+    await page.keyboard.press('Enter');
+    await expect(menu).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(menu).toHaveCount(0);
+    await expect(fx).toBeFocused();
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('Enter');
+    await expect(sheet.content).toBeFocused();
+    await expect(sheet.content).toHaveValue('1.5SUM()');
+    await page.keyboard.press('Control+a');
+    await page.keyboard.press('Delete');
+    await fx.click();
+    await menu.getByRole('menuitem', { name: /^SUM/ }).click();
+    await page.keyboard.type('B2:B5');
+    await expect(sheet.content).toHaveValue('=SUM(B2:B5)');
+    await page.keyboard.press('Enter');
+    await expect(sheet.output).toHaveText('Last commit: C5 = =SUM(B2:B5)');
+    await expect(sheet.cell(5, 'C')).toHaveText('25');
+  });
+
   test('UIC-FORMULA-BAR-4.1 passes axe', async ({ page, lab }) => {
     await lab.open('formula-bar');
     await expect(page.getByRole('grid', { name: 'Fruit order' })).toBeVisible();

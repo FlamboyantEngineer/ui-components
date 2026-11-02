@@ -48,6 +48,8 @@ export interface RedlineStrings {
   formulaResult: string;
   /** Describes the formula bar's content without its buttons: the keys that confirm and cancel. */
   formulaKeysHint: string;
+  /** Names the formula bar's fₓ button, which lists functions to insert. */
+  formulaFunctions: string;
 }
 
 /** The module's text, with the message values each text function reads its arguments as. */

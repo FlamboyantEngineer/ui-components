@@ -1,6 +1,6 @@
 'use client';
 
-import { CheckGlyph, CloseGlyph, FormulaGlyph } from '../../core/glyphs.js';
+import { CheckGlyph, CloseGlyph } from '../../core/glyphs.js';
 import {
   useId,
   useLayoutEffect,
@@ -11,9 +11,8 @@ import {
 } from 'react';
 import { Input } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
-import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
-import { Glyph, useUiStrings } from '../../core/provider.js';
+import { useUiStrings } from '../../core/provider.js';
 import {
   formatCellReference,
   parseCellReference,
@@ -21,7 +20,9 @@ import {
 } from '../../utils/cell-reference.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { CodeEditor, type CodeTokenizer } from '../code-editor/code-editor.js';
-import type { Completions } from '../completion-list/completion-list.js';
+import type { Completion, Completions } from '../completion-list/completion-list.js';
+import { FormulaBarFunctions } from './formula-bar-functions.js';
+import { formulaBarHooks as hooks } from './formula-bar-hooks.js';
 import { Button } from '../button/button.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 
@@ -42,6 +43,12 @@ export interface FormulaBarProps extends BaseProps, AriaLabellingProps {
   tokenize?: CodeTokenizer | undefined;
   /** Function names or other words to complete at the caret, or a source that completes it. */
   completions?: Completions | undefined;
+  /**
+   * The functions the fₓ button lists. Choosing one inserts its `insertText` (or `label`) with
+   * brackets at the caret, around any selected text, and returns focus to the content between the
+   * brackets; nothing is committed. Without them the fₓ mark is decorative.
+   */
+  functions?: readonly Completion[] | undefined;
   /** The caller's evaluation of the content being edited, shown as its result. */
   evaluate?: ((value: string, cell: CellCoordinates) => string) | undefined;
   /** Shown while the content is empty. */
@@ -56,16 +63,6 @@ export interface FormulaBarProps extends BaseProps, AriaLabellingProps {
    */
   showActions?: boolean | undefined;
 }
-
-const hooks = createHooks('formula-bar', [
-  'reference',
-  'status',
-  'cancel',
-  'confirm',
-  'glyph',
-  'editor',
-  'result',
-]);
 
 /** Space-separated ids for an ARIA id list, or undefined when there are none. */
 const joinIds = (...ids: (string | null)[]) => ids.filter(Boolean).join(' ') || undefined;
@@ -211,6 +208,16 @@ function FormulaBarButtons(props: {
   );
 }
 
+/** The caller's evaluation of the draft, after a visually hidden label. */
+function FormulaBarResult({ id, result }: { id: string; result: string }) {
+  const strings = useUiStrings();
+  return (
+    <span {...hooks.slot('result')} id={id}>
+      <VisuallyHidden elementType="span">{strings.formulaResult}</VisuallyHidden> {result}
+    </span>
+  );
+}
+
 /**
  * The content's draft and what the bar may do with it. A locked bar (disabled, or without a cell)
  * keeps its draft for when it unlocks, but neither commits nor drops it meanwhile.
@@ -262,6 +269,7 @@ export function FormulaBar({
   columnCount,
   tokenize,
   completions,
+  functions,
   evaluate,
   placeholder,
   isReadOnly = false,
@@ -275,6 +283,7 @@ export function FormulaBar({
   const hintId = useId();
   const { text, setDraft, isDirty, isLocked, canCancel, canCommit, commit, cancel } =
     useFormulaDraft({ cell, value, onCommit, isReadOnly, isDisabled });
+  const editorRef = useRef<HTMLTextAreaElement>(null);
   const onKeyDown = (event: KeyboardEvent) => {
     if (isComposingKey(event.nativeEvent)) return;
     if (event.key === 'Enter') commit();
@@ -304,8 +313,14 @@ export function FormulaBar({
         onConfirm={commit}
         hintId={showActions ? null : hintId}
       />
-      <Glyph icon={FormulaGlyph} className={hooks.slotClass('glyph')} />
+      <FormulaBarFunctions
+        functions={functions}
+        isDisabled={isLocked || isReadOnly}
+        editorRef={editorRef}
+        draft={{ text, setDraft }}
+      />
       <CodeEditor
+        ref={editorRef}
         variant="surface"
         className={hooks.slotClass('editor')}
         aria-label={strings.formulaCellContent}
@@ -320,12 +335,7 @@ export function FormulaBar({
         isDisabled={isLocked}
         onKeyDown={onKeyDown}
       />
-      {evaluate && cell ? (
-        <span {...hooks.slot('result')} id={resultId}>
-          <VisuallyHidden elementType="span">{strings.formulaResult}</VisuallyHidden>{' '}
-          {evaluate(text, cell)}
-        </span>
-      ) : null}
+      {evaluate && cell ? <FormulaBarResult id={resultId} result={evaluate(text, cell)} /> : null}
     </div>
   );
 }

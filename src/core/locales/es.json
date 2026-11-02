@@ -601,6 +601,7 @@
   "formulaInvalidReference": "No hay ninguna celda llamada {text}",
   "formulaResult": "Resultado",
   "formulaKeysHint": "Intro confirma, Esc cancela.",
+  "formulaFunctions": "Insertar función",
   "relationItems": "Elementos",
   "related": "Relacionados",
   "relationCount": "{count, plural, =0 {Sin relaciones} one {# relación} other {# relaciones}}",

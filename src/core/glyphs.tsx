@@ -58,6 +58,7 @@ import {
   faceSmilePath,
   filmPath,
   folderPath,
+  functionPath,
   funnelPath,
   globeAltPath,
   h1Path,
@@ -96,7 +97,6 @@ import {
   trashPath,
   underlinePath,
   usersPath,
-  variablePath,
   viewColumnsPath,
   wrenchPath,
   xCirclePath,
@@ -195,7 +195,7 @@ export const AdjustmentsGlyph = /* @__PURE__ */ createGlyph(
 export const MoveGlyph = /* @__PURE__ */ createGlyph('move', arrowsUpDownPath);
 export const TableGlyph = /* @__PURE__ */ createGlyph('table', tableCellsPath);
 export const ResizeGlyph = /* @__PURE__ */ createGlyph('resize', arrowsPointingOutPath);
-export const FormulaGlyph = /* @__PURE__ */ createGlyph('formula', variablePath);
+export const FormulaGlyph = /* @__PURE__ */ createGlyph('formula', functionPath);
 export const PlayGlyph = /* @__PURE__ */ createGlyph('play', playPath);
 export const PauseGlyph = /* @__PURE__ */ createGlyph('pause', pausePath);
 export const ParagraphGlyph = /* @__PURE__ */ createGlyph('paragraph', bars3BottomLeftPath);
