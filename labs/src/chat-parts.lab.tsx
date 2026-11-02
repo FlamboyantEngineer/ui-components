@@ -7,6 +7,7 @@ import {
   ToolRenderers,
 } from './chat-parts-conversation.js';
 import { FailedRun, failedRunParts } from './chat-parts-failure.js';
+import { ActivityExpansion, AnsweredMarks } from './chat-parts-options.js';
 import {
   bookingCall,
   linesText,
@@ -157,6 +158,18 @@ mountLab(
           </div>
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Steps on request"
+      description="By default a message's steps open while they run (expandsActivity). With expandsActivity false they stay closed while the message streams, still busy, until the reader opens them; the reader's choice then holds when Streaming is turned off."
+    >
+      <ActivityExpansion />
+    </LabSection>
+    <LabSection
+      title="Answered tabs"
+      description="questionAnsweredMark chooses how a question card's answered tabs show: icon (the default) draws a check before the label; style leaves the mark to the stylesheet through data-answered. Pick an answer to the first question to mark its tab."
+    >
+      <AnsweredMarks />
     </LabSection>
     <LabSection
       title="Working session"

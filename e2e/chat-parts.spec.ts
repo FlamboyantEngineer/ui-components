@@ -96,6 +96,48 @@ test.describe('Chat Parts lab', () => {
     await lab.expectAccessible('[data-lab-section="Streamed answer"]');
   });
 
+  test('UIC-CHAT-PARTS-5.2 UIC-CHAT-PARTS-6.1 opens running steps only on request with expandsActivity false', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-parts');
+    const steps = demo(page, 'activity-expansion');
+    const trigger = (opens: string) =>
+      matrixCell(steps, `opens=${opens}`).locator('.ui-chat-steps').getByRole('button').first();
+    await expect(trigger('automatically')).toHaveAttribute('aria-expanded', 'true');
+    const manual = trigger('on request');
+    await expect(manual).toHaveAttribute('aria-expanded', 'false');
+    await expect(manual).toHaveAccessibleName('Working…');
+    await manual.click();
+    await expect(manual).toHaveAttribute('aria-expanded', 'true');
+    await lab.expectAccessible('[data-lab-demo="activity-expansion"]');
+    await steps.getByRole('switch', { name: 'Streaming' }).focus();
+    await page.keyboard.press('Space');
+    await expect(trigger('automatically')).toHaveAttribute('aria-expanded', 'false');
+    await expect(manual).toHaveAttribute('aria-expanded', 'true');
+    await expect(manual).not.toHaveAccessibleName('Working…');
+  });
+
+  test('UIC-CHAT-QUESTION-3.4 marks answered tabs with a check or leaves them to the stylesheet', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-parts');
+    const answered = section(page, 'Answered tabs');
+    for (const mark of ['icon', 'style']) {
+      const card = matrixCell(answered, `mark=${mark}`).locator('.ui-chat-question');
+      await expect(card).toHaveAttribute('data-answered-mark', mark);
+      await card.getByRole('radio', { name: /Packed/ }).focus();
+      await page.keyboard.press('Space');
+      const tab = card.getByRole('tab', { name: /Pace/ });
+      await expect(tab).toHaveAttribute('data-answered', 'true');
+      await expect(tab).toHaveAccessibleDescription('Answered');
+      await expect(tab.locator('.ui-tabs__icon')).toHaveCount(mark === 'icon' ? 1 : 0);
+      await expect(card.getByRole('tab', { name: /Stay/ })).not.toHaveAttribute('data-answered');
+    }
+    await lab.expectAccessible('[data-lab-section="Answered tabs"]');
+  });
+
   test('UIC-CHAT-PARTS-5.4 shows a failed step as a quiet row with its error closed', async ({
     page,
     lab,
