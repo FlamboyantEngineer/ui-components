@@ -129,7 +129,7 @@ export function FullEditor() {
     <>
       <RichTextEditor
         label="Recipe"
-        description="Type / for blocks, select text for the floating toolbar, drag a block by its grip (a line marks where it lands) or press Alt+Shift+Up or Down to move it."
+        description="Type / for blocks, select text for the floating toolbar, drag a block by its grip (a line marks where it lands; a drag the document changes under drops nothing) or press Alt+Shift+Up or Down to move it."
         data-lab-editor="full"
         value={value}
         onChange={setValue}

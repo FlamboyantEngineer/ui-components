@@ -8,6 +8,12 @@ import type { EditorView } from 'prosemirror-view';
 import { useState, type RefObject } from 'react';
 import { isHTMLElement, isNode } from '../../utils/is-element.js';
 
+/** A dragged block: its position in the document it was dragged from. */
+export interface BlockDragSource {
+  pos: number;
+  doc: DocNode;
+}
+
 /** Where a dragged block would land: before the top-level block at `index`, or at the end. */
 interface BlockGap {
   index: number;
@@ -78,13 +84,15 @@ function moveBlock(view: EditorView, source: number, index: number) {
  * gap nearest the pointer, shown while the drag is over the surface, takes the block as one
  * edit. The surface's capture listeners run before ProseMirror's, which would otherwise drop the
  * block's content at the nearest text position, inside a list or a quote. A drop in place, out of
- * the surface or after the drag is cancelled changes nothing.
+ * the surface or after the drag is cancelled changes nothing. The drag belongs to the document it
+ * started in: once the document changes, by the host replacing the value or by any edit, its
+ * position may name another block or none, so the drag shows no gap and its drop changes nothing.
  *
  * Returns the gap a drop would fill, for the drop indicator, while it would move the block.
  */
 export function useBlockDrop(
   surfaceRef: RefObject<HTMLElement | null>,
-  source: number | null,
+  source: BlockDragSource | null,
 ): BlockGap | null {
   const [gap, setGap] = useState<BlockGap | null>(null);
   useEditorEffect(
@@ -92,8 +100,9 @@ export function useBlockDrop(
       const surface = surfaceRef.current;
       if (source === null || !surface) return undefined;
       const toGap = (event: DragEvent) => {
-        const found = view.editable ? findGap(view, surface, event.clientY) : null;
-        return found && !isInPlace(view.state.doc, source, found.index) ? found : null;
+        const isCurrent = view.editable && view.state.doc === source.doc;
+        const found = isCurrent ? findGap(view, surface, event.clientY) : null;
+        return found && !isInPlace(view.state.doc, source.pos, found.index) ? found : null;
       };
       const onDragOver = (event: DragEvent) => {
         event.preventDefault();
@@ -110,7 +119,7 @@ export function useBlockDrop(
         event.preventDefault();
         const found = toGap(event);
         setGap(null);
-        if (found) moveBlock(view, source, found.index);
+        if (found) moveBlock(view, source.pos, found.index);
       };
       surface.addEventListener('dragover', onDragOver, true);
       surface.addEventListener('dragleave', onDragLeave, true);
