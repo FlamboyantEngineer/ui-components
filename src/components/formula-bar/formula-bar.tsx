@@ -33,6 +33,10 @@ export interface FormulaBarProps extends BaseProps, AriaLabellingProps {
   value: string;
   /** Called with the edited content and its cell on Enter or the confirm button. */
   onCommit?: ((value: string, cell: CellCoordinates) => void) | undefined;
+  /** Called with the active cell when Escape or the cancel button drops an edit. */
+  onCancel?: ((cell: CellCoordinates) => void) | undefined;
+  /** Called with the draft and its cell as the reader edits the content. */
+  onDraftChange?: ((draft: string, cell: CellCoordinates) => void) | undefined;
   /** Called with the cell a reference typed into the reference box names, on Enter. */
   onCellChange?: ((cell: CellCoordinates) => void) | undefined;
   /** The grid's row count; a typed reference below the last row is refused. */
@@ -226,32 +230,41 @@ function useFormulaDraft({
   cell,
   value,
   onCommit,
+  onCancel,
+  onDraftChange,
   isReadOnly,
   isDisabled,
-}: Pick<FormulaBarProps, 'cell' | 'value' | 'onCommit'> & {
+}: Pick<FormulaBarProps, 'cell' | 'value' | 'onCommit' | 'onCancel' | 'onDraftChange'> & {
   isReadOnly: boolean;
   isDisabled: boolean;
 }) {
-  const [draft, setDraft] = useSourceState<string | null>(describeSource(cell, value), null);
+  const [draft, setStoredDraft] = useSourceState<string | null>(describeSource(cell, value), null);
+  const setDraft = (next: string) => {
+    setStoredDraft(next);
+    if (cell) onDraftChange?.(next, cell);
+  };
   const text = draft ?? value;
   const isDirty = draft !== null && draft !== value;
   const isLocked = isDisabled || cell === null;
   const canCancel = isDirty && !isLocked;
   const canCommit = canCancel && !isReadOnly;
-  return {
-    text,
-    setDraft,
-    isDirty,
-    isLocked,
-    canCancel,
-    canCommit,
-    commit: () => {
-      if (canCommit && cell) onCommit?.(text, cell);
-    },
-    cancel: () => {
-      if (canCancel) setDraft(null);
-    },
+  const commit = () => {
+    if (canCommit && cell) onCommit?.(text, cell);
   };
+  const cancel = () => {
+    if (!canCancel || !cell) return;
+    setStoredDraft(null);
+    onCancel?.(cell);
+  };
+  // Enter commits and Escape cancels in the content, unless an input method is composing.
+  const onKeyDown = (event: KeyboardEvent) => {
+    if (isComposingKey(event.nativeEvent)) return;
+    if (event.key === 'Enter') commit();
+    else if (event.key === 'Escape' && isDirty) cancel();
+    else return;
+    event.preventDefault();
+  };
+  return { text, setDraft, isDirty, isLocked, canCancel, canCommit, commit, cancel, onKeyDown };
 }
 
 /**
@@ -264,6 +277,8 @@ export function FormulaBar({
   cell,
   value,
   onCommit,
+  onCancel,
+  onDraftChange,
   onCellChange,
   rowCount,
   columnCount,
@@ -281,18 +296,11 @@ export function FormulaBar({
   const strings = useUiStrings();
   const resultId = useId();
   const hintId = useId();
-  const { text, setDraft, isDirty, isLocked, canCancel, canCommit, commit, cancel } =
-    useFormulaDraft({ cell, value, onCommit, isReadOnly, isDisabled });
+  const { text, setDraft, isDirty, isLocked, canCancel, canCommit, commit, cancel, onKeyDown } =
+    useFormulaDraft({ cell, value, onCommit, onCancel, onDraftChange, isReadOnly, isDisabled });
   const editorRef = useRef<HTMLTextAreaElement>(null);
   // An empty result, such as an empty cell's, takes no room and describes nothing.
   const result = evaluate && cell ? evaluate(text, cell) : '';
-  const onKeyDown = (event: KeyboardEvent) => {
-    if (isComposingKey(event.nativeEvent)) return;
-    if (event.key === 'Enter') commit();
-    else if (event.key === 'Escape' && isDirty) cancel();
-    else return;
-    event.preventDefault();
-  };
   const labelledBy = rest['aria-labelledby'];
   return (
     <div
