@@ -23,6 +23,10 @@ interface ImageIntakeOptions {
   maxSize: number;
   /** Whether the image mode shows; leaving it drops a file still being read and its message. */
   isActive: boolean;
+  /** Whether the field takes changes; locking it drops a file still being read. */
+  isEditable: boolean;
+  /** The field's value: a new one, from the host or from a taken image, drops a pending file. */
+  value: unknown;
   /** Called with an image read from an upload or a paste, or `null` when it is deleted. */
   onImage: (image: ImageSignature | null) => void;
 }
@@ -43,11 +47,14 @@ export interface ImageIntake {
 }
 
 /**
- * Takes files as the signature image, the latest one winning: a file read after another was
- * chosen, after the image was deleted or after the image mode left is dropped. A refused file
- * leaves the value and shows why.
+ * Takes files as the signature image, the latest one winning. Each upload or paste owns its work
+ * from the request, a paste from before its clipboard read, through decoding: one that settles after
+ * another began, after the image was deleted, the mode left, the value replaced, the field locked or
+ * the pad unmounted is dropped, its image and its message alike. A refused file leaves the value and
+ * shows why.
  */
-export function useImageIntake({ maxSize, isActive, onImage }: ImageIntakeOptions): ImageIntake {
+export function useImageIntake(options: ImageIntakeOptions): ImageIntake {
+  const { maxSize, isActive, isEditable, value, onImage } = options;
   const strings = useUiStrings();
   const { locale } = useLocale();
   const latest = useRef(0);
@@ -59,8 +66,8 @@ export function useImageIntake({ maxSize, isActive, onImage }: ImageIntakeOption
     if (!isActive) setMessage(null);
   }
   useEffect(() => {
-    if (!isActive) latest.current += 1;
-  }, [isActive]);
+    latest.current += 1;
+  }, [isActive, isEditable, value]);
   useEffect(
     () => () => {
       latest.current += 1;
@@ -72,9 +79,12 @@ export function useImageIntake({ maxSize, isActive, onImage }: ImageIntakeOption
     size: strings.signatureImageSize(formatBytes(maxSize, locale)),
     unreadable: strings.signatureImageUnreadable,
   };
-  const take = async (file: Blob | null) => {
+  const begin = () => {
     latest.current += 1;
-    const ticket = latest.current;
+    return latest.current;
+  };
+  const read = async (ticket: number, file: Blob | null) => {
+    if (ticket !== latest.current) return;
     if (!file || !chooser) {
       setMessage(strings.signatureImageNoPaste);
       return;
@@ -86,12 +96,16 @@ export function useImageIntake({ maxSize, isActive, onImage }: ImageIntakeOption
       onImage(result.image);
     } else setMessage(problems[result.problem]);
   };
+  const take = (file: Blob | null) => read(begin(), file);
   return {
     message,
     setChooser,
     take,
     upload: () => chooser?.click(),
-    paste: async () => take(await readClipboardImage(chooser)),
+    paste: async () => {
+      const ticket = begin();
+      await read(ticket, await readClipboardImage(chooser));
+    },
     clear() {
       latest.current += 1;
       setMessage(null);

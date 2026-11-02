@@ -252,7 +252,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Drawing, typing, images and output"
-      description="Draw strokes, undo or clear them, type a name, or upload or paste an image (copy an image, focus the image area or a button and press Ctrl+V or Cmd+V, or use Paste image); a file of another type, too large or unreadable is refused with a message. Changing the mode clears a signature given another way. The drawing shows as an image and as SVG markup. Cancelling or locking the drawing, or a replacement arriving mid-stroke (start drawing after Replace in 2 seconds), discards its unfinished stroke."
+      description="Draw strokes, undo or clear them, type a name, or upload or paste an image (copy an image, focus the image area or a button and press Ctrl+V or Cmd+V, or use Paste image); a file of another type, too large or unreadable is refused with a message. Changing the mode clears a signature given another way, and a Paste image still waiting on the clipboard (the browser may ask for permission) is dropped if you change the mode, clear or replace the value before it arrives. The drawing shows as an image and as SVG markup. Cancelling or locking the drawing, or a replacement arriving mid-stroke (start drawing after Replace in 2 seconds), discards its unfinished stroke."
     >
       <LiveSignature />
     </LabSection>
