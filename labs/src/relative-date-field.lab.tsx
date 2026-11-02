@@ -8,6 +8,7 @@ import {
 } from '../../src/components/relative-date-field/relative-date-field.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { fieldLayouts, fieldStates, type FieldStateName } from './field-states.js';
+import { Cutoffs, HostOpen, InitiallyOpen, ZonedNow } from './relative-date-cases.js';
 
 /** A fixed clock, so every label in the lab reads the same on every day. */
 const getNow = () => new Date(2026, 3, 20, 10, 30);
@@ -232,6 +233,25 @@ mountLab(
       description="A calendar beside the presets, caller-named and computed presets, relative ranges and bounds."
     >
       <Extras />
+    </LabSection>
+    <LabSection
+      title="Time zones near midnight"
+      description="The clock reads 23:30 UTC on 20 April: still the 20th in New York, already the 21st in Tokyo. The same 21 April reads as tomorrow in one and today in the other, and Today commits that zone's day."
+    >
+      <ZonedNow />
+    </LabSection>
+    <LabSection
+      title="Relative or absolute"
+      description="A date and a range four days away against cutoffs of three, four and five days: from fallbackAfterDays on, values read as absolute dates."
+    >
+      <Cutoffs />
+    </LabSection>
+    <LabSection
+      title="Open state"
+      description="The host holds whether the presets are open: Open opens them, and Close and the locks wait two seconds so you can open them first. Each request the field makes (the trigger, Escape, a pick) shows before the host grants it. Locking while open closes the presets, and unlocking leaves them closed. Clear the due date to see its placeholder. The last button mounts a field whose presets open on its first render."
+    >
+      <HostOpen />
+      <InitiallyOpen />
     </LabSection>
     <LabSection
       title="Form"

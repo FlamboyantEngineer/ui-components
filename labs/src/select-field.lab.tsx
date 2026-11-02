@@ -15,6 +15,7 @@ import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 import { Paged } from './select-field-paged.js';
 import { TriggerRefField } from './select-field-trigger-cases.js';
+import { OpenStates } from './select-field-open-cases.js';
 import { ChangeFit, ChangeMatrix } from './select-field-changes.js';
 import { fieldLayouts, fieldStates, type FieldStateName } from './field-states.js';
 
@@ -498,6 +499,12 @@ mountLab(
         description="A select that turns disabled while open closes and reports it; unlocking leaves it closed."
       >
         <Locking />
+      </LabSection>
+      <LabSection
+        title="Open state"
+        description="The host holds whether each list or tree is open: Open opens it, and Close and the locks wait two seconds so you can open it first. Each request the select makes (the trigger, Escape, a pick, locking) shows before the host grants it. A select that locks while open closes and asks the host to close, so unlocking leaves it closed. The last two mount a select that opens on its first render."
+      >
+        <OpenStates />
       </LabSection>
       <LabSection
         title="Virtualized"

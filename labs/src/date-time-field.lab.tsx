@@ -9,6 +9,7 @@ import {
 } from '../../src/components/date-time-field/date-time-field.js';
 import { Form as UiForm } from '../../src/components/form/form.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { HourGranularity, OpenPopups } from './date-time-open-cases.js';
 import { fieldLayouts, fieldStates, type FieldStateName } from './field-states.js';
 
 const modes = ['date', 'time', 'date-time', 'date-range', 'date-time-range'] as const;
@@ -368,6 +369,18 @@ mountLab(
       description="Set a time without typing. Roll the wheel over an hour, minute, second or AM/PM segment, or use a time field's up and down buttons, which step the part focused last. A date and time, or a range, also shows hour and minute columns under the calendar, in the same popup. Options outside the bounds are disabled."
     >
       <TimePickers />
+    </LabSection>
+    <LabSection
+      title="Hour granularity"
+      description="The segments stop at the hour and the committed value keeps whole hours. The date and time's picker lists hours only, and on 13 April only those from 8:00 to 18:00."
+    >
+      <HourGranularity />
+    </LabSection>
+    <LabSection
+      title="Open state"
+      description="The host holds whether the calendar, and the calendar with its time columns, are open: Open opens it, and Close and the locks wait two seconds so you can open it first. Each request the field makes (the trigger, Escape, a pick) shows before the host grants it. A locked field hides its popup without asking the host to close it, so unlocking shows it again while the host keeps it open. The last two mount a field whose popup opens on its first render."
+    >
+      <OpenPopups />
     </LabSection>
     <LabSection
       title="Scrolling with the calendar open"
