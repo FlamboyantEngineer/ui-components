@@ -8,7 +8,11 @@ import {
 } from '../../src/components/calendar-view/calendar-view.js';
 import { Button } from '../../src/components/button/button.js';
 import { Checkbox } from '../../src/components/checkbox/checkbox.js';
-import type { CalendarEventMenuEntry } from '../../src/components/calendar-view/index.js';
+import type {
+  CalendarEventDragMode,
+  CalendarEventMenuEntry,
+} from '../../src/components/calendar-view/index.js';
+import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import type { Key } from '../../src/core/props.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { fr } from '../../src/core/locales/index.js';
@@ -135,15 +139,30 @@ const draggable: CalendarViewEvent[] = [
 ];
 
 /**
- * Editable events in New York, the week the clocks go back: each moves by its handle and resizes
- * by its end, except the read-only Locked audit and Fixed-length review, which only moves.
+ * Editable events in New York, the week the clocks go back, in the drag mode the reader picks:
+ * Locked audit is read-only, and Fixed-length review never changes its length.
  */
 function DraggableCalendar() {
   const [items, setItems] = useState(draggable);
   const [log, setLog] = useState('No change yet');
+  const [dragMode, setDragMode] = useState<CalendarEventDragMode>('move');
   return (
     <div style={frame(900)} data-lab-demo="dragging">
+      <SegmentedChoice
+        aria-label="Drag mode"
+        size="sm"
+        sizing="content"
+        options={[
+          { value: 'move', label: 'Move and end' },
+          { value: 'resize', label: 'Start and end' },
+        ]}
+        value={dragMode}
+        onChange={(value) => {
+          if (value === 'move' || value === 'resize') setDragMode(value);
+        }}
+      />
       <CalendarView
+        eventDragMode={dragMode}
         events={items}
         timeZone="America/New_York"
         getNow={getNow}
@@ -390,7 +409,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Moving and resizing"
-      description="Editable events show a grip that moves them and an end that resizes them; dragging shows a dashed preview where the event would land, and releasing hands the change to the host. Timed events snap to 15 minutes. Focus a handle (Tab from the focused day) and use the arrow keys: Left and Right move a day, Up and Down 15 minutes on the time grid or a week on a bar. Escape or a cancelled pointer abandons a drag. Night shift crosses midnight and the clocks going back on 1 November keep its wall-clock times when moved; Offsite is a multi-day bar moved as one event; Fixed-length review only moves; Locked audit is read-only and shows no handles."
+      description="Pick a drag mode; no handle is drawn. Move and end: drag an event to move it, keeping its length, and drag its end edge (the right edge of a bar, the bottom of a block) to change its end. Start and end: drag its start edge or its end edge to change that end alone; the event itself does not move. Dragging shows a dashed preview where the event would land, timed events snap to 15 minutes, and a click without dragging opens the editor. With the keyboard, focus an event (Move and end) or Tab to an edge and use the arrow keys: Left and Right a day, Up and Down 15 minutes on the time grid or a week on a bar. Escape or a cancelled pointer abandons a drag. Night shift crosses midnight and the clocks going back on 1 November; Offsite is a multi-day bar changed as one event; Fixed-length review only moves; Locked audit is read-only."
     >
       <DraggableCalendar />
     </LabSection>

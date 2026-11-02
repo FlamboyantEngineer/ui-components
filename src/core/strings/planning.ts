@@ -35,10 +35,10 @@ export interface PlanningStrings {
   eventTitle: string;
   /** Labels the start and end field of the calendar event editor. */
   eventWhen: string;
-  /** Names the handle that moves a calendar event, by the event's title. */
-  moveEvent: (title: string) => string;
-  /** Names the handle that moves a calendar event's end, by the event's title. */
-  resizeEvent: (title: string) => string;
+  /** Names the edge that changes a calendar event's start, by the event's title. */
+  changeEventStart: (title: string) => string;
+  /** Names the edge that changes a calendar event's end, by the event's title. */
+  changeEventEnd: (title: string) => string;
 }
 
 /** Whether a count is over its limit, within it, or has none. */
@@ -57,6 +57,6 @@ export const planningStrings = defineStrings<PlanningStrings>({
   moreEvents: (count) => ({ count }),
   calendarEvent: (title, when) => ({ title, when }),
   eventActions: (title) => ({ title }),
-  moveEvent: (title) => ({ title }),
-  resizeEvent: (title) => ({ title }),
+  changeEventStart: (title) => ({ title }),
+  changeEventEnd: (title) => ({ title }),
 });

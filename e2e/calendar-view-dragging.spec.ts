@@ -22,56 +22,105 @@ async function dragTo(page: Page, handle: Locator, target: Locator | { x: number
   await page.mouse.move(to.x, to.y, { steps: 8 });
 }
 
+const eventNamed = (page: Page, title: string) =>
+  demo(page).getByRole('button', { name: new RegExp(`^${title},`) });
+const editor = (page: Page) => page.getByRole('dialog', { name: 'Edit event' });
+
 test.describe('Calendar View dragging', () => {
-  test('UIC-CALENDAR-VIEW-6.1 UIC-CALENDAR-VIEW-6.2 moves a timed event to another day and hour with a preview', async ({
+  test('UIC-CALENDAR-VIEW-6.1 UIC-CALENDAR-VIEW-6.2 drags an event to move it, without handles, and clicks it to edit', async ({
     page,
     lab,
   }) => {
     await lab.open('calendar-view');
     const grid = demo(page);
-    // Read-only and move-only events.
-    await expect(grid.getByRole('button', { name: 'Move Locked audit' })).toHaveCount(0);
-    await expect(grid.getByRole('button', { name: 'Move Fixed-length review' })).toHaveCount(1);
-    await expect(grid.getByRole('button', { name: 'Resize Fixed-length review' })).toHaveCount(0);
+    // No handle bars: only invisible edges, and no edge or move on the read-only event.
+    await expect(
+      grid.locator('.ui-calendar-view__event-move, .ui-calendar-view__event-resize'),
+    ).toHaveCount(0);
+    const edge = grid.getByRole('button', { name: 'Change end of Standup' });
+    await expect(edge).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+    await expect(grid.getByRole('button', { name: 'Change end of Locked audit' })).toHaveCount(0);
+    await expect(eventNamed(page, 'Locked audit')).not.toHaveAttribute('data-movable');
+    await expect(
+      grid.getByRole('button', { name: 'Change end of Fixed-length review' }),
+    ).toHaveCount(0);
 
-    const handle = grid.getByRole('button', { name: 'Move Standup' });
-    await handle.scrollIntoViewIfNeeded();
-    const from = await center(handle);
+    const standup = eventNamed(page, 'Standup');
+    await standup.scrollIntoViewIfNeeded();
+    const from = await center(standup);
     const hour = requireDefined(await timed(page, '2026-11-03').boundingBox()).height / 24;
     const next = await center(timed(page, '2026-11-03'));
-    await dragTo(page, handle, { x: next.x, y: from.y + hour });
+    await dragTo(page, standup, { x: next.x, y: from.y + hour });
     const preview = grid.locator('.ui-calendar-view__event[data-preview]');
     await expect(preview).toHaveCount(1);
     await expect(preview).toHaveAttribute('aria-hidden', 'true');
     await expect(day(page, '2026-11-03').locator('[data-preview]')).toHaveCount(1);
-    await expect(handle).toHaveAttribute('data-dragging', 'true');
+    await expect(standup).toHaveAttribute('data-dragging', 'true');
     await page.mouse.up();
     await expect(preview).toHaveCount(0);
     await expect(output(page)).toHaveText('Standup: 2026-11-03T10:00 to 2026-11-03T10:30');
-    await expect(day(page, '2026-11-03')).toContainText('Standup');
+    // The release of the drag is not a click: no editor.
+    await expect(editor(page)).toHaveCount(0);
+
+    // A click without dragging opens the editor.
+    await eventNamed(page, 'Standup').click();
+    await expect(editor(page).getByRole('textbox', { name: 'Title' })).toHaveValue('Standup');
+    await editor(page).getByRole('button', { name: 'Cancel' }).click();
+    await expect(editor(page)).toBeHidden();
   });
 
-  test('UIC-CALENDAR-VIEW-6.2 abandons a drag on Escape and resizes a bar by days', async ({
+  test('UIC-CALENDAR-VIEW-6.2 abandons a drag on Escape and drags a bar end by days', async ({
     page,
     lab,
   }) => {
     await lab.open('calendar-view');
     const grid = demo(page);
-    const handle = grid.getByRole('button', { name: 'Move Deadline' });
-    await dragTo(page, handle, day(page, '2026-11-02').locator('.ui-calendar-view__all-day'));
+    await dragTo(
+      page,
+      eventNamed(page, 'Deadline'),
+      day(page, '2026-11-02').locator('.ui-calendar-view__all-day'),
+    );
     await expect(grid.locator('[data-preview]')).toHaveCount(1);
     await page.keyboard.press('Escape');
     await expect(grid.locator('[data-preview]')).toHaveCount(0);
     await page.mouse.up();
     await expect(output(page)).toHaveText('No change yet');
+    await expect(editor(page)).toHaveCount(0);
 
-    // The bar's end follows the pointer to the next day; the bar stays one event.
-    const resize = grid.getByRole('button', { name: 'Resize Offsite' });
-    const target = day(page, '2026-11-06').locator('.ui-calendar-view__all-day');
-    await dragTo(page, resize, target);
+    const end = grid.getByRole('button', { name: 'Change end of Offsite' });
+    await dragTo(page, end, day(page, '2026-11-06').locator('.ui-calendar-view__all-day'));
     await page.mouse.up();
     await expect(output(page)).toHaveText('Offsite: 2026-11-03 to 2026-11-06');
-    await expect(grid.getByRole('button', { name: /^Offsite,/ })).toHaveCount(1);
+    await expect(eventNamed(page, 'Offsite')).toHaveCount(1);
+  });
+
+  test('UIC-CALENDAR-VIEW-6.1 UIC-CALENDAR-VIEW-6.2 changes the start and end alone in the resize mode', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('calendar-view');
+    const grid = demo(page);
+    await grid.getByRole('radio', { name: 'Start and end' }).click();
+    await expect(eventNamed(page, 'Offsite')).not.toHaveAttribute('data-movable');
+    const start = grid.getByRole('button', { name: 'Change start of Offsite' });
+    await dragTo(page, start, day(page, '2026-11-02').locator('.ui-calendar-view__all-day'));
+    await page.mouse.up();
+    await expect(output(page)).toHaveText('Offsite: 2026-11-02 to 2026-11-05');
+
+    // A block's bottom edge follows the pointer down an hour; its start stays.
+    const end = grid.getByRole('button', { name: 'Change end of Standup' });
+    await end.scrollIntoViewIfNeeded();
+    const hour = requireDefined(await timed(page, '2026-11-02').boundingBox()).height / 24;
+    const from = await center(end);
+    await dragTo(page, end, { x: from.x, y: from.y + hour });
+    await page.mouse.up();
+    await expect(output(page)).toHaveText('Standup: 2026-11-02T09:00 to 2026-11-02T10:30');
+    // Dragging the event itself moves nothing in this mode.
+    const standup = eventNamed(page, 'Standup');
+    const body = await center(standup);
+    await dragTo(page, standup, { x: body.x + 200, y: body.y });
+    await page.mouse.up();
+    await expect(output(page)).toHaveText('Standup: 2026-11-02T09:00 to 2026-11-02T10:30');
   });
 
   test('UIC-CALENDAR-VIEW-6.2 moves a multi-day bar across weeks in the month view as one event', async ({
@@ -81,13 +130,16 @@ test.describe('Calendar View dragging', () => {
     await lab.open('calendar-view');
     const grid = demo(page);
     await grid.getByRole('radio', { name: 'Month' }).click();
-    const handle = grid.getByRole('button', { name: 'Move Offsite' });
-    await dragTo(page, handle, day(page, '2026-11-10').locator('.ui-calendar-view__day-number'));
+    // Pressed at its middle day, 4 November, the bar keeps that grip: dropped on the 10th it starts
+    // on the 9th.
+    await dragTo(
+      page,
+      eventNamed(page, 'Offsite'),
+      day(page, '2026-11-10').locator('.ui-calendar-view__day-number'),
+    );
     await page.mouse.up();
-    await expect(output(page)).toHaveText('Offsite: 2026-11-10 to 2026-11-12');
-    // Pressing a handle without moving changes nothing.
-    await grid.getByRole('button', { name: 'Move Offsite' }).click();
-    await expect(output(page)).toHaveText('Offsite: 2026-11-10 to 2026-11-12');
+    await expect(output(page)).toHaveText('Offsite: 2026-11-09 to 2026-11-11');
+    await expect(editor(page)).toHaveCount(0);
   });
 
   test('UIC-CALENDAR-VIEW-6.3 steps events by keyboard across the night the clocks go back', async ({
@@ -97,18 +149,18 @@ test.describe('Calendar View dragging', () => {
     await lab.open('calendar-view');
     const grid = demo(page);
     await grid.getByRole('button', { name: 'Previous week' }).click();
-    const shift = grid.getByRole('button', { name: 'Move Night shift' });
-    await shift.focus();
+    await eventNamed(page, 'Night shift').focus();
     await page.keyboard.press('ArrowRight');
     // Eight wall-clock hours lasting nine elapsed keep nine: it now ends at 7 AM.
     await expect(output(page)).toHaveText('Night shift: 2026-11-01T22:00 to 2026-11-02T07:00');
-    await expect(grid.getByRole('button', { name: 'Move Night shift' })).toBeFocused();
+    await expect(eventNamed(page, 'Night shift').first()).toBeFocused();
     await expect(grid.getByRole('grid')).toHaveAccessibleName(/Nov 1/);
-    const resize = grid.getByRole('button', { name: 'Resize Standup' });
-    await resize.focus();
+    const end = grid.getByRole('button', { name: 'Change end of Standup' });
+    await end.focus();
     await page.keyboard.press('ArrowDown');
     await expect(output(page)).toHaveText('Standup: 2026-11-02T09:00 to 2026-11-02T09:45');
-    await expect(resize).toBeFocused();
+    await expect(end).toBeFocused();
+    await expect(end).toHaveCSS('outline-style', 'solid');
     await lab.expectAccessible('[data-lab-demo="dragging"]');
   });
 });
