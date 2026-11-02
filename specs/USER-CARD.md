@@ -6,7 +6,7 @@
 
 ### UIC-USER-CARD-1.1 - Identity
 
-`UserCard` shall draw a `UserIdentity` in the `ui-user-card__identity` slot with the card's `name`, `description`, `src`, `imageProps`, `initials`, `colorKey`, `colorIndex`, `colorCount`, `kind` and `shape`, so the card follows the identity row's name, secondary line, picture fallback, initials, colour slot and group glyph rules ([USER-IDENTITY.md](USER-IDENTITY.md)). A blank `name` reads as the provider's `unnamed` string. Text is rendered as text, never as markup.
+`UserCard` shall draw a `UserIdentity` in the `ui-user-card__identity` slot with the card's `name`, `description`, `src`, `imageProps`, `initials`, `colorKey`, `colorIndex`, `colorCount`, `kind`, `shape`, `badge`, `badgeLabel` and `badgePlacement`, so the card follows the identity row's name, secondary line, picture fallback, initials, colour slot, group glyph and corner badge rules ([USER-IDENTITY.md](USER-IDENTITY.md)). A blank `name` reads as the provider's `unnamed` string. Text is rendered as text, never as markup.
 
 Implementation: `src/components/user-card/user-card.tsx`
 Verification: `src/components/user-card/user-card.test.tsx`, `e2e/user-card.spec.ts`

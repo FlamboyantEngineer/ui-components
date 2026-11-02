@@ -117,3 +117,8 @@
 .ui-user-identity[data-size='xs'] .ui-user-identity__description {
   font-size: var(--ref-font-size-xs);
 }
+
+/* The corner badge's words, read after the name; the avatar draws the badge itself. */
+.ui-user-identity__badge-label {
+  position: absolute;
+}

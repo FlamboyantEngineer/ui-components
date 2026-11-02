@@ -9,6 +9,7 @@ import {
   getDisplayName,
   resolveStatusLabel,
   splitAvatarIdentity,
+  type AvatarBadgeProps,
   type AvatarIdentity,
 } from '../avatar/avatar.js';
 import { Button } from '../button/button.js';
@@ -42,7 +43,11 @@ export interface UserCardAction {
 }
 
 export interface UserCardProps
-  extends AvatarIdentity, Pick<UserIdentityProps, 'description' | 'colorCount'>, BaseProps {
+  extends
+    AvatarIdentity,
+    AvatarBadgeProps,
+    Pick<UserIdentityProps, 'description' | 'colorCount'>,
+    BaseProps {
   /** Names the card instead of the display name. */
   'aria-label'?: string | undefined;
   /** The person's presence, published as `data-status`. */
@@ -157,6 +162,9 @@ export function UserCard(props: UserCardProps) {
     description,
     status,
     statusLabel,
+    badge,
+    badgeLabel,
+    badgePlacement,
     details,
     actions,
     onAction,
@@ -180,6 +188,7 @@ export function UserCard(props: UserCardProps) {
         {...identity}
         colorCount={colorCount}
         description={description}
+        {...{ badge, badgeLabel, badgePlacement }}
         className={hooks.slotClass('identity')}
       />
       {isLoading ? (

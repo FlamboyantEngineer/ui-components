@@ -53,6 +53,13 @@ A `status` (a `PresenceStatus`, as on [Avatar](AVATAR.md#uic-avatar-111---avatar
 Implementation: `src/components/user-identity/user-identity.tsx`, `labs/reference/user-identity.css`
 Verification: `src/components/user-identity/user-identity.test.tsx`, `e2e/user-identity.spec.ts`
 
+### UIC-USER-IDENTITY-1.8 - Corner badge
+
+`badge`, `badgeLabel` and `badgePlacement` shall reach the avatar's corner badge ([UIC-AVATAR-4.2](AVATAR.md#uic-avatar-42---corner-badge)), which gives the status indicator's corner way the same: with a status, a badge placed `bottom-end` moves to `top-end`. The avatar stays decorative, so the badge's words come as a `ui-user-identity__badge-label` element after the name, the secondary line and the status: a `role="img"` named by the trimmed `badgeLabel`, drawn only while there is a badge and a label.
+
+Implementation: `src/components/user-identity/user-identity.tsx`, `labs/reference/user-identity.css`
+Verification: `src/components/avatar/avatar-badge.test.tsx`, `e2e/avatar.spec.ts`
+
 ## Hooks
 
 | Hook                            | Kind      | Values                 | Description                                       |
@@ -64,5 +71,6 @@ Verification: `src/components/user-identity/user-identity.test.tsx`, `e2e/user-i
 | `ui-user-identity__name`        | slot      |                        | The display name.                                 |
 | `ui-user-identity__description` | slot      |                        | The secondary line.                               |
 | `ui-user-identity__indicator`   | slot      |                        | The status badge, when there is a status.         |
+| `ui-user-identity__badge-label` | slot      |                        | The corner badge's words, when it has a label.    |
 | `data-size`                     | attribute | `xs`, `sm`, `md`, `lg` | Row and avatar size.                              |
 | `data-status`                   | attribute |                        | The `status`: `active`, `away`, `busy` or `idle`. |
