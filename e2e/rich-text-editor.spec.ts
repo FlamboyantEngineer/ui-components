@@ -687,6 +687,86 @@ test.describe('Rich Text Editor lab', () => {
     await expect(field).toHaveAttribute('data-dirty', 'true');
   });
 
+  test('UIC-RICH-TEXT-EDITOR-12.2 marks the track level with the marked rows in view', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('rich-text-editor');
+    const field = editor(page, 'long');
+    const box = content(page, 'long');
+    const surface = field.locator('.ui-rich-text-editor__surface');
+    const markers = field.locator('.ui-rich-text-editor__scroll-marker');
+    const track = field.locator('.ui-scroll-region__track');
+    await field.scrollIntoViewIfNeeded();
+    /** Scrolls the surface so `row`'s top lies `offset` pixels below the surface's top. */
+    const scrollRow = (row: number, offset: number) =>
+      surface.evaluate(
+        (node, [index, gap]) => {
+          const rows = node.querySelectorAll('.ui-rich-text-editor__content > p');
+          const target = rows[index ?? 0]?.getBoundingClientRect().top ?? 0;
+          const view = node.getBoundingClientRect();
+          const scale = view.height / (node as HTMLElement).offsetHeight;
+          node.scrollTop += (target - view.top - (gap ?? 0)) / scale;
+        },
+        [row, offset],
+      );
+    /** The marks' and the given rows' spans, clipped to the track. */
+    const spans = async (first: number, last: number) => {
+      const trackBox = await track.boundingBox();
+      const firstBox = await box.locator('p').nth(first).boundingBox();
+      const lastBox = await box.locator('p').nth(last).boundingBox();
+      if (!trackBox || !firstBox || !lastBox) throw new Error('no box');
+      const marks = await markers.evaluateAll((nodes) =>
+        nodes.map((node) => {
+          const { top, bottom } = node.getBoundingClientRect();
+          return { top, bottom, severity: node.getAttribute('data-severity') };
+        }),
+      );
+      const top = Math.max(trackBox.y, firstBox.y);
+      const bottom = Math.min(trackBox.y + trackBox.height, lastBox.y + lastBox.height);
+      return { marks, row: { top, bottom } };
+    };
+    const expectLevel = async (first: number, last: number, severity: string) => {
+      await expect(markers).toHaveCount(1);
+      await expect
+        .poll(async () => {
+          const { marks, row } = await spans(first, last);
+          const mark = marks[0];
+          return Boolean(
+            mark &&
+            mark.severity === severity &&
+            Math.abs(mark.top - row.top) < 1 &&
+            Math.abs(mark.bottom - row.bottom) < 1,
+          );
+        })
+        .toBe(true);
+    };
+    // Row 120 centred in view: its mark sits level with it, mid-track.
+    const viewHeight = await surface.evaluate((node) => node.clientHeight);
+    const rowHeight = (await box.locator('p').nth(119).boundingBox())?.height ?? 0;
+    await scrollRow(119, (viewHeight - rowHeight) / 2);
+    await expectLevel(119, 119, 'error');
+    // Near the top of the view, then near the bottom: the mark moves with the row.
+    await scrollRow(119, 20);
+    await expectLevel(119, 119, 'error');
+    await scrollRow(119, viewHeight - rowHeight - 20);
+    await expectLevel(119, 119, 'error');
+    // Rows 481 and 482 in one marker, its top scrolled out of view: the mark is clipped at the
+    // track's top, not pinned there whole.
+    await scrollRow(480, -20);
+    await expectLevel(480, 481, 'error');
+    // Scrolled away from every marked row: no mark, not one pinned to an edge.
+    await scrollRow(300, 0);
+    await expect(markers).toHaveCount(0);
+    // Under an ancestor scale the mark still lies level with its row.
+    await field.evaluate((node) => {
+      (node as HTMLElement).style.transform = 'scale(0.75)';
+      (node as HTMLElement).style.transformOrigin = 'top left';
+    });
+    await scrollRow(119, 60);
+    await expectLevel(119, 119, 'error');
+  });
+
   test('UIC-RICH-TEXT-EDITOR-12.1 UIC-RICH-TEXT-EDITOR-12.2 scrolls a long document inside the editor with marked rows', async ({
     page,
     lab,
@@ -699,24 +779,12 @@ test.describe('Rich Text Editor lab', () => {
     expect(await surface.evaluate((node) => node.clientHeight)).toBe(360);
     expect((await field.boundingBox())?.height).toBeLessThan(600);
     await expect(field.locator('.ui-scroll-region__thumb')).toHaveCount(1);
-    await expect(markers).toHaveCount(4);
-    expect(
-      await markers.evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-severity'))),
-    ).toEqual(['error', 'error', 'warning', 'warning']);
+    // Nothing marked is in view at the top, so the track draws no mark.
+    await expect(markers).toHaveCount(0);
     const flagged = box.locator('p').nth(480);
     await expect(flagged).toHaveAttribute('data-severity', 'error');
     await expect(flagged).toHaveAttribute('aria-description', 'Blight reported: inspect this row.');
     await expect(box.locator('p').nth(749)).toHaveAttribute('data-severity', 'warning');
-    // The second marker spans rows 481 and 482, at their place in the whole document.
-    const [mark, rows] = await Promise.all([
-      markers.nth(1).evaluate((node) => parseFloat((node as HTMLElement).style.top) / 100),
-      surface.evaluate((node) => {
-        const row = node.querySelectorAll('.ui-rich-text-editor__content > p')[480];
-        const top = (row?.getBoundingClientRect().top ?? 0) - node.getBoundingClientRect().top;
-        return (top + node.scrollTop) / node.scrollHeight;
-      }),
-    ]);
-    expect(Math.abs(mark - rows)).toBeLessThan(0.002);
     await box.locator('p').first().click();
     await page.keyboard.press('ControlOrMeta+End');
     // The caret, at the end of the last row, scrolls into the surface's view.
@@ -733,10 +801,10 @@ test.describe('Rich Text Editor lab', () => {
       )
       .toBe(true);
     await page.keyboard.type(' Blight.');
-    await expect(markers).toHaveCount(5);
+    await expect(markers).toHaveCount(1);
     await expect(box.locator('p').last()).toHaveAttribute('data-severity', 'error');
     await page.keyboard.press('ControlOrMeta+z');
-    await expect(markers).toHaveCount(4);
+    await expect(markers).toHaveCount(0);
     await page.keyboard.press('ControlOrMeta+Home');
     await expect.poll(() => surface.evaluate((node) => node.scrollTop)).toBeLessThan(20);
   });
