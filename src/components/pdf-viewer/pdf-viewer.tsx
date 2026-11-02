@@ -20,6 +20,7 @@ import { PdfViewerToolbar } from './pdf-viewer-toolbar.js';
 import type { PdfZoom } from './pdf-zoom.js';
 import type { PdfDocumentAccess } from './use-pdf-access.js';
 import type { PdfCommandName } from './use-pdf-commands.js';
+import type { PdfMenuIcons } from './use-pdf-context-menu.js';
 import type { PdfSearchControls } from './use-pdf-search.js';
 import type { PdfVisiblePosition } from './use-pdf-visible-position.js';
 import { usePdfViewer } from './use-pdf-viewer.js';
@@ -38,6 +39,7 @@ export type { PdfDocumentAccess, PdfPageContent } from './use-pdf-access.js';
 export type { PdfVisiblePosition } from './use-pdf-visible-position.js';
 export type { PdfSearchControls } from './use-pdf-search.js';
 export type { PdfCommandName } from './use-pdf-commands.js';
+export type { PdfMenuAction, PdfMenuIcons } from './use-pdf-context-menu.js';
 
 export interface PdfViewerProps<
   V extends PdfViewport = PdfViewport,
@@ -114,6 +116,11 @@ export interface PdfViewerProps<
   getSelectionMenuItems?: ((selection: PdfSelection<V>) => readonly MenuEntry[]) | undefined;
   /** Context menu entries for a secondary click on a page without a selection. */
   getPageMenuItems?: ((target: PdfPagePoint<V>) => readonly MenuEntry[]) | undefined;
+  /**
+   * Icons for the viewer's own menu actions, by action: an icon for `copy`, which has none by
+   * default. The caller's entries take theirs from the entry.
+   */
+  menuIcons?: PdfMenuIcons | undefined;
   /**
    * Called with a handle on each document that opens, for reading the text of any page without
    * drawing or scrolling to it, and with `null` when the document closes: on a new source, a

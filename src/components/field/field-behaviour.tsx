@@ -8,7 +8,7 @@ import { useCallback, useContext, useEffect, useRef, useState, type FocusEvent }
 import { DialogEnteringContext } from '../../utils/dialog-entering.js';
 import type { Key } from '../../core/props.js';
 import type { SlotRegistry } from '../../utils/slot-registry.js';
-import type { FieldMenuEntry } from './field-menu-entries.js';
+import type { FieldMenuEntry, FieldMenuIcons } from './field-menu-entries.js';
 import { useFieldContextMenu, useFieldMenu } from './field-menu.js';
 import { useFieldFocus } from './field-focus.js';
 import { focusControl, useFieldFormBinding } from './field-form.js';
@@ -70,6 +70,7 @@ function useAutoFocus(autoFocus: boolean | undefined, slots: FieldSlots) {
 interface FieldBehaviourOptions {
   label: string;
   menu: readonly FieldMenuEntry[];
+  menuIcons?: FieldMenuIcons | undefined;
   onMenuAction: ((key: Key) => void) | undefined;
   commitOnBlur: boolean;
   autoFocus: boolean | undefined;

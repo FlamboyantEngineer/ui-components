@@ -12,10 +12,14 @@ import {
   useMenuController,
 } from '../context-menu/context-menu.js';
 import { Menu, type MenuEntry } from '../menu/menu.js';
+import { resolveActionIcon, type MenuActionIcons } from '../menu/menu-action-icons.js';
 import type { CalendarViewEvent } from './calendar-view.js';
 
 /** The built-in event action: open the event editor. */
 export type CalendarEventAction = 'edit';
+
+/** Icons for the event menu's built-in actions, by action; Edit has none by default. */
+export type CalendarEventMenuIcons = MenuActionIcons<CalendarEventAction>;
 
 /** The built-in Edit by name, or any menu entry. */
 export type CalendarEventMenuEntry = CalendarEventAction | MenuEntry;
@@ -27,6 +31,7 @@ export interface CalendarEventMenuContext {
     | readonly CalendarEventMenuEntry[]
     | ((event: CalendarViewEvent) => readonly CalendarEventMenuEntry[]);
   onAction: ((key: Key, event: CalendarViewEvent) => void) | undefined;
+  icons: CalendarEventMenuIcons | undefined;
   /** Whether the host lets the reader change the event. */
   isEditable: (event: CalendarViewEvent) => boolean;
   /** Opens the editor on the event. */
@@ -57,7 +62,8 @@ export function useEventMenu(
   const listed = menu ? readEntries(menu, event) : [];
   const entries = listed.flatMap((entry): MenuEntry[] => {
     if (entry !== 'edit') return [entry];
-    return menu?.isEditable(event) ? [{ id: 'edit', label: strings.edit }] : [];
+    if (!menu?.isEditable(event)) return [];
+    return [{ id: 'edit', label: strings.edit, icon: resolveActionIcon(menu.icons, 'edit') }];
   });
   const isDisabled = entries.length === 0;
   const {

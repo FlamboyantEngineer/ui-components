@@ -17,11 +17,15 @@ import {
 import { getOwnerWindow } from '../../utils/owner-window.js';
 import { isFocusLost } from '../../utils/focus-target.js';
 import { Menu, type MenuEntry } from '../menu/menu.js';
+import { resolveActionIcon, type MenuActionIcons } from '../menu/menu-action-icons.js';
 import type { DashboardGridItem } from './dashboard-layout.js';
 import type { CellStep, TileMoveKind } from './use-tile-move.js';
 
 /** A built-in tile action: focus its move or resize handle, or remove it from the layout. */
 export type DashboardTileAction = 'move' | 'resize' | 'remove';
+
+/** Icons for the tile menu's built-in actions, by action; they have none by default. */
+export type DashboardTileMenuIcons = MenuActionIcons<DashboardTileAction>;
 
 /** A built-in tile action by name, or any menu entry. */
 export type DashboardTileMenuEntry = DashboardTileAction | MenuEntry;
@@ -33,6 +37,7 @@ export interface DashboardTileMenuOptions {
     | readonly DashboardTileMenuEntry[]
     | ((item: DashboardGridItem) => readonly DashboardTileMenuEntry[]);
   onAction: ((key: Key, item: DashboardGridItem) => void) | undefined;
+  icons: DashboardTileMenuIcons | undefined;
 }
 
 /** The grid state a tile menu acts on. */
@@ -96,7 +101,8 @@ export function useTileMenu(
   };
   const entries = listed.flatMap((entry): MenuEntry[] => {
     if (!isBuiltIn(entry)) return [entry];
-    return grid?.isEditing ? [{ id: entry, label: names[entry] }] : [];
+    if (!grid?.isEditing) return [];
+    return [{ id: entry, label: names[entry], icon: resolveActionIcon(menu?.icons, entry) }];
   });
   const isDisabled = entries.length === 0;
   const targetProps = useContextMenuTarget({
@@ -216,6 +222,7 @@ export function useSpaceMenu(
 interface GridMenuOptions {
   tileMenu: DashboardTileMenuOptions['entries'] | undefined;
   onTileAction: DashboardTileMenuOptions['onAction'];
+  tileMenuIcons: DashboardTileMenuOptions['icons'];
   spaceMenu: readonly MenuEntry[] | undefined;
   onSpaceAction: DashboardSpaceMenuOptions['onAction'];
 }
@@ -230,10 +237,10 @@ export function useGridMenus(
     committed: { layout: DashboardGridItem[]; commit: (next: DashboardGridItem[]) => void };
   },
 ) {
-  const { tileMenu, onTileAction } = options;
+  const { tileMenu, onTileAction, tileMenuIcons } = options;
   const menu = useMemo(
-    () => (tileMenu ? { entries: tileMenu, onAction: onTileAction } : null),
-    [tileMenu, onTileAction],
+    () => (tileMenu ? { entries: tileMenu, onAction: onTileAction, icons: tileMenuIcons } : null),
+    [tileMenu, onTileAction, tileMenuIcons],
   );
   const { commit, layout } = grid.committed;
   const remove = useCallback(

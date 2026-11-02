@@ -3,7 +3,11 @@
 import { useRef, useState, type ReactNode, type RefObject } from 'react';
 import type { BaseProps, ControlSize, Key } from '../../core/props.js';
 import { createSlotRegistry } from '../../utils/slot-registry.js';
-import { defaultFieldMenu, type FieldMenuEntry } from './field-menu-entries.js';
+import {
+  defaultFieldMenu,
+  type FieldMenuEntry,
+  type FieldMenuIcons,
+} from './field-menu-entries.js';
 import { useFieldBehaviour, type FieldSlots } from './field-behaviour.js';
 import {
   FieldLabel,
@@ -74,6 +78,11 @@ export interface FieldProps<T> extends BaseProps {
    * empty list leaves the browser's context menu alone.
    */
   menu?: readonly FieldMenuEntry[] | undefined;
+  /**
+   * Icons for the menu's built-in actions, by action (`clear`, `reset`, `set-default`, `help`):
+   * an icon replaces the action's own, `null` removes it. Custom entries take theirs from the entry.
+   */
+  menuIcons?: FieldMenuIcons | undefined;
   /** Called with the id of the chosen menu entry, after a built-in action has run. */
   onMenuAction?: ((key: Key) => void) | undefined;
   /**
@@ -230,6 +239,7 @@ export function Field<T>({
   showHelpButton,
   decoration,
   menu = defaultFieldMenu,
+  menuIcons,
   onMenuAction,
   renderMessage,
   autoFocus,
@@ -242,12 +252,8 @@ export function Field<T>({
   const ids = useFieldIds(id);
   const [slots] = useState<FieldSlots>(() => createSlotRegistry());
   const behaviour = useFieldBehaviour(state, slots, {
-    label,
-    menu,
-    onMenuAction,
-    commitOnBlur,
-    autoFocus,
-    messageDisplay,
+    ...{ label, menu, menuIcons, onMenuAction },
+    ...{ commitOnBlur, autoFocus, messageDisplay },
     hasHelp: !isEmptyNode(help),
   });
   const controlSlot = useRef<HTMLDivElement>(null);
@@ -319,7 +325,7 @@ export type {
   FieldLayoutProps,
   FieldTextInputProps,
 } from './field-control.js';
-export type { FieldMenuAction, FieldMenuEntry } from './field-menu-entries.js';
+export type { FieldMenuAction, FieldMenuEntry, FieldMenuIcons } from './field-menu-entries.js';
 export { FieldPreviousValue } from './field-previous-value.js';
 export type { FieldPreviousValueProps } from './field-previous-value.js';
 export { FieldRestoreButton } from './field-restore-button.js';

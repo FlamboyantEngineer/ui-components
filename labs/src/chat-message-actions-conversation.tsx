@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import {
   ChatMessageActionsMenu,
+  type ChatMessageMenuIcons,
   type ChatFeedback,
   type ChatMessageCommandProps,
 } from '../../src/components/chat-message-actions/chat-message-actions.js';
@@ -139,7 +140,15 @@ function MessageContent({
 }
 
 /** One demo message wrapped in its context menu, with its bar and its reactions. */
-function DemoEntry({ message, log }: { message: DemoMessage; log: (entry: string) => void }) {
+function DemoEntry({
+  message,
+  log,
+  menuIcons,
+}: {
+  message: DemoMessage;
+  log: (entry: string) => void;
+  menuIcons: ChatMessageMenuIcons | undefined;
+}) {
   const [text, setText] = useState(message.text);
   const [state, setState] = useState<'shown' | 'editing' | 'deleted'>('shown');
   const [reactions, setReactions] = useState(message.reactions);
@@ -154,7 +163,7 @@ function DemoEntry({ message, log }: { message: DemoMessage; log: (entry: string
   };
   const commands = state === 'deleted' ? {} : message.commands(log, controls);
   return (
-    <ChatMessageActionsMenu {...commands}>
+    <ChatMessageActionsMenu {...commands} menuIcons={menuIcons}>
       {(actions) => (
         <ChatMessage
           origin={message.origin}
@@ -167,7 +176,7 @@ function DemoEntry({ message, log }: { message: DemoMessage; log: (entry: string
               <ReactionBar reactions={reactions} onToggle={toggle} />
             ) : null
           }
-          data-lab-message={message.id}
+          data-lab-message={menuIcons ? `icons-${message.id}` : message.id}
         >
           <MessageContent
             text={text}
@@ -184,20 +193,24 @@ function DemoEntry({ message, log }: { message: DemoMessage; log: (entry: string
   );
 }
 
-/** A short conversation whose messages offer their commands in a bar and a context menu. */
-export function ConversationDemo() {
+/**
+ * A short conversation whose messages offer their commands in a bar and a context menu, the menu
+ * drawing `menuIcons` when given.
+ */
+export function ConversationDemo({ menuIcons }: { menuIcons?: ChatMessageMenuIcons }) {
   const [entries, setEntries] = useState<string[]>([]);
   const log = (entry: string) => setEntries((list) => [entry, ...list].slice(0, 4));
+  const name = menuIcons ? 'conversation-icons' : 'conversation';
   return (
-    <div data-lab-demo="conversation">
+    <div data-lab-demo={name}>
       <div style={{ height: 320 }}>
-        <ChatTranscript aria-label="Trip planning">
+        <ChatTranscript aria-label={menuIcons ? 'Trip planning with menu icons' : 'Trip planning'}>
           {messages.map((message) => (
-            <DemoEntry key={message.id} message={message} log={log} />
+            <DemoEntry key={message.id} message={message} log={log} menuIcons={menuIcons} />
           ))}
         </ChatTranscript>
       </div>
-      <output data-lab-log="conversation">{entries.join(' · ')}</output>
+      <output data-lab-log={name}>{entries.join(' · ')}</output>
     </div>
   );
 }

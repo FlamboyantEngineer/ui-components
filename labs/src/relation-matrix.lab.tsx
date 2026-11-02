@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { CloseGlyph } from '../../src/core/glyphs.js';
+import { CloseGlyph, DeleteGlyph, PlusGlyph } from '../../src/core/glyphs.js';
 import {
   RelationMatrix,
   setRelation,
   toggleRelation,
   type RelationMatrixAxisAction,
+  type RelationMatrixMenuIcons,
   type RelationMatrixCell,
   type RelationMatrixItem,
   type RelationMatrixKind,
@@ -185,7 +186,13 @@ function applyAxisAction(
 }
 
 /** Right-click a cell or header, or press Shift+F10 on it: every edit changes the matrix. */
-function EditableMatrix() {
+function EditableMatrix({
+  demo = 'editable',
+  menuIcons,
+}: {
+  demo?: string;
+  menuIcons?: RelationMatrixMenuIcons;
+}) {
   const [rows, setRows] = useState(requirements.slice(0, 4));
   const [columns, setColumns] = useState(tests.slice(0, 4));
   const [relations, setRelations] = useState(traces);
@@ -210,9 +217,12 @@ function EditableMatrix() {
     setOutput(`${action.axis} ${String(action.item)}: ${action.action}`);
   };
   return (
-    <div data-lab-demo="editable">
+    <div data-lab-demo={demo}>
       <RelationMatrix
-        aria-label="Editable requirements by test"
+        aria-label={
+          menuIcons ? 'Requirements by test with menu icons' : 'Editable requirements by test'
+        }
+        menuIcons={menuIcons}
         rows={rows}
         columns={columns}
         relations={relations}
@@ -345,6 +355,20 @@ mountLab(
       description="Right-click a cell, or move to it and press Shift+F10 or the Context Menu key, to set its relation to Verifies, Partly verifies or Blocked (drawn with a cross) or remove it. A row or column header's menu moves it, inserts a new one beside it or removes it with its relations; moves are unavailable at the ends. The counts follow every edit."
     >
       <EditableMatrix />
+    </LabSection>
+    <LabSection
+      title="Menu icons"
+      description="The same menus with host icons: the header menus draw a plus for the inserts and a cross for Remove, the moves stay without icons, and a cell's Remove relation takes the delete icon beside the kinds' own marks. Every action still edits the matrix."
+    >
+      <EditableMatrix
+        demo="editable-icons"
+        menuIcons={{
+          'insert-before': PlusGlyph,
+          'insert-after': PlusGlyph,
+          remove: CloseGlyph,
+          'remove-relation': DeleteGlyph,
+        }}
+      />
     </LabSection>
     <LabSection
       title="Rows sorted by coverage"

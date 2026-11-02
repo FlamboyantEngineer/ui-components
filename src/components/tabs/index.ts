@@ -3,6 +3,8 @@ export type {
   TabListOverflow,
   TabListProps,
   TabListRenderState,
+  TabMenuAction,
+  TabMenuIcons,
   TabMenuItems,
   TabMove,
   TabNameValidate,

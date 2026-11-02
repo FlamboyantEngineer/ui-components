@@ -6,7 +6,12 @@ import { useUiStrings } from '../../core/provider.js';
 import { ContextMenuTrigger } from '../context-menu/context-menu.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import { Menu } from '../menu/menu.js';
-import { conditionBuilderHooks as hooks, useConditionBuilder } from './condition-context.js';
+import { resolveActionIcon } from '../menu/menu-action-icons.js';
+import {
+  conditionBuilderHooks as hooks,
+  useConditionBuilder,
+  type ConditionMenuAction,
+} from './condition-context.js';
 
 interface ConditionActionsProps {
   /** The rule's or the group's id. */
@@ -27,18 +32,23 @@ function toMoveDelta(event: KeyboardEvent): -1 | 1 | undefined {
 /** A rule's or a group's actions, as its menu button and its context menu offer them. */
 function useConditionMenu({ id, index, count }: ConditionActionsProps) {
   const strings = useUiStrings();
-  const { actions } = useConditionBuilder();
+  const { actions, menuIcons } = useConditionBuilder();
   const isFirst = index === 0;
   const isLast = index === count - 1;
+  const item = (id: ConditionMenuAction, label: string) => ({
+    id,
+    label,
+    icon: resolveActionIcon(menuIcons, id),
+  });
   return {
     label: strings.conditionActions,
     items: [
-      { id: 'up', label: strings.moveItem('up') },
-      { id: 'down', label: strings.moveItem('down') },
-      { id: 'duplicate', label: strings.duplicate },
-      { id: 'delete', label: strings.delete },
+      item('move-up', strings.moveItem('up')),
+      item('move-down', strings.moveItem('down')),
+      item('duplicate', strings.duplicate),
+      item('delete', strings.delete),
     ],
-    disabledKeys: [...(isFirst ? ['up'] : []), ...(isLast ? ['down'] : [])],
+    disabledKeys: [...(isFirst ? ['move-up'] : []), ...(isLast ? ['move-down'] : [])],
     /** Moves the node for Alt+Arrow keys, unless it is at that end; returns whether it was one. */
     moveByKey: (event: KeyboardEvent) => {
       const delta = toMoveDelta(event);
@@ -47,8 +57,8 @@ function useConditionMenu({ id, index, count }: ConditionActionsProps) {
       return true;
     },
     onAction: (key: Key) => {
-      if (key === 'up') actions.move(id, -1);
-      else if (key === 'down') actions.move(id, 1);
+      if (key === 'move-up') actions.move(id, -1);
+      else if (key === 'move-down') actions.move(id, 1);
       else if (key === 'duplicate') actions.duplicate(id);
       else actions.remove(id);
     },

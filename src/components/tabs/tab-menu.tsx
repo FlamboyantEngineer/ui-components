@@ -29,13 +29,21 @@ import {
   type MenuController,
 } from '../context-menu/context-menu.js';
 import type { MenuEntry, MenuItemEntry } from '../menu/menu.js';
+import { resolveActionIcon, type MenuActionIcons } from '../menu/menu-action-icons.js';
 import { isTabAvailable, type TabsShared, type TabListModel } from './tab-actions.js';
 import { useLatest } from '../../utils/use-latest.js';
 import type { TabRename } from './tab-rename.js';
+import type { IconSource } from '../icon/icon.js';
 import { stepTabMove, type TabReorder } from './tab-reorder.js';
 
 /** Lists the entries of a tab's menu, given the tab's `id` and the standard entries. */
 export type TabMenuItems = (key: Key, standard: readonly MenuEntry[]) => readonly MenuEntry[];
+
+/** The standard actions of a tab's menu. */
+export type TabMenuAction = 'rename' | 'duplicate' | 'move-backward' | 'move-forward' | 'delete';
+
+/** Icons for a tab menu's standard actions, by action; `null` removes an action's own icon. */
+export type TabMenuIcons = MenuActionIcons<TabMenuAction>;
 
 /** A list's tab menu, shared with its tabs. */
 export interface TabMenu {
@@ -59,6 +67,7 @@ interface TabMenuOptions {
   onDuplicate: ((key: Key) => void) | undefined;
   onRemove: ((keys: Set<Key>) => void) | undefined;
   getMenuItems: TabMenuItems | undefined;
+  menuIcons: TabMenuIcons | undefined;
 }
 
 interface TabMenuTargetOptions {
@@ -69,6 +78,13 @@ interface TabMenuTargetOptions {
 }
 
 type MoveDirection = 'left' | 'right' | 'up' | 'down';
+
+const moveGlyphs: Record<MoveDirection, IconSource> = {
+  left: ArrowLeftGlyph,
+  right: ArrowRightGlyph,
+  up: ArrowUpGlyph,
+  down: ArrowDownGlyph,
+};
 
 /** The directions a tab moves toward the start and the end of its list, as the reader sees them. */
 function findMoveDirections(reorder: TabReorder): [MoveDirection, MoveDirection] {
@@ -90,12 +106,15 @@ function useStandardEntries(options: TabMenuOptions) {
       const act = (run: (current: TabMenuOptions) => void) => () => {
         if (isTabAvailable(latestRef.current.shared, key)) run(latestRef.current);
       };
+      // The icons are read when the menu opens, so a caller's inline map keeps the menu stable.
+      const icon = (action: TabMenuAction, glyph: IconSource) =>
+        resolveActionIcon(latestRef.current.menuIcons, action, glyph);
       const edits: MenuItemEntry[] = [];
       if (rename) {
         edits.push({
           id: 'rename',
           label: strings.rename,
-          icon: EditGlyph,
+          icon: icon('rename', EditGlyph),
           onAction: act((current) => current.rename?.start(key)),
         });
       }
@@ -103,7 +122,7 @@ function useStandardEntries(options: TabMenuOptions) {
         edits.push({
           id: 'duplicate',
           label: strings.duplicate,
-          icon: CopyGlyph,
+          icon: icon('duplicate', CopyGlyph),
           onAction: act((current) => current.onDuplicate?.(key)),
         });
       }
@@ -111,15 +130,11 @@ function useStandardEntries(options: TabMenuOptions) {
       if (reorder) {
         findMoveDirections(reorder).forEach((direction, index) => {
           const step = index === 0 ? -1 : 1;
+          const id = index === 0 ? 'move-backward' : 'move-forward';
           moves.push({
-            id: index === 0 ? 'move-backward' : 'move-forward',
+            id,
             label: strings.moveItem(direction),
-            icon: {
-              left: ArrowLeftGlyph,
-              right: ArrowRightGlyph,
-              up: ArrowUpGlyph,
-              down: ArrowDownGlyph,
-            }[direction],
+            icon: icon(id, moveGlyphs[direction]),
             isDisabled: stepTabMove(reorder.listKeys(), key, step) === null,
             // The move is worked out from the order when it runs, not when the menu was drawn.
             onAction: act(({ reorder: current }) => {
@@ -134,7 +149,7 @@ function useStandardEntries(options: TabMenuOptions) {
             {
               id: 'delete',
               label: strings.delete,
-              icon: DeleteGlyph,
+              icon: icon('delete', DeleteGlyph),
               tone: 'danger',
               onAction: act((current) => current.onRemove?.(new Set([key]))),
             },

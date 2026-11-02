@@ -1,8 +1,11 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import type { DashboardTileMenuIcons } from './dashboard-grid-menu.js';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { DeleteGlyph, MoveGlyph } from '../../core/glyphs.js';
 import { requireDefined } from '../../utils/require-defined.js';
+import { readMenuIcons } from '../../../test/menu-fixtures.js';
 import {
   DashboardGrid,
   type DashboardGridItem,
@@ -29,7 +32,9 @@ function Board({
   onTileAction,
   onSpaceAction,
   onLayoutChange,
+  tileMenuIcons,
 }: {
+  tileMenuIcons?: DashboardTileMenuIcons;
   isEditing?: boolean;
   onTileAction?: (key: unknown, item: DashboardGridItem) => void;
   onSpaceAction?: (key: unknown, cell: { x: number; y: number }) => void;
@@ -46,6 +51,7 @@ function Board({
       }}
       isEditing={isEditing}
       tileMenu={tileMenu}
+      tileMenuIcons={tileMenuIcons}
       onTileAction={onTileAction}
       spaceMenu={spaceMenu}
       onSpaceAction={onSpaceAction}
@@ -72,6 +78,26 @@ const names = (menu: HTMLElement) =>
     .map((item) => item.textContent);
 
 describe('DashboardGrid menus', () => {
+  it('UIC-DASHBOARD-GRID-5.1 draws the built-in actions with the icons given, still acting', async () => {
+    const user = userEvent.setup();
+    const onLayoutChange = vi.fn();
+    render(
+      <Board
+        onLayoutChange={onLayoutChange}
+        tileMenuIcons={{ move: MoveGlyph, remove: DeleteGlyph }}
+      />,
+    );
+    const menu = await openTileMenu('Notes');
+    expect(readMenuIcons(menu)).toEqual({
+      'Move Notes': 'move',
+      'Resize Notes': null,
+      'Remove Notes': 'delete',
+      'Full width': null,
+    });
+    await user.click(within(menu).getByRole('menuitem', { name: 'Remove Notes' }));
+    expect(onLayoutChange).toHaveBeenLastCalledWith([layout[0]]);
+  });
+
   it('UIC-DASHBOARD-GRID-5.1 lists the built-in actions in edit mode and the host entries always', async () => {
     const { rerender } = render(<Board />);
     let menu = await openTileMenu('Visitors');

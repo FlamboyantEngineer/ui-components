@@ -2,6 +2,8 @@ import { fireEvent, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { readMenuIcons } from '../../../test/menu-fixtures.js';
+import { CopyGlyph } from '../../core/glyphs.js';
 import { pointsToPixels, renderReady } from '../../../test/pdf-fixtures.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { findBoxAtPoint, type PdfPagePoint } from './page-geometry.js';
@@ -51,6 +53,24 @@ describe('PdfViewer context menu', () => {
     const canvas = requireDefined(container.querySelector('canvas'));
     expect(fireEvent.contextMenu(canvas, { clientX: 10, clientY: 10 })).toBe(false);
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
+  it('UIC-PDF-VIEWER-8.2 draws Copy with the icon given, still copying', async () => {
+    const user = userEvent.setup();
+    const { container } = await renderReady({
+      defaultZoom: 100,
+      menuIcons: { copy: CopyGlyph },
+      getSelectionMenuItems: () => [{ id: 'mark', label: 'Mark selection' }],
+    });
+    const run = runOf(container, 'The apple harvest began');
+    selectText(requireDefined(run.firstChild), 4, 17);
+    fireEvent.contextMenu(run, { clientX: 50, clientY: 90 });
+    expect(readMenuIcons(screen.getByRole('menu'))).toEqual({
+      Copy: 'copy',
+      'Mark selection': null,
+    });
+    await user.click(screen.getByRole('menuitem', { name: 'Copy' }));
+    expect(await navigator.clipboard.readText()).toBe('apple harvest');
   });
 
   it('UIC-PDF-VIEWER-8.1 leaves a menu of caller content alone', async () => {

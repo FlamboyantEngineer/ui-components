@@ -5,6 +5,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { copyText } from '../../utils/clipboard.js';
 import { useMenuController } from '../context-menu/context-menu.js';
 import type { MenuEntry } from '../menu/menu.js';
+import { resolveActionIcon, type MenuActionIcons } from '../menu/menu-action-icons.js';
 import {
   findPageIndex,
   locateRange,
@@ -29,7 +30,14 @@ interface UsePdfContextMenuOptions<
   elements: RefObject<ReadonlyMap<number, HTMLElement>>;
   getSelectionMenuItems?: ((selection: PdfSelection<V>) => readonly MenuEntry[]) | undefined;
   getPageMenuItems?: ((target: PdfPagePoint<V>) => readonly MenuEntry[]) | undefined;
+  menuIcons?: PdfMenuIcons | undefined;
 }
+
+/** The viewer's own context menu action: Copy, over a selection. */
+export type PdfMenuAction = 'copy';
+
+/** Icons for the viewer's own menu actions, by action; Copy has none by default. */
+export type PdfMenuIcons = MenuActionIcons<PdfMenuAction>;
 
 interface MenuRequest<V extends PdfViewport, C extends PdfTextContent> {
   options: UsePdfContextMenuOptions<V, C>;
@@ -57,6 +65,7 @@ function listSelectionEntries<V extends PdfViewport, C extends PdfTextContent>(
   const copy: MenuEntry = {
     id: 'copy',
     label: copyLabel,
+    icon: resolveActionIcon(options.menuIcons, 'copy'),
     onAction: () => void copyText(text, { owner: range.commonAncestorContainer }),
   };
   const located = locateRange(range, elements.current, scale);

@@ -100,3 +100,19 @@ export async function expectRowMenuReturnsFocus(
     await waitFor(() => expect(control).toHaveFocus());
   }
 }
+
+/**
+ * The glyphs drawn as the icons of a menu's items, by item name, `null` for an item without one
+ * (`specs/MENU.md`, UIC-MENU-6.1).
+ */
+export function readMenuIcons(menu: HTMLElement): Record<string, string | null> {
+  const items = menu.querySelectorAll<HTMLElement>(
+    '[role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"]',
+  );
+  return Object.fromEntries(
+    [...items].map((item) => [
+      item.querySelector('.ui-menu-item__label')?.textContent ?? item.textContent,
+      item.querySelector('.ui-menu-item__icon [data-glyph]')?.getAttribute('data-glyph') ?? null,
+    ]),
+  );
+}

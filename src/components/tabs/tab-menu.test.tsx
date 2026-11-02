@@ -1,4 +1,5 @@
-import { DeleteGlyph } from '../../core/glyphs.js';
+import { DeleteGlyph, StarGlyph } from '../../core/glyphs.js';
+import { readMenuIcons } from '../../../test/menu-fixtures.js';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
@@ -42,6 +43,30 @@ beforeAll(() => {
 
 // Menus driven by userEvent are slow in jsdom on a busy machine.
 describe('Tab menu', { timeout: 15_000 }, () => {
+  it('UIC-TABS-3.5 takes icons for the standard entries by action, keeping what they do', async () => {
+    const onDuplicate = vi.fn();
+    render(
+      <Fruit
+        getMenuItems={standard}
+        onRename={vi.fn()}
+        onDuplicate={onDuplicate}
+        onReorder={vi.fn()}
+        onRemove={vi.fn()}
+        menuIcons={{ duplicate: StarGlyph, 'move-forward': null, delete: null }}
+      />,
+    );
+    fireEvent.contextMenu(tab('Banana'));
+    expect(readMenuIcons(screen.getByRole('menu'))).toEqual({
+      Rename: 'edit',
+      Duplicate: 'star',
+      'Move left': 'arrow-left',
+      'Move right': null,
+      Delete: null,
+    });
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Duplicate' }));
+    expect(onDuplicate).toHaveBeenCalledWith('banana');
+  });
+
   it('UIC-TABS-3.5 opens the standard entries of a tab on a secondary click', async () => {
     const onDuplicate = vi.fn();
     const onRemove = vi.fn();

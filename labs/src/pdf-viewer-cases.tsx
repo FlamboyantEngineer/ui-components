@@ -3,6 +3,7 @@
 
 import type * as Pdfjs from 'pdfjs-dist';
 import { useEffect, useRef, useState } from 'react';
+import { CopyGlyph, EditGlyph } from '../../src/core/glyphs.js';
 import { Button } from '../../src/components/button/button.js';
 import {
   PdfViewer,
@@ -121,8 +122,15 @@ export function AnnotatedReader() {
               {pageIndex === 0 ? <PageNote scale={viewport.scale} /> : null}
             </>
           )}
+          // Copy takes a host icon (none by default), Mark selection brings its own.
+          menuIcons={{ copy: CopyGlyph }}
           getSelectionMenuItems={(selection) => [
-            { id: 'mark', label: 'Mark selection', onAction: () => addMark(selection) },
+            {
+              id: 'mark',
+              label: 'Mark selection',
+              icon: EditGlyph,
+              onAction: () => addMark(selection),
+            },
           ]}
           getPageMenuItems={getPageMenuItems}
         />

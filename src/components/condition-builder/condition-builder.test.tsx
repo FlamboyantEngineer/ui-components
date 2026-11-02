@@ -3,6 +3,8 @@ import { userEvent, type UserEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { readMenuIcons } from '../../../test/menu-fixtures.js';
+import { ArrowDownGlyph, DeleteGlyph } from '../../core/glyphs.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import type { FilterField } from '../filter-bar/filter-bar.js';
 import {
@@ -269,6 +271,39 @@ describe('ConditionBuilder', () => {
       'kept',
       `${base}3`,
       'n',
+    ]);
+  });
+
+  it('UIC-CONDITION-BUILDER-1.5 draws no icons by default and the ones given by action', async () => {
+    const user = userEvent.setup();
+    const onValue = vi.fn();
+    const { rerender } = render(<Controlled onValue={onValue} />);
+    const nested = rule('Group');
+    const first = () => within(nested).getByRole('group', { name: 'Rule 1' });
+    expect(Object.values(readMenuIcons(await openActions(user, first())))).toEqual([
+      null,
+      null,
+      null,
+      null,
+    ]);
+    await user.keyboard('{Escape}');
+    rerender(
+      <Controlled
+        onValue={onValue}
+        menuIcons={{ 'move-down': ArrowDownGlyph, delete: DeleteGlyph }}
+      />,
+    );
+    const menu = await openActions(user, first());
+    expect(readMenuIcons(menu)).toEqual({
+      'Move up': null,
+      'Move down': 'arrow-down',
+      Duplicate: null,
+      Delete: 'delete',
+    });
+    await user.click(within(menu).getByRole('menuitem', { name: 'Move down' }));
+    expect(ruleIds(onValue.mock.lastCall?.[0] as ConditionGroup)).toEqual([
+      'title',
+      ['genre', 'pages'],
     ]);
   });
 

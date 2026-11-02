@@ -34,7 +34,7 @@ Verification: `src/components/condition-builder/condition-builder.test.tsx`, `e2
 
 ### UIC-CONDITION-BUILDER-1.5 - Moving, duplicating and deleting
 
-Each rule and each nested group shall have a menu (`ui-condition-builder__actions`, named by the provider string `conditionActions`) to move it up or down among its siblings (disabled at either end), duplicate it after itself under new ids, nested nodes included, and delete it. After a move focus returns to the moved node's menu button, after a duplicate it moves to the copy's first control, and after a delete to the add-rule button of the group that held the node.
+Each rule and each nested group shall have a menu (`ui-condition-builder__actions`, named by the provider string `conditionActions`) to move it up or down among its siblings (disabled at either end), duplicate it after itself under new ids, nested nodes included, and delete it. After a move focus returns to the moved node's menu button, after a duplicate it moves to the copy's first control, and after a delete to the add-rule button of the group that held the node. The actions have no icons by default; `menuIcons` gives them icons by action name (`move-up`, `move-down`, `duplicate`, `delete`, [UIC-MENU-6.1](MENU.md#uic-menu-61---action-icon-maps)), in the menu button's menu and the context menu alike, without changing what they do.
 
 Implementation: `src/components/condition-builder/condition-actions.tsx`, `src/components/condition-builder/condition-builder.tsx`, `src/components/condition-builder/condition-tree.ts`
 Verification: `src/components/condition-builder/condition-builder.test.tsx`, `src/components/condition-builder/condition-tree.test.ts`, `e2e/condition-builder.spec.ts`

@@ -10,6 +10,7 @@ import {
   renderChat,
 } from '../../../test/chat-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { readMenuIcons } from '../../../test/menu-fixtures.js';
 import { collectImports, collectPackages } from '../../../test/module-imports.js';
 import { installEditorDom } from '../../../test/rich-text-fixtures.js';
 import type { ChatMessageData, ChatPart } from '../chat-parts/chat-parts.js';
@@ -406,6 +407,13 @@ describe('Chat', () => {
     expect(within(header).getAllByRole('img')).toHaveLength(2);
     rerenderWith({});
     expect(container.querySelector('.ui-chat-header')).toBeNull();
+  });
+
+  it('UIC-CHAT-2.1 hands every message menu the icons of its commands', async () => {
+    const { user } = renderChat({ messageMenuIcons: { copy: null } });
+    await user.pointer({ keys: '[MouseRight]', target: article('m3') });
+    const menu = await screen.findByRole('menu', { name: 'Message actions' });
+    expect(readMenuIcons(menu)).toMatchObject({ Copy: null });
   });
 
   it('UIC-CHAT-2.2 copies a message’s text and reports it', async () => {

@@ -20,7 +20,7 @@ import {
 import { TextMatchProvider } from '../../src/components/text-match/text-match.js';
 import type { Key } from '../../src/core/props.js';
 import { UiProvider, useUiStrings } from '../../src/core/provider.js';
-import { HelpFromMenu, MenuEverywhere } from './field-menu-cases.js';
+import { HelpFromMenu, MenuEverywhere, MenuIcons } from './field-menu-cases.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 import { CompactFieldsSection } from './field-compact-cases.js';
@@ -514,6 +514,12 @@ mountLab(
       description="Right-click directly on the text inside each control (an input, a text area, a number and editable content), long-press it, or press Shift+F10 in it: the field menu opens, not the browser's. Edit a value first: opening the menu keeps the caret and the unsaved edit, and Reset puts back the value the field started with."
     >
       <MenuEverywhere />
+    </LabSection>
+    <LabSection
+      title="Menu icons"
+      description="Right-click each field. The first keeps the built-in glyphs; the second swaps Clear's icon, drops Reset's and adds a custom entry with an icon; the number field draws its actions without icons. Labels stay in line either way, and every action still works."
+    >
+      <MenuIcons />
     </LabSection>
     <LabSection
       title="Help from the menu"

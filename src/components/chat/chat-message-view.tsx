@@ -4,7 +4,10 @@ import { memo, type ReactNode } from 'react';
 import { isShallowEqual } from '../../utils/is-shallow-equal.js';
 import { useUiStrings } from '../../core/provider.js';
 import { ChatStatusLine } from '../chat-activity/chat-activity.js';
-import { ChatMessageActionsMenu } from '../chat-message-actions/chat-message-actions.js';
+import {
+  ChatMessageActionsMenu,
+  type ChatMessageMenuIcons,
+} from '../chat-message-actions/chat-message-actions.js';
 import { ChatParts, type ChatMessageData, type ChatPartsProps } from '../chat-parts/chat-parts.js';
 import {
   ChatMessage,
@@ -65,6 +68,7 @@ export interface ChatMessageContext extends ChatCommandContext {
   conversationId: string | undefined;
   parts: ChatPartOptions;
   onRetry: ((messageId: string) => void) | undefined;
+  messageMenuIcons: ChatMessageMenuIcons | undefined;
   thinkingText: string | undefined;
   thinkingIcon: ReactNode;
   thinkingUntil: ChatThinkingUntil;
@@ -172,7 +176,10 @@ export const ChatMessageView = memo(function ChatMessageView({
   const id = message.id;
   const origin = toMessageOrigin(message, context.currentUserId);
   return (
-    <ChatMessageActionsMenu {...toMessageCommands(message, context)}>
+    <ChatMessageActionsMenu
+      {...toMessageCommands(message, context)}
+      menuIcons={context.messageMenuIcons}
+    >
       {(actions) => (
         <ChatMessage
           id={id}

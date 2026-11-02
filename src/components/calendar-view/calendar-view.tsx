@@ -22,7 +22,7 @@ import { useCalendarFormat } from './use-calendar-format.js';
 import { useCalendarGrid } from './use-calendar-grid.js';
 import type { CalendarEventChange } from './calendar-event-handles.js';
 import { useEventChanges } from './use-event-changes.js';
-import type { CalendarEventMenuEntry } from './calendar-event-menu.js';
+import type { CalendarEventMenuEntry, CalendarEventMenuIcons } from './calendar-event-menu.js';
 
 /** The period a calendar view shows. */
 export type CalendarViewMode = 'month' | 'week';
@@ -116,6 +116,11 @@ export interface CalendarViewProps extends BaseProps, RefProps<HTMLDivElement> {
    * `isReadOnly`. Defaults to allowing every change.
    */
   canChangeEvent?: ((event: CalendarViewEvent, change: CalendarEventChange) => boolean) | undefined;
+  /**
+   * Icons for the event menu's built-in actions, by action: an icon for `edit`, which has none by
+   * default. The host's own entries take theirs from the entry.
+   */
+  eventMenuIcons?: CalendarEventMenuIcons | undefined;
   /** Called with the key of the event menu entry the reader chose, Edit included, and its event. */
   onEventMenuAction?: ((key: Key, event: CalendarViewEvent) => void) | undefined;
   /** Draws extra content in each day cell, such as a marker or a count. */
@@ -229,6 +234,7 @@ export function CalendarView({
   onEventChange,
   canChangeEvent,
   eventMenu = defaultEventMenu,
+  eventMenuIcons,
   onEventMenuAction,
   renderDay,
   getNow,
@@ -258,7 +264,7 @@ export function CalendarView({
     <div {...root}>
       <CalendarContent
         {...{ events, mode, views: allowed, focused, today, maxEvents, onEventAction, renderDay }}
-        {...{ onEventChange, canChangeEvent, eventMenu, onEventMenuAction }}
+        {...{ onEventChange, canChangeEvent, eventMenu, eventMenuIcons, onEventMenuAction }}
         minEventMinutes={minEventMinutes}
         timeZone={zone}
         onFocusedChange={(next) => {
@@ -272,13 +278,21 @@ export function CalendarView({
   );
 }
 
+/** The calendar's props its content passes on to the events, unchanged. */
+type CalendarEventOptions = Pick<
+  CalendarViewProps,
+  | 'onEventAction'
+  | 'renderDay'
+  | 'onEventChange'
+  | 'onEventMenuAction'
+  | 'eventMenuIcons'
+  | 'canChangeEvent'
+>;
+
 /** The toolbar and the grid of a calendar whose focused day is known. */
 function CalendarContent(
   props: Required<Pick<CalendarViewProps, 'events' | 'views' | 'maxEvents' | 'minEventMinutes'>> &
-    Pick<
-      CalendarViewProps,
-      'onEventAction' | 'renderDay' | 'onEventChange' | 'onEventMenuAction' | 'canChangeEvent'
-    > & {
+    CalendarEventOptions & {
       eventMenu: NonNullable<CalendarViewProps['eventMenu']>;
       mode: CalendarViewMode;
       focused: string;

@@ -23,3 +23,5 @@ export type {
   MenuTriggerProps,
   SubmenuTriggerProps,
 } from './menu.js';
+export { resolveActionIcon } from './menu-action-icons.js';
+export type { MenuActionIcons } from './menu-action-icons.js';

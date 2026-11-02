@@ -324,6 +324,13 @@ While the field has `help` (content that renders something), its menu shall offe
 Implementation: `src/components/field/field-menu.tsx`, `src/components/field/field-help.tsx`, `src/components/field/field-behaviour.tsx`
 Verification: `src/components/field/field-menu.test.tsx`, `e2e/field.spec.ts`
 
+### UIC-FIELD-6.6 - Action icons
+
+`menuIcons` shall set the icons of the built-in actions by name (`clear`, `reset`, `set-default`, `help`), as [UIC-MENU-6.1](MENU.md#uic-menu-61---action-icon-maps) describes: an icon replaces the action's glyph, `null` draws the action without one, and an action left out keeps its glyph. The actions' labels, availability, behaviour, focus return and reports to `onMenuAction` stay the same. Entries the caller lists take their own `icon`. Every field control built on `Field` passes `menuIcons` through.
+
+Implementation: `src/components/field/field-menu.tsx`, `src/components/field/field-control.ts`
+Verification: `src/components/field/field-menu.test.tsx`
+
 ## UIC-FIELD-7 - String rules
 
 ### UIC-FIELD-7.1 - Length

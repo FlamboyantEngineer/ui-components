@@ -164,6 +164,7 @@ interface EventEditingOptions {
   onEventChange: ((next: CalendarViewEvent, previous: CalendarViewEvent) => void) | undefined;
   eventMenu: CalendarEventMenuContext['entries'];
   onEventMenuAction: CalendarEventMenuContext['onAction'];
+  eventMenuIcons: CalendarEventMenuContext['icons'];
   /** Whether the host lets the reader edit the event. */
   isEditable: (event: CalendarViewEvent) => boolean;
   /** The focused day's cell, where focus goes when the edited event left the view. */
@@ -181,16 +182,18 @@ interface EventEditingOptions {
  */
 export function useEventEditing(options: EventEditingOptions) {
   const { events, timeZone, onEventChange, eventMenu, onEventMenuAction, isEditable } = options;
+  const { eventMenuIcons } = options;
   const [editing, setEditing] = useState<{ id: Key; draft: EventDraft } | null>(null);
   const { register, find } = useEventButtons();
   const menu = useMemo<CalendarEventMenuContext>(
     () => ({
       entries: eventMenu,
       onAction: onEventMenuAction,
+      icons: eventMenuIcons,
       isEditable,
       edit: (event) => setEditing({ id: event.id, draft: {} }),
     }),
-    [eventMenu, onEventMenuAction, isEditable],
+    [eventMenu, onEventMenuAction, eventMenuIcons, isEditable],
   );
   const identity = editing ? toKeyIdentity(editing.id) : null;
   const current = events.find((placed) => toKeyIdentity(placed.event.id) === identity);

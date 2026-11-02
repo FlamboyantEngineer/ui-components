@@ -1,4 +1,5 @@
 import { useMemo, useState, type CSSProperties } from 'react';
+import { ArrowDownGlyph, ArrowUpGlyph, DeleteGlyph } from '../../src/core/glyphs.js';
 import {
   ConditionBuilder,
   createConditionMatcher,
@@ -206,6 +207,19 @@ mountLab(
           </div>
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Menu icons"
+      description="The actions have no icons by default. Here the host gives Move up, Move down and Delete icons and leaves Duplicate without one: open a rule's menu button or right-click the rule. Every label stays in line and each action still works."
+    >
+      <div style={column} data-lab-demo="menu-icons">
+        <ConditionBuilder
+          aria-label="Conditions, menu icons"
+          fields={bookFields}
+          defaultValue={nested}
+          menuIcons={{ 'move-up': ArrowUpGlyph, 'move-down': ArrowDownGlyph, delete: DeleteGlyph }}
+        />
+      </div>
     </LabSection>
     <LabSection
       title="Multiple values"

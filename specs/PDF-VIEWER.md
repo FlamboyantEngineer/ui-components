@@ -311,7 +311,7 @@ Verification: `src/components/pdf-viewer/use-pdf-context-menu.test.tsx`, `e2e/pd
 
 ### UIC-PDF-VIEWER-8.2 - Copying the selection
 
-While the reader's selection is not blank and lies inside the page scroller, the menu shall offer Copy first (the provider's `copy` string, entry id `copy`), which copies the selected text to the clipboard. A selection elsewhere on the screen does not count.
+While the reader's selection is not blank and lies inside the page scroller, the menu shall offer Copy first (the provider's `copy` string, entry id `copy`), which copies the selected text to the clipboard. A selection elsewhere on the screen does not count. Copy has no icon by default; `menuIcons` gives it one as `copy` ([UIC-MENU-6.1](MENU.md#uic-menu-61---action-icon-maps)), and the caller's entries take their own `icon`.
 
 Implementation: `src/components/pdf-viewer/use-pdf-context-menu.ts`
 Verification: `src/components/pdf-viewer/use-pdf-context-menu.test.tsx`, `e2e/pdf-viewer.spec.ts`

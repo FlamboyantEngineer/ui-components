@@ -184,6 +184,30 @@ With `highlightMatches`, the menu shall mark the text typed in the enclosing sea
 Implementation: `src/components/menu/menu.tsx`
 Verification: `src/components/menu/menu.test.tsx`, `e2e/menu.spec.ts`
 
+## UIC-MENU-6 - Built-in action icons
+
+### UIC-MENU-6.1 - Action icon maps
+
+A component whose menu offers built-in actions shall take their icons as a `MenuActionIcons<Action>` map, keyed by action name, through a `menuIcons` prop (or `<menu>MenuIcons`, such as `tileMenuIcons`, where the component already names its menu that way). For each listed action, an icon replaces the action's own and `null` (or `false`) leaves it without one; an action left out keeps its default, which may be none. Only the icon changes: the action's label, accessible name, availability, tone, handler, keyboard and context-menu invocation and focus return stay as they were. Entries the caller adds are `MenuEntry` objects and take their icon from the entry's own `icon`. `resolveActionIcon(icons, action, fallback)` resolves one action's icon by these rules. Action icons are decorative ([UIC-MENU-2.1](#uic-menu-21---anatomy)), so they add nothing to an item's name. The components with built-in menu actions, their actions and default icons:
+
+| Component                                                  | Prop             | Actions                                                                                                                       | Default icons         |
+| ---------------------------------------------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| `Field` and every field built on it                        | `menuIcons`      | `clear`, `reset`, `set-default`, `help`                                                                                       | yes                   |
+| `SignaturePad`                                             | `menuIcons`      | its own `upload-image`, `paste-image`, `delete-image`, `undo-stroke`, and the field's                                         | yes                   |
+| `TabList`                                                  | `menuIcons`      | `rename`, `duplicate`, `move-backward`, `move-forward`, `delete`                                                              | yes                   |
+| `ConditionBuilder`                                         | `menuIcons`      | `move-up`, `move-down`, `duplicate`, `delete`                                                                                 | none                  |
+| `RelationMatrix`                                           | `menuIcons`      | `move-before`, `move-after`, `insert-before`, `insert-after`, `remove`, `remove-relation` (a cell's kinds take their `glyph`) | none                  |
+| `CalendarView`                                             | `eventMenuIcons` | `edit`                                                                                                                        | none                  |
+| `DashboardGrid`                                            | `tileMenuIcons`  | `move`, `resize`, `remove`                                                                                                    | none                  |
+| `ChatMessageActionsMenu`, and `Chat` as `messageMenuIcons` | `menuIcons`      | `copy`, `up`, `down`, `reply`, `react`, `edit`, `delete`                                                                      | yes                   |
+| `FolderManager`                                            | `menuIcons`      | `rename`, `delete`, `move`                                                                                                    | `rename` and `delete` |
+| `PdfViewer`                                                | `menuIcons`      | `copy`                                                                                                                        | none                  |
+
+`Timeline` item menus and the empty space menu of `DashboardGrid` hold only the caller's entries, so the entry's `icon` already covers them. In a menu where some rows have an icon, the reference stylesheet indents the text of the rows without one so every label starts in line; selection checks and submenu arrows keep their own slots.
+
+Implementation: `src/components/menu/menu-action-icons.ts`, `labs/reference/menu.css`
+Verification: `src/components/menu/menu-action-icons.test.tsx`, `e2e/menu.spec.ts`
+
 ## Hooks
 
 | Hook                              | Kind      | Values                                                                        | Description                                                         |

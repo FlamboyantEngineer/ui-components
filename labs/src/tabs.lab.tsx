@@ -7,6 +7,7 @@ import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import {
   DisabledRemovalTabs,
+  IconMenuTabs,
   LiveRenameTabs,
   LockingTabs,
   SwitchingTabs,
@@ -283,6 +284,12 @@ mountLab(
       description="Numeric, text and whitespace-containing IDs keep separate selection and panel relationships."
     >
       <TypedKeyTabs />
+    </LabSection>
+    <LabSection
+      title="Tab menu icons"
+      description="Right-click a tab or press Shift+F10 on it. Rename takes a host icon, Delete draws none, and the host's Copy link and Add a note show with and without an icon, every label in line. Each action still runs."
+    >
+      <IconMenuTabs />
     </LabSection>
     <LabSection
       title="Rename, reorder and tab menu"

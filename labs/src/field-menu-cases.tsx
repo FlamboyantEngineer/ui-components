@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { CopyGlyph, StarGlyph } from '../../src/core/glyphs.js';
 import { NumberField } from '../../src/components/number-field/number-field.js';
 import { RichTextEditor } from '../../src/components/rich-text-editor/rich-text-editor.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
@@ -42,6 +43,45 @@ export function HelpFromMenu() {
       <TextField label="Grower" defaultValue="Hillside" help={text} showHelpButton={false} />
       <TextField label="Orchard" defaultValue="North row" help={text} isReadOnly />
       <NumberField label="Crates" defaultValue={4} help={text} showHelpButton={false} />
+    </div>
+  );
+}
+
+/**
+ * Field menus whose built-in actions take the host's icons by name, with an icon removed, beside
+ * a custom entry with an icon and one without (UIC-FIELD-6.6).
+ */
+export function MenuIcons() {
+  const [last, setLast] = useState('none');
+  return (
+    <div data-lab-menu-icons style={{ display: 'grid', gap: 12, maxWidth: 420 }}>
+      <TextField
+        label="Default icons"
+        defaultValue="Pear"
+        menu={['clear', 'reset', 'set-default', { id: 'copy', label: 'Copy value' }]}
+        onMenuAction={(key) => setLast(String(key))}
+      />
+      <TextField
+        label="Host icons"
+        defaultValue="Pear"
+        menu={[
+          'clear',
+          'reset',
+          'set-default',
+          { id: 'copy', label: 'Copy value', icon: CopyGlyph },
+        ]}
+        menuIcons={{ clear: StarGlyph, reset: null }}
+        onMenuAction={(key) => setLast(String(key))}
+      />
+      <NumberField
+        label="Without icons"
+        defaultValue={12}
+        menuIcons={{ clear: null, reset: null }}
+        onMenuAction={(key) => setLast(String(key))}
+      />
+      <p>
+        Last action: <output data-lab-output="field-menu-icons">{last}</output>
+      </p>
     </div>
   );
 }

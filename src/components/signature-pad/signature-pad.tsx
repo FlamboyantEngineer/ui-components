@@ -21,7 +21,7 @@ import {
   useImageIntake,
   type ImageIntake,
 } from './signature-image.js';
-import { useSignatureMenu } from './signature-pad-menu.js';
+import { useSignatureMenu, type SignaturePadMenuIcons } from './signature-pad-menu.js';
 import { SignatureSurface, signaturePadHooks as hooks } from './signature-surface.js';
 
 export type {
@@ -30,6 +30,7 @@ export type {
   SignatureValue,
   TypedSignature,
 } from './signature-path.js';
+export type { SignaturePadAction, SignaturePadMenuIcons } from './signature-pad-menu.js';
 
 /**
  * How the signature is given: drawn with a pointer, typed as the signer's name, or as an existing
@@ -50,6 +51,12 @@ export interface SignaturePadProps extends FieldInputProps<SignatureValue | null
   modes?: readonly SignaturePadMode[] | undefined;
   /** The largest image file the image mode takes, in bytes. Defaults to 2 MB. */
   maxImageSize?: number | undefined;
+  /**
+   * Icons for the menu's built-in actions, by action: the pad's (`upload-image`, `paste-image`,
+   * `delete-image`, `undo-stroke`) and the field's. An icon replaces the action's own, `null`
+   * removes it.
+   */
+  menuIcons?: SignaturePadMenuIcons | undefined;
 }
 
 interface SignatureControlsProps {
@@ -218,6 +225,7 @@ export function SignaturePad({
     state,
     menu: field.menu,
     onMenuAction: field.onMenuAction,
+    menuIcons: field.menuIcons,
     allowsImage: modes.includes('image'),
     isImageMode: mode === 'image',
     intake,

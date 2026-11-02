@@ -27,7 +27,7 @@ import { TabActionsContext, TabsSharedContext, type TabActions } from './tab-act
 import { TabBar } from './tab-bar.js';
 import { useTabListLayout } from './tab-list-layout.js';
 import { tabsHooks as hooks } from './tab-hooks.js';
-import { TabMenuOverlay, useTabMenu, type TabMenuItems } from './tab-menu.js';
+import { TabMenuOverlay, useTabMenu, type TabMenuIcons, type TabMenuItems } from './tab-menu.js';
 import {
   createTabRename,
   TabRenameOverlay,
@@ -36,7 +36,7 @@ import {
 } from './tab-rename.js';
 import { createTabReorder, useTabReorderKeys, type TabMove } from './tab-reorder.js';
 
-export type { TabMenuItems } from './tab-menu.js';
+export type { TabMenuAction, TabMenuIcons, TabMenuItems } from './tab-menu.js';
 export type { TabNameValidate } from './tab-rename.js';
 export type { TabMove } from './tab-reorder.js';
 
@@ -82,6 +82,12 @@ export interface TabListProps extends BaseProps, AriaLabellingProps, RefProps<HT
    * given the standard entries for the actions the list takes (rename, duplicate, moves, delete).
    */
   getMenuItems?: TabMenuItems | undefined;
+  /**
+   * Icons for the standard menu actions, by action (`rename`, `duplicate`, `move-backward`,
+   * `move-forward`, `delete`): an icon replaces the action's own, `null` removes it. Entries the
+   * caller adds take theirs from the entry.
+   */
+  menuIcons?: TabMenuIcons | undefined;
 }
 
 interface ListKeyOptions {
@@ -192,7 +198,13 @@ function listKeyShortcuts(options: {
 function useTabActions(
   props: Pick<
     TabListProps,
-    'onRemove' | 'onRename' | 'validateName' | 'onReorder' | 'onDuplicate' | 'getMenuItems'
+    | 'onRemove'
+    | 'onRename'
+    | 'validateName'
+    | 'onReorder'
+    | 'onDuplicate'
+    | 'getMenuItems'
+    | 'menuIcons'
   >,
 ): TabActions {
   const shared = useContext(TabsSharedContext);
@@ -244,7 +256,15 @@ function useTabActions(
         : undefined,
     [latest, hasMenu],
   );
-  const menu = useTabMenu({ shared, rename, reorder, onRemove: remove, onDuplicate, getMenuItems });
+  const menu = useTabMenu({
+    shared,
+    rename,
+    reorder,
+    onRemove: remove,
+    onDuplicate,
+    getMenuItems,
+    menuIcons: props.menuIcons,
+  });
   return useMemo(() => {
     const actions = { onRemove: remove, rename, reorder, menu };
     return {
@@ -270,6 +290,7 @@ export function TabList({
   onReorder,
   onDuplicate,
   getMenuItems,
+  menuIcons,
   className,
   ref,
   ...rest
@@ -281,17 +302,12 @@ export function TabList({
   const { editingKey } = useContext(TabsSharedContext);
   const parts = useTabListParts(state, renderAfterTab);
   const { menuMode, menu, scroll, elementRef, overflowing } = useTabListLayout(listRef, {
-    state,
-    editingKey,
-    parts,
-    orientation,
-    isMenu,
-    isStrip,
-    setListRef,
+    ...{ state, editingKey, parts, setListRef },
+    ...{ orientation, isMenu, isStrip },
   });
   const actions = useTabActions({
     ...{ onRemove, onRename, validateName },
-    ...{ onReorder, onDuplicate, getMenuItems },
+    ...{ onReorder, onDuplicate, getMenuItems, menuIcons },
   });
   const onReorderKey = useTabReorderKeys({ state, listRef, reorder: actions.reorder });
   const keys = useListKeys({

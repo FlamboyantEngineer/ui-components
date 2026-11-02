@@ -3,6 +3,8 @@ export type {
   ConditionBuilderProps,
   ConditionCombinator,
   ConditionGroup,
+  ConditionMenuAction,
+  ConditionMenuIcons,
   ConditionNode,
   ConditionRule,
   ConditionRuleValidator,

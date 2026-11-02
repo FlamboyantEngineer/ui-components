@@ -21,7 +21,9 @@ import type { BaseProps, Key, Selection } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { ContextMenuTrigger } from '../context-menu/context-menu.js';
+import type { IconSource } from '../icon/icon.js';
 import { Menu, MenuItem, MenuSection } from '../menu/menu.js';
+import { resolveActionIcon, type MenuActionIcons } from '../menu/menu-action-icons.js';
 import { MessageActionsBar } from './message-actions-bar.js';
 import { MessageCommandOverlays } from './message-command-overlays.js';
 import {
@@ -41,7 +43,30 @@ export interface ChatMessageActionsMenuProps extends BaseProps, ChatMessageComma
   children: (actions: ReactNode) => ReactElement;
   /** Names the menu. Defaults to the provider's `messageActions` string. */
   'aria-label'?: string | undefined;
+  /**
+   * Icons for the menu's commands, by command (`copy`, the `up` and `down` ratings, `reply`,
+   * `react`, `edit`, `delete`): an icon replaces the command's own, `null` removes it. The action
+   * bar keeps its own icons, which name its buttons.
+   */
+  menuIcons?: ChatMessageMenuIcons | undefined;
 }
+
+/** The commands of a message's menu. */
+export type ChatMessageMenuAction =
+  'copy' | ChatFeedbackRating | 'reply' | 'react' | 'edit' | 'delete';
+
+/** Icons for a message menu's commands, by command; `null` removes a command's own icon. */
+export type ChatMessageMenuIcons = MenuActionIcons<ChatMessageMenuAction>;
+
+const commandGlyphs: Record<ChatMessageMenuAction, IconSource> = {
+  copy: CopyGlyph,
+  up: ThumbsUpGlyph,
+  down: ThumbsDownGlyph,
+  reply: ReplyGlyph,
+  react: EmojiGlyph,
+  edit: EditGlyph,
+  delete: DeleteGlyph,
+};
 
 /** The rating a menu selection change chose, or the shown rating when the reader unchecked it. */
 function toChosenRating(keys: Selection, shown: ChatFeedbackRating | null) {
@@ -53,11 +78,15 @@ function toChosenRating(keys: Selection, shown: ChatFeedbackRating | null) {
 function CommandMenu({
   state,
   anchor,
+  icons,
 }: {
   state: MessageCommands;
   anchor: RefObject<HTMLElement | null>;
+  icons: ChatMessageMenuIcons | undefined;
 }) {
   const strings = useUiStrings();
+  const icon = (action: ChatMessageMenuAction) =>
+    resolveActionIcon(icons, action, commandGlyphs[action]);
   const { commands, rating } = state;
   const run = (key: Key) => {
     if (key === 'copy') state.copy(anchor.current);
@@ -68,7 +97,7 @@ function CommandMenu({
   return (
     <Menu onAction={run}>
       {commands.copyText === undefined ? null : (
-        <MenuItem id="copy" icon={CopyGlyph}>
+        <MenuItem id="copy" icon={icon('copy')}>
           {strings.copy}
         </MenuItem>
       )}
@@ -83,31 +112,31 @@ function CommandMenu({
             if (chosen) state.rate(chosen, anchor);
           }}
         >
-          <MenuItem id="up" icon={ThumbsUpGlyph}>
+          <MenuItem id="up" icon={icon('up')}>
             {strings.goodResponse}
           </MenuItem>
-          <MenuItem id="down" icon={ThumbsDownGlyph}>
+          <MenuItem id="down" icon={icon('down')}>
             {strings.badResponse}
           </MenuItem>
         </MenuSection>
       ) : null}
       {commands.onReply ? (
-        <MenuItem id="reply" icon={ReplyGlyph}>
+        <MenuItem id="reply" icon={icon('reply')}>
           {strings.reply}
         </MenuItem>
       ) : null}
       {commands.onReact ? (
-        <MenuItem id="react" icon={EmojiGlyph}>
+        <MenuItem id="react" icon={icon('react')}>
           {strings.addReaction}
         </MenuItem>
       ) : null}
       {commands.onEdit ? (
-        <MenuItem id="edit" icon={EditGlyph}>
+        <MenuItem id="edit" icon={icon('edit')}>
           {strings.edit}
         </MenuItem>
       ) : null}
       {commands.onDelete ? (
-        <MenuItem id="delete" icon={DeleteGlyph} tone="danger">
+        <MenuItem id="delete" icon={icon('delete')} tone="danger">
           {strings.delete}
         </MenuItem>
       ) : null}
@@ -123,7 +152,8 @@ function CommandMenu({
  */
 export function ChatMessageActionsMenu(props: ChatMessageActionsMenuProps) {
   const strings = useUiStrings();
-  const [commands, { children, 'aria-label': ariaLabel, ...rest }] = splitCommands(props);
+  const [commands, { children, 'aria-label': ariaLabel, menuIcons, ...rest }] =
+    splitCommands(props);
   const state = useMessageCommands(commands);
   const isEnabled = hasCommands(commands);
   const message = children(isEnabled ? <MessageActionsBar state={state} /> : null);
@@ -141,7 +171,7 @@ export function ChatMessageActionsMenu(props: ChatMessageActionsMenuProps) {
         aria-label={ariaLabel ?? strings.messageActions}
       >
         {cloneElement(target, { ref })}
-        <CommandMenu state={state} anchor={targetRef} />
+        <CommandMenu state={state} anchor={targetRef} icons={menuIcons} />
       </ContextMenuTrigger>
       {isEnabled ? <MessageCommandOverlays state={state} /> : null}
     </>

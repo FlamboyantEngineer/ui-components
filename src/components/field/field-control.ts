@@ -103,6 +103,7 @@ const layoutKeys = new Set<string>([
   'showHelpButton',
   'decoration',
   'menu',
+  'menuIcons',
   'onMenuAction',
   'renderMessage',
   'autoFocus',

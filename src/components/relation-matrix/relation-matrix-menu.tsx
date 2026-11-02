@@ -7,6 +7,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
 import { CheckGlyph } from '../../core/glyphs.js';
 import type { GlyphComponent } from '../../core/glyph-types.js';
+import { resolveActionIcon, type MenuActionIcons } from '../menu/menu-action-icons.js';
 import type { Key, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
@@ -63,6 +64,15 @@ export interface RelationMatrixAxisAction {
   action: 'move-before' | 'move-after' | 'insert-before' | 'insert-after' | 'remove';
 }
 
+/**
+ * The built-in actions of the matrix's menus: a header's moves, inserts and removal, and a cell's
+ * Remove relation. A cell's kinds take the kind's `glyph`.
+ */
+export type RelationMatrixMenuAction = RelationMatrixAxisAction['action'] | 'remove-relation';
+
+/** Icons for the matrix's menu actions, by action; the actions have none by default. */
+export type RelationMatrixMenuIcons = MenuActionIcons<RelationMatrixMenuAction>;
+
 /** What a matrix menu opened on, by its items' keys. */
 type MenuTarget = { type: 'cell'; row: Key; column: Key } | { type: 'row' | 'column'; item: Key };
 
@@ -75,6 +85,7 @@ interface MatrixMenuOptions {
   onRelationChange: ((cell: RelationMatrixCell) => void) | undefined;
   onAxisAction: ((action: RelationMatrixAxisAction) => void) | undefined;
   axisActions: readonly RelationMatrixAxisOperation[];
+  menuIcons: RelationMatrixMenuIcons | undefined;
 }
 
 /** A resolved menu: its name, entries and what each entry does. */
@@ -119,6 +130,7 @@ function cellMenu(
   entries.push(separator('cell-separator'), {
     id: 'remove',
     label: strings.removeRelation,
+    icon: resolveActionIcon(options.menuIcons, 'remove-relation'),
     isDisabled: !relation,
   });
   const onAction = (key: Key) => {
@@ -156,29 +168,30 @@ function axisMenu(
   const sides = axisSides(target.axis, isRtl);
   const mirrored = target.axis === 'column' && isRtl;
   const pair = (entries: MenuEntry[]) => (mirrored ? entries.reverse() : entries);
+  const item = (
+    id: RelationMatrixAxisAction['action'],
+    label: string,
+    isDisabled = false,
+  ): MenuEntry => ({ id, label, icon: resolveActionIcon(options.menuIcons, id), isDisabled });
   const groups: MenuEntry[][] = [];
   if (options.axisActions.includes('move')) {
     groups.push(
       pair([
-        { id: 'move-before', label: strings.moveItem(sides.before), isDisabled: target.at === 0 },
-        {
-          id: 'move-after',
-          label: strings.moveItem(sides.after),
-          isDisabled: target.at === target.count - 1,
-        },
+        item('move-before', strings.moveItem(sides.before), target.at === 0),
+        item('move-after', strings.moveItem(sides.after), target.at === target.count - 1),
       ]),
     );
   }
   if (options.axisActions.includes('insert')) {
     groups.push(
       pair([
-        { id: 'insert-before', label: strings.insertRelationItem(sides.above) },
-        { id: 'insert-after', label: strings.insertRelationItem(sides.below) },
+        item('insert-before', strings.insertRelationItem(sides.above)),
+        item('insert-after', strings.insertRelationItem(sides.below)),
       ]),
     );
   }
   if (options.axisActions.includes('remove')) {
-    groups.push([{ id: 'remove', label: strings.removeItem(target.item.label) }]);
+    groups.push([item('remove', strings.removeItem(target.item.label))]);
   }
   const entries = groups.flatMap((group, at) =>
     at === 0 ? group : [separator(`separator-${at}`), ...group],

@@ -213,7 +213,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Overlays and context menu"
-      description="Marks drawn over the pages in page coordinates. Right-click selected text to copy it or mark it, right-click a mark to remove it, and reveal a mark from the list. The note field on the first page keeps Home, End and the page keys for its own text."
+      description="Marks drawn over the pages in page coordinates. Right-click selected text to copy it or mark it (Copy with a host icon, Mark selection with its own), right-click a mark to remove it (an entry without an icon), and reveal a mark from the list. The note field on the first page keeps Home, End and the page keys for its own text."
     >
       <AnnotatedReader />
     </LabSection>
