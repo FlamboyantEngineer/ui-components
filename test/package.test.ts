@@ -270,6 +270,7 @@ describe('hosted lab browser suite', () => {
     expect(labs).toContain('npx playwright install --with-deps ${{ matrix.browser }}');
     expect(labs).toContain('--project=chromium --shard=1/3');
     expect(labs).toContain('--project=webkit --project=mobile-webkit');
+    expect(labs).toContain('--project=firefox');
   });
 
   it('UIC-LABS-1.7 records no traces, which a run would not keep', () => {

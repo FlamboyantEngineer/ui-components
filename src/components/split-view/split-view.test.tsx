@@ -325,6 +325,28 @@ describe('SplitView owners', () => {
     expect(onSizesChangeEnd).toHaveBeenCalledExactlyOnceWith([40, 60]);
   });
 
+  it('UIC-SPLIT-VIEW-3.4 keeps a caller tabIndex, so a pointer-only handle leaves the tab order', () => {
+    const onChange = vi.fn();
+    const props = {
+      orientation: 'vertical' as const,
+      value: 300,
+      minValue: 120,
+      maxValue: 640,
+      'aria-label': 'Resize details',
+      onChange,
+    };
+    const { rerender } = render(<ResizeHandle {...props} tabIndex={-1} />);
+    const handle = screen.getByRole('separator', { name: 'Resize details' });
+    expect(handle).toHaveAttribute('tabindex', '-1');
+    Object.assign(handle, { setPointerCapture: vi.fn(), releasePointerCapture: vi.fn() });
+    pointer('pointerDown', handle, { clientX: 100 });
+    pointer('pointerMove', handle, { clientX: 130 });
+    expect(onChange).toHaveBeenLastCalledWith(330);
+    pointer('pointerUp', handle, { clientX: 130 });
+    rerender(<ResizeHandle {...props} />);
+    expect(handle).toHaveAttribute('tabindex', '0');
+  });
+
   it('UIC-SPLIT-VIEW-3.4 abandons a standalone drag when its reset key changes and takes a new press', () => {
     const onChangeEnd = vi.fn();
     const onResizingChange = vi.fn();
@@ -822,7 +844,7 @@ describe('ResizeHandle', () => {
     expect(resolveResizeKeyboardValue({ key: 'ArrowDown', shiftKey: false }, percent)).toBeNull();
   });
 
-  it('UIC-SPLIT-VIEW-3.3 drags with pointer capture, shields the viewport and ends on release or cancel', async () => {
+  it('UIC-SPLIT-VIEW-3.3 drags with pointer capture, shields the viewport, ends on release and abandons on cancel', async () => {
     const user = userEvent.setup();
     const onSizeChange = vi.fn();
     const onSizeChangeEnd = vi.fn();
@@ -860,12 +882,14 @@ describe('ResizeHandle', () => {
     expect(handle).not.toHaveAttribute('data-resizing');
     expect(root).not.toHaveAttribute('data-resizing');
     expect(document.querySelector('.ui-resize-handle__shield')).toBeNull();
-    expect(onSizeChangeEnd).toHaveBeenLastCalledWith(80);
+    // A cancelled gesture is abandoned: no end, and the split returns to its committed size.
+    expect(onSizeChangeEnd).not.toHaveBeenCalled();
+    expect(handle).toHaveAttribute('aria-valuenow', '30');
 
     pointer('pointerDown', handle, { clientX: 800 });
     pointer('pointerUp', handle, { clientX: 700 });
-    expect(handle).toHaveAttribute('aria-valuenow', '70');
-    expect(onSizeChangeEnd).toHaveBeenLastCalledWith(70);
+    expect(handle).toHaveAttribute('aria-valuenow', '20');
+    expect(onSizeChangeEnd).toHaveBeenLastCalledWith(20);
     expect(document.querySelector('.ui-resize-handle__shield')).toBeNull();
 
     pointer('pointerDown', handle, { clientX: 700 });

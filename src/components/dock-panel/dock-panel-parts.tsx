@@ -4,7 +4,6 @@ import { containsComposed, getComposedActiveElement, isFocused } from '../../uti
 import {
   Children,
   isValidElement,
-  useMemo,
   useState,
   useSyncExternalStore,
   type ReactElement,
@@ -15,6 +14,7 @@ import { createPortal } from 'react-dom';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useElementSize } from '../../utils/use-element-size.js';
+import { isHTMLElement } from '../../utils/is-element.js';
 import { Drawer } from '../drawer/drawer.js';
 import { ResizeHandle } from '../split-view/split-view.js';
 import { dockPanelHooks as hooks } from './dock-panel-hooks.js';
@@ -24,11 +24,9 @@ import type {
   DockPanelPosition,
 } from './dock-panel-launchers.js';
 import { DockPanelPane, DockPanelPaneContext, type DockPanelPaneProps } from './dock-panel-pane.js';
-import type { DockPanelFocus } from './use-dock-panel-focus.js';
 import type { DockPanelState } from './use-dock-panel-state.js';
-import { isHTMLElement } from '../../utils/is-element.js';
 
-/** A pane element with its launcher. */
+/** A pane element with what its tab and launcher show. */
 export interface PaneEntry {
   element: ReactElement<DockPanelPaneProps>;
   launcher: DockPanelLauncherPane;
@@ -49,6 +47,10 @@ interface DockPanelSeparatorProps {
   minSize: number;
   maxSize: number;
   bodyId: string;
+  /** Collapsed, the separator stays draggable but leaves the tab order to the toggle. */
+  isCollapsed: boolean;
+  /** Changes whenever the panel collapses, which abandons a drag in progress. */
+  resetKey: unknown;
   onResizingChange: (isResizing: boolean) => void;
 }
 
@@ -61,28 +63,19 @@ interface PaneHost {
   drawerRef: (node: HTMLElement | null) => void;
 }
 
-interface PaneFrameProps {
-  entry: PaneEntry;
-  /** The pane that shows, docked or in the drawer, if any. */
-  shownKey: Key | null;
-  isOverlay: boolean;
-  focus: Pick<DockPanelFocus, 'paneRef'>;
-}
-
 interface DockPanelPanesProps {
   bodyId: string;
   position: DockPanelPosition;
   panes: readonly PaneEntry[];
-  /** The pane shown beside the main content, if any. */
-  openKey: Key | null;
+  /** The body shows the selected pane: the panel is expanded and docked. */
+  isShown: boolean;
   isOverlay: boolean;
   open: DockPanelOpenState;
-  focus: Pick<DockPanelFocus, 'paneRef'>;
 }
 
 interface DockPanelDrawerProps {
   position: DockPanelPosition;
-  /** The open pane, which titles the drawer. */
+  /** The selected pane, which titles the drawer. */
   entry: PaneEntry;
   state: DockPanelOpenState;
   /** Receives the element that holds the panes in the drawer. */
@@ -94,27 +87,28 @@ const subscribeToNothing = () => () => undefined;
 /** Arrow keys step 5 % of this many pixels (10), Shift+arrows 1 % (2). */
 const keyboardExtent = 200;
 
-/** The `DockPanelPane` children, each with its launcher and the id of its element. */
-export function readPanes(children: ReactNode, baseId: string): PaneEntry[] {
+/** The `DockPanelPane` children, each with what its tab and launcher show. */
+export function readPanes(children: ReactNode): PaneEntry[] {
   return Children.toArray(children)
     .filter(
       (child): child is ReactElement<DockPanelPaneProps> =>
         isValidElement(child) && child.type === DockPanelPane,
     )
-    .map((element, index) => ({
-      element,
-      launcher: { ...element.props, elementId: `${baseId}-pane-${index}` },
-    }));
+    .map((element) => {
+      const { id, label, icon, count, isDisabled } = element.props;
+      return { element, launcher: { id, label, icon, count, isDisabled } };
+    });
 }
 
-/** The keys of the panes whose launchers are enabled, in order. */
+/** The keys of the panes whose tabs are enabled, in order. */
 export function readEnabledKeys(panes: readonly PaneEntry[]): Key[] {
   return panes.filter((pane) => !pane.launcher.isDisabled).map((pane) => pane.launcher.id);
 }
 
 /**
  * Whether the panel is an overlay, from its parent's width, and its largest size: `maxSize`,
- * lowered to leave `minMainSize` of the parent along the panel's axis, never below `minSize`.
+ * lowered to leave `minMainSize` of the parent along the panel's axis, never below `minSize`. The
+ * parent is measured when it resizes, never during a drag.
  */
 export function useDockPanelBounds(rootRef: RefObject<HTMLElement | null>, options: BoundsOptions) {
   const { position, minSize, maxSize, minMainSize, overlayBelow } = options;
@@ -128,7 +122,10 @@ export function useDockPanelBounds(rootRef: RefObject<HTMLElement | null>, optio
   };
 }
 
-/** The window splitter on the panel's inner edge, sizing the panel in pixels. */
+/**
+ * The window splitter on the panel's inner edge, sizing the panel in pixels. Collapsed it stays
+ * draggable: a drag expands the panel and keeps resizing it in the same gesture.
+ */
 export function DockPanelSeparator({
   label,
   position,
@@ -136,6 +133,8 @@ export function DockPanelSeparator({
   minSize,
   maxSize,
   bodyId,
+  isCollapsed,
+  resetKey,
   onResizingChange,
 }: DockPanelSeparatorProps) {
   const strings = useUiStrings();
@@ -150,11 +149,13 @@ export function DockPanelSeparator({
       extent={keyboardExtent}
       aria-label={strings.resizePanel(label)}
       aria-controls={bodyId}
+      tabIndex={isCollapsed ? -1 : 0}
+      isDisabled={state.selectedKey === null}
       onChange={state.changeSize}
       onChangeEnd={state.commitSize}
       onChangeCancel={state.cancelSize}
       onResizingChange={onResizingChange}
-      resetKey={state.sizeOwner}
+      resetKey={resetKey}
     />
   );
 }
@@ -210,41 +211,27 @@ function usePaneHost(): PaneHost | null {
   return isHydrated ? host : null;
 }
 
-/** Hands a pane its element id, its visibility and the ref that lets its launcher focus it. */
-function PaneFrame({ entry, shownKey, isOverlay, focus }: PaneFrameProps) {
-  const { id, elementId } = entry.launcher;
-  const isHidden = id !== shownKey;
-  const paneRef = focus.paneRef(id);
-  const value = useMemo(
-    () => ({ elementId, isHidden, isOverlay, paneRef }),
-    [elementId, isHidden, isOverlay, paneRef],
-  );
-  return <DockPanelPaneContext value={value}>{entry.element}</DockPanelPaneContext>;
-}
-
 /**
  * The body and, while an overlay, the drawer: the panes render once, into the pane host the body
- * holds and the open drawer borrows. Docked, the open pane shows; in the drawer, the selected one.
+ * holds and the open drawer borrows. Each is its tab's panel, so the selected one shows.
  */
 export function DockPanelPanes({
   bodyId,
   position,
   panes,
-  openKey,
+  isShown,
   isOverlay,
   open,
-  focus,
 }: DockPanelPanesProps) {
   const host = usePaneHost();
-  const shownKey = isOverlay ? open.selectedKey : openKey;
   const selected = panes.find((pane) => pane.launcher.id === open.selectedKey);
-  const frames = panes.map((entry) => (
-    <PaneFrame key={entry.element.key} {...{ entry, shownKey, isOverlay, focus }} />
-  ));
+  const elements = (
+    <DockPanelPaneContext value>{panes.map((entry) => entry.element)}</DockPanelPaneContext>
+  );
   return (
     <>
-      <div {...hooks.slot('body')} ref={host?.bodyRef} id={bodyId} hidden={openKey === null}>
-        {host ? createPortal(frames, host.element) : frames}
+      <div {...hooks.slot('body')} ref={host?.bodyRef} id={bodyId} hidden={!isShown}>
+        {host ? createPortal(elements, host.element) : elements}
       </div>
       {isOverlay && selected ? (
         <DockPanelDrawer
@@ -258,13 +245,13 @@ export function DockPanelPanes({
   );
 }
 
-/** The drawer that holds the panes while the panel is an overlay, titled by the open pane. */
+/** The drawer that holds the panes while the panel is an overlay, titled by the selected pane. */
 function DockPanelDrawer({ position, entry, state, holderRef }: DockPanelDrawerProps) {
   return (
     <Drawer
       className={hooks.slotClass('drawer')}
       position={position}
-      title={entry.element.props.title ?? entry.launcher.label}
+      title={entry.launcher.label}
       showCloseButton
       isOpen={state.isOpen}
       onOpenChange={state.setOpen}
@@ -286,5 +273,9 @@ export function useDockPanelOpenState(
   if (!isOverlay && isDrawerOpen) setDrawerOpen(false);
   return isOverlay
     ? { selectedKey: state.selectedKey, isOpen: isDrawerOpen, setOpen: setDrawerOpen }
-    : { selectedKey: state.selectedKey, isOpen: state.isExpanded, setOpen: state.setExpanded };
+    : {
+        selectedKey: state.selectedKey,
+        isOpen: state.isExpanded && state.selectedKey !== null,
+        setOpen: state.setExpanded,
+      };
 }

@@ -107,6 +107,15 @@ function chain<E>(first: ((event: E) => void) | undefined, second: (event: E) =>
   };
 }
 
+/** The nearest ancestor with a box: a `display: contents` wrapper has none to measure. */
+function findLaidOutParent(handle: HTMLElement): HTMLElement {
+  let parent = handle.parentElement;
+  while (parent && parent.offsetWidth === 0 && parent.offsetHeight === 0) {
+    parent = parent.parentElement;
+  }
+  return parent ?? handle;
+}
+
 /**
  * Pointer dragging with pointer capture, and key steps. The latest value lives in a ref between
  * renders so a drag reports its last value when it ends.
@@ -159,14 +168,19 @@ function useResizeInteraction(options: ResizeInteractionOptions) {
       changeResizing(true);
       // Pointer travel is in viewport pixels; a scaled ancestor makes them more or fewer than the
       // split's own pixels, so the travel is measured against the split the handle sits in.
-      const split = measureScale(event.currentTarget.parentElement ?? event.currentTarget);
+      const split = measureScale(findLaidOutParent(event.currentTarget));
       const scale = getUnitsPerPixel() / (orientation === 'vertical' ? split.x : split.y);
       return { start: axisCoordinate(event), startValue: value, scale };
     },
     onMove: move,
+    // The browser cancelling the gesture, or taking its capture, abandons it like a reset does.
     onEnd: (event, active, isCancelled) => {
-      if (!isCancelled) move(event, active);
       changeResizing(false);
+      if (isCancelled) {
+        onChangeCancel?.();
+        return;
+      }
+      move(event, active);
       onChangeEnd?.(latest.current);
     },
   });
@@ -184,6 +198,7 @@ function useResizeInteraction(options: ResizeInteractionOptions) {
 /** The caller's own pointer and key handlers on a handle. */
 type HandleEvents = Pick<
   ResizeHandleProps,
+  | 'tabIndex'
   | 'onPointerDown'
   | 'onPointerMove'
   | 'onPointerUp'
@@ -192,13 +207,16 @@ type HandleEvents = Pick<
   | 'onKeyDown'
 >;
 
-/** An enabled handle's tab stop and handlers: the caller's handlers run before the handle's own. */
+/**
+ * An enabled handle's tab stop, the caller's own if given (`-1` keeps a pointer-only handle out of
+ * the tab order), and handlers: the caller's handlers run before the handle's own.
+ */
 function chainHandleEvents(
   caller: HandleEvents,
   { pointer, step }: ReturnType<typeof useResizeInteraction>,
 ) {
   return {
-    tabIndex: 0,
+    tabIndex: caller.tabIndex ?? 0,
     onPointerDown: chain(caller.onPointerDown, pointer.onPointerDown),
     onPointerMove: chain(caller.onPointerMove, pointer.onPointerMove),
     onPointerUp: chain(caller.onPointerUp, pointer.onPointerUp),

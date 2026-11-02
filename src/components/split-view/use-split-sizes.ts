@@ -49,6 +49,8 @@ export interface SplitSizes {
    * it ends, `set` both at once.
    */
   update: (next: readonly number[], phase: SplitSizesPhase) => void;
+  /** Drops the live sizes of a drag abandoned without an end. */
+  cancel: () => void;
   /** Collapses pane `index` if it can. */
   collapse: (index: number) => void;
   /** Opens collapsed pane `index` at its size before collapsing. */
@@ -175,6 +177,7 @@ export function useSplitSizes(options: SplitSizesOptions): SplitSizes {
     current,
     owner,
     update,
+    cancel: () => setPreview(null),
     collapse(index) {
       const next = collapseSplitPane(panes, latest.current, index);
       if (next !== latest.current) update(next, 'set');

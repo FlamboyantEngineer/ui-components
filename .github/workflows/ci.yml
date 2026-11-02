@@ -123,7 +123,7 @@ jobs:
 
   labs:
     # The lab browser suite runs in shards beside the check job so it fits the time budget. The
-    # Chromium shards and the WebKit job each install only their own browser, from a cache keyed by
+    # Chromium shards, the WebKit job and the Firefox job each install only their own browser, from a cache keyed by
     # the Playwright version. CI records no traces; rerun a failing test locally with --trace=on.
     needs: labs-build
     runs-on: ubuntu-latest
@@ -136,6 +136,7 @@ jobs:
           - { name: chromium 2 of 3, browser: chromium, args: --project=chromium --shard=2/3 }
           - { name: chromium 3 of 3, browser: chromium, args: --project=chromium --shard=3/3 }
           - { name: webkit, browser: webkit, args: --project=webkit --project=mobile-webkit }
+          - { name: firefox, browser: firefox, args: --project=firefox }
     name: labs (${{ matrix.name }})
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0

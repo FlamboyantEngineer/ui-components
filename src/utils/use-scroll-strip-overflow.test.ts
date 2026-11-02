@@ -252,10 +252,13 @@ test('UIC-SCROLL-STRIP-1.4 reports and scrolls a right-to-left strip from its in
   }
 });
 
-test('UIC-SCROLL-STRIP-1.3 leaves a vertical strip to native wheel scrolling', async () => {
+test.each([
+  ['a vertical strip', { orientation: 'vertical' as const }],
+  ['a strip without wheel handling', { wheel: false }],
+])('UIC-SCROLL-STRIP-1.3 leaves %s to native wheel scrolling', async (_, options) => {
   function Strip(): ReactElement {
     const ref = useRef<HTMLDivElement>(null);
-    useScrollStripOverflow(ref, { orientation: 'vertical' });
+    useScrollStripOverflow(ref, options);
     return createElement('div', { ref, 'data-testid': 'strip' });
   }
   const root = createRoot(document.body.appendChild(document.createElement('div')));
