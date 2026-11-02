@@ -24,6 +24,12 @@ import { HelpFromMenu, MenuEverywhere, MenuIcons } from './field-menu-cases.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 import { CompactFieldsSection } from './field-compact-cases.js';
+import {
+  CustomControl,
+  ErrorSources,
+  OwnHistory,
+  PreviousValues,
+} from './field-custom-control-cases.js';
 import { TooltipMessagesSection } from './field-tooltip-cases.js';
 import { fieldLayouts, fieldStates, type FieldStateName } from './field-states.js';
 
@@ -510,6 +516,30 @@ mountLab(
       description="A form reset restores a value the field compares with its own equality, such as a set of tags."
     >
       <CustomValueReset />
+    </LabSection>
+    <LabSection
+      title="A custom control"
+      description="A reminder built with useFieldControl and toAriaControlProps: a library switch and a minutes input. The value contract makes an off reminder empty (so the required field asks for one) and treats two off reminders as the same, whatever minutes they kept. The field commits on blur only when focus leaves it: Tab from the switch to the minutes, to the field menu and into its popup commits nothing; leaving the field commits once."
+    >
+      <CustomControl />
+    </LabSection>
+    <LabSection
+      title="A control's own history"
+      description="The tally keeps its own undo history (hasOwnHistory), so the field records none and its undo stays unavailable; Step the tally back moves back through the control's history."
+    >
+      <OwnHistory />
+    </LabSection>
+    <LabSection
+      title="Previous values"
+      description="Each colour was edited from Blue to Green, and the control marks Blue with FieldPreviousValue: as text, with an icon, or locked with its restore disabled. Its restore button is named by restoreLabel and puts that one value back. changeLayout places the marker before the control (inline) or above it (stacked), or hides it, leaving the field's own Restore."
+    >
+      <PreviousValues />
+    </LabSection>
+    <LabSection
+      title="Errors for several names"
+      description="One price range submits low and high. Load server errors: an error for each name belongs to the field, which shows the first and blocks the form until that part changes, so changing the lowest price clears only its error and the highest price's shows next. Type letters in either price: the draft issue blocks the form while the accepted range keeps the last numbers."
+    >
+      <ErrorSources />
     </LabSection>
     <LabSection
       title="Plain input"
