@@ -30,12 +30,12 @@ async function numberIn(locator: Locator): Promise<number> {
   return Number(await locator.textContent());
 }
 
-test.describe('Number slider lab', () => {
+test.describe('Number Field lab, slider display', () => {
   test('UIC-NUMBER-FIELD-5.1 UIC-NUMBER-FIELD-6.1 UIC-NUMBER-FIELD-6.2 steps with the keyboard and shows keyboard focus', async ({
     page,
     lab,
   }) => {
-    await lab.open('number-slider');
+    await lab.open('number-field');
     const brightness = field(page, 'brightness');
     const input = brightness.getByRole('slider', { name: 'Brightness' });
     const thumb = brightness.locator('.ui-number-field__thumb');
@@ -63,7 +63,7 @@ test.describe('Number slider lab', () => {
     page,
     lab,
   }) => {
-    await lab.open('number-slider');
+    await lab.open('number-field');
     const brightness = field(page, 'brightness');
     const thumb = brightness.locator('.ui-number-field__thumb');
     const track = brightness.locator('.ui-number-field__track');
@@ -92,7 +92,7 @@ test.describe('Number slider lab', () => {
     page,
     lab,
   }) => {
-    await lab.open('number-slider');
+    await lab.open('number-field');
     const range = field(page, 'range');
     const start = range.getByRole('slider', { name: 'Minimum Price' });
     const end = range.getByRole('slider', { name: 'Maximum Price' });
@@ -124,7 +124,7 @@ test.describe('Number slider lab', () => {
     page,
     lab,
   }) => {
-    await lab.open('number-slider');
+    await lab.open('number-field');
     const marks = field(page, 'marks');
     const track = await boxOf(marks.locator('.ui-number-field__track'));
     const label = await boxOf(marks.locator('.ui-number-field__mark-label', { hasText: '20°' }));
@@ -166,7 +166,7 @@ test.describe('Number slider lab', () => {
     page,
     lab,
   }) => {
-    await lab.open('number-slider');
+    await lab.open('number-field');
     const saved = field(page, 'saved');
     const volume = saved.getByRole('slider', { name: 'Volume' });
     await volume.focus();
@@ -202,7 +202,7 @@ test('UIC-NUMBER-FIELD-8.3 shows the exported helpers in a host-side snippet', a
   page,
   lab,
 }) => {
-  await lab.open('number-slider');
+  await lab.open('number-field');
   const call = (text: string) => page.locator(`[data-lab-call=${JSON.stringify(text)}]`);
   await expect(
     call('keepThumbsApart([40, 45], [30, 45], { distance: 10, minValue: 0, maxValue: 100 })'),
@@ -213,7 +213,7 @@ test('UIC-NUMBER-FIELD-5.2 keeps the held value on the grid as the bounds change
   page,
   lab,
 }) => {
-  await lab.open('number-slider');
+  await lab.open('number-field');
   const share = field(page, 'normalized');
   const start = share.getByRole('slider', { name: 'Minimum Share' });
   await start.focus();
@@ -231,7 +231,7 @@ test('UIC-NUMBER-FIELD-8.5 UIC-NUMBER-FIELD-5.4 types a range and a slider value
   page,
   lab,
 }) => {
-  await lab.open('number-slider');
+  await lab.open('number-field');
   const age = field(page, 'range-field');
   await expect(age.getByRole('slider')).toHaveCount(0);
   const start = age.getByRole('textbox', { name: 'Minimum Age' });
@@ -262,7 +262,7 @@ test('UIC-NUMBER-FIELD-5.6 runs right to left under a right-to-left locale', asy
   page,
   lab,
 }) => {
-  await lab.open('number-slider');
+  await lab.open('number-field');
   for (const name of ['rtl', 'rtl-range']) {
     const demo = field(page, name);
     const track = await boxOf(demo.locator('.ui-number-field__track'));

@@ -4,6 +4,7 @@ import {
   NumberFieldUnitTypeSection,
   NumberFieldUnitsSection,
 } from './number-field-displays.js';
+import { NumberFieldSliderSections } from './number-field-slider.js';
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { NumberField } from '../../src/components/number-field/number-field.js';
@@ -287,6 +288,7 @@ mountLab(
     <NumberFieldDisplays />
     <NumberFieldUnitsSection />
     <NumberFieldUnitTypeSection />
+    <NumberFieldSliderSections />
     <LabSection title="Lock during a scrub" description="A lock ends the current pointer gesture.">
       <LockedScrub />
     </LabSection>
