@@ -146,7 +146,8 @@ function readData(placed: PlacedEvent, continuesBefore: boolean, continuesAfter:
 
 /**
  * One event: a button showing its title, after its time when asked, and named by its title and when
- * it happens; a press calls `onEventAction` with its key, and a context menu request opens the
+ * it happens; a press calls `onEventAction` with its key and, when the event is editable, opens
+ * the event editor; a context menu request opens the
  * event's menu. An editable event sits in a frame with its move and resize handles; the preview of
  * a dragged event is drawn without a button.
  */
@@ -201,7 +202,10 @@ function EventButton({
       {...hooks.slot('event', readData(placed, continuesBefore, continuesAfter))}
       excludeFromTabOrder={!isTabbable}
       style={gestures.length > 0 ? undefined : style}
-      onPress={() => context.onEventAction?.(event.id)}
+      onPress={() => {
+        context.onEventAction?.(event.id);
+        if (context.menu.isEditable(event)) context.menu.edit(event);
+      }}
     >
       <EventText placed={placed} time={time} context={context} />
       <VisuallyHidden elementType="span">

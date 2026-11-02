@@ -187,4 +187,29 @@ describe('CalendarView event menus', () => {
     );
     await waitFor(() => expect(dialog).not.toBeInTheDocument());
   });
+
+  it('UIC-CALENDAR-VIEW-2.2 UIC-CALENDAR-VIEW-5.2 opens the editor on a single press of an editable event', async () => {
+    const user = userEvent.setup();
+    const onEventAction = vi.fn();
+    const onEventChange = vi.fn();
+    render(<Calendar onEventAction={onEventAction} onEventChange={onEventChange} />);
+    await user.click(eventButton('Design review'));
+    expect(onEventAction).toHaveBeenCalledExactlyOnceWith('review');
+    const dialog = await screen.findByRole('dialog', { name: 'Edit event' });
+    expect(within(dialog).getByRole('textbox', { name: /Title/ })).toHaveValue('Design review');
+    await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    await waitFor(() => expect(dialog).not.toBeInTheDocument());
+    await waitFor(() => expect(eventButton('Design review')).toHaveFocus());
+    expect(onEventChange).not.toHaveBeenCalled();
+    // Enter opens it too; a read-only event only reports its press.
+    await user.keyboard('{Enter}');
+    expect(await screen.findByRole('dialog', { name: 'Edit event' })).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: 'Edit event' })).not.toBeInTheDocument(),
+    );
+    await user.click(eventButton('Release'));
+    expect(onEventAction).toHaveBeenLastCalledWith('release');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
 });

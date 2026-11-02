@@ -384,7 +384,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Event menus and editor"
-      description="Right-click an event, long-press it, or focus it and press Shift+F10 (or the Context Menu key): Edit opens a dialog with the event's title, all-day state and start and end, Duplicate and Delete are the host's own entries. Save is disabled while the title is blank or the end comes before the start; Cancel and Escape keep the event. Release 2.4 is locked, so its menu has no Edit. Events behind +n more on 18 March have the same menu. Open Design review's menu or editor, then remove it with the button: the menu or editor closes and focus goes to its day."
+      description="Click an event (or focus it and press Enter) to open its editor. Right-click an event, long-press it, or focus it and press Shift+F10 (or the Context Menu key) for its menu: Edit opens a dialog with the event's title, all-day state and start and end, Duplicate and Delete are the host's own entries. Save is disabled while the title is blank or the end comes before the start; Cancel and Escape keep the event. Release 2.4 is locked: a click only reports it, and its menu has no Edit. Events behind +n more on 18 March have the same menu. Open Design review's menu or editor, then remove it with the button: the menu or editor closes and focus goes to its day."
     >
       <EditableCalendar />
     </LabSection>
