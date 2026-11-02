@@ -39,8 +39,12 @@ export interface ScrollKeeper {
   /**
    * Handles a scroll event. One that finds the view where the keeper last left it is the keeper's
    * own scroll, heard late: content may have grown since, so the hold is applied again rather than
-   * read back from a view that no longer sits at the bottom. Any other is the reader's, or the
-   * host's, and moves the hold.
+   * read back from a view that no longer sits at the bottom. So is one that finds the view higher
+   * while the hold is not free and the viewport has changed height since: the browser clamped the
+   * position as the viewport grew for a moment, the composer below it shrinking, and the composer
+   * grew again before the event arrived. Content that streams in never counts, so a reader who
+   * scrolls up while a reply grows still stops the following. Any other is the reader's, or the host's, and
+   * moves the hold.
    */
   scrolled(): void;
   /** Holds the view at the bottom, following new content. */
@@ -136,15 +140,21 @@ export function createScrollKeeper(sources: ScrollKeeperSources): ScrollKeeper {
   let hold: TranscriptHold = 'bottom';
   let anchorKey: string | null = null;
   let snapshot: ScrollSnapshot | null = null;
-  // Where the keeper last left the scroll position, to notice a scroll it has not heard of yet.
+  // Where the keeper last left the scroll position, to notice a scroll it has not heard of yet, and
+  // the viewport's height then.
   let known: number | null = null;
+  let knownHeight = 0;
+  const remember = (viewport: HTMLElement) => {
+    known = viewport.scrollTop;
+    knownHeight = viewport.clientHeight;
+  };
 
   const classify = () => {
     const viewport = sources.viewport();
     if (!viewport) return;
     hold = resolveHold(sources, viewport, { anchorKey, current: hold });
     snapshot = readSnapshot(sources, viewport);
-    known = viewport.scrollTop;
+    remember(viewport);
   };
 
   const settle = () => {
@@ -160,7 +170,7 @@ export function createScrollKeeper(sources: ScrollKeeperSources): ScrollKeeper {
     else if (hold === 'anchor' && anchorTop !== null) viewport.scrollTop = anchorTop;
     else restoreSnapshot(sources, viewport, snapshot);
     snapshot = readSnapshot(sources, viewport);
-    known = viewport.scrollTop;
+    remember(viewport);
   };
 
   return {
@@ -170,8 +180,12 @@ export function createScrollKeeper(sources: ScrollKeeperSources): ScrollKeeper {
     settle,
     classify,
     scrolled() {
-      const top = sources.viewport()?.scrollTop;
-      if (known !== null && top !== undefined && Math.abs(top - known) <= 1) settle();
+      const viewport = sources.viewport();
+      if (!viewport || known === null) return classify();
+      const top = viewport.scrollTop;
+      const isResized = viewport.clientHeight !== knownHeight;
+      if (top < known && hold !== 'free' && isResized) known = top;
+      if (Math.abs(top - known) <= 1) settle();
       else classify();
     },
     holdBottom() {
