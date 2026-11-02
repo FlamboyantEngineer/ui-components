@@ -101,9 +101,27 @@ export function NumberFieldUnitsSection() {
   return (
     <LabSection
       title="Typed units"
-      description="A field in millimetres that also reads centimetres, metres and inches as they are typed or pasted."
+      description="A field in millimetres that also reads centimetres, metres and inches as they are typed or pasted, in the locale's digits and in a percent format too."
     >
       <TypedLength />
+      <UiProvider locale="ar-EG">
+        <NumberField
+          label="Arabic length"
+          defaultValue={10}
+          units={lengths}
+          description="Arabic digits and separators read back as typed: ١٫٥ cm is 15 mm."
+          data-lab-field="units-arabic"
+        />
+      </UiProvider>
+      <NumberField
+        label="Share of total"
+        defaultValue={0.25}
+        units={{ unit: 'of total', conversions: {} }}
+        endAdornmentPlacement="value"
+        formatOptions={{ style: 'percent' }}
+        description="A percent format reads 25% and 25 alike as a quarter."
+        data-lab-field="units-percent"
+      />
     </LabSection>
   );
 }

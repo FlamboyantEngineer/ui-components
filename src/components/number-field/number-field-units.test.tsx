@@ -85,4 +85,37 @@ describe('NumberField units', () => {
     await user.type(input, '1 m{Enter}');
     expect(input).toHaveValue('100');
   });
+
+  it('UIC-NUMBER-FIELD-3.4 reads back its own localized and percent values', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <UiProvider locale="ar-EG">
+        <NumberField label="Length" defaultValue={10} units={lengths} onChange={onChange} />
+        <NumberField
+          label="Share"
+          value={0.25}
+          units={{ unit: 'of total', conversions: {} }}
+          formatOptions={{ style: 'percent' }}
+          onChange={onChange}
+        />
+      </UiProvider>,
+    );
+    const length = screen.getByRole('spinbutton', { name: 'Length' });
+    const share = screen.getByRole('spinbutton', { name: 'Share' });
+    expect(length).toHaveValue('١٠');
+    // Untouched values stay valid through focus and blur.
+    await user.click(share);
+    await user.click(length);
+    await user.tab();
+    expect(length).not.toHaveAttribute('aria-invalid');
+    expect(share).not.toHaveAttribute('aria-invalid');
+    // Blur may report a value again, but never another one.
+    for (const [value] of onChange.mock.calls) expect([10, 0.25]).toContain(value);
+    await user.clear(length);
+    await user.type(length, '١٫٢ cm');
+    await user.tab();
+    expect(onChange).toHaveBeenLastCalledWith(12);
+    expect(length).not.toHaveAttribute('aria-invalid');
+  });
 });

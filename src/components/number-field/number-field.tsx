@@ -179,6 +179,7 @@ function NumberControl({ state, control, steps, config, radix, units }: NumberCo
       ? createQuantityCodec({
           units,
           locale,
+          formatOptions: config.formatOptions,
           format: (value) => formatter.format(value),
           strings,
         })

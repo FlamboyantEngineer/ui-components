@@ -19,6 +19,8 @@ export function createRadixCodec(radix: NumberFieldRadix): NumberTextCodec {
 interface QuantityCodecOptions {
   units: NumberFieldUnits;
   locale: string;
+  /** The field's format options, which the input reads numbers back with. */
+  formatOptions: Intl.NumberFormatOptions | undefined;
   /** Formats a number in the field's unit, as its format options say. */
   format: (value: number) => string;
   strings: UiStrings;
@@ -32,13 +34,14 @@ interface QuantityCodecOptions {
 export function createQuantityCodec({
   units,
   locale,
+  formatOptions,
   format,
   strings,
 }: QuantityCodecOptions): NumberTextCodec {
   const names = listUnits(units).map(([unit]) => unit);
   const list = new Intl.ListFormat(locale, { type: 'disjunction' }).format(names);
   return {
-    parse: (text) => parseQuantity(text, units, locale),
+    parse: (text) => parseQuantity(text, units, { locale, options: formatOptions }),
     format: (value) => (value === null ? '' : format(value)),
     describe: (value) => `${format(value)} ${units.unit}`,
     inputMode: 'text',
