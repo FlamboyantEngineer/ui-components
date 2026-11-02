@@ -96,15 +96,18 @@ function RemovedFile({
 }
 
 /**
- * The committed files an edit removed, in a titled group below the held files, each with a button
+ * The committed files an edit removed, in a group below the held files, titled unless `hideLabel`, each with a button
  * that puts it back. Without removed files it renders nothing.
  */
 export function RemovedFiles({
   removed,
+  hideLabel,
   isDisabled,
   onRestore,
 }: {
   removed: readonly FileFieldItem[];
+  /** Names the group without showing its title. */
+  hideLabel: boolean;
   /** The field is locked or full: removed files cannot go back. */
   isDisabled: boolean;
   onRestore: (item: FileFieldItem) => void;
@@ -113,10 +116,17 @@ export function RemovedFiles({
   const labelId = useId();
   if (removed.length === 0) return null;
   return (
-    <div {...hooks.slot('removed-files')} role="group" aria-labelledby={labelId}>
-      <span {...hooks.slot('removed-label')} id={labelId}>
-        {strings.removedFiles}
-      </span>
+    <div
+      {...hooks.slot('removed-files', { hideLabel })}
+      role="group"
+      aria-labelledby={hideLabel ? undefined : labelId}
+      aria-label={hideLabel ? strings.removedFiles : undefined}
+    >
+      {hideLabel ? null : (
+        <span {...hooks.slot('removed-label')} id={labelId}>
+          {strings.removedFiles}
+        </span>
+      )}
       {removed.map((item) => (
         <RemovedFile
           key={toKeyIdentity(item.id)}

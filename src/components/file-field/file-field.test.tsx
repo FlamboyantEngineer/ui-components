@@ -355,6 +355,17 @@ describe('FileField', () => {
     });
   });
 
+  it('UIC-FILE-FIELD-3.2 leaves out the removed files title on request, keeping the group named', () => {
+    const { container } = render(
+      <Attachments allowsMultiple hideRemovedLabel value={[]} committedValue={[report, song]} />,
+    );
+    const group = screen.getByRole('group', { name: 'Removed files' });
+    expect(group).toHaveAttribute('data-hide-label', 'true');
+    expect(container.querySelector('.ui-file-field__removed-label')).toBeNull();
+    expect(within(group).getAllByRole('button', { name: /^Restore/ })).toHaveLength(2);
+    expectHooksMatchSpec(container, 'FILE-FIELD');
+  });
+
   it('UIC-FILE-FIELD-4.1 names every control in words and keeps glyphs decorative', () => {
     const { container } = render(
       <Attachments

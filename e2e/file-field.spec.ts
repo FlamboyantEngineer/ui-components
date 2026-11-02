@@ -90,6 +90,31 @@ test.describe('File Field lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-FILE-FIELD-3.2 stacks untitled removed files right below the held files', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('file-field');
+    const untitled = field(page, 'removed-wide-untitled');
+    const group = untitled.getByRole('group', { name: 'Removed files' });
+    await expect(group).toHaveAttribute('data-hide-label', 'true');
+    await expect(group.locator('.ui-file-field__removed-label')).toHaveCount(0);
+    const lastFile = await box(untitled.locator('.ui-file-upload__file').last());
+    const firstRemoved = await box(group.locator('.ui-file-field__removed').first());
+    expect(firstRemoved.y - (lastFile.y + lastFile.height)).toBeLessThanOrEqual(8);
+    expect(Math.abs(firstRemoved.width - lastFile.width)).toBeLessThanOrEqual(1);
+
+    const all = field(page, 'removed-narrow-untitled-all');
+    await expect(all.locator('.ui-file-upload__file')).toHaveCount(0);
+    await expect(all.locator('.ui-file-field__removed')).toHaveCount(4);
+    await all.getByRole('button', { name: 'Restore Report.pdf' }).click();
+    await expect(all.locator('.ui-file-upload__file')).toHaveCount(1);
+    await expect(all.locator('.ui-file-field__removed')).toHaveCount(3);
+    await expect(
+      field(page, 'removed-wide-all').locator('.ui-file-field__removed-label'),
+    ).toHaveText('Removed files');
+  });
+
   test('UIC-FILE-FIELD-1.3 UIC-FILE-FIELD-2.3 UIC-FILE-FIELD-2.4 uploads chosen files into the value', async ({
     page,
     lab,
