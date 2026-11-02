@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { CommentComposer } from '../../src/components/comment-composer/comment-composer.js';
 import { Switch } from '../../src/components/switch/switch.js';
+import { CommentComposerHostCases } from './comment-composer-host-cases.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const drafts = { empty: '', draft: 'The pears arrive on Tuesday.\nCan we move the tasting?' };
@@ -146,5 +147,6 @@ mountLab(
     >
       <ThreadDrafts />
     </LabSection>
+    <CommentComposerHostCases />
   </>,
 );

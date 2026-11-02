@@ -307,3 +307,34 @@ test.describe('Comment Thread lab', () => {
     await expect(thread.getByRole('listitem').nth(1)).toBeFocused();
   });
 });
+
+test.describe('Comment Thread reply time zones', () => {
+  test.use({ timezoneId: 'Asia/Tokyo' });
+
+  test('UIC-COMMENT-THREAD-2.1 a reply reads its time in its own zone over the provider', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('comment-thread');
+    const demo = page.locator('[data-lab-demo="reply-zones"]');
+    const inherited = demo.locator(
+      '[data-lab-zone-reply="inherited"] .ui-comment-thread-reply__time',
+    );
+    const override = demo.locator(
+      '[data-lab-zone-reply="override"] .ui-comment-thread-reply__time',
+    );
+    await demo
+      .getByRole('radiogroup', { name: 'Provider time zone' })
+      .getByRole('radio', { name: 'London' })
+      .click();
+    await expect(inherited).toHaveText('2 days ago');
+    await expect(override).toHaveText('2 days ago');
+    await demo
+      .getByRole('radiogroup', { name: 'Override time zone' })
+      .getByRole('radio', { name: 'Los Angeles' })
+      .click();
+    await expect(inherited).toHaveText('2 days ago');
+    await expect(override).toHaveText('Yesterday');
+    await lab.expectAccessible('[data-lab-demo="reply-zones"]');
+  });
+});

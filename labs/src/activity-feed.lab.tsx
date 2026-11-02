@@ -9,6 +9,7 @@ import { ChangeList } from '../../src/components/change-list/change-list.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { requireDefined } from './require-defined.js';
+import { ActivityFeedHostCases } from './activity-feed-host-cases.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { samplePicture } from './people-samples.js';
 
@@ -247,5 +248,6 @@ mountLab(
     >
       <LiveFeed />
     </LabSection>
+    <ActivityFeedHostCases />
   </>,
 );
