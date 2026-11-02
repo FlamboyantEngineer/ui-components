@@ -106,6 +106,25 @@ describe('Switch', () => {
     expectHooksMatchSpec(container, 'SWITCH');
   });
 
+  it('UIC-SWITCH-1.3 makes a required switch a native constraint unless validation is aria', () => {
+    const { rerender } = render(
+      <Switch isRequired aria-label="Consent">
+        Consent
+      </Switch>,
+    );
+    const input = screen.getByRole<HTMLInputElement>('switch', { name: 'Consent' });
+    // Only the native constraint fails the browser's validity check while off.
+    expect(input).toBeRequired();
+    expect(input.checkValidity()).toBe(false);
+    rerender(
+      <Switch isRequired validationBehavior="aria" aria-label="Consent">
+        Consent
+      </Switch>,
+    );
+    expect(input).toBeRequired();
+    expect(input.checkValidity()).toBe(true);
+  });
+
   it('UIC-SWITCH-1.1 publishes an indeterminate state and reports an invalid value', () => {
     const { container, rerender } = render(
       <Switch isIndeterminate isRequired isInvalid validationBehavior="aria">

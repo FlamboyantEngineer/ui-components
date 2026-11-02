@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { BooleanField } from '../../src/components/boolean-field/boolean-field.js';
 import { Button } from '../../src/components/button/button.js';
 import { Switch } from '../../src/components/switch/switch.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabForm, MountOnDemand } from './lab-form.js';
 import { LabOutput } from './lab-output.js';
 
 const values = ['off', 'on'] as const;
-const states = ['resting', 'read-only', 'disabled'] as const;
+const states = ['resting', 'required', 'invalid', 'read-only', 'disabled'] as const;
 const sizes = ['xs', 'sm', 'md', 'lg'] as const;
 const sizedValues = ['off', 'on', 'unset'] as const;
 
@@ -50,6 +51,66 @@ function FormValue() {
   );
 }
 
+/** A required switch under each validation behaviour, and a controlled one that resets with its form. */
+function RequiredSwitches() {
+  const [backups, setBackups] = useState(true);
+  return (
+    <>
+      <LabForm label="Native consent">
+        <Switch name="consent" value="given" isRequired data-lab-field="required-native">
+          Share usage data (native)
+        </Switch>
+        <Switch name="backups" value="on" isSelected={backups} onChange={setBackups}>
+          Nightly backups
+        </Switch>
+        <LabOutput name="Backups">{backups ? 'on' : 'off'}</LabOutput>
+      </LabForm>
+      <LabForm label="Aria consent" noValidate>
+        <Switch
+          name="consent"
+          value="given"
+          isRequired
+          validationBehavior="aria"
+          data-lab-field="required-aria"
+        >
+          Share usage data (aria)
+        </Switch>
+      </LabForm>
+    </>
+  );
+}
+
+/** `inputRef` reaches the native input; a disabled switch refuses the focus. */
+function FocusedInput() {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const disabledRef = useRef<HTMLInputElement>(null);
+  const [focused, setFocused] = useState('nothing yet');
+  const focus = (input: HTMLInputElement | null) => {
+    input?.focus();
+    setFocused(
+      document.activeElement === input ? 'the input' : 'nothing (the switch refused focus)',
+    );
+  };
+  return (
+    <>
+      <Switch inputRef={inputRef} data-lab-field="input-ref">
+        Dark mode
+      </Switch>
+      <Switch inputRef={disabledRef} isDisabled data-lab-field="input-ref-disabled">
+        Sync (disabled)
+      </Switch>
+      <Button onPress={() => focus(inputRef.current)}>Focus the input</Button>
+      <Button onPress={() => focus(disabledRef.current)}>Focus the disabled input</Button>
+      <LabOutput name="Focused">{focused}</LabOutput>
+      <MountOnDemand label="an autofocused switch">
+        <Switch autoFocus data-lab-field="autofocus">
+          Reduce motion
+        </Switch>
+      </MountOnDemand>
+    </>
+  );
+}
+
 mountLab(
   <>
     <LabSection title="Values and states" description="Every value against every state.">
@@ -58,6 +119,8 @@ mountLab(
         render={({ state, value }) => (
           <Switch
             isSelected={value === 'on'}
+            isRequired={state === 'required' || state === 'invalid'}
+            isInvalid={state === 'invalid'}
             isReadOnly={state === 'read-only'}
             isDisabled={state === 'disabled'}
           >
@@ -102,6 +165,18 @@ mountLab(
       description="A form submits the value of each switch that is on."
     >
       <FormValue />
+    </LabSection>
+    <LabSection
+      title="Required, validation and reset"
+      description="Submit with the switch off: native validation stops the submit, aria validation lets it through and marks the switch invalid. Reset puts the controlled backups switch back on."
+    >
+      <RequiredSwitches />
+    </LabSection>
+    <LabSection
+      title="Focusing the input"
+      description="inputRef reaches the native input, which a caller can focus; a disabled switch refuses it. A switch mounted with autoFocus takes focus as it appears."
+    >
+      <FocusedInput />
     </LabSection>
     <LabSection
       title="Numeric labels"

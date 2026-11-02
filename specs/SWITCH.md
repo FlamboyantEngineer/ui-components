@@ -20,7 +20,7 @@ Verification: `src/components/switch/switch.test.tsx`, `e2e/switch.spec.ts`
 
 ### UIC-SWITCH-1.3 - Accessibility and form value
 
-The input shall be named by the children, or by `aria-label` or `aria-labelledby` when the switch has no text, and carry the caller's `id`. With `name`, a form submits `value` (`on` by default) while the switch is on. Keyboard focus publishes `data-focus-visible` on the root, so the stylesheet can ring the track.
+The input shall be named by the children, or by `aria-label` or `aria-labelledby` when the switch has no text, and carry the caller's `id`. With `name`, a form submits `value` (`on` by default) while the switch is on. `isRequired` makes the switch a native constraint, so a native submit stops while it is off, unless `validationBehavior` (or the form around it) is `aria`, which reports `aria-required` and lets the submit through. Keyboard focus publishes `data-focus-visible` on the root, so the stylesheet can ring the track.
 
 Implementation: `src/components/switch/switch.tsx`
 Verification: `src/components/switch/switch.test.tsx`, `e2e/switch.spec.ts`
