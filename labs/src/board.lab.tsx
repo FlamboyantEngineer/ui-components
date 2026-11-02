@@ -386,7 +386,7 @@ mountLab(
   <>
     <LabSection
       title="States"
-      description="Columns with cards and drag handles, empty cells, a column over its limit, and collapsed columns: one compressed to its icon, and one without an icon that keeps its chevron. A collapsed toggle shows its column's title and count in a tooltip."
+      description="Columns with cards and drag handles, each card as wide as its column header, empty cells, a column over its limit, and collapsed columns: one compressed to its icon, and one without an icon that keeps its chevron. A collapsed toggle shows its column's title and count in a tooltip."
     >
       <StateMatrix
         axes={{ state: Object.keys(states) as Array<keyof typeof states> }}
@@ -454,7 +454,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Nested boards and fields"
-      description="A card that draws a board of its own, and a card with a notes field. Alt+Arrow keys on a card move it on the board it belongs to, even where both boards use the same card keys. In the notes field, the arrow keys, Alt+Arrow keys and typing stay with the field."
+      description="A card that draws a board of its own, kept inside the card: it scrolls its own columns sideways, and collapsing the outer column restyles only the outer cards. A card with a notes field. Alt+Arrow keys on a card move it on the board it belongs to, even where both boards use the same card keys. In the notes field, the arrow keys, Alt+Arrow keys and typing stay with the field."
     >
       <NestedBoards />
     </LabSection>

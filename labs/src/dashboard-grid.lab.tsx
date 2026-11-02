@@ -242,7 +242,7 @@ mountLab(
   <>
     <LabSection
       title="Edit mode"
-      description="Each tile shows a move and a resize handle. Drag them, or focus one and press the arrow keys (plain arrows only: with Shift, Alt, Control or Meta they do nothing); tiles in the way move down, and a resize stops at the last column. Leaving edit mode, reflowing to a narrow layout or a pointer the browser cancels (such as a touch it takes over for scrolling) discards an unfinished pointer move or resize."
+      description="Each tile shows a move grip at the middle of its top edge and a diagonal resize arrow at its end corner, ghost buttons laid over the tile: toggle Done editing and Edit layout to see the content keep its place. Drag them, or focus one and press the arrow keys (plain arrows only: with Shift, Alt, Control or Meta they do nothing); tiles in the way move down, and a resize stops at the last column. Leaving edit mode, reflowing to a narrow layout or a pointer the browser cancels (such as a touch it takes over for scrolling) discards an unfinished pointer move or resize."
     >
       <EditableOverview />
     </LabSection>

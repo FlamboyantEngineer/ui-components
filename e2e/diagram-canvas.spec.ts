@@ -26,6 +26,82 @@ async function viewportBox(page: Page) {
   return requireDefined(await viewport.boundingBox());
 }
 
+/**
+ * Zooms the plant around Pump to whole and fractional zooms and compares its label with the same
+ * text set natively at the zoomed size: the canvas draws vector text at its zoom, never an upscaled
+ * bitmap of it.
+ */
+async function expectSharpZoom(page: Page, lab: { open(name: string): Promise<void> }) {
+  await lab.open('diagram-canvas');
+  await viewportBox(page);
+  const label = part(page, 'Pump').locator('strong');
+  const centre = await centreOf(label);
+  await page.mouse.move(centre.x, centre.y);
+  // The share of a text's ink in half tones: an upscaled bitmap smears its edges into many more.
+  const halfTones = async (target: Locator) => {
+    const png = (await target.screenshot({ animations: 'disabled' })).toString('base64');
+    return page.evaluate(async (data) => {
+      const image = new Image();
+      image.src = `data:image/png;base64,${data}`;
+      await image.decode();
+      const canvas = document.createElement('canvas');
+      canvas.width = image.width;
+      canvas.height = image.height;
+      const context = canvas.getContext('2d');
+      if (!context) throw new Error('No canvas context.');
+      context.drawImage(image, 0, 0);
+      const pixels = context.getImageData(0, 0, image.width, image.height).data;
+      let ink = 0;
+      let half = 0;
+      for (let index = 0; index < pixels.length; index += 4) {
+        const light =
+          ((pixels[index] ?? 0) + (pixels[index + 1] ?? 0) + (pixels[index + 2] ?? 0)) / 3;
+        if (light < 235) ink += 1;
+        if (light > 60 && light < 200) half += 1;
+      }
+      return half / Math.max(ink, 1);
+    }, png);
+  };
+  // Whole and fractional zooms: wheel steps zoom around the pointer by a factor per pixel.
+  for (const delta of [-300, 100, -600]) {
+    await page.keyboard.down('Control');
+    await page.mouse.wheel(0, delta);
+    await page.keyboard.up('Control');
+    await expect(output(page, 'zoom')).not.toHaveText('100%');
+    const zoom = (await output(page, 'zoom').textContent()) ?? '';
+    // The same text set natively at the zoomed size, beside the canvas, for comparison.
+    const native = await label.evaluate(
+      (node, scale) => {
+        const style = getComputedStyle(node);
+        const sample = document.createElement('span');
+        sample.textContent = node.textContent;
+        Object.assign(sample.style, {
+          position: 'fixed',
+          left: '0',
+          top: '0',
+          zIndex: '2147483647',
+          background: getComputedStyle(node.closest('.ui-diagram-canvas__node') ?? node)
+            .backgroundColor,
+          color: style.color,
+          fontFamily: style.fontFamily,
+          fontWeight: style.fontWeight,
+          fontSize: `${Number.parseFloat(style.fontSize) * scale}px`,
+          lineHeight: 'normal',
+        });
+        sample.dataset.labSample = 'native';
+        document.body.append(sample);
+        return true;
+      },
+      Number.parseInt(zoom, 10) / 100,
+    );
+    expect(native).toBe(true);
+    const sample = page.locator('[data-lab-sample="native"]');
+    const [zoomed, reference] = [await halfTones(label), await halfTones(sample)];
+    await sample.evaluate((node) => node.remove());
+    expect(zoomed, zoom).toBeLessThan(reference * 1.15 + 0.03);
+  }
+}
+
 test.describe('Diagram Canvas lab', () => {
   test('UIC-DIAGRAM-CANVAS-5.1 UIC-DIAGRAM-CANVAS-5.2 cancels a pending connection when editing ends', async ({
     page,
@@ -138,6 +214,18 @@ test.describe('Diagram Canvas lab', () => {
     await page.keyboard.press('-');
     await expect(output(page, 'zoom')).toHaveText('75%');
   });
+
+  for (const scale of [1, 2]) {
+    test.describe(`at device pixel ratio ${scale}`, () => {
+      test.use({ deviceScaleFactor: scale });
+      test('UIC-DIAGRAM-CANVAS-3.2 draws zoomed labels as sharp as text set at that size', async ({
+        page,
+        lab,
+      }) => {
+        await expectSharpZoom(page, lab);
+      });
+    });
+  }
 
   test('UIC-DIAGRAM-CANVAS-3.1 UIC-DIAGRAM-CANVAS-3.2 leaves the wheel to a scrollable control until its end', async ({
     page,
