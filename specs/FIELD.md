@@ -27,9 +27,9 @@ Verification: `src/components/field/field.test.tsx`
 
 ### UIC-FIELD-1.4 - Help
 
-`help` shall draw a help button (`ui-field__help`, a `Button` with the `help` glyph) after the control, named by the provider string `fieldHelp` from the label (`Help for <label>`). The button shows the help in a `Tooltip` on hover and keyboard focus, and a hidden copy of the help describes the button, so the help is announced when the button is reached even before the tooltip opens.
+`help` shall draw a help button (`ui-field__help`, a `Button` with the `help` glyph) after the control, named by the provider string `fieldHelp` from the label (`Help for <label>`). The button shows the help in a `Tooltip` on hover and keyboard focus, and a hidden copy of the help describes the button, so the help is announced when the button is reached even before the tooltip opens. `showHelpButton={false}` draws no button: the hidden copy then describes the control, and the help stays reachable from the menu's Help (UIC-FIELD-6.5).
 
-Implementation: `src/components/field/field-parts.tsx`, `src/core/strings.ts`
+Implementation: `src/components/field/field-parts.tsx`, `src/components/field/field-help.tsx`, `src/core/strings.ts`
 Verification: `src/components/field/field.test.tsx`, `e2e/field.spec.ts`
 
 ### UIC-FIELD-1.5 - Required marker
@@ -317,6 +317,13 @@ Choosing Clear, Reset or Set to default shall move focus to the field's control 
 Implementation: `src/components/field/field-menu.tsx`
 Verification: `src/components/field/field-menu.test.tsx`, `e2e/field.spec.ts`
 
+### UIC-FIELD-6.5 - Help
+
+While the field has `help` (content that renders something), its menu shall offer Help once: the menu the caller lists, `defaultFieldMenu` or an empty one, gains `help` at its end unless it already lists `help` or an entry of its own with the id `help`, which then acts as Help. A field without help adds nothing, and a `help` it lists only reports to `onMenuAction`. Choosing Help, by pointer or keyboard, closes the menu and shows the help in a tooltip (`ui-field__help-tooltip`, an info `AnchoredTooltip` shown visually only, since the help already describes the button or the control): above the help button, or below the control without one. The focus the menu gives back to the control keeps it open; Escape (which then goes no further, so it reverts nothing), any other key, a press anywhere, focus leaving the field, the field becoming disabled or the help going away hides it, and new help shows in it while open. Read-only fields offer Help like any other; a disabled field has no menu. Every field control built on `Field` inherits this.
+
+Implementation: `src/components/field/field-menu.tsx`, `src/components/field/field-help.tsx`, `src/components/field/field-behaviour.tsx`
+Verification: `src/components/field/field-menu.test.tsx`, `e2e/field.spec.ts`
+
 ## UIC-FIELD-7 - String rules
 
 ### UIC-FIELD-7.1 - Length
@@ -351,7 +358,7 @@ Verification: `src/components/field/string-rules.test.ts`
 
 ### UIC-FIELD-8.1 - Control props
 
-Every field control shall take the field's props through one type, `FieldInputProps<T>`: the `useFieldState` options (value, default, committed and empty values, `onChange`, `onCommit`, `validate`, `validateAsync`, `validationDebounce`, `validationMode`, `validationBehavior`, `name`, `isRequired`, `isReadOnly`, `isDisabled`, `isPending`) and the `Field` props but its state and render function (label, layout, description, help, decoration, menu, `onMenuAction`, `renderMessage`, `className`, `id` and caller `data-*`). `useFieldControl(props, options)` shall split a control's props into the field state, the props for `Field` and the control's own props. A field with no value, committed value or default starts at the control's `initialValue`, which is then also its default; a field with no `emptyValue` clears to the control's `emptyValue`; the control's `check` runs before the caller's `validate`, and its error wins; the control's `isEqual` and `hasOwnHistory` go to the field state (UIC-FIELD-2.3, UIC-FIELD-5.1). The form `name` goes to both the field state (UIC-FIELD-3.9) and the control's own props, so the control still submits under it.
+Every field control shall take the field's props through one type, `FieldInputProps<T>`: the `useFieldState` options (value, default, committed and empty values, `onChange`, `onCommit`, `validate`, `validateAsync`, `validationDebounce`, `validationMode`, `validationBehavior`, `name`, `isRequired`, `isReadOnly`, `isDisabled`, `isPending`) and the `Field` props but its state and render function (label, layout, description, help, `showHelpButton`, decoration, menu, `onMenuAction`, `renderMessage`, `className`, `id` and caller `data-*`). `useFieldControl(props, options)` shall split a control's props into the field state, the props for `Field` and the control's own props. A field with no value, committed value or default starts at the control's `initialValue`, which is then also its default; a field with no `emptyValue` clears to the control's `emptyValue`; the control's `check` runs before the caller's `validate`, and its error wins; the control's `isEqual` and `hasOwnHistory` go to the field state (UIC-FIELD-2.3, UIC-FIELD-5.1). The form `name` goes to both the field state (UIC-FIELD-3.9) and the control's own props, so the control still submits under it.
 
 Implementation: `src/components/field/field-control.ts`
 Verification: `src/components/field/field-control.test.tsx`
@@ -443,6 +450,7 @@ Verification: `src/components/field/field-picker.test.tsx`
 | `ui-field__colon`                | slot      |                                                                         | The colon of the `label-colon-control` layout, inside the label. |
 | `ui-field__control`              | slot      |                                                                         | Holds the control.                                               |
 | `ui-field__help`                 | slot      |                                                                         | The help button (also `ui-button`).                              |
+| `ui-field__help-tooltip`         | slot      |                                                                         | The help the menu's Help shows (also `ui-tooltip`).              |
 | `ui-field__decoration`           | slot      |                                                                         | The host's badges and marks.                                     |
 | `ui-field__description`          | slot      |                                                                         | The description.                                                 |
 | `ui-field__message`              | slot      |                                                                         | The validation message; empty while valid.                       |

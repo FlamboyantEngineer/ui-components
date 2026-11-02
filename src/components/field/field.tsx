@@ -6,7 +6,6 @@ import { createSlotRegistry } from '../../utils/slot-registry.js';
 import { defaultFieldMenu, type FieldMenuEntry } from './field-menu-entries.js';
 import { useFieldBehaviour, type FieldSlots } from './field-behaviour.js';
 import {
-  FieldHelp,
   FieldLabel,
   FieldMessage,
   fieldHooks as hooks,
@@ -20,6 +19,7 @@ import {
 } from './field-parts.js';
 import { focusControl } from './field-form.js';
 import { FieldRestoreButton } from './field-restore-button.js';
+import { FieldHelpParts } from './field-help.js';
 import { FieldChangeLayoutContext } from './field-previous-value.js';
 import type { FieldIssue, FieldState, FieldValidation } from './field-state.js';
 import { FieldMessageTooltip, type FieldMessageDisplay } from './field-message-tooltip.js';
@@ -56,8 +56,16 @@ export interface FieldProps<T> extends BaseProps {
   messageDisplay?: FieldMessageDisplay | undefined;
   /** Help text below the control, which describes it. */
   description?: ReactNode;
-  /** Help shown in a tooltip from a help button after the control. */
+  /**
+   * Help shown in a tooltip from a help button after the control, and from Help, which the
+   * context menu then offers.
+   */
   help?: ReactNode;
+  /**
+   * Draws the help button. Defaults to true; false leaves the help to the context menu's Help, and
+   * the help then describes the control.
+   */
+  showHelpButton?: boolean | undefined;
   /** Badges and other marks the host renders for the field; they describe the control. */
   decoration?: ReactNode;
   /**
@@ -121,26 +129,38 @@ function toFieldData(
   };
 }
 
-/** The buttons after the control, one size below the field: restore while dirty, and help. */
+/** The parts after the control, one size below the field: restore while dirty, and the help. */
 function FieldButtons({
-  label,
-  size,
-  help,
-  onRestore,
+  props: { label, size = 'md', help, showHelpButton = true },
+  ids,
+  state,
+  slots,
+  behaviour,
+  controlSlot,
 }: {
-  label: string;
-  size: ControlSize;
-  help: { id: string; content: ReactNode } | null;
-  onRestore: (() => void) | null;
+  props: Pick<FieldProps<unknown>, 'label' | 'size' | 'help' | 'showHelpButton'>;
+  ids: ReturnType<typeof useFieldIds>;
+  state: FieldState<unknown>;
+  slots: FieldSlots;
+  behaviour: ReturnType<typeof useFieldBehaviour>;
+  controlSlot: RefObject<Element | null>;
 }) {
+  const button = { label, size: toInnerControlSize(size) };
   return (
     <>
-      {onRestore ? <FieldRestoreButton label={label} size={size} onPress={onRestore} /> : null}
-      {help ? (
-        <FieldHelp id={help.id} label={label} size={size}>
-          {help.content}
-        </FieldHelp>
+      {state.isDirty ? (
+        <FieldRestoreButton {...button} onPress={() => restoreField(state, slots)} />
       ) : null}
+      {isEmptyNode(help) ? null : (
+        <FieldHelpParts
+          {...button}
+          help={{ id: ids.help, content: help }}
+          showButton={showHelpButton}
+          tooltip={behaviour.help}
+          controlSlot={controlSlot}
+          getRoot={behaviour.getRoot}
+        />
+      )}
     </>
   );
 }
@@ -151,16 +171,19 @@ function FieldNotes({
   state,
   decoration,
   description,
-  message,
+  renderMessage,
   tooltip,
 }: {
   ids: ReturnType<typeof useFieldIds>;
   state: FieldState<unknown>;
   decoration: ReactNode;
   description: ReactNode;
-  message: ReactNode;
+  renderMessage: FieldProps<unknown>['renderMessage'];
   tooltip: { isOpen: boolean; anchor: RefObject<Element | null> } | null;
 }) {
+  const message = renderMessage
+    ? renderMessage(state.validation, state.issues)
+    : state.validation.message;
   return (
     <>
       {isEmptyNode(decoration) ? null : (
@@ -205,6 +228,7 @@ export function Field<T>({
   messageDisplay = 'inline',
   description,
   help,
+  showHelpButton,
   decoration,
   menu = defaultFieldMenu,
   onMenuAction,
@@ -225,6 +249,7 @@ export function Field<T>({
     commitOnBlur,
     autoFocus,
     messageDisplay,
+    hasHelp: !isEmptyNode(help),
   });
   const controlSlot = useRef<HTMLDivElement>(null);
   const hasLabel = labelLayout !== 'control-only';
@@ -233,6 +258,7 @@ export function Field<T>({
     label: hasLabel ? undefined : label,
     hasDescription: !isEmptyNode(description),
     hasDecoration: !isEmptyNode(decoration),
+    hasHelp: showHelpButton === false && !isEmptyNode(help),
   });
   const labelElement = hasLabel ? (
     <FieldLabel ids={ids} label={label} layout={labelLayout} isRequired={state.isRequired} />
@@ -252,19 +278,15 @@ export function Field<T>({
       </div>
       {labelLayout === 'control-label' ? labelElement : null}
       <FieldButtons
-        label={label}
-        size={toInnerControlSize(size)}
-        help={isEmptyNode(help) ? null : { id: ids.help, content: help }}
-        onRestore={state.isDirty ? () => restoreField(state, slots) : null}
+        props={{ label, size, help, showHelpButton }}
+        {...{ ids, state, slots, behaviour, controlSlot }}
       />
       <FieldNotes
         ids={ids}
         state={state}
         decoration={decoration}
         description={description}
-        message={
-          renderMessage ? renderMessage(state.validation, state.issues) : state.validation.message
-        }
+        renderMessage={renderMessage}
         tooltip={
           messageDisplay === 'tooltip'
             ? { isOpen: behaviour.isTooltipOpen, anchor: controlSlot }
