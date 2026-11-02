@@ -50,10 +50,10 @@ Verification: `src/components/chat/chat.test.tsx`, `e2e/chat.spec.ts`, `src/comp
 
 ### UIC-CHAT-1.7 - Transcript behaviour
 
-The transcript shall scroll in `scrollMode`, by default `anchor` in an assistant chat and `follow` otherwise, and take `presentation`, `virtualized`, `emptyState`, `onLoadOlder`, `hasOlder`, `isLoadingOlder`, `firstUnreadId` and `onRead` as [Chat Transcript](CHAT-TRANSCRIPT.md) does. Escape from a focused message (the transcript's second Escape) moves focus to the composer.
+The transcript shall scroll in `scrollMode`, by default `anchor` in an assistant chat and `follow` otherwise, and take `presentation`, `virtualized`, `emptyState`, `onLoadOlder`, `hasOlder`, `isLoadingOlder`, `firstUnreadId` and `onRead` as [Chat Transcript](CHAT-TRANSCRIPT.md) does. Escape from a focused message (the transcript's second Escape) moves focus to the composer. `emptyState` shows only while there are no messages and is never one of them: an assistant chat's welcome composes it from stock parts, an [Empty State](EMPTY-STATE.md) whose title and description say what the assistant is for and whose `actions` are suggested first questions that send themselves through the host, or none, so the first message replaces it, nothing of it enters the history, and a new empty conversation (a [Chat Controller](CHAT-CONTROLLER.md)'s `resetConversation`) shows it again. The host writes the welcome and the questions; the disclaimer ([UIC-CHAT-1.9](#uic-chat-19---disclaimer)) stays apart from it.
 
 Implementation: `src/components/chat/chat.tsx`
-Verification: `src/components/chat/chat.test.tsx`, `e2e/chat.spec.ts`
+Verification: `src/components/chat/chat.test.tsx`, `e2e/chat.spec.ts`, `e2e/chat-empty.spec.ts`
 
 ### UIC-CHAT-1.8 - Message display
 
