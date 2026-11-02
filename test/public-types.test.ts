@@ -21,6 +21,8 @@ import type { ListProps } from '../src/components/list-row/list-row.js';
 import type { OverflowListProps } from '../src/components/overflow-list/overflow-list.js';
 import type { ScrollRegionProps } from '../src/components/scroll-region/scroll-region.js';
 import type { DescriptionListProps } from '../src/components/description-list/description-list.js';
+import type { SeparatorProps } from '../src/components/separator/separator.js';
+import type { VisuallyHiddenProps } from '../src/components/visually-hidden/visually-hidden.js';
 
 // Package names built from parts so the repository scan in primitives.test.ts skips this file.
 const ARIA = `${'react-aria'}-components`;
@@ -114,6 +116,14 @@ describe('public declarations', () => {
     });
     expect(result.status).toBe(1);
     expect(result.stderr).toContain('ProbeProps names unexported ProbeDraft');
+  });
+
+  it('UIC-COMPOSITION-1.3 chooses a native tag with as, never elementType', () => {
+    expectTypeOf<StackProps<'span'>['as']>().toEqualTypeOf<'span' | undefined>();
+    expectTypeOf<SeparatorProps['as']>().toEqualTypeOf<'hr' | 'div' | 'li' | undefined>();
+    expectTypeOf<VisuallyHiddenProps['as']>().toEqualTypeOf<'div' | 'span' | undefined>();
+    expectTypeOf<SeparatorProps>().not.toHaveProperty('elementType');
+    expectTypeOf<VisuallyHiddenProps>().not.toHaveProperty('elementType');
   });
 
   it('UIC-COMPOSITION-2.4 forwards container props without raw HTML', () => {

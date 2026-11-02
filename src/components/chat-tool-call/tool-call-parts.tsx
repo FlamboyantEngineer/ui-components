@@ -81,9 +81,7 @@ function ToolCallDuration({ milliseconds }: { milliseconds: number }) {
   return (
     <span {...hooks.slot('duration')}>
       <span aria-hidden="true">{strings.toolCallDuration(milliseconds, 'short')}</span>
-      <VisuallyHidden elementType="span">
-        {strings.toolCallDuration(milliseconds, 'long')}
-      </VisuallyHidden>
+      <VisuallyHidden as="span">{strings.toolCallDuration(milliseconds, 'long')}</VisuallyHidden>
     </span>
   );
 }

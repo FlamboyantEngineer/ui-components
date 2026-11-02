@@ -6,7 +6,7 @@
 
 ### UIC-SEPARATOR-1.1 - Element
 
-`Separator` shall render an `<hr>` by default, a `<div>` when it is vertical or labelled (an `<hr>` can hold neither), or the element `elementType` names (`hr`, `div` or `li`). It holds no children unless labelled.
+`Separator` shall render an `<hr>` by default, a `<div>` when it is vertical or labelled (an `<hr>` can hold neither), or the element `as` names (`hr`, `div` or `li`; [UIC-COMPOSITION-1.3](COMPOSITION.md#uic-composition-13---native-tag)). With `render` as well, `render` receives the finished props of that element. It holds no children unless labelled.
 
 Implementation: `src/components/separator/separator.tsx`
 Verification: `src/components/separator/separator.test.tsx`, `e2e/separator.spec.ts`

@@ -40,7 +40,7 @@ export function RelationCount({
   return (
     <span {...hooks.slot(slot)}>
       <span aria-hidden="true">{formatCount(count, locale)}</span>
-      <VisuallyHidden elementType="span">{strings.relationCount(count)}</VisuallyHidden>
+      <VisuallyHidden as="span">{strings.relationCount(count)}</VisuallyHidden>
     </span>
   );
 }

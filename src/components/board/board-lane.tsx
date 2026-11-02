@@ -86,7 +86,7 @@ export function BoardLaneGroup<T extends { id: Key }>({
         </span>
         <span {...hooks.slot('lane-count')}>
           <span aria-hidden="true">{formatCount(count, locale)}</span>
-          <VisuallyHidden elementType="span">{strings.cardCount(count)}</VisuallyHidden>
+          <VisuallyHidden as="span">{strings.cardCount(count)}</VisuallyHidden>
         </span>
       </div>
       {isCollapsed ? null : (

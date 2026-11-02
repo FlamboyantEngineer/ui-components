@@ -126,7 +126,7 @@ export function Shortcut({
         )}
       </span>
       {decorative ? null : (
-        <VisuallyHidden elementType="span" className={hooks.slotClass('text')}>
+        <VisuallyHidden as="span" className={hooks.slotClass('text')}>
           {formatShortcutAccessibleText(chord, {
             platform: resolved,
             keyName: strings.shortcutKeyName,

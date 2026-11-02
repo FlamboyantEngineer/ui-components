@@ -110,7 +110,7 @@ interface EntryContentProps {
 /** An entry's icon, or its initials while collapsed without one, then its label. */
 function EntryContent({ label, icon, isCollapsed }: EntryContentProps) {
   const text = isCollapsed ? (
-    <VisuallyHidden elementType="span" className={hooks.slotClass('label')}>
+    <VisuallyHidden as="span" className={hooks.slotClass('label')}>
       {label}
     </VisuallyHidden>
   ) : (
@@ -146,7 +146,7 @@ export function NavigationRailSection({
   return (
     <div {...rest} {...hooks.slot('section', undefined, className)}>
       {title === undefined ? null : isCollapsed ? (
-        <VisuallyHidden elementType="span" {...titleProps}>
+        <VisuallyHidden as="span" {...titleProps}>
           {title}
         </VisuallyHidden>
       ) : (

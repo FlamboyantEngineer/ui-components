@@ -56,7 +56,7 @@ function ChannelLabel({ shown, name }: { shown: string; name: string }) {
   return (
     <Label {...hooks.slot('channel-label')}>
       <span aria-hidden="true">{shown}</span>
-      <VisuallyHidden elementType="span">{name}</VisuallyHidden>
+      <VisuallyHidden as="span">{name}</VisuallyHidden>
     </Label>
   );
 }

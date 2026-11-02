@@ -32,7 +32,7 @@ describe('VisuallyHidden', () => {
   it('UIC-VISUALLY-HIDDEN-1.2 renders the element type the content needs', () => {
     const { container } = render(
       <p>
-        12 kg <VisuallyHidden elementType="span">of apples</VisuallyHidden>
+        12 kg <VisuallyHidden as="span">of apples</VisuallyHidden>
       </p>,
     );
     const hidden = container.querySelector('.ui-visually-hidden') as HTMLElement;

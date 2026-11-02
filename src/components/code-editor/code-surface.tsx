@@ -99,7 +99,7 @@ function CodeProblems(props: {
   return (
     <>
       {props.isListed ? <CodeDiagnostics id={props.id} diagnostics={props.diagnostics} /> : null}
-      <VisuallyHidden elementType="span" className={hooks.slotClass('announcement')} role="status">
+      <VisuallyHidden as="span" className={hooks.slotClass('announcement')} role="status">
         {props.announcement}
       </VisuallyHidden>
     </>

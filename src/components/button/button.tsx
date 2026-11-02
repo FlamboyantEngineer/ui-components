@@ -153,7 +153,7 @@ function ButtonParts({
       {/* The space separates the label from the hidden text in the accessible name. */}
       {opensNewTab ? ' ' : null}
       {opensNewTab ? (
-        <VisuallyHidden elementType="span" className={hooks.slotClass('new-tab-label')}>
+        <VisuallyHidden as="span" className={hooks.slotClass('new-tab-label')}>
           {strings.opensInNewTab}
         </VisuallyHidden>
       ) : null}

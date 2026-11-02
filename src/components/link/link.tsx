@@ -104,7 +104,7 @@ function NewTabParts() {
     <>
       {' '}
       <Glyph icon={ExternalLinkGlyph} className={hooks.slotClass('external-icon')} />
-      <VisuallyHidden elementType="span" className={hooks.slotClass('new-tab-label')}>
+      <VisuallyHidden as="span" className={hooks.slotClass('new-tab-label')}>
         {strings.opensInNewTab}
       </VisuallyHidden>
     </>

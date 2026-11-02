@@ -156,7 +156,7 @@ export function SignatureSurface({ control, drawing, isEditable, onDraw }: Signa
           ))}
         </svg>
       </div>
-      <VisuallyHidden id={strokesId} elementType="span">
+      <VisuallyHidden id={strokesId} as="span">
         {strings.signatureStrokes(paths.length)}
       </VisuallyHidden>
       <div {...hooks.slot('actions')}>

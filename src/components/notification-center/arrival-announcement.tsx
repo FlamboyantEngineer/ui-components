@@ -63,14 +63,15 @@ interface ArrivalAnnouncementProps {
   items: readonly ArrivalEntry[];
   /** The status's hook class. */
   className: string;
-  elementType?: VisuallyHiddenElement | undefined;
+  /** The element to render. */
+  as?: VisuallyHiddenElement | undefined;
 }
 
 /** The visually hidden polite status that announces the arrivals among `items`. */
-export function ArrivalAnnouncement({ items, className, elementType }: ArrivalAnnouncementProps) {
+export function ArrivalAnnouncement({ items, className, as }: ArrivalAnnouncementProps) {
   const announcement = useArrivalAnnouncement(items);
   return (
-    <VisuallyHidden elementType={elementType} role="status" className={className}>
+    <VisuallyHidden as={as} role="status" className={className}>
       {announcement}
     </VisuallyHidden>
   );

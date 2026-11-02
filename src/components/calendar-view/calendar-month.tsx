@@ -122,7 +122,7 @@ export function CalendarMonth({ grid, titleId, ...rest }: CalendarMonthProps) {
           return (
             <div key={date} role="columnheader" {...hooks.slot('weekday')}>
               <span aria-hidden="true">{names.short}</span>
-              <VisuallyHidden elementType="span">{names.long}</VisuallyHidden>
+              <VisuallyHidden as="span">{names.long}</VisuallyHidden>
             </div>
           );
         })}

@@ -99,7 +99,7 @@ function LineRows({ line, side, change, options }: LineRowsProps) {
         {side === 'old' ? null : <NumberCell side="new" value={line.newNumber} />}
         <td {...hooks.slot('marker')}>
           <span aria-hidden="true">{markers[line.change]}</span>
-          <VisuallyHidden elementType="span">{label}</VisuallyHidden>
+          <VisuallyHidden as="span">{label}</VisuallyHidden>
         </td>
         <td {...hooks.slot('content')}>
           <LineText line={line} />

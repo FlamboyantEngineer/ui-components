@@ -147,7 +147,7 @@ export function CalendarWeek({ grid, titleId, ...rest }: CalendarWeekProps) {
                 {rest.day.format.formatWeekday(date).short}{' '}
                 <span {...hooks.slot('day-number')}>{rest.day.format.formatDayNumber(date)}</span>
               </span>
-              <VisuallyHidden elementType="span">{rest.day.format.formatDay(date)}</VisuallyHidden>
+              <VisuallyHidden as="span">{rest.day.format.formatDay(date)}</VisuallyHidden>
             </div>
           );
         })}

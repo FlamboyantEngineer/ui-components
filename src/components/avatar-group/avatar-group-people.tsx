@@ -90,7 +90,7 @@ export function AvatarGroupPeople({
         <Fragment key={key}>
           {isList && index > 0 ? (
             <>
-              <VisuallyHidden elementType="span">,</VisuallyHidden>{' '}
+              <VisuallyHidden as="span">,</VisuallyHidden>{' '}
             </>
           ) : null}
           {isDots ? (
@@ -108,7 +108,7 @@ export function AvatarGroupPeople({
       ))}
       {isList && presence.visible.length > 0 && presence.overflow > 0 ? (
         <>
-          <VisuallyHidden elementType="span">,</VisuallyHidden>{' '}
+          <VisuallyHidden as="span">,</VisuallyHidden>{' '}
         </>
       ) : null}
       <AvatarGroupOverflow

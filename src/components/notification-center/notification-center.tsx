@@ -115,7 +115,7 @@ export function NotificationCenter({
       />
       <ArrivalAnnouncement
         items={listProps.items}
-        elementType="span"
+        as="span"
         className={hooks.slotClass('announcement')}
       />
     </span>

@@ -105,9 +105,7 @@ function TextDiffHeader({ added, removed, previous, next, changes, onMove }: Hea
         <span aria-hidden="true" {...hooks.slot('count', { change: 'removed' })}>
           −{removed}
         </span>
-        <VisuallyHidden elementType="span">
-          {strings.textDiffSummary(added, removed)}
-        </VisuallyHidden>
+        <VisuallyHidden as="span">{strings.textDiffSummary(added, removed)}</VisuallyHidden>
       </span>
       <ChangeNavigation
         hooks={hooks}

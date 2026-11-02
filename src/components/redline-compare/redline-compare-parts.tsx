@@ -152,7 +152,7 @@ export function RedlineMarker(props: {
   return (
     <span {...hooks.slot('marker', { change: props.change })}>
       {props.change === 'unchanged' ? null : <Glyph icon={markerGlyphs[props.change]} />}
-      <VisuallyHidden elementType="span" id={props.labelId}>
+      <VisuallyHidden as="span" id={props.labelId}>
         {props.label}
       </VisuallyHidden>
     </span>

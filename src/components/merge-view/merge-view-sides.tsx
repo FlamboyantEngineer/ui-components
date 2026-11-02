@@ -37,9 +37,7 @@ function LineRow({ line }: { line: MergeLine }) {
       </td>
       <td {...hooks.slot('marker')}>
         <span aria-hidden="true">{markers[line.change]}</span>
-        <VisuallyHidden elementType="span">
-          {strings.mergeViewLine(line.change, line.number)}
-        </VisuallyHidden>
+        <VisuallyHidden as="span">{strings.mergeViewLine(line.change, line.number)}</VisuallyHidden>
       </td>
       <td {...hooks.slot('content')}>{line.text}</td>
     </tr>

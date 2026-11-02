@@ -39,7 +39,7 @@ function Count({
   return (
     <span {...hooks.slot(slot)}>
       <span aria-hidden="true">{formatCount(count, locale)}</span>
-      <VisuallyHidden elementType="span">{text}</VisuallyHidden>
+      <VisuallyHidden as="span">{text}</VisuallyHidden>
     </span>
   );
 }
