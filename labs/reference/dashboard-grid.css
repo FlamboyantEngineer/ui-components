@@ -1,4 +1,5 @@
-/* Dashboard Grid: a CSS grid of tiles; edit mode outlines tiles and shows corner handles. */
+/* Dashboard Grid: a CSS grid of tiles; edit mode outlines tiles and lays ghost handles over their
+   corners, so the content keeps its place and size. */
 
 .ui-dashboard-grid {
   position: relative;
@@ -19,8 +20,6 @@
 }
 
 .ui-dashboard-grid[data-editing] .ui-dashboard-grid__tile {
-  box-sizing: border-box;
-  padding-block-start: 28px;
   outline: 1px dashed var(--ref-border-strong);
   outline-offset: 2px;
 }
@@ -53,16 +52,19 @@
   width: 24px;
   height: 24px;
   padding: 0;
-  border: 1px solid var(--ref-border);
+  border: 0;
   border-radius: var(--ref-radius-sm);
-  background: var(--ref-raised);
+  background: none;
   color: var(--ref-muted);
   touch-action: none;
 }
 
+/* The grip sits at the middle of the top edge, where tile titles and toolbars rarely reach. */
 .ui-dashboard-grid__move {
-  inset-block-start: 2px;
-  inset-inline-start: 2px;
+  inset-block-start: 0;
+  inset-inline-start: calc(50% - 16px);
+  width: 32px;
+  height: 20px;
   cursor: grab;
 }
 

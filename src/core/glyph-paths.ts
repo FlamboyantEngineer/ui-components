@@ -206,3 +206,7 @@ export const xMarkPath = 'M6 18 18 6M6 6l12 12';
 // f with a subscript x, the spreadsheet fₓ.
 export const functionPath =
   'M15 3.75c-2.25-.375-3.5.5-3.875 2.75L9.5 17.25c-.375 2.25-1.625 3.125-3.875 2.75M7.5 9h6M14.25 13.5l4.5 6M18.75 13.5l-4.5 6';
+
+// Drawn for the library in the same outline style, as Heroicons has no diagonal two-headed arrow:
+// one shaft from the top-left corner to the bottom-right, with a head at each end, for resizing.
+export const arrowsDiagonalPath = 'M5.25 5.25l13.5 13.5M5.25 5.25v6m0-6h6M18.75 18.75v-6m0 6h-6';
