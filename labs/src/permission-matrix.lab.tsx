@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '../../src/components/button/index.js';
 import {
   PermissionMatrix,
+  applyPermissionChange,
   type PermissionMatrixChange,
   type PermissionMatrixGrant,
   type PermissionMatrixGroup,
@@ -72,6 +73,34 @@ function describeChange(change: PermissionMatrixChange): string {
   return `${change.isGranted ? 'Granted' : 'Revoked'} ${names.join(', ')} for ${role}`;
 }
 
+/** Changes a host makes outside the matrix, applied with `applyPermissionChange`. */
+const externalChanges: { label: string; change: PermissionMatrixChange }[] = [
+  {
+    label: 'Grant all Photos to Guest',
+    change: { role: 'guest', permissions: ['photo-upload', 'photo-delete'], isGranted: true },
+  },
+  {
+    label: 'Revoke all Recipes from Editor',
+    change: {
+      role: 'editor',
+      permissions: ['recipe-read', 'recipe-write', 'recipe-publish'],
+      isGranted: false,
+    },
+  },
+];
+
+function ExternalChanges({ onApply }: { onApply: (change: PermissionMatrixChange) => void }) {
+  return (
+    <>
+      {externalChanges.map(({ label, change }) => (
+        <Button key={label} onPress={() => onApply(change)}>
+          {label}
+        </Button>
+      ))}
+    </>
+  );
+}
+
 function RoleEditor() {
   const [committed, setCommitted] = useState(saved);
   const [value, setValue] = useState(saved);
@@ -106,6 +135,12 @@ function RoleEditor() {
       >
         Save
       </Button>
+      <ExternalChanges
+        onApply={(change) => {
+          setValue((current) => applyPermissionChange(current, change));
+          setOutput(`Applied outside: ${describeChange(change)}`);
+        }}
+      />
       <Button onPress={reverseSoon}>Reverse roles in 1.5 seconds</Button>
       <Button onPress={reverseGroupsSoon}>Reverse groups in 1.5 seconds</Button>
       <output data-lab-output>{output}</output>
@@ -145,7 +180,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Editing roles"
-      description="Tick cells or whole groups; changed cells are marked dirty until saved. Guest reads recipes and Reviewer uploads photos through an inherited role, drawn mixed until granted directly. Arrow keys move between checkboxes and Space toggles. Reversing the roles keeps the focused checkbox on its role; reversing the groups keeps the focused group checkbox and each collapsed group on its group."
+      description="Tick cells or whole groups; changed cells are marked dirty until saved. Guest reads recipes and Reviewer uploads photos through an inherited role, drawn mixed until granted directly. Arrow keys move between checkboxes and Space toggles. The Grant all Photos to Guest and Revoke all Recipes from Editor buttons change the grants from outside the matrix with applyPermissionChange: a whole group at once, keeping every other grant, and the matrix shows the result as dirty until saved. Reversing the roles keeps the focused checkbox on its role; reversing the groups keeps the focused group checkbox and each collapsed group on its group."
     >
       <RoleEditor />
     </LabSection>
