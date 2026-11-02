@@ -123,4 +123,37 @@ test.describe('State Machine View lab', () => {
     await expect(entry('Placed')).toHaveAccessibleDescription('Initial state.');
     await lab.expectAccessible();
   });
+
+  test('UIC-STATE-MACHINE-VIEW-1.2 starts at the initial state given and in the view given', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('state-machine-view');
+    const outline = field(page, 'kettle-outline');
+    const canvas = field(page, 'kettle-canvas');
+    await expect(outline.getByRole('radio', { name: 'Outline' })).toBeChecked();
+    await expect(canvas.getByRole('radio', { name: 'Diagram' })).toBeChecked();
+    const entry = (name: string) =>
+      outline
+        .locator('.ui-diagram-canvas__outline-item')
+        .filter({ has: page.locator('.ui-diagram-canvas__outline-label', { hasText: name }) })
+        .first();
+    await expect(entry('Cold')).toHaveAccessibleDescription(/^Initial state\./);
+    await expect(entry('Heating')).toHaveAccessibleDescription(/^Current state\./);
+    await expect(entry('Done')).toHaveAccessibleDescription(/^Final state\./);
+    await expect(
+      stateOf(canvas, 'Cold').locator('.ui-state-machine-view__initial-marker'),
+    ).toHaveCount(1);
+    await expect(canvas.locator('.ui-state-machine-view__initial-marker')).toHaveCount(1);
+    await expect(
+      stateOf(canvas, 'Heating').locator('.ui-state-machine-view__state'),
+    ).toHaveAttribute('data-current', 'true');
+    await outline.getByRole('radio', { name: 'Diagram' }).click();
+    await expect(
+      stateOf(outline, 'Cold').locator('.ui-state-machine-view__initial-marker'),
+    ).toHaveCount(1);
+    await canvas.getByRole('radio', { name: 'Outline' }).click();
+    await expect(canvas.locator('.ui-diagram-canvas__outline-item')).toHaveCount(3);
+    await lab.expectAccessible();
+  });
 });
