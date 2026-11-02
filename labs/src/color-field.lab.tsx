@@ -110,6 +110,13 @@ function Transparency() {
         onCommit={(value) => setCommitted(value ?? 'empty')}
         data-lab-field="opaque"
       />
+      <ColorField
+        label="Shade"
+        defaultValue="#33669980"
+        description="Translucent without allowsTransparency: the picker offers opacity, with # above the hex input, until it closes on an opaque colour."
+        onCommit={(value) => setCommitted(value ?? 'empty')}
+        data-lab-field="auto-alpha"
+      />
       <LabOutput name="Transparency committed">{committed}</LabOutput>
     </>
   );
@@ -233,7 +240,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Formats"
-      description="The colour text in each format, with transparency allowed or not, for an opaque and a translucent colour. A translucent colour keeps and shows its alpha either way."
+      description="The colour text in each format, with transparency allowed or not, for an opaque and a translucent colour. A colour shown with alpha always offers opacity in its picker; allowsTransparency also offers it for an opaque colour."
     >
       <StateMatrix
         axes={{
@@ -253,7 +260,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Transparency"
-      description="With allowsTransparency the picker adds an alpha slider over a checkerboard and an Alpha input; without it the picker edits the colour alone and never changes its alpha."
+      description="With allowsTransparency the picker always offers opacity: an alpha slider over a checkerboard and an Alpha input, with # above the hex input. Without it an opaque colour is edited alone, with no # label, and a translucent one still gets the opacity controls."
     >
       <Transparency />
     </LabSection>

@@ -216,6 +216,55 @@ test.describe('Color Field lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-COLOR-FIELD-3.1 UIC-COLOR-FIELD-3.2 offers opacity for a translucent colour, with # only beside Alpha', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('color-field');
+    const label = (dialog: ReturnType<Page['getByRole']>) =>
+      dialog.locator('.ui-color-field__hex .ui-color-field__channel-label');
+    // Opaque without transparency: no opacity, no # row, and the hex input sits at the top.
+    await field(page, 'opaque').locator('.ui-color-field__trigger').click();
+    let dialog = page.getByRole('dialog', { name: 'Stroke' });
+    await expect(dialog.getByRole('textbox', { name: 'Hex color' })).toHaveValue('#336699');
+    await expect(label(dialog)).toHaveCount(0);
+    const [hex, input] = await Promise.all([
+      dialog.locator('.ui-color-field__hex').boundingBox(),
+      dialog.locator('.ui-color-field__hex .ui-color-field__input').boundingBox(),
+    ]);
+    expect(Math.abs((hex?.y ?? 0) - (input?.y ?? 99))).toBeLessThanOrEqual(1);
+    await page.keyboard.press('Escape');
+    // Translucent without transparency: opacity offered, # above the hex input, level with A.
+    const shade = field(page, 'auto-alpha').locator('.ui-color-field__trigger');
+    await shade.click();
+    dialog = page.getByRole('dialog', { name: 'Shade' });
+    await expect(dialog.getByRole('slider', { name: 'Alpha' })).toBeVisible();
+    await expect(label(dialog)).toHaveText('#Hex color');
+    const [hexInput, alphaInput] = await Promise.all([
+      dialog.getByRole('textbox', { name: 'Hex color' }).boundingBox(),
+      dialog.getByRole('textbox', { name: 'Alpha' }).boundingBox(),
+    ]);
+    expect(Math.abs((hexInput?.y ?? 0) - (alphaInput?.y ?? 99))).toBeLessThanOrEqual(1);
+    // Up to opaque with the keyboard: the slider stays and keeps focus.
+    const alpha = dialog.getByRole('slider', { name: 'Alpha' });
+    await alpha.focus();
+    await page.keyboard.press('End');
+    await expect(alpha).toBeFocused();
+    await expect(dialog.getByRole('textbox', { name: 'Alpha' })).toHaveValue('100%');
+    await page.keyboard.press('Home');
+    await expect(dialog.getByRole('textbox', { name: 'Alpha' })).toHaveValue('0%');
+    await page.keyboard.press('End');
+    await page.keyboard.press('Escape');
+    await expect(output(page, 'Transparency committed')).toHaveText('#336699');
+    // Reopened on an opaque colour, it is edited alone again.
+    await shade.click();
+    dialog = page.getByRole('dialog', { name: 'Shade' });
+    await expect(dialog.getByRole('slider', { name: 'Hue' })).toBeVisible();
+    await expect(dialog.getByRole('slider', { name: 'Alpha' })).toHaveCount(0);
+    await expect(label(dialog)).toHaveCount(0);
+    await page.keyboard.press('Escape');
+  });
+
   test('UIC-COLOR-FIELD-3.2 labels each channel and steps the one under the wheel', async ({
     page,
     lab,

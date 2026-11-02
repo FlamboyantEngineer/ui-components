@@ -3,6 +3,7 @@
 import { useContext, useRef } from 'react';
 import {
   ColorField as AriaColorField,
+  ColorFieldContext,
   ColorPickerStateContext,
   Input,
   Label,
@@ -96,27 +97,48 @@ function ChannelInput({
 }
 
 /**
+ * The picker's hex input. It edits the colour and keeps the picker's alpha, as its six digits hold
+ * none: it takes the picker's colour itself rather than through the picker's context, which would
+ * set the colour opaque. It shows `#` only beside the Alpha input, and is otherwise named without a
+ * visible label.
+ */
+function HexInput({ showsAlpha }: { showsAlpha: boolean }) {
+  const strings = useUiStrings();
+  const picker = useContext(ColorPickerStateContext);
+  return (
+    <ColorFieldContext value={null}>
+      <AriaColorField
+        {...hooks.slot('hex')}
+        aria-label={showsAlpha ? undefined : strings.hexColor}
+        value={picker?.color}
+        onChange={(next) => {
+          if (!picker || !next) return;
+          picker.setColor(next.withChannelValue('alpha', picker.color.getChannelValue('alpha')));
+        }}
+      >
+        {showsAlpha ? <ChannelLabel shown="#" name={strings.hexColor} /> : null}
+        <Input {...hooks.slot('input')} />
+      </AriaColorField>
+    </ColorFieldContext>
+  );
+}
+
+/**
  * The picker's inputs for its format: a hex input, or a number input per channel of the format's
- * colour space (React Aria `ColorField` with `channel`), then alpha while transparency is allowed. Each
- * input has a visible label: `#` for hex and the channel's initial for a channel.
+ * colour space (React Aria `ColorField` with `channel`), then alpha while the picker offers opacity.
+ * A channel has a visible label, its initial.
  */
 export function ColorChannelInputs({
   format,
-  allowsTransparency,
+  showsAlpha,
 }: {
   format: ColorFieldFormat;
-  allowsTransparency: boolean;
+  showsAlpha: boolean;
 }) {
-  const strings = useUiStrings();
-  const { hasHex, space, channels } = describeFormatInputs(format, allowsTransparency);
+  const { hasHex, space, channels } = describeFormatInputs(format, showsAlpha);
   return (
     <div {...hooks.slot('channels')}>
-      {hasHex ? (
-        <AriaColorField {...hooks.slot('hex')}>
-          <ChannelLabel shown="#" name={strings.hexColor} />
-          <Input {...hooks.slot('input')} />
-        </AriaColorField>
-      ) : null}
+      {hasHex ? <HexInput showsAlpha={showsAlpha} /> : null}
       {channels.map((channel) => (
         <ChannelInput key={channel} channel={channel} space={space} />
       ))}

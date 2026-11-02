@@ -73,30 +73,97 @@ describe('ColorField formats and channels', () => {
     expect(within(dialog).getByRole('textbox', { name: 'Alpha' })).toHaveValue('50%');
   });
 
-  it('UIC-COLOR-FIELD-3.2 marks the hex input with #', async () => {
+  it("UIC-COLOR-FIELD-3.2 shows the hex input's # only beside the Alpha input", async () => {
     const user = userEvent.setup();
-    render(<ColorField label="Accent" defaultValue="#336699" />);
-    const dialog = await openPicker(user);
+    const { unmount } = render(<ColorField label="Accent" defaultValue="#336699" />);
+    let dialog = await openPicker(user);
     const hex = within(dialog).getByRole('textbox', { name: 'Hex color' });
+    expect(dialog.querySelector('.ui-color-field__hex .ui-color-field__channel-label')).toBeNull();
+    fireEvent.wheel(hex, { deltaY: -100 });
+    expect(hex).toHaveValue('#336699');
+    await user.keyboard('{Escape}');
+    unmount();
+    render(<ColorField label="Accent" defaultValue="#336699" allowsTransparency />);
+    dialog = await openPicker(user);
+    expect(within(dialog).getByRole('textbox', { name: 'Hex color' })).toHaveValue('#336699');
     expect(
       dialog.querySelector('.ui-color-field__hex .ui-color-field__channel-label'),
     ).toHaveTextContent('#Hex color');
-    fireEvent.wheel(hex, { deltaY: -100 });
-    expect(hex).toHaveValue('#336699');
   });
 
-  it('UIC-COLOR-FIELD-3.1 keeps a translucent value without transparency editing', async () => {
+  it('UIC-COLOR-FIELD-3.1 offers opacity for a translucent value without allowsTransparency', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     render(<ColorField label="Stroke" defaultValue="#33669980" onChange={onChange} />);
     expect(trigger()).toHaveAccessibleName('Stroke #33669980');
-    const dialog = await openPicker(user);
-    expect(within(dialog).queryByRole('slider', { name: 'Alpha' })).not.toBeInTheDocument();
-    expect(within(dialog).queryByRole('textbox', { name: 'Alpha' })).not.toBeInTheDocument();
+    let dialog = await openPicker(user);
+    expect(within(dialog).getByRole('slider', { name: 'Alpha' })).toBeInTheDocument();
+    expect(
+      dialog.querySelector('.ui-color-field__hex .ui-color-field__channel-label'),
+    ).toHaveTextContent('#Hex color');
     const hex = within(dialog).getByRole('textbox', { name: 'Hex color' });
     await user.clear(hex);
     await user.type(hex, 'FF0000{Enter}');
     expect(onChange).toHaveBeenLastCalledWith('#ff000080');
+    // Raising the alpha to one keeps the controls while the picker is open.
+    const alpha = within(dialog).getByRole('textbox', { name: 'Alpha' });
+    await user.clear(alpha);
+    await user.type(alpha, '100{Enter}');
+    expect(onChange).toHaveBeenLastCalledWith('#ff0000');
+    expect(within(dialog).getByRole('slider', { name: 'Alpha' })).toBeInTheDocument();
+    expect(alpha).toHaveFocus();
+    await user.clear(alpha);
+    await user.type(alpha, '0{Enter}');
+    expect(onChange).toHaveBeenLastCalledWith('#ff000000');
+    await user.clear(alpha);
+    await user.type(alpha, '100{Enter}');
+    await user.keyboard('{Escape}');
+    // Closed on an opaque colour, the picker offers the colour alone again.
+    expect(trigger()).toHaveAccessibleName('Stroke #FF0000');
+    dialog = await openPicker(user);
+    expect(within(dialog).queryByRole('slider', { name: 'Alpha' })).not.toBeInTheDocument();
+    expect(within(dialog).queryByRole('textbox', { name: 'Alpha' })).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ['hex', '#336699cc', '#336699CC'],
+    ['rgb', 'rgba(51, 102, 153, 0.8)', 'rgba(51, 102, 153, 0.8)'],
+    ['hsl', 'hsla(210, 50%, 40%, 0.8)', 'hsla(210, 50%, 40%, 0.8)'],
+    ['hsb', 'hsba(210, 67%, 60%, 0.8)', 'hsba(210, 67%, 60%, 0.8)'],
+  ] as const)(
+    'UIC-COLOR-FIELD-3.1 offers opacity for a %s colour shown with alpha',
+    async (format, value, shown) => {
+      const user = userEvent.setup();
+      const onChange = vi.fn();
+      render(
+        <ColorField
+          label="Tint"
+          format={format}
+          valueFormat={format}
+          defaultValue={value}
+          onChange={onChange}
+        />,
+      );
+      expect(trigger()).toHaveAccessibleName(`Tint ${shown}`);
+      const dialog = await openPicker(user);
+      expect(within(dialog).getByRole('slider', { name: 'Alpha' })).toBeInTheDocument();
+      const alpha = within(dialog).getByRole('textbox', { name: 'Alpha' });
+      await user.clear(alpha);
+      await user.type(alpha, '25{Enter}');
+      expect(onChange).toHaveBeenLastCalledWith(expect.stringMatching(/0\.25\)$|40$/));
+    },
+  );
+
+  it('UIC-COLOR-FIELD-3.1 offers opacity once a typed colour turns translucent', async () => {
+    const user = userEvent.setup();
+    render(<ColorField label="Tint" allowsTyping defaultValue="#336699" />);
+    const entry = screen.getByRole('textbox', { name: 'Tint' });
+    await user.clear(entry);
+    await user.type(entry, '#ff000040{Enter}');
+    await user.click(screen.getByRole('button', { name: 'Tint picker' }));
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByRole('slider', { name: 'Alpha' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('textbox', { name: 'Alpha' })).toHaveValue('25%');
   });
 
   it('UIC-COLOR-FIELD-3.2 edits the channels of the format as numbers', async () => {
