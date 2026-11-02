@@ -1,12 +1,14 @@
 import {
   ChatToolCall,
   type ChatToolCallApproval,
+  type ChatToolCallKind,
   type ChatToolCallStatus,
   type ChatToolCallVariant,
 } from '../../src/components/chat-tool-call/chat-tool-call.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import {
   ApprovalDemo,
+  ControlledDemo,
   ForecastCard,
   QueueDemo,
   recipeArgs,
@@ -48,6 +50,18 @@ const decisions = {
 } as const satisfies Record<string, readonly [ChatToolCallApproval, ChatToolCallStatus]>;
 
 const noop = () => {};
+
+/** One call of each kind, as a coding assistant would make it. */
+const kindCalls = {
+  read: { name: 'read_file', label: 'Read', target: 'notes/menu.md' },
+  edit: { name: 'edit_file', label: 'Edited', target: 'notes/menu.md' },
+  command: { name: 'run_command', label: 'Ran', target: 'npm test' },
+  search: { name: 'search_files', label: 'Searched', target: 'lentil' },
+  fetch: { name: 'fetch_url', label: 'Fetched', target: 'example.com/recipes' },
+  other: { name: 'plan_menu', label: 'Planned the menu', target: undefined },
+} as const satisfies Record<ChatToolCallKind, { name: string; label: string; target?: string }>;
+
+const kinds = Object.keys(kindCalls) as ChatToolCallKind[];
 
 /** A recipe search in one status, with or without its JSON, open or closed at first. */
 function StatusCall({
@@ -157,6 +171,24 @@ mountLab(
       <StateMatrix
         axes={{ variant: ['card', 'row'], status: ['running', 'succeeded', 'failed'] }}
         render={(cell) => <VariantCall {...cell} />}
+      />
+    </LabSection>
+    <LabSection
+      title="Kinds"
+      description="Each kind running and once it succeeded: a finished call trades the status glyph for its kind's (a file for read, a pencil for edit, a terminal for command, a magnifier for search, a globe for fetch and a wrench for any other), and shows its target after the label."
+    >
+      <StateMatrix
+        axes={{ kind: kinds, status: ['running', 'succeeded'] }}
+        render={({ kind, status }) => (
+          <ChatToolCall
+            id={`kind-${kind}-${status}`}
+            {...kindCalls[kind]}
+            kind={kind}
+            variant="row"
+            status={status}
+            durationMs={status === 'succeeded' ? 500 : undefined}
+          />
+        )}
       />
     </LabSection>
     <LabSection
@@ -287,6 +319,12 @@ mountLab(
           </div>
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Controlled expansion"
+      description="The host owns whether the card is open (isExpanded): its Show details button and the card's own trigger both go through onExpandedChange, which the host applies. Next status moves the call from running to done to failed, and the host's state holds through each."
+    >
+      <ControlledDemo />
     </LabSection>
     <LabSection
       title="Interactive approval"

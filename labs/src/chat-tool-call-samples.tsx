@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
+import { LabOutput } from './lab-output.js';
 import {
   ChatToolCall,
   type ChatToolCallApproval,
@@ -159,6 +160,46 @@ export function QueueDemo() {
           <li key={position}>{event}</li>
         ))}
       </ol>
+    </div>
+  );
+}
+
+const controlledStatuses = ['running', 'succeeded', 'failed'] as const;
+
+/**
+ * A card whose host owns the expanded state: its own button and the card's trigger both ask the
+ * host, which shows the state and the last request; the status moves on without changing it.
+ */
+export function ControlledDemo() {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [requested, setRequested] = useState('none');
+  const [step, setStep] = useState(0);
+  const status = controlledStatuses[step % controlledStatuses.length] ?? 'running';
+  return (
+    <div data-lab-demo="controlled">
+      <Button size="sm" onPress={() => setIsExpanded((open) => !open)}>
+        {isExpanded ? 'Hide details' : 'Show details'}
+      </Button>
+      <Button size="sm" onPress={() => setStep((current) => current + 1)}>
+        Next status
+      </Button>
+      <ChatToolCall
+        id="controlled-search"
+        name="search_recipes"
+        status={status}
+        args={recipeArgs}
+        result={status === 'succeeded' ? recipeResult : undefined}
+        error={status === 'failed' ? 'The recipe service did not answer in time.' : undefined}
+        durationMs={status === 'running' ? undefined : 900}
+        isExpanded={isExpanded}
+        onExpandedChange={(next) => {
+          setRequested(String(next));
+          setIsExpanded(next);
+        }}
+      />
+      <LabOutput name="expanded">{String(isExpanded)}</LabOutput>
+      <LabOutput name="requested">{requested}</LabOutput>
+      <LabOutput name="status">{status}</LabOutput>
     </div>
   );
 }

@@ -86,6 +86,58 @@ test.describe('Chat Tool Call lab', () => {
     ).toHaveAttribute('aria-expanded', 'true');
   });
 
+  test('UIC-CHAT-TOOL-CALL-1.7 shows each kind with its glyph once it succeeded', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-tool-call');
+    const glyphs = {
+      read: 'file-text',
+      edit: 'edit',
+      command: 'terminal',
+      search: 'search',
+      fetch: 'globe',
+      other: 'wrench',
+    } as const;
+    for (const [kind, glyph] of Object.entries(glyphs)) {
+      const done = card(page, `kind=${kind} status=succeeded`);
+      await expect(done).toHaveAttribute('data-kind', kind);
+      await expect(done.locator(`[data-glyph="${glyph}"]`)).toHaveCount(1);
+      await expect(
+        card(page, `kind=${kind} status=running`).locator(`[data-glyph="${glyph}"]`),
+      ).toHaveCount(0);
+    }
+    await expect(card(page, 'kind=command status=succeeded')).toContainText('npm test');
+    await lab.expectAccessible('[data-lab-section="Kinds"]');
+  });
+
+  test('UIC-CHAT-TOOL-CALL-3.1 follows the host while controlled, through status changes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-tool-call');
+    const controlled = page.locator('[data-lab-demo="controlled"]');
+    const call = controlled.locator('.ui-chat-tool-call');
+    const trigger = triggerOf(call);
+    const output = (name: string) => controlled.locator(`[data-lab-output="${name}"]`);
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await controlled.getByRole('button', { name: 'Show details' }).click();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await expect(output('expanded')).toHaveText('true');
+    await expect(output('requested')).toHaveText('none');
+    await controlled.getByRole('button', { name: 'Next status' }).click();
+    await expect(output('status')).toHaveText('succeeded');
+    await expect(call.getByRole('group', { name: 'Result' })).toBeVisible();
+    await controlled.getByRole('button', { name: 'Next status' }).click();
+    await expect(output('status')).toHaveText('failed');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await trigger.click();
+    await expect(output('requested')).toHaveText('false');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await expect(controlled.getByRole('button', { name: 'Show details' })).toBeVisible();
+    await lab.expectAccessible('[data-lab-demo="controlled"]');
+  });
+
   test('UIC-CHAT-TOOL-CALL-2.1 UIC-CHAT-TOOL-CALL-2.3 shows a custom body and scrolls a long result by keyboard', async ({
     page,
     lab,
