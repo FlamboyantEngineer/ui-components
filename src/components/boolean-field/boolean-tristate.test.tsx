@@ -34,7 +34,7 @@ describe('explicit tri-state fields', () => {
       'data-indeterminate',
       'true',
     );
-    expect(screen.getByText('Unset')).toHaveClass('ui-boolean-field__caption');
+    expect(screen.getByText('Unset')).toHaveClass('ui-switch__label');
     rerender(<BooleanField label="Ripe" variant="toggle-button" allowsUnset />);
     expect(container.querySelector('.ui-boolean-field__toggle-button')).toHaveAttribute(
       'data-indeterminate',

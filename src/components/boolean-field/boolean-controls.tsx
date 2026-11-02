@@ -1,11 +1,12 @@
 'use client';
 
 import { useId, useRef, type CSSProperties } from 'react';
-import { Switch, ToggleButton, type Key } from '../../primitives/index.js';
+import { ToggleButton, type Key } from '../../primitives/index.js';
 import { measuredProperty } from '../../core/hooks.js';
 import type { ControlSize } from '../../core/props.js';
 import { useWidestTextWidth } from '../../utils/use-widest-text-width.js';
 import { Checkbox } from '../checkbox/checkbox.js';
+import { Switch } from '../switch/switch.js';
 import { cycleCheckState } from '../checkbox/checkbox.js';
 import {
   FieldFormValue,
@@ -244,11 +245,13 @@ function CheckControl(props: BooleanControlProps) {
   const caption = switchCaptionOf(state.value, labels);
   return (
     <>
-      <Switch {...shared} {...hooks.slot('switch', { indeterminate: state.value === null })}>
-        <span {...hooks.slot('track')} aria-hidden="true">
-          <span {...hooks.slot('thumb')} />
-        </span>
-        {caption ? <span {...hooks.slot('caption')}>{caption}</span> : null}
+      <Switch
+        {...shared}
+        className={hooks.slotClass('switch')}
+        size={size}
+        isIndeterminate={state.value === null}
+      >
+        {caption}
       </Switch>
       {formValue}
     </>

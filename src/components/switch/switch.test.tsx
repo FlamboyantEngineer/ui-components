@@ -106,6 +106,20 @@ describe('Switch', () => {
     expectHooksMatchSpec(container, 'SWITCH');
   });
 
+  it('UIC-SWITCH-1.1 publishes an indeterminate state and reports an invalid value', () => {
+    const { container, rerender } = render(
+      <Switch isIndeterminate isRequired isInvalid validationBehavior="aria">
+        Alerts
+      </Switch>,
+    );
+    const root = container.querySelector('.ui-switch');
+    expect(root).toHaveAttribute('data-indeterminate', 'true');
+    expect(root).toHaveAttribute('data-invalid', 'true');
+    rerender(<Switch>Alerts</Switch>);
+    expect(root).not.toHaveAttribute('data-indeterminate');
+    expect(root).not.toHaveAttribute('data-invalid');
+  });
+
   it('UIC-SWITCH-1.4 forwards the class name and data attributes to its root', () => {
     const { container } = render(
       <Switch className="dense" data-test="toggle">

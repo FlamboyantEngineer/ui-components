@@ -40,6 +40,10 @@ export const acceptedIncomplete: Readonly<Record<string, Readonly<Record<string,
     'form-field-multiple-labels':
       "The checkbox has the field's label and React Aria's wrapping label; aria-labelledby names it by the field's.",
   },
+  switch: {
+    'form-field-multiple-labels':
+      "The Boolean Field switches beside the bare ones have the field's label and React Aria's wrapping label; aria-labelledby names them by the field's.",
+  },
   'segmented-choice': {
     'label-content-name-mismatch':
       'A segment with a count is named "Open, 3", which holds its visible text "Open 3".',
