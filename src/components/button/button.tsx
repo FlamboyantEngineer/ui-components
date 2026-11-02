@@ -192,6 +192,9 @@ function ButtonTooltip({ children, tooltip, shortcut }: ButtonHint & { children:
   );
 }
 
+/** The options a Button takes when the caller leaves them out; an icon-only button is `ghost`. */
+export const buttonDefaults = { size: 'md', variant: 'secondary', iconVariant: 'ghost' } as const;
+
 /** The icon mode owns its accessible name and defaults, independently of action timing. */
 function resolveButtonPresentation(
   props: Pick<
@@ -207,7 +210,7 @@ function resolveButtonPresentation(
     isIcon,
     name,
     hint,
-    variant: props.variant ?? (isIcon ? 'ghost' : 'secondary'),
+    variant: props.variant ?? (isIcon ? buttonDefaults.iconVariant : buttonDefaults.variant),
     content: isIcon ? 'icon' : props.content,
     isTooltipName: isIcon && hint === name && !props.shortcut,
   };
@@ -269,7 +272,7 @@ function PointerMoveButton(props: ComponentProps<typeof AriaButton>) {
 /** A labelled command button, or a link drawn as one with `href`. */
 export function Button({
   variant,
-  size = 'md',
+  size = buttonDefaults.size,
   children,
   content = 'label',
   align = 'center',
@@ -352,3 +355,4 @@ export { usePendingAction } from './button-action.js';
 export { ScrollStripButton } from './scroll-strip-button.js';
 
 export { runPendingAction } from './pending-action.js';
+export { useInheritedDisabled } from './button-state.js';

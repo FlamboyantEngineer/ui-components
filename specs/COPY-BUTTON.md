@@ -29,17 +29,20 @@ Verification: `src/components/copy-button/copy-button.test.tsx`, `e2e/copy-butto
 
 ### UIC-COPY-BUTTON-1.4 - Options, hooks and caller attributes
 
-`variant`, `size` and `isDisabled` shall pass to the Icon Button, which publishes its own hooks in the `ui-copy-button__button` slot; a disabled button never copies. `CopyButton` shall carry the hooks below on its `<span>` root, append the caller's `className`, forward caller `data-*` attributes and `id` to the root, and keep its own hook values over caller attributes of the same name.
+`variant` (`ghost` by default, as for an icon button), `size` (`md` by default) and `isDisabled` (or the disabled state a component around supplies, as for a Button) shall pass to the Icon Button, which publishes its own hooks in the `ui-copy-button__button` slot, and the root publishes the same resolved values as `data-variant`, `data-size` and `data-disabled`, so a stylesheet styles the whole control from its root as it does a Button; a disabled button never copies. `CopyButton` shall carry the hooks below on its `<span>` root, append the caller's `className`, forward caller `data-*` attributes and `id` to the root, and keep its own hook values over caller attributes of the same name.
 
 Implementation: `src/components/copy-button/copy-button.tsx`
 Verification: `src/components/copy-button/copy-button.test.tsx`, `e2e/copy-button.spec.ts`
 
 ## Hooks
 
-| Hook                     | Kind  | Values | Description                                                      |
-| ------------------------ | ----- | ------ | ---------------------------------------------------------------- |
-| `ui-copy-button`         | root  |        | The `<span>` holding the button and its live region.             |
-| `ui-copy-button__button` | slot  |        | The button (also `ui-button`).                                   |
-| `ui-copy-button__status` | slot  |        | The visually hidden live region that announces the outcome.      |
-| `data-copied`            | state | `true` | The last copy reached the clipboard and its feedback is showing. |
-| `data-failed`            | state | `true` | The last copy was refused and its feedback is showing.           |
+| Hook                     | Kind      | Values                                                                                  | Description                                                      |
+| ------------------------ | --------- | --------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `ui-copy-button`         | root      |                                                                                         | The `<span>` holding the button and its live region.             |
+| `ui-copy-button__button` | slot      |                                                                                         | The button (also `ui-button`).                                   |
+| `ui-copy-button__status` | slot      |                                                                                         | The visually hidden live region that announces the outcome.      |
+| `data-variant`           | attribute | `primary`, `secondary`, `tertiary`, `danger`, `ghost`, `accent`, `chip`, `link`, `bare` | The button's variant, `ghost` by default.                        |
+| `data-size`              | attribute | `xs`, `sm`, `md`, `lg`                                                                  | The button's size, `md` by default.                              |
+| `data-disabled`          | state     | `true`                                                                                  | The button is disabled.                                          |
+| `data-copied`            | state     | `true`                                                                                  | The last copy reached the clipboard and its feedback is showing. |
+| `data-failed`            | state     | `true`                                                                                  | The last copy was refused and its feedback is showing.           |
