@@ -2,7 +2,7 @@ import { useState, type CSSProperties } from 'react';
 import { Button } from '../../src/components/button/index.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { SplitView } from '../../src/components/split-view/index.js';
-import { Table, applyTableMove } from '../../src/components/table/index.js';
+import { Table, applyTableMove, type TableColumn } from '../../src/components/table/index.js';
 
 /** The ancestor scales the content widths demo offers: content widths stay the same in each. */
 const scales: Record<string, CSSProperties> = {
@@ -156,6 +156,41 @@ export function FluidColumns() {
           </div>,
         ]}
       </SplitView>
+    </div>
+  );
+}
+
+const weightRows = [
+  { id: 'one', name: 'First entry', kind: 'Sample', size: 'Small', note: 'Kept' },
+  { id: 'two', name: 'Second entry', kind: 'Sample', size: 'Large', note: 'Moved' },
+];
+
+type WeightRow = (typeof weightRows)[number];
+
+const weightColumns: TableColumn<WeightRow>[] = [
+  { id: 'name', header: 'Name', width: '1fr', maxWidth: 1000 },
+  { id: 'kind', header: 'Kind', width: '2fr', maxWidth: 1000 },
+  { id: 'size', header: 'Size', width: '1fr', maxWidth: 90 },
+  { id: 'note', header: 'Note', width: '2fr', minWidth: 100 },
+];
+
+/**
+ * The same weighted, capped columns in a static and a virtualized table: Name and Kind keep their
+ * one-to-two weights under a cap they never reach, Size stops at its 90 pixel cap, and the others
+ * split what it leaves.
+ */
+export function ShareWeights() {
+  return (
+    <div data-lab="share-weights" style={{ display: 'grid', gap: 12, width: 640 }}>
+      <Table aria-label="Weighted columns" rows={weightRows} columns={weightColumns} />
+      <div style={{ height: 140, display: 'flex', flexDirection: 'column' }}>
+        <Table
+          aria-label="Weighted columns, virtualized"
+          rows={weightRows}
+          columns={weightColumns}
+          virtualized
+        />
+      </div>
     </div>
   );
 }
