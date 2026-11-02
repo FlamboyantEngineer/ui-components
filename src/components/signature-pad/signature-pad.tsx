@@ -220,9 +220,7 @@ export function SignaturePad({
     onMenuAction: field.onMenuAction,
     allowsImage: modes.includes('image'),
     isImageMode: mode === 'image',
-    isEmpty: isSignatureEmpty(state.value),
     intake,
-    showImageMode: () => changeMode('image'),
     settle,
   });
   return (

@@ -34,10 +34,7 @@ interface SignatureMenuOptions {
   allowsImage: boolean;
   /** Whether the image mode shows. */
   isImageMode: boolean;
-  isEmpty: boolean;
   intake: ImageIntake;
-  /** Shows the image mode, before an image is taken into an empty pad. */
-  showImageMode: () => void;
   /** Sets and commits the value, as the pad's own buttons do. */
   settle: (next: SignatureValue | null) => void;
 }
@@ -69,18 +66,15 @@ function usePadEntries(
 }
 
 /**
- * The field menu with the pad's actions first, each offered while it can apply: Upload image and
- * Paste image while the image mode is offered and showing or the pad is empty (so no signature is
- * lost), Delete image while an image is held (in place of the field's Clear, which would do the
- * same), and Undo stroke while a drawing is held. A read-only field shows them disabled. An empty
+ * The field menu with the pad's actions first, each offered while it applies to the mode shown and
+ * the value: Upload image and Paste image in the image mode, empty or not, Delete image while an
+ * image is held (in place of the field's Clear, which would do the same), and Undo stroke while a
+ * drawing has a stroke. The typed mode adds none, and no action switches the mode. A read-only field shows them disabled. An empty
  * caller menu still leaves the browser's context menu alone.
  */
 export function useSignatureMenu(options: SignatureMenuOptions) {
   const { state, intake, settle } = options;
-  const held = readPadValue(
-    state.value,
-    options.allowsImage && (options.isImageMode || options.isEmpty),
-  );
+  const held = readPadValue(state.value, options.allowsImage && options.isImageMode);
   const own = usePadEntries(held, state.isReadOnly || state.isDisabled);
   const shared = (options.menu ?? defaultFieldMenu).filter(
     (entry) => !(held.hasImage && entry === 'clear'),
@@ -88,14 +82,8 @@ export function useSignatureMenu(options: SignatureMenuOptions) {
   const separator: FieldMenuEntry[] =
     own.length > 0 && shared.length > 0 ? [{ type: 'separator', id: 'pad-actions' }] : [];
   const run: Record<PadAction, () => void> = {
-    'upload-image': () => {
-      options.showImageMode();
-      intake.upload();
-    },
-    'paste-image': () => {
-      options.showImageMode();
-      void intake.paste();
-    },
+    'upload-image': intake.upload,
+    'paste-image': () => void intake.paste(),
     'delete-image': intake.clear,
     'undo-stroke': () => {
       if (held.drawing) settle(withoutLastStroke(held.drawing));

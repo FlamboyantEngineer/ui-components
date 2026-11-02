@@ -78,9 +78,9 @@ describe('SignaturePad field menu', () => {
     menu = await openMenu(canvas);
     await choose(menu, 'Undo stroke');
     expect(onCommit).toHaveBeenLastCalledWith(null);
-    // An empty pad has no stroke to undo, and offers to take an image instead.
+    // An empty drawing has no stroke to undo, and the draw mode takes no image.
     menu = await openMenu(canvas);
-    expect(names(menu)).toEqual(['Upload image', 'Paste image', 'Clear', 'Reset']);
+    expect(names(menu)).toEqual(['Clear', 'Reset']);
   });
 
   it('UIC-SIGNATURE-PAD-5.1 offers Delete image in place of Clear while an image is held', async () => {
@@ -102,7 +102,7 @@ describe('SignaturePad field menu', () => {
     expect(onMenuAction).not.toHaveBeenCalled();
   });
 
-  it('UIC-SIGNATURE-PAD-5.1 takes an image from the menu into an empty pad, switching to the image mode', async () => {
+  it('UIC-SIGNATURE-PAD-5.1 follows the mode chosen: an empty image mode takes an image from the menu', async () => {
     const onCommit = vi.fn<(value: SignatureValue | null) => void>();
     // Set up first: the user-event setup puts in its own clipboard.
     const user = userEvent.setup();
@@ -113,12 +113,20 @@ describe('SignaturePad field menu', () => {
       },
     ]);
     Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { read } });
-    const { container } = render(<SignaturePad label="Signature" onCommit={onCommit} />);
-    const click = vi.spyOn(HTMLInputElement.prototype, 'click').mockImplementation(() => {});
+    render(<SignaturePad label="Signature" onCommit={onCommit} />);
     let menu = await openMenu(screen.getByRole('img', { name: 'Signature' }));
+    expect(names(menu)).toEqual(['Clear', 'Reset']);
+    await user.keyboard('{Escape}');
+    await user.click(screen.getByRole('radio', { name: 'Type' }));
+    menu = await openMenu(screen.getByRole('textbox'));
+    expect(names(menu)).toEqual(['Clear', 'Reset']);
+    await user.keyboard('{Escape}');
+    await user.click(screen.getByRole('radio', { name: 'Image' }));
+    const click = vi.spyOn(HTMLInputElement.prototype, 'click').mockImplementation(() => {});
+    menu = await openMenu(screen.getByRole('img', { name: 'Signature' }));
+    expect(names(menu)).toEqual(['Upload image', 'Paste image', 'Clear', 'Reset']);
     await choose(menu, 'Upload image', user);
     expect(click).toHaveBeenCalledOnce();
-    expect(container.querySelector('.ui-signature-pad')).toHaveAttribute('data-mode', 'image');
     menu = await openMenu(screen.getByRole('img', { name: 'Signature' }));
     await choose(menu, 'Paste image', user);
     await waitFor(() => expect(onCommit).toHaveBeenCalledOnce());
