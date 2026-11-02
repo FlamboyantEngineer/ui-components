@@ -184,7 +184,8 @@ function hasEntries(value: object): boolean {
 }
 
 /** Handlers a refusing button keeps, so focus, hover and their tooltips still work. */
-const keptHandler = /Focus|Blur|Hover|Pointer(Enter|Leave|Over|Out)|Mouse(Enter|Leave|Over|Out)/;
+const keptHandler =
+  /Focus|Blur|Hover|Pointer(Enter|Leave|Over|Out|Move)|Mouse(Enter|Leave|Over|Out)/;
 
 /**
  * A `<button>`'s props without the handlers that activate it: presses, clicks and keys, whether

@@ -76,6 +76,10 @@ function Reader() {
   const [failedCommand, setFailedCommand] = useState<string | null>(null);
   return (
     <div data-lab-case="reader">
+      <p>
+        Enter or leave the page field to navigate; Escape restores the current page without moving
+        it.
+      </p>
       <div style={{ height: 560, maxWidth: 1000 }}>
         <PdfViewer
           aria-label="Seasonal report"

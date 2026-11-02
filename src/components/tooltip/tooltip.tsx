@@ -11,6 +11,8 @@ import { tooltipHooks as hooks } from './tooltip-hooks.js';
 import { useInCallerTrigger } from './caller-trigger.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { useCloseWhenLocked } from '../../utils/use-close-when-locked.js';
+import { PointerEntry } from '../../utils/use-pointer-entry.js';
+import { TooltipEscape } from './tooltip-escape.js';
 
 export type TooltipVariant = 'default' | 'info';
 
@@ -141,7 +143,8 @@ export function Tooltip({
       isOpen={isOpen && !isDisabled}
       onOpenChange={setOpen}
     >
-      {trigger}
+      <TooltipEscape />
+      <PointerEntry isDisabled={isDisabled}>{trigger}</PointerEntry>
       <TooltipPanel {...data} variant={variant} className={className} placement={placement}>
         {content}
       </TooltipPanel>

@@ -8,7 +8,7 @@ import { findDiagnosticRange, matchBracket, type BracketMatch } from './code-ran
 import { findLineStarts } from './find-line-starts.js';
 import { splitSegments, type CodeDecorations, type CodeSegment } from './code-segments.js';
 import type { Completions, CompletionsModel } from '../completion-list/completion-list.js';
-import { useCodeCompletion } from './use-code-completion.js';
+import { useCodeCompletion, type CodeCompletionsModel } from './use-code-completion.js';
 import { useCodeEdits } from './use-code-edits.js';
 import { useCodeKeys } from './use-code-keys.js';
 import { useCodeSearch, type CodeSearchModel } from './use-code-search.js';
@@ -41,7 +41,7 @@ interface CodeEditorOptions {
 export interface CodeEditorModel {
   layers: CodeLayers;
   segments: ReadonlyArray<CodeSegment | null>;
-  completion: CompletionsModel;
+  completion: CodeCompletionsModel;
   search: CodeSearchModel;
   hover: CodeHoverModel;
   snippet: CodeSnippetSession;
@@ -169,6 +169,7 @@ export function useCodeEditor(options: CodeEditorOptions): CodeEditorModel {
   const applyEdit = useCodeEdits({ inputRef: layers.input, value, onChange });
   const snippet = useCodeSnippet(layers.input);
   const completion = useCodeCompletion({
+    value,
     completions: options.completions,
     inputRef: layers.input,
     isLocked,

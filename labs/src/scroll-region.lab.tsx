@@ -7,6 +7,7 @@ import {
 import { resolveScrollSpy, useScrollSpy } from '../../src/components/scroll-region/index.js';
 import { Button } from '../../src/components/button/button.js';
 import { ProseTable } from '../../src/components/prose-table/prose-table.js';
+import { Table } from '../../src/components/table/table.js';
 import { LabOutput } from './lab-output.js';
 import { requireDefined } from './require-defined.js';
 import { useScrollStripOverflow } from '../../src/utils/use-scroll-strip-overflow.js';
@@ -121,6 +122,50 @@ function StickyTable() {
         ))}
       </tbody>
     </table>
+  );
+}
+
+function NativeTableHeaderInset() {
+  const [grouped, setGrouped] = useState(false);
+  const [inset, setInset] = useState(true);
+  return (
+    <>
+      <p>
+        <Button onPress={() => setGrouped((value) => !value)}>
+          {grouped ? 'Ungroup city columns' : 'Group city columns'}
+        </Button>{' '}
+        <Button onPress={() => setInset((value) => !value)}>
+          {inset ? 'Remove city header inset' : 'Inset city header'}
+        </Button>
+      </p>
+      <style>{`
+        [data-lab-native-table] .ui-table { max-height: none; }
+        [data-lab-native-table] .ui-table__scroll { overflow: visible; }
+      `}</style>
+      <div style={frame(360, 200)} data-lab-region="native-table-header">
+        <ScrollRegion
+          id="native-table-header-viewport"
+          scrollbar="overlay"
+          scrollbarInset={inset ? 'header' : 'none'}
+          role="region"
+          aria-label="Cities with native Table headers"
+          data-lab-native-table="true"
+        >
+          <Table
+            aria-label="City catalog"
+            stickyHeader
+            rows={cities.map((city) => ({ id: city, city, letter: city[0] }))}
+            columns={[
+              { id: 'city', header: 'City' },
+              { id: 'letter', header: 'Letter' },
+            ]}
+            columnGroups={
+              grouped ? [{ id: 'location', header: 'Location', columns: ['city', 'letter'] }] : []
+            }
+          />
+        </ScrollRegion>
+      </div>
+    </>
   );
 }
 
@@ -365,6 +410,12 @@ mountLab(
           <StickyTable />
         </ScrollRegion>
       </div>
+    </LabSection>
+    <LabSection
+      title="Native Table header inset"
+      description="A Table registers its own header. Grouping the columns increases the measured inset; removing the inset lets the thumb start above the header. The outer region owns scrolling."
+    >
+      <NativeTableHeaderInset />
     </LabSection>
     <LabSection
       title="Thumb over a sticky header"

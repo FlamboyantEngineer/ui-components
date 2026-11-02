@@ -264,6 +264,16 @@ export function useListNavigation({
   );
   const rows = useOrderedRows(list, { primaryClass, onRead });
   const focusedIdRef = useRef<string | null>(null);
+  useLayoutEffect(() => {
+    const owner = list.current?.ownerDocument.defaultView;
+    if (!owner) return;
+    // A window can lose focus while its document still names the row as active.
+    const clearFocusedRow = () => {
+      focusedIdRef.current = null;
+    };
+    owner.addEventListener('blur', clearFocusedRow);
+    return () => owner.removeEventListener('blur', clearFocusedRow);
+  }, [list]);
   const registry = useRowRegistry({ list, rows, store, focusedIdRef, hasEnteredRef });
   useImperativeHandle(handleRef, () => ({ focusFirst: () => rows.read()[0]?.[1].focus() }), [rows]);
 

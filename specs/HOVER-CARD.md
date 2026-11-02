@@ -13,17 +13,17 @@ Verification: `src/components/hover-card/hover-card.test.tsx`, `e2e/hover-card.s
 
 ### UIC-HOVER-CARD-1.2 - Opening
 
-The card shall open `delay` milliseconds (600 by default) after a mouse or pen rests on the trigger or keyboard focus reaches it, without moving focus. The pointer leaving the trigger first cancels the opening. Right after a card closes, a neighbouring trigger opens its card without the delay, and only one card is open at a time. On a touch device, which has no hover, a long press on the trigger opens the card at once and moves focus into it; while the reader uses touch, the trigger is described by React Aria's long-press hint.
+The card shall open `delay` milliseconds (600 by default) after a mouse or pen rests on the trigger or keyboard focus reaches it, without moving focus. The first genuine pointer movement onto the trigger shall work without a prior interaction elsewhere, including after programmatic focus. An enter caused only by layout or keyboard navigation while the input is not a pointer shall wait for genuine pointer movement. The pointer leaving the trigger first cancels the opening. Right after a card closes, a neighbouring trigger opens its card without the delay, and only one card is open at a time. On a touch device, which has no hover, a long press on the trigger opens the card at once and moves focus into it; while the reader uses touch, the trigger is described by React Aria's long-press hint.
 
-Implementation: `src/components/hover-card/hover-card.tsx`
-Verification: `src/components/hover-card/hover-card.test.tsx`, `e2e/hover-card.spec.ts`
+Implementation: `src/components/hover-card/hover-card.tsx`, `src/utils/use-pointer-entry.tsx`
+Verification: `src/components/hover-card/hover-card.test.tsx`, `src/utils/use-pointer-entry.test.tsx`, `e2e/hover-card.spec.ts`
 
 ### UIC-HOVER-CARD-1.3 - Staying open and closing
 
-The card shall stay open while the pointer travels from the trigger into the card and while the pointer or focus is on either, and close `closeDelay` milliseconds (200 by default) after both have left them. Tab from the trigger moves into the open card. Escape closes it at once, keeping focus on the trigger or returning it there from inside the card. The card keeps its open state apart from React Aria's tooltips, which allow one open tooltip at a time: a [Tooltip](TOOLTIP.md) on a control inside the open card opens on keyboard focus and on hover, and the card stays open meanwhile.
+The card shall stay open while the pointer travels from the trigger into the card and while the pointer or focus is on either, and close `closeDelay` milliseconds (200 by default) after both have left them. Tab from the trigger moves into the open card. Escape closes it at once, keeping focus on the trigger or returning it there from inside the card. When a hover left focus elsewhere on the page, an otherwise unhandled Escape closes the current card without moving that focus. A handled key, text composition, an interactive overlay or an owning dialog keeps its own Escape behavior. The card keeps its open state apart from React Aria's tooltips, which allow one open tooltip at a time: a [Tooltip](TOOLTIP.md) on a control inside the open card opens on keyboard focus and on hover, and the card stays open meanwhile.
 
-Implementation: `src/components/hover-card/hover-card.tsx`, `src/utils/use-preview-state.ts`
-Verification: `src/components/hover-card/hover-card.test.tsx`, `e2e/hover-card.spec.ts`
+Implementation: `src/components/hover-card/hover-card.tsx`, `src/utils/use-preview-state.ts`, `src/utils/use-preview-escape.ts`
+Verification: `src/components/hover-card/hover-card.test.tsx`, `src/utils/use-preview-escape.test.tsx`, `e2e/hover-card.spec.ts`
 
 ### UIC-HOVER-CARD-1.4 - Controlled state
 

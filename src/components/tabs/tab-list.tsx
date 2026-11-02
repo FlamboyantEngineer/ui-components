@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  useContext,
-  useLayoutEffect,
-  useMemo,
-  type JSX,
-  type KeyboardEvent,
-  type ReactNode,
-} from 'react';
+import { useContext, useMemo, type JSX, type KeyboardEvent, type ReactNode } from 'react';
 import {
   TabList as AriaTabList,
   TabListStateContext,
@@ -18,23 +11,22 @@ import {
 } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, Key, Orientation, RefProps } from '../../core/props.js';
-import { mergeProps, mergeRefs } from '../../utils/merge-props.js';
+import { mergeProps } from '../../utils/merge-props.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { useLatest } from '../../utils/use-latest.js';
-import { useToolbarScroll } from '../toolbar-scroller/toolbar-scroller.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
-import { keyCollectionChildren } from '../../utils/key-collection-children.js';
-import { VisibleCollection } from '../overflow-list/overflow-list.js';
 import {
-  TabActionsContext,
-  TabsSharedContext,
-  type TabActions,
-  type TabListModel,
-} from './tab-actions.js';
-import { TabBar, useTabOverflow } from './tab-bar.js';
+  TabListCollection,
+  TabListParts,
+  TabListStateSync,
+  useTabListParts,
+  withTabActionEvents,
+} from './tab-list-parts.js';
+import { TabActionsContext, TabsSharedContext, type TabActions } from './tab-actions.js';
+import { TabBar } from './tab-bar.js';
+import { useTabListLayout } from './tab-list-layout.js';
 import { tabsHooks as hooks } from './tab-hooks.js';
-import { useCenterSelectedTab, useListOverflow } from './tab-list-overflow.js';
 import { TabMenuOverlay, useTabMenu, type TabMenuItems } from './tab-menu.js';
 import {
   createTabRename,
@@ -73,6 +65,8 @@ export interface TabListProps extends BaseProps, AriaLabellingProps, RefProps<HT
   scrollButtons?: boolean | undefined;
   /** Makes the tabs removable: a close mark on each and Delete or Backspace on the focused one. */
   onRemove?: ((keys: Set<Key>) => void) | undefined;
+  /** Ordinary content after a tab, outside selection and panel keys. Null adds nothing. */
+  renderAfterTab?: ((key: Key) => ReactNode) | undefined;
   /** Draws an add button after the tabs. */
   onAdd?: (() => void) | undefined;
   /** Renames a tab from the name field that a double click, F2 or its menu opens in it. */
@@ -125,10 +119,16 @@ function resolveParts({
 function renderListKeys(
   render: TabListProps['render'],
   handlers: ListKeyHandlers,
+  hasActions = false,
 ): TabListProps['render'] {
   return (props, state) => {
     const merged = mergeProps(props, handlers);
-    return render ? render(merged, state) : <div {...merged} />;
+    if (hasActions) {
+      delete merged['aria-orientation'];
+      merged.role = 'group';
+    }
+    const forwarded = hasActions ? withTabActionEvents(merged) : merged;
+    return render ? render(forwarded, state) : <div {...forwarded} />;
   };
 }
 
@@ -255,18 +255,6 @@ function useTabActions(
 }
 
 /**
- * Publishes the drawn list's state to actions that run on an event. It renders before the list's
- * overlays, so their layout effects read the state of the same render.
- */
-function ListStateSync({ state }: { state: TabListModel }) {
-  const { stateRef } = useContext(TabsSharedContext);
-  useLayoutEffect(() => {
-    stateRef.current = state;
-  });
-  return null;
-}
-
-/**
  * The row (or column) of tabs. An overflowing list scrolls the selected tab toward its middle, or
  * collapses the tabs that do not fit into a "more" menu; it can draw scroll buttons, removable tabs
  * and an add button, rename and reorder its tabs, and give each tab a menu of its actions.
@@ -276,6 +264,7 @@ export function TabList({
   scrollButtons = false,
   onRemove,
   onAdd,
+  renderAfterTab,
   onRename,
   validateName,
   onReorder,
@@ -290,10 +279,16 @@ export function TabList({
   const { isMenu, isStrip, hasButtons } = resolveParts({ orientation, overflow, scrollButtons });
   const [listRef, setListRef] = useForwardedRef(ref);
   const { editingKey } = useContext(TabsSharedContext);
-  const menu = useTabOverflow(state, isMenu, editingKey);
-  const scroll = useToolbarScroll(isStrip);
-  const scrollOverflowing = useListOverflow(listRef, orientation);
-  useCenterSelectedTab(listRef, { orientation, selectedKey: state?.selectedKey ?? null });
+  const parts = useTabListParts(state, renderAfterTab);
+  const { menuMode, menu, scroll, elementRef, overflowing } = useTabListLayout(listRef, {
+    state,
+    editingKey,
+    parts,
+    orientation,
+    isMenu,
+    isStrip,
+    setListRef,
+  });
   const actions = useTabActions({
     ...{ onRemove, onRename, validateName },
     ...{ onReorder, onDuplicate, getMenuItems },
@@ -305,43 +300,44 @@ export function TabList({
     rename: actions.rename,
     onReorderKey,
   });
-  const elementRef = useMemo(
-    () => mergeRefs(setListRef, menu.itemContainerRef, scroll.stripRef),
-    [setListRef, menu.itemContainerRef, scroll.stripRef],
-  );
   // React Aria builds the collection from a hidden render of the list, which draws no parts.
-  if (!state) {
-    return (
-      <TabActionsContext value={actions}>
-        <AriaTabList {...rest}>{keyCollectionChildren(rest.children)}</AriaTabList>
-      </TabActionsContext>
-    );
-  }
+  if (!state) return <TabListCollection {...rest} actions={actions} />;
 
-  const overflowing = isMenu ? menu.hiddenItems.length > 0 : scrollOverflowing;
   const list = (
-    <VisibleCollection keys={menu.visibleKeys}>
+    <TabListParts
+      model={parts}
+      visible={menu.visibleParts}
+      tabKeys={menu.visibleKeys}
+      listRef={listRef}
+      label={rest}
+    >
       <AriaTabList
         {...mergeProps(rest, { onScroll: hasButtons ? scroll.syncOverflow : undefined })}
-        render={keys ? renderListKeys(rest.render, keys) : rest.render}
+        render={
+          keys || parts ? renderListKeys(rest.render, keys ?? {}, Boolean(parts)) : rest.render
+        }
         ref={elementRef}
         {...hooks.slot('list', { overflowing }, className)}
       />
-    </VisibleCollection>
+    </TabListParts>
   );
-  const hasBar = isMenu || hasButtons || Boolean(onAdd);
   // The overlays keep their place whether or not a bar wraps the list, so a presentation change
   // that adds or drops the bar keeps a rename's draft, message and focus.
   return (
     <TabActionsContext value={actions}>
-      {hasBar ? (
-        <TabBar {...{ state, orientation, isMenu, hasButtons, menu, onAdd }} scroll={scroll}>
+      {isMenu || hasButtons || onAdd ? (
+        <TabBar
+          {...{ state, orientation, hasButtons, menu, onAdd }}
+          scroll={scroll}
+          isMenu={menuMode}
+          hasActions={Boolean(parts)}
+        >
           {list}
         </TabBar>
       ) : (
         list
       )}
-      <ListStateSync state={state} />
+      <TabListStateSync state={state} />
       <TabRenameOverlay rename={actions.rename} state={state} listRef={listRef} />
       <TabMenuOverlay menu={actions.menu} state={state} />
     </TabActionsContext>

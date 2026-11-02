@@ -53,7 +53,7 @@ export function ButtonTriggerCases() {
     <div data-lab-family="button-trigger-cases">
       <LabSection
         title="Menu triggers"
-        description="Each button opens a menu. The locked one is disabled but focusable: hover or tab to it to read why, and neither a click, Enter, Space nor the arrow keys open its menu. Sync then choose opens its menu as it starts a three-second sync and refuses to open it again until the sync ends, also during the two seconds before it shows pending."
+        description="Each button opens a menu. The locked one is disabled but focusable: hover it as the first pointer interaction, or tab to it, to read why, and neither a click, Enter, Space nor the arrow keys open its menu. Sync then choose opens its menu as it starts a three-second sync and refuses to open it again until the sync ends, also during the two seconds before it shows pending."
       >
         <CommandsMenu isDisabled={false} onRun={run} /> <CommandsMenu isDisabled onRun={run} />{' '}
         <SyncingMenu onRun={run} />

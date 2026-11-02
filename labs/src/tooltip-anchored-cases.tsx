@@ -1,6 +1,7 @@
 import { PlusGlyph } from '../../src/core/glyphs.js';
 import { useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
+import { Modal } from '../../src/components/modal/modal.js';
 import { AnchoredTooltip } from '../../src/components/tooltip/tooltip.js';
 
 const bars = [
@@ -8,6 +9,33 @@ const bars = [
   { label: 'Tue', value: 30 },
   { label: 'Wed', value: 22 },
 ];
+
+/** A modal-owned anchor whose hint shares the overlay container. */
+function ModalHint() {
+  const anchor = useRef<HTMLSpanElement>(null);
+  const [isOpen, setOpen] = useState(false);
+  return (
+    <div data-lab-demo="anchored-modal">
+      <Button onPress={() => setOpen(true)}>Open build details</Button>
+      <Modal
+        isOpen={isOpen}
+        onOpenChange={setOpen}
+        title="Build details"
+        cancelAction={{ label: 'Close' }}
+      >
+        <span ref={anchor} role="status" aria-label="Modal build status">
+          Passing
+        </span>
+      </Modal>
+      <AnchoredTooltip
+        isOpen={isOpen}
+        anchor={anchor}
+        content="All modal checks passed"
+        placement="bottom"
+      />
+    </div>
+  );
+}
 
 /** A status chip the page owns, with a hint the page shows and hides. */
 function ChipHint() {
@@ -150,6 +178,7 @@ export function AnchoredTooltipCases() {
   return (
     <>
       <ChipHint />
+      <ModalHint />
       <ChartHints />
       <RegionHint />
       <VisualHint />

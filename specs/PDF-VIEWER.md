@@ -154,7 +154,7 @@ Verification: `src/components/pdf-viewer/pdf-viewer.test.tsx`, `e2e/pdf-viewer.s
 
 ### UIC-PDF-VIEWER-4.2 - Going to a page
 
-Previous page and next page buttons (`chevron-up` and `chevron-down` glyphs) shall scroll to the neighbouring page and are disabled on the first and last page. A page number typed into the field and committed with Enter or by leaving it scrolls to that page, limited to the document's pages. A page lands where the first page sits at the top of the document.
+Previous page and next page buttons (`chevron-up` and `chevron-down` glyphs) shall scroll to the neighbouring page and are disabled on the first and last page. A page number typed into the field and committed with Enter or by leaving it scrolls to that page, limited to the document's pages. Escape shall discard an uncommitted edit and restore the current page's localized number without moving the viewer. Enter, Escape and navigation keys sent while an input method composes shall remain with that input method and shall neither navigate nor discard its edit. A page lands where the first page sits at the top of the document.
 
 Implementation: `src/components/pdf-viewer/pdf-viewer-toolbar.tsx`, `src/components/pdf-viewer/use-pdf-pages.ts`
 Verification: `src/components/pdf-viewer/pdf-viewer.test.tsx`, `e2e/pdf-viewer.spec.ts`

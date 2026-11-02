@@ -61,7 +61,8 @@ function useKeyProps(model: CodeEditorModel, props: CodeTextAreaProps): TextArea
   return {
     onKeyDown: (event) => {
       // Keys an input method owns go to the caller alone: no completion, field, hover or edit.
-      if (isComposingKey(event.nativeEvent)) return props.onKeyDown?.(event);
+      if (completion.isComposing || isComposingKey(event.nativeEvent))
+        return props.onKeyDown?.(event);
       // Escape ends snippet stepping first, so Escape then Tab leaves even past an open list.
       if (event.key === 'Escape') snippet.end();
       if (completion.handleKeyDown(event) || snippet.handleKeyDown(event)) return;
@@ -96,6 +97,11 @@ function useInputProps(
     autoCorrect: 'off',
     ...props,
     ...useKeyProps(model, props),
+    onCompositionStart: () => {
+      completion.startComposition();
+      hover.close();
+    },
+    onCompositionEnd: () => completion.endComposition(),
     onChange: (event) => {
       const text = event.target.value;
       onChange?.(multiline ? text : text.replace(/\r?\n/g, ' '));

@@ -34,10 +34,10 @@ Verification: `src/components/list-row/list-row.test.tsx`
 
 ### UIC-LIST-ROW-1.5 - Focus recovery
 
-When the row holding focus is removed, focus shall move to the nearest remaining row, preferring the next row at equal distance. A row whose primary control is replaced (an action row becoming read-only while it is renamed, and back) keeps focus on its new primary control. Focus that has left the list, including a blur with no related target, cancels the recovery. A removed tab-stop row leaves a remaining row in the tab sequence. Focus is read through open shadow roots, so this holds for a list inside one.
+When the row holding focus is removed, focus shall move to the nearest remaining row, preferring the next row at equal distance. A row whose primary control is replaced (an action row becoming read-only while it is renamed, and back) keeps focus on its new primary control. Focus that has left the list, including a blur with no related target or the list's owner window losing focus, cancels the recovery. Window blur cancels it even when the browser still names a row's primary or trailing control as its active element. Returning to the window alone does not restore recovery ownership; focusing a row again does. A removed tab-stop row leaves a remaining row in the tab sequence. Focus is read through open shadow roots, so this holds for a list inside one.
 
 Implementation: `src/components/list-row/list-row.tsx`, `src/components/list-row/use-list-navigation.ts`, `src/utils/focus-target.ts`
-Verification: `src/components/list-row/list-row.test.tsx`
+Verification: `src/components/list-row/list-row.test.tsx`, `src/components/list-row/use-list-navigation.test.tsx`, `e2e/list-row.spec.ts`
 
 ### UIC-LIST-ROW-1.6 - Pending and dividers
 

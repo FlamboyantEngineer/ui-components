@@ -4,6 +4,7 @@ import { createRef, type ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { Table } from '../table/table.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { MIN_THUMB_SIZE, THUMB_ARROW_STEP } from './scroll-region-defaults.js';
 import { ScrollRegion, useScrollRegionHeaderRef } from './scroll-region.js';
@@ -297,6 +298,63 @@ describe('ScrollRegion', () => {
     expect(horizontal.style.left).toBe('82.5px');
     expect(horizontal).toHaveAttribute('aria-valuenow', '300');
   });
+
+  it.each([false, true])(
+    'UIC-TABLE-7.2 UIC-SCROLL-REGION-2.5 measures native Table headers and releases them (groups=%s)',
+    async (grouped) => {
+      viewports.set('catalog', {
+        clientHeight: 100,
+        scrollHeight: 300,
+        clientWidth: 120,
+        scrollWidth: 120,
+      });
+      vi.spyOn(HTMLTableSectionElement.prototype, 'getBoundingClientRect').mockImplementation(
+        function (this: HTMLTableSectionElement) {
+          return { height: this.rows.length * 20 } as DOMRect;
+        },
+      );
+      const nativeTable = (
+        <Table
+          aria-label="City catalog"
+          stickyHeader
+          rows={[{ id: 'oslo', city: 'Oslo', country: 'Norway' }]}
+          columns={[
+            { id: 'city', header: 'City' },
+            { id: 'country', header: 'Country' },
+          ]}
+          columnGroups={
+            grouped ? [{ id: 'location', header: 'Location', columns: ['city', 'country'] }] : []
+          }
+        />
+      );
+      const region = (inset: 'header' | 'none', content = nativeTable) => (
+        <ScrollRegion id="catalog" scrollbar="overlay" scrollbarInset={inset}>
+          {content}
+        </ScrollRegion>
+      );
+      const { container, rerender } = render(region('header'));
+      await screen.findByRole('columnheader', { name: 'City' });
+      flushFrames();
+      flushFrames();
+      const root = requireDefined(container.firstElementChild) as HTMLElement;
+      const measuredHeader = () => root.style.getPropertyValue('--ui-scroll-region-header-size');
+      expect(measuredHeader()).toBe(grouped ? '40px' : '20px');
+      expect(thumb('catalog')).toHaveAttribute('aria-valuemax', '200');
+
+      rerender(region('none'));
+      flushFrames();
+      flushFrames();
+      expect(measuredHeader()).toBe('0px');
+      rerender(region('header'));
+      flushFrames();
+      flushFrames();
+      expect(measuredHeader()).toBe(grouped ? '40px' : '20px');
+      rerender(region('header', <p>No cities</p>));
+      flushFrames();
+      flushFrames();
+      expect(measuredHeader()).toBe('0px');
+    },
+  );
 
   it('UIC-SCROLL-REGION-2.3 UIC-SCROLL-REGION-2.5 names thumbs, steps by key and keeps below a registered header', async () => {
     const user = userEvent.setup();

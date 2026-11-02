@@ -175,7 +175,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Focus recovery"
-      description="Remove the focused row with its trailing button: focus moves to the nearest remaining row."
+      description="Remove the focused row with its trailing button: focus moves to the nearest remaining row. If the window loses focus before removal completes, focus stays outside the list; focus a row again to resume recovery."
     >
       <RemovableRows />
     </LabSection>

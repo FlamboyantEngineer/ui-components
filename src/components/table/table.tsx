@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { useContentWidths } from './use-content-widths.js';
 import {
   ResizableTableContainer,
   Table as AriaTable,
@@ -58,6 +59,8 @@ export interface TableProps<T extends TableRow>
     TableGroupingProps<T>,
     TableSpreadsheetProps<T>,
     RefProps<HTMLDivElement> {
+  /** Ordinary content in a full-width final row, outside row selection and actions. */
+  trailingContent?: ReactNode;
   /** The data columns, in declared order. */
   columns: readonly TableColumn<T>[];
   /** The rows, each with an `id` unique in the table, nested rows included. */
@@ -142,18 +145,20 @@ const virtualRowHeights: Readonly<Record<TableSize, number>> = { md: 40, sm: 32 
 
 type TableGridElementOptions<T extends TableRow> = Pick<
   TableProps<T>,
-  'rows' | 'getChildRows' | 'columnGroups'
+  'rows' | 'getChildRows' | 'columnGroups' | 'trailingContent'
 > & { rowHeight: number };
 
 /** What the header row shows, from the grid and the table's own props. */
 function createHeaderModel<T extends TableRow>(
   grid: TableGrid<T>,
   options: TableGridElementOptions<T>,
+  contentWidths: Readonly<Record<string, number>>,
 ): TableHeaderModel<T> {
   const { view } = grid;
   const values = view.filter.columns ?? {};
   return {
     widths: grid.widths.widths,
+    contentWidths,
     groups: options.columnGroups ?? [],
     rowHeight: options.rowHeight,
     pinOffsets: grid.pinOffsets,
@@ -179,12 +184,14 @@ function createHeaderModel<T extends TableRow>(
 function TableGridElement<T extends TableRow>({
   grid,
   options,
+  contentWidths,
 }: {
   grid: TableGrid<T>;
   options: TableGridElementOptions<T>;
+  contentWidths: Readonly<Record<string, number>>;
 }) {
   const { ariaProps, view, reordering, onRowAction, body, structure } = grid;
-  const header = createHeaderModel(grid, options);
+  const header = createHeaderModel(grid, options, contentWidths);
   // React Aria keeps the hooks a table mounts with, so they stay and are disabled while it does
   // not reorder: turning reordering or grouping on and off keeps the rows mounted.
   const { dragAndDropHooks } = useDragAndDrop<T>({
@@ -216,8 +223,15 @@ function TableGridElement<T extends TableRow>({
     >
       <TableHeader structure={structure} model={header} />
       <TableBody {...body} />
-      {body.status === null && hasTableFooter(structure) ? (
-        <TableFooter structure={structure} rows={view.presentedRows} pinOffsets={grid.pinOffsets} />
+      {(body.status === null && hasTableFooter(structure)) ||
+      options.trailingContent !== undefined ? (
+        <TableFooter
+          structure={structure}
+          rows={view.presentedRows}
+          pinOffsets={grid.pinOffsets}
+          trailingContent={options.trailingContent}
+          showSummary={body.status === null}
+        />
       ) : null}
     </AriaTable>
   );
@@ -247,7 +261,14 @@ export function Table<T extends TableRow>({
   const { view, layout } = grid;
   const { virtualized } = rest;
   const height = rowHeight ?? virtualRowHeights[size];
-  const element = <TableGridElement grid={grid} options={{ ...rest, rowHeight: height }} />;
+  const { ref: rootRef, widths: contentWidths } = useContentWidths(rest.columns, ref);
+  const element = (
+    <TableGridElement
+      grid={grid}
+      options={{ ...rest, rowHeight: height }}
+      contentWidths={contentWidths}
+    />
+  );
   const label = rest['aria-label'];
   return (
     <div
@@ -258,7 +279,7 @@ export function Table<T extends TableRow>({
         data: { size, stickyHeader, virtualized, reordering: grid.reordering !== null },
       })}
       id={id}
-      ref={ref}
+      ref={rootRef}
       aria-busy={grid.body.status === 'loading' || undefined}
     >
       <TableToolbar

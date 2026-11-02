@@ -1,7 +1,7 @@
 'use client';
 
 import { useId, useState, type KeyboardEvent, type Ref } from 'react';
-import type { Key } from '../../core/props.js';
+import type { BaseProps, Key } from '../../core/props.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { useCloseWhenLocked } from '../../utils/use-close-when-locked.js';
@@ -39,6 +39,8 @@ export interface SelectConfig {
   onOpenChange?: ((isOpen: boolean) => void) | undefined;
   name?: string | undefined;
   triggerRef?: Ref<HTMLButtonElement> | undefined;
+  /** Attributes and hook classes for the portalled popover, independent of the field. */
+  popoverProps?: BaseProps | undefined;
 }
 
 interface SelectModelProps extends SelectConfig {

@@ -23,6 +23,7 @@ import { useTableRows, type TableRowsView } from './use-table-rows.js';
 import { resolveSelectionBar, useCellsView, useRowModel } from './use-table-model.js';
 import { useTableSelection } from './use-table-selection.js';
 import { createTableAriaKeys, createTableRowAction, useTableKeyIndex } from './table-aria-keys.js';
+import { resolveGroupReorder } from './table-reorder-groups.js';
 
 /** The props that shape the grid; the root's presentation is the table's own. */
 export type TableGridOptions<T extends TableRow> = Omit<
@@ -124,6 +125,23 @@ function useVisibleRows<T extends TableRow>(grouped: ReturnType<typeof useTableG
   );
 }
 
+/** Keeps row-model inputs stable until the visible groups or their move policy change. */
+function useGroupReorder<T extends TableRow>(
+  { reorder }: TableGridOptions<T>,
+  { rows, sort: { descriptors } }: TableRowsView<T>,
+  { nodes, isGrouped, expansion: { expandedKeys } }: ReturnType<typeof useTableGrouping<T>>,
+) {
+  return useMemo(
+    () =>
+      resolveGroupReorder(
+        { reorder },
+        { rows, sort: { descriptors } },
+        { nodes, isGrouped, expansion: { expandedKeys } },
+      ),
+    [reorder, rows, descriptors, nodes, isGrouped, expandedKeys],
+  );
+}
+
 /** The root handlers of the features in use, merged so each sees every event. */
 function mergeRootProps<T extends TableRow>(
   columns: readonly TableColumn<T>[],
@@ -146,13 +164,27 @@ function mergeRootProps<T extends TableRow>(
   );
 }
 
+/** The current body and the caller's loading and retry controls. */
+function createBody<T extends TableRow>(
+  options: TableGridOptions<T>,
+  parts: Pick<TableBodyProps<T>, 'nodes' | 'model' | 'status' | 'message'>,
+): TableBodyProps<T> {
+  return {
+    ...parts,
+    onRetry: options.onRetry,
+    onLoadMore: options.onLoadMore,
+    isLoading: options.isLoading,
+    loadingMessage: options.loadingMessage,
+  };
+}
+
 /**
  * Derives everything the grid renders: the rows of the current page under their groups, the drawn
  * columns and their layout, the notice, selection, reordering, editing, spreadsheet mode, pinned
  * offsets and the root's handlers.
  */
 export function useTableGrid<T extends TableRow>(options: TableGridOptions<T>): TableGrid<T> {
-  const { columns, reorder, onRowAction, onRetry, onLoadMore, isLoading } = options;
+  const { columns, onRowAction } = options;
   const widths = useColumnWidths(options);
   const layout = useColumnLayout(options);
   const view = useTableRows(options);
@@ -160,7 +192,8 @@ export function useTableGrid<T extends TableRow>(options: TableGridOptions<T>): 
   const selection = useTableSelection(options, view.presentedNodes);
   const keyIndex = useTableKeyIndex(options.rows, options.getChildRows, onRowAction !== undefined);
   const { isRowDisabled } = selection;
-  const reordering = useTableReorder({ rows: view.rows, reorder, isRowDisabled });
+  const reorderView = useGroupReorder(options, view, grouped);
+  const reordering = useTableReorder({ ...reorderView, isRowDisabled });
   const structure = useStructure(options, layout.visibleColumns, grouped.isGrouped);
   const visibleRows = useVisibleRows<T>(grouped);
   const cells = useCellsView(options, {
@@ -182,12 +215,13 @@ export function useTableGrid<T extends TableRow>(options: TableGridOptions<T>): 
   const pinned = usePinnedOffsets(hasPins);
   const status = resolveStatus(options, view.nodes.length === 0);
   const message = useStatusMessage(options, status);
-  const activeReordering = reorder && !grouped.isGrouped ? reordering : null;
+  const activeReordering = reorderView.reorder ? reordering : null;
   const model = useRowModel(options, {
     structure,
     status,
     reordering,
-    isGrouped: grouped.isGrouped,
+    isReorderable: activeReordering !== null,
+    hideFixedHandles: reorderView.groupKeys !== undefined,
     pinOffsets: pinned.offsets,
     editing,
     cells: cells.view,
@@ -211,16 +245,7 @@ export function useTableGrid<T extends TableRow>(options: TableGridOptions<T>): 
     pinOffsets: pinned.offsets,
     onPinOffsets: pinned.report,
     onRowAction: createTableRowAction(keyIndex, onRowAction),
-    body: {
-      nodes: grouped.nodes,
-      model,
-      status,
-      message,
-      onRetry,
-      onLoadMore,
-      isLoading,
-      loadingMessage: options.loadingMessage,
-    },
+    body: createBody(options, { nodes: grouped.nodes, model, status, message }),
     selectionBar: resolveSelectionBar(options, { selection, columns: structure.columns }),
     rootProps: mergeRootProps(columns, {
       reordering: activeReordering,

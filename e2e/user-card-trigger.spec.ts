@@ -1,6 +1,23 @@
 import { expect, test } from './fixtures.js';
 
 test.describe('User Card Trigger lab', () => {
+  test('UIC-USER-CARD-TRIGGER-1.3 opens the first hover preview after programmatic trigger focus', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('user-card-trigger');
+    const trigger = page.locator('[data-lab-trigger="hover-avatar"]');
+    const card = page.getByRole('dialog', { name: 'Priya Nair' });
+    await trigger.focus();
+    await expect(card).toHaveCount(0);
+    await trigger.hover();
+    await expect(card).toBeVisible();
+    await expect(trigger).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(card).toHaveCount(0);
+    await expect(trigger).toBeFocused();
+  });
+
   test('UIC-USER-CARD-TRIGGER-1.1 UIC-USER-CARD-TRIGGER-1.2 opens a card from the keyboard and returns focus', async ({
     page,
     lab,
@@ -146,6 +163,30 @@ test.describe('User Card Trigger lab', () => {
     await page.clock.runFor(1000);
     await expect(card).toHaveCount(0);
     await page.clock.resume();
+  });
+
+  test('UIC-USER-CARD-TRIGGER-1.3 Escape dismisses a hovered card while the page keeps focus', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('user-card-trigger');
+    const trigger = page.locator('[data-lab-trigger="hover-avatar"]');
+    await trigger.scrollIntoViewIfNeeded();
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+        ),
+    );
+    const card = page.getByRole('dialog', { name: 'Priya Nair' });
+    await trigger.hover();
+    await expect(card).toBeVisible();
+    await card.hover();
+    await expect(page.locator('body')).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(card).toHaveCount(0);
+    await expect(page.locator('body')).toBeFocused();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
   });
 
   test('UIC-USER-CARD-1.4 UIC-USER-CARD-TRIGGER-1.3 closes a hover card before reporting its action', async ({

@@ -35,6 +35,36 @@ async function topmostAt(page: Page, target: Locator, attribute: string) {
 }
 
 test.describe('Modal lab', () => {
+  for (const modifier of ['Control', 'Meta']) {
+    test(`UIC-MODAL-6.1 ${modifier}+Enter on focused Cancel saves once and refuses Cancel while disabled or pending`, async ({
+      page,
+      lab,
+    }) => {
+      await lab.open('modal');
+      const opener = matrix(page, 'modal-main').locator('[data-lab-open="save"]');
+      await opener.click();
+      const dialog = page.getByRole('dialog', { name: 'Add a city' });
+      const cancel = dialog.getByRole('button', { name: 'Cancel' });
+      const save = dialog.getByRole('button', { name: 'Save' });
+      await cancel.focus();
+      await page.keyboard.press(`${modifier}+Enter`);
+      await expect(dialog).toBeVisible();
+      await expect(save).not.toHaveAttribute('data-pending');
+      await dialog.getByRole('textbox', { name: 'City' }).fill('Lisbon');
+      await cancel.focus();
+      await page.keyboard.press(`${modifier}+Enter`);
+      await expect(save).toHaveAttribute('data-pending', 'true');
+      await expect(cancel).toBeFocused();
+      await page.keyboard.press(`${modifier}+Enter`);
+      await expect(dialog).toBeVisible();
+      await expect(save).toHaveAttribute('data-pending', 'true');
+      await page.locator('[data-lab-action="finish"]').click();
+      await expect(dialog).toHaveCount(0);
+      await expect(matrix(page, 'modal-main').locator('[data-lab-output="saved"]')).toHaveText(
+        'Lisbon',
+      );
+    });
+  }
   test('UIC-MODAL-1.1 UIC-MODAL-1.4 UIC-MODAL-3.3 opens every tone and size and returns focus to its button', async ({
     page,
     lab,

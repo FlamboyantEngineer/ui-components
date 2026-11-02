@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { Button } from '../button/button.js';
 import { Menu, MenuItem, MenuPopover, MenuTrigger } from '../menu/menu.js';
 import { PortalContainerProvider } from '../portal/portal.js';
-import { ContextMenu } from './context-menu.js';
+import { ContextMenu, ContextMenuTrigger } from './context-menu.js';
 import { createMenuController } from './menu-controller.js';
 
 function popover() {
@@ -12,6 +12,56 @@ function popover() {
 }
 
 describe('ContextMenu', () => {
+  it('UIC-CONTEXT-MENU-1.8 leaves outside content reachable and scrollable when non-modal', async () => {
+    const user = userEvent.setup();
+    const controller = createMenuController();
+    const onAction = vi.fn();
+    render(
+      <>
+        <Button>Outside action</Button>
+        <ContextMenu controller={controller} isNonModal />
+      </>,
+    );
+    const outside = screen.getByRole('button', { name: 'Outside action' });
+    act(() =>
+      controller.open({ x: 10, y: 10 }, { items: [{ id: 'copy', label: 'Copy', onAction }] }),
+    );
+    expect(screen.getByRole('menuitem', { name: 'Copy' })).toHaveFocus();
+    expect(outside.closest('[inert], [aria-hidden="true"]')).toBeNull();
+    expect(document.documentElement.style.overflow).not.toBe('hidden');
+    await user.click(outside);
+    expect(controller.isOpen()).toBe(false);
+    expect(onAction).not.toHaveBeenCalled();
+  });
+
+  it('UIC-CONTEXT-MENU-1.8 forwards non-modal behavior through the trigger with keyboard actions and dismissal', async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    render(
+      <>
+        <Button>Outside action</Button>
+        <ContextMenuTrigger isNonModal>
+          <button type="button">Excerpt</button>
+          <Menu onAction={onAction}>
+            <MenuItem id="copy">Copy</MenuItem>
+          </Menu>
+        </ContextMenuTrigger>
+      </>,
+    );
+    const target = screen.getByRole('button', { name: 'Excerpt' });
+    await user.click(target);
+    await user.keyboard('{Shift>}{F10}{/Shift}');
+    expect(screen.getByRole('button', { name: 'Outside action' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Copy' })).toHaveFocus();
+    await user.keyboard('{Enter}');
+    expect(onAction).toHaveBeenCalledWith('copy');
+    await waitFor(() => expect(target).toHaveFocus());
+    await user.keyboard('{Shift>}{F10}{/Shift}{Escape}');
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    await waitFor(() => expect(target).toHaveFocus());
+    expect(onAction).toHaveBeenCalledTimes(1);
+  });
+
   it('UIC-CONTEXT-MENU-2.2 shows the controller entries at a point and closes the controller', async () => {
     const user = userEvent.setup();
     const controller = createMenuController();

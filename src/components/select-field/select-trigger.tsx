@@ -15,6 +15,7 @@ import { Icon } from '../icon/icon.js';
 import { toIconProps } from '../icon/icon.js';
 import type { ChosenSelectOption } from './select-options.js';
 import { selectFieldHooks as hooks } from './select-field-hooks.js';
+import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';
 
 interface SelectTriggerProps {
   ref: Ref<HTMLButtonElement>;
@@ -73,7 +74,9 @@ export function SelectTrigger({
           id={valueProps?.id}
         >
           {chosen ? <OptionIcon option={chosen} slot="value-icon" /> : null}
-          <span {...hooks.slot('value-label')}>{chosen?.label ?? summary ?? placeholder}</span>
+          <TruncationTooltip {...hooks.slot('value-label')}>
+            {chosen?.label ?? summary ?? placeholder}
+          </TruncationTooltip>
         </span>
         <Glyph icon={ChevronDownGlyph} className={hooks.slotClass('chevron')} />
       </AriaButton>

@@ -208,6 +208,43 @@ test.describe('Popover lab', () => {
     await expect(notes).toHaveCount(0);
   });
 
+  test('UIC-POPOVER-1.1 UIC-POPOVER-2.2 UIC-POPOVER-2.3 a non-modal opener closes on its second press and leaves neighboring presses available', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('popover');
+    const demo = page.locator('[data-lab-demo="trigger-press"]');
+    const first = demo.getByRole('button', { name: 'First picker', exact: true });
+    const second = demo.getByRole('button', { name: 'Second picker', exact: true });
+    const firstDialog = page.getByRole('dialog', { name: 'First picker', exact: true });
+    const secondDialog = page.getByRole('dialog', { name: 'Second picker', exact: true });
+    await first.scrollIntoViewIfNeeded();
+    await first.click();
+    await expect(firstDialog).toBeFocused();
+    await first.click();
+    await expect(firstDialog).toHaveCount(0);
+    await expect(first).toHaveAttribute('aria-expanded', 'false');
+    await expect(demo.locator('[data-lab-output="First picker-changes"]')).toHaveText(
+      'open, closed',
+    );
+    await expect(first).toBeFocused();
+    await first.press('Enter');
+    await expect(firstDialog).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(firstDialog).toHaveCount(0);
+    await expect(first).toBeFocused();
+    await first.click();
+    await expect(firstDialog).toBeFocused();
+    await second.click();
+    await expect(firstDialog).toHaveCount(0);
+    await expect(secondDialog).toBeVisible();
+    await expect(first).toHaveAttribute('aria-expanded', 'false');
+    await expect(second).toHaveAttribute('aria-expanded', 'true');
+    await demo.getByRole('button', { name: 'Outside action', exact: true }).click();
+    await expect(secondDialog).toHaveCount(0);
+    await expect(demo.locator('[data-lab-output="outside-presses"]')).toHaveText('1');
+  });
+
   test('UIC-POPOVER-1.1 passes axe with an open popover in the dark theme', async ({
     page,
     lab,

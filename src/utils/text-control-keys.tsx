@@ -8,7 +8,7 @@ const keylessInputs = ['checkbox', 'radio', 'button', 'submit', 'reset', 'color'
 
 /**
  * Controls that use the arrow, Home, End and character keys themselves: text inputs, sliders and
- * selects, text areas, editable content, and the text widgets a host draws.
+ * selects, listbox picker buttons, text areas, editable content, and the text widgets a host draws.
  */
 const textControls = [
   `input:not(${keylessInputs})`,
@@ -17,6 +17,8 @@ const textControls = [
   '[contenteditable]:not([contenteditable="false"])',
   '[role="textbox"]',
   '[role="combobox"]',
+  'button[aria-haspopup="listbox"]',
+  '[role="button"][aria-haspopup="listbox"]',
 ].join(', ');
 
 /** Whether `target` is in a text control: a field, editable content or a host's text widget. */
@@ -44,7 +46,8 @@ interface KeyHandlers<E> {
 /**
  * A row or cell element's props that leave a text control's keys to it: React Aria's capture,
  * which walks the row's controls, skips them, and they stop at the element, so the collection's
- * navigation and typeahead never take them. Tab and Escape pass.
+ * navigation and typeahead never take them. Tab, Escape and modified Enter pass to enclosing
+ * shortcuts; modified Enter still skips the collection's own handlers.
  */
 export function keepTextControlKeys<E extends Element, P extends KeyHandlers<E>>(props: P): P {
   const { onKeyDownCapture, onKeyDown } = props;
@@ -55,6 +58,7 @@ export function keepTextControlKeys<E extends Element, P extends KeyHandlers<E>>
     },
     onKeyDown: (event: KeyboardEvent<E>) => {
       if (!isTextControlKey(event)) return onKeyDown?.(event);
+      if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) return;
       event.stopPropagation();
     },
   };

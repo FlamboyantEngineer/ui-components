@@ -14,6 +14,7 @@ import { Tooltip } from '../tooltip/tooltip.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { useButtonAction, type ButtonActionProps } from './button-action.js';
+import { usePrimaryActionKeys } from './button-primary-keys.js';
 import {
   toAriaButtonProps,
   toAriaLinkProps,
@@ -277,7 +278,7 @@ export function Button({
   });
   const isDisabled = useInheritedDisabled(given);
   const newTab = useNewTab({ ...given, isExternal, endIcon }, { ...presentation, isDisabled });
-  const rest = { ...given, target: newTab.target };
+  const rest = usePrimaryActionKeys({ ...given, target: newTab.target });
   const own = { ...rest, isDisabled };
   const selection = useButtonSelection(own);
   const { isBusy, ...action } = useButtonAction({ ...own, ...selection, onError, pendingDelay });

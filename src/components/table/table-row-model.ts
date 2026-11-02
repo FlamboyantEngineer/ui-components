@@ -16,6 +16,8 @@ export interface TableRowModel<T> {
   /** Draws drag handles; `isMovable` tells which are enabled. */
   isReorderable: boolean;
   isMovable: (row: T) => boolean;
+  /** Group-constrained moves show handles only for eligible rows. */
+  hideFixedHandles?: boolean;
   dragTrigger: TableDragTrigger;
   pinOffsets: TablePinOffsets;
   editing: Pick<CellEditing<T>, 'editing' | 'commit' | 'cancel' | 'release' | 'dismiss'>;

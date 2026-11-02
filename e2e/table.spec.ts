@@ -8,6 +8,80 @@ const names = (table: Locator) =>
 const width = async (locator: Locator) => Math.round((await locator.boundingBox())?.width ?? 0);
 
 test.describe('Table lab', () => {
+  test('UIC-TABLE-3.4 opens a cell picker without moving its cell or selecting its row', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('table');
+    const table = page.locator('[data-lab-demo="picker-cell"] .ui-table__grid');
+    await expect(table).toHaveAttribute('role', 'grid');
+    await expect(table).toHaveAttribute('aria-label', 'Fruit sizes');
+    const trigger = table.getByRole('button', { name: 'Small Apple size', exact: true });
+    const cell = table
+      .locator('.ui-table__cell')
+      .filter({ has: page.locator('.ui-select-field__trigger') })
+      .first();
+    await trigger.focus();
+    const before = await cell.boundingBox();
+    expect(before).not.toBeNull();
+    await trigger.press('ArrowDown');
+    await expect(page.getByRole('listbox')).toBeVisible();
+    await expect(table.getByRole('listbox')).toHaveCount(0);
+    expect(await cell.boundingBox()).toEqual(before);
+    await expect(table.locator('[aria-selected="true"]')).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('listbox')).toHaveCount(0);
+    await expect(trigger).toBeFocused();
+    await trigger.press('ArrowDown');
+    await page.getByRole('option', { name: 'Large', exact: true }).click();
+    await expect(
+      table.getByRole('button', { name: 'Large Apple size', exact: true }),
+    ).toBeFocused();
+    await expect(table.locator('[aria-selected="true"]')).toHaveCount(0);
+  });
+
+  test('UIC-TABLE-1.7 trailing actions span the columns and retain ordinary keyboard and pointer activation', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('table');
+    const table = page.getByRole('grid', { name: 'Trailing actions', exact: true });
+    const button = table.getByRole('button', { name: 'Add item', exact: true });
+    await expect(button.locator('xpath=..')).toHaveAttribute('colspan', '4');
+    await button.focus();
+    await button.press('Enter');
+    await expect(page.getByRole('status', { name: 'Added items' })).toHaveText('1');
+    await button.click();
+    await expect(page.getByRole('status', { name: 'Added items' })).toHaveText('2');
+    await expect(table.locator('[aria-selected="true"]')).toHaveCount(0);
+  });
+
+  test('UIC-TABLE-3.4 preserves header field editing and enclosing modal shortcuts', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('table');
+    const demo = page.locator('[data-lab-demo="header-filter"]');
+    await demo.getByRole('button', { name: 'Filter fruit' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Filter fruit', exact: true });
+    const field = dialog.getByRole('searchbox', { name: 'Fruit query' });
+    await field.fill('Apple');
+    await field.press('End');
+    await field.press('ArrowLeft');
+    await field.pressSequentially('x');
+    await expect(field).toHaveValue('Applxe');
+    await expect(field).toBeFocused();
+    await field.fill('Apple');
+    await field.press('Space');
+    await field.press('Enter');
+    await expect(field).toHaveValue('Apple ');
+    await expect(dialog).toBeVisible();
+    await expect(demo.getByRole('status', { name: 'Header sorts' })).toHaveText('0');
+    await field.press('Control+Enter');
+    await expect(dialog).toBeHidden();
+    await expect(demo.getByRole('status', { name: 'Applied filters' })).toHaveText('1');
+  });
+
   test('UIC-TABLE-1.3 toggles a checkbox in a header apart from select all', async ({
     page,
     lab,

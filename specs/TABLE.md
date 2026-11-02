@@ -52,6 +52,13 @@ Verification: `src/components/table/table-row.test.tsx`, `e2e/table.spec.ts`
 Implementation: `src/components/table/table-row.tsx`, `src/components/table/table-data-cell.tsx`, `src/components/table/table-structure.ts`, `src/components/table/table-footer.tsx`, `src/components/table/table-group-row.tsx`, `src/components/table/use-table-grid.ts`
 Verification: `src/components/table/table.test.tsx`, `e2e/table.spec.ts`
 
+### UIC-TABLE-1.7 - Trailing actions
+
+`trailingContent` shall render ordinary controls in one full-width final row, after any summary, including while the body shows a notice. Its controls stay focusable without selecting, dragging or activating a data row. Summary cells keep their existing behavior and notices still hide the summary. Omitting the prop leaves the table unchanged.
+
+Implementation: `src/components/table/table.tsx`, `src/components/table/table-footer.tsx`
+Verification: `src/components/table/table.test.tsx`, `src/components/table/table-footer.test.tsx`, `e2e/table.spec.ts`
+
 ## UIC-TABLE-2 - Sorting and filtering
 
 ### UIC-TABLE-2.1 - Sort cycle
@@ -151,14 +158,18 @@ Verification: `src/components/table/table.test.tsx`
 
 A control inside a cell (a row action, a selection checkbox, a cell's own content or a detail row's content) shall keep focus when it takes it, by keyboard, pointer or `focus()`, in flat and nested rows: the cell becomes the grid's focused cell, so the grid never moves focus to another row or cell. The control keeps focus and its element while it turns pending or unavailable (`focusableWhenDisabled`) and while rows are added around it with stable row IDs, and the arrow keys move on from its cell when it is not a text control. A text control in a cell (a text input, a slider or select, a text area, editable content, or an element with role `textbox` or `combobox`) keeps every key but Tab and Escape: the arrow keys, Home, End and typed characters are its own, and neither the grid's navigation nor its typeahead take them.
 
-Implementation: `src/components/table/table-row.tsx`, `src/components/table/table-data-cell.tsx`, `src/utils/text-control-keys.tsx`
-Verification: `src/components/table/table-cell-focus.test.tsx`, `e2e/table.spec.ts`, `src/utils/text-control-keys.test.tsx`
+A listbox picker button (a native button or an element with role `button`, with `aria-haspopup="listbox"`) shall keep these same keys, including when a child of its trigger receives the event. ArrowDown opens its own list without moving the cell or selecting a row; Escape returns focus to its trigger. Ordinary buttons and menu buttons keep the grid's existing arrow navigation.
+
+A text control inside a column header shall keep the same editing keys, without sorting or navigating the grid. Pointer activation of a nested control shall run only the control. Control+Enter and Meta+Enter skip the collection's handlers and reach enclosing shortcuts; plain Enter remains with the field. Focusing and activating the column header directly shall still sort an enabled sortable column.
+
+Implementation: `src/components/table/table-row.tsx`, `src/components/table/table-data-cell.tsx`, `src/components/table/table-column.tsx`, `src/utils/text-control-keys.tsx`
+Verification: `src/components/table/table-cell-focus.test.tsx`, `src/components/table/table-column-controls.test.tsx`, `src/components/table/table-picker-controls.test.tsx`, `e2e/table.spec.ts`, `src/utils/text-control-keys.test.tsx`
 
 ## UIC-TABLE-4 - Column sizing
 
 ### UIC-TABLE-4.1 - Column widths
 
-Each data column shall size from its `width` (pixels, a percentage or an `fr` share; `1fr` by default), `minWidth` and `maxWidth` through React Aria's resizable table container, with a maximum never below the minimum and pixel widths kept inside the bounds. The selection column is 44 pixels wide and the actions column `actionsColumnWidth` pixels.
+Each data column shall size from its `width` (pixels, a percentage, an `fr` share or `content`; `1fr` by default), `minWidth` and `maxWidth` through React Aria's resizable table container, with a maximum never below the minimum and pixel widths kept inside the bounds. `content` fits the rendered header and cells as described in UIC-TABLE-4.5. The selection column is 44 pixels wide and the actions column `actionsColumnWidth` pixels.
 
 Implementation: `src/components/table/column-sizing.ts`, `src/components/table/table-header.tsx`, `src/components/table/table-column.tsx`
 Verification: `src/components/table/column-sizing.test.ts`, `src/components/table/table.test.tsx`, `e2e/table.spec.ts`
@@ -179,23 +190,32 @@ Verification: `src/components/table/use-column-widths.test.tsx`, `e2e/table.spec
 
 ### UIC-TABLE-4.4 - Sizing helpers
 
-The table shall size columns with small pure functions: a usable width is a positive pixel count, percentage or `fr` share; a column's maximum is never below its minimum; pixel widths are kept inside the bounds; a column renders at its usable stored width, else its declared width, else `1fr`; and only the usable widths of known columns are taken from a resize report or from storage.
+The table shall size columns with small pure functions: a usable explicit width is a positive pixel count, percentage or `fr` share; a column's maximum is never below its minimum; pixel widths are kept inside the bounds; a column renders at its usable stored width, else its declared width (measured for `content`), else `1fr`; and only the usable explicit widths of known columns are taken from a resize report or from storage. The word `content` is a declaration, never a persisted measurement.
 
 Implementation: `src/components/table/column-sizing.ts`
 Verification: `src/components/table/column-sizing.test.ts`
+
+### UIC-TABLE-4.5 - Content-sized columns
+
+`width="content"` shall fit the widest rendered header or data cell in the column, including controls and the containing page's typography and spacing, using measured pixel tracks through React Aria. Measurements shall update after cell or header content changes, host size changes and fonts finish loading, and may shrink as well as grow. Only the containing table's own cells shall be treated as members of a measured column; synthetic group, detail, notice and trailing rows shall not influence the measurement. A virtualized table measures its rendered cells; it does not render unseen rows to measure them.
+
+Before layout is available, the column shall use its minimum, or 75 pixels without one. Measurements and explicit resizes obey numeric `minWidth` and `maxWidth`, with a maximum never below the minimum. An explicit resized or restored width takes precedence over measurements until the caller removes that stored width. Measurements alone shall neither call `onColumnWidthsChange` nor persist a width. Columns without `width` retain `1fr`; flexible columns share the remaining width and the existing scroll container handles tracks wider than the available space. Data column headers publish `data-sizing`: `content` while measured, `flex` for an `fr` track, and `fixed` for an explicit pixel or percentage track, including a restored resize.
+
+Implementation: `src/components/table/column-sizing.ts`, `src/components/table/measure-content-widths.ts`, `src/components/table/use-content-widths.ts`, `src/components/table/table-column.tsx`, `src/components/table/table-header.tsx`, `src/components/table/table.tsx`, `labs/src/table-content-contracts.tsx`
+Verification: `src/components/table/column-sizing.test.ts`, `src/components/table/use-content-widths.test.tsx`, `e2e/table-content-contracts.spec.ts`
 
 ## UIC-TABLE-5 - Reordering
 
 ### UIC-TABLE-5.1 - Drag and drop
 
-With `reorder`, the first cell of each row shall start with a [Drag Handle](DRAG-HANDLE.md) (`ui-table__drag-handle`, named `Drag <row>` by React Aria). Dragging a row by pointer from anywhere on it, the handle's cell included ([UIC-DRAG-HANDLE-2.2](DRAG-HANDLE.md#uic-drag-handle-22---dragging-from-the-handles-cell)), or from the keyboard with Enter on its handle, the arrow keys and Enter, shall report one `reorder.onMove({ keys, targetKey, position })` with `position` `before` or `after`, while a `ui-table__drop-indicator` row marks the drop position. Drop positions that would leave the order unchanged are refused. A dragged row carries its `id` as text (`text/plain`) to other drop targets. The table never reorders its rows itself. Reordering moves the top-level rows of the current page; nested, detail and summary rows never move and nothing lands beside them. While the table reorders, which `reorder` turns on and grouping suspends, its root publishes `data-reordering`. Turning `reorder` on or off keeps every row mounted with its focus, scroll position, selection and expansion, and grouping or ungrouping a reorderable table keeps the grid mounted with its selection and scroll position while its rows move under their group rows: React Aria's drag and drop stays wired and is disabled while the table does not reorder, so `data-allows-dragging` stays on the grid and stylesheets key reordering styles off `data-reordering`. The grid keeps the caller's `aria-describedby`, which React Aria would clear from a grid that takes drops.
+With `reorder`, the first cell of each row shall start with a [Drag Handle](DRAG-HANDLE.md) (`ui-table__drag-handle`, named `Drag <row>` by React Aria). Dragging a row by pointer from anywhere on it, the handle's cell included ([UIC-DRAG-HANDLE-2.2](DRAG-HANDLE.md#uic-drag-handle-22---dragging-from-the-handles-cell)), or from the keyboard with Enter on its handle, the arrow keys and Enter, shall report one `reorder.onMove({ keys, targetKey, position })` with `position` `before` or `after`, while a `ui-table__drop-indicator` row marks the drop position. Drop positions that would leave the order unchanged are refused. A dragged row carries its `id` as text (`text/plain`) to other drop targets. The table never reorders its rows itself. Reordering moves the top-level rows of the current page; nested, detail and summary rows never move and nothing lands beside them. While the table reorders, which `reorder` turns on and grouping suspends unless UIC-TABLE-5.7 is selected, its root publishes `data-reordering`. Turning `reorder` on or off keeps every row mounted with its focus, scroll position, selection and expansion, and grouping or ungrouping a reorderable table keeps the grid mounted with its selection and scroll position while its rows move under their group rows: React Aria's drag and drop stays wired and is disabled while the table does not reorder, so `data-allows-dragging` stays on the grid and stylesheets key reordering styles off `data-reordering`. The grid keeps the caller's `aria-describedby`, which React Aria would clear from a grid that takes drops.
 
 Implementation: `src/components/table/use-table-reorder.tsx`, `src/utils/use-reorder-drag-and-drop.ts`, `src/components/table/table-row.tsx`, `src/components/table/table-data-cell.tsx`
 Verification: `src/components/table/use-table-reorder.test.tsx`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-5.2 - Fixed rows
 
-A row for which `reorder.canMove` returns false shall not move: its handle is disabled, drags starting on it are refused and Alt+Arrow keys leave it in place. Disabled rows are never dragged. Other rows may still be dropped beside it. A drop is checked against the rows as they are when it lands: of the dragged rows, only those still shown, enabled and accepted by `canMove` move, and a drop with none of them reports nothing.
+A row for which `reorder.canMove` returns false shall not move: its handle is disabled in ordinary reordering (omitted in UIC-TABLE-5.7), drags starting on it are refused and Alt+Arrow keys leave it in place. Disabled rows are never dragged. Other rows may still be dropped beside it. A drop is checked against the rows as they are when it lands: of the dragged rows, only those still shown, enabled and accepted by `canMove` move, and a drop with none of them reports nothing.
 
 Implementation: `src/components/table/use-table-reorder.tsx`, `src/components/table/table-row.tsx`, `src/components/table/table-data-cell.tsx`
 Verification: `src/components/table/use-table-reorder.test.tsx`
@@ -227,6 +247,15 @@ Verification: `src/components/table/use-table-reorder.test.tsx`, `e2e/table.spec
 
 Implementation: `src/components/table/use-table-reorder.tsx`, `src/utils/use-reorder-drag-and-drop.ts`
 Verification: `src/components/table/use-table-reorder.test.tsx`
+
+### UIC-TABLE-5.7 - Moves within a group
+
+`reorder.grouped="within-group"` shall explicitly allow controlled moves of visible top-level data rows inside their current leaf group. The default shall continue to suppress grouped reordering. The table shall keep reporting `onMove({ keys, targetKey, position })`; it never changes row order or group values itself. Every moved row and target shall belong to the same expanded leaf group on the current page. Cross-group requests, synthetic group headers, collapsed-group rows, nested data rows and detail or summary rows shall not be targets or move sources. A selection spanning groups shall not move across those boundaries. An active sort shall suspend grouped moves.
+
+`canMove` and disabled-row checks shall still decide which data rows may move. Group-constrained moves shall draw handles only for eligible rows; group headers and fixed rows draw none. Other rows may land beside a fixed data row in the same group, preserving the ordinary fixed-row rule. Pointer dragging, keyboard dragging and Alt+Arrow moves shall share the same live validation; Alt+Arrow stops at a leaf-group boundary, and Escape cancels a keyboard drag without reporting a move. Row keys and caller attributes remain unchanged after a controlled move.
+
+Implementation: `src/components/table/table-reorder-groups.ts`, `src/components/table/use-table-reorder.tsx`, `src/components/table/use-table-grid.ts`, `src/components/table/use-table-model.ts`, `src/components/table/table-data-cell.tsx`, `labs/src/table-content-contracts.tsx`
+Verification: `src/components/table/table-reorder-groups.test.ts`, `src/components/table/table-group-reorder.test.tsx`, `src/components/table/use-table-reorder.test.tsx`, `e2e/table-content-contracts.spec.ts`
 
 ## UIC-TABLE-6 - Notices
 
@@ -269,10 +298,10 @@ Verification: `src/components/table/table.test.tsx`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-7.2 - Sticky header
 
-`stickyHeader` shall publish `data-sticky-header` on the root, from which the stylesheet keeps the header in view while a bounded scroll area scrolls.
+`stickyHeader` shall publish `data-sticky-header` on the root, from which the stylesheet keeps the header in view while a bounded scroll area scrolls. Inside an overlay [Scroll Region](SCROLL-REGION.md) with `scrollbarInset="header"`, Table shall register its actual header through `useScrollRegionHeaderRef`, including both rows of grouped column headers. The region shall measure the full header without caller registration or DOM queries; changing or removing the header releases its registration. Without a header inset, Table shall register no header.
 
-Implementation: `src/components/table/table.tsx`
-Verification: `src/components/table/table.test.tsx`, `e2e/table.spec.ts`
+Implementation: `src/components/table/table.tsx`, `src/components/table/table-header.tsx`, `src/components/table/table-group-header.tsx`
+Verification: `src/components/table/table.test.tsx`, `src/components/scroll-region/scroll-region.test.tsx`, `e2e/table.spec.ts`, `e2e/scroll-region.spec.ts`
 
 ### UIC-TABLE-7.3 - Virtualization
 
@@ -451,7 +480,7 @@ Verification: `src/components/table/table-group-row.test.tsx`, `src/components/t
 
 ### UIC-TABLE-13.2 - Group header rows
 
-A group header row (`ui-table__group-row`) shall draw one cell per column: after an empty selection cell, a `ui-table__group-cell` under the first data column, with its id and pin hooks and the measured `--ui-table-level` of its group, from which the label may spill over the empty cells beside it. It holds React Aria's expand button (`ui-table__expand`), the label (`ui-table__group-label`): `renderGroupLabel(group)`, else the provider's `groupHeading` from the grouping's name and the group's value (the provider's `emptyValue` for empty values, a date as its day), and the number of rows (`ui-table__group-count`) in the provider locale, hidden from assistive technology, which reads the provider's `itemCount` instead. The row's text value is the heading with its count, and the row is named by its label and the count's words, whichever columns are row headers. A group row can take focus but is never selected, dragged or passed to `onRowAction`, and the table draws no drag handles and reorders no rows while it is grouped.
+A group header row (`ui-table__group-row`) shall draw one cell per column: after an empty selection cell, a `ui-table__group-cell` under the first data column, with its id and pin hooks and the measured `--ui-table-level` of its group, from which the label may spill over the empty cells beside it. It holds React Aria's expand button (`ui-table__expand`), the label (`ui-table__group-label`): `renderGroupLabel(group)`, else the provider's `groupHeading` from the grouping's name and the group's value (the provider's `emptyValue` for empty values, a date as its day), and the number of rows (`ui-table__group-count`) in the provider locale, hidden from assistive technology, which reads the provider's `itemCount` instead. The row's text value is the heading with its count, and the row is named by its label and the count's words, whichever columns are row headers. A group row can take focus but is never selected, dragged or passed to `onRowAction`, and grouping suppresses data-row handles and reordering unless the caller opts into UIC-TABLE-5.7.
 
 Implementation: `src/components/table/table-group-row.tsx`, `src/components/table/use-table-grid.ts`, `src/core/strings/table.ts`
 Verification: `src/components/table/table-group-row.test.tsx`, `e2e/table.spec.ts`
@@ -616,6 +645,8 @@ Verification: `src/components/table/table-bulk-edit.test.tsx`, `e2e/table.spec.t
 | `ui-table__footer`               | slot      |                                | The summary row group (React Aria's table footer).                             |
 | `ui-table__footer-row`           | slot      |                                | The summary row.                                                               |
 | `ui-table__footer-cell`          | slot      |                                | One summary cell.                                                              |
+| `ui-table__action-row`           | slot      |                                | The final nonselectable ordinary-content row.                                  |
+| `ui-table__action-cell`          | slot      |                                | Its full-width content cell.                                                   |
 | `ui-table__pagination`           | slot      |                                | The page navigation under a paginated grid (also `ui-pagination`).             |
 | `ui-table__selection-bar`        | slot      |                                | The bar above the grid while rows are selected (also `ui-action-row`).         |
 | `ui-table__bulk-edit`            | slot      |                                | The bulk edit dialog (also `ui-modal`).                                        |
@@ -623,6 +654,7 @@ Verification: `src/components/table/table-bulk-edit.test.tsx`, `e2e/table.spec.t
 | `data-kind`                      | attribute | `data`, `selection`, `actions` | What a column header, cell or summary cell holds.                              |
 | `data-align`                     | attribute | `start`, `center`, `end`       | A data column's alignment, on its header and cells.                            |
 | `data-column`                    | attribute |                                | A data column's id, on its header and cells.                                   |
+| `data-sizing`                    | attribute | `content`, `flex`, `fixed`     | The effective sizing mode of a data column header.                             |
 | `data-pinned`                    | attribute | `start`, `end`                 | The edge a pinned column's header and cells stay at.                           |
 | `data-wrap`                      | attribute | `nowrap`, `wrap`, `anywhere`   | How a data column's cells, summary and aggregate cells wrap their text.        |
 | `data-sort-priority`             | attribute |                                | A sorted header's place in a sort by several columns, from 1.                  |

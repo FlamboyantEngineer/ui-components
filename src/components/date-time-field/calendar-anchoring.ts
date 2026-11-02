@@ -9,7 +9,7 @@ import {
 } from '../../primitives/index.js';
 import { isElement } from '../../utils/is-element.js';
 import { useFollowAnchor } from '../../utils/use-follow-anchor.js';
-import { usePageScrollGuard } from '../../utils/use-page-scroll-guard.js';
+import { useScrollCloseGuard } from '../../utils/use-scroll-close-guard.js';
 
 const noTrigger: RefObject<Element | null> = { current: null };
 
@@ -24,7 +24,7 @@ export function useCalendarAnchoring() {
   const triggerRef = useSlottedContext(PopoverContext)?.triggerRef ?? noTrigger;
   const surface = useRef<HTMLElement>(null);
   const isOpen = state?.isOpen ?? false;
-  const isPageScrolling = usePageScrollGuard(isOpen, triggerRef);
+  const isScrollCloseIgnored = useScrollCloseGuard(isOpen, triggerRef);
   const shouldUpdatePosition = useFollowAnchor({ anchorRef: triggerRef, isOpen });
   useInteractOutside({
     ref: surface,
@@ -40,7 +40,7 @@ export function useCalendarAnchoring() {
     ref: surface,
     isOpen,
     onOpenChange: (open: boolean) => {
-      if (open || !isPageScrolling()) state?.setOpen(open);
+      if (open || !isScrollCloseIgnored()) state?.setOpen(open);
     },
     shouldUpdatePosition,
   };

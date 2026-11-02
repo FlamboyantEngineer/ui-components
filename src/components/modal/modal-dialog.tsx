@@ -27,6 +27,10 @@ import { useModalActions, type ModalActions } from './use-modal-actions.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { modalHooks as hooks } from './modal-hooks.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
+import {
+  PrimaryActionKeysContext,
+  preventPrimaryActionButtonDefault,
+} from '../../utils/primary-action-keys.js';
 import { HeadingLevelContext, dialogTitleLevel } from '../../core/heading-level.js';
 
 type ModalDialogProps = Omit<
@@ -180,6 +184,7 @@ function toDialogKeyDown({
     }
     handlePrimaryShortcut(event, { actionState, hasCustomActions });
     if (!event.defaultPrevented) onCallerKeyDown?.(event);
+    preventPrimaryActionButtonDefault(event);
   };
 }
 
@@ -219,41 +224,43 @@ export function ModalDialog({
   return (
     <>
       {/* Its own place to work: menus and popups inside stay usable while the page beneath loads. */}
-      <AvailableLoadingBoundary>
-        <Dialog
-          ref={dialogRef}
-          id={id}
-          role={role}
-          className={hooks.slotClass('dialog')}
-          aria-label={ariaLabel}
-          aria-describedby={isEmptyNode(description) ? ariaDescribedby : descriptionId}
-          // React Aria's Dialog forwards no keyboard handlers, so the listener goes on its element.
-          render={(props) => <section {...props} onKeyDown={onKeyDown} />}
-        >
-          <ModalHeader
-            {...{ title, description, descriptionId, headerActions, showCloseButton }}
-            isDismissDisabled={isDismissDisabled}
-            onClose={actionState.close}
-          />
-          <ModalBody ref={bodyRef} renderProps={toRenderProps(actionState, hasCustomActions)}>
-            {children}
-          </ModalBody>
-          <ModalFooter
-            {...footer}
-            ref={footerRef}
-            actionState={actionState}
-            isDismissDisabled={isDismissDisabled}
-          />
-          {initialFocus === 'dialog' || !isShown ? null : (
-            <InitialFocus
-              dialogRef={dialogRef}
-              bodyRef={bodyRef}
-              footerRef={footerRef}
-              target={initialFocus === 'first' ? undefined : initialFocus}
+      <PrimaryActionKeysContext value={true}>
+        <AvailableLoadingBoundary>
+          <Dialog
+            ref={dialogRef}
+            id={id}
+            role={role}
+            className={hooks.slotClass('dialog')}
+            aria-label={ariaLabel}
+            aria-describedby={isEmptyNode(description) ? ariaDescribedby : descriptionId}
+            // React Aria's Dialog forwards no keyboard handlers, so the listener goes on its element.
+            render={(props) => <section {...props} onKeyDown={onKeyDown} />}
+          >
+            <ModalHeader
+              {...{ title, description, descriptionId, headerActions, showCloseButton }}
+              isDismissDisabled={isDismissDisabled}
+              onClose={actionState.close}
             />
-          )}
-        </Dialog>
-      </AvailableLoadingBoundary>
+            <ModalBody ref={bodyRef} renderProps={toRenderProps(actionState, hasCustomActions)}>
+              {children}
+            </ModalBody>
+            <ModalFooter
+              {...footer}
+              ref={footerRef}
+              actionState={actionState}
+              isDismissDisabled={isDismissDisabled}
+            />
+            {initialFocus === 'dialog' || !isShown ? null : (
+              <InitialFocus
+                dialogRef={dialogRef}
+                bodyRef={bodyRef}
+                footerRef={footerRef}
+                target={initialFocus === 'first' ? undefined : initialFocus}
+              />
+            )}
+          </Dialog>
+        </AvailableLoadingBoundary>
+      </PrimaryActionKeysContext>
       {isShown ? (
         <ModalOpening
           {...{ finalFocus, onExitComplete, dialogRef }}

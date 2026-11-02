@@ -18,6 +18,57 @@ async function box(locator: Locator) {
 }
 
 test.describe('Code Editor lab', () => {
+  test('UIC-CODE-EDITOR-4.2 suspends suggestions throughout input-method composition', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('code-editor');
+    const completing = editor(page, 'completions');
+    const input = completing.getByRole('textbox', { name: 'Source with completions' });
+    const suggestions = page.getByRole('listbox', { name: 'Suggestions' });
+    await input.fill('fruit.');
+    await expect(suggestions).toBeVisible();
+    await input.dispatchEvent('compositionstart');
+    await expect(suggestions).toBeHidden();
+    await input.fill('fruit.r');
+    await input.dispatchEvent('keydown', { key: 'Enter', isComposing: true });
+    await expect(input).toHaveValue('fruit.r');
+    await expect(suggestions).toBeHidden();
+    await expect(
+      page.locator(`${familySelector('surface')} [data-lab-output="completions"]`),
+    ).toHaveText('fruit.r');
+    await input.dispatchEvent('compositionend', { data: 'r' });
+    await expect(suggestions.getByRole('option', { selected: true })).toHaveText(
+      'fruit.ripe Whether the fruit is ripe',
+    );
+    await expect(input).toBeFocused();
+    expect(await input.evaluate((element: HTMLTextAreaElement) => element.selectionStart)).toBe(7);
+    await input.dispatchEvent('compositionstart');
+    await expect(suggestions).toBeHidden();
+    await input.dispatchEvent('compositionend', { data: '' });
+    await expect(suggestions).toBeVisible();
+    await input.press('Tab');
+    await expect(input).toHaveValue('fruit.ripe');
+    await expect(input).toBeFocused();
+    await expect(suggestions).toBeHidden();
+  });
+
+  test('UIC-CODE-EDITOR-4.2 keeps completions while a controlled table cell updates', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('code-editor');
+    const source = page.getByRole('textbox', { name: 'Cell expression', exact: true });
+    await source.fill('');
+    await source.pressSequentially('fru');
+    await expect(source).toHaveValue('fru');
+    await expect(source).toBeFocused();
+    await expect(page.getByRole('option', { name: 'fruit.count', exact: true })).toBeVisible();
+    await source.press('Tab');
+    await expect(source).toHaveValue('fruit.count');
+    await expect(source).toBeFocused();
+  });
+
   test('UIC-CODE-EDITOR-7.2 UIC-CODE-EDITOR-7.3 replaces literal Unicode ranges without shifting source offsets', async ({
     page,
     lab,

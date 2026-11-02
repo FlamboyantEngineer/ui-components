@@ -1,5 +1,12 @@
 /* Table */
 
+.ui-table__action-row {
+  height: auto;
+}
+.ui-table__action-cell {
+  padding: 1px;
+}
+
 .ui-table {
   display: flex;
   flex-direction: column;

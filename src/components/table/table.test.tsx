@@ -34,6 +34,23 @@ const header = (name: string) => screen.getByRole('columnheader', { name: new Re
 
 // Full React Aria tables driven by userEvent are slow in jsdom on a busy machine.
 describe('Table', { timeout: 15_000 }, () => {
+  it('UIC-TABLE-4.5 publishes content and default flex sizing without changing row values', () => {
+    const { container } = render(
+      <Table
+        aria-label="Content-sized fruit"
+        rows={fruit}
+        columns={[
+          { id: 'name', header: 'Name', width: 'content', minWidth: 100 },
+          { id: 'colour', header: 'Colour' },
+        ]}
+      />,
+    );
+    expect(header('Name')).toHaveAttribute('data-sizing', 'content');
+    expect(header('Name').style.width).toBe('100px');
+    expect(header('Colour')).toHaveAttribute('data-sizing', 'flex');
+    expect(names()).toEqual(['Banana', 'Apple', 'Cherry']);
+    expectHooksMatchSpec(container, 'TABLE');
+  });
   it('UIC-TABLE-3.1 preserves Shift range anchors while a caller controls typed row selections', async () => {
     const user = userEvent.setup();
     const onSelectionChange = vi.fn();
@@ -66,6 +83,32 @@ describe('Table', { timeout: 15_000 }, () => {
     await user.click(screen.getByRole('row', { name: 'Compact' }));
     await user.keyboard('{/Shift}');
     expect(onSelectionChange).toHaveBeenLastCalledWith(new Set([1, '1', 'a b', 'ab']));
+  });
+  it('UIC-TABLE-1.7 keeps trailing actions reachable without selecting a row', async () => {
+    const user = userEvent.setup();
+    const add = vi.fn();
+    const select = vi.fn();
+    const action = vi.fn();
+    const { container } = render(
+      <Table
+        aria-label="Items"
+        rows={fruit}
+        columns={columns}
+        selectionMode="single"
+        onSelectionChange={select}
+        onRowAction={action}
+        trailingContent={<Button onPress={add}>Add item</Button>}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Add item' }));
+    expect(add).toHaveBeenCalledTimes(1);
+    expect(select).not.toHaveBeenCalled();
+    expect(action).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Add item' }).closest('td')).toHaveAttribute(
+      'colspan',
+      '3',
+    );
+    expectHooksMatchSpec(container, 'TABLE', { slots: ['action-row', 'action-cell'] });
   });
   it('UIC-TABLE-1.1 renders one row per item and one cell per column as React nodes', () => {
     const { container } = render(
