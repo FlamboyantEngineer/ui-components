@@ -22,6 +22,8 @@ export interface PlacedEvent {
   /** Its start and end, in epoch milliseconds; for an all-day event, those of its days. */
   start: number;
   end: number;
+  /** Where a dragged event would land, drawn while its handle is dragged. */
+  isPreview?: boolean | undefined;
 }
 
 /** A bar of an event in a week: the columns it covers and the lane it sits in. */

@@ -27,4 +27,7 @@ export const calendarViewHooks = createHooks('calendar-view', [
   'more',
   'more-list',
   'editor',
+  'event-frame',
+  'event-move',
+  'event-resize',
 ]);

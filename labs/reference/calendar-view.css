@@ -264,3 +264,121 @@
 .ui-calendar-view__editor .ui-modal__body > * {
   inline-size: 100%;
 }
+
+/* An editable event: its button fills a frame that carries the event's place, with its handles. */
+.ui-calendar-view__event-frame {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  box-sizing: border-box;
+  width: 100%;
+  height: 20px;
+}
+
+.ui-calendar-view__event-frame > .ui-calendar-view__event {
+  width: 100%;
+  height: 100%;
+}
+
+.ui-calendar-view__timed > .ui-calendar-view__event-frame > .ui-calendar-view__event {
+  position: absolute;
+  inset: 0;
+}
+
+.ui-calendar-view__event-frame:has([data-dragging]) > .ui-calendar-view__event {
+  opacity: var(--ref-dragging-opacity);
+}
+
+.ui-calendar-view__event-move,
+.ui-calendar-view__event-resize {
+  display: flex;
+  position: absolute;
+  z-index: 2;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--ref-radius-sm);
+  background: none;
+  color: var(--ref-muted);
+  touch-action: none;
+}
+
+.ui-calendar-view__event-move {
+  inset-block: 0;
+  inset-inline-start: 3px;
+  width: 14px;
+  cursor: grab;
+}
+
+.ui-calendar-view__event-move svg {
+  width: 12px;
+  height: 12px;
+}
+
+.ui-calendar-view__event-move[data-dragging] {
+  cursor: grabbing;
+}
+
+.ui-calendar-view__event-move + .ui-calendar-view__event {
+  padding-inline-start: 18px;
+}
+
+/* A bar's end resizes across days; a block's bottom edge resizes on the time grid. */
+.ui-calendar-view__event-resize {
+  inset-block: 0;
+  inset-inline-end: 0;
+  width: 8px;
+  cursor: ew-resize;
+}
+
+.ui-calendar-view__event-resize::before {
+  width: 2px;
+  height: 10px;
+  background: currentColor;
+  content: '';
+}
+
+.ui-calendar-view__timed .ui-calendar-view__event-move {
+  inset-block: 1px auto;
+  inset-inline: auto 1px;
+  height: 14px;
+}
+
+.ui-calendar-view__timed .ui-calendar-view__event-move + .ui-calendar-view__event {
+  padding-inline: 4px 16px;
+}
+
+.ui-calendar-view__timed .ui-calendar-view__event-resize {
+  inset-block: auto 0;
+  inset-inline: 0;
+  width: auto;
+  height: 6px;
+  cursor: ns-resize;
+}
+
+.ui-calendar-view__timed .ui-calendar-view__event-resize::before {
+  width: 16px;
+  height: 2px;
+}
+
+.ui-calendar-view__event-move:hover,
+.ui-calendar-view__event-resize:hover {
+  color: var(--ref-text);
+}
+
+.ui-calendar-view__event-move:focus-visible,
+.ui-calendar-view__event-resize:focus-visible {
+  outline: var(--ref-focus-ring);
+  outline-offset: 0;
+}
+
+/* Where a dragged event would land. */
+.ui-calendar-view__event[data-preview] {
+  z-index: 2;
+  outline: 2px dashed var(--ref-accent);
+  outline-offset: -2px;
+  pointer-events: none;
+}

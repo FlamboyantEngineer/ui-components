@@ -1,13 +1,13 @@
 'use client';
 
 import { useLocale } from '../../primitives/index.js';
-import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useUiStrings } from '../../core/provider.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { CalendarDayCell, findDayEvents, type CalendarDayContext } from './calendar-day.js';
 import {
   CalendarEventButton,
   CalendarEventLanes,
+  toEventKey,
   type CalendarEventContext,
 } from './calendar-event.js';
 import { layoutDay, layoutWeek, type PlacedEvent, type WeekSegment } from './calendar-layout.js';
@@ -98,11 +98,12 @@ function WeekDay({
       <div {...hooks.slot('timed')} style={{ position: 'relative' }}>
         {layoutDay(date, events, { timeZone, minMinutes: minEventMinutes }).map((block) => (
           <CalendarEventButton
-            key={toKeyIdentity(block.placed.event.id)}
+            key={toEventKey(block.placed)}
             placed={block.placed}
             context={event}
             isTabbable={isActive}
             time="range"
+            placement="block"
             continuesBefore={block.continuesBefore}
             continuesAfter={block.continuesAfter}
             style={{
