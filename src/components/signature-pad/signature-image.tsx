@@ -1,12 +1,11 @@
 'use client';
 
 import { ClipboardGlyph, DeleteGlyph, UploadGlyph } from '../../core/glyphs.js';
-import { useEffect, useId, useMemo, useRef, useState, type RefObject } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { FileTrigger, useLocale } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import { formatBytes } from '../../utils/format-bytes.js';
 import { joinIds } from '../../utils/join-ids.js';
-import { mergeRefs } from '../../utils/merge-props.js';
 import { Button } from '../button/button.js';
 import type { FieldControlProps } from '../field/field.js';
 import {
@@ -19,29 +18,49 @@ import {
 import type { ImageSignature } from './signature-path.js';
 import { signaturePadHooks as hooks } from './signature-surface.js';
 
-interface SignatureImageAreaProps {
-  control: FieldControlProps;
-  /** The image shown, or `null` for an empty area. */
-  image: ImageSignature | null;
-  isEditable: boolean;
+interface ImageIntakeOptions {
   /** The largest image file taken, in bytes. */
   maxSize: number;
-  /** Called with an image read from an upload or a paste, or `null` when it is cleared. */
+  /** Whether the image mode shows; leaving it drops a file still being read and its message. */
+  isActive: boolean;
+  /** Called with an image read from an upload or a paste, or `null` when it is deleted. */
   onImage: (image: ImageSignature | null) => void;
+}
+
+/** The pad's image intake, shared by the image area's buttons and the field menu. */
+export interface ImageIntake {
+  /** Why the latest file was refused, or `null`. */
+  message: string | null;
+  /** Mounts the hidden file input the chooser opens from. */
+  setChooser: (input: HTMLInputElement | null) => void;
+  take: (file: Blob | null) => Promise<void>;
+  /** Opens the file chooser. Called from a press or a menu action, so the browser allows it. */
+  upload: () => void;
+  /** Takes the system clipboard's first image. */
+  paste: () => Promise<void>;
+  /** Deletes the image, dropping any file still being read. */
+  clear: () => void;
 }
 
 /**
  * Takes files as the signature image, the latest one winning: a file read after another was
- * chosen, or after the area left, is dropped. A refused file leaves the value and shows why.
+ * chosen, after the image was deleted or after the image mode left is dropped. A refused file
+ * leaves the value and shows why.
  */
-function useImageIntake(
-  owner: RefObject<HTMLElement | null>,
-  { maxSize, onImage }: Pick<SignatureImageAreaProps, 'maxSize' | 'onImage'>,
-) {
+export function useImageIntake({ maxSize, isActive, onImage }: ImageIntakeOptions): ImageIntake {
   const strings = useUiStrings();
   const { locale } = useLocale();
   const latest = useRef(0);
+  const [chooser, setChooser] = useState<HTMLInputElement | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [wasActive, setWasActive] = useState(isActive);
+  if (wasActive !== isActive) {
+    setWasActive(isActive);
+    if (!isActive) setMessage(null);
+  }
+  useEffect(() => {
+    if (!isActive) latest.current += 1;
+  }, [isActive]);
   useEffect(
     () => () => {
       latest.current += 1;
@@ -56,24 +75,52 @@ function useImageIntake(
   const take = async (file: Blob | null) => {
     latest.current += 1;
     const ticket = latest.current;
-    const node = owner.current;
-    if (!file || !node) {
+    if (!file || !chooser) {
       setMessage(strings.signatureImageNoPaste);
       return;
     }
-    const result = await readSignatureImage(file, { maxSize, owner: node });
+    const result = await readSignatureImage(file, { maxSize, owner: chooser });
     if (ticket !== latest.current) return;
     if ('image' in result) {
       setMessage(null);
       onImage(result.image);
     } else setMessage(problems[result.problem]);
   };
-  const clear = () => {
-    latest.current += 1;
-    setMessage(null);
-    onImage(null);
+  return {
+    message,
+    setChooser,
+    take,
+    upload: () => chooser?.click(),
+    paste: async () => take(await readClipboardImage(chooser)),
+    clear() {
+      latest.current += 1;
+      setMessage(null);
+      onImage(null);
+    },
   };
-  return { message, take, clear };
+}
+
+/** The hidden file input of the image intake, mounted in every mode so the menu can open it. */
+export function SignatureImageChooser({ intake }: { intake: ImageIntake }) {
+  const { setChooser, take } = intake;
+  return (
+    <FileTrigger
+      ref={setChooser}
+      acceptedFileTypes={[...signatureImageTypes]}
+      onSelect={(files) => {
+        const [file] = files ? Array.from(files) : [];
+        if (file) void take(file);
+      }}
+    />
+  );
+}
+
+interface SignatureImageAreaProps {
+  control: FieldControlProps;
+  /** The image shown, or `null` for an empty area. */
+  image: ImageSignature | null;
+  isEditable: boolean;
+  intake: ImageIntake;
 }
 
 /**
@@ -82,31 +129,29 @@ function useImageIntake(
  * image, Paste image and Clear as icon buttons. A paste anywhere in it takes the clipboard's first image.
  */
 export function SignatureImageArea(props: SignatureImageAreaProps) {
-  const { control, image, isEditable } = props;
+  const { control, image, isEditable, intake } = props;
+  const { ref: controlRef, ...controlProps } = control;
   const strings = useUiStrings();
   const hintId = useId();
-  const surface = useRef<HTMLDivElement>(null);
-  const surfaceRef = useMemo(() => mergeRefs<HTMLDivElement>(control.ref, surface), [control.ref]);
-  const { message, take, clear } = useImageIntake(surface, props);
   return (
     <div
       {...hooks.slot('image')}
       onPaste={(event) => {
         if (!isEditable) return;
         event.preventDefault();
-        void take(findImageFile(event.clipboardData.files));
+        void intake.take(findImageFile(event.clipboardData.files));
       }}
     >
       <div
         {...hooks.slot('image-surface', { empty: image === null })}
-        ref={surfaceRef}
-        id={control.id}
+        ref={controlRef}
+        id={controlProps.id}
         role="img"
         tabIndex={-1}
-        aria-label={control['aria-label']}
-        aria-labelledby={control['aria-labelledby']}
-        aria-describedby={joinIds(image ? undefined : hintId, control['aria-describedby'])}
-        aria-invalid={control['aria-invalid']}
+        aria-label={controlProps['aria-label']}
+        aria-labelledby={controlProps['aria-labelledby']}
+        aria-describedby={joinIds(image ? undefined : hintId, controlProps['aria-describedby'])}
+        aria-invalid={controlProps['aria-invalid']}
       >
         {image ? (
           <img {...hooks.slot('image-preview')} src={image.src} alt="" draggable={false} />
@@ -117,28 +162,21 @@ export function SignatureImageArea(props: SignatureImageAreaProps) {
         )}
       </div>
       <div {...hooks.slot('actions')}>
-        <FileTrigger
-          acceptedFileTypes={[...signatureImageTypes]}
-          onSelect={(files) => {
-            const [file] = files ? Array.from(files) : [];
-            if (file) void take(file);
-          }}
-        >
-          <Button
-            size="sm"
-            icon={UploadGlyph}
-            label={strings.uploadSignatureImage}
-            tooltip={strings.uploadSignatureImage}
-            isDisabled={!isEditable}
-          />
-        </FileTrigger>
+        <Button
+          size="sm"
+          icon={UploadGlyph}
+          label={strings.uploadSignatureImage}
+          tooltip={strings.uploadSignatureImage}
+          isDisabled={!isEditable}
+          onPress={intake.upload}
+        />
         <Button
           size="sm"
           icon={ClipboardGlyph}
           label={strings.pasteSignatureImage}
           tooltip={strings.pasteSignatureImage}
           isDisabled={!isEditable}
-          onPress={async () => take(await readClipboardImage(surface.current))}
+          onPress={intake.paste}
         />
         <Button
           size="sm"
@@ -146,11 +184,11 @@ export function SignatureImageArea(props: SignatureImageAreaProps) {
           label={strings.clear}
           tooltip={strings.clear}
           isDisabled={!isEditable || image === null}
-          onPress={clear}
+          onPress={intake.clear}
         />
       </div>
       <p {...hooks.slot('image-message')} role="status">
-        {message}
+        {intake.message}
       </p>
     </div>
   );

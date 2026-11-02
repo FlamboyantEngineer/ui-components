@@ -15,7 +15,13 @@ import { EditGlyph, ImageGlyph, ItalicGlyph } from '../../core/glyphs.js';
 import { SegmentedChoice } from '../segmented-choice/segmented-choice.js';
 import type { SignatureValue } from './signature-path.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
-import { SignatureImageArea } from './signature-image.js';
+import {
+  SignatureImageArea,
+  SignatureImageChooser,
+  useImageIntake,
+  type ImageIntake,
+} from './signature-image.js';
+import { useSignatureMenu } from './signature-pad-menu.js';
 import { SignatureSurface, signaturePadHooks as hooks } from './signature-surface.js';
 
 export type {
@@ -53,7 +59,8 @@ interface SignatureControlsProps {
   /** The modes offered, when there is a choice. */
   modes: readonly SignaturePadMode[] | null;
   onModeChange: (mode: SignaturePadMode) => void;
-  maxImageSize: number;
+  intake: ImageIntake;
+  settle: (next: SignatureValue | null) => void;
   name: string | undefined;
 }
 
@@ -97,13 +104,9 @@ function SignatureInput({ control, state }: Pick<SignatureControlsProps, 'contro
 }
 
 /** Where the signature is given in the current mode: the name input, the image area or the canvas. */
-function SignatureEntry({ control, state, mode, maxImageSize }: SignatureControlsProps) {
+function SignatureEntry({ control, state, mode, intake, settle }: SignatureControlsProps) {
   const { value } = state;
   const isEditable = !state.isReadOnly && !state.isDisabled;
-  const settle = (next: SignatureValue | null) => {
-    state.setValue(next);
-    state.commit();
-  };
   if (mode === 'type') return <SignatureInput control={control} state={state} />;
   if (mode === 'image') {
     return (
@@ -111,8 +114,7 @@ function SignatureEntry({ control, state, mode, maxImageSize }: SignatureControl
         control={control}
         image={value?.kind === 'image' ? value : null}
         isEditable={isEditable}
-        maxSize={maxImageSize}
-        onImage={settle}
+        intake={intake}
       />
     );
   }
@@ -159,6 +161,7 @@ function SignatureControls(props: SignatureControlsProps) {
         />
       ) : null}
       <SignatureEntry {...props} />
+      <SignatureImageChooser intake={props.intake} />
       <FieldFormValue
         name={name}
         value={state.value ? JSON.stringify(state.value) : null}
@@ -202,10 +205,31 @@ export function SignaturePad({
       state.commit();
     }
   };
+  const settle = (next: SignatureValue | null) => {
+    state.setValue(next);
+    state.commit();
+  };
+  const intake = useImageIntake({
+    maxSize: maxImageSize,
+    isActive: mode === 'image',
+    onImage: settle,
+  });
+  const menu = useSignatureMenu({
+    state,
+    menu: field.menu,
+    onMenuAction: field.onMenuAction,
+    allowsImage: modes.includes('image'),
+    isImageMode: mode === 'image',
+    isEmpty: isSignatureEmpty(state.value),
+    intake,
+    showImageMode: () => changeMode('image'),
+    settle,
+  });
   return (
     <Field
       {...field}
       {...hooks.root({ className: field.className, data: { mode } })}
+      {...menu}
       state={state}
       commitOnBlur
     >
@@ -216,7 +240,8 @@ export function SignaturePad({
           mode={mode}
           modes={modes.length > 1 ? modes : null}
           onModeChange={changeMode}
-          maxImageSize={maxImageSize}
+          intake={intake}
+          settle={settle}
           name={rest.name}
         />
       )}

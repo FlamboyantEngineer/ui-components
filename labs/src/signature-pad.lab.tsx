@@ -67,6 +67,43 @@ function Sample({
   return <SignaturePad label="Signature" labelLayout={layout} {...props} />;
 }
 
+const menuValues = ['empty', 'image', 'drawn', 'typed'] as const;
+const menuLocks = ['editable', 'read-only', 'disabled'] as const;
+const menuSamples: Record<(typeof menuValues)[number], SignatureValue | null> = {
+  empty: null,
+  image: imageSignature,
+  drawn: signature,
+  typed: { kind: 'typed', text: 'Ada Lovelace' },
+};
+
+/** A pad whose field menu offers its own actions, with what it last committed. */
+function MenuSample({
+  value,
+  lock,
+}: {
+  value: (typeof menuValues)[number];
+  lock: (typeof menuLocks)[number];
+}) {
+  const [committed, setCommitted] = useState<string>('nothing yet');
+  return (
+    <>
+      <SignaturePad
+        label="Signature"
+        defaultValue={menuSamples[value]}
+        isReadOnly={lock === 'read-only'}
+        isDisabled={lock === 'disabled'}
+        onCommit={(next) =>
+          setCommitted(
+            next?.kind === 'drawn' ? `drawn, ${next.paths.length}` : (next?.kind ?? 'none'),
+          )
+        }
+        data-lab-field={`menu-${value}-${lock}`}
+      />
+      {lock === 'editable' ? <LabOutput name={`menu-${value}`}>{committed}</LabOutput> : null}
+    </>
+  );
+}
+
 /** Each committed drawing as a data URL image and as inline SVG markup. */
 function LiveSignature() {
   const [value, setValue] = useState<SignatureValue | null>(null);
@@ -199,6 +236,15 @@ mountLab(
       description="Draw strokes, undo or clear them, type a name, or upload or paste an image (copy an image, focus the image area or a button and press Ctrl+V or Cmd+V, or use Paste image); a file of another type, too large or unreadable is refused with a message. Changing the mode clears a signature given another way. The drawing shows as an image and as SVG markup. Cancelling or locking the drawing, or a replacement arriving mid-stroke (start drawing after Replace in 2 seconds), discards its unfinished stroke."
     >
       <LiveSignature />
+    </LabSection>
+    <LabSection
+      title="Field menu"
+      description="Right-click anywhere in a pad, long-press it, or press Shift+F10 or the Context Menu key inside it. Upload image and Paste image show while the image mode applies (an empty pad switches to it), Delete image replaces Clear while an image is held, and Undo stroke shows on a drawing. Read-only pads show them disabled; disabled pads open no menu."
+    >
+      <StateMatrix
+        axes={{ value: menuValues, lock: menuLocks }}
+        render={({ value, lock }) => <MenuSample value={value} lock={lock} />}
+      />
     </LabSection>
     <LabSection
       title="In a form"

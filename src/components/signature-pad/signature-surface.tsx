@@ -16,6 +16,7 @@ import {
   signatureSpace,
   type DrawnSignature,
   type SignaturePoint,
+  withoutLastStroke,
 } from './signature-path.js';
 import { joinIds } from '../../utils/join-ids.js';
 
@@ -165,7 +166,7 @@ export function SignatureSurface({ control, drawing, isEditable, onDraw }: Signa
           label={strings.undoStroke}
           tooltip={strings.undoStroke}
           isDisabled={!isEditable || !hasStrokes}
-          onPress={() => onDraw(paths.length > 1 ? { ...size, paths: paths.slice(0, -1) } : null)}
+          onPress={() => onDraw(withoutLastStroke(size))}
         />
         <Button
           size="sm"
