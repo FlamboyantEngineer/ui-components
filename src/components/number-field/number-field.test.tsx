@@ -808,6 +808,26 @@ describe('NumberField', () => {
     expect(onCommit).not.toHaveBeenCalled();
   });
 
+  it.each(['pointerCancel', 'lostPointerCapture', 'pointerUp'] as const)(
+    'UIC-NUMBER-FIELD-3.3 keeps a host value set just before the scrub ends with %s',
+    (end) => {
+      const onChange = vi.fn();
+      const onCommit = vi.fn();
+      const props = { label: 'Weight', showScrubber: true, onChange, onCommit };
+      const { container, rerender } = render(<NumberField {...props} value={10} />);
+      const scrubber = container.querySelector('.ui-number-field__scrubber') as HTMLElement;
+      pointer('pointerDown', scrubber, 100);
+      pointer('pointerMove', scrubber, 112);
+      expect(onChange).toHaveBeenLastCalledWith(13);
+      rerender(<NumberField {...props} value={50} />);
+      onChange.mockClear();
+      fireEvent[end](scrubber, { clientX: 112, pointerId: 3, button: 0, isPrimary: true });
+      expect(screen.getByRole('textbox')).toHaveValue('50');
+      expect(onChange).not.toHaveBeenCalled();
+      expect(onCommit).not.toHaveBeenCalled();
+    },
+  );
+
   it('UIC-NUMBER-FIELD-3.3 scrubs toward the end of the line and not while locked', async () => {
     const user = userEvent.setup();
     const { container, rerender } = render(
