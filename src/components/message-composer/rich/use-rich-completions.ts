@@ -7,7 +7,7 @@ import {
 } from '@handlewithcare/react-prosemirror';
 import type { EditorState } from 'prosemirror-state';
 import type { EditorView } from 'prosemirror-view';
-import { useId, useMemo, useState } from 'react';
+import { useId, useMemo, useRef, useState } from 'react';
 import {
   getCompletionOptionId,
   scoreCompletion,
@@ -87,6 +87,10 @@ function matchItems(items: readonly RichCompletionItem[], range: TriggerRange) {
     .map(({ item }) => item);
 }
 
+function isForwardTab(event: KeyboardEvent): boolean {
+  return event.key === 'Tab' && !event.shiftKey;
+}
+
 /** Replaces the trigger and query with a pill and a space after it. */
 function insertPill(view: EditorView, item: RichCompletionItem) {
   const range = findTrigger(view.state);
@@ -110,6 +114,7 @@ export function useRichCompletions(options: RichCompletionsOptions) {
   const [hasFocus, setFocus] = useState(false);
   const [dismissedIn, setDismissedIn] = useState<EditorState | null>(null);
   const [active, setActive] = useState({ query: '', index: 0 });
+  const shownRef = useRef(false);
   const listId = `${useId()}-completions`;
   const isOpen = hasFocus && matches.length > 0 && dismissedIn !== state;
   const query = range ? `${range.kind}${range.from}:${range.query}` : '';
@@ -123,15 +128,33 @@ export function useRichCompletions(options: RichCompletionsOptions) {
     view.focus();
   });
 
-  /** The list's keys while it is open; returns whether the key was used. */
+  const dismiss = () => {
+    setDismissedIn(state);
+    return true;
+  };
+  /** Tab while the list is dismissed shows it again without inserting. */
+  const reveal = () => {
+    const canReveal = hasFocus && matches.length > 0 && dismissedIn === state;
+    if (canReveal) setDismissedIn(null);
+    return canReveal;
+  };
+
+  /**
+   * The list's keys while it is open; returns whether the key was used. Until the list is on screen
+   * Enter and Tab wait for it, and Tab after Escape shows the list again without inserting.
+   */
   const handleKeyDown = (event: KeyboardEvent): boolean => {
-    if (!isOpen || event.isComposing) return false;
+    if (event.isComposing) return false;
+    if (!isOpen) return isForwardTab(event) && reveal();
+    if (!shownRef.current) {
+      return event.key === 'Enter' || isForwardTab(event) || (event.key === 'Escape' && dismiss());
+    }
     const step = { ArrowDown: 1, ArrowUp: -1 }[event.key];
     const count = matches.length;
     if (step !== undefined) setActive({ query, index: (activeIndex + step + count) % count });
     else if ((event.key === 'Enter' || event.key === 'Tab') && !event.shiftKey && activeItem) {
       choose(activeItem);
-    } else if (event.key === 'Escape') setDismissedIn(state);
+    } else if (event.key === 'Escape') dismiss();
     else return false;
     return true;
   };
@@ -144,6 +167,9 @@ export function useRichCompletions(options: RichCompletionsOptions) {
     listId,
     choose,
     handleKeyDown,
+    setShown: (shown: boolean) => {
+      shownRef.current = shown;
+    },
     close: () => setDismissedIn(state),
     setActiveKey: (key: string) =>
       setActive({ query, index: matches.findIndex((item) => item.id === key) }),

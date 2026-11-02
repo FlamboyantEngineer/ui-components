@@ -146,3 +146,74 @@ test.describe('Query Field suggestions', () => {
     expect(inset).toBeLessThanOrEqual(8);
   });
 });
+
+test.describe('Query Field Tab and suggestions', () => {
+  test('UIC-COMPLETION-LIST-2.8 UIC-QUERY-FIELD-1.2 shows hidden suggestions on the first Tab and inserts on the next', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('query-field');
+    const input = page.getByRole('textbox', { name: 'Query, empty' });
+    const list = page.locator('.ui-completion-list');
+    await input.click();
+    await page.keyboard.type('reader');
+    // A label equal to the typed word is left out, so `reader` alone shows no list.
+    await expect(list).toHaveCount(0);
+    await page.keyboard.type(':');
+    await expect(list.getByRole('option', { name: /maria/ })).toBeVisible();
+    await expect(input).toHaveValue('reader:');
+    await page.keyboard.press('Escape');
+    await expect(list).toHaveCount(0);
+    await expect(input).toHaveValue('reader:');
+
+    // Dismissed: the first Tab shows the list again, the second inserts its active value.
+    await page.keyboard.press('Tab');
+    await expect(input).toBeFocused();
+    await expect(input).toHaveValue('reader:');
+    await expect(list.getByRole('option', { name: /maria/ })).toBeVisible();
+    await expect(input).toHaveAttribute('aria-activedescendant', /.+/);
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Tab');
+    await expect(input).toHaveValue('reader:jon');
+    await expect(list).toHaveCount(0);
+
+    // Nothing completes the text now: Tab moves on to the run button, as Shift+Tab moves back.
+    await page.keyboard.press('Tab');
+    await expect(page.getByRole('button', { name: 'Run query' }).first()).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
+    await expect(input).toBeFocused();
+    await expect(input).toHaveValue('reader:jon');
+  });
+
+  test('UIC-COMPLETION-LIST-2.8 waits for a slow answer on Tab, drops it on Escape and leaves an empty source to focus', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('query-field');
+    const list = page.locator('.ui-completion-list');
+    const slow = page.getByRole('textbox', { name: 'Query, slow suggestions' });
+    await slow.click();
+    await page.keyboard.type('reader:');
+    await page.keyboard.press('Tab');
+    await expect(slow).toBeFocused();
+    await expect(slow).toHaveValue('reader:');
+    await expect(list.getByRole('option', { name: /maria/ })).toBeVisible();
+    await page.keyboard.press('Tab');
+    await expect(slow).toHaveValue('reader:maria');
+
+    // Escape drops the answer on its way: the list never opens for it.
+    await page.keyboard.type(' g');
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(1500);
+    await expect(list).toHaveCount(0);
+    await expect(slow).toHaveValue('reader:maria g');
+
+    const empty = page.getByRole('textbox', { name: 'Query, no matches suggestions' });
+    await empty.click();
+    await page.keyboard.type('genre');
+    await page.keyboard.press('Tab');
+    await expect(empty).not.toBeFocused();
+    await expect(empty).toHaveValue('genre');
+    await expect(list).toHaveCount(0);
+  });
+});

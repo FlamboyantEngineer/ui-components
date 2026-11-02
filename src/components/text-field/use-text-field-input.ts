@@ -60,7 +60,7 @@ function createEditKeyHandler(state: FieldState<string>, multiline: boolean) {
 function createKeyHandler(options: TextFieldInputOptions, completion: TextCompletions | null) {
   const editKeys = createEditKeyHandler(options.state, options.multiline);
   return (event: KeyboardEvent<HTMLElement>) => {
-    if (completion?.model.handleKeyDown(event)) return;
+    if (completion?.model.handleKeyDown(event) || completion?.model.revealOnTab(event)) return;
     editKeys(event);
     options.onKeyDown?.(event);
   };

@@ -145,7 +145,7 @@ Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-edito
 
 ### UIC-CODE-EDITOR-4.3 - Choosing
 
-While the list is open, ArrowDown and ArrowUp shall move the active option, wrapping at either end, Enter or Tab (not Shift+Tab) insert it and Escape close the list until the next edit; those keys go no further than the editor. Moving the pointer over an option activates it and pressing it inserts it without taking focus from the text area. Losing focus closes the list.
+While the list is open, ArrowDown and ArrowUp shall move the active option, wrapping at either end, Enter or Tab (not Shift+Tab) insert it once the list is on screen and Escape close the list until the next edit; those keys go no further than the editor. Without `indentWithTab`, Tab while no list shows asks for the completions at the caret and shows them without inserting ([UIC-COMPLETION-LIST-2.8](COMPLETION-LIST.md#uic-completion-list-28---seen-before-inserted)), after snippet stepping has had it; with `indentWithTab`, Tab indents or, after Escape, leaves. Moving the pointer over an option activates it and pressing it inserts it without taking focus from the text area. Losing focus closes the list.
 
 Implementation: `src/components/completion-list/completion-list.tsx`, `src/components/completion-list/use-completions.ts`, `src/components/code-editor/code-editor.tsx`
 Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-editor.spec.ts`

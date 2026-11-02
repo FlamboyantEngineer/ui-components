@@ -13,7 +13,7 @@ Verification: `src/components/query-field/query-field.test.tsx`, `e2e/query-fiel
 
 ### UIC-QUERY-FIELD-1.2 - Grammar
 
-The `grammar`'s `tokenize` shall highlight the query, its `complete` (a vocabulary or a completion source) shall offer completions at the caret, and its `diagnose(query)` shall report the query's problems, which the editor marks and lists below the query, as for a code editor.
+The `grammar`'s `tokenize` shall highlight the query, its `complete` (a vocabulary or a completion source) shall offer completions at the caret, and its `diagnose(query)` shall report the query's problems, which the editor marks and lists below the query, as for a code editor. Completions are inserted only from a list on screen: after typing `reader:`, the first Tab shows the values without inserting one, the next Tab inserts the active value, and Escape hides the list until Tab or the next edit asks again ([UIC-COMPLETION-LIST-2.8](COMPLETION-LIST.md#uic-completion-list-28---seen-before-inserted)).
 
 Implementation: `src/components/query-field/query-field.tsx`
 Verification: `src/components/query-field/query-field.test.tsx`, `e2e/query-field.spec.ts`

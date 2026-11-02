@@ -122,7 +122,7 @@ export function useMessageComposer(props: MessageComposerProps): MessageComposer
       model?.track('input');
     },
     onKeyDown: (event) => {
-      if (model?.handleKeyDown(event)) return;
+      if (model?.handleKeyDown(event) || model?.revealOnTab(event)) return;
       if (!runComposerKey(event.nativeEvent, actions)) return props.onKeyDown?.(event);
       event.preventDefault();
     },

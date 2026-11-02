@@ -51,6 +51,8 @@ export interface CodeEditorModel {
   setCaret(caret: number | null): void;
   /** Handles the editing keys; returns whether a key was used. */
   handleKeyDown: ReturnType<typeof useCodeKeys>;
+  /** Tab indents instead of moving focus. */
+  indentWithTab: boolean;
 }
 
 /** Moves the text area's selection to the next or previous diagnostic after the caret. */
@@ -226,5 +228,6 @@ export function useCodeEditor(options: CodeEditorOptions): CodeEditorModel {
     announcement,
     setCaret,
     handleKeyDown,
+    indentWithTab: Boolean(options.indentWithTab),
   };
 }

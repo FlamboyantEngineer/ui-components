@@ -71,7 +71,10 @@ function useKeyProps(model: CodeEditorModel, props: CodeTextAreaProps): TextArea
         hover.close();
         return;
       }
-      if (!model.handleKeyDown(event)) props.onKeyDown?.(event);
+      if (model.handleKeyDown(event)) return;
+      // Tab that indents, or leaves after Escape, never asks for completions.
+      if (!model.indentWithTab && completion.revealOnTab(event)) return;
+      props.onKeyDown?.(event);
     },
     onKeyUp: (event) => {
       completion.handleKeyUp(event);

@@ -228,6 +228,7 @@ describe('RichMessageComposer', () => {
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     await user.keyboard('a');
+    await screen.findByRole('listbox');
     await user.keyboard('{Enter}');
     const pill = box().querySelector('.ui-message-composer__pill');
     expect(pill).toHaveTextContent('/translate');
