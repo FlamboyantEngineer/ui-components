@@ -69,6 +69,15 @@ test.describe('Chat List lab', () => {
     for (const key of ['Enter', 'Space']) {
       await page.keyboard.press(key);
       await expect(page.getByRole('menu')).toBeVisible();
+      // A scroll the reader did not make, as one still settling from the row moves, leaves it open.
+      await grid(page).evaluate(async (list) => {
+        const scroller = list.closest('.ui-chat-list__list') ?? list;
+        for (const top of [24, 12, 0]) {
+          scroller.scrollTop = top;
+          await new Promise(requestAnimationFrame);
+        }
+      });
+      await expect(page.getByRole('menu')).toBeVisible();
       await page.keyboard.press('Escape');
       await expect(page.getByRole('menu')).toHaveCount(0);
       await expect(more).toBeFocused();

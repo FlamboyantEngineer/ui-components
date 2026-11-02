@@ -72,6 +72,29 @@ describe('MenuPopover and SubmenuTrigger', () => {
     await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
   });
 
+  it('UIC-MENU-4.3 stays open while a scroll it did not start settles, and closes on the reader’s', async () => {
+    const user = userEvent.setup();
+    render(
+      <div role="region" aria-label="List">
+        <MenuButton items={fruitEntries} aria-label="Fruit" />
+      </div>,
+    );
+    const scroller = screen.getByRole('region', { name: 'List' });
+    screen.getByRole('button', { name: 'Actions' }).focus();
+    await user.keyboard('{Enter}');
+    expect(screen.getByRole('menu')).toBeVisible();
+    // A focus scroll still running when the menu opened keeps moving the list.
+    for (const top of [40, 20, 0]) {
+      scroller.scrollTop = top;
+      fireEvent.scroll(scroller);
+    }
+    expect(screen.getByRole('menu')).toBeVisible();
+    fireEvent.wheel(scroller);
+    scroller.scrollTop = 30;
+    fireEvent.scroll(scroller);
+    await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
+  });
+
   it('UIC-MENU-4.3 closes on Escape pressed in the same task as a page scroll', async () => {
     const user = userEvent.setup({ delay: null });
     render(<MenuButton items={fruitEntries} aria-label="Fruit" />);

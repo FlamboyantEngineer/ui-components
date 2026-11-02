@@ -131,7 +131,7 @@ Verification: `src/components/menu/menu.test.tsx`, `e2e/menu.spec.ts`
 Implementation: `src/components/menu/menu-popover.tsx`, `labs/reference/menu.css`
 Verification: `src/components/menu/menu-popover.test.tsx`, `e2e/menu.spec.ts`
 
-A first press that reveals the trigger inside a scrolling ancestor shall open the menu. A queued scroll event for offsets already present at opening shall not close it; changing an ancestor’s scroll offsets after opening shall still close it. A hinted trigger follows the same rule.
+A first press that reveals the trigger inside a scrolling ancestor shall open the menu. Only a scroll the reader makes after the menu opens closes it: until the reader turns a wheel, moves a touch, or presses a pointer or a key, scrolls are the page's own (a reveal or focus scroll still settling, as after moving through a list's rows with the keys) and leave it open. After that, a queued scroll event for offsets already present at opening shall not close it; changing an ancestor’s scroll offsets shall still close it. A hinted trigger follows the same rule.
 
 ### UIC-MENU-4.4 - Layers
 

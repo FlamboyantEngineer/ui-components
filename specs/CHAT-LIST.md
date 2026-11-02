@@ -34,7 +34,7 @@ Verification: `src/components/chat-list/chat-list.test.tsx`, `e2e/chat-list.spec
 
 ### UIC-CHAT-LIST-1.5 - Keyboard
 
-The grid list shall be one stop in the Tab sequence, entering on the selected or last focused row. Up and Down move focus between rows without selecting, Home and End move to the first and last row, Page Up and Page Down move by a page, and Left and Right move into and out of the row's controls. A row's control keeps its own keys: Enter and Space press it, so a menu button among the actions opens its menu without selecting or opening the row, while Up and Down still move between rows. When a menu or popover a control opened closes, focus returns to that control, not to its row, so the reader can open it again or move on with Left.
+The grid list shall be one stop in the Tab sequence, entering on the selected or last focused row. Up and Down move focus between rows without selecting, Home and End move to the first and last row, Page Up and Page Down move by a page, and Left and Right move into and out of the row's controls. A row's control keeps its own keys: Enter and Space press it, so a menu button among the actions opens its menu without selecting or opening the row, while Up and Down still move between rows. The menu stays open while the list still scrolls from the keys that reached the row ([UIC-MENU-4.3](MENU.md#uic-menu-43---popover)). When a menu or popover a control opened closes, focus returns to that control, not to its row, so the reader can open it again or move on with Left.
 
 Implementation: `src/components/chat-list/chat-list.tsx`
 Verification: `src/components/chat-list/chat-list.test.tsx`, `e2e/chat-list.spec.ts`

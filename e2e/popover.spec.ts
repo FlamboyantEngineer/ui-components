@@ -203,9 +203,14 @@ test.describe('Popover lab', () => {
       'right',
     );
     await lab.expectAccessible('.ui-popover');
-    await page.locator('[data-lab-counter]').click();
-    await expect(page.locator('[data-lab-output="visits"]')).toHaveText('1');
+    // A scroll the reader did not make leaves it open; the reader's own wheel closes it.
+    const counter = page.locator('[data-lab-counter]');
+    await counter.scrollIntoViewIfNeeded();
+    await expect(notes).toBeVisible();
+    await page.mouse.wheel(0, 40);
     await expect(notes).toHaveCount(0);
+    await counter.click();
+    await expect(page.locator('[data-lab-output="visits"]')).toHaveText('1');
   });
 
   test('UIC-POPOVER-1.1 UIC-POPOVER-2.2 UIC-POPOVER-2.3 a non-modal opener closes on its second press and leaves neighboring presses available', async ({

@@ -40,9 +40,16 @@ test.describe('Menu lab', () => {
     await expect(demo.locator('[data-lab-output="hinted-menu-changes"]')).toHaveText('true, false');
     await trigger.click();
     await expect(page.getByRole('menu', { name: 'Hinted choices', exact: true })).toBeVisible();
-    await demo.getByRole('region', { name: 'Hinted menu scroller' }).evaluate((element) => {
+    const scroller = demo.getByRole('region', { name: 'Hinted menu scroller' });
+    // A scroll the reader did not make leaves the menu open; the reader's wheel closes it.
+    await scroller.evaluate((element) => {
       element.scrollTop -= 8;
     });
+    await expect(page.getByRole('menu', { name: 'Hinted choices', exact: true })).toBeVisible();
+    const box = await scroller.boundingBox();
+    if (!box) throw new Error('The scroller is not visible');
+    await page.mouse.move(box.x + 4, box.y + 4);
+    await page.mouse.wheel(0, -8);
     await expect(page.getByRole('menu', { name: 'Hinted choices', exact: true })).toHaveCount(0);
   });
 
