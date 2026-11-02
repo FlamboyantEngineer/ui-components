@@ -443,6 +443,21 @@ describe('FormulaBar', () => {
     expectHooksMatchSpec(container, 'FORMULA-BAR', { slots: ['result'] });
   });
 
+  it('UIC-FORMULA-BAR-3.3 leaves out an empty result, keeping no room for it', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <FormulaBar cell={{ row: 0, column: 0 }} value="" evaluate={(value) => value} />,
+    );
+    expect(container.querySelector('.ui-formula-bar__result')).not.toBeInTheDocument();
+    expect(contentBox()).not.toHaveAttribute('aria-describedby');
+    await user.click(contentBox());
+    await user.keyboard('7');
+    expect(container.querySelector('.ui-formula-bar__result')).toHaveTextContent('Result 7');
+    expect(contentBox()).toHaveAccessibleDescription('Result 7');
+    await user.keyboard('{Backspace}');
+    expect(container.querySelector('.ui-formula-bar__result')).not.toBeInTheDocument();
+  });
+
   it('UIC-FORMULA-BAR-4.1 names the group', () => {
     const { rerender } = render(<FormulaBar cell={null} value="" />);
     expect(screen.getByRole('group', { name: 'Formula bar' })).toBeInTheDocument();

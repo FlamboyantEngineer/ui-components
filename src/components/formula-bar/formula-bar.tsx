@@ -284,6 +284,8 @@ export function FormulaBar({
   const { text, setDraft, isDirty, isLocked, canCancel, canCommit, commit, cancel } =
     useFormulaDraft({ cell, value, onCommit, isReadOnly, isDisabled });
   const editorRef = useRef<HTMLTextAreaElement>(null);
+  // An empty result, such as an empty cell's, takes no room and describes nothing.
+  const result = evaluate && cell ? evaluate(text, cell) : '';
   const onKeyDown = (event: KeyboardEvent) => {
     if (isComposingKey(event.nativeEvent)) return;
     if (event.key === 'Enter') commit();
@@ -324,7 +326,7 @@ export function FormulaBar({
         variant="surface"
         className={hooks.slotClass('editor')}
         aria-label={strings.formulaCellContent}
-        aria-describedby={joinIds(evaluate && cell ? resultId : null, showActions ? null : hintId)}
+        aria-describedby={joinIds(result ? resultId : null, showActions ? null : hintId)}
         multiline={false}
         value={text}
         onChange={setDraft}
@@ -335,7 +337,7 @@ export function FormulaBar({
         isDisabled={isLocked}
         onKeyDown={onKeyDown}
       />
-      {evaluate && cell ? <FormulaBarResult id={resultId} result={evaluate(text, cell)} /> : null}
+      {result ? <FormulaBarResult id={resultId} result={result} /> : null}
     </div>
   );
 }

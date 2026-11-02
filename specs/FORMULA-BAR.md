@@ -52,7 +52,7 @@ Verification: `src/components/formula-bar/formula-bar.test.tsx`, `e2e/formula-ba
 
 ### UIC-FORMULA-BAR-3.3 - Caller evaluation
 
-With `evaluate`, the bar shall show `evaluate(content, cell)` for the draft and the active cell in `ui-formula-bar__result`, after a visually hidden label from the provider's `formulaResult` string, and describe the editor with it, updating as the reader types. The bar evaluates nothing itself.
+With `evaluate`, the bar shall show `evaluate(content, cell)` for the draft and the active cell in `ui-formula-bar__result`, after a visually hidden label from the provider's `formulaResult` string, and describe the editor with it, updating as the reader types. An empty evaluation, such as an empty cell's, draws no result and takes no room, so the editor keeps the bar's full width, and the editor has no result to be described by. The bar evaluates nothing itself.
 
 Implementation: `src/components/formula-bar/formula-bar.tsx`
 Verification: `src/components/formula-bar/formula-bar.test.tsx`, `e2e/formula-bar.spec.ts`

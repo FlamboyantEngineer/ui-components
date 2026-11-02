@@ -180,23 +180,27 @@ mountLab(
   <>
     <LabSection
       title="States"
-      description="A formula, plain text, an empty cell and no active cell, editable, with the caller's evaluation, read-only and disabled. The formula's references, operators and functions take the caller's token types."
+      description="A formula, plain text, an empty cell and no active cell, editable, with the caller's evaluation, read-only and disabled, each bar 256px wide. The reference, Cancel, Confirm and fₓ keep their places and the content takes the rest; a result appears only when the evaluation has one, so an empty cell's content keeps the full width. The formula's references, operators and functions take the caller's token types."
     >
       <StateMatrix
         axes={{ content: stateNames, mode: ['editable', 'evaluated', 'read-only', 'disabled'] }}
         render={({ content, mode }) => (
-          <FormulaBar
-            aria-label={`${content} formula bar, ${mode}`}
-            cell={states[content].cell}
-            value={states[content].value}
-            tokenize={tokenizeFormula}
-            placeholder="Value or formula"
-            evaluate={
-              mode === 'evaluated' ? (value, at) => evaluateAt(value, sampleCells, at) : undefined
-            }
-            isReadOnly={mode === 'read-only'}
-            isDisabled={mode === 'disabled'}
-          />
+          // Every cell is as wide, so the bars line up and differ only in their state.
+          <div style={{ width: 256 }}>
+            <FormulaBar
+              aria-label={`${content} formula bar, ${mode}`}
+              cell={states[content].cell}
+              value={states[content].value}
+              tokenize={tokenizeFormula}
+              functions={formulaFunctions}
+              placeholder="Value or formula"
+              evaluate={
+                mode === 'evaluated' ? (value, at) => evaluateAt(value, sampleCells, at) : undefined
+              }
+              isReadOnly={mode === 'read-only'}
+              isDisabled={mode === 'disabled'}
+            />
+          </div>
         )}
       />
     </LabSection>
