@@ -95,6 +95,29 @@ describe('ChatTranscript', () => {
     expect(viewport.scrollTop).toBe(120);
   });
 
+  it('UIC-CHAT-TRANSCRIPT-1.2 keeps following when a clamp from a viewport that grew for a moment is heard late', () => {
+    render(<Conversation count={3} />);
+    const viewport = getViewport();
+    expect(viewport.scrollTop).toBe(200);
+    // The composer shrinks for a moment: the viewport grows and the browser clamps the position.
+    layout.viewportHeight = 150;
+    viewport.scrollTop = 150;
+    // The composer grows again before the scroll event arrives.
+    layout.viewportHeight = 120;
+    expect(viewport.scrollTop).toBe(150);
+    fireEvent.scroll(viewport);
+    expect(viewport.scrollTop).toBe(180);
+  });
+
+  it('UIC-CHAT-TRANSCRIPT-1.2 stops following when the reader scrolls up while a reply grows', () => {
+    const { rerender } = render(<Conversation count={3} />);
+    const viewport = getViewport();
+    layout.heights.set('m3', 160);
+    scrollViewport(viewport, 120);
+    rerender(<Conversation count={4} />);
+    expect(viewport.scrollTop).toBe(120);
+  });
+
   it('UIC-CHAT-TRANSCRIPT-1.3 jumps back to the latest message, focuses it and follows again', async () => {
     const user = userEvent.setup();
     const { container, rerender } = render(<Conversation count={3} />);

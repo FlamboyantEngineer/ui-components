@@ -70,7 +70,9 @@ for (const cell of [
     const box = await log.boundingBox();
     if (!box) throw new Error('The transcript has no box.');
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    // Each wheel takes effect before the next, so the last one is the reader's.
     await page.mouse.wheel(0, -60);
+    await expect.poll(() => distanceToBottom(scope)).toBeGreaterThan(1);
     await page.mouse.wheel(0, 4000);
     await expect.poll(() => distanceToBottom(scope)).toBeLessThanOrEqual(1);
     await composer(scope).click();
