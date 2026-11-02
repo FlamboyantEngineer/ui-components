@@ -48,4 +48,56 @@ test.describe('Pagination lab', () => {
     await expect(middle.locator('.ui-pagination__ellipsis')).toHaveCount(2);
     await lab.expectAccessible();
   });
+
+  test('UIC-PAGINATION-1.2 shows one page for a single page or none, and the nearest page as the count shrinks', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('pagination');
+    for (const state of ['one page', 'no results']) {
+      const nav = page.getByRole('navigation', { name: `Pages, ${state}` });
+      await expect(nav.locator('.ui-pagination__page')).toHaveText(['1']);
+      await expect(nav.getByRole('button', { name: 'Previous page' })).toHaveAttribute(
+        'aria-disabled',
+        'true',
+      );
+      await expect(nav.getByRole('button', { name: 'Next page' })).toHaveAttribute(
+        'aria-disabled',
+        'true',
+      );
+    }
+    const demo = page.locator('[data-lab-demo="changing-count"]');
+    const nav = demo.getByRole('navigation', { name: 'Results pages' });
+    const current = nav.locator('[aria-current="page"]');
+    await expect(current).toHaveText('10');
+    await demo.getByRole('radio', { name: '5' }).click();
+    await expect(current).toHaveText('5');
+    await expect(demo.locator('[data-lab-output="page"]')).toHaveText('10');
+    await expect(demo.locator('[data-lab-output="shown"]')).toHaveText('5');
+    await expect(demo.locator('[data-lab-output="calls"]')).toHaveText('none');
+    await nav.getByRole('button', { name: 'Previous page' }).click();
+    await expect(demo.locator('[data-lab-output="calls"]')).toHaveText('onPageChange(4)');
+    await demo.getByRole('radio', { name: '0' }).click();
+    await expect(current).toHaveText('1');
+    await demo.getByRole('radio', { name: '12' }).click();
+    await expect(current).toHaveText('4');
+    await lab.expectAccessible();
+  });
+
+  test('UIC-PAGINATION-1.1 localizes digits and mirrors the chevrons right to left', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('pagination');
+    const nav = page.locator('[data-lab-demo="rtl"] .ui-pagination');
+    await expect(nav.locator('[aria-current="page"]')).toHaveText('٦');
+    await expect(nav.locator('.ui-pagination__previous .ui-icon__glyph')).toHaveAttribute(
+      'data-glyph',
+      'chevron-right',
+    );
+    await expect(nav.locator('.ui-pagination__next .ui-icon__glyph')).toHaveAttribute(
+      'data-glyph',
+      'chevron-left',
+    );
+  });
 });

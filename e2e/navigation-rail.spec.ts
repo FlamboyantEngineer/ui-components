@@ -186,4 +186,54 @@ test.describe('Navigation Rail lab', () => {
     await expect(rail.getByRole('link', { name: 'Groceries' })).toBeHidden();
     await lab.expectAccessible('[data-lab-section="Toggles in a group"]');
   });
+
+  test('UIC-NAVIGATION-RAIL-1.3 UIC-NAVIGATION-RAIL-2.5 resizes within custom bounds and follows a page-controlled group', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('navigation-rail');
+    const demo = page.locator('[data-lab-demo="bounded"]');
+    const rail = demo.getByRole('navigation', { name: 'Bounded navigation' });
+    const handle = rail.getByRole('separator', { name: 'Resize navigation' });
+    const width = demo.locator('[data-lab-output="width"]');
+    await expect(handle).toHaveAttribute('aria-valuenow', '200');
+    await expect(handle).toHaveAttribute('aria-valuemin', '160');
+    await expect(handle).toHaveAttribute('aria-valuemax', '260');
+    await handle.scrollIntoViewIfNeeded();
+    const box = await handle.boundingBox();
+    if (!box) throw new Error('The resize handle has no box');
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2 + 200, box.y + box.height / 2, { steps: 4 });
+    await page.mouse.up();
+    await expect(width).toHaveText('260px');
+    await handle.focus();
+    await page.keyboard.press('Home');
+    await expect(width).toHaveText('160px');
+    await page.keyboard.press('ArrowLeft');
+    await expect(handle).toHaveAttribute('aria-valuenow', '160');
+
+    await demo.getByRole('radio', { name: '220 to 360px' }).click();
+    const wide = demo.getByRole('navigation', { name: 'Bounded navigation' });
+    await expect(wide.getByRole('separator')).toHaveAttribute('aria-valuemin', '220');
+    await wide.getByRole('separator').focus();
+    await page.keyboard.press('End');
+    await expect(width).toHaveText('360px');
+
+    const lists = rail.getByRole('button', { name: 'Lists' });
+    await expect(lists).toHaveAttribute('aria-expanded', 'false');
+    await demo.getByRole('switch', { name: 'Lists group open' }).press('Space');
+    await expect(lists).toHaveAttribute('aria-expanded', 'true');
+    await expect(rail.getByRole('link', { name: 'Groceries' })).toBeVisible();
+    await lists.click();
+    await expect(lists).toHaveAttribute('aria-expanded', 'false');
+    await expect(demo.getByRole('switch', { name: 'Lists group open' })).not.toBeChecked();
+    await expect(demo.locator('[data-lab-output="group"]')).toHaveText('onExpandedChange(false)');
+
+    await rail.getByRole('button', { name: 'Collapse navigation' }).click();
+    await expect(rail).toHaveAttribute('data-collapsed', 'true');
+    await rail.getByRole('button', { name: 'Expand navigation' }).click();
+    await expect(rail.getByRole('separator')).toHaveAttribute('aria-valuenow', '360');
+    await lab.expectAccessible();
+  });
 });

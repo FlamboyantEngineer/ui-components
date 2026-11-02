@@ -55,7 +55,7 @@ describe('Pagination', () => {
     expect(screen.getByRole('navigation', { name: 'Fruit pages' })).toBeInTheDocument();
     const previous = screen.getByRole('button', { name: 'Previous page' });
     expect(previous.querySelector('[data-glyph]')).toHaveAttribute('data-glyph', 'chevron-right');
-    expect(screen.getByRole('button', { name: 'Page 2' })).toHaveTextContent('٢');
+    expect(screen.getByRole('button', { name: 'Page ٢' })).toHaveTextContent('٢');
   });
 
   it('UIC-PAGINATION-1.2 marks the current page and clamps it into range', () => {

@@ -412,3 +412,100 @@ for (const scale of [1.5, 0.5]) {
     expect(Math.abs(moved.x + moved.width / 2 - (x + 50 * scale))).toBeLessThanOrEqual(1);
   });
 }
+
+test.describe('Split View controls', () => {
+  test('UIC-SPLIT-VIEW-2.3 reports live and committed sizes of controlled mixed panes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('split-view');
+    const demo = page.locator('[data-lab-split="controlled-panes"]');
+    const live = demo.locator('[data-lab-output="live"]');
+    const committed = demo.locator('[data-lab-output="committed"]');
+    await expect(live).toHaveText('160px, 40%, 60%');
+    const separator = demo.getByRole('separator', { name: 'Resize Messages, controlled' });
+    await separator.scrollIntoViewIfNeeded();
+    const handle = await box(separator);
+    const y = handle.y + handle.height / 2;
+    await page.mouse.move(handle.x + handle.width / 2, y);
+    await page.mouse.down();
+    await page.mouse.move(handle.x + handle.width / 2 + 40, y, { steps: 4 });
+    await expect(live).not.toHaveText('160px, 40%, 60%');
+    await expect(committed).toHaveText('none yet');
+    await page.mouse.up();
+    await expect(committed).toHaveText(await live.innerText());
+
+    await demo.getByRole('button', { name: 'Wide folders' }).click();
+    await expect(live).toHaveText('200px, 30%, 70%');
+    await expect(
+      demo.getByRole('separator', { name: 'Resize Folders, controlled' }),
+    ).toHaveAttribute('aria-valuenow', '200');
+    await demo.getByRole('button', { name: 'Collapse folders' }).click();
+    await expect(committed).toHaveText(/^0px, /);
+    await demo.getByRole('button', { name: 'Expand folders' }).click();
+    await expect(committed).toHaveText(/^200px, /);
+    await lab.expectAccessible();
+  });
+
+  test('UIC-SPLIT-VIEW-3.3 UIC-SPLIT-VIEW-3.4 scales pointer travel and cancels a drag its owner abandons', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('split-view');
+    const demo = page.locator('[data-lab-handle="rows"]');
+    const events = demo.locator('[data-lab-output="handle-events"] li');
+    const drag = async (distance: number, release = true) => {
+      const separator = demo.getByRole('separator', { name: 'Resize the shopping list' });
+      await separator.scrollIntoViewIfNeeded();
+      const handle = await box(separator);
+      const x = handle.x + handle.width / 2;
+      const y = handle.y + handle.height / 2;
+      await page.mouse.move(x, y);
+      await page.mouse.down();
+      await page.mouse.move(x, y + distance, { steps: 4 });
+      if (release) await page.mouse.up();
+    };
+    await drag(40);
+    await expect(events.last()).toHaveText('end 6.00 rows');
+    await expect(events.filter({ hasText: 'cancel' })).toHaveCount(0);
+
+    for (const [choice, check] of [
+      ['Change resetKey', () => expect(demo.locator('[data-lab-output="owner"]')).toHaveText('1')],
+      [
+        'Disable the handle',
+        () => expect(demo.getByRole('separator')).toHaveAttribute('aria-disabled', 'true'),
+      ],
+      ['Unmount the handle', () => expect(demo.getByRole('separator')).toHaveCount(0)],
+    ] as const) {
+      await demo.getByRole('button', { name: 'Restore the handle' }).click();
+      await demo.getByRole('radio', { name: choice }).click();
+      await drag(-20, false);
+      await check();
+      await expect(events.last()).toHaveText('cancel');
+      await page.mouse.up();
+      await expect(events.filter({ hasText: /^end/ })).toHaveCount(0);
+    }
+  });
+
+  test('UIC-SPLIT-VIEW-1.1 spaces fixed panes and grows, fills or clips in a bounded host', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('split-view');
+    const gap = async (space: string) => {
+      const panes = page.locator(`[data-lab-space="${space}"] > *`);
+      const [a, b] = [await box(panes.nth(0)), await box(panes.nth(1))];
+      return b.x - (a.x + a.width);
+    };
+    expect(await gap('none')).toBeLessThan(1);
+    expect(await gap('3xl')).toBeGreaterThan(await gap('xs'));
+    const contained = (name: string) => page.locator(`[data-lab-containment="${name}"]`);
+    await expect(contained('grow')).toHaveAttribute('data-grow', 'true');
+    expect((await box(contained('grow'))).height).toBeCloseTo(80, 0);
+    await expect(contained('fill')).toHaveAttribute('data-fill', 'true');
+    await expect(contained('clip')).toHaveAttribute('data-clip', 'true');
+    expect(await contained('clip').evaluate((node) => getComputedStyle(node).overflow)).toBe(
+      'hidden',
+    );
+  });
+});

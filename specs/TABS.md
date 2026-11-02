@@ -8,10 +8,10 @@ Pointer ownership and drag lifecycle cleanup follow the shared [drag interaction
 
 ### UIC-TABS-1.1 - Tabs, list and panels
 
-`Tabs` shall render its root, a `TabList` with role `tablist` named by its `aria-label` or `aria-labelledby`, one `Tab` per section with role `tab` named by its label, and the `TabPanel` of the selected tab with role `tabpanel`, labelled by its tab. Each selected tab carries `aria-selected="true"` and `aria-controls` naming its panel, including tabs and panels returned from a host component that forwards their props ([UIC-COMPOSITION-4.2](COMPOSITION.md#uic-composition-42---collection-items-behind-a-host-component)). `selectedKey` with `onSelectionChange` controls the selection and `defaultSelectedKey` sets it when uncontrolled; without either, the first enabled tab is selected.
+`Tabs` shall render its root, a `TabList` with role `tablist` named by its `aria-label` or `aria-labelledby`, one `Tab` per section with role `tab` named by its label, and the `TabPanel` of the selected tab with role `tabpanel`, labelled by its tab. Each selected tab carries `aria-selected="true"` and `aria-controls` naming its panel, including tabs and panels returned from a host component that forwards their props ([UIC-COMPOSITION-4.2](COMPOSITION.md#uic-composition-42---collection-items-behind-a-host-component)). `selectedKey` with `onSelectionChange` controls the selection and `defaultSelectedKey` sets it when uncontrolled; without either, the first enabled tab is selected. A panel whose tab is not selected unmounts, unless `shouldForceMount` keeps it mounted, hidden and inert (`data-inert`), so its content keeps its state.
 
 Implementation: `src/components/tabs/tabs.tsx`
-Verification: `src/components/tabs/tabs.test.tsx`, `src/components/tabs/tab-keys.test.tsx`, `e2e/tabs.spec.ts`
+Verification: `src/components/tabs/tabs.test.tsx`, `src/components/tabs/tab-keys.test.tsx`, `e2e/tabs.spec.ts`, `e2e/tabs-composition.spec.ts`
 
 ### UIC-TABS-1.2 - Labels, icons and counts
 
@@ -39,14 +39,14 @@ Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs.spec.ts`
 Each family member shall carry its hooks below and append the caller's `className`. `Tabs`, `TabList`, `Tab` and `TabPanel` forward caller `data-*` attributes and `ref` to their elements; `Tabs` also forwards `id`, `TabList` and `Tab` the ARIA labelling attributes, and `Tab` its `onContextMenu` handler, so a host can open a menu for a tab. A tab's and a panel's `id` is a `Key` (a string or a number).
 
 Implementation: `src/components/tabs/tabs.tsx`
-Verification: `src/components/tabs/tabs.test.tsx`
+Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs-composition.spec.ts`
 
 ### UIC-TABS-1.6 - Swapping elements
 
 `Tabs`, `TabList`, `Tab` and `TabPanel` shall take `render(props, state)`, typed `ElementRender<'div', State>`, so the caller can replace each element as [COMPOSITION.md](COMPOSITION.md) describes; the replacement receives the element's hook classes, data attributes, handlers and ref, and a library state: `TabsRenderState` and `TabListRenderState` (`orientation`), the shared `SelectableState` for `Tab` (`isSelected`, `isHovered`, `isPressed`, `isFocused`, `isFocusVisible`, `isDisabled`) and `TabPanelRenderState` (`isFocused`, `isFocusVisible`, `isInert`, `isEntering`, `isExiting`). A tab with `href` receives an anchor's props, and its replacement renders an `<a>`.
 
 Implementation: `src/components/tabs/tabs.tsx`, `src/components/tabs/tab-list.tsx`
-Verification: `src/components/tabs/tab-list.test.tsx`
+Verification: `src/components/tabs/tab-list.test.tsx`, `e2e/tabs-composition.spec.ts`
 
 ## UIC-TABS-2 - Behaviour
 
@@ -92,7 +92,7 @@ Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs.spec.ts`
 With `overflow="menu"` a horizontal list shall sit in a `ui-tabs__bar` element (with `data-overflow="menu"`) and render only the tabs that fit, as [`useOverflowItems`](OVERFLOW-LIST.md) measures them in the bar beside a `ui-tabs__overflow` element after the list. The selected tab, then the tab with keyboard focus, always stay; the others fit from the start. The rest stay in the tabs' collection, so panels, selection and keyboard navigation still reach them: an arrow key, Home or End that moves focus to a hidden tab shows it. The overflow element holds an icon-only [Dropdown Menu](DROPDOWN-MENU.md) named by the provider's `moreItems` text with the count, listing the hidden tabs by their text (`textValue`, or a plain-text label) with their disabled state and links; choosing one selects it. The list publishes `data-overflowing` while tabs are hidden. A vertical list scrolls.
 
 Implementation: `src/components/tabs/tab-list.tsx`, `src/components/overflow-list/visible-collection.tsx`, `src/utils/use-overflow-items.ts`, `labs/reference/tabs.css`
-Verification: `src/components/tabs/tab-list.test.tsx`, `e2e/tabs.spec.ts`
+Verification: `src/components/tabs/tab-list.test.tsx`, `e2e/tabs.spec.ts`, `e2e/tabs-composition.spec.ts`
 
 ### UIC-TABS-2.7 - Scroll buttons
 

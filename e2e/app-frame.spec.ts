@@ -108,3 +108,65 @@ test.describe('App Frame lab', () => {
     await lab.expectAccessible();
   });
 });
+
+test.describe('App Frame page and projections', () => {
+  test('UIC-APP-FRAME-1.2 UIC-APP-FRAME-2.1 names page landmarks with labels and the band parts with their labels', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('app-frame');
+    const frame = page.frameLocator('[data-lab-demo="page-frame"]');
+    await expect(frame.getByRole('banner')).toHaveCount(1);
+    await expect(frame.getByRole('main', { name: 'Recipe editor' })).toHaveText(/Zest two lemons/);
+    for (const name of ['Outline', 'Inspector', 'Console']) {
+      await expect(frame.getByRole('complementary', { name })).toBeVisible();
+    }
+    await expect(frame.getByRole('contentinfo')).toHaveText('Saved');
+    await expect(frame.getByRole('toolbar', { name: 'Recipe tools' })).toBeVisible();
+    await expect(frame.getByRole('group', { name: 'Recipe actions' })).toBeVisible();
+    await lab.expectAccessible();
+  });
+
+  test('UIC-APP-FRAME-1.5 UIC-APP-FRAME-2.3 fills each region and band slot and restores it on unmount', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('app-frame');
+    const demo = page.locator('[data-lab-demo="projection"]');
+    const frame = demo.locator('.ui-app-frame');
+    const toggle = (name: string) => demo.getByRole('switch', { name }).press('Space');
+    for (const [name, slot, own] of [
+      ['Navigation', 'navigation', 'Own navigation'],
+      ['Start panel', 'start-panel', 'Own start panel'],
+      ['End panel', 'end-panel', 'Own end panel'],
+      ['Bottom panel', 'bottom-panel', 'Own bottom panel'],
+      ['Status bar', 'status-bar', 'Own status bar'],
+    ] as const) {
+      const region = frame.locator(`.ui-app-frame__${slot}`);
+      await expect(region).toHaveText(own);
+      await toggle(name);
+      await expect(region).toHaveText(`Page ${name.toLowerCase()}`);
+      await toggle(name);
+      await expect(region).toHaveText(own);
+    }
+    for (const [name, part, own] of [
+      ['Band leading', 'leading', 'Own title'],
+      ['Band status', 'status', 'Own status'],
+      ['Band tools', 'tools', 'Own tools'],
+      ['Band actions', 'actions', 'Own actions'],
+    ] as const) {
+      const slot = frame.locator(`.ui-app-frame-band__${part}`);
+      await expect(slot).toHaveText(own);
+      await toggle(name);
+      await expect(slot).toHaveText(`Page ${name.toLowerCase()}`);
+      await toggle(name);
+      await expect(slot).toHaveText(own);
+    }
+    await toggle('Top bar');
+    await expect(frame.locator('.ui-app-frame__top-bar')).toHaveText('Page top bar');
+    await expect(frame.locator('.ui-app-frame-band')).toHaveCount(0);
+    await toggle('Top bar');
+    await expect(frame.locator('.ui-app-frame-band__leading')).toHaveText('Own title');
+    await lab.expectAccessible();
+  });
+});

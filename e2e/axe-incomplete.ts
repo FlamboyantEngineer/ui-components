@@ -44,6 +44,10 @@ export const acceptedIncomplete: Readonly<Record<string, Readonly<Record<string,
     'form-field-multiple-labels':
       "The Boolean Field switches beside the bare ones have the field's label and React Aria's wrapping label; aria-labelledby names them by the field's.",
   },
+  pagination: {
+    'label-content-name-mismatch':
+      'Under an Arabic locale a page button shows Arabic-Indic digits (٦) and is named "Page ٦", which axe cannot match to its visible text.',
+  },
   'segmented-choice': {
     'label-content-name-mismatch':
       'A segment with a count is named "Open, 3", which holds its visible text "Open 3".',

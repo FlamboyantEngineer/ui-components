@@ -5,6 +5,7 @@ import { ResizeHandle, resolveResizeKeyboardValue } from '../../src/components/s
 import { SplitView, type SplitViewHandle } from '../../src/components/split-view/split-view.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { LabHelperCalls } from './lab-helper-calls.js';
+import { SplitViewControlCases } from './split-view-control-cases.js';
 
 // Lab-only frames so the panes are visible with or without a stylesheet.
 const frame = (width: number | string, height: number): CSSProperties => ({
@@ -377,6 +378,7 @@ mountLab(
         )}
       />
     </LabSection>
+    <SplitViewControlCases />
     <LabSection
       title="Right to left"
       description="In a right-to-left locale the first pane is on the right and the Left arrow grows it."

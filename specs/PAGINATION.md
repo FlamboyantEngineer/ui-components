@@ -6,7 +6,7 @@
 
 ### UIC-PAGINATION-1.1 - Navigation
 
-`Pagination` shall render a `nav` landmark (the `ui-pagination` root) named by `aria-label`, else the provider's `pagination` string, around a list (`ui-pagination__list`) whose items (`ui-pagination__item`) hold a previous button (`ui-pagination__previous`, named by the provider's `previousPage` string), one button per listed page (`ui-pagination__page`, showing the page number in the locale's digits, formatted through the shared cached number formatter, and named `Page <n>` by the provider's `pageNumber` string) and a next button (`ui-pagination__next`, named by `nextPage`). The previous and next buttons draw the `chevron-left` and `chevron-right` glyphs, swapped in a right-to-left locale.
+`Pagination` shall render a `nav` landmark (the `ui-pagination` root) named by `aria-label`, else the provider's `pagination` string, around a list (`ui-pagination__list`) whose items (`ui-pagination__item`) hold a previous button (`ui-pagination__previous`, named by the provider's `previousPage` string), one button per listed page (`ui-pagination__page`, showing the page number in the locale's digits, formatted through the shared cached number formatter, and named `Page <n>` by the provider's `pageNumber` string, whose number takes the same digits) and a next button (`ui-pagination__next`, named by `nextPage`). The previous and next buttons draw the `chevron-left` and `chevron-right` glyphs, swapped in a right-to-left locale.
 
 Implementation: `src/components/pagination/pagination.tsx`, `src/core/strings/content.ts`
 Verification: `src/components/pagination/pagination.test.tsx`, `e2e/pagination.spec.ts`

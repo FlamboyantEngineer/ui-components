@@ -129,7 +129,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Grid"
-      description="Fixed column counts against gaps, then fit columns by minimum width."
+      description="Fixed column counts against gaps, then fit columns by minimum width, then cell alignment against the padding inside the grid (gutter)."
     >
       <StateMatrix
         axes={{
@@ -157,6 +157,47 @@ mountLab(
           </div>
         )}
       />
+      <StateMatrix
+        axes={{ align: ['stretch', 'start', 'center', 'end'], gutter: ['none', 'md', '2xl'] }}
+        render={({ align, gutter }) => (
+          <div style={frameStyle(300)}>
+            <Grid columns={3} space="xs" align={align} gutter={gutter} data-lab-grid="aligned">
+              <Box tall>Tall</Box>
+              <Box>Short</Box>
+              <Box>Short</Box>
+            </Grid>
+          </div>
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Semantic elements"
+      description="as renders each primitive as a semantic element with its native props: a named section stack, a navigation cluster of links, a list grid of list items and a description list."
+    >
+      <Stack
+        as="section"
+        aria-labelledby="lab-harvest-title"
+        space="md"
+        data-lab-semantic="section"
+      >
+        <h3 id="lab-harvest-title">Harvest plan</h3>
+        <Cluster as="nav" aria-label="Harvest pages" space="sm" data-lab-semantic="nav">
+          <a href="#lab-apples">Apples</a>
+          <a href="#lab-pears">Pears</a>
+        </Cluster>
+        <Grid as="ul" columns={3} space="xs" data-lab-semantic="list">
+          <GridItem as="li">
+            <Box>Rows 1 to 4</Box>
+          </GridItem>
+          <GridItem as="li" span={2}>
+            <Box>Rows 5 to 12</Box>
+          </GridItem>
+        </Grid>
+        <Grid as="dl" columns={2} space="xs" data-lab-semantic="terms">
+          <GridItem as="dt">Picked</GridItem>
+          <GridItem as="dd">120 kg</GridItem>
+        </Grid>
+      </Stack>
     </LabSection>
     <LabSection
       title="Grid items"
@@ -278,7 +319,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Inline field"
-      description="A caption and its control on one row, as a block or inline, wrapping or not, in a 200px host."
+      description="A caption and its control on one row, as a block or inline, wrapping or not, in a 200px host; then the gap, cross-axis alignment against a two-line control, and distribution."
     >
       <StateMatrix
         axes={{ flow: ['block', 'inline'], wrap: ['nowrap', 'wrap'] }}
@@ -286,6 +327,21 @@ mountLab(
           <div style={frameStyle(200)}>
             <InlineField inline={flow === 'inline'} wrap={wrap}>
               Quantity of pears <input size={6} defaultValue="12" />
+            </InlineField>
+          </div>
+        )}
+      />
+      <StateMatrix
+        axes={{
+          space: ['xs', 'md', 'xl'],
+          align: ['center', 'start', 'end', 'baseline'],
+          justify: ['start', 'between', 'end'],
+        }}
+        render={({ space, align, justify }) => (
+          <div style={frameStyle(260)}>
+            <InlineField space={space} align={align} justify={justify} data-lab-inline="options">
+              <span>Pears</span>
+              <textarea rows={2} cols={8} defaultValue="12" aria-label="Pears" />
             </InlineField>
           </div>
         )}
@@ -363,7 +419,10 @@ mountLab(
     >
       <PendingToolbar />
     </LabSection>
-    <LabSection title="Status bar" description="Distribution against wrapping in a 260px host.">
+    <LabSection
+      title="Status bar"
+      description="Distribution against wrapping in a 260px host, then the gap between items at each space."
+    >
       <StateMatrix
         axes={{ justify: ['between', 'start', 'end'], wrap: ['nowrap', 'wrap'] }}
         render={({ justify, wrap }) => (
@@ -371,6 +430,17 @@ mountLab(
             <StatusBar justify={justify} wrap={wrap}>
               <span>128 words</span>
               <span>Saved just now</span>
+              <span>English</span>
+            </StatusBar>
+          </div>
+        )}
+      />
+      <StateMatrix
+        axes={{ space: ['none', 'xs', 'md', 'xl'] }}
+        render={({ space }) => (
+          <div style={frameStyle(260)}>
+            <StatusBar space={space} justify="start" data-lab-status="spaced">
+              <span>128 words</span>
               <span>English</span>
             </StatusBar>
           </div>

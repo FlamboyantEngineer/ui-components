@@ -68,7 +68,10 @@ export interface BreadcrumbProps
   items: readonly BreadcrumbItem[];
   /** Type scale. Defaults to `md`. */
   size?: BreadcrumbSize | undefined;
-  /** Decorative icon between crumbs. Defaults to a chevron pointing along the reading direction. */
+  /**
+   * Decorative icon between crumbs. Defaults to a chevron pointing along the reading direction;
+   * `null` or `false` draws none.
+   */
   separator?: IconSource;
   /**
    * What a trail that runs out of room does: `truncate` (the default) lets labels ellipsize, `menu`
@@ -153,6 +156,7 @@ function CrumbMenu({ item, index, isDisabled, onAction }: CrumbMenuProps) {
 }
 
 function Separator({ glyph }: { glyph: IconSource }) {
+  if (glyph === null || glyph === false) return null;
   return <Icon {...toIconProps(glyph)} size="sm" className={hooks.slotClass('separator')} />;
 }
 
@@ -244,7 +248,7 @@ export function Breadcrumb({
       data: { size, overflow, collapsed: collapse.isCollapsed },
     }),
   };
-  const glyph = separator ?? (rtl ? ChevronLeftGlyph : ChevronRightGlyph);
+  const glyph = separator === undefined ? (rtl ? ChevronLeftGlyph : ChevronRightGlyph) : separator;
   const containerRef = collapse.containerRef;
 
   return (

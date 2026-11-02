@@ -195,3 +195,61 @@ for (const scale of [1.5, 0.5]) {
     await expectInsideRow(row);
   });
 }
+
+test('UIC-OVERFLOW-LIST-1.5 UIC-OVERFLOW-LIST-1.6 keeps priorities and a minimum in a host row, with the indicator placed or nested', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('overflow-list');
+  const demo = page.locator('[data-lab-demo="overflow-items"]');
+  const choose = (group: string, name: string) =>
+    demo.getByRole('radiogroup', { name: group }).getByRole('radio', { name, exact: true }).click();
+  const kept = demo.locator('[data-lab-output="kept"]');
+  const hidden = demo.locator('[data-lab-output="hidden"]');
+  const row = demo.locator('[data-lab-row]');
+
+  await choose('Width', 'wide');
+  await expect(hidden).toHaveText('none');
+  await choose('Width', 'narrow');
+  await expect(kept).toContainText('Trash');
+  await expect(hidden).not.toContainText('Trash');
+  await expect(row.locator('[data-lab-indicator]')).toBeVisible();
+  const indicatorIsLast = await row.evaluate(
+    (node) => node.lastElementChild?.hasAttribute('data-lab-indicator') ?? false,
+  );
+  expect(indicatorIsLast).toBe(true);
+
+  await choose('Pinned item', 'Sent');
+  await expect(kept).toContainText('Sent');
+  await expect(hidden).toContainText('Trash');
+
+  await page.locator('[data-lab-demo="overflow-items"] [data-lab-frame]').evaluate((node) => {
+    (node as HTMLElement).style.width = '40px';
+  });
+  await expect(kept).toHaveText('none');
+  await choose('Minimum visible', '2');
+  await expect(kept).toHaveText(/^\w+, \w+$/);
+  await page.locator('[data-lab-demo="overflow-items"] [data-lab-frame]').evaluate((node) => {
+    (node as HTMLElement).style.width = '';
+  });
+
+  await choose('Width', 'medium');
+  await choose('Layout', 'Placed indicator');
+  await expect(row.locator('[data-lab-indicator]')).toBeVisible();
+  const indicatorIndex = await row.evaluate((node) =>
+    [...node.children].findIndex((child) => child.hasAttribute('data-lab-indicator')),
+  );
+  expect(indicatorIndex).toBe(1);
+
+  await choose('Layout', 'Nested list');
+  const list = row.getByRole('list', { name: 'Folders' });
+  await expect(list.getByRole('listitem').first()).toBeVisible();
+  await expect(row.getByRole('button', { name: 'New folder' })).toBeVisible();
+  const box = await row.boundingBox();
+  const action = await row.getByRole('button', { name: 'New folder' }).boundingBox();
+  expect((action?.x ?? 0) + (action?.width ?? 0)).toBeLessThanOrEqual(
+    (box?.x ?? 0) + (box?.width ?? 0) + 0.5,
+  );
+  await expect(hidden).not.toHaveText('none');
+  await lab.expectAccessible();
+});

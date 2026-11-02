@@ -629,3 +629,71 @@ for (const scale of [1.5, 0.5]) {
     expect(Math.abs(moved.y - (start.y + travel / 2))).toBeLessThanOrEqual(1.5);
   });
 }
+
+test.describe('Scroll Region options', () => {
+  test('UIC-SCROLL-REGION-2.8 keeps scrollbars for the chosen hide delay after scrolling and hovering', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('scroll-region');
+    const demo = page.locator('[data-lab-demo="hide-delay"]');
+    const region = demo.locator('.ui-scroll-region');
+    const viewport = region.locator('.ui-scroll-region__viewport');
+    await demo.getByRole('radio', { name: '2 s' }).click();
+    await page.clock.pauseAt(Date.now() + 60_000);
+    await viewport.evaluate((node) => {
+      node.scrollTop = 30;
+    });
+    await expect(region).toHaveAttribute('data-scrolling', 'true');
+    await expect(region.locator('.ui-scroll-region__track')).toHaveCount(1);
+    await page.clock.runFor(1900);
+    await expect(region).toHaveAttribute('data-scrolling', 'true');
+    await page.clock.runFor(200);
+    await expect(region).not.toHaveAttribute('data-scrolling');
+    await expect(region.locator('.ui-scroll-region__track')).toHaveCount(0);
+    await expect(demo.locator('[data-lab-output="states"] li')).toHaveText([
+      /^scrolling on/,
+      /^scrolling off/,
+    ]);
+
+    await page.clock.resume();
+    await demo.getByRole('radio', { name: '200 ms' }).click();
+    await demo.getByRole('radio', { name: 'While hovered' }).click();
+    await region.hover();
+    await expect(region).toHaveAttribute('data-hovering', 'true');
+    await expect(region.locator('.ui-scroll-region__track')).toHaveCount(1);
+    await page.mouse.move(0, 0);
+    await expect(region).not.toHaveAttribute('data-hovering');
+    await expect(demo.locator('[data-lab-output="states"] li')).toHaveText([
+      /^hovering on/,
+      /^hovering off/,
+    ]);
+  });
+
+  test('UIC-SCROLL-REGION-1.3 fills and clips a bounded host and lays fit columns out by width, gap and alignment', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('scroll-region');
+    const contained = (id: string) => page.locator(`[data-lab-containment="${id}"]`);
+    await expect(contained('on on')).toHaveAttribute('data-fill', 'true');
+    await expect(contained('on on')).toHaveAttribute('data-clip', 'true');
+    expect((await box(contained('on off'))).height).toBe(120);
+
+    const columns = async (id: string) =>
+      page.locator(`[data-lab-fit="${id}"] span`).evaluateAll((cells) => {
+        const lefts = new Set(cells.map((cell) => Math.round(cell.getBoundingClientRect().x)));
+        return lefts.size;
+      });
+    expect(await columns('sm none')).toBeGreaterThan(await columns('xl none'));
+    await expect(page.locator('[data-lab-fit="md xs"]')).toHaveAttribute('data-space', 'xs');
+    for (const align of ['start', 'center', 'end', 'baseline']) {
+      await expect(page.locator(`[data-lab-align="${align}"]`)).toHaveAttribute(
+        'data-align',
+        align,
+      );
+    }
+    await lab.expectAccessible();
+  });
+});
