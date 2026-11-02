@@ -459,6 +459,8 @@ test.describe('Code Editor lab', () => {
     expect(await selection()).toBe('    pi');
     await page.keyboard.press('End');
     await page.keyboard.press('Control+Space');
+    // Enter inserts only once the list is on screen (UIC-COMPLETION-LIST-2.8).
+    await expect(page.getByRole('option', { name: /pick/ })).toBeVisible();
     await page.keyboard.press('Enter');
     await expect(input).toHaveValue(/pick\(test, yes, no\)$/);
     await page.keyboard.press('Escape');
