@@ -361,6 +361,70 @@ test.describe('Color Field lab', () => {
     await expect(output(page, 'Preset committed')).toHaveText('#e69500');
   });
 
+  test('UIC-COLOR-FIELD-4.2 samples, cancels and reports the eye dropper in its lab demo', async ({
+    page,
+    lab,
+  }) => {
+    // The first sample is cancelled, the second returns a colour.
+    await page.addInitScript(() => {
+      let calls = 0;
+      Object.assign(window, {
+        EyeDropper: function EyeDropper() {
+          return {
+            open: () => {
+              calls += 1;
+              return calls === 1
+                ? Promise.reject(new DOMException('The user canceled the selection.', 'AbortError'))
+                : Promise.resolve({ sRGBHex: '#e69500' });
+            },
+          };
+        },
+      });
+    });
+    await lab.open('color-field');
+    await expect(output(page, 'Eye dropper')).toHaveText('available');
+    const trigger = field(page, 'eye-dropper').locator('.ui-color-field__trigger');
+    await trigger.click();
+    const dialog = page.getByRole('dialog', { name: 'Sampled colour' });
+    const eyeDropper = dialog.getByRole('button', { name: 'Pick a color from the screen' });
+    await eyeDropper.click();
+    // Cancelled: the colour stays.
+    await expect(output(page, 'Sampled value')).toHaveText('#336699');
+    await expect(trigger).toHaveAccessibleName('Sampled colour #336699');
+    await eyeDropper.click();
+    await expect(output(page, 'Sampled value')).toHaveText('#e69500');
+    await page.keyboard.press('Escape');
+    await expect(output(page, 'Sampled committed')).toHaveText('#e69500');
+    // Off: no button even where the browser has one.
+    await field(page, 'no-eye-dropper').locator('.ui-color-field__trigger').click();
+    await expect(
+      page
+        .getByRole('dialog', { name: 'Unsampled colour' })
+        .getByRole('button', { name: 'Pick a color from the screen' }),
+    ).toHaveCount(0);
+  });
+
+  test('UIC-COLOR-FIELD-4.2 explains a missing eye dropper and keeps picking', async ({
+    page,
+    lab,
+  }) => {
+    await page.addInitScript(() => {
+      delete (window as { EyeDropper?: unknown }).EyeDropper;
+    });
+    await lab.open('color-field');
+    await expect(output(page, 'Eye dropper')).toHaveText(/^unavailable: /);
+    const trigger = field(page, 'eye-dropper').locator('.ui-color-field__trigger');
+    await trigger.click();
+    const dialog = page.getByRole('dialog', { name: 'Sampled colour' });
+    await expect(dialog.getByRole('button', { name: 'Pick a color from the screen' })).toHaveCount(
+      0,
+    );
+    const hex = dialog.getByRole('textbox', { name: 'Hex color' });
+    await hex.fill('#2e8b57');
+    await hex.press('Enter');
+    await expect(output(page, 'Sampled value')).toHaveText('#2e8b57');
+  });
+
   test('UIC-COLOR-FIELD-4.1 picks either place of a colour listed twice', async ({ page, lab }) => {
     await lab.open('color-field');
     const trigger = field(page, 'presets').locator('.ui-color-field__trigger');
