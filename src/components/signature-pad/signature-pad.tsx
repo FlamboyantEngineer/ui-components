@@ -219,6 +219,8 @@ export function SignaturePad({
   const intake = useImageIntake({
     maxSize: maxImageSize,
     isActive: mode === 'image',
+    isEditable: !state.isReadOnly && !state.isDisabled,
+    value: state.value,
     onImage: settle,
   });
   const menu = useSignatureMenu({

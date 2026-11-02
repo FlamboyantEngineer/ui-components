@@ -16,6 +16,8 @@ const image: ImageSignature = {
 
 /** Whether the stubbed image decoder loads the next image, and the size it reports. */
 let decodes = true;
+/** What the stubbed decoder waits for before it reports. */
+let decoded: Promise<void> = Promise.resolve();
 
 const srcDescriptor = requireDefined(
   Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src'),
@@ -23,6 +25,7 @@ const srcDescriptor = requireDefined(
 
 beforeEach(() => {
   decodes = true;
+  decoded = Promise.resolve();
   // jsdom decodes no image: report a load, or an error, as a browser would.
   Object.defineProperty(HTMLImageElement.prototype, 'src', {
     configurable: true,
@@ -31,7 +34,7 @@ beforeEach(() => {
     },
     set(this: HTMLImageElement, value: string) {
       srcDescriptor.set?.call(this, value);
-      queueMicrotask(() => {
+      void decoded.then(() => {
         if (decodes) this.onload?.(new Event('load'));
         else this.onerror?.(new Event('error'));
       });
@@ -49,6 +52,32 @@ afterEach(() => {
 function png(name = 'signature.png', size = 64) {
   return new File([new Uint8Array(size)], name, { type: 'image/png' });
 }
+
+/** A promise and the function that settles it, for work that finishes when a test says so. */
+function deferred<T>() {
+  let settle: (value: T) => void = () => undefined;
+  const promise = new Promise<T>((resolve) => {
+    settle = resolve;
+  });
+  return { promise, settle };
+}
+
+/** A clipboard whose reads each wait until the test hands them their image; set up after the user. */
+function stubClipboard() {
+  const reads: Array<(file: Blob) => void> = [];
+  const read = vi.fn(() => {
+    const pending = deferred<Blob>();
+    reads.push(pending.settle);
+    return pending.promise.then((file) => [
+      { types: ['image/png'], getType: () => Promise.resolve(file) },
+    ]);
+  });
+  Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { read } });
+  return reads;
+}
+
+/** Lets pending reads and decodes run. */
+const settle = () => new Promise((resolve) => setTimeout(resolve, 50));
 
 function fileInput(container: HTMLElement) {
   return requireDefined(container.querySelector<HTMLInputElement>('input[type="file"]'));
@@ -205,5 +234,89 @@ describe('SignaturePad image mode', () => {
     );
     await user.click(screen.getByRole('button', { name: 'Send' }));
     expect(submitted).toEqual([JSON.stringify(image)]);
+  });
+
+  it('UIC-SIGNATURE-PAD-4.2 drops a paste whose clipboard read settles after the mode changed', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const onCommit = vi.fn();
+    const reads = stubClipboard();
+    const { container } = render(
+      <SignaturePad label="Signature" onChange={onChange} onCommit={onCommit} />,
+    );
+    await user.click(screen.getByRole('radio', { name: 'Image' }));
+    await user.click(screen.getByRole('button', { name: 'Paste image' }));
+    await user.click(screen.getByRole('radio', { name: 'Type' }));
+    reads[0]?.(png());
+    await settle();
+    expect(onChange).not.toHaveBeenCalled();
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(container.querySelector('.ui-field')).toHaveAttribute('data-mode', 'type');
+    // A failed read that settles late leaves no message either.
+    await user.click(screen.getByRole('radio', { name: 'Image' }));
+    await user.click(screen.getByRole('button', { name: 'Paste image' }));
+    await user.click(screen.getByRole('button', { name: 'Upload image' }));
+    await user.upload(fileInput(container), png());
+    await waitFor(() => expect(onCommit).toHaveBeenCalledOnce());
+    reads[1]?.(new Blob(['not an image'], { type: 'text/plain' }));
+    await settle();
+    expect(message(container)).toBeEmptyDOMElement();
+    expect(onCommit).toHaveBeenCalledOnce();
+  });
+
+  it('UIC-SIGNATURE-PAD-4.2 keeps the latest image when an earlier clipboard read settles last', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    const reads = stubClipboard();
+    render(<SignaturePad label="Signature" modes={['image']} onCommit={onCommit} />);
+    // Paste image waits on the clipboard while a paste brings a newer image at once.
+    await user.click(screen.getByRole('button', { name: 'Paste image' }));
+    paste(screen.getByRole('img', { name: 'Signature' }), [png('newer.png', 40)]);
+    await waitFor(() => expect(onCommit).toHaveBeenCalledOnce());
+    const newer = onCommit.mock.lastCall?.[0] as ImageSignature;
+    reads[0]?.(png('older.png', 90));
+    await settle();
+    expect(onCommit).toHaveBeenCalledOnce();
+    expect(screen.getByRole('img', { name: 'Signature' }).querySelector('img')).toHaveAttribute(
+      'src',
+      newer.src,
+    );
+  });
+
+  it('UIC-SIGNATURE-PAD-4.2 drops an image still decoding when the host replaces the value or locks the field', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    const reads = stubClipboard();
+    const { rerender } = render(
+      <SignaturePad label="Signature" modes={['image']} value={null} onCommit={onCommit} />,
+    );
+    const decoding = deferred<undefined>();
+    decoded = decoding.promise;
+    await user.click(screen.getByRole('button', { name: 'Paste image' }));
+    reads[0]?.(png());
+    await settle();
+    rerender(
+      <SignaturePad label="Signature" modes={['image']} value={image} onCommit={onCommit} />,
+    );
+    decoding.settle(undefined);
+    await settle();
+    expect(onCommit).not.toHaveBeenCalled();
+    const locking = deferred<undefined>();
+    decoded = locking.promise;
+    await user.click(screen.getByRole('button', { name: 'Paste image' }));
+    reads[1]?.(png());
+    await settle();
+    rerender(
+      <SignaturePad
+        label="Signature"
+        modes={['image']}
+        value={image}
+        isDisabled
+        onCommit={onCommit}
+      />,
+    );
+    locking.settle(undefined);
+    await settle();
+    expect(onCommit).not.toHaveBeenCalled();
   });
 });
