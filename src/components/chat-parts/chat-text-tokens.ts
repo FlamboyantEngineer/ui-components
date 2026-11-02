@@ -10,17 +10,20 @@ import type { ChatTextToken } from './chat-part.js';
 /** A run of text, or a token by its position among the listed tokens. */
 type TokenPiece = string | number;
 
-// A marker is a run of interlinear annotation anchors, the token's position and a terminator, which
-// Markdown reads as ordinary text. Text may hold anchors too, so the run is longer than any run of
-// anchors in the text, as written or as Markdown reads it (entities decode): text cannot spell a
-// marker, and an anchor beside one only lengthens its run.
+// A marker is an interlinear annotation anchor, a key, a separator, the token's position and a
+// terminator, which Markdown reads as ordinary text. Text may hold anchors too, so the key is one
+// that follows no anchor in the text, as written or as Markdown reads it (entities decode): text
+// cannot spell a marker's opening, and an anchor beside one cannot join it, since the opening holds
+// only the one anchor. The key is the smallest number free, so it stays short however many anchors,
+// and so however many tokens, the text holds.
 const anchor = '\uFFF9';
+const separator = '\uFFFA';
 const markerEnd = '\uFFFB';
 
-/** The run of anchors that opens each marker of a source, as `writeTokenSource` chose it. */
+/** The opening of each marker of a source, as `writeTokenSource` chose it. */
 export type TokenMarker = string;
 
-/** A Markdown source with its tokens replaced by markers, and the run that opens them. */
+/** A Markdown source with its tokens replaced by markers, and the opening they share. */
 export interface TokenSource {
   source: string;
   marker: TokenMarker;
@@ -123,25 +126,28 @@ function readShownText(source: string) {
   };
 }
 
-/** The longest run of anchors in any of the strings. */
-function longestAnchorRun(values: readonly string[]): number {
-  let longest = 0;
+/** A marker opening that none of the strings holds: an anchor, the smallest free key, a separator. */
+function chooseMarker(values: readonly string[]): TokenMarker {
+  const taken = new Set<string>();
   for (const value of values) {
-    for (const run of value.match(/\uFFF9+/g) ?? []) longest = Math.max(longest, run.length);
+    for (const [, key] of value.matchAll(/\uFFF9(\d+)\uFFFA/g)) taken.add(requireDefined(key));
   }
-  return longest;
+  let key = 0;
+  while (taken.has(String(key))) key += 1;
+  return `${anchor}${key}${separator}`;
 }
 
 /**
  * The Markdown source of a text with tokens: a marker in place of each token that Markdown reads as
  * text, and the token's own text where Markdown shows the source as written (in code, a link's
- * target or an image), since a pill cannot show there. Its marker run is longer than any run of
- * anchors in the text, so literal text never reads as a token.
+ * target or an image), since a pill cannot show there. Its markers open with a key no anchor in the
+ * text is followed by, so literal text never reads as a token, and each marker stays a few
+ * characters long, so the source grows linearly with the tokens.
  */
 export function writeTokenSource(text: string, tokens: readonly ChatTextToken[]): TokenSource {
-  if (tokens.length === 0) return { source: text, marker: anchor };
+  if (tokens.length === 0) return { source: text, marker: chooseMarker([]) };
   const shown = readShownText(text);
-  const marker = anchor.repeat(longestAnchorRun([text, ...shown.text, ...shown.literal]) + 1);
+  const marker = chooseMarker([text, ...shown.text, ...shown.literal]);
   const marked = writeTokenMarkers(text, tokens, { literal: noTokens, marker });
   const literal = new Set(
     readShownText(marked)
