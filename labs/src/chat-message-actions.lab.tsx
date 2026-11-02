@@ -11,6 +11,7 @@ import {
   describeFeedback,
   feedbackReasons,
 } from './chat-message-actions-conversation.js';
+import { EmojiOptionsDemo } from './chat-message-actions-emoji.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const commandSets = ['copy', 'ratings', 'reasons', 'reply', 'own', 'all'] as const;
@@ -96,6 +97,12 @@ mountLab(
       description="The bar shows while a message is hovered or holds focus, and stays while its overlays are open. A secondary click, a long press, the Context Menu key or Shift+F10 on a message opens the same commands as a menu; a secondary click in the draft field keeps the browser's menu. React, from the bar or the menu, adds the emoji to one small chip that overlaps the bottom right of the message: a stack of the emoji and the total. Pressing the chip opens the picker, where choosing an emoji you reacted with takes it back."
     >
       <ConversationDemo />
+    </LabSection>
+    <LabSection
+      title="Emoji options"
+      description="React, from the bar or the context menu, opens a picker with the host's custom emoji (On my way, See you) and its recent emoji, which the host keeps through onRecentEmojiChange: choose an emoji and it leads the recent list next time. The loader buttons switch loadEmoji: the bundled set, a slow load that reads Loading first, or one that fails its first call and loads when the picker opens again."
+    >
+      <EmojiOptionsDemo />
     </LabSection>
     <LabSection
       title="Menu icons"

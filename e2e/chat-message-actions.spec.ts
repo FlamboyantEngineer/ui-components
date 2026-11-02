@@ -346,3 +346,81 @@ test.describe('Chat Message Actions lab', () => {
     }
   });
 });
+
+test.describe('Chat Message Actions lab: emoji options', () => {
+  const demo = (page: Page) => page.locator('[data-lab-demo="emoji-options"]');
+  const output = (page: Page, name: string) => demo(page).locator(`[data-lab-output="${name}"]`);
+  const picker = (page: Page) => page.getByRole('dialog', { name: 'Emoji picker' });
+  const openFromBar = async (page: Page) => {
+    const entry = message(page, 'emoji');
+    await entry.scrollIntoViewIfNeeded();
+    await entry.hover();
+    await entry
+      .locator('.ui-chat-message-actions')
+      .getByRole('button', { name: 'Add reaction' })
+      .click();
+    await expect(picker(page)).toBeVisible();
+  };
+  const openFromMenu = async (page: Page) => {
+    await message(page, 'emoji')
+      .getByText('Meet at the station at eight.')
+      .click({ button: 'right' });
+    await page
+      .getByRole('menu', { name: 'Message actions' })
+      .getByRole('menuitem', { name: 'Add reaction' })
+      .click();
+    await expect(picker(page)).toBeVisible();
+  };
+
+  test('UIC-CHAT-MESSAGE-ACTIONS-3.2 offers the host’s custom and recent emoji from the bar and the menu', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-message-actions');
+    await openFromBar(page);
+    await expect(picker(page).getByRole('tab', { name: 'Custom' })).toBeVisible();
+    await expect(
+      picker(page).getByRole('grid', { name: 'Recently used' }).getByRole('row'),
+    ).toHaveText(['🚆']);
+    const search = page.getByRole('searchbox', { name: 'Search emoji' });
+    await search.fill('see you');
+    await page.keyboard.press('Enter');
+    await expect(picker(page)).toBeHidden();
+    await expect(output(page, 'reacted')).toHaveText(':see_you:');
+    await expect(output(page, 'recent')).toContainText('🚆');
+    await expect(output(page, 'recent')).toContainText('see_you');
+    await openFromMenu(page);
+    await expect(
+      picker(page).getByRole('grid', { name: 'Recently used' }).getByRole('row').first(),
+    ).toHaveAccessibleName(/see you/i);
+    await search.fill('party popper');
+    await page.keyboard.press('Enter');
+    await expect(output(page, 'reacted')).toHaveText('🎉');
+    await expect(output(page, 'recent')).toHaveText(/^🎉 /);
+  });
+
+  test('UIC-CHAT-MESSAGE-ACTIONS-3.2 loads the emoji through the host’s loader, slow or failing', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-message-actions');
+    await demo(page).getByRole('button', { name: 'Load slow' }).click();
+    await expect(output(page, 'loader')).toHaveText('slow');
+    await openFromMenu(page);
+    await expect(picker(page).getByRole('status')).toHaveText('Loading');
+    await expect(output(page, 'load attempts')).toHaveText('1');
+    await expect(picker(page).getByRole('tab', { name: 'Smileys & Emotion' })).toBeVisible();
+    await expect(output(page, 'load attempts')).toHaveText('1');
+    await page.keyboard.press('Escape');
+    await expect(picker(page)).toBeHidden();
+    await demo(page).getByRole('button', { name: 'Load fails once' }).click();
+    await openFromBar(page);
+    await expect(picker(page)).toContainText('Emoji could not be loaded.');
+    await expect(output(page, 'load attempts')).toHaveText('1');
+    await page.keyboard.press('Escape');
+    await expect(picker(page)).toBeHidden();
+    await openFromBar(page);
+    await expect(picker(page).getByRole('tab', { name: 'Smileys & Emotion' })).toBeVisible();
+    await expect(output(page, 'load attempts')).toHaveText('2');
+  });
+});
