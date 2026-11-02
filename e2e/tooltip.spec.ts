@@ -344,10 +344,15 @@ test.describe('Anchored tooltip lab', () => {
     await lab.open('tooltip');
     const output = page.locator('[data-lab-output="locked-hint"]');
     const hint = page.getByRole('tooltip', { name: 'Saved drafts' });
+    const lock = page.getByRole('button', { name: 'Lock the drafts hint' });
+    // Isolate the lock: the row is in view before the hint opens, so no scroll asks the hint to
+    // close, and the lock is pressed by key, so no pointer moves over another trigger.
+    await lock.scrollIntoViewIfNeeded();
     await page.getByRole('button', { name: 'Show the drafts hint' }).click();
     await expect(hint).toBeVisible();
+    await lock.focus();
     const before = Number((await output.textContent())?.split(' ')[0]);
-    await page.getByRole('button', { name: 'Lock the drafts hint' }).click();
+    await page.keyboard.press('Enter');
     await expect(hint).toHaveCount(0);
     await expect(output).toHaveText(`${before + 1} close requests`);
     await page.waitForTimeout(500);

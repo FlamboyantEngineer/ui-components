@@ -447,10 +447,17 @@ test.describe('Code Editor lab', () => {
     await input.click();
     await page.keyboard.press('Control+End');
     await page.keyboard.press('Enter');
+    // Enter inserts only once the list is on screen for the current lookup (UIC-COMPLETION-LIST-2.8):
+    // wait for that list's option, not one in a list still leaving from an earlier lookup.
+    const shownOption = page
+      .locator('.ui-code-editor__popover:not([data-exiting])')
+      .getByRole('option', { name: /pick/ });
     await page.keyboard.press('Control+Space');
     await page.keyboard.type('pi');
+    await expect(shownOption).toBeVisible();
     await page.keyboard.press('Enter');
     await expect(input).toHaveValue(/\npick\(test, yes, no\)$/);
+    await expect(shownOption).toHaveCount(0);
     await page.keyboard.press('Control+z');
     await expect(input).not.toHaveValue(/pick\(test/);
     // Tab indents the restored line instead of selecting a field of the undone snippet.
@@ -459,8 +466,7 @@ test.describe('Code Editor lab', () => {
     expect(await selection()).toBe('    pi');
     await page.keyboard.press('End');
     await page.keyboard.press('Control+Space');
-    // Enter inserts only once the list is on screen (UIC-COMPLETION-LIST-2.8).
-    await expect(page.getByRole('option', { name: /pick/ })).toBeVisible();
+    await expect(shownOption).toBeVisible();
     await page.keyboard.press('Enter');
     await expect(input).toHaveValue(/pick\(test, yes, no\)$/);
     await page.keyboard.press('Escape');
