@@ -78,8 +78,13 @@
   outline-offset: -3px;
 }
 
+/*
+ * The pan and zoom transform already isolates the layer. It takes no will-change: a promoted layer
+ * keeps the raster of an earlier zoom and magnifies it, where nodes and text should be redrawn at the
+ * displayed zoom.
+ */
 .ui-diagram-canvas__content {
-  will-change: transform;
+  isolation: isolate;
 }
 
 .ui-diagram-canvas__edges {
