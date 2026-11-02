@@ -5,6 +5,31 @@
   padding: 0;
 }
 
+/*
+ * In a narrow viewer the title and Close share the first row and the controls wrap onto the rows
+ * below, rather than squeezing the title to nothing.
+ */
+.ui-media-viewer .ui-modal__dialog {
+  container: ui-media-viewer / inline-size;
+}
+
+@container ui-media-viewer (width <= 37.5rem) {
+  .ui-media-viewer .ui-modal__header {
+    flex-wrap: wrap;
+  }
+
+  .ui-media-viewer .ui-modal__heading {
+    flex-basis: calc(100% - 48px);
+  }
+
+  .ui-media-viewer .ui-modal__header-actions {
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    order: 1;
+    min-width: 0;
+  }
+}
+
 /* The stage takes the body's height left by the strip, so the viewport (and the fit) is bounded. */
 .ui-media-viewer__stage {
   display: grid;

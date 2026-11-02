@@ -59,7 +59,7 @@ Verification: `test/package.test.ts`
 
 ### UIC-LABS-2.1 - Stylesheet picker
 
-Every lab and the index shall show a toolbar with a stylesheet picker offering Unstyled, Reference (`labs/build/reference.css`) and Custom URL. The chosen stylesheet applies to the lab content immediately. The root element reports the current stylesheet's loading state in `data-lab-stylesheet-state` (`none`, `loading`, `loaded`, `error`); events from a replaced or removed stylesheet shall not change it. An invalid stylesheet URL shall report `error` without interrupting the lab or preventing another choice.
+Every lab and the index shall show a toolbar with a stylesheet picker offering Unstyled, Reference (`labs/build/reference.css`) and Custom URL. The toolbar sticks to the top of the page above the lab's content and below every overlay layer (its z-index is one less than the backdrop layer's), so a full-screen modal, drawer, menu or tooltip covers it and its controls stay reachable. The chosen stylesheet applies to the lab content immediately. The root element reports the current stylesheet's loading state in `data-lab-stylesheet-state` (`none`, `loading`, `loaded`, `error`); events from a replaced or removed stylesheet shall not change it. An invalid stylesheet URL shall report `error` without interrupting the lab or preventing another choice.
 
 Implementation: `labs/src/chrome/lab-chrome.tsx`, `labs/src/chrome/settings.ts`, `labs/src/chrome/mount.tsx`
 Verification: `e2e/lab-harness.spec.ts`, `labs/src/chrome/settings.test.ts`
