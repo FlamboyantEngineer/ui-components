@@ -73,6 +73,42 @@ test.describe('Board lab', () => {
     await lab.expectAccessible('[data-lab-demo="typed-board"]');
   });
 
+  test('UIC-BOARD-2.3 yields focus to a control the application focuses as a move settles', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('board');
+    const board = demo(page, 'typed-board');
+    const handle = board.getByRole('button', { name: 'Move column Text column' });
+    // The application focuses the column handle the moment the moved card takes focus, while the
+    // move's focus retries are still settling.
+    await board.getByRole('row', { name: 'Text card' }).focus();
+    await handle.evaluate((button: HTMLElement) => {
+      const onFocusIn = (event: FocusEvent) => {
+        const row = event.target as HTMLElement;
+        if (row.getAttribute('role') !== 'row' || !row.textContent?.includes('Text card')) return;
+        document.removeEventListener('focusin', onFocusIn, true);
+        queueMicrotask(() => button.focus());
+      };
+      document.addEventListener('focusin', onFocusIn, true);
+    });
+    await page.keyboard.press('Alt+ArrowRight');
+    await expect(cards(board, 'Text column')).toHaveText(['Text card']);
+    await expect(handle).toBeFocused();
+    // Past every retry frame, the handle keeps focus, and the next shortcut moves its column.
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve) => {
+          let frames = 10;
+          const next = () => (--frames === 0 ? resolve() : requestAnimationFrame(next));
+          requestAnimationFrame(next);
+        }),
+    );
+    await expect(handle).toBeFocused();
+    await page.keyboard.press('Alt+ArrowLeft');
+    expect(await titles(board)).toEqual(['Text column', 'Numeric column']);
+  });
+
   test('UIC-BOARD-1.1 UIC-BOARD-1.2 UIC-BOARD-1.4 UIC-BOARD-1.5 UIC-BOARD-4.1 shows counts, limits, empty and collapsed columns', async ({
     page,
     lab,
