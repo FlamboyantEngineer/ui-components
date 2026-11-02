@@ -436,7 +436,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Long columns"
-      description="Five hundred cards, virtualized: each cell renders only the cards in view and scrolls under an overlay thumb. Virtualize turns virtualization off and on; the cards in view, their focus and their state stay as they are."
+      description="Five hundred cards, virtualized: each cell renders only the cards in view and scrolls under an overlay thumb. Virtualize turns virtualization off and on; the cards in view, their focus and their state stay as they are. The wheel scrolls a list while it can move, and the page elsewhere over the board."
     >
       <LongBoard />
     </LabSection>

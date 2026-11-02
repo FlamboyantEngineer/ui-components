@@ -15,7 +15,7 @@ Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll
 
 ### UIC-SCROLL-REGION-1.2 - Options
 
-`ScrollRegion` shall publish `data-axis` (`x`, `y` by default, `both`, `none`), `data-overscroll` (`contain` by default, `auto`), `data-scrollbar` (`native` by default, `overlay`) and `data-scrollbar-visibility` ([UIC-SCROLL-REGION-2.8](#uic-scroll-region-28---scrollbar-visibility)). It grows by default (`data-grow`), clips only for `axis="none"` unless `clip` says otherwise, and with `fill` covers its nearest positioned ancestor (`data-fill`). With `columns` it lays the children out in a grid and publishes `data-columns`, `data-min-column-width` (for `fit`), `data-space` and `data-align` as `Grid` does ([LAYOUT.md](LAYOUT.md)).
+`ScrollRegion` shall publish `data-axis` (`x`, `y` by default, `both`, `none`), `data-overscroll` (`contain` by default, `auto`; `contain` stops scroll chaining only on the axes the region scrolls, so wheel input across an `x` region still scrolls the page vertically), `data-scrollbar` (`native` by default, `overlay`) and `data-scrollbar-visibility` ([UIC-SCROLL-REGION-2.8](#uic-scroll-region-28---scrollbar-visibility)). It grows by default (`data-grow`), clips only for `axis="none"` unless `clip` says otherwise, and with `fill` covers its nearest positioned ancestor (`data-fill`). With `columns` it lays the children out in a grid and publishes `data-columns`, `data-min-column-width` (for `fit`), `data-space` and `data-align` as `Grid` does ([LAYOUT.md](LAYOUT.md)).
 
 Implementation: `src/components/scroll-region/scroll-region.tsx`, `labs/reference/scroll-region.css`
 Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll-region.spec.ts`
