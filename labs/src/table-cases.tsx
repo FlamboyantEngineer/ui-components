@@ -8,7 +8,7 @@ import { Button } from '../../src/components/button/button.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { Table } from '../../src/components/table/table.js';
 import type { TableColumnGroup, TableColumnLayout } from '../../src/components/table/index.js';
-import type { TableFilter } from '../../src/components/table/index.js';
+import { filterTableRows, type TableFilter } from '../../src/components/table/index.js';
 import type { TableColumn } from '../../src/components/table/index.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { requireDefined } from './require-defined.js';
@@ -275,20 +275,17 @@ export function ColumnFilters() {
 /** A caller that filters on its side, as a server would, and shows the table its filter. */
 export function CallerFilter() {
   const [filter, setFilter] = useState<TableFilter>({ columns: { colour: ['Purple'] } });
-  const colours = filter.columns?.['colour'];
-  const rows = produce.filter(
-    (row) =>
-      (!Array.isArray(colours) || colours.length === 0 || colours.includes(row.colour)) &&
-      row.name.toLowerCase().startsWith((filter.query ?? '').toLowerCase()),
-  );
+  const columns = [requireDefined(filterColumns[0]), requireDefined(filterColumns[1])];
+  // The caller filters as the table would, as a server could.
+  const rows = filterTableRows(produce, columns, filter);
   return (
     <div data-lab="caller-filter">
       <Table
         aria-label="Produce, filtered by the caller"
         rows={rows}
-        columns={[requireDefined(filterColumns[0]), requireDefined(filterColumns[1])]}
+        columns={columns}
         filterable
-        filterLabel="Names starting with"
+        filterLabel="Search names and colours"
         filter={filter}
         onFilterChange={setFilter}
         size="sm"
