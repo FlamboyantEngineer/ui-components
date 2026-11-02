@@ -2,9 +2,11 @@
 
 import { useEditorEffect } from '@handlewithcare/react-prosemirror';
 import type { EditorView } from 'prosemirror-view';
-import { useCallback, useEffect, useState, type RefObject } from 'react';
+import { useEffect, useState, type RefObject } from 'react';
 import {
   OverlayScrollbars,
+  getThumbSpan,
+  type OverlayMetrics,
   useOverlayMetrics,
   useSharedViewportObserver,
 } from '../scroll-region/scroll-region.js';
@@ -21,10 +23,10 @@ interface SurfaceScrollbarsProps {
   markers: readonly PlacedMarker[];
 }
 
-/** A marker's span along the track, in the track's pixels from its top. */
+/** A marker's blocks' span in the surface's scrolled content, in the surface's own pixels. */
 interface TrackMark {
   top: number;
-  height: number;
+  bottom: number;
   severity: FieldSeverity;
 }
 
@@ -34,43 +36,56 @@ function isSameMarks(previous: readonly TrackMark[], next: readonly TrackMark[])
     previous.every(
       (mark, index) =>
         mark.top === next[index]?.top &&
-        mark.height === next[index]?.height &&
+        mark.bottom === next[index]?.bottom &&
         mark.severity === next[index]?.severity,
     )
   );
 }
 
 /**
- * Where each marker's blocks lie beside the track: the part of them in the surface's view, in the
- * track's pixels from its top, so a mark sits level with its blocks. Measured in the surface's own
- * pixels, so the marks stay put under an ancestor `transform: scale()`. Blocks out of view draw
- * none, and none draw while the surface does not scroll.
+ * Where each marker's blocks lie in the surface's scrolled content, measured in the surface's own
+ * pixels so the marks stay put under an ancestor `transform: scale()`. None while the surface does
+ * not scroll.
  */
 function measureMarks(
   view: EditorView,
-  { surface, track }: { surface: HTMLElement; track: HTMLElement | null },
+  surface: HTMLElement,
   markers: readonly PlacedMarker[],
 ): TrackMark[] {
-  if (!track || surface.scrollHeight <= surface.clientHeight) return [];
-  const trackBox = measureInScroller(track, surface);
-  const trackTop = trackBox.top - surface.scrollTop;
+  if (surface.scrollHeight <= surface.clientHeight) return [];
   return markers.flatMap((marker) => {
     const first = view.nodeDOM(marker.from);
     const last = view.nodeDOM(marker.last);
     if (!isHTMLElement(first) || !isHTMLElement(last)) return [];
     const end = measureInScroller(last, surface);
-    const top = measureInScroller(first, surface).top - surface.scrollTop - trackTop;
-    const bottom = end.top + end.height - surface.scrollTop - trackTop;
-    const clippedTop = Math.max(0, top);
-    const clippedBottom = Math.min(trackBox.height, bottom);
-    if (clippedBottom <= clippedTop) return [];
-    return [{ top: clippedTop, height: clippedBottom - clippedTop, severity: marker.severity }];
+    const top = measureInScroller(first, surface).top;
+    return [{ top, bottom: end.top + end.height, severity: marker.severity }];
+  });
+}
+
+/**
+ * The marks drawn inside the thumb: the view's top, middle and bottom fall at the thumb's top,
+ * middle and bottom, so a block's mark sits in the thumb as far down as the block sits in view.
+ * Blocks out of view draw none; one partly in view draws its visible part.
+ */
+function placeInThumb(marks: readonly TrackMark[], metrics: OverlayMetrics) {
+  const page = Math.max(0, metrics.height - metrics.header);
+  const max = Math.max(0, metrics.contentHeight - metrics.height);
+  const thumb = getThumbSpan({ track: metrics.trackY, page, max, value: metrics.top });
+  if (metrics.height <= 0) return [];
+  const toThumb = (y: number) =>
+    thumb.offset +
+    (Math.min(Math.max(y - metrics.top, 0), metrics.height) / metrics.height) * thumb.size;
+  return marks.flatMap((mark) => {
+    if (mark.bottom <= metrics.top || mark.top >= metrics.top + metrics.height) return [];
+    const top = toThumb(mark.top);
+    return [{ top, height: toThumb(mark.bottom) - top, severity: mark.severity }];
   });
 }
 
 /**
  * The shared overlay scrollbars over the editor's surface, with the host's block markers painted
- * in the vertical track beside the blocks in view. They draw only while the surface overflows the height its host gives it;
+ * in the vertical thumb, where the blocks in view lie. They draw only while the surface overflows the height its host gives it;
  * the document's own keys, the caret and the wheel keep scrolling it natively.
  */
 export function SurfaceScrollbars({ surfaceRef, surfaceId, markers }: SurfaceScrollbarsProps) {
@@ -82,15 +97,7 @@ export function SurfaceScrollbars({ surfaceRef, surfaceId, markers }: SurfaceScr
     headerInset: false,
   });
   const [marks, setMarks] = useState<TrackMark[]>([]);
-  const [track, setTrack] = useState<HTMLElement | null>(null);
-  const { schedule, metrics, verticalTrackRef } = measurement;
-  const trackRef = useCallback(
-    (element: HTMLElement | null) => {
-      setTrack(element);
-      verticalTrackRef(element);
-    },
-    [verticalTrackRef],
-  );
+  const { schedule, metrics } = measurement;
   useEffect(() => {
     const surface = surfaceRef.current;
     if (!surface) return undefined;
@@ -103,24 +110,18 @@ export function SurfaceScrollbars({ surfaceRef, surfaceId, markers }: SurfaceScr
       const surface = surfaceRef.current;
       if (!surface) return undefined;
       const update = () => {
-        const next = measureMarks(view, { surface, track }, markers);
+        const next = measureMarks(view, surface, markers);
         setMarks((previous) => (isSameMarks(previous, next) ? previous : next));
       };
       update();
       schedule();
-      // Scrolling, a new height of the document (an edit, rewrapping), of the surface or of the
-      // track moves the marks.
-      surface.addEventListener('scroll', update);
+      // A new height of the document (an edit, rewrapping) or of the surface moves the marks.
       const resize = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(update);
       resize?.observe(surface);
       resize?.observe(view.dom);
-      if (track) resize?.observe(track);
-      return () => {
-        surface.removeEventListener('scroll', update);
-        resize?.disconnect();
-      };
+      return () => resize?.disconnect();
     },
-    [surfaceRef, track, markers, schedule],
+    [surfaceRef, markers, schedule],
   );
   return (
     <div {...hooks.slot('scrollbars')}>
@@ -128,11 +129,11 @@ export function SurfaceScrollbars({ surfaceRef, surfaceId, markers }: SurfaceScr
         tabIndex={-1}
         viewport={surfaceRef}
         viewportId={surfaceId}
-        measurement={{ ...measurement, verticalTrackRef: trackRef }}
+        measurement={measurement}
         drawX={false}
         drawY={metrics.contentHeight > metrics.height + 1}
         isVisible
-        verticalMarks={marks.map((mark, index) => (
+        verticalMarks={placeInThumb(marks, metrics).map((mark, index) => (
           <span
             key={index}
             {...hooks.slot('scroll-marker', { severity: mark.severity })}
