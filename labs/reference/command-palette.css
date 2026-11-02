@@ -7,7 +7,7 @@
   padding: 12vh 16px 16px;
   background: var(--ref-scrim);
   /* The palette's own close fade, kept apart from the shared overlay durations. */
-  --ref-command-palette-exit-duration: 500ms;
+  --ref-command-palette-exit-duration: 250ms;
 }
 
 .ui-command-palette[data-entering] {
