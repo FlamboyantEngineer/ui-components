@@ -15,7 +15,7 @@ Verification: `src/components/chat/chat.test.tsx`
 
 ### UIC-CHAT-1.2 - Layout
 
-`Chat` shall render a `ui-chat` root holding, in order: the header ([UIC-CHAT-5.1](#uic-chat-51---header)), the search bar while open ([UIC-CHAT-5.3](#uic-chat-53---search)), the transcript (`ui-chat__transcript`), the typing indicator (`ui-chat__typing`, [UIC-CHAT-4.1](#uic-chat-41---typing)), the queue ([UIC-CHAT-3.4](#uic-chat-34---queue-of-follow-ups)) and the composer ([UIC-CHAT-3.1](#uic-chat-31---composer)). The transcript's feed is named by the caller's `aria-label` or `aria-labelledby`, else by `title`, else by the provider string `conversation`; `aria-describedby` and `aria-details` go to it too. The typing indicator sits outside the feed, which holds only messages and their separators; what the assistant is thinking or doing shows inside its reply ([UIC-CHAT-4.2](#uic-chat-42---thinking)).
+`Chat` shall render a `ui-chat` root holding, in order: the header ([UIC-CHAT-5.1](#uic-chat-51---header)), the search bar while open ([UIC-CHAT-5.3](#uic-chat-53---search)), the transcript (`ui-chat__transcript`), the typing indicator (`ui-chat__typing`, [UIC-CHAT-4.1](#uic-chat-41---typing)), the queue ([UIC-CHAT-3.4](#uic-chat-34---queue-of-follow-ups)), the composer ([UIC-CHAT-3.1](#uic-chat-31---composer)) and the disclaimer ([UIC-CHAT-1.9](#uic-chat-19---disclaimer)). The transcript's feed is named by the caller's `aria-label` or `aria-labelledby`, else by `title`, else by the provider string `conversation`; `aria-describedby` and `aria-details` go to it too. The typing indicator sits outside the feed, which holds only messages and their separators; what the assistant is thinking or doing shows inside its reply ([UIC-CHAT-4.2](#uic-chat-42---thinking)).
 
 Implementation: `src/components/chat/chat.tsx`
 Verification: `src/components/chat/chat.test.tsx`, `e2e/chat.spec.ts`
@@ -61,6 +61,13 @@ Verification: `src/components/chat/chat.test.tsx`, `e2e/chat.spec.ts`
 
 Implementation: `src/components/chat/chat-message-display.ts`, `src/components/chat/chat-message-view.tsx`, `src/components/chat/chat.tsx`
 Verification: `src/components/chat/chat-message-display.test.tsx`, `e2e/chat-display.spec.ts`
+
+### UIC-CHAT-1.9 - Disclaimer
+
+With a non-empty `disclaimer`, `Chat` shall draw it last, in `ui-chat__disclaimer`, below the composer and outside both the scrolling transcript and the composer's frame, so it stays in view in an empty conversation and while a reply streams, and never takes room from the composer's controls. The caller writes and translates it, as in an assistant chat's "AI can make mistakes. Check important information."; the library adds no wording of its own, so a chat between people shows none unless its host asks. It is ordinary content: not a live region, so a streaming reply never announces it again. Without a disclaimer (omitted, `null`, `false` or empty text) nothing is drawn. The reference sheet sets it in small muted text, centred, wrapping within a narrow panel.
+
+Implementation: `src/components/chat/chat.tsx`, `src/components/chat/chat-hooks.ts`, `labs/reference/chat.css`
+Verification: `src/components/chat/chat.test.tsx`, `e2e/chat.spec.ts`
 
 ## UIC-CHAT-2 - Message commands
 
@@ -273,6 +280,7 @@ Verification: `src/components/chat/chat.test.tsx`
 | `ui-chat__queue-edit`        | slot  |        | Edit a queued message (also `ui-button`).                                         |
 | `ui-chat__queue-remove`      | slot  |        | Remove a queued message (also `ui-button`).                                       |
 | `ui-chat__composer`          | slot  |        | The composer (also `ui-message-composer`).                                        |
+| `ui-chat__disclaimer`        | slot  |        | The caller's disclaimer under the composer.                                       |
 | `ui-chat__banner`            | slot  |        | The reply or edit banner's text, inside the composer's banner.                    |
 | `ui-chat__banner-label`      | slot  |        | What the banner is about: replying, or editing.                                   |
 | `ui-chat__banner-cancel`     | slot  |        | Cancel reply (also `ui-button`).                                                  |

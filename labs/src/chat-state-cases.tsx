@@ -9,6 +9,7 @@ import type { ChatMessageData } from '../../src/components/chat-parts/index.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { Cluster } from '../../src/components/layout/layout.js';
 import { agents } from './chat-agent.js';
+import { labDisclaimer } from './chat-assistant-cases.js';
 import { labEfforts, labModels } from './chat-model-samples.js';
 import { assistantPeople, getLabNow, plannerId, readerId, textMessage } from './chat-samples.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
@@ -47,6 +48,7 @@ function EmptyDemo() {
         currentUserId={readerId}
         placeholder="Ask the trip planner…"
         emptyState={<Starters onPick={(text) => controller.send(text)} />}
+        disclaimer={labDisclaimer}
       />
     </div>
   );
@@ -99,7 +101,7 @@ export function ChatStateCases() {
     <>
       <LabSection
         title="Starting a conversation"
-        description="With no messages, the transcript shows the host's empty state: here, suggested first questions that send themselves."
+        description="With no messages, the transcript shows the host's empty state: here, suggested first questions that send themselves. The host's disclaimer stays under the composer before and after the first message."
       >
         <EmptyDemo />
       </LabSection>

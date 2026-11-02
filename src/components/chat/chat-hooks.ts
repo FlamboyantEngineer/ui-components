@@ -15,6 +15,7 @@ export const chatHooks = createHooks('chat', [
   'queue-edit',
   'queue-remove',
   'composer',
+  'disclaimer',
   'banner',
   'banner-label',
   'banner-cancel',
