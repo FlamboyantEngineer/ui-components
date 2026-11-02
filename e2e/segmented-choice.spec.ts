@@ -301,12 +301,14 @@ test('UIC-SEGMENTED-CHOICE-1.3 keeps descenders and accents whole in labels and 
 }) => {
   await lab.open('segmented-choice');
   const heights = { xs: 20, sm: 24, md: 28, lg: 32 } as const;
-  for (const size of ['xs', 'sm', 'md', 'lg'] as const) {
-    const group = page.locator(`[data-lab-glyphs="content-${size}"]`);
+  for (const [segments, size] of (['content', 'equal'] as const).flatMap((segments) =>
+    (['xs', 'sm', 'md', 'lg'] as const).map((size) => [segments, size] as const),
+  )) {
+    const group = page.locator(`[data-lab-glyphs="${segments}-${size}"]`);
     await group.scrollIntoViewIfNeeded();
     const frame = await group.boundingBox();
     if (!frame) throw new Error('The group has no layout box.');
-    expect(frame.height).toBe(heights[size]);
+    expect(frame.height, `${segments} ${size}`).toBe(heights[size]);
     const clip = { x: frame.x, y: frame.y, width: frame.width, height: frame.height };
     const unclip = (overflow: string) =>
       group.evaluate((node, value) => {
@@ -347,8 +349,72 @@ test('UIC-SEGMENTED-CHOICE-1.3 keeps descenders and accents whole in labels and 
       },
       { first: clipped, second: whole },
     );
-    expect(changed, size).toBe(0);
+    expect(changed, `${segments} ${size}`).toBe(0);
   }
+});
+
+test('UIC-SEGMENTED-CHOICE-1.3 shows every label and count in full in the equal Glyph room samples', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('segmented-choice');
+  const measure = (size: string) =>
+    page.locator(`[data-lab-glyphs="equal-${size}"]`).evaluate((group) => {
+      const frame = group.getBoundingClientRect();
+      return [...group.querySelectorAll<HTMLElement>('.ui-segmented-choice__segment')].map(
+        (segment) => {
+          const box = segment.getBoundingClientRect();
+          const label = segment.querySelector<HTMLElement>('.ui-segmented-choice__label');
+          const count = segment.querySelector<HTMLElement>('.ui-segmented-choice__count');
+          const badge = count?.getBoundingClientRect();
+          const labelBox = label?.getBoundingClientRect();
+          return {
+            width: Math.round(box.width * 100) / 100,
+            text: label?.textContent,
+            cut: !label || label.scrollWidth > label.clientWidth,
+            count: count?.textContent,
+            badgeInside:
+              !!badge &&
+              badge.left >= box.left - 0.5 &&
+              badge.right <= box.right + 0.5 &&
+              badge.top >= frame.top - 0.5 &&
+              badge.bottom <= frame.bottom + 0.5 &&
+              (!labelBox || badge.left >= labelBox.right - 0.5),
+          };
+        },
+      );
+    });
+  for (const size of ['xs', 'sm', 'md', 'lg']) {
+    const group = page.locator(`[data-lab-glyphs="equal-${size}"]`);
+    await group.scrollIntoViewIfNeeded();
+    const before = await measure(size);
+    expect(before.map(({ text }) => text)).toEqual(['Typography', 'Quietly gjpqy', 'Émigré Åçñ']);
+    expect(before.map(({ count }) => count)).toEqual(['7', '42', '99+']);
+    expect(
+      before.filter(({ cut }) => cut),
+      size,
+    ).toEqual([]);
+    expect(
+      before.every(({ badgeInside }) => badgeInside),
+      size,
+    ).toBe(true);
+    expect(new Set(before.map(({ width }) => width)).size, size).toBe(1);
+    // Selecting another segment changes no width and cuts nothing.
+    await group.getByRole('radio', { name: /Émigré/ }).click({ force: true });
+    await expect(group.getByRole('radio', { name: /Émigré/ })).toBeChecked();
+    expect(await measure(size)).toEqual(before);
+  }
+  // The deliberately narrow row still ends a long label in an ellipsis.
+  const narrow = page.locator('[data-lab-glyphs="narrow-md"] .ui-segmented-choice__label');
+  expect(
+    await narrow.evaluateAll((labels) =>
+      labels.some((label) => label.scrollWidth > label.clientWidth),
+    ),
+  ).toBe(true);
+  // The samples fit the page without scrolling it sideways.
+  const table = await page.locator('table[data-lab-matrix="size segments"]').boundingBox();
+  const width = await page.evaluate(() => document.documentElement.clientWidth);
+  expect((table?.x ?? 0) + (table?.width ?? Infinity)).toBeLessThanOrEqual(width);
 });
 
 test('UIC-SEGMENTED-CHOICE-1.3 gives equal segments the widest label in a content-sized row', async ({

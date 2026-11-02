@@ -2,4 +2,4 @@
 '@flamboyantengineer/ui-components': patch
 ---
 
-The SegmentedChoice reference label keeps descenders and accents whole: it clips only sideways, with block padding taken back by a negative margin, so segment heights are unchanged (#1421).
+The Segmented Choice spec describes the lab's Glyph room. Its equal groups now size to their widest label and show every label and count in full, and a separate narrow row shows the ellipsis.
