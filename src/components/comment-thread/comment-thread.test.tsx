@@ -113,6 +113,35 @@ describe('CommentThread', () => {
     expect(screen.getByRole('textbox', { name: 'Reply' })).toBeInTheDocument();
   });
 
+  it('UIC-COMMENT-THREAD-1.11 shows the Resolved chip icon-only, named and not a button', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <CommentThread defaultResolved statusIconOnly isReadOnly>
+        {replies(1)}
+      </CommentThread>,
+    );
+    const chip = screen.getByRole('img', { name: 'Resolved' });
+    expect(chip).toHaveClass('ui-comment-thread__status');
+    expect(chip).toHaveAttribute('data-icon-only', 'true');
+    expect(chip.querySelector('.ui-badge__label')).toBeEmptyDOMElement();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    expectHooksMatchSpec(container, 'COMMENT-THREAD', { slots: ['status'] });
+    await user.tab();
+    expect(chip).toHaveFocus();
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('Resolved');
+  });
+
+  it('UIC-COMMENT-THREAD-1.11 keeps the chip and the resolve button presentations apart', () => {
+    render(
+      <CommentThread defaultResolved resolveIconOnly onResolvedChange={() => {}}>
+        {replies(1)}
+      </CommentThread>,
+    );
+    expect(screen.queryByRole('img', { name: 'Resolved' })).not.toBeInTheDocument();
+    expect(document.querySelector('.ui-comment-thread__status')).toHaveTextContent('Resolved');
+    expect(screen.getByRole('button', { name: 'Reopen' })).toBeInTheDocument();
+  });
+
   it('UIC-COMMENT-THREAD-1.4 follows a controlled resolved state', async () => {
     function Controlled() {
       const [isResolved, setIsResolved] = useState(true);

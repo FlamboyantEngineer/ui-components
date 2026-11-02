@@ -231,6 +231,33 @@ function IndentedThread({ isIndented }: { isIndented: boolean }) {
   );
 }
 
+/** A resolved thread with a text or icon-only Resolved chip, interactive or read-only. */
+function StatusThread({
+  chip,
+  mode,
+}: {
+  chip: 'text' | 'icon';
+  mode: 'interactive' | 'read-only';
+}) {
+  const [isResolved, setIsResolved] = useState(true);
+  const isIcon = chip === 'icon';
+  return (
+    <CommentThread
+      quote={quote}
+      statusIconOnly={isIcon}
+      resolveIconOnly={isIcon}
+      indentReplies={isIcon}
+      isResolved={isResolved}
+      onResolvedChange={setIsResolved}
+      isReadOnly={mode === 'read-only'}
+      onReply={() => {}}
+      data-lab-thread={`status-${chip}-${mode}`}
+    >
+      {renderComments(longThread.slice(0, 2))}
+    </CommentThread>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -269,6 +296,15 @@ mountLab(
       <StateMatrix
         axes={{ replies: ['indented', 'flat'] }}
         render={({ replies }) => <IndentedThread isIndented={replies === 'indented'} />}
+      />
+    </LabSection>
+    <LabSection
+      title="State chips"
+      description="The Resolved chip as text, or as an icon-only chip named by its tooltip (hover it or Tab to it), beside the icon-only Resolve and Reopen and indented replies. Reopen and resolve the interactive threads; the read-only ones keep the chip with no action."
+    >
+      <StateMatrix
+        axes={{ chip: ['text', 'icon'], mode: ['interactive', 'read-only'] }}
+        render={({ chip, mode }) => <StatusThread chip={chip} mode={mode} />}
       />
     </LabSection>
     <LabSection
