@@ -176,6 +176,8 @@ export interface ContentStrings {
   addReaction: string;
   /** Names a reaction from its emoji, its count and some of the people who reacted. */
   reactionLabel: (emoji: string, count: number, names: readonly string[]) => string;
+  /** Names every reaction at once: the total, each emoji's reactions, and the reader's own emoji. */
+  reactionSummary: (count: number, labels: readonly string[], own: readonly string[]) => string;
 }
 
 /** The module's text, with the message values each text function reads its arguments as. */
@@ -207,6 +209,12 @@ export const contentStrings = defineStrings<ContentStrings>({
   saveStatus: (phase) => ({ phase }),
   recordUnavailable: (reason) => ({ reason }),
   showMoreReplies: (count) => ({ count }),
+  reactionSummary: (count, labels, own) => ({
+    count,
+    labels: { items: labels, type: 'unit' },
+    ownCount: own.length,
+    own: { items: own, type: 'and' },
+  }),
   reactionLabel: (emoji, count, names) => ({
     emoji,
     count,

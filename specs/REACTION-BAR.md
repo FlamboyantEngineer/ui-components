@@ -1,6 +1,6 @@
 # Reaction Bar
 
-`ReactionBar` is a row of reaction chips under a comment, a message or any other entry: each chip is an emoji with how many people reacted, pressed while the reader is one of them, and an add-reaction button opens the [Emoji Picker](EMOJI-PICKER.md). The reactions come in as data and the reader's toggles leave through one callback; the host keeps the counts. A [Comment Thread](COMMENT-THREAD.md) reply takes one in its `reactions` slot.
+`ReactionBar` is a row of reaction chips under a comment, a message or any other entry: each chip is an emoji with how many people reacted, pressed while the reader is one of them, and an add-reaction button opens the [Emoji Picker](EMOJI-PICKER.md). As a `summary` it draws every reaction in one small chip that opens the picker. The reactions come in as data and the reader's toggles leave through one callback; the host keeps the counts. A [Comment Thread](COMMENT-THREAD.md) reply takes one in its `reactions` slot.
 
 ## UIC-REACTION-BAR-1 - Contract
 
@@ -46,14 +46,25 @@ The root shall be a `role="group"` named by `aria-label` or `aria-labelledby`, e
 Implementation: `src/components/reaction-bar/reaction-bar.tsx`
 Verification: `src/components/reaction-bar/reaction-bar.test.tsx`, `e2e/reaction-bar.spec.ts`
 
+### UIC-REACTION-BAR-1.7 - Summary
+
+With `presentation="summary"` (`chips` by default) the bar shall draw, in place of the chips and the add button, one chip-variant `Button` in the `ui-reaction-bar__summary` slot: a `ui-reaction-bar__stack` of the first three entries' emoji, each in `ui-reaction-bar__emoji` (a custom emoji's image as in [UIC-REACTION-BAR-1.1](#uic-reaction-bar-11---chips)), and in `ui-reaction-bar__count` the sum of every entry's count, in the locale's digits. The chip is named, through its `Tooltip`, by the provider's `reactionSummary` string from that total, every entry's `reactionLabel` and the emoji the reader reacted with, such as `3 reactions: 👍 2, reacted by Ana Lima and Ben Ode, 🎉 1. You reacted with 🎉`; the stack and the count are not read separately. It carries `data-reacted` while the reader reacted with any entry. With `onToggle`, pressing it opens the `EmojiPickerTrigger` popover of [UIC-REACTION-BAR-1.4](#uic-reaction-bar-14---adding-a-reaction), and choosing an emoji calls `onToggle` with its key and `true`, or `false` when the reader already reacted with it; without, it is read-only as in [UIC-REACTION-BAR-1.5](#uic-reaction-bar-15---read-only). A summary without reactions renders nothing, so the host offers the first reaction elsewhere, such as a message's React command. The root carries `data-presentation`.
+
+Implementation: `src/components/reaction-bar/reaction-bar.tsx`, `src/core/strings/content.ts`, `labs/reference/reaction-bar.css`
+Verification: `src/components/reaction-bar/reaction-bar.test.tsx`, `e2e/chat-message-actions.spec.ts`
+
 ## Hooks
 
-| Hook                        | Kind  | Values | Description                                                     |
-| --------------------------- | ----- | ------ | --------------------------------------------------------------- |
-| `ui-reaction-bar`           | root  |        | The `role="group"` row.                                         |
-| `ui-reaction-bar__reaction` | slot  |        | One chip (also `ui-button`, with its `data-selected`).          |
-| `ui-reaction-bar__emoji`    | slot  |        | The chip's emoji: a glyph, an image or a shortcode.             |
-| `ui-reaction-bar__image`    | slot  |        | A custom emoji's `<img>`.                                       |
-| `ui-reaction-bar__count`    | slot  |        | The chip's count.                                               |
-| `ui-reaction-bar__add`      | slot  |        | The add-reaction button (also `ui-button`).                     |
-| `data-readonly`             | state | `true` | The bar has no `onToggle`: no add button, chips refuse presses. |
+| Hook                        | Kind  | Values             | Description                                                     |
+| --------------------------- | ----- | ------------------ | --------------------------------------------------------------- |
+| `ui-reaction-bar`           | root  |                    | The `role="group"` row.                                         |
+| `ui-reaction-bar__reaction` | slot  |                    | One chip (also `ui-button`, with its `data-selected`).          |
+| `ui-reaction-bar__emoji`    | slot  |                    | The chip's emoji: a glyph, an image or a shortcode.             |
+| `ui-reaction-bar__image`    | slot  |                    | A custom emoji's `<img>`.                                       |
+| `ui-reaction-bar__count`    | slot  |                    | The chip's count.                                               |
+| `ui-reaction-bar__add`      | slot  |                    | The add-reaction button (also `ui-button`).                     |
+| `ui-reaction-bar__summary`  | slot  |                    | The summary chip (also `ui-button`).                            |
+| `ui-reaction-bar__stack`    | slot  |                    | The summary chip's stacked emoji.                               |
+| `data-presentation`         | state | `chips`, `summary` | How the bar draws its reactions.                                |
+| `data-reacted`              | state | `true`             | On the summary chip: the reader reacted with an entry.          |
+| `data-readonly`             | state | `true`             | The bar has no `onToggle`: no add button, chips refuse presses. |
