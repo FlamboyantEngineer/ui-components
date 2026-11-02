@@ -20,7 +20,7 @@ Verification: `src/components/relation-matrix/relation-matrix-model.test.ts`, `s
 
 ### UIC-RELATION-MATRIX-1.3 - Relation marks
 
-A related cell shall publish `data-related`, `data-kind` with its relation's `kind` (when it has one) and `data-tone` with the `tone` of that kind in `kinds` (`neutral` by default), and hold a mark (`ui-relation-matrix__mark`): the `check` glyph, hidden from assistive technology, and the kind's `label` as hidden text, or the provider's `related` text for a relation without a known kind. A cell without a relation is empty.
+A related cell shall publish `data-related`, `data-kind` with its relation's `kind` (when it has one) and `data-tone` with the `tone` of that kind in `kinds` (`neutral` by default), and hold a mark (`ui-relation-matrix__mark`): the kind's `glyph` (the `check` glyph by default, such as a cross for a blocking kind), hidden from assistive technology, and the kind's `label` as hidden text, or the provider's `related` text for a relation without a known kind. A cell without a relation is empty.
 
 Implementation: `src/components/relation-matrix/relation-matrix-row.tsx`
 Verification: `src/components/relation-matrix/relation-matrix.test.tsx`, `e2e/relation-matrix.spec.ts`
@@ -63,6 +63,20 @@ The focused cell shall belong to its row and column items, not to their places: 
 
 Implementation: `src/components/relation-matrix/use-matrix-navigation.ts`, `src/components/relation-matrix/matrix-navigation.ts`, `src/components/relation-matrix/relation-matrix.tsx`
 Verification: `src/components/relation-matrix/matrix-navigation.test.ts`, `src/components/relation-matrix/relation-matrix-focus.test.tsx`, `e2e/relation-matrix.spec.ts`
+
+### UIC-RELATION-MATRIX-2.4 - Cell menu
+
+With `onRelationChange`, every body cell shall open a context menu ([CONTEXT-MENU.md](CONTEXT-MENU.md)) on a secondary click or long touch, and on the Context Menu key or Shift+F10 while it has focus, then placed against the cell. A secondary click focuses the cell first, so the menu gives focus back to it on close; opening the menu never runs `onCellAction`. The menu is named by the provider's `relationCellActions` text with the row and column labels. It holds one check item per entry of `kinds`, labelled and drawn with the kind's glyph, checked for the cell's own kind; without `kinds`, one item reads the provider's `related` text. After a separator comes Remove relation (`removeRelation`), unavailable on an empty cell. Choosing a kind calls `onRelationChange({ row, column, relation })` with the relation the cell should hold (`{ row, column, kind }`); choosing the checked kind again, or Remove relation, passes `relation: null`. The menu acts on its row and column keys, so it keeps its cell when rows or columns reorder or window, and it closes if either item leaves the matrix while it is open. The matrix never changes its relations itself: `setRelation(relations, cell)` returns `relations` with the cell's relation replaced, or removed for `null`. Without `onRelationChange` cells keep the browser's menu.
+
+Implementation: `src/components/relation-matrix/relation-matrix-menu.tsx`, `src/components/relation-matrix/relation-matrix.tsx`, `src/components/relation-matrix/relation-matrix-model.ts`, `src/core/strings/relation.ts`
+Verification: `src/components/relation-matrix/relation-matrix-menu.test.tsx`, `e2e/relation-matrix.spec.ts`
+
+### UIC-RELATION-MATRIX-2.5 - Header menus
+
+With `onAxisAction`, every row header and column header shall open a context menu the same ways, named by the provider's `relationItemActions` text with its label (the corner opens none). A row header's menu offers Move up and Move down, Insert above and Insert below, and Remove (`removeItem`) with the row's label; a column header's offers Move left and Move right, Insert left and Insert right, and Remove, mirrored in right-to-left text so left and right keep their visible sense. `axisActions` (`move`, `insert`, `remove`; all by default) chooses the groups offered. A move past either end is unavailable. Choosing an item calls `onAxisAction({ axis, item, action })` with `axis` `row` or `column`, the item's key, and `action` `move-before`, `move-after`, `insert-before`, `insert-after` or `remove`, relative to the axis order. The owner applies it: the matrix leaves out relations whose item is gone, and an owner that removes an item drops its relations so they cannot return with an item of the same key. Focus follows a moved header, and when a removed header held it, the grid's focused cell takes it back once the menu has closed.
+
+Implementation: `src/components/relation-matrix/relation-matrix-menu.tsx`, `src/components/relation-matrix/relation-matrix.tsx`, `src/core/strings/relation.ts`
+Verification: `src/components/relation-matrix/relation-matrix-menu.test.tsx`, `e2e/relation-matrix.spec.ts`
 
 ## UIC-RELATION-MATRIX-3 - Large matrices
 

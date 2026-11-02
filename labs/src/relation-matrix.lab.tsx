@@ -1,7 +1,10 @@
 import { useState } from 'react';
+import { CloseGlyph } from '../../src/core/glyphs.js';
 import {
   RelationMatrix,
+  setRelation,
   toggleRelation,
+  type RelationMatrixAxisAction,
   type RelationMatrixCell,
   type RelationMatrixItem,
   type RelationMatrixKind,
@@ -30,7 +33,7 @@ const tests: RelationMatrixItem[] = [
 const kinds: RelationMatrixKind[] = [
   { id: 'verifies', label: 'Verifies', tone: 'success' },
   { id: 'partial', label: 'Partly verifies', tone: 'warning' },
-  { id: 'blocked', label: 'Blocked', tone: 'danger' },
+  { id: 'blocked', label: 'Blocked', tone: 'danger', glyph: CloseGlyph },
 ];
 
 const traces: RelationMatrixRelation[] = [
@@ -65,6 +68,7 @@ function TypedRelations() {
       relations={relations}
       columnLabels="truncated"
       onCellAction={(cell) => setRelations((current) => toggleRelation(current, cell))}
+      onRelationChange={(cell) => setRelations((current) => setRelation(current, cell))}
     />
   );
 }
@@ -128,6 +132,7 @@ function CoverageSortedMatrix() {
           setOutput(describeAction(cell, 'verifies'));
           setRelations((current) => toggleRelation(current, { ...cell, kind: 'verifies' }));
         }}
+        onRelationChange={(cell) => setRelations((current) => setRelation(current, cell))}
       />
       <output data-lab-output>{output}</output>
     </div>
@@ -159,6 +164,73 @@ function ArrivingMatrix() {
   );
 }
 
+/** `items` with an axis action applied; a new item comes from `create`. */
+function applyAxisAction(
+  items: readonly RelationMatrixItem[],
+  action: RelationMatrixAxisAction,
+  create: () => RelationMatrixItem,
+): RelationMatrixItem[] {
+  const at = items.findIndex((item) => item.id === action.item);
+  const next = [...items];
+  if (at < 0) return next;
+  if (action.action === 'remove') next.splice(at, 1);
+  else if (action.action === 'insert-before') next.splice(at, 0, create());
+  else if (action.action === 'insert-after') next.splice(at + 1, 0, create());
+  else {
+    const to = action.action === 'move-before' ? at - 1 : at + 1;
+    const [moved] = next.splice(at, 1);
+    if (moved) next.splice(to, 0, moved);
+  }
+  return next;
+}
+
+/** Right-click a cell or header, or press Shift+F10 on it: every edit changes the matrix. */
+function EditableMatrix() {
+  const [rows, setRows] = useState(requirements.slice(0, 4));
+  const [columns, setColumns] = useState(tests.slice(0, 4));
+  const [relations, setRelations] = useState(traces);
+  const [created, setCreated] = useState(0);
+  const [output, setOutput] = useState('No change yet');
+  const onAxisAction = (action: RelationMatrixAxisAction) => {
+    const number = created + 1;
+    const isRow = action.axis === 'row';
+    const create = () => ({
+      id: `${action.axis}-new-${number}`,
+      label: isRow ? `New requirement ${number}` : `New test ${number}`,
+    });
+    if (action.action.startsWith('insert')) setCreated(number);
+    if (isRow) setRows(applyAxisAction(rows, action, create));
+    else setColumns(applyAxisAction(columns, action, create));
+    // A removed item takes its relations with it.
+    if (action.action === 'remove') {
+      setRelations(
+        relations.filter((relation) => (isRow ? relation.row : relation.column) !== action.item),
+      );
+    }
+    setOutput(`${action.axis} ${String(action.item)}: ${action.action}`);
+  };
+  return (
+    <div data-lab-demo="editable">
+      <RelationMatrix
+        aria-label="Editable requirements by test"
+        rows={rows}
+        columns={columns}
+        relations={relations}
+        kinds={kinds}
+        rowsLabel="Requirements"
+        onRelationChange={(cell) => {
+          setRelations(setRelation(relations, cell));
+          setOutput(
+            `${String(cell.row)} × ${String(cell.column)}: ${cell.relation?.kind ?? 'removed'}`,
+          );
+        }}
+        onAxisAction={onAxisAction}
+      />
+      <output data-lab-output>{output}</output>
+    </div>
+  );
+}
+
 const rowCount = 2000;
 const columnCount = 400;
 const manyRows: RelationMatrixItem[] = Array.from({ length: rowCount }, (_, index) => ({
@@ -180,13 +252,15 @@ const manyRelations: RelationMatrixRelation[] = manyRows.flatMap((row, rowIndex)
 );
 
 function LargeMatrix() {
+  const [relations, setRelations] = useState(manyRelations);
   return (
     <div data-lab-demo="large">
       <RelationMatrix
         aria-label="Large matrix"
         rows={manyRows}
         columns={manyColumns}
-        relations={manyRelations}
+        relations={relations}
+        onRelationChange={(cell) => setRelations((current) => setRelation(current, cell))}
         kinds={kinds}
         columnLabels="truncated"
         columnWidth={72}
@@ -267,8 +341,14 @@ mountLab(
       <TraceabilityMatrix />
     </LabSection>
     <LabSection
+      title="Editing with menus"
+      description="Right-click a cell, or move to it and press Shift+F10 or the Context Menu key, to set its relation to Verifies, Partly verifies or Blocked (drawn with a cross) or remove it. A row or column header's menu moves it, inserts a new one beside it or removes it with its relations; moves are unavailable at the ends. The counts follow every edit."
+    >
+      <EditableMatrix />
+    </LabSection>
+    <LabSection
       title="Rows sorted by coverage"
-      description="Requirements with the fewest relations come first, so adding or removing a relation can move its row. Focus and Enter stay with the cell you acted on as its row moves."
+      description="Requirements with the fewest relations come first, so adding or removing a relation can move its row. Focus and Enter stay with the cell you acted on as its row moves, and a cell's context menu keeps acting on its own row after the rows reorder."
     >
       <CoverageSortedMatrix />
     </LabSection>
@@ -280,7 +360,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Large matrix"
-      description="Two thousand requirements against four hundred tests, windowed on both axes: only the rows and columns in view render. Every ninth requirement is uncovered."
+      description="Two thousand requirements against four hundred tests, windowed on both axes: only the rows and columns in view render. Every ninth requirement is uncovered. A cell's context menu edits its relation anywhere in the matrix."
     >
       <LargeMatrix />
     </LabSection>
@@ -292,7 +372,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Distinct relation keys"
-      description="Numeric and text keys identify separate rows and columns. Press a cell to toggle only its own relation."
+      description="Numeric and text keys identify separate rows and columns. Press a cell to toggle only its own relation, or set it from its context menu."
     >
       <TypedRelations />
     </LabSection>

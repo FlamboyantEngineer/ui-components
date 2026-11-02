@@ -1,6 +1,7 @@
 'use client';
 
 import { CheckGlyph } from '../../core/glyphs.js';
+import type { GlyphComponent } from '../../core/glyph-types.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { CSSProperties } from 'react';
 import { Glyph, useUiStrings } from '../../core/provider.js';
@@ -45,11 +46,11 @@ interface CellProps {
   context: RelationMatrixRowContext;
 }
 
-/** A related cell's mark: a glyph, read as its kind's label (or the provider's `related` text). */
-function RelationMark({ label }: { label: string }) {
+/** A related cell's mark: its kind's glyph (`check` by default), read as its kind's label (or the provider's `related` text). */
+function RelationMark({ label, glyph }: { label: string; glyph: GlyphComponent | undefined }) {
   return (
     <span {...hooks.slot('mark')}>
-      <Glyph icon={CheckGlyph} />
+      <Glyph icon={glyph ?? CheckGlyph} />
       <VisuallyHidden elementType="span">{label}</VisuallyHidden>
     </span>
   );
@@ -68,7 +69,7 @@ function RelationMatrixCell({ relation, relatedLabel, position, gridColumn, cont
       style={{ gridColumn }}
       onClick={context.isActionable ? () => context.onCellPress(position) : undefined}
     >
-      {relation ? <RelationMark label={kind?.label ?? relatedLabel} /> : null}
+      {relation ? <RelationMark label={kind?.label ?? relatedLabel} glyph={kind?.glyph} /> : null}
     </div>
   );
 }
