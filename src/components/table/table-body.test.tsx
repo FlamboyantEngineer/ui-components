@@ -173,6 +173,9 @@ describe('Table notices', { timeout: 15_000 }, () => {
         isLoading
       />,
     );
+    // React Aria reports the loader in view again while the request runs: nothing more is asked.
+    act(() => report([{ isIntersecting: true, target: observed.at(-1) } as never], {} as never));
+    expect(onLoadMore).toHaveBeenCalledTimes(1);
     const loader = container.querySelector('.ui-table__loader') as HTMLElement;
     expect(loader).toHaveTextContent('Loading');
     expect(loader.querySelector('[role="rowheader"]')).toHaveAttribute('colspan', '2');

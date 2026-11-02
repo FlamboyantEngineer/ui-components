@@ -167,7 +167,10 @@ function OptionList(props: ComboboxSuggestionsProps & { filterText: string }) {
       {loading.onLoadMore || loading.isLoading ? (
         <ListBoxLoadMoreItem
           className={hooks.slotClass('load-more')}
-          onLoadMore={loading.onLoadMore}
+          // React Aria calls it whenever the end is in view; a request already loading waits.
+          onLoadMore={() => {
+            if (!loading.isLoading) loading.onLoadMore?.();
+          }}
           isLoading={loading.isLoading}
         >
           {strings.loading}
