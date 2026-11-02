@@ -69,3 +69,20 @@ test.describe('Icon Label lab', () => {
     }
   });
 });
+
+test('UIC-ICON-LABEL-1.4 announces a changed label politely, assertively or not at all', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('icon-label');
+  for (const mode of ['off', 'polite', 'assertive']) {
+    const demo = page.locator(`[data-lab-live="${mode}"]`);
+    const label = demo.locator('.ui-icon-label');
+    if (mode === 'off') await expect(label).not.toHaveAttribute('aria-live');
+    else await expect(label).toHaveAttribute('aria-live', mode);
+    await expect(label).toHaveText('Synced 2 minutes ago');
+    await demo.getByRole('button', { name: `Change the ${mode} status` }).press('Enter');
+    await expect(label).toHaveText('Syncing…');
+  }
+  await lab.expectAccessible();
+});

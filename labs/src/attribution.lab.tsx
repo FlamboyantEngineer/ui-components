@@ -1,9 +1,16 @@
 import { useState } from 'react';
 import { Attribution } from '../../src/components/attribution/attribution.js';
 import { Button } from '../../src/components/button/button.js';
+import { Switch } from '../../src/components/switch/switch.js';
 import { UserCard } from '../../src/components/user-card/user-card.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { samplePicture } from './people-samples.js';
+import {
+  ZoneComparison,
+  getNearMidnightNow,
+  nearMidnightDate,
+  nearMidnightInstant,
+} from './time-zone-samples.js';
 
 /** A fixed clock, so every sentence in the matrices reads the same on every day. */
 const getNow = () => new Date(2026, 3, 20, 10, 30);
@@ -53,6 +60,40 @@ function LiveNotes() {
       >
         Add a note
       </Button>
+    </div>
+  );
+}
+
+/** The near-midnight instant and date under a chosen provider zone, override and tooltip setting. */
+function ZonedAttribution() {
+  const [showTooltip, setShowTooltip] = useState(true);
+  return (
+    <div data-lab-demo="attribution-zones">
+      <Switch isSelected={showTooltip} onChange={setShowTooltip}>
+        Show the time tooltip
+      </Switch>
+      <ZoneComparison>
+        {({ timeZone }) => (
+          <ul>
+            {[
+              { id: 'instant', time: nearMidnightInstant, template: 'Edited {time} by {person}' },
+              { id: 'date', time: nearMidnightDate, template: 'Due {time}, set by {person}' },
+            ].map((sample) => (
+              <li key={sample.id}>
+                <Attribution
+                  time={sample.time}
+                  getNow={getNearMidnightNow}
+                  person={maria}
+                  template={sample.template}
+                  timeZone={timeZone}
+                  showTooltip={showTooltip}
+                  data-lab-zone-row={sample.id}
+                />
+              </li>
+            ))}
+          </ul>
+        )}
+      </ZoneComparison>
     </div>
   );
 }
@@ -144,6 +185,12 @@ mountLab(
           />
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Time zones and tooltip"
+      description="Now is 23:30 UTC; the edit was at 22:00 UTC the day before. Choose the provider's zone and the attribution's own override: the edit reads yesterday in UTC and Los Angeles but two days ago in London, and the tooltip's absolute time moves with the zone. The due date keeps Apr 19 in every zone. Switch the tooltip off where a surrounding control already shows the time: the time is no longer a tab stop."
+    >
+      <ZonedAttribution />
     </LabSection>
     <LabSection
       title="Live"

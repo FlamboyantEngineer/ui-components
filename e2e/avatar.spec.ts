@@ -315,6 +315,8 @@ test.describe('Avatar lab', () => {
     await page.keyboard.press('Tab');
     await expect(trigger).not.toBeFocused();
     expect(await badge.evaluate((node) => node.contains(document.activeElement))).toBe(false);
+    // Tab scrolls the next control into view, which can leave the trigger under the lab chrome.
+    await trigger.evaluate((node) => node.scrollIntoView({ block: 'center' }));
     const before = await badge.boundingBox();
     const box = requireBox(await trigger.boundingBox());
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
@@ -339,3 +341,31 @@ function requireBox<T>(box: T | null): T {
   if (!box) throw new Error('no box');
   return box;
 }
+
+test('UIC-AVATAR-1.3 keeps a key-derived colour across renames and follows the palette size and index', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('avatar');
+  const demo = page.locator('[data-lab-demo="avatar-colours"]');
+  const row = (id: string) => demo.locator(`[data-lab-colour="${id}"]`);
+  const check = async (id: string) => {
+    const slot = await row(id).locator('[data-lab-output="slot"]').innerText();
+    await expect(row(id).locator('.ui-avatar')).toHaveAttribute('data-color', slot);
+    return slot;
+  };
+  const keyed = await check('key');
+  await check('name');
+  await demo.getByRole('textbox', { name: 'Display name' }).fill('Lena Ortiz-Brand');
+  expect(await check('key')).toBe(keyed);
+  await check('name');
+  await demo.getByRole('radio', { name: '4' }).click();
+  expect(Number(await check('key'))).toBeLessThan(4);
+  await demo.getByRole('radio', { name: '11' }).click();
+  expect(await check('index')).toBe('3');
+  await demo.getByRole('radio', { name: '12' }).click();
+  expect(await check('index')).toBe('11');
+  await demo.getByRole('radio', { name: '-1' }).click();
+  expect(await check('index')).toBe('11');
+  await lab.expectAccessible();
+});

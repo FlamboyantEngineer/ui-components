@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { Disclosure, DisclosurePanel } from '../../src/components/disclosure/disclosure.js';
 import { ExpandToggle } from '../../src/components/expand-toggle/expand-toggle.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { ExpandToggleHostCases } from './expand-toggle-host-cases.js';
 
 const sizes = ['xs', 'sm', 'md', 'lg'] as const;
 const states = ['collapsed', 'expanded', 'disabled', 'leaf', 'pending'] as const;
@@ -180,5 +181,6 @@ mountLab(
     >
       <LazyRow />
     </LabSection>
+    <ExpandToggleHostCases />
   </>,
 );

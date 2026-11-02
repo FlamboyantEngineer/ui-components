@@ -4,6 +4,7 @@ import { ListView, ListViewItem, type ListViewMove } from '../../src/components/
 import { Table } from '../../src/components/table/table.js';
 import { applyTableMove, type TableColumn } from '../../src/components/table/index.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { DragHandleHostCases } from './drag-handle-host-cases.js';
 
 interface Fruit {
   id: string;
@@ -86,5 +87,6 @@ mountLab(
     >
       <FruitTable />
     </LabSection>
+    <DragHandleHostCases />
   </>,
 );

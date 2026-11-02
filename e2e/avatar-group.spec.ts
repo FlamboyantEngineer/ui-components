@@ -1,3 +1,4 @@
+import type { Locator } from '@playwright/test';
 import { expect, matrix, matrixCell, test } from './fixtures.js';
 
 test.describe('Avatar Group lab', () => {
@@ -85,4 +86,57 @@ test.describe('Avatar Group lab', () => {
     await expect(dialog).toHaveCount(0);
     await lab.expectAccessible();
   });
+});
+
+test('UIC-AVATAR-GROUP-1.1 carries identity overrides and the palette size into the menu and the list', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('avatar-group');
+  const demo = page.locator('[data-lab-demo="group-identity"]');
+  const expected = async () =>
+    Object.fromEntries(
+      (await demo.locator('[data-lab-output="slots"] li').allInnerTexts()).map((text) => {
+        const [name, slot] = text.split(': ');
+        return [name, slot];
+      }),
+    );
+  const checkAvatars = async (scope: Locator) => {
+    const slots = await expected();
+    const avatars = scope.locator('.ui-avatar');
+    const count = await avatars.count();
+    expect(count).toBeGreaterThan(0);
+    for (let index = 0; index < count; index += 1) {
+      const avatar = avatars.nth(index);
+      const name = (await avatar.getAttribute('aria-label'))?.split(',')[0] ?? '';
+      const slot = slots[name];
+      if (slot !== undefined && slot !== 'undefined')
+        await expect(avatar, name).toHaveAttribute('data-color', slot);
+    }
+  };
+
+  await demo.getByRole('textbox', { name: "First person's name" }).fill('Maria Ortega');
+  await demo.getByRole('button', { name: 'Reverse the order' }).click();
+  const menuGroup = demo.locator('[data-lab-group="identity-menu"]');
+  await checkAvatars(menuGroup);
+  await menuGroup.getByRole('button', { name: /more people/ }).click();
+  const menu = page.getByRole('menu', { name: /more people/ });
+  await expect(menu.getByRole('menuitem')).toHaveCount(3);
+  await checkAvatars(menu);
+  await expect(menu.locator('.ui-avatar[data-shape="square"]')).toHaveCount(1);
+  await page.keyboard.press('Escape');
+
+  await demo.locator('[data-lab-group="identity-list"]').getByRole('button').click();
+  const dialog = page.getByRole('dialog', { name: '5 people' });
+  await checkAvatars(dialog);
+  await expect(dialog.locator('.ui-avatar[data-shape="square"]')).toHaveCount(2);
+  await expect(dialog.getByText('K', { exact: true })).toBeVisible();
+  await expect(dialog.locator('img[loading="lazy"][referrerpolicy="no-referrer"]')).toHaveCount(1);
+  await expect(dialog.locator('.ui-user-identity__name')).toHaveText([
+    'Omar Haddad',
+    'Ana Ruiz',
+    'Jon Berg',
+    'Kim Lee',
+    'Maria Ortega',
+  ]);
 });

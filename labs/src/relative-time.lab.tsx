@@ -9,6 +9,12 @@ import {
 } from '../../src/components/relative-time/relative-time.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import {
+  ZoneComparison,
+  getNearMidnightNow,
+  nearMidnightDate,
+  nearMidnightInstant,
+} from './time-zone-samples.js';
 
 /** The text the server renders for a timestamp, read back from its markup. */
 function serverText(value: string): string {
@@ -224,6 +230,50 @@ mountLab(
           />
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Time zones"
+      description="Now is 23:30 UTC and the instant 22:00 UTC the day before. Choose the provider's zone and the component's own override: the instant reads yesterday in UTC and Los Angeles but two days ago in London, and its absolute fallback and tooltip move with the zone. The date-only value keeps its calendar date, Apr 19, in every zone; only its distance from today changes."
+    >
+      <ZoneComparison>
+        {({ timeZone }) => (
+          <table>
+            <tbody>
+              <tr data-lab-zone-row="instant">
+                <th scope="row">Instant (hover for the tooltip)</th>
+                <td>
+                  <RelativeTime
+                    value={nearMidnightInstant}
+                    getNow={getNearMidnightNow}
+                    timeZone={timeZone}
+                  />
+                </td>
+              </tr>
+              <tr data-lab-zone-row="fallback">
+                <th scope="row">Instant, absolute after 1 day</th>
+                <td>
+                  <RelativeTime
+                    value={nearMidnightInstant}
+                    getNow={getNearMidnightNow}
+                    timeZone={timeZone}
+                    fallbackAfterDays={1}
+                  />
+                </td>
+              </tr>
+              <tr data-lab-zone-row="date">
+                <th scope="row">Date only (hover for the tooltip)</th>
+                <td>
+                  <RelativeTime
+                    value={nearMidnightDate}
+                    getNow={getNearMidnightNow}
+                    timeZone={timeZone}
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        )}
+      </ZoneComparison>
     </LabSection>
     <LabSection
       title="Missing values"

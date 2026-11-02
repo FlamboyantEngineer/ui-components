@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
 import { Table } from '../../src/components/table/table.js';
@@ -8,7 +8,9 @@ import {
   LoadingOverlay,
   LoadingRegion,
   type LoadingCardProps,
+  type LoadingProgress,
 } from '../../src/components/loading-overlay/loading-overlay.js';
+import { useEnterExit } from '../../src/utils/use-enter-exit.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { ShadowRootHost } from './shadow-root-host.js';
 
@@ -24,6 +26,65 @@ function cardProps(progress: (typeof progressStates)[number], extras: string): L
     ...(extras !== 'label only' ? { description: 'Preparing pages and figures.' } : {}),
     ...(extras === 'hint and step' ? { hint: longHint, step: { current: 6, total: 9 } } : {}),
   };
+}
+
+/** The published progress options beyond a plain value, each passed to an otherwise equal card. */
+const progressOptions = {
+  'shifted range': { value: 500, minValue: 200, maxValue: 800 },
+  'unit formatter': { value: 3, maxValue: 12, formatOptions: { style: 'unit', unit: 'megabyte' } },
+  'explicit indeterminate': { value: 42, isIndeterminate: true },
+  'own progress label': { value: 42, 'aria-label': 'Pages measured' },
+} satisfies Record<string, LoadingProgress>;
+
+type LifecyclePhase = 'closed' | 'entering' | 'open' | 'exiting';
+
+/** A standalone overlay the host keeps mounted through its exit with its own useEnterExit. */
+function HostEnterExitDemo() {
+  const [isOpen, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const { isMounted, isEntering, isExiting } = useEnterExit(ref, isOpen);
+  const phase: LifecyclePhase = !isMounted
+    ? 'closed'
+    : isEntering
+      ? 'entering'
+      : isExiting
+        ? 'exiting'
+        : 'open';
+  const [log, setLog] = useState<LifecyclePhase[]>(['closed']);
+  if (log.at(-1) !== phase) setLog([...log, phase]);
+  // A slower reference duration, so each phase lasts long enough to watch.
+  const slow = { '--ref-duration': '0.8s' } as CSSProperties;
+  return (
+    <div data-lab-demo="host-enter-exit">
+      <Button onPress={() => setOpen((open) => !open)}>
+        {isOpen ? 'Hide the overlay' : 'Show the overlay'}
+      </Button>{' '}
+      <Button variant="ghost" size="sm" onPress={() => setLog([phase])}>
+        Clear the log
+      </Button>
+      <div
+        data-lab-surface="true"
+        style={{ ...slow, position: 'relative', width: 320, height: 160 }}
+      >
+        <p>Surface content under the overlay.</p>
+        {isMounted ? (
+          <LoadingOverlay
+            ref={ref}
+            label="Loading the map"
+            isEntering={isEntering}
+            isExiting={isExiting}
+            data-lab-overlay="host-enter-exit"
+          />
+        ) : null}
+      </div>
+      <p>
+        Phase: <output data-lab-output="phase">{phase}</output>
+      </p>
+      <p>
+        Phases so far: <output data-lab-output="phases">{log.join(' → ')}</output>
+      </p>
+    </div>
+  );
 }
 
 /** A region rendered into an open shadow root, as a web component would hold it. */
@@ -354,6 +415,20 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Progress options"
+      description="A range from 200 to 800 (500 reads 50%), a unit formatter that words the bar's value text in megabytes, a value marked indeterminate (no percentage, no level) and a progress aria-label that names the bar apart from the card's label. The code column shows what each card receives."
+    >
+      <StateMatrix
+        axes={{ progress: Object.keys(progressOptions) as (keyof typeof progressOptions)[] }}
+        render={({ progress }) => (
+          <div style={{ width: 320 }}>
+            <LoadingCard label="Loading report" progress={progressOptions[progress]} />
+            <code data-lab-output="progress">{JSON.stringify(progressOptions[progress])}</code>
+          </div>
+        )}
+      />
+    </LabSection>
+    <LabSection
       title="Overlay"
       description="The cover over a bounded 320 × 220 surface: the card on a scrim, or the scrim alone."
     >
@@ -418,6 +493,12 @@ mountLab(
       description="With delay={500}, the region blocks only once a search has run for half a second; stop it sooner and nothing flashes."
     >
       <DelayDemo />
+    </LabSection>
+    <LabSection
+      title="Enter and exit flags from the host"
+      description="A standalone overlay the host mounts itself: it times isEntering and isExiting with its own useEnterExit on the overlay's ref, so the cover fades in, stays mounted while it fades out and unmounts after. Show and hide it again to replay; the log lists each phase."
+    >
+      <HostEnterExitDemo />
     </LabSection>
     <LabSection
       title="Full screen"

@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, familySelector, test, matrixCell } from './fixtures.js';
 
 test.describe('Expand Toggle lab', () => {
   test('UIC-EXPAND-TOGGLE-1.5 gives a leaf the toggle box at every size', async ({ page, lab }) => {
@@ -115,5 +115,72 @@ test.describe('Expand Toggle lab', () => {
     await expect(toggle).toHaveAttribute('aria-expanded', 'true');
     await expect(demo.getByRole('listitem')).toHaveText(['Cherry', 'Peach', 'Plum']);
     await lab.expectAccessible();
+  });
+
+  test('UIC-EXPAND-TOGGLE-1.9 draws a custom glyph or the chevron with a tooltip and the same name', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('expand-toggle');
+    const family = { family: 'expand-toggle-host-cases' };
+    const path = (address: string) =>
+      matrixCell(page, address, family).locator('svg path').first().getAttribute('d');
+    const chevron = await path('icon=chevron state=collapsed');
+    const folder = await path('icon=folder state=collapsed');
+    expect(folder).not.toBe(chevron);
+    expect(await path('icon=folder state=expanded')).toBe(folder);
+    expect(await path('icon=no icon (null) state=collapsed')).toBe(chevron);
+    const expanded = matrixCell(page, 'icon=folder state=expanded', family).getByRole('button');
+    await expect(expanded).toHaveAccessibleName('Collapse');
+    await expect(expanded).toHaveAttribute('aria-expanded', 'true');
+    await expanded.hover();
+    await expect(page.getByRole('tooltip')).toHaveText('Show the varieties');
+  });
+
+  test('UIC-EXPAND-TOGGLE-1.4 leaves Tab to a row that toggles with the arrows', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('expand-toggle');
+    const demo = page.locator('[data-lab-case="tab-owning-row"]');
+    const row = demo.getByRole('group', { name: 'Citrus' });
+    const toggle = row.getByRole('button', { name: 'Expand' });
+    await expect(toggle).toHaveAttribute('tabindex', '-1');
+    await row.focus();
+    await page.keyboard.press('Tab');
+    await expect(toggle).not.toBeFocused();
+    await row.focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(demo.getByText('Lemon')).toBeVisible();
+    await expect(row.getByRole('button', { name: 'Collapse' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    await page.keyboard.press('ArrowLeft');
+    await expect(demo.getByText('Lemon')).toHaveCount(0);
+    await page.keyboard.press('Enter');
+    await expect(demo.locator('[data-lab-output="row-opened"]')).toHaveText('1');
+    await row.getByRole('button', { name: 'Expand' }).click();
+    await expect(demo.getByText('Lemon')).toBeVisible();
+    await expect(demo.locator('[data-lab-output="row-opened"]')).toHaveText('1');
+  });
+
+  test('UIC-EXPAND-TOGGLE-1.3 UIC-EXPAND-TOGGLE-1.9 renders a swapped root that keeps presses off the row', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('expand-toggle');
+    const demo = page.locator('[data-lab-case="swapped-toggle"]');
+    const toggle = demo.getByRole('button', { name: 'Expand' });
+    await expect(toggle).toHaveAttribute('data-lab-swapped', 'true');
+    await expect(toggle).toHaveClass(/ui-expand-toggle/);
+    await toggle.hover();
+    await expect(toggle).toHaveAttribute('data-lab-hovered', 'true');
+    await toggle.click();
+    await expect(demo.getByText('Strawberry')).toBeVisible();
+    await expect(demo.locator('[data-lab-output="row-opened"]')).toHaveText('0');
+    await demo.getByText('Berries').click();
+    await expect(demo.locator('[data-lab-output="row-opened"]')).toHaveText('1');
+    await lab.expectAccessible(familySelector('expand-toggle-host-cases'));
   });
 });

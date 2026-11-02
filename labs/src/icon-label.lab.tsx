@@ -1,9 +1,31 @@
 import { InfoGlyph, MoreGlyph } from '../../src/core/glyphs.js';
 import { IconLabel } from '../../src/components/icon-label/icon-label.js';
+import { useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const sizes = ['sm', 'md', 'lg'] as const;
 const longText = 'A considerably longer label that wraps or truncates in a narrow column';
+
+const syncStates = ['Synced 2 minutes ago', 'Syncing…', 'Sync failed, retrying'];
+const liveModes = { off: undefined, polite: 'polite', assertive: 'assertive' } as const;
+
+/** A status label the reader changes, announced or not by its live mode. */
+function LiveStatus({ mode }: { mode: keyof typeof liveModes }) {
+  const [step, setStep] = useState(0);
+  return (
+    <div data-lab-live={mode}>
+      <IconLabel
+        icon={InfoGlyph}
+        label={syncStates[step % syncStates.length]}
+        live={liveModes[mode]}
+      />{' '}
+      <Button size="sm" onPress={() => setStep((value) => value + 1)}>
+        {`Change the ${mode} status`}
+      </Button>
+    </div>
+  );
+}
 
 mountLab(
   <>
@@ -65,6 +87,15 @@ mountLab(
             {placement === 'in a row' ? <span aria-hidden>⋯</span> : null}
           </div>
         )}
+      />
+    </LabSection>
+    <LabSection
+      title="Live announcements"
+      description="Press a button (with the pointer, or Tab to it and press Enter) to change the status beside it. With a screen reader running, the off label stays quiet, polite waits for a pause and assertive interrupts; the label's aria-live carries the mode."
+    >
+      <StateMatrix
+        axes={{ live: ['off', 'polite', 'assertive'] as const }}
+        render={({ live }) => <LiveStatus mode={live} />}
       />
     </LabSection>
   </>,
