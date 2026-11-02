@@ -12,6 +12,7 @@ import {
   type OverlayGeometry,
 } from '../../src/utils/index.js';
 import { LabOutput } from './lab-output.js';
+import { PopoverCoverageSections } from './popover-coverage-cases.js';
 
 const placements = ['top', 'bottom', 'start', 'end'] as const;
 const arrows = ['no arrow', 'arrow'] as const;
@@ -418,5 +419,6 @@ mountLab(
     >
       <GeometryDemo />
     </LabSection>
+    <PopoverCoverageSections />
   </>,
 );

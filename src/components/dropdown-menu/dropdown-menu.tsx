@@ -13,6 +13,7 @@ import {
   Menu,
   MenuPopover,
   MenuTrigger,
+  useMenuSelection,
   type MenuProps,
   type MenuSize,
   type MenuTriggerProps,
@@ -198,14 +199,14 @@ export function DropdownMenu({
   onPress,
   ...trigger
 }: DropdownMenuProps) {
+  // Held above the popover, which unmounts the menu on close, so reopening keeps the choice.
+  const selection = useMenuSelection({ selectedKeys, defaultSelectedKeys, onSelectionChange });
   const menu: MenuProps = {
     items,
     children,
     onAction,
     selectionMode,
-    selectedKeys,
-    defaultSelectedKeys,
-    onSelectionChange,
+    ...selection,
     disabledKeys,
     disallowEmptySelection,
     shouldCloseOnSelect,

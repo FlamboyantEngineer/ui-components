@@ -6,6 +6,7 @@ import { Portal, PortalHost } from '../../src/components/portal/portal.js';
 import { Section, SectionHeader } from '../../src/components/section-header/section-header.js';
 import { Shortcut } from '../../src/components/shortcut/shortcut.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { ModalCoverageSections } from './modal-coverage-cases.js';
 import { ModalFocusCases } from './modal-focus-cases.js';
 import { ModalTallCases, ModalTallFormCase } from './modal-tall-cases.js';
 import { RetainedLetter } from './modal-retained-cases.js';
@@ -529,5 +530,6 @@ mountLab(
         </PortalHost>
       </div>
     </LabSection>
+    <ModalCoverageSections />
   </>,
 );

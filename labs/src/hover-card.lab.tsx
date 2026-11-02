@@ -8,6 +8,7 @@ import {
   type HoverCardTriggerProps,
 } from '../../src/components/hover-card/hover-card.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { HoverCardCoverageSections } from './hover-card-coverage-cases.js';
 
 interface City {
   name: string;
@@ -193,5 +194,6 @@ mountLab(
     >
       <HintedTrigger />
     </LabSection>
+    <HoverCardCoverageSections />
   </>,
 );

@@ -4,6 +4,7 @@ import { Drawer, DrawerTrigger, type DrawerProps } from '../../src/components/dr
 import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { DrawerCoverageSections } from './drawer-coverage-cases.js';
 
 const positions = ['start', 'end', 'top', 'bottom'] as const;
 const sizes = ['sm', 'md', 'lg'] as const;
@@ -253,5 +254,6 @@ mountLab(
     >
       <Controlled />
     </LabSection>
+    <DrawerCoverageSections />
   </>,
 );

@@ -6,9 +6,10 @@ import {
   type ModalHandle,
 } from '../../src/components/modal-controller/modal-controller.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { ModalControllerCoverageSections } from './modal-controller-coverage-cases.js';
 
 const controller = createModalController();
-const tones = ['neutral', 'danger'] as const;
+const tones = ['neutral', 'info', 'success', 'warning', 'danger'] as const;
 const sizes = ['sm', 'md', 'lg', 'xl', 'full'] as const;
 const colours = ['Teal', 'Plum', 'Amber'] as const;
 
@@ -240,5 +241,6 @@ mountLab(
       <Workspaces />
     </LabSection>
     <ModalHost controller={controller} />
+    <ModalControllerCoverageSections />
   </>,
 );

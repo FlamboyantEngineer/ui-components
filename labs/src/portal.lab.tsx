@@ -6,6 +6,7 @@ import { isLayerAbove, overlayLayers } from '../../src/components/portal/index.j
 import { Portal, PortalContainerProvider, PortalHost } from '../../src/components/portal/portal.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { LabHelperCalls } from './lab-helper-calls.js';
+import { PortalLayerSections } from './portal-layer-cases.js';
 
 // Lab-only presentation for the content placed in portals; the library draws none of it.
 const card: CSSProperties = {
@@ -449,5 +450,6 @@ mountLab(
         ]}
       />
     </LabSection>
+    <PortalLayerSections />
   </>,
 );

@@ -16,7 +16,7 @@ test.describe('Dropdown Menu lab', () => {
   }) => {
     await lab.open('dropdown-menu');
     const cells = page.locator('table[data-lab-matrix="variant size"] td[data-lab-cell]');
-    expect(await cells.count()).toBe(5 * 4);
+    expect(await cells.count()).toBe(9 * 4);
     for (const [size, height] of [
       ['xs', 20],
       ['sm', 24],

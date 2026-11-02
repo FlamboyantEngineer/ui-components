@@ -269,6 +269,29 @@ describe('DropdownMenu', () => {
     expect(await screen.findByRole('menu')).toBeInTheDocument();
   });
 
+  it('UIC-DROPDOWN-MENU-1.4 keeps an uncontrolled selection when the menu closes and opens again', async () => {
+    const user = userEvent.setup();
+    const onSelectionChange = vi.fn();
+    render(
+      <DropdownMenu
+        label="Fruit"
+        selectionMode="multiple"
+        defaultSelectedKeys={['apples']}
+        onSelectionChange={onSelectionChange}
+      >
+        <MenuItem id="apples">Apples</MenuItem>
+        <MenuItem id="pears">Pears</MenuItem>
+      </DropdownMenu>,
+    );
+    await user.click(screen.getByRole('button', { name: 'Fruit' }));
+    await user.click(screen.getByRole('menuitemcheckbox', { name: 'Pears' }));
+    await user.keyboard('{Escape}');
+    await user.click(screen.getByRole('button', { name: 'Fruit' }));
+    expect(screen.getByRole('menuitemcheckbox', { name: 'Apples' })).toBeChecked();
+    expect(screen.getByRole('menuitemcheckbox', { name: 'Pears' })).toBeChecked();
+    expect(onSelectionChange).toHaveBeenCalledTimes(1);
+  });
+
   it('UIC-DROPDOWN-MENU-1.4 passes filterable to the menu', async () => {
     const user = userEvent.setup();
     render(<DropdownMenu label="Move to" filterable items={items} />);

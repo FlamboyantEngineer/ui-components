@@ -27,7 +27,7 @@ Verification: `src/components/dropdown-menu/dropdown-menu.test.tsx`, `e2e/dropdo
 
 ### UIC-DROPDOWN-MENU-1.4 - Menu
 
-Opening the menu shall keep the page scrollable and its scrollbar present, as a `MenuPopover` does ([UIC-MENU-4.3](MENU.md#uic-menu-43---popover)): the menu follows the trigger as the page scrolls, and scrolling an element that holds the trigger closes it. The menu shall draw `children` or `items` like `Menu`, pass `onAction`, the selection props, `disabledKeys`, `shouldCloseOnSelect` and `filterable` ([UIC-MENU-5.1](MENU.md#uic-menu-51---filterable-menu)) to it, and open at `placement` (`bottom start` by default). Its size is `menuSize`, by default the trigger size (`sm` for an `xs` trigger).
+Opening the menu shall keep the page scrollable and its scrollbar present, as a `MenuPopover` does ([UIC-MENU-4.3](MENU.md#uic-menu-43---popover)): the menu follows the trigger as the page scrolls, and scrolling an element that holds the trigger closes it. The menu shall draw `children` or `items` like `Menu`, pass `onAction`, the selection props, `disabledKeys`, `shouldCloseOnSelect` and `filterable` ([UIC-MENU-5.1](MENU.md#uic-menu-51---filterable-menu)) to it, and open at `placement` (`bottom start` by default). Without `selectedKeys` the dropdown holds the selection itself, starting at `defaultSelectedKeys`, so closing and reopening the menu keeps it. Its size is `menuSize`, by default the trigger size (`sm` for an `xs` trigger).
 
 Implementation: `src/components/dropdown-menu/dropdown-menu.tsx`, `src/components/menu/menu-popover.tsx`
 Verification: `src/components/dropdown-menu/dropdown-menu.test.tsx`, `e2e/dropdown-menu.spec.ts`

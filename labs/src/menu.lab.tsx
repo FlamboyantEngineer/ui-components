@@ -26,6 +26,7 @@ import {
 import { Portal, PortalHost } from '../../src/components/portal/portal.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
+import { MenuCoverageSections } from './menu-coverage-cases.js';
 import { MenuKeyCase } from './menu-key-case.js';
 
 const sizes = ['sm', 'md', 'lg'] as const;
@@ -603,5 +604,6 @@ mountLab(
     >
       <MenuKeyCase />
     </LabSection>
+    <MenuCoverageSections />
   </>,
 );

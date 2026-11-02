@@ -163,9 +163,10 @@ function AutocompleteMatches({ isOn, children }: { isOn: boolean; children: Reac
 
 /**
  * The selection a menu without `selectedKeys` holds itself, above the React Aria menu, so turning
- * filtering or virtualization on or off, which mounts the list again, keeps it.
+ * filtering or virtualization on or off, which mounts the list again, keeps it. A menu in a popover
+ * holds it above the popover the same way, so closing and reopening the menu keeps it.
  */
-function useMenuSelection({
+export function useMenuSelection({
   selectedKeys,
   defaultSelectedKeys,
   onSelectionChange,

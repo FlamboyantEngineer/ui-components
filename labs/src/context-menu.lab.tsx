@@ -14,6 +14,7 @@ import {
   type MenuSize,
 } from '../../src/components/menu/menu.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { ContextMenuCoverageSections } from './context-menu-coverage-cases.js';
 
 const sizes = ['sm', 'md', 'lg'] as const;
 
@@ -282,5 +283,6 @@ mountLab(
     >
       <Layers />
     </LabSection>
+    <ContextMenuCoverageSections />
   </>,
 );

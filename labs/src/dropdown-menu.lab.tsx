@@ -6,8 +6,19 @@ import { DropdownMenu } from '../../src/components/dropdown-menu/dropdown-menu.j
 import { MenuItem, MenuSection, type MenuEntry } from '../../src/components/menu/menu.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { DropdownMenuCoverageSections } from './dropdown-menu-coverage-cases.js';
 
-const variants: ButtonVariant[] = ['primary', 'secondary', 'tertiary', 'ghost', 'danger'];
+const variants: ButtonVariant[] = [
+  'primary',
+  'secondary',
+  'tertiary',
+  'ghost',
+  'danger',
+  'link',
+  'accent',
+  'chip',
+  'bare',
+];
 const sizes = ['xs', 'sm', 'md', 'lg'] as const;
 const states = ['default', 'start icon', 'no caret', 'icon only', 'disabled'] as const;
 
@@ -322,5 +333,6 @@ mountLab(
     <LabSection title="Controlled" description="The open state lives in the lab.">
       <Controlled />
     </LabSection>
+    <DropdownMenuCoverageSections />
   </>,
 );
