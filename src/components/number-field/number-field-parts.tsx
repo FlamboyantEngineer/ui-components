@@ -310,7 +310,8 @@ export function NumberScrubber({
       if (count !== 0) state.setValue(value);
     },
     onEnd: (_event, current, isCancelled) => {
-      if (current.isLost || isLocked(state)) return;
+      // The host may have replaced the value since the last move: it still wins.
+      if (current.isLost || !isScrubValue(state.value, current) || isLocked(state)) return;
       if (isCancelled) state.setValue(current.start);
       else state.commit();
     },
