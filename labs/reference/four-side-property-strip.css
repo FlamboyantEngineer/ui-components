@@ -12,6 +12,25 @@
   max-width: 100%;
 }
 
+/*
+ * The row's unit sits on the inputs' baseline, so link brackets on the strip's second row never
+ * move it from the inputs it follows, and stays beside them in a narrow row rather than wrapping
+ * under the brackets; a hint still takes a line of its own.
+ */
+.ui-four-side-property-strip > .ui-property-row__control {
+  align-items: first baseline;
+}
+
+.ui-four-side-property-strip > .ui-property-row__control:not(:has(> .ui-property-row__hint)) {
+  flex-wrap: nowrap;
+}
+
+.ui-four-side-property-strip
+  > .ui-property-row__control
+  > :is(.ui-property-strip, .ui-property-row__unit) {
+  flex: none;
+}
+
 /* Doubled to win over the strip cell's own flex layout, which loads later. */
 .ui-four-side-property-strip .ui-four-side-property-strip__side {
   display: grid;
