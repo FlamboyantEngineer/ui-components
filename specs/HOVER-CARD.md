@@ -59,10 +59,10 @@ Verification: `src/components/hover-card/hover-card.test.tsx`
 
 ### UIC-HOVER-CARD-3.1 - Preview triggers in tags
 
-A `HoverCardTrigger` inside a `Tag` shall let its ordinary button open the card on hover and keyboard focus without acting as the tag's remove button, and Escape closes the preview. The tag's own remove button keeps its action; a group without `onRemove` offers no removal and ignores Delete. A `UserCardTrigger` with `trigger="hover"` composes the same way.
+A `HoverCardTrigger` inside a `Tag` shall let its ordinary button open the card on hover and keyboard focus without acting as the tag's remove button, and Escape closes the preview. The tag's own remove button keeps its action; a group without `onRemove` offers no removal and ignores Delete. Tab from that trigger moves into the open card's first control, and without one leaves through ordinary navigation, the tag's row not taking the focus back. A `UserCardTrigger` with `trigger="hover"` composes the same way.
 
 Implementation: `src/components/hover-card/hover-card.tsx`
-Verification: `src/components/hover-card/hover-card-tag.test.tsx`
+Verification: `src/components/hover-card/hover-card-tag.test.tsx`, `src/components/user-card/user-card-preview-focus.test.tsx`
 
 ## Hooks
 

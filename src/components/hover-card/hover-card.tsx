@@ -50,8 +50,16 @@ const hooks = createHooks('hover-card', ['arrow']);
 function TriggerProps({ isEnabled, children }: { isEnabled: boolean; children: ReactNode }) {
   const props = useContext(FocusableContext);
   const continued = usePointerEntry(props ?? {}, !isEnabled);
+  const onKeyDown: typeof continued.onKeyDown = (event) => {
+    continued.onKeyDown?.(event);
+    // The trigger moved focus into the open card; a collection around it (a tag's row) must not
+    // move it back.
+    if (event.key === 'Tab' && event.defaultPrevented) event.stopPropagation();
+  };
   return (
-    <FocusableContext value={isEnabled && props ? continued : null}>{children}</FocusableContext>
+    <FocusableContext value={isEnabled && props ? { ...continued, onKeyDown } : null}>
+      {children}
+    </FocusableContext>
   );
 }
 
