@@ -4,6 +4,7 @@ import { PdfViewer, type PdfViewerProps } from '../../src/components/pdf-viewer/
 import { Switch } from '../../src/components/switch/switch.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import {
+  AccentFind,
   AnnotatedReader,
   CallerOwnedFind,
   ProjectedToolbar,
@@ -231,9 +232,15 @@ mountLab(
     </LabSection>
     <LabSection
       title="Caller-owned find"
-      description="The caller holds the query and the current match and draws its own find controls in the toolbar. Phrases can span text runs, and every occurrence can be highlighted on a page."
+      description="The caller holds the query, the current match and the find options and draws its own find controls in the toolbar: Same case, Any accent, Whole words and Mark every match set the options. Phrases can span text runs, and every occurrence can be highlighted on a page."
     >
       <CallerOwnedFind />
+    </LabSection>
+    <LabSection
+      title="Accents and whole words"
+      description="A page built in the lab writes café with a composed accent, with a separate combining accent and without one, beside cafeteria and cafes. The caller's find controls toggle each find option; the table gives the matches each query and option set finds. Mark every match is on by default; off, only the current match is marked."
+    >
+      <AccentFind />
     </LabSection>
     <LabSection
       title="Toolbar elsewhere"

@@ -1,4 +1,4 @@
-import { cellSelector, expect, matrixCell, test } from './fixtures.js';
+import { cellSelector, expect, familySelector, matrixCell, test } from './fixtures.js';
 
 test.describe('Inline Text Diff lab', () => {
   test('UIC-INLINE-TEXT-DIFF-2.1 shows a struck removed run and an added run in the sentence', async ({
@@ -110,4 +110,61 @@ test('UIC-INLINE-TEXT-DIFF-2.4 switches between the changes and the final text',
   await live.getByRole('radio', { name: 'Changes' }).click();
   await expect(live.getByRole('insertion')).toHaveText('figs first');
   await lab.expectAccessible();
+});
+
+test.describe('Inline Text Diff cases', () => {
+  test('UIC-INLINE-TEXT-DIFF-1.2 cuts the excerpt to the chosen context and run limits', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('inline-text-diff');
+    const demo = page.locator('[data-lab-demo="excerpt-limits"]');
+    const segments = demo.locator('[data-lab-output="segments"]');
+    await expect(segments).toHaveText(
+      'text: …, tarte aux pommes 🥧 et | removed: glace à la vanille 🍦 | added: sorbet au citron 🍋 | text: — servi avec un thé ver…',
+    );
+    await demo
+      .getByRole('radiogroup', { name: 'Context' })
+      .getByRole('radio', { name: '6', exact: true })
+      .press('Space');
+    await demo
+      .getByRole('radiogroup', { name: 'Run' })
+      .getByRole('radio', { name: '6', exact: true })
+      .press('Space');
+    await expect(segments).toHaveText(
+      'text: … 🥧 et | removed: glace … | added: sorbet… | text: — ser…',
+    );
+    await expect(demo.getByRole('deletion')).toHaveText('glace …');
+    await demo
+      .getByRole('radiogroup', { name: 'Context' })
+      .getByRole('radio', { name: '0', exact: true })
+      .press('Space');
+    await expect(segments).toHaveText('removed: glace … | added: sorbet…');
+    await demo
+      .getByRole('radiogroup', { name: 'Run' })
+      .getByRole('radio', { name: '0', exact: true })
+      .press('Space');
+    await expect(segments).toHaveText('');
+    await expect(demo.locator('.ui-inline-text-diff > *')).toHaveCount(0);
+  });
+
+  test('UIC-INLINE-TEXT-DIFF-2.4 shows finalText, else the joined segments, in the final view', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('inline-text-diff');
+    const final = (name: string) => page.locator(`[data-lab-final="${name}"] dd`);
+    const whole =
+      'Every crate leaves the orchard at dawn, packed with green pears, and reaches the market by noon.';
+    await expect(final('excerpt with finalText')).toHaveText(whole);
+    await expect(final('excerpt without finalText')).toHaveText(
+      '…packed with green pears, and reach…',
+    );
+    await expect(final('word diff without finalText')).toHaveText(whole);
+    await expect(page.locator('[data-lab-demo="final-sources"]').getByRole('deletion')).toHaveText([
+      'red apple',
+      'red apples',
+    ]);
+    await lab.expectAccessible(familySelector('inline-text-diff-cases'));
+  });
 });

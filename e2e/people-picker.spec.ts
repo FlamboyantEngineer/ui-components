@@ -129,4 +129,51 @@ test.describe('People Picker lab', () => {
     await expect(input).toHaveValue('Dara Nkemelu');
     await expect(area.locator('[data-lab-output="owner"]')).toHaveText('dara');
   });
+
+  test('UIC-PEOPLE-PICKER-3.1 pages a remote directory, reports a failed search and retries it', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('people-picker');
+    const demo = page.locator('[data-lab-demo="paged-directory"]');
+    const log = demo.locator('[data-lab-output="directory-log"] li');
+    const input = demo.getByRole('combobox', { name: 'Watchers' });
+    await input.scrollIntoViewIfNeeded();
+    await input.fill('nor');
+    await input.pressSequentially('th');
+    await expect(page.getByRole('option', { name: /^Alex North/ })).toBeVisible();
+    await expect(log.filter({ hasText: 'aborted' }).first()).toHaveText('aborted "nor" from 0');
+    // The end of the list is in view, so the next page loads.
+    await page.locator('.ui-combobox__listbox').evaluate((listbox) => {
+      listbox.scrollTop = listbox.scrollHeight;
+    });
+    const later = page.getByRole('option', { name: /^Gus North/ });
+    await expect(later).toBeVisible();
+    await expect(log.filter({ hasText: 'page "north"' })).toHaveText([
+      'page "north" 1-5 of 7',
+      'page "north" 6-7 of 7',
+    ]);
+    await later.click();
+    await expect(demo.locator('[data-lab-output="watchers"]')).toHaveText('gus-north');
+
+    await input.fill('lund');
+    await expect(page.getByRole('option', { name: /^Alex Lund/ })).toBeVisible();
+    await expect(demo.locator('.ui-combobox__chips [role="row"]')).toHaveText(['GNGus North']);
+    await expect(log.last()).toHaveText('page "lund" 6-7 of 7');
+    await page.keyboard.press('Escape');
+
+    await demo.getByRole('button', { name: 'Fail the next search' }).click();
+    await expect(demo.locator('[data-lab-output="next search"]')).toHaveText('fails');
+    await input.fill('marsh');
+    await expect(page.getByText('Search is unavailable.')).toBeVisible();
+    await expect(log.last()).toHaveText('failed "marsh"');
+    // Changing the text searches again, and the directory answers.
+    await input.press('Backspace');
+    await input.press('h');
+    await expect(page.getByRole('option', { name: /^Alex Marsh/ })).toBeVisible();
+    await expect(demo.locator('.ui-combobox__chips [role="row"]')).toHaveText(['GNGus North']);
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('listbox')).toHaveCount(0);
+    await lab.expectAccessible('[data-lab-demo="paged-directory"]');
+  });
 });

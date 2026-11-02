@@ -238,3 +238,46 @@ test('UIC-INLINE-EDIT-1.1 hovers with a light fill and a small pencil', async ({
   expect(alpha).toBeLessThan(0.05);
   await expect(read).toHaveCSS('border-top-color', 'rgba(0, 0, 0, 0)');
 });
+
+test.describe('Inline Edit host cases', () => {
+  test('UIC-INLINE-EDIT-1.2 UIC-INLINE-EDIT-1.5 follows a page that opens and closes the editor', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('inline-edit');
+    const demo = page.locator('[data-lab-demo="owned-editing"]');
+    const log = demo.locator('[data-lab-output="editing-log"]');
+    await demo.getByRole('button', { name: 'Edit from the page' }).click();
+    const box = demo.getByRole('textbox', { name: 'Loaf' });
+    await expect(box).toBeVisible();
+    await expect(demo.locator('[data-lab-output="editing"]')).toHaveText('open');
+    await page.keyboard.press('Escape');
+    await expect(box).toHaveCount(0);
+    await expect(log).toHaveText('close');
+    await demo.getByRole('button', { name: /^Edit Loaf/ }).click();
+    await expect(log).toHaveText('close, open');
+    await demo.getByRole('button', { name: 'Close from the page' }).click();
+    await expect(box).toHaveCount(0);
+    await expect(demo.locator('[data-lab-output="editing"]')).toHaveText('closed');
+  });
+
+  test('UIC-INLINE-EDIT-1.6 a custom editor shows isPending while its save runs', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('inline-edit');
+    const demo = page.locator('[data-lab-demo="pending-editor"]');
+    await demo.getByRole('button', { name: /^Edit Step/ }).click();
+    const box = demo.getByRole('textbox', { name: 'Step' });
+    await box.fill('Proof overnight');
+    const state = demo.locator('[data-lab-output="editor-state"]');
+    await expect(state).toHaveText('Press Enter to save');
+    await box.press('Enter');
+    await expect(state).toHaveText('Saving…');
+    await expect(box).toHaveAttribute('readonly', '');
+    await expect(box).toBeEnabled();
+    await expect(box).toHaveCount(0, { timeout: 5000 });
+    await expect(demo.locator('.ui-inline-edit__value')).toHaveText('Proof overnight');
+    await lab.expectAccessible('[data-lab-demo="pending-editor"]');
+  });
+});

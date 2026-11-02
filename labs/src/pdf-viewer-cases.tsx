@@ -19,6 +19,8 @@ import {
   ProjectionProvider,
 } from '../../src/components/projection/projection.js';
 import { SearchField } from '../../src/components/search-field/search-field.js';
+import { LabOutput } from './lab-output.js';
+import { createAccentPdf } from './pdf-accent-sample.js';
 
 // The labs build copies the sample, the engine and its worker next to the bundles
 // (scripts/build-labs.mjs); the engine is loaded by URL, as a host would load its own copy.
@@ -193,6 +195,30 @@ function CallerFindControls({ search }: { search: PdfSearchControls }) {
       >
         Same case
       </Button>
+      <Button
+        size="sm"
+        variant="ghost"
+        isSelected={options.ignoreAccents}
+        onChange={(ignoreAccents) => setOptions({ ...options, ignoreAccents })}
+      >
+        Any accent
+      </Button>
+      <Button
+        size="sm"
+        variant="ghost"
+        isSelected={options.wholeWords}
+        onChange={(wholeWords) => setOptions({ ...options, wholeWords })}
+      >
+        Whole words
+      </Button>
+      <Button
+        size="sm"
+        variant="ghost"
+        isSelected={options.highlightAll}
+        onChange={(highlightAll) => setOptions({ ...options, highlightAll })}
+      >
+        Mark every match
+      </Button>
     </span>
   );
 }
@@ -222,6 +248,69 @@ export function CallerOwnedFind() {
           onSearchQueryChange={setQuery}
           matchIndex={matchIndex}
           onMatchIndexChange={setMatchIndex}
+          searchOptions={searchOptions}
+          onSearchOptionsChange={setSearchOptions}
+          renderSearch={(search) => <CallerFindControls search={search} />}
+        />
+      </div>
+    </div>
+  );
+}
+
+const accentSample = createAccentPdf();
+
+/** Queries for the accent sample and the matches each set of options finds in it. */
+const accentCounts = [
+  ['café', 'none', 3],
+  ['café', 'Any accent', 7],
+  ['café', 'Any accent, Whole words', 5],
+  ['cafe', 'Whole words', 1],
+  ['Café', 'Same case', 2],
+  ['Café', 'Same case, Any accent', 3],
+] as const;
+
+/**
+ * A one-page sample with café written composed, decomposed and without an accent, beside longer
+ * words that hold it, searched with the caller's find controls and every find option.
+ */
+export function AccentFind() {
+  const [query, setQuery] = useState('café');
+  const [searchOptions, setSearchOptions] = useState<PdfSearchOptions>({});
+  return (
+    <div data-lab-case="accents">
+      <table>
+        <caption>Expected matches</caption>
+        <thead>
+          <tr>
+            <th scope="col">Query</th>
+            <th scope="col">Options</th>
+            <th scope="col">Matches</th>
+          </tr>
+        </thead>
+        <tbody>
+          {accentCounts.map(([text, options, count]) => (
+            <tr key={`${text} ${options}`}>
+              <td>{text}</td>
+              <td>{options}</td>
+              <td>{count}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <LabOutput name="options">
+        {Object.entries(searchOptions)
+          .filter(([, isOn]) => isOn)
+          .map(([option]) => option)
+          .join(', ') || 'none'}
+      </LabOutput>
+      <div style={{ height: 420, maxWidth: 1000 }}>
+        <PdfViewer
+          aria-label="Menu with accents"
+          source={accentSample}
+          loadEngine={loadEngine}
+          workerSrc={workerSrc}
+          searchQuery={query}
+          onSearchQueryChange={setQuery}
           searchOptions={searchOptions}
           onSearchOptionsChange={setSearchOptions}
           renderSearch={(search) => <CallerFindControls search={search} />}

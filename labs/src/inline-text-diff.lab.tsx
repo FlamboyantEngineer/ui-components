@@ -7,6 +7,7 @@ import {
   createInlineWordDiff,
   splitTextDiff,
 } from '../../src/components/inline-text-diff/index.js';
+import { InlineTextDiffCases } from './inline-text-diff-cases.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { LabHelperCalls } from './lab-helper-calls.js';
 
@@ -124,5 +125,6 @@ mountLab(
         ]}
       />
     </LabSection>
+    <InlineTextDiffCases />
   </>,
 );

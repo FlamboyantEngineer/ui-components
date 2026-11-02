@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
+import { Switch } from '../../src/components/switch/switch.js';
 import { MergeView, type MergeViewResult } from '../../src/components/merge-view/merge-view.js';
 import { ShadowRootApp } from './shadow-root-host.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
@@ -85,15 +86,21 @@ function Output({ name, value }: { name: string; value: string }) {
 
 function RecipeMerge() {
   const [result, setResult] = useState<MergeViewResult | null>(null);
+  const [showBase, setShowBase] = useState(true);
   return (
     <>
+      <Switch isSelected={showBase} onChange={setShowBase}>
+        Show the original
+      </Switch>
       <MergeView
         aria-label="Recipe merge"
         base={base}
         ours={ours}
         theirs={theirs}
         oursLabel="My edits"
+        baseLabel="Original"
         theirsLabel="Shared copy"
+        showBase={showBase}
         onChange={setResult}
         data-lab-field="recipe"
       />
@@ -185,7 +192,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Resolving conflicts"
-      description="Take a side, both or the base for each conflict, or edit its result; Next conflict and Previous conflict move between them and the count announces what is left. The result text updates below."
+      description="Take a side, both or the base for each conflict, or edit its result; Next conflict and Previous conflict move between them and the count announces what is left. The result text updates below. Each pane takes its own label: My edits, Original and Shared copy; Show the original hides and shows the base pane, and the labels stay."
     >
       <RecipeMerge />
     </LabSection>
