@@ -1,6 +1,6 @@
 'use client';
 
-import { useContext, useMemo, type RefObject } from 'react';
+import { useContext, useMemo, type ContextType, type RefObject } from 'react';
 import {
   OverlayTriggerStateContext,
   PopoverContext,
@@ -17,6 +17,12 @@ interface ScrollGuardOptions {
   isNonModal: boolean;
 }
 
+interface ScrollGuardedState {
+  /** The trigger's state for the panel, or `null` outside a trigger. */
+  state: ContextType<typeof OverlayTriggerStateContext>;
+  onOpenChange: (isOpen: boolean) => void;
+}
+
 /**
  * The open state a nonmodal panel hands React Aria, which ignores the closes `useScrollCloseGuard`
  * refuses: a queued scroll event of an ancestor that has not moved since the panel opened. React
@@ -28,7 +34,7 @@ export function useScrollGuardedState({
   onOpenChange,
   triggerRef,
   isNonModal,
-}: ScrollGuardOptions) {
+}: ScrollGuardOptions): ScrollGuardedState {
   const context = useContext(OverlayTriggerStateContext);
   const anchor = useSlottedContext(PopoverContext)?.triggerRef;
   const isIgnored = useScrollCloseGuard(

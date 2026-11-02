@@ -11,7 +11,7 @@ const rows = [
 const columns = [{ id: 'name', header: 'Name' }];
 
 it.each([undefined, false, true])(
-  'UIC-TABLE-3.6 reports repeated pointer and keyboard selection only when enabled=%s',
+  'UIC-TABLE-3.5 reports repeated pointer and keyboard selection only when enabled=%s',
   async (enabled) => {
     const user = userEvent.setup();
     const onSelectionChange = vi.fn();
@@ -36,7 +36,7 @@ it.each([undefined, false, true])(
   },
 );
 
-it('UIC-TABLE-3.6 suppresses passive controlled rerenders, disabled rows and nested controls', async () => {
+it('UIC-TABLE-3.5 suppresses passive controlled rerenders, disabled rows and nested controls', async () => {
   const user = userEvent.setup();
   const onSelectionChange = vi.fn();
   const onPress = vi.fn();

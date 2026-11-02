@@ -1,7 +1,7 @@
 import { expect, test } from './fixtures.js';
 
 for (const enabled of [false, true]) {
-  test(`UIC-TABLE-3.6 repeats reader selection events only when enabled=${String(enabled)}`, async ({
+  test(`UIC-TABLE-3.5 repeats reader selection events only when enabled=${String(enabled)}`, async ({
     page,
     lab,
   }) => {
