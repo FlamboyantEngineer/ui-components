@@ -76,7 +76,7 @@ Verification: `src/components/button/button.test.tsx`, `test/bundle.test.ts`, `e
 Beside `onPress`, the button shall report `onPressStart`, `onPressEnd`, `onPressUp` and `onPressChange`, `onHoverStart`, `onHoverEnd` and `onHoverChange`, `onFocus`, `onBlur` and `onFocusChange`, and `onKeyDown` and `onKeyUp`, with the library's event types. `autoFocus` focuses it on mount, `excludeFromTabOrder` keeps it pressable but out of the Tab order, `preventFocusOnPress` leaves focus where it was when it is pressed (a button inside a field), and `hidden` hides it with the native attribute, which the reference stylesheet honours over its display rules (at any width and variant, as a button or a link), so a hidden button takes no space, focus or press. `slot` names the part of an enclosing library component the button fills (a calendar's `previous` and `next`), and `slot={null}` keeps it out of any part. A button in a slot takes the disabled state of the component around it (a disabled `Disclosure` or `DisclosureGroup` disables its trigger) unless it sets `isDisabled` itself; leaving the prop out never enables a control its parent disabled, so it neither runs its own `onPress` nor its parent's, and leaves the tab order.
 
 Implementation: `src/components/button/button-state.tsx`
-Verification: `src/components/button/button.test.tsx`, `src/components/button/button-slot.test.tsx`
+Verification: `src/components/button/button.test.tsx`, `src/components/button/button-slot.test.tsx`, `e2e/button-host.spec.ts`
 
 ## UIC-BUTTON-2 - States
 
@@ -224,7 +224,7 @@ Verification: `src/components/button/button-action.test.tsx`
 A caller's `isPending` shall override the internal pending state. While pending the button keeps its label, and its busy indicator is named by `pendingLabel`, or the provider's `loading` string; a button named by `aria-label` is named by that label followed by the busy indicator's name, as in Button (UIC-BUTTON-2.2). `runPendingAction` exposes the same lifecycle for hosts that run an action from elsewhere (for example a keyboard shortcut).
 
 Implementation: `src/components/button/button-action.tsx`
-Verification: `src/components/button/button-action.test.tsx`
+Verification: `src/components/button/button-action.test.tsx`, `e2e/button-host.spec.ts`
 
 ### UIC-BUTTON-21.6 - Hint and shortcut
 

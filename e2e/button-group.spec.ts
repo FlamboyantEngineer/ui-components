@@ -90,4 +90,31 @@ test.describe('Button Group lab', () => {
     expect(Math.max(...widths) - Math.min(...widths)).toBeLessThan(1.5);
     expect(widths.reduce((sum, width) => sum + width, 0)).toBeGreaterThan(355);
   });
+
+  test('UIC-BUTTON-GROUP-1.4 swaps the root and passes it the group state', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('button-group');
+    const demo = page.locator('[data-lab-case="render"]');
+    const group = demo.getByRole('group', { name: 'Alignment' });
+    const state = demo.locator('[data-lab-output="state"]');
+    await expect(group).toHaveAttribute('data-lab-swapped', '');
+    await expect(group).toHaveClass(/ui-button-group/);
+    await page.mouse.move(0, 0);
+    await expect(state).toHaveText('idle');
+    await group.getByRole('button', { name: 'Centre' }).hover();
+    await expect(state).toHaveText('hovered');
+    await page.mouse.move(0, 0);
+    await group.getByRole('button', { name: 'Left' }).focus();
+    await page.keyboard.press('Tab');
+    await expect(group.getByRole('button', { name: 'Centre' })).toBeFocused();
+    await expect(state).toHaveText('focus within, focus visible');
+
+    const zoom = demo.getByRole('group', { name: 'Zoom' });
+    await expect(zoom).toHaveAttribute('data-lab-swapped', '');
+    await expect(zoom).toHaveAttribute('data-density', 'attached');
+    await expect(zoom.getByRole('button')).toHaveCount(3);
+    await lab.expectAccessible();
+  });
 });

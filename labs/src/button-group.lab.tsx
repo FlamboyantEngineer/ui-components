@@ -96,5 +96,42 @@ mountLab(
         </ButtonGroup>
       </div>
     </LabSection>
+    <LabSection
+      title="Swapped root"
+      description="render replaces the group's root with a caller's div that keeps every prop it receives (role, name, hooks and ref). The first shows the state it was given: hover the group or tab into it. The second is attached, and its swapped root still joins the buttons."
+    >
+      <div data-lab-case="render">
+        <ButtonGroup
+          aria-label="Alignment"
+          render={(props, state) => (
+            <div {...props} data-lab-swapped="">
+              {props.children}
+              <output aria-label="Group state" data-lab-output="state">
+                {[
+                  state.isHovered ? 'hovered' : null,
+                  state.isFocusWithin ? 'focus within' : null,
+                  state.isFocusVisible ? 'focus visible' : null,
+                ]
+                  .filter(Boolean)
+                  .join(', ') || 'idle'}
+              </output>
+            </div>
+          )}
+        >
+          <Button>Left</Button>
+          <Button>Centre</Button>
+          <Button>Right</Button>
+        </ButtonGroup>
+        <ButtonGroup
+          aria-label="Zoom"
+          density="attached"
+          render={(props) => <div {...props} data-lab-swapped="" />}
+        >
+          <Button>Zoom out</Button>
+          <Button>Reset zoom</Button>
+          <Button>Zoom in</Button>
+        </ButtonGroup>
+      </div>
+    </LabSection>
   </>,
 );

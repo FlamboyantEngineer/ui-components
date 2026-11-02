@@ -167,3 +167,25 @@ test('UIC-SHORTCUT-1.2 UIC-SHORTCUT-1.3 UIC-SHORTCUT-1.4 shows the exported help
   ).toHaveText('Shift Command K');
   await expect(call("detectShortcutPlatform({ platform: 'MacIntel' })")).toHaveText('mac');
 });
+
+test("UIC-SHORTCUT-1.4 UIC-SHORTCUT-1.6 names keys and joins steps in the host's words, and pairs text with aria-keyshortcuts", async ({
+  page,
+  lab,
+}) => {
+  await lab.open('shortcut');
+  await expect(
+    page.locator('[data-lab-section="Translated key names"] [data-lab-call]'),
+  ).toHaveText('Contrôle K, puis Maj Flèche haut, puis Entrée');
+  const row = (name: string) =>
+    page.locator(`[data-lab-case="aria-keyshortcuts"] [data-lab-chord="${name}"]`);
+  await expect(row('Ctrl+S mac').locator('[data-lab-output="text"]')).toHaveText('Command S');
+  await expect(row('Ctrl+S mac').locator('[data-lab-output="aria"]')).toHaveText('Meta+S');
+  await expect(row('Ctrl+S windows').locator('[data-lab-output="aria"]')).toHaveText('Control+S');
+  await expect(row('Alt+Shift+↑ linux').locator('[data-lab-output="aria"]')).toHaveText(
+    'Alt+Shift+ArrowUp',
+  );
+  await expect(row('Ctrl++ windows').locator('[data-lab-output="aria"]')).toHaveText(
+    'Control+Plus',
+  );
+  await lab.expectAccessible();
+});

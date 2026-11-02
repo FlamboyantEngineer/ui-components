@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { Link } from '../../src/components/link/link.js';
+import type { JSX } from 'react';
+import { Button } from '../../src/components/button/button.js';
+import { Link, type LinkProps, type LinkRenderState } from '../../src/components/link/link.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -16,9 +18,16 @@ function stateProps(state: string) {
 
 function ClientNavigation() {
   const [route, setRoute] = useState('/recipes');
+  const [options, setOptions] = useState('none');
   return (
     <div data-lab-demo="router">
-      <UiProvider navigate={setRoute} useHref={(href) => `#${href}`}>
+      <UiProvider
+        navigate={(href, routerOptions) => {
+          setRoute(href);
+          setOptions(routerOptions === undefined ? 'none' : JSON.stringify(routerOptions));
+        }}
+        useHref={(href) => `#${href}`}
+      >
         <ul>
           <li>
             <Link href="/recipes/lemon-tart" isStandalone>
@@ -30,10 +39,22 @@ function ClientNavigation() {
               Plum crumble
             </Link>
           </li>
+          <li>
+            <Link
+              href="/recipes/pear-tart"
+              routerOptions={{ scroll: false, replace: true }}
+              isStandalone
+            >
+              Pear tart, replacing the route
+            </Link>
+          </li>
         </ul>
       </UiProvider>
       <p>
         Current route: <output data-lab-output="route">{route}</output>
+      </p>
+      <p>
+        Router options: <output data-lab-output="router-options">{options}</output>
       </p>
     </div>
   );
@@ -51,6 +72,98 @@ function ShowMore() {
       <Link isStandalone onPress={() => setExpanded((value) => !value)}>
         {isExpanded ? 'Show fewer fruit' : `Show ${extraFruit.length} more fruit`}
       </Link>
+    </div>
+  );
+}
+
+/** The state a swapped link was given, named in words. */
+function describeState(state: LinkRenderState): string {
+  const parts = [
+    state.isHovered ? 'hovered' : null,
+    state.isPressed ? 'pressed' : null,
+    state.isFocusVisible ? 'focus visible' : null,
+    state.isDisabled ? 'disabled' : null,
+    state.isCurrent ? 'current' : null,
+  ].filter(Boolean);
+  return parts.length > 0 ? parts.join(', ') : 'idle';
+}
+
+/**
+ * A host's own element: an anchor when the link navigates, a span otherwise, with a marker and the
+ * received state beside the text.
+ */
+const swappedLink: NonNullable<LinkProps['render']> = ({ children, ...props }, state) => {
+  const content = (
+    <>
+      {children}
+      <span aria-hidden="true" data-lab-output="link-state">
+        {` [${describeState(state)}]`}
+      </span>
+    </>
+  );
+  if (typeof props.href === 'string' && props['aria-disabled'] === undefined) {
+    return (
+      <a {...props} data-lab-swapped="">
+        {content}
+      </a>
+    );
+  }
+  const { href: _href, target: _target, rel: _rel, ...spanProps } = props;
+  return (
+    <span {...(spanProps as JSX.IntrinsicElements['span'])} data-lab-swapped="">
+      {content}
+    </span>
+  );
+};
+
+/** Swapped links whose press and hover callbacks write to a log. */
+function SwappedLinks() {
+  const [log, setLog] = useState<string[]>([]);
+  const [route, setRoute] = useState('/recipes');
+  const logged = (name: string) => {
+    const add = (entry: string) => setLog((current) => [...current, `${name}: ${entry}`]);
+    return {
+      onPress: () => add('press'),
+      onPressStart: () => add('pressStart'),
+      onPressEnd: () => add('pressEnd'),
+      onPressChange: (isPressed: boolean) => add(`pressChange ${String(isPressed)}`),
+      onHoverStart: () => add('hoverStart'),
+      onHoverEnd: () => add('hoverEnd'),
+      onHoverChange: (isHovering: boolean) => add(`hoverChange ${String(isHovering)}`),
+    };
+  };
+  return (
+    <div data-lab-demo="render">
+      <UiProvider navigate={setRoute} useHref={(href) => `#${href}`}>
+        <ul>
+          <li>
+            <Link href="/recipes/apple-pie" render={swappedLink} {...logged('Navigation')}>
+              Apple pie
+            </Link>
+          </li>
+          <li>
+            <Link render={swappedLink} {...logged('Press only')}>
+              Show the method
+            </Link>
+          </li>
+          <li>
+            <Link href="/recipes/fig-roll" isDisabled render={swappedLink} {...logged('Disabled')}>
+              Fig roll
+            </Link>
+          </li>
+        </ul>
+      </UiProvider>
+      <p>
+        Current route: <output data-lab-output="route">{route}</output>
+      </p>
+      <Button size="sm" variant="ghost" onPress={() => setLog([])}>
+        Clear log
+      </Button>
+      <ol aria-label="Link events" data-lab-output="events">
+        {log.map((entry, index) => (
+          <li key={index}>{entry}</li>
+        ))}
+      </ol>
     </div>
   );
 }
@@ -136,9 +249,15 @@ mountLab(
     </LabSection>
     <LabSection
       title="Client-side navigation"
-      description="Under a provider with navigate, links change the route without loading a page; useHref maps the route to the anchor's href."
+      description="Under a provider with navigate, links change the route without loading a page; useHref maps the route to the anchor's href. The pear tart link passes routerOptions, which navigate receives with the href."
     >
       <ClientNavigation />
+    </LabSection>
+    <LabSection
+      title="Swapped element and events"
+      description="render swaps each link for the host's own anchor or span, with a marker and the state it received in brackets: hover, press or tab to them. The navigation link still navigates through the provider; the press-only and disabled links are spans. Their press and hover callbacks write to the log; the disabled link writes nothing."
+    >
+      <SwappedLinks />
     </LabSection>
     <LabSection
       title="Links without an href"

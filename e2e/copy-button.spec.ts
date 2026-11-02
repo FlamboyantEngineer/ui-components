@@ -8,7 +8,19 @@ test.describe('Copy Button lab', () => {
         `${cellSelector(`state=${state} variant=${variant} size=${size}`)} .ui-copy-button__button`,
       );
     await expect(button('rest', 'ghost', 'md')).toHaveClass(/ui-button/);
-    await expect(button('rest', 'secondary', 'sm')).toHaveAttribute('data-variant', 'secondary');
+    for (const variant of [
+      'primary',
+      'secondary',
+      'tertiary',
+      'danger',
+      'ghost',
+      'accent',
+      'chip',
+      'link',
+      'bare',
+    ]) {
+      await expect(button('rest', variant, 'sm')).toHaveAttribute('data-variant', variant);
+    }
     await expect(button('disabled', 'ghost', 'lg')).toBeDisabled();
     const sizes = await Promise.all(
       ['xs', 'sm', 'md', 'lg'].map(
@@ -64,6 +76,36 @@ test.describe('Copy Button lab', () => {
     await page.keyboard.press('Enter');
     await expect(status).toHaveText('Copied');
     await lab.expectAccessible();
+  });
+
+  test('UIC-COPY-BUTTON-1.3 keeps the feedback for the chosen timeout', async ({
+    page,
+    lab,
+    baseURL,
+  }) => {
+    await page.context().grantPermissions(['clipboard-read', 'clipboard-write'], {
+      origin: new URL(baseURL ?? 'http://127.0.0.1/').origin,
+    });
+    await page.clock.install();
+    await lab.open('copy-button');
+    await page.clock.pauseAt(Date.now() + 1000);
+    const demo = page.locator('[data-lab-demo="timeout"]');
+    const root = demo.locator('.ui-copy-button');
+    const button = demo.getByRole('button', { name: 'Copy the invoice number' });
+    await button.click();
+    await expect(root).toHaveAttribute('data-copied', 'true');
+    await page.clock.runFor(600);
+    await expect(root).not.toHaveAttribute('data-copied');
+
+    await demo.getByRole('radio', { name: 'Long (5 s)' }).click();
+    await expect(demo.locator('[data-lab-output="timeout"]')).toHaveText('5000 ms');
+    await button.click();
+    await expect(root).toHaveAttribute('data-copied', 'true');
+    await page.clock.runFor(4999);
+    await expect(root).toHaveAttribute('data-copied', 'true');
+    await page.clock.runFor(1);
+    await expect(root).not.toHaveAttribute('data-copied');
+    await expect(demo.locator('[data-lab-output="copies"]')).toHaveText('2');
   });
 
   test('UIC-CLIPBOARD-2.1 preserves latest feedback and reset across pending writes', async ({

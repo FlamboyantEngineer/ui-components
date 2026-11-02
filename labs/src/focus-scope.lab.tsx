@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Button } from '../../src/components/button/button.js';
 import { FocusScope, useFocusManager } from '../../src/components/focus-scope/focus-scope.js';
+import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { Switch } from '../../src/components/switch/switch.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
@@ -187,27 +188,111 @@ function FramedScope() {
   );
 }
 
-function FruitFilters() {
+interface FilterOptions {
+  wrap: boolean;
+  tabbable: boolean;
+  skipSoldOut: boolean;
+  startAt: 'focused' | 'Plums';
+}
+
+/** Fruit chips; Pears is sold out and Quinces is focusable from code only (tabIndex -1). */
+function FruitFilters({
+  options,
+  onMove,
+}: {
+  options: FilterOptions;
+  onMove: (result: string) => void;
+}) {
   const manager = useFocusManager();
+  const toolbarRef = useRef<HTMLDivElement>(null);
+  const managerOptions = () => ({
+    wrap: options.wrap,
+    tabbable: options.tabbable,
+    accept: options.skipSoldOut
+      ? (node: Element) => !node.hasAttribute('data-sold-out')
+      : undefined,
+    from:
+      options.startAt === 'Plums'
+        ? (toolbarRef.current?.querySelector('[data-fruit="Plums"]') ?? undefined)
+        : undefined,
+  });
   const onKeyDown = (event: KeyboardEvent) => {
-    const moves: Record<string, () => void> = {
-      ArrowRight: () => manager?.focusNext({ wrap: true }),
-      ArrowLeft: () => manager?.focusPrevious({ wrap: true }),
-      Home: () => manager?.focusFirst(),
-      End: () => manager?.focusLast(),
+    const moves: Record<string, () => Element | null | undefined> = {
+      ArrowRight: () => manager?.focusNext(managerOptions()),
+      ArrowLeft: () => manager?.focusPrevious(managerOptions()),
+      Home: () => manager?.focusFirst(managerOptions()),
+      End: () => manager?.focusLast(managerOptions()),
     };
     const move = moves[event.key];
     if (!move) return;
     event.preventDefault();
-    move();
+    const focused = move();
+    onMove(`${event.key}: ${focused?.getAttribute('data-fruit') ?? 'nothing (stayed put)'}`);
   };
   return (
-    <div role="toolbar" aria-label="Fruit filters" onKeyDown={onKeyDown}>
+    <div ref={toolbarRef} role="toolbar" aria-label="Fruit filters" onKeyDown={onKeyDown}>
       {fruit.map((name) => (
-        <Button key={name} size="sm" variant="chip">
-          {name}
+        <Button
+          key={name}
+          size="sm"
+          variant="chip"
+          data-fruit={name}
+          data-sold-out={name === 'Pears' ? '' : undefined}
+        >
+          {name === 'Pears' ? 'Pears (sold out)' : name}
         </Button>
       ))}
+      <button type="button" tabIndex={-1} data-fruit="Quinces">
+        Quinces (not tabbable)
+      </button>
+    </div>
+  );
+}
+
+function FocusManagerDemo() {
+  const [options, setOptions] = useState<FilterOptions>({
+    wrap: true,
+    tabbable: true,
+    skipSoldOut: false,
+    startAt: 'focused',
+  });
+  const [result, setResult] = useState('No move yet');
+  const toggle = (key: 'wrap' | 'tabbable' | 'skipSoldOut') => (value: boolean) =>
+    setOptions((current) => ({ ...current, [key]: value }));
+  return (
+    <div data-lab-demo="manager-options">
+      <div role="group" aria-label="Focus manager options">
+        <Switch isSelected={options.wrap} onChange={toggle('wrap')}>
+          Wrap at the ends
+        </Switch>
+        <Switch isSelected={options.tabbable} onChange={toggle('tabbable')}>
+          Tabbable elements only
+        </Switch>
+        <Switch isSelected={options.skipSoldOut} onChange={toggle('skipSoldOut')}>
+          Skip sold-out fruit (accept)
+        </Switch>
+        <SegmentedChoice
+          aria-label="Start from"
+          sizing="content"
+          options={[
+            { value: 'focused', label: 'Focused element' },
+            { value: 'Plums', label: 'Plums' },
+          ]}
+          value={options.startAt}
+          onChange={(value) =>
+            setOptions((current) => ({
+              ...current,
+              startAt: value === 'Plums' ? 'Plums' : 'focused',
+            }))
+          }
+        />
+      </div>
+      <FocusScope data-lab-demo="filters">
+        <FruitFilters options={options} onMove={setResult} />
+      </FocusScope>
+      <output aria-label="Last move" data-lab-output="move">
+        {result}
+      </output>
     </div>
   );
 }
@@ -259,11 +344,9 @@ mountLab(
     </LabSection>
     <LabSection
       title="Arrow keys through the focus manager"
-      description="The filters use useFocusManager: ArrowRight and ArrowLeft wrap around, Home and End jump to the ends."
+      description="The filters use useFocusManager: ArrowRight and ArrowLeft move, Home and End jump to the ends. The switches set wrap, tabbable (Quinces is focusable from code only) and accept (skips Pears); Start from passes Plums as from. The readout names the element each move returned."
     >
-      <FocusScope data-lab-demo="filters">
-        <FruitFilters />
-      </FocusScope>
+      <FocusManagerDemo />
     </LabSection>
   </>,
 );

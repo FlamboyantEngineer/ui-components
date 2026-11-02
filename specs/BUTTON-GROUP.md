@@ -30,7 +30,7 @@ Verification: `src/components/button-group/button-group.test.tsx`, `e2e/button-g
 `ButtonGroup` shall carry the hooks below, append the caller's `className`, forward caller `data-*` attributes, `id` and `ref` to its root, keep its own hook values over caller attributes of the same name, and take `render`, typed `ElementRender<'div', ButtonGroupRenderState>`, so the caller can swap the root `<div>` ([COMPOSITION.md](COMPOSITION.md)); the state holds `isHovered`, `isFocusWithin` and `isFocusVisible`.
 
 Implementation: `src/components/button-group/button-group.tsx`
-Verification: `src/components/button-group/button-group.test.tsx`
+Verification: `src/components/button-group/button-group.test.tsx`, `e2e/button-group.spec.ts`
 
 ## Hooks
 

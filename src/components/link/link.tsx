@@ -31,7 +31,8 @@ export interface LinkRenderState extends InteractionState {
 export interface LinkProps
   extends
     BaseProps,
-    PressEventProps,
+    // React Aria's link reports no press-up: a press always starts on the link it ends on.
+    Omit<PressEventProps, 'onPressUp'>,
     HoverEventProps,
     FocusEventProps,
     AriaLabellingProps,

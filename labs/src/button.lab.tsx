@@ -15,6 +15,7 @@ import { Button } from '../../src/components/button/button.js';
 import { mergeProps } from '../../src/utils/merge-props.js';
 import { buttonSizes, buttonStates, buttonVariants } from './button-axes.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { ButtonHostCases } from './button-host-cases.js';
 
 const hints = ['tooltip', 'shortcut', 'tooltip and shortcut'] as const;
 
@@ -302,5 +303,6 @@ mountLab(
     <ButtonIconCases />
     <ButtonActionCases />
     <ButtonTriggerCases />
+    <ButtonHostCases />
   </>,
 );
