@@ -6,6 +6,7 @@ import {
   type ToolbarScrollerItem,
 } from '../../src/components/toolbar-scroller/toolbar-scroller.js';
 import { UiProvider } from '../../src/core/provider.js';
+import { ToolbarScrollerCases } from './toolbar-scroller-cases.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const fewTools = ['Bold', 'Italic'];
@@ -170,5 +171,6 @@ mountLab(
     >
       <TypedTools />
     </LabSection>
+    <ToolbarScrollerCases />
   </>,
 );

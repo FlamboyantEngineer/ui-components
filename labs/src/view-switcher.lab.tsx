@@ -17,6 +17,7 @@ import {
 } from '../../src/components/view-switcher/view-switcher.js';
 import type { Key } from '../../src/core/props.js';
 import { requireDefined } from './require-defined.js';
+import { ViewSwitcherCases } from './view-switcher-cases.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { RecipeTable, recipeProperties, recipes } from './recipe-samples.js';
 
@@ -223,5 +224,6 @@ mountLab(
     >
       <SwitchingLayout />
     </LabSection>
+    <ViewSwitcherCases />
   </>,
 );
