@@ -117,7 +117,19 @@ test.describe('Chat Activity lab', () => {
     const icon = matrixCell(page, 'running=running content=icon');
     await expect(icon.locator('.ui-chat-status-line__icon .ui-icon')).toBeVisible();
     await expect(icon.locator('.ui-chat-status-line__spinner')).toHaveCount(0);
-    for (const content of ['text', 'thinking', 'icon']) {
+    const writing = matrixCell(page, 'running=running content=writing');
+    await expect(writing.locator('.ui-chat-status-line')).toHaveAttribute(
+      'data-activity',
+      'writing',
+    );
+    await expect(writing.locator('.ui-chat-status-line__spinner')).toBeVisible();
+    await expect(writing.locator('.ui-chat-status-line__text')).toHaveCount(0);
+    await expect(writing.getByRole('status')).toHaveText('');
+    await expect(running.locator('.ui-chat-status-line')).toHaveAttribute(
+      'data-activity',
+      'thinking',
+    );
+    for (const content of ['text', 'thinking', 'icon', 'writing']) {
       await expect(
         matrixCell(page, `running=stopped content=${content}`).locator('.ui-chat-status-line'),
       ).toHaveCount(0);
@@ -161,6 +173,56 @@ test.describe('Chat Activity lab', () => {
     await expect(toggle).toBeChecked();
     await expect(trigger).toHaveAttribute('aria-expanded', 'true');
     await trigger.click();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await expect(toggle).not.toBeChecked();
+  });
+
+  test('UIC-CHAT-ACTIVITY-1.2 UIC-CHAT-ACTIVITY-1.5 UIC-CHAT-ACTIVITY-2.2 UIC-CHAT-ACTIVITY-2.4 opens running parts on request and keeps the reader’s choice', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-activity');
+    const demo = page.locator('[data-lab-demo="manual"]');
+    const trigger = (part: string, opens: string) =>
+      matrixCell(demo, `part=${part} opens=${opens}`).getByRole('button');
+    await expect(trigger('reasoning', 'automatically')).toHaveAttribute('aria-expanded', 'true');
+    await expect(trigger('steps', 'automatically')).toHaveAttribute('aria-expanded', 'true');
+    const reasoning = trigger('reasoning', 'on request');
+    const steps = trigger('steps', 'on request');
+    await expect(reasoning).toHaveAttribute('aria-expanded', 'false');
+    await expect(reasoning).toHaveAccessibleName('Thinking…');
+    await expect(steps).toHaveAttribute('aria-expanded', 'false');
+    await expect(steps).toHaveAccessibleName('Working…');
+    await reasoning.click();
+    await expect(reasoning).toHaveAttribute('aria-expanded', 'true');
+    await lab.expectAccessible('[data-lab-demo="manual"]');
+    await demo.getByRole('switch', { name: 'Running' }).focus();
+    await page.keyboard.press('Space');
+    await expect(trigger('reasoning', 'automatically')).toHaveAttribute('aria-expanded', 'false');
+    await expect(trigger('steps', 'automatically')).toHaveAttribute('aria-expanded', 'false');
+    await expect(reasoning).toHaveAttribute('aria-expanded', 'true');
+    await expect(reasoning).toHaveAccessibleName('Thought for 4 s');
+    await expect(steps).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  test('UIC-CHAT-ACTIVITY-2.4 follows a controlled group of steps through the end of the run', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-activity');
+    const demo = page.locator('[data-lab-demo="controlled-steps"]');
+    const trigger = demo.locator('.ui-chat-steps').getByRole('button');
+    const toggle = demo.getByRole('switch', { name: 'Show the steps' });
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await toggle.focus();
+    await page.keyboard.press('Space');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await demo.getByRole('switch', { name: 'Still running' }).focus();
+    await page.keyboard.press('Space');
+    await expect(trigger).not.toHaveAccessibleName('Working…');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await trigger.click();
+    await expect(demo.locator('[data-lab-output="requested"]')).toHaveText('false');
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');
     await expect(toggle).not.toBeChecked();
   });

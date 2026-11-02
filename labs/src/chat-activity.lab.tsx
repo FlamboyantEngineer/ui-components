@@ -12,6 +12,7 @@ import { Switch } from '../../src/components/switch/switch.js';
 import { LabToolCall, planSteps, reasoningText } from './chat-activity-samples.js';
 import { ActivitySimulation } from './chat-activity-simulation.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabOutput } from './lab-output.js';
 
 const formats = ['markdown', 'plain'] as const satisfies readonly ChatReasoningFormat[];
 const reasoningStates = [
@@ -101,6 +102,89 @@ function ControlledReasoning() {
   );
 }
 
+const openings = ['automatically', 'on request'] as const;
+
+/**
+ * Reasoning and steps that open while they run, beside ones that wait for the reader
+ * (`expandsAutomatically` false), all driven by one switch: the run ends with the switch off, and
+ * a part the reader opened or closed keeps that choice.
+ */
+function ManualExpansion() {
+  const [isRunning, setRunning] = useState(true);
+  return (
+    <div data-lab-demo="manual">
+      <Switch isSelected={isRunning} onChange={setRunning}>
+        Running
+      </Switch>
+      <StateMatrix
+        axes={{ part: ['reasoning', 'steps'], opens: openings }}
+        render={({ part, opens }) => {
+          const expandsAutomatically = opens === 'automatically';
+          return (
+            <div style={{ width: 260 }}>
+              {part === 'reasoning' ? (
+                <ChatReasoning
+                  text={isRunning ? reasoningText.slice(0, 90) : reasoningText}
+                  status={isRunning ? 'streaming' : 'complete'}
+                  durationMs={4400}
+                  expandsAutomatically={expandsAutomatically}
+                />
+              ) : (
+                <ChatSteps
+                  isRunning={isRunning}
+                  actions={[{ kind: 'search', count: 2 }]}
+                  expandsAutomatically={expandsAutomatically}
+                >
+                  <LabToolCall label="Searched trains to Porto" />
+                  <LabToolCall
+                    label={isRunning ? 'Searching buses to Porto…' : 'Searched buses to Porto'}
+                    isRunning={isRunning}
+                  />
+                </ChatSteps>
+              )}
+            </div>
+          );
+        }}
+      />
+    </div>
+  );
+}
+
+/**
+ * Steps whose expansion a switch outside controls while the run goes on and ends: the run changes
+ * nothing, and each press of the trigger is a request the host applies and reports.
+ */
+function ControlledSteps() {
+  const [isExpanded, setExpanded] = useState(false);
+  const [isRunning, setRunning] = useState(true);
+  const [requested, setRequested] = useState('none');
+  return (
+    <div data-lab-demo="controlled-steps">
+      <Switch isSelected={isExpanded} onChange={setExpanded}>
+        Show the steps
+      </Switch>
+      <Switch isSelected={isRunning} onChange={setRunning}>
+        Still running
+      </Switch>
+      <ChatSteps
+        isRunning={isRunning}
+        actions={[{ kind: 'search', count: 1 }]}
+        isExpanded={isExpanded}
+        onExpandedChange={(next) => {
+          setRequested(String(next));
+          setExpanded(next);
+        }}
+      >
+        <LabToolCall
+          label={isRunning ? 'Searching trains to Porto…' : 'Searched trains to Porto'}
+          isRunning={isRunning}
+        />
+      </ChatSteps>
+      <LabOutput name="requested">{requested}</LabOutput>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -121,6 +205,18 @@ mountLab(
       description="The switch controls the reasoning; pressing its trigger asks to change it, which flips the switch."
     >
       <ControlledReasoning />
+    </LabSection>
+    <LabSection
+      title="Opening on request"
+      description="With expandsAutomatically false, running reasoning and steps stay closed until the reader opens them, still busy and labelled as they run; the default opens them. Turn Running off to end the run: the automatic parts collapse, and a part the reader opened or closed keeps that choice."
+    >
+      <ManualExpansion />
+    </LabSection>
+    <LabSection
+      title="Controlled steps"
+      description="The Show the steps switch controls the group (isExpanded); its trigger asks to change it through onExpandedChange, which flips the switch. Ending the run with Still running changes nothing while controlled."
+    >
+      <ControlledSteps />
     </LabSection>
     <LabSection
       title="Steps"
@@ -151,13 +247,19 @@ mountLab(
     </LabSection>
     <LabSection
       title="Status line"
-      description="A live line while the assistant works, its text shimmering: what it does, Thinking… without a text, or an icon in place of the busy indicator; nothing once it stops."
+      description="A live line while the assistant works, its text shimmering: what it does, Thinking… without a text, or an icon in place of the busy indicator. While it writes its answer (activity writing) the indicator shows alone, without text or announcement, even with a text given. Nothing once it stops."
     >
       <StateMatrix
-        axes={{ running: ['running', 'stopped'], content: ['text', 'thinking', 'icon'] }}
+        axes={{
+          running: ['running', 'stopped'],
+          content: ['text', 'thinking', 'icon', 'writing'],
+        }}
         render={({ running, content }) => (
           <ChatStatusLine
-            text={content === 'text' ? 'Searching trains to Porto…' : undefined}
+            text={
+              content === 'text' || content === 'writing' ? 'Searching trains to Porto…' : undefined
+            }
+            activity={content === 'writing' ? 'writing' : 'thinking'}
             icon={content === 'icon' ? <Icon icon={SearchGlyph} size="sm" /> : undefined}
             isRunning={running === 'running'}
           />
