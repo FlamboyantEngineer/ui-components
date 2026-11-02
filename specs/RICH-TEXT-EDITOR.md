@@ -231,9 +231,9 @@ Verification: `src/components/rich-text-editor/insert-menu.test.tsx`, `e2e/rich-
 
 ### UIC-RICH-TEXT-EDITOR-9.1 - Placement
 
-`BlockHandle` shall render `ui-block-handle`, absolutely placed in the surface at the top of the top-level block under the pointer, or else of the first block the selection touches while the document or the handle has focus or its menu is open; it renders nothing otherwise or while the editor is not editable. It follows the block as the document changes.
+`BlockHandle` shall render `ui-block-handle`, absolutely placed in the surface at the top of the top-level block level with the pointer, or else of the first block the selection touches while the document or the handle has focus or its menu is open; it renders nothing otherwise or while the editor is not editable. The pointer picks a block over its text or anywhere in the surface's gutter beside it, entered directly from outside the editor without crossing the text; in a gap between blocks it picks the nearer one, and as the surface scrolls under a still pointer it picks the block now beside it. Over the handle itself the block stays, and hovering never selects, focuses or changes the document. It follows the block as the document changes.
 
-Implementation: `src/components/rich-text-editor/block-handle.tsx`, `src/components/rich-text-editor/use-block-target.ts`
+Implementation: `src/components/rich-text-editor/block-handle.tsx`, `src/components/rich-text-editor/use-block-target.ts`, `src/components/rich-text-editor/block-at-pointer.ts`
 Verification: `src/components/rich-text-editor/block-handle.test.tsx`, `e2e/rich-text-editor.spec.ts`
 
 ### UIC-RICH-TEXT-EDITOR-9.2 - Drag

@@ -84,7 +84,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Block handle controls"
-      description="BlockHandle shows a grip and a block menu; grip={false} or menu={false} leaves one out. The gutter is only as wide as the chosen controls, and none is kept for neither control or without a BlockHandle child. The narrow editors scroll; hover a block, or click into it, to see the handle. Alt+Shift+Up and Down still move blocks."
+      description="BlockHandle shows a grip and a block menu; grip={false} or menu={false} leaves one out. The gutter is only as wide as the chosen controls, and none is kept for neither control or without a BlockHandle child. The narrow editors scroll; hover a block or the margin beside it, or click into it, to see the handle. Alt+Shift+Up and Down still move blocks."
     >
       <BlockHandleChoices />
     </LabSection>

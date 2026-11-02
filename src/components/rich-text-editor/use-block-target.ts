@@ -2,11 +2,13 @@
 
 import {
   useEditorEffect,
+  useEditorEventCallback,
   useEditorEventListener,
   useEditorState,
 } from '@handlewithcare/react-prosemirror';
 import type { Node as DocNode } from 'prosemirror-model';
 import { useEffect, useState, type FocusEvent } from 'react';
+import { findBlockAtY } from './block-at-pointer.js';
 import { findTopBlocks } from './block-commands.js';
 import { useRichTextEditorContext } from './rich-text-context.js';
 import { isElement, isHTMLElement, isNode } from '../../utils/is-element.js';
@@ -26,17 +28,8 @@ interface Hovered {
   doc: DocNode;
 }
 
-/** The position of the top-level block holding a document position. */
-function findTopLevelPos(doc: DocNode, pos: number): number {
-  const $pos = doc.resolve(pos);
-  if ($pos.depth > 0) return $pos.before(1);
-  let start = 0;
-  for (let index = 0; index < $pos.index(0); index += 1) start += doc.child(index).nodeSize;
-  return start;
-}
-
 /**
- * The block under the pointer, or else the block holding the selection while the document or the
+ * The block level with the pointer, over its text or in the surface's gutter beside it, or else the block holding the selection while the document or the
  * handle has focus (or `isHeld`, as while the handle's menu is open or its block is dragged),
  * placed against the surface.
  */
@@ -51,16 +44,17 @@ export function useBlockTarget(isHeld: boolean): BlockTarget | null {
   const hoveredPos = hovered?.doc === state.doc && !isHeld ? hovered.pos : null;
   const pos = hoveredPos ?? (isFocused ? (findTopBlocks(state)?.from ?? null) : null);
 
-  useEditorEventListener('mousemove', (view, event) => {
-    if (isHeld) return false;
-    const found = view.posAtCoords({ left: event.clientX, top: event.clientY });
-    if (!found) return false;
+  // Over the document or the surface's own gutter the pointer picks a block; over the handle
+  // itself, or other chrome, the target stays.
+  const hoverAt = useEditorEventCallback((view, y: number, over: EventTarget | null) => {
+    const surface = surfaceRef.current;
+    if (over !== surface && !(isNode(over) && view.dom.contains(over))) return;
+    const block = findBlockAtY(view, y);
     const { doc } = view.state;
-    const block = findTopLevelPos(doc, found.pos);
-    setHovered((current) =>
-      current?.pos === block && current.doc === doc ? current : { pos: block, doc },
-    );
-    return false;
+    setHovered((current) => {
+      if (block === null) return null;
+      return current?.pos === block && current.doc === doc ? current : { pos: block, doc };
+    });
   });
   useEditorEventListener('focus', () => (setEditorFocus(true), false));
   useEditorEventListener('blur', (_view, event) => {
@@ -70,10 +64,26 @@ export function useBlockTarget(isHeld: boolean): BlockTarget | null {
   });
   useEffect(() => {
     const surface = surfaceRef.current;
-    const leave = () => setHovered(null);
-    surface?.addEventListener('pointerleave', leave);
-    return () => surface?.removeEventListener('pointerleave', leave);
-  }, [surfaceRef]);
+    if (!surface) return;
+    // The pointer's last place over the surface, to retarget as the surface scrolls under it.
+    let last: { y: number; over: EventTarget | null } | null = null;
+    const move = (event: PointerEvent) => {
+      last = { y: event.clientY, over: event.target };
+      if (!isHeld) hoverAt(last.y, last.over);
+    };
+    const scroll = () => {
+      if (last && !isHeld) hoverAt(last.y, last.over);
+    };
+    const leave = () => ((last = null), setHovered(null));
+    surface.addEventListener('pointermove', move);
+    surface.addEventListener('scroll', scroll);
+    surface.addEventListener('pointerleave', leave);
+    return () => {
+      surface.removeEventListener('pointermove', move);
+      surface.removeEventListener('scroll', scroll);
+      surface.removeEventListener('pointerleave', leave);
+    };
+  }, [surfaceRef, isHeld, hoverAt]);
   useEditorEffect(
     (view) => {
       const dom = pos === null ? null : view.nodeDOM(pos);
