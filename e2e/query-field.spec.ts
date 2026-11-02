@@ -1,4 +1,5 @@
 import { expect, test, matrixCell } from './fixtures.js';
+import type { Locator } from '@playwright/test';
 
 test.describe('Query Field lab', () => {
   test('UIC-QUERY-FIELD-1.1 UIC-QUERY-FIELD-1.3 UIC-QUERY-FIELD-1.5 UIC-CODE-EDITOR-1.7 draws one-line queries in every state', async ({
@@ -112,7 +113,7 @@ test.describe('Query Field suggestions', () => {
     const field = list.getByRole('option', { name: /genre/ });
     await expect(field).toBeVisible();
     const box = await list.boundingBox();
-    expect(box?.width).toBeLessThan(200);
+    expect(box?.width).toBeLessThan(280);
     expect((await tag(field)).color).not.toBe(keywordTag.color);
     await page.keyboard.press('Escape');
 
@@ -216,4 +217,79 @@ test.describe('Query Field Tab and suggestions', () => {
     await expect(empty).toHaveValue('genre');
     await expect(list).toHaveCount(0);
   });
+});
+
+test.describe('Query Field suggestion alignment', () => {
+  /** Each option's label and description baselines and the label's offsets from the option. */
+  const measureOptions = (list: Locator) =>
+    list.locator('[role="option"]').evaluateAll((options) =>
+      options.map((option) => {
+        /** Where text in `element` sits: a zero-height inline block rests on its first baseline. */
+        const baseline = (element: Element | null) => {
+          if (!element) return null;
+          const probe = document.createElement('span');
+          probe.style.display = 'inline-block';
+          element.prepend(probe);
+          const bottom = probe.getBoundingClientRect().bottom;
+          probe.remove();
+          return bottom;
+        };
+        const label = option.querySelector('.ui-completion-list__label');
+        const box = option.getBoundingClientRect();
+        const labelBox = label?.getBoundingClientRect();
+        const lineHeight = label ? parseFloat(getComputedStyle(label).lineHeight) : 0;
+        return {
+          name: option.textContent,
+          label: baseline(label),
+          description: baseline(option.querySelector('.ui-completion-list__description')),
+          above: (labelBox?.top ?? 0) - box.top,
+          below: box.bottom - (labelBox?.bottom ?? 0),
+          lines: Math.round((labelBox?.height ?? 0) / lineHeight),
+          labelStart: labelBox?.left ?? 0,
+          labelEnd: labelBox?.right ?? 0,
+          optionStart: box.left,
+          optionEnd: box.right,
+        };
+      }),
+    );
+
+  for (const direction of ['ltr', 'rtl'] as const) {
+    test(`UIC-COMPLETION-LIST-1.2 lines up kind tags, labels and descriptions on the first line (${direction})`, async ({
+      page,
+      lab,
+    }) => {
+      await lab.open('query-field');
+      const name = direction === 'ltr' ? 'Query, mixed suggestions' : 'Query, right to left';
+      await page.getByRole('textbox', { name }).click();
+      await page.keyboard.type('g');
+      const list = page.locator('.ui-completion-list');
+      await expect(list.getByRole('option')).toHaveCount(6);
+      const options = await measureOptions(list);
+      for (const option of options) {
+        // The smaller description text shares the label's first baseline.
+        if (option.description !== null) {
+          expect(
+            Math.abs(option.description - (option.label ?? 0)),
+            option.name ?? '',
+          ).toBeLessThan(1.5);
+        }
+        // A single line sits in the middle of its row.
+        if (option.lines === 1) {
+          expect(Math.abs(option.above - option.below), option.name ?? '').toBeLessThan(2);
+        }
+      }
+      // The long label wraps rather than squeezing to a column of letters.
+      const wrapped = options.find((option) => option.lines > 1);
+      expect(wrapped?.labelEnd ?? 0).toBeGreaterThan((wrapped?.labelStart ?? 0) + 120);
+      // Every label starts in the same column, after the kind tags.
+      const starts = options.map((option) =>
+        direction === 'ltr'
+          ? option.labelStart - option.optionStart
+          : option.optionEnd - option.labelEnd,
+      );
+      expect(Math.max(...starts) - Math.min(...starts)).toBeLessThan(1);
+      expect(Math.min(...starts)).toBeGreaterThan(40);
+      await lab.expectAccessible();
+    });
+  }
 });

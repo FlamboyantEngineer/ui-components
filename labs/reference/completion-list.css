@@ -5,6 +5,8 @@
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+  /* Sized by its content wherever it is placed, so React Aria shifts it into view near an edge. */
+  width: max-content;
   min-width: 120px;
   max-width: min(420px, calc(100vw - 16px));
   overflow: hidden;
@@ -33,7 +35,8 @@
 .ui-completion-list__listbox {
   display: grid;
   flex: 1 1 auto;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  /* Squeezed against the viewport's edge, descriptions give way first and labels keep a readable width. */
+  grid-template-columns: auto minmax(min(8em, 60vw), 1fr) minmax(0, auto);
   align-content: start;
   min-height: 0;
   max-height: 240px;
@@ -42,10 +45,15 @@
   outline: none;
 }
 
+/*
+ * Custom content (`renderItem`) is centred in the row. Options with a label line their kind tag,
+ * label and description up on the first line's baseline, so a short label, a wrapped one and the
+ * smaller tag and description text all sit on one line, and a single line is centred in the row.
+ */
 .ui-completion-list__option {
   display: flex;
   grid-column: 1 / -1;
-  align-items: baseline;
+  align-items: center;
   gap: 6px;
   min-height: var(--ref-control-height-xs);
   padding: 2px 6px;
@@ -56,6 +64,8 @@
 .ui-completion-list__option:has(> .ui-completion-list__label) {
   display: grid;
   grid-template-columns: subgrid;
+  align-content: center;
+  align-items: baseline;
   gap: 0;
 }
 
@@ -99,7 +109,6 @@
 .ui-completion-list__option[data-kind]::before {
   content: attr(data-kind);
   grid-column: 1;
-  align-self: center;
   justify-self: start;
   margin-inline-end: 6px;
   padding: 0 4px;
