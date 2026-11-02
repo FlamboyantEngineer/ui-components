@@ -71,7 +71,10 @@ function TableLoader({
   return (
     <TableLoadMoreItem
       className={hooks.slotClass('loader')}
-      onLoadMore={onLoadMore}
+      // React Aria calls it whenever the end is in view; a request already loading waits.
+      onLoadMore={() => {
+        if (!isLoading) onLoadMore?.();
+      }}
       isLoading={isLoading}
     >
       <EmptyState variant="loading" size="sm" description={loadingMessage ?? strings.loading} />

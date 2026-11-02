@@ -331,8 +331,12 @@ describe('Combobox suggestions', () => {
     await user.keyboard('{ArrowDown}');
     await screen.findByRole('listbox');
     act(() => report([{ isIntersecting: true, target: observed.at(-1) } as never], {} as never));
-    expect(onLoadMore).toHaveBeenCalled();
+    const asked = onLoadMore.mock.calls.length;
+    expect(asked).toBeGreaterThan(0);
     rerender(<Paged isLoading items={page} />);
+    // React Aria reports the row in view again while the request runs: nothing more is asked.
+    act(() => report([{ isIntersecting: true, target: observed.at(-1) } as never], {} as never));
+    expect(onLoadMore).toHaveBeenCalledTimes(asked);
     const row = document.querySelector('.ui-combobox__load-more');
     expect(row).toHaveTextContent('Loading');
     expectHooksMatchSpec(document.body, 'COMBOBOX', { slots: ['load-more'] });
