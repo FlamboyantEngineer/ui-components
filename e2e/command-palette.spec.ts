@@ -321,3 +321,33 @@ test.describe('Command Palette lab', () => {
     await expect(name).toBeFocused();
   });
 });
+
+test('UIC-COMMAND-PALETTE-1.1 UIC-COMMAND-PALETTE-1.4 opens on mount with defaultOpen, closes and reopens by its chord', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('command-palette');
+  const demo = page.locator('[data-lab-demo="mounted-open"]');
+  const dialog = page.locator('[data-lab-palette="mounted-open"]');
+  await expect(dialog).toHaveCount(0);
+  const mount = demo.getByRole('button', { name: 'Mount the palette open' });
+  await mount.click();
+  const search = page.getByRole('searchbox');
+  await expect(search).toBeFocused();
+  await expect(demo.locator('[data-lab-output="palette"]')).toHaveText('open');
+  await page.keyboard.type('timer');
+  await expect(page.getByRole('menuitem')).toHaveText(['Start a timer']);
+  await page.keyboard.press('Escape');
+  await expect(search).toHaveValue('');
+  await page.keyboard.press('Escape');
+  await expect(demo.locator('[data-lab-output="palette"]')).toHaveText('closed');
+  await expect(mount).toBeFocused();
+
+  await page.keyboard.press('ControlOrMeta+Shift+L');
+  await expect(search).toBeFocused();
+  await expect(search).toHaveValue('');
+  await page.keyboard.type('scale');
+  await page.keyboard.press('Enter');
+  await expect(demo.locator('[data-lab-output="ran"]')).toHaveText('scale');
+  await expect(demo.locator('[data-lab-output="palette"]')).toHaveText('closed');
+});

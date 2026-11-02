@@ -23,6 +23,7 @@ import {
   splitMatchTerms,
   textMatchesTerms,
 } from '../../src/components/text-match/text-match.js';
+import { CommandPaletteMountCases } from './command-palette-mount-cases.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const sizes = ['sm', 'md', 'lg'] as const;
@@ -343,5 +344,6 @@ mountLab(
     >
       <JsxPalette />
     </LabSection>
+    <CommandPaletteMountCases />
   </>,
 );

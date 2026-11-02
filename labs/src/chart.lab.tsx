@@ -3,6 +3,7 @@ import { BarChart, type BarChartSeries } from '../../src/components/chart/index.
 import { Chart, type ChartView } from '../../src/components/chart/chart.js';
 import { ChartAxis } from '../../src/components/chart/index.js';
 import { ChartLegend } from '../../src/components/chart/index.js';
+import { Switch } from '../../src/components/switch/switch.js';
 import { Button } from '../../src/components/button/button.js';
 import { DonutChart, type DonutChartSegment } from '../../src/components/chart/index.js';
 import { LineChart, type LineChartSeries } from '../../src/components/chart/index.js';
@@ -113,51 +114,68 @@ function CustomDrawing() {
   const rows = createBandScale({ domain: rooms, range: [8, 128], padding: 0.05 });
   const shade = createLinearScale({ domain: [0, 9], range: [0, 4] });
   const [hidden, setHidden] = useState<Set<Key>>(new Set());
+  const [isEmpty, setEmpty] = useState(false);
   return (
-    <Chart
-      label="Room use by hour"
-      summary="Three rooms over five hours; Lab B is busiest at 16:00"
-      showSummary
-      data-lab-demo="custom"
-      table={{
-        columns: ['Room', ...hours],
-        rows: rooms.map((room, index) => [room, ...requireDefined(usage[index]).map(String)]),
-      }}
-      legend={
-        <ChartLegend
-          items={rooms.map((room) => ({ id: room, label: room }))}
-          hiddenKeys={hidden}
-          onHiddenKeysChange={setHidden}
-        />
-      }
-    >
-      <svg width={372} height={156} role="group" aria-label="Room use cells">
-        <ChartAxis position="left" offset={56} range={[8, 128]} ticks={rows.ticks()} />
-        <ChartAxis position="bottom" offset={128} range={[56, 356]} ticks={columns.ticks()} />
-        {rooms.map((room, row) =>
-          hidden.has(room)
-            ? null
-            : hours.map((hour, column) => (
-                <rect
-                  key={`${room}-${hour}`}
-                  role="img"
-                  aria-label={`${room}, ${hour}: ${requireDefined(usage[row])[column]} people`}
-                  data-lab-shade={Math.round(
-                    shade.map(requireDefined(requireDefined(usage[row])[column])),
-                  )}
-                  fill="currentColor"
-                  fillOpacity={
-                    0.1 + 0.2 * shade.map(requireDefined(requireDefined(usage[row])[column]))
-                  }
-                  x={columns.map(hour)}
-                  y={rows.map(room)}
-                  width={columns.bandwidth}
-                  height={rows.bandwidth}
-                />
-              )),
+    <>
+      <Switch isSelected={isEmpty} onChange={setEmpty}>
+        No readings yet
+      </Switch>
+      <Chart
+        label="Room use by hour"
+        summary={
+          isEmpty ? 'No readings yet' : 'Three rooms over five hours; Lab B is busiest at 16:00'
+        }
+        showSummary
+        isEmpty={isEmpty}
+        data-lab-demo="custom"
+        table={{
+          columns: ['Room', ...hours],
+          rows: isEmpty
+            ? []
+            : rooms.map((room, index) => [room, ...requireDefined(usage[index]).map(String)]),
+        }}
+        legend={
+          isEmpty ? null : (
+            <ChartLegend
+              items={rooms.map((room) => ({ id: room, label: room }))}
+              hiddenKeys={hidden}
+              onHiddenKeysChange={setHidden}
+            />
+          )
+        }
+      >
+        {isEmpty ? (
+          <p data-lab-custom-empty="">The rooms report nothing until the first sensor reading.</p>
+        ) : (
+          <svg width={372} height={156} role="group" aria-label="Room use cells">
+            <ChartAxis position="left" offset={56} range={[8, 128]} ticks={rows.ticks()} />
+            <ChartAxis position="bottom" offset={128} range={[56, 356]} ticks={columns.ticks()} />
+            {rooms.map((room, row) =>
+              hidden.has(room)
+                ? null
+                : hours.map((hour, column) => (
+                    <rect
+                      key={`${room}-${hour}`}
+                      role="img"
+                      aria-label={`${room}, ${hour}: ${requireDefined(usage[row])[column]} people`}
+                      data-lab-shade={Math.round(
+                        shade.map(requireDefined(requireDefined(usage[row])[column])),
+                      )}
+                      fill="currentColor"
+                      fillOpacity={
+                        0.1 + 0.2 * shade.map(requireDefined(requireDefined(usage[row])[column]))
+                      }
+                      x={columns.map(hour)}
+                      y={rows.map(room)}
+                      width={columns.bandwidth}
+                      height={rows.bandwidth}
+                    />
+                  )),
+            )}
+          </svg>
         )}
-      </svg>
-    </Chart>
+      </Chart>
+    </>
   );
 }
 
@@ -438,7 +456,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Custom drawing"
-      description="A host's own drawing inside the shared frame, with the library's axis, legend, band scale and table view."
+      description="A host's own drawing inside the shared frame, with the library's axis, legend, band scale and table view. No readings yet sets isEmpty: the frame publishes data-empty while the host draws its own message, summary and empty table."
     >
       <CustomDrawing />
     </LabSection>

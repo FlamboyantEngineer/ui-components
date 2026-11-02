@@ -234,3 +234,23 @@ test.describe('Chart lab', () => {
     await lab.expectAccessible();
   });
 });
+
+test('UIC-CHART-1.4 a custom chart owns its empty state through isEmpty', async ({ page, lab }) => {
+  await lab.open('chart');
+  const chart = page.locator('[data-lab-demo="custom"]');
+  await expect(chart).not.toHaveAttribute('data-empty');
+  await expect(chart.getByRole('group', { name: 'Room use cells' })).toBeVisible();
+  await page.getByRole('switch', { name: 'No readings yet' }).press('Space');
+  await expect(chart).toHaveAttribute('data-empty', 'true');
+  await expect(chart.locator('.ui-chart__summary')).toHaveText('No readings yet');
+  await expect(chart.locator('[data-lab-custom-empty]')).toBeVisible();
+  await expect(chart.getByRole('group', { name: 'Room use cells' })).toHaveCount(0);
+  await expect(chart.locator('.ui-chart-legend')).toHaveCount(0);
+  await lab.expectAccessible('[data-lab-demo="custom"]');
+  await chart.getByRole('button', { name: 'Show as table' }).click();
+  await expect(chart.getByRole('table').getByRole('row')).toHaveCount(1);
+  await chart.getByRole('button', { name: 'Show as table' }).click();
+  await page.getByRole('switch', { name: 'No readings yet' }).press('Space');
+  await expect(chart).not.toHaveAttribute('data-empty');
+  await expect(chart.getByRole('img', { name: 'Lab B, 16:00: 9 people' })).toBeVisible();
+});

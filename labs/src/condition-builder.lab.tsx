@@ -7,6 +7,7 @@ import {
   type ConditionRule,
 } from '../../src/components/condition-builder/condition-builder.js';
 import type { FilterField } from '../../src/components/filter-bar/filter-bar.js';
+import { ConditionBuilderMatcherCases } from './condition-builder-matcher-cases.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { bookFields, getBookValue, sampleBooks } from './filter-samples.js';
 
@@ -278,5 +279,6 @@ mountLab(
     >
       <LiveQuery />
     </LabSection>
+    <ConditionBuilderMatcherCases />
   </>,
 );
