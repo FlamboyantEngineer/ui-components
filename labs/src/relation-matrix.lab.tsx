@@ -5,6 +5,7 @@ import {
   setRelation,
   toggleRelation,
   type RelationMatrixAxisAction,
+  type RelationMatrixAxisOperation,
   type RelationMatrixMenuIcons,
   type RelationMatrixCell,
   type RelationMatrixItem,
@@ -189,9 +190,11 @@ function applyAxisAction(
 function EditableMatrix({
   demo = 'editable',
   menuIcons,
+  axisActions,
 }: {
   demo?: string;
   menuIcons?: RelationMatrixMenuIcons;
+  axisActions?: readonly RelationMatrixAxisOperation[];
 }) {
   const [rows, setRows] = useState(requirements.slice(0, 4));
   const [columns, setColumns] = useState(tests.slice(0, 4));
@@ -235,6 +238,7 @@ function EditableMatrix({
           );
         }}
         onAxisAction={onAxisAction}
+        axisActions={axisActions}
       />
       <output data-lab-output>{output}</output>
     </div>
@@ -261,11 +265,33 @@ const manyRelations: RelationMatrixRelation[] = manyRows.flatMap((row, rowIndex)
       })),
 );
 
+const rowHeights = { '32': 32, '48': 48 } as const;
+
+type RowHeightChoice = keyof typeof rowHeights;
+
+const isRowHeight = (value: unknown): value is RowHeightChoice =>
+  typeof value === 'string' && Object.hasOwn(rowHeights, value);
+
 function LargeMatrix() {
   const [relations, setRelations] = useState(manyRelations);
+  const [height, setHeight] = useState<RowHeightChoice>('32');
   return (
     <div data-lab-demo="large">
+      <SegmentedChoice
+        aria-label="Row height"
+        size="sm"
+        sizing="content"
+        options={[
+          { value: '32', label: '32 pixels (default)' },
+          { value: '48', label: '48 pixels' },
+        ]}
+        value={height}
+        onChange={(value) => {
+          if (isRowHeight(value)) setHeight(value);
+        }}
+      />
       <RelationMatrix
+        rowHeight={rowHeights[height]}
         aria-label="Large matrix"
         rows={manyRows}
         columns={manyColumns}
@@ -275,6 +301,46 @@ function LargeMatrix() {
         columnLabels="truncated"
         columnWidth={72}
         virtualized
+      />
+    </div>
+  );
+}
+
+/** The header actions each subset offers. */
+const axisSubsets = {
+  all: { label: 'All (default)', actions: undefined },
+  move: { label: 'Move only', actions: ['move'] },
+  edit: { label: 'Insert and remove', actions: ['insert', 'remove'] },
+  none: { label: 'None', actions: [] },
+} as const satisfies Record<
+  string,
+  { label: string; actions: readonly RelationMatrixAxisOperation[] | undefined }
+>;
+
+type AxisSubset = keyof typeof axisSubsets;
+
+const isAxisSubset = (value: unknown): value is AxisSubset =>
+  typeof value === 'string' && Object.hasOwn(axisSubsets, value);
+
+/** The editable matrix with only some header actions offered. */
+function AxisActionSubsets() {
+  const [subset, setSubset] = useState<AxisSubset>('move');
+  return (
+    <div data-lab-demo="axis-subsets">
+      <SegmentedChoice
+        aria-label="Header actions"
+        size="sm"
+        sizing="content"
+        options={Object.entries(axisSubsets).map(([value, { label }]) => ({ value, label }))}
+        value={subset}
+        onChange={(value) => {
+          if (isAxisSubset(value)) setSubset(value);
+        }}
+      />
+      <EditableMatrix
+        key={subset}
+        demo={`axis-${subset}`}
+        axisActions={axisSubsets[subset].actions}
       />
     </div>
   );
@@ -357,6 +423,12 @@ mountLab(
       <EditableMatrix />
     </LabSection>
     <LabSection
+      title="Header action subsets"
+      description="axisActions limits what a row or column header's menu offers: Move only keeps the moves, Insert and remove keeps the inserts and Remove, and None leaves the headers without a menu. Each change shows in the line under the matrix, which starts afresh with each subset."
+    >
+      <AxisActionSubsets />
+    </LabSection>
+    <LabSection
       title="Menu icons"
       description="The same menus with host icons: the header menus draw a plus for the inserts and a cross for Remove, the moves stay without icons, and a cell's Remove relation takes the delete icon beside the kinds' own marks. Every action still edits the matrix."
     >
@@ -384,7 +456,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Large matrix"
-      description="Two thousand requirements against four hundred tests, windowed on both axes: only the rows and columns in view render. Every ninth requirement is uncovered. A cell's context menu edits its relation anywhere in the matrix."
+      description="Two thousand requirements against four hundred tests, windowed on both axes: only the rows and columns in view render. Every ninth requirement is uncovered. Row height switches the windowed rows between the 32 pixel default and 48 pixels: headers and cells stay in line as you scroll and move with the arrow keys. A cell's context menu edits its relation anywhere in the matrix."
     >
       <LargeMatrix />
     </LabSection>
