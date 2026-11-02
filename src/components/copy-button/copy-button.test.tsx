@@ -167,4 +167,27 @@ describe('CopyButton', () => {
     expect(root).not.toHaveAttribute('data-copied');
     expectHooksMatchSpec(container, 'COPY-BUTTON', { callerAttributes: ['data-testid'] });
   });
+
+  it('UIC-COPY-BUTTON-1.4 publishes the resolved options on its root over caller attributes', () => {
+    const { container, rerender } = render(
+      <CopyButton value="Oslo" data-size="lg" data-variant="primary" data-disabled="true" />,
+    );
+    const root = container.firstElementChild as HTMLElement;
+    const button = screen.getByRole('button');
+    // The defaults are stated, on the root as on the button, whatever the caller wrote.
+    for (const element of [root, button]) {
+      expect(element).toHaveAttribute('data-size', 'md');
+      expect(element).toHaveAttribute('data-variant', 'ghost');
+      expect(element).not.toHaveAttribute('data-disabled');
+    }
+    rerender(<CopyButton value="Oslo" size="xs" variant="primary" isDisabled data-size="lg" />);
+    for (const element of [root, button]) {
+      expect(element).toHaveAttribute('data-size', 'xs');
+      expect(element).toHaveAttribute('data-variant', 'primary');
+      expect(element).toHaveAttribute('data-disabled', 'true');
+    }
+    rerender(<CopyButton value="Oslo" size="xs" variant="primary" />);
+    expect(root).not.toHaveAttribute('data-disabled');
+    expect(button).not.toHaveAttribute('data-disabled');
+  });
 });

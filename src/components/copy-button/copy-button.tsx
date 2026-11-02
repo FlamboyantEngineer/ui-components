@@ -7,7 +7,12 @@ import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useClipboard, type CopyStatus } from '../../utils/use-clipboard.js';
 import { useLatestSettledCount } from '../../utils/use-latest-settled-count.js';
-import { Button, type ButtonProps } from '../button/button.js';
+import {
+  Button,
+  buttonDefaults,
+  useInheritedDisabled,
+  type ButtonProps,
+} from '../button/button.js';
 import { REANNOUNCE_MARK } from '../../utils/reannounce.js';
 
 export interface CopyButtonProps
@@ -28,21 +33,23 @@ const statusGlyphs = { idle: CopyGlyph, copied: CheckGlyph, failed: ErrorGlyph }
 
 /**
  * An icon button that copies `value` to the clipboard, shows a check mark (or an error glyph)
- * while the outcome lasts, and announces it in a polite live region.
+ * while the outcome lasts, and announces it in a polite live region. The root publishes the
+ * button's resolved variant, size and disabled state, as the button does.
  */
 export function CopyButton({
   value,
   label,
   timeout,
   onCopy,
-  variant,
-  size,
-  isDisabled,
+  variant = buttonDefaults.iconVariant,
+  size = buttonDefaults.size,
+  isDisabled: isDisabledProp,
   className,
   id,
   ...rest
 }: CopyButtonProps) {
   const strings = useUiStrings();
+  const isDisabled = useInheritedDisabled({ isDisabled: isDisabledProp });
   const { copy, status } = useClipboard({ timeout });
   // Counts the latest press's settled copies: a repeated outcome still changes the live region, so
   // it is announced, and an earlier copy that settles later announces nothing.
@@ -58,7 +65,13 @@ export function CopyButton({
       {...hooks.root({
         className,
         props: rest,
-        data: { copied: status === 'copied', failed: status === 'failed' },
+        data: {
+          variant,
+          size,
+          disabled: isDisabled,
+          copied: status === 'copied',
+          failed: status === 'failed',
+        },
       })}
       id={id}
     >
