@@ -97,6 +97,8 @@
 .ui-zoom-control__value {
   min-width: 6ch;
   font-size: var(--ref-font-size-sm);
+  /* Its own line height, as the buttons beside it, so surrounding type never stretches the control. */
+  line-height: 1.2;
   font-variant-numeric: tabular-nums;
   text-align: end;
 }

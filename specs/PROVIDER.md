@@ -16,7 +16,7 @@ Verification: `src/core/provider.test.tsx`
 A provider inside another shall merge its glyphs and messages over its parent's and replace the parent's link renderer and storage only when it sets them.
 
 Implementation: `src/core/provider.tsx`
-Verification: `src/core/provider.test.tsx`
+Verification: `src/core/provider.test.tsx`, `e2e/provider.spec.ts`
 
 ## UIC-PROVIDER-2 - Glyphs
 
@@ -94,7 +94,7 @@ Verification: `src/core/provider.test.tsx`, `src/core/provider-options.test.tsx`
 Components that draw links (breadcrumbs, list rows, tree items) shall render them through the provider's `renderLink`, a render prop that receives the anchor props including `href`, so a host can route them through its router. The default renders a plain anchor.
 
 Implementation: `src/core/provider.tsx`
-Verification: `src/core/provider.test.tsx`
+Verification: `src/core/provider.test.tsx`, `e2e/provider.spec.ts`
 
 ### UIC-PROVIDER-5.2 - Client-side navigation for React Aria links
 
@@ -117,14 +117,14 @@ Verification: `src/core/provider.test.tsx`, `src/core/provider-storage.test.tsx`
 A stored value that cannot be parsed, or that parses to data of the wrong shape, shall fall back to the component's initial value: `usePersistentState` requires a codec, `PersistCodec<T>` (`{ parse(raw): T, stringify(value): string }`, whose `parse` throws on data of another shape), and the package exports from `/core` the ones the library uses: `createJsonCodec(read, write?)`, `createListCodec(isEntry)`, `booleanCodec`, `numberCodec`, `keyCodec` and `keyListCodec`. Every component that persists state reads it through a codec that checks the shape it expects, and refuses a list as a whole when one of its entries is not valid, so old, stale or corrupted data never fails a render. `createSafeStorage` wraps a storage that may throw, so reads return nothing and writes are dropped instead of failing.
 
 Implementation: `src/core/provider.tsx`, `src/core/storage.ts`, `src/utils/json-codec.ts`
-Verification: `src/core/provider.test.tsx`, `src/utils/json-codec.test.ts`
+Verification: `src/core/provider.test.tsx`, `src/utils/json-codec.test.ts`, `e2e/provider.spec.ts`
 
 ### UIC-PROVIDER-6.3 - Delayed writes
 
 `usePersistentState(key, initialValue, { codec, writeDelay })` shall return the value, its setter and `flush`. The value changes at once. With `writeDelay`, the adapter write waits that many milliseconds after the last change and writes only the last value, encoded only then, so a burst of changes such as typing writes once; `flush` writes a waiting change now. A waiting change shall be written under the key and adapter it was made for when the key or adapter changes, when the component unmounts and when the page hides (`pagehide`). The value the state then shows shall agree with what that write left: a new adapter over the same backing store (an adapter wrapped anew on each render, such as an inline `createSafeStorage`) is read again once the waiting change is written, before paint, so the state keeps the newer value rather than rolling back, while a different store, or a new key, shows its own value. Storage is never written during render. Without `writeDelay` every change is written at once.
 
 Implementation: `src/core/provider.tsx`, `labs/src/provider-storage-cases.tsx`
-Verification: `src/core/provider-delayed-write.test.tsx`, `src/components/message-composer/use-composer-state.test.tsx`
+Verification: `src/core/provider-delayed-write.test.tsx`, `src/components/message-composer/use-composer-state.test.tsx`, `e2e/provider.spec.ts`
 
 ### UIC-PROVIDER-6.4 - Controlled or persisted values
 

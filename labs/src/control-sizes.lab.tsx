@@ -9,7 +9,10 @@ import { DateTimeField } from '../../src/components/date-time-field/date-time-fi
 import { DropdownMenu } from '../../src/components/dropdown-menu/dropdown-menu.js';
 import { Menubar, MenubarMenu } from '../../src/components/menubar/menubar.js';
 import type { MenuEntry } from '../../src/components/menu/menu.js';
+import { FormulaBar } from '../../src/components/formula-bar/formula-bar.js';
 import { NumberField } from '../../src/components/number-field/number-field.js';
+import { PinInput } from '../../src/components/pin-input/pin-input.js';
+import { RelativeDateField } from '../../src/components/relative-date-field/relative-date-field.js';
 import { Choice, ChoiceGroup } from '../../src/components/choice-group/choice-group.js';
 import { SearchField } from '../../src/components/search-field/search-field.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
@@ -20,9 +23,11 @@ import {
 import { Switch } from '../../src/components/switch/switch.js';
 import { TagsInput } from '../../src/components/tags-input/tags-input.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
+import { ZoomControl } from '../../src/components/zoom-control/zoom-control.js';
 import type { ControlSize } from '../../src/core/props.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { ChipDescenders } from './control-sizes-chips.js';
+import { PeoplePickerSizes, PinCellGeometry } from './control-sizes-more.js';
 
 const sizes = ['xs', 'sm', 'md', 'lg'] as const satisfies readonly ControlSize[];
 const contents = ['short', 'long', 'large type'] as const;
@@ -45,6 +50,10 @@ const controls = [
   'choice-group-multiple',
   'switch',
   'choice-group',
+  'pin-input',
+  'relative-date-field',
+  'formula-bar',
+  'zoom-control',
 ] as const;
 
 type Control = (typeof controls)[number];
@@ -205,13 +214,42 @@ const cells: Record<Control, (props: CellProps) => ReactNode> = {
       <Choice value="fig">Fig</Choice>
     </ChoiceGroup>
   ),
+  'pin-input': ({ size, isLong }) => (
+    <PinInput
+      size={size}
+      label="Code"
+      labelLayout="control-only"
+      length={isLong ? 6 : 4}
+      defaultValue={isLong ? '402917' : '4029'}
+    />
+  ),
+  'relative-date-field': ({ size, isLong }) => (
+    <RelativeDateField
+      size={size}
+      label="Due"
+      labelLayout="control-only"
+      defaultValue={isLong ? '2026-04-13' : null}
+      placeholder={isLong ? undefined : 'Any day'}
+    />
+  ),
+  'formula-bar': ({ size, isLong }) => (
+    <FormulaBar
+      size={size}
+      aria-label="Formula"
+      cell={{ row: isLong ? 41 : 0, column: isLong ? 27 : 0 }}
+      value={isLong ? '=SUM(A1:A40)*TAX_RATE' : '12'}
+    />
+  ),
+  'zoom-control': ({ size, isLong }) => (
+    <ZoomControl size={size} aria-label="Zoom" defaultValue={isLong ? 1250 : 100} />
+  ),
 };
 
 mountLab(
   <>
     <LabSection
       title="Every control at every size"
-      description="Compare xs (20), sm (24), md (28) and lg (32 pixels) across each row. Long content changes labels, not height; icon buttons keep a square frame and put their label in a tooltip. Large type enlarges the Aa sample around each control to 24 pixels with double line height; the control keeps its own type and size."
+      description="Compare xs (20), sm (24), md (28) and lg (32 pixels) across each row. Long content changes labels, not height; icon buttons keep a square frame and put their label in a tooltip. PIN input cells are the exception: a step taller and wider than the scale (see PIN cells). Large type enlarges the Aa sample around each control to 24 pixels with double line height; the control keeps its own type and size."
     >
       <StateMatrix
         axes={{ control: controls, content: contents, size: sizes }}
@@ -234,6 +272,8 @@ mountLab(
         }}
       />
     </LabSection>
+    <PeoplePickerSizes />
+    <PinCellGeometry />
     <ChipDescenders />
   </>,
 );
