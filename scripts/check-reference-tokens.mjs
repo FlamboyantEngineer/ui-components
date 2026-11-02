@@ -350,18 +350,20 @@ for (const [name, entries] of defined)
 for (const [name, places] of occurrences) {
   if (name.startsWith('--ref-')) continue;
   const at = where(places[0]);
+  const definitions = defined.get(name);
+  const partials = interop.get(name);
   if (name.startsWith('--ui-')) {
     if (!measured.has(name))
       problems.push(`${at}: ${name} is not a measured property any spec declares`);
-    if (defined.has(name))
+    if (definitions)
       problems.push(
-        `${where(defined.get(name)[0])}: ${name} is published by a component; the stylesheet only reads it`,
+        `${where(definitions[0])}: ${name} is published by a component; the stylesheet only reads it`,
       );
-  } else if (interop.has(name)) {
-    const stray = places.find((place) => !interop.get(name).includes(place.file));
+  } else if (partials) {
+    const stray = places.find((place) => !partials.includes(place.file));
     if (stray)
       problems.push(
-        `${where(stray)}: ${name} belongs to a third-party engine; use it only in ${interop.get(name).join(', ')}`,
+        `${where(stray)}: ${name} belongs to a third-party engine; use it only in ${partials.join(', ')}`,
       );
   } else {
     problems.push(`${at}: ${name} is outside the reference namespaces; name it --ref-<owner>-…`);

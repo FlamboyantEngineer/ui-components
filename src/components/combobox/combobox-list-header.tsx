@@ -8,7 +8,7 @@ import {
   type ReactNode,
   type RefObject,
 } from 'react';
-import { ComboBoxStateContext } from '../../primitives/index.js';
+import { ComboBoxStateContext, useIsHidden } from '../../primitives/index.js';
 import type { HookProps } from '../../core/hooks.js';
 import { isElement, isHTMLElement } from '../../utils/is-element.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
@@ -40,6 +40,9 @@ function isEntryControl(target: EventTarget): boolean {
  */
 export function ComboboxListHeader({ slot, inputRef, children }: ComboboxListHeaderProps) {
   const state = useContext(ComboBoxStateContext);
+  // The combobox collects its options from a hidden copy of the popover. The header renders only in
+  // the shown one, so its controls (a field's menu, say) never join the option collection.
+  if (useIsHidden()) return null;
   return (
     <div
       {...slot}
