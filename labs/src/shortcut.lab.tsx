@@ -1,5 +1,14 @@
 import { useState, type KeyboardEvent } from 'react';
-import { KeyHints, Shortcut, matchesChord } from '../../src/components/shortcut/shortcut.js';
+import {
+  KeyHints,
+  Shortcut,
+  ShortcutAppearanceContext,
+  matchesChord,
+  type ShortcutAppearance,
+} from '../../src/components/shortcut/shortcut.js';
+import { Button } from '../../src/components/button/button.js';
+import { Menu, MenuItem, MenuPopover, MenuTrigger } from '../../src/components/menu/menu.js';
+import { MoreGlyph, UndoGlyph } from '../../src/core/glyphs.js';
 import {
   detectShortcutPlatform,
   formatShortcut,
@@ -32,6 +41,43 @@ const sequences = {
   'Ctrl+K Ctrl+C': ['Ctrl+K', 'Ctrl+C'],
   'Ctrl+K Shift+↑': ['Ctrl+K', 'Shift+↑'],
 } as const;
+
+const appearances = ['keycaps', 'text'] as const satisfies readonly ShortcutAppearance[];
+const samples = ['Ctrl+Shift+K', 'Ctrl++', ['G', 'I'], ['Ctrl+K', 'Ctrl+C']] as const;
+
+/** A menu and a button tooltip whose shortcuts take the appearance of the context around them. */
+function ComposedShortcuts({ appearance }: { appearance: ShortcutAppearance }) {
+  return (
+    <ShortcutAppearanceContext value={appearance}>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <MenuTrigger>
+          <Button icon={MoreGlyph} label={`Edit (${appearance})`} variant="secondary" />
+          <MenuPopover>
+            <Menu aria-label={`Edit actions (${appearance})`}>
+              <MenuItem id="cut" shortcut="Ctrl+X">
+                Cut
+              </MenuItem>
+              <MenuItem id="copy" shortcut="Ctrl+C">
+                Copy
+              </MenuItem>
+              <MenuItem id="go" shortcut={['G', 'I']}>
+                Go to inbox
+              </MenuItem>
+            </Menu>
+          </MenuPopover>
+        </MenuTrigger>
+        <Button
+          icon={UndoGlyph}
+          label={`Undo (${appearance})`}
+          tooltip="Undo"
+          shortcut="Ctrl+Z"
+          variant="secondary"
+        />
+        <KeyHints hints={legend} platform="linux" />
+      </div>
+    </ShortcutAppearanceContext>
+  );
+}
 
 const tried = ['Control+Я', 'Control+Z', 'Control+Alt+Q', 'Ctrl+Shift+1'] as const;
 
@@ -70,6 +116,35 @@ mountLab(
       <StateMatrix
         axes={{ chord: chords, platform: platforms }}
         render={({ chord, platform }) => <Shortcut chord={chord} platform={platform} />}
+      />
+    </LabSection>
+    <LabSection
+      title="Appearance"
+      description="Keycaps box each key; text draws the same notation as quiet inline text, with no key boxes. Chords, the literal plus key and sequences keep their platform notation and their separators."
+    >
+      <StateMatrix
+        axes={{ appearance: appearances, platform: platforms }}
+        render={({ appearance, platform }) => (
+          <span style={{ display: 'inline-flex', gap: 16 }}>
+            {samples.map((chord) => (
+              <Shortcut
+                key={String(chord)}
+                chord={chord}
+                platform={platform}
+                appearance={appearance}
+              />
+            ))}
+          </span>
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Appearance of composed shortcuts"
+      description="ShortcutAppearanceContext sets the appearance of the shortcuts inside it that set none: a menu item's, a button tooltip's (hover or focus Undo) and a key legend's."
+    >
+      <StateMatrix
+        axes={{ appearance: appearances }}
+        render={({ appearance }) => <ComposedShortcuts appearance={appearance} />}
       />
     </LabSection>
     <LabSection

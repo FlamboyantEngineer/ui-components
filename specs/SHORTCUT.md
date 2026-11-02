@@ -90,6 +90,13 @@ Verification: `src/components/shortcut/shortcut.test.tsx`
 Implementation: `src/components/shortcut/shortcut.tsx`, `labs/reference/shortcut.css`
 Verification: `src/components/shortcut/shortcut.test.tsx`, `e2e/shortcut.spec.ts`
 
+### UIC-SHORTCUT-2.5 - Text appearance
+
+`Shortcut` shall publish its `appearance` in `data-appearance`: `keycaps` (the default) asks the stylesheet to box each key, `text` to draw the keys as quiet inline text, such as `Ctrl+Shift+K` or `⌘⇧K`, with no key backgrounds, borders or minimum widths, in a muted colour. Both draw the same markup, notation, separators and readable text, so only the stylesheet tells them apart and a sequence's chords stay separated. A shortcut without `appearance` takes the nearest `ShortcutAppearanceContext` value, `keycaps` by default, so a host can set the appearance of the shortcuts the library composes, such as those of menu items and button tooltips, for a whole subtree. `KeyHints` passes its own `appearance` to each of its shortcuts.
+
+Implementation: `src/components/shortcut/shortcut.tsx`, `labs/reference/shortcut.css`
+Verification: `src/components/shortcut/shortcut.test.tsx`, `e2e/shortcut.spec.ts`
+
 ## UIC-SHORTCUT-3 - Key hints
 
 ### UIC-SHORTCUT-3.1 - Legend
@@ -123,6 +130,7 @@ Verification: `src/components/shortcut/shortcut.test.tsx`, `e2e/chat.spec.ts`
 | `ui-shortcut__key`     | slot      |                           | One keycap `<kbd>`.                                           |
 | `ui-shortcut__text`    | slot      |                           | The readable text, visually hidden. Absent when `decorative`. |
 | `data-platform`        | attribute | `mac`, `windows`, `linux` | The notation drawn.                                           |
+| `data-appearance`      | attribute | `keycaps`, `text`         | Whether the keys draw as keycaps or as quiet text.            |
 | `ui-key-hints`         | root      |                           | The legend's `<span>`, also `ui-meta-line`.                   |
 | `ui-key-hints__hint`   | slot      |                           | One hint: its shortcuts, then its action.                     |
 | `ui-key-hints__action` | slot      |                           | The hint's action text.                                       |

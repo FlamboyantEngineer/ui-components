@@ -89,6 +89,50 @@ test.describe('Shortcut lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-SHORTCUT-2.5 draws text shortcuts without keycaps, alone and composed', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('shortcut');
+    const appearance = page.locator('[data-lab-section="Appearance"]');
+    const text = matrixCell(appearance, 'appearance=text platform=windows');
+    const shortcut = text.locator('.ui-shortcut').first();
+    await expect(shortcut).toHaveAttribute('data-appearance', 'text');
+    await expect(shortcut.locator('.ui-shortcut__keys')).toHaveText('Ctrl+Shift+K');
+    const key = await shortcut
+      .locator('.ui-shortcut__key')
+      .first()
+      .evaluate((node) => {
+        const style = getComputedStyle(node);
+        return [style.borderTopWidth, style.paddingLeft, style.minWidth, style.backgroundColor];
+      });
+    expect(key).toEqual(['0px', '0px', '0px', 'rgba(0, 0, 0, 0)']);
+    await expect(text.locator('.ui-shortcut').nth(3).locator('.ui-shortcut__chord')).toHaveCount(2);
+    const keycap = matrixCell(appearance, 'appearance=keycaps platform=windows')
+      .locator('.ui-shortcut__key')
+      .first();
+    expect(await keycap.evaluate((node) => getComputedStyle(node).borderTopWidth)).not.toBe('0px');
+
+    const composed = matrixCell(
+      page.locator('[data-lab-section="Appearance of composed shortcuts"]'),
+      'appearance=text',
+    );
+    await expect(composed.locator('.ui-key-hints .ui-shortcut').first()).toHaveAttribute(
+      'data-appearance',
+      'text',
+    );
+    await composed.getByRole('button', { name: 'Edit (text)' }).click();
+    const cut = page.getByRole('menuitem', { name: 'Cut' });
+    await expect(cut.locator('.ui-shortcut')).toHaveAttribute('data-appearance', 'text');
+    await page.keyboard.press('Escape');
+    await composed.getByRole('button', { name: 'Undo (text)' }).focus();
+    await expect(page.getByRole('tooltip').locator('.ui-shortcut')).toHaveAttribute(
+      'data-appearance',
+      'text',
+    );
+    await lab.expectAccessible();
+  });
+
   test('UIC-SHORTCUT-1.8 matches non-Latin letters and leaves AltGr text alone', async ({
     page,
     lab,
