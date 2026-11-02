@@ -4,9 +4,9 @@ import { Link } from '../../src/components/link/link.js';
 import { Switch } from '../../src/components/switch/switch.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { NumberField } from '../../src/components/number-field/number-field.js';
-import { numberCodec } from '../../src/core/index.js';
+import { createJsonCodec, numberCodec } from '../../src/core/index.js';
 import { UiProvider, usePersistentState } from '../../src/core/provider.js';
-import { createMemoryStorage } from '../../src/core/storage.js';
+import { createMemoryStorage, createSafeStorage } from '../../src/core/storage.js';
 
 function StoredCounter({ storageKey }: { storageKey: string }) {
   const [count, setCount] = usePersistentState(storageKey, 0, { codec: numberCodec });
@@ -32,6 +32,37 @@ export function StorageSwitch() {
       </p>
       <UiProvider storage={stores[store]}>
         <StoredCounter storageKey={key} />
+      </UiProvider>
+    </div>
+  );
+}
+
+const textCodec = createJsonCodec((value): string => {
+  if (typeof value !== 'string') throw new TypeError('Not stored text');
+  return value;
+});
+
+function DelayedNote() {
+  const [note, setNote] = usePersistentState('wrapped-note', '', {
+    codec: textCodec,
+    writeDelay: 300,
+  });
+  return <TextField label="Delayed note" value={note} onChange={setNote} />;
+}
+
+/**
+ * The provider wraps the same storage anew on every render, as an inline `createSafeStorage` does.
+ * Typing, then rerendering before the 300ms write, keeps the text.
+ */
+export function WrappedStorage() {
+  const [backing] = useState(() => createMemoryStorage());
+  const [renders, setRenders] = useState(1);
+  return (
+    <div data-lab-case="wrapped-storage">
+      <Button onPress={() => setRenders((value) => value + 1)}>Rerender provider</Button>
+      <p>Provider renders: {renders}</p>
+      <UiProvider storage={createSafeStorage(backing)}>
+        <DelayedNote />
       </UiProvider>
     </div>
   );

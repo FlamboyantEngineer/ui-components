@@ -1,9 +1,9 @@
-import { act, renderHook } from '@testing-library/react';
+import { act, render, renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createJsonCodec } from '../utils/json-codec.js';
-import { UiProvider, usePersistentState } from './provider.js';
-import { createMemoryStorage, type UiStorage } from './storage.js';
+import { UiProvider, usePersistentState, type PersistentState } from './provider.js';
+import { createMemoryStorage, createSafeStorage, type UiStorage } from './storage.js';
 
 const textCodec = createJsonCodec((value): string => {
   if (typeof value !== 'string') throw new TypeError('Not stored text');
@@ -23,6 +23,25 @@ function countingStorage(): UiStorage & { writes: number } {
     removeItem: (key: string) => storage.removeItem(key),
   };
   return counted;
+}
+
+/** A hook under a provider whose adapter the props choose, so a rerender can replace it. */
+function renderWithAdapter(storage: UiStorage, key: string | undefined) {
+  const result: { current: PersistentState<string> | null } = { current: null };
+  function Probe({ stateKey }: { stateKey: string | undefined }) {
+    result.current = usePersistentState(stateKey, '', { codec: textCodec, writeDelay: 300 });
+    return null;
+  }
+  const view = (props: { key: string | undefined; storage: UiStorage }) => (
+    <UiProvider storage={props.storage}>
+      <Probe stateKey={props.key} />
+    </UiProvider>
+  );
+  const { rerender } = render(view({ key, storage }));
+  return {
+    result: result as { current: PersistentState<string> },
+    rerender: (props: { key: string | undefined; storage: UiStorage }) => rerender(view(props)),
+  };
 }
 
 function renderDelayed(storage: UiStorage, initialKey = 'note') {
@@ -84,5 +103,39 @@ describe('persistent state with a write delay', () => {
       vi.runAllTimers();
     });
     expect(storage.writes).toBe(4);
+  });
+
+  it('UIC-PROVIDER-6.3 keeps a pending change when a new adapter wraps the same store', () => {
+    vi.useFakeTimers();
+    const backing = createMemoryStorage({ note: '"Pear"' });
+    const { result, rerender } = renderWithAdapter(createSafeStorage(backing), 'note');
+    act(() => result.current[1]('Plum'));
+    rerender({ key: 'note', storage: createSafeStorage(backing) });
+    expect(backing.getItem('note')).toBe('"Plum"');
+    expect(result.current[0]).toBe('Plum');
+    act(() => result.current[1]((text) => `${text}s`));
+    expect(result.current[0]).toBe('Plums');
+  });
+
+  it('UIC-PROVIDER-6.3 reads a different store as its own, writing the pending change to the old one', () => {
+    vi.useFakeTimers();
+    const first = createMemoryStorage({ note: '"Pear"' });
+    const second = createMemoryStorage({ note: '"Fig"' });
+    const { result, rerender } = renderWithAdapter(first, 'note');
+    act(() => result.current[1]('Plum'));
+    rerender({ key: 'note', storage: second });
+    expect(first.getItem('note')).toBe('"Plum"');
+    expect(second.getItem('note')).toBe('"Fig"');
+    expect(result.current[0]).toBe('Fig');
+  });
+
+  it('UIC-PROVIDER-6.3 keeps plain state, with no key, across an adapter change', () => {
+    vi.useFakeTimers();
+    const backing = createMemoryStorage();
+    const { result, rerender } = renderWithAdapter(createSafeStorage(backing), undefined);
+    act(() => result.current[1]('Plum'));
+    rerender({ key: undefined, storage: createSafeStorage(backing) });
+    expect(result.current[0]).toBe('Plum');
+    expect(backing.getItem('note')).toBeNull();
   });
 });
