@@ -103,11 +103,12 @@ function useComposerActions({
     if (canSubmit) submission.send(draft, true, (sent) => onSubmit(sent.trim()));
   };
   const cancel = () => {
-    setDraft('');
+    submission.setDraft('');
     onCancel?.();
   };
   return {
     isPending,
+    setDraft: submission.setDraft,
     canSubmit,
     canCancel: (text !== '' || onCancel !== undefined) && !isPending && !isDisabled,
     submit,
@@ -183,7 +184,7 @@ export function CommentComposer({
         minRows={2}
         value={draft}
         tracksChanges={false}
-        onChange={setDraft}
+        onChange={actions.setDraft}
         isDisabled={isDisabled}
         autoFocus={autoFocus}
       />

@@ -163,7 +163,7 @@ export function useComposerState<T>(options: ComposerStateOptions<T>): ComposerS
     const next = stepHistory(history, current, direction);
     if (next === undefined) return current !== null;
     setRecalled(next);
-    setDraft(next ? format.fromText(next.text) : format.empty);
+    submission.setDraft(next ? format.fromText(next.text) : format.empty);
     return true;
   };
   const submit = () => {
@@ -174,7 +174,7 @@ export function useComposerState<T>(options: ComposerStateOptions<T>): ComposerS
   return {
     value,
     draft,
-    setValue: isEditing ? setEdit : setDraft,
+    setValue: isEditing ? setEdit : submission.setDraft,
     flushDraft,
     isEditing,
     canSubmit,
