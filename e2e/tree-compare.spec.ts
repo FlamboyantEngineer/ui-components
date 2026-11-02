@@ -146,6 +146,57 @@ test.describe('Tree Compare lab', () => {
     await expect(requirements).toHaveAttribute('aria-expanded', 'false');
   });
 
+  test('UIC-TREE-COMPARE-3.1 starts at the expansion given, then the reader owns it', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tree-compare');
+    const demo = page.locator('[data-lab-demo="starting-expansion"]');
+    const tree = demo.getByRole('treegrid');
+    const names = () =>
+      tree
+        .getByRole('row')
+        .evaluateAll((rows) => rows.map((row) => row.getAttribute('aria-label')));
+    const expanded = demo.locator('[data-lab-output="expanded"]');
+    await expect(tree.getByRole('row', { name: 'Level 0' })).toBeVisible();
+    expect(await names()).toEqual([
+      'Frame set',
+      'Wheels',
+      'Drivetrain',
+      'Cockpit, added',
+      'Level 0',
+    ]);
+    await tree.getByRole('row', { name: 'Wheels' }).focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(tree.getByRole('row', { name: 'Rim, 29 inch' })).toBeVisible();
+    await expect(expanded).toHaveText('wheels');
+    await demo.getByRole('button', { name: 'Start again' }).click();
+    await expect(tree.getByRole('row', { name: 'Rim, 29 inch' })).toHaveCount(0);
+    await expect(expanded).toHaveText('not changed yet');
+
+    await demo.getByRole('radio', { name: 'Wheels and Level 0' }).click();
+    await expect(tree.getByRole('row', { name: 'Level 1' })).toBeVisible();
+    expect(await names()).toEqual([
+      'Frame set',
+      'Wheels',
+      'Rim, 29 inch',
+      'Tyre, 2.4 inch, changed from Tyre, 2.2 inch',
+      'Hub, moved away',
+      'Drivetrain',
+      'Cockpit, added',
+      'Level 0',
+      'Level 1',
+    ]);
+    await tree.getByRole('row', { name: 'Level 0' }).focus();
+    await page.keyboard.press('ArrowLeft');
+    await expect(tree.getByRole('row', { name: 'Level 1' })).toHaveCount(0);
+    await expect(expanded).toHaveText('wheels');
+
+    await demo.getByRole('radio', { name: 'Paths to changes (default)' }).click();
+    await expect(tree.getByRole('row', { name: 'Cassette, 12 speed, added' })).toBeVisible();
+    await lab.expectAccessible('[data-lab-demo="starting-expansion"]');
+  });
+
   test('UIC-TREE-COMPARE-4.1 steps between differences with the buttons and F7', async ({
     page,
     lab,
