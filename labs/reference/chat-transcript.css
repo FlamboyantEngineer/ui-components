@@ -412,12 +412,14 @@
   font-style: italic;
 }
 
+/* Reactions sit at the bottom end of every message, sent or received, and wrap when narrow. */
 .ui-chat-message__reactions,
 .ui-chat-message__readers {
   display: flex;
 }
 
-.ui-chat-message[data-origin='sent'] :is(.ui-chat-message__reactions, .ui-chat-message__readers) {
+.ui-chat-message__reactions,
+.ui-chat-message[data-origin='sent'] .ui-chat-message__readers {
   justify-content: flex-end;
 }
 

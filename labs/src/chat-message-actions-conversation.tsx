@@ -8,6 +8,7 @@ import {
   ChatMessage,
   ChatTranscript,
 } from '../../src/components/chat-transcript/chat-transcript.js';
+import { ReactionBar, type ReactionEntry } from '../../src/components/reaction-bar/reaction-bar.js';
 import { samplePicture } from './people-samples.js';
 
 /** A fixed clock, so every time reads the same on every day. */
@@ -38,12 +39,29 @@ interface DemoMessage {
   origin: 'sent' | 'received';
   minute: number;
   text: string;
+  reactions: readonly ReactionEntry[];
   commands: (log: (entry: string) => void, message: MessageControls) => ChatMessageCommandProps;
 }
 
 interface MessageControls {
   edit: () => void;
   remove: () => void;
+  react: (emoji: string) => void;
+}
+
+/** The reactions after the reader reacts with an emoji, or takes their reaction back. */
+function toggleReaction(
+  reactions: readonly ReactionEntry[],
+  emoji: string,
+  isReacted: boolean,
+): readonly ReactionEntry[] {
+  const entry = reactions.find((reaction) => reaction.emoji === emoji);
+  if (!entry) return isReacted ? [...reactions, { emoji, count: 1, isReacted }] : reactions;
+  if (Boolean(entry.isReacted) === isReacted) return reactions;
+  const count = (entry.count ?? 0) + (isReacted ? 1 : -1);
+  return reactions
+    .map((reaction) => (reaction === entry ? { ...entry, count, isReacted } : reaction))
+    .filter((reaction) => (reaction.count ?? 0) > 0);
 }
 
 const messages: DemoMessage[] = [
@@ -53,9 +71,10 @@ const messages: DemoMessage[] = [
     origin: 'sent',
     minute: 2,
     text: 'Which tram goes to the castle?',
+    reactions: [{ emoji: '👀', count: 1, people: ['Ana Lima'] }],
     commands: (log, message) => ({
       onReply: () => log('reply to Maria'),
-      onReact: (emoji) => log(`react ${emoji}`),
+      onReact: message.react,
       onEdit: message.edit,
       onDelete: message.remove,
     }),
@@ -66,6 +85,7 @@ const messages: DemoMessage[] = [
     origin: 'received',
     minute: 3,
     text: 'Take the 28 tram to the castle, then walk down to the river.',
+    reactions: [],
     commands: (log) => ({
       copyText: 'Take the 28 tram to the castle, then walk down to the river.',
       onCopy: () => log('copied the answer'),
@@ -79,10 +99,11 @@ const messages: DemoMessage[] = [
     origin: 'received',
     minute: 9,
     text: 'I can meet you at the river at noon.',
-    commands: (log) => ({
+    reactions: [{ emoji: '👍', count: 2, people: ['Maria Santos', 'Travel helper'] }],
+    commands: (log, message) => ({
       copyText: 'I can meet you at the river at noon.',
       onReply: () => log('reply to Ana'),
-      onReact: (emoji) => log(`react ${emoji}`),
+      onReact: message.react,
     }),
   },
 ];
@@ -117,13 +138,19 @@ function MessageContent({
   );
 }
 
-/** One demo message wrapped in its context menu, with its bar. */
+/** One demo message wrapped in its context menu, with its bar and its reactions. */
 function DemoEntry({ message, log }: { message: DemoMessage; log: (entry: string) => void }) {
   const [text, setText] = useState(message.text);
   const [state, setState] = useState<'shown' | 'editing' | 'deleted'>('shown');
+  const [reactions, setReactions] = useState(message.reactions);
+  const toggle = (emoji: string, isReacted: boolean) => {
+    setReactions((list) => toggleReaction(list, emoji, isReacted));
+    log(`${isReacted ? 'react' : 'take back'} ${emoji} on ${message.id}`);
+  };
   const controls = {
     edit: () => setState('editing'),
     remove: () => (setState('deleted'), log(`delete ${message.id}`)),
+    react: (emoji: string) => toggle(emoji, true),
   };
   const commands = state === 'deleted' ? {} : message.commands(log, controls);
   return (
@@ -135,6 +162,11 @@ function DemoEntry({ message, log }: { message: DemoMessage; log: (entry: string
           time={new Date(2026, 3, 20, 10, message.minute).toISOString()}
           getNow={getNow}
           actions={actions}
+          reactions={
+            state !== 'deleted' && reactions.length > 0 ? (
+              <ReactionBar reactions={reactions} onToggle={toggle} />
+            ) : null
+          }
           data-lab-message={message.id}
         >
           <MessageContent
