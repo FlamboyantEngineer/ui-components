@@ -1,11 +1,38 @@
 /* Board: fixed-width columns of raised cards, narrow collapsed columns and lanes under headers. */
 
+/*
+ * The board is as wide as its container; its columns scroll sideways in the board's own viewport,
+ * under the shared overlay scrollbar, when they need more room.
+ */
 .ui-board {
-  display: inline-flex;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.ui-board__viewport > .ui-scroll-region__viewport {
+  display: flex;
   flex-direction: column;
   gap: 8px;
-  min-width: 100%;
-  box-sizing: border-box;
+}
+
+/* The header row, the lanes and the cells are as wide as their columns, past the viewport. */
+.ui-board__viewport > .ui-scroll-region__viewport > * {
+  min-width: max-content;
+}
+
+/* A cell's list frame: a virtualized list scrolls under its overlay scrollbar's track, at its edge. */
+.ui-board__list {
+  display: flex;
+  position: relative;
+  flex: 1;
+  flex-direction: column;
+}
+
+.ui-board__list[data-virtualized] {
+  flex: none;
 }
 
 .ui-board__columns,
@@ -245,9 +272,6 @@
  */
 .ui-board__card-content .ui-board {
   flex: 1 1 100%;
-  min-width: 0;
-  max-width: 100%;
-  overflow-x: auto;
 }
 
 /*

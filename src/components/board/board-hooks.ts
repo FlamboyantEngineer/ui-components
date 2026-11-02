@@ -18,6 +18,8 @@ export const boardHooks = createHooks('board', [
   'lane-count',
   'cells',
   'cell',
+  'viewport',
+  'list',
   'cards',
   'card',
   'card-handle',

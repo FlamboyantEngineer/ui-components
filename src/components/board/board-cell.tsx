@@ -6,6 +6,7 @@ import { requireDefined } from '../../utils/require-defined.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { createKeyIndex } from '../../utils/create-key-index.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import {
   useCallback,
   useLayoutEffect,
@@ -30,6 +31,7 @@ import { Button } from '../button/button.js';
 import { armHandleDrag, DragHandle } from '../drag-handle/drag-handle.js';
 import { EmptyState } from '../empty-state/empty-state.js';
 import { boardHooks as hooks } from './board-hooks.js';
+import { BoardListFrame } from './board-scrollbars.js';
 import type { BoardCellAddress } from './board-moves.js';
 import type { BoardCardDrag } from './use-board-drag.js';
 import type { BoardCardState } from './board.js';
@@ -268,9 +270,12 @@ function BoardCards<T extends { id: Key }>({
     [strings.noCards],
   );
   const cardState = { isColumnCollapsed: isCollapsed };
+  // React Aria names the list itself; its overlay scrollbars read that id from the element.
+  const [listElement, setListElement] = useState<HTMLDivElement | null>(null);
+  const listRef = useMergedRefs(grid, setListElement);
   const list = (
     <GridList
-      ref={grid}
+      ref={listRef}
       aria-labelledby={labelledBy}
       items={items}
       dependencies={[renderCard, getTextValue, keyShortcuts, options.onCardKeyDown, isCollapsed]}
@@ -311,13 +316,15 @@ function BoardCards<T extends { id: Key }>({
     </GridList>
   );
   return (
-    <Virtualizer
-      layout={layout}
-      layoutOptions={{ estimatedRowSize: estimatedCardHeight, isVirtualized: virtualized }}
-      shouldObserveItemSize
-    >
-      {list}
-    </Virtualizer>
+    <BoardListFrame isVirtualized={virtualized} listRef={grid} listId={listElement?.id}>
+      <Virtualizer
+        layout={layout}
+        layoutOptions={{ estimatedRowSize: estimatedCardHeight, isVirtualized: virtualized }}
+        shouldObserveItemSize
+      >
+        {list}
+      </Virtualizer>
+    </BoardListFrame>
   );
 }
 
