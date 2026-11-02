@@ -22,7 +22,7 @@ Verification: `src/components/find-bar/find-bar.test.tsx`, `e2e/find-bar.spec.ts
 
 Previous match and Next match icon buttons (`ui-find-bar__previous` and `ui-find-bar__next`, the `arrow-up` and `arrow-down` glyphs, the provider's `previousMatch` and `nextMatch` strings) shall call `onPrevious` and `onNext`, as Shift+Enter and Enter in the find box do; the buttons are disabled and the keys do nothing while there is no match, or when the Enter confirms a text composition (`isComposing`, or key code 229). Enter never submits an enclosing form.
 
-The bar does not draw the searched content: the host highlights its matches and the current one. The lab's passage marks every match and gives the current match (`aria-current`) the accent tint, an outline and an underline, so it stands out beyond colour in both themes; the mark follows Next, Previous and wrapping, resets with a new query or option, and no mark is current while there is no match.
+The bar does not draw the searched content: the host highlights its matches and the current one. The lab's passage marks every match and gives the current match (`aria-current`) a colour of its own, the accent tint, with no border; a checkbox swaps in a host's own outlined and underlined style, since the look is the host's; the mark follows Next, Previous and wrapping, resets with a new query or option, and no mark is current while there is no match.
 
 Implementation: `src/components/find-bar/find-bar.tsx`
 Verification: `src/components/find-bar/find-bar.test.tsx`, `e2e/find-bar.spec.ts`
