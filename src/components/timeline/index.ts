@@ -11,6 +11,10 @@ export type {
   TimelineProps,
   TimelineRange,
   TimelineRow,
+  TimelineRowColumn,
+  TimelineRowColumnEntry,
+  TimelineRowColumnKind,
+  TimelineRowContext,
   TimelineScale,
   TimelineView,
 } from './timeline.js';

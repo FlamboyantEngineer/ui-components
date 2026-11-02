@@ -90,6 +90,54 @@
   font-weight: var(--ref-font-weight-strong);
 }
 
+/*
+ * Row properties: with columns the row list grows past its usual width, each value and heading a
+ * fixed width at the end of its row so they line up, and long names give way with an ellipsis.
+ */
+.ui-timeline__corner[data-columns],
+.ui-timeline__list[data-columns] {
+  width: auto;
+  min-width: 11rem;
+}
+
+.ui-timeline__corner[data-columns] {
+  display: flex;
+  align-items: flex-end;
+}
+
+.ui-timeline__row-headings {
+  display: flex;
+  gap: 4px;
+  margin-inline-start: auto;
+  padding: 0 8px 4px;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-timeline__list[data-columns] .ui-timeline__row-name {
+  flex: 1 1 auto;
+  max-width: 12rem;
+}
+
+.ui-timeline__row-heading,
+.ui-timeline__row-value {
+  flex: none;
+  box-sizing: border-box;
+  width: 6.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-timeline__row-value {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-timeline__list[data-columns] .ui-timeline__row-name + .ui-timeline__row-value {
+  margin-inline-start: auto;
+}
+
 .ui-timeline__body {
   overflow: hidden;
 }

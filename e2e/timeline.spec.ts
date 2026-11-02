@@ -2,6 +2,40 @@ import { expect, test, matrixCell } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 test.describe('Timeline lab', () => {
+  test('UIC-TIMELINE-1.13 shows chosen row properties lined up with their headings', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('timeline');
+    const demo = page.locator('[data-lab-demo="row-properties"]');
+    const timeline = demo.getByRole('group', { name: 'Garden works' });
+    await demo.scrollIntoViewIfNeeded();
+    const headings = timeline.locator('.ui-timeline__row-heading');
+    await expect(headings).toHaveText(['Duration', 'Depends on']);
+    const label = (name: string) => timeline.locator('.ui-timeline__row-label', { hasText: name });
+    await expect(label('Paths')).toContainText('5 days');
+    await expect(label('Raised beds')).toContainText('2 items');
+    await expect(label('Opening')).toContainText('Lay gravel');
+    // Each value sits under its heading, in every row, and a long name gives way.
+    const heading = await headings.first().boundingBox();
+    for (const name of ['Raised beds', 'Paths', 'Opening']) {
+      const value = await label(name).locator('[data-column="duration"]').boundingBox();
+      expect(Math.abs((value?.x ?? 0) - (heading?.x ?? 0))).toBeLessThanOrEqual(1);
+    }
+    const name = label('Raised beds').locator('.ui-timeline__row-name');
+    expect(await name.evaluate((node) => node.scrollWidth > node.clientWidth)).toBe(true);
+    // The reader chooses the properties; their order stays the host's.
+    await demo.getByText('Dependencies').click();
+    await demo.getByText('Status').click();
+    await expect(headings).toHaveText(['Duration', 'Status']);
+    await expect(label('Paths')).toContainText('Open');
+    // A move updates the values.
+    await timeline.getByRole('button', { name: 'Lay gravel' }).focus();
+    await page.keyboard.press('Shift+ArrowRight');
+    await expect(label('Paths')).toContainText('6 days');
+    await lab.expectAccessible('[data-lab-demo="row-properties"]');
+  });
+
   test('UIC-TIMELINE-1.12 UIC-TIMELINE-2.6 shows, edits and keeps assignees and links task cards', async ({
     page,
     lab,

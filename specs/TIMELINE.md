@@ -90,6 +90,13 @@ An item's `assignees` (people with an `id` and an [Avatar](AVATAR.md) identity) 
 Implementation: `src/components/timeline/timeline-item.tsx`, `src/components/timeline/timeline-table.tsx`, `src/components/timeline/timeline-geometry.ts`
 Verification: `src/components/timeline/timeline-item-editor.test.tsx`, `e2e/timeline.spec.ts`
 
+### UIC-TIMELINE-1.13 - Row properties
+
+`rowColumns` shall show properties beside each row's name in the chart's row list, in the order given: the built-in `duration` (`timelineDurationColumn`) and `dependencies` (`timelineDependenciesColumn`), or host columns with an `id`, a `header` and `renderValue({ row, items, isGroup })`, where `items` are the row's own items (not its children's). Without it (the default) the row list shows the names alone. Each value renders in a `ui-timeline__row-value` slot (`data-column` the built-in's name or the host id) after the name, prefixed by its heading in visually hidden text; the headings render once, hidden from assistive technology, in a `ui-timeline__row-headings` slot in the corner (`ui-timeline__row-heading` each), and the corner and the list publish `data-columns`. A built-in value reads a row's items: with one item, its length in days counting both ends (`timelineDuration`, which names a milestone) or its predecessors' names (`timelineNone` without any); with several, their count (`timelineItemCount`) rather than an aggregate; with none, as for a group without its own items, an empty cell. A host value of `null` or `undefined` is an empty cell. Values follow the items, so a move or a resize updates them. The reference sheet widens the row list for the columns, gives each value and heading the same fixed width at the end of its row so they line up with the rows and the chart, in either reading direction, and lets a long name give way with an ellipsis.
+
+Implementation: `src/components/timeline/timeline-row-columns.tsx`, `src/components/timeline/timeline-chart.tsx`, `src/components/timeline/timeline.tsx`
+Verification: `src/components/timeline/timeline-row-columns.test.tsx`, `e2e/timeline.spec.ts`
+
 ## UIC-TIMELINE-2 - Editing and selection
 
 ### UIC-TIMELINE-2.1 - Pointer moves and resizes
@@ -175,46 +182,51 @@ Verification: `src/components/timeline/timeline.test.tsx`
 
 ## Hooks
 
-| Hook                            | Kind      | Values                                            | Description                                                      |
-| ------------------------------- | --------- | ------------------------------------------------- | ---------------------------------------------------------------- |
-| `ui-timeline`                   | root      |                                                   | The root `group`.                                                |
-| `ui-timeline__viewport`         | slot      |                                                   | The chart's scroll container.                                    |
-| `ui-timeline__canvas`           | slot      |                                                   | The two-column grid of corner, scale, row list and body.         |
-| `ui-timeline__corner`           | slot      |                                                   | The pinned cell above the row list.                              |
-| `ui-timeline__header`           | slot      |                                                   | The pinned time scale.                                           |
-| `ui-timeline__scale-row`        | slot      |                                                   | A row of the time scale.                                         |
-| `ui-timeline__scale-cell`       | slot      |                                                   | A unit of a scale row, with its label.                           |
-| `ui-timeline__list`             | slot      |                                                   | The pinned column of row names.                                  |
-| `ui-timeline__row-label`        | slot      |                                                   | A row's toggle and name.                                         |
-| `ui-timeline__toggle`           | slot      |                                                   | A row's expand toggle, or the empty box of a row with none.      |
-| `ui-timeline__row-name`         | slot      |                                                   | A row's name.                                                    |
-| `ui-timeline__body`             | slot      |                                                   | The rows of items, with guides and connectors.                   |
-| `ui-timeline__gridline`         | slot      |                                                   | A line at the start of a unit of the scale.                      |
-| `ui-timeline__today`            | slot      |                                                   | The today marker, at the middle of the day.                      |
-| `ui-timeline__connectors`       | slot      |                                                   | The SVG layer of dependency connectors.                          |
-| `ui-timeline__connector`        | slot      |                                                   | A dependency's path, with its arrow head.                        |
-| `ui-timeline__row`              | slot      |                                                   | A row of items, a labelled `group`.                              |
-| `ui-timeline__item`             | slot      |                                                   | A bar or milestone `<button>`.                                   |
-| `ui-timeline__progress`         | slot      |                                                   | The completed share of a bar.                                    |
-| `ui-timeline__item-label`       | slot      |                                                   | An item's visible label.                                         |
-| `ui-timeline__assignees`        | slot      |                                                   | An item's assignees' avatars.                                    |
-| `ui-timeline__handle`           | slot      |                                                   | A resize handle at one end of a movable bar.                     |
-| `ui-timeline__table`            | slot      |                                                   | The table of the table view.                                     |
-| `ui-timeline-item-editor`       | root      |                                                   | The item editor's modal.                                         |
-| `ui-timeline-item-editor__form` | slot      |                                                   | The item editor's form.                                          |
-| `ui-timeline-item-editor__link` | slot      |                                                   | The item editor's link to the item's own page.                   |
-| `data-scale`                    | attribute | `day`, `week`, `month`, `quarter`                 | The zoom level, on the root.                                     |
-| `data-view`                     | attribute | `chart`, `table`                                  | The view, on the root.                                           |
-| `data-tier`                     | attribute | `major`, `minor`                                  | On a scale row: the larger unit above or the scale's unit below. |
-| `data-unit`                     | attribute | `day`, `week`, `month`, `quarter`, `year`         | On a scale row: its unit.                                        |
-| `data-kind`                     | attribute | `bar`, `milestone`                                | On an item.                                                      |
-| `data-tone`                     | attribute | `neutral`, `info`, `success`, `warning`, `danger` | On an item: its tone.                                            |
-| `data-edge`                     | attribute | `start`, `end`                                    | On a handle: the end of the bar it moves.                        |
-| `data-group`                    | state     | `true`                                            | On a row label: the row has children.                            |
-| `data-expanded`                 | state     | `true`                                            | On a group's row label: the group is expanded.                   |
-| `data-major`                    | state     | `true`                                            | On a gridline: a unit of the upper scale row starts there.       |
-| `data-selected`                 | state     | `true`                                            | On a selected item.                                              |
-| `data-dragging`                 | state     | `true`                                            | On an item while a pointer drags it.                             |
-| `data-readonly`                 | state     | `true`                                            | On an item that does not move.                                   |
-| `data-conflict`                 | state     | `true`                                            | On a connector, and an item, that starts before it may.          |
-| `--ui-timeline-level`           | property  |                                                   | On a row label: the row's depth, from 1, for indentation.        |
+| Hook                            | Kind      | Values                                            | Description                                                                |
+| ------------------------------- | --------- | ------------------------------------------------- | -------------------------------------------------------------------------- |
+| `ui-timeline`                   | root      |                                                   | The root `group`.                                                          |
+| `ui-timeline__viewport`         | slot      |                                                   | The chart's scroll container.                                              |
+| `ui-timeline__canvas`           | slot      |                                                   | The two-column grid of corner, scale, row list and body.                   |
+| `ui-timeline__corner`           | slot      |                                                   | The pinned cell above the row list.                                        |
+| `ui-timeline__header`           | slot      |                                                   | The pinned time scale.                                                     |
+| `ui-timeline__scale-row`        | slot      |                                                   | A row of the time scale.                                                   |
+| `ui-timeline__scale-cell`       | slot      |                                                   | A unit of a scale row, with its label.                                     |
+| `ui-timeline__list`             | slot      |                                                   | The pinned column of row names.                                            |
+| `ui-timeline__row-label`        | slot      |                                                   | A row's toggle and name.                                                   |
+| `ui-timeline__toggle`           | slot      |                                                   | A row's expand toggle, or the empty box of a row with none.                |
+| `ui-timeline__row-name`         | slot      |                                                   | A row's name.                                                              |
+| `ui-timeline__row-value`        | slot      |                                                   | A row property's value, after the row's name.                              |
+| `ui-timeline__row-headings`     | slot      |                                                   | The row properties' headings, in the corner.                               |
+| `ui-timeline__row-heading`      | slot      |                                                   | A row property's heading.                                                  |
+| `ui-timeline__body`             | slot      |                                                   | The rows of items, with guides and connectors.                             |
+| `ui-timeline__gridline`         | slot      |                                                   | A line at the start of a unit of the scale.                                |
+| `ui-timeline__today`            | slot      |                                                   | The today marker, at the middle of the day.                                |
+| `ui-timeline__connectors`       | slot      |                                                   | The SVG layer of dependency connectors.                                    |
+| `ui-timeline__connector`        | slot      |                                                   | A dependency's path, with its arrow head.                                  |
+| `ui-timeline__row`              | slot      |                                                   | A row of items, a labelled `group`.                                        |
+| `ui-timeline__item`             | slot      |                                                   | A bar or milestone `<button>`.                                             |
+| `ui-timeline__progress`         | slot      |                                                   | The completed share of a bar.                                              |
+| `ui-timeline__item-label`       | slot      |                                                   | An item's visible label.                                                   |
+| `ui-timeline__assignees`        | slot      |                                                   | An item's assignees' avatars.                                              |
+| `ui-timeline__handle`           | slot      |                                                   | A resize handle at one end of a movable bar.                               |
+| `ui-timeline__table`            | slot      |                                                   | The table of the table view.                                               |
+| `ui-timeline-item-editor`       | root      |                                                   | The item editor's modal.                                                   |
+| `ui-timeline-item-editor__form` | slot      |                                                   | The item editor's form.                                                    |
+| `ui-timeline-item-editor__link` | slot      |                                                   | The item editor's link to the item's own page.                             |
+| `data-scale`                    | attribute | `day`, `week`, `month`, `quarter`                 | The zoom level, on the root.                                               |
+| `data-view`                     | attribute | `chart`, `table`                                  | The view, on the root.                                                     |
+| `data-tier`                     | attribute | `major`, `minor`                                  | On a scale row: the larger unit above or the scale's unit below.           |
+| `data-unit`                     | attribute | `day`, `week`, `month`, `quarter`, `year`         | On a scale row: its unit.                                                  |
+| `data-kind`                     | attribute | `bar`, `milestone`                                | On an item.                                                                |
+| `data-tone`                     | attribute | `neutral`, `info`, `success`, `warning`, `danger` | On an item: its tone.                                                      |
+| `data-edge`                     | attribute | `start`, `end`                                    | On a handle: the end of the bar it moves.                                  |
+| `data-column`                   | attribute |                                                   | On a row value and a heading: the built-in's name or the host column's id. |
+| `data-columns`                  | state     | `true`                                            | On the corner and the row list: row properties are shown.                  |
+| `data-group`                    | state     | `true`                                            | On a row label: the row has children.                                      |
+| `data-expanded`                 | state     | `true`                                            | On a group's row label: the group is expanded.                             |
+| `data-major`                    | state     | `true`                                            | On a gridline: a unit of the upper scale row starts there.                 |
+| `data-selected`                 | state     | `true`                                            | On a selected item.                                                        |
+| `data-dragging`                 | state     | `true`                                            | On an item while a pointer drags it.                                       |
+| `data-readonly`                 | state     | `true`                                            | On an item that does not move.                                             |
+| `data-conflict`                 | state     | `true`                                            | On a connector, and an item, that starts before it may.                    |
+| `--ui-timeline-level`           | property  |                                                   | On a row label: the row's depth, from 1, for indentation.                  |

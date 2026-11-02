@@ -45,6 +45,16 @@ export interface TimelineStrings {
   timelineAssigneesColumn: string;
   /** Names the link to an item's own page, from the item's name. */
   timelineOpenItem: (item: string) => string;
+  /** Heads the row list's duration column. */
+  timelineDurationColumn: string;
+  /** Heads the row list's dependencies column. */
+  timelineDependenciesColumn: string;
+  /** An item's length in days, counting both ends; 0 for a milestone. */
+  timelineDuration: (days: number) => string;
+  /** How many items a row holds, when it holds several. */
+  timelineItemCount: (count: number) => string;
+  /** Tells that an item depends on nothing. */
+  timelineNone: string;
 }
 
 /** The module's text, with the message values each text function reads its arguments as. */
@@ -59,4 +69,6 @@ export const timelineStrings = defineStrings<TimelineStrings>({
   timelineEditItem: (item) => ({ item }),
   timelineAssignedTo: (names) => ({ names }),
   timelineOpenItem: (item) => ({ item }),
+  timelineDuration: (days) => ({ days }),
+  timelineItemCount: (count) => ({ count }),
 });
