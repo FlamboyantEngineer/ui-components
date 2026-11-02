@@ -1,12 +1,13 @@
 import { RestoreGlyph } from '../../src/core/glyphs.js';
 import { useRef, useState } from 'react';
-import { Banner, type BannerTone } from '../../src/components/banner/banner.js';
+import { Banner } from '../../src/components/banner/banner.js';
 import { Button } from '../../src/components/button/button.js';
 import { useEnterExit } from '../../src/utils/use-enter-exit.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import type { Tone } from '../../src/core/props.js';
 
-const tones: BannerTone[] = ['neutral', 'info', 'success', 'warning', 'danger'];
-const messages: Record<BannerTone, string> = {
+const tones: Tone[] = ['neutral', 'info', 'success', 'warning', 'danger'];
+const messages: Record<Tone, string> = {
   neutral: 'Viewing a copy from Tuesday.',
   info: 'A new version is available.',
   success: 'All changes saved.',
@@ -62,7 +63,7 @@ function AutoFocusDemo() {
 }
 
 function LiveDemo() {
-  const [tone, setTone] = useState<BannerTone>('info');
+  const [tone, setTone] = useState<Tone>('info');
   const [dismissed, setDismissed] = useState(0);
   const [visible, setVisible] = useState(true);
   return (

@@ -9,7 +9,6 @@ export type {
   ModalRenderProps,
   ModalRole,
   ModalSize,
-  ModalTone,
   ModalTriggerProps,
 } from './modal.js';
 

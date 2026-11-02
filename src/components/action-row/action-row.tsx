@@ -3,10 +3,10 @@
 import { CloseGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, ControlSize } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
-import type { ButtonSize } from '../button/button.js';
+
 import { Button } from '../button/button.js';
 import { ActionRowActions, createClearKey } from './action-row-actions.js';
 import { orderActions, type ActionRowAction } from './action-verbs.js';
@@ -22,7 +22,7 @@ export interface ActionRowProps
   /** Content at the start of the row, before the actions (a title, a filter, a status line). */
   lead?: ReactNode;
   /** Size of every action button. Defaults to `md`. */
-  size?: ButtonSize | undefined;
+  size?: ControlSize | undefined;
   /**
    * Draws the actions as one toolbar, named by `aria-label` or `aria-labelledby`: one tab
    * stop, with the arrow keys moving between the actions.

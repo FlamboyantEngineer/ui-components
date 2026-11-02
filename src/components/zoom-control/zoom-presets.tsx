@@ -2,9 +2,10 @@
 
 import { ChevronDownGlyph } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
-import type { ButtonSize } from '../button/button.js';
+
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import type { MenuItemEntry } from '../menu/menu.js';
+import type { ControlSize } from '../../core/props.js';
 
 /** A zoom the preset menu offers that the caller resolves, such as fitting the page width. */
 export interface ZoomPreset {
@@ -21,7 +22,7 @@ interface ZoomPresetMenuProps {
   /** Formats a percentage entry like the control's value. */
   formatter: Intl.NumberFormat;
   className: string;
-  size: ButtonSize;
+  size: ControlSize;
   isDisabled: boolean;
   /** Requests a percentage entry's zoom. */
   onRequest: (value: number) => void;

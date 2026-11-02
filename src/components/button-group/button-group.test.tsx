@@ -40,11 +40,12 @@ describe('ButtonGroup', () => {
     expect(group).toHaveAttribute('data-orientation', 'horizontal');
     expect(group).not.toHaveAttribute('data-justified');
     rerender(
-      <ButtonGroup aria-label="View" density="attached" orientation="vertical" justified>
+      <ButtonGroup aria-label="View" attached orientation="vertical" justified>
         <Button icon={UndoGlyph} label="Undo" />
       </ButtonGroup>,
     );
-    expect(group).toHaveAttribute('data-density', 'attached');
+    expect(group).toHaveAttribute('data-attached', 'true');
+    expect(group).toHaveAttribute('data-density', 'default');
     expect(group).toHaveAttribute('data-orientation', 'vertical');
     expect(group).toHaveAttribute('data-justified', 'true');
     rerender(

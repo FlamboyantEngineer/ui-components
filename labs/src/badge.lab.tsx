@@ -6,16 +6,17 @@ import {
   UsersGlyph,
 } from '../../src/core/glyphs.js';
 import { useState } from 'react';
-import { Badge, type BadgeTone } from '../../src/components/badge/badge.js';
+import { Badge } from '../../src/components/badge/badge.js';
 import { Button } from '../../src/components/button/button.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { formatCount, normalizeCount } from '../../src/utils/index.js';
 import { LabHelperCalls } from './lab-helper-calls.js';
+import type { Tone } from '../../src/core/props.js';
 
-const tones: BadgeTone[] = ['neutral', 'info', 'success', 'warning', 'danger'];
+const tones: Tone[] = ['neutral', 'info', 'success', 'warning', 'danger'];
 const sizes = ['sm', 'md', 'lg'] as const;
-const labels: Record<BadgeTone, string> = {
+const labels: Record<Tone, string> = {
   neutral: 'Seasonal',
   info: 'New',
   success: 'In stock',

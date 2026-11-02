@@ -5,6 +5,5 @@ export type {
   ButtonContent,
   ButtonProps,
   ButtonRenderState,
-  ButtonSize,
   ButtonVariant,
 } from './button.js';

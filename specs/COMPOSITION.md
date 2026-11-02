@@ -62,6 +62,13 @@ A component that renders a root element of its own shall declare its `ref` throu
 Implementation: `src/core/props.ts`
 Verification: `test/public-types.test.ts`
 
+### UIC-COMPOSITION-2.6 - Shared vocabulary in props
+
+Props shall name the shared vocabulary of `src/core/props.ts` directly: `ControlSize` for control heights (`Button`, `SegmentedChoice`, `Breadcrumb`, `Combobox` and the components that pass a size on to them), `Tone` for tones (`Badge`, `Banner`, `Modal`, `StatusLight`, `Tag`), and `Density` or a subset of it for spacing. No module exports a type that only renames a core type. Joining controls into one run is the boolean `attached` beside `density`, on [Button Group](BUTTON-GROUP.md) and on a toolbar row's groups ([UIC-LAYOUT-3.10](LAYOUT.md#uic-layout-310---attached-toolbar-groups)), never a density value. A subset with its own meaning, such as an avatar's geometry, keeps its own name.
+
+Implementation: `src/core/props.ts`, `src/components/button-group/button-group.tsx`, `src/components/layout/toolbar-row.tsx`
+Verification: `test/public-types.test.ts`
+
 ## UIC-COMPOSITION-3 - Slots
 
 ### UIC-COMPOSITION-3.1 - Slot props

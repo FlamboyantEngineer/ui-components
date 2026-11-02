@@ -11,8 +11,6 @@ import { formatCount, normalizeCount } from '../../utils/count.js';
 import { Icon, type IconSource } from '../icon/icon.js';
 import { toIconProps } from '../icon/icon.js';
 
-export type BadgeTone = Tone;
-
 export type BadgeSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 
 /** `subtle` is a tinted pill, `solid` a filled token, `status` a tone dot before the label. */
@@ -26,7 +24,7 @@ interface BadgeCommonProps
     RefProps<HTMLSpanElement>,
     Pick<NativeProps<'span'>, 'hidden' | 'aria-hidden' | 'aria-label'> {
   /** The value's tone. Defaults to `neutral`. */
-  tone?: BadgeTone | undefined;
+  tone?: Tone | undefined;
   /** Scale. Defaults to `md`. */
   size?: BadgeSize | undefined;
   /** Drop the pill inside chrome that already draws its own edge; tone and dot stay. */

@@ -6,6 +6,5 @@ export type {
   BadgePlacement,
   BadgeProps,
   BadgeSize,
-  BadgeTone,
   BadgeVariant,
 } from './badge.js';

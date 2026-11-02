@@ -33,7 +33,7 @@ function Tools() {
         <Button icon={UndoGlyph} label="Undo" size="sm" />
         <Button icon={RedoGlyph} label="Redo" size="sm" />
       </ToolbarRowGroup>
-      <ToolbarRowGroup aria-label="Edit" density="attached">
+      <ToolbarRowGroup aria-label="Edit" attached>
         <Button icon={EditGlyph} label="Edit" size="sm" />
         <Button icon={CopyGlyph} label="Copy" size="sm" />
         <Button icon={DeleteGlyph} label="Delete" size="sm" />

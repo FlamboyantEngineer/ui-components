@@ -8,7 +8,7 @@ import {
   ProgressBar,
 } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Size } from '../../core/props.js';
+import type { BaseProps, ControlSize } from '../../core/props.js';
 import { ExternalLinkGlyph } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Icon, type IconSource } from '../icon/icon.js';
@@ -32,8 +32,6 @@ import {
 export type ButtonVariant =
   'primary' | 'secondary' | 'tertiary' | 'danger' | 'ghost' | 'accent' | 'chip' | 'link' | 'bare';
 
-export type ButtonSize = Extract<Size, 'xs' | 'sm' | 'md' | 'lg'>;
-
 /** `label` wraps children in one label slot; `parts` lays them out directly; `sentence` lets a prose label wrap. */
 export type ButtonContent = 'label' | 'parts' | 'sentence' | 'icon';
 
@@ -43,7 +41,7 @@ export interface ButtonProps extends ButtonStateProps, ButtonActionProps, BasePr
   /** Emphasis and chrome. Defaults to `secondary`. */
   variant?: ButtonVariant | undefined;
   /** Block size. Defaults to `md`. */
-  size?: ButtonSize | undefined;
+  size?: ControlSize | undefined;
   /** The label, or the parts of the content with `content="parts"`. */
   children?: ReactNode;
   /** How the children are laid out. Defaults to `label`. */

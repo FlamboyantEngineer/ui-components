@@ -5,9 +5,9 @@ import { useId, useMemo, type ReactNode } from 'react';
 import { useNumberFormatter } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, NativeProps } from '../../core/props.js';
+import type { BaseProps, NativeProps, ControlSize } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import type { ButtonSize } from '../button/button.js';
+
 import { Button } from '../button/button.js';
 import { ZoomPresetMenu, type ZoomPreset } from './zoom-presets.js';
 import {
@@ -38,7 +38,7 @@ export interface ZoomControlProps
   /** Number format for the displayed value, applied to the percentage itself (`137.5` → `137.5%`). */
   formatOptions?: Intl.NumberFormatOptions | undefined;
   /** Size of the built-in buttons, published for the stylesheet. Defaults to `sm`. */
-  size?: ButtonSize | undefined;
+  size?: ControlSize | undefined;
   /**
    * The entries of a preset menu after the value, in order: percentages, which request that zoom,
    * and named presets, which call `onPresetAction`. Without it the control has no preset menu.
@@ -54,7 +54,7 @@ interface ZoomButtonProps {
   label: string;
   /** The zoom the button requests, or `undefined` while it has none to request. */
   target: number | undefined;
-  size: ButtonSize;
+  size: ControlSize;
   isDisabled: boolean;
   onRequest: (value: number) => void;
 }

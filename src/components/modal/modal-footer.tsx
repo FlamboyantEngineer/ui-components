@@ -5,9 +5,10 @@ import { mergeClassNames } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Button, type ButtonVariant } from '../button/button.js';
-import type { ModalAction, ModalCancelAction, ModalProps, ModalTone } from './modal.js';
+import type { ModalAction, ModalCancelAction, ModalProps } from './modal.js';
 import type { ModalActionSlot, ModalActions } from './use-modal-actions.js';
 import { modalHooks as hooks } from './modal-hooks.js';
+import type { Tone } from '../../core/props.js';
 
 interface ModalFooterProps extends Pick<
   ModalProps,
@@ -33,7 +34,7 @@ type BuiltInActionsProps = Omit<
 >;
 
 interface FooterMessage {
-  tone: ModalTone;
+  tone: Tone;
   content: ReactNode;
 }
 

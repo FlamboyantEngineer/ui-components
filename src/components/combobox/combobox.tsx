@@ -22,8 +22,6 @@ import { ComboboxSuggestions, type ComboboxOptionRenderer } from './combobox-sug
 import { comboboxHooks as hooks } from './combobox-hooks.js';
 import { useScopedDisabled } from '../field/field.js';
 
-export type ComboboxSize = ControlSize;
-
 /** `search` leads the field with a search glyph, for a query completed from suggestions. */
 export type ComboboxVariant = 'default' | 'search';
 
@@ -91,7 +89,7 @@ export interface ComboboxProps<M extends ComboboxSelectionMode = 'single'>
   /** Defaults to `default`. */
   variant?: ComboboxVariant | undefined;
   /** Field size. Defaults to `md`. */
-  size?: ComboboxSize | undefined;
+  size?: ControlSize | undefined;
   /** Renders only the options in view, for very long lists. */
   virtualized?: boolean | undefined;
   /** Ends the list with an "Add" row for typed text no option has as label; runs with the text. */

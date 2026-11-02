@@ -1,11 +1,6 @@
 import { useState } from 'react';
-import type { Key, Selection } from '../../src/core/props.js';
-import {
-  Tag,
-  TagGroup,
-  type TagGroupSize,
-  type TagTone,
-} from '../../src/components/tag-group/tag-group.js';
+import type { Key, Selection, Tone } from '../../src/core/props.js';
+import { Tag, TagGroup, type TagGroupSize } from '../../src/components/tag-group/tag-group.js';
 import { Button } from '../../src/components/button/button.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
@@ -21,7 +16,7 @@ const tones = [
   'success',
   'warning',
   'danger',
-] as const satisfies readonly TagTone[];
+] as const satisfies readonly Tone[];
 const sizes = ['sm', 'md', 'lg'] as const satisfies readonly TagGroupSize[];
 const states = ['read-only', 'removable', 'disabled', 'selected', 'empty'] as const;
 const fruit: Fruit[] = [

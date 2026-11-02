@@ -11,7 +11,7 @@ import { isComposingKey } from '../../utils/is-composing-key.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { useOverflowFocus } from '../../utils/use-overflow-focus.js';
 import { useOverflowItems } from '../../utils/use-overflow-items.js';
-import type { ButtonSize } from '../button/button.js';
+
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import { Button, type ButtonProps } from '../button/button.js';
 import {
@@ -25,10 +25,11 @@ import {
 import { useActionPending, type ActionPress } from './use-action-pending.js';
 import { toActionContent, toActionKey, type ActionRowAction } from './action-verbs.js';
 import { actionRowHooks as hooks } from './action-row-hooks.js';
+import type { ControlSize } from '../../core/props.js';
 
 interface ActionRowActionsProps extends Pick<AriaLabellingProps, 'aria-label' | 'aria-labelledby'> {
   actions: readonly ActionRowAction[];
-  size: ButtonSize;
+  size: ControlSize;
   /** Draws the actions as one toolbar. */
   isToolbar: boolean;
   /** Collapses the actions that do not fit into a "more" menu. */
@@ -67,7 +68,7 @@ function ActionRowMenu({
   children,
 }: {
   action: ActionRowAction;
-  size: ButtonSize;
+  size: ControlSize;
   hasMenu: boolean;
   /** The action is disabled or pending: its menu does not open, and an open one closes. */
   isLocked: boolean;
@@ -98,7 +99,7 @@ function ActionRowButton({
 }: {
   action: ActionRowAction;
   press: ActionPress;
-  size: ButtonSize;
+  size: ControlSize;
 }) {
   const { icon, label, pendingLabel } = toActionContent(action, useUiStrings());
   const hasMenu = Boolean(action.items?.length);
@@ -175,7 +176,7 @@ interface KeyedAction {
 }
 
 /** The menu of the actions that do not fit, at the end of the row. */
-function OverflowMenu({ keyed, size }: { keyed: readonly KeyedAction[]; size: ButtonSize }) {
+function OverflowMenu({ keyed, size }: { keyed: readonly KeyedAction[]; size: ControlSize }) {
   const strings = useUiStrings();
   return (
     <div {...hooks.slot('overflow')}>

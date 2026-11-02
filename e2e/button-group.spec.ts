@@ -20,7 +20,7 @@ test.describe('Button Group lab', () => {
     expect(await gapBetween('compact')).toBeCloseTo(2, 0);
     expect(await gapBetween('attached')).toBeCloseTo(-1, 0);
     const group = page.getByRole('group', { name: 'Alignment attached horizontal' });
-    await expect(group).toHaveAttribute('data-density', 'attached');
+    await expect(group).toHaveAttribute('data-attached', 'true');
     await lab.expectAccessible();
   });
 
@@ -113,7 +113,7 @@ test.describe('Button Group lab', () => {
 
     const zoom = demo.getByRole('group', { name: 'Zoom' });
     await expect(zoom).toHaveAttribute('data-lab-swapped', '');
-    await expect(zoom).toHaveAttribute('data-density', 'attached');
+    await expect(zoom).toHaveAttribute('data-attached', 'true');
     await expect(zoom.getByRole('button')).toHaveCount(3);
     await lab.expectAccessible();
   });

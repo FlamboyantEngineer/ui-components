@@ -14,7 +14,6 @@ import { Group, Toolbar } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, ContainerProps, Orientation } from '../../core/props.js';
-import type { ButtonGroupDensity } from '../button-group/button-group.js';
 import { Separator } from '../separator/separator.js';
 import { ScrollStrip, useToolbarScroll } from '../toolbar-scroller/toolbar-scroller.js';
 import {
@@ -33,9 +32,6 @@ export type ToolbarRowVariant = 'plain' | 'surface';
  * one row that scrolls in a `ToolbarScroller`; `none` keeps one row and leaves overflow to the caller.
  */
 export type ToolbarRowOverflow = 'wrap' | 'scroll' | 'none';
-
-/** `default` spaces a group's controls apart; `attached` joins them into one segmented run. */
-export type ToolbarRowGroupDensity = Extract<ButtonGroupDensity, 'default' | 'attached'>;
 
 export interface ToolbarRowProps
   extends Omit<ContainerProps<'div'>, 'role'>, BaseProps, LayoutContainmentProps {
@@ -58,8 +54,8 @@ export interface ToolbarRowProps
 export interface ToolbarRowGroupProps extends BaseProps, AriaLabellingProps {
   /** The group's controls. Name the group with `aria-label` or `aria-labelledby`. */
   children?: ReactNode;
-  /** How close the controls sit. Defaults to `default`. */
-  density?: ToolbarRowGroupDensity | undefined;
+  /** Joins the controls into one segmented run, with no gap and shared borders. */
+  attached?: boolean | undefined;
 }
 
 export type ToolbarRowSeparatorProps = BaseProps;
@@ -198,12 +194,12 @@ export function ToolbarRow({
 export function ToolbarRowGroup({
   children,
   className,
-  density = 'default',
+  attached = false,
   ...rest
 }: ToolbarRowGroupProps) {
   const { orientation, wrap } = useContext(ToolbarRowContext);
   return (
-    <Group {...rest} {...hooks.slot('group', { orientation, wrap, density }, className)}>
+    <Group {...rest} {...hooks.slot('group', { orientation, wrap, attached }, className)}>
       {children}
     </Group>
   );

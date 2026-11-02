@@ -12,12 +12,10 @@ import { Button } from '../button/button.js';
 import { Icon, type IconSource } from '../icon/icon.js';
 import { toIconProps } from '../icon/icon.js';
 
-export type BannerTone = Tone;
-
 export interface BannerProps
   extends BaseProps, Pick<NativeProps<'div'>, 'hidden' | 'aria-label'>, RefProps<HTMLElement> {
   /** The message's tone; it also chooses the announcement. Defaults to `neutral`. */
-  tone?: BannerTone | undefined;
+  tone?: Tone | undefined;
   /** A short summary before the description. */
   title?: ReactNode;
   /** The message itself: text or rich content. */
