@@ -24,6 +24,37 @@ describe('ColorSwatch', () => {
     expectHooksMatchSpec(container, 'COLOR-SWATCH');
   });
 
+  it('UIC-COLOR-SWATCH-1.1 publishes the colour it draws, alpha included, for a backdrop', () => {
+    const { container } = render(
+      <>
+        <ColorSwatch color="#33669980" colorName="Half" />
+        <ColorSwatch color="hsba(210, 67%, 60%, 0.25)" colorName="Quarter" />
+        <ColorSwatch color="rgba(51, 102, 153, 0)" colorName="Clear" />
+        <ColorSwatch color="#336699" colorName="Solid" />
+        <ColorSwatch />
+      </>,
+    );
+    const fill = (name: string) =>
+      screen.getByRole('img', { name }).style.getPropertyValue('--ui-color-swatch-color');
+    // The exact alpha byte: 0x80 / 255.
+    expect(fill('Half')).toBe('rgba(51, 102, 153, 0.5019607843137255)');
+    expect(fill('Quarter')).toMatch(/^hsla\(210, .*, 0\.25\)$|^rgba\(.*, 0\.25\)$/);
+    expect(fill('Clear')).toBe('rgba(51, 102, 153, 0)');
+    expect(fill('Solid')).toBe('rgba(51, 102, 153, 1)');
+    // A fully transparent colour is a colour, not an empty swatch.
+    expect(screen.getByRole('img', { name: 'Clear' })).not.toHaveAttribute('data-empty');
+    // The inline fill stays, so the swatch draws its colour unstyled.
+    expect(screen.getByRole('img', { name: 'Half' }).style.backgroundColor).toMatch(
+      /^rgba\(51, 102, 153, 0\.50?\d*\)$/,
+    );
+    expect(
+      screen
+        .getByRole('img', { name: 'No color' })
+        .style.getPropertyValue('--ui-color-swatch-color'),
+    ).toBe('');
+    expectHooksMatchSpec(container, 'COLOR-SWATCH');
+  });
+
   it('UIC-COLOR-SWATCH-1.2 marks an empty swatch and names it from the provider', () => {
     const { container } = render(
       <>

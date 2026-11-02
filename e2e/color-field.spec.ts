@@ -1,5 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { expect, test, matrixCell, controlHeight } from './fixtures.js';
+import { swatchInkCount } from './swatch-ink.js';
 
 function cell(page: Page, state: string, layout = 'label-control'): Locator {
   return matrixCell(page, `state=${state} layout=${layout}`);
@@ -471,6 +472,31 @@ test.describe('Color Field lab', () => {
     await expect(unreadable).toHaveAttribute('data-validation', 'invalid');
     await expect(unreadable).toContainText('Enter a color, such as #3366ff.');
   });
+  test('UIC-COLOR-FIELD-1.2 UIC-COLOR-SWATCH-1.1 shows a checkerboard through translucent swatches', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('color-field');
+    for (const size of ['xs', 'sm', 'md', 'lg']) {
+      const swatch = (colour: string) =>
+        matrixCell(page, `colour=${colour} size=${size}`).locator('.ui-color-swatch');
+      expect(await swatchInkCount(page, swatch('opaque')), size).toBe(1);
+      expect(await swatchInkCount(page, swatch('half')), size).toBeGreaterThan(1);
+      expect(await swatchInkCount(page, swatch('clear')), size).toBeGreaterThan(1);
+      await expect(swatch('empty')).toHaveAttribute('data-empty', 'true');
+      await expect(swatch('clear')).not.toHaveAttribute('data-empty');
+    }
+    const field = page.locator('[data-lab-field="translucent-presets"]');
+    await field.getByRole('button', { name: /Overlay tint/ }).click();
+    const presets = page
+      .getByRole('listbox', { name: 'Color swatches' })
+      .locator('.ui-color-swatch');
+    await expect(presets).toHaveCount(4);
+    expect(await swatchInkCount(page, presets.first())).toBe(1);
+    expect(await swatchInkCount(page, presets.nth(1))).toBeGreaterThan(1);
+    expect(await swatchInkCount(page, presets.nth(3))).toBeGreaterThan(1);
+  });
+
   test('UIC-COLOR-FIELD-1.2 scales the swatch with the field size at one inset', async ({
     page,
     lab,

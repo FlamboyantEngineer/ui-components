@@ -1,4 +1,7 @@
-/* Color Swatch: a rounded square; an empty one shows a checkerboard. */
+/*
+ * Color Swatch: a rounded square, its colour layered over a checkerboard that shows through a
+ * translucent colour; an empty swatch shows the checkerboard alone.
+ */
 
 .ui-color-swatch {
   display: inline-block;
@@ -34,9 +37,19 @@
   border-radius: var(--ref-radius);
 }
 
-.ui-color-swatch[data-empty] {
-  background-image: repeating-conic-gradient(var(--ref-border) 0 25%, var(--ref-canvas) 0 50%);
-  background-size: 8px 8px;
+.ui-color-swatch {
+  background-image:
+    linear-gradient(var(--ui-color-swatch-color, transparent) 0 0),
+    repeating-conic-gradient(var(--ref-border) 0 25%, var(--ref-canvas) 0 50%);
+  background-size:
+    auto,
+    8px 8px;
+}
+
+.ui-color-swatch[data-size='xs'] {
+  background-size:
+    auto,
+    6px 6px;
 }
 
 /* Color Swatch Picker: swatches in a wrapping row; the selected one is ringed. */

@@ -1,4 +1,5 @@
 import { expect, test, matrixCell } from './fixtures.js';
+import { swatchInkCount } from './swatch-ink.js';
 
 test.describe('Color Swatch lab', () => {
   test('UIC-COLOR-SWATCH-1.1 UIC-COLOR-SWATCH-1.3 fills five sizes with the colour', async ({
@@ -35,6 +36,44 @@ test.describe('Color Swatch lab', () => {
     await expect(empty).toHaveAttribute('data-empty', 'true');
     await expect(empty).toHaveAccessibleName('No color');
     await expect(empty).toHaveCSS('background-image', /conic-gradient/);
+  });
+
+  test('UIC-COLOR-SWATCH-1.1 shows the checkerboard through a translucent colour only', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('color-swatch');
+    for (const size of ['xs', 'md', 'xl']) {
+      const swatch = (colour: string) =>
+        matrixCell(page, `colour=${colour} size=${size}`).locator('.ui-color-swatch');
+      expect(await swatchInkCount(page, swatch('#336699')), size).toBe(1);
+      for (const colour of ['#33669980', 'rgba(204, 51, 0, 0.25)', 'rgba(51, 102, 153, 0)']) {
+        expect(await swatchInkCount(page, swatch(colour)), `${colour} ${size}`).toBeGreaterThan(1);
+      }
+      // The colour is drawn over the board, its opacity unchanged.
+      await expect(swatch('#33669980')).toHaveCSS('opacity', '1');
+      await expect(swatch('#33669980')).toHaveCSS(
+        'background-image',
+        /^linear-gradient\(rgba\(51, 102, 153, 0\.5\d*\).*conic-gradient/,
+      );
+    }
+    // A fully transparent colour is named as a colour, unlike an empty swatch.
+    await expect(
+      matrixCell(page, 'colour=rgba(51, 102, 153, 0) size=md').locator('.ui-color-swatch'),
+    ).not.toHaveAccessibleName('No color');
+    // A picker's items draw it too.
+    const picker = page.locator('[data-lab-picker="translucent"]');
+    expect(await swatchInkCount(page, picker.locator('.ui-color-swatch').nth(1))).toBeGreaterThan(
+      1,
+    );
+    expect(await swatchInkCount(page, picker.locator('.ui-color-swatch').first())).toBe(1);
+    await lab.open('color-swatch', { theme: 'dark' });
+    expect(
+      await swatchInkCount(
+        page,
+        matrixCell(page, 'colour=#33669980 size=sm').locator('.ui-color-swatch'),
+      ),
+    ).toBeGreaterThan(1);
   });
 
   test('UIC-COLOR-SWATCH-2.1 UIC-COLOR-SWATCH-2.2 picks a swatch with the keyboard and the pointer', async ({
