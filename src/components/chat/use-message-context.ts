@@ -4,7 +4,10 @@ import { useLatest } from '../../utils/use-latest.js';
 import { useEqualValue } from '../../utils/use-equal-value.js';
 import { isValidElement, useMemo, type ReactNode } from 'react';
 import { useShallowStable } from '../../utils/use-shallow-stable.js';
-import type { ChatFeedback } from '../chat-message-actions/chat-message-actions.js';
+import type {
+  ChatFeedback,
+  ChatMessageMenuIcons,
+} from '../chat-message-actions/chat-message-actions.js';
 import type { ChatPartsProps } from '../chat-parts/chat-parts.js';
 import type { ChatCommandHandlers } from './chat-commands.js';
 import type { ChatComposerOptions } from './chat-composer.js';
@@ -24,6 +27,11 @@ export interface ChatMessageOptions
   onCopy?: ((messageId: string) => void) | undefined;
   onFeedback?: ((messageId: string, feedback: ChatFeedback) => void) | undefined;
   feedbackReasons?: readonly string[] | undefined;
+  /**
+   * Icons for each message menu's commands, by command, as `ChatMessageActionsMenu`'s `menuIcons`.
+   * Compared by what it holds, so a map written inline keeps the messages.
+   */
+  messageMenuIcons?: ChatMessageMenuIcons | undefined;
   onReact?: ((messageId: string, emoji: string, isReacted: boolean) => void) | undefined;
   onDelete?: ((messageId: string) => void) | undefined;
   /** What a reply that streams says while the assistant thinks, unless it says what it is doing. Defaults to "Thinking…". */
@@ -35,6 +43,7 @@ export interface ChatMessageOptions
 }
 
 const noReasons: readonly string[] = [];
+const noIcons: ChatMessageMenuIcons = {};
 
 /** The command handlers: each present while its callback is, calling the latest callback. */
 function useCommandHandlers(options: ChatMessageOptions, state: ChatState): ChatCommandHandlers {
@@ -149,11 +158,13 @@ export function useMessageContext(
   const thinkingIcon = useSameNode(options.thinkingIcon);
   const reasons = useShallowStable(options.feedbackReasons ?? noReasons);
   const feedbackReasons = options.feedbackReasons && reasons;
+  const icons = useShallowStable(options.messageMenuIcons ?? noIcons);
+  const messageMenuIcons = options.messageMenuIcons && icons;
   const { conversationId, currentUserId } = options;
   const { thinkingText, thinkingUntil = 'text' } = options;
   return useShallowStable({
     ...{ handlers, currentUserId, isAssistantChat, participants, feedbackReasons },
-    ...{ conversationId, parts, onRetry },
+    ...{ conversationId, parts, onRetry, messageMenuIcons },
     ...{ thinkingText, thinkingIcon, thinkingUntil },
     onQuotePress: state.jumpTo,
     onExpandedPartsChange: state.setExpandedParts,

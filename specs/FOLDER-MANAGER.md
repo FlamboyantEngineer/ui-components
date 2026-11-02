@@ -91,7 +91,7 @@ Verification: `src/components/folder-manager/folder-manager.test.tsx`, `src/comp
 
 ### UIC-FOLDER-MANAGER-2.8 - Context menu
 
-A secondary click on a folder or root row shall select it (keeping a multiple selection it belongs to) and open a context menu holding the offered Rename and Delete entries, and Move to in multiple selection (UIC-FOLDER-MANAGER-6.3); Shift+F10 or the Context Menu key opens it for the selected row. Entries that do not apply (the root row, a busy manager) are disabled. Without Rename and Delete the browser's own menu is left alone.
+A secondary click on a folder or root row shall select it (keeping a multiple selection it belongs to) and open a context menu holding the offered Rename and Delete entries, and Move to in multiple selection (UIC-FOLDER-MANAGER-6.3); Shift+F10 or the Context Menu key opens it for the selected row. Entries that do not apply (the root row, a busy manager) are disabled. Without Rename and Delete the browser's own menu is left alone. Rename and Delete draw the `edit` and `delete` glyphs and Move to none; `menuIcons` sets them by action (`rename`, `delete`, `move`, [UIC-MENU-6.1](MENU.md#uic-menu-61---action-icon-maps)), `null` leaving one without, and they still act as described. Move to's destinations have no icons.
 
 Implementation: `src/components/folder-manager/folder-tree.tsx`, `src/components/folder-manager/folder-manager.tsx`
 Verification: `src/components/folder-manager/folder-manager.test.tsx`, `e2e/folder-manager.spec.ts`

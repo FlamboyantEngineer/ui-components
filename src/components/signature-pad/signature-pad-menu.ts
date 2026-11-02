@@ -6,22 +6,35 @@
 import { ClipboardGlyph, DeleteGlyph, UndoGlyph, UploadGlyph } from '../../core/glyphs.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { defaultFieldMenu, type FieldMenuEntry } from '../field/field-menu-entries.js';
+import {
+  defaultFieldMenu,
+  type FieldMenuAction,
+  type FieldMenuEntry,
+} from '../field/field-menu-entries.js';
 import type { FieldState } from '../field/field.js';
+import { resolveActionIcon, type MenuActionIcons } from '../menu/menu-action-icons.js';
+import type { IconSource } from '../icon/icon.js';
 import type { MenuItemEntry } from '../menu/menu.js';
 import type { ImageIntake } from './signature-image.js';
 import { withoutLastStroke, type SignatureValue } from './signature-path.js';
 
-type PadAction = 'upload-image' | 'paste-image' | 'delete-image' | 'undo-stroke';
+/** The signature pad's own menu actions, offered before the field's. */
+export type SignaturePadAction = 'upload-image' | 'paste-image' | 'delete-image' | 'undo-stroke';
 
-const padKeys: ReadonlySet<Key> = new Set<PadAction>([
+/**
+ * Icons for the signature pad's menu actions and the field's, by action; `null` removes an
+ * action's own icon.
+ */
+export type SignaturePadMenuIcons = MenuActionIcons<SignaturePadAction | FieldMenuAction>;
+
+const padKeys: ReadonlySet<Key> = new Set<SignaturePadAction>([
   'upload-image',
   'paste-image',
   'delete-image',
   'undo-stroke',
 ]);
 
-function isPadAction(key: Key): key is PadAction {
+function isSignaturePadAction(key: Key): key is SignaturePadAction {
   return padKeys.has(key);
 }
 
@@ -30,6 +43,7 @@ interface SignatureMenuOptions {
   /** The caller's field menu, or `undefined` for the default one. */
   menu: readonly FieldMenuEntry[] | undefined;
   onMenuAction: ((key: Key) => void) | undefined;
+  menuIcons: SignaturePadMenuIcons | undefined;
   /** Whether the image mode is offered. */
   allowsImage: boolean;
   /** Whether the image mode shows. */
@@ -51,18 +65,22 @@ function readPadValue(value: SignatureValue | null, takesImage: boolean) {
 /** The pad's entries that apply to what it holds, disabled while the field is locked. */
 function usePadEntries(
   { takesImage, hasImage, drawing }: ReturnType<typeof readPadValue>,
-  isLocked: boolean,
+  { isLocked, icons }: { isLocked: boolean; icons: SignaturePadMenuIcons | undefined },
 ): MenuItemEntry[] {
   const strings = useUiStrings();
+  const entry = (id: SignaturePadAction, label: string, glyph: IconSource): MenuItemEntry => ({
+    id,
+    label,
+    icon: resolveActionIcon(icons, id, glyph),
+    isDisabled: isLocked,
+  });
   const offered: (MenuItemEntry | false)[] = [
-    takesImage && { id: 'upload-image', label: strings.uploadSignatureImage, icon: UploadGlyph },
-    takesImage && { id: 'paste-image', label: strings.pasteSignatureImage, icon: ClipboardGlyph },
-    hasImage && { id: 'delete-image', label: strings.deleteSignatureImage, icon: DeleteGlyph },
-    drawing !== null && { id: 'undo-stroke', label: strings.undoStroke, icon: UndoGlyph },
+    takesImage && entry('upload-image', strings.uploadSignatureImage, UploadGlyph),
+    takesImage && entry('paste-image', strings.pasteSignatureImage, ClipboardGlyph),
+    hasImage && entry('delete-image', strings.deleteSignatureImage, DeleteGlyph),
+    drawing !== null && entry('undo-stroke', strings.undoStroke, UndoGlyph),
   ];
-  return offered
-    .filter((entry) => entry !== false)
-    .map((entry) => ({ ...entry, isDisabled: isLocked }));
+  return offered.filter((item) => item !== false);
 }
 
 /**
@@ -75,13 +93,16 @@ function usePadEntries(
 export function useSignatureMenu(options: SignatureMenuOptions) {
   const { state, intake, settle } = options;
   const held = readPadValue(state.value, options.allowsImage && options.isImageMode);
-  const own = usePadEntries(held, state.isReadOnly || state.isDisabled);
+  const own = usePadEntries(held, {
+    isLocked: state.isReadOnly || state.isDisabled,
+    icons: options.menuIcons,
+  });
   const shared = (options.menu ?? defaultFieldMenu).filter(
     (entry) => !(held.hasImage && entry === 'clear'),
   );
   const separator: FieldMenuEntry[] =
     own.length > 0 && shared.length > 0 ? [{ type: 'separator', id: 'pad-actions' }] : [];
-  const run: Record<PadAction, () => void> = {
+  const run: Record<SignaturePadAction, () => void> = {
     'upload-image': intake.upload,
     'paste-image': () => void intake.paste(),
     'delete-image': intake.clear,
@@ -92,7 +113,7 @@ export function useSignatureMenu(options: SignatureMenuOptions) {
   return {
     menu: options.menu?.length === 0 ? [] : [...own, ...separator, ...shared],
     onMenuAction(key: Key) {
-      if (isPadAction(key)) run[key]();
+      if (isSignaturePadAction(key)) run[key]();
       else options.onMenuAction?.(key);
     },
   };

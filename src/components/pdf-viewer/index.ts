@@ -1,6 +1,8 @@
 export { PdfViewer } from './pdf-viewer.js';
 export type {
   PdfCommandName,
+  PdfMenuAction,
+  PdfMenuIcons,
   PdfDocumentAccess,
   PdfPageContent,
   PdfPageGeometry,

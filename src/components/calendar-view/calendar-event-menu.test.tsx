@@ -2,7 +2,9 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { CopyGlyph, EditGlyph } from '../../core/glyphs.js';
 import { UiProvider } from '../../core/provider.js';
+import { readMenuIcons } from '../../../test/menu-fixtures.js';
 import type { CalendarEventMenuEntry } from './calendar-event-menu.js';
 import { CalendarView, type CalendarViewEvent, type CalendarViewProps } from './calendar-view.js';
 
@@ -87,6 +89,23 @@ describe('CalendarView event menus', () => {
     expect(onEventMenuAction).toHaveBeenCalledWith('copy', events[0]);
     menu = await openMenu('Release');
     expect(items(menu)).toEqual(['Copy link']);
+  });
+
+  it('UIC-CALENDAR-VIEW-5.1 draws Edit with the icon given, still opening the editor', async () => {
+    const user = userEvent.setup();
+    const onEventMenuAction = vi.fn();
+    render(
+      <Calendar
+        eventMenu={['edit', { id: 'copy', label: 'Copy link', icon: CopyGlyph }]}
+        eventMenuIcons={{ edit: EditGlyph }}
+        onEventMenuAction={onEventMenuAction}
+      />,
+    );
+    const menu = await openMenu('Design review');
+    expect(readMenuIcons(menu)).toEqual({ Edit: 'edit', 'Copy link': 'copy' });
+    await user.click(within(menu).getByRole('menuitem', { name: 'Edit' }));
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    expect(onEventMenuAction).toHaveBeenCalledWith('edit', events[0]);
   });
 
   it('UIC-CALENDAR-VIEW-5.1 leaves the browser menu without entries or changes', () => {

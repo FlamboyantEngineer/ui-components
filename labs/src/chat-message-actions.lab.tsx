@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { QuoteGlyph } from '../../src/core/glyphs.js';
 import {
   ChatMessageActions,
   type ChatFeedback,
@@ -95,6 +96,12 @@ mountLab(
       description="The bar shows while a message is hovered or holds focus, and stays while its overlays are open. A secondary click, a long press, the Context Menu key or Shift+F10 on a message opens the same commands as a menu; a secondary click in the draft field keeps the browser's menu. React, from the bar or the menu, adds the emoji to one small chip that overlaps the bottom right of the message: a stack of the emoji and the total. Pressing the chip opens the picker, where choosing an emoji you reacted with takes it back."
     >
       <ConversationDemo />
+    </LabSection>
+    <LabSection
+      title="Menu icons"
+      description="The same conversation with host icons for the menu: Copy and Delete draw none, Reply takes a quote mark, and the other commands keep their glyphs. The bar keeps its own icons, which name its buttons, and every command still runs."
+    >
+      <ConversationDemo menuIcons={{ copy: null, delete: null, reply: QuoteGlyph }} />
     </LabSection>
   </>,
 );

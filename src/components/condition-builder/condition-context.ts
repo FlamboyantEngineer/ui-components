@@ -4,6 +4,7 @@ import { createContext, useContext } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { FilterField } from '../filter-bar/filter-bar.js';
 import type { ConditionNode, ConditionRule } from './condition-tree.js';
+import type { MenuActionIcons } from '../menu/menu-action-icons.js';
 
 /** Checks a rule; a message makes it invalid. */
 export type ConditionRuleValidator = (rule: ConditionRule) => string | null | undefined;
@@ -27,7 +28,14 @@ interface ConditionBuilderContextValue {
   elementId(id: string, part?: 'add'): string;
   /** Rules and nested groups show their menu buttons, not only their context menus. */
   showActionButtons: boolean;
+  menuIcons: ConditionMenuIcons | undefined;
 }
+
+/** The actions of a rule's or a group's menu. */
+export type ConditionMenuAction = 'move-up' | 'move-down' | 'duplicate' | 'delete';
+
+/** Icons for a rule's or a group's menu actions, by action; `null` leaves an action without one. */
+export type ConditionMenuIcons = MenuActionIcons<ConditionMenuAction>;
 
 export const conditionBuilderHooks = createHooks('condition-builder', [
   'group',

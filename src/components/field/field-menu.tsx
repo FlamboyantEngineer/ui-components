@@ -13,7 +13,8 @@ import {
   type ContextMenuTargetProps,
 } from '../context-menu/context-menu.js';
 import { Menu, type MenuEntry } from '../menu/menu.js';
-import type { FieldMenuEntry } from './field-menu-entries.js';
+import { resolveActionIcon } from '../menu/menu-action-icons.js';
+import type { FieldMenuEntry, FieldMenuIcons } from './field-menu-entries.js';
 import type { FieldState } from './field-state.js';
 
 export interface FieldMenuModel {
@@ -27,18 +28,19 @@ export interface FieldMenuModel {
 function toMenuEntry(
   entry: FieldMenuEntry,
   state: FieldState<unknown>,
-  strings: UiStrings,
+  { strings, icons }: { strings: UiStrings; icons: FieldMenuIcons | undefined },
 ): MenuEntry | null {
   if (entry === 'clear') {
     // A field that can never be cleared does not offer it.
     if (!state.isClearable) return null;
-    return { id: entry, label: strings.clear, icon: CloseGlyph, isDisabled: !state.canClear };
+    const icon = resolveActionIcon(icons, entry, CloseGlyph);
+    return { id: entry, label: strings.clear, icon, isDisabled: !state.canClear };
   }
   if (entry === 'reset') {
     return {
       id: entry,
       label: strings.resetValue,
-      icon: RestoreGlyph,
+      icon: resolveActionIcon(icons, entry, RestoreGlyph),
       isDisabled: !state.isDirty,
     };
   }
@@ -46,11 +48,13 @@ function toMenuEntry(
     return {
       id: entry,
       label: strings.setDefault,
-      icon: RefreshGlyph,
+      icon: resolveActionIcon(icons, entry, RefreshGlyph),
       isDisabled: !state.canSetDefault,
     };
   }
-  if (entry === 'help') return { id: entry, label: strings.help, icon: HelpGlyph };
+  if (entry === 'help') {
+    return { id: entry, label: strings.help, icon: resolveActionIcon(icons, entry, HelpGlyph) };
+  }
   return entry;
 }
 
@@ -79,13 +83,14 @@ export function useFieldMenu(
   label: string,
   options: {
     menu: readonly FieldMenuEntry[];
+    menuIcons?: FieldMenuIcons | undefined;
     onMenuAction?: ((key: Key) => void) | undefined;
     onHelp?: (() => void) | undefined;
   },
 ): FieldMenuModel {
   const strings = useUiStrings();
   const entries = withHelp(options.menu, options.onHelp !== undefined)
-    .map((entry) => toMenuEntry(entry, state, strings))
+    .map((entry) => toMenuEntry(entry, state, { strings, icons: options.menuIcons }))
     .filter((entry) => entry !== null);
   return {
     label: strings.fieldActions(label),

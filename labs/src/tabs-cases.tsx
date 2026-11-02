@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { LinkGlyph, StarGlyph } from '../../src/core/glyphs.js';
 import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
@@ -383,6 +384,56 @@ export function LiveRenameTabs() {
       <p data-lab-output="live-rename">
         Key {String(selected)}: {tabName(current?.name ?? '')}
       </p>
+    </div>
+  );
+}
+
+/**
+ * Tabs whose menu draws the standard actions with the host's icons, one of them without, beside a
+ * custom entry with an icon and one without (UIC-TABS-3.5).
+ */
+export function IconMenuTabs() {
+  const [names, setNames] = useState(['North', 'South', 'East']);
+  const [last, setLast] = useState('none');
+  return (
+    <div data-lab-demo="icon-menu" style={{ width: 420 }}>
+      <Tabs>
+        <TabList
+          aria-label="Regions"
+          onRename={(key, name) => {
+            setLast(`renamed ${String(key)}`);
+            setNames((current) => current.map((item) => (item === key ? name : item)));
+          }}
+          onRemove={(keys) => {
+            setLast(`deleted ${[...keys].join(', ')}`);
+            setNames((current) => current.filter((item) => !keys.has(item)));
+          }}
+          menuIcons={{ rename: StarGlyph, delete: null }}
+          getMenuItems={(key, standard) => [
+            ...standard,
+            { type: 'separator', id: 'own' },
+            {
+              id: 'link',
+              label: 'Copy link',
+              icon: LinkGlyph,
+              onAction: () => setLast(`linked ${String(key)}`),
+            },
+            { id: 'note', label: 'Add a note', onAction: () => setLast(`noted ${String(key)}`) },
+          ]}
+        >
+          {names.map((name) => (
+            <Tab key={name} id={name}>
+              {name}
+            </Tab>
+          ))}
+        </TabList>
+        {names.map((name) => (
+          <TabPanel key={name} id={name}>
+            The {name.toLowerCase()} region.
+          </TabPanel>
+        ))}
+      </Tabs>
+      <p data-lab-output="icon-menu">Last change: {last}</p>
     </div>
   );
 }

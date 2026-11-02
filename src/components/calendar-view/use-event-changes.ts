@@ -34,7 +34,7 @@ function useChangeCheck({
 export function useEventChanges(
   props: Pick<
     CalendarViewProps,
-    'onEventChange' | 'canChangeEvent' | 'onEventMenuAction' | 'timeZone'
+    'onEventChange' | 'canChangeEvent' | 'onEventMenuAction' | 'eventMenuIcons' | 'timeZone'
   > & {
     eventMenu: NonNullable<CalendarViewProps['eventMenu']>;
     eventDragMode: CalendarEventDragMode;
@@ -62,6 +62,7 @@ export function useEventChanges(
     isEditable: (event) => allows(event, 'edit'),
     eventMenu: props.eventMenu,
     onEventMenuAction: props.onEventMenuAction,
+    eventMenuIcons: props.eventMenuIcons,
     findDayCell: () =>
       gridRef.current?.querySelector<HTMLElement>(`${dayCellSelector}[tabindex="0"]`) ?? null,
     onMoved: onFocusedChange,

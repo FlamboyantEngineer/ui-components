@@ -32,7 +32,11 @@ export function ChatMessageActions(props: ChatMessageActionsProps) {
 }
 
 export { ChatMessageActionsMenu } from './chat-message-actions-menu.js';
-export type { ChatMessageActionsMenuProps } from './chat-message-actions-menu.js';
+export type {
+  ChatMessageActionsMenuProps,
+  ChatMessageMenuAction,
+  ChatMessageMenuIcons,
+} from './chat-message-actions-menu.js';
 export type {
   ChatFeedback,
   ChatFeedbackRating,

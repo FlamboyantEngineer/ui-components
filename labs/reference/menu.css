@@ -130,6 +130,26 @@
   padding-inline-start: 24px;
 }
 
+/* In a menu where some rows have an icon, a row without one keeps its text in line with theirs. */
+
+.ui-menu:has(.ui-menu-item__icon)
+  .ui-menu-item:not(:has(> .ui-menu-item__icon, > .ui-menu-item__spinner))
+  > :is(.ui-menu-item__label, .ui-menu-item__description) {
+  padding-inline-start: 24px;
+}
+
+.ui-menu[data-size='sm']:has(.ui-menu-item__icon)
+  .ui-menu-item:not(:has(> .ui-menu-item__icon, > .ui-menu-item__spinner))
+  > :is(.ui-menu-item__label, .ui-menu-item__description) {
+  padding-inline-start: 18px;
+}
+
+.ui-menu[data-size='lg']:has(.ui-menu-item__icon)
+  .ui-menu-item:not(:has(> .ui-menu-item__icon, > .ui-menu-item__spinner))
+  > :is(.ui-menu-item__label, .ui-menu-item__description) {
+  padding-inline-start: 28px;
+}
+
 .ui-menu-item__shortcut {
   color: var(--ref-muted);
 }

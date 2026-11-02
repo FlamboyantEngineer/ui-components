@@ -1,8 +1,9 @@
-import { PlusGlyph } from '../../core/glyphs.js';
+import { PlusGlyph, StarGlyph } from '../../core/glyphs.js';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { TextField } from '../../../test/field-fixtures.js';
+import { readMenuIcons } from '../../../test/menu-fixtures.js';
 import type { FieldState } from './field-state.js';
 import type { FieldMenuEntry } from './field.js';
 
@@ -307,5 +308,33 @@ describe('Field menu', () => {
     expect(helpTooltip()).not.toBeInTheDocument();
     fireEvent.contextMenu(screen.getByRole('textbox'));
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+});
+
+describe('Field menu icons', () => {
+  it('UIC-FIELD-6.6 replaces and removes built-in icons, keeping their actions', async () => {
+    const user = userEvent.setup();
+    const onMenuAction = vi.fn();
+    render(
+      <TextField
+        options={{ committedValue: 'Fig', defaultValue: 'Apple', emptyValue: '' }}
+        menu={[{ id: 'copy', label: 'Copy name' }, 'clear', 'reset', 'set-default']}
+        menuIcons={{ clear: StarGlyph, reset: null }}
+        onMenuAction={onMenuAction}
+      />,
+    );
+    const opened = await openMenu(user);
+    expect(readMenuIcons(opened)).toEqual({
+      'Copy name': null,
+      Clear: 'star',
+      Reset: null,
+      'Set to default': 'refresh',
+    });
+    await user.click(within(opened).getByRole('menuitem', { name: 'Clear' }));
+    expect(screen.getByRole('textbox')).toHaveValue('');
+    await waitFor(() => expect(screen.getByRole('textbox')).toHaveFocus());
+    await user.click(within(await openMenu(user)).getByRole('menuitem', { name: 'Reset' }));
+    expect(screen.getByRole('textbox')).toHaveValue('Fig');
+    expect(onMenuAction.mock.calls).toEqual([['clear'], ['reset']]);
   });
 });

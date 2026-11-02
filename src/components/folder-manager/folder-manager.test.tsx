@@ -5,6 +5,8 @@ import type { Key } from '../../core/props.js';
 import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { pressComposingKeys } from '../../../test/composition.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { readMenuIcons } from '../../../test/menu-fixtures.js';
+import { FolderGlyph } from '../../core/glyphs.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { applyTreeMove } from '../../utils/tree-reorder.js';
 import { FolderManager, type FolderItem, type FolderManagerProps } from './folder-manager.js';
@@ -475,6 +477,21 @@ describe('FolderManager', () => {
     for (const item of within(rootMenu).getAllByRole('menuitem')) {
       expect(item).toHaveAttribute('aria-disabled', 'true');
     }
+  });
+
+  it('UIC-FOLDER-MANAGER-2.8 takes icons for its actions by name, still renaming', async () => {
+    const user = userEvent.setup();
+    render(
+      <Manager<'multiple'>
+        selectionMode="multiple"
+        menuIcons={{ rename: null, move: FolderGlyph }}
+      />,
+    );
+    fireEvent.contextMenu(row('Citrus'));
+    const menu = await screen.findByRole('menu');
+    expect(readMenuIcons(menu)).toEqual({ Rename: null, Delete: 'delete', 'Move to': 'folder' });
+    await user.click(within(menu).getByRole('menuitem', { name: 'Rename' }));
+    expect(screen.getByRole('textbox', { name: 'Rename Citrus' })).toHaveFocus();
   });
 
   it('UIC-FOLDER-MANAGER-2.8 leaves the browser menu alone without rename and delete', () => {

@@ -5,9 +5,11 @@ import {
   SignaturePad,
   type DrawnSignature,
   type ImageSignature,
+  type SignaturePadMenuIcons,
   type SignaturePadMode,
   type SignatureValue,
 } from '../../src/components/signature-pad/signature-pad.js';
+import { StarGlyph } from '../../src/core/glyphs.js';
 import {
   formatSignatureDataUrl,
   formatSignatureSvg,
@@ -85,6 +87,12 @@ const menuModes: Partial<Record<(typeof menuValues)[number], readonly SignatureP
 };
 
 /** A pad whose field menu offers its own actions, with what it last committed. */
+const padIcons: Record<'default' | 'host' | 'none', SignaturePadMenuIcons | undefined> = {
+  default: undefined,
+  host: { 'undo-stroke': StarGlyph, clear: null, reset: null },
+  none: { 'undo-stroke': null, clear: null, reset: null },
+};
+
 function MenuSample({
   value,
   lock,
@@ -255,6 +263,23 @@ mountLab(
       <StateMatrix
         axes={{ value: menuValues, lock: menuLocks }}
         render={({ value, lock }) => <MenuSample value={value} lock={lock} />}
+      />
+    </LabSection>
+    <LabSection
+      title="Menu icons"
+      description="Right-click each pad. The first keeps the default glyphs; the second swaps Undo stroke's icon and drops Clear's and Reset's; the third draws every action without an icon. Undo stroke still removes the last stroke."
+    >
+      <StateMatrix
+        axes={{ icons: ['default', 'host', 'none'] as const }}
+        render={({ icons }) => (
+          <SignaturePad
+            label="Signature"
+            defaultValue={menuSamples.drawn}
+            modes={['draw']}
+            menuIcons={padIcons[icons]}
+            data-lab-field={`menu-icons-${icons}`}
+          />
+        )}
       />
     </LabSection>
     <LabSection

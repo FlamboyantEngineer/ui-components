@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Key } from '../../src/core/props.js';
+import { FolderGlyph } from '../../src/core/glyphs.js';
 import { Button } from '../../src/components/button/button.js';
 import {
   FolderManager,
@@ -149,6 +150,26 @@ function SeveralFolders() {
       />
       <LabOutput name="Selection">{selected.map(String).join(', ') || 'none'}</LabOutput>
       <LabOutput name="Bulk action">{last}</LabOutput>
+    </>
+  );
+}
+
+/** Several folders whose menu draws Move to with a host icon and Rename without one. */
+function IconMenuFolders() {
+  const [last, setLast] = useState('none');
+  const { folders, callbacks } = useFolders(0, setLast);
+  return (
+    <>
+      <FolderManager
+        aria-label="Folders with menu icons"
+        folders={folders}
+        selectionMode="multiple"
+        defaultSelectedKeys={['citrus']}
+        menuIcons={{ rename: null, move: FolderGlyph }}
+        data-lab-manager="menu-icons"
+        {...callbacks}
+      />
+      <LabOutput name="Menu icons action">{last}</LabOutput>
     </>
   );
 }
@@ -472,6 +493,12 @@ mountLab(
       description="Ctrl or Shift with a click, or Shift with the arrow keys, selects several folders. onSelectionChange reports them as a Set of keys. Delete removes them all; right-click for Move to. Folders already at the destination stay there, and the depth limit includes every selected subfolder."
     >
       <SeveralFolders />
+    </LabSection>
+    <LabSection
+      title="Menu icons"
+      description="Right-click a folder. Rename and Delete have the edit and delete glyphs by default and Move to none; here the host drops Rename's and gives Move to a folder icon, every label in line. Each action still works, and Move to's destinations stay without icons."
+    >
+      <IconMenuFolders />
     </LabSection>
     <LabSection
       title="Locked folder inside a selection"

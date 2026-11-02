@@ -1,5 +1,6 @@
 import { useRef, useState, type CSSProperties } from 'react';
 import { Badge } from '../../src/components/badge/badge.js';
+import { CopyGlyph, DeleteGlyph, EditGlyph } from '../../src/core/glyphs.js';
 import {
   CalendarView,
   type CalendarViewDay,
@@ -110,6 +111,37 @@ function EditableCalendar() {
           setItems((current) => current.map((item) => (item.id === previous.id ? next : item)));
           setLog(`Saved ${next.title}: ${next.start} to ${next.end ?? next.start}`);
         }}
+      />
+      <output data-lab-output>{log}</output>
+    </div>
+  );
+}
+
+const iconMenu: CalendarEventMenuEntry[] = [
+  'edit',
+  { id: 'duplicate', label: 'Duplicate', icon: CopyGlyph },
+  { id: 'share', label: 'Share' },
+  { type: 'separator', id: 'host-actions' },
+  { id: 'delete', label: 'Delete', icon: DeleteGlyph, tone: 'danger' },
+];
+
+/** Event menus whose Edit takes a host icon, beside host entries with and without icons. */
+function IconMenuCalendar() {
+  const [items, setItems] = useState(events.slice(0, 7));
+  const [log, setLog] = useState('No action yet');
+  return (
+    <div style={frame(900)} data-lab-demo="menu-icons">
+      <CalendarView
+        events={items}
+        timeZone="UTC"
+        getNow={getNow}
+        defaultDate="2026-03-18"
+        eventMenu={iconMenu}
+        eventMenuIcons={{ edit: EditGlyph }}
+        onEventMenuAction={(key, event) => setLog(`${String(key)} on ${event.title}`)}
+        onEventChange={(next, previous) =>
+          setItems((current) => current.map((item) => (item.id === previous.id ? next : item)))
+        }
       />
       <output data-lab-output>{log}</output>
     </div>
@@ -406,6 +438,12 @@ mountLab(
       description="Click an event (or focus it and press Enter) to open its editor. Right-click an event, long-press it, or focus it and press Shift+F10 (or the Context Menu key) for its menu: Edit opens a dialog with the event's title, all-day state and start and end, Duplicate and Delete are the host's own entries. Save is disabled while the title is blank or the end comes before the start; Cancel and Escape keep the event. Release 2.4 is locked: a click only reports it, and its menu has no Edit. Events behind +n more on 18 March have the same menu. Open Design review's menu or editor, then remove it with the button: the menu or editor closes and focus goes to its day."
     >
       <EditableCalendar />
+    </LabSection>
+    <LabSection
+      title="Event menu icons"
+      description="Right-click an event or press Shift+F10 on it. Edit has no icon by default; here the host gives it one, Duplicate and Delete bring their own and Share has none, every label in line. Edit still opens the editor."
+    >
+      <IconMenuCalendar />
     </LabSection>
     <LabSection
       title="Moving and resizing"

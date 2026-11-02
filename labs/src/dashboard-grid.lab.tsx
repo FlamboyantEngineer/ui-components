@@ -1,5 +1,7 @@
 import { useState, type CSSProperties } from 'react';
+import type { DashboardTileMenuIcons } from '../../src/components/dashboard-grid/index.js';
 import type { Key } from '../../src/core/props.js';
+import { DeleteGlyph, MoveGlyph } from '../../src/core/glyphs.js';
 import { Button } from '../../src/components/button/button.js';
 import { Card } from '../../src/components/card/card.js';
 import { BarChart } from '../../src/components/chart/index.js';
@@ -103,6 +105,9 @@ function NoteTile({ id }: { id: string }) {
   );
 }
 
+/** Host icons for the tile menu's built-in actions (UIC-DASHBOARD-GRID-5.1). */
+const tileIcons: DashboardTileMenuIcons = { move: MoveGlyph, remove: DeleteGlyph };
+
 /** A tile's title: the sample's, or the added note's. */
 const titleOf = (id: string) =>
   id.startsWith('note-') ? `Note ${id.slice(5)}` : requireDefined(titles[id]);
@@ -127,6 +132,7 @@ function EditableOverview() {
         isEditing={isEditing}
         rowHeight={112}
         tileMenu={overviewTileMenu}
+        tileMenuIcons={tileIcons}
         onTileAction={(key, target) => {
           if (key !== 'full-width') return;
           setLayout(
@@ -292,7 +298,7 @@ mountLab(
   <>
     <LabSection
       title="Edit mode"
-      description="Right-click a tile, or press Shift+F10 in it, for Move, Resize and Remove (in edit mode) and Full width; right-click the empty space below the tiles to add a note there, whose field keeps its own menu. Each tile shows a move grip at the middle of its top edge and a diagonal resize arrow at its end corner, ghost buttons laid over the tile: toggle Done editing and Edit layout to see the content keep its place. Drag them, or focus one and press the arrow keys (plain arrows only: with Shift, Alt, Control or Meta they do nothing); tiles in the way move down, and a resize stops at the last column. Leaving edit mode, reflowing to a narrow layout or a pointer the browser cancels (such as a touch it takes over for scrolling) discards an unfinished pointer move or resize."
+      description="Right-click a tile, or press Shift+F10 in it, for Move, Resize and Remove (in edit mode) and Full width: the host gives Move and Remove icons, which built-in actions lack by default, and Resize and Full width stay without, every label in line; right-click the empty space below the tiles to add a note there, whose field keeps its own menu. Each tile shows a move grip at the middle of its top edge and a diagonal resize arrow at its end corner, ghost buttons laid over the tile: toggle Done editing and Edit layout to see the content keep its place. Drag them, or focus one and press the arrow keys (plain arrows only: with Shift, Alt, Control or Meta they do nothing); tiles in the way move down, and a resize stops at the last column. Leaving edit mode, reflowing to a narrow layout or a pointer the browser cancels (such as a touch it takes over for scrolling) discards an unfinished pointer move or resize."
     >
       <EditableOverview />
     </LabSection>

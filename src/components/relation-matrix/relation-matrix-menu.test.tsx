@@ -2,7 +2,8 @@ import { fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { CloseGlyph } from '../../core/glyphs.js';
+import { CloseGlyph, DeleteGlyph, PlusGlyph } from '../../core/glyphs.js';
+import { readMenuIcons } from '../../../test/menu-fixtures.js';
 import { UiProvider } from '../../core/provider.js';
 import {
   RelationMatrix,
@@ -154,6 +155,36 @@ describe('RelationMatrix header menus', () => {
       axis: 'row',
       item: '1',
       action: 'insert-before',
+    });
+  });
+
+  it('UIC-RELATION-MATRIX-2.5 takes icons for the header actions and Remove relation', async () => {
+    const user = userEvent.setup();
+    const onAxisAction = Headers({
+      kinds,
+      onRelationChange: vi.fn(),
+      menuIcons: { 'insert-after': PlusGlyph, remove: DeleteGlyph, 'remove-relation': DeleteGlyph },
+    });
+    fireEvent.contextMenu(screen.getByRole('rowheader', { name: /Text one/ }));
+    const menu = await screen.findByRole('menu', { name: 'Actions for Text one' });
+    expect(readMenuIcons(menu)).toEqual({
+      'Move up': null,
+      'Move down': null,
+      'Insert above': null,
+      'Insert below': 'plus',
+      'Remove Text one': 'delete',
+    });
+    await user.click(within(menu).getByRole('menuitem', { name: 'Insert below' }));
+    expect(onAxisAction).toHaveBeenLastCalledWith({
+      axis: 'row',
+      item: '1',
+      action: 'insert-after',
+    });
+    fireEvent.contextMenu(cell(0, 0));
+    const cellMenu = await screen.findByRole('menu', { name: /Relation of/ });
+    expect(readMenuIcons(cellMenu)).toMatchObject({
+      Blocked: 'close',
+      'Remove relation': 'delete',
     });
   });
 

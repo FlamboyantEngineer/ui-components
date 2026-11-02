@@ -13,6 +13,7 @@ import {
   ConditionBuilderContext,
   conditionBuilderHooks,
   type ConditionBuilderActions,
+  type ConditionMenuIcons,
   type ConditionRuleValidator,
 } from './condition-context.js';
 import { ConditionGroupView } from './condition-group.js';
@@ -48,6 +49,11 @@ export interface ConditionBuilderProps extends BaseProps, AriaLabellingProps {
    * actions in their context menus only.
    */
   showActionButtons?: boolean | undefined;
+  /**
+   * Icons for the rule and group menu actions, by action (`move-up`, `move-down`, `duplicate`,
+   * `delete`). The actions have none by default.
+   */
+  menuIcons?: ConditionMenuIcons | undefined;
 }
 
 /** Where focus goes after an edit: the first match of `selector` inside an element, or itself. */
@@ -184,6 +190,7 @@ export function ConditionBuilder({
   maxDepth = 3,
   validate,
   showActionButtons = true,
+  menuIcons,
   className,
   'aria-label': ariaLabel,
   ...rest
@@ -198,8 +205,8 @@ export function ConditionBuilder({
   );
   const actions = useBuilderActions({ tree, setTree, fields, elementId, rootRef });
   const context = useMemo(
-    () => ({ fields, maxDepth, validate, actions, elementId, showActionButtons }),
-    [fields, maxDepth, validate, actions, elementId, showActionButtons],
+    () => ({ fields, maxDepth, validate, actions, elementId, showActionButtons, menuIcons }),
+    [fields, maxDepth, validate, actions, elementId, showActionButtons, menuIcons],
   );
   return (
     <div
@@ -223,4 +230,8 @@ export type {
   ConditionNode,
   ConditionRule,
 } from './condition-tree.js';
-export type { ConditionRuleValidator } from './condition-context.js';
+export type {
+  ConditionMenuAction,
+  ConditionMenuIcons,
+  ConditionRuleValidator,
+} from './condition-context.js';

@@ -1,4 +1,5 @@
 export { DashboardGrid } from './dashboard-grid.js';
+export type { DashboardTileMenuIcons } from './dashboard-grid-menu.js';
 export type {
   DashboardGridItem,
   DashboardGridProps,

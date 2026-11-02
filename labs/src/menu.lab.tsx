@@ -29,6 +29,22 @@ import { LabOutput } from './lab-output.js';
 import { MenuKeyCase } from './menu-key-case.js';
 
 const sizes = ['sm', 'md', 'lg'] as const;
+
+// Rows with and without icons in one menu (UIC-MENU-6.1).
+const mixedIconEntries: MenuEntry[] = [
+  { id: 'undo', label: 'Undo', icon: UndoGlyph },
+  { id: 'redo', label: 'Redo' },
+  { id: 'reset', label: 'Reset', icon: RestoreGlyph, isDisabled: true },
+  { id: 'refresh', label: 'Refresh', isDisabled: true },
+  { id: 'wrap', label: 'Wrap lines', isSelected: true },
+  {
+    id: 'more',
+    label: 'More',
+    items: [{ id: 'more-one', label: 'Nested', icon: PlusGlyph }],
+  },
+  { type: 'separator', id: 'end' },
+  { id: 'remove', label: 'Remove', icon: CloseGlyph, tone: 'danger' },
+];
 const cities = ['Paris', 'Lima', 'Oslo', 'Cairo', 'Quito', 'Hanoi', 'Dakar', 'Perth', 'Turin'];
 
 // Lab-only presentation; the library draws none of it.
@@ -476,6 +492,17 @@ mountLab(
           size: sizes,
         }}
         render={({ state, size }) => <Menu size={size} {...stateMenu(state)} />}
+      />
+    </LabSection>
+    <LabSection
+      title="Mixed icon rows by size"
+      description="Rows with and without an icon in one menu: every label starts in line, the check and the submenu arrow keep their own slots, and disabled and danger rows keep their icon or its absence."
+    >
+      <StateMatrix
+        axes={{ size: sizes }}
+        render={({ size }) => (
+          <Menu aria-label="Mixed icons" size={size} items={mixedIconEntries} />
+        )}
       />
     </LabSection>
     <LabSection

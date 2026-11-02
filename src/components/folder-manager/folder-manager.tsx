@@ -10,6 +10,7 @@ import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import type { MenuEntry } from '../menu/menu.js';
+import { resolveActionIcon, type MenuActionIcons } from '../menu/menu-action-icons.js';
 import { SearchField } from '../search-field/search-field.js';
 import {
   FolderToolbar,
@@ -42,7 +43,18 @@ export interface FolderManagerProps<
   virtualized?: boolean | undefined;
   /** Row height in pixels for a virtualized tree. */
   rowHeight?: number | undefined;
+  /**
+   * Icons for the context menu's actions, by action (`rename`, `delete`, `move`): an icon replaces
+   * the action's own, `null` removes it. Move to has none by default; its destinations never do.
+   */
+  menuIcons?: FolderMenuIcons | undefined;
 }
+
+/** The actions of a folder's context menu. */
+export type FolderMenuAction = 'rename' | 'delete' | 'move';
+
+/** Icons for a folder menu's actions, by action; `null` removes an action's own icon. */
+export type FolderMenuIcons = MenuActionIcons<FolderMenuAction>;
 
 interface ToolContext<T extends FolderItem> {
   model: FolderManagerModel<T>;
@@ -114,6 +126,7 @@ function moveEntryOf<T extends FolderItem>(context: ToolContext<T>): MenuEntry {
   return {
     id: 'move',
     label: strings.moveTo,
+    icon: resolveActionIcon(props.menuIcons, 'move'),
     isDisabled: model.selection.length === 0 || model.isBusy,
     // Listed when the menu shows them rather than on every render: they span the whole tree.
     get items() {
@@ -141,13 +154,18 @@ function menuOf<T extends FolderItem>(
   const { props, strings } = context;
   const entries: MenuEntry[] = [];
   if (props.onRename) {
-    entries.push({ id: 'rename', label: strings.rename, icon: EditGlyph, isDisabled: !canRename });
+    entries.push({
+      id: 'rename',
+      label: strings.rename,
+      icon: resolveActionIcon(props.menuIcons, 'rename', EditGlyph),
+      isDisabled: !canRename,
+    });
   }
   if (props.onDelete) {
     entries.push({
       id: 'delete',
       label: strings.delete,
-      icon: DeleteGlyph,
+      icon: resolveActionIcon(props.menuIcons, 'delete', DeleteGlyph),
       tone: 'danger',
       isDisabled: !canDelete,
       description: deleteReason ?? undefined,

@@ -6,6 +6,8 @@ export type {
   RelationMatrixColumnLabels,
   RelationMatrixItem,
   RelationMatrixKind,
+  RelationMatrixMenuAction,
+  RelationMatrixMenuIcons,
   RelationMatrixProps,
 } from './relation-matrix.js';
 export { setRelation, toggleRelation } from './relation-matrix-model.js';

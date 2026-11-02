@@ -3,6 +3,8 @@ import { userEvent, type UserEvent } from '@testing-library/user-event';
 import { createRef, type HTMLAttributes, type ReactNode, type Ref } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { readMenuIcons } from '../../../test/menu-fixtures.js';
+import { StarGlyph } from '../../core/glyphs.js';
 import {
   ChatMessageActionsMenu,
   type ChatMessageActionsMenuProps,
@@ -88,6 +90,29 @@ describe('ChatMessageActionsMenu', () => {
     await waitFor(() => expect(message()).toHaveFocus());
     await user.keyboard('{Shift>}{F10}{/Shift}');
     expect(await screen.findByRole('menu')).toBeVisible();
+  });
+
+  it('UIC-CHAT-MESSAGE-ACTIONS-4.1 takes icons for its commands, leaving the bar and the actions as they are', async () => {
+    const user = userEvent.setup();
+    const onFeedback = vi.fn();
+    renderMenu({
+      copyText: 'The museum opens at nine.',
+      onFeedback,
+      onDelete: () => {},
+      menuIcons: { copy: null, up: StarGlyph },
+    });
+    const menu = await openMenu(user);
+    expect(readMenuIcons(menu)).toEqual({
+      Copy: null,
+      'Good response': 'star',
+      'Bad response': 'thumbs-down',
+      Delete: 'delete',
+    });
+    // The bar, hidden from the tree while the menu is open, keeps its own glyph.
+    const copyButton = screen.getByRole('button', { name: 'Copy', hidden: true });
+    expect(copyButton.querySelector('[data-glyph]')).toHaveAttribute('data-glyph', 'copy');
+    await user.click(within(menu).getByRole('menuitemcheckbox', { name: 'Good response' }));
+    expect(onFeedback).toHaveBeenLastCalledWith({ rating: 'up', reasons: [] });
   });
 
   it('UIC-CHAT-MESSAGE-ACTIONS-4.1 keeps the browser menu on a text control and without commands', async () => {

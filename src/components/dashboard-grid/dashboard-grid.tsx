@@ -35,6 +35,7 @@ import type { MenuEntry } from '../menu/menu.js';
 import {
   useGridMenus,
   type DashboardTileMenuEntry,
+  type DashboardTileMenuIcons,
   type DashboardTileMenuOptions,
 } from './dashboard-grid-menu.js';
 import { isSameCells, readGap, useTileMoves } from './use-tile-moves.js';
@@ -69,6 +70,12 @@ export interface DashboardGridProps
     | readonly DashboardTileMenuEntry[]
     | ((item: DashboardGridItem) => readonly DashboardTileMenuEntry[])
     | undefined;
+  /**
+   * Icons for the tile menu's built-in actions, by action (`move`, `resize`, `remove`), which have
+   * none by default. The host's own entries take theirs from the entry. Keep it stable, as
+   * `tileMenu`.
+   */
+  tileMenuIcons?: DashboardTileMenuIcons | undefined;
   /** Called with the chosen tile menu entry and the tile's item, after a built-in action ran. */
   onTileAction?: ((key: Key, item: DashboardGridItem) => void) | undefined;
   /** The context menu of the grid's empty space, such as an action that adds a tile there. */
@@ -308,6 +315,7 @@ export function DashboardGrid({
   rowHeight = 80,
   isEditing = false,
   tileMenu,
+  tileMenuIcons,
   onTileAction,
   spaceMenu: spaceEntries,
   onSpaceAction,
@@ -339,7 +347,7 @@ export function DashboardGrid({
   });
   const rows = findMaximum(shown, (item) => item.y + item.h, 1);
   const { shared, rootRef, spaceProps, spaceMenu } = useGridShared(
-    { tileMenu, onTileAction, spaceMenu: spaceEntries, onSpaceAction },
+    { tileMenu, onTileAction, tileMenuIcons, spaceMenu: spaceEntries, onSpaceAction },
     { element, setElement, ref, committed, handlers, columns, shownColumns, editable, setMessage },
   );
   const style = {

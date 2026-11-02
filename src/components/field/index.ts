@@ -29,6 +29,7 @@ export type {
   FieldLayoutProps,
   FieldMenuAction,
   FieldMenuEntry,
+  FieldMenuIcons,
   FieldPreviousValueProps,
   FieldProps,
   FieldRestoreButtonProps,

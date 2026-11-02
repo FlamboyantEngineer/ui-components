@@ -1,7 +1,9 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { StarGlyph } from '../../core/glyphs.js';
 import { requireDefined } from '../../utils/require-defined.js';
+import { readMenuIcons } from '../../../test/menu-fixtures.js';
 import {
   SignaturePad,
   type DrawnSignature,
@@ -81,6 +83,23 @@ describe('SignaturePad field menu', () => {
     // An empty drawing has no stroke to undo, and the draw mode takes no image.
     menu = await openMenu(canvas);
     expect(names(menu)).toEqual(['Clear', 'Reset']);
+  });
+
+  it("UIC-SIGNATURE-PAD-5.1 takes icons for its own actions and the field's, keeping Undo stroke", async () => {
+    const onCommit = vi.fn<(value: SignatureValue | null) => void>();
+    const { container } = render(
+      <SignaturePad
+        label="Signature"
+        defaultValue={drawing}
+        onCommit={onCommit}
+        menuIcons={{ 'undo-stroke': StarGlyph, clear: null }}
+      />,
+    );
+    const canvas = requireDefined(container.querySelector('.ui-signature-pad__canvas'));
+    const menu = await openMenu(canvas);
+    expect(readMenuIcons(menu)).toEqual({ 'Undo stroke': 'star', Clear: null, Reset: 'restore' });
+    await choose(menu, 'Undo stroke');
+    expect(onCommit).toHaveBeenLastCalledWith({ ...drawing, paths: ['M10 10 L50 40'] });
   });
 
   it('UIC-SIGNATURE-PAD-5.1 offers Delete image in place of Clear while an image is held', async () => {

@@ -24,6 +24,7 @@ import {
   type RelationMatrixCell,
   type RelationMatrixItem,
   type RelationMatrixKind,
+  type RelationMatrixMenuIcons,
 } from './relation-matrix-menu.js';
 
 export type {
@@ -32,6 +33,8 @@ export type {
   RelationMatrixCell,
   RelationMatrixItem,
   RelationMatrixKind,
+  RelationMatrixMenuAction,
+  RelationMatrixMenuIcons,
 } from './relation-matrix-menu.js';
 
 /** How the stylesheet fits long column labels: turned on their side, or cut. */
@@ -65,6 +68,12 @@ export interface RelationMatrixProps
   onAxisAction?: ((action: RelationMatrixAxisAction) => void) | undefined;
   /** The header actions `onAxisAction` offers. Defaults to all: `move`, `insert` and `remove`. */
   axisActions?: readonly RelationMatrixAxisOperation[] | undefined;
+  /**
+   * Icons for the menus' built-in actions, by action: a header's `move-before`, `move-after`,
+   * `insert-before`, `insert-after` and `remove`, and a cell's `remove-relation`. They have none by
+   * default; a cell's kinds take each kind's `glyph`.
+   */
+  menuIcons?: RelationMatrixMenuIcons | undefined;
   /** Renders only the rows and columns in view; the stylesheet must bound the matrix's size. */
   virtualized?: boolean | undefined;
   /** The height of every row in pixels, while virtualized. Defaults to 32. */
@@ -124,6 +133,7 @@ export function RelationMatrix({
   onRelationChange,
   onAxisAction,
   axisActions = allAxisActions,
+  menuIcons,
   virtualized = false,
   rowHeight = defaultRowHeight,
   columnWidth = defaultColumnWidth,
@@ -156,7 +166,7 @@ export function RelationMatrix({
     focus: navigation.focus,
   });
   const menus = useMatrixMenu(
-    { root, rows, columns, index, kinds, onRelationChange, onAxisAction, axisActions },
+    { root, rows, columns, index, kinds, onRelationChange, onAxisAction, axisActions, menuIcons },
     { ownRef: setRoot, onKeyDown: navigation.gridProps.onKeyDown },
   );
   const context: RelationMatrixRowContext = {

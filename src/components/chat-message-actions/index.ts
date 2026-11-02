@@ -5,4 +5,6 @@ export type {
   ChatMessageActionsMenuProps,
   ChatMessageActionsProps,
   ChatMessageCommandProps,
+  ChatMessageMenuAction,
+  ChatMessageMenuIcons,
 } from './chat-message-actions.js';
