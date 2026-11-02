@@ -3,6 +3,7 @@
 import { toErrorMessage } from '../../utils/to-error-message.js';
 import { useRef, useState, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
+import type { ControlSize } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { runPendingAction } from '../button/button.js';
@@ -225,6 +226,7 @@ export function DecisionComment({
   value,
   onChange,
   isDisabled,
+  size,
 }: {
   comment: DecisionControlComment;
   options: readonly DecisionControlOption[];
@@ -232,6 +234,7 @@ export function DecisionComment({
   value: string;
   onChange: (value: string) => void;
   isDisabled: boolean;
+  size: ControlSize;
 }) {
   const strings = useUiStrings();
   if (comment === 'none' && !options.some((option) => option.requiresComment)) return null;
@@ -241,6 +244,7 @@ export function DecisionComment({
       multiline
       minRows={2}
       density="compact"
+      size={size}
       isRequired={comment === 'required' || Boolean(picked?.requiresComment)}
       isDisabled={isDisabled}
       value={value}
@@ -255,10 +259,12 @@ export function DecisionSubmit({
   submission,
   label,
   isDisabled,
+  size,
 }: {
   submission: DecisionSubmission;
   label: ReactNode;
   isDisabled: boolean;
+  size: ControlSize;
 }) {
   const strings = useUiStrings();
   return (
@@ -269,6 +275,7 @@ export function DecisionSubmit({
       <Button
         type="submit"
         variant="primary"
+        size={size}
         isDisabled={isDisabled}
         isPending={submission.isPending}
         className={hooks.slotClass('submit')}

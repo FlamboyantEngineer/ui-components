@@ -121,6 +121,31 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Sizes"
+      description="The four control sizes side by side: the decisions, the comment and Submit take the same size, with long decision names and a comment that is optional or required. Submit a rejection without a comment to see the validation at each size."
+    >
+      <StateMatrix
+        axes={{
+          size: ['xs', 'sm', 'md', 'lg'] as const,
+          comment: ['optional', 'required'] as const,
+        }}
+        render={({ size, comment }) => (
+          <DecisionControl
+            label={`Release decision, ${size}, ${comment} comment`}
+            size={size}
+            comment={comment}
+            options={[
+              { value: 'approve', label: 'Approve the release as planned' },
+              { value: 'hold', label: 'Hold for another review', requiresComment: true },
+            ]}
+            defaultValue="approve"
+            onSubmit={() => {}}
+            data-lab-size={`${size} ${comment}`}
+          />
+        )}
+      />
+    </LabSection>
+    <LabSection
       title="Compact width"
       description="Each state in a 240 pixel column: the comment starts at two rows and keeps no room for a message it has not got. Submit fails in every cell, so the error shows where it would."
     >

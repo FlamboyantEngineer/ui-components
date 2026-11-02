@@ -164,4 +164,43 @@ test.describe('Decision Control lab', () => {
     expect(failed.gap).toBeLessThanOrEqual(8);
     expect(failed.fits).toBe(true);
   });
+
+  test('UIC-DECISION-CONTROL-1.8 sizes the decisions and Submit on the control scale and wraps long names', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('decision-control');
+    for (const size of ['xs', 'sm', 'md', 'lg']) {
+      const root = page.locator(`[data-lab-size="${size} required"]`);
+      const measured = await root.evaluate((element, name) => {
+        const scale = getComputedStyle(document.documentElement);
+        const expected =
+          Number.parseFloat(scale.getPropertyValue(`--ref-control-height-${name}`)) *
+          Number.parseFloat(scale.fontSize);
+        const height = (selector: string) =>
+          Math.round(element.querySelector(selector)?.getBoundingClientRect().height ?? 0);
+        const outer = element.getBoundingClientRect();
+        const clipped = [...element.querySelectorAll('.ui-segmented-choice__segment')].some(
+          (segment) =>
+            segment.scrollWidth > segment.clientWidth + 1 ||
+            segment.getBoundingClientRect().right > outer.right + 0.5,
+        );
+        return {
+          expected,
+          submit: height('.ui-decision-control__submit'),
+          clipped,
+        };
+      }, size);
+      expect(measured.submit, size).toBe(measured.expected);
+      expect(measured.clipped, size).toBe(false);
+    }
+    const lg = page.getByRole('form', { name: 'Release decision, lg, required comment' });
+    await lg.getByRole('radio', { name: 'Hold for another review' }).click();
+    await lg.getByRole('button', { name: 'Submit' }).click();
+    await expect(lg.getByRole('textbox', { name: /^Comment/ })).toHaveAttribute(
+      'aria-invalid',
+      'true',
+    );
+    await lab.expectAccessible('[data-lab-section="Sizes"]');
+  });
 });
