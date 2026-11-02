@@ -493,6 +493,87 @@ test.describe('Rich Text Editor lab', () => {
     }
   });
 
+  test('UIC-RICH-TEXT-EDITOR-9.1 reveals the handle when the pointer enters the gutter directly', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('rich-text-editor');
+    const field = editor(page, 'full');
+    const box = content(page, 'full');
+    const handle = field.locator('.ui-block-handle');
+    await field.scrollIntoViewIfNeeded();
+    const surface = await field.locator('.ui-rich-text-editor__surface').boundingBox();
+    const text = await box.boundingBox();
+    if (!surface || !text) throw new Error('no box');
+    const gutterX = (surface.x + text.x) / 2;
+    /** The handle's offset from a block's top, polled. */
+    const offsetFrom = (block: Locator) => async () => {
+      const [handleBox, blockBox] = await Promise.all([handle.boundingBox(), block.boundingBox()]);
+      return handleBox && blockBox ? Math.abs(handleBox.y - blockBox.y) : Number.NaN;
+    };
+    const quote = box.locator('blockquote');
+    const quoteBox = await quote.boundingBox();
+    if (!quoteBox) throw new Error('no quote');
+    // From outside the editor straight into the gutter beside a later block, crossing no text.
+    await page.mouse.move(surface.x - 40, quoteBox.y + quoteBox.height / 2);
+    await expect(handle).toHaveCount(0);
+    await page.mouse.move(gutterX, quoteBox.y + quoteBox.height / 2, { steps: 4 });
+    await expect(handle).toBeVisible();
+    await expect.poll(offsetFrom(quote)).toBeLessThan(8);
+    await expect(box).not.toBeFocused();
+    // Down the gutter: a heading, then the list, each picked as the pointer reaches it.
+    for (const block of [box.locator('h1'), box.locator('ul').first()]) {
+      const blockBox = await block.boundingBox();
+      if (!blockBox) throw new Error('no block');
+      await page.mouse.move(gutterX, blockBox.y + Math.min(8, blockBox.height / 2), { steps: 4 });
+      await expect.poll(offsetFrom(block)).toBeLessThan(8);
+    }
+    // Onto the handle's menu button: it stays on its block and opens there.
+    const list = box.locator('ul').first();
+    await handle.getByRole('button', { name: 'Block actions' }).hover();
+    await expect.poll(offsetFrom(list)).toBeLessThan(8);
+    await page.mouse.move(surface.x - 40, surface.y + 4);
+    await expect(handle).toHaveCount(0);
+  });
+
+  test('UIC-RICH-TEXT-EDITOR-9.1 picks the gutter block in a scrolled editor with one control', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('rich-text-editor');
+    for (const name of ['handle-grip', 'handle-menu']) {
+      const field = editor(page, name);
+      const surfaceLocator = field.locator('.ui-rich-text-editor__surface');
+      await field.scrollIntoViewIfNeeded();
+      await surfaceLocator.evaluate((node) => node.scrollTo({ top: node.scrollHeight }));
+      const surface = await surfaceLocator.boundingBox();
+      const text = await content(page, name).boundingBox();
+      const last = content(page, name).locator('p').last();
+      const lastBox = await last.boundingBox();
+      if (!surface || !text || !lastBox) throw new Error('no box');
+      await page.mouse.move(surface.x - 40, lastBox.y + lastBox.height - 4);
+      await page.mouse.move((surface.x + text.x) / 2, lastBox.y + lastBox.height - 4, { steps: 3 });
+      const handle = field.locator('.ui-block-handle');
+      await expect(handle).toBeVisible();
+      await expect
+        .poll(async () => Math.abs(((await handle.boundingBox())?.y ?? 0) - lastBox.y))
+        .toBeLessThan(8);
+      // The surface scrolls under a still pointer: the block now beside it takes the handle.
+      await surfaceLocator.evaluate((node) => node.scrollTo({ top: 0 }));
+      const first = content(page, name).locator('p').first();
+      await expect
+        .poll(async () => {
+          const [handleBox, firstBox] = await Promise.all([
+            handle.boundingBox(),
+            first.boundingBox(),
+          ]);
+          return Math.abs((handleBox?.y ?? 0) - (firstBox?.y ?? 0));
+        })
+        .toBeGreaterThan(8);
+      await page.mouse.move(surface.x - 40, surface.y);
+    }
+  });
+
   test('UIC-RICH-TEXT-EDITOR-6.2 previews block types in the select and applies one', async ({
     page,
     lab,
