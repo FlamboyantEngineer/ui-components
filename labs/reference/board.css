@@ -136,12 +136,13 @@
   border-bottom: 1px solid var(--ref-border);
 }
 
+/* Cards run edge to edge in their cell, so they line up with the column header above. */
 .ui-board__cell {
   display: flex;
   flex-direction: column;
   gap: 4px;
   min-height: 96px;
-  padding: 4px;
+  padding: 4px 0;
   border-radius: var(--ref-radius);
   background: var(--ref-canvas);
 }
@@ -150,9 +151,6 @@
  * A collapsed column keeps its cards, as narrow as the column: the handle stacks above the content,
  * which wraps anywhere and is clamped to three lines, so nothing overflows into the next column.
  */
-.ui-board__cell[data-collapsed] {
-  padding: 4px 2px;
-}
 
 .ui-board__cell[data-collapsed] .ui-board__card {
   flex-direction: column;
