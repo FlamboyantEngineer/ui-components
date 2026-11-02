@@ -29,6 +29,8 @@ export default defineConfig({
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
     // Layout that leans on newer CSS also runs in WebKit.
     { name: 'webkit', use: { ...devices['Desktop Safari'] }, testMatch: /steps-narrow\.spec\.ts$/ },
+    // Dock panel geometry leans on writing modes and pointer capture, which Firefox draws its own way.
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] }, testMatch: /dock-panel\.spec\.ts$/ },
     // Focus scrolling that only phones show runs in mobile WebKit.
     {
       name: 'mobile-webkit',

@@ -11,231 +11,353 @@ function inspector(page: Page) {
   return page.getByRole('region', { name: 'Inspector', exact: true });
 }
 
+function frame(page: Page, name: string) {
+  return page.locator(`[data-lab-frame="${name}"]`);
+}
+
+/** Scrolls the separator into view and presses its middle, holding the button. */
+async function press(page: Page, separator: Locator) {
+  await separator.scrollIntoViewIfNeeded();
+  const rect = await box(separator);
+  const x = rect.x + rect.width / 2;
+  const y = rect.y + rect.height / 2;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  return { x, y };
+}
+
 test.describe('Dock Panel lab', () => {
-  test('UIC-DOCK-PANEL-1.1 UIC-DOCK-PANEL-1.2 UIC-DOCK-PANEL-3.1 docks the panel with launchers on the outer edge', async ({
+  test('UIC-DOCK-PANEL-1.1 UIC-DOCK-PANEL-1.2 UIC-DOCK-PANEL-1.3 lays out every edge and state from the reference sheet', async ({
     page,
     lab,
   }) => {
     await lab.open('dock-panel');
-    const panel = inspector(page);
-    const frame = await box(page.locator('[data-lab-frame="workspace"]'));
-    const rect = await box(panel);
-    expect(rect.width).toBe(320);
-    expect(Math.round(rect.x + rect.width)).toBe(Math.round(frame.x + frame.width));
-    const toolbar = page.getByRole('toolbar', { name: 'Inspector panes' });
-    await expect(toolbar).toHaveAttribute('aria-orientation', 'vertical');
-    const rail = await box(toolbar);
-    const separator = page.getByRole('separator', { name: 'Resize Inspector' });
-    const handle = await box(separator);
-    expect(rail.x).toBeGreaterThan(handle.x);
-    // The separator starts right inside the panel's inner border.
-    expect(Math.abs(handle.x - rect.x)).toBeLessThanOrEqual(1);
-    await expect(panel.locator('.ui-dock-panel__count').first()).toHaveText('3');
-    await expect(panel.locator('.ui-dock-panel__count').nth(1)).toHaveText('99+');
-    await expect(page.getByRole('region', { name: 'Properties' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Report.pdf' })).toBeVisible();
+    for (const position of ['start', 'end', 'bottom']) {
+      const expanded = matrixCell(page, `position=${position} state=expanded`);
+      const panel = expanded.locator('.ui-dock-panel');
+      await expect(panel).toHaveCSS('flex-direction', 'column');
+      const strip = panel.locator('.ui-dock-panel__strip');
+      const toggle = panel.getByRole('button', { name: /^Collapse/ });
+      // The toggle sits beside the strip, outside it, on the same row.
+      const stripBox = await box(strip);
+      const toggleBox = await box(toggle);
+      expect(toggleBox.x).toBeGreaterThanOrEqual(stripBox.x + stripBox.width - 1);
+      expect(
+        Math.abs(toggleBox.y + toggleBox.height / 2 - (stripBox.y + stripBox.height / 2)),
+      ).toBeLessThan(2);
+      expect(
+        await strip.evaluate(
+          (node, toggleNode) => node.contains(toggleNode),
+          await toggle.elementHandle(),
+        ),
+      ).toBe(false);
 
-    const start = matrixCell(page, 'position=start state=expanded');
-    const startPanel = await box(start.locator('.ui-dock-panel'));
-    const startMain = await box(start.getByText('Main'));
-    expect(startPanel.x).toBeLessThan(startMain.x);
-    const bottom = matrixCell(page, 'position=bottom state=expanded');
-    const bottomPanel = await box(bottom.locator('.ui-dock-panel'));
-    expect(bottomPanel.height).toBe(120);
-    expect(bottomPanel.y).toBeGreaterThan((await box(bottom.getByText('Main'))).y);
+      const collapsed = matrixCell(page, `position=${position} state=collapsed`);
+      const rail = collapsed.locator('.ui-dock-panel');
+      await expect(rail).toHaveCSS('flex-direction', 'column');
+      const railBox = await box(rail);
+      expect(Math.round(position === 'bottom' ? railBox.height : railBox.width)).toBe(40);
+      const expand = rail.getByRole('button', { name: /^Expand/ });
+      const launcher = rail.getByRole('button', { name: /^Outline/ });
+      const expandBox = await box(expand);
+      const launcherBox = await box(launcher);
+      if (position === 'bottom') {
+        expect(expandBox.x + expandBox.width).toBeLessThanOrEqual(launcherBox.x + 1);
+        await expect(launcher).toHaveCSS('writing-mode', 'horizontal-tb');
+      } else {
+        expect(expandBox.y + expandBox.height).toBeLessThanOrEqual(launcherBox.y + 1);
+        await expect(launcher).toHaveCSS('writing-mode', 'vertical-rl');
+        // Read bottom to top: the icon sits below the label, upright.
+        const icon = await box(launcher.locator('.ui-dock-panel__launcher-icon'));
+        const label = await box(launcher.locator('.ui-dock-panel__launcher-label'));
+        expect(icon.y).toBeGreaterThan(label.y);
+        await expect(launcher.locator('.ui-dock-panel__launcher-icon')).toHaveCSS(
+          'writing-mode',
+          'horizontal-tb',
+        );
+        await expect(launcher).not.toHaveAttribute('aria-hidden');
+      }
+    }
     await lab.expectAccessible();
   });
 
-  test('UIC-DOCK-PANEL-2.2 UIC-DOCK-PANEL-2.3 UIC-DOCK-PANEL-2.4 opens panes from the keyboard and keeps hidden panes mounted', async ({
+  test('UIC-DOCK-PANEL-1.2 UIC-DOCK-PANEL-1.3 caps counts at 9+ and keeps the full count accessible', async ({
     page,
     lab,
   }) => {
     await lab.open('dock-panel');
-    const panel = inspector(page);
-    const properties = panel.getByRole('button', { name: 'Properties', exact: true });
-    await properties.focus();
-    await page.keyboard.press('ArrowDown');
-    const search = panel.getByRole('button', { name: 'Search', exact: true });
-    await expect(search).toBeFocused();
-    await page.keyboard.press('Enter');
-    const searchPane = page.getByRole('region', { name: 'Search' });
-    await expect(searchPane).toBeFocused();
-    await expect(search).toHaveAttribute('aria-expanded', 'true');
-    await page.locator('[data-lab-input="search"]').fill('budget');
-
-    await panel.getByRole('button', { name: 'People', exact: true }).click();
-    await expect(searchPane).toBeHidden();
-    await expect(page.getByRole('region', { name: 'People' })).toBeVisible();
-    await search.click();
-    await expect(page.locator('[data-lab-input="search"]')).toHaveValue('budget');
-
-    await search.click();
-    await expect(panel).not.toHaveAttribute('data-expanded');
-    await expect(search).toBeFocused();
-    expect((await box(panel)).width).toBeLessThan(80);
-    await expect(page.locator('[data-lab-output="workspace"]')).toHaveText('collapsed');
-    await panel.getByRole('button', { name: 'Expand Inspector' }).click();
-    await expect(panel).toHaveAttribute('data-expanded', 'true');
-    await expect(searchPane).toBeVisible();
+    const expanded = matrixCell(page, 'position=end state=expanded');
+    const activity = expanded.getByRole('tab', { name: /Activity/ });
+    await expect(activity).toContainText('9+');
+    await expect(activity).toHaveAccessibleDescription('128 items');
+    const collapsed = matrixCell(page, 'position=end state=collapsed');
+    const launcher = collapsed.getByRole('button', { name: 'Activity (End collapsed)' });
+    await expect(launcher.locator('.ui-dock-panel__count')).toHaveText('9+');
+    await expect(launcher).toHaveAccessibleDescription('128 items');
+    await expect(
+      collapsed.getByRole('button', { name: 'People (End collapsed)' }),
+    ).toHaveAccessibleDescription('3 items');
   });
 
-  test('UIC-DOCK-PANEL-3.1 UIC-DOCK-PANEL-3.2 resizes from the inner edge by keyboard and pointer', async ({
+  test('UIC-DOCK-PANEL-2.2 UIC-DOCK-PANEL-2.3 UIC-DOCK-PANEL-2.4 switches by keyboard, collapses and expands with focus following', async ({
     page,
     lab,
   }) => {
     await lab.open('dock-panel');
     const panel = inspector(page);
-    const separator = page.getByRole('separator', { name: 'Resize Inspector' });
-    await expect(separator).toHaveAttribute('aria-valuemax', '460');
-    await separator.focus();
-    await page.keyboard.press('ArrowLeft');
-    await expect(separator).toHaveAttribute('aria-valuenow', '330');
-    expect((await box(panel)).width).toBe(330);
+    const properties = panel.getByRole('tab', { name: 'Properties', exact: true });
+    await properties.focus();
+    await page.keyboard.press('ArrowRight');
+    const search = panel.getByRole('tab', { name: 'Search', exact: true });
+    await expect(search).toHaveAttribute('aria-selected', 'true');
+    await page.locator('[data-lab-input="search"]').fill('Quarterly');
+    await search.focus();
     await page.keyboard.press('End');
-    expect((await box(panel)).width).toBe(460);
+    await expect(panel.getByRole('tab', { selected: true })).toContainText('Activity');
     await page.keyboard.press('Home');
-    expect((await box(panel)).width).toBe(200);
+    await expect(properties).toHaveAttribute('aria-selected', 'true');
+    await page.keyboard.press('Tab');
+    const toggle = panel.getByRole('button', { name: 'Collapse Inspector' });
+    await expect(toggle).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(panel).not.toHaveAttribute('data-expanded');
+    await expect(panel.getByRole('button', { name: 'Expand Inspector' })).toBeFocused();
+    await page.keyboard.press('Tab');
+    const launchers = panel.getByRole('toolbar', { name: 'Inspector panes' });
+    await expect(launchers.getByRole('button', { name: 'Properties' })).toBeFocused();
+    await page.keyboard.press('ArrowDown');
+    await expect(launchers.getByRole('button', { name: 'Search' })).toBeFocused();
+    await page.keyboard.press('End');
+    await expect(launchers.getByRole('button', { name: 'Activity' })).toBeFocused();
+    await page.keyboard.press('Home');
+    await expect(launchers.getByRole('button', { name: 'Properties' })).toBeFocused();
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Enter');
+    await expect(panel).toHaveAttribute('data-expanded', 'true');
+    await expect(search).toBeFocused();
+    await expect(page.locator('[data-lab-input="search"]')).toHaveValue('Quarterly');
+    await lab.expectAccessible();
+  });
 
-    const handle = await box(separator);
-    const x = handle.x + handle.width / 2;
-    const y = handle.y + handle.height / 2;
-    await page.mouse.move(x, y);
-    await page.mouse.down();
-    await page.mouse.move(x - 60, y, { steps: 4 });
+  test('UIC-DOCK-PANEL-2.5 scrolls the tab strip freely with the wheel and fades its hidden edges', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('dock-panel');
+    const panel = frame(page, 'overflow-expanded').locator('.ui-dock-panel');
+    const list = panel.getByRole('tablist');
+    const selected = panel.getByRole('tab', { selected: true });
+    await expect(selected).toContainText('Change history');
+    // The selected tab shows clear of both fades.
+    await expect
+      .poll(async () => {
+        const tab = await box(selected);
+        const strip = await box(list);
+        return tab.x >= strip.x + 26 - 1 && tab.x + tab.width <= strip.x + strip.width - 26 + 1;
+      })
+      .toBe(true);
+    const fades = panel.locator('.ui-dock-panel__fade');
+    await expect(fades.first()).toBeVisible();
+    await expect(fades.first()).toHaveCSS('width', '26px');
+    // A vertical wheel scrolls it sideways, with no snapping, and keeps the offset.
+    await list.evaluate((node) => {
+      node.scrollLeft = 0;
+    });
+    await expect(panel.locator('.ui-dock-panel__fade[data-edge="start"]')).toBeHidden();
+    await list.hover();
+    await page.mouse.wheel(0, 37);
+    await expect.poll(() => list.evaluate((node) => node.scrollLeft)).toBe(37);
+    await expect(panel.locator('.ui-dock-panel__fade[data-edge="start"]')).toBeVisible();
+    await page.waitForTimeout(200);
+    expect(await list.evaluate((node) => node.scrollLeft)).toBe(37);
+    expect(await list.evaluate((node) => getComputedStyle(node).scrollSnapType)).toBe('none');
+    await expect(panel.locator('.ui-tabs__scroll-button')).toHaveCount(0);
+  });
+
+  test('UIC-DOCK-PANEL-2.5 reveals the selected tab when the panel expands', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('dock-panel');
+    const panel = frame(page, 'overflow-collapsed').locator('.ui-dock-panel');
+    const rail = panel.getByRole('toolbar');
+    // A short rail keeps its labels and scrolls natively.
+    expect(await rail.evaluate((node) => node.scrollHeight > node.clientHeight)).toBe(true);
+    await expect(rail.getByRole('button', { name: 'Reviewers' })).toHaveText(/Reviewers/);
+    await panel.getByRole('button', { name: 'Expand Project collapsed' }).click();
+    const list = panel.getByRole('tablist');
+    const selected = panel.getByRole('tab', { selected: true });
+    await expect(selected).toContainText('Change history');
+    const tab = await box(selected);
+    const strip = await box(list);
+    expect(tab.x).toBeGreaterThanOrEqual(strip.x + 25);
+    expect(tab.x + tab.width).toBeLessThanOrEqual(strip.x + strip.width - 25);
+  });
+
+  test('UIC-DOCK-PANEL-3.1 UIC-DOCK-PANEL-3.2 UIC-DOCK-PANEL-3.4 resizes the main content in the same frame and saves once', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('dock-panel');
+    const panel = inspector(page);
+    const main = frame(page, 'workspace').locator(':scope > div').first();
+    const separator = panel.getByRole('separator', { name: 'Resize Inspector' });
+    const before = await box(panel);
+    await page.evaluate(() => {
+      // Firefox keeps an own `setItem` on the storage as an item, so the prototype counts writes.
+      const writes: string[] = [];
+      const original = Storage.prototype.setItem;
+      Object.assign(window, { writes });
+      Storage.prototype.setItem = function (this: Storage, key: string, value: string) {
+        writes.push(key);
+        original.call(this, key, value);
+      };
+    });
+    const { x, y } = await press(page, separator);
+    for (const step of [10, 20, 30, 40]) await page.mouse.move(x - step, y);
+    // The panel and the content beside it share one frame's geometry.
+    const geometry = await page.evaluate(() => {
+      const root = document.querySelector('[data-lab-frame="workspace"]');
+      const panelNode = root?.querySelector('.ui-dock-panel');
+      const mainNode = root?.firstElementChild;
+      return panelNode && mainNode
+        ? mainNode.getBoundingClientRect().right - panelNode.getBoundingClientRect().left
+        : NaN;
+    });
+    expect(Math.abs(geometry)).toBeLessThanOrEqual(1);
     await expect(panel).toHaveAttribute('data-resizing', 'true');
     await page.mouse.up();
     await expect(panel).not.toHaveAttribute('data-resizing');
-    await expect(separator).toHaveAttribute('aria-valuenow', '260');
-    expect((await box(panel)).width).toBe(260);
-
-    const console = page.getByRole('separator', { name: 'Resize Console' });
-    await expect(console).toHaveAttribute('aria-orientation', 'horizontal');
-    await console.focus();
-    await page.keyboard.press('ArrowUp');
-    expect((await box(page.getByRole('region', { name: 'Console', exact: true }))).height).toBe(
-      160,
+    const after = await box(panel);
+    expect(Math.round(after.width - before.width)).toBe(40);
+    expect((await box(main)).width).toBeGreaterThan(0);
+    const writes = await page.evaluate(() => (window as unknown as { writes: string[] }).writes);
+    expect(writes.filter((key) => key.endsWith(':size'))).toHaveLength(1);
+    await expect(page.locator('[data-lab-output="workspace"]')).toHaveText(
+      `size ${String(Math.round(after.width))}px`,
     );
   });
 
-  test('UIC-DOCK-PANEL-3.3 restores the selection and size after a reload', async ({
+  test('UIC-DOCK-PANEL-3.3 expands a collapsed panel in the same drag, in both reading directions', async ({
     page,
     lab,
   }) => {
     await lab.open('dock-panel');
-    await inspector(page).getByRole('button', { name: 'Activity', exact: true }).click();
-    const separator = page.getByRole('separator', { name: 'Resize Inspector' });
-    await separator.focus();
-    await page.keyboard.press('End');
-    await page.reload();
-    await expect(page.locator('html')).toHaveAttribute('data-lab-ready', 'true');
-    await expect(page.getByRole('region', { name: 'Activity' })).toBeVisible();
-    expect((await box(inspector(page))).width).toBe(460);
+    for (const rtl of [false, true]) {
+      const host = frame(page, rtl ? 'drag-rtl' : 'drag');
+      const panel = host.locator('.ui-dock-panel');
+      const separator = panel.getByRole('separator');
+      await separator.scrollIntoViewIfNeeded();
+      await expect(separator).toHaveAttribute('tabindex', '-1');
+      await expect(panel).not.toHaveAttribute('data-expanded');
+      const { x, y } = await press(page, separator);
+      // Toward the main content: leftward for an end panel, rightward right to left.
+      const toward = rtl ? 1 : -1;
+      await page.mouse.move(x + toward * 5, y);
+      await expect(panel).toHaveAttribute('data-expanded', 'true');
+      await expect.poll(async () => Math.round((await box(panel)).width)).toBe(245);
+      await page.mouse.move(x + toward * 65, y, { steps: 4 });
+      await expect.poll(async () => Math.round((await box(panel)).width)).toBe(305);
+      await page.mouse.up();
+      const output = page.locator(`[data-lab-output="${rtl ? 'drag-rtl' : 'drag'}"]`);
+      await expect(output).toHaveText('ended at 305px');
+      await expect(separator).toHaveAttribute('tabindex', '0');
+      await panel.getByRole('button', { name: /^Collapse/ }).click();
+    }
   });
 
-  test('UIC-DOCK-PANEL-2.1 UIC-DOCK-PANEL-2.2 follows controlled values', async ({ page, lab }) => {
+  test('UIC-DOCK-PANEL-3.4 cancels a drag on lost capture and rolls a controlled host back', async ({
+    page,
+    lab,
+  }) => {
     await lab.open('dock-panel');
-    const output = page.locator('[data-lab-output="controlled"]');
-    await page.getByRole('button', { name: 'Show history' }).click();
-    await expect(page.getByRole('region', { name: 'History' })).toBeVisible();
-    await expect(output).toHaveText('history, expanded, 260px');
-    await page.getByRole('button', { name: 'Collapse from outside' }).click();
-    await expect(page.getByRole('region', { name: 'History' })).toBeHidden();
-    await page.getByRole('button', { name: 'Outline', exact: true }).click();
-    await expect(output).toHaveText('outline, expanded, 260px');
+    const panel = page.getByRole('region', { name: 'Navigator', exact: true });
+    const separator = panel.getByRole('separator');
+    const before = Math.round((await box(panel)).width);
+    await separator.evaluate((node) => {
+      node.addEventListener('pointerdown', (event) => {
+        Object.assign(window, { pressedPointer: (event as PointerEvent).pointerId });
+      });
+    });
+    const { x, y } = await press(page, separator);
+    await page.mouse.move(x + 50, y, { steps: 3 });
+    await expect.poll(async () => Math.round((await box(panel)).width)).toBe(before + 50);
+    // The browser cancels the gesture, as when a touch turns into a page scroll.
+    await separator.evaluate((node) => {
+      const pointerId = (window as unknown as { pressedPointer: number }).pressedPointer;
+      node.dispatchEvent(
+        new PointerEvent('pointercancel', { bubbles: true, pointerId, isPrimary: true }),
+      );
+    });
+    await expect(panel).not.toHaveAttribute('data-resizing');
+    await expect.poll(async () => Math.round((await box(panel)).width)).toBe(before);
+    await page.mouse.up();
+    await expect(page.locator('[data-lab-output="controlled-ends"]')).toHaveText(
+      '0 ends, 1 cancels',
+    );
+  });
+
+  test('UIC-DOCK-PANEL-3.2 resizes a bottom panel by keyboard and follows a scaled pointer', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('dock-panel');
+    const panel = page.getByRole('region', { name: 'Console', exact: true });
+    const separator = panel.getByRole('separator', { name: 'Resize Console' });
+    await expect(separator).toHaveAttribute('aria-orientation', 'horizontal');
+    await separator.focus();
+    await page.keyboard.press('ArrowUp');
+    await expect(separator).toHaveAttribute('aria-valuenow', '160');
+    await page.keyboard.press('Shift+ArrowDown');
+    await expect(separator).toHaveAttribute('aria-valuenow', '158');
+    await page.keyboard.press('End');
+    await expect(separator).toHaveAttribute('aria-valuenow', '240');
+    await page.keyboard.press('Home');
+    await expect(separator).toHaveAttribute('aria-valuenow', '100');
+    await frame(page, 'console').evaluate((node) => {
+      (node as HTMLElement).style.transform = 'scale(0.5)';
+      (node as HTMLElement).style.transformOrigin = '0 0';
+    });
+    const { x, y } = await press(page, separator);
+    await page.mouse.move(x, y - 20, { steps: 2 });
+    await page.mouse.up();
+    // Twenty viewport pixels are forty of the panel's own under a half scale.
+    await expect(separator).toHaveAttribute('aria-valuenow', '140');
+  });
+
+  test('UIC-DOCK-PANEL-3.5 restores the selection and size after a reload', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('dock-panel');
+    const panel = inspector(page);
+    await panel.getByRole('tab', { name: /People/ }).click();
+    const separator = panel.getByRole('separator', { name: 'Resize Inspector' });
+    await separator.focus();
+    await page.keyboard.press('ArrowLeft');
+    await page.reload();
+    await expect(inspector(page).getByRole('tab', { selected: true })).toContainText('People');
+    expect(Math.round((await box(inspector(page))).width)).toBe(330);
   });
 
   test('UIC-DOCK-PANEL-4.1 opens a pane in a drawer on a narrow frame', async ({ page, lab }) => {
     await lab.open('dock-panel');
     const panel = page.getByRole('region', { name: 'Helper', exact: true });
     await expect(panel).toHaveAttribute('data-overlay', 'true');
-    await expect(panel.locator('.ui-dock-panel__body')).toBeHidden();
-    const tips = panel.getByRole('button', { name: 'Tips', exact: true });
-    await expect(tips).toHaveAttribute('aria-haspopup', 'dialog');
-    await tips.click();
-    const dialog = page.getByRole('dialog', { name: 'Tips' });
+    await panel.getByRole('button', { name: 'Links' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Links' });
     await expect(dialog).toBeVisible();
-    const drawer = page.locator('.ui-dock-panel__drawer');
-    await expect(drawer).not.toHaveAttribute('data-entering');
-    await expect(dialog).toBeFocused();
-    await expect(dialog.getByText('Press a launcher to open its pane in a drawer.')).toBeVisible();
-    await lab.expectAccessible('.ui-dock-panel__drawer');
+    await dialog.getByRole('textbox', { name: 'Link draft' }).fill('Kept');
     await page.keyboard.press('Escape');
-    await expect(drawer).toHaveCount(0);
-    await expect(tips).toBeFocused();
-    await expect(tips).toHaveAttribute('aria-expanded', 'false');
-  });
-
-  test('UIC-DOCK-PANEL-2.3 UIC-DOCK-PANEL-4.1 keeps pane drafts across the drawer and width changes', async ({
-    page,
-    lab,
-  }) => {
-    await lab.open('dock-panel');
-    const panel = page.getByRole('region', { name: 'Helper', exact: true });
-    const tips = panel.getByRole('button', { name: 'Tips', exact: true });
-    const links = panel.getByRole('button', { name: 'Links', exact: true });
-    // An open drawer hides the page from the accessibility tree, so look past that.
-    const widen = page.getByRole('button', { name: 'Widen the frame', includeHidden: true });
-    const narrow = page.getByRole('button', { name: 'Narrow the frame' });
-    const drawer = page.locator('.ui-dock-panel__drawer');
-
-    await links.click();
-    const linksDialog = page.getByRole('dialog', { name: 'Links' });
-    await linksDialog.getByLabel('Link draft').fill('Unsaved link');
-    // Focus stays contained in the drawer, and Escape from inside the pane closes it.
-    for (let step = 0; step < 4; step += 1) {
-      await page.keyboard.press('Tab');
-      await expect(linksDialog.locator(':focus')).toHaveCount(1);
-    }
-    await linksDialog.getByLabel('Link draft').focus();
-    await page.keyboard.press('Escape');
-    await expect(drawer).toHaveCount(0);
-    await tips.click();
-    const tipDraft = page.getByRole('dialog', { name: 'Tips' }).getByLabel('Tip draft');
-    await tipDraft.fill('Unsaved tip');
-    // The frame widening under the open drawer, as a host layout change would, docks the panel:
-    // the drawer closes and the field keeps focus in the docked pane.
-    await widen.dispatchEvent('click');
-    await expect(drawer).toHaveCount(0);
+    await expect(dialog).toBeHidden();
+    await expect(panel.getByRole('button', { name: 'Links' })).toBeFocused();
+    await page.getByRole('button', { name: 'Widen the frame' }).click();
     await expect(panel).not.toHaveAttribute('data-overlay');
-    await expect(panel.getByLabel('Tip draft')).toBeFocused();
-    await expect(panel.getByLabel('Tip draft')).toHaveValue('Unsaved tip');
-
-    for (let crossing = 0; crossing < 2; crossing += 1) {
-      await narrow.click();
-      await expect(panel).toHaveAttribute('data-overlay', 'true');
-      await tips.click();
-      const dialog = page.getByRole('dialog', { name: 'Tips' });
-      await expect(dialog.getByLabel('Tip draft')).toHaveValue('Unsaved tip');
-      await expect(dialog.getByLabel('Link draft')).toBeHidden();
-      await expect(drawer).not.toHaveAttribute('data-entering');
-      await expect(dialog).toBeFocused();
-      await page.keyboard.press('Escape');
-      await expect(drawer).toHaveCount(0);
-      await expect(tips).toBeFocused();
-      await widen.click();
-      await expect(panel).not.toHaveAttribute('data-overlay');
-    }
-    await links.click();
-    await expect(panel.getByLabel('Link draft')).toHaveValue('Unsaved link');
-    await expect(panel.getByLabel('Tip draft')).toBeHidden();
+    await panel.getByRole('tab', { name: /Links/ }).click();
+    await expect(panel.getByRole('textbox', { name: 'Link draft' })).toHaveValue('Kept');
   });
 
-  for (const change of ['Remove', 'Disable']) {
-    test(`UIC-DOCK-PANEL-2.4 moves focus to the next pane when the page does ${change.toLowerCase()} the focused one`, async ({
-      page,
-      lab,
-    }) => {
-      await page.clock.install();
-      await lab.open('dock-panel');
-      const frame = page.locator('[data-lab-frame="taken-away"]');
-      await frame.getByRole('button', { name: `${change} Notes in one second` }).click();
-      await frame.getByRole('textbox', { name: 'Note' }).focus();
-      await page.clock.runFor(1000);
-      await expect(frame.locator('.ui-dock-panel__pane[aria-label="Links"]')).toBeFocused();
-    });
-  }
-
-  test('UIC-DOCK-PANEL-1.1 is as tall as its open pane in a host with no height, and fills a host with one', async ({
+  test('UIC-DOCK-PANEL-1.1 is as tall as its selected pane in a host with no height, and fills a host with one', async ({
     page,
     lab,
   }) => {
@@ -246,11 +368,7 @@ test.describe('Dock Panel lab', () => {
     const rect = await box(panel);
     const end = await box(button);
     expect(end.y + end.height).toBeLessThanOrEqual(rect.y + rect.height);
-    const first = await box(page.getByText('Import records'));
-    expect(first.y).toBeGreaterThanOrEqual(rect.y);
-
-    const frame = await box(page.locator('[data-lab-frame="workspace"]'));
-    const workspace = await box(inspector(page));
-    expect(Math.round(workspace.height)).toBe(Math.round(frame.height));
+    const workspace = await box(frame(page, 'workspace'));
+    expect(Math.round((await box(inspector(page))).height)).toBe(Math.round(workspace.height));
   });
 });

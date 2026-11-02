@@ -24,6 +24,8 @@ export interface ScrollStripOptions {
   orientation?: Orientation | undefined;
   /** Called after wheel input scrolled the strip. */
   onWheelScroll?: (() => void) | undefined;
+  /** False leaves the wheel alone, for a strip that already takes it. Defaults to true. */
+  wheel?: boolean | undefined;
 }
 
 export interface ScrollStripState {
@@ -175,10 +177,10 @@ export function scrollStripPage(
  */
 export function useScrollStripOverflow(
   stripRef: RefObject<HTMLElement | null>,
-  { orientation = 'horizontal', onWheelScroll }: ScrollStripOptions = {},
+  { orientation = 'horizontal', onWheelScroll, wheel = true }: ScrollStripOptions = {},
 ): ScrollStripState {
   const horizontal = orientation === 'horizontal';
-  useWheelScrolling(stripRef, horizontal, onWheelScroll);
+  useWheelScrolling(stripRef, horizontal && wheel, onWheelScroll);
   const [overflow, setOverflow] = useState<ScrollStripOverflow>({ start: false, end: false });
   const pending = useRef<{ id: number; cancel: (id: number) => void } | null>(null);
 

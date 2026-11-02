@@ -1,113 +1,252 @@
 /* Dock Panel */
 
+/*
+ * The panel owns its own layout: the root is always a column (tabs or launchers above the body),
+ * whatever the generic Tabs rules say, because the Tabs root inside it lays nothing out.
+ */
 .ui-dock-panel {
+  position: relative;
   display: flex;
   flex: none;
+  flex-direction: column;
   box-sizing: border-box;
   min-width: 0;
   min-height: 0;
-  overflow: hidden;
   background: var(--ref-surface);
   color: var(--ref-text);
+}
+
+.ui-dock-panel__tabs.ui-tabs {
+  display: contents;
 }
 
 .ui-dock-panel[data-resizing] {
   user-select: none;
 }
 
-/* The separator sits on the inner edge; the launchers on the outer edge, or on top at the bottom. */
 .ui-dock-panel[data-position='end'] {
   border-inline-start: 1px solid var(--ref-border);
-  & > .ui-dock-panel__handle {
-    order: 0;
-  }
-  & > .ui-dock-panel__body {
-    order: 1;
-  }
-  & > .ui-dock-panel__launchers {
-    order: 2;
-  }
 }
 
 .ui-dock-panel[data-position='start'] {
   border-inline-end: 1px solid var(--ref-border);
-  & > .ui-dock-panel__launchers {
-    order: 0;
-  }
-  & > .ui-dock-panel__body {
-    order: 1;
-  }
-  & > .ui-dock-panel__handle {
-    order: 2;
-  }
 }
 
 .ui-dock-panel[data-position='bottom'] {
-  flex-direction: column;
   border-block-start: 1px solid var(--ref-border);
-  & > .ui-dock-panel__handle {
-    order: 0;
-  }
-  & > .ui-dock-panel__launchers {
-    order: 1;
-  }
-  & > .ui-dock-panel__body {
-    order: 2;
-  }
+}
+
+/* Collapsed, the panel is a 40 pixel rail: a column beside a side edge, a bar at the bottom. */
+.ui-dock-panel:not([data-expanded]):not([data-position='bottom']) {
+  width: 40px;
+}
+
+.ui-dock-panel:not([data-expanded])[data-position='bottom'] {
+  height: 40px;
+}
+
+/* The separator straddles the inner edge without taking room from the panel or the rail. */
+.ui-resize-handle.ui-dock-panel__handle {
+  position: absolute;
+  z-index: 1;
+  border: 0;
+  background: transparent;
+}
+
+.ui-resize-handle.ui-dock-panel__handle[data-orientation='vertical'] {
+  inset-block: 0;
+  width: 6px;
+}
+
+.ui-dock-panel[data-position='end'] > .ui-tabs > .ui-dock-panel__handle {
+  inset-inline-start: -4px;
+}
+
+.ui-dock-panel[data-position='start'] > .ui-tabs > .ui-dock-panel__handle {
+  inset-inline-end: -4px;
+}
+
+.ui-resize-handle.ui-dock-panel__handle[data-orientation='horizontal'] {
+  inset-inline: 0;
+  inset-block-start: -4px;
+  height: 6px;
+}
+
+/* The header: the tab strip and the toggle in a row, or the toggle above the launchers. */
+.ui-dock-panel__header {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+  padding-inline-end: 4px;
+}
+
+.ui-dock-panel[data-expanded] > .ui-tabs > .ui-dock-panel__header {
+  border-block-end: 1px solid var(--ref-border);
+}
+
+.ui-dock-panel__header[data-orientation='vertical'] {
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 4px 0;
+}
+
+.ui-dock-panel:not([data-expanded])[data-position='bottom'] > .ui-tabs > .ui-dock-panel__header {
+  height: 100%;
+  padding-inline: 4px;
+}
+
+.ui-dock-panel__header[data-orientation='vertical'] > .ui-dock-panel__toggle {
+  align-self: center;
+}
+
+/* The scrolling list and its fades. */
+.ui-dock-panel__strip {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+}
+
+.ui-dock-panel__strip[hidden] {
+  display: none;
+}
+
+.ui-dock-panel__tab.ui-tabs__tab {
+  flex: none;
+}
+
+.ui-dock-panel__tab-list.ui-tabs__list {
+  flex: 1 1 auto;
+  border-bottom: 0;
 }
 
 .ui-dock-panel__launchers {
   display: flex;
-  flex: none;
+  flex: 1 1 auto;
   align-items: center;
-  gap: 6px;
-  box-sizing: border-box;
-  padding: 8px 6px;
-  overflow: auto;
+  gap: 2px;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto hidden;
 }
 
 .ui-dock-panel__launchers[data-orientation='vertical'] {
   flex-direction: column;
+  overflow: hidden auto;
 }
 
-.ui-dock-panel__launchers[data-orientation='horizontal'] {
-  padding: 4px 8px;
+.ui-dock-panel__fade {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
 }
 
-.ui-dock-panel[data-expanded][data-position='end'] > .ui-dock-panel__launchers {
-  border-inline-start: 1px solid var(--ref-border);
+.ui-dock-panel__fade[hidden] {
+  display: none;
 }
 
-.ui-dock-panel[data-expanded][data-position='start'] > .ui-dock-panel__launchers {
-  border-inline-end: 1px solid var(--ref-border);
+.ui-dock-panel__fade[data-orientation='horizontal'] {
+  inset-block: 0;
+  width: 26px;
 }
 
-.ui-dock-panel[data-expanded][data-position='bottom'] > .ui-dock-panel__launchers {
-  border-block-end: 1px solid var(--ref-border);
+.ui-dock-panel__fade[data-orientation='horizontal'][data-edge='start'] {
+  inset-inline-start: 0;
+  background: linear-gradient(to right, var(--ref-surface), transparent);
 }
 
+.ui-dock-panel__fade[data-orientation='horizontal'][data-edge='end'] {
+  inset-inline-end: 0;
+  background: linear-gradient(to left, var(--ref-surface), transparent);
+}
+
+[dir='rtl'] .ui-dock-panel__fade[data-orientation='horizontal'][data-edge='start'] {
+  background: linear-gradient(to left, var(--ref-surface), transparent);
+}
+
+[dir='rtl'] .ui-dock-panel__fade[data-orientation='horizontal'][data-edge='end'] {
+  background: linear-gradient(to right, var(--ref-surface), transparent);
+}
+
+.ui-dock-panel__fade[data-orientation='vertical'] {
+  inset-inline: 0;
+  height: 26px;
+}
+
+.ui-dock-panel__fade[data-orientation='vertical'][data-edge='start'] {
+  inset-block-start: 0;
+  background: linear-gradient(to bottom, var(--ref-surface), transparent);
+}
+
+.ui-dock-panel__fade[data-orientation='vertical'][data-edge='end'] {
+  inset-block-end: 0;
+  background: linear-gradient(to top, var(--ref-surface), transparent);
+}
+
+/* A launcher: icon, label and count in a row; beside a side edge the label reads bottom to top. */
 .ui-dock-panel__launcher {
-  position: relative;
   display: inline-flex;
   flex: none;
+  align-items: center;
+  gap: 6px;
+  box-sizing: border-box;
+  height: 32px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--ref-radius-sm);
+  background: transparent;
   color: var(--ref-muted);
+  font: inherit;
+  font-size: var(--ref-font-size-sm);
+  white-space: nowrap;
+  cursor: pointer;
+  outline: none;
 }
 
-.ui-dock-panel__launcher[data-selected] {
+.ui-dock-panel__launcher[data-hovered] {
+  background: var(--ref-hover);
   color: var(--ref-text);
 }
 
-.ui-dock-panel__launcher > .ui-button[data-content='icon'] {
-  color: inherit;
+.ui-dock-panel__launcher[data-focus-visible] {
+  box-shadow: var(--ref-focus-inset);
 }
 
-.ui-dock-panel__launcher > [aria-expanded='true'] {
-  background: var(--ref-selected);
-  color: var(--ref-on-fill);
+.ui-dock-panel__launcher[data-disabled] {
+  opacity: var(--ref-disabled-opacity);
+  cursor: not-allowed;
 }
 
+.ui-dock-panel__launchers[data-orientation='vertical'] > .ui-dock-panel__launcher {
+  width: 32px;
+  height: auto;
+  padding: 8px 0;
+  writing-mode: vertical-rl;
+  rotate: 180deg;
+}
+
+/* Rotating the launcher turns its icon and count upside down; they turn back upright. */
+.ui-dock-panel__launchers[data-orientation='vertical']
+  > .ui-dock-panel__launcher
+  > :is(.ui-dock-panel__launcher-icon, .ui-dock-panel__count) {
+  writing-mode: horizontal-tb;
+  rotate: 180deg;
+}
+
+.ui-dock-panel__launcher-icon,
 .ui-dock-panel__count {
-  transform: translate(30%, -30%);
+  flex: none;
+}
+
+.ui-dock-panel__launcher-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .ui-dock-panel__toggle {
@@ -115,37 +254,17 @@
   color: var(--ref-muted);
 }
 
-.ui-dock-panel__launchers[data-orientation='vertical'] > .ui-dock-panel__toggle {
-  margin-block-start: auto;
-}
-
-.ui-dock-panel__launchers[data-orientation='horizontal'] > .ui-dock-panel__toggle {
-  margin-inline-start: auto;
-}
-
-.ui-resize-handle.ui-dock-panel__handle {
-  border: 0;
-  background: transparent;
-}
-
-.ui-resize-handle.ui-dock-panel__handle[data-orientation='vertical'] {
-  width: 6px;
-}
-
-.ui-resize-handle.ui-dock-panel__handle[data-orientation='horizontal'] {
-  height: 6px;
-}
-
 .ui-dock-panel__body {
   display: flex;
-  flex: 1 1 0;
+  flex: 1 1 auto;
   flex-direction: column;
   min-width: 0;
   min-height: 0;
+  overflow: hidden;
 }
 
 /* The panes' own element, which moves between the body and the drawer. Its auto basis gives a
-   host with no height the open pane's height; min-height: 0 still lets it shrink in a frame. */
+   host with no height the selected pane's height; min-height: 0 still lets it shrink in a frame. */
 .ui-dock-panel__panes {
   display: flex;
   flex: 1 1 auto;
@@ -176,21 +295,10 @@
   outline-offset: -2px;
 }
 
-.ui-dock-panel__header {
+.ui-dock-panel__actions {
   flex: none;
-  min-height: 28px;
-  padding: 6px 8px;
+  padding: 4px 8px;
   border-block-end: 1px solid var(--ref-border);
-}
-
-.ui-dock-panel__title {
-  margin: 0;
-  overflow: hidden;
-  color: var(--ref-text);
-  font-size: var(--ref-font-size-md);
-  font-weight: var(--ref-font-weight-strong);
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .ui-dock-panel__content {
@@ -200,6 +308,12 @@
   overflow: auto;
 }
 
+.ui-dock-panel__footer {
+  flex: none;
+  padding: 8px;
+  border-block-start: 1px solid var(--ref-border);
+}
+
 /* In the drawer the panes fill the body below the drawer's own title. */
 .ui-dock-panel__drawer-body,
 .ui-dock-panel__drawer .ui-dock-panel__panes,
@@ -207,10 +321,7 @@
   height: 100%;
 }
 
-.ui-dock-panel__drawer .ui-dock-panel__header {
-  padding-inline: 0;
-}
-
-.ui-dock-panel__drawer .ui-dock-panel__content {
+.ui-dock-panel__drawer
+  :is(.ui-dock-panel__actions, .ui-dock-panel__content, .ui-dock-panel__footer) {
   padding-inline: 0;
 }

@@ -1,16 +1,15 @@
 'use client';
 
+import type { RefObject } from 'react';
 import type { Key } from '../../core/props.js';
-import { useUiStorage } from '../../core/provider.js';
-import { clamp } from '../../utils/clamp.js';
-import { booleanCodec, keyCodec, numberCodec } from '../../utils/json-codec.js';
+import { booleanCodec, keyCodec } from '../../utils/json-codec.js';
 import { isKey } from '../../utils/is-key.js';
-import { useOwnedPreview } from '../../utils/use-owned-preview.js';
 import { usePersistedValue } from '../../utils/use-persisted-value.js';
-import { useShallowStable } from '../../utils/use-shallow-stable.js';
 import { useRetainedKey } from '../../utils/use-retained-key.js';
+import { useDockPanelSize, type DockPanelSize } from './use-dock-panel-size.js';
 
 interface DockPanelStateOptions {
+  rootRef: RefObject<HTMLElement | null>;
   /** The panes that can be selected, in order. */
   enabledKeys: readonly Key[];
   selectedKey?: Key | undefined;
@@ -22,31 +21,20 @@ interface DockPanelStateOptions {
   size?: number | undefined;
   defaultSize: number;
   onSizeChange?: ((size: number) => void) | undefined;
+  onSizeChangeEnd?: ((size: number) => void) | undefined;
+  onSizeChangeCancel?: (() => void) | undefined;
   /** The size bounds, in pixels. */
   minSize: number;
   maxSize: number;
   persistKey?: string | undefined;
 }
 
-export interface DockPanelState {
+export interface DockPanelState extends DockPanelSize {
   /** The selected pane, kept while the panel is collapsed; `null` without an enabled pane. */
   selectedKey: Key | null;
   setSelectedKey: (key: Key) => void;
   isExpanded: boolean;
   setExpanded: (isExpanded: boolean) => void;
-  /** The expanded size, within the bounds. */
-  size: number;
-  /** A size during a drag or a key step. */
-  changeSize: (size: number) => void;
-  /** The size after a drag or a key step, which a persisted panel saves. */
-  commitSize: (size: number) => void;
-  /** Drops the size of a drag abandoned without an end. */
-  cancelSize: () => void;
-  /**
-   * Changes with the persist key, the storage and the bounds: a drag or a live size taken for
-   * another owner is dropped, never committed.
-   */
-  sizeOwner: object;
 }
 
 /** The first candidate that names an enabled pane. */
@@ -61,8 +49,9 @@ function toValueKey(persistKey: string | undefined, name: string) {
 }
 
 /**
- * The selected pane, the expanded state and the size of a dock panel, each controlled or held by
- * the panel, which restores and saves the values it holds under `persistKey`.
+ * The selected pane, the expanded state and the size of an dock panel, each controlled or held by
+ * the panel, which restores and saves the values it holds under `persistKey`. Selecting the pane
+ * that is already selected changes nothing.
  */
 export function useDockPanelState(options: DockPanelStateOptions): DockPanelState {
   const { enabledKeys, onSelectionChange, persistKey } = options;
@@ -84,44 +73,25 @@ export function useDockPanelState(options: DockPanelStateOptions): DockPanelStat
     persistKey: toValueKey(persistKey, 'expanded'),
     codec: booleanCodec,
   });
-  const [committedSize, commitSize] = usePersistedValue({
-    value: options.size,
-    defaultValue: options.defaultSize,
-    persistKey: toValueKey(persistKey, 'size'),
-    codec: numberCodec,
-  });
-  const sizeOwner = useShallowStable({
-    persistKey,
-    storage: useUiStorage(),
-    minSize: options.minSize,
-    maxSize: options.maxSize,
-  });
-  const [liveSize, setLiveSize] = useOwnedPreview<number>(sizeOwner);
-  const isSizeControlled = options.size !== undefined;
-
   // With no chosen pane, the pane shown first stays shown while it is enabled.
   const shownKey = useRetainedKey(
     findEnabledKey([selectedKey, options.defaultSelectedKey], enabledKeys),
     (key) => enabledKeys.includes(key),
     enabledKeys[0],
   );
-
-  return {
-    selectedKey: shownKey,
-    setSelectedKey,
+  const size = useDockPanelSize({
+    ...options,
+    persistKey: toValueKey(persistKey, 'size'),
     isExpanded,
     setExpanded,
-    size: clamp(options.size ?? liveSize ?? committedSize, options.minSize, options.maxSize),
-    changeSize(size) {
-      if (!isSizeControlled) setLiveSize(size);
-      options.onSizeChange?.(size);
+  });
+  return {
+    ...size,
+    selectedKey: shownKey,
+    setSelectedKey: (key) => {
+      if (key !== shownKey) setSelectedKey(key);
     },
-    commitSize(size) {
-      if (isSizeControlled) return;
-      setLiveSize(null);
-      commitSize(size);
-    },
-    cancelSize: () => setLiveSize(null),
-    sizeOwner,
+    isExpanded,
+    setExpanded,
   };
 }

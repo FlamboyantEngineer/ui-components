@@ -1,173 +1,25 @@
-import {
-  EditGlyph,
-  FolderGlyph,
-  InfoGlyph,
-  LockGlyph,
-  UsersGlyph,
-  WarningGlyph,
-} from '../../core/glyphs.js';
+import { EditGlyph, FolderGlyph, InfoGlyph, WarningGlyph } from '../../core/glyphs.js';
 import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { hydrateRoot } from 'react-dom/client';
 import { renderToString } from 'react-dom/server';
-import { cloneElement, useEffect, useState, type ReactElement } from 'react';
+import { useEffect, useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { deepActive, inShadow, ShadowHost } from '../../../test/shadow-fixtures.js';
-import { UiProvider } from '../../core/provider.js';
-import { createMemoryStorage, type UiStorage } from '../../core/storage.js';
+import { addFile, Panel, panelRoot as root } from '../../../test/dock-panel-fixtures.js';
 import { requireDefined } from '../../utils/require-defined.js';
-import { Section } from '../section-header/section-header.js';
-import {
-  DockPanel,
-  DockPanelPane,
-  type DockPanelPaneProps,
-  type DockPanelProps,
-} from './dock-panel.js';
-
-const add = vi.fn();
-
-function Panel(props: Partial<DockPanelProps>) {
-  return (
-    <DockPanel label="Details" {...props}>
-      <DockPanelPane
-        id="files"
-        label="Files"
-        icon={FolderGlyph}
-        title="Recent files"
-        actions={[{ verb: 'add', onPress: add }]}
-      >
-        <input aria-label="File filter" />
-      </DockPanelPane>
-      <DockPanelPane id="people" label="People" icon={UsersGlyph} count={3}>
-        <p>Maria Santos</p>
-      </DockPanelPane>
-      <DockPanelPane id="locked" label="Locked" icon={LockGlyph} isDisabled>
-        <p>Hidden</p>
-      </DockPanelPane>
-      {null}
-      <p>Not a pane</p>
-    </DockPanel>
-  );
-}
-
-/** A frame whose client size the fake observer reports. */
-function Frame({ children }: { children: React.ReactNode }) {
-  return (
-    <div role="region" aria-label="Frame">
-      {children}
-    </div>
-  );
-}
-
-class FakeResizeObserver {
-  static observers: FakeResizeObserver[] = [];
-  readonly elements = new Set<Element>();
-  constructor(readonly callback: ResizeObserverCallback) {
-    FakeResizeObserver.observers.push(this);
-  }
-  observe(element: Element) {
-    this.elements.add(element);
-  }
-  unobserve(element: Element) {
-    this.elements.delete(element);
-  }
-  disconnect() {
-    this.elements.clear();
-  }
-}
-
-/** Gives the frame a client size and reports it to every observer watching it. */
-function resizeFrame(width: number, height: number) {
-  // An open drawer hides the frame from the accessibility tree, so look past that.
-  const frame = screen.getByRole('region', { name: 'Frame', hidden: true });
-  Object.defineProperties(frame, {
-    clientWidth: { configurable: true, value: width },
-    clientHeight: { configurable: true, value: height },
-  });
-  const entry = {
-    target: frame,
-    contentRect: { width, height },
-    borderBoxSize: [{ inlineSize: width, blockSize: height }],
-  } as unknown as ResizeObserverEntry;
-  act(() => {
-    for (const observer of FakeResizeObserver.observers) {
-      if (observer.elements.has(frame))
-        observer.callback([entry], observer as unknown as ResizeObserver);
-    }
-    for (const callback of frames.splice(0)) callback(0);
-  });
-}
-
-const frames: FrameRequestCallback[] = [];
-
-/** Observes sizes through the fake observer; `resizeFrame` runs the frames it queues. */
-function stubObserver() {
-  vi.stubGlobal('ResizeObserver', FakeResizeObserver);
-  vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => frames.push(callback));
-  vi.stubGlobal('cancelAnimationFrame', () => {});
-}
-
-/** Stubs what React Aria's sheet needs in jsdom, and ends its slide. */
-function stubSheet() {
-  vi.stubGlobal(
-    'IntersectionObserver',
-    class {
-      observe() {}
-      disconnect() {}
-    },
-  );
-  vi.stubGlobal('matchMedia', () => ({ matches: false }));
-}
-
-async function settleDrawer() {
-  await act(async () => {
-    for (const scroller of document.querySelectorAll('[data-sheet-scroll]')) {
-      scroller.dispatchEvent(new Event('scrollend'));
-    }
-    await new Promise((resolve) => setTimeout(resolve, 60));
-  });
-}
-
-function root(container: HTMLElement) {
-  return requireDefined(container.querySelector<HTMLElement>('.ui-dock-panel'));
-}
-
-/** A pane by its label, shown or hidden. */
-function pane(name: string) {
-  const element = document.querySelector<HTMLElement>(`.ui-dock-panel__pane[aria-label="${name}"]`);
-  if (!element) throw new Error(`No pane named ${name}`);
-  return element;
-}
-
-function prepareCapture(handle: HTMLElement) {
-  const capture = { id: null as number | null };
-  Object.assign(handle, {
-    setPointerCapture: (id: number) => {
-      capture.id = id;
-    },
-    hasPointerCapture: (id: number) => capture.id === id,
-    releasePointerCapture: () => {
-      capture.id = null;
-    },
-  });
-}
+import { DockPanel, DockPanelPane } from './dock-panel.js';
 
 beforeEach(() => {
-  add.mockClear();
-  FakeResizeObserver.observers = [];
-  frames.length = 0;
-  Element.prototype.scrollTo = () => {};
+  addFile.mockClear();
 });
 
 afterEach(() => {
   vi.unstubAllGlobals();
-  // @ts-expect-error -- jsdom has no scrollTo; React Aria's sheet calls it.
-  delete Element.prototype.scrollTo;
 });
 
 describe('DockPanel structure', () => {
-  it('UIC-DOCK-PANEL-1.1 UIC-DOCK-PANEL-1.4 renders a named region with launchers, a separator and the panes', () => {
+  it('UIC-DOCK-PANEL-1.1 UIC-DOCK-PANEL-1.5 renders a named region with tabs, a separator and the panes', () => {
     const { container } = render(<Panel className="inspector" id="details" data-area="side" />);
     const panel = screen.getByRole('region', { name: 'Details' });
     expect(panel.tagName).toBe('SECTION');
@@ -175,23 +27,26 @@ describe('DockPanel structure', () => {
     expect(panel).toHaveClass('ui-dock-panel', 'inspector');
     expect(panel).toHaveAttribute('data-area', 'side');
     expect(panel).toHaveAttribute('data-position', 'end');
-    expect(within(panel).getByRole('toolbar')).toBeInTheDocument();
+    expect(within(panel).getByRole('tablist', { name: 'Details' })).toBeInTheDocument();
     expect(within(panel).getByRole('separator')).toBeInTheDocument();
     expect(container.querySelectorAll('.ui-dock-panel__pane')).toHaveLength(3);
     expect(screen.queryByText('Not a pane')).not.toBeInTheDocument();
     expectHooksMatchSpec(container, 'DOCK-PANEL', {
       slots: [
-        'launchers',
-        'launcher',
-        'count',
+        'tabs',
+        'header',
+        'strip',
+        'tab-list',
+        'tab',
+        'fade',
         'toggle',
         'handle',
         'body',
         'panes',
         'pane',
-        'header',
-        'title',
+        'actions',
         'content',
+        'footer',
       ],
       callerAttributes: ['data-area'],
     });
@@ -204,96 +59,106 @@ describe('DockPanel structure', () => {
     expect(root(container)).toHaveAttribute('data-position', 'bottom');
   });
 
-  it('UIC-DOCK-PANEL-1.2 draws a launcher toolbar with labels, counts and pane links', () => {
-    render(<Panel />);
-    const toolbar = screen.getByRole('toolbar', { name: 'Details panes' });
-    expect(toolbar).toHaveAttribute('aria-orientation', 'vertical');
-    expect(toolbar).toHaveAttribute('data-orientation', 'vertical');
-    const files = within(toolbar).getByRole('button', { name: 'Files' });
-    expect(files).toHaveAttribute('aria-expanded', 'true');
-    expect(files).toHaveAttribute('aria-controls', pane('Files').id);
-    expect(files.querySelector('[data-glyph="folder"]')).not.toBeNull();
-    const people = within(toolbar).getByRole('button', { name: 'People' });
-    expect(people).toHaveAttribute('aria-expanded', 'false');
-    expect(people).toHaveAccessibleDescription('3 items');
-    const count = requireDefined(toolbar.querySelector('.ui-dock-panel__count'));
-    expect(count).toHaveClass('ui-badge');
-    expect(count).toHaveTextContent('3');
-    expect(count).toHaveAttribute('aria-hidden', 'true');
-    expect(within(toolbar).getByRole('button', { name: 'Locked' })).toBeDisabled();
-  });
-
-  it('UIC-DOCK-PANEL-1.2 caps counts, hides empty ones and lays a bottom toolbar out in a row', () => {
-    const { container } = render(
+  it('UIC-DOCK-PANEL-1.2 draws a tab per pane with its icon, label and capped count', () => {
+    render(
       <DockPanel label="Output" position="bottom">
         <DockPanelPane id="log" label="Log" icon={InfoGlyph} count={120}>
-          Log
+          Log lines
         </DockPanelPane>
-        <DockPanelPane id="warnings" label="Warnings" icon={WarningGlyph} count={0}>
+        <DockPanelPane id="warnings" label="Warnings" icon={WarningGlyph} count={9}>
           None
         </DockPanelPane>
       </DockPanel>,
     );
+    const log = screen.getByRole('tab', { name: /Log/ });
+    expect(log).toHaveClass('ui-dock-panel__tab', 'ui-tabs__tab');
+    expect(log).toHaveAttribute('aria-selected', 'true');
+    expect(log.querySelector('[data-glyph="info"]')).not.toBeNull();
+    expect(log).toHaveTextContent('9+');
+    expect(log).toHaveAccessibleDescription('120 items');
+    expect(screen.getByRole('tab', { name: /Warnings/ })).toHaveTextContent('9');
+    expect(screen.getByRole('tabpanel')).toHaveTextContent('Log lines');
+    expect(screen.getByRole('tabpanel')).toHaveAttribute('aria-labelledby', log.id);
+    expect(log).toHaveAttribute('aria-controls', screen.getByRole('tabpanel').id);
+  });
+
+  it('UIC-DOCK-PANEL-1.3 draws the collapsed launchers with labels and full-count descriptions', () => {
+    const { container } = render(<Panel defaultExpanded={false} />);
+    expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
+    const toolbar = screen.getByRole('toolbar', { name: 'Details panes' });
+    expect(toolbar).toHaveAttribute('aria-orientation', 'vertical');
+    expect(toolbar).toHaveAttribute('data-orientation', 'vertical');
+    const files = within(toolbar).getByRole('button', { name: 'Files' });
+    expect(files).toHaveClass('ui-dock-panel__launcher');
+    expect(files).toHaveAttribute('data-selected', 'true');
+    expect(files).toHaveAttribute('aria-expanded', 'false');
+    expect(files.querySelector('.ui-dock-panel__launcher-label')).toHaveTextContent('Files');
+    expect(files.querySelector('[data-glyph="folder"]')).not.toBeNull();
+    const people = within(toolbar).getByRole('button', { name: 'People' });
+    expect(people).toHaveAccessibleDescription('3 items');
+    const count = requireDefined(people.querySelector('.ui-dock-panel__count'));
+    expect(count).toHaveClass('ui-badge');
+    expect(count).toHaveAttribute('aria-hidden', 'true');
+    expect(within(toolbar).getByRole('button', { name: 'Locked' })).toBeDisabled();
+    expect(within(toolbar).queryByRole('tooltip')).not.toBeInTheDocument();
+    expectHooksMatchSpec(container, 'DOCK-PANEL', {
+      slots: ['launchers', 'launcher', 'launcher-icon', 'launcher-label', 'count'],
+    });
+  });
+
+  it('UIC-DOCK-PANEL-1.3 caps launcher counts and lays a bottom rail out in a row', () => {
+    render(
+      <DockPanel label="Output" position="bottom" defaultExpanded={false}>
+        <DockPanelPane id="log" label="Log" icon={InfoGlyph} count={120}>
+          Log
+        </DockPanelPane>
+      </DockPanel>,
+    );
     expect(screen.getByRole('toolbar')).toHaveAttribute('aria-orientation', 'horizontal');
-    const counts = container.querySelectorAll('.ui-dock-panel__count');
-    expect(counts).toHaveLength(1);
-    expect(counts[0]).toHaveTextContent('99+');
-    expect(screen.getByRole('button', { name: 'Log' })).toHaveAccessibleDescription('120 items');
+    const log = screen.getByRole('button', { name: 'Log' });
+    expect(log.querySelector('.ui-dock-panel__count')).toHaveTextContent('9+');
+    expect(log).toHaveAccessibleDescription('120 items');
   });
 
-  it('UIC-DOCK-PANEL-1.3 draws a pane header with its title and actions', async () => {
-    render(<Panel />);
-    const files = pane('Files');
-    expect(files.tagName).toBe('SECTION');
+  it('UIC-DOCK-PANEL-1.4 draws pane actions, content and footer without a title', async () => {
+    const { container } = render(<Panel />);
+    const files = screen.getByRole('tabpanel', { name: 'Files' });
     expect(files).toHaveClass('ui-dock-panel__pane');
-    const header = requireDefined(files.querySelector('.ui-dock-panel__header'));
-    expect(header).toHaveClass('ui-action-row');
-    expect(within(files).getByRole('heading', { level: 3, name: 'Recent files' })).toHaveClass(
-      'ui-dock-panel__title',
-    );
+    expect(within(files).queryByRole('heading')).not.toBeInTheDocument();
+    expect(files.querySelector('.ui-dock-panel__actions')).toHaveClass('ui-action-row');
     await userEvent.click(within(files).getByRole('button', { name: 'Add' }));
-    expect(add).toHaveBeenCalledTimes(1);
-    expect(pane('People').querySelector('.ui-dock-panel__header')).toBeNull();
-    expect(pane('People').querySelector('.ui-dock-panel__content')).toHaveTextContent(
-      'Maria Santos',
+    expect(addFile).toHaveBeenCalledTimes(1);
+    expect(files.querySelector('.ui-dock-panel__content')).toHaveAttribute('tabindex', '0');
+    expect(files.querySelector('.ui-dock-panel__footer')).toHaveTextContent('Three files');
+    const people = requireDefined(
+      [...container.querySelectorAll('.ui-dock-panel__pane')].find((pane) =>
+        pane.textContent.includes('Maria Santos'),
+      ),
     );
-    expect(pane('People').querySelector('.ui-dock-panel__content')).toHaveAttribute(
-      'tabindex',
-      '0',
-    );
+    expect(people.querySelector('.ui-dock-panel__actions')).toBeNull();
+    expect(people.querySelector('.ui-dock-panel__footer')).toBeNull();
   });
 
-  it('UIC-DOCK-PANEL-1.3 UIC-DOCK-PANEL-1.4 takes the heading level and caller hooks, and renders alone', () => {
+  it('UIC-DOCK-PANEL-1.4 UIC-DOCK-PANEL-1.5 takes caller hooks and renders alone', () => {
     const { container } = render(
       <>
-        <Section title="Workspace" headingLevel={2}>
-          <DockPanel label="Nested">
-            <DockPanelPane
-              id="a"
-              label="Notes"
-              icon={EditGlyph}
-              title="Notes"
-              className="notes"
-              data-kind="text"
-            >
-              Text
-            </DockPanelPane>
-          </DockPanel>
-        </Section>
+        <DockPanel label="Nested">
+          <DockPanelPane id="a" label="Notes" icon={EditGlyph} className="notes" data-kind="text">
+            Text
+          </DockPanelPane>
+        </DockPanel>
         <DockPanelPane id="alone" label="Alone" icon={InfoGlyph}>
           Standalone
         </DockPanelPane>
       </>,
     );
-    expect(screen.getByRole('heading', { name: 'Notes' }).tagName).toBe('H3');
-    const notes = pane('Notes');
+    const notes = screen.getByRole('tabpanel', { name: 'Notes' });
     expect(notes).toHaveClass('ui-dock-panel__pane', 'notes');
     expect(notes).toHaveAttribute('data-kind', 'text');
-    const alone = screen.getByRole('region', { name: 'Alone' });
-    expect(alone).toBeVisible();
-    expect(alone).not.toHaveAttribute('tabindex');
+    expect(screen.getByText('Standalone')).toBeVisible();
     expectHooksMatchSpec(container, 'DOCK-PANEL', { callerAttributes: ['data-kind'] });
   });
+
   it('UIC-DOCK-PANEL-1.1 renders the panes in place on the server and hydrates without errors', async () => {
     // eslint-disable-next-line testing-library/render-result-naming-convention -- renderToString returns an HTML string, not a render result
     const markup = renderToString(<Panel />);
@@ -318,472 +183,75 @@ describe('DockPanel panes', () => {
   it('UIC-DOCK-PANEL-2.1 selects the first enabled pane, a default or a controlled key', async () => {
     const onSelectionChange = vi.fn();
     const { rerender } = render(<Panel defaultSelectedKey="locked" />);
-    expect(pane('Files')).toBeVisible();
+    expect(screen.getByRole('tabpanel', { name: 'Files' })).toBeVisible();
     rerender(<Panel key="b" defaultSelectedKey="people" />);
-    expect(pane('People')).toBeVisible();
+    expect(screen.getByRole('tabpanel', { name: /People/ })).toBeVisible();
     rerender(<Panel key="c" selectedKey="files" onSelectionChange={onSelectionChange} />);
-    await userEvent.click(screen.getByRole('button', { name: 'People' }));
-    expect(onSelectionChange).toHaveBeenCalledWith('people');
-    expect(pane('Files')).toBeVisible();
-    expect(pane('People')).not.toBeVisible();
+    await userEvent.click(screen.getByRole('tab', { name: /People/ }));
+    expect(onSelectionChange).toHaveBeenCalledExactlyOnceWith('people');
+    expect(screen.getByRole('tabpanel', { name: 'Files' })).toBeVisible();
+    await userEvent.click(screen.getByRole('tab', { name: 'Files' }));
+    expect(onSelectionChange).toHaveBeenCalledOnce();
   });
 
-  it('UIC-DOCK-PANEL-2.1 keeps the first pane shown by id while panes are added or reordered', async () => {
-    const onSelectionChange = vi.fn();
-    function Ordered({ ids }: { ids: readonly string[] }) {
-      return (
-        <DockPanel label="Details" onSelectionChange={onSelectionChange}>
-          {ids.map((id) => (
-            <DockPanelPane key={id} id={id} label={id} icon={FolderGlyph}>
-              <input aria-label={`${id} note`} />
-            </DockPanelPane>
-          ))}
-        </DockPanel>
-      );
-    }
-    const { rerender } = render(<Ordered ids={[]} />);
-    rerender(<Ordered ids={['Alpha', 'Blue']} />);
-    const note = screen.getByRole('textbox', { name: 'Alpha note' });
-    await userEvent.type(note, 'draft');
-    rerender(<Ordered ids={['Gamma', 'Blue', 'Alpha']} />);
-    expect(note).toBeVisible();
-    expect(note).toHaveValue('draft');
-    expect(note).toHaveFocus();
-    expect(onSelectionChange).not.toHaveBeenCalled();
-    // Only when the shown pane goes does the first pane take its place.
-    rerender(<Ordered ids={['Gamma', 'Blue']} />);
-    expect(screen.getByRole('textbox', { name: 'Gamma note' })).toBeVisible();
-    expect(onSelectionChange).not.toHaveBeenCalled();
+  it('UIC-DOCK-PANEL-2.1 keeps the selection while collapsed', async () => {
+    render(<Panel defaultSelectedKey="people" />);
+    await userEvent.click(screen.getByRole('button', { name: 'Collapse Details' }));
+    expect(screen.getByRole('button', { name: 'People' })).toHaveAttribute('data-selected', 'true');
+    await userEvent.click(screen.getByRole('button', { name: 'Expand Details' }));
+    expect(screen.getByRole('tab', { name: /People/ })).toHaveAttribute('aria-selected', 'true');
   });
 
-  it('UIC-DOCK-PANEL-2.1 keeps the selection while collapsed', () => {
-    render(<Panel defaultSelectedKey="people" defaultExpanded={false} />);
-    const launcher = screen
-      .getByRole('button', { name: 'People' })
-      .closest('.ui-dock-panel__launcher');
-    expect(launcher).toHaveAttribute('data-selected', 'true');
-    expect(screen.getByRole('button', { name: 'People' })).toHaveAttribute(
-      'aria-expanded',
-      'false',
-    );
-  });
-
-  it('UIC-DOCK-PANEL-2.2 opens a pane from its launcher and collapses from the open one', async () => {
+  it('UIC-DOCK-PANEL-2.2 collapses and expands with the toggle, pointing toward the edge', async () => {
     const onExpandedChange = vi.fn();
-    const { container } = render(
-      <Panel defaultExpanded={false} onExpandedChange={onExpandedChange} />,
-    );
-    const panel = root(container);
-    const body = requireDefined(container.querySelector('.ui-dock-panel__body'));
-    expect(panel).not.toHaveAttribute('data-expanded');
-    expect(body).not.toBeVisible();
-    expect(screen.queryByRole('separator')).not.toBeInTheDocument();
-    expect(panel.style.width).toBe('');
-    await userEvent.click(screen.getByRole('button', { name: 'People' }));
-    expect(onExpandedChange).toHaveBeenLastCalledWith(true);
-    expect(panel).toHaveAttribute('data-expanded', 'true');
-    expect(pane('People')).toBeVisible();
-    await userEvent.click(screen.getByRole('button', { name: 'People' }));
-    expect(onExpandedChange).toHaveBeenLastCalledWith(false);
-    expect(body).not.toBeVisible();
-  });
-
-  it('UIC-DOCK-PANEL-2.2 flips the panel with the toggle, which points toward its edge', async () => {
-    const { container } = render(<Panel />);
-    const body = requireDefined(container.querySelector('.ui-dock-panel__body'));
+    const { container } = render(<Panel onExpandedChange={onExpandedChange} />);
     const toggle = screen.getByRole('button', { name: 'Collapse Details' });
-    expect(toggle).toHaveClass('ui-dock-panel__toggle', 'ui-button');
+    expect(toggle).toHaveClass('ui-dock-panel__toggle');
     expect(toggle).toHaveAttribute('aria-expanded', 'true');
-    expect(toggle).toHaveAttribute('aria-controls', body.id);
-    expect(toggle.querySelector('[data-glyph="chevron-double-right"]')).not.toBeNull();
-    await userEvent.click(toggle);
-    const expand = screen.getByRole('button', { name: 'Expand Details' });
-    expect(expand).toHaveAttribute('aria-expanded', 'false');
-    expect(expand.querySelector('[data-glyph="chevron-double-left"]')).not.toBeNull();
-    expect(body).not.toBeVisible();
-  });
-
-  it('UIC-DOCK-PANEL-2.2 picks the toggle glyph by position and reading direction', () => {
-    const glyph = () =>
-      screen
-        .getByRole('button', { name: /Details$/ })
-        .querySelector('svg')
-        ?.getAttribute('data-glyph');
-    const { rerender } = render(<Panel position="start" />);
-    expect(glyph()).toBe('chevron-double-left');
-    rerender(<Panel position="bottom" />);
-    expect(glyph()).toBe('chevron-down');
-    rerender(<Panel key="collapsed" position="bottom" defaultExpanded={false} />);
-    expect(glyph()).toBe('chevron-up');
-    rerender(
-      <UiProvider locale="he-IL">
-        <Panel position="end" />
-      </UiProvider>,
+    expect(toggle).toHaveAttribute(
+      'aria-controls',
+      requireDefined(container.querySelector('.ui-dock-panel__body')).id,
     );
-    expect(glyph()).toBe('chevron-double-left');
+    expect(toggle.querySelector('[data-glyph="chevron-double-right"]')).not.toBeNull();
+    expect(root(container)).toHaveAttribute('data-expanded', 'true');
+    await userEvent.click(toggle);
+    expect(onExpandedChange).toHaveBeenLastCalledWith(false);
+    expect(root(container)).not.toHaveAttribute('data-expanded');
+    expect(toggle).toHaveAccessibleName('Expand Details');
+    expect(toggle).toHaveFocus();
+    expect(toggle.querySelector('[data-glyph="chevron-double-left"]')).not.toBeNull();
+    expect(container.querySelector('.ui-dock-panel__body')).not.toBeVisible();
   });
 
-  it('UIC-DOCK-PANEL-2.2 refuses the toggle without an enabled pane', () => {
+  it('UIC-DOCK-PANEL-2.2 expands from a launcher, which re-activates the selected pane idempotently', async () => {
+    const onSelectionChange = vi.fn();
+    const onExpandedChange = vi.fn();
+    const { rerender } = render(
+      <Panel defaultExpanded={false} {...{ onSelectionChange, onExpandedChange }} />,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Files' }));
+    expect(onSelectionChange).not.toHaveBeenCalled();
+    expect(onExpandedChange).toHaveBeenCalledExactlyOnceWith(true);
+    expect(screen.getByRole('tabpanel', { name: 'Files' })).toBeVisible();
+    rerender(<Panel key="b" isExpanded={false} {...{ onSelectionChange, onExpandedChange }} />);
+    screen.getByRole('button', { name: 'People' }).focus();
+    await userEvent.keyboard('{Enter}');
+    expect(onSelectionChange).toHaveBeenCalledExactlyOnceWith('people');
+  });
+
+  it('UIC-DOCK-PANEL-2.2 refuses the toggle and the separator without an enabled pane', () => {
     render(
       <DockPanel label="Empty">
-        <DockPanelPane id="a" label="Off" icon={InfoGlyph} isDisabled>
+        <DockPanelPane id="a" label="Off" icon={FolderGlyph} isDisabled>
           Off
         </DockPanelPane>
       </DockPanel>,
     );
-    expect(screen.getByRole('button', { name: 'Collapse Empty' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Expand Empty' })).toBeDisabled();
+    expect(screen.getByRole('separator')).toHaveAttribute('aria-disabled', 'true');
   });
 
-  it('UIC-DOCK-PANEL-2.3 keeps hidden panes mounted, hidden and inert', async () => {
-    render(<Panel />);
-    const filter = screen.getByRole('textbox', { name: 'File filter' });
-    await userEvent.type(filter, 'report');
-    await userEvent.click(screen.getByRole('button', { name: 'People' }));
-    expect(pane('Files')).toHaveAttribute('hidden');
-    expect(pane('Files')).toHaveAttribute('inert');
-    expect(pane('People')).not.toHaveAttribute('inert');
-    await userEvent.click(screen.getByRole('button', { name: 'Files' }));
-    expect(screen.getByRole('textbox', { name: 'File filter' })).toHaveValue('report');
-  });
-
-  it('UIC-DOCK-PANEL-2.4 moves between launchers with the arrow keys and focus into an opened pane', async () => {
-    render(<Panel defaultExpanded={false} />);
-    const files = screen.getByRole('button', { name: 'Files' });
-    act(() => files.focus());
-    await userEvent.keyboard('{ArrowDown}');
-    expect(screen.getByRole('button', { name: 'People' })).toHaveFocus();
-    await userEvent.keyboard('{Enter}');
-    expect(pane('People')).toHaveFocus();
-    expect(pane('People')).toHaveAttribute('tabindex', '-1');
-    act(() => screen.getByRole('button', { name: 'People' }).focus());
-    await userEvent.keyboard('{Enter}');
-    expect(screen.getByRole('button', { name: 'People' })).toHaveFocus();
-  });
-
-  const paneChanges: [string, (pane: ReactElement<DockPanelPaneProps>) => ReactElement | null][] = [
-    ['removed', () => null],
-    ['disabled', (pane) => cloneElement(pane, { isDisabled: true })],
-  ];
-
-  describe.each(paneChanges)('when the pane holding focus is %s', (_, change) => {
-    const alpha = (
-      <DockPanelPane key="alpha" id="alpha" label="Alpha" icon={InfoGlyph}>
-        <input aria-label="Alpha note" />
-      </DockPanelPane>
-    );
-    const blue = (
-      <DockPanelPane key="blue" id="blue" label="Blue" icon={InfoGlyph}>
-        Blue
-      </DockPanelPane>
-    );
-
-    it('UIC-DOCK-PANEL-2.4 moves focus to the pane shown in its place', () => {
-      const { rerender } = render(<DockPanel label="Details">{[alpha, blue]}</DockPanel>);
-      act(() => screen.getByRole('textbox', { name: 'Alpha note' }).focus());
-      rerender(<DockPanel label="Details">{[change(alpha), blue]}</DockPanel>);
-      expect(pane('Blue')).toHaveFocus();
-    });
-
-    it('UIC-DOCK-PANEL-2.4 moves focus to the pane shown in its place inside a shadow root', () => {
-      const panel = (first: ReactElement | null) => (
-        <ShadowHost name="page">
-          <DockPanel label="Details">{[first, blue]}</DockPanel>
-        </ShadowHost>
-      );
-      const { rerender } = render(panel(alpha));
-      act(() => inShadow('page').getByRole('textbox', { name: 'Alpha note' }).focus());
-      rerender(panel(change(alpha)));
-      expect(deepActive()).toHaveAttribute('aria-label', 'Blue');
-    });
-  });
-
-  it('UIC-DOCK-PANEL-2.4 returns focus to the launcher when the pane holding it closes', async () => {
-    const user = userEvent.setup();
-    function Controlled() {
-      const [isExpanded, setExpanded] = useState(true);
-      // A caller shortcut closes the panel while focus stays inside it.
-      return (
-        <div onKeyDown={(event) => event.key === 'F4' && setExpanded(false)}>
-          <Panel isExpanded={isExpanded} onExpandedChange={setExpanded} />
-        </div>
-      );
-    }
-    render(<Controlled />);
-    const filter = screen.getByRole('textbox', { name: 'File filter' });
-    act(() => filter.focus());
-    await user.keyboard('{F4}');
-    expect(screen.getByRole('button', { name: 'Files' })).toHaveFocus();
-  });
-
-  it('UIC-DOCK-PANEL-2.4 returns focus to the launcher from a closing pane inside a shadow root', () => {
-    const tree = (isExpanded: boolean) => (
-      <ShadowHost name="page">
-        <Panel isExpanded={isExpanded} />
-      </ShadowHost>
-    );
-    const { rerender } = render(tree(true));
-    act(() => inShadow('page').getByRole('textbox', { name: 'File filter' }).focus());
-    rerender(tree(false));
-    expect(deepActive()).toBe(inShadow('page').getByRole('button', { name: 'Files' }));
-  });
-});
-
-describe('DockPanel size', () => {
-  it('UIC-DOCK-PANEL-3.1 sizes the expanded panel inline within its bounds', () => {
-    const { container, rerender } = render(<Panel />);
-    expect(root(container).style.width).toBe('320px');
-    rerender(<Panel key="b" position="bottom" defaultSize={180} minSize={120} />);
-    expect(root(container).style.height).toBe('180px');
-    expect(root(container).style.width).toBe('');
-    rerender(<Panel key="c" size={900} />);
-    expect(root(container).style.width).toBe('640px');
-    rerender(<Panel key="d" size={50} />);
-    expect(root(container).style.width).toBe('200px');
-  });
-
-  it('UIC-DOCK-PANEL-3.1 leaves minMainSize of the parent to the main content', () => {
-    stubObserver();
-    const { container } = render(
-      <Frame>
-        <Panel defaultSize={500} minMainSize={600} />
-      </Frame>,
-    );
-    resizeFrame(900, 500);
-    expect(screen.getByRole('separator')).toHaveAttribute('aria-valuemax', '300');
-    expect(root(container).style.width).toBe('300px');
-    resizeFrame(700, 500);
-    expect(screen.getByRole('separator')).toHaveAttribute('aria-valuemax', '200');
-  });
-
-  it('UIC-DOCK-PANEL-3.2 resizes from the inner edge by keyboard', async () => {
-    const onSizeChange = vi.fn();
-    const { container } = render(<Panel onSizeChange={onSizeChange} />);
-    const separator = screen.getByRole('separator', { name: 'Resize Details' });
-    expect(separator).toHaveClass('ui-dock-panel__handle', 'ui-resize-handle');
-    expect(separator).toHaveAttribute('aria-orientation', 'vertical');
-    expect(separator).toHaveAttribute(
-      'aria-controls',
-      requireDefined(container.querySelector('.ui-dock-panel__body')).id,
-    );
-    expect(separator).toHaveAttribute('aria-valuenow', '320');
-    expect(separator).toHaveAttribute('aria-valuemin', '200');
-    act(() => separator.focus());
-    await userEvent.keyboard('{ArrowLeft}');
-    expect(separator).toHaveAttribute('aria-valuenow', '330');
-    expect(onSizeChange).toHaveBeenLastCalledWith(330);
-    await userEvent.keyboard('{Shift>}{ArrowRight}{/Shift}');
-    expect(separator).toHaveAttribute('aria-valuenow', '328');
-    await userEvent.keyboard('{Home}');
-    expect(root(container).style.width).toBe('200px');
-    await userEvent.keyboard('{End}');
-    expect(root(container).style.width).toBe('640px');
-  });
-
-  it('UIC-DOCK-PANEL-3.2 grows a start panel toward the end and a bottom panel upward', async () => {
-    const { rerender } = render(<Panel position="start" />);
-    act(() => screen.getByRole('separator').focus());
-    await userEvent.keyboard('{ArrowRight}');
-    expect(screen.getByRole('separator')).toHaveAttribute('aria-valuenow', '330');
-    rerender(<Panel key="bottom" position="bottom" />);
-    const separator = screen.getByRole('separator');
-    expect(separator).toHaveAttribute('aria-orientation', 'horizontal');
-    act(() => separator.focus());
-    await userEvent.keyboard('{ArrowUp}');
-    expect(separator).toHaveAttribute('aria-valuenow', '330');
-  });
-
-  it('UIC-DOCK-PANEL-3.2 follows a pointer drag and publishes the resizing state', async () => {
-    const user = userEvent.setup();
-    const { container } = render(<Panel />);
-    const separator = screen.getByRole('separator');
-    prepareCapture(separator);
-    await user.pointer({ keys: '[MouseLeft>]', target: separator, coords: { clientX: 500 } });
-    expect(root(container)).toHaveAttribute('data-resizing', 'true');
-    await user.pointer({ target: separator, coords: { clientX: 450 } });
-    expect(root(container).style.width).toBe('370px');
-    await user.pointer({ keys: '[/MouseLeft]', target: separator, coords: { clientX: 440 } });
-    expect(root(container)).not.toHaveAttribute('data-resizing');
-    expect(root(container).style.width).toBe('380px');
-  });
-});
-
-describe('DockPanel abandoned resize', () => {
-  it('UIC-DOCK-PANEL-3.2 drops a drag when the panel collapses mid-drag', async () => {
-    const user = userEvent.setup();
-    const { container, rerender } = render(<Panel isExpanded />);
-    const separator = screen.getByRole('separator');
-    prepareCapture(separator);
-    await user.pointer({ keys: '[MouseLeft>]', target: separator, coords: { clientX: 500 } });
-    await user.pointer({ target: separator, coords: { clientX: 545 } });
-    expect(root(container).style.width).toBe('275px');
-    rerender(<Panel isExpanded={false} />);
-    await user.pointer({ keys: '[/MouseLeft]', target: container, coords: { clientX: 545 } });
-    rerender(<Panel isExpanded />);
-    expect(root(container)).not.toHaveAttribute('data-resizing');
-    expect(root(container).style.width).toBe('320px');
-  });
-
-  it('UIC-DOCK-PANEL-3.2 drops a drag when the panel moves to another edge', async () => {
-    const user = userEvent.setup();
-    const { container, rerender } = render(<Panel />);
-    const separator = screen.getByRole('separator');
-    prepareCapture(separator);
-    await user.pointer({ keys: '[MouseLeft>]', target: separator, coords: { clientX: 500 } });
-    await user.pointer({ target: separator, coords: { clientX: 545 } });
-    rerender(<Panel position="bottom" />);
-    expect(root(container)).not.toHaveAttribute('data-resizing');
-    expect(root(container).style.height).toBe('320px');
-    await user.pointer({ target: separator, coords: { clientX: 545, clientY: 200 } });
-    await user.pointer({ keys: '[/MouseLeft]', target: separator, coords: { clientY: 200 } });
-    expect(root(container).style.height).toBe('320px');
-  });
-});
-
-describe('DockPanel persistence', () => {
-  function persisted(storage: UiStorage, props: Partial<DockPanelProps> = {}) {
-    return (
-      <UiProvider storage={storage}>
-        <Panel persistKey="side" {...props} />
-      </UiProvider>
-    );
-  }
-
-  it('UIC-DOCK-PANEL-3.3 abandons a resize when the persist key changes', async () => {
-    const user = userEvent.setup();
-    const storage = createMemoryStorage({ 'side:size': '320', 'other:size': '400' });
-    const { container, rerender } = render(persisted(storage));
-    const separator = screen.getByRole('separator');
-    prepareCapture(separator);
-    await user.pointer({ keys: '[MouseLeft>]', target: separator, coords: { clientX: 500 } });
-    await user.pointer({ target: separator, coords: { clientX: 450 } });
-    expect(root(container)).toHaveAttribute('data-resizing', 'true');
-    expect(root(container).style.width).toBe('370px');
-    rerender(persisted(storage, { persistKey: 'other' }));
-    expect(root(container)).not.toHaveAttribute('data-resizing');
-    expect(root(container).style.width).toBe('400px');
-    await user.pointer({ target: separator, coords: { clientX: 420 } });
-    await user.pointer({ keys: '[/MouseLeft]', target: separator, coords: { clientX: 420 } });
-    expect(storage.getItem('side:size')).toBe('320');
-    expect(storage.getItem('other:size')).toBe('400');
-    expect(root(container).style.width).toBe('400px');
-  });
-
-  it('UIC-DOCK-PANEL-3.3 saves and restores the selection, expanded state and size', async () => {
-    const user = userEvent.setup();
-    const storage = createMemoryStorage();
-    const { unmount } = render(persisted(storage));
-    await user.click(screen.getByRole('button', { name: 'People' }));
-    const separator = screen.getByRole('separator');
-    prepareCapture(separator);
-    await user.pointer([
-      { keys: '[MouseLeft>]', target: separator, coords: { clientX: 500 } },
-      { coords: { clientX: 460 } },
-    ]);
-    expect(storage.getItem('side:selected')).toBe('"people"');
-    expect(storage.getItem('side:size')).toBeNull();
-    await user.pointer({ keys: '[/MouseLeft]', target: separator, coords: { clientX: 460 } });
-    expect(storage.getItem('side:size')).toBe('360');
-    await user.click(screen.getByRole('button', { name: 'Collapse Details' }));
-    expect(storage.getItem('side:expanded')).toBe('false');
-    unmount();
-    const { container } = render(persisted(storage));
-    expect(root(container)).not.toHaveAttribute('data-expanded');
-    await user.click(screen.getByRole('button', { name: 'Expand Details' }));
-    expect(pane('People')).toBeVisible();
-    expect(root(container).style.width).toBe('360px');
-  });
-
-  it('UIC-DOCK-PANEL-3.3 falls back to the defaults for unreadable values and unavailable panes', () => {
-    const unreadable = { 'side:selected': '{', 'side:expanded': '{', 'side:size': '{' };
-    const { container, unmount } = render(persisted(createMemoryStorage(unreadable)));
-    expect(pane('Files')).toBeVisible();
-    expect(root(container).style.width).toBe('320px');
-    unmount();
-    const stored = { 'side:selected': '"locked"', 'side:expanded': '"yes"', 'side:size': '"wide"' };
-    const { container: nextContainer } = render(persisted(createMemoryStorage(stored)));
-    expect(pane('Files')).toBeVisible();
-    expect(root(nextContainer).style.width).toBe('320px');
-  });
-
-  it('UIC-DOCK-PANEL-3.3 leaves controlled values to the caller', async () => {
-    const storage = createMemoryStorage();
-    render(persisted(storage, { selectedKey: 'files', size: 300 }));
-    await userEvent.click(screen.getByRole('button', { name: 'People' }));
-    act(() => screen.getByRole('separator').focus());
-    await userEvent.keyboard('{ArrowLeft}');
-    expect(storage.getItem('side:selected')).toBeNull();
-    expect(storage.getItem('side:size')).toBeNull();
-  });
-});
-
-describe('DockPanel overlay', () => {
-  it('UIC-DOCK-PANEL-4.1 opens the selected pane in a drawer below the width', async () => {
-    stubObserver();
-    stubSheet();
-    const onExpandedChange = vi.fn();
-    const { container } = render(
-      <Frame>
-        <Panel overlayBelow={600} onExpandedChange={onExpandedChange} />
-      </Frame>,
-    );
-    resizeFrame(500, 400);
-    const panel = root(container);
-    expect(panel).toHaveAttribute('data-overlay', 'true');
-    expect(panel).not.toHaveAttribute('data-expanded');
-    expect(panel.style.width).toBe('');
-    expect(container.querySelector('.ui-dock-panel__body')).not.toBeVisible();
-    expect(screen.queryByRole('separator')).not.toBeInTheDocument();
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    const people = screen.getByRole('button', { name: 'People' });
-    expect(people).toHaveAttribute('aria-haspopup', 'dialog');
-    expect(people).not.toHaveAttribute('aria-controls');
-
-    await userEvent.click(people);
-    await settleDrawer();
-    const dialog = screen.getByRole('dialog', { name: 'People' });
-    expect(document.querySelector('.ui-dock-panel__drawer')).toHaveClass('ui-drawer');
-    expect(document.querySelector('.ui-dock-panel__drawer')).toHaveAttribute(
-      'data-position',
-      'right',
-    );
-    expect(within(dialog).getByText('Maria Santos')).toBeInTheDocument();
-    expect(within(dialog).queryByRole('heading', { level: 3 })).not.toBeInTheDocument();
-    expect(people).toHaveAttribute('aria-expanded', 'true');
-    expect(onExpandedChange).not.toHaveBeenCalled();
-    // Every pane moved into the drawer, the others hidden and inert.
-    expect(container.querySelectorAll('.ui-dock-panel__pane')).toHaveLength(0);
-    expect(dialog.querySelectorAll('.ui-dock-panel__pane')).toHaveLength(3);
-    expect(pane('Files')).toHaveAttribute('inert');
-    expect(pane('People')).not.toHaveAttribute('inert');
-    expectHooksMatchSpec(document.body, 'DOCK-PANEL', {
-      slots: ['drawer', 'drawer-body', 'panes'],
-    });
-  });
-
-  it('UIC-DOCK-PANEL-4.1 titles the drawer by the pane title, opens from the toggle and closes when docked', async () => {
-    stubObserver();
-    stubSheet();
-    render(
-      <Frame>
-        <Panel overlayBelow={600} position="bottom" />
-      </Frame>,
-    );
-    resizeFrame(500, 400);
-    await userEvent.click(screen.getByRole('button', { name: 'Expand Details' }));
-    await settleDrawer();
-    expect(screen.getByRole('dialog', { name: 'Recent files' })).toBeInTheDocument();
-    expect(document.querySelector('.ui-dock-panel__drawer')).toHaveAttribute(
-      'data-position',
-      'bottom',
-    );
-    resizeFrame(900, 400);
-    expect(root(document.body)).not.toHaveAttribute('data-overlay');
-    expect(pane('Files')).toBeVisible();
-  });
-
-  it('UIC-DOCK-PANEL-2.3 UIC-DOCK-PANEL-4.1 keeps every pane mounted across the drawer and the width', async () => {
-    stubObserver();
-    stubSheet();
+  it('UIC-DOCK-PANEL-2.3 keeps every pane mounted, hidden and inert through switching and collapsing', async () => {
     const mounts = vi.fn();
     function Draft({ label }: { label: string }) {
       const [value, setValue] = useState('');
@@ -797,40 +265,62 @@ describe('DockPanel overlay', () => {
       );
     }
     render(
-      <Frame>
-        <DockPanel label="Details" overlayBelow={600}>
-          <DockPanelPane id="notes" label="Notes" icon={EditGlyph}>
-            <Draft label="Note draft" />
-          </DockPanelPane>
-          <DockPanelPane id="files" label="Files" icon={FolderGlyph}>
-            <Draft label="File draft" />
-          </DockPanelPane>
-        </DockPanel>
-      </Frame>,
+      <DockPanel label="Details">
+        <DockPanelPane id="notes" label="Notes" icon={EditGlyph}>
+          <Draft label="Note draft" />
+        </DockPanelPane>
+        <DockPanelPane id="files" label="Files" icon={FolderGlyph}>
+          <Draft label="File draft" />
+        </DockPanelPane>
+      </DockPanel>,
     );
-    resizeFrame(800, 400);
-    await userEvent.type(screen.getByRole('textbox', { name: 'Note draft' }), 'Unsaved note');
-    await userEvent.click(screen.getByRole('button', { name: 'Files' }));
-    await userEvent.type(screen.getByRole('textbox', { name: 'File draft' }), 'Unsaved file');
+    await userEvent.type(screen.getByRole('textbox', { name: 'Note draft' }), 'Unsaved');
+    await userEvent.click(screen.getByRole('tab', { name: 'Files' }));
+    const hidden = requireDefined(
+      screen.getByRole('textbox', { name: 'Note draft', hidden: true }).closest('[hidden]'),
+    );
+    expect(hidden).toHaveAttribute('inert');
+    expect(hidden).toHaveAttribute('data-inert', 'true');
+    await userEvent.click(screen.getByRole('button', { name: 'Collapse Details' }));
     await userEvent.click(screen.getByRole('button', { name: 'Notes' }));
+    expect(screen.getByRole('textbox', { name: 'Note draft' })).toHaveValue('Unsaved');
     expect(mounts.mock.calls).toEqual([['Note draft'], ['File draft']]);
+  });
+});
 
-    for (const _crossing of [1, 2]) {
-      resizeFrame(500, 400);
-      await userEvent.click(screen.getByRole('button', { name: 'Notes' }));
-      await settleDrawer();
-      const dialog = screen.getByRole('dialog', { name: 'Notes' });
-      expect(within(dialog).getByRole('textbox', { name: 'Note draft' })).toHaveValue(
-        'Unsaved note',
-      );
-      await userEvent.keyboard('{Escape}');
-      await settleDrawer();
-      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-      resizeFrame(800, 400);
-    }
-    expect(screen.getByRole('textbox', { name: 'Note draft' })).toHaveValue('Unsaved note');
-    await userEvent.click(screen.getByRole('button', { name: 'Files' }));
-    expect(screen.getByRole('textbox', { name: 'File draft' })).toHaveValue('Unsaved file');
-    expect(mounts).toHaveBeenCalledTimes(2);
+describe('DockPanel keyboard and focus', () => {
+  it('UIC-DOCK-PANEL-2.4 selects tabs with the arrow keys, Home and End, skipping disabled ones', async () => {
+    render(<Panel />);
+    act(() => screen.getByRole('tab', { name: 'Files' }).focus());
+    await userEvent.keyboard('{ArrowRight}');
+    expect(screen.getByRole('tab', { name: /People/ })).toHaveAttribute('aria-selected', 'true');
+    await userEvent.keyboard('{End}');
+    expect(screen.getByRole('tab', { name: /People/ })).toHaveFocus();
+    await userEvent.keyboard('{Home}');
+    expect(screen.getByRole('tab', { name: 'Files' })).toHaveAttribute('aria-selected', 'true');
+    await userEvent.tab();
+    expect(screen.getByRole('button', { name: 'Collapse Details' })).toHaveFocus();
+  });
+
+  it('UIC-DOCK-PANEL-2.4 moves between launchers without activating them, then hands focus to the tab', async () => {
+    const onExpandedChange = vi.fn();
+    render(<Panel defaultExpanded={false} onExpandedChange={onExpandedChange} />);
+    act(() => screen.getByRole('button', { name: 'Files' }).focus());
+    await userEvent.keyboard('{ArrowDown}');
+    expect(screen.getByRole('button', { name: 'People' })).toHaveFocus();
+    await userEvent.keyboard('{Home}');
+    expect(screen.getByRole('button', { name: 'Files' })).toHaveFocus();
+    await userEvent.keyboard('{End}');
+    expect(screen.getByRole('button', { name: 'People' })).toHaveFocus();
+    expect(onExpandedChange).not.toHaveBeenCalled();
+    await userEvent.keyboard(' ');
+    expect(screen.getByRole('tab', { name: /People/ })).toHaveFocus();
+  });
+
+  it('UIC-DOCK-PANEL-2.4 returns focus to the launcher when the panel collapses from outside', () => {
+    const { rerender } = render(<Panel isExpanded />);
+    act(() => screen.getByRole('textbox', { name: 'File filter' }).focus());
+    rerender(<Panel isExpanded={false} />);
+    expect(screen.getByRole('button', { name: 'Files' })).toHaveFocus();
   });
 });

@@ -13,6 +13,7 @@ import {
 import { useState, type CSSProperties, type ReactNode } from 'react';
 import { DockPanel, DockPanelPane } from '../../src/components/dock-panel/dock-panel.js';
 import type { Key } from '../../src/core/props.js';
+import { UiProvider } from '../../src/core/provider.js';
 import { requireDefined } from './require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -73,11 +74,14 @@ function MatrixPanel({ position, state }: { position: Position; state: string })
       defaultSize={position === 'bottom' ? 120 : 220}
       minSize={position === 'bottom' ? 80 : 160}
     >
-      <DockPanelPane id="outline" label={`Outline (${name})`} icon={FolderGlyph} title="Outline">
+      <DockPanelPane id="outline" label={`Outline (${name})`} icon={FolderGlyph}>
         <p>Introduction, Methods, Results.</p>
       </DockPanelPane>
       <DockPanelPane id="people" label={`People (${name})`} icon={UsersGlyph} count={3}>
         <p>{people.join(', ')}</p>
+      </DockPanelPane>
+      <DockPanelPane id="activity" label={`Activity (${name})`} icon={RefreshGlyph} count={128}>
+        <p>128 changes this week.</p>
       </DockPanelPane>
       <DockPanelPane id="locked" label={`Locked (${name})`} icon={LockGlyph} isDisabled>
         <p>Unavailable</p>
@@ -94,7 +98,6 @@ function InspectorPanes() {
       id="properties"
       label="Properties"
       icon={InfoGlyph}
-      title="Report.pdf"
       actions={[
         { verb: 'edit', onPress: () => {} },
         {
@@ -113,7 +116,13 @@ function InspectorPanes() {
         <dd>18</dd>
       </dl>
     </DockPanelPane>,
-    <DockPanelPane key="search" id="search" label="Search" icon={SearchGlyph} title="Search">
+    <DockPanelPane
+      key="search"
+      id="search"
+      label="Search"
+      icon={SearchGlyph}
+      footer={<small>Searches the open report only.</small>}
+    >
       <label>
         Find <input data-lab-input="search" />
       </label>
@@ -159,7 +168,7 @@ function Workspace() {
             minMainSize={360}
             onSelectionChange={(key) => setLog(`selected ${key}`)}
             onExpandedChange={(isExpanded) => setLog(isExpanded ? 'expanded' : 'collapsed')}
-            onSizeChange={(size) => setLog(`size ${size}px`)}
+            onSizeChangeEnd={(size) => setLog(`size ${size}px`)}
           >
             {InspectorPanes()}
           </DockPanel>
@@ -177,6 +186,9 @@ function Controlled() {
   const [selectedKey, setSelectedKey] = useState<Key>('outline');
   const [isExpanded, setExpanded] = useState(true);
   const [size, setSize] = useState(260);
+  // The host previews each size, keeps the last ended one, and returns to it on a cancel.
+  const [savedSize, setSavedSize] = useState(260);
+  const [ends, setEnds] = useState({ end: 0, cancel: 0 });
   return (
     <div style={{ display: 'grid', gap: 8 }}>
       <p>
@@ -186,11 +198,20 @@ function Controlled() {
         <button type="button" onClick={() => setExpanded(!isExpanded)}>
           {isExpanded ? 'Collapse' : 'Expand'} from outside
         </button>{' '}
-        <button type="button" onClick={() => setSize(260)}>
+        <button
+          type="button"
+          onClick={() => {
+            setSize(260);
+            setSavedSize(260);
+          }}
+        >
           Reset size
         </button>{' '}
         <output data-lab-output="controlled">
           {String(selectedKey)}, {isExpanded ? 'expanded' : 'collapsed'}, {size}px
+        </output>{' '}
+        <output data-lab-output="controlled-ends">
+          {ends.end} ends, {ends.cancel} cancels
         </output>
       </p>
       <Frame
@@ -207,15 +228,23 @@ function Controlled() {
             onExpandedChange={setExpanded}
             size={size}
             onSizeChange={setSize}
+            onSizeChangeEnd={(next) => {
+              setSavedSize(next);
+              setEnds((current) => ({ ...current, end: current.end + 1 }));
+            }}
+            onSizeChangeCancel={() => {
+              setSize(savedSize);
+              setEnds((current) => ({ ...current, cancel: current.cancel + 1 }));
+            }}
           >
-            <DockPanelPane id="outline" label="Outline" icon={FolderGlyph} title="Outline">
+            <DockPanelPane id="outline" label="Outline" icon={FolderGlyph}>
               <ol>
                 <li>Scope</li>
                 <li>Requirement 12</li>
                 <li>Verification</li>
               </ol>
             </DockPanelPane>
-            <DockPanelPane id="history" label="History" icon={CalendarGlyph} title="History">
+            <DockPanelPane id="history" label="History" icon={CalendarGlyph}>
               <p>Edited yesterday by Kenji Watanabe.</p>
             </DockPanelPane>
           </DockPanel>
@@ -241,7 +270,6 @@ function Console() {
             label="Problems"
             icon={WarningGlyph}
             count={12}
-            title="12 problems"
             actions={[{ verb: 'refresh', onPress: () => {} }]}
           >
             <p>Line 4: unknown unit “km/hr”.</p>
@@ -273,7 +301,7 @@ function Narrow() {
         data-lab-frame="narrow"
         panel={
           <DockPanel label="Helper" overlayBelow={600}>
-            <DockPanelPane id="tips" label="Tips" icon={HelpGlyph} title="Tips">
+            <DockPanelPane id="tips" label="Tips" icon={HelpGlyph}>
               <p>Press a launcher to open its pane in a drawer.</p>
               <label>
                 Tip draft <input />
@@ -308,7 +336,7 @@ function ContentSized() {
       data-lab-frame="content-sized"
       panel={
         <DockPanel label="Tasks">
-          <DockPanelPane id="tasks" label="Task list" icon={CalendarGlyph} title="Tasks">
+          <DockPanelPane id="tasks" label="Task list" icon={CalendarGlyph}>
             <ul>
               {tasks.map((task) => (
                 <li key={task}>{task}</li>
@@ -338,7 +366,7 @@ function ArrivingPanes() {
       panel={
         <DockPanel label="Arriving">
           {ids.map((id) => (
-            <DockPanelPane key={id} id={id} label={id} icon={FolderGlyph} title={id}>
+            <DockPanelPane key={id} id={id} label={id} icon={FolderGlyph}>
               <label>
                 Note <input data-lab-input={id} />
               </label>
@@ -382,7 +410,6 @@ function PaneTakenAway() {
               id="notes"
               label="Notes"
               icon={FolderGlyph}
-              title="Notes"
               isDisabled={notes === 'disabled'}
             >
               <label>
@@ -390,7 +417,7 @@ function PaneTakenAway() {
               </label>
             </DockPanelPane>
           )}
-          <DockPanelPane id="links" label="Links" icon={SearchGlyph} title="Links">
+          <DockPanelPane id="links" label="Links" icon={SearchGlyph}>
             <p>Saved links.</p>
           </DockPanelPane>
         </DockPanel>
@@ -411,11 +438,106 @@ function PaneTakenAway() {
   );
 }
 
+const projects = [
+  'Overview',
+  'Requirements and acceptance criteria',
+  'Open questions',
+  'Decisions',
+  'Attachments',
+  'Change history',
+  'Reviewers',
+];
+
+/** Many panes with long labels: the tabs scroll freely, and the rail scrolls on a short frame. */
+function Overflowing({ state }: { state: 'expanded' | 'collapsed' }) {
+  return (
+    <Frame
+      position="end"
+      width={560}
+      height={state === 'expanded' ? 220 : 180}
+      data-lab-frame={`overflow-${state}`}
+      panel={
+        <DockPanel
+          label={`Project ${state}`}
+          defaultExpanded={state === 'expanded'}
+          defaultSize={300}
+          defaultSelectedKey="Change history"
+        >
+          {projects.map((name, index) => (
+            <DockPanelPane
+              key={name}
+              id={name}
+              label={name}
+              icon={index % 2 ? FolderGlyph : InfoGlyph}
+              count={index === 1 ? 7 : index === 4 ? 42 : undefined}
+              isDisabled={name === 'Decisions'}
+            >
+              <p>{name}</p>
+            </DockPanelPane>
+          ))}
+        </DockPanel>
+      }
+    >
+      <p>
+        Wheel over the tabs to scroll them; fades mark the edges that hide tabs. The selected tab
+        shows clear of the fades when the panel expands or resizes.
+      </p>
+    </Frame>
+  );
+}
+
+/** A collapsed panel whose separator a drag pulls open: it resumes its remembered size. */
+function DragToExpand({ rtl }: { rtl: boolean }) {
+  const [log, setLog] = useState('Nothing yet');
+  const name = rtl ? 'Notes right to left' : 'Notes';
+  return (
+    <UiProvider locale={rtl ? 'he-IL' : 'en-US'}>
+      <div dir={rtl ? 'rtl' : 'ltr'} style={{ display: 'grid', gap: 8 }}>
+        <p>
+          Last change: <output data-lab-output={rtl ? 'drag-rtl' : 'drag'}>{log}</output>
+        </p>
+        <Frame
+          position="end"
+          width={640}
+          height={200}
+          data-lab-frame={rtl ? 'drag-rtl' : 'drag'}
+          panel={
+            <DockPanel
+              label={name}
+              defaultExpanded={false}
+              defaultSize={240}
+              minSize={160}
+              maxSize={420}
+              onExpandedChange={(isExpanded) => setLog(isExpanded ? 'expanded' : 'collapsed')}
+              onSizeChangeEnd={(size) => setLog(`ended at ${size}px`)}
+              onSizeChangeCancel={() => setLog('cancelled')}
+            >
+              <DockPanelPane id="notes" label="Notes" icon={FolderGlyph} count={2}>
+                <label>
+                  Draft <input />
+                </label>
+              </DockPanelPane>
+              <DockPanelPane id="links" label="Links" icon={LinkGlyph}>
+                <p>Saved links.</p>
+              </DockPanelPane>
+            </DockPanel>
+          }
+        >
+          <p>
+            Drag the collapsed rail&apos;s inner edge toward the content: the panel expands at its
+            remembered 240 pixels and follows the same drag.
+          </p>
+        </Frame>
+      </div>
+    </UiProvider>
+  );
+}
+
 mountLab(
   <>
     <LabSection
       title="Positions and states"
-      description="Each position expanded and collapsed. The second pane has a count; the third is disabled."
+      description="Each position expanded and collapsed. Expanded, one strip of tabs sits beside the collapse button; collapsed, a 40 pixel rail of launchers, read bottom to top beside a side edge. Counts above 9 show 9+; the last pane is disabled."
     >
       <StateMatrix
         axes={{ position: ['start', 'end', 'bottom'], state: ['expanded', 'collapsed'] }}
@@ -433,13 +555,13 @@ mountLab(
     </LabSection>
     <LabSection
       title="Workspace"
-      description="A launcher opens its pane and moves focus into it; pressing the open pane's launcher collapses the panel. Hidden panes stay mounted (type in Search, switch away and back). The selection, expanded state and size persist across reloads."
+      description="The arrow keys select tabs; the button beside them collapses the panel, and a launcher on the rail expands it again with focus on its tab. Hidden panes stay mounted (type in Search, switch away and back). The selection, expanded state and size persist across reloads."
     >
       <Workspace />
     </LabSection>
     <LabSection
       title="Controlled"
-      description="The host controls every value; the buttons change them from outside."
+      description="The host controls every value; the buttons change them from outside. It previews each size, keeps the size a drag ends at, and returns to it when a drag is cancelled."
     >
       <Controlled />
     </LabSection>
@@ -448,7 +570,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Narrow frame"
-      description="Below overlayBelow the open pane shows in a drawer; Escape closes it and focus returns to the launcher. The panes move between the drawer and the docked panel without mounting again, so a draft typed in either survives the frame changing width."
+      description="Below overlayBelow the panel keeps its launcher rail and a launcher opens its pane in a drawer; Escape closes it and focus returns to the launcher. The panes move between the drawer and the docked panel without mounting again, so a draft typed in either survives the frame changing width."
     >
       <Narrow />
     </LabSection>
@@ -469,6 +591,20 @@ mountLab(
       description="Press a button, then put focus in the Notes field within a second: when the page removes or disables Notes, focus moves to the Links pane shown in its place instead of being lost."
     >
       <PaneTakenAway />
+    </LabSection>
+    <LabSection
+      title="Overflow"
+      description="Seven panes with long labels. Expanded, the tabs scroll freely by wheel or swipe, without snapping or steppers; collapsed, the short rail keeps its labels and scrolls natively."
+    >
+      <Overflowing state="expanded" />
+      <Overflowing state="collapsed" />
+    </LabSection>
+    <LabSection
+      title="Drag to expand"
+      description="The collapsed rail's separator stays draggable: one drag expands the panel and keeps resizing it. Keyboard users expand with the button above the launchers instead, so the collapsed separator stays out of the tab order."
+    >
+      <DragToExpand rtl={false} />
+      <DragToExpand rtl />
     </LabSection>
   </>,
 );

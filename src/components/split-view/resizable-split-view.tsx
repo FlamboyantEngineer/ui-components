@@ -116,6 +116,7 @@ function SeparatorHandle({
       resetKey={split.owner}
       onChange={(value) => split.update(apply(value), 'change')}
       onChangeEnd={(value) => split.update(apply(value), 'end')}
+      onChangeCancel={split.cancel}
       onKeyDown={onKeyDown}
     />
   );

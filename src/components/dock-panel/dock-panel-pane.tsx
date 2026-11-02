@@ -1,90 +1,84 @@
 'use client';
 
-import { createContext, useContext, type ReactNode, type Ref } from 'react';
+import { createContext, useContext, type ReactNode } from 'react';
 import { pickDataAttributes } from '../../core/hooks.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { ActionRow, type ActionRowAction } from '../action-row/action-row.js';
 import type { IconSource } from '../icon/icon.js';
-import { useHeadingLevel } from '../section-header/section-header.js';
+import { TabPanel } from '../tabs/tabs.js';
 import { dockPanelHooks as hooks } from './dock-panel-hooks.js';
 
 export interface DockPanelPaneProps extends Omit<BaseProps, 'id'> {
   /** Identifies the pane in the panel's selection. */
   id: Key;
-  /** Names the pane, its launcher and the launcher's tooltip. */
+  /** Names the pane, its tab and its collapsed launcher. */
   label: string;
-  /** The launcher's icon: an imported icon component or rendered element. */
+  /** The icon of its tab and launcher: an imported icon component or rendered element. */
   icon: IconSource;
-  /** A count on the launcher, such as unread entries. Zero, negative and non-finite values show none. */
+  /** A count on its tab and launcher. Zero, negative and non-finite values show none. */
   count?: number | null | undefined;
-  /** Refuses the pane's launcher. */
+  /** Refuses the pane's tab and launcher. */
   isDisabled?: boolean | undefined;
-  /** A heading in the pane's header row. */
-  title?: ReactNode;
-  /** The header row's actions, as an `ActionRow` draws them. */
+  /** Pane-local actions in a row above the content, as an `ActionRow` draws them. */
   actions?: readonly ActionRowAction[] | undefined;
+  /** Content pinned below the scrolling content, such as a composer or a status line. */
+  footer?: ReactNode;
   /** The pane's content. */
   children?: ReactNode;
 }
 
-/** What an `DockPanel` tells each of its panes. */
-interface DockPanelPaneContextValue {
-  /** The pane element's id, which its launcher controls. */
-  elementId: string;
-  /** The pane is not the open one: it stays mounted, hidden and inert. */
-  isHidden: boolean;
-  /** The pane fills the panel's drawer, whose title already names it. */
-  isOverlay: boolean;
-  /** Receives the pane element, which takes focus when its launcher opens it. */
-  paneRef: Ref<HTMLElement>;
-}
-
-export const DockPanelPaneContext = createContext<DockPanelPaneContextValue | null>(null);
+/** Whether a pane is inside an `DockPanel`, which pairs it with its tab. */
+export const DockPanelPaneContext = createContext(false);
 
 const noActions: readonly ActionRowAction[] = Object.freeze([]);
 
 /**
- * One pane of an `DockPanel`, which draws its launcher from the pane's label, icon and count. The
- * pane is a labelled region with an optional header row (a title and `ActionRow` actions) above
- * its content; while another pane is open it stays mounted, hidden and inert, keeping its state.
+ * One pane of an `DockPanel`, which draws its tab and launcher from the pane's label, icon and
+ * count. The pane is the tab's panel: optional pane-local actions, the content, and an optional
+ * footer. While another pane is shown it stays mounted, hidden and inert, keeping its state.
  */
 export function DockPanelPane({
-  id: _id,
-  label,
+  id,
+  label: _label,
   icon: _icon,
   count: _count,
   isDisabled: _isDisabled,
-  title,
   actions = noActions,
+  footer,
   children,
   className,
   ...rest
 }: DockPanelPaneProps) {
-  const context = useContext(DockPanelPaneContext);
-  const level = useHeadingLevel(undefined);
-  const Heading = `h${level}` as const;
-  const isHidden = context?.isHidden ?? false;
-  const heading =
-    context?.isOverlay || isEmptyNode(title) ? null : (
-      <Heading {...hooks.slot('title')}>{title}</Heading>
-    );
-  return (
-    <section
-      {...pickDataAttributes(rest)}
-      {...hooks.slot('pane', undefined, className)}
-      ref={context?.paneRef}
-      id={context?.elementId}
-      aria-label={label}
-      tabIndex={context ? -1 : undefined}
-      hidden={isHidden}
-      inert={isHidden}
-    >
-      <ActionRow className={hooks.slotClass('header')} lead={heading} actions={actions} size="sm" />
-      {/* The content scrolls on its own below the header, so the keyboard can reach and scroll it. */}
+  const body = (
+    <>
+      {actions.length > 0 ? (
+        <ActionRow className={hooks.slotClass('actions')} actions={actions} size="sm" />
+      ) : null}
+      {/* The content scrolls on its own between the actions and the footer, so the keyboard can
+          reach and scroll it. */}
       <div {...hooks.slot('content')} tabIndex={0}>
         {children}
       </div>
-    </section>
+      {isEmptyNode(footer) ? null : <div {...hooks.slot('footer')}>{footer}</div>}
+    </>
+  );
+  if (!useContext(DockPanelPaneContext)) {
+    return (
+      <section {...pickDataAttributes(rest)} {...hooks.slot('pane', undefined, className)}>
+        {body}
+      </section>
+    );
+  }
+  return (
+    <TabPanel
+      {...pickDataAttributes(rest)}
+      id={id}
+      shouldForceMount
+      {...hooks.slot('pane', undefined, className)}
+      render={(props, state) => <div {...props} hidden={state.isInert || undefined} />}
+    >
+      {body}
+    </TabPanel>
   );
 }
