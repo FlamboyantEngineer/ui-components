@@ -301,6 +301,56 @@ test.describe('Formula Bar lab', () => {
     await expect(content).toBeFocused();
   });
 
+  test('UIC-FORMULA-BAR-3.6 sizes the whole bar and keeps every size working', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('formula-bar');
+    const heights = { xs: 20, sm: 24, md: 28, lg: 32 };
+    for (const [size, height] of Object.entries(heights)) {
+      for (const layout of ['buttons, 360px', 'keys only, 360px', 'buttons, 280px']) {
+        const bar = page.getByRole('group', { name: `Formula bar, ${size}, ${layout}` });
+        const boxes = await bar.evaluate((node) => {
+          const rect = (element: Element | null) => {
+            const box = element?.getBoundingClientRect();
+            return box ? { left: box.left, right: box.right, height: box.height } : null;
+          };
+          return {
+            bar: rect(node),
+            reference: rect(node.querySelector('.ui-formula-bar__reference')),
+            editor: rect(node.querySelector('.ui-formula-bar__editor')),
+            // The laid-out parts, leaving out the absolutely placed status and hidden hint.
+            parts: [...node.children]
+              .filter((child) => getComputedStyle(child).position !== 'absolute')
+              .map(rect),
+          };
+        });
+        expect(boxes.reference?.height).toBeCloseTo(height, 0);
+        expect(boxes.editor?.height).toBeCloseTo(height, 0);
+        // The parts run in order without overlap, inside the bar.
+        const parts = boxes.parts.filter((part) => part && part.right - part.left > 1);
+        for (const [index, part] of parts.entries()) {
+          const next = parts[index + 1];
+          if (next && part) expect(part.right).toBeLessThanOrEqual(next.left + 0.5);
+        }
+        expect(parts.at(-1)?.right ?? 0).toBeLessThanOrEqual((boxes.bar?.right ?? 0) + 0.5);
+      }
+    }
+    // The smallest bar still inserts a function and commits it.
+    const bar = page.getByRole('group', { name: 'Formula bar, xs, buttons, 360px' });
+    const content = bar.getByRole('textbox', { name: 'Cell content' });
+    await content.click();
+    await page.keyboard.press('End');
+    await page.keyboard.type('+');
+    await bar.getByRole('button', { name: 'Insert function' }).click();
+    await page.getByRole('menuitem', { name: /^SUM/ }).click();
+    await expect(content).toHaveValue('=B2*C2+SUM()');
+    await bar.getByRole('button', { name: 'Confirm' }).click();
+    await expect(page.locator('[data-lab-output="size-xs"]').first()).toHaveText(
+      'Saved =B2*C2+SUM()',
+    );
+  });
+
   test('UIC-FORMULA-BAR-4.1 passes axe', async ({ page, lab }) => {
     await lab.open('formula-bar');
     await expect(page.getByRole('grid', { name: 'Fruit order' })).toBeVisible();
