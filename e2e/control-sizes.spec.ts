@@ -22,12 +22,19 @@ const boxes: Record<string, string> = {
   'choice-group-multiple': '.ui-checkbox',
   switch: '.ui-switch',
   'choice-group': '.ui-choice__button',
+  'pin-input': '.ui-pin-input__cell',
+  'relative-date-field': '.ui-relative-date-field__trigger',
+  'formula-bar': '.ui-formula-bar__reference',
+  'zoom-control': '.ui-zoom-control',
 };
+
+/** Controls deliberately off the scale by a fixed step: a PIN cell holds one large character. */
+const offsets: Record<string, number> = { 'pin-input': 8 };
 
 /** Each control cell's box height and the height its size's token gives now. */
 async function measureCells(page: Page) {
   return page.locator('td[data-lab-cell*="control="]').evaluateAll(
-    (tds, selectors) =>
+    (tds, { selectors, offset }) =>
       tds.map((td) => {
         const address = td.getAttribute('data-lab-cell') ?? '';
         const control = /control=(\S+)/.exec(address)?.[1] ?? '';
@@ -41,12 +48,14 @@ async function measureCells(page: Page) {
           size,
           height: box ? Math.round(box.getBoundingClientRect().height) : null,
           // The scale is in rem, so it follows the reader's font size; an override may use pixels.
-          expected: token.endsWith('px')
-            ? Number.parseFloat(token)
-            : Number.parseFloat(token) * Number.parseFloat(scale.fontSize),
+          expected:
+            (token.endsWith('px')
+              ? Number.parseFloat(token)
+              : Number.parseFloat(token) * Number.parseFloat(scale.fontSize)) +
+            (offset[control] ?? 0),
         };
       }),
-    boxes,
+    { selectors: boxes, offset: offsets },
   );
 }
 
@@ -63,6 +72,7 @@ test('UIC-LABS-3.7 every control takes the height of its size, not of its conten
 }) => {
   await lab.open('control-sizes');
   const cells = await measureCells(page);
+  expect(new Set(cells.map(({ control }) => control))).toEqual(new Set(Object.keys(boxes)));
   expect(cells.length).toBe(Object.keys(boxes).length * 3 * 4);
   const missing = cells.filter(({ height }) => height === null).map(({ address }) => address);
   expect(missing, 'cells without their control').toEqual([]);
@@ -284,4 +294,48 @@ test('UIC-LABS-3.7 chip-like controls show descenders, capitals and accents whol
     });
   expect(clipped.count).toBeGreaterThan(40);
   expect(clipped.problems).toEqual([]);
+});
+
+test('UIC-LABS-3.7 the people picker takes the scale at sm, md and lg', async ({ page, lab }) => {
+  await lab.open('control-sizes');
+  for (const content of ['short', 'long', 'large type']) {
+    for (const [size, height] of [
+      ['sm', 24],
+      ['md', 28],
+      ['lg', 32],
+    ] as const) {
+      const field = matrixCell(page, `content=${content} size=${size}`, {
+        family: 'people-picker-sizes',
+      }).locator('.ui-combobox__field');
+      expect(Math.round(requireDefined(await field.boundingBox()).height)).toBe(height);
+    }
+  }
+});
+
+test('UIC-LABS-3.7 PIN cells are a step larger than the scale and follow it', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('control-sizes');
+  const cell = (setting: string, size: string) =>
+    page.locator(`[data-lab-pin-sample="${setting}"]`).nth(['xs', 'sm', 'md', 'lg'].indexOf(size));
+  const firstBox = async (setting: string, size: string) =>
+    requireDefined(await cell(setting, size).locator('.ui-pin-input__cell').first().boundingBox());
+  for (const [size, height] of [
+    ['xs', 20],
+    ['sm', 24],
+    ['md', 28],
+    ['lg', 32],
+  ] as const) {
+    for (const setting of ['scale', 'large type']) {
+      const box = await firstBox(setting, size);
+      expect([Math.round(box.width), Math.round(box.height)]).toEqual([height + 4, height + 8]);
+    }
+  }
+  const overridden = await firstBox('md at 40 pixels', 'md');
+  expect([Math.round(overridden.width), Math.round(overridden.height)]).toEqual([44, 48]);
+  const narrow = cell('narrow column', 'lg').locator('.ui-pin-input__cell');
+  const first = requireDefined(await narrow.first().boundingBox());
+  const last = requireDefined(await narrow.last().boundingBox());
+  expect(last.y).toBeGreaterThan(first.y);
 });

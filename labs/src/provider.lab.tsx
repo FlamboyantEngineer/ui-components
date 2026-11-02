@@ -7,6 +7,7 @@ import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { ProviderClock } from './provider-clock-cases.js';
 import { PausedShortcut } from './provider-overlay-cases.js';
 import { OptionalOptions, StorageSwitch, WrappedStorage } from './provider-storage-cases.js';
+import { PersistenceLifecycle, RoutedLinks } from './provider-host-cases.js';
 
 const replacedGlyphs = Object.fromEntries(glyphNames.map((name) => [name, SquareGlyph]));
 
@@ -234,6 +235,18 @@ mountLab(
       description="Type a draft, then turn the French locale or client routing on and off: the draft and its focus stay, the locale follows, and the link routes through navigate only while routing is on."
     >
       <OptionalOptions />
+    </LabSection>
+    <LabSection
+      title="Delayed persistence"
+      description="The draft persists through usePersistentState with the chosen writeDelay, over a store whose writes the log lists. Type: the value in memory changes at once and the store only after the delay; Flush writes now. Switch the key or unmount the draft while a write waits: the waiting write goes to the key it was made for. Corrupt the stored value (it becomes 42, not text), then unmount and mount the draft: the codec refuses it and the draft falls back to empty."
+    >
+      <PersistenceLifecycle />
+    </LabSection>
+    <LabSection
+      title="Link renderer and href mapping"
+      description="The outer provider gives React Aria links a router (navigate, and useHref mapping /garden to the native #/app/garden) and draws every library link with its renderLink, a router link marked data-lab-link-renderer=outer that routes list-row links itself. The inner provider replaces only renderLink (inner) and keeps the outer router and href mapping. Each press lists the href it routed and what routed it."
+    >
+      <RoutedLinks />
     </LabSection>
     <LabSection
       title="Clock and time zone"
