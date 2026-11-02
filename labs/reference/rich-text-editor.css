@@ -363,6 +363,11 @@
   pointer-events: auto;
 }
 
+/* The thumb stays over the marks, which lie level with the marked blocks in view. */
+.ui-rich-text-editor__scrollbars .ui-scroll-region__thumb {
+  z-index: 1;
+}
+
 .ui-rich-text-editor__scroll-marker {
   position: absolute;
   inset-inline: 0;
