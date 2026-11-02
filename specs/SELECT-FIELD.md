@@ -232,12 +232,12 @@ Verification: `src/components/select-field/select-tree-field.test.tsx`, `e2e/sel
 
 ### UIC-SELECT-FIELD-9.2 - Popover
 
-Pressing the trigger shall open a popover (`ui-select-field__popover`) below it, publishing the trigger's width as `--ui-trigger-width`, holding a dialog (`ui-select-field__dialog`) named by the field's label, with a [Search Field](SEARCH-FIELD.md) (`ui-select-field__search`) named by the provider's `filterLabel` string with the label, which takes focus, and a `Tree` in its `picker` variant (`ui-select-field__tree`) named by the label, its chosen rows selected. Every opening starts afresh: the search is empty and the tree opens with the ancestors of the chosen nodes expanded. Escape, or a press outside, closes the popover and returns focus to the trigger; Escape in the tree closes it rather than clearing a multiple choice. The open state follows `isOpen`, `defaultOpen` and `onOpenChange`.
+Pressing the trigger shall open a popover (`ui-select-field__popover`) below it, publishing the trigger's width as `--ui-trigger-width`, holding a dialog (`ui-select-field__dialog`) named by the field's label, with a [Search Field](SEARCH-FIELD.md) (`ui-select-field__search`) named by the provider's `filterLabel` string with the label, which takes focus, and a `Tree` in its `picker` variant (`ui-select-field__tree`) named by the label, its chosen rows selected. Every opening starts afresh: the search is empty and the tree opens with the ancestors of the chosen nodes expanded. Escape, or a press outside, closes the popover and returns focus to the trigger; Escape in the tree closes it rather than clearing a multiple choice, and Escape in the search field closes it at once, even with text there, rather than clearing that text first; a containing modal stays open. The open state follows `isOpen`, `defaultOpen` and `onOpenChange`.
 
 Indexing the loaded hierarchy shall use an explicit traversal stack. Opening at multiple selected nodes shall collect their distinct ancestors without revisiting shared parent paths.
 
 Implementation: `src/components/select-field/tree-select-control.tsx`, `src/components/select-field/tree-select-popover.tsx`, `src/components/select-field/tree-index.ts`
-Verification: `src/components/select-field/tree-index.test.ts`, `src/components/select-field/select-tree-field.test.tsx`, `e2e/select-tree.spec.ts`
+Verification: `src/components/select-field/tree-index.test.ts`, `src/components/select-field/select-tree-field.test.tsx`, `src/components/select-field/select-dismissal.test.tsx`, `e2e/select-tree.spec.ts`
 
 ### UIC-SELECT-FIELD-9.3 - Single choice
 

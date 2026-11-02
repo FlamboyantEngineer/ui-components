@@ -76,9 +76,10 @@ function useTreeChoosing(options: TreeChoosingOptions) {
 
 /**
  * Captured, since a search field with a key handler of its own would keep Escape from closing the
- * popover: Down from the search field moves to the tree's first row, and Escape in the tree closes
- * the popover instead of clearing a multiple choice. A key an input method composition owns (a Down
- * through its candidates, an Escape that drops them) is left to it.
+ * popover: Down from the search field moves to the tree's first row, and Escape closes the popover
+ * at once, neither clearing the search's text first nor a multiple choice in the tree. A key an
+ * input method composition owns (a Down through its candidates, an Escape that drops them) is left
+ * to it.
  */
 function handleDialogKey(
   event: KeyboardEvent<HTMLElement>,
@@ -90,7 +91,7 @@ function handleDialogKey(
   if (event.key === 'ArrowDown' && isInSearch) {
     event.preventDefault();
     tree?.querySelector<HTMLElement>('[role="row"]')?.focus();
-  } else if (event.key === 'Escape' && !isInSearch) {
+  } else if (event.key === 'Escape' && !event.defaultPrevented) {
     event.preventDefault();
     event.stopPropagation();
     onClose();
