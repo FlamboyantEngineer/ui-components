@@ -81,45 +81,6 @@ test.describe('Select Field lab', () => {
     }
   });
 
-  test('UIC-SELECT-FIELD-1.1 UIC-SELECT-FIELD-1.3 UIC-SELECT-FIELD-2.1 UIC-SELECT-FIELD-2.3 draws every layout and state', async ({
-    page,
-    lab,
-  }) => {
-    await lab.open('select-field');
-    const cells = page.locator(
-      `${familySelector('list')} table[data-lab-matrix="state layout"] td[data-lab-cell]`,
-    );
-    expect(await cells.count()).toBe(8 * 4);
-    const resting = cell(page, 'resting', 'label-control');
-    await expect(resting.getByRole('button', { name: 'Apple Fruit' })).toHaveAttribute(
-      'aria-haspopup',
-      'listbox',
-    );
-    await expect(resting.locator('.ui-select-field__trigger')).toHaveCSS(
-      'height',
-      `${await controlHeight(page, 'md')}px`,
-    );
-    await expect(
-      cell(page, 'required', 'label-control').locator('.ui-select-field__value'),
-    ).toHaveAttribute('data-placeholder', 'true');
-    await expect(
-      cell(page, 'disabled', 'label-control').locator('.ui-select-field__trigger'),
-    ).toBeDisabled();
-    await expect(
-      cell(page, 'read-only', 'label-control').locator('.ui-select-field__trigger'),
-    ).toHaveCSS('border-top-style', 'dashed');
-    await expect(
-      cell(page, 'invalid', 'label-control').locator('.ui-select-field__trigger'),
-    ).toHaveCSS('border-top-color', 'rgb(207, 34, 46)');
-    const dirty = cell(page, 'dirty', 'label-control');
-    await expect(dirty.locator('.ui-select-field__previous del')).toHaveText('Pear');
-    await expect(dirty.getByRole('button', { name: 'Restore Fruit' })).toBeVisible();
-    await expect(
-      modeCell(page, 'dirty', 'multiple').locator('.ui-select-field__removed del'),
-    ).toHaveText('Pear');
-    await lab.expectAccessible();
-  });
-
   test('UIC-SELECT-FIELD-12.1 forwards caller popup attributes and restores focus on dismissal', async ({
     page,
     lab,

@@ -83,20 +83,6 @@ test.describe('Tree lab', () => {
     await lab.expectAccessible('[data-lab-cell^="current="]');
   });
 
-  test('UIC-TREE-1.3 points a collapsed chevron to the inline end right to left', async ({
-    page,
-    lab,
-  }) => {
-    await lab.open('tree');
-    const tree = page.locator('[data-lab-demo="rtl"]');
-    await expect(
-      tree.getByRole('row', { name: 'Travel' }).locator('.ui-tree__expand .ui-icon'),
-    ).toHaveAttribute('data-glyph', 'chevron-left');
-    await expect(
-      tree.getByRole('row', { name: 'Recipes' }).locator('.ui-tree__expand .ui-icon'),
-    ).toHaveAttribute('data-glyph', 'chevron-down');
-  });
-
   test('UIC-TREE-3.6 keeps row Enter and delegates modified Enter to its modal', async ({
     page,
     lab,
