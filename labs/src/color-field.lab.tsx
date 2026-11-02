@@ -156,6 +156,42 @@ function TranslucentPresets() {
   );
 }
 
+/** Why the eye dropper button shows or not here: the browser's EyeDropper API, on a secure page. */
+function eyeDropperAvailability(): string {
+  if ('EyeDropper' in window) return 'available';
+  if (!window.isSecureContext) return 'unavailable: this page is not a secure context';
+  return 'unavailable: this browser has no EyeDropper API (desktop Chromium has one)';
+}
+
+/** The optional eye dropper, on and off, with what it sampled and committed. */
+function EyeDropperDemo() {
+  const [value, setValue] = useState<string | null>('#336699');
+  const [committed, setCommitted] = useState('none');
+  const availability = eyeDropperAvailability();
+  return (
+    <>
+      <LabOutput name="Eye dropper">{availability}</LabOutput>
+      <ColorField
+        label="Sampled colour"
+        value={value}
+        onChange={setValue}
+        allowsEyeDropper
+        description="allowsEyeDropper: the picker's footer has a Pick a color from the screen button where the browser can sample the screen. Press it, then click anywhere on the screen; Escape cancels the sample and leaves the colour as it was. Without the API the button is left out and the colour is picked as usual."
+        onCommit={(next) => setCommitted(next ?? 'empty')}
+        data-lab-field="eye-dropper"
+      />
+      <LabOutput name="Sampled value">{value ?? 'empty'}</LabOutput>
+      <LabOutput name="Sampled committed">{committed}</LabOutput>
+      <ColorField
+        label="Unsampled colour"
+        defaultValue="#336699"
+        description="Without allowsEyeDropper (the default) the picker has no eye dropper, in any browser."
+        data-lab-field="no-eye-dropper"
+      />
+    </>
+  );
+}
+
 function Typing() {
   const [committed, setCommitted] = useState('none');
   const [typed, setTyped] = useState('#2e8b57');
@@ -306,6 +342,12 @@ mountLab(
     </LabSection>
     <LabSection title="Preset swatches and eye dropper" description="Presets beside the picker.">
       <Presets />
+    </LabSection>
+    <LabSection
+      title="Eye dropper"
+      description="An optional screen sampler: on and off, where this browser can sample the screen, and what a sample or a cancelled one leaves."
+    >
+      <EyeDropperDemo />
     </LabSection>
     <LabSection title="Typing a colour" description="The closed field takes typed colours.">
       <Typing />
