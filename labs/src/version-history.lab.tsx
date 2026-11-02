@@ -9,6 +9,12 @@ import type { Key } from '../../src/core/props.js';
 import { requireDefined } from './require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { samplePicture } from './people-samples.js';
+import {
+  ControlledFilter,
+  CustomEmpty,
+  PagedHistory,
+  TimePolicy,
+} from './version-history-cases.js';
 
 /** A fixed clock, so every time in the matrices reads the same on every day. */
 const getNow = () => new Date(2026, 3, 20, 10, 30);
@@ -220,6 +226,30 @@ mountLab(
           />
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Filter owned by the host"
+      description="filter and onFilterChange: the buttons set the filter from outside, the toolbar's switch and person menu report back, and Show every version resets it."
+    >
+      <ControlledFilter />
+    </LabSection>
+    <LabSection
+      title="Custom empty content"
+      description="renderEmptyState draws the list while there are no versions at all, here with an action that saves a first version. Clear the versions empties it again."
+    >
+      <CustomEmpty />
+    </LabSection>
+    <LabSection
+      title="Time zone and relative times"
+      description="On a clock fixed at 20 April 2026, 10:30 UTC: timeZone sets the zone automatic versions are titled in, so the same instant reads as another day and hour in Tokyo or Los Angeles; fallbackAfterDays sets how many days back a time still reads as relative before its date shows."
+    >
+      <TimePolicy />
+    </LabSection>
+    <LabSection
+      title="Loading more, failing and retrying"
+      description="Each request takes 400 ms and appends three older versions, up to three pages. The first request fails and shows Retry; retrying loads the next page, and the list keeps asking until the last page. Start again goes back to the first page with the failure armed."
+    >
+      <PagedHistory />
     </LabSection>
     <LabSection
       title="A recipe's history"
