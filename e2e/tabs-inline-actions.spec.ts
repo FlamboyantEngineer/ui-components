@@ -264,3 +264,46 @@ test('UIC-TABS-3.11 menu actions and a pinned external toolbar fit supported wid
   }
   await lab.expectAccessible('[data-lab-demo="inline-action-menu"]');
 });
+
+test('UIC-TABS-3.11 a menu list that falls back to scrolling takes the wheel in both directions', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('tabs');
+  const demo = page.locator('[data-lab-demo="inline-action-menu"]');
+  const bar = demo.locator('.ui-tabs__bar');
+  const list = demo.locator('.ui-tabs__list');
+  const wheel = (deltaY: number) =>
+    list.evaluate((element, delta) => {
+      const event = new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaY: delta });
+      element.querySelector('[role="tab"]')?.dispatchEvent(event);
+      return { held: event.defaultPrevented, left: element.scrollLeft };
+    }, deltaY);
+  for (const rtl of [false, true]) {
+    if (rtl) await demo.getByRole('button', { name: 'Toggle direction' }).click();
+    await demo.evaluate((element) => {
+      element.style.width = '80px';
+    });
+    await expect(bar).toHaveAttribute('data-overflow', 'scroll');
+    await list.evaluate((element) => {
+      element.scrollLeft = 0;
+    });
+    // The vertical wheel scrolls toward the inline end: leftward, so negative, right to left.
+    const first = await wheel(40);
+    expect(first.held).toBe(true);
+    expect(rtl ? first.left < 0 : first.left > 0).toBe(true);
+    // At the far end the list keeps the wheel, so the page behind it stays put.
+    await wheel(10_000);
+    const end = await list.evaluate((element) => element.scrollLeft);
+    const past = await wheel(100);
+    expect(past.held).toBe(true);
+    expect(past.left).toBe(end);
+    await demo.evaluate((element) => {
+      element.style.removeProperty('width');
+    });
+    await expect(bar).toHaveAttribute('data-overflow', 'menu');
+    // A menu list that hides tabs no longer scrolls, so it leaves the wheel to the page.
+    expect((await wheel(40)).held).toBe(false);
+    await expect(demo.getByRole('button', { name: 'Add item' })).toHaveCount(1);
+  }
+});
