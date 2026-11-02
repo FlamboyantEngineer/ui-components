@@ -143,6 +143,7 @@ function TreeSelectDialog<T extends TreeItemData>({
           {...props}
           onKeyDownCapture={onKeyDownCapture}
           onPointerDownCapture={branchPress.onPointerDownCapture}
+          onClickCapture={branchPress.onClickCapture}
         />
       )}
     >
