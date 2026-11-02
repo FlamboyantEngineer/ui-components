@@ -29,7 +29,8 @@ export function useTabListLayout(
   const scrollActions = useTabActionScroll(listRef, { model: parts, selectedKey, enabled: isMenu });
   const menuMode = isMenu && !scrollActions;
   const menu = useTabOverflow(state, menuMode, { editingKey, parts });
-  const scroll = useToolbarScroll(isStrip);
+  // A menu list that falls back to scrolling is a scroll strip too, so it takes the wheel.
+  const scroll = useToolbarScroll(isStrip || (isMenu && scrollActions));
   const scrollOverflowing = useListOverflow(listRef, orientation);
   useCenterSelectedTab(listRef, { orientation, selectedKey });
   const elementRef = useMemo(

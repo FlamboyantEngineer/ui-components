@@ -335,7 +335,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Actions between tabs"
-      description="An ordinary action between selectable tabs."
+      description="An ordinary action between selectable tabs. Narrow the menu example until its action no longer fits beside the menu: it scrolls instead, and the wheel scrolls it."
     >
       <InlineActionTabs />
       <InlineActionTabs overflow="menu" />
