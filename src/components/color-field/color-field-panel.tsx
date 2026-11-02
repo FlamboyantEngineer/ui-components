@@ -18,8 +18,8 @@ interface ColorFieldPanelProps {
   format: ColorFieldFormat;
   formats: readonly ColorFieldFormat[];
   onFormatChange: (format: ColorFieldFormat) => void;
-  /** Adds the alpha slider and input. */
-  allowsTransparency: boolean;
+  /** Adds the alpha slider and input, and the hex input's visible `#`. */
+  showsAlpha: boolean;
   /** Preset colours, offered as swatches. */
   swatches: readonly string[];
   /** Draws the eye dropper where the browser has one. */
@@ -40,7 +40,7 @@ function ChannelSlider({ channel }: { channel: 'hue' | 'alpha' }) {
 
 /**
  * The picker popover: the format choice, a saturation and brightness area, the hue slider (and the
- * alpha slider while transparency is allowed), the format's inputs, the eye dropper, the preset
+ * alpha slider while it offers opacity), the format's inputs, the eye dropper, the preset
  * swatches and Clear, which closes the picker once the colour is gone.
  */
 export function ColorFieldPanel({
@@ -49,7 +49,7 @@ export function ColorFieldPanel({
   format,
   formats,
   onFormatChange,
-  allowsTransparency,
+  showsAlpha,
   swatches,
   allowsEyeDropper,
 }: ColorFieldPanelProps) {
@@ -78,8 +78,8 @@ export function ColorFieldPanel({
                 <ColorThumb {...hooks.slot('thumb')} />
               </ColorArea>
               <ChannelSlider channel="hue" />
-              {allowsTransparency ? <ChannelSlider channel="alpha" /> : null}
-              <ColorChannelInputs format={format} allowsTransparency={allowsTransparency} />
+              {showsAlpha ? <ChannelSlider channel="alpha" /> : null}
+              <ColorChannelInputs format={format} showsAlpha={showsAlpha} />
               {swatches.length > 0 ? (
                 <ColorSwatchPicker className={hooks.slotClass('swatches')} size="sm">
                   {swatches.map((swatch, index) => (

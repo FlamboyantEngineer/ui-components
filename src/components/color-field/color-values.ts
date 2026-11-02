@@ -119,15 +119,21 @@ export function storeColorText(
 /** The inputs that edit a format: the hex input or the space's three channels, then alpha. */
 export function describeFormatInputs(
   format: ColorFieldFormat,
-  allowsTransparency = false,
+  showsAlpha = false,
 ): ColorFormatInputs {
   const space = spaces[format];
   const channels = space ? [...parseColor('#000000').toFormat(space).getColorChannels()] : [];
   return {
     hasHex: !space,
     space,
-    channels: allowsTransparency ? [...channels, 'alpha'] : channels,
+    channels: showsAlpha ? [...channels, 'alpha'] : channels,
   };
+}
+
+/** Whether a colour text is translucent: its alpha is below one. */
+export function isTranslucent(text: string | null): boolean {
+  const color = text === null ? null : attemptParse(text);
+  return color !== null && color.getChannelValue('alpha') < 1;
 }
 
 /**

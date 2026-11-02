@@ -21,6 +21,7 @@ import { ColorFieldPanel } from './color-field-panel.js';
 import { colorFieldHooks as hooks } from './color-field-hooks.js';
 import {
   formatColor,
+  isTranslucent,
   keepAlpha,
   toColorText,
   toStoredValue,
@@ -48,9 +49,10 @@ export interface ColorFieldProps extends FieldInputProps<string | null>, ColorFi
    */
   valueFormat?: ColorFieldFormat | undefined;
   /**
-   * Adds an alpha slider and an alpha input to the picker, and writes and stores the colour with its
-   * alpha (`#rrggbbaa`, `rgba()`). Without it the picker edits the colour alone, and a translucent
-   * value keeps and shows its alpha.
+   * Offers opacity for every colour: the picker always has its alpha slider and input, and the
+   * colour is written and stored with its alpha (`#rrggbbaa`, `rgba()`). Without it the picker
+   * offers opacity only for a translucent colour, from the moment it shows one until it closes on
+   * an opaque one, and an opaque colour stays opaque.
    */
   allowsTransparency?: boolean | undefined;
   /** Preset colours the picker offers as swatches. */
@@ -116,6 +118,19 @@ function ColorTrigger({ control, state, color, text }: ColorTriggerProps) {
  * Whether the picker is open: it opens only while the field is editable, closes when the field is
  * locked, and commits the picked colour as it closes.
  */
+/**
+ * Whether the picker offers opacity: always with `allowsTransparency`, and otherwise while the
+ * colour is translucent, kept until the picker closes on an opaque colour, so raising the alpha to
+ * one does not take the slider away mid-drag.
+ */
+function useShowsAlpha(allowsTransparency: boolean, color: string | null, isOpen: boolean) {
+  const translucent = isTranslucent(color);
+  const [isKept, setKept] = useState(translucent);
+  if (translucent && !isKept) setKept(true);
+  if (!translucent && !isOpen && isKept) setKept(false);
+  return allowsTransparency || translucent || isKept;
+}
+
 function usePickerOpen(state: FieldState<string | null>) {
   const [isOpen, setOpen] = useState(false);
   const isEditable = !state.isReadOnly && !state.isDisabled;
@@ -132,7 +147,7 @@ function usePickerOpen(state: FieldState<string | null>) {
  * A field for a colour value, stored as lowercase hex (or in `valueFormat`) or `null`. Its trigger
  * shows a swatch and the colour text (or, with `allowsTyping`, a swatch button and a text input) and
  * opens a picker: a format choice, a saturation and brightness area, a hue slider (and, with
- * `allowsTransparency`, an alpha slider), the format's inputs, an eye dropper, preset swatches and,
+ * `allowsTransparency` or a translucent colour, an alpha slider), the format's inputs, an eye dropper, preset swatches and,
  * unless required, a Clear button. The picked colour commits when the picker closes. With `name`, a hidden input submits the stored value.
  */
 export function ColorField({
@@ -140,7 +155,7 @@ export function ColorField({
   defaultFormat = 'hex',
   onFormatChange,
   formats = [],
-  valueFormat,
+  valueFormat = 'hex',
   swatches = [],
   allowsEyeDropper = false,
   allowsTyping = false,
@@ -156,10 +171,10 @@ export function ColorField({
   const check = createColorCheck(strings.colorUnreadable);
   const { state, field } = useFieldControl(props, { initialValue: null, emptyValue: null, check });
   const [shownFormat, setFormat] = useControllableState(format, defaultFormat, onFormatChange);
-  const storedFormat = valueFormat ?? 'hex';
   const color = toColorText(state.value);
   const shownPlaceholder = placeholder ?? strings.noColor;
   const picker = usePickerOpen(state);
+  const showsAlpha = useShowsAlpha(allowsTransparency, color, picker.isOpen);
   return (
     <Field
       {...field}
@@ -171,8 +186,8 @@ export function ColorField({
         <ColorPicker
           value={color ?? emptyPickerColor}
           onChange={(next) => {
-            const picked = allowsTransparency ? next : keepAlpha(next, color);
-            state.setValue(toStoredValue(picked, storedFormat, allowsTransparency));
+            const picked = showsAlpha ? next : keepAlpha(next, color);
+            state.setValue(toStoredValue(picked, valueFormat, allowsTransparency));
           }}
         >
           <DialogTrigger isOpen={picker.isOpen} onOpenChange={picker.changeOpen}>
@@ -183,7 +198,7 @@ export function ColorField({
                 label={field.label}
                 color={color}
                 format={shownFormat}
-                valueFormat={storedFormat}
+                valueFormat={valueFormat}
                 allowsTransparency={allowsTransparency}
                 placeholder={shownPlaceholder}
                 textInput={{ autoComplete, inputMode, spellCheck, enterKeyHint }}
@@ -204,7 +219,7 @@ export function ColorField({
               format={shownFormat}
               formats={formats}
               onFormatChange={setFormat}
-              allowsTransparency={allowsTransparency}
+              showsAlpha={showsAlpha}
               swatches={swatches}
               allowsEyeDropper={allowsEyeDropper}
             />

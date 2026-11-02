@@ -253,6 +253,7 @@ export {
 export {
   ColorArea,
   ColorField,
+  ColorFieldContext,
   ColorPicker,
   ColorPickerStateContext,
   ColorSlider,
