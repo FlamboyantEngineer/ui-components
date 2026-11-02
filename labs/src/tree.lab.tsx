@@ -28,6 +28,7 @@ import {
 } from './tree-cases.js';
 import { RowMenu } from './row-menu.js';
 import { ModalTree } from './tree-modal-case.js';
+import { CallerFilterTree, RequiredSelectionTree, TallRowsTree } from './tree-option-cases.js';
 import { SectionsTree, VirtualSectionsTree } from './tree-sections-cases.js';
 
 interface Entry {
@@ -467,6 +468,12 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Required selection"
+      description="disallowEmptySelection keeps one row selected: selecting Leaf rake again leaves it selected, and other rows add to the selection."
+    >
+      <RequiredSelectionTree />
+    </LabSection>
+    <LabSection
       title="Owner labels and keys"
       description="The owner draws labels and sees each key first: F2 on a row swaps its label for a rename field, whose keys stay out of the tree's navigation. Enter keeps the name, Escape drops it."
     >
@@ -524,6 +531,12 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Virtualized with taller rows"
+      description="rowHeight sets a virtualized tree's row height, 44 pixels here, past the 40 of the lg size; arrows and Page Down move focus through rows mounted as they scroll into view."
+    >
+      <TallRowsTree />
+    </LabSection>
+    <LabSection
       title="Changing presentation"
       description="Select a row, then virtualize or enter filter mode: the tree keeps its selection, and a row focused before a change keeps focus."
     >
@@ -567,6 +580,12 @@ mountLab(
       description="Matching places show with their ancestors opened and the match marked; a matching country keeps its cities to open. Places added while filtering open to their matches, and branches you collapsed stay collapsed."
     >
       <FilterTree />
+    </LabSection>
+    <LabSection
+      title="Caller's matcher"
+      description="filter decides whether a name matches the query: with ra, the default each-term matcher also finds Box grater; Word start finds Leaf rake and Hallway shoe rack only; Whole name needs the full name."
+    >
+      <CallerFilterTree />
     </LabSection>
     <LabSection
       title="Loading on demand"

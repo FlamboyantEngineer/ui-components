@@ -241,6 +241,11 @@
   overflow: auto;
 }
 
+/* A virtualized row fills the row height the layout gives it (rowHeight). */
+.ui-tree[data-virtualized] .ui-tree__item {
+  height: 100%;
+}
+
 .ui-tree__checkbox {
   flex: none;
 }
