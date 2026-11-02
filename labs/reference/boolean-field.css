@@ -26,7 +26,7 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  height: var(--ref-field-height);
+  height: var(--ref-control-height);
   padding: 0 10px;
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius);

@@ -337,3 +337,61 @@
     transform: rotate(360deg);
   }
 }
+
+/*
+ * The control height of a control's size, resolved once: every root that takes a ControlSize
+ * names its step here and its parts read `--ref-control-height`. Each root sets it again, so a
+ * nested control never inherits a parent's step. Fields, comboboxes, search boxes and formula bars
+ * default to md; a zoom control to sm.
+ */
+:is(.ui-field, .ui-combobox, .ui-combobox__popover, .ui-search-field, .ui-formula-bar) {
+  --ref-control-height: var(--ref-control-height-md);
+}
+
+.ui-zoom-control {
+  --ref-control-height: var(--ref-control-height-sm);
+}
+
+:is(
+  .ui-field,
+  .ui-combobox,
+  .ui-combobox__popover,
+  .ui-search-field,
+  .ui-formula-bar,
+  .ui-zoom-control
+)[data-size='xs'] {
+  --ref-control-height: var(--ref-control-height-xs);
+}
+
+:is(
+  .ui-field,
+  .ui-combobox,
+  .ui-combobox__popover,
+  .ui-search-field,
+  .ui-formula-bar,
+  .ui-zoom-control
+)[data-size='sm'] {
+  --ref-control-height: var(--ref-control-height-sm);
+}
+
+:is(
+  .ui-field,
+  .ui-combobox,
+  .ui-combobox__popover,
+  .ui-search-field,
+  .ui-formula-bar,
+  .ui-zoom-control
+)[data-size='md'] {
+  --ref-control-height: var(--ref-control-height-md);
+}
+
+:is(
+  .ui-field,
+  .ui-combobox,
+  .ui-combobox__popover,
+  .ui-search-field,
+  .ui-formula-bar,
+  .ui-zoom-control
+)[data-size='lg'] {
+  --ref-control-height: var(--ref-control-height-lg);
+}

@@ -10,7 +10,7 @@
   align-items: center;
   gap: 6px;
   box-sizing: border-box;
-  height: var(--ref-field-height);
+  height: var(--ref-control-height);
   padding: 0 8px;
   border: 1px solid var(--ref-field-border);
   border-radius: var(--ref-radius);
@@ -65,8 +65,8 @@
 
 /* The swatch follows the field's height, so it sits the same 4px inside the frame at every size. */
 .ui-color-field .ui-color-field__swatch.ui-color-swatch {
-  width: calc(var(--ref-field-height) - 10px);
-  height: calc(var(--ref-field-height) - 10px);
+  width: calc(var(--ref-control-height) - 10px);
+  height: calc(var(--ref-control-height) - 10px);
 }
 
 .ui-color-field__value {
@@ -227,7 +227,7 @@
   display: inline-flex;
   align-items: center;
   box-sizing: border-box;
-  height: var(--ref-field-height);
+  height: var(--ref-control-height);
   border: 1px solid var(--ref-field-border);
   border-radius: var(--ref-radius);
   background: var(--ref-field-fill);
@@ -240,7 +240,7 @@
 
 /* The extra class outweighs the trigger's state borders, which the frame draws instead. */
 .ui-color-field .ui-color-field__group .ui-color-field__trigger {
-  height: calc(var(--ref-field-height) - 2px);
+  height: calc(var(--ref-control-height) - 2px);
   padding: 0 6px;
   border: none;
   border-inline-end: 1px solid var(--ref-border);
@@ -260,7 +260,7 @@
 
 .ui-color-field__entry .ui-color-field__input {
   width: 13ch;
-  height: calc(var(--ref-field-height) - 2px);
+  height: calc(var(--ref-control-height) - 2px);
   border: none;
   background: transparent;
   outline: none;

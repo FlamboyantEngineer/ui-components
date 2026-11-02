@@ -9,7 +9,7 @@
   min-width: 0;
   box-sizing: border-box;
   /* One line at the field's height; more tags wrap onto more lines. */
-  min-height: var(--ref-field-height);
+  min-height: var(--ref-control-height);
   padding: 2px 4px 2px 6px;
   border: 1px solid var(--ref-field-border);
   border-radius: var(--ref-radius);
@@ -48,7 +48,7 @@
 
 /* The tags fit inside the box at every size: one line keeps the field's height. */
 .ui-tags-input .ui-tag-group__tag {
-  height: calc(var(--ref-field-height) - 6px);
+  height: calc(var(--ref-control-height) - 6px);
 }
 
 .ui-tags-input:is([data-size='xs'], [data-size='sm']) .ui-tag-group__tag {
@@ -66,7 +66,7 @@
   flex: 1 1 80px;
   min-width: 80px;
   box-sizing: border-box;
-  height: calc(var(--ref-field-height) - 6px);
+  height: calc(var(--ref-control-height) - 6px);
   padding: 0 2px;
   border: 0;
   background: none;

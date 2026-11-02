@@ -21,24 +21,20 @@
  * inside it the size below, and the type the matching step; content never changes the box's height.
  */
 .ui-field {
-  --ref-field-height: var(--ref-control-height-md);
   --ref-field-button: var(--ref-control-height-sm);
 }
 
 .ui-field[data-size='xs'] {
-  --ref-field-height: var(--ref-control-height-xs);
   --ref-field-button: var(--ref-control-height-xs);
   font-size: var(--ref-font-size-xs);
 }
 
 .ui-field[data-size='sm'] {
-  --ref-field-height: var(--ref-control-height-sm);
   --ref-field-button: var(--ref-control-height-xs);
   font-size: var(--ref-font-size-sm);
 }
 
 .ui-field[data-size='lg'] {
-  --ref-field-height: var(--ref-control-height-lg);
   --ref-field-button: var(--ref-control-height-md);
   font-size: var(--ref-font-size);
 }
@@ -98,7 +94,7 @@
   flex: 1 1 auto;
   min-width: 0;
   box-sizing: border-box;
-  height: var(--ref-field-height);
+  height: var(--ref-control-height);
   padding: 0 8px;
   border: 1px solid var(--ref-field-border);
   border-radius: var(--ref-radius);

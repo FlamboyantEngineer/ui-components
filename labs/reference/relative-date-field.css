@@ -22,7 +22,7 @@
   gap: 6px;
   min-width: 0;
   box-sizing: border-box;
-  height: var(--ref-field-height);
+  height: var(--ref-control-height);
   padding: 0 8px;
   border: 1px solid var(--ref-field-border);
   border-radius: var(--ref-radius);

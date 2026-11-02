@@ -49,7 +49,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: var(--ref-field-height);
+  min-height: var(--ref-control-height);
   cursor: pointer;
 }
 

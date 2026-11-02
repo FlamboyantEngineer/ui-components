@@ -28,7 +28,7 @@
   column-gap: 4px;
   min-width: 0;
   box-sizing: border-box;
-  min-height: var(--ref-field-height);
+  min-height: var(--ref-control-height);
   padding: 0 4px 0 8px;
   border: 1px solid var(--ref-field-border);
   border-radius: var(--ref-radius);
@@ -75,7 +75,7 @@
 .ui-date-time-field__input {
   display: inline-flex;
   align-items: center;
-  min-height: calc(var(--ref-field-height) - 2px);
+  min-height: calc(var(--ref-control-height) - 2px);
   white-space: nowrap;
 }
 
@@ -108,8 +108,8 @@
   display: inline-grid;
   flex: none;
   place-items: center;
-  width: calc(var(--ref-field-height) - 6px);
-  height: calc(var(--ref-field-height) - 6px);
+  width: calc(var(--ref-control-height) - 6px);
+  height: calc(var(--ref-control-height) - 6px);
   padding: 0;
   border: 0;
   border-radius: var(--ref-radius-sm);

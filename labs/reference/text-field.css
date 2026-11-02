@@ -10,7 +10,7 @@
   flex: 1 1 auto;
   min-width: 0;
   box-sizing: border-box;
-  height: var(--ref-field-height);
+  height: var(--ref-control-height);
   padding: 0 8px;
   border: 1px solid var(--ref-field-border);
   border-radius: var(--ref-radius);
@@ -79,7 +79,7 @@
   gap: 6px;
   min-width: 0;
   box-sizing: border-box;
-  height: var(--ref-field-height);
+  height: var(--ref-control-height);
   padding: 0 2px 0 8px;
   border: 1px solid var(--ref-field-border);
   border-radius: var(--ref-radius);
@@ -138,15 +138,15 @@
 
 /* Buttons inside the box fit it at every size. */
 .ui-text-field .ui-text-field__reveal.ui-button[data-content='icon'] {
-  width: calc(var(--ref-field-height) - 4px);
-  height: calc(var(--ref-field-height) - 4px);
+  width: calc(var(--ref-control-height) - 4px);
+  height: calc(var(--ref-control-height) - 4px);
 }
 
 /* A multiline control's frame grows with its text area; adornments stay at the top. */
 .ui-text-field[data-multiline] .ui-text-field__group[data-framed] {
   align-items: flex-start;
   height: auto;
-  min-height: var(--ref-field-height);
+  min-height: var(--ref-control-height);
   padding-block: 3px;
 }
 
