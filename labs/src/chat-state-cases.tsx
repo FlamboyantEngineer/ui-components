@@ -1,13 +1,15 @@
-// The Chat lab's states: an empty conversation with suggested starters, plain text against the
-// Markdown default, a disabled composer, and right to left.
+// The Chat lab's states: an empty conversation with a welcome and suggested starters, plain text
+// against the Markdown default, a disabled composer, and right to left.
 
+import { SparklesGlyph } from '../../src/core/glyphs.js';
 import { Button } from '../../src/components/button/button.js';
 import { Chat } from '../../src/components/chat/index.js';
 import { useChatController } from '../../src/components/chat-controller/index.js';
 import { ChatModelPicker } from '../../src/components/chat-model-picker/index.js';
+import { EmptyState } from '../../src/components/empty-state/empty-state.js';
 import type { ChatMessageData } from '../../src/components/chat-parts/index.js';
 import { UiProvider } from '../../src/core/provider.js';
-import { Cluster } from '../../src/components/layout/layout.js';
+import { Cluster, Stack } from '../../src/components/layout/layout.js';
 import { agents } from './chat-agent.js';
 import { labDisclaimer } from './chat-assistant-cases.js';
 import { labEfforts, labModels } from './chat-model-samples.js';
@@ -18,39 +20,78 @@ const states = ['markdown', 'plain text', 'disabled', 'right to left'] as const;
 
 type ChatState = (typeof states)[number];
 
-const starters = ['Plan a weekend in Lisbon', 'Which day is best for the castle?'];
+const starters = [
+  'Plan a weekend in Lisbon',
+  'Which day is best for the castle?',
+  'What should I pack for May?',
+];
 
-/** Suggested first questions, in the transcript's empty state. */
-function Starters({ onPick }: { onPick: (text: string) => void }) {
+/** How many first questions the empty conversation suggests. */
+const suggestionCounts = ['several', 'none'] as const;
+
+type SuggestionCount = (typeof suggestionCounts)[number];
+
+/**
+ * The empty conversation's welcome, from stock parts in the transcript's empty state: what the
+ * assistant is for, and suggested first questions that send themselves, if any.
+ */
+function Welcome({
+  suggestions,
+  onPick,
+}: {
+  suggestions: readonly string[];
+  onPick: (text: string) => void;
+}) {
   return (
-    <Cluster space="sm" data-lab-starters="">
-      {starters.map((text) => (
-        <Button key={text} size="sm" onPress={() => onPick(text)}>
-          {text}
-        </Button>
-      ))}
-    </Cluster>
+    <EmptyState
+      icon={SparklesGlyph}
+      title="Plan your next trip"
+      description="Ask about places to see, the best days to go and what to pack. Pick a question to start, or write your own."
+      actions={
+        suggestions.length > 0 ? (
+          <Cluster space="sm" data-lab-starters="">
+            {suggestions.map((text) => (
+              <Button key={text} size="sm" content="sentence" onPress={() => onPick(text)}>
+                {text}
+              </Button>
+            ))}
+          </Cluster>
+        ) : null
+      }
+    />
   );
 }
 
-function EmptyDemo() {
+function EmptyDemo({ suggestions }: { suggestions: SuggestionCount }) {
   const controller = useChatController({
     send: agents.answer,
     currentUserId: readerId,
     assistantId: plannerId,
   });
   return (
-    <div style={{ height: 420 }} data-lab-demo="empty">
-      <Chat
-        {...controller.props}
-        aria-label="New conversation with the trip planner"
-        participants={assistantPeople}
-        currentUserId={readerId}
-        placeholder="Ask the trip planner…"
-        emptyState={<Starters onPick={(text) => controller.send(text)} />}
-        disclaimer={labDisclaimer}
-      />
-    </div>
+    <Stack space="sm" data-lab-demo="empty">
+      <Cluster space="sm">
+        <Button size="sm" onPress={() => controller.resetConversation()}>
+          New conversation
+        </Button>
+      </Cluster>
+      <div style={{ height: 460 }}>
+        <Chat
+          {...controller.props}
+          aria-label="New conversation with the trip planner"
+          participants={assistantPeople}
+          currentUserId={readerId}
+          placeholder="Ask the trip planner…"
+          emptyState={
+            <Welcome
+              suggestions={suggestions === 'several' ? starters : []}
+              onPick={(text) => controller.send(text)}
+            />
+          }
+          disclaimer={labDisclaimer}
+        />
+      </div>
+    </Stack>
   );
 }
 
@@ -101,9 +142,12 @@ export function ChatStateCases() {
     <>
       <LabSection
         title="Starting a conversation"
-        description="With no messages, the transcript shows the host's empty state: here, suggested first questions that send themselves. The host's disclaimer stays under the composer before and after the first message."
+        description="With no messages, the transcript shows the host's empty state, built from stock parts: an EmptyState welcome that says what the assistant is for, with suggested first questions as its actions that send themselves (or none: the welcome stands alone). The first message replaces it, and New conversation brings it back; it is never a message in the history. The host's disclaimer stays under the composer before and after the first message."
       >
-        <EmptyDemo />
+        <StateMatrix
+          axes={{ suggestions: suggestionCounts }}
+          render={({ suggestions }) => <EmptyDemo suggestions={suggestions} />}
+        />
       </LabSection>
       <LabSection
         title="States"

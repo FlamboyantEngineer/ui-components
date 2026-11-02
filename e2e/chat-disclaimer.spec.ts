@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, formatLabUrl, test, waitForLab } from './fixtures.js';
+import { expect, formatLabUrl, matrixCell, test, waitForLab } from './fixtures.js';
 
 const note = 'AI can make mistakes. Check important information.';
 const section = (page: Page, title: string) => page.locator(`[data-lab-section="${title}"]`);
@@ -30,7 +30,7 @@ test.describe('Chat disclaimer', () => {
     page,
   }) => {
     await openChat(page);
-    const empty = section(page, 'Starting a conversation');
+    const empty = matrixCell(section(page, 'Starting a conversation'), 'suggestions=several');
     await expectDisclaimerUnderComposer(empty);
     await empty.getByRole('button', { name: 'Plan a weekend in Lisbon' }).click();
     await expect(empty.locator('article').first()).toContainText('Plan a weekend in Lisbon');
@@ -60,7 +60,7 @@ test.describe('Chat disclaimer', () => {
     page,
   }) => {
     await openChat(page);
-    const empty = section(page, 'Starting a conversation');
+    const empty = matrixCell(section(page, 'Starting a conversation'), 'suggestions=several');
     const chat = empty.locator('.ui-chat');
     // A side panel no wider than a phone's narrowest column.
     await chat.evaluate((root) => {
@@ -72,11 +72,12 @@ test.describe('Chat disclaimer', () => {
       const note = root.querySelector<HTMLElement>('.ui-chat__disclaimer');
       const lineHeight = note ? Number.parseFloat(getComputedStyle(note).lineHeight) : 1;
       return {
-        root: [root.scrollWidth, root.clientWidth],
+        scrollWidth: root.scrollWidth,
+        clientWidth: root.clientWidth,
         lines: (note?.getBoundingClientRect().height ?? 0) / lineHeight,
       };
     });
-    expect(sizes.root[0]).toBeLessThanOrEqual(sizes.root[1]);
+    expect(sizes.scrollWidth).toBeLessThanOrEqual(sizes.clientWidth);
     expect(sizes.lines).toBeGreaterThan(1.5);
     const send = await empty.getByRole('button', { name: 'Send' }).boundingBox();
     const box = await disclaimer.boundingBox();

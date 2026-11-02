@@ -31,11 +31,12 @@ export default defineConfig({
     { name: 'webkit', use: { ...devices['Desktop Safari'] }, testMatch: /steps-narrow\.spec\.ts$/ },
     // Dock panel geometry leans on writing modes and pointer capture, and tree section rows on
     // React Aria's row groups, the rich composer's ranges on its own selection model, and the chat's
-    // disclaimer on how text wraps beside the composer, which Firefox draws and edits its own way.
+    // disclaimer and welcome on how text wraps in a narrow panel, which Firefox draws and edits its own way.
     {
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
-      testMatch: /(dock-panel|tree-sections|message-composer-ranges|chat-disclaimer)\.spec\.ts$/,
+      testMatch:
+        /(dock-panel|tree-sections|message-composer-ranges|chat-disclaimer|chat-empty)\.spec\.ts$/,
     },
     // Focus scrolling that only phones show runs in mobile WebKit.
     {
