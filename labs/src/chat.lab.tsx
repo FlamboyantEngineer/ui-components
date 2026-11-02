@@ -1,7 +1,7 @@
 import { MoreGlyph } from '../../src/core/glyphs.js';
 import { Button } from '../../src/components/button/button.js';
 import { ChatHeader } from '../../src/components/chat/index.js';
-import { ChatAssistantCases } from './chat-assistant-cases.js';
+import { ChatAssistantCases, ChatTypingWhileStreamingCases } from './chat-assistant-cases.js';
 import { ChatCaretCases } from './chat-caret-cases.js';
 import { ChatChromeCases } from './chat-chrome-cases.js';
 import { ChatDisplayCases } from './chat-display-cases.js';
@@ -53,6 +53,7 @@ mountLab(
   <>
     <ChatEverythingCases />
     <ChatAssistantCases />
+    <ChatTypingWhileStreamingCases />
     <ChatQueueCases />
     <ChatThinkingCases />
     <ChatCaretCases />

@@ -17,7 +17,7 @@ import {
 import { createReplyHandlers, useCallbackLog, useLabModelChoice } from './chat-assistant-host.js';
 import { forecastRenderer, renderLabPart } from './chat-parts-samples.js';
 import { assistantPeople, plannerId, readerId } from './chat-samples.js';
-import { LabSection } from './chrome/index.js';
+import { LabSection, StateMatrix } from './chrome/index.js';
 
 const initialMessages: ChatMessageData[] = [
   {
@@ -105,6 +105,57 @@ export function ChatAssistantCases() {
       description="A fake trip planner streams through useChatController. Pick what it does with your next message: an answer whose reasoning and tool calls fold into steps (the forecast uses a custom tool renderer) with a live status line, then streamed Markdown with a table, code (Copy and Apply) and citations with their sources; a booking awaited in the stream, or a cancellation answered by a new turn (Approve, Deny with a reason, Always allow); a card of three questions with previews; a plan that advances, then a diff and a terminal block; or a reply that fails once (Retry). Stop ends a reply and keeps its text; messages sent while it runs wait in the queue above the composer, where you can edit or remove them. Attach files (a file named broken… fails its first upload, and one named huge… is refused before it starts: Retry), press Up in the empty composer to recall earlier prompts, type / for a command, and copy or rate a reply with reasons. The model picker beside the send button chooses the model and effort of your next message, and each reply names the ones it was sent with."
     >
       <AssistantDemo />
+    </LabSection>
+  );
+}
+
+/** An assistant in a short frame, to keep typing while a long reply streams. */
+function TypingWhileStreamingDemo({
+  scrollMode,
+  history,
+}: {
+  scrollMode: 'anchor' | 'follow';
+  history: 'plain' | 'virtualized';
+}) {
+  const controller = useChatController({
+    send: agents.answer,
+    currentUserId: readerId,
+    assistantId: plannerId,
+    initialMessages,
+  });
+  return (
+    <div style={{ height: 420 }}>
+      <Chat
+        {...controller.props}
+        participants={assistantPeople}
+        currentUserId={readerId}
+        conversationId={`lab-typing-${scrollMode}-${history}`}
+        title="Trip planner"
+        scrollMode={scrollMode}
+        virtualized={history === 'virtualized'}
+        placeholder="Ask, then keep typing…"
+        toolRenderers={{ get_weather: forecastRenderer }}
+        renderPart={renderLabPart}
+      />
+    </div>
+  );
+}
+
+export function ChatTypingWhileStreamingCases() {
+  return (
+    <LabSection
+      title="Typing while a reply streams"
+      description="Short chats that follow the latest message. Send a question (an anchoring chat keeps it at the top: scroll to the bottom or press Jump to latest to follow the reply), then type your next message while the answer streams, adding lines with Shift+Enter so the composer grows: the transcript keeps following, and your draft and focus stay put. Scroll up first and typing keeps your place instead."
+    >
+      <StateMatrix
+        axes={{
+          scrollMode: ['anchor', 'follow'] as const,
+          history: ['plain', 'virtualized'] as const,
+        }}
+        render={({ scrollMode, history }) => (
+          <TypingWhileStreamingDemo scrollMode={scrollMode} history={history} />
+        )}
+      />
     </LabSection>
   );
 }

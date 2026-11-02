@@ -107,6 +107,21 @@ describe('ChatTranscript anchor mode', () => {
     expect(offsetInViewport(article('m7'))).toBe(20);
   });
 
+  it('UIC-CHAT-TRANSCRIPT-1.2 follows once the reader comes back to the bottom, where the anchor also sits', () => {
+    const { rerender } = render(<Chat />);
+    const viewport = getViewport();
+    rerender(<Chat extra={1} />);
+    rerender(<Chat extra={2} streaming />);
+    const anchored = viewport.scrollTop;
+    scrollViewport(viewport, anchored - 40);
+    // Back at the bottom, which is also where the anchor sits while the reply is short.
+    scrollViewport(viewport, anchored);
+    expect(offsetInViewport(article('m7'))).toBe(0);
+    layout.heights.set('m8', 400);
+    resizeContent();
+    expect(distanceToBottom(viewport)).toBe(0);
+  });
+
   it('UIC-CHAT-TRANSCRIPT-1.5 drops the anchor and the spacer in follow mode', () => {
     const { rerender } = render(<Chat />);
     const viewport = getViewport();
