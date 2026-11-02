@@ -220,6 +220,43 @@ test.describe('Four Side Property Strip lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-FOUR-SIDE-PROPERTY-STRIP-1.6 keeps the unit level with the inputs, link brackets or not', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('four-side-property-strip');
+    {
+      const rows = page.locator(
+        '.ui-four-side-property-strip > .ui-property-row__control:has(> .ui-property-row__unit)',
+      );
+      expect(await rows.count()).toBeGreaterThan(4);
+      const offsets = await rows.evaluateAll((controls) =>
+        controls.map((control) => {
+          const unit = control.querySelector(':scope > .ui-property-row__unit');
+          const input = control.querySelector('.ui-four-side-property-strip__side > input');
+          const strip = control.querySelector('.ui-property-strip');
+          if (!unit || !input || !strip) return { id: 'missing', offset: Infinity, below: true };
+          const range = document.createRange();
+          range.selectNodeContents(unit);
+          const text = range.getBoundingClientRect();
+          const box = input.getBoundingClientRect();
+          const brackets = [...strip.querySelectorAll('.ui-four-side-property-strip__bracket')];
+          return {
+            id: `${input.getAttribute('aria-label')} ${unit.textContent}`,
+            // The unit's text centred on the input row, whatever sits below it.
+            offset: Math.abs(text.top + text.height / 2 - (box.top + box.height / 2)),
+            // Brackets stay below the inputs.
+            below: brackets.every(
+              (bracket) => bracket.getBoundingClientRect().top >= box.bottom - 0.5,
+            ),
+          };
+        }),
+      );
+      expect(offsets.filter(({ offset }) => offset > 1)).toEqual([]);
+      expect(offsets.filter(({ below }) => !below)).toEqual([]);
+    }
+  });
+
   test('UIC-FOUR-SIDE-PROPERTY-STRIP-1.7 centres or ends values in their boxes without clipping them', async ({
     page,
     lab,

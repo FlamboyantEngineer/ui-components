@@ -107,6 +107,7 @@ function LinkedLogical({
           <FourSidePropertyStrip
             label="Inset"
             sides="logical"
+            unit="rem"
             link={link}
             defaultLinked={['block', 'inline']}
             defaultValue={{
@@ -317,7 +318,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Linked logical sides"
-      description="Linked flow-relative sides in a 260 pixel panel, left to right and right to left: each bracket follows its cells in the reading direction."
+      description="Linked flow-relative sides in rem in a 260 pixel panel, left to right and right to left: each bracket follows its cells in the reading direction, and the unit stays level with the inputs above the brackets."
     >
       <StateMatrix
         axes={{ link: ['pairs', 'all'], direction: ['ltr', 'rtl'] }}
