@@ -8,14 +8,18 @@ import {
   SortAscendingGlyph,
   SortDescendingGlyph,
 } from '../../src/core/glyphs.js';
-import { useId, useState } from 'react';
+import { useId, useState, type JSX } from 'react';
+import { Switch } from '../../src/components/switch/switch.js';
 import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import { InlineError } from '../../src/components/inline-error/inline-error.js';
 import {
   SegmentedChoice,
   type SegmentedChoiceOption,
+  type SegmentedChoiceRenderState,
 } from '../../src/components/segmented-choice/segmented-choice.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabForm } from './lab-form.js';
+import { LabOutput } from './lab-output.js';
 
 const views: SegmentedChoiceOption[] = [
   { value: 'day', label: 'Day' },
@@ -177,6 +181,41 @@ const glyphRoom = {
   equal: { width: 'max-content', maxWidth: '100%' },
   narrow: { width: 260 },
 } as const;
+
+/** The caller's own root: it keeps the props and ref it is given and marks the group's state. */
+function framedRoot(props: JSX.IntrinsicElements['div'], state: SegmentedChoiceRenderState) {
+  return (
+    <div
+      {...props}
+      data-lab-root="framed"
+      data-lab-root-state={`${state.orientation}${state.isDisabled ? ', disabled' : ''}`}
+    />
+  );
+}
+
+/** A swapped root still chooses by keyboard, takes focus and submits with its form. */
+function SwappedRoot() {
+  const [view, setView] = useState<string | null>('week');
+  const [isDisabled, setDisabled] = useState(false);
+  return (
+    <LabForm label="Calendar view">
+      <SegmentedChoice
+        aria-label="Calendar view"
+        name="view"
+        options={views}
+        value={view}
+        onChange={setView}
+        isDisabled={isDisabled}
+        render={framedRoot}
+        data-lab-field="swapped-root"
+      />
+      <Switch isSelected={isDisabled} onChange={setDisabled}>
+        Disable the choice
+      </Switch>
+      <LabOutput name="View">{view ?? 'none'}</LabOutput>
+    </LabForm>
+  );
+}
 
 mountLab(
   <>
@@ -390,6 +429,12 @@ mountLab(
       description="The pick shows at once and stays pending while it saves; a failed save puts the previous choice back."
     >
       <SavedFilter />
+    </LabSection>
+    <LabSection
+      title="Swapped root"
+      description="render replaces the root with the caller's element, which receives the group's props, ref and state (orientation and disabled). Arrow keys still choose, and the form submits the view."
+    >
+      <SwappedRoot />
     </LabSection>
   </>,
 );

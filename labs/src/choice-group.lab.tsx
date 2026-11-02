@@ -1,5 +1,5 @@
 import { multipleChoices } from './choice-group-multiple.js';
-import { useState, type JSX } from 'react';
+import { useRef, useState, type JSX } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Form } from '../../src/components/form/form.js';
 import {
@@ -147,6 +147,39 @@ function Swapped() {
   );
 }
 
+/**
+ * `inputRef` reaches each choice's native input (a radio, or a checkbox in multiple mode), while
+ * the element `render` swaps is the choice's root. A caller focuses the input; Space then picks it.
+ */
+function InputRefs() {
+  const radio = useRef<HTMLInputElement>(null);
+  const checkbox = useRef<HTMLInputElement>(null);
+  const [focused, setFocused] = useState('nothing yet');
+  const focus = (input: HTMLInputElement | null) => {
+    input?.focus();
+    setFocused(input ? `${input.type} input "${input.value}"` : 'nothing');
+  };
+  return (
+    <>
+      <ChoiceGroup label="Shipping" defaultValue="post" data-lab-field="input-ref-single">
+        <Choice value="post">Standard post</Choice>
+        <Choice value="courier" inputRef={radio}>
+          Express courier
+        </Choice>
+      </ChoiceGroup>
+      <ChoiceGroup selectionMode="multiple" label="Extras" data-lab-field="input-ref-multiple">
+        <Choice value="wrap">Paper wrap</Choice>
+        <Choice value="note" inputRef={checkbox}>
+          Handwritten note
+        </Choice>
+      </ChoiceGroup>
+      <Button onPress={() => focus(radio.current)}>Focus Express courier</Button>
+      <Button onPress={() => focus(checkbox.current)}>Focus Handwritten note</Button>
+      <LabOutput name="Focused input">{focused}</LabOutput>
+    </>
+  );
+}
+
 mountLab(
   <>
     {multipleChoices}
@@ -187,6 +220,12 @@ mountLab(
         description="Each radio renders its own element, marked with the state render receives."
       >
         <Swapped />
+      </LabSection>
+      <LabSection
+        title="Native input references"
+        description="inputRef receives the choice's native radio or checkbox, not its root: a caller focuses Express courier or Handwritten note, and Space then picks it."
+      >
+        <InputRefs />
       </LabSection>
       <LabSection
         title="Zero content"

@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode, Ref } from 'react';
-import { Switch as AriaSwitch } from '../../primitives/index.js';
+import { Switch as AriaSwitch, FormContext, useSlottedContext } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, ControlSize } from '../../core/props.js';
@@ -50,10 +50,14 @@ export function Switch({
   children,
   size = 'md',
   isIndeterminate = false,
+  validationBehavior,
   className,
   ...rest
 }: SwitchProps) {
   const isDisabled = useScopedDisabled(rest.isDisabled);
+  // React Aria's switch reports through ARIA unless told otherwise; like the checkbox, it follows
+  // the form around it and is otherwise a native constraint.
+  const formBehavior = useSlottedContext(FormContext)?.validationBehavior;
   const input = useInputRef(rest.inputRef);
   const held = useResetHeldValue({
     value: rest.isSelected,
@@ -63,7 +67,8 @@ export function Switch({
   });
   return (
     <AriaSwitch
-      {...rest}
+      // React Aria's switch reads `validationBehavior` though its props type leaves it out.
+      {...{ ...rest, validationBehavior: validationBehavior ?? formBehavior ?? 'native' }}
       isSelected={held.value}
       defaultSelected={undefined}
       onChange={held.onChange}
