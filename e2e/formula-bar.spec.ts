@@ -1,6 +1,6 @@
 import { toCollectionKey } from '../src/utils/to-collection-key.js';
 import type { Page } from '@playwright/test';
-import { cellSelector, expect, test } from './fixtures.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 function spreadsheet(page: Page) {
@@ -190,6 +190,66 @@ test.describe('Formula Bar lab', () => {
     await page.keyboard.press('Enter');
     await expect(sheet.output).toHaveText('Last commit: C5 = =SUM(B2:B5)');
     await expect(sheet.cell(5, 'C')).toHaveText('25');
+  });
+
+  test('UIC-FORMULA-BAR-3.3 lays out every state alike, with no room for an empty result', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('formula-bar');
+    const parts = (content: string, mode: string) =>
+      matrixCell(page, `content=${content} mode=${mode}`)
+        .locator('.ui-formula-bar')
+        .evaluate((bar) => {
+          const box = (element: Element | null) => element?.getBoundingClientRect() ?? null;
+          const own = bar.getBoundingClientRect();
+          const editor = bar.querySelector('.ui-formula-bar__editor');
+          return {
+            bar: { left: own.left, right: own.right },
+            children: [...bar.children]
+              .filter((child) => getComputedStyle(child).position !== 'absolute')
+              .map((child) => {
+                const rect = child.getBoundingClientRect();
+                return { left: rect.left, right: rect.right };
+              }),
+            editor: box(editor),
+            editorBorder: editor ? getComputedStyle(editor).borderTopColor : '',
+            result: box(bar.querySelector('.ui-formula-bar__result')),
+          };
+        });
+    const contents = ['formula', 'text', 'empty', 'no cell'];
+    const modes = ['editable', 'evaluated', 'read-only', 'disabled'];
+    const editable = await parts('empty', 'editable');
+    for (const content of contents) {
+      for (const mode of modes) {
+        const bar = await parts(content, mode);
+        const where = `${content}, ${mode}`;
+        // Every part stays inside its bar, which is as wide as every other.
+        for (const child of bar.children) {
+          expect(child.left, where).toBeGreaterThanOrEqual(bar.bar.left);
+          expect(child.right, where).toBeLessThanOrEqual(bar.bar.right + 0.5);
+        }
+        expect(bar.bar.right - bar.bar.left, where).toBeCloseTo(
+          editable.bar.right - editable.bar.left,
+          0,
+        );
+        if (mode !== 'read-only') {
+          // An untouched content draws no dirty frame.
+          expect(bar.editorBorder, where).toBe(editable.editorBorder);
+        }
+      }
+    }
+    // An empty cell's evaluation draws no result: its content is as wide as without evaluation.
+    const empty = await parts('empty', 'evaluated');
+    expect(empty.result).toBeNull();
+    expect(requireDefined(empty.editor).width).toBeCloseTo(
+      requireDefined(editable.editor).width,
+      0,
+    );
+    const formula = await parts('formula', 'evaluated');
+    expect(requireDefined(formula.result).left).toBeGreaterThanOrEqual(
+      requireDefined(formula.editor).right,
+    );
   });
 
   test('UIC-FORMULA-BAR-4.1 passes axe', async ({ page, lab }) => {
