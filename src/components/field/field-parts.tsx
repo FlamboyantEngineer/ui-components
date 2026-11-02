@@ -54,6 +54,7 @@ export const fieldHooks = createHooks('field', [
   'colon',
   'control',
   'help',
+  'help-tooltip',
   'decoration',
   'description',
   'message',
@@ -102,6 +103,8 @@ export function toFieldControlProps(
     label: string | undefined;
     hasDescription: boolean;
     hasDecoration: boolean;
+    /** The help has no button to describe, so it describes the control. */
+    hasHelp?: boolean | undefined;
   },
 ): FieldControlProps {
   const { status, message } = state.validation;
@@ -114,6 +117,7 @@ export function toFieldControlProps(
     'aria-describedby': joinIds(
       parts.hasDescription && ids.description,
       parts.hasDecoration && ids.decoration,
+      parts.hasHelp === true && ids.help,
       Boolean(message) && ids.message,
     ),
     'aria-errormessage': isInvalid ? ids.message : undefined,

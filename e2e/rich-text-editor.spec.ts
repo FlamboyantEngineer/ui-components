@@ -450,6 +450,130 @@ test.describe('Rich Text Editor lab', () => {
     await expect(none.locator('p').first()).toHaveText('Wash the plums.');
   });
 
+  test('UIC-RICH-TEXT-EDITOR-9.4 keeps a gutter only as wide as the chosen controls', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('rich-text-editor');
+    const inset = (name: string) =>
+      content(page, name).evaluate(
+        (node) =>
+          node.getBoundingClientRect().left -
+          (node.closest('.ui-rich-text-editor__surface')?.getBoundingClientRect().left ?? 0),
+      );
+    const insets = {
+      both: await inset('handle-grip-menu'),
+      grip: await inset('handle-grip'),
+      menu: await inset('handle-menu'),
+      neither: await inset('handle-neither'),
+      none: await inset('handle-none'),
+    };
+    expect(insets.neither).toBe(insets.none);
+    expect(insets.grip).toBeGreaterThan(insets.none);
+    expect(insets.menu).toBeGreaterThan(insets.none);
+    expect(insets.grip).toBeLessThan(insets.both - 10);
+    expect(insets.menu).toBeLessThan(insets.both - 10);
+    for (const name of ['handle-grip-menu', 'handle-grip', 'handle-menu']) {
+      const surface = editor(page, name).locator('.ui-rich-text-editor__surface');
+      // The narrow editor scrolls: the last block wraps below the fold.
+      await surface.evaluate((node) => node.scrollTo({ top: node.scrollHeight }));
+      const last = content(page, name).locator('p').last();
+      await last.hover();
+      const handle = editor(page, name).locator('.ui-block-handle');
+      await expect(handle).toBeVisible();
+      const [handleBox, textBox, surfaceBox] = await Promise.all([
+        handle.boundingBox(),
+        last.boundingBox(),
+        surface.boundingBox(),
+      ]);
+      if (!handleBox || !textBox || !surfaceBox) throw new Error('no box');
+      expect(handleBox.x).toBeGreaterThanOrEqual(surfaceBox.x);
+      expect(handleBox.x + handleBox.width).toBeLessThanOrEqual(textBox.x);
+      expect(Math.abs(handleBox.y - textBox.y)).toBeLessThan(textBox.height);
+    }
+  });
+
+  test('UIC-RICH-TEXT-EDITOR-9.1 reveals the handle when the pointer enters the gutter directly', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('rich-text-editor');
+    const field = editor(page, 'full');
+    const box = content(page, 'full');
+    const handle = field.locator('.ui-block-handle');
+    await field.scrollIntoViewIfNeeded();
+    const surface = await field.locator('.ui-rich-text-editor__surface').boundingBox();
+    const text = await box.boundingBox();
+    if (!surface || !text) throw new Error('no box');
+    const gutterX = (surface.x + text.x) / 2;
+    /** The handle's offset from a block's top, polled. */
+    const offsetFrom = (block: Locator) => async () => {
+      const [handleBox, blockBox] = await Promise.all([handle.boundingBox(), block.boundingBox()]);
+      return handleBox && blockBox ? Math.abs(handleBox.y - blockBox.y) : Number.NaN;
+    };
+    const quote = box.locator('blockquote');
+    const quoteBox = await quote.boundingBox();
+    if (!quoteBox) throw new Error('no quote');
+    // From outside the editor straight into the gutter beside a later block, crossing no text.
+    await page.mouse.move(surface.x - 40, quoteBox.y + quoteBox.height / 2);
+    await expect(handle).toHaveCount(0);
+    await page.mouse.move(gutterX, quoteBox.y + quoteBox.height / 2, { steps: 4 });
+    await expect(handle).toBeVisible();
+    await expect.poll(offsetFrom(quote)).toBeLessThan(8);
+    await expect(box).not.toBeFocused();
+    // Down the gutter: a heading, then the list, each picked as the pointer reaches it.
+    for (const block of [box.locator('h1'), box.locator('ul').first()]) {
+      const blockBox = await block.boundingBox();
+      if (!blockBox) throw new Error('no block');
+      await page.mouse.move(gutterX, blockBox.y + Math.min(8, blockBox.height / 2), { steps: 4 });
+      await expect.poll(offsetFrom(block)).toBeLessThan(8);
+    }
+    // Onto the handle's menu button: it stays on its block and opens there.
+    const list = box.locator('ul').first();
+    await handle.getByRole('button', { name: 'Block actions' }).hover();
+    await expect.poll(offsetFrom(list)).toBeLessThan(8);
+    await page.mouse.move(surface.x - 40, surface.y + 4);
+    await expect(handle).toHaveCount(0);
+  });
+
+  test('UIC-RICH-TEXT-EDITOR-9.1 picks the gutter block in a scrolled editor with one control', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('rich-text-editor');
+    for (const name of ['handle-grip', 'handle-menu']) {
+      const field = editor(page, name);
+      const surfaceLocator = field.locator('.ui-rich-text-editor__surface');
+      await field.scrollIntoViewIfNeeded();
+      await surfaceLocator.evaluate((node) => node.scrollTo({ top: node.scrollHeight }));
+      const surface = await surfaceLocator.boundingBox();
+      const text = await content(page, name).boundingBox();
+      const last = content(page, name).locator('p').last();
+      const lastBox = await last.boundingBox();
+      if (!surface || !text || !lastBox) throw new Error('no box');
+      await page.mouse.move(surface.x - 40, lastBox.y + lastBox.height - 4);
+      await page.mouse.move((surface.x + text.x) / 2, lastBox.y + lastBox.height - 4, { steps: 3 });
+      const handle = field.locator('.ui-block-handle');
+      await expect(handle).toBeVisible();
+      await expect
+        .poll(async () => Math.abs(((await handle.boundingBox())?.y ?? 0) - lastBox.y))
+        .toBeLessThan(8);
+      // The surface scrolls under a still pointer: the block now beside it takes the handle.
+      await surfaceLocator.evaluate((node) => node.scrollTo({ top: 0 }));
+      const first = content(page, name).locator('p').first();
+      await expect
+        .poll(async () => {
+          const [handleBox, firstBox] = await Promise.all([
+            handle.boundingBox(),
+            first.boundingBox(),
+          ]);
+          return Math.abs((handleBox?.y ?? 0) - (firstBox?.y ?? 0));
+        })
+        .toBeGreaterThan(8);
+      await page.mouse.move(surface.x - 40, surface.y);
+    }
+  });
+
   test('UIC-RICH-TEXT-EDITOR-6.2 previews block types in the select and applies one', async ({
     page,
     lab,
@@ -563,6 +687,86 @@ test.describe('Rich Text Editor lab', () => {
     await expect(field).toHaveAttribute('data-dirty', 'true');
   });
 
+  test('UIC-RICH-TEXT-EDITOR-12.2 marks the track level with the marked rows in view', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('rich-text-editor');
+    const field = editor(page, 'long');
+    const box = content(page, 'long');
+    const surface = field.locator('.ui-rich-text-editor__surface');
+    const markers = field.locator('.ui-rich-text-editor__scroll-marker');
+    const track = field.locator('.ui-scroll-region__track');
+    await field.scrollIntoViewIfNeeded();
+    /** Scrolls the surface so `row`'s top lies `offset` pixels below the surface's top. */
+    const scrollRow = (row: number, offset: number) =>
+      surface.evaluate(
+        (node, [index, gap]) => {
+          const rows = node.querySelectorAll('.ui-rich-text-editor__content > p');
+          const target = rows[index ?? 0]?.getBoundingClientRect().top ?? 0;
+          const view = node.getBoundingClientRect();
+          const scale = view.height / (node as HTMLElement).offsetHeight;
+          node.scrollTop += (target - view.top - (gap ?? 0)) / scale;
+        },
+        [row, offset],
+      );
+    /** The marks' and the given rows' spans, clipped to the track. */
+    const spans = async (first: number, last: number) => {
+      const trackBox = await track.boundingBox();
+      const firstBox = await box.locator('p').nth(first).boundingBox();
+      const lastBox = await box.locator('p').nth(last).boundingBox();
+      if (!trackBox || !firstBox || !lastBox) throw new Error('no box');
+      const marks = await markers.evaluateAll((nodes) =>
+        nodes.map((node) => {
+          const { top, bottom } = node.getBoundingClientRect();
+          return { top, bottom, severity: node.getAttribute('data-severity') };
+        }),
+      );
+      const top = Math.max(trackBox.y, firstBox.y);
+      const bottom = Math.min(trackBox.y + trackBox.height, lastBox.y + lastBox.height);
+      return { marks, row: { top, bottom } };
+    };
+    const expectLevel = async (first: number, last: number, severity: string) => {
+      await expect(markers).toHaveCount(1);
+      await expect
+        .poll(async () => {
+          const { marks, row } = await spans(first, last);
+          const mark = marks[0];
+          return Boolean(
+            mark &&
+            mark.severity === severity &&
+            Math.abs(mark.top - row.top) < 1 &&
+            Math.abs(mark.bottom - row.bottom) < 1,
+          );
+        })
+        .toBe(true);
+    };
+    // Row 120 centred in view: its mark sits level with it, mid-track.
+    const viewHeight = await surface.evaluate((node) => node.clientHeight);
+    const rowHeight = (await box.locator('p').nth(119).boundingBox())?.height ?? 0;
+    await scrollRow(119, (viewHeight - rowHeight) / 2);
+    await expectLevel(119, 119, 'error');
+    // Near the top of the view, then near the bottom: the mark moves with the row.
+    await scrollRow(119, 20);
+    await expectLevel(119, 119, 'error');
+    await scrollRow(119, viewHeight - rowHeight - 20);
+    await expectLevel(119, 119, 'error');
+    // Rows 481 and 482 in one marker, its top scrolled out of view: the mark is clipped at the
+    // track's top, not pinned there whole.
+    await scrollRow(480, -20);
+    await expectLevel(480, 481, 'error');
+    // Scrolled away from every marked row: no mark, not one pinned to an edge.
+    await scrollRow(300, 0);
+    await expect(markers).toHaveCount(0);
+    // Under an ancestor scale the mark still lies level with its row.
+    await field.evaluate((node) => {
+      (node as HTMLElement).style.transform = 'scale(0.75)';
+      (node as HTMLElement).style.transformOrigin = 'top left';
+    });
+    await scrollRow(119, 60);
+    await expectLevel(119, 119, 'error');
+  });
+
   test('UIC-RICH-TEXT-EDITOR-12.1 UIC-RICH-TEXT-EDITOR-12.2 scrolls a long document inside the editor with marked rows', async ({
     page,
     lab,
@@ -575,42 +779,32 @@ test.describe('Rich Text Editor lab', () => {
     expect(await surface.evaluate((node) => node.clientHeight)).toBe(360);
     expect((await field.boundingBox())?.height).toBeLessThan(600);
     await expect(field.locator('.ui-scroll-region__thumb')).toHaveCount(1);
-    await expect(markers).toHaveCount(4);
-    expect(
-      await markers.evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-severity'))),
-    ).toEqual(['error', 'error', 'warning', 'warning']);
+    // Nothing marked is in view at the top, so the track draws no mark.
+    await expect(markers).toHaveCount(0);
     const flagged = box.locator('p').nth(480);
     await expect(flagged).toHaveAttribute('data-severity', 'error');
     await expect(flagged).toHaveAttribute('aria-description', 'Blight reported: inspect this row.');
     await expect(box.locator('p').nth(749)).toHaveAttribute('data-severity', 'warning');
-    // The second marker spans rows 481 and 482, at their place in the whole document.
-    const [mark, rows] = await Promise.all([
-      markers.nth(1).evaluate((node) => parseFloat((node as HTMLElement).style.top) / 100),
-      surface.evaluate((node) => {
-        const row = node.querySelectorAll('.ui-rich-text-editor__content > p')[480];
-        const top = (row?.getBoundingClientRect().top ?? 0) - node.getBoundingClientRect().top;
-        return (top + node.scrollTop) / node.scrollHeight;
-      }),
-    ]);
-    expect(Math.abs(mark - rows)).toBeLessThan(0.002);
     await box.locator('p').first().click();
     await page.keyboard.press('ControlOrMeta+End');
-    // The caret's row scrolls into the surface's view.
+    // The caret, at the end of the last row, scrolls into the surface's view.
     await expect
       .poll(() =>
         surface.evaluate((node) => {
+          const selection = node.ownerDocument.getSelection();
           const last = node.querySelector('.ui-rich-text-editor__content > p:last-child');
-          const row = last?.getBoundingClientRect();
+          if (!selection?.rangeCount || !last?.contains(selection.focusNode)) return false;
+          const caret = selection.getRangeAt(0).getBoundingClientRect();
           const view = node.getBoundingClientRect();
-          return Boolean(row && row.bottom <= view.bottom + 1 && row.top >= view.top - 1);
+          return caret.bottom <= view.bottom + 1 && caret.top >= view.top - 1;
         }),
       )
       .toBe(true);
     await page.keyboard.type(' Blight.');
-    await expect(markers).toHaveCount(5);
+    await expect(markers).toHaveCount(1);
     await expect(box.locator('p').last()).toHaveAttribute('data-severity', 'error');
     await page.keyboard.press('ControlOrMeta+z');
-    await expect(markers).toHaveCount(4);
+    await expect(markers).toHaveCount(0);
     await page.keyboard.press('ControlOrMeta+Home');
     await expect.poll(() => surface.evaluate((node) => node.scrollTop)).toBeLessThan(20);
   });

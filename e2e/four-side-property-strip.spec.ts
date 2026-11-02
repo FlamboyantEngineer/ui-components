@@ -219,4 +219,54 @@ test.describe('Four Side Property Strip lab', () => {
     await expect(toggles.nth(1)).toHaveAttribute('data-focus-visible', 'true');
     await lab.expectAccessible();
   });
+
+  test('UIC-FOUR-SIDE-PROPERTY-STRIP-1.7 centres or ends values in their boxes without clipping them', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('four-side-property-strip');
+    for (const align of ['default', 'start', 'center', 'end']) {
+      for (const shape of ['physical pairs', 'logical all', 'right to left', 'narrow']) {
+        const cell = matrixCell(page, `align=${align} shape=${shape}`);
+        const inputs = cell.getByRole('textbox');
+        await expect(inputs).toHaveCount(4);
+        const measured = await inputs.evaluateAll((nodes) =>
+          nodes.map((node) => {
+            const input = node as HTMLInputElement;
+            return {
+              align: getComputedStyle(input).textAlign,
+              clipped: input.scrollWidth > input.clientWidth,
+            };
+          }),
+        );
+        const expected = align === 'default' ? 'start' : align;
+        for (const each of measured) {
+          expect(each.align, `${align} ${shape}`).toBe(expected);
+          expect(each.clipped, `${align} ${shape}`).toBe(false);
+        }
+      }
+    }
+    // Centring moves only the text: the box, its letter and the bracket keep their places.
+    const box = (align: string) =>
+      matrixCell(page, `align=${align} shape=physical pairs`)
+        .getByRole('textbox', { name: `Offset ${align} physical pairs left` })
+        .evaluate((node) => node.getBoundingClientRect().toJSON() as DOMRect);
+    const plain = await box('default');
+    const centred = await box('center');
+    expect(centred.width).toBeCloseTo(plain.width, 0);
+    expect(centred.left - plain.left).toBeCloseTo(0, 0);
+
+    // Editing a centred, linked pair still sets both sides, and the caret follows the typing.
+    const cell = matrixCell(page, 'align=center shape=physical pairs');
+    const left = cell.getByRole('textbox', { name: 'Offset center physical pairs left' });
+    await left.click();
+    await page.keyboard.press('End');
+    await page.keyboard.type('.5');
+    await expect(left).toHaveValue('4.5');
+    await expect(
+      cell.getByRole('textbox', { name: 'Offset center physical pairs right' }),
+    ).toHaveValue('4.5');
+    expect(await left.evaluate((node) => (node as HTMLInputElement).selectionStart)).toBe(3);
+    await lab.expectAccessible();
+  });
 });

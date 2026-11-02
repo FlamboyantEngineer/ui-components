@@ -16,6 +16,7 @@ import type { FieldState } from './field-state.js';
 import { useFieldRoot } from './field-root.js';
 import { useFieldUndo } from './field-undo.js';
 import { useFieldMessageTooltip, type FieldMessageDisplay } from './field-message-tooltip.js';
+import { useFieldHelpTooltip } from './field-help.js';
 import { findOwnerDocument } from '../../utils/owner-window.js';
 import { usePortalContainer } from '../portal/portal.js';
 
@@ -73,6 +74,8 @@ interface FieldBehaviourOptions {
   commitOnBlur: boolean;
   autoFocus: boolean | undefined;
   messageDisplay: FieldMessageDisplay;
+  /** The field has help, which its menu offers. */
+  hasHelp: boolean;
 }
 
 /**
@@ -90,7 +93,14 @@ export function useFieldBehaviour(
   const focus = useFieldLeave(state, slots, options.commitOnBlur);
   useFieldFormBinding(state, slots, options.label);
   useAutoFocus(options.autoFocus, slots);
-  const menuModel = useFieldMenu(state, options.label, options);
+  const help = useFieldHelpTooltip(
+    { hasHelp: options.hasHelp, isFocused: focus.isFocused, isDisabled: state.isDisabled },
+    getRoot,
+  );
+  const menuModel = useFieldMenu(state, options.label, {
+    ...options,
+    onHelp: options.hasHelp ? help.open : undefined,
+  });
   const tooltip = useFieldMessageTooltip(
     options.messageDisplay,
     state.validation.message ?? null,
@@ -107,10 +117,13 @@ export function useFieldBehaviour(
   return {
     isFocused: focus.isFocused,
     isTooltipOpen: tooltip.isOpen,
+    help,
+    getRoot,
     menu: contextMenu.menu,
     rootProps: {
       ...contextMenu.targetProps,
       ...tooltip.rootProps,
+      onKeyDownCapture: help.onKeyDownCapture,
       onFocus: (event: FocusEvent) => {
         if (!focus.isFocused) tooltip.onEnter();
         focus.onFocus(event);

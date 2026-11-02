@@ -38,6 +38,11 @@ export interface ImageSignature {
 /** A drawn, typed or image signature. A field with no signature holds `null`. */
 export type SignatureValue = DrawnSignature | TypedSignature | ImageSignature;
 
+/** The drawing without its last stroke, or `null` when that stroke was its only one. */
+export function withoutLastStroke(drawing: DrawnSignature): DrawnSignature | null {
+  return drawing.paths.length > 1 ? { ...drawing, paths: drawing.paths.slice(0, -1) } : null;
+}
+
 /** A pointer position in the drawing space. */
 export interface SignaturePoint {
   x: number;

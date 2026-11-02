@@ -54,9 +54,25 @@ function toMenuEntry(
   return entry;
 }
 
+/** Whether `menu` lists Help, as the built-in action or an entry of its own with the id `help`. */
+function hasHelpEntry(menu: readonly FieldMenuEntry[]): boolean {
+  return menu.some(
+    (entry) => entry === 'help' || (typeof entry === 'object' && entry.id === 'help'),
+  );
+}
+
+/**
+ * The menu a field offers: the caller's, with Help added at the end while the field has help and
+ * the menu does not list it yet. A Help the caller lists in a field without help only reports.
+ */
+function withHelp(menu: readonly FieldMenuEntry[], hasHelp: boolean): readonly FieldMenuEntry[] {
+  return hasHelp && !hasHelpEntry(menu) ? [...menu, 'help'] : menu;
+}
+
 /**
  * The field menu's entries in the caller's order, with built-in actions applied to the field state
- * before `onMenuAction` hears of any chosen entry.
+ * before `onMenuAction` hears of any chosen entry. Help, offered whenever the field has help, shows
+ * it through `onHelp`.
  */
 export function useFieldMenu(
   state: FieldState<unknown>,
@@ -64,10 +80,11 @@ export function useFieldMenu(
   options: {
     menu: readonly FieldMenuEntry[];
     onMenuAction?: ((key: Key) => void) | undefined;
+    onHelp?: (() => void) | undefined;
   },
 ): FieldMenuModel {
   const strings = useUiStrings();
-  const entries = options.menu
+  const entries = withHelp(options.menu, options.onHelp !== undefined)
     .map((entry) => toMenuEntry(entry, state, strings))
     .filter((entry) => entry !== null);
   return {
@@ -77,6 +94,7 @@ export function useFieldMenu(
     onAction(key) {
       const apply = { clear: state.clear, reset: state.restore, 'set-default': state.setToDefault };
       if (key === 'clear' || key === 'reset' || key === 'set-default') apply[key]();
+      if (key === 'help') options.onHelp?.();
       options.onMenuAction?.(key);
     },
   };

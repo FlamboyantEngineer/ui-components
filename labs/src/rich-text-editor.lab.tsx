@@ -84,7 +84,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Block handle controls"
-      description="BlockHandle shows a grip and a block menu; grip={false} or menu={false} leaves one out. Hover a block, or click into it, to see the handle. Without a BlockHandle child the editor keeps no gutter for it, and Alt+Shift+Up and Down still move blocks."
+      description="BlockHandle shows a grip and a block menu; grip={false} or menu={false} leaves one out. The gutter is only as wide as the chosen controls, and none is kept for neither control or without a BlockHandle child. The narrow editors scroll; hover a block or the margin beside it, or click into it, to see the handle. Alt+Shift+Up and Down still move blocks."
     >
       <BlockHandleChoices />
     </LabSection>
@@ -126,7 +126,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Long document"
-      description="A thousand paragraphs in an editor bounded to 360 pixels: it scrolls inside, under the overlay scrollbar. The host passes blockMarkers from its own check (blight is an error, frost a warning): the marked rows are tinted and underlined, read out with their message, and marked in the scroll track. Fix a row and its marker goes. Each change reports a document that keeps every block it left alone. Edit, press Restore, then Ctrl+Z: the one undo history brings the edit back."
+      description="A thousand paragraphs in an editor bounded to 360 pixels: it scrolls inside, under the overlay scrollbar. The host passes blockMarkers from its own check (blight is an error, frost a warning): the marked rows are tinted and underlined, read out with their message, and marked in the scroll track level with the rows in view (scroll to row 120 or 481). Fix a row and its marker goes. Each change reports a document that keeps every block it left alone. Edit, press Restore, then Ctrl+Z: the one undo history brings the edit back."
     >
       <LongDocumentEditor />
     </LabSection>

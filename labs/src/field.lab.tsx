@@ -20,7 +20,7 @@ import {
 import { TextMatchProvider } from '../../src/components/text-match/text-match.js';
 import type { Key } from '../../src/core/props.js';
 import { UiProvider, useUiStrings } from '../../src/core/provider.js';
-import { MenuEverywhere } from './field-menu-cases.js';
+import { HelpFromMenu, MenuEverywhere } from './field-menu-cases.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 import { CompactFieldsSection } from './field-compact-cases.js';
@@ -514,6 +514,12 @@ mountLab(
       description="Right-click directly on the text inside each control (an input, a text area, a number and editable content), long-press it, or press Shift+F10 in it: the field menu opens, not the browser's. Edit a value first: opening the menu keeps the caret and the unsaved edit, and Reset puts back the value the field started with."
     >
       <MenuEverywhere />
+    </LabSection>
+    <LabSection
+      title="Help from the menu"
+      description="A field with help offers Help at the end of its menu. Right-click a field or press Shift+F10 in it and choose Help: the help shows in a tooltip, against the help button or, for the fields without one (Grower and Crates), against the control, which the help then describes. Escape, typing, a press elsewhere or leaving the field hides it. The button above changes the help or takes it away, and the menus follow."
+    >
+      <HelpFromMenu />
     </LabSection>
     <LabSection title="String rules" description="Length, format and trimming rules.">
       <NameField />

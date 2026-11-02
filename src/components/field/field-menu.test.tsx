@@ -26,6 +26,15 @@ const names = (menuElement: HTMLElement) =>
     .getAllByRole('menuitem')
     .map((item) => item.textContent);
 
+/** The help tooltip, shown visually only: the help already describes its button or control. */
+const helpTooltip = () => document.querySelector<HTMLElement>('.ui-field__help-tooltip');
+const findHelpTooltip = () =>
+  waitFor(() => {
+    const tooltip = helpTooltip();
+    if (!tooltip) throw new Error('no help tooltip');
+    return tooltip;
+  });
+
 describe('Field menu', () => {
   it('UIC-FIELD-6.1 lists built-in and custom entries in the caller order', async () => {
     const user = userEvent.setup();
@@ -184,5 +193,118 @@ describe('Field menu', () => {
     await choose('Copy name');
     expect(onMenuAction).toHaveBeenLastCalledWith('copy');
     expect(input).toHaveValue('Apple');
+  });
+
+  it('UIC-FIELD-6.5 offers Help once whenever the field has help, in default and custom menus', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<TextField options={{ emptyValue: '' }} help="Pick a fruit" />);
+    expect(names(await openMenu(user))).toEqual(['Clear', 'Reset', 'Help']);
+    await user.keyboard('{Escape}');
+    rerender(<TextField options={{ emptyValue: '' }} help="Pick a fruit" menu={menu} />);
+    expect(names(await openMenu(user))).toEqual([
+      'Copy name',
+      'Clear',
+      'Reset',
+      'Set to default',
+      'Help',
+    ]);
+    await user.keyboard('{Escape}');
+    // A caller's own entry with the id `help` is Help: it is not added again.
+    const ownHelp: FieldMenuEntry[] = [{ id: 'help', label: 'About this field' }];
+    rerender(<TextField help="Pick a fruit" menu={ownHelp} />);
+    expect(names(await openMenu(user))).toEqual(['About this field']);
+    await user.keyboard('{Escape}');
+    // An empty menu still offers the help.
+    rerender(<TextField help="Pick a fruit" menu={[]} />);
+    expect(names(await openMenu(user))).toEqual(['Help']);
+    await user.keyboard('{Escape}');
+    rerender(<TextField help="" menu={[]} />);
+    await user.keyboard('{Shift>}{F10}{/Shift}');
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
+  it('UIC-FIELD-6.5 shows the help in a tooltip from Help by keyboard, until Escape', async () => {
+    const user = userEvent.setup();
+    const onMenuAction = vi.fn();
+    render(<TextField help="Pick a fruit" onMenuAction={onMenuAction} />);
+    const input = screen.getByRole('textbox');
+    await openMenu(user);
+    await user.keyboard('{ArrowUp}');
+    expect(screen.getByRole('menuitem', { name: 'Help' })).toHaveFocus();
+    await user.keyboard('{Enter}');
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    await waitFor(() => expect(input).toHaveFocus());
+    // The focus coming back from the menu keeps it.
+    expect(await findHelpTooltip()).toHaveTextContent('Pick a fruit');
+    expect(onMenuAction).toHaveBeenLastCalledWith('help');
+    await user.type(input, 'F');
+    expect(helpTooltip()).not.toBeInTheDocument();
+    await openMenu(user);
+    await user.keyboard('{ArrowUp}{Enter}');
+    await findHelpTooltip();
+    // Escape hides it and goes no further: the typed value stays.
+    await user.keyboard('{Escape}');
+    expect(helpTooltip()).not.toBeInTheDocument();
+    expect(input).toHaveValue('F');
+  });
+
+  it('UIC-FIELD-6.5 shows the help from a pointer, against the control without a help button', async () => {
+    const user = userEvent.setup();
+    const { container, rerender } = render(
+      <>
+        <TextField help="Pick a fruit" showHelpButton={false} />
+        <button type="button">Elsewhere</button>
+      </>,
+    );
+    const input = screen.getByRole('textbox');
+    expect(screen.queryByRole('button', { name: /help/i })).not.toBeInTheDocument();
+    // The help describes the control instead of a button.
+    expect(input).toHaveAccessibleDescription('Pick a fruit');
+    fireEvent.contextMenu(input);
+    await user.click(await screen.findByRole('menuitem', { name: 'Help' }));
+    const tooltip = await findHelpTooltip();
+    expect(tooltip).toHaveTextContent('Pick a fruit');
+    // New help shows in the open tooltip; help going away closes it and leaves the menu.
+    rerender(
+      <>
+        <TextField help="Pick a ripe fruit" showHelpButton={false} />
+        <button type="button">Elsewhere</button>
+      </>,
+    );
+    expect(helpTooltip()).toHaveTextContent('Pick a ripe fruit');
+    rerender(
+      <>
+        <TextField showHelpButton={false} />
+        <button type="button">Elsewhere</button>
+      </>,
+    );
+    expect(helpTooltip()).not.toBeInTheDocument();
+    expect(input).not.toHaveAccessibleDescription();
+    // A press anywhere hides it.
+    rerender(
+      <>
+        <TextField help="Pick a fruit" />
+        <button type="button">Elsewhere</button>
+      </>,
+    );
+    expect(screen.getByRole('button', { name: 'Help for Fruit' })).toBeInTheDocument();
+    fireEvent.contextMenu(input);
+    await user.click(await screen.findByRole('menuitem', { name: 'Help' }));
+    await findHelpTooltip();
+    await user.click(screen.getByRole('button', { name: 'Elsewhere' }));
+    expect(helpTooltip()).not.toBeInTheDocument();
+    expect(container.querySelector('.ui-field__help-tooltip')).toBeNull();
+  });
+
+  it('UIC-FIELD-6.5 offers Help in a read-only field and nothing in a disabled one', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<TextField help="Pick a fruit" options={{ isReadOnly: true }} />);
+    await openMenu(user);
+    await user.click(screen.getByRole('menuitem', { name: 'Help' }));
+    expect(await findHelpTooltip()).toHaveTextContent('Pick a fruit');
+    rerender(<TextField help="Pick a fruit" options={{ isDisabled: true }} />);
+    expect(helpTooltip()).not.toBeInTheDocument();
+    fireEvent.contextMenu(screen.getByRole('textbox'));
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 });

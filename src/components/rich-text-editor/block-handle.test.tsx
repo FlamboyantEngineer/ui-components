@@ -70,6 +70,43 @@ describe('BlockHandle', () => {
     expect(handle()).toBeNull();
   });
 
+  it('UIC-RICH-TEXT-EDITOR-9.1 picks the block level with the pointer in the gutter, across gaps and scrolling', async () => {
+    // Each paragraph 20px tall with a 10px gap, from the viewport's top.
+    const rect = (top: number, height: number) => new DOMRect(0, top, 100, height);
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      const index = ['One', 'Two', 'Three'].indexOf(this.textContent);
+      const scroll = surface()?.scrollTop ?? 0;
+      return this.tagName === 'P' && index >= 0 ? rect(index * 30 - scroll, 20) : rect(0, 0);
+    });
+    const { user } = renderHandle();
+    const gutter = surface() as HTMLElement;
+    const topAt = async (clientY: number) => {
+      await user.pointer({ target: gutter, coords: { clientX: 4, clientY } });
+      return handle()?.getAttribute('style');
+    };
+    expect(await topAt(35)).toContain('top: 30px');
+    expect(await topAt(5)).toContain('top: 0px');
+    // In the gap after Two, nearer Three.
+    expect(await topAt(57)).toContain('top: 60px');
+    expect(await topAt(200)).toContain('top: 60px');
+    // Over the handle itself the target stays.
+    await user.pointer({ target: handle() as HTMLElement, coords: { clientX: 4, clientY: 5 } });
+    expect(handle()?.getAttribute('style')).toContain('top: 60px');
+    // The surface scrolls 30px under a still pointer at 35: Three is now beside it.
+    await topAt(35);
+    gutter.scrollTop = 30;
+    fireEvent.scroll(gutter);
+    expect(handle()?.getAttribute('style')).toContain('top: 60px');
+    gutter.scrollTop = 0;
+    fireEvent.scroll(gutter);
+    expect(handle()?.getAttribute('style')).toContain('top: 30px');
+    await user.unhover(gutter);
+    expect(handle()).toBeNull();
+    vi.restoreAllMocks();
+  });
+
   it('UIC-RICH-TEXT-EDITOR-9.1 renders nothing in a read-only editor', () => {
     renderHandle({ isReadOnly: true });
     selectRange(2);
@@ -211,9 +248,29 @@ describe('BlockHandle', () => {
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
+  it('UIC-RICH-TEXT-EDITOR-9.4 sizes the gutter for the configured controls and releases it', () => {
+    const editor = (controls?: { grip: boolean; menu: boolean }) => (
+      <RichTextEditor label="Body" defaultValue={blocks}>
+        {controls ? <BlockHandle {...controls} /> : null}
+      </RichTextEditor>
+    );
+    const { rerender } = render(editor({ grip: true, menu: true }));
+    expect(surface()).toHaveAttribute('data-gutter', 'both');
+    rerender(editor({ grip: true, menu: false }));
+    expect(surface()).toHaveAttribute('data-gutter', 'grip');
+    rerender(editor({ grip: false, menu: true }));
+    expect(surface()).toHaveAttribute('data-gutter', 'menu');
+    rerender(editor({ grip: false, menu: false }));
+    expect(surface()).not.toHaveAttribute('data-gutter');
+    rerender(editor({ grip: true, menu: true }));
+    expect(surface()).toHaveAttribute('data-gutter', 'both');
+    rerender(editor());
+    expect(surface()).not.toHaveAttribute('data-gutter');
+  });
+
   it('UIC-RICH-TEXT-EDITOR-9.4 shows the chosen controls and keeps a gutter only for a handle', () => {
     const { unmount } = renderHandle({ menu: false });
-    expect(surface()).toHaveAttribute('data-gutter', 'true');
+    expect(surface()).toHaveAttribute('data-gutter', 'grip');
     selectRange(7);
     expect(document.querySelector('.ui-block-handle__grip')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Block actions' })).not.toBeInTheDocument();

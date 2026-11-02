@@ -47,6 +47,11 @@ export interface FileFieldProps extends FieldInputProps<FileFieldItem[]> {
   renderFileActions?: ((file: FileFieldItem) => ReactNode) | undefined;
   /** Replaces the thumbnail of a held file, such as with an audio or video player. */
   renderFilePreview?: ((file: FileFieldItem) => ReactNode) | undefined;
+  /**
+   * Leaves out the visible `Removed files` title, so the removed files stack right below the held
+   * ones; the group keeps the title as its accessible name.
+   */
+  hideRemovedLabel?: boolean | undefined;
 }
 
 /**
@@ -111,6 +116,7 @@ export function FileField({
   maxFiles = allowsMultiple ? undefined : 1,
   renderFileActions,
   renderFilePreview,
+  hideRemovedLabel = false,
   ...props
 }: FileFieldProps) {
   const strings = useUiStrings();
@@ -155,6 +161,7 @@ export function FileField({
           />
           <RemovedFiles
             removed={changes?.removed ?? []}
+            hideLabel={hideRemovedLabel}
             isDisabled={isFull || control.disabled || control.readOnly}
             onRestore={(item) => apply(restoreFileItem(value, committedValue, item))}
           />

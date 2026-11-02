@@ -6,6 +6,7 @@ import {
   type NumberFieldUnits,
 } from '../../src/components/number-field/index.js';
 import type { ControlSize } from '../../src/core/props.js';
+import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 
@@ -104,5 +105,58 @@ export function NumberFieldUnitsSection() {
     >
       <TypedLength />
     </LabSection>
+  );
+}
+
+/** Units drawn as part of the number at every size, sign, length, locale and state. */
+export function NumberFieldUnitTypeSection() {
+  return (
+    <LabSection
+      title="Units with the number"
+      description="A unit takes the number's font, size, colour and baseline, with about a space between them after the number. Negative, decimal, long, read-only, disabled and German-formatted values at xs, sm, md and lg."
+    >
+      <UnitTypography />
+    </LabSection>
+  );
+}
+
+/** Quantities whose unit should read as part of the number, whatever its sign, length or locale. */
+const quantities = {
+  negative: { defaultValue: -12.5, endAdornment: '°C' },
+  decimal: { defaultValue: 0.375, endAdornment: 'mm', formatOptions: { maximumFractionDigits: 3 } },
+  long: { defaultValue: 1234567.89, endAdornment: 'kg' },
+  'read-only': { defaultValue: 42, endAdornment: 'kg', isReadOnly: true },
+  disabled: { defaultValue: 42, endAdornment: 'kg', isDisabled: true },
+} as const satisfies Record<string, Partial<NumberFieldProps>>;
+
+const quantityNames = Object.keys(quantities) as (keyof typeof quantities)[];
+const placements = ['value', 'edge'] as const;
+
+/** Units in the number's own type and baseline, after the number and at the frame's edge. */
+function UnitTypography() {
+  return (
+    <>
+      <StateMatrix
+        caption="unit type"
+        axes={{ quantity: quantityNames, placement: placements, size: sizes }}
+        render={({ quantity, placement, size }) => (
+          <NumberField
+            label={`${quantity} ${placement} ${size}`}
+            size={size}
+            endAdornmentPlacement={placement}
+            {...quantities[quantity]}
+          />
+        )}
+      />
+      <UiProvider locale="de-DE">
+        <NumberField
+          label="Gewicht"
+          defaultValue={1234.5}
+          endAdornment="kg"
+          endAdornmentPlacement="value"
+          data-lab-field="unit-locale"
+        />
+      </UiProvider>
+    </>
   );
 }

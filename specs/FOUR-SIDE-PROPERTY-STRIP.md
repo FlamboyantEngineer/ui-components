@@ -46,6 +46,13 @@ With `link`, the row shall publish `data-link` (`all` or `pairs`) and draw, afte
 Implementation: `src/components/four-side-property-strip/four-side-property-strip.tsx`, `labs/reference/four-side-property-strip.css`
 Verification: `src/components/four-side-property-strip/four-side-property-strip.test.tsx`, `e2e/four-side-property-strip.spec.ts`
 
+### UIC-FOUR-SIDE-PROPERTY-STRIP-1.7 - Value alignment
+
+`valueAlign` (`start`, `center`, `end`) shall publish `data-value-align` on the row, so a stylesheet places each side control's value at the start, centre or end of its box in the reading direction; without it the row publishes nothing and the controls keep their own alignment. It changes no value, edit, link or caret. The reference sheet aligns the text of every input in the side cells, leaving the letters, the unit, the brackets and the inputs' boxes where they are, so negative, decimal and long values in narrow controls show whole in both directions.
+
+Implementation: `src/components/four-side-property-strip/four-side-property-strip.tsx`, `labs/reference/four-side-property-strip.css`
+Verification: `src/components/four-side-property-strip/four-side-property-strip.test.tsx`, `e2e/four-side-property-strip.spec.ts`
+
 ## Hooks
 
 | Hook                                   | Kind      | Values                                                                                     | Description                                               |
@@ -57,4 +64,5 @@ Verification: `src/components/four-side-property-strip/four-side-property-strip.
 | `data-side`                            | attribute | `top`, `bottom`, `left`, `right`, `block-start`, `block-end`, `inline-start`, `inline-end` | On a cell: the side it edits.                             |
 | `data-sides`                           | attribute | Side names, space-separated                                                                | On a bracket: the sides it groups, in cell order.         |
 | `data-link`                            | attribute | `all`, `pairs`                                                                             | On the row: what linked sides share.                      |
+| `data-value-align`                     | attribute | `start`, `center`, `end`                                                                   | On the row: where the side controls' values sit.          |
 | `data-linked`                          | state     | `true`                                                                                     | On a cell or a bracket: its group of sides is linked.     |

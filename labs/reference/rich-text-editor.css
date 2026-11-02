@@ -43,7 +43,8 @@
 }
 
 /*
- * The block handle sits in the inline-start gutter the surface keeps while one is mounted. The
+ * The block handle sits in the inline-start gutter the surface keeps while one is mounted, as wide
+ * as its controls: the 14px grip, the 18px menu button or both, after the handle's 2px inset. The
  * surface scrolls once a host bounds its height, under the overlay scrollbars.
  */
 .ui-rich-text-editor__surface {
@@ -51,8 +52,16 @@
   padding-inline-start: 12px;
 }
 
-.ui-rich-text-editor__surface[data-gutter] {
+.ui-rich-text-editor__surface[data-gutter='both'] {
   padding-inline-start: 36px;
+}
+
+.ui-rich-text-editor__surface[data-gutter='grip'] {
+  padding-inline-start: 22px;
+}
+
+.ui-rich-text-editor__surface[data-gutter='menu'] {
+  padding-inline-start: 24px;
 }
 
 /*
@@ -352,6 +361,11 @@
 
 .ui-rich-text-editor__scrollbars .ui-scroll-region__track {
   pointer-events: auto;
+}
+
+/* The thumb stays over the marks, which lie level with the marked blocks in view. */
+.ui-rich-text-editor__scrollbars .ui-scroll-region__thumb {
+  z-index: 1;
 }
 
 .ui-rich-text-editor__scroll-marker {

@@ -173,6 +173,8 @@ export interface FieldStrings {
   uploadSignatureImage: string;
   /** Pastes the clipboard's image as the signature. */
   pasteSignatureImage: string;
+  /** Deletes a signature pad's image, from its field menu. */
+  deleteSignatureImage: string;
   /** Shown in a signature pad's empty image area, and describes it. */
   signatureImageEmpty: string;
   /** Refuses a signature image of a type the pad does not take. */

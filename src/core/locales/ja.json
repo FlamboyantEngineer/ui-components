@@ -490,6 +490,7 @@
   "signatureImage": "画像",
   "uploadSignatureImage": "画像をアップロード",
   "pasteSignatureImage": "画像を貼り付け",
+  "deleteSignatureImage": "画像を削除",
   "signatureImageEmpty": "画像がありません。アップロードするか貼り付けてください。",
   "signatureImageType": "PNG、JPEG、WebP、GIF の画像を選んでください。",
   "signatureImageSize": "{size} 以下の画像を選んでください。",

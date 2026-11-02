@@ -68,10 +68,10 @@ Verification: `src/components/number-field/number-field.test.tsx`, `e2e/number-f
 
 ### UIC-NUMBER-FIELD-3.1 - Literal affixes
 
-`startAdornment` and `endAdornment` shall render the caller's content in `ui-number-field__start` and `ui-number-field__end`, inside the group, around the input and within the step buttons, so a literal the locale formats cannot produce (`$ 1,000 /mo`) frames the number without becoming part of its text. The locale's own formats (currency, units, grouping such as the `en-IN` lakh) stay `formatOptions`' and the locale's. Content that renders nothing (`null`, `undefined`, a boolean or an empty string) counts as absent; `0` counts as content. The content may hold controls, such as a `Button` that switches the unit: buttons and checkboxes there are free of the field's step-button slots, need no `slot` and take none of the steppers' props, in the decimal and the radix field alike. `endAdornmentPlacement` (`NumberFieldAdornmentPlacement`) places the end adornment: at the frame's trailing edge, before the increment button (`edge`, the default), or right after the number (`value`), as a unit that reads with it (`1,250 kg`). With `value` the root publishes `data-adornment-placement="value"` and the input sits in `ui-number-field__value` beside `ui-number-field__sizer`, a copy of the text the input shows (the typed text while editing, the placeholder while empty) hidden from assistive technology, so a stylesheet can make the input as wide as its text: the adornment then follows the number as it is typed, stepped or replaced, and the free room falls after it. The reference sheet stacks the input and the sizer in one grid cell. Units stay the caller's: the field names none.
+`startAdornment` and `endAdornment` shall render the caller's content in `ui-number-field__start` and `ui-number-field__end`, inside the group, around the input and within the step buttons, so a literal the locale formats cannot produce (`$ 1,000 /mo`) frames the number without becoming part of its text. The locale's own formats (currency, units, grouping such as the `en-IN` lakh) stay `formatOptions`' and the locale's. Content that renders nothing (`null`, `undefined`, a boolean or an empty string) counts as absent; `0` counts as content. The content may hold controls, such as a `Button` that switches the unit: buttons and checkboxes there are free of the field's step-button slots, need no `slot` and take none of the steppers' props, in the decimal and the radix field alike. `endAdornmentPlacement` (`NumberFieldAdornmentPlacement`) places the end adornment: at the frame's trailing edge, before the increment button (`edge`, the default), or right after the number (`value`), as a unit that reads with it (`1,250 kg`). With `value` the root publishes `data-adornment-placement="value"` and the input sits in `ui-number-field__value` beside `ui-number-field__sizer`, a copy of the text the input shows (the typed text while editing, the placeholder while empty) hidden from assistive technology, so a stylesheet can make the input as wide as its text: the adornment then follows the number as it is typed, stepped or replaced, and the free room falls after it. The reference sheet stacks the input and the sizer in one grid cell, both in the input's type, so the sizer measures the text as drawn. The reference sheet draws an adornment's text in the number's font, size, weight, figures and colour, centred on the same line box as the input's text so the two share a baseline, in every size and state, with about a space (`0.25em`) between the number and a unit after it, so `50 mm` reads as one quantity; controls placed in an adornment keep their own type. The lab draws negative, decimal, long, read-only, disabled and German-formatted values with a unit after the number and at the edge, at `xs`, `sm`, `md` and `lg`. Units stay the caller's: the field names none.
 
 Implementation: `src/components/number-field/number-field.tsx`, `src/components/number-field/number-field-parts.tsx`, `src/utils/free-controls.tsx`, `labs/reference/number-field.css`
-Verification: `src/components/number-field/number-field.test.tsx`, `e2e/number-field.spec.ts`
+Verification: `src/components/number-field/number-field.test.tsx`, `e2e/number-field.spec.ts`, `e2e/number-field-displays.spec.ts`
 
 ### UIC-NUMBER-FIELD-3.2 - Modifier steps
 
@@ -82,7 +82,7 @@ Verification: `src/components/number-field/number-field.test.tsx`, `e2e/number-f
 
 ### UIC-NUMBER-FIELD-3.3 - Scrub handle
 
-`showScrubber` shall draw a scrub handle (`ui-number-field__scrubber`, holding the `scrub` glyph, a double arrow pointing both ways along the line, hidden from assistive technology, which steps with the arrow keys) after the decrement button. The reference sheet makes it as wide as the frame is tall less its border, with an `ew-resize` cursor, and darkens it under the pointer. Pressing it with the primary pointer button and dragging sideways steps the value once every 4 pixels toward the end of the line (rightward in left-to-right text, leftward in right-to-left text) by `step`, or by `largeStep` with Shift and `smallStep` with Alt, within the range; the field's value follows the drag through `onChange` and commits once when the drag ends. The handle captures the pointer and opts out of touch panning (`touch-action: none`). A read-only or disabled field refuses the drag. Becoming read-only or disabled releases capture and abandons an active scrub without a commit; unlocking requires a new press. Only the pointer that pressed the handle moves or ends the scrub. A cancelled scrub (`pointercancel` or lost capture) puts back the value it started from, through `onChange`, and commits nothing. A value the host sets during the scrub, other than the one the scrub last set, wins: the scrub is abandoned without a further change or a commit. The vertical wheel over the handle steps the value too, one step a notch (up raises it, a trackpad's smaller deltas adding up to a step), by `step`, or by `largeStep` with Shift and `smallStep` with Alt, within the range, and commits each step as an arrow key does; steps that come faster than the field renders build on each other. The page does not scroll while the wheel is over the handle. A zoom gesture (the wheel with Ctrl or Meta) and a mostly sideways wheel stay the browser's, except a sideways wheel with Shift held, which some platforms report for Shift and a mouse wheel. A read-only or disabled field leaves the wheel to the page. In the reference sheet the step buttons and the handle scale with the frame, their glyphs take the icon size of the field's size (12 pixels at `xs` and `sm`, 14 at `md`, 16 at `lg`) and the adornments a step below the number's type; the lab draws each display choice (step buttons, the handle alone, a unit at the edge, a unit after the number) at `xs`, `sm`, `md` and `lg`.
+`showScrubber` shall draw a scrub handle (`ui-number-field__scrubber`, holding the `scrub` glyph, a double arrow pointing both ways along the line, hidden from assistive technology, which steps with the arrow keys) after the decrement button. The reference sheet makes it as wide as the frame is tall less its border, with an `ew-resize` cursor, and darkens it under the pointer. Pressing it with the primary pointer button and dragging sideways steps the value once every 4 pixels toward the end of the line (rightward in left-to-right text, leftward in right-to-left text) by `step`, or by `largeStep` with Shift and `smallStep` with Alt, within the range; the field's value follows the drag through `onChange` and commits once when the drag ends. The handle captures the pointer and opts out of touch panning (`touch-action: none`). A read-only or disabled field refuses the drag. Becoming read-only or disabled releases capture and abandons an active scrub without a commit; unlocking requires a new press. Only the pointer that pressed the handle moves or ends the scrub. A cancelled scrub (`pointercancel` or lost capture) puts back the value it started from, through `onChange`, and commits nothing. A value the host sets during the scrub, other than the one the scrub last set, wins: the scrub is abandoned without a further change or a commit. The vertical wheel over the handle steps the value too, one step a notch (up raises it, a trackpad's smaller deltas adding up to a step), by `step`, or by `largeStep` with Shift and `smallStep` with Alt, within the range, and commits each step as an arrow key does; steps that come faster than the field renders build on each other. The page does not scroll while the wheel is over the handle. A zoom gesture (the wheel with Ctrl or Meta) and a mostly sideways wheel stay the browser's, except a sideways wheel with Shift held, which some platforms report for Shift and a mouse wheel. A read-only or disabled field leaves the wheel to the page. In the reference sheet the step buttons and the handle scale with the frame, their glyphs take the icon size of the field's size (12 pixels at `xs` and `sm`, 14 at `md`, 16 at `lg`) and the adornments in the number's type (UIC-NUMBER-FIELD-3.1); the lab draws each display choice (step buttons, the handle alone, a unit at the edge, a unit after the number) at `xs`, `sm`, `md` and `lg`.
 
 Implementation: `src/components/number-field/number-field.tsx`, `src/components/number-field/number-field-parts.tsx`, `src/core/glyphs.tsx`, `src/utils/use-wheel-steps.ts`, `labs/reference/number-field.css`
 Verification: `src/components/number-field/number-field.test.tsx`, `e2e/number-field.spec.ts`, `e2e/number-field-displays.spec.ts`
@@ -117,7 +117,7 @@ Verification: `src/components/number-field/number-radix.test.tsx`, `e2e/number-r
 `display="slider"` shall draw the number as a slider: a `Field` around a slider group (`ui-number-field__slider`, role `group`) built on React Aria's `Slider`, `SliderTrack`, `SliderFill`, `SliderThumb` and `SliderOutput`, with `useFieldControl`. Its root is the field's root, which carries `ui-number-field` beside `ui-field` and publishes `data-display="slider"`. Its props are `NumberSliderFieldProps`: the field's props (`FieldInputProps<number>`) but `isRequired` and `emptyValue`, since a slider always holds a value and is never required or cleared, plus the range, step, format and the track props this section lists; the number input's own props (steppers, adornments, scrubber, units, radix) do not apply. The value is a number: a field given no value, committed value or default starts at the minimum. The colour sliders of a [Color Field](COLOR-FIELD.md) are a different control. While a thumb moves, by a drag or a key press, each new value goes through `onChange`; when the drag or key press ends the field commits (`onCommit`) and calls `onChangeEnd` with the value.
 
 Implementation: `src/components/number-field/number-slider.tsx`, `src/components/number-field/number-slider-parts.tsx`, `labs/reference/number-field.css`
-Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-slider.spec.ts`
+Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-field-slider.spec.ts`
 
 ### UIC-NUMBER-FIELD-5.2 - Range, step and format
 
@@ -131,28 +131,28 @@ Verification: `src/components/number-field/number-slider.test.tsx`
 The slider shall draw a track (`ui-number-field__track`) holding the fill (`ui-number-field__fill`) and one thumb per value (`ui-number-field__thumb`). The slider positions the thumb along the track and sizes the fill with functional inline styles: the fill runs from the minimum, or from `fillOffset` (so a slider around zero fills from 0), to the value. Pressing the track moves the nearest thumb to the press, and dragging a thumb or the track moves it with the pointer. A drag maps the pointer's travel onto the track's length, so a stylesheet keeps that length steady while a thumb moves: the reference sheet reserves the restore button's place, which shows once the value differs from the committed one, and gives the output a fixed width.
 
 Implementation: `src/components/number-field/number-slider.tsx`, `src/components/number-field/number-slider-parts.tsx`, `labs/reference/number-field.css`
-Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-slider.spec.ts`
+Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-field-slider.spec.ts`
 
 ### UIC-NUMBER-FIELD-5.4 - Value label
 
 `valueLabel` shall choose where the value shows and publish it as `data-value-label` on the root: `output` (the default) draws a value output (`ui-number-field__output`, an `<output>` for the thumbs that does not announce itself) before the track, with the formatted value or range; `input` draws a number input per value before the track (`ui-number-field__endpoints`, UIC-NUMBER-FIELD-8.5) that edits it, named like its thumb, while the thumbs keep the field's control and its form value; `thumb` draws each thumb's formatted value in `ui-number-field__thumb-label` inside the thumb, hidden from assistive technology, which the reference sheet shows above the thumb while it is hovered, focused or dragged; `none` draws neither.
 
 Implementation: `src/components/number-field/number-slider-parts.tsx`, `labs/reference/number-field.css`
-Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-slider.spec.ts`
+Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-field-slider.spec.ts`
 
 ### UIC-NUMBER-FIELD-5.5 - Marks
 
 `marks` shall draw one `ui-number-field__mark` per entry inside the track, at its `value`, positioned with functional inline styles (`inset-inline-start` as a percentage of the track, or `bottom` on a vertical slider), with its `label` in `ui-number-field__mark-label`. A mark within the filled part publishes `data-in-range`. Marks are a visual scale, hidden from assistive technology: each thumb reports its own value. Pressing a mark's label presses the track there.
 
 Implementation: `src/components/number-field/number-slider-parts.tsx`, `labs/reference/number-field.css`
-Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-slider.spec.ts`
+Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-field-slider.spec.ts`
 
 ### UIC-NUMBER-FIELD-5.6 - Orientation and size
 
-`orientation` (`horizontal` by default, or `vertical`) shall lay the track out along that axis, publish `data-orientation` on the box, the track, the fill and the output, and turn the thumb's drag and arrow keys to that axis. A horizontal slider follows the direction of the `UiProvider` locale, as React Aria reads it: in a right-to-left locale the minimum sits at the right end, the fill grows leftward, a thumb sits at its value measured from the right, Arrow Left raises the value and Arrow Right lowers it, and a drag toward the left raises it. The locale, not the DOM's `dir`, sets this direction, so a right-to-left region sets both (a provider with a right-to-left locale around content with `dir="rtl"`); a vertical slider is the same in both directions. `size` (`xs`, `sm`, `md` by default, `lg`) is the field's size (UIC-FIELD-1.10), which also sizes the track and thumb.
+`orientation` (`horizontal` by default, or `vertical`) shall lay the track out along that axis, publish `data-orientation` on the box, the track, the fill and the output, and turn the thumb's drag and arrow keys to that axis. A horizontal slider follows the direction of the `UiProvider` locale, as React Aria reads it: in a right-to-left locale the minimum sits at the right end, the fill grows leftward, a thumb sits at its value measured from the right, Arrow Left raises the value and Arrow Right lowers it, and a drag toward the left raises it. The locale, not the DOM's `dir`, sets this direction, so a right-to-left region sets both (a provider with a right-to-left locale around content with `dir="rtl"`); a vertical slider is the same in both directions. `size` (`xs`, `sm`, `md` by default, `lg`) is the field's size (UIC-FIELD-1.10), which also sizes the track and thumb. The Number Field lab draws the slider display and ranges beside the number input, in every field state at `xs`, `sm`, `md` and `lg`.
 
 Implementation: `src/components/number-field/number-slider.tsx`, `src/components/number-field/number-slider-parts.tsx`, `labs/reference/number-field.css`
-Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-slider.spec.ts`
+Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-field-slider.spec.ts`
 
 ### UIC-NUMBER-FIELD-5.7 - Hooks and caller attributes
 
@@ -168,14 +168,14 @@ Verification: `src/components/number-field/number-slider.test.tsx`
 The group shall carry the field label as its `aria-label`, because each thumb is named after the group's own name. Each thumb holds a visually hidden native range input (role `slider`) named by the field label (UIC-NUMBER-FIELD-8.4 for a range), described by the field's description, decoration and message, and reporting its formatted value in `aria-valuetext`. While invalid, each input carries `aria-invalid="true"` and `aria-errormessage` naming the message.
 
 Implementation: `src/components/number-field/number-slider-parts.tsx`, `src/components/number-field/number-slider.tsx`
-Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-slider.spec.ts`
+Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-field-slider.spec.ts`
 
 ### UIC-NUMBER-FIELD-6.2 - Keyboard and states
 
 Tab shall reach each thumb in order. Arrow Right and Arrow Up shall step the focused thumb's value up and Arrow Left and Arrow Down down by `step` (mirrored for Right and Left in right-to-left locales); Shift with an arrow, Page Up and Page Down step by a page, a tenth of the range rounded to a multiple of the step; Home and End move to the lowest and highest value the thumb may take. Each thumb publishes `data-focused`, `data-focus-visible` (keyboard focus only), `data-hovered` and `data-dragging` while it is dragged.
 
 Implementation: `src/components/number-field/number-slider-parts.tsx`
-Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-slider.spec.ts`
+Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-field-slider.spec.ts`
 
 ### UIC-NUMBER-FIELD-6.3 - Disabled and read-only
 
@@ -191,14 +191,14 @@ Verification: `src/components/number-field/number-slider.test.tsx`
 The slider display shall show each validation status from `validate` (invalid, warning and pending), show dirty state with a restore button that puts the committed value back and focuses the first thumb, undo and redo with the field's chords pressed on a thumb, and offer the field menu, whose Set to default puts the default back.
 
 Implementation: `src/components/number-field/number-slider.tsx`, `src/components/field/field.tsx`
-Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-slider.spec.ts`
+Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-field-slider.spec.ts`
 
 ### UIC-NUMBER-FIELD-7.2 - Forms
 
 With `name`, a form shall submit a slider's value under that name. A range takes `startName` and `endName` instead and submits each end once under its own name. Errors a [Form](FORM.md) gives in `validationErrors` under `startName` or `endName` belong to the field ([UIC-FIELD-3.9](FIELD.md#uic-field-39---external-errors)): it shows them, they block the form's submission, and each clears once its own end changes, while the other end's error stays until a new errors object or its own end changes. The field's control reference is the first thumb's input, so a form's submit validation focuses it and the native behavior's custom validity (UIC-FIELD-3.10) blocks a native submit through it.
 
 Implementation: `src/components/number-field/number-slider-parts.tsx`
-Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-slider.spec.ts`
+Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-field-slider.spec.ts`
 
 ## UIC-NUMBER-FIELD-8 - Range
 
@@ -207,35 +207,35 @@ Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-
 `range` shall make the field hold a range, a start and an end (`NumberRange`, `[number, number]`), with `NumberRangeFieldProps`: the slider display's props, but `name`, plus `startName`, `endName` and `minStepsBetweenThumbs`. Its root publishes `data-range`. With `display="slider"` it renders the slider's parts with two thumbs, so every slider rule applies to it. A field given no value, committed value or default starts at the whole range, the fill runs between the thumbs and the output shows the formatted range.
 
 Implementation: `src/components/number-field/number-slider.tsx`, `src/components/number-field/number-slider-parts.tsx`, `labs/reference/number-field.css`
-Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-slider.spec.ts`
+Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-field-slider.spec.ts`
 
 ### UIC-NUMBER-FIELD-8.2 - Thumbs never cross
 
 Each thumb of a range shall stop at the other one, by drag, track press and keyboard alike: the start never passes the end and the end never passes the start.
 
 Implementation: `src/components/number-field/number-slider.tsx`
-Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-slider.spec.ts`
+Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-field-slider.spec.ts`
 
 ### UIC-NUMBER-FIELD-8.3 - Minimum distance
 
 `minStepsBetweenThumbs` (0 by default) shall keep that many steps between the thumbs: the thumb that moves stops that far from the other, within the range. `keepThumbsApart(next, previous, bounds)` gives the range after a move from the previous one, holding back the thumb that moved, and keeps a change that moves both thumbs as it is. Thumbs already closer than that (a value set from outside, or the range's end) never jump apart: a move that brings them closer is refused and one that moves them apart is kept as it is. The spaced range is snapped onto the grid (UIC-NUMBER-FIELD-5.2), so a fractional step gives `0.2`, not `0.19999999999999998`.
 
 Implementation: `src/components/number-field/number-slider.tsx`
-Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-slider.spec.ts`
+Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-field-slider.spec.ts`
 
 ### UIC-NUMBER-FIELD-8.4 - Thumb names
 
 The start thumb shall be named by the provider string `rangeMinimum` and the end thumb by `rangeMaximum`, each followed by the field label (`Minimum Price`, `Maximum Price`).
 
 Implementation: `src/components/number-field/number-slider.tsx`, `src/core/strings/field.ts`
-Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-slider.spec.ts`
+Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-field-slider.spec.ts`
 
 ### UIC-NUMBER-FIELD-8.5 - Range inputs
 
 A range without `display="slider"` (`display="field"`, the default) shall draw no track: its control is a start and an end number input (`ui-number-field__endpoints` holding a `ui-number-field__endpoint` per end, React Aria's `NumberField` around a `ui-number-field__input`) with a dash between them (`ui-number-field__separator`, hidden from assistive technology). Each input is named like its thumb (UIC-NUMBER-FIELD-8.4), described by the field's description and message, formats and parses its end in the locale with `formatOptions`, and steps it with the arrow keys within the range and on the step. A typed end takes effect on Enter, when focus leaves the input and on each arrow step, and commits; the range keeps its ends in order and `minStepsBetweenThumbs` steps apart, as the thumbs do (UIC-NUMBER-FIELD-8.3). The start input is the field's control and submits under `startName`, the end input under `endName`. Read-only inputs refuse edits and disabled ones leave the tab order. The same inputs edit the value before the track with `valueLabel="input"` (UIC-NUMBER-FIELD-5.4), where the thumbs submit it.
 
 Implementation: `src/components/number-field/number-endpoints.tsx`, `src/components/number-field/number-slider.tsx`, `labs/reference/number-field.css`
-Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-slider.spec.ts`
+Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-field-slider.spec.ts`
 
 ## Hooks
 

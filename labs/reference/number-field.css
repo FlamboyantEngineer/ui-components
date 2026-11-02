@@ -150,9 +150,14 @@
   display: inline-flex;
   flex: none;
   align-items: center;
-  color: var(--ref-muted);
-  /* A step below the number's type, whatever the field's size. */
-  font-size: 0.875em;
+  /*
+   * A unit reads as part of the quantity: the number's type, figures and colour, its text centred
+   * on the same line box as the input's, so both share a baseline. Controls placed as adornments
+   * keep their own type.
+   */
+  color: inherit;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
 }
 
 .ui-number-field__start {
@@ -179,7 +184,8 @@
   display: inline-grid;
   flex: 0 1 auto;
   min-width: 0;
-  padding-inline: 8px 4px;
+  /* About a space between the number and the unit after it, as in "50 mm". */
+  padding-inline: 8px 0.25em;
 }
 
 .ui-number-field__value > .ui-number-field__input,

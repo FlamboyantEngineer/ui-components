@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { formatBytes } from '../../utils/format-bytes.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import type { FileUploadItem } from '../file-upload/file-upload.js';
 import { FileField, type FileFieldItem, type FileFieldProps } from './file-field.js';
@@ -301,7 +302,9 @@ describe('FileField', () => {
     const { container } = render(<Edited />);
     expect(rows(container).map((row) => row.getAttribute('data-change'))).toEqual([null, 'added']);
     const removed = container.querySelector('.ui-file-field__removed');
-    expect(removed).toHaveClass('ui-field-previous-value');
+    expect(removed?.querySelector('.ui-file-field__removed-name')).toHaveClass(
+      'ui-field-previous-value',
+    );
     expect(removed).toHaveTextContent('Harbour.png');
     const group = screen.getByRole('group', { name: 'Removed files' });
     expect(group).toHaveClass('ui-file-field__removed-files');
@@ -321,6 +324,45 @@ describe('FileField', () => {
     ]);
     expect(container.querySelector('.ui-file-field__removed')).toBeNull();
     expect(screen.queryByRole('group', { name: 'Removed files' })).not.toBeInTheDocument();
+    expectHooksMatchSpec(container, 'FILE-FIELD');
+  });
+
+  it('UIC-FILE-FIELD-3.2 shows a removed file like a held one: glyph, size and download link beside its restore button', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const { container } = render(
+      <Attachments allowsMultiple value={[]} committedValue={[report, song]} onChange={onChange} />,
+    );
+    const group = screen.getByRole('group', { name: 'Removed files' });
+    const [first, second] = [...group.querySelectorAll('.ui-file-field__removed')];
+    expect(first?.querySelector('.ui-file-field__removed-icon')).toHaveAttribute(
+      'aria-hidden',
+      'true',
+    );
+    expect(first?.querySelector('.ui-file-field__removed-size')).toHaveTextContent(
+      formatBytes(2048, 'en-US'),
+    );
+    const download = within(group).getByRole('link', { name: 'Download Report.pdf' });
+    expect(download.closest('button')).toBeNull();
+    expect(download).toHaveAttribute('download', 'Report.pdf');
+    // Song.ogg has neither a size nor a download link.
+    expect(second?.querySelector('.ui-file-field__removed-size')).toBeNull();
+    expect(within(second as HTMLElement).queryByRole('link')).not.toBeInTheDocument();
+    await user.click(download);
+    expect(onChange).not.toHaveBeenCalled();
+    expectHooksMatchSpec(container, 'FILE-FIELD', {
+      slots: ['removed', 'removed-icon', 'removed-name', 'removed-size', 'download'],
+    });
+  });
+
+  it('UIC-FILE-FIELD-3.2 leaves out the removed files title on request, keeping the group named', () => {
+    const { container } = render(
+      <Attachments allowsMultiple hideRemovedLabel value={[]} committedValue={[report, song]} />,
+    );
+    const group = screen.getByRole('group', { name: 'Removed files' });
+    expect(group).toHaveAttribute('data-hide-label', 'true');
+    expect(container.querySelector('.ui-file-field__removed-label')).toBeNull();
+    expect(within(group).getAllByRole('button', { name: /^Restore/ })).toHaveLength(2);
     expectHooksMatchSpec(container, 'FILE-FIELD');
   });
 

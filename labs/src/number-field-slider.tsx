@@ -11,7 +11,7 @@ import {
 } from '../../src/components/number-field/index.js';
 import type { ControlSize } from '../../src/core/props.js';
 import { UiProvider } from '../../src/core/provider.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, StateMatrix } from './chrome/index.js';
 import { LabHelperCalls } from './lab-helper-calls.js';
 import { LabOutput } from './lab-output.js';
 import {
@@ -23,7 +23,7 @@ import {
 
 // A slider always holds a value, so it has no required state.
 const sliderStates = fieldStates.filter((state) => state !== 'required');
-const sizes = ['sm', 'md', 'lg'] as const satisfies readonly ControlSize[];
+const sizes = ['xs', 'sm', 'md', 'lg'] as const satisfies readonly ControlSize[];
 const valueLabels = [
   'output',
   'input',
@@ -298,108 +298,126 @@ function SavedForm() {
         }
         data-lab-field="quiet"
       />
-      <Button onPress={() => setSaved(value)}>Save</Button>
+      <Button onPress={() => setSaved(value)}>Save sound</Button>
       <Button type="submit">Submit</Button>
       <LabOutput name="Submitted">{submitted}</LabOutput>
     </Form>
   );
 }
 
-mountLab(
-  <>
-    <LabSection title="Sizes and states" description="Every size against every field state.">
-      <StateMatrix
-        axes={{ state: sliderStates, size: sizes }}
-        render={({ state, size }) => <Sample state={state} size={size} />}
-      />
-    </LabSection>
-    <LabSection
-      title="Value labels and layouts"
-      description="The value in an output, on the thumb (shown while hovered, focused or dragged) or nowhere, against every label layout."
-    >
-      <StateMatrix
-        axes={{ valueLabel: valueLabels, layout: fieldLayouts }}
-        render={({ valueLabel, layout }) => (
-          <NumberField
-            display="slider"
-            label="Volume"
-            labelLayout={layout}
-            valueLabel={valueLabel}
-            defaultValue={40}
-          />
-        )}
-      />
-    </LabSection>
-    <LabSection title="Range states" description="A range slider in every field state.">
-      <StateMatrix
-        axes={{ state: sliderStates }}
-        render={({ state }) => <RangeSample state={state} />}
-      />
-    </LabSection>
-    <LabSection
-      title="Marks and formats"
-      description="Labelled marks, a unit format and a centred fill."
-    >
-      <Marks />
-    </LabSection>
-    <LabSection
-      title="Commit"
-      description="The value follows a drag; the commit lands when it ends."
-    >
-      <Commit />
-    </LabSection>
-    <LabSection title="Range" description="The thumbs never cross and keep a minimum distance.">
-      <Range />
-    </LabSection>
-    <LabSection
-      title="Range field and value inputs"
-      description="A range without a track: a start and an end input. A slider with valueLabel input edits its value in an input per thumb before the track."
-    >
-      <RangeInputs />
-    </LabSection>
-    <LabSection
-      title="Normalized value"
-      description="Validation, callbacks and the form all hold the snapped, clamped and ordered value. NaN reads as the minimum and Infinity as the last step, reported as a change."
-    >
-      <Normalized />
-    </LabSection>
-    <LabSection title="Vertical" description="Vertical sliders, one with the value on its thumb.">
-      <Vertical />
-    </LabSection>
-    <LabSection
-      title="Right to left"
-      description="Under a right-to-left provider locale and dir rtl, the minimum is at the right: the fill grows leftward, Arrow Left raises the value and a drag to the left raises it."
-    >
-      <RightToLeft />
-    </LabSection>
-    <LabSection
-      title="Form value, dirty state and the field menu"
-      description="Each thumb submits under the slider's name; an invalid range blocks the submit."
-    >
-      <SavedForm />
-    </LabSection>
-    <LabSection
-      title="Host helpers"
-      description="The spacing rule a range slider with minDistance applies, and the grid every slider value is snapped onto, for a host that adjusts a range from its own inputs."
-    >
-      <LabHelperCalls
-        calls={[
-          [
-            'snapToStep(0.1 + 0.2, { minValue: 0, maxValue: 1, step: 0.1 })',
-            String(snapToStep(0.1 + 0.2, { minValue: 0, maxValue: 1, step: 0.1 })),
-          ],
-          [
-            'normalizeSliderValue([80, 20], { minValue: 0, maxValue: 50, step: 10 })',
-            JSON.stringify(normalizeSliderValue([80, 20], { minValue: 0, maxValue: 50, step: 10 })),
-          ],
-          [
-            'keepThumbsApart([40, 45], [30, 45], { distance: 10, minValue: 0, maxValue: 100 })',
-            JSON.stringify(
-              keepThumbsApart([40, 45], [30, 45], { distance: 10, minValue: 0, maxValue: 100 }),
-            ),
-          ],
-        ]}
-      />
-    </LabSection>
-  </>,
-);
+/**
+ * The slider display and ranges, drawn in the Number Field lab: `display="slider"` and `range`
+ * at every size and state, value labels, marks, commits, normalization, vertical, right to left
+ * and forms.
+ */
+export function NumberFieldSliderSections() {
+  return (
+    <>
+      <LabSection
+        title="Slider sizes and states"
+        description="Every size against every field state."
+      >
+        <StateMatrix
+          axes={{ state: sliderStates, size: sizes }}
+          render={({ state, size }) => <Sample state={state} size={size} />}
+        />
+      </LabSection>
+      <LabSection
+        title="Slider value labels and layouts"
+        description="The value in an output, on the thumb (shown while hovered, focused or dragged) or nowhere, against every label layout."
+      >
+        <StateMatrix
+          axes={{ valueLabel: valueLabels, layout: fieldLayouts }}
+          render={({ valueLabel, layout }) => (
+            <NumberField
+              display="slider"
+              label="Volume"
+              labelLayout={layout}
+              valueLabel={valueLabel}
+              defaultValue={40}
+            />
+          )}
+        />
+      </LabSection>
+      <LabSection title="Range slider states" description="A range slider in every field state.">
+        <StateMatrix
+          axes={{ state: sliderStates }}
+          render={({ state }) => <RangeSample state={state} />}
+        />
+      </LabSection>
+      <LabSection
+        title="Slider marks and formats"
+        description="Labelled marks, a unit format and a centred fill."
+      >
+        <Marks />
+      </LabSection>
+      <LabSection
+        title="Slider commit"
+        description="The value follows a drag; the commit lands when it ends."
+      >
+        <Commit />
+      </LabSection>
+      <LabSection
+        title="Range slider"
+        description="The thumbs never cross and keep a minimum distance."
+      >
+        <Range />
+      </LabSection>
+      <LabSection
+        title="Range field and value inputs"
+        description="A range without a track: a start and an end input. A slider with valueLabel input edits its value in an input per thumb before the track."
+      >
+        <RangeInputs />
+      </LabSection>
+      <LabSection
+        title="Normalized slider value"
+        description="Validation, callbacks and the form all hold the snapped, clamped and ordered value. NaN reads as the minimum and Infinity as the last step, reported as a change."
+      >
+        <Normalized />
+      </LabSection>
+      <LabSection
+        title="Vertical slider"
+        description="Vertical sliders, one with the value on its thumb."
+      >
+        <Vertical />
+      </LabSection>
+      <LabSection
+        title="Slider right to left"
+        description="Under a right-to-left provider locale and dir rtl, the minimum is at the right: the fill grows leftward, Arrow Left raises the value and a drag to the left raises it."
+      >
+        <RightToLeft />
+      </LabSection>
+      <LabSection
+        title="Slider form value, dirty state and the field menu"
+        description="Each thumb submits under the slider's name; an invalid range blocks the submit."
+      >
+        <SavedForm />
+      </LabSection>
+      <LabSection
+        title="Slider host helpers"
+        description="The spacing rule a range slider with minDistance applies, and the grid every slider value is snapped onto, for a host that adjusts a range from its own inputs."
+      >
+        <LabHelperCalls
+          calls={[
+            [
+              'snapToStep(0.1 + 0.2, { minValue: 0, maxValue: 1, step: 0.1 })',
+              String(snapToStep(0.1 + 0.2, { minValue: 0, maxValue: 1, step: 0.1 })),
+            ],
+            [
+              'normalizeSliderValue([80, 20], { minValue: 0, maxValue: 50, step: 10 })',
+              JSON.stringify(
+                normalizeSliderValue([80, 20], { minValue: 0, maxValue: 50, step: 10 }),
+              ),
+            ],
+            [
+              'keepThumbsApart([40, 45], [30, 45], { distance: 10, minValue: 0, maxValue: 100 })',
+              JSON.stringify(
+                keepThumbsApart([40, 45], [30, 45], { distance: 10, minValue: 0, maxValue: 100 }),
+              ),
+            ],
+          ]}
+        />
+      </LabSection>
+    </>
+  );
+}
