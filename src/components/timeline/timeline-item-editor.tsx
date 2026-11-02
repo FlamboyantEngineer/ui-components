@@ -3,25 +3,31 @@
 // The item editor: a modal form over one timeline item's name, days and progress
 // (specs/TIMELINE.md, UIC-TIMELINE-2.6).
 
-import { useRef, useState, type FormEvent, type RefObject } from 'react';
+import { useCallback, useRef, useState, type FormEvent, type RefObject } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { DateTimeField } from '../date-time-field/date-time-field.js';
 import { Form } from '../form/form.js';
+import { Link } from '../link/link.js';
 import { Modal } from '../modal/modal.js';
 import { NumberField } from '../number-field/number-field.js';
+import { PeoplePicker } from '../people-picker/people-picker.js';
 import { TextField } from '../text-field/text-field.js';
-import { readTimelineItem, type TimelineItem } from './timeline-geometry.js';
+import { readTimelineItem, type TimelineItem, type TimelinePerson } from './timeline-geometry.js';
 
-/** What the editor saves: the item's name, days and progress. A milestone's `end` is its `start`. */
+/**
+ * What the editor saves: the item's name, days, progress and assignees. A milestone's `end` is its
+ * `start`.
+ */
 export interface TimelineItemEdit {
   id: Key;
   label: string;
   start: string;
   end: string;
   progress: number | undefined;
+  assignees: readonly TimelinePerson[] | undefined;
 }
 
 export interface TimelineItemEditorProps extends BaseProps {
@@ -31,20 +37,64 @@ export interface TimelineItemEditorProps extends BaseProps {
   onSave: (edit: TimelineItemEdit) => void;
   /** Called when the editor closes, by Save, Cancel, Escape or the close button. */
   onClose: () => void;
+  /**
+   * The people an item can be assigned to. With them the editor shows an assignees picker that
+   * searches them by name; without them the item keeps its assignees.
+   */
+  assignablePeople?: readonly TimelinePerson[] | undefined;
 }
 
-const hooks = createHooks('timeline-item-editor', ['form']);
+const hooks = createHooks('timeline-item-editor', ['form', 'link']);
 
 const percent: Intl.NumberFormatOptions = { style: 'percent' };
 
 interface ItemFormProps {
   item: TimelineItem;
+  people: readonly TimelinePerson[] | undefined;
   formRef: RefObject<HTMLFormElement | null>;
   onSave: (edit: TimelineItemEdit) => void;
 }
 
+interface AssigneesFieldProps {
+  people: readonly TimelinePerson[];
+  value: Key[];
+  onChange: (value: Key[]) => void;
+  isReadOnly: boolean;
+}
+
+/** A picker of an item's assignees among the assignable people, searched by name. */
+function AssigneesField({ people, value, onChange, isReadOnly }: AssigneesFieldProps) {
+  const strings = useUiStrings();
+  const loadItems = useCallback(
+    (query: string) => {
+      const text = query.trim().toLocaleLowerCase();
+      return Promise.resolve(
+        people.filter((person) => person.name.toLocaleLowerCase().includes(text)),
+      );
+    },
+    [people],
+  );
+  return (
+    <PeoplePicker
+      selectionMode="multiple"
+      label={strings.timelineAssigneesColumn}
+      value={value}
+      onChange={onChange}
+      loadItems={loadItems}
+      knownPeople={people}
+      isReadOnly={isReadOnly}
+    />
+  );
+}
+
+/** The people with the given ids, in that order, from the item's assignees and the assignable people. */
+function findPeople(ids: readonly Key[], sources: readonly (readonly TimelinePerson[])[]) {
+  const byId = new Map(sources.flat().map((person) => [person.id, person]));
+  return ids.flatMap((id) => byId.get(id) ?? []);
+}
+
 /** The fields of one item, drafted from it; a submit with every field valid saves them once. */
-function ItemForm({ item, formRef, onSave }: ItemFormProps) {
+function ItemForm({ item, people, formRef, onSave }: ItemFormProps) {
   const strings = useUiStrings();
   const read = readTimelineItem(item);
   const isMilestone = read?.kind === 'milestone';
@@ -53,6 +103,7 @@ function ItemForm({ item, formRef, onSave }: ItemFormProps) {
   const [dates, setDates] = useState(read ? { start: read.start, end: read.end } : null);
   const [day, setDay] = useState(read?.start ?? null);
   const [progress, setProgress] = useState(item.progress ?? null);
+  const [assigneeIds, setAssigneeIds] = useState(() => (item.assignees ?? []).map((p) => p.id));
   const isSaved = useRef(false);
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -61,10 +112,18 @@ function ItemForm({ item, formRef, onSave }: ItemFormProps) {
     if (isSaved.current || isReadOnly || !span || !name) return;
     isSaved.current = true;
     const kept = isMilestone ? item.progress : (progress ?? undefined);
-    onSave({ id: item.id, label: name, ...span, progress: kept });
+    const assignees = people
+      ? findPeople(assigneeIds, [item.assignees ?? [], people])
+      : item.assignees;
+    onSave({ id: item.id, label: name, ...span, progress: kept, assignees });
   };
   return (
     <Form ref={formRef} className={hooks.slotClass('form')} onSubmit={submit}>
+      {item.href ? (
+        <Link href={item.href} className={hooks.slotClass('link')}>
+          {strings.timelineOpenItem(item.label)}
+        </Link>
+      ) : null}
       <TextField
         label={strings.timelineNameField}
         value={label}
@@ -103,17 +162,32 @@ function ItemForm({ item, formRef, onSave }: ItemFormProps) {
           />
         </>
       )}
+      {people ? (
+        <AssigneesField
+          people={people}
+          value={assigneeIds}
+          onChange={setAssigneeIds}
+          isReadOnly={isReadOnly}
+        />
+      ) : null}
     </Form>
   );
 }
 
 /**
  * A modal editor for one timeline item: its name, its days (a range for a bar, one day for a
- * milestone) and a bar's progress. Save checks the fields and hands the edit to the host once;
+ * milestone), a bar's progress and, given the assignable people, its assignees; a link to the
+ * item's own page when it has one. Save checks the fields and hands the edit to the host once;
  * Cancel and Escape leave the item as it was. A read-only item opens with read-only fields and no
  * Save. The draft belongs to the item it opened on, by id.
  */
-export function TimelineItemEditor({ item, onSave, onClose, className }: TimelineItemEditorProps) {
+export function TimelineItemEditor({
+  item,
+  onSave,
+  onClose,
+  assignablePeople,
+  className,
+}: TimelineItemEditorProps) {
   const strings = useUiStrings();
   // The last item stays drawn while the editor closes.
   const [shown, setShown] = useState(item);
@@ -140,6 +214,7 @@ export function TimelineItemEditor({ item, onSave, onClose, className }: Timelin
         <ItemForm
           key={toKeyIdentity(shown.id)}
           item={shown}
+          people={assignablePeople}
           formRef={formRef}
           onSave={(edit) => {
             onSave(edit);

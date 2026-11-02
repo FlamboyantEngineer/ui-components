@@ -4,6 +4,7 @@ import {
   Timeline,
   TimelineItemEditor,
   type TimelineItem,
+  type TimelinePerson,
   type TimelineRow,
   type TimelineView,
 } from '../../src/components/timeline/index.js';
@@ -16,6 +17,15 @@ const gardenRows: TimelineRow[] = [
   { id: 'opening', label: 'Opening' },
 ];
 
+const people: TimelinePerson[] = [
+  { id: 'ana', name: 'Ana Lima' },
+  { id: 'leo', name: 'Leo Park' },
+  { id: 'maria', name: 'Maria Santos' },
+  { id: 'sam', name: 'Sam Ortiz' },
+];
+
+const [ana, leo, maria] = people as [TimelinePerson, TimelinePerson, TimelinePerson];
+
 const gardenItems: TimelineItem[] = [
   {
     id: 'dig',
@@ -24,8 +34,18 @@ const gardenItems: TimelineItem[] = [
     start: '2026-03-02',
     end: '2026-03-06',
     progress: 0.5,
+    assignees: [ana],
+    href: '#tasks/dig',
   },
-  { id: 'sow', rowId: 'beds', label: 'Sow seeds', start: '2026-03-12', end: '2026-03-16' },
+  {
+    id: 'sow',
+    rowId: 'beds',
+    label: 'Sow seeds',
+    start: '2026-03-12',
+    end: '2026-03-16',
+    assignees: [ana, leo],
+    href: '#tasks/sow',
+  },
   {
     id: 'gravel',
     rowId: 'paths',
@@ -35,7 +55,14 @@ const gardenItems: TimelineItem[] = [
     tone: 'info',
     isReadOnly: true,
   },
-  { id: 'open', rowId: 'opening', label: 'Open day', start: '2026-03-21', kind: 'milestone' },
+  {
+    id: 'open',
+    rowId: 'opening',
+    label: 'Open day',
+    start: '2026-03-21',
+    kind: 'milestone',
+    assignees: [maria],
+  },
 ];
 
 const viewOptions = [
@@ -43,10 +70,16 @@ const viewOptions = [
   { value: 'table', label: 'Table' },
 ];
 
-/** The commands of an item's menu: a read-only item only shows its details. */
+/**
+ * The commands of an item's menu: a link to its task card when it has one, then its edits; a
+ * read-only item only shows its details.
+ */
 function itemMenu(item: TimelineItem): MenuEntry[] {
-  if (item.isReadOnly) return [{ id: 'edit', label: 'View details' }];
-  const entries: MenuEntry[] = [{ id: 'edit', label: 'Edit' }];
+  const open: MenuEntry[] = item.href
+    ? [{ id: 'open', label: 'Open task card', href: item.href }]
+    : [];
+  if (item.isReadOnly) return [...open, { id: 'edit', label: 'View details' }];
+  const entries: MenuEntry[] = [...open, { id: 'edit', label: 'Edit' }];
   if (item.kind !== 'milestone') entries.push({ id: 'complete', label: 'Mark complete' });
   return [...entries, { id: 'remove', label: 'Remove' }];
 }
@@ -99,6 +132,7 @@ export function TaskEditingDemo() {
       />
       <TimelineItemEditor
         item={editing}
+        assignablePeople={people}
         onSave={(edit) => {
           setItems((current) => applyEdit(current, edit));
           setLastAction(`saved ${edit.label}`);

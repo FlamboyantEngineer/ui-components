@@ -26,6 +26,7 @@ export type {
   TimelineItem,
   TimelineItemChange,
   TimelineItemKind,
+  TimelinePerson,
   TimelineRange,
   TimelineScale,
 } from './timeline-geometry.js';

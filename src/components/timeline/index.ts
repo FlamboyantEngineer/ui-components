@@ -7,6 +7,7 @@ export type {
   TimelineItemChange,
   TimelineItemKind,
   TimelineItemMenu,
+  TimelinePerson,
   TimelineProps,
   TimelineRange,
   TimelineRow,

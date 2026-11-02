@@ -21,6 +21,7 @@ export const timelineHooks = createHooks('timeline', [
   'item',
   'progress',
   'item-label',
+  'assignees',
   'handle',
   'table',
 ]);

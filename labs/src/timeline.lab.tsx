@@ -434,7 +434,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Task menus and editor"
-      description="A secondary click, a long touch, Shift+F10 or the Context Menu key on an item opens its menu. Edit opens the item editor with its name, dates and progress (a milestone's day); Save checks the fields and applies the edit once, Cancel or Escape leaves the item as it was. Mark complete fills the progress and Remove takes the item out. Lay gravel is read-only: its menu only views its details, in read-only fields. The table view shows the same items."
+      description="A secondary click, a long touch, Shift+F10 or the Context Menu key on an item opens its menu. Edit opens the item editor with its name, dates and progress (a milestone's day); Save checks the fields and applies the edit once, Cancel or Escape leaves the item as it was. Mark complete fills the progress and Remove takes the item out. Lay gravel is read-only and unassigned: its menu only views its details, in read-only fields. Bars show their assignees' avatars, and the editor assigns, reassigns or removes people from a local list. Items with a task card link to it from Open task card in the menu, the editor and the table's names. The table view shows the same items, with an Assignees column."
     >
       <TaskEditingDemo />
     </LabSection>

@@ -3,6 +3,7 @@
 
 import { clamp } from '../../utils/clamp.js';
 import type { Key, Tone } from '../../core/props.js';
+import type { AvatarIdentity } from '../avatar/avatar.js';
 import { isPlanningDate, planningDateRange } from '../../utils/planning-dates.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import {
@@ -18,6 +19,11 @@ export type TimelineScale = 'day' | 'week' | 'month' | 'quarter';
 
 /** A `bar` spans its first to its last day; a `milestone` marks one day. */
 export type TimelineItemKind = 'bar' | 'milestone';
+
+/** A person an item is assigned to: their identity, drawn as an avatar, and a stable id. */
+export interface TimelinePerson extends AvatarIdentity {
+  id: Key;
+}
 
 /** An item on a row: a bar or a milestone. */
 export interface TimelineItem {
@@ -39,6 +45,10 @@ export interface TimelineItem {
   tone?: Tone | undefined;
   /** Keeps the item from being moved or resized. */
   isReadOnly?: boolean | undefined;
+  /** The people the item is assigned to, in the order to show them. */
+  assignees?: readonly TimelinePerson[] | undefined;
+  /** Where the item's own page or card is, linked from the table view and the item editor. */
+  href?: string | undefined;
 }
 
 /** An item's new days after a move or a resize. A milestone's `end` equals its `start`. */
