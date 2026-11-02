@@ -51,11 +51,7 @@ export interface TableGroup<T> {
 
 /** A built-in aggregate of a column's values in a group, or the caller's from the group's rows. */
 export type TableAggregate<T> =
-  | 'sum'
-  | 'count'
-  | 'min'
-  | 'max'
-  | ((rows: readonly T[]) => ReactNode);
+  'sum' | 'count' | 'min' | 'max' | ((rows: readonly T[]) => ReactNode);
 
 /** A group header row and the groups or rows under it. */
 export interface TableGroupNode<T> {

@@ -23,11 +23,7 @@ import { booleanFieldHooks as hooks } from './boolean-field-hooks.js';
  * values, or a toggle button showing the current value's name.
  */
 export type BooleanFieldVariant =
-  | 'checkbox'
-  | 'switch'
-  | 'segmented'
-  | 'dropdown'
-  | 'toggle-button';
+  'checkbox' | 'switch' | 'segmented' | 'dropdown' | 'toggle-button';
 
 /** The names of the three states, and whether the caller named true or false. */
 interface BooleanLabels {

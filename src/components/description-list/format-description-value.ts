@@ -15,17 +15,11 @@ export interface DescriptionRange<T extends number | string> {
  * (`2026-05-14`, `2026-05-14T09:30`), a list of texts, or a range of numbers or ISO 8601 texts.
  */
 export type DescriptionValue =
-  | number
-  | string
-  | readonly string[]
-  | DescriptionRange<number>
-  | DescriptionRange<string>;
+  number | string | readonly string[] | DescriptionRange<number> | DescriptionRange<string>;
 
 /** `Intl` options for the value's kind: number, date or list formatting. */
 export type DescriptionFormatOptions =
-  | Intl.NumberFormatOptions
-  | Intl.DateTimeFormatOptions
-  | Intl.ListFormatOptions;
+  Intl.NumberFormatOptions | Intl.DateTimeFormatOptions | Intl.ListFormatOptions;
 
 export interface DescriptionFormatInput {
   /** A BCP 47 locale, such as `fr-FR`. */

@@ -199,7 +199,9 @@ describe('CodeEditor completion sources', () => {
     const user = userEvent.setup();
     render(<Editor completions={fruit} initialValue="  " />);
     await user.click(input());
-    await user.keyboard('{End}bas{Enter}');
+    await user.keyboard('{End}bas');
+    await screen.findByRole('listbox');
+    await user.keyboard('{Enter}');
     expect(marked()).toBe('  basket {\n    |\n  }');
     act(() => input().setSelectionRange(0, 0));
     await user.keyboard('{Tab}');

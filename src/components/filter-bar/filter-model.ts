@@ -40,13 +40,7 @@ export interface FilterNumberRange {
  * range of numbers or dates, or `null` for an operator that takes none.
  */
 export type FilterValue =
-  | string
-  | number
-  | boolean
-  | readonly string[]
-  | FilterNumberRange
-  | DateRangeValue
-  | null;
+  string | number | boolean | readonly string[] | FilterNumberRange | DateRangeValue | null;
 
 /** One condition on one field, as plain data. */
 export interface FilterCondition {
@@ -58,14 +52,7 @@ export interface FilterCondition {
 
 /** The shape of value an operator takes on a field type. */
 type FilterValueKind =
-  | 'none'
-  | 'text'
-  | 'number'
-  | 'number-range'
-  | 'date'
-  | 'date-range'
-  | 'list'
-  | 'boolean';
+  'none' | 'text' | 'number' | 'number-range' | 'date' | 'date-range' | 'list' | 'boolean';
 
 const defaultOperators: Readonly<Record<FilterFieldType, readonly FilterOperator[]>> = {
   text: ['contains', 'not-contains', 'equals', 'not-equals', 'starts-with', 'empty', 'not-empty'],

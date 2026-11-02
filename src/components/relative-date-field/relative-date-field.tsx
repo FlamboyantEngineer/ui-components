@@ -70,8 +70,7 @@ export interface RelativeDateFieldProps<K extends RelativeDateFieldMode = 'date'
    */
   presets?:
     | readonly (
-        | RelativeDatePreset
-        | RelativeDateComputedPreset<NonNullable<RelativeDateFieldValue<K>>>
+        RelativeDatePreset | RelativeDateComputedPreset<NonNullable<RelativeDateFieldValue<K>>>
       )[]
     | undefined;
   /** The clock presets and relative text count from. Defaults to the provider's, else the current time. */

@@ -14,14 +14,7 @@ export type ColorFormatSpace = 'rgb' | 'hsl' | 'hsb';
 
 /** A channel a colour input edits. */
 export type ColorFormatChannel =
-  | 'red'
-  | 'green'
-  | 'blue'
-  | 'hue'
-  | 'saturation'
-  | 'lightness'
-  | 'brightness'
-  | 'alpha';
+  'red' | 'green' | 'blue' | 'hue' | 'saturation' | 'lightness' | 'brightness' | 'alpha';
 
 /** The inputs a format edits with: a hex input or the channels of a colour space, then alpha. */
 interface ColorFormatInputs {

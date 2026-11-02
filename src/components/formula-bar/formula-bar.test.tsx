@@ -80,6 +80,7 @@ describe('FormulaBar', () => {
     await user.keyboard('{Enter}');
     await user.keyboard('{ArrowDown}{Enter}');
     expect(contentBox()).toHaveValue('=SUM(B1)AVG()*2');
+    await vi.waitFor(() => expect(contentBox()).toHaveFocus());
     await user.keyboard('{Enter}');
     expect(onCommit).toHaveBeenCalledWith('=SUM(B1)AVG()*2', { row: 0, column: 0 });
   });

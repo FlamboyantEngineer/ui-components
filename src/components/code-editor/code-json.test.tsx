@@ -349,7 +349,9 @@ describe('CodeEditor', () => {
     expect(option).toHaveAccessibleDescription('What the dish is called.');
     await user.keyboard('{Enter}');
     expect(editor()).toHaveValue('{"name": ""');
-    await user.keyboard('Soup{End}, "c{Enter}');
+    await user.keyboard('Soup{End}, "c');
+    await screen.findByRole('option', { name: /^"course"/ });
+    await user.keyboard('{Enter}');
     expect(editor()).toHaveValue('{"name": "Soup", "course": "starter"');
     expect(editor().value.slice(editor().selectionStart, editor().selectionEnd)).toBe('"starter"');
     await user.keyboard('{Control>} {/Control}');
