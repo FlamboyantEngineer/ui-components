@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
 import { Carousel, type CarouselPagination } from '../../src/components/carousel/carousel.js';
+import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 interface City {
@@ -112,6 +114,49 @@ function HostChanges() {
   );
 }
 
+/**
+ * An uncontrolled carousel that starts at a chosen slide. Changing the start, or Start over,
+ * remounts it; from then on it owns its index and reports each move.
+ */
+function StartingSlide() {
+  const [start, setStart] = useState(2);
+  const [mount, setMount] = useState(0);
+  const [moves, setMoves] = useState<string[]>([]);
+  const remount = () => {
+    setMoves([]);
+    setMount((count) => count + 1);
+  };
+  return (
+    <div data-lab-demo="default-index">
+      <SegmentedChoice
+        aria-label="Start at"
+        size="sm"
+        sizing="content"
+        options={cities.map((city, at) => ({ value: String(at), label: city.name }))}
+        value={String(start)}
+        onChange={(value) => {
+          setStart(Number(value));
+          remount();
+        }}
+      />{' '}
+      <Button size="sm" variant="secondary" onPress={remount}>
+        Start over
+      </Button>
+      <Carousel
+        key={`${start}-${mount}`}
+        aria-label="Cities from a chosen start"
+        defaultIndex={start}
+        onIndexChange={(at) => setMoves((all) => [...all, cities[at]?.name ?? String(at)])}
+      >
+        {citySlides()}
+      </Carousel>
+      <p>
+        Moves since the start: <output data-lab-output="moves">{moves.join(', ') || 'none'}</output>
+      </p>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -140,6 +185,12 @@ mountLab(
       description="Tab into the carousel and press the arrow keys; focus inside a slide moves to the slide shown next. The output follows the controlled index."
     >
       <Controlled />
+    </LabSection>
+    <LabSection
+      title="Starting at a chosen slide"
+      description="An uncontrolled carousel with defaultIndex: pick where it starts, or Start over to remount it there, and compare it with the carousels above that start at the first slide. Afterwards it owns its index; each move is listed."
+    >
+      <StartingSlide />
     </LabSection>
     <LabSection
       title="Changed by the page"

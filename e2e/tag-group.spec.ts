@@ -106,6 +106,31 @@ test.describe('Tag Group lab', () => {
     await expect(marked.getByRole('row', { name: 'Lima, capital' })).toBeVisible();
   });
 
+  test('UIC-TAG-GROUP-2.4 UIC-TAG-GROUP-2.3 picks one tag and refuses a tag disabled on its own', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tag-group');
+    const group = field(page, 'single');
+    const tag = (name: string) => group.getByRole('row', { name });
+    await tag('Okra').click();
+    await expect(output(page, 'Picked')).toHaveText('okra');
+    await expect(tag('Okra')).toHaveAttribute('aria-selected', 'true');
+    await expect(tag('Kale')).toHaveAttribute('aria-selected', 'false');
+    const leek = tag('Leek (sold out)');
+    await expect(leek).toHaveAttribute('aria-disabled', 'true');
+    await leek.click({ force: true });
+    await expect(output(page, 'Picked')).toHaveText('okra');
+    await expect(leek).toHaveAttribute('data-disabled', 'true');
+    await expect(leek.locator('.ui-tag-group__remove')).toHaveCount(0);
+    await expect(tag('Okra').locator('.ui-tag-group__remove')).toHaveCount(1);
+    await tag('Kale').focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(tag('Okra')).toBeFocused();
+    await page.keyboard.press('Delete');
+    await expect(output(page, 'Vegetables')).toHaveText('Kale, Leek (sold out), Pea');
+  });
+
   test('UIC-TAG-GROUP-1.4 UIC-TAG-GROUP-1.5 passes axe in the dark theme', async ({
     page,
     lab,

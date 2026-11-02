@@ -19,6 +19,7 @@ import {
   SelectionCase,
   selections,
 } from './list-view-cases.js';
+import { ListViewDataCases } from './list-view-data-cases.js';
 
 const kinds = ['link', 'action', 'static'] as const;
 const states = ['default', 'current', 'disabled', 'danger'] as const;
@@ -263,5 +264,6 @@ mountLab(
         <ListRowContent title="Quarterly notes" meta="Edited today" icon={InfoGlyph} />
       </div>
     </LabSection>
+    <ListViewDataCases />
   </>,
 );

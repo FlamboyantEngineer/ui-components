@@ -105,7 +105,10 @@ function CardGridCards<T extends object>(
         <GridListLoadMoreItem
           className={gridHooks.slotClass('loader')}
           isLoading={isLoading}
-          onLoadMore={onLoadMore}
+          // React Aria calls it whenever the end is in view; a request already loading waits.
+          onLoadMore={() => {
+            if (!isLoading) onLoadMore();
+          }}
         >
           <EmptyState variant="loading" size="sm" description={strings.loading} />
         </GridListLoadMoreItem>

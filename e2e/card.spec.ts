@@ -373,6 +373,111 @@ test.describe('Card lab', () => {
     await lab.expectAccessible('[data-lab-demo="collapse"]');
   });
 
+  test('UIC-CARD-6.2 locks collapsing while the card controls stay usable', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('card');
+    const demo = page.locator('[data-lab-demo="locked-collapse"]');
+    const record = demo.getByRole('region', { name: 'Orchard row 9' });
+    const toggle = record.getByRole('button', { name: 'Details Orchard row 9' });
+    await expect(toggle).toBeDisabled();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await record.getByRole('textbox', { name: 'Notes' }).fill('Thin the fruit');
+    await record.getByRole('button', { name: 'Water' }).click();
+    const report = demo.getByRole('region', { name: 'Spring report' });
+    const reportToggle = report.getByRole('button', { name: 'Details Spring report' });
+    await expect(reportToggle).toBeDisabled();
+    await expect(report.getByRole('button', { name: 'Share' })).toBeEnabled();
+    await demo.getByRole('switch', { name: 'Lock collapsing' }).press('Space');
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await reportToggle.click();
+    await expect(reportToggle).toHaveAttribute('aria-expanded', 'false');
+    await toggle.click();
+    await expect(record.getByRole('textbox', { name: 'Notes' })).toHaveValue('Thin the fruit');
+  });
+
+  test('UIC-CARD-5.2 loads more cards, then shows the custom empty result', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('card');
+    const demo = page.locator('[data-lab-demo="paged-grid"]');
+    const grid = demo.getByRole('grid', { name: 'Dishes' });
+    const output = (name: string) => demo.locator(`[data-lab-output="${name}"]`);
+    await grid.scrollIntoViewIfNeeded();
+    await expect(output('shown')).toHaveText('4');
+    await grid.evaluate((node) => {
+      const frame = node.parentElement;
+      if (frame) frame.scrollTop = frame.scrollHeight;
+    });
+    await expect(output('loading')).toHaveText('true');
+    await expect(grid.locator('.ui-card-grid__loader')).toContainText('Loading');
+    await expect(output('requests')).toHaveText('1');
+    // While a request loads, the grid asks for no more, however often the page renders.
+    await expect(output('requests')).toHaveText('1');
+    const deliver = demo.getByRole('button', { name: 'Deliver page' });
+    for (const shown of ['8', '12']) {
+      await deliver.click();
+      await expect(output('shown')).toHaveText(shown);
+      if (shown === '8') {
+        // The new end is still in the frame, so the grid asks again.
+        await expect(output('requests')).toHaveText('2');
+      }
+    }
+    await expect(output('loading')).toHaveText('false');
+    await expect(grid.locator('.ui-card-grid__loader')).toHaveCount(0);
+    await demo.getByRole('switch', { name: 'Filter out every dish' }).press('Space');
+    await expect(output('empty')).toHaveText('No dish matches. Clear the filter to see the menu.');
+    await expect(grid).toHaveAttribute('data-empty', 'true');
+  });
+
+  test('UIC-CARD-5.2 redraws stable cards when their dependencies change', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('card');
+    const demo = page.locator('[data-lab-demo="dependent-grid"]');
+    const grid = demo.getByRole('grid', { name: 'Dishes with prices' });
+    await expect(grid.getByRole('row').first()).toContainText('Price hidden');
+    await demo.getByRole('switch', { name: 'Show prices' }).press('Space');
+    await expect(grid.getByRole('row').first()).toContainText('4 €');
+  });
+
+  test('UIC-CARD-5.3 selects by mode and behavior, keeps a required card and skips a disabled one', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('card');
+    const demo = page.locator('[data-lab-demo="selection-grid"]');
+    const grid = demo.getByRole('grid', { name: 'Dishes to order' });
+    const selected = demo.locator('[data-lab-output="selected"]');
+    const row = (name: string) => grid.getByRole('row', { name });
+    await row('Barley salad').locator('.ui-card-grid-item__checkbox').click();
+    await expect(selected).toHaveText('barley-salad, leek-soup');
+    await expect(row('Pea risotto')).toHaveAttribute('aria-disabled', 'true');
+    await row('Pea risotto').click({ force: true });
+    await expect(selected).toHaveText('barley-salad, leek-soup');
+
+    await demo.getByRole('radio', { name: 'Single' }).click();
+    await row('Corn bread').locator('.ui-card-grid-item__checkbox').click();
+    await expect(selected).toHaveText('corn-bread');
+
+    await demo.getByRole('switch', { name: 'Keep one selected' }).press('Space');
+    await row('Corn bread').locator('.ui-card-grid-item__checkbox').click();
+    await expect(selected).toHaveText('corn-bread');
+
+    await demo.getByRole('radio', { name: 'Multiple' }).click();
+    await demo.getByRole('radio', { name: 'Replace' }).click();
+    await expect(grid.locator('.ui-card-grid-item__checkbox')).toHaveCount(0);
+    await row('Leek soup').click();
+    await expect(selected).toHaveText('leek-soup');
+    await row('Barley salad').click({ modifiers: ['Shift'] });
+    await expect(selected).toHaveText('barley-salad, leek-soup');
+    await lab.expectAccessible('[data-lab-demo="selection-grid"]');
+  });
+
   test('UIC-CARD-7.1 UIC-CARD-7.2 fits cards to a pane from full width down to a few characters', async ({
     page,
     lab,

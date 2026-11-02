@@ -572,6 +572,36 @@ describe('ListView', () => {
     }
   });
 
+  it('UIC-LIST-ROW-3.6 asks for more rows only while none are loading', () => {
+    // An observer that reports the loader in view as soon as it watches it.
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        constructor(private readonly report: (entries: { isIntersecting: boolean }[]) => void) {}
+        observe() {
+          this.report([{ isIntersecting: true }]);
+        }
+        disconnect() {}
+      },
+    );
+    const onLoadMore = vi.fn();
+    const list = (isLoading: boolean, count: number) => (
+      <ListView
+        aria-label="Few"
+        items={fruit.slice(0, count)}
+        isLoading={isLoading}
+        onLoadMore={onLoadMore}
+      >
+        {(item) => <ListViewItem title={item.name} />}
+      </ListView>
+    );
+    const { rerender } = render(list(true, 1));
+    rerender(list(true, 2));
+    expect(onLoadMore).not.toHaveBeenCalled();
+    rerender(list(false, 3));
+    expect(onLoadMore).toHaveBeenCalled();
+  });
+
   it('UIC-LIST-ROW-3.6 shows a loading row while more rows load, and the empty state', () => {
     vi.stubGlobal(
       'IntersectionObserver',
