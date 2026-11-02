@@ -76,4 +76,42 @@ test.describe('Table fluid columns', () => {
     expect(tracks).toBe(`${Math.round(after)}px 100px`);
     await lab.expectAccessible('[data-lab="fluid-columns"]');
   });
+
+  test('UIC-TABLE-4.6 keeps share weights under caps and matches the virtualized widths', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('table');
+    const demo = page.locator('[data-lab="share-weights"]');
+    await demo.scrollIntoViewIfNeeded();
+    const widths = (name: string) =>
+      demo.getByRole('grid', { name, exact: true }).evaluate((grid) =>
+        ['Name', 'Kind', 'Size', 'Note'].map((label) => {
+          const header = [...grid.querySelectorAll('[role="columnheader"]')].find((cell) =>
+            cell.textContent?.startsWith(label),
+          );
+          return header?.getBoundingClientRect().width ?? 0;
+        }),
+      );
+    for (const host of [640, 900, 480]) {
+      await demo.evaluate((root: HTMLElement, width) => {
+        root.style.width = `${width}px`;
+      }, host);
+      const fixed = await widths('Weighted columns');
+      const [name = 0, kind = 0, size = 0, note = 0] = fixed;
+      expect(Math.abs(kind - 2 * name)).toBeLessThan(1.5);
+      expect(Math.abs(size - 90)).toBeLessThan(1);
+      expect(Math.abs(note - Math.max(100, 2 * name))).toBeLessThan(1.5);
+      await expect
+        .poll(async () =>
+          Math.max(
+            ...(await widths('Weighted columns, virtualized')).map((width, index) =>
+              Math.abs(width - (fixed[index] ?? 0)),
+            ),
+          ),
+        )
+        .toBeLessThan(2);
+    }
+    await lab.expectAccessible('[data-lab="share-weights"]');
+  });
 });

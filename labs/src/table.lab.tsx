@@ -26,7 +26,12 @@ import {
 import { BulkEdit, Grouping, SmallSteps, Spreadsheet } from './table-sheet-cases.js';
 import { GroupKeyTable, ObjectKeyTable, TypedTable } from './collection-identity-cases.js';
 import { HeaderFilter, PickerCell } from './table-control-cases.js';
-import { ContentWidths, FluidColumns, GroupedReordering } from './table-content-contracts.js';
+import {
+  ContentWidths,
+  FluidColumns,
+  GroupedReordering,
+  ShareWeights,
+} from './table-content-contracts.js';
 import { RepeatedSelection } from './table-selection-cases.js';
 
 function TrailingActions() {
@@ -352,6 +357,12 @@ mountLab(
       description="Every static table lays its columns out as a CSS grid. Here a flexible, resizable Name column (at least 200 pixels) sits beside a 100 pixel State column: drag the separator and Name follows the pane in the same frame; below 300 pixels the table scrolls. Drag the Name resizer, or press Enter on it and the arrow keys, to give Name a fixed width."
     >
       <FluidColumns />
+    </LabSection>
+    <LabSection
+      title="Weighted shares"
+      description="Flexible columns keep their weights until a cap stops them. Name (1fr) and Kind (2fr) are capped at 1000 pixels they never reach, so Kind stays twice Name; Size (1fr) stops at its 90 pixel cap and Note (2fr, at least 100) and the others split what it leaves. The virtualized copy below lays out the same widths."
+    >
+      <ShareWeights />
     </LabSection>
     <LabSection
       title="Moves within groups"
