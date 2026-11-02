@@ -79,17 +79,32 @@ function fitSpacer(
   return top;
 }
 
-/** Where the scroll position holds the view: on the anchored message, at the bottom, or free. */
+/**
+ * Where the scroll position holds the view: on the anchored message, at the bottom, or free. A
+ * view at both the anchor and the bottom, as while a short reply fills in below the anchor, keeps
+ * the anchor only while it still holds there: a reader who came back to the bottom, by scrolling or
+ * Jump to latest, follows the latest message from then on.
+ */
 function resolveHold(
   sources: ScrollKeeperSources,
   viewport: HTMLElement,
-  anchorKey: string | null,
+  { anchorKey, current }: { anchorKey: string | null; current: TranscriptHold },
 ): TranscriptHold {
   const element = anchorKey === null ? null : sources.element(anchorKey);
-  if (element && Math.abs(resolveTopAlignment(element, viewport) - viewport.scrollTop) <= 1) {
-    return 'anchor';
-  }
-  return readDistanceToBottom(viewport) <= 1 ? 'bottom' : 'free';
+  const isAtBottom = readDistanceToBottom(viewport) <= 1;
+  const isAtAnchor =
+    element !== null && Math.abs(resolveTopAlignment(element, viewport) - viewport.scrollTop) <= 1;
+  if (isAtAnchor && (current === 'anchor' || !isAtBottom)) return 'anchor';
+  return isAtBottom ? 'bottom' : 'free';
+}
+
+/**
+ * Whether the scroll position moved because the browser clamped it to a scroll range that shrank,
+ * as when the viewport or the content resizes, rather than because the reader scrolled: it moved
+ * up, and only as far as the new bottom. A reader scrolling up never stops exactly there.
+ */
+function isClamped(viewport: HTMLElement, known: number): boolean {
+  return viewport.scrollTop < known && readDistanceToBottom(viewport) <= 1;
 }
 
 /** Scrolls so the message that was first in view sits where it was. */
@@ -120,7 +135,7 @@ export function createScrollKeeper(sources: ScrollKeeperSources): ScrollKeeper {
   const classify = () => {
     const viewport = sources.viewport();
     if (!viewport) return;
-    hold = resolveHold(sources, viewport, anchorKey);
+    hold = resolveHold(sources, viewport, { anchorKey, current: hold });
     snapshot = readSnapshot(sources, viewport);
     known = viewport.scrollTop;
   };
@@ -128,8 +143,11 @@ export function createScrollKeeper(sources: ScrollKeeperSources): ScrollKeeper {
   const settle = () => {
     const viewport = sources.viewport();
     if (!viewport) return;
-    // The reader scrolled before the scroll event arrived: their position wins over the hold.
-    if (known !== null && Math.abs(viewport.scrollTop - known) > 1) classify();
+    // The reader scrolled before the scroll event arrived: their position wins over the hold. A
+    // position the browser clamped as the scroll range shrank is layout, not the reader.
+    if (known !== null && Math.abs(viewport.scrollTop - known) > 1 && !isClamped(viewport, known)) {
+      classify();
+    }
     const anchorTop = fitSpacer(sources, viewport, anchorKey);
     if (hold === 'bottom') viewport.scrollTop = viewport.scrollHeight;
     else if (hold === 'anchor' && anchorTop !== null) viewport.scrollTop = anchorTop;

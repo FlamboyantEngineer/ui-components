@@ -24,6 +24,96 @@ async function ask(page: Page, behaviour: string, text: string) {
   return assistant;
 }
 
+/** How far the transcript of `scope` is scrolled from its bottom, in pixels. */
+function distanceToBottom(scope: Locator) {
+  return scope.locator('.ui-chat-transcript__log').evaluate((log) => {
+    const viewport = [log, ...log.querySelectorAll<HTMLElement>('*')].find(
+      (node) =>
+        node.scrollHeight > node.clientHeight + 2 && getComputedStyle(node).overflowY !== 'visible',
+    );
+    return viewport ? viewport.scrollHeight - viewport.clientHeight - viewport.scrollTop : 0;
+  });
+}
+
+/** Sends a question in a typing case, then waits until its reply has started to stream. */
+async function startTypingCase(page: Page, cell: string) {
+  const scope = matrixCell(section(page, 'Typing while a reply streams'), cell);
+  await composer(scope).click();
+  await page.keyboard.type('Plan a weekend in Lisbon');
+  await page.keyboard.press('Enter');
+  await expect(scope.locator('.ui-chat__status')).toHaveText(/…$/);
+  return scope;
+}
+
+/** Types three wrapping lines into the focused composer, so it grows while the reply streams. */
+async function typeDraft(page: Page) {
+  for (const line of ['First line of the next question', 'and a second one', 'and a third']) {
+    await page.keyboard.type(`${line}, long enough to wrap in the composer of this chat`);
+    await page.keyboard.press('Shift+Enter');
+  }
+}
+
+for (const cell of [
+  'scrollMode=anchor history=plain',
+  'scrollMode=follow history=plain',
+  'scrollMode=anchor history=virtualized',
+  'scrollMode=follow history=virtualized',
+]) {
+  test(`UIC-CHAT-TRANSCRIPT-1.2 keeps following while the reader types (${cell})`, async ({
+    page,
+  }) => {
+    test.slow();
+    await openChat(page, 80);
+    const scope = await startTypingCase(page, cell);
+    const log = scope.locator('.ui-chat-transcript__log');
+    // Reach the bottom as a reader does, then type.
+    const box = await log.boundingBox();
+    if (!box) throw new Error('The transcript has no box.');
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.wheel(0, -60);
+    await page.mouse.wheel(0, 4000);
+    await expect.poll(() => distanceToBottom(scope)).toBeLessThanOrEqual(1);
+    await composer(scope).click();
+    await typeDraft(page);
+    await expect(scope.locator('.ui-chat__status')).toHaveCount(0, { timeout: 20_000 });
+    expect(await distanceToBottom(scope)).toBeLessThanOrEqual(1);
+    await expect(composer(scope)).toBeFocused();
+    await expect(composer(scope)).toContainText('and a third, long enough to wrap');
+  });
+}
+
+test("UIC-CHAT-TRANSCRIPT-1.2 keeps the reader's place while they type scrolled away", async ({
+  page,
+}) => {
+  test.slow();
+  await openChat(page, 80);
+  const scope = await startTypingCase(page, 'scrollMode=follow history=plain');
+  const log = scope.locator('.ui-chat-transcript__log');
+  const box = await log.boundingBox();
+  if (!box) throw new Error('The transcript has no box.');
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.wheel(0, -150);
+  await expect.poll(() => distanceToBottom(scope)).toBeGreaterThan(100);
+  // The first message in view, and how far below the transcript's top it sits.
+  const place = () =>
+    log.evaluate((node) => {
+      const top = node.getBoundingClientRect().top;
+      const article = [...node.querySelectorAll('article')].find(
+        (item) => item.getBoundingClientRect().bottom > top,
+      );
+      return { id: article?.id, offset: (article?.getBoundingClientRect().top ?? 0) - top };
+    });
+  const before = await place();
+  await composer(scope).click();
+  await typeDraft(page);
+  await expect(scope.locator('.ui-chat__status')).toHaveCount(0, { timeout: 20_000 });
+  const after = await place();
+  expect(after.id).toBe(before.id);
+  expect(Math.abs(after.offset - before.offset)).toBeLessThanOrEqual(1);
+  expect(await distanceToBottom(scope)).toBeGreaterThan(100);
+  await expect(composer(scope)).toBeFocused();
+});
+
 test.describe('Chat lab', () => {
   test('UIC-CHAT-1.2 UIC-CHAT-6.1 passes axe in every section', async ({ page, lab }) => {
     test.slow();
