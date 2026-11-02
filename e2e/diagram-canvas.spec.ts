@@ -519,3 +519,79 @@ for (const scale of [1.5, 0.5]) {
     expect(Math.abs(panned.y - moved.y - 30)).toBeLessThanOrEqual(1);
   });
 }
+
+test.describe('Diagram Canvas lab, host-owned cases', () => {
+  test('UIC-DIAGRAM-CANVAS-4.3 UIC-DIAGRAM-CANVAS-4.4 UIC-DIAGRAM-CANVAS-3.1 snaps moves to the grid size and starts at the default viewport', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('diagram-canvas');
+    const demo = page.locator('[data-lab-demo="grid"]');
+    const canvas = demo.locator('[data-lab-field="grid"]');
+    await expect(output(page, 'grid-viewport')).toHaveText('60,90 at 150%');
+    const mixer = canvas.getByRole('group', { name: 'Mixer', exact: true });
+    await mixer.focus();
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('ArrowDown');
+    await expect(output(page, 'grid-nodes')).toContainText('Mixer 1,1;');
+    await demo.getByRole('radio', { name: '25 pixels' }).click();
+    await mixer.focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(output(page, 'grid-nodes')).toContainText('Mixer 25,0;');
+    await demo.getByRole('radio', { name: '10 pixels (default)' }).click();
+    await mixer.focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(output(page, 'grid-nodes')).toContainText('Mixer 40,0;');
+    await expect(output(page, 'grid-viewport')).toHaveText('60,90 at 150%');
+  });
+
+  test('UIC-DIAGRAM-CANVAS-4.1 UIC-DIAGRAM-CANVAS-6.4 follows a selection and view owned by the host', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('diagram-canvas');
+    const demo = page.locator('[data-lab-demo="controlled"]');
+    const canvas = demo.locator('[data-lab-field="controlled"]');
+    const node = (name: string) => canvas.getByRole('group', { name, exact: true });
+    await expect(output(page, 'controlled-selection')).toHaveText('heater');
+    await expect(canvas.locator('.ui-diagram-canvas__node[data-selected]')).toHaveCount(1);
+    await demo.getByRole('button', { name: 'Select Heater and Cooler' }).click();
+    await expect(output(page, 'controlled-selection')).toHaveText('heater, cooler');
+    await expect(canvas.locator('.ui-diagram-canvas__node[data-selected]')).toHaveCount(2);
+    await node('Mixer').click();
+    await expect(output(page, 'controlled-selection')).toHaveText('mixer');
+    await demo.getByRole('button', { name: 'Show the outline' }).click();
+    await expect(output(page, 'controlled-view')).toHaveText('outline');
+    const selectedItems = canvas.locator('.ui-diagram-canvas__outline-item[data-selected]');
+    await expect(selectedItems).toHaveCount(1);
+    await expect(selectedItems).toContainText('Mixer');
+    await demo.getByRole('button', { name: 'Clear selection' }).click();
+    await expect(selectedItems).toHaveCount(0);
+    await canvas.getByRole('radio', { name: 'Diagram' }).click();
+    await expect(output(page, 'controlled-view')).toHaveText('canvas');
+    await lab.expectAccessible('[data-lab-demo="controlled"]');
+  });
+
+  test('UIC-DIAGRAM-CANVAS-2.1 UIC-DIAGRAM-CANVAS-2.3 draws parallel routes from the exported helper', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('diagram-canvas');
+    const demo = page.locator('[data-lab-demo="route"]');
+    const paths = async () => [
+      await output(page, 'route-forth').textContent(),
+      await output(page, 'route-back').textContent(),
+    ];
+    for (const route of ['straight', 'orthogonal', 'bezier']) {
+      await demo.getByRole('radio', { name: route }).click();
+      await demo.getByRole('radio', { name: '0', exact: true }).click();
+      const [together] = await paths();
+      await demo.getByRole('radio', { name: '12' }).click();
+      const [forth, back] = await paths();
+      expect(forth).not.toBe(together);
+      expect(forth).not.toBe(back);
+      await expect(demo.locator('path[data-route]')).toHaveCount(2);
+    }
+    await lab.expectAccessible('[data-lab-demo="route"]');
+  });
+});
