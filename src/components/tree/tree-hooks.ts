@@ -2,6 +2,8 @@ import { createHooks } from '../../core/hooks.js';
 
 /** The hook classes every module of the tree writes (specs/TREE.md). */
 export const treeHooks = createHooks('tree', [
+  'section',
+  'section-header',
   'item',
   'drag-handle',
   'expand',

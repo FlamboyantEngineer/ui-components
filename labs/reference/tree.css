@@ -262,3 +262,35 @@
   min-width: 0;
   font-size: var(--ref-font-size-sm);
 }
+
+/*
+ * Category sections (getSection): a heading row above each section's rows, full width and apart
+ * from the row hover and selection surfaces. It is a label, so it draws no hover, focus or pointer.
+ */
+.ui-tree__section {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ui-tree__section-header {
+  display: flex;
+  align-items: flex-end;
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 8px 6px 2px;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-xs);
+  font-weight: var(--ref-font-weight-strong);
+  overflow-wrap: anywhere;
+}
+
+.ui-tree__section:first-child > .ui-tree__section-header {
+  padding-block-start: 2px;
+}
+
+/* A virtualized heading fills the row height the layout gives it. */
+.ui-tree[data-virtualized] .ui-tree__section-header {
+  height: 100%;
+  padding-block: 0 2px;
+}

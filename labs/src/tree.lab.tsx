@@ -28,6 +28,7 @@ import {
 } from './tree-cases.js';
 import { RowMenu } from './row-menu.js';
 import { ModalTree } from './tree-modal-case.js';
+import { SectionsTree, VirtualSectionsTree } from './tree-sections-cases.js';
 
 interface Entry {
   id: string;
@@ -596,6 +597,18 @@ mountLab(
       description="An owner checks a move before it applies it, with the same rules the tree uses: no move into a row's own descendants, and none to another parent without canMoveInto."
     >
       <LabHelperCalls calls={moveCalls} />
+    </LabSection>
+    <LabSection
+      title="Category sections"
+      description="getSection groups top-level rows under heading rows: Start here has no section and comes first, the two Shared sections share a label but not an id, and Maps is disabled. Headings take no focus or selection; arrows, Home, End and typeahead run across sections, and a filter drops sections it empties."
+    >
+      <SectionsTree />
+    </LabSection>
+    <LabSection
+      title="Virtualized sections"
+      description="Six sections of forty rows each, virtualized: heading rows take the row height and scroll with their rows."
+    >
+      <VirtualSectionsTree />
     </LabSection>
     <LabSection
       title="Right to left"

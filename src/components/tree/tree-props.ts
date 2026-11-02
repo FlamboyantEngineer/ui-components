@@ -12,6 +12,17 @@ import type { TreeReorderOptions } from './use-tree-reorder.js';
 /** The minimal shape of a tree item: a key unique in the tree, and optional children. */
 export type TreeItemData = TreeMoveItem<unknown>;
 
+/**
+ * A category section of top-level items: a heading row drawn above them. The heading is a label,
+ * not a row the reader selects, activates or expands.
+ */
+export interface TreeSectionData {
+  /** Unique among the tree's sections; items never share it. */
+  id: Key;
+  /** The heading row's content, which also names the section's group of rows. */
+  label: ReactNode;
+}
+
 /** A row's state, passed to the render callbacks. */
 export interface TreeItemState {
   /** Whether the row's children are shown. */
@@ -66,6 +77,12 @@ export interface TreeProps<T extends TreeItemData>
   onAction?: ((key: Key) => void) | undefined;
   /** Plain text for an item: its accessible name and the text typeahead matches. */
   getTextValue: (item: T) => string;
+  /**
+   * Groups the top-level items into category sections, each under its own heading row, in the order
+   * their first item comes. An item without a section shows before the first section. Sectioned
+   * trees do not reorder: `reorder` is ignored while this is set.
+   */
+  getSection?: ((item: T) => TreeSectionData | undefined) | undefined;
   /** Children of an item. Defaults to its `children` property. */
   getChildren?: ((item: T) => readonly T[] | undefined) | undefined;
   /** Whether an item without loaded children has some, so it can be expanded to load them. */
