@@ -252,6 +252,55 @@ test.describe('Formula Bar lab', () => {
     );
   });
 
+  test('UIC-FORMULA-BAR-3.2 UIC-FORMULA-BAR-3.4 confirms and cancels in the actions demo, by button and key', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('formula-bar');
+    const root = page.locator('[data-lab-demo="actions"]');
+    const content = root.getByRole('textbox', { name: 'Cell content' });
+    const cancel = root.getByRole('button', { name: 'Cancel' });
+    const confirm = root.getByRole('button', { name: 'Confirm' });
+    const saved = root.locator('[data-lab-output="saved"]');
+    const draft = root.locator('[data-lab-output="draft"]');
+    const counts = root.locator('[data-lab-output="counts"]');
+    // No pending edit: both buttons are off.
+    await expect(cancel).toBeDisabled();
+    await expect(confirm).toBeDisabled();
+    await content.click();
+    await page.keyboard.press('End');
+    await page.keyboard.type('5');
+    await expect(draft).toHaveText('0.55');
+    await expect(cancel).toBeEnabled();
+    await expect(confirm).toBeEnabled();
+    await confirm.click();
+    await expect(saved).toHaveText('0.55');
+    await expect(draft).toHaveText('none');
+    await expect(counts).toHaveText('1 committed, 0 cancelled');
+    await expect(confirm).toBeDisabled();
+    await content.click();
+    await page.keyboard.press('End');
+    await page.keyboard.type('9');
+    await cancel.click();
+    await expect(content).toHaveValue('0.55');
+    await expect(saved).toHaveText('0.55');
+    await expect(counts).toHaveText('1 committed, 1 cancelled');
+    // Without the buttons, Enter and Escape do the same.
+    await root.getByText('Show Cancel and Confirm').click();
+    await expect(cancel).toHaveCount(0);
+    await content.click();
+    await page.keyboard.press('End');
+    await page.keyboard.type('1');
+    await page.keyboard.press('Escape');
+    await expect(content).toHaveValue('0.55');
+    await page.keyboard.press('End');
+    await page.keyboard.type('2');
+    await page.keyboard.press('Enter');
+    await expect(saved).toHaveText('0.552');
+    await expect(counts).toHaveText('2 committed, 2 cancelled');
+    await expect(content).toBeFocused();
+  });
+
   test('UIC-FORMULA-BAR-4.1 passes axe', async ({ page, lab }) => {
     await lab.open('formula-bar');
     await expect(page.getByRole('grid', { name: 'Fruit order' })).toBeVisible();

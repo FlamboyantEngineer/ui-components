@@ -270,6 +270,29 @@ describe('FormulaBar', () => {
     },
   );
 
+  it('UIC-FORMULA-BAR-3.2 reports each edit, and each cancel once, with the cell', async () => {
+    const user = userEvent.setup();
+    const onDraftChange = vi.fn();
+    const onCancel = vi.fn();
+    const cell = { row: 1, column: 2 };
+    render(<FormulaBar cell={cell} value="5" onDraftChange={onDraftChange} onCancel={onCancel} />);
+    await user.click(contentBox());
+    await user.keyboard('{End}0');
+    expect(onDraftChange).toHaveBeenLastCalledWith('50', cell);
+    await user.keyboard('{Escape}');
+    expect(onCancel).toHaveBeenCalledTimes(1);
+    expect(onCancel).toHaveBeenCalledWith(cell);
+    expect(contentBox()).toHaveValue('5');
+    // Nothing to drop: Escape and the disabled button cancel nothing.
+    await user.keyboard('{Escape}');
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(onCancel).toHaveBeenCalledTimes(1);
+    await user.click(contentBox());
+    await user.keyboard('{End}1');
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(onCancel).toHaveBeenCalledTimes(2);
+  });
+
   it('UIC-FORMULA-BAR-3.2 restores the content with Escape and the cancel button', async () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();

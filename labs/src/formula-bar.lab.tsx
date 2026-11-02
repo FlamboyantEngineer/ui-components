@@ -137,6 +137,56 @@ function Spreadsheet() {
   );
 }
 
+/**
+ * Cancel and Confirm at work on one cell: the saved value, the pending edit and how many commits
+ * and cancels arrived, with the buttons shown or replaced by Enter and Escape.
+ */
+function CancelConfirm() {
+  const cell = { row: 1, column: 2 };
+  const [saved, setSaved] = useState('0.5');
+  const [draft, setDraft] = useState<string | null>(null);
+  const [counts, setCounts] = useState({ commits: 0, cancels: 0 });
+  const [showActions, setShowActions] = useState(true);
+  return (
+    <div data-lab-demo="actions">
+      <FormulaBar
+        aria-label="Price formula bar"
+        cell={cell}
+        value={saved}
+        tokenize={tokenizeFormula}
+        functions={formulaFunctions}
+        showActions={showActions}
+        onDraftChange={(next) => setDraft(next === saved ? null : next)}
+        onCommit={(next) => {
+          setSaved(next);
+          setDraft(null);
+          setCounts((current) => ({ ...current, commits: current.commits + 1 }));
+        }}
+        onCancel={() => {
+          setDraft(null);
+          setCounts((current) => ({ ...current, cancels: current.cancels + 1 }));
+        }}
+      />
+      <label>
+        <input
+          type="checkbox"
+          checked={showActions}
+          onChange={(event) => setShowActions(event.target.checked)}
+        />{' '}
+        Show Cancel and Confirm
+      </label>
+      <dl>
+        <dt>Saved value</dt>
+        <dd data-lab-output="saved">{saved}</dd>
+        <dt>Pending edit</dt>
+        <dd data-lab-output="draft">{draft ?? 'none'}</dd>
+        <dt>Commits and cancels</dt>
+        <dd data-lab-output="counts">{`${counts.commits} committed, ${counts.cancels} cancelled`}</dd>
+      </dl>
+    </div>
+  );
+}
+
 /** A bar inside a form: Enter in either box never submits it (UIC-FORMULA-BAR-2.2). */
 function FormBar() {
   const [cell, setCell] = useState<CellCoordinates>({ row: 0, column: 0 });
@@ -203,6 +253,12 @@ mountLab(
           </div>
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Cancel and confirm"
+      description="Edit C2's price: Confirm (✓) and Cancel (×) turn on with a pending edit and off without one. Confirm saves the edit, Cancel restores the saved value, and each counts once. Uncheck Show Cancel and Confirm to do the same with Enter and Escape. The fₓ button only inserts a function into the edit; it commits and cancels nothing."
+    >
+      <CancelConfirm />
     </LabSection>
     <LabSection
       title="Without buttons"
