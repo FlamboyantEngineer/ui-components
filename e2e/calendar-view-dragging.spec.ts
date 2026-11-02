@@ -258,6 +258,16 @@ test.describe('Calendar View dragging', () => {
     const grid = demo(page);
     await grid.getByRole('button', { name: 'Previous week' }).click();
     await eventNamed(page, 'Night shift').focus();
+    // Modified arrows are shortcuts, not steps.
+    for (const chord of [
+      'Control+ArrowRight',
+      'Alt+ArrowDown',
+      'Shift+ArrowRight',
+      'Meta+ArrowLeft',
+    ])
+      await page.keyboard.press(chord);
+    await expect(output(page)).toHaveText('No change yet');
+    await eventNamed(page, 'Night shift').first().focus();
     await page.keyboard.press('ArrowRight');
     // Eight wall-clock hours lasting nine elapsed keep nine: it now ends at 7 AM.
     await expect(output(page)).toHaveText('Night shift: 2026-11-01T22:00 to 2026-11-02T07:00');

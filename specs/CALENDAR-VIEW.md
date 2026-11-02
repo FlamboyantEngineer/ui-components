@@ -158,9 +158,9 @@ Verification: `src/components/calendar-view/calendar-event-change.test.ts`, `e2e
 
 ### UIC-CALENDAR-VIEW-6.3 - Keyboard
 
-On a focused movable event (the `move` mode) or a focused edge, ArrowLeft and ArrowRight shall shift the event, or that end, a day, mirrored right to left, and ArrowUp and ArrowDown 15 minutes on the week's time grid or a week on a bar, calling `onEventChange` for each step. The event's new start day becomes the focused day, and focus stays on the same event or edge wherever it is drawn again. Edges show the focus ring while focused.
+On a focused movable event (the `move` mode) or a focused edge, ArrowLeft and ArrowRight shall shift the event, or that end, a day, mirrored right to left, and ArrowUp and ArrowDown 15 minutes on the week's time grid or a week on a bar, calling `onEventChange` for each step. Only these plain arrows step: an arrow with Shift, Control, Alt or Meta, a key that is part of an input method composition, or one already handled (`defaultPrevented`) changes nothing and is left to the browser and the host. The event's new start day becomes the focused day, and focus stays on the same event or edge wherever it is drawn again. Edges show the focus ring while focused.
 
-Implementation: `src/components/calendar-view/calendar-event-handles.tsx`, `src/components/calendar-view/calendar-event.tsx`
+Implementation: `src/components/calendar-view/calendar-event-change.ts`, `src/components/calendar-view/calendar-event-handles.tsx`, `src/components/calendar-view/calendar-event.tsx`
 Verification: `src/components/calendar-view/calendar-event-handles.test.tsx`, `e2e/calendar-view-dragging.spec.ts`
 
 ## Hooks

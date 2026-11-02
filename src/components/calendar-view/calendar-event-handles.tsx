@@ -23,6 +23,8 @@ import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import {
   changeEvent,
+  readKeyShift,
+  snapMinutes,
   type CalendarEventGesture,
   type EventShift,
 } from './calendar-event-change.js';
@@ -73,9 +75,6 @@ export interface CalendarEventHandlesContext {
   refocus: RefObject<{ identity: string; gesture: CalendarEventGesture } | null>;
 }
 
-/** The snap of a dragged timed event, in minutes. */
-const snapMinutes = 15;
-
 const timedSelector = `.${hooks.slotClass('timed')}`;
 
 interface PointerPlace {
@@ -114,22 +113,6 @@ function readShift(origin: PointerPlace, place: PointerPlace, last: EventShift):
   if (origin.minutes === null || place.minutes === null) return { days, minutes: last.minutes };
   const minutes = Math.round((place.minutes - origin.minutes) / snapMinutes) * snapMinutes;
   return { days, minutes };
-}
-
-/**
- * The shift one arrow key asks for: Left and Right a day (mirrored right to left); Up and Down
- * `snapMinutes` on a time grid, else a week. A bar changes by whole days only.
- */
-function readKeyShift(key: string, placement: EventPlacement, isRtl: boolean): EventShift | null {
-  const forward = isRtl ? 'ArrowLeft' : 'ArrowRight';
-  const back = isRtl ? 'ArrowRight' : 'ArrowLeft';
-  if (key === forward) return { days: 1, minutes: 0 };
-  if (key === back) return { days: -1, minutes: 0 };
-  const step = key === 'ArrowDown' ? 1 : key === 'ArrowUp' ? -1 : 0;
-  if (step === 0) return null;
-  return placement === 'block'
-    ? { days: 0, minutes: step * snapMinutes }
-    : { days: step * 7, minutes: 0 };
 }
 
 interface DragState {
@@ -263,7 +246,7 @@ export function useEventDrag(options: EventDragOptions) {
     },
     /** Steps the event by an arrow key; whether the key was one. */
     onKey(key: KeyboardEvent<HTMLElement>) {
-      const shift = isDisabled ? null : readKeyShift(key.key, placement, isRtl);
+      const shift = isDisabled ? null : readKeyShift(key.nativeEvent, placement, isRtl);
       if (!shift) return false;
       key.preventDefault();
       const next = change(shift);
