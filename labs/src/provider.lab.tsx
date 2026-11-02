@@ -45,6 +45,7 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   moveAllTo: ['Available'],
   skinToneName: ['medium-light'],
   reactionLabel: ['👍', 3, ['Jon Berg', 'Lena Ortiz', 'Sam Okafor']],
+  reactionSummary: [4, ['👍 3, reacted by Jon Berg', '🎉 1'], ['🎉']],
   timelineDates: [{ start: 'Mar 2, 2026', end: 'Mar 13, 2026' }],
   timelineMilestone: ['Mar 20, 2026'],
   timelineProgress: ['40%'],
