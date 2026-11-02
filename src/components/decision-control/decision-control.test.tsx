@@ -252,4 +252,22 @@ describe('DecisionControl', { timeout: 15_000 }, () => {
     expect(comment()).toBeDisabled();
     expect(submit()).toBeDisabled();
   });
+
+  it('UIC-DECISION-CONTROL-1.8 sizes the decisions, the comment and Submit alike', () => {
+    const { container, rerender } = render(<DecisionControl onSubmit={() => {}} />);
+    const root = container.querySelector('.ui-decision-control');
+    const sizes = () => [
+      root?.getAttribute('data-size'),
+      container.querySelector('.ui-segmented-choice')?.getAttribute('data-size'),
+      container.querySelector('.ui-text-field')?.getAttribute('data-size'),
+      submit().getAttribute('data-size'),
+    ];
+    expect(sizes()).toEqual(['md', 'md', 'md', 'md']);
+    for (const size of ['xs', 'sm', 'lg'] as const) {
+      rerender(<DecisionControl size={size} onSubmit={() => {}} />);
+      expect(sizes()).toEqual([size, size, size, size]);
+    }
+    expect(screen.getByRole('radio', { name: 'Approve' })).toBeInTheDocument();
+    expect(comment()).toBeInTheDocument();
+  });
 });

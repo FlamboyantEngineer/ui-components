@@ -53,6 +53,13 @@ Verification: `src/components/decision-control/decision-control.test.tsx`
 Implementation: `src/components/decision-control/decision-control.tsx`
 Verification: `src/components/decision-control/decision-control.test.tsx`
 
+### UIC-DECISION-CONTROL-1.8 - Sizes
+
+`size` (`xs`, `sm`, `md` by default, or `lg`, the shared control scale) shall size every control the decision composes: the choice's segments (UIC-SEGMENTED-CHOICE), the comment field (UIC-FIELD) and Submit (UIC-BUTTON) take it as their own `size`, and the root publishes it as `data-size`, so the reference stylesheet scales the label and the spacing between them. A size changes no name, focus indicator or behaviour, and long labels wrap instead of clipping.
+
+Implementation: `src/components/decision-control/decision-control.tsx`, `src/components/decision-control/decision-parts.tsx`, `labs/reference/decision-control.css`
+Verification: `src/components/decision-control/decision-control.test.tsx`, `e2e/decision-control.spec.ts`
+
 ## UIC-DECISION-CONTROL-2 - Accessibility
 
 ### UIC-DECISION-CONTROL-2.1 - Named form and choice
@@ -64,15 +71,16 @@ Verification: `src/components/decision-control/decision-control.test.tsx`, `e2e/
 
 ## Hooks
 
-| Hook                             | Kind  | Values | Description                                              |
-| -------------------------------- | ----- | ------ | -------------------------------------------------------- |
-| `ui-decision-control`            | root  |        | The control (`<div>`).                                   |
-| `ui-decision-control__form`      | slot  |        | The form (also `ui-form`).                               |
-| `ui-decision-control__label`     | slot  |        | The visible label that names the form and the choice.    |
-| `ui-decision-control__choice`    | slot  |        | The decisions (also `ui-segmented-choice`).              |
-| `ui-decision-control__comment`   | slot  |        | The comment (also `ui-text-field`).                      |
-| `ui-decision-control__error`     | slot  |        | Why submitting failed (also `ui-inline-error`).          |
-| `ui-decision-control__submit`    | slot  |        | Submit (also `ui-button`).                               |
-| `ui-decision-control__signature` | slot  |        | The signature dialog (also `ui-modal`).                  |
-| `data-decision`                  | state |        | The picked decision's value (on the root).               |
-| `data-pending`                   | state | `true` | While an unsigned submission is unsettled (on the root). |
+| Hook                             | Kind      | Values                 | Description                                              |
+| -------------------------------- | --------- | ---------------------- | -------------------------------------------------------- |
+| `ui-decision-control`            | root      |                        | The control (`<div>`).                                   |
+| `ui-decision-control__form`      | slot      |                        | The form (also `ui-form`).                               |
+| `ui-decision-control__label`     | slot      |                        | The visible label that names the form and the choice.    |
+| `ui-decision-control__choice`    | slot      |                        | The decisions (also `ui-segmented-choice`).              |
+| `ui-decision-control__comment`   | slot      |                        | The comment (also `ui-text-field`).                      |
+| `ui-decision-control__error`     | slot      |                        | Why submitting failed (also `ui-inline-error`).          |
+| `ui-decision-control__submit`    | slot      |                        | Submit (also `ui-button`).                               |
+| `ui-decision-control__signature` | slot      |                        | The signature dialog (also `ui-modal`).                  |
+| `data-decision`                  | state     |                        | The picked decision's value (on the root).               |
+| `data-pending`                   | state     | `true`                 | While an unsigned submission is unsettled (on the root). |
+| `data-size`                      | attribute | `xs`, `sm`, `md`, `lg` | The control size (on the root).                          |

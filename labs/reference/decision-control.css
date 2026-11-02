@@ -14,6 +14,31 @@
   gap: 6px;
 }
 
+/* Sizes: the label's type and the spacing follow the controls' size. */
+.ui-decision-control[data-size='xs'] {
+  font-size: var(--ref-font-size-xs);
+}
+
+.ui-decision-control[data-size='xs'] .ui-decision-control__form {
+  gap: 4px;
+}
+
+.ui-decision-control[data-size='sm'] {
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-decision-control[data-size='sm'] .ui-decision-control__form {
+  gap: 5px;
+}
+
+.ui-decision-control[data-size='lg'] {
+  font-size: var(--ref-font-size);
+}
+
+.ui-decision-control[data-size='lg'] .ui-decision-control__form {
+  gap: 8px;
+}
+
 .ui-decision-control__label {
   font-weight: var(--ref-font-weight-strong);
 }

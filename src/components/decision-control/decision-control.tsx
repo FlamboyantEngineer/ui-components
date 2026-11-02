@@ -3,7 +3,7 @@
 import { CheckGlyph, CloseGlyph } from '../../core/glyphs.js';
 import { useId, useState, type ReactNode } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, ControlSize } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { Form } from '../form/form.js';
@@ -53,6 +53,11 @@ export interface DecisionControlProps extends BaseProps {
   onSubmit: (details: DecisionControlDetails) => void | Promise<unknown>;
   /** Refuses picking and submitting. */
   isDisabled?: boolean | undefined;
+  /**
+   * The size of the decisions, the comment field and Submit on the shared control scale, and of
+   * the spacing between them. Defaults to `md`.
+   */
+  size?: ControlSize | undefined;
 }
 
 function defaultOptions(strings: UiStrings): DecisionControlOption[] {
@@ -78,6 +83,7 @@ export function DecisionControl({
   submitLabel,
   onSubmit,
   isDisabled = false,
+  size = 'md',
   className,
   ...rest
 }: DecisionControlProps) {
@@ -94,7 +100,7 @@ export function DecisionControl({
     onSubmit,
     onSubmitted: () => setCommentText(''),
   });
-  const state = { decision: picked?.value, pending: submission.isPending };
+  const state = { decision: picked?.value, pending: submission.isPending, size };
   return (
     <div {...rest} {...hooks.root({ className, props: rest, data: state })}>
       <Form
@@ -115,6 +121,7 @@ export function DecisionControl({
           onChange={setDecision}
           isDisabled={isDisabled}
           sizing="content"
+          size={size}
           className={hooks.slotClass('choice')}
         />
         <DecisionComment
@@ -124,11 +131,13 @@ export function DecisionControl({
           value={commentText}
           onChange={setCommentText}
           isDisabled={isDisabled}
+          size={size}
         />
         <DecisionSubmit
           submission={submission}
           label={submitLabel}
           isDisabled={isDisabled || !picked}
+          size={size}
         />
       </Form>
       {signature && picked && !isDisabled ? (
