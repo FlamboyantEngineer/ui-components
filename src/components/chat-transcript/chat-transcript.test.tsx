@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -74,6 +74,22 @@ describe('ChatTranscript', () => {
     layout.heights.set('m4', 250);
     resizeContent();
     expect(viewport.scrollTop).toBe(450);
+    scrollViewport(viewport, 120);
+    rerender(<Conversation count={5} />);
+    expect(viewport.scrollTop).toBe(120);
+  });
+
+  it('UIC-CHAT-TRANSCRIPT-1.2 keeps following when its own scroll is heard after the content grew', () => {
+    const { rerender } = render(<Conversation count={3} />);
+    const viewport = getViewport();
+    expect(viewport.scrollTop).toBe(200);
+    rerender(<Conversation count={4} />);
+    expect(viewport.scrollTop).toBe(300);
+    // The keeper's own scroll, heard after the content grew again, does not stop following.
+    layout.heights.set('m4', 250);
+    fireEvent.scroll(viewport);
+    expect(viewport.scrollTop).toBe(450);
+    // A scroll that moves the view does.
     scrollViewport(viewport, 120);
     rerender(<Conversation count={5} />);
     expect(viewport.scrollTop).toBe(120);
