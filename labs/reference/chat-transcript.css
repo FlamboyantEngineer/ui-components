@@ -418,6 +418,17 @@
   display: flex;
 }
 
+/*
+ * Right under the bubble, a summary chip overlaps the bubble's bottom edge at its end; below a
+ * footer or an error it keeps clear of them.
+ */
+.ui-chat-message__content
+  + .ui-chat-message__reactions:has(> .ui-reaction-bar[data-presentation='summary']) {
+  position: relative;
+  margin-block-start: -10px;
+  padding-inline: 8px;
+}
+
 .ui-chat-message__reactions,
 .ui-chat-message[data-origin='sent'] .ui-chat-message__readers {
   justify-content: flex-end;

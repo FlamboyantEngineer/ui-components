@@ -267,7 +267,7 @@ test.describe('Chat Message Actions lab', () => {
     await expect(log(page, 'conversation')).toContainText('delete question');
   });
 
-  test('UIC-CHAT-TRANSCRIPT-2.12 UIC-CHAT-MESSAGE-ACTIONS-3.2 UIC-CHAT-MESSAGE-ACTIONS-4.1 shows reactions at the bottom right of each message', async ({
+  test('UIC-CHAT-TRANSCRIPT-2.12 UIC-CHAT-MESSAGE-ACTIONS-3.2 UIC-CHAT-MESSAGE-ACTIONS-4.1 UIC-REACTION-BAR-1.7 sums reactions in one chip at the bottom right of each message', async ({
     page,
     lab,
   }) => {
@@ -279,20 +279,27 @@ test.describe('Chat Message Actions lab', () => {
       await page.keyboard.press('Enter');
       await expect(search).toBeHidden();
     };
-    const chips = (id: string) =>
-      message(page, id).locator('.ui-chat-message__reactions .ui-reaction-bar__reaction');
-    // From the received message's context menu.
+    const summary = (id: string) =>
+      message(page, id).locator('.ui-chat-message__reactions .ui-reaction-bar__summary');
+    const total = (id: string) => summary(id).locator('.ui-reaction-bar__count');
+    // One chip per message: no per-emoji chips and no add button beside it.
     const ana = message(page, 'ana');
     await ana.scrollIntoViewIfNeeded();
+    await expect(summary('ana')).toHaveCount(1);
+    await expect(ana.locator('.ui-reaction-bar__reaction, .ui-reaction-bar__add')).toHaveCount(0);
+    await expect(total('ana')).toHaveText('5');
+    await expect(summary('ana').locator('.ui-reaction-bar__emoji')).toHaveText(['👍', '🎉', '❤️']);
+    await expect(summary('ana')).toHaveAttribute('data-reacted', 'true');
+    await expect(summary('ana')).toHaveAccessibleName(/^5 reactions: .*You reacted with 🎉$/);
+    // React from the received message's context menu adds to the total.
     await ana.getByText('I can meet you at the river at noon.').click({ button: 'right' });
     await page
       .getByRole('menu', { name: 'Message actions' })
       .getByRole('menuitem', { name: 'Add reaction' })
       .click();
-    await pick('party popper');
-    await expect(log(page, 'conversation')).toHaveText('react 🎉 on ana');
-    await expect(chips('ana')).toHaveCount(2);
-    await expect(chips('ana').nth(1)).toHaveAttribute('aria-pressed', 'true');
+    await pick('grinning face');
+    await expect(log(page, 'conversation')).toHaveText('react 😀 on ana');
+    await expect(total('ana')).toHaveText('6');
     // From the sent message's bar, after an edit: the reaction stays with that message.
     const question = message(page, 'question');
     await question.getByText('Which tram goes to the castle?').click({ button: 'right' });
@@ -305,31 +312,37 @@ test.describe('Chat Message Actions lab', () => {
       .click();
     await pick('party popper');
     await expect(log(page, 'conversation')).toContainText('react 🎉 on question');
-    await expect(chips('question')).toHaveCount(2);
-    await expect(chips('ana')).toHaveCount(2);
-    // A chip takes the reaction back, and the next press adds it again.
-    await chips('question').nth(1).click();
+    await expect(total('question')).toHaveText('2');
+    await expect(total('ana')).toHaveText('6');
+    // The chip opens the picker for its own message; choosing a reaction of the reader's takes it back.
+    await summary('question').click();
+    await pick('party popper');
     await expect(log(page, 'conversation')).toContainText('take back 🎉 on question');
-    await expect(chips('question')).toHaveCount(1);
-    await chips('ana').first().click();
-    await expect(chips('ana').first()).toHaveAttribute('aria-pressed', 'true');
-    // Every message sets its reactions at its bottom right, under the content and the footer.
-    for (const id of ['question', 'ana']) {
+    await expect(total('question')).toHaveText('1');
+    await expect(summary('question')).toBeFocused();
+    // A message without reactions has no chip; React in its bar adds the first.
+    const answer = message(page, 'answer');
+    await expect(answer.locator('.ui-chat-message__reactions')).toHaveCount(0);
+    await answer.hover();
+    await answer
+      .locator('.ui-chat-message-actions')
+      .getByRole('button', { name: 'Add reaction' })
+      .click();
+    await pick('thumbs up');
+    await expect(total('answer')).toHaveText('1');
+    // Each chip overlaps the bubble's bottom edge at its end, sent or received.
+    for (const id of ['question', 'answer', 'ana']) {
       const placement = await message(page, id).evaluate((node) => {
-        const box = (selector: string) => node.querySelector(selector)?.getBoundingClientRect();
-        const content = box('.ui-chat-message__content');
-        const chips = [
-          ...node.querySelectorAll('.ui-chat-message__reactions .ui-reaction-bar > *'),
-        ];
-        const last = chips.at(-1)?.getBoundingClientRect();
-        const reactions = box('.ui-chat-message__reactions');
+        const content = node.querySelector('.ui-chat-message__content')?.getBoundingClientRect();
+        const chip = node.querySelector('.ui-reaction-bar__summary')?.getBoundingClientRect();
+        if (!content || !chip) return null;
         return {
-          below: (reactions?.top ?? 0) >= (content?.bottom ?? 0) - 0.5,
-          atEnd: Math.abs((last?.right ?? 0) - (reactions?.right ?? 0)) <= 1,
-          withinMessage: (reactions?.right ?? 0) <= (content?.right ?? 0) + 0.5,
+          overlapsBottom: chip.top < content.bottom && chip.bottom > content.bottom,
+          atEnd: chip.right <= content.right && content.right - chip.right <= 12,
+          clearOfText: chip.top >= content.bottom - chip.height / 2 - 1,
         };
       });
-      expect(placement).toEqual({ below: true, atEnd: true, withinMessage: true });
+      expect(placement, id).toEqual({ overlapsBottom: true, atEnd: true, clearOfText: true });
     }
   });
 });
