@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode, Ref } from 'react';
+import { useState, type ReactNode, type Ref } from 'react';
 import { mergeClassNames } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
@@ -96,6 +96,7 @@ function FooterActionButton({
     className,
     ...buttonProps
   } = action;
+  const [isFocused, setFocused] = useState(false);
   const isOtherRunning = actionState.running !== null && actionState.running !== slot;
   return (
     <Button
@@ -103,6 +104,9 @@ function FooterActionButton({
       className={mergeClassNames(hooks.slotClass(slot), className)}
       variant={variant ?? defaultVariant}
       isDisabled={Boolean(isDisabled) || isOtherRunning}
+      // A focused action the other action disables keeps the focus, refusing presses meanwhile.
+      focusableWhenDisabled={(isOtherRunning && isFocused) || buttonProps.focusableWhenDisabled}
+      onFocusChange={setFocused}
       isPending={actionState.running === slot || Boolean(isPending)}
       onPress={() => actionState.run(slot)}
     >

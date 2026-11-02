@@ -149,10 +149,10 @@ Verification: `src/components/modal/modal.test.tsx`, `e2e/modal.spec.ts`
 
 ### UIC-MODAL-5.2 - Action lifecycle
 
-Pressing an action shall call its `onPress` with `close`, which closes this opening of the modal. When `onPress` returns a promise, its button shall be pending ([Action Button](BUTTON.md)'s lifecycle: spinner named by `pendingLabel`, `data-pending`, repeat presses refused, even before the pending state renders) until it settles, the other action shall be disabled meanwhile, and Cancel shall stay available. An action with `isDisabled` never runs; `isPending` holds it pending from outside.
+Pressing an action shall call its `onPress` with `close`, which closes this opening of the modal. When `onPress` returns a promise, its button shall be pending ([Action Button](BUTTON.md)'s lifecycle: spinner named by `pendingLabel`, `data-pending`, repeat presses refused, even before the pending state renders) until it settles, the other action shall be disabled meanwhile (a focused one stays focusable, refusing presses, so the focus is not lost), and Cancel shall stay available. An action with `isDisabled` never runs; `isPending` holds it pending from outside.
 
 Implementation: `src/components/modal/modal-footer.tsx`, `src/components/modal/use-modal-actions.ts`
-Verification: `src/components/modal/modal.test.tsx`, `e2e/modal.spec.ts`
+Verification: `src/components/modal/modal.test.tsx`, `src/components/modal/modal-running-focus.test.tsx`, `e2e/modal.spec.ts`
 
 ### UIC-MODAL-5.3 - Failed actions
 
