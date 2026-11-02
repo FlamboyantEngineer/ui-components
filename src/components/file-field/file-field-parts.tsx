@@ -6,6 +6,9 @@ import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { useLocale } from '../../primitives/index.js';
+import { formatBytes } from '../../utils/format-bytes.js';
+import { getFileGlyph } from '../../utils/file-glyph.js';
 import { FieldPreviousValue } from '../field/field.js';
 import { Icon } from '../icon/icon.js';
 import { Link } from '../link/link.js';
@@ -17,6 +20,9 @@ export const fileFieldHooks = createHooks('file-field', [
   'removed-files',
   'removed-label',
   'removed',
+  'removed-icon',
+  'removed-name',
+  'removed-size',
 ]);
 
 const hooks = fileFieldHooks;
@@ -56,6 +62,40 @@ export function renderFileFieldActions(
 }
 
 /**
+ * One removed committed file, laid out like a held file's row: its type glyph, its struck name with
+ * the button that puts it back, its size and its download link when it has them. The link sits
+ * beside the restore button, never inside it.
+ */
+function RemovedFile({
+  item,
+  isDisabled,
+  onRestore,
+}: {
+  item: FileFieldItem;
+  isDisabled: boolean;
+  onRestore: () => void;
+}) {
+  const { locale } = useLocale();
+  return (
+    <div {...hooks.slot('removed')}>
+      <Icon icon={getFileGlyph(item.type)} className={hooks.slotClass('removed-icon')} />
+      <FieldPreviousValue
+        className={hooks.slotClass('removed-name')}
+        restoreLabel={item.name}
+        isDisabled={isDisabled}
+        onRestore={onRestore}
+      >
+        {item.name}
+      </FieldPreviousValue>
+      {item.size === undefined ? null : (
+        <span {...hooks.slot('removed-size')}>{formatBytes(item.size, locale)}</span>
+      )}
+      {item.downloadUrl ? <FileDownloadLink item={item} href={item.downloadUrl} /> : null}
+    </div>
+  );
+}
+
+/**
  * The committed files an edit removed, in a titled group below the held files, each with a button
  * that puts it back. Without removed files it renders nothing.
  */
@@ -78,15 +118,12 @@ export function RemovedFiles({
         {strings.removedFiles}
       </span>
       {removed.map((item) => (
-        <FieldPreviousValue
+        <RemovedFile
           key={toKeyIdentity(item.id)}
-          className={hooks.slotClass('removed')}
-          restoreLabel={item.name}
+          item={item}
           isDisabled={isDisabled}
           onRestore={() => onRestore(item)}
-        >
-          {item.name}
-        </FieldPreviousValue>
+        />
       ))}
     </div>
   );

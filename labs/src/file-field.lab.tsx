@@ -282,7 +282,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Removed files"
-      description="Three committed files removed, one with a long name: they follow the held files under a Removed files title, as chips the height of the file rows, and each restore button puts its file back."
+      description="Three committed files removed, one with a long name: they follow the held files under a Removed files title, laid out like the file rows with their size and, where they have one, a download link. Each restore button puts its file back."
     >
       <StateMatrix
         axes={{ width: ['narrow', 'wide'] }}
