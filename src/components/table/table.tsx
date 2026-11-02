@@ -67,6 +67,8 @@ export interface TableProps<T extends TableRow>
   rows: readonly T[];
   /** Called with the key of the row the reader activates. */
   onRowAction?: ((key: Key) => void) | undefined;
+  /** Reports a reader's selection press even when the selected keys stay the same. Defaults to false. */
+  allowDuplicateSelectionEvents?: boolean | undefined;
   /**
    * Bulk actions on a selection bar above the grid while rows are selected, in multiple selection.
    * Columns with `bulkEdit` add an action there that sets one column across the selected rows.

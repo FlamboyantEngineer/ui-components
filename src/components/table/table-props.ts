@@ -14,6 +14,7 @@ const ariaKeys = [
   'aria-details',
   'selectionMode',
   'selectionBehavior',
+  'allowDuplicateSelectionEvents',
   'disabledKeys',
   'disallowEmptySelection',
 ] as const satisfies readonly (keyof TableGridOptions<TableRow>)[];

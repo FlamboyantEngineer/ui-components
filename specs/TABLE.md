@@ -165,6 +165,13 @@ A text control inside a column header shall keep the same editing keys, without 
 Implementation: `src/components/table/table-row.tsx`, `src/components/table/table-data-cell.tsx`, `src/components/table/table-column.tsx`, `src/utils/text-control-keys.tsx`
 Verification: `src/components/table/table-cell-focus.test.tsx`, `src/components/table/table-column-controls.test.tsx`, `src/components/table/table-picker-controls.test.tsx`, `e2e/table.spec.ts`, `src/utils/text-control-keys.test.tsx`
 
+### UIC-TABLE-3.6 - Repeated selection events
+
+`allowDuplicateSelectionEvents` shall default to false. When enabled, a reader's pointer or keyboard selection press shall call `onSelectionChange` even when the selected keys are unchanged. Passive controlled rerenders, disabled rows and a row's nested controls shall not emit selection callbacks. Selection values, bulk selection, toggle/replace behavior and row actions retain their existing contracts.
+
+Implementation: `src/components/table/table.tsx`, `src/components/table/table-props.ts`
+Verification: `src/components/table/table-repeat-selection.test.tsx`, `e2e/table-selection.spec.ts`
+
 ## UIC-TABLE-4 - Column sizing
 
 ### UIC-TABLE-4.1 - Column widths

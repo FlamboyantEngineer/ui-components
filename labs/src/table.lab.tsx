@@ -27,6 +27,7 @@ import { BulkEdit, Grouping, SmallSteps, Spreadsheet } from './table-sheet-cases
 import { GroupKeyTable, ObjectKeyTable, TypedTable } from './collection-identity-cases.js';
 import { HeaderFilter, PickerCell } from './table-control-cases.js';
 import { ContentWidths, GroupedReordering } from './table-content-contracts.js';
+import { RepeatedSelection } from './table-selection-cases.js';
 
 function TrailingActions() {
   const [count, setCount] = useState(0);
@@ -377,6 +378,7 @@ mountLab(
       description="Checkboxes, select all, a disabled row and an actions column."
     >
       <Selection />
+      <RepeatedSelection />
     </LabSection>
     <LabSection
       title="A control in a header"
