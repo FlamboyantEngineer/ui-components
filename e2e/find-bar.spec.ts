@@ -62,7 +62,7 @@ test.describe('Find Bar lab', () => {
     await expect(status).toHaveText('1 of 5');
     await area.getByRole('button', { name: 'Previous match' }).click();
     await expect(status).toHaveText('5 of 5');
-    // Only the current match stands out, in its own colour and outline, and it follows the steps.
+    // Only the current match stands out, by colour alone, and it follows the steps.
     const marks = area.locator('mark');
     const current = area.locator('mark[data-lab-current]');
     await expect(current).toHaveCount(1);
@@ -75,8 +75,13 @@ test.describe('Find Bar lab', () => {
     const active = await look(current);
     const other = await look(marks.nth(0));
     expect(active.background).not.toBe(other.background);
-    expect(active.outline).toBe('solid');
+    expect(active.outline).toBe('none');
     expect(other.outline).toBe('none');
+    // The host may style it its own way: the lab's outlined look.
+    await area.getByText('Outline the current match (a host style)').click();
+    await expect.poll(async () => (await look(current)).outline).toBe('solid');
+    expect((await look(marks.nth(0))).outline).toBe('none');
+    await expect(marks.nth(4)).toHaveAttribute('data-lab-current', 'true');
     await box.fill('quince');
     await expect(status).toHaveText('No results');
     await expect(current).toHaveCount(0);

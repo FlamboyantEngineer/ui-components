@@ -70,8 +70,8 @@ function replaceAll(text: string, matches: readonly Match[], replacement: string
 
 /**
  * The passage's highlights, which the host draws, not the bar or the reference stylesheet: every
- * match in the highlight tint, the current one in the accent tint with an outline and an underline,
- * so it stands out beyond its colour.
+ * match in the highlight tint and the current one in the accent tint, a colour of its own and no
+ * border. The outlined look is one a host may pick instead.
  */
 const matchStyle: CSSProperties = {
   borderRadius: 'var(--ref-radius-sm)',
@@ -82,13 +82,24 @@ const matchStyle: CSSProperties = {
 const currentMatchStyle: CSSProperties = {
   ...matchStyle,
   background: 'color-mix(in srgb, var(--ref-accent) var(--ref-tint-strong), transparent)',
+};
+
+const outlinedMatchStyle: CSSProperties = {
+  ...currentMatchStyle,
   outline: '2px solid var(--ref-accent-ink)',
   textDecoration: 'underline 2px',
   textUnderlineOffset: 3,
 };
 
-/** The text with each match in a `<mark>`, the current one flagged. */
-function markMatches(text: string, matches: readonly Match[], current: number): ReactNode[] {
+/** The text with each match in a `<mark>`, the current one flagged and drawn in `currentStyle`. */
+function markMatches(
+  text: string,
+  {
+    matches,
+    current,
+    currentStyle,
+  }: { matches: readonly Match[]; current: number; currentStyle: CSSProperties },
+): ReactNode[] {
   const parts: ReactNode[] = [];
   let offset = 0;
   matches.forEach((match, index) => {
@@ -98,7 +109,7 @@ function markMatches(text: string, matches: readonly Match[], current: number): 
         key={match.start}
         data-lab-current={index === current || undefined}
         aria-current={index === current || undefined}
-        style={index === current ? currentMatchStyle : matchStyle}
+        style={index === current ? currentStyle : matchStyle}
       >
         {text.slice(match.start, match.end)}
       </mark>,
@@ -116,6 +127,7 @@ function Passage() {
   const [query, setQuery] = useState('pear');
   const [selected, setSelected] = useState<Set<Key>>(new Set());
   const [current, setCurrent] = useState(0);
+  const [isOutlined, setOutlined] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const matches = findMatches(text, query, selected);
   const count = matches.length;
@@ -165,8 +177,17 @@ function Passage() {
         </Button>
       )}
       <p tabIndex={0} data-lab-text="">
-        {isOpen ? markMatches(text, matches, index) : text}
+        {isOpen
+          ? markMatches(text, {
+              matches,
+              current: index,
+              currentStyle: isOutlined ? outlinedMatchStyle : currentMatchStyle,
+            })
+          : text}
       </p>
+      <Checkbox isSelected={isOutlined} onChange={setOutlined}>
+        Outline the current match (a host style)
+      </Checkbox>
       <p>
         Open: <output data-lab-output="open">{isOpen ? 'yes' : 'no'}</output>; options:{' '}
         <output data-lab-output="options">{[...selected].join(', ') || 'none'}</output>
@@ -226,7 +247,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Find and replace in a passage"
-      description="Type to find; Enter and Shift+Enter step, the options match case or whole words, Replace and Replace all rewrite the recipe, and Escape or Close closes the bar (an Escape that cancels an input method candidate only cancels it). Ctrl+F in the passage opens it again."
+      description="Type to find; Enter and Shift+Enter step, the options match case or whole words, Replace and Replace all rewrite the recipe, and Escape or Close closes the bar (an Escape that cancels an input method candidate only cancels it). Ctrl+F in the passage opens it again. The passage draws its own highlights: the current match takes a colour of its own, and the checkbox swaps in an outlined host style."
     >
       <Passage />
     </LabSection>
