@@ -91,10 +91,10 @@ Verification: `src/components/step-list-editor/step-list-editor.test.tsx`, `e2e/
 
 ### UIC-STEP-LIST-EDITOR-4.2 - Focus after an edit
 
-The editors that add, remove and move their items (this editor, [Condition Builder](CONDITION-BUILDER.md) and [Board](BOARD.md)) shall move focus with `useFocusRequest`: a request names how to find the element to focus, and after the next render it is focused, then checked again on the following frames until it holds focus (at most 60 attempts, including while the target has not mounted), since an open menu keeps the page inert for a few frames and moving an element drops its focus. The target's own document and animation frames are used once it exists. A pointer press, key press, newer request or unmount ends the request, so a pending check never takes focus back from where the reader has moved it.
+The editors that add, remove and move their items (this editor, [Condition Builder](CONDITION-BUILDER.md) and [Board](BOARD.md)) shall move focus with `useFocusRequest`: a request names how to find the element to focus, and after the next render it is focused, then checked again on the following frames until it holds focus (at most 60 attempts, including while the target has not mounted), since an open menu keeps the page inert for a few frames and moving an element drops its focus. The target's own document and animation frames are used once it exists. A pointer press, key press, newer request or unmount ends the request, so a pending check never takes focus back from where the reader has moved it. Once the element has taken focus, the request owns focus only against the edit settling: focus that the collection (grid, tree grid, list box or tree) around the element focused when the request began, or around the element, moves onto one of its own items, or that falls to the page, is taken back; focus that moves anywhere else, as when the application focuses another control or a dialog opens, ends the request, in the element's document and inside its shadow root alike.
 
 Implementation: `src/utils/use-focus-request.ts`, `src/components/condition-builder/condition-builder.tsx`, `src/components/board/board.tsx`
-Verification: `src/utils/use-focus-request.test.tsx`, `src/components/condition-builder/condition-builder.test.tsx`
+Verification: `src/utils/use-focus-request.test.tsx`, `src/components/condition-builder/condition-builder.test.tsx`, `e2e/board.spec.ts`
 
 ## Hooks
 

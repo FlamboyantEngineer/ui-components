@@ -194,4 +194,104 @@ describe('useFocusRequest', () => {
     expect(deepActive()).toBe(input);
     expect(focus).toHaveBeenCalledOnce();
   });
+
+  describe('ownership after the target takes focus', () => {
+    function advanceFrames(count: number) {
+      for (let frame = 0; frame < count; frame += 1) {
+        act(() => {
+          vi.advanceTimersToNextFrame();
+        });
+      }
+    }
+
+    function renderLists() {
+      render(
+        <div>
+          <div role="grid" aria-label="Source">
+            <div role="row" tabIndex={-1} aria-label="Moved" />
+            <div role="row" tabIndex={-1} aria-label="Sibling" />
+          </div>
+          <div role="grid" aria-label="Destination">
+            <div role="row" tabIndex={-1} aria-label="Arrived" />
+            <div role="row" tabIndex={-1} aria-label="Neighbour" />
+          </div>
+          <button type="button">Handle</button>
+          <div role="dialog" aria-label="Details">
+            <button type="button">Close</button>
+          </div>
+        </div>,
+      );
+      const row = (name: string) => screen.getByRole('row', { name });
+      return { row, arrived: row('Arrived') };
+    }
+
+    it('UIC-STEP-LIST-EDITOR-4.2 yields to the application focusing another control', () => {
+      vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame'] });
+      const { row, arrived } = renderLists();
+      act(() => row('Moved').focus());
+      focusWithRetry(() => arrived);
+      expect(arrived).toHaveFocus();
+      const handle = screen.getByRole('button', { name: 'Handle' });
+      act(() => handle.focus());
+      advanceFrames(4);
+      expect(handle).toHaveFocus();
+    });
+
+    it('UIC-STEP-LIST-EDITOR-4.2 yields to a dialog that takes focus', () => {
+      vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame'] });
+      const { arrived } = renderLists();
+      focusWithRetry(() => arrived);
+      const close = screen.getByRole('button', { name: 'Close' });
+      act(() => close.focus());
+      advanceFrames(4);
+      expect(close).toHaveFocus();
+    });
+
+    it('UIC-STEP-LIST-EDITOR-4.2 undoes a collection repairing its own focus while the edit settles', () => {
+      vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame'] });
+      const { row, arrived } = renderLists();
+      act(() => row('Moved').focus());
+      focusWithRetry(() => arrived);
+      // The source collection, then the destination, move focus onto their own items.
+      act(() => row('Sibling').focus());
+      advanceFrames(1);
+      expect(arrived).toHaveFocus();
+      act(() => row('Neighbour').focus());
+      advanceFrames(1);
+      expect(arrived).toHaveFocus();
+      act(() => arrived.blur());
+      advanceFrames(1);
+      expect(arrived).toHaveFocus();
+    });
+
+    it('UIC-STEP-LIST-EDITOR-4.2 keeps retrying while the target has not taken focus yet', () => {
+      vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame'] });
+      const { arrived } = renderLists();
+      let ready = false;
+      focusWithRetry(() => (ready ? arrived : null));
+      act(() => screen.getByRole('button', { name: 'Handle' }).focus());
+      ready = true;
+      advanceFrames(1);
+      expect(arrived).toHaveFocus();
+    });
+
+    it('UIC-FOCUS-SCOPE-2.8 yields to focus moved inside a shadow root', () => {
+      vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame'] });
+      render(
+        <ShadowHost name="editor">
+          <div role="grid" aria-label="Items">
+            <div role="row" tabIndex={-1} aria-label="Item" />
+          </div>
+          <button type="button">Other</button>
+        </ShadowHost>,
+      );
+      const item = inShadow('editor').getByRole('row', { name: 'Item' });
+      const other = inShadow('editor').getByRole('button', { name: 'Other' });
+      focusWithRetry(() => item);
+      expect(deepActive()).toBe(item);
+      act(() => other.focus());
+      advanceFrames(4);
+      expect(deepActive()).toBe(other);
+    });
+  });
 });
