@@ -9,7 +9,7 @@
 `UserCardTrigger` shall render its children inside a button, the `ui-user-card-trigger` root while it has a card, named by that content, with `aria-expanded` reporting whether the card is open. It takes the press handlers (`onPress` runs as well as opening the card) and `isDisabled`, appends the caller's `className`, forwards caller `data-*` attributes and `id`, and publishes `data-hovered`, `data-pressed`, `data-focused`, `data-focus-visible` and `data-disabled` states. The reference stylesheet sets a trigger holding only text inline on the surrounding sentence's baseline, wrapping with it, and keeps triggers holding an avatar or an identity row as centred inline boxes.
 
 Implementation: `src/components/user-card-trigger/user-card-trigger.tsx`, `labs/reference/user-card-trigger.css`
-Verification: `src/components/user-card-trigger/user-card-trigger.test.tsx`, `e2e/user-card-trigger.spec.ts`
+Verification: `src/components/user-card-trigger/user-card-trigger.test.tsx`, `src/components/hover-card/hover-card-tag.test.tsx`, `e2e/user-card-trigger.spec.ts`
 
 ### UIC-USER-CARD-TRIGGER-1.2 - Opening and dismissing
 

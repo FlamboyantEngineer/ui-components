@@ -55,6 +55,15 @@ Verification: `src/components/hover-card/hover-card.test.tsx`, `e2e/hover-card.s
 Implementation: `src/components/hover-card/hover-card.tsx`
 Verification: `src/components/hover-card/hover-card.test.tsx`
 
+## UIC-HOVER-CARD-3 - Composition
+
+### UIC-HOVER-CARD-3.1 - Preview triggers in tags
+
+A `HoverCardTrigger` inside a `Tag` shall let its ordinary button open the card on hover and keyboard focus without acting as the tag's remove button, and Escape closes the preview. The tag's own remove button keeps its action; a group without `onRemove` offers no removal and ignores Delete. A `UserCardTrigger` with `trigger="hover"` composes the same way.
+
+Implementation: `src/components/hover-card/hover-card.tsx`
+Verification: `src/components/hover-card/hover-card-tag.test.tsx`
+
 ## Hooks
 
 | Hook                   | Kind  | Values                           | Description                                                |
