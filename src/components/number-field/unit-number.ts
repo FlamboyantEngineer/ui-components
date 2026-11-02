@@ -16,38 +16,78 @@ export function listUnits(units: NumberFieldUnits): [string, number][] {
   return Object.entries({ [units.unit]: 1, ...units.conversions });
 }
 
-const separatorCache = new Map<string, { group: string; decimal: string }>();
+// `\s` covers the no-break spaces some locales group digits with; the marks are the bidi controls
+// right-to-left locales write around signs.
+const spaces = /[\s\u061c\u200e\u200f]/g;
 
-/** The grouping and decimal separators of a locale's numbers. */
-function readSeparators(locale: string) {
-  const known = separatorCache.get(locale);
-  if (known) return known;
-  const parts = new Intl.NumberFormat(locale).formatToParts(12345.6);
-  const separators = {
-    group: parts.find((part) => part.type === 'group')?.value ?? ',',
-    decimal: parts.find((part) => part.type === 'decimal')?.value ?? '.',
-  };
-  separatorCache.set(locale, separators);
-  return separators;
+/** How a locale and format options write numbers, as a reader may type them back. */
+interface NumberNotation {
+  group: string;
+  decimal: string;
+  minus: string;
+  /** The locale's digits, zero to nine, when they are not ASCII digits. */
+  digits: readonly string[];
+  /** Signs around the number the format adds, as a percent or currency sign. */
+  affixes: readonly string[];
+  /** Percent scaling: the number written is a hundred times the value. */
+  scale: number;
 }
 
-// `\s` covers the no-break spaces some locales group digits with.
-const spaces = /\s/g;
+const notationCache = new Map<string, NumberNotation>();
+const numberParts = new Set(['integer', 'group', 'decimal', 'fraction', 'minusSign', 'plusSign']);
+const exponentParts = /^exponent/;
+
+/** The separators, digits and signs a locale writes numbers with, under the field's format options. */
+function readNotation(locale: string, options: Intl.NumberFormatOptions = {}): NumberNotation {
+  const cacheKey = `${locale}|${JSON.stringify(options)}`;
+  const known = notationCache.get(cacheKey);
+  if (known) return known;
+  const formatter = new Intl.NumberFormat(locale, options);
+  const parts = formatter.formatToParts(-12345.6);
+  const find = (type: string, fallback: string) =>
+    parts.find((part) => part.type === type)?.value ?? fallback;
+  const { numberingSystem } = formatter.resolvedOptions();
+  const digitFormat = new Intl.NumberFormat(locale, { numberingSystem, useGrouping: false });
+  const notation: NumberNotation = {
+    group: find('group', ','),
+    decimal: find('decimal', '.'),
+    minus: find('minusSign', '-'),
+    digits: numberingSystem === 'latn' ? [] : [...'0123456789'].map((d) => digitFormat.format(+d)),
+    affixes: parts
+      .filter((part) => !numberParts.has(part.type) && !exponentParts.test(part.type))
+      .map((part) => part.value.replace(spaces, ''))
+      .filter((value) => value !== ''),
+    scale: options.style === 'percent' ? 100 : 1,
+  };
+  notationCache.set(cacheKey, notation);
+  return notation;
+}
+
 const plainNumber = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i;
 
 /**
- * A number written in a locale's digits and separators (`1,234.5`, `1.234,5`, `1 234,5`), as a
- * number; `NaN` when it is none. The locale's grouping is ignored and its decimal sign read, and the
- * minus sign (U+2212) counts as a hyphen.
+ * A number written as a locale and the field's format options write it (`1,234.5`, `1.234,5`,
+ * `1 234,5`, `١٢٫٥`, `25%`), as a number; `NaN` when it is none. The locale's grouping is ignored,
+ * its decimal sign, minus sign and digits read alongside ASCII ones, and the signs the format adds
+ * (a percent or currency sign) dropped; a percent format reads the number as hundredths. The minus
+ * sign (U+2212) counts as a hyphen.
  */
-export function parseLocaleNumber(text: string, locale: string): number {
-  const { group, decimal } = readSeparators(locale);
-  const plain = text
-    .replace(spaces, '')
-    .replaceAll('\u2212', '-')
-    .replaceAll(group.replace(spaces, ''), '')
-    .replace(decimal, '.');
-  return plainNumber.test(plain) ? Number(plain) : Number.NaN;
+export function parseLocaleNumber(
+  text: string,
+  locale: string,
+  options?: Intl.NumberFormatOptions,
+): number {
+  const { group, decimal, minus, digits, affixes, scale } = readNotation(locale, options);
+  let plain = text.replace(spaces, '');
+  for (const affix of affixes) plain = plain.replaceAll(affix, '');
+  digits.forEach((digit, value) => {
+    plain = plain.replaceAll(digit, String(value));
+  });
+  const groupSign = group.replace(spaces, '');
+  if (groupSign) plain = plain.replaceAll(groupSign, '');
+  plain = plain.replaceAll(minus, '-').replaceAll('\u2212', '-').replace(decimal, '.');
+  if (!plainNumber.test(plain)) return Number.NaN;
+  return scale === 1 ? Number(plain) : Number((Number(plain) / scale).toPrecision(15));
 }
 
 /** The unit a text ends with, the longest first, matched exactly or else in any case. */
@@ -60,7 +100,7 @@ function findUnit(text: string, units: NumberFieldUnits): [string, number] | und
 }
 
 /**
- * A typed quantity (`5cm`, `5 cm`, `0,5 m`, `50`) in the field's unit: the number times its unit's
+ * A typed quantity (`5cm`, `5 cm`, `0,5 m`, `50`, written as `parseLocaleNumber` reads) in the field's unit: the number times its unit's
  * conversion, rounded to 15 significant digits so `0.1 m` reads `100`, not `100.00000000000001`. A
  * number alone is in the field's unit. `null` for empty text; `NaN` for text that is no number, or
  * that ends in a unit the field does not read.
@@ -68,12 +108,12 @@ function findUnit(text: string, units: NumberFieldUnits): [string, number] | und
 export function parseQuantity(
   text: string,
   units: NumberFieldUnits,
-  locale: string,
+  { locale, options }: { locale: string; options?: Intl.NumberFormatOptions | undefined },
 ): number | null {
   const source = text.trim();
   if (!source) return null;
   const found = findUnit(source, units);
   const number = found ? source.slice(0, source.length - found[0].length) : source;
-  const value = parseLocaleNumber(number, locale) * (found?.[1] ?? 1);
+  const value = parseLocaleNumber(number, locale, options) * (found?.[1] ?? 1);
   return Number.isFinite(value) ? Number(value.toPrecision(15)) : Number.NaN;
 }
