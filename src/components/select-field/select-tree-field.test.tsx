@@ -268,6 +268,63 @@ describe('SelectTreeField', () => {
     expect(onCommit).toHaveBeenLastCalledWith('peru');
   });
 
+  it.each([
+    ['single', false],
+    ['multiple', true],
+  ] as const)(
+    'UIC-SELECT-FIELD-9.6 opens a branch on a virtual click in a %s choice and chooses no branch',
+    (_mode, isMultiple) => {
+      vi.stubGlobal('IntersectionObserver', VisibleObserver);
+      const onChange = vi.fn();
+      const lazy: Place[] = [...places, { id: 'oceania', name: 'Oceania', hasChildren: true }];
+      render(
+        <SelectField
+          mode="tree"
+          selectionMode={isMultiple ? 'multiple' : 'single'}
+          label="Place"
+          items={lazy}
+          getTextValue={getTextValue}
+          hasChildItems={(place: Place) => Boolean(place.hasChildren)}
+          onLoadChildren={() => undefined}
+          onChange={onChange}
+          defaultOpen
+        />,
+      );
+      // An assistive technology's click comes with no pointer or key before it.
+      act(() => row('Europe').click());
+      expect(row('Europe')).toHaveAttribute('aria-expanded', 'true');
+      act(() => row('Europe').click());
+      expect(row('Europe')).toHaveAttribute('aria-expanded', 'false');
+      act(() => row('Oceania').click());
+      expect(row('Oceania')).toHaveAttribute('aria-expanded', 'true');
+      expect(onChange).not.toHaveBeenCalled();
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      act(() => row('Americas').click());
+      act(() => row('Peru').click());
+      expect(onChange).toHaveBeenLastCalledWith(isMultiple ? ['peru'] : 'peru');
+    },
+  );
+
+  it('UIC-SELECT-FIELD-9.6 opens a closed branch first on a virtual click with selectableBranches', () => {
+    const onChange = vi.fn();
+    render(
+      <SelectField
+        mode="tree"
+        label="Place"
+        items={places}
+        getTextValue={getTextValue}
+        selectableBranches
+        onChange={onChange}
+        defaultOpen
+      />,
+    );
+    act(() => row('Americas').click());
+    expect(row('Americas')).toHaveAttribute('aria-expanded', 'true');
+    expect(onChange).not.toHaveBeenCalled();
+    act(() => row('Americas').click());
+    expect(onChange).toHaveBeenLastCalledWith('americas');
+  });
+
   it('UIC-SELECT-FIELD-9.6 chooses an open branch with selectableBranches', async () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();

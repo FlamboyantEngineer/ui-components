@@ -4,7 +4,7 @@
 // and only leaves are chosen; with `selectableBranches` the first press opens a closed branch and a
 // press on an open one chooses it (specs/SELECT-FIELD.md, UIC-SELECT-FIELD-9.6).
 
-import { useRef, type KeyboardEvent, type PointerEvent } from 'react';
+import { useRef, type KeyboardEvent, type MouseEvent, type PointerEvent } from 'react';
 import type { Key } from '../../core/props.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { isHTMLElement } from '../../utils/is-element.js';
@@ -38,7 +38,9 @@ export function createBranchCheck<T>(
 
 /**
  * Tracks the row each press starts on, and turns a press on a branch row into opening or closing it
- * through the row's own expand button, so filtering and lazy loading behave as the button does.
+ * through the row's own expand button, so filtering and lazy loading behave as the button does. A
+ * virtual click, as an assistive technology sends with no pointer or key before it, starts a press
+ * of its own.
  * `claim()` reports whether the press in flight was such a branch press, once.
  */
 export function useBranchPress({ selectableBranches, isMultiple }: BranchPressOptions) {
@@ -60,6 +62,14 @@ export function useBranchPress({ selectableBranches, isMultiple }: BranchPressOp
     const isPressKey = event.key === 'Enter' || (event.key === ' ' && !isMultiple);
     start(isPressKey && target.getAttribute('role') === 'row' ? target : null, false);
   };
+  const onClickCapture = (event: MouseEvent<HTMLElement>) => {
+    // A real click follows the pointer press it ends; a virtual one has no press before it.
+    if (event.detail !== 0) return;
+    const target = event.target as Element;
+    // The expand button's click, also the one a claim sends, leaves the press in flight alone.
+    if (target.closest('[slot="chevron"]')) return;
+    start(target.closest('[role="row"]'), target.closest('[slot="selection"]') !== null);
+  };
   /** Opens or closes the pressed branch instead of choosing it; true when it did. */
   const claim = (): boolean => {
     const current = press.current;
@@ -71,5 +81,5 @@ export function useBranchPress({ selectableBranches, isMultiple }: BranchPressOp
     current.row.querySelector<HTMLElement>('[slot="chevron"]')?.click();
     return true;
   };
-  return { onPointerDownCapture, onKeyDownCapture, claim };
+  return { onPointerDownCapture, onKeyDownCapture, onClickCapture, claim };
 }
