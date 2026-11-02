@@ -22,6 +22,17 @@ async function dragTo(page: Page, handle: Locator, target: Locator | { x: number
   await page.mouse.move(to.x, to.y, { steps: 8 });
 }
 
+/** The event as it is, drawn as a ghost while it is dragged. */
+async function expectGhost(event: Locator) {
+  await expect(event).toHaveAttribute('data-dragging', 'true');
+  await expect(event).toHaveCSS('opacity', /^0\.\d+$/);
+}
+
+async function expectSettled(event: Locator) {
+  await expect(event).not.toHaveAttribute('data-dragging');
+  await expect(event).toHaveCSS('opacity', '1');
+}
+
 const eventNamed = (page: Page, title: string) =>
   demo(page).getByRole('button', { name: new RegExp(`^${title},`) });
 const editor = (page: Page) => page.getByRole('dialog', { name: 'Edit event' });
@@ -55,9 +66,10 @@ test.describe('Calendar View dragging', () => {
     await expect(preview).toHaveCount(1);
     await expect(preview).toHaveAttribute('aria-hidden', 'true');
     await expect(day(page, '2026-11-03').locator('[data-preview]')).toHaveCount(1);
-    await expect(standup).toHaveAttribute('data-dragging', 'true');
+    await expectGhost(standup);
     await page.mouse.up();
     await expect(preview).toHaveCount(0);
+    await expectSettled(standup);
     await expect(output(page)).toHaveText('Standup: 2026-11-03T10:00 to 2026-11-03T10:30');
     // The release of the drag is not a click: no editor.
     await expect(editor(page)).toHaveCount(0);
@@ -81,8 +93,10 @@ test.describe('Calendar View dragging', () => {
       day(page, '2026-11-02').locator('.ui-calendar-view__all-day'),
     );
     await expect(grid.locator('[data-preview]')).toHaveCount(1);
+    await expectGhost(eventNamed(page, 'Deadline'));
     await page.keyboard.press('Escape');
     await expect(grid.locator('[data-preview]')).toHaveCount(0);
+    await expectSettled(eventNamed(page, 'Deadline'));
     await page.mouse.up();
     await expect(output(page)).toHaveText('No change yet');
     await expect(editor(page)).toHaveCount(0);
@@ -103,9 +117,20 @@ test.describe('Calendar View dragging', () => {
     await grid.getByRole('radio', { name: 'Start and end' }).click();
     await expect(eventNamed(page, 'Offsite')).not.toHaveAttribute('data-movable');
     const start = grid.getByRole('button', { name: 'Change start of Offsite' });
+    // A press alone leaves the event as it is.
+    await start.scrollIntoViewIfNeeded();
+    const pressed = await center(start);
+    await page.mouse.move(pressed.x, pressed.y);
+    await page.mouse.down();
+    await expect(eventNamed(page, 'Offsite')).not.toHaveAttribute('data-dragging');
+    await page.mouse.up();
+    // Resizing a bar's start ghosts the event as it is, apart from its preview, until release.
     await dragTo(page, start, day(page, '2026-11-02').locator('.ui-calendar-view__all-day'));
+    await expectGhost(eventNamed(page, 'Offsite'));
+    await expect(grid.locator('[data-preview]')).toHaveCount(1);
     await page.mouse.up();
     await expect(output(page)).toHaveText('Offsite: 2026-11-02 to 2026-11-05');
+    await expectSettled(eventNamed(page, 'Offsite'));
 
     // A block's bottom edge follows the pointer down an hour; its start stays.
     const end = grid.getByRole('button', { name: 'Change end of Standup' });
@@ -113,8 +138,10 @@ test.describe('Calendar View dragging', () => {
     const hour = requireDefined(await timed(page, '2026-11-02').boundingBox()).height / 24;
     const from = await center(end);
     await dragTo(page, end, { x: from.x, y: from.y + hour });
+    await expectGhost(eventNamed(page, 'Standup'));
     await page.mouse.up();
     await expect(output(page)).toHaveText('Standup: 2026-11-02T09:00 to 2026-11-02T10:30');
+    await expectSettled(eventNamed(page, 'Standup'));
     // Dragging the event itself moves nothing in this mode.
     const standup = eventNamed(page, 'Standup');
     const body = await center(standup);

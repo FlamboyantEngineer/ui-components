@@ -291,8 +291,12 @@
   user-select: none;
 }
 
+/* The event as it is, while its body or either edge is dragged: a ghost of its settled place. */
 .ui-calendar-view__event[data-dragging] {
   opacity: var(--ref-dragging-opacity);
+}
+
+.ui-calendar-view__event[data-movable][data-dragging] {
   cursor: grabbing;
 }
 
