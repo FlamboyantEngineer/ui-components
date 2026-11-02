@@ -26,8 +26,7 @@ import type { TableCellEdit } from './use-cell-editing.js';
  * boolean field, or a choice of `options`.
  */
 export type TableBulkEdit =
-  | { type: 'text' | 'number' | 'date' | 'boolean' }
-  | { type: 'choice'; options: readonly string[] };
+  { type: 'text' | 'number' | 'date' | 'boolean' } | { type: 'choice'; options: readonly string[] };
 
 export interface TableSelectionBarProps<T> {
   /** The caller's bulk actions. */

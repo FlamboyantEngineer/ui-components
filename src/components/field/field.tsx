@@ -82,8 +82,7 @@ export interface FieldProps<T> extends BaseProps {
    * validation's message.
    */
   renderMessage?:
-    | ((validation: FieldValidation, issues: readonly FieldIssue[]) => ReactNode)
-    | undefined;
+    ((validation: FieldValidation, issues: readonly FieldIssue[]) => ReactNode) | undefined;
   /** Focuses the control when the field mounts (its first focusable element for a group). */
   autoFocus?: boolean | undefined;
   /**

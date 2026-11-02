@@ -15,8 +15,7 @@ export type ShortcutModifier = 'primary' | 'control' | 'alt' | 'shift' | 'meta';
  * the physical key) or as a key with its modifiers.
  */
 export type ShortcutChord =
-  | string
-  | { key: string; modifiers?: readonly ShortcutModifier[] | undefined };
+  string | { key: string; modifiers?: readonly ShortcutModifier[] | undefined };
 
 /** Chords pressed one after another, such as `['G', 'I']` or `['Ctrl+K', 'Ctrl+C']`. */
 export type ShortcutSequence = readonly ShortcutChord[];

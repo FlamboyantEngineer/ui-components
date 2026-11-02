@@ -65,7 +65,7 @@ function settle(ordered: readonly DashboardGridItem[]): Map<Key, DashboardGridIt
   const settled = new Map<Key, DashboardGridItem>();
   for (const item of ordered) {
     let placed = item;
-    for (let blocker = findBlocker(settled, placed); blocker; ) {
+    for (let blocker = findBlocker(settled, placed); blocker;) {
       placed = { ...placed, y: blocker.y + blocker.h };
       blocker = findBlocker(settled, placed);
     }

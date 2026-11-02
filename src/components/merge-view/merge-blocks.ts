@@ -18,8 +18,7 @@ export type MergeResolution = 'unresolved' | 'ours' | 'theirs' | 'both' | 'base'
 
 /** A conflict's resolution, with the text the reader typed once edited. */
 export type ConflictState =
-  | { resolution: Exclude<MergeResolution, 'edited'> }
-  | { resolution: 'edited'; text: string };
+  { resolution: Exclude<MergeResolution, 'edited'> } | { resolution: 'edited'; text: string };
 
 /** One line of a side. */
 export interface MergeLine {

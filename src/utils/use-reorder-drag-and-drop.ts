@@ -9,8 +9,7 @@ type ReorderDragItem = Record<string, string>;
 
 /** Where dragged items would land: on an item, before or after it, or on the collection itself. */
 export type CollectionDropTarget =
-  | { type: 'root' }
-  | { type: 'item'; key: Key; dropPosition: 'before' | 'after' | 'on' };
+  { type: 'root' } | { type: 'item'; key: Key; dropPosition: 'before' | 'after' | 'on' };
 
 /** A drop target on an item. */
 type CollectionItemDropTarget = Extract<CollectionDropTarget, { type: 'item' }>;

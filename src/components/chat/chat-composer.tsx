@@ -75,16 +75,14 @@ export interface ChatComposerOptions
    * it resolves, and stay for another try when it rejects.
    */
   onSend?:
-    | ((text: string, tokens?: readonly ChatTextToken[]) => void | Promise<unknown>)
-    | undefined;
+    ((text: string, tokens?: readonly ChatTextToken[]) => void | Promise<unknown>) | undefined;
   /**
    * Sends the reader's message at once while a reply runs (the composer's `sendNow` chord, Ctrl+Enter
    * by default), for a host that stops the reply and sends the message ahead of its queue. It
    * settles as `onSend` does. Without it, that chord queues the message.
    */
   onSendNow?:
-    | ((text: string, tokens?: readonly ChatTextToken[]) => void | Promise<unknown>)
-    | undefined;
+    ((text: string, tokens?: readonly ChatTextToken[]) => void | Promise<unknown>) | undefined;
   /** Called when `onSend`, `onSendNow`, `onReply` or `onEdit` throws or its promise rejects; the composer keeps the message. Without it the error is rethrown. */
   onSendError?: ((error: unknown) => void) | undefined;
   /** Sends a blank message too, as when context the host adds carries the request; a complete attachment allows it as well. */

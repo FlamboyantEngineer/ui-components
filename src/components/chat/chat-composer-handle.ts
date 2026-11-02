@@ -12,12 +12,7 @@ import { toComposerTokens, toDisplayTokens } from './chat-model.js';
  * is `unavailable` (a chat without `onSend` has no composer).
  */
 export type ChatComposerInsertResult =
-  | 'inserted'
-  | 'other-conversation'
-  | 'disabled'
-  | 'editing'
-  | 'submitting'
-  | 'unavailable';
+  'inserted' | 'other-conversation' | 'disabled' | 'editing' | 'submitting' | 'unavailable';
 
 /** A conversation's draft: its text and tokens, as `onSend` would receive them. */
 export interface ChatDraft {

@@ -24,14 +24,7 @@ export interface FieldInputProps<T> extends FieldStateOptions<T>, FieldLayoutPro
 
 /** The virtual keyboard a text control asks for. */
 export type FieldInputMode =
-  | 'none'
-  | 'text'
-  | 'tel'
-  | 'url'
-  | 'email'
-  | 'numeric'
-  | 'decimal'
-  | 'search';
+  'none' | 'text' | 'tel' | 'url' | 'email' | 'numeric' | 'decimal' | 'search';
 
 /** The label of the virtual keyboard's Enter key. */
 export type FieldEnterKeyHint = 'enter' | 'done' | 'go' | 'next' | 'previous' | 'search' | 'send';

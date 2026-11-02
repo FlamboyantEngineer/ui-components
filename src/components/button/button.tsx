@@ -30,15 +30,7 @@ import {
 } from './button-state.js';
 
 export type ButtonVariant =
-  | 'primary'
-  | 'secondary'
-  | 'tertiary'
-  | 'danger'
-  | 'ghost'
-  | 'accent'
-  | 'chip'
-  | 'link'
-  | 'bare';
+  'primary' | 'secondary' | 'tertiary' | 'danger' | 'ghost' | 'accent' | 'chip' | 'link' | 'bare';
 
 export type ButtonSize = Extract<Size, 'xs' | 'sm' | 'md' | 'lg'>;
 
