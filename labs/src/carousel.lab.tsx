@@ -7,6 +7,8 @@ interface City {
   caption: string;
   ground: string;
   figure: string;
+  /** A tall picture, which the frame fits whole. */
+  portrait?: boolean;
 }
 
 const cities: readonly City[] = [
@@ -18,7 +20,8 @@ const cities: readonly City[] = [
   },
   {
     name: 'Oslo',
-    caption: 'A fjord in the long evening light.',
+    caption:
+      'A fjord in the long evening light, with ferries crossing between the islands and the hills behind the harbour turning gold.',
     ground: '#1e3a8a',
     figure: '#dbeafe',
   },
@@ -27,19 +30,27 @@ const cities: readonly City[] = [
     caption: 'Maple leaves along a temple path.',
     ground: '#9a3412',
     figure: '#fff7ed',
+    portrait: true,
   },
   { name: 'Quito', caption: 'Rooftops under the volcano.', ground: '#3f6212', figure: '#f7fee7' },
 ];
 
 function picture(city: City): string {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 90"><rect width="160" height="90" fill="${city.ground}"/><circle cx="120" cy="30" r="14" fill="${city.figure}"/><path d="M0 90 L50 40 L90 75 L120 55 L160 90 Z" fill="${city.figure}" opacity="0.7"/></svg>`;
+  const svg = city.portrait
+    ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 160"><rect width="90" height="160" fill="${city.ground}"/><circle cx="62" cy="34" r="12" fill="${city.figure}"/><path d="M0 160 L30 90 L55 130 L90 80 L90 160 Z" fill="${city.figure}" opacity="0.7"/></svg>`
+    : `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 90"><rect width="160" height="90" fill="${city.ground}"/><circle cx="120" cy="30" r="14" fill="${city.figure}"/><path d="M0 90 L50 40 L90 75 L120 55 L160 90 Z" fill="${city.figure}" opacity="0.7"/></svg>`;
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
 
 function citySlides(list: readonly City[] = cities) {
   return list.map((city) => (
     <figure key={city.name}>
-      <img src={picture(city)} alt={`${city.name} skyline`} width={320} height={180} />
+      <img
+        src={picture(city)}
+        alt={`${city.name} skyline`}
+        width={city.portrait ? 180 : 320}
+        height={city.portrait ? 320 : 180}
+      />
       <figcaption>
         <strong>{city.name}</strong> — {city.caption}{' '}
         <a href={`#${city.name.toLowerCase()}`}>More</a>
@@ -105,7 +116,7 @@ mountLab(
   <>
     <LabSection
       title="Pagination"
-      description="Dots, thumbnails or no pagination, with and without looping at the ends."
+      description="Dots, thumbnails or no pagination, with and without looping at the ends. The pages differ, a tall picture and a long caption among them, yet every page takes the same size, so the controls and pagination stay put."
     >
       <StateMatrix
         axes={{

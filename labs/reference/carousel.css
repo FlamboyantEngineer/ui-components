@@ -23,7 +23,14 @@
   flex: none;
 }
 
+/*
+ * Every slide shares the viewport's one grid cell, and the hidden ones keep their boxes without being
+ * drawn, so the tallest page sets the height and moving between pages never shifts the controls or
+ * the content below. It follows the available width and any content change on its own.
+ */
 .ui-carousel__viewport {
+  display: grid;
+  grid-template: auto / minmax(0, 1fr);
   overflow: hidden;
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius);
@@ -31,7 +38,14 @@
 }
 
 .ui-carousel__slide {
+  grid-area: 1 / 1;
+  min-width: 0;
   outline: none;
+}
+
+.ui-carousel__slide[hidden] {
+  display: block;
+  visibility: hidden;
 }
 
 .ui-carousel__slide:focus-visible {
@@ -42,10 +56,14 @@
   margin: 0;
 }
 
+/* Pictures of any shape fit whole, unstretched, in one frame shape. */
 .ui-carousel__slide img {
   display: block;
   width: 100%;
   height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+  background: var(--ref-canvas);
 }
 
 .ui-carousel__slide figcaption {
@@ -93,6 +111,7 @@
 
 .ui-carousel__thumbnail img {
   display: block;
+  object-fit: cover;
 }
 
 .ui-carousel__thumbnail[data-hovered] {
