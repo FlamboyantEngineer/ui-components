@@ -219,4 +219,45 @@ test.describe('Disclosure lab', () => {
     );
     await expect(panel).toBeVisible();
   });
+
+  test('UIC-DISCLOSURE-1.7 UIC-DISCLOSURE-2.1 renders caller roots with their state and focuses the trigger by ref', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('disclosure');
+    const demo = page.locator('[data-lab-demo="rendered-roots"]');
+    const output = (name: string) => demo.locator(`[data-lab-output="${name}"]`);
+    await expect(demo.locator('[data-lab-rendered="group"]')).toHaveClass(/ui-disclosure-group/);
+    await expect(demo.locator('[data-lab-rendered="route"]')).toHaveClass(/ui-disclosure/);
+    await expect(output('route-state')).toHaveText(
+      'Expanded: true · disabled: false · focus within: false',
+    );
+    await expect(output('packing-state')).toHaveText('Expanded: false · disabled: false');
+
+    const field = demo.getByRole('textbox', { name: 'Starting point' });
+    await field.fill('Village green');
+    const route = demo.getByRole('button', { name: 'Route', exact: true });
+    await route.click();
+    await expect(output('route-state')).toHaveText(/^Expanded: false/);
+    await route.click();
+    await expect(field).toHaveValue('Village green');
+
+    await demo.getByRole('button', { name: 'Focus the packing trigger' }).click();
+    const packing = demo.getByRole('button', { name: 'Packing', exact: true });
+    await expect(packing).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(output('packing-state')).toHaveText('Expanded: true · disabled: false');
+    const panel = demo.getByRole('region', { name: 'Packing' });
+    await expect(panel).toHaveAttribute('data-lab-rendered', 'packing-panel');
+    await page.keyboard.press('Tab');
+    await expect(demo.getByRole('textbox', { name: 'Things to bring' })).toBeFocused();
+    await expect(output('panel-state')).toHaveText('Panel focus within: true');
+    await expect(output('packing-state')).toHaveText('Expanded: true · disabled: false');
+
+    await demo.getByRole('switch', { name: 'Disable the group' }).press('Space');
+    await expect(output('group-state')).toHaveText('Group disabled: true');
+    await expect(output('route-state')).toHaveText(/disabled: true/);
+    await expect(packing).toBeDisabled();
+    await lab.expectAccessible('[data-lab-demo="rendered-roots"]');
+  });
 });

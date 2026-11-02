@@ -1,5 +1,5 @@
 import type { Locator } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, familySelector, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 async function box(locator: Locator) {
@@ -173,5 +173,85 @@ test.describe('Section Header lab', () => {
     await expect(collapsed.getByText('Merlot, Syrah and Grenache.')).toBeHidden();
     expect(await collapsed.evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(true);
     await lab.expectAccessible();
+  });
+
+  test('UIC-SECTION-HEADER-1.6 spaces the content by every step of the scale', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('section-header');
+    let previous = -1;
+    for (const space of ['none', '3xs', '2xs', 'xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl']) {
+      const section = page.locator(`[data-lab-space="${space}"]`);
+      await expect(section).toHaveAttribute('data-space', space);
+      const header = await box(section.locator('.ui-section-header'));
+      const panel = await box(section.locator('.ui-section__panel'));
+      const gap = Math.round(panel.y - (header.y + header.height));
+      if (space === 'none') expect(gap).toBe(0);
+      else expect(gap).toBeGreaterThan(previous);
+      previous = gap;
+    }
+  });
+
+  test('UIC-SECTION-HEADER-1.5 grows, fills or clips the section in a bounded host', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('section-header');
+    const contained = (name: string) => page.locator(`[data-lab-containment="${name}"]`);
+    await expect(contained('grow')).toHaveAttribute('data-grow', 'true');
+    expect((await box(contained('grow'))).height).toBeCloseTo(90, 0);
+    await expect(contained('fill')).toHaveAttribute('data-fill', 'true');
+    await expect(contained('clip')).toHaveAttribute('data-clip', 'true');
+    expect(await contained('clip').evaluate((node) => getComputedStyle(node).overflow)).toBe(
+      'hidden',
+    );
+    for (const name of ['none', 'grow', 'fill']) {
+      await expect(contained(name)).not.toHaveAttribute('data-clip');
+    }
+  });
+
+  test('UIC-SECTION-HEADER-2.2 follows a page that owns expansion', async ({ page, lab }) => {
+    await lab.open('section-header');
+    const demo = page.locator('[data-lab-demo="controlled-section"]');
+    const trigger = demo.getByRole('button', { name: 'Greenhouse' });
+    const content = demo.getByText('Water twice a day in summer.');
+    await trigger.click();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await expect(content).toBeHidden();
+    await demo.getByRole('button', { name: 'Expand from the page' }).click();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await expect(content).toBeVisible();
+    await expect(demo.locator('[data-lab-output="requests"] li')).toHaveText([
+      'title: collapse',
+      'page: expand',
+    ]);
+
+    const refusing = page.locator('[data-lab-demo="refusing-section"]');
+    const archive = refusing.getByRole('button', { name: 'Archive' });
+    await archive.click();
+    await expect(archive).toHaveAttribute('aria-expanded', 'false');
+    await archive.click();
+    await expect(refusing.locator('[data-lab-output="requests"]')).toHaveText('2');
+    await expect(archive).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  test('UIC-SECTION-HEADER-2.1 levels a host heading with useHeadingLevel', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('section-header');
+    const demo = page.locator('[data-lab-demo="host-headings"]');
+    for (const [name, level] of [
+      ['Allotment', 2],
+      ['Inferred inside a level 2 section', 3],
+      ['Beds', 3],
+      ['Inferred inside a level 3 section', 4],
+      ['Explicitly level 5', 5],
+      ['Carrots', 4],
+    ] as const) {
+      await expect(demo.getByRole('heading', { name, level })).toBeVisible();
+    }
+    await lab.expectAccessible(familySelector('section-header-host-cases'));
   });
 });

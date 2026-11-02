@@ -117,4 +117,63 @@ test.describe('Load More lab', () => {
     await expect(demo.locator('[data-lab-output="cities"] li')).toHaveCount(24);
     await expect(demo.locator('[data-lab-output="done"]')).toBeAttached();
   });
+
+  test('UIC-LOAD-MORE-1.4 hands a failed page to onError and loads it on retry', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('load-more');
+    const demo = page.locator('[data-lab-demo="paged"]');
+    const items = demo.locator('[data-lab-output="items"] li');
+    const button = demo.locator('[data-lab-action="load"]');
+    await button.click();
+    await expect(button).toHaveAttribute('data-pending', 'true');
+    await demo.locator('[data-lab-action="fail"]').click();
+    await expect(demo.locator('[data-lab-output="error"]')).toHaveText('The server did not answer');
+    await expect(button).not.toHaveAttribute('data-pending');
+    await expect(items).toHaveCount(4);
+    await button.click();
+    await demo.locator('[data-lab-action="deliver"]').click();
+    await expect(items).toHaveCount(8);
+  });
+
+  test('UIC-LOAD-MORE-1.7 does not repeat a failed automatic load until asked', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('load-more');
+    const demo = page.locator('[data-lab-demo="endless"]');
+    const scroller = demo.locator('[data-lab-scroller]');
+    const button = demo.locator('.ui-load-more');
+    await scroller.scrollIntoViewIfNeeded();
+    await scroller.evaluate((node) => {
+      node.scrollTop = node.scrollHeight;
+    });
+    await expect(button).toHaveAttribute('data-pending', 'true');
+    await demo.locator('[data-lab-action="fail"]').click();
+    await expect(demo.locator('[data-lab-output="error"]')).toHaveText('The server did not answer');
+    await expect(button).not.toHaveAttribute('data-pending');
+    await expect(button).toBeInViewport();
+    await button.click();
+    await expect(button).toHaveAttribute('data-pending', 'true');
+    await demo.locator('[data-lab-action="deliver-cities"]').click();
+    await expect(demo.locator('[data-lab-output="cities"] li')).toHaveCount(16);
+  });
+
+  test('UIC-LOAD-MORE-1.1 UIC-LOAD-MORE-1.2 shows a caller label and every variant', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('load-more');
+    const custom = matrixCell(page, 'label=Show older messages count=12 remaining').locator(
+      '.ui-load-more',
+    );
+    await expect(custom).toHaveText('Show older messages (12 remaining)');
+    await expect(custom).toHaveAccessibleName('Show older messages (12 remaining) messages');
+    for (const variant of ['primary', 'tertiary', 'danger', 'accent', 'chip', 'link', 'bare']) {
+      await expect(
+        matrixCell(page, `variant=${variant} size=sm`).locator('.ui-load-more'),
+      ).toHaveAttribute('data-variant', variant);
+    }
+  });
 });

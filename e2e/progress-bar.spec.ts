@@ -136,4 +136,73 @@ test.describe('Progress Bar lab', () => {
     ).toBe(true);
     expect(await spinner.evaluate((node: HTMLElement) => node.offsetWidth)).toBe(12);
   });
+
+  test('UIC-PROGRESS-BAR-1.5 UIC-PROGRESS-BAR-11.3 UIC-PROGRESS-BAR-21.4 bounds values to ranges that start off zero', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('progress-bar');
+    const family = { family: 'progress-range-cases' };
+    const expected = {
+      '200 to 800': { below: ['200', '0%'], within: ['350', '25%'], above: ['800', '100%'] },
+      '-50 to 50': { below: ['-50', '0%'], within: ['25', '75%'], above: ['50', '100%'] },
+    } as const;
+    for (const [range, values] of Object.entries(expected)) {
+      for (const [value, [now, text]] of Object.entries(values)) {
+        for (const kind of ['linear', 'circular', 'meter']) {
+          const cell = matrixCell(page, `range=${range} value=${value} kind=${kind}`, family);
+          const bar = cell.getByRole(kind === 'meter' ? 'meter' : 'progressbar');
+          await expect(bar).toHaveAttribute('aria-valuenow', now);
+          await expect(bar).toHaveAttribute('aria-valuetext', text);
+          await expect(cell.locator('.ui-progress-bar__value')).toHaveText(text);
+        }
+      }
+    }
+    const within = matrixCell(page, 'range=-50 to 50 value=within kind=linear', family);
+    const track = await within.locator('.ui-progress-bar__track').boundingBox();
+    const fill = await within.locator('.ui-progress-bar__fill').boundingBox();
+    expect(Math.round(((fill?.width ?? 0) / (track?.width ?? 1)) * 100)).toBe(75);
+  });
+
+  test('UIC-PROGRESS-BAR-1.7 renders the caller root with its hooks, ref and values', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('progress-bar');
+    const demo = page.locator('[data-lab-demo="render"]');
+    const bar = demo.getByRole('progressbar', { name: 'Importing photos' });
+    await expect(bar).toHaveAttribute('data-lab-rendered', 'true');
+    await expect(bar).toHaveAttribute('data-lab-bar', 'rendered');
+    await expect(bar).toHaveClass(/ui-progress-bar/);
+    const readout = demo.locator('[data-lab-output="values"]');
+    await expect(readout).toHaveText('percentage 30 · value text 30% · measured');
+    await demo.getByRole('button', { name: 'More' }).click();
+    await expect(readout).toHaveText('percentage 40 · value text 40% · measured');
+    await expect(bar).toHaveAttribute('aria-valuenow', '40');
+    await demo.getByRole('button', { name: 'Stop measuring' }).click();
+    await expect(readout).toHaveText('percentage none · value text none · indeterminate');
+    await demo.getByRole('button', { name: 'Read the ref' }).click();
+    await expect(demo.locator('[data-lab-output="ref"]')).toHaveText(/^div\.ui-progress-bar/);
+  });
+
+  test('UIC-PROGRESS-BAR-21.7 matches resolveMeterTone to the drawn meter tone', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('progress-bar');
+    const demo = page.locator('[data-lab-demo="meter-tone"]');
+    const meter = demo.getByRole('meter', { name: 'Disk used' });
+    const tone = demo.locator('[data-lab-output="tone"]');
+    for (const [presses, expected] of [
+      [0, 'success'],
+      [2, 'warning'],
+      [2, 'danger'],
+    ] as const) {
+      for (let press = 0; press < presses; press += 1) {
+        await demo.getByRole('button', { name: 'Use 10 GB' }).click();
+      }
+      await expect(tone).toHaveText(expected);
+      await expect(meter).toHaveAttribute('data-tone', expected);
+    }
+  });
 });

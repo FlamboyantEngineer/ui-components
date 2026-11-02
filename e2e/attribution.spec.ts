@@ -141,3 +141,54 @@ test.describe('Attribution lab', () => {
     await lab.expectAccessible();
   });
 });
+
+test.describe('Attribution time zones', () => {
+  // A device zone unlike every sample zone, so only the provider and the override decide.
+  test.use({ timezoneId: 'Asia/Tokyo' });
+
+  test('UIC-ATTRIBUTION-1.2 reads the time in its own zone and drops the tooltip when asked', async ({
+    page,
+    lab,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 4000 });
+    await lab.open('attribution');
+    const demo = page.locator('[data-lab-demo="attribution-zones"]');
+    const edited = demo.locator('[data-lab-zone-row="instant"]');
+    const due = demo.locator('[data-lab-zone-row="date"]');
+    const tooltip = page.locator('[role="tooltip"]:not([data-exiting])');
+
+    await expect(edited).toHaveText('Edited yesterday by Maria Santos');
+    await expect(due).toHaveText('Due yesterday, set by Maria Santos');
+    await page.mouse.move(5, 5);
+    await edited.locator('time').hover();
+    await expect(tooltip).toHaveText(/^Apr 19, 2026, 10:00\sPM$/);
+
+    await page.mouse.move(5, 5);
+    await demo
+      .getByRole('radiogroup', { name: 'Provider time zone' })
+      .getByRole('radio', { name: 'London' })
+      .click();
+    await expect(edited).toHaveText('Edited 2 days ago by Maria Santos');
+    await expect(due).toHaveText('Due 2 days ago, set by Maria Santos');
+    await edited.locator('time').hover();
+    await expect(tooltip).toHaveText(/^Apr 19, 2026, 11:00\sPM$/);
+
+    await page.mouse.move(5, 5);
+    await demo
+      .getByRole('radiogroup', { name: 'Override time zone' })
+      .getByRole('radio', { name: 'Los Angeles' })
+      .click();
+    await expect(demo.locator('[data-lab-output="zone"]')).toHaveText('America/Los_Angeles');
+    await expect(edited).toHaveText('Edited yesterday by Maria Santos');
+    await edited.locator('time').hover();
+    await expect(tooltip).toHaveText(/^Apr 19, 2026, 3:00\sPM$/);
+    await expect(edited.locator('time')).toHaveAttribute('tabindex', '0');
+
+    await page.mouse.move(5, 5);
+    await demo.getByRole('switch', { name: 'Show the time tooltip' }).press('Space');
+    await expect(edited.locator('time')).not.toHaveAttribute('tabindex');
+    await edited.locator('time').hover();
+    await expect(tooltip).toHaveCount(0);
+    await lab.expectAccessible('[data-lab-demo="attribution-zones"]');
+  });
+});

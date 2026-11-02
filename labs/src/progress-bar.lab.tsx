@@ -1,4 +1,5 @@
 import { ProgressMeterCases } from './progress-meter-cases.js';
+import { ProgressRangeCases } from './progress-range-cases.js';
 import { ProgressRingCases } from './progress-ring-cases.js';
 import { ProgressSegmentCases } from './progress-segment-cases.js';
 import { useState } from 'react';
@@ -173,6 +174,7 @@ mountLab(
     <ProgressSegmentCases />
     <ProgressRingCases />
     <ProgressMeterCases />
+    <ProgressRangeCases />
     <LabSection
       title="Right to left"
       description="In a right-to-left page the fill starts at the right edge, and the indeterminate fill travels left, with the reading."

@@ -210,3 +210,42 @@ test.describe('Relative Time lab in New York', () => {
     await expect(earlier).toHaveAttribute('data-relation', 'past');
   });
 });
+
+test.describe('Relative Time time zones', () => {
+  // A device zone unlike every sample zone, so only the provider and the override decide.
+  test.use({ timezoneId: 'Asia/Tokyo' });
+
+  test('UIC-RELATIVE-TIME-1.2 reads days in its own zone over the provider zone', async ({
+    page,
+    lab,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 4000 });
+    await lab.open('relative-time');
+    const demo = page.locator('[data-lab-demo="time-zones"]');
+    const row = (name: string) => demo.locator(`[data-lab-zone-row="${name}"] .ui-relative-time`);
+    const provider = demo.getByRole('radiogroup', { name: 'Provider time zone' });
+    const override = demo.getByRole('radiogroup', { name: 'Override time zone' });
+    const tooltip = page.locator('[role="tooltip"]:not([data-exiting])');
+    const expectZone = async (zone: string, instant: string, distance: string, at: RegExp) => {
+      await expect(demo.locator('[data-lab-output="zone"]')).toHaveText(zone);
+      await expect(row('instant')).toHaveText(instant);
+      await expect(row('fallback')).toHaveText(at);
+      await expect(row('date')).toHaveText(distance);
+      await page.mouse.move(5, 5);
+      await row('instant').hover();
+      await expect(tooltip).toHaveText(at);
+      await page.mouse.move(5, 5);
+      await row('date').hover();
+      await expect(tooltip).toHaveText('Apr 19, 2026');
+    };
+
+    await expectZone('UTC', 'Yesterday', 'Yesterday', /^Apr 19, 2026, 10:00\sPM$/);
+    await provider.getByRole('radio', { name: 'London' }).click();
+    await expectZone('Europe/London', '2 days ago', '2 days ago', /^Apr 19, 2026, 11:00\sPM$/);
+    await override.getByRole('radio', { name: 'Los Angeles' }).click();
+    await expectZone('America/Los_Angeles', 'Yesterday', 'Yesterday', /^Apr 19, 2026, 3:00\sPM$/);
+    await override.getByRole('radio', { name: 'None' }).click();
+    await expect(row('instant')).toHaveText('2 days ago');
+    await lab.expectAccessible('[data-lab-demo="time-zones"]');
+  });
+});

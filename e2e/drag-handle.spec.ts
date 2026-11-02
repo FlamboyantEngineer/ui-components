@@ -148,4 +148,62 @@ test.describe('Drag Handle lab', () => {
     await expect(output).toHaveText('Order: Banana, Cherry, Apple, Fig');
     await lab.expectAccessible();
   });
+
+  test('UIC-DRAG-HANDLE-1.1 joins the tab order when asked', async ({ page, lab }) => {
+    await lab.open('drag-handle');
+    const demo = page.locator('[data-lab-demo="tab-order"]');
+    await demo.getByRole('textbox', { name: 'Before' }).focus();
+    await page.keyboard.press('Tab');
+    await expect(demo.getByRole('button', { name: 'Drag Notes.txt' })).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(demo.getByRole('textbox', { name: 'After' })).toBeFocused();
+  });
+
+  for (const mode of ['handle', 'row'] as const) {
+    test(`UIC-DRAG-HANDLE-2.1 moves and cancels rows of a host grid dragged by ${mode}`, async ({
+      page,
+      lab,
+    }) => {
+      await lab.open('drag-handle');
+      const host = page.locator(`[data-lab-host="${mode}"]`);
+      await host.scrollIntoViewIfNeeded();
+      const order = host.locator('[data-lab-output="order"]');
+      const log = host.locator('[data-lab-output="log"] li');
+      const drag = async (from: { x: number; y: number }, to: { x: number; y: number }) => {
+        await page.mouse.move(from.x, from.y);
+        await page.mouse.down();
+        await page.mouse.move(to.x, to.y, { steps: 8 });
+        await page.mouse.up();
+      };
+      const centre = async (locator: ReturnType<typeof host.locator>) => {
+        const box = await locator.boundingBox();
+        if (!box) throw new Error('not visible');
+        return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+      };
+      const cherry = await centre(host.getByRole('row', { name: 'Cherry' }));
+      await drag(await centre(host.getByRole('button', { name: 'Drag Apple' })), cherry);
+      await expect(order).toHaveText('Order: Banana, Cherry, Apple, Fig');
+      await expect(log).toHaveText(['moved Apple after Cherry']);
+      const apple = host.getByRole('row', { name: 'Apple' });
+      if (mode === 'row') await expect(apple).toHaveAttribute('draggable', 'true');
+      else await expect(apple).not.toHaveAttribute('draggable');
+
+      const outside = await centre(host.locator('[data-lab-output="order"]'));
+      await drag(await centre(host.getByRole('button', { name: 'Drag Fig' })), {
+        x: outside.x + 400,
+        y: outside.y,
+      });
+      await expect(log).toHaveText(['moved Apple after Cherry', 'cancelled Fig']);
+      await expect(order).toHaveText('Order: Banana, Cherry, Apple, Fig');
+
+      const bananaText = host.getByRole('row', { name: 'Banana' }).getByText('Banana');
+      await drag(await centre(bananaText), await centre(host.getByRole('row', { name: 'Fig' })));
+      if (mode === 'handle') {
+        await expect(order).toHaveText('Order: Banana, Cherry, Apple, Fig');
+        await expect(log).toHaveCount(2);
+      } else {
+        await expect(order).toHaveText('Order: Cherry, Apple, Fig, Banana');
+      }
+    });
+  }
 });

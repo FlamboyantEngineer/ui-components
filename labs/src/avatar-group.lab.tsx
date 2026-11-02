@@ -4,6 +4,7 @@ import {
   type AvatarGroupPerson,
 } from '../../src/components/avatar-group/avatar-group.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { AvatarGroupIdentityCases } from './avatar-group-identity-cases.js';
 import { brokenPicture, samplePeople } from './people-samples.js';
 
 const sizes = ['xs', 'sm', 'md', 'lg'] as const;
@@ -83,5 +84,6 @@ mountLab(
       </LabSection>
     </div>
     <AvatarGroupPresenceCases />
+    <AvatarGroupIdentityCases />
   </>,
 );

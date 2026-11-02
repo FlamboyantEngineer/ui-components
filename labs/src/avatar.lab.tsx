@@ -1,5 +1,6 @@
 import { AvatarBadgeCases } from './avatar-badge-cases.js';
 import { AvatarPresenceCases } from './avatar-presence-cases.js';
+import { AvatarColorCases } from './avatar-color-cases.js';
 import { useState, type ReactNode } from 'react';
 import {
   Avatar,
@@ -235,5 +236,6 @@ mountLab(
     </div>
     <AvatarPresenceCases />
     <AvatarBadgeCases />
+    <AvatarColorCases />
   </>,
 );

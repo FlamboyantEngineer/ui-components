@@ -20,6 +20,37 @@ test.describe('Loading Overlay lab', () => {
     await expect(plain.getByRole('progressbar')).not.toHaveAttribute('aria-valuenow');
   });
 
+  test('UIC-LOADING-OVERLAY-1.2 bounds, formats and names measured progress by its options', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('loading-overlay');
+    const card = (id: string) => matrixCell(page, `progress=${id}`);
+
+    const shifted = card('shifted range');
+    await expect(shifted.locator('.ui-loading-card__value')).toHaveText('50%');
+    const shiftedBar = shifted.getByRole('progressbar', { name: 'Loading report' });
+    await expect(shiftedBar).toHaveAttribute('aria-valuemin', '200');
+    await expect(shiftedBar).toHaveAttribute('aria-valuemax', '800');
+    await expect(shiftedBar).toHaveAttribute('aria-valuenow', '500');
+
+    const unit = card('unit formatter');
+    await expect(unit.locator('.ui-loading-card__value')).toHaveText('25%');
+    await expect(unit.getByRole('progressbar')).toHaveAttribute('aria-valuetext', '3 MB');
+
+    const indeterminate = card('explicit indeterminate');
+    await expect(indeterminate.locator('.ui-loading-card__value')).toHaveCount(0);
+    await expect(indeterminate.getByRole('progressbar')).not.toHaveAttribute('aria-valuenow');
+
+    const named = card('own progress label');
+    await expect(named.getByRole('status')).toContainText('Loading report');
+    await expect(named.getByRole('progressbar', { name: 'Pages measured' })).toHaveAttribute(
+      'aria-valuenow',
+      '42',
+    );
+    await expect(named.locator('.ui-loading-card__value')).toHaveText('42%');
+  });
+
   test('UIC-LOADING-OVERLAY-1.5 keeps a cut hint whole in a tooltip', async ({ page, lab }) => {
     await lab.open('loading-overlay');
     const hint = page.locator(
@@ -203,6 +234,41 @@ test.describe('Loading Overlay lab', () => {
     expect(await cover.evaluate((node) => getComputedStyle(node).pointerEvents)).toBe('none');
     expect(await finish()).toBeGreaterThan(0);
     await expect(cover).toHaveCount(0);
+  });
+
+  test('UIC-LOADING-OVERLAY-2.4 UIC-ENTER-EXIT-1.3 keeps a host-timed overlay mounted through its exit', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('loading-overlay');
+    await page.addStyleTag({
+      content:
+        '[data-lab-demo="host-enter-exit"] .ui-loading-overlay { animation-duration: 60s !important; transition-duration: 60s !important; }',
+    });
+    const demo = page.locator('[data-lab-demo="host-enter-exit"]');
+    const cover = demo.locator('.ui-loading-overlay');
+    const phase = demo.locator('[data-lab-output="phase"]');
+    const finish = () =>
+      cover.evaluate((node) => {
+        for (const animation of node.getAnimations()) animation.finish();
+      });
+    for (let round = 0; round < 2; round += 1) {
+      await demo.getByRole('button', { name: 'Show the overlay' }).click();
+      await expect(cover).toHaveAttribute('data-entering', 'true');
+      await expect(phase).toHaveText('entering');
+      await finish();
+      await expect(phase).toHaveText('open');
+      await expect(cover).not.toHaveAttribute('data-entering');
+      await demo.getByRole('button', { name: 'Hide the overlay' }).click();
+      await expect(cover).toHaveAttribute('data-exiting', 'true');
+      await expect(phase).toHaveText('exiting');
+      await finish();
+      await expect(phase).toHaveText('closed');
+      await expect(cover).toHaveCount(0);
+    }
+    await expect(demo.locator('[data-lab-output="phases"]')).toHaveText(
+      'closed → entering → open → exiting → closed → entering → open → exiting → closed',
+    );
   });
 
   test('UIC-LOADING-OVERLAY-3.2 blocks only once a search outlasts the delay', async ({

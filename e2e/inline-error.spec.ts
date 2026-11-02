@@ -50,6 +50,38 @@ test.describe('Inline Error lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-INLINE-ERROR-1.3 hands rejected and thrown retries to onRetryError and recovers', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('inline-error');
+    const demo = page.locator('[data-lab-demo="recovery"]');
+    const outcome = demo.getByRole('radiogroup', { name: 'Next retry' });
+    const retry = demo.getByRole('alert').getByRole('button', { name: 'Retry' });
+    const output = (name: string) => demo.locator(`[data-lab-output="${name}"]`);
+
+    await outcome.getByRole('radio', { name: 'Rejects' }).click();
+    await retry.click();
+    await expect(retry).toHaveAttribute('data-pending', 'true');
+    await expect(output('error')).toHaveText('The weather service timed out');
+    await expect(retry).not.toHaveAttribute('data-pending', 'true');
+    await expect(retry).toBeEnabled();
+    await expect(output('tries')).toHaveText('1');
+    await expect(output('attempts')).toHaveText('0');
+
+    await outcome.getByRole('radio', { name: 'Throws at once' }).click();
+    await retry.click();
+    await expect(output('error')).toHaveText('No connection');
+    await expect(output('tries')).toHaveText('2');
+    await expect(retry).not.toHaveAttribute('data-pending', 'true');
+
+    await outcome.getByRole('radio', { name: 'Succeeds' }).click();
+    await retry.click();
+    await expect(output('loaded')).toBeVisible();
+    await expect(output('tries')).toHaveText('3');
+    await expect(output('attempts')).toHaveText('1');
+  });
+
   test('UIC-INLINE-ERROR-2.1 UIC-INLINE-ERROR-2.2 draws tones and pending checks with their urgency', async ({
     page,
     lab,

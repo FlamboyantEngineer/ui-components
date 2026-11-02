@@ -6,6 +6,7 @@ import {
   SectionHeader,
 } from '../../src/components/section-header/section-header.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { SectionHeaderHostCases } from './section-header-host-cases.js';
 
 /** A section that becomes collapsible on request, as after measuring space or loading preferences. */
 function CollapsibleOnDemand() {
@@ -115,7 +116,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Sections"
-      description="Sections named by their title, with each spacing before the content."
+      description="Sections named by their title, with xs, md, 2xl and 3xl spacing before the content; Every spacing below shows the whole scale."
     >
       <StateMatrix
         axes={{ space: ['xs', 'md', '2xl', '3xl'], column: ['260px'] }}
@@ -215,5 +216,6 @@ mountLab(
     >
       <Interactive />
     </LabSection>
+    <SectionHeaderHostCases />
   </>,
 );

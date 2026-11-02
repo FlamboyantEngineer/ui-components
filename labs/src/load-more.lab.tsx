@@ -19,10 +19,76 @@ const fruit = [
 ];
 const pageSize = 4;
 
+/**
+ * A page request the reader answers: Deliver page resolves it with the next page, Fail the request
+ * rejects it, and the control hands the rejection to `onError`, shown as the handled error.
+ */
+function usePageRequest(onDeliver: () => void) {
+  const [waiting, setWaiting] = useState(false);
+  const [error, setError] = useState('none');
+  const settle = useRef<{ resolve: () => void; reject: (reason: Error) => void } | null>(null);
+  const answer = (outcome: 'deliver' | 'fail') => {
+    const current = settle.current;
+    settle.current = null;
+    setWaiting(false);
+    if (outcome === 'fail') {
+      current?.reject(new Error('The server did not answer'));
+      return;
+    }
+    onDeliver();
+    current?.resolve();
+  };
+  const request = () =>
+    new Promise<void>((resolve, reject) => {
+      settle.current = { resolve, reject };
+      setWaiting(true);
+    });
+  const onError = (reason: unknown) =>
+    setError(reason instanceof Error ? reason.message : 'unknown');
+  return { waiting, error, request, onError, answer };
+}
+
+/** The buttons that answer a pending page request, and the last error the control handled. */
+function RequestAnswers({
+  waiting,
+  error,
+  answer,
+  deliverAction,
+}: Pick<ReturnType<typeof usePageRequest>, 'waiting' | 'error' | 'answer'> & {
+  deliverAction: string;
+}) {
+  return (
+    <>
+      <Button
+        size="sm"
+        variant="tertiary"
+        data-lab-action={deliverAction}
+        isDisabled={!waiting}
+        onPress={() => answer('deliver')}
+      >
+        Deliver page
+      </Button>{' '}
+      <Button
+        size="sm"
+        variant="tertiary"
+        data-lab-action="fail"
+        isDisabled={!waiting}
+        onPress={() => answer('fail')}
+      >
+        Fail the request
+      </Button>
+      <p>
+        Handled error: <output data-lab-output="error">{error}</output>
+      </p>
+    </>
+  );
+}
+
 function PagedList() {
   const [loaded, setLoaded] = useState(pageSize);
-  const [waiting, setWaiting] = useState(false);
-  const deliver = useRef<(() => void) | null>(null);
+  const { waiting, error, request, onError, answer } = usePageRequest(() =>
+    setLoaded((count) => Math.min(fruit.length, count + pageSize)),
+  );
   const remaining = fruit.length - loaded;
   return (
     <div data-lab-demo="paged">
@@ -37,32 +103,13 @@ function PagedList() {
           itemLabel="fruit"
           remainingCount={remaining}
           pendingLabel="Loading fruit"
-          onLoadMore={() =>
-            new Promise<void>((resolve) => {
-              deliver.current = () => {
-                setLoaded((count) => Math.min(fruit.length, count + pageSize));
-                resolve();
-              };
-              setWaiting(true);
-            })
-          }
+          onLoadMore={request}
+          onError={onError}
         />
       ) : (
         <p data-lab-output="done">All fruit loaded.</p>
       )}{' '}
-      <Button
-        size="sm"
-        variant="tertiary"
-        data-lab-action="deliver"
-        isDisabled={!waiting}
-        onPress={() => {
-          deliver.current?.();
-          deliver.current = null;
-          setWaiting(false);
-        }}
-      >
-        Deliver page
-      </Button>
+      <RequestAnswers waiting={waiting} error={error} answer={answer} deliverAction="deliver" />
     </div>
   );
 }
@@ -105,8 +152,9 @@ function EndlessList({
   initial?: number;
 }) {
   const [loaded, setLoaded] = useState(initial);
-  const [waiting, setWaiting] = useState(false);
-  const deliver = useRef<(() => void) | null>(null);
+  const { waiting, error, request, onError, answer } = usePageRequest(() =>
+    setLoaded((count) => Math.min(cities.length, count + cityPage)),
+  );
   const remaining = cities.length - loaded;
   return (
     <div data-lab-demo={demo}>
@@ -129,33 +177,19 @@ function EndlessList({
             scrollOffset={scrollOffset}
             itemLabel="cities"
             remainingCount={remaining}
-            onLoadMore={() =>
-              new Promise<void>((resolve) => {
-                deliver.current = () => {
-                  setLoaded((count) => Math.min(cities.length, count + cityPage));
-                  resolve();
-                };
-                setWaiting(true);
-              })
-            }
+            onLoadMore={request}
+            onError={onError}
           />
         ) : (
           <p data-lab-output="done">All cities loaded.</p>
         )}
       </div>
-      <Button
-        size="sm"
-        variant="tertiary"
-        data-lab-action="deliver-cities"
-        isDisabled={!waiting}
-        onPress={() => {
-          deliver.current?.();
-          deliver.current = null;
-          setWaiting(false);
-        }}
-      >
-        Deliver page
-      </Button>
+      <RequestAnswers
+        waiting={waiting}
+        error={error}
+        answer={answer}
+        deliverAction="deliver-cities"
+      />
     </div>
   );
 }
@@ -183,22 +217,50 @@ mountLab(
     </LabSection>
     <LabSection
       title="Variants and sizes"
-      description="Small and secondary by default; any Button size and variant."
+      description="Small and secondary by default; every Button variant at every size."
     >
       <StateMatrix
-        axes={{ variant: ['secondary', 'ghost'], size: ['xs', 'sm', 'md', 'lg'] }}
+        axes={{
+          variant: [
+            'primary',
+            'secondary',
+            'tertiary',
+            'danger',
+            'ghost',
+            'accent',
+            'chip',
+            'link',
+            'bare',
+          ],
+          size: ['xs', 'sm', 'md', 'lg'],
+        }}
         render={({ variant, size }) => <LoadMore variant={variant} size={size} />}
       />
     </LabSection>
     <LabSection
+      title="Caller label"
+      description="A label replaces the provider's Load more text; the remaining count and the item label still follow it."
+    >
+      <StateMatrix
+        axes={{ label: ['default', 'Show older messages'], count: ['no count', '12 remaining'] }}
+        render={({ label, count }) => (
+          <LoadMore
+            label={label === 'default' ? undefined : label}
+            itemLabel="messages"
+            remainingCount={count === '12 remaining' ? 12 : undefined}
+          />
+        )}
+      />
+    </LabSection>
+    <LabSection
       title="Paging"
-      description="Each press requests four more fruit and stays pending until Deliver page answers the request; the control disappears when the list is complete."
+      description="Each press requests four more fruit and stays pending until Deliver page or Fail the request answers it. A failed request reaches onError, shown as the handled error, and the control is ready to retry; the control disappears when the list is complete."
     >
       <PagedList />
     </LabSection>
     <LabSection
       title="Loading on view"
-      description="With autoLoad, scrolling the control into view inside the frame requests the next eight cities; it stays pending until Deliver page answers, and remains a button for keyboard users."
+      description="With autoLoad, scrolling the control into view inside the frame requests the next eight cities; it stays pending until Deliver page or Fail the request answers, and remains a button for keyboard users. A failed request reaches onError and is not repeated on its own: press the control, or scroll away and back, to retry."
     >
       <EndlessList demo="endless" />
     </LabSection>

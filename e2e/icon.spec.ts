@@ -107,3 +107,21 @@ test.describe('Icon lab', () => {
     }
   });
 });
+
+test('UIC-ICON-1.1 passes each icon source through toIconProps', async ({ page, lab }) => {
+  await lab.open('icon');
+  const row = (name: string) =>
+    page.locator(`[data-lab-case="icon-sources"] [data-lab-source="${name}"]`);
+  await expect(row('component').locator('[data-lab-output="props"]')).toHaveText('icon: component');
+  await expect(row('component').getByRole('img', { name: 'Icon from component' })).toHaveAttribute(
+    'data-glyph',
+    'check',
+  );
+  await expect(row('element').locator('[data-lab-output="props"]')).toHaveText('children: element');
+  await expect(row('element').locator('.ui-icon rect')).toHaveCount(1);
+  for (const name of ['null', 'undefined', 'false']) {
+    await expect(row(name).locator('[data-lab-output="props"]')).toHaveText(`children: ${name}`);
+    await expect(row(name).locator('.ui-icon')).toHaveCount(0);
+  }
+  await lab.expectAccessible();
+});
