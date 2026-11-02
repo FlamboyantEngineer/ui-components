@@ -368,4 +368,33 @@ describe('FourSidePropertyStrip', () => {
     expect(row).not.toHaveAttribute('data-link');
     expect(brackets()).toEqual([]);
   });
+
+  it('UIC-FOUR-SIDE-PROPERTY-STRIP-1.7 publishes the value alignment and keeps editing as it is', async () => {
+    const onChange = vi.fn();
+    const strip = (valueAlign?: 'start' | 'center' | 'end') => (
+      <FourSidePropertyStrip
+        label="Offset"
+        valueAlign={valueAlign}
+        link="pairs"
+        defaultLinked={['vertical']}
+        onChange={onChange}
+        renderSide={(side, field) => (
+          <input
+            aria-label={`Offset ${side}`}
+            value={field.value ?? ''}
+            onChange={(event) => field.onChange(event.target.value)}
+          />
+        )}
+      />
+    );
+    const { container, rerender } = render(strip('center'));
+    const row = container.querySelector('.ui-four-side-property-strip');
+    expect(row).toHaveAttribute('data-value-align', 'center');
+    await userEvent.type(screen.getByRole('textbox', { name: 'Offset top' }), '-1.5');
+    expect(onChange).toHaveBeenLastCalledWith({ top: '-1.5', bottom: '-1.5' });
+    rerender(strip('end'));
+    expect(row).toHaveAttribute('data-value-align', 'end');
+    rerender(strip());
+    expect(row).not.toHaveAttribute('data-value-align');
+  });
 });

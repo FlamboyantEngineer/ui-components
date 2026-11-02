@@ -31,8 +31,22 @@
   margin-inline-start: 12px;
 }
 
+/*
+ * Side inputs grow with their value from a compact width, so a negative, decimal or long value
+ * shows whole. Their text takes its direction from itself, so a number reads alike right to left.
+ */
 .ui-four-side-property-strip .ui-four-side-property-strip__side > input {
-  width: 40px;
+  width: 56px;
+  unicode-bidi: plaintext;
+}
+
+@supports (field-sizing: content) {
+  .ui-four-side-property-strip .ui-four-side-property-strip__side > input {
+    width: auto;
+    min-width: 40px;
+    max-width: 96px;
+    field-sizing: content;
+  }
 }
 
 /* |----icon----|: ticks up to the linked controls and a rule through the centred toggle. */
@@ -111,4 +125,17 @@
 
 .ui-four-side-property-strip__side[data-linked] > input {
   border-style: dashed;
+}
+
+/* A value alignment the host chose, for each side's text box: its padding and caret stay as they are. */
+.ui-four-side-property-strip[data-value-align='start'] .ui-four-side-property-strip__side input {
+  text-align: start;
+}
+
+.ui-four-side-property-strip[data-value-align='center'] .ui-four-side-property-strip__side input {
+  text-align: center;
+}
+
+.ui-four-side-property-strip[data-value-align='end'] .ui-four-side-property-strip__side input {
+  text-align: end;
 }
