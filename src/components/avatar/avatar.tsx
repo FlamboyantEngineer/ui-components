@@ -7,6 +7,7 @@ import type { BaseProps, NativeProps, PresenceStatus, Size } from '../../core/pr
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { getInitials } from '../../utils/initials.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { useStableArray } from '../../utils/use-stable-array.js';
 import type { PressEvent } from '../../core/events.js';
 import { toImageProps } from '../icon/icon.js';
@@ -26,6 +27,25 @@ export type AvatarKind = 'person' | 'group';
 
 /** `circle` for people; `rounded` or `square` for bots, organisations and groups. */
 export type AvatarShape = 'circle' | 'rounded' | 'square';
+
+/**
+ * The corner a badge sits on, in the reading direction. With a status, `bottom-end` gives way to
+ * the status indicator and the badge takes `top-end`.
+ */
+export type AvatarBadgePlacement = 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end';
+
+/** A small marker on a corner of the avatar, such as a country flag, and the words that name it. */
+export interface AvatarBadgeProps {
+  /**
+   * Caller content drawn on a corner, outside the clipped picture: a flag image, an emoji or a
+   * glyph. It is decorative and inert, so it must not hold controls.
+   */
+  badge?: ReactNode;
+  /** The badge in words (`France`), added to the avatar's name. Without it the badge is decorative. */
+  badgeLabel?: string | undefined;
+  /** Defaults to `bottom-end`, or `top-end` when a status takes that corner. */
+  badgePlacement?: AvatarBadgePlacement | undefined;
+}
 
 /** No picture to load (`idle`), or the picture is loading, has loaded or has failed. */
 export type AvatarLoadingStatus = 'idle' | 'loading' | 'loaded' | 'error';
@@ -56,7 +76,7 @@ export interface AvatarIdentity {
   shape?: AvatarShape | undefined;
 }
 
-export interface AvatarProps extends AvatarIdentity, BaseProps {
+export interface AvatarProps extends AvatarIdentity, AvatarBadgeProps, BaseProps {
   /** The person's presence, published as `data-status`. */
   status?: PresenceStatus | undefined;
   /** The status in words, added to the accessible name. Defaults to the provider's `presenceStatus`. */
@@ -92,7 +112,14 @@ interface AvatarPicture {
   imageRef: (image: HTMLImageElement | null) => void;
 }
 
-const hooks = createHooks('avatar', ['image', 'initials', 'glyph', 'surface', 'indicator']);
+const hooks = createHooks('avatar', [
+  'image',
+  'initials',
+  'glyph',
+  'surface',
+  'indicator',
+  'badge',
+]);
 
 /** The picture an identity draws: its trimmed `src`, or none for a group or a blank address. */
 function pictureOf({ src, kind }: Pick<AvatarIdentity, 'src' | 'kind'>): string {
@@ -225,20 +252,52 @@ export function resolveStatusLabel(
 function useAvatarPresentation(
   props: Pick<
     AvatarProps,
-    'name' | 'label' | 'status' | 'statusLabel' | 'nameTooltip' | 'card' | 'cardTrigger' | 'onPress'
+    | 'name'
+    | 'label'
+    | 'status'
+    | 'statusLabel'
+    | 'badgeLabel'
+    | 'nameTooltip'
+    | 'card'
+    | 'cardTrigger'
+    | 'onPress'
   >,
 ) {
   const strings = useUiStrings();
-  const displayName = getDisplayName(props.name, strings.unnamed);
-  const statusText = resolveStatusLabel(props, strings);
-  const accessibleName =
-    props.label?.trim() ||
-    (statusText ? strings.nameWithStatus(displayName, statusText) : displayName);
+  const named = [resolveStatusLabel(props, strings), props.badgeLabel?.trim()].reduce(
+    (name: string, detail) => (detail ? strings.nameWithStatus(name, detail) : name),
+    getDisplayName(props.name, strings.unnamed),
+  );
+  const accessibleName = props.label?.trim() || named;
   return {
     accessibleName,
     surfaceProps: toImageProps(props.card || props.onPress ? accessibleName : undefined),
     hasTooltip: props.nameTooltip && !(props.card && props.cardTrigger === 'hover'),
   };
+}
+
+/** The corner a badge takes: the one asked for, unless the status indicator holds it. */
+export function resolveBadgePlacement(
+  placement: AvatarBadgePlacement | undefined,
+  hasStatus: boolean,
+): AvatarBadgePlacement {
+  const asked = placement ?? 'bottom-end';
+  return hasStatus && asked === 'bottom-end' ? 'top-end' : asked;
+}
+
+/** The badge on its corner, hidden and inert: the avatar's name says what it means. */
+function AvatarBadge({
+  badge,
+  badgePlacement,
+  hasStatus,
+}: Pick<AvatarProps, 'badge' | 'badgePlacement'> & { hasStatus: boolean }) {
+  if (isEmptyNode(badge)) return null;
+  const placement = resolveBadgePlacement(badgePlacement, hasStatus);
+  return (
+    <span {...hooks.slot('badge', { placement })} aria-hidden="true" inert>
+      {badge}
+    </span>
+  );
 }
 
 /** A person's picture, or their initials on a stable colour slot; a group glyph for a group. */
@@ -258,6 +317,9 @@ export function Avatar(props: AvatarProps) {
       card,
       cardTrigger,
       nameTooltip,
+      badge,
+      badgeLabel,
+      badgePlacement,
       className,
       ...rest
     },
@@ -269,6 +331,7 @@ export function Avatar(props: AvatarProps) {
     label,
     status,
     statusLabel,
+    badgeLabel,
     nameTooltip,
     card,
     cardTrigger,
@@ -300,6 +363,7 @@ export function Avatar(props: AvatarProps) {
         <AvatarContent identity={identity} picture={picture} />
       </span>
       {status ? <span {...hooks.slot('indicator')} aria-hidden="true" /> : null}
+      <AvatarBadge badge={badge} badgePlacement={badgePlacement} hasStatus={Boolean(status)} />
     </AvatarRoot>
   );
   // A pressable avatar keeps its tooltip trigger while the tooltip is off, so turning it on or off

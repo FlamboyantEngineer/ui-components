@@ -1,3 +1,4 @@
+import { AvatarBadgeCases } from './avatar-badge-cases.js';
 import { AvatarPresenceCases } from './avatar-presence-cases.js';
 import { useState, type ReactNode } from 'react';
 import {
@@ -233,5 +234,6 @@ mountLab(
       </LabSection>
     </div>
     <AvatarPresenceCases />
+    <AvatarBadgeCases />
   </>,
 );

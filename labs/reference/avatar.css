@@ -210,3 +210,79 @@
 .ui-avatar[data-pressed] .ui-avatar__surface {
   transform: scale(0.94);
 }
+
+/* A caller's badge, such as a flag, on a corner outside the clipped surface. It keeps its size and
+   place while the avatar is hovered or pressed, and the status indicator keeps the bottom end. */
+.ui-avatar__badge {
+  position: absolute;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 14px;
+  height: 14px;
+  overflow: hidden;
+  border: 1.5px solid var(--ref-canvas);
+  border-radius: 50%;
+  background: var(--ref-canvas);
+  color: var(--ref-text);
+  font-size: var(--ref-font-size-2xs);
+  font-weight: normal;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.ui-avatar__badge > :is(img, svg) {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ui-avatar__badge[data-placement='top-start'] {
+  inset-block-start: -2px;
+  inset-inline-start: -2px;
+}
+
+.ui-avatar__badge[data-placement='top-end'] {
+  inset-block-start: -2px;
+  inset-inline-end: -2px;
+}
+
+.ui-avatar__badge[data-placement='bottom-start'] {
+  inset-block-end: -2px;
+  inset-inline-start: -2px;
+}
+
+.ui-avatar__badge[data-placement='bottom-end'] {
+  inset-block-end: -2px;
+  inset-inline-end: -2px;
+}
+
+.ui-avatar[data-size='xs'] .ui-avatar__badge {
+  width: 10px;
+  height: 10px;
+  border-width: 1px;
+  font-size: var(--ref-font-size-2xs);
+}
+
+.ui-avatar[data-size='sm'] .ui-avatar__badge {
+  width: 12px;
+  height: 12px;
+  border-width: 1px;
+  font-size: var(--ref-font-size-2xs);
+}
+
+.ui-avatar[data-size='lg'] .ui-avatar__badge {
+  width: 18px;
+  height: 18px;
+  font-size: var(--ref-font-size-xs);
+}
+
+.ui-avatar[data-size='fill'] .ui-avatar__badge {
+  width: 36%;
+  height: 36%;
+  border-width: 2px;
+  font-size: 0.6em;
+}

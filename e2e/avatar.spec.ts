@@ -263,8 +263,79 @@ test.describe('Avatar lab', () => {
       .toBeGreaterThan(0);
   });
 
+  test('UIC-AVATAR-4.2 places the corner badge outside the picture, clear of the status', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('avatar');
+    const cell = (address: string) => matrixCell(page, address, { family: 'avatar-badge' });
+    for (const size of ['xs', 'sm', 'md', 'lg'] as const) {
+      for (const placement of ['top-start', 'top-end', 'bottom-start', 'bottom-end'] as const) {
+        const avatar = cell(`placement=${placement} size=${size}`).locator('.ui-avatar');
+        const [box, badge] = await Promise.all([
+          avatar.boundingBox(),
+          avatar.locator('.ui-avatar__badge').boundingBox(),
+        ]);
+        if (!box || !badge) throw new Error(`no badge at ${placement} ${size}`);
+        // The badge stays on its own corner and pokes past the clipped surface.
+        const isEnd = placement.endsWith('end');
+        const isBottom = placement.startsWith('bottom');
+        expect(isEnd ? badge.x + badge.width : badge.x).toBeCloseTo(
+          isEnd ? box.x + box.width + 2 : box.x - 2,
+          0,
+        );
+        expect(isBottom ? badge.y + badge.height : badge.y).toBeCloseTo(
+          isBottom ? box.y + box.height + 2 : box.y - 2,
+          0,
+        );
+        expect(badge.width).toBeLessThan(box.width);
+        await expect(avatar).toHaveAccessibleName('Maria Santos, France');
+      }
+    }
+    // With a status, a badge asked for at the bottom end moves to the top end.
+    const away = cell('status=away placement=bottom-end').locator('.ui-avatar');
+    await expect(away.locator('.ui-avatar__badge')).toHaveAttribute('data-placement', 'top-end');
+    const [dot, flag] = await Promise.all([
+      away.locator('.ui-avatar__indicator').boundingBox(),
+      away.locator('.ui-avatar__badge').boundingBox(),
+    ]);
+    expect(requireBox(flag).y + requireBox(flag).height).toBeLessThan(requireBox(dot).y);
+    await expect(away).toHaveAccessibleName('Maria Santos, Away, France');
+  });
+
+  test('UIC-AVATAR-4.2 keeps the badge out of the tab order and out of the press', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('avatar');
+    const trigger = page.locator('[data-lab-avatar="badge-trigger"]');
+    const badge = trigger.locator('.ui-avatar__badge');
+    await trigger.focus();
+    await expect(trigger).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(trigger).not.toBeFocused();
+    expect(await badge.evaluate((node) => node.contains(document.activeElement))).toBe(false);
+    const before = await badge.boundingBox();
+    const box = requireBox(await trigger.boundingBox());
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await expect(trigger).toHaveAttribute('data-pressed', 'true');
+    expect(await badge.boundingBox()).toEqual(before);
+    await page.mouse.up();
+    await expect(page.locator('[data-lab-output="badge-presses"]')).toHaveText('1');
+    await expect(page.getByRole('dialog', { name: 'Lena Ortiz' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(trigger).not.toHaveAttribute('data-pressed');
+    await lab.expectAccessible();
+  });
+
   test('UIC-AVATAR-2.1 renders unstyled without errors', async ({ page, lab }) => {
     await lab.open('avatar', { stylesheet: 'none' });
     await expect(matrix(page, 'avatar-main').locator('.ui-avatar').first()).toBeVisible();
   });
 });
+
+function requireBox<T>(box: T | null): T {
+  if (!box) throw new Error('no box');
+  return box;
+}

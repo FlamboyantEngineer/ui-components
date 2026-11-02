@@ -10,15 +10,17 @@ import {
   Avatar,
   getDisplayName,
   splitAvatarIdentity,
+  type AvatarBadgeProps,
   type AvatarIdentity,
   type AvatarProps,
+  resolveBadgePlacement,
   resolveStatusLabel,
 } from '../avatar/avatar.js';
 
 export type UserIdentitySize = Extract<Size, 'xs' | 'sm' | 'md' | 'lg'>;
 
 export interface UserIdentityProps
-  extends AvatarIdentity, Pick<AvatarProps, 'colorCount'>, BaseProps {
+  extends AvatarIdentity, AvatarBadgeProps, Pick<AvatarProps, 'colorCount'>, BaseProps {
   /** A secondary line under the name: an email, a role, a timestamp. Blank values draw no line. */
   description?: ReactNode;
   /** Content after the name on the same line, such as a badge. */
@@ -38,6 +40,7 @@ const hooks = createHooks('user-identity', [
   'name',
   'description',
   'indicator',
+  'badge-label',
 ]);
 
 /**
@@ -47,8 +50,9 @@ const hooks = createHooks('user-identity', [
 export function UserIdentity(props: UserIdentityProps) {
   const [
     identity,
-    { description, nameSuffix, size = 'md', colorCount, status, statusLabel, className, ...rest },
+    { description, nameSuffix, size = 'md', colorCount, status, statusLabel, className, ...others },
   ] = splitAvatarIdentity(props);
+  const { badge, badgeLabel, badgePlacement, ...rest } = others;
   const strings = useUiStrings();
   return (
     <span {...rest} {...hooks.root({ className, data: { size, status } })}>
@@ -56,6 +60,9 @@ export function UserIdentity(props: UserIdentityProps) {
         {...identity}
         colorCount={colorCount}
         size={size}
+        badge={badge}
+        // The identity draws its own status indicator, on the corner the avatar keeps for it.
+        badgePlacement={resolveBadgePlacement(badgePlacement, Boolean(status))}
         decorative
         className={hooks.slotClass('avatar')}
       />
@@ -81,6 +88,13 @@ export function UserIdentity(props: UserIdentityProps) {
             {...hooks.slot('indicator')}
             {...toImageProps(resolveStatusLabel({ status, statusLabel }, strings))}
           />
+        </>
+      ) : null}
+      {/* The decorative avatar draws the badge; its words follow the name and the status. */}
+      {badgeLabel?.trim() && !isEmptyNode(badge) ? (
+        <>
+          {' '}
+          <span {...hooks.slot('badge-label')} {...toImageProps(badgeLabel.trim())} />
         </>
       ) : null}
     </span>

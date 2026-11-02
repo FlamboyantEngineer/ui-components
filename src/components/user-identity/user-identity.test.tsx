@@ -131,7 +131,10 @@ describe('UserIdentity', () => {
     expect(badge).toHaveClass('ui-user-identity__indicator');
     expect(badge).toBe(screen.getByRole('img', { name: 'Away until noon' }));
     expect(element.querySelector('.ui-avatar')).toHaveAttribute('aria-hidden', 'true');
-    expectHooksMatchSpec(container, 'USER-IDENTITY', { slots: 'all' });
+    expectHooksMatchSpec(container, 'USER-IDENTITY', {
+      // The badge's words render only with a corner badge (UIC-USER-IDENTITY-1.8).
+      slots: ['avatar', 'content', 'title', 'name', 'description', 'indicator'],
+    });
 
     rerender(<UserIdentity name="Lena Ortiz" status="busy" />);
     expect(screen.getByRole('img', { name: 'Busy' })).toHaveClass('ui-user-identity__indicator');

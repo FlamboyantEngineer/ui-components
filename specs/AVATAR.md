@@ -94,6 +94,13 @@ Avatar shall publish an optional status and its decorative indicator outside the
 Implementation: `src/components/avatar/avatar.tsx`
 Verification: `src/components/avatar/avatar.test.tsx`, `e2e/unified-options.spec.ts`
 
+### UIC-AVATAR-4.2 - Corner badge
+
+With `badge`, content that renders something, `Avatar` shall draw it in a `ui-avatar__badge` element on a corner of the root, outside the clipped `ui-avatar__surface`, for markers such as a country flag the host supplies; the library never works out what the badge says. The corner is `badgePlacement` (`top-start`, `top-end`, `bottom-start` or `bottom-end`, in the reading direction), `bottom-end` by default, published in the badge's `data-placement`. A status indicator keeps the `bottom-end` corner ([UIC-AVATAR-4.1](#uic-avatar-41---optional-presence)): with a status, a badge placed there moves to `top-end`, so the two never overlap. The badge is hidden from assistive technology and inert, so it adds no focus target and never takes a press, and a pressable avatar, card trigger or menu trigger keeps its own pressed, hovered and selected states without passing them to the badge. `badgeLabel` names the badge: its trimmed words join the accessible name after the status through the provider's `nameWithStatus` string (`Maria Santos, Away, France`); without it the badge is decorative, and a `label` still replaces the whole name. Every size, shape, variant and kind takes a badge; the reference stylesheet sizes it with the avatar and clips it to a circle. [User Identity](USER-IDENTITY.md) and [User Card](USER-CARD.md) pass `badge`, `badgeLabel` and `badgePlacement` on; other avatar composites, such as an avatar group, draw no badges.
+
+Implementation: `src/components/avatar/avatar.tsx`, `labs/reference/avatar.css`
+Verification: `src/components/avatar/avatar-badge.test.tsx`, `e2e/avatar.spec.ts`
+
 ## UIC-AVATAR-11 - Contract
 
 ### UIC-AVATAR-11.1 - Avatar and status
@@ -176,6 +183,8 @@ Verification: `src/components/avatar/avatar-presence.test.tsx`, `e2e/avatar-pres
 
 | `ui-avatar__surface` | slot | | The clipped picture or initials; the status dot sits outside it. |
 | `ui-avatar__indicator` | slot | | The decorative status badge, when there is a status. |
+| `ui-avatar__badge` | slot | | The caller's corner badge, hidden and inert, when there is a `badge`. |
+| `data-placement` | attribute | `top-start`, `top-end`, `bottom-start`, `bottom-end` | On `ui-avatar__badge`: the corner it takes. |
 | `data-status` | attribute | | The `status`: `active`, `away`, `busy` or `idle`. |
 | `data-hovered` | state | `true` | While the pointer is over a pressable avatar (React Aria). |
 | `data-pressed` | state | `true` | While a pressable avatar is pressed (React Aria). |
