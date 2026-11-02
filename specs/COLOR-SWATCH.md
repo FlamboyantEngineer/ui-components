@@ -6,14 +6,14 @@
 
 ### UIC-COLOR-SWATCH-1.1 - Colour
 
-`ColorSwatch` shall render a React Aria colour swatch (`ui-color-swatch`) filled with `color`, a colour string React Aria reads: hex with or without alpha (`#336699`, `#369`, `#33669980`), or comma-separated `rgb()`/`rgba()`, `hsl()`/`hsla()` or `hsb()`/`hsba()` (`rgb(51, 102, 153)`, `hsl(210, 50%, 40%)`). It is an image (`role="img"`) described as a colour swatch and named by the colour's name in the locale (`dark grayish cyan blue`), or by `colorName` when given; an `aria-label` adds to the name. The fill is React Aria's inline background colour, a value the swatch draws rather than a style.
+`ColorSwatch` shall render a React Aria colour swatch (`ui-color-swatch`) filled with `color`, a colour string React Aria reads: hex with or without alpha (`#336699`, `#369`, `#33669980`), or comma-separated `rgb()`/`rgba()`, `hsl()`/`hsla()` or `hsb()`/`hsba()` (`rgb(51, 102, 153)`, `hsl(210, 50%, 40%)`). It is an image (`role="img"`) described as a colour swatch and named by the colour's name in the locale (`dark grayish cyan blue`), or by `colorName` when given; an `aria-label` adds to the name. The fill is React Aria's inline background colour, a value the swatch draws rather than a style. The swatch also publishes the fill as `--ui-color-swatch-color` (as React Aria writes it in CSS, alpha included), so a stylesheet can layer it over a backdrop: the reference sheet draws every swatch as its colour over a checkerboard, which shows through a translucent colour (`#33669980`) and alone through a fully transparent one (`rgba(51, 102, 153, 0)`), while an opaque colour covers it. The colour composites over the board as it is, its opacity unchanged; the border, size and rounding stay the swatch's. A fully transparent colour is still a colour, named as one, unlike an empty swatch. The Color Field's trigger and the swatch picker's items draw their colours through `ColorSwatch` alike.
 
-Implementation: `src/components/color-swatch/color-swatch.tsx`
+Implementation: `src/components/color-swatch/color-swatch.tsx`, `labs/reference/color-swatch.css`
 Verification: `src/components/color-swatch/color-swatch.test.tsx`, `e2e/color-swatch.spec.ts`
 
 ### UIC-COLOR-SWATCH-1.2 - Empty swatch
 
-A swatch with no colour (nothing, `null` or empty text), or with a colour in a notation React Aria does not read (a colour name such as `red`, `transparent`, `currentColor`, `oklch()`, space-separated `rgb()`), shall be transparent, publish `data-empty` and be named by the provider string `noColor`, so a stylesheet can draw the empty state, such as a checkerboard; it never throws.
+A swatch with no colour (nothing, `null` or empty text), or with a colour in a notation React Aria does not read (a colour name such as `red`, `transparent`, `currentColor`, `oklch()`, space-separated `rgb()`), shall be transparent, publish `data-empty` and no `--ui-color-swatch-color`, and be named by the provider string `noColor`, so a stylesheet can draw the empty state, such as a checkerboard; it never throws.
 
 Implementation: `src/components/color-swatch/color-swatch.tsx`, `src/core/strings.ts`, `labs/reference/color-swatch.css`
 Verification: `src/components/color-swatch/color-swatch.test.tsx`, `e2e/color-swatch.spec.ts`
@@ -76,6 +76,7 @@ Verification: `src/components/color-swatch/color-swatch-picker-values.test.tsx`,
 | `ui-color-swatch`              | root      |                              | The swatch (`<div>`).                                        |
 | `data-size`                    | attribute | `xs`, `sm`, `md`, `lg`, `xl` | Box size; on a picker, the size of its swatches.             |
 | `data-empty`                   | state     | `true`                       | No colour is set; on a picker, it has no items (React Aria). |
+| `--ui-color-swatch-color`      | property  |                              | On a swatch with a colour: the colour it draws, in CSS.      |
 | `ui-color-swatch-picker`       | root      |                              | A swatch picker's `role="listbox"` list.                     |
 | `ui-color-swatch-picker__item` | slot      |                              | One `role="option"` holding its swatch.                      |
 | `data-layout`                  | state     | `grid`, `stack`              | On the picker: how the swatches are laid out (React Aria).   |

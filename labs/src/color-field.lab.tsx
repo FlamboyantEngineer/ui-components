@@ -11,6 +11,13 @@ import {
 } from './field-states.js';
 
 const formats = ['hex', 'rgb', 'hsl', 'hsb'] as const satisfies readonly ColorFieldFormat[];
+// A swatch's colour with each amount of alpha, and none at all.
+const swatchColours = {
+  opaque: '#336699',
+  half: '#33669980',
+  clear: '#33669900',
+  empty: null,
+} as const;
 // The first colour comes back at the end: each place is its own swatch.
 const swatches = ['#cc3300', '#e69500', '#2e8b57', '#336699', '#7b4fa0', '#4d4d4d', '#cc3300'];
 
@@ -123,6 +130,22 @@ function Presets() {
       />
       <LabOutput name="Preset committed">{committed}</LabOutput>
     </>
+  );
+}
+
+const translucentSwatches = ['#336699', '#33669980', 'rgba(204, 51, 0, 0.25)', '#2e8b5700'];
+
+/** Colours with and without alpha in the closed field's swatch and among the presets. */
+function TranslucentPresets() {
+  return (
+    <ColorField
+      label="Overlay tint"
+      defaultValue="#33669980"
+      swatches={translucentSwatches}
+      allowsTransparency
+      description="The trigger's swatch and the presets show a checkerboard through a translucent colour."
+      data-lab-field="translucent-presets"
+    />
   );
 }
 
@@ -256,6 +279,23 @@ mountLab(
           />
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Translucent swatches"
+      description="The closed field's swatch over a checkerboard: opaque, half-opaque, fully transparent and empty, at xs, sm, md and lg, and translucent presets."
+    >
+      <StateMatrix
+        axes={{ colour: ['opaque', 'half', 'clear', 'empty'], size: ['xs', 'sm', 'md', 'lg'] }}
+        render={({ colour, size }) => (
+          <ColorField
+            label={`Tint ${colour} ${size}`}
+            size={size}
+            allowsTransparency
+            defaultValue={swatchColours[colour]}
+          />
+        )}
+      />
+      <TranslucentPresets />
     </LabSection>
     <LabSection title="Preset swatches and eye dropper" description="Presets beside the picker.">
       <Presets />

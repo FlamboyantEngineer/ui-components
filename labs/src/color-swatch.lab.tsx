@@ -8,7 +8,16 @@ import { Button } from '../../src/components/button/button.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const sizes = ['xs', 'sm', 'md', 'lg', 'xl'] as const;
-const colours = ['#336699', '#cc3300', '#2e8b57', 'rgba(0, 0, 0, 0.5)', 'empty'] as const;
+// Opaque, half and a quarter opaque, fully transparent, and no colour at all.
+const colours = [
+  '#336699',
+  '#2e8b57',
+  '#33669980',
+  'rgba(204, 51, 0, 0.25)',
+  'rgba(51, 102, 153, 0)',
+  'empty',
+] as const;
+const translucent = ['#336699', '#33669980', 'rgba(204, 51, 0, 0.25)', '#2e8b5700'] as const;
 const palette = ['#cc3300', '#e69500', '#2e8b57', '#336699', '#7b4fa0', '#4d4d4d'] as const;
 const layouts = ['grid', 'stack'] as const;
 
@@ -79,7 +88,7 @@ mountLab(
   <>
     <LabSection
       title="Colours and sizes"
-      description="Opaque, translucent and empty swatches in every size."
+      description="Opaque, half-opaque, quarter-opaque, fully transparent and empty swatches in every size: a checkerboard shows through a translucent colour, and an empty swatch is the checkerboard alone, named No color."
     >
       <StateMatrix
         axes={{ colour: colours, size: sizes }}
@@ -110,6 +119,20 @@ mountLab(
       description="One red in three spellings is three options picked together; an unreadable or empty value picks nothing."
     >
       <ControlledPalette />
+    </LabSection>
+    <LabSection
+      title="Translucent swatches in a picker"
+      description="A picker's swatches show the checkerboard through a translucent colour, picked or not."
+    >
+      <ColorSwatchPicker
+        aria-label="Translucent palette"
+        defaultValue="#33669980"
+        data-lab-picker="translucent"
+      >
+        {translucent.map((color) => (
+          <ColorSwatchPickerItem key={color} color={color} />
+        ))}
+      </ColorSwatchPicker>
     </LabSection>
     <LabSection title="Picker layouts and sizes" description="A grid or a stack of swatches.">
       <StateMatrix

@@ -2,7 +2,7 @@
 
 import { ColorSwatch as AriaColorSwatch, parseColor } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
-import { createHooks } from '../../core/hooks.js';
+import { createHooks, measuredProperty } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 
@@ -20,15 +20,19 @@ export interface ColorSwatchProps extends BaseProps, AriaLabellingProps {
 
 const hooks = createHooks('color-swatch');
 
+/** `color` as the CSS colour the swatch draws, or nothing when it cannot draw it. */
+function toSwatchFill(color: string | null | undefined): string | undefined {
+  if (!color) return undefined;
+  try {
+    return parseColor(color).toString('css');
+  } catch {
+    return undefined;
+  }
+}
+
 /** Whether the swatch can draw `color`: a hex, `rgb()`, `hsl()` or `hsb()` colour string. */
 export function isSwatchColor(color: string | null | undefined): color is string {
-  if (!color) return false;
-  try {
-    parseColor(color);
-    return true;
-  } catch {
-    return false;
-  }
+  return toSwatchFill(color) !== undefined;
 }
 
 /** A colour shown on its own, named by its colour so assistive technology can read it. */
@@ -40,11 +44,14 @@ export function ColorSwatch({
   ...rest
 }: ColorSwatchProps) {
   const strings = useUiStrings();
-  const drawn = isSwatchColor(color) ? color : undefined;
+  const fill = toSwatchFill(color);
+  const drawn = fill === undefined ? undefined : (color ?? undefined);
   return (
     <AriaColorSwatch
       {...rest}
       {...hooks.root({ className, props: rest, data: { size, empty: drawn === undefined } })}
+      // The fill again, so a stylesheet can layer it over a checkerboard for a translucent colour.
+      style={fill === undefined ? undefined : measuredProperty('color-swatch-color', fill)}
       color={drawn}
       colorName={drawn === undefined ? strings.noColor : colorName}
     />
