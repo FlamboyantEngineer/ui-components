@@ -19,6 +19,8 @@ export interface UnsavedChangesSummary {
   labels: readonly string[];
   /** Every dirty source can save. */
   canSave: boolean;
+  /** Some dirty source has its own discard, so a Discard has work to do. */
+  canDiscard: boolean;
 }
 
 export interface UnsavedChangesStore {
@@ -45,7 +47,12 @@ export function isUnsavable(error: unknown): boolean {
   return error instanceof Error && error.cause === unsavable;
 }
 
-const cleanSummary: UnsavedChangesSummary = { isDirty: false, labels: [], canSave: false };
+const cleanSummary: UnsavedChangesSummary = {
+  isDirty: false,
+  labels: [],
+  canSave: false,
+  canDiscard: false,
+};
 
 function summarize(entries: readonly UnsavedChangesEntry[]): UnsavedChangesSummary {
   if (entries.length === 0) return cleanSummary;
@@ -53,6 +60,7 @@ function summarize(entries: readonly UnsavedChangesEntry[]): UnsavedChangesSumma
     isDirty: true,
     labels: entries.flatMap((entry) => entry.labels),
     canSave: entries.every((entry) => entry.onSave !== undefined),
+    canDiscard: entries.some((entry) => entry.onDiscard !== undefined),
   };
 }
 
@@ -60,6 +68,7 @@ function isSameSummary(a: UnsavedChangesSummary, b: UnsavedChangesSummary): bool
   return (
     a.isDirty === b.isDirty &&
     a.canSave === b.canSave &&
+    a.canDiscard === b.canDiscard &&
     a.labels.length === b.labels.length &&
     a.labels.every((label, index) => label === b.labels[index])
   );

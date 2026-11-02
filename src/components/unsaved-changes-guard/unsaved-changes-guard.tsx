@@ -167,25 +167,54 @@ interface LeaveConfirmationProps extends Omit<
   onOpenChange: (isOpen: boolean) => void;
 }
 
+type LeaveAction = 'save' | 'discard';
+
+/**
+ * Whether a finished action covered the work there is now: after Save nothing is dirty, and after
+ * Discard no dirty source has a discard of its own (one without it is left behind by leaving).
+ */
+function isCovered(action: LeaveAction, summary: UnsavedChangesSummary): boolean {
+  return action === 'save' ? !summary.isDirty : !summary.canDiscard;
+}
+
+/**
+ * Resolves once React has committed the updates already scheduled, and with them the registrations
+ * those updates change: the passive effects of a commit run after all of its layout effects.
+ */
+function useAfterCommit() {
+  const waiting = useRef<Array<() => void>>([]);
+  const [requests, setRequests] = useState(0);
+  useEffect(() => {
+    const resolved = waiting.current.splice(0);
+    for (const resolve of resolved) resolve();
+  }, [requests]);
+  return useCallback(
+    () =>
+      new Promise<void>((resolve) => {
+        waiting.current.push(resolve);
+        setRequests((count) => count + 1);
+      }),
+    [],
+  );
+}
+
 function resolveLeaveActions({
   canSave,
   strings,
   leaveAfter,
-  store,
 }: {
   canSave: boolean;
   strings: ReturnType<typeof useUiStrings>;
-  leaveAfter: (run: () => Promise<void>) => (close: () => void) => Promise<void>;
-  store: UnsavedChangesStore;
+  leaveAfter: (action: LeaveAction) => (close: () => void) => Promise<void>;
 }) {
   return {
     primaryAction: {
       label: canSave ? strings.save : strings.discard,
       pendingLabel: canSave ? strings.saving : undefined,
-      onPress: leaveAfter(canSave ? store.save : store.discard),
+      onPress: leaveAfter(canSave ? 'save' : 'discard'),
     },
     secondaryAction: canSave
-      ? { label: strings.discard, onPress: leaveAfter(store.discard) }
+      ? { label: strings.discard, onPress: leaveAfter('discard') }
       : undefined,
   };
 }
@@ -206,15 +235,23 @@ function LeaveConfirmation({
   const strings = useUiStrings();
   const [held, setHeld] = useState<UnsavedChangesSummary | null>(null);
   const { canSave, labels } = held ?? summary;
-  const leaveAfter = (run: () => Promise<void>) => async (close: () => void) => {
+  const afterCommit = useAfterCommit();
+  const leaveAfter = (action: LeaveAction) => async (close: () => void) => {
     setHeld(summary);
     try {
-      await run();
+      await store[action]();
     } catch (error) {
       setHeld(null);
       // A source lost its save meanwhile: the question now offers Discard alone.
       if (isUnsavable(error)) return;
       throw error;
+    }
+    // The sources' own updates from their actions land first, so the check reads what they left.
+    await afterCommit();
+    if (!isCovered(action, store.getSummary())) {
+      // Work arrived that the action did not cover: the question asks again about what is there.
+      setHeld(null);
+      return;
     }
     request?.settle(true);
     close();
@@ -231,7 +268,7 @@ function LeaveConfirmation({
         }
         rest.onOpenChange(next);
       }}
-      {...resolveLeaveActions({ canSave, strings, leaveAfter, store })}
+      {...resolveLeaveActions({ canSave, strings, leaveAfter })}
       className={hooks.root({ className }).className}
       title={request?.title ?? title ?? strings.unsavedChanges}
       description={
@@ -273,7 +310,7 @@ export function UnsavedChangesGuard({
     isDirty: summary.isDirty,
     labels: summary.labels,
     onSave: summary.canSave ? store.save : undefined,
-    onDiscard: store.discard,
+    onDiscard: summary.canDiscard ? store.discard : undefined,
   });
   useUnloadConfirmation(shouldConfirmUnload && summary.isDirty);
   return (
