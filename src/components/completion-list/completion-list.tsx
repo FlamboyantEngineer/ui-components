@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, type MouseEvent, type ReactNode, type RefObject } from 'react';
+import { useId, useLayoutEffect, type MouseEvent, type ReactNode, type RefObject } from 'react';
 import { Popover, useHover, usePress } from '../../primitives/index.js';
 import { PopoverPresence } from '../popover/popover.js';
 import type { AriaLabellingProps } from '../../core/events.js';
@@ -8,6 +8,7 @@ import { mergeProps } from '../../utils/merge-props.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useFollowAnchor } from '../../utils/use-follow-anchor.js';
 import { useFrameFlag } from '../../utils/use-frame-flag.js';
+import { useLatest } from '../../utils/use-latest.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -35,6 +36,11 @@ export interface CompletionListProps extends BaseProps, AriaLabellingProps {
   isOpen: boolean;
   /** Called when the popover asks to close. */
   onOpenChange?: ((isOpen: boolean) => void) | undefined;
+  /**
+   * Called when the list comes on screen or leaves it. It shows a frame after `isOpen` asks for it,
+   * so an editor inserts an option by key only once this reports `true`.
+   */
+  onShownChange?: ((isShown: boolean) => void) | undefined;
   /** The element the list opens against, such as the editor's frame or a caret marker it places. */
   anchorRef: RefObject<Element | null>;
   items: readonly CompletionListItem[];
@@ -125,21 +131,38 @@ function CompletionOption({
 }
 
 /**
+ * Whether the list is on screen: a frame after it opens with something to show, so focus-driven
+ * scrolling settles first. `onShownChange` hears each change.
+ */
+function useShownList({
+  isOpen,
+  items,
+  renderEmptyState,
+  anchorRef,
+  onShownChange,
+}: CompletionListProps) {
+  const isShown = useFrameFlag(
+    isOpen && (items.length > 0 || Boolean(renderEmptyState)),
+    anchorRef,
+  );
+  const report = useLatest(onShownChange);
+  useLayoutEffect(() => report.current?.(isShown), [report, isShown]);
+  return isShown;
+}
+
+/**
  * A list of completions for an editor that keeps focus and owns the caret: a listbox in a
  * non-modal popover against an anchor, with the active option's documentation and a footer. It
  * draws options only: the editor moves `activeKey`, names the active option in
  * `aria-activedescendant` and calls `onAction`.
  */
 export function CompletionList(props: CompletionListProps) {
-  const { isOpen, onOpenChange, anchorRef, items, activeKey, renderEmptyState, footer } = props;
+  const { onOpenChange, anchorRef, items, activeKey, renderEmptyState, footer } = props;
   const strings = useUiStrings();
   const zIndex = useLayerZIndex('dropdown');
   const generatedId = useId();
   const listId = props.id ?? generatedId;
-  const isShown = useFrameFlag(
-    isOpen && (items.length > 0 || Boolean(renderEmptyState)),
-    anchorRef,
-  );
+  const isShown = useShownList(props);
   // The editor passes new items as the caret moves, which moves the anchor.
   const shouldUpdatePosition = useFollowAnchor({ anchorRef, isOpen: isShown, target: items });
   useActiveCompletion(listId, activeKey, { isOpen: isShown, anchorRef });
@@ -226,6 +249,7 @@ export function ControlCompletionList({
       className={className}
       isOpen={model.isOpen}
       onOpenChange={(open) => (open ? undefined : model.close())}
+      onShownChange={model.setShown}
       anchorRef={anchorRef}
       items={model.options.map((option, index) => ({ ...option, id: index }))}
       activeKey={model.activeIndex}

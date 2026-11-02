@@ -135,6 +135,7 @@ function RichCompletionList({
       className={hooks.slotClass('completions')}
       isOpen={completions.isOpen}
       onOpenChange={(open) => (open ? undefined : completions.close())}
+      onShownChange={completions.setShown}
       anchorRef={rootRef}
       items={completions.matches}
       activeKey={completions.activeItem?.id ?? null}

@@ -47,7 +47,9 @@ describe('CodeEditor completion sources', () => {
     const user = userEvent.setup();
     render(<Editor completions={[{ label: '${literal}' }]} />);
     await user.click(input());
-    await user.keyboard('{Control>} {/Control}{Enter}');
+    await user.keyboard('{Control>} {/Control}');
+    await screen.findByRole('listbox');
+    await user.keyboard('{Enter}');
     expect(marked()).toBe('${literal}|');
   });
 
@@ -145,7 +147,9 @@ describe('CodeEditor completion sources', () => {
     const user = userEvent.setup();
     render(<Editor completions={fruit} initialValue="let a = " />);
     await user.click(input());
-    await user.keyboard('{End}pi{Enter}');
+    await user.keyboard('{End}pi');
+    await screen.findByRole('listbox');
+    await user.keyboard('{Enter}');
     expect(marked()).toBe('let a = pick([fruit], count)');
     await user.keyboard('pear');
     await user.keyboard('{Tab}');
@@ -245,13 +249,17 @@ describe('CodeEditor completion sources', () => {
     const user = userEvent.setup();
     const { rerender } = render(<Editor completions={fruit} />);
     await user.click(input());
-    await user.keyboard('pi{Enter}');
+    await user.keyboard('pi');
+    await screen.findByRole('listbox');
+    await user.keyboard('{Enter}');
     rerender(<Editor completions={fruit} isReadOnly />);
     await user.keyboard('{Tab}');
     expect(input()).not.toHaveFocus();
     rerender(<Editor completions={fruit} />);
     await user.click(input());
-    await user.keyboard('{Control>}a{/Control}{Backspace}pi{Enter}{Escape}{Tab}');
+    await user.keyboard('{Control>}a{/Control}{Backspace}pi');
+    await screen.findByRole('listbox');
+    await user.keyboard('{Enter}{Escape}{Tab}');
     expect(input()).not.toHaveFocus();
   });
 
@@ -272,7 +280,8 @@ describe('CodeEditor completion sources', () => {
     await waitFor(() => expect(screen.getByRole('option', { name: /pick/ })).toBeVisible());
     await user.keyboard('{Enter}');
     expect(input()).toHaveValue('pi');
-    act(() => input().setSelectionRange(1, 1));
+    // At the start no word is completed, so nothing holds Tab back.
+    act(() => input().setSelectionRange(0, 0));
     await user.keyboard('{Tab}');
     expect(input()).not.toHaveFocus();
   });

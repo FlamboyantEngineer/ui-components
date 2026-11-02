@@ -541,6 +541,7 @@ describe('CodeEditor', () => {
     const input = screen.getByRole<HTMLTextAreaElement>('textbox');
     await user.click(input);
     await user.keyboard('{Home}fruit.apr');
+    await screen.findByRole('listbox');
     await user.keyboard('{Enter}');
     expect(input).toHaveValue('fruit.apricot + 1');
     expect(onChange).toHaveBeenLastCalledWith('fruit.apricot + 1');
@@ -549,6 +550,7 @@ describe('CodeEditor', () => {
     await user.keyboard('{End}{Enter}');
     expect(input).toHaveValue('fruit.apricot + 1\n');
     await user.type(input, 'ci');
+    await screen.findByRole('listbox');
     await user.keyboard('{Tab}');
     expect(input).toHaveValue('fruit.apricot + 1\ncity');
   });

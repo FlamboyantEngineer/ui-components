@@ -10,50 +10,33 @@ import {
   type SetStateAction,
 } from 'react';
 import { callSettling, isThenable } from '../../utils/is-thenable.js';
-import { matchCompletions, type Completion } from './completion-match.js';
-import { isShallowEqual } from '../../utils/is-shallow-equal.js';
+import type { Completion } from './completion-match.js';
+import {
+  closed,
+  hideCompletionState,
+  isSameSource,
+  lookUp,
+  toPendingState,
+  toState,
+  type CompletionAnswer,
+  type CompletionRange,
+  type CompletionReason,
+  type Completions,
+  type CompletionState,
+  type Lookup,
+} from './completion-state.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 
-/** What a completion source knows about the place it completes. */
-export interface CompletionContext {
-  value: string;
-  caret: number;
-  /** The word before the caret, as the control reads words. */
-  query: string;
-  /** The reader asked for completions with Ctrl+Space. */
-  isExplicit: boolean;
-}
-
-/** A source's completions, and the text they replace when it is not the word before the caret. */
-export interface CompletionResult {
-  options: readonly Completion[];
-  /** Where the replaced text starts; the typed text from here to the caret filters the options. */
-  from?: number | undefined;
-  /** Where the replaced text ends, at or after the caret. */
-  to?: number | undefined;
-  /** Matches the options against the typed text. Defaults to true; false shows them as given. */
-  filter?: boolean | undefined;
-}
-
-export type CompletionAnswer = readonly Completion[] | CompletionResult;
-
-/** Completes the place at the caret, at once or later. */
-export type CompletionSource = (
-  context: CompletionContext,
-) => CompletionAnswer | Promise<CompletionAnswer>;
-
-/** A vocabulary for the word before the caret, or a source that completes the place at the caret. */
-export type Completions = readonly Completion[] | CompletionSource;
-
-/** The text a completion replaces. */
-export interface CompletionRange {
-  start: number;
-  end: number;
-}
-
-/** Why the completions are looked up: an edit, a caret move or the reader's request. */
-export type CompletionReason = 'input' | 'move' | 'explicit';
+export type {
+  CompletionAnswer,
+  CompletionContext,
+  CompletionRange,
+  CompletionReason,
+  CompletionResult,
+  Completions,
+  CompletionSource,
+} from './completion-state.js';
 
 interface CompletionsOptions {
   completions: Completions | undefined;
@@ -73,6 +56,11 @@ export interface CompletionsModel {
   /** The caret offset the list belongs to. */
   caret: number;
   setActiveIndex(index: number): void;
+  /**
+   * Hears whether the list is on screen, from its `onShownChange`: Enter and Tab insert only an
+   * option the reader can see. It renders nothing.
+   */
+  setShown(isShown: boolean): void;
   apply(option: Completion): void;
   /** Looks the completions up for the caret after it moved. */
   track(reason: CompletionReason): void;
@@ -81,29 +69,24 @@ export interface CompletionsModel {
   close(): void;
   /** Handles Ctrl+Space and, while the list is open, its keys; returns whether the key was used. */
   handleKeyDown(event: KeyboardEvent<HTMLElement>): boolean;
+  /**
+   * Tab while no list shows: shows the completions for the place at the caret without inserting
+   * one, or waits for an answer already on its way. Returns whether the key was used; when there
+   * is nothing to show, Tab is left to move focus.
+   */
+  revealOnTab(event: KeyboardEvent<HTMLElement>): boolean;
   /** Follows the caret after a navigation key the list did not use. */
   handleKeyUp(event: KeyboardEvent<HTMLElement>): void;
-}
-
-interface CompletionState extends CompletionRange {
-  caret: number;
-  options: readonly Completion[];
-  activeIndex: number;
-  isOpen: boolean;
-  revision: number;
-}
-
-interface Lookup {
-  value: string;
-  caret: number;
-  query: string;
-  reason: CompletionReason;
 }
 
 interface CompletionSession {
   state: CompletionState;
   setState: Dispatch<SetStateAction<CompletionState>>;
   requestRef: RefObject<number>;
+  /** The request whose answer is on its way, or 0. */
+  pendingRef: RefObject<number>;
+  /** The list reports itself on screen. */
+  shownRef: RefObject<boolean>;
   /** The lookup the pending answer or open list belongs to, or null while there is neither. */
   lookup: RefObject<Lookup | null>;
   /** The source that lookup asked. */
@@ -113,83 +96,12 @@ interface CompletionSession {
 
 const navigationKeys = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End']);
 
-const closed: CompletionState = {
-  start: 0,
-  end: 0,
-  caret: 0,
-  options: [],
-  activeIndex: 0,
-  isOpen: false,
-  revision: 0,
-};
-
 function step(index: number, delta: number, count: number): number {
   return (index + delta + count) % count;
 }
 
 function isExplicitRequest(event: KeyboardEvent<HTMLElement>): boolean {
   return event.ctrlKey && !event.metaKey && !event.altKey && event.key === ' ';
-}
-
-/** The options an answer shows: filtered by the typed text, and none for a bare caret move. */
-function toState(answer: CompletionAnswer, lookup: Lookup, revision: number): CompletionState {
-  const result: CompletionResult = 'options' in answer ? answer : { options: answer };
-  const start = result.from ?? lookup.caret - lookup.query.length;
-  const end = Math.max(result.to ?? lookup.caret, lookup.caret);
-  const typed = lookup.value.slice(start, lookup.caret);
-  const matched =
-    result.filter === false ? [...result.options] : matchCompletions(result.options, typed);
-  const options = lookup.reason === 'move' && !typed ? [] : matched;
-  const { caret } = lookup;
-  return { start, end, caret, options, activeIndex: 0, isOpen: options.length > 0, revision };
-}
-
-/** What to look up: a list completes a typed word (any word when asked); a source decides itself. */
-function lookUp(completions: Completions, lookup: Lookup) {
-  if (typeof completions === 'function') {
-    const { value, caret, query } = lookup;
-    return completions({ value, caret, query, isExplicit: lookup.reason === 'explicit' });
-  }
-  return lookup.query || lookup.reason === 'explicit' ? completions : [];
-}
-
-function hideCompletionState(state: CompletionState): CompletionState {
-  return state.isOpen ? { ...state, isOpen: false } : state;
-}
-
-/**
- * The open list while a source's answer to an edit is pending: it stays open, narrowed to the
- * options that still match the typed text, with its range following the caret, so it does not
- * blink shut on every keystroke. A caret move, or an edit before the list's start, hides it.
- */
-function toPendingState(state: CompletionState, lookup: Lookup): CompletionState {
-  if (!state.isOpen || lookup.reason === 'move' || lookup.caret < state.start) {
-    return hideCompletionState(state);
-  }
-  const options = matchCompletions(state.options, lookup.value.slice(state.start, lookup.caret));
-  const active = options.indexOf(state.options[state.activeIndex] as Completion);
-  return {
-    ...state,
-    end: lookup.caret + Math.max(state.end - state.caret, 0),
-    caret: lookup.caret,
-    options,
-    activeIndex: Math.max(active, 0),
-    isOpen: options.length > 0,
-    revision: state.revision + 1,
-  };
-}
-
-/**
- * Whether two sources are the same: the same source function, or vocabularies listing equal
- * completions in the same order, as an inline list written again on each render does.
- */
-function isSameSource(left: Completions | undefined, right: Completions | undefined): boolean {
-  if (left === right) return true;
-  if (!left || !right || typeof left === 'function' || typeof right === 'function') return false;
-  return (
-    left.length === right.length &&
-    left.every((completion, index) => isShallowEqual(completion, right[index]))
-  );
 }
 
 /** Whether the control still holds the text the session completes. */
@@ -206,11 +118,13 @@ function hasSessionSource(session: CompletionSession): boolean {
 function useCompletionState(options: CompletionsOptions) {
   const [state, setState] = useState<CompletionState>(closed);
   const requestRef = useRef(0);
+  const pendingRef = useRef(0);
+  const shownRef = useRef(false);
   const lookup = useRef<Lookup | null>(null);
   const source = useRef<Completions | undefined>(undefined);
   // Every commit: callers pass a fresh options object each render.
   const latest = useLatest({ state, options });
-  const session = { state, setState, requestRef, lookup, source, latest };
+  const session = { state, setState, requestRef, pendingRef, shownRef, lookup, source, latest };
   const isLocked = options.isLocked || options.completions === undefined;
   // Locking hides the list in the same render; the effect drops the session's pending request.
   const [wasLocked, setWasLocked] = useState(isLocked);
@@ -243,6 +157,7 @@ function useCompletionState(options: CompletionsOptions) {
 
 function closeCompletions(session: CompletionSession) {
   session.requestRef.current += 1;
+  session.pendingRef.current = 0;
   session.lookup.current = null;
   session.latest.current.state = hideCompletionState(session.latest.current.state);
   session.setState(hideCompletionState);
@@ -267,39 +182,81 @@ function applyCompletion(session: CompletionSession, option: Completion) {
   }
 }
 
+function markShown(session: CompletionSession, isShown: boolean) {
+  session.shownRef.current = isShown;
+}
+
+/** What a lookup came to: options to show, nothing, or an answer still on its way. */
+type LookupOutcome = 'options' | 'none' | 'pending';
+
 /**
  * Asks the control's source for `lookup` and shows only that answer, while the control still holds
  * the text it was looked up for and has not changed source. A list another source answered never
  * stays open while the new source answers, so its options cannot be shown or inserted.
  */
-function askSource(session: CompletionSession, lookup: Lookup, isNewSource: boolean) {
+function askSource(
+  session: CompletionSession,
+  lookup: Lookup,
+  isNewSource: boolean,
+): LookupOutcome {
   const { completions } = session.latest.current.options;
-  if (!completions) return;
+  if (!completions) return 'none';
   const id = (session.requestRef.current += 1);
   session.lookup.current = lookup;
   session.source.current = completions;
-  const show = (answer: CompletionAnswer) => {
-    if (id !== session.requestRef.current || session.latest.current.options.isLocked) return;
-    if (!holdsSessionText(session) || !hasSessionSource(session)) return closeCompletions(session);
-    session.setState((state) => toState(answer, lookup, state.revision + 1));
+  const show = (answer: CompletionAnswer): LookupOutcome => {
+    if (id !== session.requestRef.current || session.latest.current.options.isLocked) return 'none';
+    session.pendingRef.current = 0;
+    if (!holdsSessionText(session) || !hasSessionSource(session)) {
+      closeCompletions(session);
+      return 'none';
+    }
+    const next = toState(answer, lookup, 0);
+    session.setState((state) => ({ ...next, revision: state.revision + 1 }));
+    return next.isOpen ? 'options' : 'none';
   };
   // A source that throws is a source that rejects: the lookup is dropped quietly.
   const answer = callSettling(() => lookUp(completions, lookup));
   if (!isThenable(answer)) return show(answer);
+  session.pendingRef.current = id;
   session.setState((state) =>
     isNewSource ? hideCompletionState(state) : toPendingState(state, lookup),
   );
-  answer.then(show, () => undefined);
+  answer.then(show, () => {
+    if (session.pendingRef.current === id) session.pendingRef.current = 0;
+  });
+  return 'pending';
 }
 
-function trackCompletions(session: CompletionSession, reason: CompletionReason) {
+function trackCompletions(session: CompletionSession, reason: CompletionReason): LookupOutcome {
   const current = session.latest.current.options;
   const input = current.inputRef.current;
-  if (!input || !current.completions || current.isLocked) return;
+  if (!input || !current.completions || current.isLocked) return 'none';
   // Inputs without a caret (such as `email`) report none; complete at the end.
   const caret = input.selectionStart ?? input.value.length;
   const query = current.findQuery(input.value, caret);
-  askSource(session, { value: input.value, caret, query, reason }, false);
+  return askSource(session, { value: input.value, caret, query, reason }, false);
+}
+
+/** Tab alone, as an input method does not own it. */
+function isPlainTab(event: KeyboardEvent<HTMLElement>): boolean {
+  const { shiftKey, ctrlKey, metaKey, altKey } = event;
+  return event.key === 'Tab' && !shiftKey && !ctrlKey && !metaKey && !altKey;
+}
+
+/**
+ * Tab with no list on screen: an answer on its way keeps Tab and shows when it comes; otherwise the
+ * place at the caret is looked up as after an edit, and Tab is kept only when that shows options.
+ * Either way nothing is inserted: inserting takes another Tab once the list is on screen.
+ */
+function revealCompletions(session: CompletionSession, event: KeyboardEvent<HTMLElement>) {
+  const { options } = session.latest.current;
+  if (!isPlainTab(event) || isComposingKey(event.nativeEvent) || options.isLocked) return false;
+  const isPending = session.pendingRef.current !== 0;
+  if (!isPending && trackCompletions(session, 'input') !== 'options') return false;
+  event.preventDefault();
+  event.stopPropagation();
+  return true;
 }
 
 /**
@@ -311,17 +268,26 @@ function trackCompletions(session: CompletionSession, reason: CompletionReason) 
 export function useCompletions(options: CompletionsOptions): CompletionsModel {
   const { completions, isLocked } = options;
   const session = useCompletionState(options);
-  const { state, setState, requestRef } = session;
+  const { state, setState } = session;
   const usedKey = useRef<string | null>(null);
   const isOpen = state.isOpen && !isLocked && completions !== undefined;
   const close = () => closeCompletions(session);
   const setActiveIndex = (index: number) =>
     setState((current) => ({ ...current, activeIndex: index }));
   const apply = (option: Completion) => applyCompletion(session, option);
-  const track = (reason: CompletionReason) => trackCompletions(session, reason);
+  const track = (reason: CompletionReason) => {
+    trackCompletions(session, reason);
+  };
 
-  /** The list's own keys while it is open; returns whether the key was used. */
+  /**
+   * The list's own keys while it is open; returns whether the key was used. Until the list is on
+   * screen, Enter and Tab wait for it, so neither inserts an option the reader has not seen.
+   */
   const choose = (key: string, shiftKey: boolean): boolean => {
+    if (!session.shownRef.current) {
+      if (key === 'Escape') close();
+      return key === 'Escape' || key === 'Enter' || (key === 'Tab' && !shiftKey);
+    }
     const option = state.options[state.activeIndex];
     const count = state.options.length;
     if (key === 'ArrowDown') setActiveIndex(step(state.activeIndex, 1, count));
@@ -336,7 +302,7 @@ export function useCompletions(options: CompletionsOptions): CompletionsModel {
     // Keys an input method owns, its confirming Enter included, never accept or dismiss.
     if (isComposingKey(event.nativeEvent)) return false;
     // Escape also drops a lookup that has not answered yet.
-    if (!isOpen && event.key === 'Escape') requestRef.current += 1;
+    if (!isOpen && event.key === 'Escape') close();
     const isRequest = isExplicitRequest(event) && Boolean(completions) && !isLocked;
     if (isRequest) track('explicit');
     else if (!isOpen || !choose(event.key, event.shiftKey)) return false;
@@ -352,11 +318,13 @@ export function useCompletions(options: CompletionsOptions): CompletionsModel {
     activeIndex: state.activeIndex,
     caret: state.caret,
     setActiveIndex,
+    setShown: (shown) => markShown(session, shown),
     apply,
     track,
     reposition: () => setState((current) => ({ ...current, revision: current.revision + 1 })),
     close,
     handleKeyDown,
+    revealOnTab: (event) => revealCompletions(session, event),
     handleKeyUp(event) {
       const used = usedKey.current === event.key;
       usedKey.current = null;

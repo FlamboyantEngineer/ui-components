@@ -58,10 +58,11 @@ function Notes({
           model.track('input');
         }}
         onKeyDown={(event) => {
-          if (!model.handleKeyDown(event)) onKeyDown?.();
+          if (!model.handleKeyDown(event) && !model.revealOnTab(event)) onKeyDown?.();
         }}
         onBlur={() => model.close()}
       />
+      <button type="button">Next</button>
       <ControlCompletionList
         model={model}
         listId={listId}
@@ -344,7 +345,9 @@ describe('Completions engine', () => {
     Object.defineProperty(document, 'execCommand', { configurable: true, value: execCommand });
     render(<Notes completions={fruit} />);
     await user.click(input());
-    await user.keyboard('ba{Enter}');
+    await user.keyboard('ba');
+    await screen.findByRole('listbox');
+    await user.keyboard('{Enter}');
     expect(execCommand).toHaveBeenCalledWith('insertText', false, 'banana');
     expect(input()).toHaveValue('banana');
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
@@ -375,6 +378,75 @@ describe('Completions engine', () => {
       expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     },
   );
+
+  it('UIC-COMPLETION-LIST-2.8 inserts by key only an option on screen', async () => {
+    const user = userEvent.setup();
+    render(<Notes completions={fruit} />);
+    await user.click(input());
+    // Typed in one go, the Enter comes before the list has shown: it waits instead of inserting.
+    await user.keyboard('ba{Enter}');
+    expect(input()).toHaveValue('ba');
+    expect(input()).toHaveFocus();
+    expect(await screen.findByRole('option', { name: 'banana' })).toBeVisible();
+    expect(input()).toHaveAttribute('aria-activedescendant');
+    await user.keyboard('{Tab}');
+    expect(input()).toHaveValue('banana');
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+  });
+
+  it('UIC-COMPLETION-LIST-2.8 shows hidden completions on Tab and inserts on the next Tab', async () => {
+    const user = userEvent.setup();
+    render(<Notes completions={fruit} />);
+    await user.click(input());
+    await user.keyboard('ap');
+    await screen.findByRole('listbox');
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    expect(input()).not.toHaveAttribute('aria-activedescendant');
+    await user.keyboard('{Tab}');
+    expect(input()).toHaveFocus();
+    expect(input()).toHaveValue('ap');
+    await waitFor(() => expect(optionTexts()).toEqual(['apple', 'apricot']));
+    await user.keyboard('{Tab}');
+    expect(input()).toHaveValue('apple pie');
+    // Nothing completes the word now, so Tab moves focus.
+    await user.keyboard('{Tab}');
+    expect(screen.getByRole('button', { name: 'Next' })).toHaveFocus();
+  });
+
+  it('UIC-COMPLETION-LIST-2.8 leaves Shift+Tab and Tab with nothing to complete to focus', async () => {
+    const user = userEvent.setup();
+    render(<Notes completions={fruit} />);
+    await user.click(input());
+    await user.keyboard('ap');
+    await screen.findByRole('listbox');
+    await user.keyboard('{Escape}{Shift>}{Tab}{/Shift}');
+    expect(input()).not.toHaveFocus();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    await user.click(input());
+    await user.keyboard('{Control>}a{/Control}{Backspace}zz{Tab}');
+    expect(screen.getByRole('button', { name: 'Next' })).toHaveFocus();
+  });
+
+  it('UIC-COMPLETION-LIST-2.8 holds Tab for a pending answer, and Escape drops it', async () => {
+    const user = userEvent.setup();
+    const answers: Array<(options: Completion[]) => void> = [];
+    const source: CompletionSource = () =>
+      new Promise<Completion[]>((resolve) => answers.push(resolve));
+    render(<Notes completions={source} />);
+    await user.click(input());
+    await user.keyboard('a{Tab}');
+    expect(input()).toHaveFocus();
+    await act(async () => answers.at(-1)?.(fruit));
+    await waitFor(() => expect(optionTexts()).toEqual(['apple', 'apricot']));
+    expect(input()).toHaveValue('a');
+    await user.keyboard('{Escape}b{Escape}');
+    await act(async () => answers.at(-1)?.([{ label: 'abacus' }]));
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    // A source that answers later is asked by typing, not by Tab: with nothing pending, Tab leaves.
+    await user.keyboard('{Tab}');
+    expect(screen.getByRole('button', { name: 'Next' })).toHaveFocus();
+  });
 
   it('UIC-COMPLETION-LIST-2.4 inserts a pressed completion into an email field', async () => {
     const user = userEvent.setup();

@@ -191,7 +191,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Suggestion shapes"
-      description="Type in each query: short names with a kind tag and a description, long names that wrap while long descriptions truncate, a source that answers after a second (the list keeps its narrowed options until the answer comes), and a source with no matches, which opens no list."
+      description="Type in each query: short names with a kind tag and a description, long names that wrap while long descriptions truncate, a source that answers after a second (the list keeps its narrowed options until the answer comes, and a Tab pressed meanwhile waits for it instead of leaving), and a source with no matches, which opens no list and leaves Tab to move on."
     >
       <StateMatrix
         axes={{ suggestions: shapes }}
@@ -209,7 +209,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Completing and submitting"
-      description="Type a field name for its completions, then a colon for its values. Enter, when no completion is open, or the run button submits a query without errors."
+      description="Type a field name for its completions, then a colon for its values. Suggestions are inserted only from a list on screen: after Escape, or before a list has shown, the first Tab shows it and the next Tab inserts the active suggestion; Tab with nothing to suggest moves on. Enter, when no completion is open, or the run button submits a query without errors."
     >
       <SubmitDemo />
     </LabSection>
