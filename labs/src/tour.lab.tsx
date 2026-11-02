@@ -149,6 +149,50 @@ function GuidedPage() {
   );
 }
 
+/**
+ * An uncontrolled step that starts at the third step, Your recipes, each time the tour opens;
+ * Back and Next walk from there, and the log lists the steps moved to and each opening.
+ */
+function LaterStart() {
+  const [isOpen, setOpen] = useState(false);
+  const [log, setLog] = useState<string[]>([]);
+  const add = (entry: string) => setLog((list) => [...list, entry]);
+  return (
+    <div>
+      <p>
+        <Button
+          onPress={() => {
+            add('opened');
+            setOpen(true);
+          }}
+          data-lab-start="later"
+        >
+          Start at the list
+        </Button>{' '}
+        Log: <output data-lab-output="later-log">{log.join(', ') || 'none'}</output>
+      </p>
+      <RecipePage name="later" />
+      <Tour
+        steps={pageSteps.map((step) => ({
+          ...step,
+          target:
+            typeof step.target === 'string'
+              ? `[data-lab-page="later"] ${step.target}`
+              : step.target,
+        }))}
+        defaultStep={2}
+        isOpen={isOpen}
+        onOpenChange={(open) => {
+          setOpen(open);
+          if (!open) add('closed');
+        }}
+        onStepChange={(step) => add(`step ${String(step + 1)}`)}
+        data-lab-tour="later"
+      />
+    </div>
+  );
+}
+
 const rememberedKey = 'lab.tour.remembered';
 
 function HighlightTransitions() {
@@ -342,6 +386,12 @@ mountLab(
       description="Position and size animate only between two highlights. The first highlight and changes to or from a centred step without a highlight appear immediately. Try Next and Back, then scroll or resize the page to follow the target."
     >
       <HighlightTransitions />
+    </LabSection>
+    <LabSection
+      title="Starting at a later step"
+      description="defaultStep 2 opens the uncontrolled tour at its third step, Your recipes, with its progress; Back and Next move from there, and closing it (Finish, Skip or Escape) returns it to that step for the next opening."
+    >
+      <LaterStart />
     </LabSection>
   </>,
 );

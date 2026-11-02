@@ -58,6 +58,21 @@ function readTravel(
   );
 }
 
+/**
+ * Clears a text selection that touches the toast: a press on text that a drag across the swipe's
+ * axis left selected would start a native drag and drop, which takes the pointer from the swipe.
+ */
+function clearSelectionIn(element: HTMLElement) {
+  const selection = element.ownerDocument.getSelection();
+  if (!selection || selection.isCollapsed) return;
+  for (let index = 0; index < selection.rangeCount; index += 1) {
+    if (selection.getRangeAt(index).intersectsNode(element)) {
+      selection.removeAllRanges();
+      return;
+    }
+  }
+}
+
 /** Swallows the click that follows a swipe, so ending a swipe on a button does not press it. */
 function swallowNextClick(element: HTMLElement) {
   const swallow = (event: MouseEvent) => {
@@ -82,12 +97,15 @@ export function useToastSwipe({ direction, threshold, onDismiss }: ToastSwipeOpt
     { x: number; y: number; scale: ElementScale; isSwiping: boolean }
   >({
     capture: false,
-    onStart: (event) => ({
-      x: event.clientX,
-      y: event.clientY,
-      scale: measureScale(event.currentTarget),
-      isSwiping: false,
-    }),
+    onStart: (event) => {
+      clearSelectionIn(event.currentTarget);
+      return {
+        x: event.clientX,
+        y: event.clientY,
+        scale: measureScale(event.currentTarget),
+        isSwiping: false,
+      };
+    },
     onMove: (event, current) => {
       const distance = readTravel(direction, event, current);
       if (!current.isSwiping && Math.abs(distance) < swipeSlop) return;

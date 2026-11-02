@@ -927,6 +927,26 @@ describe('Toast updates and motion', () => {
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
 
+  it('UIC-TOAST-4.2 clears text a cross-axis drag selected when the next swipe starts', () => {
+    const queue = createToastQueue({ defaultTimeout: 0 });
+    render(<ToastRegion queue={queue} swipeDirection="up" />);
+    act(() => {
+      queue.add({ title: 'Crate packed' });
+    });
+    const toast = screen.getByRole('alertdialog', { name: 'Crate packed' });
+    // A sideways drag on an upward toast selects its text instead of swiping it.
+    const selection = document.getSelection();
+    selection?.selectAllChildren(within(toast).getByText('Crate packed'));
+    expect(selection?.isCollapsed).toBe(false);
+    pointer('pointerDown', toast, { clientX: 20, clientY: 100 });
+    // A press on selected text would start a native drag and drop, so the swipe clears it.
+    expect(selection?.isCollapsed).toBe(true);
+    pointer('pointerMove', toast, { clientX: 20, clientY: 60 });
+    expect(toast).toHaveAttribute('data-swiping', 'true');
+    pointer('pointerUp', toast, { clientX: 20, clientY: 40 });
+    expect(screen.queryByRole('alertdialog', { name: 'Crate packed' })).not.toBeInTheDocument();
+  });
+
   it.each([
     ['en-US', 'end', 'right', '30px', 230],
     ['ar-EG', 'end', 'left', '-30px', 170],

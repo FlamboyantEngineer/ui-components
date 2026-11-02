@@ -8,6 +8,7 @@ import {
 import type { Key } from '../../src/core/props.js';
 import { requireDefined } from './require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { TransitionMenuFailureSections } from './transition-menu-failure-cases.js';
 
 const states: TransitionMenuState[] = [
   { id: 'draft', label: 'Draft' },
@@ -115,5 +116,6 @@ mountLab(
     >
       <DocumentState />
     </LabSection>
+    <TransitionMenuFailureSections />
   </>,
 );

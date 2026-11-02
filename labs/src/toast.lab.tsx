@@ -13,6 +13,7 @@ import {
   type ToastTone,
 } from '../../src/components/toast/toast.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { ToastCoverageSections } from './toast-coverage-cases.js';
 
 const tones: ToastTone[] = ['info', 'success', 'warning', 'danger'];
 const contents = ['title', 'description', 'action', 'custom icon'] as const;
@@ -409,5 +410,6 @@ mountLab(
     >
       <OverlayDemo />
     </LabSection>
+    <ToastCoverageSections />
   </>,
 );

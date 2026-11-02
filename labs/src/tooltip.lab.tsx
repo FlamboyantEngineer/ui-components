@@ -5,6 +5,7 @@ import { Icon } from '../../src/components/icon/icon.js';
 import { Tooltip, type TooltipVariant } from '../../src/components/tooltip/tooltip.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { AnchoredTooltipCases } from './tooltip-anchored-cases.js';
+import { TooltipTimingSections } from './tooltip-timing-cases.js';
 
 const variants: TooltipVariant[] = ['default', 'info'];
 const placements = ['top', 'bottom', 'start', 'end'] as const;
@@ -181,5 +182,6 @@ mountLab(
     >
       <AnchoredTooltipCases />
     </LabSection>
+    <TooltipTimingSections />
   </>,
 );
