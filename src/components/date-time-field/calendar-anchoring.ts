@@ -1,0 +1,47 @@
+'use client';
+
+import { useContext, useRef, type RefObject } from 'react';
+import {
+  OverlayTriggerStateContext,
+  PopoverContext,
+  useInteractOutside,
+  useSlottedContext,
+} from '../../primitives/index.js';
+import { isElement } from '../../utils/is-element.js';
+import { useFollowAnchor } from '../../utils/use-follow-anchor.js';
+import { usePageScrollGuard } from '../../utils/use-page-scroll-guard.js';
+
+const noTrigger: RefObject<Element | null> = { current: null };
+
+/**
+ * Keeps the calendar's nonmodal popover open while the page scrolls under it, following its group,
+ * and closes it on a press outside it, its group and any popover it opened (the heading's month and
+ * year lists), as a modal popover would. React Aria's own nonmodal popover takes no outside press
+ * and closes on any scroll. Returns the popover's ref, open state and position option.
+ */
+export function useCalendarAnchoring() {
+  const state = useContext(OverlayTriggerStateContext);
+  const triggerRef = useSlottedContext(PopoverContext)?.triggerRef ?? noTrigger;
+  const surface = useRef<HTMLElement>(null);
+  const isOpen = state?.isOpen ?? false;
+  const isPageScrolling = usePageScrollGuard(isOpen, triggerRef);
+  const shouldUpdatePosition = useFollowAnchor({ anchorRef: triggerRef, isOpen });
+  useInteractOutside({
+    ref: surface,
+    isDisabled: !isOpen,
+    onInteractOutside: (event) => {
+      const target = event.target;
+      if (!isElement(target)) return;
+      if (triggerRef.current?.contains(target) || target.closest('[data-trigger]')) return;
+      state?.close();
+    },
+  });
+  return {
+    ref: surface,
+    isOpen,
+    onOpenChange: (open: boolean) => {
+      if (open || !isPageScrolling()) state?.setOpen(open);
+    },
+    shouldUpdatePosition,
+  };
+}

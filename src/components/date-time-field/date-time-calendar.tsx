@@ -26,6 +26,7 @@ import type { DateControlSettings } from './date-time-pickers.js';
 import { currentDateValue, type DateFieldValue, type DateTimeFieldMode } from './date-values.js';
 import { DEFAULT_DROPDOWN_OFFSET, DEFAULT_OVERLAY_GUTTER } from '../../utils/overlay-defaults.js';
 import { dateTimeFieldHooks as hooks } from './date-time-field-hooks.js';
+import { useCalendarAnchoring } from './calendar-anchoring.js';
 
 /** A named value offered beside the calendar, such as `Last 7 days`. */
 export interface DateTimeFieldPreset<V> {
@@ -223,15 +224,18 @@ function DateActions({ mode, settings, onPick }: Omit<CalendarPopoverProps, 'chi
 }
 
 /**
- * The picker's popover on the `dropdown` layer: a dialog holding the presets, the calendar and the
- * actions.
+ * The picker's nonmodal popover on the `dropdown` layer: a dialog holding the presets, the calendar
+ * and the actions. The page stays scrollable under it while it follows its group.
  */
 export function CalendarPopover({ mode, settings, onPick, children }: CalendarPopoverProps) {
   const zIndex = useLayerZIndex('dropdown');
+  const anchoring = useCalendarAnchoring();
   return (
     <>
       <PopoverPresence />
       <Popover
+        {...anchoring}
+        isNonModal
         {...hooks.slot('popover', { layer: 'dropdown' })}
         offset={DEFAULT_DROPDOWN_OFFSET}
         containerPadding={DEFAULT_OVERLAY_GUTTER}
