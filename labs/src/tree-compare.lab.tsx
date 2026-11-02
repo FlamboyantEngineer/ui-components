@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Badge } from '../../src/components/badge/badge.js';
 import { Button } from '../../src/components/button/button.js';
+import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { TreeCompare } from '../../src/components/tree-compare/tree-compare.js';
 import type { Key } from '../../src/core/props.js';
 import type { CompareTreeNode } from '../../src/utils/compare-trees.js';
@@ -203,6 +204,71 @@ function ProductStructure() {
   );
 }
 
+const starts = {
+  changed: { label: 'Paths to changes (default)', keys: undefined },
+  none: { label: 'All collapsed', keys: [] },
+  some: { label: 'Wheels and Level 0', keys: ['wheels', 'level-0'] },
+} as const satisfies Record<string, { label: string; keys: readonly Key[] | undefined }>;
+
+type StartChoice = keyof typeof starts;
+
+const isStartChoice = (value: unknown): value is StartChoice =>
+  typeof value === 'string' && Object.hasOwn(starts, value);
+
+/** The parts and a nested branch in one comparison, so a starting set can open both. */
+const startLeft: CompareTreeNode[] = [...BIKE_A, ...nestedBefore];
+const startRight: CompareTreeNode[] = [...BIKE_B, ...nestedAfter];
+
+/**
+ * The starting expansion of an uncontrolled comparison (`defaultExpandedKeys`): every row closed,
+ * or a chosen subset, instead of the paths to changes. The reader expands and collapses from there;
+ * Start again remounts the comparison at the chosen set.
+ */
+function StartingExpansion() {
+  const [start, setStart] = useState<StartChoice>('none');
+  const [mount, setMount] = useState(0);
+  const [expanded, setExpanded] = useState<string>('not changed yet');
+  return (
+    <div data-lab-demo="starting-expansion">
+      <SegmentedChoice
+        aria-label="Start with"
+        size="sm"
+        sizing="content"
+        options={Object.entries(starts).map(([value, { label }]) => ({ value, label }))}
+        value={start}
+        onChange={(value) => {
+          if (!isStartChoice(value)) return;
+          setStart(value);
+          setExpanded('not changed yet');
+        }}
+      />
+      <Button
+        size="sm"
+        variant="secondary"
+        onPress={() => {
+          setMount(mount + 1);
+          setExpanded('not changed yet');
+        }}
+      >
+        Start again
+      </Button>
+      <TreeCompare
+        key={`${start}-${mount}`}
+        aria-label="Bicycle and nested levels, starting expansion"
+        left={startLeft}
+        right={startRight}
+        leftLabel="Earlier"
+        rightLabel="Later"
+        defaultExpandedKeys={starts[start].keys}
+        onExpandedChange={(keys) => setExpanded([...keys].map(String).join(', ') || 'none')}
+      />
+      <p>
+        Expanded: <output data-lab-output="expanded">{expanded}</output>
+      </p>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -232,6 +298,12 @@ mountLab(
       description="The expansion controlled from outside with expand all and collapse all. The hub and the headset moved; follow a moved row's arrow button to its other position."
     >
       <ProductStructure />
+    </LabSection>
+    <LabSection
+      title="Starting expansion"
+      description="defaultExpandedKeys sets which rows an uncontrolled comparison opens with: every row closed with an empty set, or Wheels and Level 0 only, rather than the paths to each change. Expand and collapse rows from there; Start again remounts it at the chosen set."
+    >
+      <StartingExpansion />
     </LabSection>
     <LabSection
       title="Nested changes"
