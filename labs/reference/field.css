@@ -301,3 +301,8 @@
 .ui-fieldset[data-disabled] {
   border-style: dashed;
 }
+
+/* The help the menu's Help shows: as wide as a short paragraph, so long help wraps. */
+.ui-field__help-tooltip {
+  max-width: 280px;
+}

@@ -107,6 +107,7 @@ const layoutKeys = new Set<string>([
   'messageDisplay',
   'description',
   'help',
+  'showHelpButton',
   'decoration',
   'menu',
   'onMenuAction',

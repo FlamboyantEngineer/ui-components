@@ -530,4 +530,64 @@ test.describe('Field lab', () => {
       await expect(control, name).toBeFocused();
     }
   });
+
+  test('UIC-FIELD-6.5 opens the help from the menu, with or without the help button', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('field');
+    const area = page.locator('[data-lab-help-menu]');
+    const tooltip = page.locator('.ui-field__help-tooltip');
+    const variety = area.getByRole('textbox', { name: 'Variety', exact: true });
+    // Pointer: the tooltip points at the help button and stays as focus comes back.
+    await variety.click({ button: 'right' });
+    await page.getByRole('menuitem', { name: 'Help' }).click();
+    await expect(tooltip).toHaveText('Use the name on the label.');
+    await expect(variety).toBeFocused();
+    await page.waitForTimeout(300);
+    await expect(tooltip).toBeVisible();
+    const button = await area.getByRole('button', { name: 'Help for Variety' }).boundingBox();
+    const tip = await tooltip.boundingBox();
+    expect(
+      Math.abs(
+        (tip?.x ?? 0) + (tip?.width ?? 0) / 2 - ((button?.x ?? 0) + (button?.width ?? 0) / 2),
+      ),
+    ).toBeLessThan(4);
+    await page.keyboard.press('Escape');
+    await expect(tooltip).toHaveCount(0);
+    await expect(variety).toHaveValue('Comice');
+
+    // Keyboard, without a help button: the tooltip sits against the control.
+    const grower = area.getByRole('textbox', { name: 'Grower', exact: true });
+    await expect(area.getByRole('button', { name: 'Help for Grower' })).toHaveCount(0);
+    await expect(grower).toHaveAccessibleDescription('Use the name on the label.');
+    await grower.focus();
+    await page.keyboard.press('Shift+F10');
+    await page.getByRole('menuitem', { name: 'Help' }).focus();
+    await page.keyboard.press('Enter');
+    await expect(tooltip).toBeVisible();
+    const control = await grower.boundingBox();
+    const below = await tooltip.boundingBox();
+    expect(below?.y ?? 0).toBeGreaterThanOrEqual((control?.y ?? 0) + (control?.height ?? 0) - 1);
+    await page.keyboard.press('Tab');
+    await expect(tooltip).toHaveCount(0);
+
+    // Read-only fields and number fields offer it too; changed help shows, removed help goes.
+    const orchard = area.getByRole('textbox', { name: 'Orchard', exact: true });
+    await orchard.click({ button: 'right' });
+    await page.getByRole('menuitem', { name: 'Help' }).click();
+    await expect(tooltip).toBeVisible();
+    await area.getByRole('button', { name: 'Change the help' }).click();
+    const crates = area.getByRole('textbox', { name: 'Crates', exact: true });
+    await crates.click({ button: 'right' });
+    await page.getByRole('menuitem', { name: 'Help' }).click();
+    await expect(tooltip).toHaveText('Use the name printed on the crate.');
+    await area.getByRole('button', { name: 'Remove the help' }).click();
+    await expect(tooltip).toHaveCount(0);
+    await crates.click({ button: 'right' });
+    await expect(page.getByRole('menuitem', { name: 'Help' })).toHaveCount(0);
+    await expect(page.getByRole('menuitem', { name: 'Reset' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await lab.expectAccessible();
+  });
 });
