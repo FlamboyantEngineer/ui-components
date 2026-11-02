@@ -293,7 +293,7 @@ export function useTranscript({ children, ...options }: TranscriptOptions): Tran
     announcement: announcer.text,
     navigation: createNavigation(runtime, latest, options.onEscape),
     onScroll() {
-      runtime.keeper.classify();
+      runtime.keeper.scrolled();
       syncWithScroll(runtime, latest.current);
       focusAfterPaging(runtime);
     },

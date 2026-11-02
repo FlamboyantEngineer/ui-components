@@ -36,6 +36,13 @@ export interface ScrollKeeper {
   settle(): void;
   /** Reads the hold back from the scroll position after the reader or the keeper scrolled. */
   classify(): void;
+  /**
+   * Handles a scroll event. One that finds the view where the keeper last left it is the keeper's
+   * own scroll, heard late: content may have grown since, so the hold is applied again rather than
+   * read back from a view that no longer sits at the bottom. Any other is the reader's, or the
+   * host's, and moves the hold.
+   */
+  scrolled(): void;
   /** Holds the view at the bottom, following new content. */
   holdBottom(): void;
   /** Anchors a message at the top of the view while what follows it fills in below. */
@@ -162,6 +169,11 @@ export function createScrollKeeper(sources: ScrollKeeperSources): ScrollKeeper {
     snapshot: () => snapshot,
     settle,
     classify,
+    scrolled() {
+      const top = sources.viewport()?.scrollTop;
+      if (known !== null && top !== undefined && Math.abs(top - known) <= 1) settle();
+      else classify();
+    },
     holdBottom() {
       hold = 'bottom';
       settle();
