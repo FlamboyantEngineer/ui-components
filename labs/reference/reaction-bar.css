@@ -44,3 +44,47 @@
 .ui-reaction-bar__add {
   color: var(--ref-muted);
 }
+
+/* Summary: one small chip with the emoji stacked, each on a disc that overlaps the one before. */
+.ui-reaction-bar__summary {
+  gap: 4px;
+  min-height: 20px;
+  padding: 1px 6px 1px 3px;
+  border-radius: var(--ref-radius-full);
+  background: var(--ref-raised);
+  box-shadow: var(--ref-shadow);
+  font-size: var(--ref-font-size-sm);
+  line-height: 1;
+}
+
+.ui-reaction-bar__summary[data-reacted] {
+  border-color: var(--ref-accent);
+}
+
+.ui-reaction-bar__summary[aria-disabled='true'] {
+  cursor: default;
+}
+
+.ui-reaction-bar__stack {
+  display: inline-flex;
+  align-items: center;
+}
+
+.ui-reaction-bar__stack > .ui-reaction-bar__emoji {
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--ref-radius-full);
+  background: var(--ref-raised);
+  box-shadow: 0 0 0 1px var(--ref-raised);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-reaction-bar__stack > .ui-reaction-bar__emoji + .ui-reaction-bar__emoji {
+  margin-inline-start: -5px;
+}
+
+.ui-reaction-bar__stack .ui-reaction-bar__image {
+  width: 12px;
+  height: 12px;
+}

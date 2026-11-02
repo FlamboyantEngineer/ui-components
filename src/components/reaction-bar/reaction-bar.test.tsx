@@ -59,7 +59,9 @@ describe('ReactionBar', () => {
     const image = chips[2]?.querySelector('img.ui-reaction-bar__image');
     expect(image).toHaveAttribute('src', '/otter.png');
     expect(image).toHaveAttribute('alt', '');
-    expectHooksMatchSpec(container, 'REACTION-BAR', { slots: 'all' });
+    expectHooksMatchSpec(container, 'REACTION-BAR', {
+      slots: ['reaction', 'emoji', 'image', 'count', 'add'],
+    });
   });
 
   it('UIC-REACTION-BAR-1.1 draws the shortcode once a custom emoji image fails, and a new image again', () => {
@@ -234,5 +236,63 @@ describe('ReactionBar', () => {
     expect(root).toHaveAttribute('id', 'bar');
     expect(root).toHaveAttribute('data-test', 'bar');
     expectHooksMatchSpec(container, 'REACTION-BAR', { callerAttributes: ['data-test'] });
+  });
+});
+
+describe('ReactionBar summary', () => {
+  it(
+    'UIC-REACTION-BAR-1.7 draws one chip with a stack and the total that opens the picker',
+    { timeout: 15_000 },
+    async () => {
+      const user = userEvent.setup();
+      const onToggle = vi.fn();
+      const many = [...reactions, { emoji: '🙂', count: 1200 }];
+      const { container } = render(
+        <ReactionBar
+          presentation="summary"
+          reactions={many}
+          customEmoji={[otter]}
+          onToggle={onToggle}
+          loadEmoji={loadEmoji}
+        />,
+      );
+      expect(container.querySelector('.ui-reaction-bar')).toHaveAttribute(
+        'data-presentation',
+        'summary',
+      );
+      expect(container.querySelector('.ui-reaction-bar__reaction')).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Add reaction' })).not.toBeInTheDocument();
+      const summary = screen.getByRole('button', {
+        name: '1,208 reactions: 👍 2, reacted by Ana Lima and Ben Ode, 🎉 5, reacted by Chen Wu and 4 others, Happy otter 1, 🙂 1,200. You reacted with 👍',
+      });
+      expect(summary).toHaveClass('ui-button', 'ui-reaction-bar__summary');
+      expect(summary).toHaveAttribute('data-reacted', 'true');
+      expect(summary).not.toHaveAttribute('aria-pressed');
+      const stack = summary.querySelectorAll('.ui-reaction-bar__stack > .ui-reaction-bar__emoji');
+      expect([...stack].map((emoji) => emoji.textContent)).toEqual(['👍', '🎉', '']);
+      expect(stack[2]?.querySelector('img')).toHaveAttribute('src', '/otter.png');
+      expect(summary.querySelector('.ui-reaction-bar__count')).toHaveTextContent('1,208');
+      expectHooksMatchSpec(container, 'REACTION-BAR', {
+        slots: ['summary', 'stack', 'emoji', 'image', 'count'],
+      });
+      // Choosing an emoji the reader reacted with takes it back; another adds it.
+      await user.click(summary);
+      await user.type(await screen.findByRole('searchbox'), 'thumbs{Enter}');
+      expect(onToggle).toHaveBeenLastCalledWith('👍', false);
+      await user.click(summary);
+      await user.type(await screen.findByRole('searchbox'), 'grinning{Enter}');
+      expect(onToggle).toHaveBeenLastCalledWith('😀', true);
+    },
+  );
+
+  it('UIC-REACTION-BAR-1.7 is read-only without onToggle and absent without reactions', () => {
+    const { container, rerender } = render(
+      <ReactionBar presentation="summary" reactions={[{ emoji: '👍', count: 1 }]} />,
+    );
+    const summary = screen.getByRole('button', { name: '1 reaction: 👍 1' });
+    expect(summary).toHaveAttribute('aria-disabled', 'true');
+    expect(summary).not.toHaveAttribute('data-reacted');
+    rerender(<ReactionBar presentation="summary" reactions={[]} onToggle={() => {}} />);
+    expect(container).toBeEmptyDOMElement();
   });
 });

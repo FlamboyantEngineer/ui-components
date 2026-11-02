@@ -129,4 +129,32 @@ test.describe('Calendar View event editing', () => {
     ).toBeFocused();
     await expect(output(page)).toHaveText('edit on Design review');
   });
+
+  test('UIC-CALENDAR-VIEW-2.2 UIC-CALENDAR-VIEW-5.2 opens the editor on a single click and saves', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('calendar-view');
+    await event(page, 'Dentist').click();
+    const dialog = editor(page);
+    await expect(dialog.getByRole('textbox', { name: 'Title' })).toHaveValue('Dentist');
+    await dialog.getByRole('textbox', { name: 'Title' }).fill('Dentist check-up');
+    await dialog.getByRole('button', { name: 'Save' }).click();
+    await expect(dialog).toBeHidden();
+    await expect(output(page)).toHaveText(
+      'Saved Dentist check-up: 2026-03-27T08:30 to 2026-03-27T09:15',
+    );
+    await expect(event(page, 'Dentist check-up')).toBeFocused();
+
+    // A click in a crowded day's list opens it too; a locked event opens nothing.
+    await demo(page).getByRole('button', { name: /more$/ }).first().click();
+    const list = page.locator('.ui-calendar-view__more-list');
+    await list.getByRole('button', { name: /^Supplier call,/ }).click();
+    await expect(dialog.getByRole('textbox', { name: 'Title' })).toHaveValue('Supplier call');
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+    await expect(list.getByRole('button', { name: /^Supplier call,/ })).toBeFocused();
+    await page.keyboard.press('Escape');
+    await event(page, 'Release 2\\.4 \\(locked\\)').click();
+    await expect(dialog).toHaveCount(0);
+  });
 });

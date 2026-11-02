@@ -39,16 +39,43 @@ export interface ReactionBarProps
   onToggle?: ((emoji: string, isReacted: boolean) => void) | undefined;
   /** How many names a chip's name lists before it counts the others. Defaults to 3. */
   maxNames?: number | undefined;
+  /**
+   * `chips` (the default) draws one toggle chip per emoji and an add-reaction button; `summary` draws
+   * one chip with a stack of the emoji and the total count, which opens the picker.
+   */
+  presentation?: ReactionBarPresentation | undefined;
 }
 
+/** How a reaction bar draws its reactions. */
+export type ReactionBarPresentation = 'chips' | 'summary';
+
+/** A reaction with its count read. */
+type CountedReaction = ReactionEntry & { count: number };
+
+type PickerProps = Pick<
+  EmojiPickerProps,
+  'customEmoji' | 'recentEmoji' | 'onRecentEmojiChange' | 'loadEmoji'
+>;
+
 interface ReactionChipProps {
-  reaction: ReactionEntry & { count: number };
+  reaction: CountedReaction;
   customEmoji: EmojiPickerProps['customEmoji'];
   maxNames: number;
   onToggle: ReactionBarProps['onToggle'];
 }
 
-const hooks = createHooks('reaction-bar', ['reaction', 'emoji', 'image', 'count', 'add']);
+const hooks = createHooks('reaction-bar', [
+  'reaction',
+  'emoji',
+  'image',
+  'count',
+  'add',
+  'summary',
+  'stack',
+]);
+
+/** How many emoji the summary chip stacks; its name lists them all. */
+const stackSize = 3;
 
 const customShortcode = /^:([^:\s]+):$/;
 
@@ -57,13 +84,46 @@ function findCustomEmoji(emoji: string, customEmoji: EmojiPickerProps['customEmo
   return shortcode ? customEmoji?.find((entry) => entry.shortcode === shortcode) : undefined;
 }
 
+/** An emoji's name: a custom emoji's label, or the emoji itself. */
+function readEmojiName(emoji: string, customEmoji: EmojiPickerProps['customEmoji']) {
+  return findCustomEmoji(emoji, customEmoji)?.label ?? emoji;
+}
+
+/** Names one emoji's reactions by the emoji, the count and who reacted. */
+function useReactionLabel(customEmoji: EmojiPickerProps['customEmoji'], maxNames: number) {
+  const strings = useUiStrings();
+  return (reaction: CountedReaction) =>
+    strings.reactionLabel(
+      readEmojiName(reaction.emoji, customEmoji),
+      reaction.count,
+      (reaction.people ?? []).slice(0, maxNames),
+    );
+}
+
+/** An emoji as drawn: the glyph, or a custom emoji's image that falls back to its shortcode. */
+function ReactionEmoji({
+  emoji,
+  customEmoji,
+}: {
+  emoji: string;
+  customEmoji: EmojiPickerProps['customEmoji'];
+}) {
+  const custom = findCustomEmoji(emoji, customEmoji);
+  return (
+    <span {...hooks.slot('emoji')}>
+      {custom ? (
+        <FallbackImage {...hooks.slot('image')} src={custom.src} alt="" fallback={emoji} />
+      ) : (
+        emoji
+      )}
+    </span>
+  );
+}
+
 /** One emoji's chip: a toggle button named by the emoji, the count and who reacted. */
 function ReactionChip({ reaction, customEmoji, maxNames, onToggle }: ReactionChipProps) {
-  const strings = useUiStrings();
   const { locale } = useLocale();
-  const custom = findCustomEmoji(reaction.emoji, customEmoji);
-  const names = (reaction.people ?? []).slice(0, maxNames);
-  const label = strings.reactionLabel(custom?.label ?? reaction.emoji, reaction.count, names);
+  const label = useReactionLabel(customEmoji, maxNames)(reaction);
   return (
     <Tooltip content={label} relationship="label">
       <Button
@@ -76,33 +136,84 @@ function ReactionChip({ reaction, customEmoji, maxNames, onToggle }: ReactionChi
         isDisabled={!onToggle}
         focusableWhenDisabled
       >
-        <span {...hooks.slot('emoji')}>
-          {custom ? (
-            // A custom emoji whose image fails shows its shortcode instead.
-            <FallbackImage
-              {...hooks.slot('image')}
-              src={custom.src}
-              alt=""
-              fallback={reaction.emoji}
-            />
-          ) : (
-            reaction.emoji
-          )}
-        </span>
+        <ReactionEmoji emoji={reaction.emoji} customEmoji={customEmoji} />
         <span {...hooks.slot('count')}>{formatCount(reaction.count, locale)}</span>
       </Button>
     </Tooltip>
   );
 }
 
+interface ReactionSummaryProps extends PickerProps {
+  reactions: readonly CountedReaction[];
+  maxNames: number;
+  onToggle: ReactionBarProps['onToggle'];
+}
+
+/**
+ * Every reaction in one chip: a stack of the first emoji and the total count, named by each emoji's
+ * reactions and the reader's own. Pressing it opens the picker, where choosing an emoji toggles the
+ * reader's reaction with it; without `onToggle` it only names the reactions.
+ */
+function ReactionSummary({ reactions, maxNames, onToggle, ...picker }: ReactionSummaryProps) {
+  const strings = useUiStrings();
+  const { locale } = useLocale();
+  const labelOf = useReactionLabel(picker.customEmoji, maxNames);
+  const total = reactions.reduce((sum, reaction) => sum + reaction.count, 0);
+  const own = reactions.filter((reaction) => reaction.isReacted);
+  const label = strings.reactionSummary(
+    total,
+    reactions.map(labelOf),
+    own.map((reaction) => readEmojiName(reaction.emoji, picker.customEmoji)),
+  );
+  const chip = (
+    <Tooltip content={label} relationship="label">
+      <Button
+        variant="chip"
+        size="sm"
+        content="parts"
+        className={hooks.slotClass('summary')}
+        isDisabled={!onToggle}
+        focusableWhenDisabled
+        data-reacted={own.length > 0 || undefined}
+      >
+        <span {...hooks.slot('stack')}>
+          {reactions.slice(0, stackSize).map((reaction) => (
+            <ReactionEmoji
+              key={reaction.emoji}
+              emoji={reaction.emoji}
+              customEmoji={picker.customEmoji}
+            />
+          ))}
+        </span>
+        <span {...hooks.slot('count')}>{formatCount(total, locale)}</span>
+      </Button>
+    </Tooltip>
+  );
+  if (!onToggle) return chip;
+  const toggle = (emoji: string) =>
+    onToggle(emoji, !reactions.some((reaction) => reaction.emoji === emoji && reaction.isReacted));
+  return (
+    <EmojiPickerTrigger
+      {...picker}
+      onSelect={(selection) =>
+        toggle(selection.kind === 'native' ? selection.unicode : `:${selection.emoji.shortcode}:`)
+      }
+    >
+      {chip}
+    </EmojiPickerTrigger>
+  );
+}
+
 /**
  * A row of reaction chips, each an emoji with its count that the reader toggles, and an
- * add-reaction button that opens an `EmojiPicker`. Each chip is named by who reacted.
+ * add-reaction button that opens an `EmojiPicker`; or, as a `summary`, one chip for them all. Each
+ * chip is named by who reacted.
  */
 export function ReactionBar({
   reactions,
   onToggle,
   maxNames = 3,
+  presentation = 'chips',
   customEmoji,
   recentEmoji,
   onRecentEmojiChange,
@@ -115,27 +226,42 @@ export function ReactionBar({
     const count = normalizeCount(reaction.count ?? reaction.people?.length) ?? 0;
     return count > 0 ? [{ ...reaction, count }] : [];
   });
-  if (chips.length === 0 && !onToggle) return null;
+  const isSummary = presentation === 'summary';
+  // A summary without reactions draws nothing: the reader reacts from the message's own commands.
+  if (chips.length === 0 && (isSummary || !onToggle)) return null;
   const add = (emoji: string) => {
     if (!chips.some((chip) => chip.emoji === emoji && chip.isReacted)) onToggle?.(emoji, true);
   };
   return (
     <div
       {...rest}
-      {...hooks.root({ className, data: { readonly: !onToggle } })}
+      {...hooks.root({ className, data: { readonly: !onToggle, presentation } })}
       role="group"
       aria-label={rest['aria-label'] ?? (rest['aria-labelledby'] ? undefined : strings.reactions)}
     >
-      {chips.map((reaction) => (
-        <ReactionChip
-          key={reaction.emoji}
-          reaction={reaction}
-          customEmoji={customEmoji}
+      {isSummary ? (
+        <ReactionSummary
+          reactions={chips}
           maxNames={maxNames}
           onToggle={onToggle}
+          customEmoji={customEmoji}
+          recentEmoji={recentEmoji}
+          onRecentEmojiChange={onRecentEmojiChange}
+          loadEmoji={loadEmoji}
         />
-      ))}
-      {onToggle ? (
+      ) : null}
+      {isSummary
+        ? null
+        : chips.map((reaction) => (
+            <ReactionChip
+              key={reaction.emoji}
+              reaction={reaction}
+              customEmoji={customEmoji}
+              maxNames={maxNames}
+              onToggle={onToggle}
+            />
+          ))}
+      {onToggle && !isSummary ? (
         <EmojiPickerTrigger
           customEmoji={customEmoji}
           recentEmoji={recentEmoji}

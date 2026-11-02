@@ -87,9 +87,10 @@ const messages: DemoMessage[] = [
     minute: 3,
     text: 'Take the 28 tram to the castle, then walk down to the river.',
     reactions: [],
-    commands: (log) => ({
+    commands: (log, message) => ({
       copyText: 'Take the 28 tram to the castle, then walk down to the river.',
       onCopy: () => log('copied the answer'),
+      onReact: message.react,
       onFeedback: (feedback) => log(describeFeedback(feedback)),
       feedbackReasons,
     }),
@@ -100,7 +101,12 @@ const messages: DemoMessage[] = [
     origin: 'received',
     minute: 9,
     text: 'I can meet you at the river at noon.',
-    reactions: [{ emoji: '👍', count: 2, people: ['Maria Santos', 'Travel helper'] }],
+    reactions: [
+      { emoji: '👍', count: 2, people: ['Ana Lima', 'Travel helper'] },
+      { emoji: '🎉', count: 1, people: ['Maria Santos'], isReacted: true },
+      { emoji: '❤️', count: 1, people: ['Travel helper'] },
+      { emoji: '🚋', count: 1, people: ['Travel helper'] },
+    ],
     commands: (log, message) => ({
       copyText: 'I can meet you at the river at noon.',
       onReply: () => log('reply to Ana'),
@@ -173,7 +179,7 @@ function DemoEntry({
           actions={actions}
           reactions={
             state !== 'deleted' && reactions.length > 0 ? (
-              <ReactionBar reactions={reactions} onToggle={toggle} />
+              <ReactionBar presentation="summary" reactions={reactions} onToggle={toggle} />
             ) : null
           }
           data-lab-message={menuIcons ? `icons-${message.id}` : message.id}

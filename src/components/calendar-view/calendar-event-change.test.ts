@@ -14,7 +14,11 @@ const move = (days: number, minutes = 0) => ({
   shift: { days, minutes },
 });
 const resize = (days: number, minutes = 0) => ({
-  gesture: 'resize' as const,
+  gesture: 'end' as const,
+  shift: { days, minutes },
+});
+const start = (days: number, minutes = 0) => ({
+  gesture: 'start' as const,
   shift: { days, minutes },
 });
 
@@ -84,5 +88,42 @@ describe('calendar event change', () => {
     expect(changeEvent(anchored, move(1), zone)?.start).toBe(
       '2026-03-08T10:00:00-04:00[America/New_York]',
     );
+  });
+
+  it('UIC-CALENDAR-VIEW-6.2 moves a start alone, never past the end', () => {
+    const trip = place({ id: 'trip', title: 'Trip', start: '2026-03-30', end: '2026-04-02' });
+    expect(changeEvent(trip, start(-2), 'UTC')).toMatchObject({
+      start: '2026-03-28',
+      end: '2026-04-02',
+    });
+    expect(changeEvent(trip, start(9), 'UTC')).toMatchObject({
+      start: '2026-04-02',
+      end: '2026-04-02',
+    });
+    // An event without an end is given its own when its start moves earlier.
+    const release = place({ id: 'release', title: 'Release', start: '2026-03-20' });
+    expect(changeEvent(release, start(-1), 'UTC')).toMatchObject({
+      start: '2026-03-19',
+      end: '2026-03-20',
+    });
+    const call = place({
+      id: 1,
+      title: 'Call',
+      start: '2026-03-18T16:00',
+      end: '2026-03-18T17:00',
+    });
+    expect(changeEvent(call, start(0, -30), 'UTC')).toMatchObject({
+      start: '2026-03-18T15:30',
+      end: '2026-03-18T17:00',
+    });
+    // It leaves at least 15 minutes.
+    expect(changeEvent(call, start(0, 120), 'UTC')).toMatchObject({ start: '2026-03-18T16:45' });
+    const open = place({ id: 2, title: 'Open', start: '2026-03-18T09:00' });
+    expect(changeEvent(open, start(0, 15), 'UTC')).toEqual({
+      id: 2,
+      title: 'Open',
+      start: '2026-03-18T09:15',
+      end: '2026-03-18T10:00',
+    });
   });
 });

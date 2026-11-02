@@ -12,8 +12,10 @@ import { mergeRefs } from '../../utils/merge-props.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useEventMenu, type CalendarEventMenuContext } from './calendar-event-menu.js';
 import {
-  EventHandle,
+  EventEdge,
   readGestures,
+  useEventDrag,
+  useRefocus,
   type CalendarEventHandlesContext,
   type EventPlacement,
 } from './calendar-event-handles.js';
@@ -105,7 +107,8 @@ function useEventButtonRef(id: Key, register: CalendarEventContext['register']) 
     (element: HTMLElement | null) => (element ? register(id, element) : undefined),
     [register, id],
   );
-  return useMemo(() => mergeRefs(handoff, record), [handoff, record]);
+  const ref = useMemo(() => mergeRefs(handoff, record), [handoff, record]);
+  return { ref, element: handoff };
 }
 
 /** A rendered event's key: its id's, apart from the preview of the same event being dragged. */
@@ -146,9 +149,10 @@ function readData(placed: PlacedEvent, continuesBefore: boolean, continuesAfter:
 
 /**
  * One event: a button showing its title, after its time when asked, and named by its title and when
- * it happens; a press calls `onEventAction` with its key, and a context menu request opens the
- * event's menu. An editable event sits in a frame with its move and resize handles; the preview of
- * a dragged event is drawn without a button.
+ * it happens; a press calls `onEventAction` with its key and, when the event is editable, opens
+ * the event editor; a context menu request opens the
+ * event's menu. A movable event drags to move; an event with start or end edges sits in a frame
+ * with them; the preview of a dragged event is drawn without a button.
  */
 export function CalendarEventButton(props: CalendarEventButtonProps) {
   const { placed, time, context, style } = props;
@@ -178,30 +182,48 @@ function EventButton({
 }: CalendarEventButtonProps) {
   const strings = useUiStrings();
   const { event } = placed;
-  const ref = useEventButtonRef(event.id, context.register);
+  const { ref, element } = useEventButtonRef(event.id, context.register);
   const eventMenu = useEventMenu(event, context.menu, ref);
-  const gestures = readGestures(
+  const where = { placement, continuesBefore, continuesAfter };
+  const gestures = readGestures(placed, where, context.handles);
+  const drag = useEventDrag({
     placed,
-    { placement, continuesBefore, continuesAfter },
-    context.handles,
-  );
-  const handle = (gesture: (typeof gestures)[number]) =>
-    gestures.includes(gesture) && placement !== 'list' ? (
-      <EventHandle
+    gesture: 'move',
+    placement: placement === 'list' ? 'bar' : placement,
+    context: context.handles,
+    isDisabled: !gestures.move,
+    ownerRef: element,
+  });
+  useRefocus(element, context.handles, { id: event.id, gesture: 'move' });
+  const edge = (side: 'start' | 'end') =>
+    gestures.edges.includes(side) && placement !== 'list' ? (
+      <EventEdge
         placed={placed}
-        gesture={gesture}
+        edge={side}
         placement={placement}
         context={context.handles}
         isTabbable={isTabbable}
       />
     ) : null;
+  const hasEdges = gestures.edges.length > 0;
+  const data = readData(placed, continuesBefore, continuesAfter);
   const button = (
     <AriaButton
       {...eventMenu.targetProps}
-      {...hooks.slot('event', readData(placed, continuesBefore, continuesAfter))}
+      {...drag.pointer}
+      {...hooks.slot('event', { ...data, movable: gestures.move, dragging: drag.isDragging })}
       excludeFromTabOrder={!isTabbable}
-      style={gestures.length > 0 ? undefined : style}
-      onPress={() => context.onEventAction?.(event.id)}
+      style={hasEdges ? undefined : style}
+      onKeyDown={(key) => {
+        eventMenu.targetProps.onKeyDown(key);
+        drag.onKey(key);
+      }}
+      onPress={() => {
+        // The release of a drag is not a click.
+        if (drag.consumeClick()) return;
+        context.onEventAction?.(event.id);
+        if (context.menu.isEditable(event)) context.menu.edit(event);
+      }}
     >
       <EventText placed={placed} time={time} context={context} />
       <VisuallyHidden elementType="span">
@@ -211,11 +233,11 @@ function EventButton({
   );
   return (
     <>
-      {gestures.length > 0 ? (
+      {hasEdges ? (
         <div {...hooks.slot('event-frame', { allDay: placed.isAllDay })} style={style}>
-          {handle('move')}
+          {edge('start')}
           {button}
-          {handle('resize')}
+          {edge('end')}
         </div>
       ) : (
         button

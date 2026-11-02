@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -38,50 +38,60 @@ function Calendar({
   );
 }
 
-const handle = (name: string) => screen.getByRole('button', { name });
+const button = (name: string) => screen.getByRole('button', { name });
+const eventButton = (title: string) =>
+  screen.getByRole('button', { name: (name) => name.startsWith(`${title},`) });
 
-describe('CalendarView event handles', () => {
-  it('UIC-CALENDAR-VIEW-6.1 shows handles only where the host allows the change', () => {
+describe('CalendarView event drags', () => {
+  it('UIC-CALENDAR-VIEW-6.1 offers edges and moves only where the mode and the host allow them', () => {
     const { rerender } = render(<Calendar />);
-    expect(handle('Move Design review')).toBeInTheDocument();
-    // A timed event in the month view moves but has no end to drag.
-    expect(screen.queryByRole('button', { name: 'Resize Design review' })).not.toBeInTheDocument();
-    expect(handle('Resize Trip')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Move Release' })).not.toBeInTheDocument();
+    // The move mode: the event moves, its end edge changes its end; no start edge.
+    expect(eventButton('Trip')).toHaveAttribute('data-movable', 'true');
+    expect(button('Change end of Trip')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Change start of Trip' })).not.toBeInTheDocument();
+    // A timed event in the month view has no edge to drag.
+    expect(screen.queryByRole('button', { name: /of Design review$/ })).not.toBeInTheDocument();
+    expect(eventButton('Release')).not.toHaveAttribute('data-movable');
+    rerender(<Calendar eventDragMode="resize" />);
+    expect(eventButton('Trip')).not.toHaveAttribute('data-movable');
+    expect(button('Change start of Trip')).toBeInTheDocument();
+    expect(button('Change end of Trip')).toBeInTheDocument();
     rerender(
-      <Calendar canChangeEvent={(event, change) => change !== 'move' || event.id !== 'trip'} />,
+      <Calendar canChangeEvent={(event, change) => change !== 'resize' || event.id !== 'trip'} />,
     );
-    expect(screen.queryByRole('button', { name: 'Move Trip' })).not.toBeInTheDocument();
-    expect(handle('Resize Trip')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /of Trip$/ })).not.toBeInTheDocument();
+    expect(eventButton('Trip')).toHaveAttribute('data-movable', 'true');
     rerender(
       <UiProvider locale="en-US">
         <CalendarView events={events} timeZone="UTC" getNow={getNow} defaultDate="2026-03-18" />
       </UiProvider>,
     );
-    expect(screen.queryByRole('button', { name: /^(Move|Resize) / })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /^Change (start|end) of / }),
+    ).not.toBeInTheDocument();
+    expect(eventButton('Trip')).not.toHaveAttribute('data-movable');
   });
 
-  it('UIC-CALENDAR-VIEW-6.3 steps a bar by days and weeks, keeping focus on its handle', async () => {
+  it('UIC-CALENDAR-VIEW-6.3 steps a moving event by days and weeks, keeping focus on it', async () => {
     const user = userEvent.setup();
     const onEventChange = vi.fn();
     render(<Calendar onEventChange={onEventChange} />);
-    handle('Move Trip').focus();
+    eventButton('Trip').focus();
     await user.keyboard('{ArrowRight}');
     expect(onEventChange).toHaveBeenLastCalledWith(
       { ...events[1], start: '2026-03-19', end: '2026-03-20' },
       events[1],
     );
-    await waitFor(() => expect(handle('Move Trip')).toHaveFocus());
+    await waitFor(() => expect(eventButton('Trip')).toHaveFocus());
     expect(screen.getByRole('gridcell', { name: /March 19/ })).toHaveAttribute('tabindex', '0');
     await user.keyboard('{ArrowDown}');
     expect(onEventChange).toHaveBeenLastCalledWith(
       expect.objectContaining({ start: '2026-03-26', end: '2026-03-27' }),
       expect.objectContaining({ start: '2026-03-19' }),
     );
-    await waitFor(() => expect(handle('Move Trip')).toHaveFocus());
-    // Tab passes the event itself, then reaches its end.
-    await user.keyboard('{Tab}{Tab}');
-    expect(handle('Resize Trip')).toHaveFocus();
+    await waitFor(() => expect(eventButton('Trip')).toHaveFocus());
+    await user.keyboard('{Tab}');
+    expect(button('Change end of Trip')).toHaveFocus();
     await user.keyboard('{ArrowLeft}');
     expect(onEventChange).toHaveBeenLastCalledWith(
       expect.objectContaining({ start: '2026-03-26', end: '2026-03-26' }),
@@ -89,29 +99,38 @@ describe('CalendarView event handles', () => {
     );
   });
 
-  it('UIC-CALENDAR-VIEW-6.3 steps a block by 15 minutes in the week view', async () => {
+  it('UIC-CALENDAR-VIEW-6.3 steps the start and end of a block by 15 minutes in the resize mode', async () => {
     const user = userEvent.setup();
     const onEventChange = vi.fn();
-    render(<Calendar onEventChange={onEventChange} defaultView="week" />);
-    handle('Move Design review').focus();
+    const onEventAction = vi.fn();
+    render(
+      <Calendar
+        onEventChange={onEventChange}
+        onEventAction={onEventAction}
+        defaultView="week"
+        eventDragMode="resize"
+      />,
+    );
+    // The resize mode does not move the event by its keys.
+    eventButton('Design review').focus();
+    await user.keyboard('{ArrowUp}');
+    expect(onEventChange).not.toHaveBeenCalled();
+    button('Change start of Design review').focus();
     await user.keyboard('{ArrowUp}');
     expect(onEventChange).toHaveBeenLastCalledWith(
-      { ...events[0], start: '2026-03-18T13:45', end: '2026-03-18T15:15' },
+      { ...events[0], start: '2026-03-18T13:45', end: '2026-03-18T15:30' },
       events[0],
     );
-    handle('Resize Design review').focus();
+    await waitFor(() => expect(button('Change start of Design review')).toHaveFocus());
+    button('Change end of Design review').focus();
     await user.keyboard('{ArrowDown}');
     expect(onEventChange).toHaveBeenLastCalledWith(
-      expect.objectContaining({ start: '2026-03-18T13:45', end: '2026-03-18T15:30' }),
-      expect.objectContaining({ end: '2026-03-18T15:15' }),
+      expect.objectContaining({ start: '2026-03-18T13:45', end: '2026-03-18T15:45' }),
+      expect.objectContaining({ end: '2026-03-18T15:30' }),
     );
-    // A handle press neither opens the event nor changes it.
-    const onEventAction = vi.fn();
+    // Pressing an edge neither opens the event nor changes it.
     onEventChange.mockClear();
-    render(<Calendar onEventChange={onEventChange} onEventAction={onEventAction} />);
-    const second = screen.getAllByRole('grid').at(-1);
-    if (!second) throw new Error('no grid');
-    await user.click(within(second).getByRole('button', { name: 'Move Trip' }));
+    await user.click(button('Change end of Design review'));
     expect(onEventAction).not.toHaveBeenCalled();
     expect(onEventChange).not.toHaveBeenCalled();
   });
