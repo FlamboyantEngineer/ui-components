@@ -110,4 +110,25 @@ test.describe('State Timeline lab', () => {
     ).toBeVisible();
     await lab.expectAccessible();
   });
+
+  test('UIC-STATE-TIMELINE-1.2 reads times in its own time zone over the provider zone', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('state-timeline');
+    const demo = page.locator('[data-lab-demo="zones"]');
+    const times = demo.locator('.ui-state-timeline__attribution');
+    const expectTimes = (first: RegExp, second: RegExp) =>
+      expect(times).toHaveText([first, second]);
+    await expectTimes(
+      /^Apr 18, 2026, 11:30\sPM by Maria Santos$/,
+      /^Apr 19, 2026, 12:30\sAM by Jon Berg$/,
+    );
+    await demo.getByRole('radio', { name: 'Tokyo' }).click();
+    await expect(demo.locator('[data-lab-output="zone"]')).toHaveText('Asia/Tokyo');
+    await expectTimes(/^Apr 19, 2026, 8:30\sAM/, /^Apr 19, 2026, 9:30\sAM/);
+    await demo.getByRole('radio', { name: 'Los Angeles' }).click();
+    await expectTimes(/^Apr 18, 2026, 4:30\sPM/, /^Apr 18, 2026, 5:30\sPM/);
+    await lab.expectAccessible('[data-lab-demo="zones"]');
+  });
 });
