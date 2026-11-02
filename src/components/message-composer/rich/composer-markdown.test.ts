@@ -1,5 +1,5 @@
 import { Fragment, Slice } from 'prosemirror-model';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { MessageComposerMessage } from '../composer-message.js';
 import { parseComposerMessage, serializeComposerDocument } from './composer-markdown.js';
 import { composerSchema } from './composer-schema.js';
@@ -86,6 +86,60 @@ describe('rich composer Markdown', () => {
       const code = [parseComposerMessage(saved).child(0)].map((block) => block.textContent);
       expect(code).toEqual([body]);
     }
+  });
+
+  it('UIC-MESSAGE-COMPOSER-4.2 reads unclosed fences, many small blocks and many tokens in linear work', () => {
+    /** The line tests a parse runs, which grow with the text when no line is searched again. */
+    const countLineTests = (text: string, tokens: MessageComposerMessage['tokens'] = []) => {
+      const test = vi.spyOn(RegExp.prototype, 'test');
+      parseComposerMessage({ text, tokens });
+      const calls = test.mock.calls.length;
+      test.mockRestore();
+      return calls;
+    };
+    const openers = (count: number) =>
+      Array.from({ length: count }, () => '```javascript').join('\n');
+    const blocks = (count: number) => Array.from({ length: count }, () => '```\nx\n```').join('\n');
+    for (const make of [openers, blocks]) {
+      const small = countLineTests(make(2000));
+      expect(countLineTests(make(4000))).toBeLessThanOrEqual(small * 2 + 2);
+    }
+    // Every opener with no closing fence after it stays a line of text.
+    const doc = parseComposerMessage({ text: `${openers(3)}\n\`\``, tokens: [] });
+    expect([...Array(doc.childCount).keys()].map((index) => doc.child(index).type.name)).toEqual([
+      'paragraph',
+      'paragraph',
+      'paragraph',
+      'paragraph',
+    ]);
+    // Many mentions over many lines keep their places.
+    const lines = Array.from({ length: 3000 }, (_, index) => `@Ana ${String(index)}`);
+    const text = lines.join('\n');
+    let start = 0;
+    const tokens = lines.map((line) => {
+      const token = { kind: 'mention' as const, id: 'ana', label: 'Ana', start, end: start + 4 };
+      start += line.length + 1;
+      return token;
+    });
+    expect(serializeComposerDocument(parseComposerMessage({ text, tokens }))).toEqual({
+      text,
+      tokens,
+    });
+  });
+
+  it('UIC-MESSAGE-COMPOSER-4.2 round-trips fences of each length and language beside tokens outside code', () => {
+    const text = '@Ana see\n````py\nx = "```"\n````\n```\n@Ana in code\n```\nthen @Ana';
+    const tokens = [
+      { kind: 'mention' as const, id: 'ana', label: 'Ana', start: 0, end: 4 },
+      { kind: 'mention' as const, id: 'ana', label: 'Ana', start: 57, end: 61 },
+    ];
+    const doc = parseComposerMessage({ text, tokens });
+    expect(doc.child(1).attrs.language).toBe('py');
+    const codes = [doc.child(1), doc.child(2)].map((block) => block.textContent);
+    expect(codes[0]).toBe('x = "```"');
+    // The mention inside the plain block stays code.
+    expect(codes[1]).toBe('@Ana in code');
+    expect(serializeComposerDocument(doc)).toEqual({ text, tokens });
   });
 
   it('UIC-MESSAGE-COMPOSER-4.9 reads and writes references with their identity, record type and edits around them', () => {

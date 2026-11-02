@@ -92,14 +92,11 @@ export function serializeComposerDocument(doc: Node): MessageComposerMessage {
   return writer.finish();
 }
 
-/** The paragraph for one line, with a pill for each token that lies within it. */
-function parseLine(line: string, start: number, tokens: MessageComposerToken[]) {
+/** The paragraph for one line, with a pill for each of its tokens, given in order. */
+function parseLine(line: string, start: number, tokens: readonly MessageComposerToken[]) {
   const children: Node[] = [];
   let at = 0;
-  const inside = tokens
-    .filter((token) => token.start >= start && token.end <= start + line.length)
-    .sort((a, b) => a.start - b.start);
-  for (const token of inside) {
+  for (const token of tokens) {
     const offset = token.start - start;
     if (offset < at) continue;
     if (offset > at) children.push(schema.text(line.slice(at, offset)));
@@ -113,28 +110,63 @@ function parseLine(line: string, start: number, tokens: MessageComposerToken[]) 
   return schema.node('paragraph', null, children);
 }
 
-/** Where the code block opened at `open` closes, or -1 when it never does. */
-function findClosingFence(lines: readonly string[], open: number): number {
-  const length = openingFence.exec(lines[open] ?? '')?.[1]?.length;
-  if (length === undefined) return -1;
-  return lines.findIndex(
-    (line, index) => index > open && line.length >= length && backtickLine.test(line),
-  );
+/**
+ * Finds closing fences in one pass over the lines in all: each line's longest closing fence
+ * after it is known up front, so an opener no line closes is text at once, and a search for the
+ * close of one that is closed reads only the lines the code block then takes.
+ */
+function createFenceFinder(lines: readonly string[]) {
+  // The longest run of backticks alone on a line after each line.
+  const longestAfter = new Array<number>(lines.length).fill(0);
+  for (let index = lines.length - 2; index >= 0; index -= 1) {
+    const next = lines[index + 1] ?? '';
+    const length = backtickLine.test(next) ? next.length : 0;
+    longestAfter[index] = Math.max(length, longestAfter[index + 1] ?? 0);
+  }
+  /** Where the code block opened at `open` closes, or -1 when it never does. */
+  return (open: number): number => {
+    const length = openingFence.exec(lines[open] ?? '')?.[1]?.length;
+    if (length === undefined || (longestAfter[open] ?? 0) < length) return -1;
+    for (let index = open + 1; index < lines.length; index += 1) {
+      const line = lines[index] ?? '';
+      if (line.length >= length && backtickLine.test(line)) return index;
+    }
+    return -1;
+  };
+}
+
+/** Hands out each line's tokens in order, reading the sorted tokens once over all lines. */
+function createLineTokens(tokens: readonly MessageComposerToken[]) {
+  const sorted = [...tokens].sort((a, b) => a.start - b.start);
+  let next = 0;
+  return (start: number, end: number): MessageComposerToken[] => {
+    while (next < sorted.length && (sorted[next]?.start ?? 0) < start) next += 1;
+    const inside: MessageComposerToken[] = [];
+    for (let index = next; index < sorted.length; index += 1) {
+      const token = sorted[index] as MessageComposerToken;
+      if (token.start > end) break;
+      if (token.end <= end) inside.push(token);
+    }
+    return inside;
+  };
 }
 
 /**
  * The document for a message: a paragraph per line with pills over its tokens, and a code block
- * for each fenced run of lines. An unclosed fence stays text.
+ * for each fenced run of lines. An unclosed fence stays text. It reads the text in linear time:
+ * no line is searched again for each opener before it.
  */
 export function parseComposerMessage(message: MessageComposerMessage): Node {
   const lines = message.text.split('\n');
+  const findClosingFence = createFenceFinder(lines);
+  const lineTokens = createLineTokens(message.tokens);
   const blocks: Node[] = [];
   let start = 0;
   for (let index = 0; index < lines.length;) {
     const line = lines[index] ?? '';
-    const close = findClosingFence(lines, index);
+    const close = findClosingFence(index);
     if (close === -1) {
-      blocks.push(parseLine(line, start, message.tokens));
+      blocks.push(parseLine(line, start, lineTokens(start, start + line.length)));
       start += line.length + 1;
       index += 1;
       continue;

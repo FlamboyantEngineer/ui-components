@@ -198,4 +198,54 @@ describe('RichMessageComposer custom triggers', () => {
     // A late answer after unmount changes nothing and throws nothing.
     calls.at(-1)?.resolve([{ id: 'late', label: 'late.txt' }]);
   });
+
+  it('UIC-MESSAGE-COMPOSER-4.13 aborts the question on Escape or blur, asks again on reopening and drops the dismissed answer', async () => {
+    const { trigger, calls } = deferredSource();
+    const { user, handle } = renderComposer({ triggers: [trigger] });
+    render(<button type="button">Outside</button>);
+    await user.click(box());
+    await user.keyboard('#a');
+    await waitFor(() => expect(emptyNotice()).toHaveTextContent('Loading'));
+    const dismissed = calls.at(-1);
+    await user.keyboard('{Escape}');
+    expect(dismissed?.signal.aborted).toBe(true);
+    expect(emptyNotice()).toBeNull();
+    // Tab shows the list again without changing the text: a fresh question, and the dismissed
+    // question's late answer never becomes its answer.
+    const asked = calls.length;
+    await user.keyboard('{Tab}');
+    expect(calls.length).toBe(asked + 1);
+    expect(calls.at(-1)?.query).toBe('a');
+    await act(async () => {
+      dismissed?.resolve([{ id: 'stale', label: 'stale.txt' }]);
+      await Promise.resolve();
+    });
+    await waitFor(() => expect(emptyNotice()).toHaveTextContent('Loading'));
+    expect(screen.queryByRole('option', { name: 'stale.txt' })).not.toBeInTheDocument();
+    // An edit after Escape asks again too.
+    await user.keyboard('{Escape}');
+    const beforeEdit = calls.length;
+    await user.keyboard('p');
+    expect(calls.length).toBe(beforeEdit + 1);
+    expect(calls.at(-1)?.query).toBe('ap');
+    // Focus leaving aborts the question; its rejection shows nothing on return.
+    const blurred = calls.at(-1);
+    await user.click(screen.getByRole('button', { name: 'Outside' }));
+    expect(blurred?.signal.aborted).toBe(true);
+    await act(async () => {
+      blurred?.reject(new Error('late'));
+      await Promise.resolve();
+    });
+    const beforeFocus = calls.length;
+    act(() => handle.current?.focus());
+    expect(calls.length).toBe(beforeFocus + 1);
+    expect(calls.at(-1)?.signal.aborted).toBe(false);
+    await act(async () => {
+      calls.at(-1)?.resolve([{ id: 'apple', label: 'apple.txt' }]);
+      await Promise.resolve();
+    });
+    // Pressing an option keeps the request and inserts the entry.
+    await user.click(await screen.findByRole('option', { name: 'apple.txt' }));
+    expect(box().querySelector('.ui-message-composer__pill')).toHaveTextContent('apple.txt');
+  });
 });

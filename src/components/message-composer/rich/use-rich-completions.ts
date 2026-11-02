@@ -82,11 +82,13 @@ function toQueryKey(range: TriggerRange | null): string {
 }
 
 /**
- * Asks the vocabulary for the query's options whenever the query, its vocabulary or the draft's
- * owner changes. A synchronous answer shows at once; a later one shows only while its query is
+ * Asks the vocabulary for the query's options while the list is wanted (the editor has focus and
+ * the list is not dismissed), again whenever the query, its vocabulary or the draft's owner
+ * changes. Dismissing the list, blurring the editor or unmounting aborts the request, and its late
+ * answer is dropped. A synchronous answer shows at once; a later one shows only while its request is
  * still the current one, and a rejection or a throw shows as a failure, never as an unhandled error.
  */
-function useAnswer(range: TriggerRange | null, owner: object): Answer | null {
+function useAnswer(range: TriggerRange | null, owner: object, isWanted: boolean): Answer | null {
   const key = toQueryKey(range);
   const vocabulary = range?.vocabulary;
   const [answer, setAnswer] = useState<Answer | null>(null);
@@ -94,7 +96,7 @@ function useAnswer(range: TriggerRange | null, owner: object): Answer | null {
   const latestRange = useLatest(range);
   useLayoutEffect(() => {
     const current = latestRange.current;
-    if (!current || !vocabulary) return undefined;
+    if (!current || !vocabulary || !isWanted) return undefined;
     const controller = new AbortController();
     const settle = (next: Omit<Answer, 'query' | 'vocabulary'>) => {
       if (!controller.signal.aborted)
@@ -115,7 +117,7 @@ function useAnswer(range: TriggerRange | null, owner: object): Answer | null {
       );
     } else settle({ status: 'ready', items: result });
     return () => controller.abort();
-  }, [key, vocabulary, owner, latestRange]);
+  }, [key, vocabulary, owner, isWanted, latestRange]);
   if (!answer || !vocabulary || answer.query === key) return answer?.query === key ? answer : null;
   // Until this commit's effect asks again, before anything paints, the vocabulary's last answer
   // holds the list open, so it does not close and reopen on every key typed.
@@ -147,8 +149,8 @@ function hasContent(answer: Answer | null, range: TriggerRange | null): boolean 
  * The rich composer's completions: `@` opens the mentions, `/` the commands and each host trigger
  * its own vocabulary, at the start of a line or after a space, for the query typed after the
  * character. While the list is open, the arrows move the active option (wrapping), Enter or Tab
- * insert it as a pill and Escape closes it until the next edit or caret move. It opens only while
- * the editor has focus.
+ * insert it as a pill and Escape closes it until the next edit or caret move. It opens, and its
+ * source is asked, only while the editor has focus.
  */
 export function useRichCompletions(options: RichCompletionsOptions) {
   const { mentions, commands, triggers } = options;
@@ -158,10 +160,10 @@ export function useRichCompletions(options: RichCompletionsOptions) {
     [mentions, commands, triggers],
   );
   const range = options.isEditable ? findTrigger(state, vocabularies) : null;
-  const answer = useAnswer(range, options.owner);
-  const matches = answer?.items ?? [];
   const [hasFocus, setFocus] = useState(false);
   const [dismissedIn, setDismissedIn] = useState<EditorState | null>(null);
+  const answer = useAnswer(range, options.owner, hasFocus && dismissedIn !== state);
+  const matches = answer?.items ?? [];
   const [active, setActive] = useState({ query: '', index: 0 });
   const shownRef = useRef(false);
   const listId = `${useId()}-completions`;

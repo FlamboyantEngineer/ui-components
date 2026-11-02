@@ -235,7 +235,7 @@ export function RangeComposerSections() {
       </LabSection>
       <LabSection
         title="Host triggers"
-        description="$ opens the host's tools, with icons, and inserts them as tokens that keep their raw text ($search) while the chip shows the label; # searches files from a slow source that shows Loading for the current query only, ignores answers that come back out of order, shows a failure for the query fail and No results for no match; @ still mentions people."
+        description="$ opens the host's tools, with icons, and inserts them as tokens that keep their raw text ($search) while the chip shows the label; # searches files from a slow source that shows Loading for the current query only, ignores answers that come back out of order, cancels its search when Escape or a click outside closes the list, shows a failure for the query fail and No results for no match; @ still mentions people."
       >
         <TriggerComposer />
       </LabSection>

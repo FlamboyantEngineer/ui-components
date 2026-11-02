@@ -74,4 +74,42 @@ describe('compareBlocks pairing budget', () => {
       diffs: size * 2,
     });
   });
+
+  it('UIC-REDLINE-COMPARE-1.2 weighs a bounded number of candidates per block when no words are shared', () => {
+    /** How many inserted blocks a comparison reads, through a proxy that counts index reads. */
+    const countReads = (count: number) => {
+      let reads = 0;
+      const newBlocks = new Proxy(
+        paragraphs(Array.from({ length: count }, (_, index) => `newword${String(index)}`)),
+        {
+          get(target, property, receiver) {
+            if (typeof property === 'string' && /^\d+$/.test(property)) reads += 1;
+            return Reflect.get(target, property, receiver) as unknown;
+          },
+        },
+      );
+      const oldBlocks = paragraphs(
+        Array.from({ length: count }, (_, index) => `oldword${String(index)}`),
+      );
+      expect(compareBlocks(oldBlocks, newBlocks).counts).toEqual({
+        added: count,
+        removed: count,
+        changed: 0,
+        moved: 0,
+      });
+      return reads;
+    };
+    const small = countReads(500);
+    const large = countReads(1000);
+    expect(large).toBeLessThanOrEqual(2 * small + 100);
+    expect(large).toBeLessThan(40 * 1000);
+  });
+
+  it('UIC-REDLINE-COMPARE-1.2 still pairs an edited block far past the last pair by a word few blocks share', () => {
+    const fresh = Array.from({ length: 200 }, (_, index) => `Fresh note ${String(index)}.`);
+    const oldTexts = ['The quince harvest fills the cellar.', 'Closing words.'];
+    const newTexts = [...fresh, 'The quince harvest fills the old cellar.', 'Closing words!'];
+    const { counts } = countDiffs(oldTexts, newTexts);
+    expect(counts).toEqual({ added: 200, removed: 0, changed: 2, moved: 0 });
+  });
 });
