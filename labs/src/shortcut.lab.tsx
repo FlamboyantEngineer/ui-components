@@ -12,6 +12,7 @@ import { MoreGlyph, UndoGlyph } from '../../src/core/glyphs.js';
 import {
   detectShortcutPlatform,
   formatShortcut,
+  formatAriaKeyShortcuts,
   formatShortcutAccessibleText,
   formatShortcutDescription,
   formatShortcutKeys,
@@ -41,6 +42,22 @@ const sequences = {
   'Ctrl+K Ctrl+C': ['Ctrl+K', 'Ctrl+C'],
   'Ctrl+K Shift+↑': ['Ctrl+K', 'Shift+↑'],
 } as const;
+
+/** French names for the keys the lab's samples use; the rest read as written. */
+const frenchKeys: Readonly<Record<string, string>> = {
+  Control: 'Contrôle',
+  Shift: 'Maj',
+  '↑': 'Flèche haut',
+  Enter: 'Entrée',
+};
+const frenchKeyName = (key: string) => frenchKeys[key] ?? key;
+const ariaSamples = [
+  ['Ctrl+S', 'mac'],
+  ['Ctrl+S', 'windows'],
+  ['Alt+Shift+↑', 'linux'],
+  ['Ctrl++', 'windows'],
+  ['Ctrl+Alt+Space', 'mac'],
+] as const;
 
 const appearances = ['keycaps', 'text'] as const satisfies readonly ShortcutAppearance[];
 const samples = ['Ctrl+Shift+K', 'Ctrl++', ['G', 'I'], ['Ctrl+K', 'Ctrl+C']] as const;
@@ -224,6 +241,52 @@ mountLab(
           ],
         ]}
       />
+    </LabSection>
+    <LabSection
+      title="Translated key names"
+      description="keyName and joinSteps replace the built-in English for one call: here French key names, and a sequence of three chords joined step by step."
+    >
+      <LabHelperCalls
+        calls={[
+          [
+            "formatShortcutAccessibleText(['Ctrl+K', 'Shift+↑', 'Enter'], { platform: 'windows', keyName: frenchKeyName, joinSteps: (previous, next) => `${previous}, puis ${next}` })",
+            formatShortcutAccessibleText(['Ctrl+K', 'Shift+↑', 'Enter'], {
+              platform: 'windows',
+              keyName: frenchKeyName,
+              joinSteps: (previous, next) => `${previous}, puis ${next}`,
+            }),
+          ],
+        ]}
+      />
+    </LabSection>
+    <LabSection
+      title="Readable text beside aria-keyshortcuts"
+      description="formatAriaKeyShortcuts gives the machine-readable value a control publishes; it takes one chord, never a sequence, because aria-keyshortcuts cannot express one."
+    >
+      <table data-lab-case="aria-keyshortcuts">
+        <thead>
+          <tr>
+            <th scope="col">Chord</th>
+            <th scope="col">Platform</th>
+            <th scope="col">Readable text</th>
+            <th scope="col">aria-keyshortcuts</th>
+          </tr>
+        </thead>
+        <tbody>
+          {ariaSamples.map(([chord, platform]) => (
+            <tr key={`${chord} ${platform}`} data-lab-chord={`${chord} ${platform}`}>
+              <td>
+                <code>{chord}</code>
+              </td>
+              <td>{platform}</td>
+              <td data-lab-output="text">{formatShortcutAccessibleText(chord, { platform })}</td>
+              <td>
+                <code data-lab-output="aria">{formatAriaKeyShortcuts(chord, platform)}</code>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </LabSection>
   </>,
 );

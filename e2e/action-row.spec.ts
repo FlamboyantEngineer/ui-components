@@ -272,3 +272,34 @@ test('UIC-ACTION-ROW-1.1 UIC-ACTION-ROW-1.3 shows the exported helpers in a host
     call("orderActions([{ verb: 'delete' }, { verb: 'add' }, { verb: 'edit' }])"),
   ).toHaveText('add, edit, delete');
 });
+
+test('UIC-ACTION-ROW-2.1 keeps a lead-only row and drops a row with neither actions nor lead', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('action-row');
+  const demo = page.locator('[data-lab-case="empty-row"]');
+  const row = demo.locator('[data-lab-case="empty-row-target"] .ui-action-row');
+  const inputs = demo.locator('[data-lab-output="inputs"]');
+  await expect(row.locator('.ui-action-row__lead')).toHaveText('Quarterly notes');
+  await demo.getByRole('switch', { name: 'Actions' }).press('Space');
+  await expect(inputs).toHaveText('actions: 0, lead: <strong>Quarterly notes</strong>');
+  await expect(row.locator('.ui-action-row__actions')).toHaveCount(0);
+  await expect(row.locator('.ui-action-row__lead')).toHaveText('Quarterly notes');
+  for (const [choice, shown] of [
+    ['Empty string', "''"],
+    ['null', 'null'],
+    ['Not set', 'undefined'],
+  ] as const) {
+    await demo.getByRole('radio', { name: choice }).click();
+    await expect(inputs).toHaveText(`actions: 0, lead: ${shown}`);
+    await expect(row).toHaveCount(0);
+  }
+  await demo.getByRole('radio', { name: 'Number 0' }).click();
+  await expect(row.locator('.ui-action-row__lead')).toHaveText('0');
+  await demo.getByRole('radio', { name: 'null' }).click();
+  await demo.getByRole('switch', { name: 'Actions' }).press('Space');
+  await expect(row.locator('.ui-action-row__lead')).toHaveCount(0);
+  await expect(row.getByRole('button', { name: 'Edit' })).toBeVisible();
+  await lab.expectAccessible();
+});

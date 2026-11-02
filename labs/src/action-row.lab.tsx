@@ -13,6 +13,8 @@ import { ActionRow, type ActionRowAction } from '../../src/components/action-row
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { actionVerbs, orderActions } from '../../src/components/action-row/index.js';
 import { LabHelperCalls } from './lab-helper-calls.js';
+import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
+import { Switch } from '../../src/components/switch/switch.js';
 
 const sizes = ['xs', 'sm', 'md', 'lg'] as const;
 const states = ['default', 'selected', 'disabled', 'pending', 'with lead'] as const;
@@ -271,6 +273,56 @@ function SelectionBar() {
   );
 }
 
+const leadChoices = {
+  title: {
+    label: 'Title',
+    value: <strong>Quarterly notes</strong>,
+    shown: '<strong>Quarterly notes</strong>',
+  },
+  zero: { label: 'Number 0', value: 0, shown: '0' },
+  empty: { label: 'Empty string', value: '', shown: "''" },
+  null: { label: 'null', value: null, shown: 'null' },
+  none: { label: 'Not set', value: undefined, shown: 'undefined' },
+} as const;
+type LeadChoice = keyof typeof leadChoices;
+
+/** A row whose actions and lead can be cleared: with neither it renders nothing. */
+function EmptyRow() {
+  const [hasActions, setHasActions] = useState(true);
+  const [lead, setLead] = useState<LeadChoice>('title');
+  const actions: ActionRowAction[] = hasActions
+    ? [
+        { verb: 'edit', onPress: noop },
+        { verb: 'delete', onPress: noop },
+      ]
+    : [];
+  return (
+    <div data-lab-case="empty-row">
+      <div role="group" aria-label="Row inputs">
+        <Switch isSelected={hasActions} onChange={setHasActions}>
+          Actions
+        </Switch>
+        <SegmentedChoice
+          aria-label="Lead"
+          sizing="content"
+          options={Object.entries(leadChoices).map(([value, choice]) => ({
+            value,
+            label: choice.label,
+          }))}
+          value={lead}
+          onChange={(value) => setLead((value as LeadChoice | null) ?? 'title')}
+        />
+      </div>
+      <div data-lab-case="empty-row-target">
+        <ActionRow lead={leadChoices[lead].value} actions={actions} />
+      </div>
+      <output aria-label="Selected inputs" data-lab-output="inputs">
+        {`actions: ${String(actions.length)}, lead: ${leadChoices[lead].shown}`}
+      </output>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -378,6 +430,12 @@ mountLab(
       description="With a selected count the row shows the count and a clear button, and disappears when nothing is selected. Escape inside it clears the selection, except the Escape that cancels an input method candidate in the note field."
     >
       <SelectionBar />
+    </LabSection>
+    <LabSection
+      title="Empty and lead-only rows"
+      description="Turn the actions off for a lead-only row. With no actions and an empty lead (not set, null or the empty string) the row renders nothing; the number 0 is content and keeps it."
+    >
+      <EmptyRow />
     </LabSection>
     <LabSection
       title="Host helpers"

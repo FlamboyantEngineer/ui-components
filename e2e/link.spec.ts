@@ -60,6 +60,11 @@ test.describe('Link lab', () => {
     await page.keyboard.press('Enter');
     await expect(route).toHaveText('/recipes/plum-crumble');
     expect(page.url()).toBe(url);
+    const options = demo.locator('[data-lab-output="router-options"]');
+    await expect(options).toHaveText('none');
+    await demo.getByRole('link', { name: 'Pear tart, replacing the route' }).click();
+    await expect(route).toHaveText('/recipes/pear-tart');
+    await expect(options).toHaveText('{"scroll":false,"replace":true}');
   });
 
   test('UIC-LINK-2.2 UIC-LINK-3.1 says a link opens a new tab and opens it safely', async ({
@@ -101,7 +106,10 @@ test.describe('Link lab', () => {
     const more = demo.getByRole('link', { name: 'Show 3 more fruit' });
     expect(await more.evaluate((node) => node.tagName)).toBe('SPAN');
     await expect(more).not.toHaveAttribute('href');
-    await page.getByRole('link', { name: 'Plum crumble' }).focus();
+    await page
+      .locator('[data-lab-demo="render"]')
+      .getByRole('button', { name: 'Clear log' })
+      .focus();
     await page.keyboard.press('Tab');
     await expect(more).toBeFocused();
     await expect(more).toHaveAttribute('data-focus-visible', 'true');
@@ -145,6 +153,51 @@ test.describe('Link lab', () => {
     await expect(matrixCell(page, 'state=no href variant=primary').getByRole('link')).toBeFocused();
     await rest.hover();
     await expect(rest).toHaveAttribute('data-hovered', 'true');
+    await lab.expectAccessible();
+  });
+
+  test('UIC-LINK-1.6 swaps the element, passes its state and reports press and hover', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('link');
+    const demo = page.locator('[data-lab-demo="render"]');
+    const log = demo.locator('[data-lab-output="events"] li');
+    const pie = demo.getByRole('link', { name: 'Apple pie' });
+    await expect(pie).toHaveAttribute('data-lab-swapped', '');
+    await expect(pie).toHaveClass(/ui-link/);
+    await expect(pie).toHaveAttribute('href', '#/recipes/apple-pie');
+    await expect(pie.locator('[data-lab-output="link-state"]')).toHaveText(' [idle]');
+    await pie.hover();
+    await expect(pie.locator('[data-lab-output="link-state"]')).toHaveText(' [hovered]');
+    const url = page.url();
+    await pie.click();
+    await expect(demo.locator('[data-lab-output="route"]')).toHaveText('/recipes/apple-pie');
+    expect(page.url()).toBe(url);
+    await expect(log).toContainText([
+      'Navigation: hoverStart',
+      'Navigation: hoverChange true',
+      'Navigation: pressStart',
+      'Navigation: pressChange true',
+      'Navigation: pressEnd',
+      'Navigation: pressChange false',
+      'Navigation: press',
+    ]);
+
+    await demo.getByRole('button', { name: 'Clear log' }).click();
+    const method = demo.getByRole('link', { name: 'Show the method' });
+    await expect(method).toHaveAttribute('data-lab-swapped', '');
+    await method.focus();
+    await page.keyboard.press('Enter');
+    await expect(method.locator('[data-lab-output="link-state"]')).toHaveText(' [focus visible]');
+    await expect(log.filter({ hasText: /^Press only: press$/ })).toHaveCount(1);
+
+    await demo.getByRole('button', { name: 'Clear log' }).click();
+    const fig = demo.getByRole('link', { name: 'Fig roll' });
+    await expect(fig).not.toHaveAttribute('href');
+    await expect(fig.locator('[data-lab-output="link-state"]')).toHaveText(' [disabled]');
+    await fig.click({ force: true });
+    await expect(log.filter({ hasText: /^Disabled: press$/ })).toHaveCount(0);
     await lab.expectAccessible();
   });
 });

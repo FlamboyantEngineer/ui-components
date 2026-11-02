@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
-import { Button } from '../../src/components/button/button.js';
+import { Button, type ButtonVariant } from '../../src/components/button/button.js';
+import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { CopyButton } from '../../src/components/copy-button/copy-button.js';
 import { useClipboard } from '../../src/utils/use-clipboard.js';
 import { copyRichText, type RichCopyResult } from '../../src/utils/index.js';
@@ -7,6 +8,51 @@ import { LabOutput } from './lab-output.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const states = ['rest', 'disabled'] as const;
+const variants = [
+  'primary',
+  'secondary',
+  'tertiary',
+  'danger',
+  'ghost',
+  'accent',
+  'chip',
+  'link',
+  'bare',
+] as const satisfies readonly ButtonVariant[];
+const timeouts = { short: 600, long: 5000 } as const;
+
+/** A copy button whose feedback lasts a short or a long time. */
+function TimeoutDemo() {
+  const [length, setLength] = useState<keyof typeof timeouts>('short');
+  const [copies, setCopies] = useState(0);
+  return (
+    <div data-lab-demo="timeout">
+      <SegmentedChoice
+        aria-label="Feedback lasts"
+        sizing="content"
+        options={[
+          { value: 'short', label: 'Short (600 ms)' },
+          { value: 'long', label: 'Long (5 s)' },
+        ]}
+        value={length}
+        onChange={(value) => setLength(value === 'long' ? 'long' : 'short')}
+      />
+      <p>
+        <code>INV-0042</code>{' '}
+        <CopyButton
+          value="INV-0042"
+          label="Copy the invoice number"
+          timeout={timeouts[length]}
+          onCopy={() => setCopies((value) => value + 1)}
+        />
+      </p>
+      <p>
+        Timeout: <output data-lab-output="timeout">{timeouts[length]} ms</output>, copies:{' '}
+        <output data-lab-output="copies">{copies}</output>
+      </p>
+    </div>
+  );
+}
 
 /** Copies a formatted note: rich editors paste the HTML, plain fields the text. */
 function RichCopyDemo() {
@@ -98,10 +144,10 @@ mountLab(
   <>
     <LabSection
       title="Variants, sizes and states"
-      description="Any Icon Button variant and size; a disabled button never copies."
+      description="Every Icon Button variant and size; a disabled button never copies."
     >
       <StateMatrix
-        axes={{ state: states, variant: ['ghost', 'secondary'], size: ['xs', 'sm', 'md', 'lg'] }}
+        axes={{ state: states, variant: variants, size: ['xs', 'sm', 'md', 'lg'] }}
         render={({ state, variant, size }) => (
           <CopyButton
             value="Lisbon"
@@ -118,6 +164,12 @@ mountLab(
       description="Press the button: it copies the order number, shows a check mark and announces Copied for two seconds."
     >
       <CopyDemo />
+    </LabSection>
+    <LabSection
+      title="Feedback duration"
+      description="timeout sets how long the check mark lasts: copy with Short and it returns to the copy glyph after 600 ms; with Long it stays for five seconds."
+    >
+      <TimeoutDemo />
     </LabSection>
     <LabSection
       title="Overlapping copy feedback"

@@ -60,7 +60,7 @@ Verification: `src/components/action-row/action-row.test.tsx`, `e2e/action-row.s
 The row shall render `lead` in the `ui-action-row__lead` slot before the `ui-action-row__actions` slot that holds the buttons. A lead that renders nothing (`null`, `undefined`, a boolean or an empty string) draws no slot, and a row with no actions and no such lead renders nothing.
 
 Implementation: `src/components/action-row/action-row.tsx`
-Verification: `src/components/action-row/action-row.test.tsx`
+Verification: `src/components/action-row/action-row.test.tsx`, `e2e/action-row.spec.ts`
 
 ### UIC-ACTION-ROW-2.2 - Size
 

@@ -159,6 +159,43 @@ test.describe('Focus Scope lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-FOCUS-SCOPE-3.1 applies the wrap, tabbable, accept and from options and reports each result', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('focus-scope');
+    const demo = page.locator('[data-lab-demo="manager-options"]');
+    const filters = demo.getByRole('toolbar', { name: 'Fruit filters' });
+    const button = (name: string) => filters.getByRole('button', { name });
+    const result = demo.locator('[data-lab-output="move"]');
+    const option = (name: string) => demo.getByRole('switch', { name });
+
+    await option('Wrap at the ends').press('Space');
+    await button('Cherries').focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(button('Cherries')).toBeFocused();
+    await expect(result).toHaveText('ArrowRight: nothing (stayed put)');
+
+    await option('Tabbable elements only').press('Space');
+    await button('Cherries').focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(button('Quinces (not tabbable)')).toBeFocused();
+    await expect(result).toHaveText('ArrowRight: Quinces');
+
+    await option('Skip sold-out fruit (accept)').press('Space');
+    await button('Apples').focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(button('Plums')).toBeFocused();
+    await expect(result).toHaveText('ArrowRight: Plums');
+
+    await demo.getByRole('radio', { name: 'Plums' }).click();
+    await button('Apples').focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(button('Cherries')).toBeFocused();
+    await expect(result).toHaveText('ArrowRight: Cherries');
+    await lab.expectAccessible();
+  });
+
   test('UIC-FOCUS-SCOPE-2.7 returns focus to finalFocus inside a frame the page renders into', async ({
     page,
     lab,
