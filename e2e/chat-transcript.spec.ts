@@ -581,3 +581,73 @@ test.describe('Chat Transcript lab: embedded in a panel', () => {
     await lab.expectAccessible('[data-lab-demo="conversation-switch"]');
   });
 });
+
+test.describe('Chat Transcript lab: options', () => {
+  const message = (page: Page, cell: string) =>
+    matrixCell(page, cell).locator('.ui-chat-message').first();
+  const heightOf = (target: Locator) =>
+    target.evaluate((node) => node.getBoundingClientRect().height);
+
+  test('UIC-CHAT-TRANSCRIPT-2.7 UIC-CHAT-TRANSCRIPT-2.13 keeps the footer time line or collapses it until shown', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-transcript');
+    const reserved = message(page, 'line=reserved');
+    const collapsing = message(page, 'line=collapsing');
+    await expect(reserved).not.toHaveAttribute('data-collapse-footer-time');
+    await expect(collapsing).toHaveAttribute('data-collapse-footer-time');
+    const reservedFooter = reserved.locator('.ui-chat-message__footer[data-time-only]');
+    const collapsingFooter = collapsing.locator('.ui-chat-message__footer[data-time-only]');
+    await collapsing.scrollIntoViewIfNeeded();
+    await page.mouse.move(0, 0);
+    expect(await heightOf(reservedFooter)).toBeGreaterThan(4);
+    await expect.poll(() => heightOf(collapsingFooter)).toBeLessThan(1);
+    await collapsing.hover();
+    await expect.poll(() => heightOf(collapsingFooter)).toBeGreaterThan(4);
+    await lab.expectAccessible('[data-lab-section="Footer time line"]');
+  });
+
+  test('UIC-CHAT-TRANSCRIPT-2.13 draws the caret only on a streaming message that asks for it', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-transcript');
+    const caret = (cell: string) =>
+      message(page, cell)
+        .locator('.ui-chat-message__content')
+        .evaluate((node) => getComputedStyle(node, '::after').content);
+    await expect(message(page, 'caret=on status=streaming')).toHaveAttribute(
+      'data-streaming-caret',
+    );
+    expect(await caret('caret=on status=streaming')).toBe('"▍"');
+    for (const cell of ['caret=on status=complete', 'caret=off status=streaming']) {
+      await expect(message(page, cell)).not.toHaveAttribute('data-streaming-caret');
+      expect(await caret(cell)).toBe('none');
+    }
+    await expect(message(page, 'caret=off status=streaming')).toHaveAttribute('aria-busy', 'true');
+  });
+
+  test('UIC-CHAT-TRANSCRIPT-5.5 shows at most maxVisible readers before the count', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-transcript');
+    const overflow = (limit: string) =>
+      matrixCell(page, `max visible=${limit}`).locator('.ui-avatar-group__overflow');
+    await expect(overflow('2')).toHaveText('+3');
+    await expect(overflow('default (3)')).toHaveText('+2');
+    await expect(overflow('5')).toHaveCount(0);
+    await lab.expectAccessible('[data-lab-section="Read receipts limit"]');
+  });
+
+  test('UIC-CHAT-TRANSCRIPT-6.2 groups messages within maxGap', async ({ page, lab }) => {
+    await lab.open('chat-transcript');
+    const positions = (gap: string) =>
+      matrixCell(page, `max gap=${gap}`)
+        .locator('.ui-chat-message')
+        .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-group-position')));
+    expect(await positions('default (5 min)')).toEqual(['first', 'last', 'single', 'single']);
+    expect(await positions('15 min')).toEqual(['first', 'middle', 'last', 'single']);
+  });
+});
