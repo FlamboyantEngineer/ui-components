@@ -109,6 +109,30 @@ describe('FormulaBar', () => {
     expect(button()).toBeEnabled();
   });
 
+  it('UIC-FORMULA-BAR-3.6 publishes its size and sizes its buttons a step smaller', () => {
+    const { container, rerender } = render(
+      <FormulaBar cell={{ row: 0, column: 0 }} value="=1" functions={functions} />,
+    );
+    const root = () => container.querySelector('.ui-formula-bar');
+    const sizeOf = (name: string) => screen.getByRole('button', { name }).getAttribute('data-size');
+    expect(root()).toHaveAttribute('data-size', 'md');
+    expect(sizeOf('Cancel')).toBe('sm');
+    expect(sizeOf('Insert function')).toBe('sm');
+    for (const [size, buttons] of [
+      ['xs', 'xs'],
+      ['sm', 'xs'],
+      ['lg', 'md'],
+    ] as const) {
+      rerender(
+        <FormulaBar cell={{ row: 0, column: 0 }} value="=1" functions={functions} size={size} />,
+      );
+      expect(root()).toHaveAttribute('data-size', size);
+      expect(sizeOf('Cancel')).toBe(buttons);
+      expect(sizeOf('Confirm')).toBe(buttons);
+      expect(sizeOf('Insert function')).toBe(buttons);
+    }
+  });
+
   it('UIC-FORMULA-BAR-2.1 UIC-FORMULA-BAR-3.1 shows the active cell and its raw content', () => {
     const { container } = render(<Sheet />);
     expect(referenceBox()).toHaveValue('A1');

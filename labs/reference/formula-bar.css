@@ -1,6 +1,13 @@
 /* Formula Bar: the reference box, the cancel and confirm buttons, the glyph, the content and its result. */
 
+/*
+ * Each size sets the bar's control height, text size and line: the reference box and the content
+ * are as tall as a control of that size, and the buttons a step smaller.
+ */
 .ui-formula-bar {
+  --ref-formula-bar-height: var(--ref-control-height-md);
+  --ref-formula-bar-line: 18px;
+  --ref-formula-bar-glyph: 18px;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -15,17 +22,41 @@
   font-size: var(--ref-font-size-md);
 }
 
+.ui-formula-bar[data-size='xs'] {
+  --ref-formula-bar-height: var(--ref-control-height-xs);
+  font-size: var(--ref-font-size-xs);
+  --ref-formula-bar-line: 14px;
+  --ref-formula-bar-glyph: 14px;
+  padding: 2px 4px;
+}
+
+.ui-formula-bar[data-size='sm'] {
+  --ref-formula-bar-height: var(--ref-control-height-sm);
+  font-size: var(--ref-font-size-sm);
+  --ref-formula-bar-line: 16px;
+  --ref-formula-bar-glyph: 16px;
+}
+
+.ui-formula-bar[data-size='lg'] {
+  --ref-formula-bar-height: var(--ref-control-height-lg);
+  font-size: var(--ref-font-size);
+  --ref-formula-bar-line: 20px;
+  --ref-formula-bar-glyph: 20px;
+  padding: 4px 8px;
+}
+
 .ui-formula-bar__reference {
   box-sizing: border-box;
   flex: none;
-  width: 64px;
-  height: var(--ref-control-height-md);
+  width: calc(2 * var(--ref-formula-bar-height) + 8px);
+  height: var(--ref-formula-bar-height);
   padding: 0 6px;
   border: 1px solid var(--ref-field-border);
   border-radius: var(--ref-radius);
   background: var(--ref-field-fill);
   color: inherit;
-  font: var(--ref-font-size-md) var(--ref-mono);
+  font: inherit;
+  font-family: var(--ref-mono);
   text-align: center;
 }
 
@@ -59,8 +90,8 @@
 
 .ui-formula-bar__glyph {
   flex: none;
-  width: 18px;
-  height: 18px;
+  width: var(--ref-formula-bar-glyph);
+  height: var(--ref-formula-bar-glyph);
   padding-inline: 2px;
   color: var(--ref-muted);
 }
@@ -69,6 +100,22 @@
   flex: 1 1 auto;
   width: auto;
   min-width: 48px;
+}
+
+/* The one-line content is as tall as the reference box: its line, centred, in the bar's type. */
+.ui-formula-bar .ui-formula-bar__editor.ui-code-editor[data-variant] {
+  font-size: inherit;
+}
+
+.ui-formula-bar .ui-formula-bar__editor[data-single-line] .ui-code-editor__surface {
+  height: calc(var(--ref-formula-bar-height) - 2px);
+}
+
+.ui-formula-bar__editor :is(.ui-code-editor__highlight, .ui-code-editor__input) {
+  padding-block: calc((var(--ref-formula-bar-height) - 2px - var(--ref-formula-bar-line)) / 2);
+  font: inherit;
+  font-family: var(--ref-mono);
+  line-height: var(--ref-formula-bar-line);
 }
 
 .ui-formula-bar__result {

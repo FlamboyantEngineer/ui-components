@@ -71,6 +71,13 @@ With `functions` (completions such as `{ label: 'SUM', description }`), the fₓ
 Implementation: `src/components/formula-bar/formula-bar.tsx`, `src/components/formula-bar/formula-bar-functions.tsx`
 Verification: `src/components/formula-bar/formula-bar.test.tsx`, `e2e/formula-bar.spec.ts`
 
+### UIC-FORMULA-BAR-3.6 - Sizes
+
+`size` (`xs`, `sm`, `md` or `lg`, default `md`) shall set the bar's control size: the root publishes `data-size`, so a stylesheet sizes the reference box, the content, the glyph and the result together, and the cancel, confirm and fₓ buttons take the size a step below the bar's (`xs` for `xs` and `sm`, `sm` for `md`, `md` for `lg`), as icon buttons beside a field of that size. Every size keeps the same parts and behaviour; the reference stylesheet makes the reference box and the one-line content as tall as a control of the size.
+
+Implementation: `src/components/formula-bar/formula-bar.tsx`, `src/components/formula-bar/formula-bar-functions.tsx`
+Verification: `src/components/formula-bar/formula-bar.test.tsx`, `e2e/formula-bar.spec.ts`
+
 ## UIC-FORMULA-BAR-4 - Accessibility and hooks
 
 ### UIC-FORMULA-BAR-4.1 - Accessible bar
@@ -89,20 +96,21 @@ Verification: `src/components/formula-bar/formula-bar.test.tsx`
 
 ## Hooks
 
-| Hook                        | Kind  | Values | Description                                                       |
-| --------------------------- | ----- | ------ | ----------------------------------------------------------------- |
-| `ui-formula-bar`            | root  |        | The `<div>` around the reference box, the buttons and the editor. |
-| `ui-formula-bar__reference` | slot  |        | The reference box `<input>`.                                      |
-| `ui-formula-bar__status`    | slot  |        | The visually hidden status that reads a refused reference.        |
-| `ui-formula-bar__cancel`    | slot  |        | The button that restores the content (also `ui-button`).          |
-| `ui-formula-bar__confirm`   | slot  |        | The button that commits the content (also `ui-button`).           |
-| `ui-formula-bar__glyph`     | slot  |        | The decorative fₓ glyph, without `functions`.                     |
-| `ui-formula-bar__functions` | slot  |        | The fₓ button listing `functions` (also `ui-dropdown-menu`).      |
-| `ui-formula-bar__editor`    | slot  |        | The single-line code editor (also `ui-code-editor`).              |
-| `ui-formula-bar__result`    | slot  |        | The caller's evaluation of the content.                           |
-| `data-dirty`                | state | `true` | On the root while the content differs from the cell's.            |
-| `data-disabled`             | state | `true` | On the root while disabled or no cell is active.                  |
-| `data-invalid`              | state | `true` | On the reference box while it holds a refused reference.          |
-| `data-focused`              | state | `true` | On the reference box while it has focus (React Aria).             |
-| `data-focus-visible`        | state | `true` | On the reference box while it has keyboard focus (React Aria).    |
-| `data-hovered`              | state | `true` | On the reference box while the pointer is over it (React Aria).   |
+| Hook                        | Kind  | Values                 | Description                                                       |
+| --------------------------- | ----- | ---------------------- | ----------------------------------------------------------------- |
+| `ui-formula-bar`            | root  |                        | The `<div>` around the reference box, the buttons and the editor. |
+| `ui-formula-bar__reference` | slot  |                        | The reference box `<input>`.                                      |
+| `ui-formula-bar__status`    | slot  |                        | The visually hidden status that reads a refused reference.        |
+| `ui-formula-bar__cancel`    | slot  |                        | The button that restores the content (also `ui-button`).          |
+| `ui-formula-bar__confirm`   | slot  |                        | The button that commits the content (also `ui-button`).           |
+| `ui-formula-bar__glyph`     | slot  |                        | The decorative fₓ glyph, without `functions`.                     |
+| `ui-formula-bar__functions` | slot  |                        | The fₓ button listing `functions` (also `ui-dropdown-menu`).      |
+| `ui-formula-bar__editor`    | slot  |                        | The single-line code editor (also `ui-code-editor`).              |
+| `ui-formula-bar__result`    | slot  |                        | The caller's evaluation of the content.                           |
+| `data-size`                 | state | `xs`, `sm`, `md`, `lg` | On the root: the bar's control size.                              |
+| `data-dirty`                | state | `true`                 | On the root while the content differs from the cell's.            |
+| `data-disabled`             | state | `true`                 | On the root while disabled or no cell is active.                  |
+| `data-invalid`              | state | `true`                 | On the reference box while it holds a refused reference.          |
+| `data-focused`              | state | `true`                 | On the reference box while it has focus (React Aria).             |
+| `data-focus-visible`        | state | `true`                 | On the reference box while it has keyboard focus (React Aria).    |
+| `data-hovered`              | state | `true`                 | On the reference box while the pointer is over it (React Aria).   |
