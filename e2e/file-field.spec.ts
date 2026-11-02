@@ -46,7 +46,7 @@ test.describe('File Field lab', () => {
     await lab.expectAccessible();
   });
 
-  test('UIC-FILE-FIELD-3.2 lists removed files below the held files as chips the height of a file row', async ({
+  test('UIC-FILE-FIELD-3.2 lists removed files below the held files like file rows, with size and download', async ({
     page,
     lab,
   }) => {
@@ -63,6 +63,8 @@ test.describe('File Field lab', () => {
       for (const chip of await chips.all()) {
         const chipBox = await box(chip);
         expect(Math.abs(chipBox.height - fileBox.height), width).toBeLessThanOrEqual(1);
+        expect(Math.abs(chipBox.width - fileBox.width), width).toBeLessThanOrEqual(1);
+        await expect(chip.locator('.ui-file-field__removed-size')).toBeVisible();
         expect(chipBox.x + chipBox.width).toBeLessThanOrEqual(fieldBox.x + fieldBox.width + 0.5);
         // The struck name keeps its descenders: its box is no shorter than its text.
         const name = chip.locator('del');
@@ -73,6 +75,14 @@ test.describe('File Field lab', () => {
       const long = chips.filter({ hasText: 'north pier' }).locator('del');
       expect(await long.evaluate((node) => node.scrollWidth > node.clientWidth)).toBe(true);
     }
+    const wide = field(page, 'removed-wide');
+    const notes = wide.locator('.ui-file-field__removed', { hasText: 'Notes.txt' });
+    const download = notes.getByRole('link', { name: 'Download Notes.txt' });
+    await expect(download).toHaveAttribute('download', 'Notes.txt');
+    // The long-named file has no download link, and shows none.
+    await expect(
+      wide.locator('.ui-file-field__removed', { hasText: 'north pier' }).getByRole('link'),
+    ).toHaveCount(0);
     const narrow = field(page, 'removed-narrow');
     await narrow.getByRole('button', { name: 'Restore Notes.txt' }).click();
     await expect(narrow.locator('.ui-file-upload__file')).toHaveCount(2);
