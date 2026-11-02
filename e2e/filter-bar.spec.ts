@@ -1,4 +1,5 @@
 import { expect, test, matrixCell } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 test.describe('Filter Bar lab', () => {
   test('UIC-FILTER-BAR-2.1 UIC-FILTER-BAR-4.1 reads every field type as a chip', async ({
@@ -99,4 +100,27 @@ test.describe('Filter Bar lab', () => {
     const results = page.locator('[data-lab-helpers] [data-lab-call]');
     await expect(results).toHaveText(['true', 'false', 'true', 'false']);
   });
+});
+
+test('UIC-FILTER-BAR-1.2 UIC-FILTER-BAR-3.2 reports which conditions are complete and filters by those alone', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('filter-bar');
+  const demo = page.locator('[data-lab-demo="completeness"]');
+  const state = (field: string) => demo.locator(`[data-lab-condition="${field}"]`);
+  await expect(state('title')).toHaveText(/: incomplete$/);
+  await expect(state('published')).toHaveText(/not-empty null: complete$/);
+  await expect(state('pages')).toHaveText(/"max":null\}: incomplete$/);
+  await expect(state('genre')).toHaveText(/: complete$/);
+  const before = await demo.locator('[data-lab-output="books"]').textContent();
+
+  await demo.getByRole('button', { name: /^Pages/ }).click();
+  const dialog = page.getByRole('dialog', { name: 'Pages' });
+  await dialog.getByRole('textbox', { name: 'To' }).fill('300');
+  await dialog.getByRole('textbox', { name: 'To' }).press('Tab');
+  await page.keyboard.press('Escape');
+  await expect(state('pages')).toHaveText(/"max":300\}: complete$/);
+  await expect(demo.locator('[data-lab-output="books"]')).not.toHaveText(requireDefined(before));
+  await lab.expectAccessible('[data-lab-demo="completeness"]');
 });

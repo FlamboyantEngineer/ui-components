@@ -327,3 +327,57 @@ test.describe('Emoji Picker lab', () => {
     await expect(loaded.getByRole('grid', { name: 'Smileys & Emotion' })).toBeVisible();
   });
 });
+
+test.describe('Emoji Picker lifetime', () => {
+  test('UIC-EMOJI-PICKER-3.1 a trigger disabled while open closes its picker and stays closed', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('emoji-picker');
+    const demo = page.locator('[data-lab-demo="locking-trigger"]');
+    const react = demo.getByRole('button', { name: 'React', exact: true });
+    await demo.getByRole('button', { name: 'Disable in 2 seconds' }).click();
+    await react.click();
+    const picker = page.locator('.ui-emoji-picker__popover');
+    await expect(picker).toBeVisible();
+    await expect(picker).toHaveCount(0, { timeout: 5000 });
+    await expect(demo.locator('[data-lab-output="trigger"]')).toHaveText('disabled');
+    await expect(react).toBeDisabled();
+    await demo.getByRole('button', { name: 'Enable' }).click();
+    await expect(react).toBeEnabled();
+    await expect(picker).toHaveCount(0);
+    await react.click();
+    await expect(picker).toBeVisible();
+    await page.keyboard.type('rocket');
+    await page.keyboard.press('Enter');
+    await expect(demo.locator('[data-lab-output="chosen"]')).toHaveText('🚀');
+  });
+
+  test('UIC-EMOJI-PICKER-3.2 UIC-EMOJI-PICKER-3.1 focuses the search on mount only with autoFocus', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('emoji-picker');
+    const demo = page.locator('[data-lab-demo="emoji-autofocus"]');
+    const popupSearch = page
+      .getByRole('dialog', { name: 'Popup emoji picker' })
+      .getByRole('searchbox');
+    await demo.getByRole('button', { name: 'Open the popup picker' }).click();
+    await expect(popupSearch).toBeFocused();
+    await page.keyboard.press('Escape');
+    await demo.getByRole('radio', { name: 'off' }).click();
+    await demo.getByRole('button', { name: 'Open the popup picker' }).click();
+    await expect(page.getByRole('dialog', { name: 'Popup emoji picker' })).toBeFocused();
+    await expect(popupSearch).not.toBeFocused();
+    await page.keyboard.press('Escape');
+
+    await demo.getByRole('button', { name: 'Mount the inline picker' }).click();
+    const inline = demo.getByRole('dialog', { name: 'Inline emoji picker' });
+    await expect(inline).toBeVisible();
+    await expect(inline.getByRole('searchbox')).not.toBeFocused();
+    await demo.getByRole('radio', { name: 'on' }).click();
+    await demo.getByRole('button', { name: 'Mount the inline picker' }).click();
+    await expect(inline.getByRole('searchbox')).toBeFocused();
+    await lab.expectAccessible('[data-lab-demo="emoji-autofocus"]');
+  });
+});

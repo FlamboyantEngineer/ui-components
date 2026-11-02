@@ -316,3 +316,30 @@ test.describe('Form lab', () => {
     await lab.expectAccessible('[data-lab-section="Inside a shadow root"]');
   });
 });
+
+test('UIC-FORM-2.2 reports each validity change and focuses a chosen blocker', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('form');
+  const demo = page.locator('[data-lab-demo="blocker-log"]');
+  const log = demo.locator('[data-lab-output="validity-log"] li');
+  await expect(log).toHaveText(['Name invalid, Handle pending']);
+  // Reading validity reveals nothing: no field shows an error.
+  await expect(demo.locator('[data-invalid]')).toHaveCount(0);
+
+  await demo.getByRole('button', { name: 'Finish the handle check' }).click();
+  await expect(log).toHaveText(['Name invalid, Handle pending', 'Name invalid']);
+  await demo.getByRole('checkbox', { name: 'Ask for a phone number' }).press('Space');
+  await expect(log.last()).toHaveText('Name invalid, Phone invalid');
+  await demo.getByRole('button', { name: 'Go to Phone' }).click();
+  await expect(demo.getByRole('textbox', { name: 'Phone' })).toBeFocused();
+  await demo.getByRole('button', { name: 'Go to Name' }).click();
+  await expect(demo.getByRole('textbox', { name: 'Name' })).toBeFocused();
+  await page.keyboard.type('Ada');
+  await expect(log.last()).toHaveText('Phone invalid');
+  await demo.getByRole('checkbox', { name: 'Ask for a phone number' }).press('Space');
+  await expect(log.last()).toHaveText('clear');
+  await expect(demo.locator('[data-lab-blocker-buttons] button')).toHaveCount(0);
+  await lab.expectAccessible('[data-lab-demo="blocker-log"]');
+});

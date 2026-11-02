@@ -9,6 +9,7 @@ import {
 import { PropertyPanel } from '../../src/components/property-panel/property-panel.js';
 import { PropertyScope } from '../../src/components/property-scope/property-scope.js';
 import { UiProvider } from '../../src/core/provider.js';
+import { FourSidePropertyStripHostCases } from './four-side-property-strip-host-cases.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const states = ['plain', 'unit', 'overridden', 'required', 'wide', 'hint'] as const;
@@ -347,5 +348,6 @@ mountLab(
         )}
       />
     </LabSection>
+    <FourSidePropertyStripHostCases />
   </>,
 );

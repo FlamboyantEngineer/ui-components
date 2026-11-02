@@ -16,7 +16,7 @@ Verification: `src/components/filter-bar/filter-model.test.ts`, `src/components/
 A condition's value shall take the shape its operator needs on its field's type: text for a `text` field, a number, a `{ min, max }` range for `number` with `between`, a `YYYY-MM-DD` date, a `{ start, end }` range of dates for `date` with `between`, a list of option values for `choice` and `person`, a boolean, and `null` for `empty` and `not-empty`. A new condition takes the field's first operator and an empty value of its shape (a boolean starts at `true`), a range or list of its own that no other condition shares; changing the operator keeps the value when the new operator takes the same shape and empties it otherwise. A condition is complete when its field offers its operator and it holds every value its operator needs (`isFilterConditionComplete`); a range needs both ends. A value of another shape, such as `null` for a list, a value saved in an older shape or one kept after the field's type or operators changed, leaves the condition incomplete, so it filters nothing; the editors (Filter Bar and Condition Builder) show it as that shape's empty value, a boolean as unanswered, and the first edit replaces it.
 
 Implementation: `src/components/filter-bar/filter-model.ts`
-Verification: `src/components/filter-bar/filter-model.test.ts`
+Verification: `src/components/filter-bar/filter-model.test.ts`, `e2e/filter-bar.spec.ts`
 
 ### UIC-FILTER-BAR-1.3 - Controlled value
 

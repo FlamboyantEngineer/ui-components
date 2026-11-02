@@ -9,6 +9,7 @@ import {
 } from '../../src/components/filter-bar/filter-bar.js';
 import { SearchField } from '../../src/components/search-field/search-field.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { FilterBarCompletenessCases } from './filter-bar-completeness-cases.js';
 import { LabHelperCalls } from './lab-helper-calls.js';
 import { bookFields, getBookValue, sampleBooks } from './filter-samples.js';
 
@@ -160,5 +161,6 @@ mountLab(
         ]}
       />
     </LabSection>
+    <FilterBarCompletenessCases />
   </>,
 );
