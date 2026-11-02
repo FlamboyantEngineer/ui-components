@@ -165,3 +165,18 @@ test.describe('Merge View lab', () => {
     await expect(demo.getByRole('textbox', { name: 'Result of conflict 1' })).toBeFocused();
   });
 });
+
+test('UIC-MERGE-VIEW-1.1 labels each pane and keeps the labels as the base pane comes and goes', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('merge-view');
+  const merge = page.locator('[data-lab-field="recipe"]');
+  const titles = merge.locator('.ui-merge-view__title');
+  await expect(titles).toHaveText(['My edits', 'Original', 'Shared copy', 'Result']);
+  await page.getByRole('switch', { name: 'Show the original' }).press('Space');
+  await expect(merge).not.toHaveAttribute('data-show-base');
+  await expect(titles).toHaveText(['My edits', 'Shared copy', 'Result']);
+  await page.getByRole('switch', { name: 'Show the original' }).press('Space');
+  await expect(titles).toHaveText(['My edits', 'Original', 'Shared copy', 'Result']);
+});

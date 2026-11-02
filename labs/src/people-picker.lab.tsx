@@ -5,6 +5,7 @@ import {
   type PeoplePickerLoader,
   type PeoplePickerPerson,
 } from '../../src/components/people-picker/people-picker.js';
+import { PeoplePickerPagedCases } from './people-picker-paged-cases.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const sizes = ['sm', 'md', 'lg'] as const;
@@ -190,5 +191,6 @@ mountLab(
         recent={recent}
       />
     </LabSection>
+    <PeoplePickerPagedCases />
   </>,
 );

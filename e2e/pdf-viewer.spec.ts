@@ -377,6 +377,44 @@ test.describe('PDF Viewer lab', () => {
     await expect(matches).toHaveText(/of 2$/);
   });
 
+  test('UIC-PDF-VIEWER-5.7 finds composed, decomposed and plain accents and whole words', async ({
+    page,
+    lab,
+  }) => {
+    const accents = await openCase(page, lab, 'accents');
+    const field = accents.getByRole('searchbox', { name: 'Find everywhere' });
+    const matches = accents.locator('[data-lab-output="matches"]');
+    const marks = accents.locator('.ui-pdf-viewer__match');
+    const toggle = (name: string) =>
+      accents.getByRole('button', { name, exact: true }).press('Enter');
+    await expect(field).toHaveValue('café');
+    await expect(matches).toHaveText('1 of 3');
+    await expect(marks).toHaveCount(3);
+    await toggle('Any accent');
+    await expect(matches).toHaveText('1 of 7');
+    await toggle('Whole words');
+    await expect(matches).toHaveText('1 of 5');
+    await toggle('Any accent');
+    await field.fill('cafe');
+    await expect(matches).toHaveText('1 of 1');
+    await expect(accents.locator('.ui-pdf-viewer__match[data-current]')).toHaveText('cafe');
+    await toggle('Whole words');
+    await field.fill('Café');
+    await toggle('Same case');
+    await expect(matches).toHaveText('1 of 2');
+    await toggle('Any accent');
+    await expect(matches).toHaveText('1 of 3');
+    await expect(marks).toHaveCount(3);
+    await toggle('Mark every match');
+    await expect(accents.getByRole('button', { name: 'Mark every match' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+    await expect(marks).toHaveCount(1);
+    await expect(matches).toHaveText('1 of 3');
+    await lab.expectAccessible('[data-lab-case="accents"]');
+  });
+
   test('UIC-PDF-VIEWER-6.3 UIC-PDF-VIEWER-6.1 UIC-PDF-VIEWER-4.3 projects the toolbar above a panel and follows the contents', async ({
     page,
     lab,
