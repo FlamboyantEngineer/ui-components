@@ -16,7 +16,7 @@ import { getBlockItems, getWrapItems } from './format-items.js';
 import type { RichTextCommand } from './rich-text-command.js';
 import type { RichTextController } from './rich-text-controller.js';
 import { useRichTextController } from './rich-text-controller.js';
-import { useBlockDrop } from './use-block-drop.js';
+import { useBlockDrop, type BlockDragSource } from './use-block-drop.js';
 import { useBlockTarget } from './use-block-target.js';
 import { useRichTextEditorContext } from './rich-text-context.js';
 import { useFocusReturn } from './use-focus-return.js';
@@ -100,8 +100,8 @@ export function BlockHandle({ className, grip = true, menu = true, ...rest }: Bl
   useLayoutEffect(() => reserveGutter({ grip, menu }), [grip, menu, reserveGutter]);
   const { ref: returnFocusRef, request: returnFocus } = useFocusReturn(controller);
   const [isMenuOpen, setMenuOpen] = useState(false);
-  // The dragged block's position, held so the handle, and its grip that ends the drag, stay.
-  const [dragged, setDragged] = useState<number | null>(null);
+  // The dragged block and its document, held so the handle, and its grip that ends the drag, stay.
+  const [dragged, setDragged] = useState<BlockDragSource | null>(null);
   const target = useBlockTarget(isMenuOpen || dragged !== null);
   const gap = useBlockDrop(surfaceRef, dragged);
   const select = useEditorEventCallback(selectBlock);
@@ -112,6 +112,7 @@ export function BlockHandle({ className, grip = true, menu = true, ...rest }: Bl
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData('text/plain', selection.node.textContent);
     if (isHTMLElement(dom)) event.dataTransfer.setDragImage(dom, 0, 0);
+    return { pos, doc: view.state.doc };
   });
   if (isMenuOpen && !controller.isEditable) setMenuOpen(false);
   if (dragged !== null && !controller.isEditable) setDragged(null);
@@ -138,10 +139,7 @@ export function BlockHandle({ className, grip = true, menu = true, ...rest }: Bl
             {...hooks.slot('grip')}
             aria-hidden="true"
             draggable
-            onDragStart={(event) => {
-              startDrag(event, target.pos);
-              setDragged(target.pos);
-            }}
+            onDragStart={(event) => setDragged(startDrag(event, target.pos))}
             onDragEnd={() => setDragged(null)}
           >
             <Glyph icon={DragHandleGlyph} />
