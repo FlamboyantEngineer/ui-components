@@ -7,7 +7,9 @@ import type {
 } from '../../src/components/completion-list/completion-list.js';
 import { QueryField, type QueryGrammar } from '../../src/components/query-field/query-field.js';
 import { UiProvider } from '../../src/core/provider.js';
+import { Button } from '../../src/components/button/button.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabOutput } from './lab-output.js';
 
 const column: CSSProperties = { width: 460 };
 
@@ -183,6 +185,48 @@ function SubmitDemo() {
   );
 }
 
+/**
+ * The host owns the query: buttons outside the field replace or clear it, the field reports each
+ * edit, and completions and submission work on whatever the host holds now.
+ */
+function ControlledDemo() {
+  const [query, setQuery] = useState('genre:history');
+  const [submitted, setSubmitted] = useState<string[]>([]);
+  return (
+    <div data-lab-demo="controlled" style={column}>
+      <QueryField
+        label="Search the catalogue"
+        grammar={grammar}
+        value={query}
+        onChange={setQuery}
+        onSubmit={(next) => setSubmitted([...submitted, next])}
+      />
+      <Button onPress={() => setQuery('reader:')}>Replace with reader:</Button>
+      <Button onPress={() => setQuery('')}>Clear the query</Button>
+      <LabOutput name="Host query">{query === '' ? 'empty' : query}</LabOutput>
+      <LabOutput name="Catalogue submitted">{submitted.join(' | ') || 'nothing yet'}</LabOutput>
+    </div>
+  );
+}
+
+/** A grammar with none of its optional services: no highlighting, completions or problems. */
+const plainGrammar: QueryGrammar = {};
+
+function PlainDemo() {
+  const [submitted, setSubmitted] = useState('nothing yet');
+  return (
+    <div data-lab-demo="plain" style={column}>
+      <QueryField
+        label="Plain query"
+        grammar={plainGrammar}
+        defaultValue="anything: goes ("
+        onSubmit={setSubmitted}
+      />
+      <LabOutput name="Plain submitted">{submitted}</LabOutput>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -243,6 +287,18 @@ mountLab(
       description="Type a field name for its completions, then a colon for its values. Suggestions are inserted only from a list on screen: after Escape, or before a list has shown, the first Tab shows it and the next Tab inserts the active suggestion; Tab with nothing to suggest moves on. Enter, when no completion is open, or the run button submits a query without errors."
     >
       <SubmitDemo />
+    </LabSection>
+    <LabSection
+      title="Host-controlled query"
+      description="The host holds the query through value and onChange: the buttons replace or clear it from outside, the output follows every keystroke, and completions and submission use the host's current query."
+    >
+      <ControlledDemo />
+    </LabSection>
+    <LabSection
+      title="Minimal grammar"
+      description="An empty grammar: no tokenize, complete or diagnose. The text is not highlighted, Tab moves on with nothing to suggest, and any query submits since nothing reports an error."
+    >
+      <PlainDemo />
     </LabSection>
   </>,
 );

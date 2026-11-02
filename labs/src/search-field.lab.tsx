@@ -1,11 +1,18 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
 import { SearchField } from '../../src/components/search-field/search-field.js';
 import { Switch } from '../../src/components/switch/switch.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabForm, MountOnDemand } from './lab-form.js';
 import { LabOutput } from './lab-output.js';
 
-const sizes = ['sm', 'md'] as const;
-const states = ['empty', 'filled', 'read-only', 'disabled'] as const;
+const sizes = ['xs', 'sm', 'md', 'lg'] as const;
+const states = ['empty', 'filled', 'invalid', 'pending', 'read-only', 'disabled'] as const;
+
+const tooShort = (value: string) =>
+  value.length > 0 && value.length < 3
+    ? { severity: 'error' as const, message: 'Too short.' }
+    : null;
 const fruit = ['Apple', 'Apricot', 'Banana', 'Cherry', 'Fig', 'Grape', 'Lemon', 'Mango', 'Pear'];
 
 function FilterList() {
@@ -85,6 +92,96 @@ function Loading() {
   );
 }
 
+/**
+ * A named search in a form: it submits its query and a native reset puts back the initial one.
+ * Every change, clear and Enter shows in the event list.
+ */
+function FormSearch() {
+  const [events, setEvents] = useState<string[]>([]);
+  const log = (event: string) => setEvents((list) => [...list.slice(-5), event]);
+  return (
+    <LabForm label="Recipe search">
+      <SearchField
+        label="Recipes"
+        name="q"
+        defaultValue="soup"
+        onChange={(value) => log(`change "${value}"`)}
+        onClear={() => log('clear')}
+        onSubmit={(value) => log(`enter "${value}"`)}
+        data-lab-field="form"
+      />
+      <LabOutput name="Search events">{events.join(' · ') || 'none'}</LabOutput>
+    </LabForm>
+  );
+}
+
+/** A rule under each validation behaviour: native blocks the form's submit, aria only marks the box. */
+function ValidationBehaviours() {
+  return (
+    <>
+      <LabForm label="Native city search">
+        <SearchField
+          label="City (native)"
+          labelLayout="label-control"
+          name="city"
+          defaultValue="Ro"
+          validate={tooShort}
+          validationBehavior="native"
+          data-lab-field="native"
+        />
+      </LabForm>
+      <LabForm label="Aria city search">
+        <SearchField
+          label="City (aria)"
+          labelLayout="label-control"
+          name="city"
+          defaultValue="Ro"
+          validate={tooShort}
+          data-lab-field="aria"
+        />
+      </LabForm>
+    </>
+  );
+}
+
+/** A caller focuses the input through `inputRef`; a box mounted with `autoFocus` takes focus. */
+function FocusedSearch() {
+  const inputRef = useRef<HTMLInputElement>(null);
+  return (
+    <>
+      <SearchField label="Search the archive" inputRef={inputRef} data-lab-field="input-ref" />
+      <Button onPress={() => inputRef.current?.focus()}>Focus the search</Button>
+      <MountOnDemand label="an autofocused search">
+        <SearchField label="Quick find" autoFocus data-lab-field="autofocus" />
+      </MountOnDemand>
+    </>
+  );
+}
+
+/** Input hints a phone keyboard and the browser read: autofill, spelling, keyboard and Enter key. */
+function InputHints() {
+  return (
+    <>
+      <SearchField
+        label="Order number"
+        inputMode="numeric"
+        enterKeyHint="search"
+        autoComplete="off"
+        spellCheck={false}
+        data-lab-field="hints-number"
+      />
+      <SearchField
+        label="Search messages"
+        inputMode="search"
+        enterKeyHint="go"
+        autoComplete="on"
+        spellCheck
+        data-lab-field="hints-text"
+      />
+    </>
+  );
+}
+
 mountLab(
   <>
     <LabSection title="Sizes and states" description="Each size against each state.">
@@ -95,7 +192,9 @@ mountLab(
             label={`Search, ${state}, ${size}`}
             placeholder="Search"
             size={size}
-            defaultValue={state === 'empty' ? '' : 'Apple'}
+            defaultValue={state === 'empty' ? '' : state === 'invalid' ? 'Ap' : 'Apple'}
+            validate={state === 'invalid' ? tooShort : undefined}
+            isPending={state === 'pending'}
             isReadOnly={state === 'read-only'}
             isDisabled={state === 'disabled'}
           />
@@ -132,6 +231,30 @@ mountLab(
         clearLabel="Clear the glossary filter"
         data-lab-field="worded"
       />
+    </LabSection>
+    <LabSection
+      title="Form, reset and events"
+      description="Submit sends the query under its name; Reset puts back soup. Each change, clear (Escape or the button) and Enter shows in the events."
+    >
+      <FormSearch />
+    </LabSection>
+    <LabSection
+      title="Validation behaviour"
+      description="Both cities are too short: native validation stops the form's submit, aria validation marks the box and lets it through."
+    >
+      <ValidationBehaviours />
+    </LabSection>
+    <LabSection
+      title="Focusing the input"
+      description="A caller focuses the input through inputRef; a search mounted with autoFocus takes focus as it appears."
+    >
+      <FocusedSearch />
+    </LabSection>
+    <LabSection
+      title="Input hints"
+      description="On a phone, the order number opens a number pad with a Search key and no spelling marks; the message search opens a search keyboard with a Go key."
+    >
+      <InputHints />
     </LabSection>
   </>,
 );

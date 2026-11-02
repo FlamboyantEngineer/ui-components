@@ -117,3 +117,53 @@ export function DialogSuggestingField() {
     </div>
   );
 }
+
+/**
+ * A multiline editor that listens to the text area's own events through `controlProps` and holds
+ * it through `textAreaRef`. Each event lands in an ordered list; typing with an input method
+ * (Japanese kana, say) adds composition start, updates and end. The field still owns the value.
+ */
+export function MultilineEditorBridge() {
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
+  const [value, setValue] = useState('');
+  const [events, setEvents] = useState<string[]>([]);
+  const [selection, setSelection] = useState('none');
+  const log = (event: string) => setEvents((list) => [...list.slice(-7), event]);
+  return (
+    <div data-lab-demo="editor-bridge">
+      <TextField
+        label="Margin note"
+        description="Type, or compose with an input method: each event shows below in order."
+        multiline
+        minRows={2}
+        value={value}
+        onChange={setValue}
+        textAreaRef={textAreaRef}
+        controlProps={{
+          onBeforeInput: (event) => {
+            const data = (event.nativeEvent as InputEvent).data;
+            log(`beforeinput ${data ?? ''}`.trim());
+          },
+          onCompositionStart: () => log('compositionstart'),
+          onCompositionUpdate: (event) => log(`compositionupdate ${event.data}`),
+          onCompositionEnd: (event) => log(`compositionend ${event.data}`),
+        }}
+      />
+      <Button
+        onPress={() => {
+          const area = textAreaRef.current;
+          if (!area) return;
+          area.focus();
+          area.select();
+          setSelection(`${area.tagName.toLowerCase()} ${area.selectionStart}-${area.selectionEnd}`);
+        }}
+      >
+        Select the note
+      </Button>
+      <Button onPress={() => setEvents([])}>Clear the events</Button>
+      <LabOutput name="Note">{value === '' ? 'empty' : value}</LabOutput>
+      <LabOutput name="Note selection">{selection}</LabOutput>
+      <LabOutput name="Note events">{events.join(' · ') || 'none'}</LabOutput>
+    </div>
+  );
+}
