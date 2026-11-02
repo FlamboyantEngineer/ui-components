@@ -101,7 +101,7 @@ Verification: `src/components/split-view/split-view.test.tsx`, `e2e/split-view.s
 `ResizeHandle` shall work outside `SplitView` in any unit: the caller passes `value`, `minValue`, `maxValue`, `extent` and `getUnitsPerPixel` and receives `onChange`, `onChangeEnd` and `onResizingChange`. An enabled handle is in the tab order (`tabIndex` 0) unless the caller passes its own `tabIndex`, such as `-1` for a handle that only the pointer drags while another control takes the keyboard. `isDisabled` removes it from the tab order, ignores input and publishes `data-disabled` and `aria-disabled`. Becoming disabled during a drag shall release capture, clear the resizing state and shield, and report `onResizingChange(false)` without `onChangeEnd`; re-enabling requires a new press. A change of `resetKey`, `orientation`, `sizedPane` or the writing direction during a drag abandons it the same way without disabling later presses, and so does unmounting the handle. Every abandoned drag calls `onChangeCancel`, so a caller holding a live preview of the drag drops it. `resolveResizeKeyboardValue` exposes the keyboard contract. `size` (`xs`, `sm`, `md` or `lg`, default `md`) sets how thick the bar and its grip are drawn, published as `data-size`; it changes no behaviour. `ResizableSplitView` passes its `separatorSize` to every separator, a name kept apart from `size`, the first pane's numeric size.
 
 Implementation: `src/components/split-view/resize-handle.tsx`
-Verification: `src/components/split-view/split-view.test.tsx`
+Verification: `src/components/split-view/split-view.test.tsx`, `e2e/split-view.spec.ts`
 
 ### UIC-SPLIT-VIEW-3.5 - Hooks and caller attributes
 

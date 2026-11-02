@@ -293,7 +293,7 @@
   "pages": "ページ",
   "outline": "アウトライン",
   "sectionsIn": "{label}のセクション",
-  "pageNumber": "{pageNumber} ページ",
+  "pageNumber": "{pageNumber, number} ページ",
   "rotateClockwise": "右に回転",
   "rotateCounterclockwise": "左に回転",
   "print": "印刷",

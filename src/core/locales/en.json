@@ -293,7 +293,7 @@
   "pages": "Pages",
   "outline": "Outline",
   "sectionsIn": "Sections in {label}",
-  "pageNumber": "Page {pageNumber}",
+  "pageNumber": "Page {pageNumber, number}",
   "rotateClockwise": "Rotate clockwise",
   "rotateCounterclockwise": "Rotate counterclockwise",
   "print": "Print",

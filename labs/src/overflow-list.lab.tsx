@@ -8,6 +8,7 @@ import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { resolveOverflowCount } from '../../src/utils/index.js';
 import { LabHelperCalls } from './lab-helper-calls.js';
 import { NoteRow } from './overflow-list-notes.js';
+import { OverflowItemsHost } from './overflow-items-host.js';
 
 const fruit = ['Apple', 'Banana', 'Cherry', 'Dragon fruit', 'Elderberry', 'Fig', 'Grape'];
 const tools = ['Cut', 'Copy', 'Paste', 'Bold', 'Italic', 'Underline', 'Link'];
@@ -155,6 +156,12 @@ mountLab(
       description="Type a note in a kept item, then reverse, add or remove items: each note stays with its item, and focus with the field it is in. An item that leaves for the menu loses its note."
     >
       <NoteRow />
+    </LabSection>
+    <LabSection
+      title="A host row with useOverflowItems"
+      description="A row the host renders itself, measured by useOverflowItems. The pinned item has a higher getPriority and is hidden last; minVisible keeps two items however narrow. Direct children put the +N indicator at the end, Placed indicator puts it after the first item through indicatorRef, and Nested list measures a list of its own through itemContainerRef beside a New folder button that keeps its size. The readout lists the kept and hidden items."
+    >
+      <OverflowItemsHost />
     </LabSection>
     <LabSection
       title="Host helpers"

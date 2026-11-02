@@ -264,4 +264,36 @@ test.describe('Breadcrumb lab', () => {
       ).toBe(true);
     }
   });
+
+  test('UIC-BREADCRUMB-1.2 replaces the separator or draws none, in both directions and collapsed', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('breadcrumb');
+    const trail = (separator: string, kind: string, direction: string) =>
+      page.getByRole('navigation', { name: `Trail, ${separator}, ${kind}, ${direction}` });
+    for (const direction of ['ltr', 'rtl']) {
+      const slash = trail('slash glyph', 'short', direction);
+      await expect(slash.getByRole('listitem')).toHaveCount(4);
+      await expect(slash.locator('.ui-breadcrumb__separator')).toHaveCount(3);
+      await expect(slash.locator('.ui-breadcrumb__separator path').first()).toHaveAttribute(
+        'd',
+        'M11 2 5 14',
+      );
+      const dot = trail('dot element', 'short', direction);
+      await expect(dot.locator('.ui-breadcrumb__separator circle')).toHaveCount(3);
+      for (const none of ['none (null)', 'none (false)']) {
+        for (const kind of ['short', 'overflow']) {
+          const bare = trail(none, kind, direction);
+          await expect(bare.getByRole('list')).toBeVisible();
+          await expect(bare.locator('.ui-breadcrumb__separator')).toHaveCount(0);
+          await expect(bare.locator('[aria-current="page"]')).toHaveText('Lemon tart');
+        }
+      }
+    }
+    const collapsed = trail('slash glyph', 'overflow', 'rtl');
+    await expect(collapsed.locator('.ui-breadcrumb__overflow')).toHaveCount(1);
+    await expect(collapsed.locator('.ui-breadcrumb__separator').first()).toBeVisible();
+    await lab.expectAccessible();
+  });
 });

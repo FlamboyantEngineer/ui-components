@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Breadcrumb, type BreadcrumbItem } from '../../src/components/breadcrumb/breadcrumb.js';
 import { UiProvider } from '../../src/core/provider.js';
+import type { GlyphComponentProps } from '../../src/core/index.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const sizes = ['xs', 'sm', 'md', 'lg'] as const;
@@ -126,6 +127,26 @@ function GrowingTrail() {
   );
 }
 
+const separators = {
+  'slash glyph': SlashGlyph,
+  'dot element': (
+    <svg viewBox="0 0 16 16" width="16" height="16">
+      <circle cx="8" cy="8" r="2" fill="currentColor" />
+    </svg>
+  ),
+  'none (null)': null,
+  'none (false)': false,
+} as const;
+
+/** A host's own separator glyph: a slash. */
+function SlashGlyph(props: GlyphComponentProps) {
+  return (
+    <svg viewBox="0 0 16 16" width="16" height="16" {...props}>
+      <path d="M11 2 5 14" stroke="currentColor" strokeWidth="1.5" fill="none" />
+    </svg>
+  );
+}
+
 mountLab(
   <>
     <LabSection title="Trails and sizes">
@@ -208,6 +229,37 @@ mountLab(
             </UiProvider>
           ) : (
             trail
+          );
+        }}
+      />
+    </LabSection>
+    <LabSection
+      title="Custom and suppressed separators"
+      description="separator takes an imported glyph component or an element in place of the chevron; null or false draws none. Each trail keeps its navigation landmark and list, short and collapsed into a menu, in both reading directions."
+    >
+      <StateMatrix
+        axes={{
+          separator: Object.keys(separators) as (keyof typeof separators)[],
+          trail: ['short', 'overflow'],
+          direction: ['ltr', 'rtl'],
+        }}
+        render={({ separator, trail, direction }) => {
+          const crumbs = (
+            <div data-lab-frame="" style={{ width: trail === 'overflow' ? 220 : 420 }}>
+              <Breadcrumb
+                aria-label={`Trail, ${separator}, ${trail}, ${direction}`}
+                items={trail === 'overflow' ? deepTrail : (trails['four crumbs'] ?? [])}
+                overflow={trail === 'overflow' ? 'menu' : 'truncate'}
+                separator={separators[separator]}
+              />
+            </div>
+          );
+          return direction === 'rtl' ? (
+            <UiProvider locale="ar-EG">
+              <div dir="rtl">{crumbs}</div>
+            </UiProvider>
+          ) : (
+            crumbs
           );
         }}
       />

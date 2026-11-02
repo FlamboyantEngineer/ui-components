@@ -21,6 +21,7 @@ import {
 } from '../../src/components/navigation-rail/index.js';
 import { SaveStatus } from '../../src/components/save-status/save-status.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { AppFramePageCases } from './app-frame-page-cases.js';
 import { KitchenRail, kitchenPages, type KitchenPage } from './navigation-rail-cases.js';
 
 const panelSets = ['none', 'start', 'end', 'bottom', 'all'] as const;
@@ -183,5 +184,6 @@ mountLab(
     >
       <KitchenWorkspace />
     </LabSection>
+    <AppFramePageCases />
   </>,
 );

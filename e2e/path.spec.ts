@@ -119,3 +119,29 @@ test('UIC-PATH-1.3 shows the exported helpers in a host-side snippet', async ({ 
     '/Garden/Vegetable beds/Tomatoes',
   );
 });
+
+test('UIC-PATH-1.1 UIC-PATH-1.2 UIC-PATH-1.3 draws empty, root and untidy paths and formats folder catalogs', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('path');
+  const drawn = (label: string) =>
+    page.locator(
+      `[data-lab-case="inputs"] [data-lab-input=${JSON.stringify(label)}] .ui-path__text`,
+    );
+  await expect(drawn("''")).toHaveText('');
+  await expect(drawn("'/'")).toHaveText('/');
+  await expect(drawn("'Garden//Beds/ /'")).toHaveText('Garden/Beds');
+  await expect(drawn("'  /Garden/ Beds '")).toHaveText('/Garden/Beds');
+  await expect(drawn('[]')).toHaveText('');
+  await expect(drawn("['', 'Garden', ' ']")).toHaveText('Garden');
+  const call = (text: string) => page.locator(`[data-lab-call=${JSON.stringify(text)}]`);
+  await expect(call("formatFolderPath(folders, 'herbs')")).toHaveText('/Kitchen garden/Herbs');
+  await expect(call("formatFolderPath(folders, 'orphan')")).toHaveText('/Seed trays');
+  await expect(call("formatFolderPath(folders, 'blank')")).toHaveText('/Garden/blank');
+  await expect(call("formatFolderPath(folders, 'missing', 'Home')")).toHaveText('Home');
+  await expect(call("formatPath('', { rooted: true })")).toHaveText('/');
+  await expect(call("formatPath([], { emptyLabel: 'No folder' })")).toHaveText('No folder');
+  await expect(call("formatPath(' / ', { rooted: true, emptyLabel: 'Home' })")).toHaveText('Home');
+  await lab.expectAccessible();
+});

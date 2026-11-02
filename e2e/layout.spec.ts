@@ -449,4 +449,74 @@ test.describe('Layout lab', () => {
     await expect(demo.getByRole('button', { name: 'Undo' })).toBeFocused();
     await lab.expectAccessible('[data-lab-demo="pending"]');
   });
+
+  test('UIC-LAYOUT-1.2 renders primitives as semantic elements with their native props', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('layout');
+    const section = page.getByRole('region', { name: 'Harvest plan' });
+    await expect(section).toHaveClass(/ui-stack/);
+    const nav = section.getByRole('navigation', { name: 'Harvest pages' });
+    await expect(nav).toHaveClass(/ui-cluster/);
+    await expect(nav.getByRole('link')).toHaveCount(2);
+    const list = section.locator('[data-lab-semantic="list"]');
+    expect(await list.evaluate((node) => node.tagName)).toBe('UL');
+    await expect(list.getByRole('listitem')).toHaveCount(2);
+    const terms = section.locator('[data-lab-semantic="terms"]');
+    expect(
+      await terms.evaluate((node) => [...node.children].map((child) => child.tagName)),
+    ).toEqual(['DT', 'DD']);
+    await lab.expectAccessible();
+  });
+
+  test('UIC-LAYOUT-2.1 UIC-LAYOUT-2.2 aligns grid cells, pads the grid and spaces inline fields and status bars', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('layout');
+    const grid = (align: string, gutter: string) =>
+      page.locator(`${cell('Grid', `align=${align} gutter=${gutter}`)} .ui-grid`);
+    const short = (align: string) => grid(align, 'none').locator(':scope > *').nth(1);
+    const tall = await box(grid('start', 'none').locator(':scope > *').first());
+    expect((await box(short('stretch'))).height).toBe(tall.height);
+    expect((await box(short('start'))).y).toBe(tall.y);
+    expect((await box(short('end'))).y + (await box(short('end'))).height).toBeCloseTo(
+      (await box(grid('end', 'none').locator(':scope > *').first())).y + tall.height,
+      0,
+    );
+    await expect(grid('center', 'md')).toHaveAttribute('data-gutter', 'md');
+    const padded = await box(grid('start', '2xl'));
+    const first = await box(grid('start', '2xl').locator(':scope > *').first());
+    expect(first.x - padded.x).toBeGreaterThan(8);
+
+    const inline = (space: string, align: string, justify: string) =>
+      page.locator(
+        `${cell('Inline field', `space=${space} align=${align} justify=${justify}`)} .ui-inline-field`,
+      );
+    const gap = async (space: string) => {
+      const field = inline(space, 'center', 'start');
+      const [caption, control] = [
+        await box(field.locator('span')),
+        await box(field.locator('textarea')),
+      ];
+      return control.x - (caption.x + caption.width);
+    };
+    expect(await gap('xl')).toBeGreaterThan(await gap('xs'));
+    const between = inline('md', 'center', 'between');
+    expect(
+      (await box(between.locator('textarea'))).x + (await box(between.locator('textarea'))).width,
+    ).toBeCloseTo((await box(between)).x + (await box(between)).width, 0);
+    await expect(inline('md', 'baseline', 'start')).toHaveAttribute('data-align', 'baseline');
+
+    const status = (space: string) =>
+      page.locator(`${cell('Status bar', `space=${space}`)} .ui-status-bar`);
+    const statusGap = async (space: string) => {
+      const items = status(space).locator('span');
+      const [a, b] = [await box(items.nth(0)), await box(items.nth(1))];
+      return b.x - (a.x + a.width);
+    };
+    expect(await statusGap('xl')).toBeGreaterThan(await statusGap('xs'));
+    expect(await statusGap('none')).toBeLessThan(1);
+  });
 });

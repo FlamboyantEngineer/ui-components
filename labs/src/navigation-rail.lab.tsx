@@ -9,6 +9,8 @@ import {
   NavigationRailItem,
   NavigationRailSection,
 } from '../../src/components/navigation-rail/index.js';
+import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
+import { Switch } from '../../src/components/switch/switch.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import {
   KitchenRail,
@@ -104,6 +106,84 @@ function CollapsedMidDrag() {
   );
 }
 
+const bounds = { narrow: [160, 260], wide: [220, 360] } as const;
+type Bounds = keyof typeof bounds;
+
+/**
+ * An uncontrolled rail that starts at 200px within bounds the reader picks, and a group the page
+ * opens and closes.
+ */
+function BoundedRail() {
+  const [range, setRange] = useState<Bounds>('narrow');
+  const [width, setWidth] = useState<number | null>(null);
+  const [isListsOpen, setListsOpen] = useState(false);
+  const [changes, setChanges] = useState<string[]>([]);
+  const [minWidth, maxWidth] = bounds[range];
+  return (
+    <div data-lab-demo="bounded">
+      <div role="group" aria-label="Rail options">
+        <SegmentedChoice
+          aria-label="Resize bounds"
+          sizing="content"
+          options={[
+            { value: 'narrow', label: '160 to 260px' },
+            { value: 'wide', label: '220 to 360px' },
+          ]}
+          value={range}
+          onChange={(value) => {
+            setRange((value as Bounds | null) ?? 'narrow');
+            setWidth(null);
+          }}
+        />
+        <Switch isSelected={isListsOpen} onChange={setListsOpen}>
+          Lists group open
+        </Switch>
+      </div>
+      <div style={{ display: 'flex', height: 320 }}>
+        <NavigationRail
+          key={range}
+          aria-label="Bounded navigation"
+          isResizable
+          defaultWidth={200}
+          minWidth={minWidth}
+          maxWidth={maxWidth}
+          onWidthChange={setWidth}
+        >
+          <NavigationRailSection title="Workspace">
+            <NavigationRailItem label="Inbox" icon={FolderGlyph} href="#inbox" />
+            <NavigationRailGroup
+              label="Lists"
+              icon={UsersGlyph}
+              isExpanded={isListsOpen}
+              onExpandedChange={(isOpen) => {
+                setListsOpen(isOpen);
+                setChanges((current) => [...current, `onExpandedChange(${String(isOpen)})`]);
+              }}
+            >
+              <NavigationRailItem label="Groceries" href="#groceries" />
+              <NavigationRailItem label="Errands" href="#errands" />
+            </NavigationRailGroup>
+          </NavigationRailSection>
+        </NavigationRail>
+        <div style={{ padding: 16 }}>
+          <p>
+            Bounds: <output data-lab-output="bounds">{`${minWidth} to ${maxWidth}px`}</output>
+          </p>
+          <p>
+            Committed width:{' '}
+            <output data-lab-output="width">
+              {width === null ? 'none yet (starts at 200px)' : `${width}px`}
+            </output>
+          </p>
+          <p>
+            Group changes: <output data-lab-output="group">{changes.join(', ') || 'none'}</output>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -176,6 +256,12 @@ mountLab(
       description="The page collapses this rail one second after a drag of its edge starts. The drag ends with it: releasing commits nothing, and expanding the rail shows its earlier width."
     >
       <CollapsedMidDrag />
+    </LabSection>
+    <LabSection
+      title="Width bounds and a page-controlled group"
+      description="The rail starts at defaultWidth 200px and resizes within the chosen minWidth and maxWidth, by dragging its edge or with the arrow keys, Home and End on the handle. The page owns the Lists group: the switch opens and closes it, and pressing the group reports onExpandedChange, which the page follows."
+    >
+      <BoundedRail />
     </LabSection>
     <LabSection
       title="Toggles in a group"

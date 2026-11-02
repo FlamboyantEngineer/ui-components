@@ -12,6 +12,7 @@ import { LabOutput } from './lab-output.js';
 import { requireDefined } from './require-defined.js';
 import { useScrollStripOverflow } from '../../src/utils/use-scroll-strip-overflow.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { ScrollRegionOptionCases } from './scroll-region-options.js';
 
 const cities = [
   'Amsterdam',
@@ -504,6 +505,7 @@ mountLab(
         )}
       />
     </LabSection>
+    <ScrollRegionOptionCases />
     <LabSection
       title="Edge distances"
       description="The reference stylesheet shades each edge the content reaches past, as deep as the distance the region publishes up to 8px, with native and overlay scrollbars."

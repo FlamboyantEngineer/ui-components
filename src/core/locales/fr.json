@@ -293,7 +293,7 @@
   "pages": "Pages",
   "outline": "Plan",
   "sectionsIn": "Sections de {label}",
-  "pageNumber": "Page {pageNumber}",
+  "pageNumber": "Page {pageNumber, number}",
   "rotateClockwise": "Pivoter dans le sens horaire",
   "rotateCounterclockwise": "Pivoter dans le sens antihoraire",
   "print": "Imprimer",
