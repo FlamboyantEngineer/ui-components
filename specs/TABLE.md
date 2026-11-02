@@ -176,16 +176,16 @@ Verification: `src/components/table/table-repeat-selection.test.tsx`, `e2e/table
 
 ### UIC-TABLE-4.1 - Column widths
 
-Each data column shall size from its `width` (pixels, a percentage, an `fr` share or `content`; `1fr` by default), `minWidth` and `maxWidth` through React Aria's resizable table container, with a maximum never below the minimum and pixel widths kept inside the bounds. `content` fits the rendered header and cells as described in UIC-TABLE-4.5. The selection column is 44 pixels wide and the actions column `actionsColumnWidth` pixels.
+Each data column shall size from its `width` (pixels, a percentage, an `fr` share or `content`; `1fr` by default), `minWidth` and `maxWidth` (75 pixels when a flexible column declares no minimum), as a CSS grid track in a static table (UIC-TABLE-4.6) and through React Aria's resizable table container in a virtualized one, with a maximum never below the minimum and pixel widths kept inside the bounds. `content` fits the rendered header and cells as described in UIC-TABLE-4.5. The selection column is 44 pixels wide and the actions column `actionsColumnWidth` pixels.
 
 Implementation: `src/components/table/column-sizing.ts`, `src/components/table/table-header.tsx`, `src/components/table/table-column.tsx`
 Verification: `src/components/table/column-sizing.test.ts`, `src/components/table/table.test.tsx`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-4.2 - Resizing
 
-A column with `allowsResizing` shall draw a React Aria column resizer named `Resize <column>` (the provider's `resizeColumn` string). The reader resizes by dragging it, or from the keyboard by focusing the header, pressing ArrowRight to reach the resizer, Enter to start, the arrow keys to resize and Enter to finish, within the column's bounds. The column redraws live during the gesture, and `onColumnWidthsChange` receives the data columns' widths once when it ends.
+A column with `allowsResizing` shall draw a column resizer (`ui-table__resizer`) holding a slider named `Resize <column>` (the provider's `resizeColumn` string): the table's own in a static table, React Aria's in a virtualized one. The reader resizes by dragging it, or from the keyboard by focusing the header, pressing ArrowRight to reach the resizer, Enter to start, the arrow keys to resize by 10 pixels (mirrored right to left) and Enter, Escape, Space or Tab to finish, within the column's bounds. While a keyboard resize lasts, the arrow keys resize instead of moving through the grid. A drag is measured in layout pixels, so an ancestor scale or zoom moves the edge with the pointer, and a cancelled drag returns to the width it began at. A press on the resizer neither sorts nor selects the column. The column redraws live during the gesture as a pixel track, and `onColumnWidthsChange` receives the data columns' widths once when it ends: the resized column's pixels, the other columns' kept or declared widths. The table's resizer publishes `data-hovered`, `data-resizing` and `data-focus-visible`.
 
-Implementation: `src/components/table/use-column-widths.ts`, `src/components/table/table-column.tsx`
+Implementation: `src/components/table/use-column-widths.ts`, `src/components/table/table-column.tsx`, `src/components/table/table-column-resizer.tsx`
 Verification: `src/components/table/use-column-widths.test.tsx`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-4.3 - Persisted widths
@@ -204,12 +204,19 @@ Verification: `src/components/table/column-sizing.test.ts`
 
 ### UIC-TABLE-4.5 - Content-sized columns
 
-`width="content"` shall fit the widest rendered header or data cell in the column, including controls and the containing page's typography and spacing, using measured pixel tracks through React Aria. Measurements shall update after cell or header content changes, host size changes and fonts finish loading, and may shrink as well as grow. Only the containing table's own cells shall be treated as members of a measured column; synthetic group, detail, notice and trailing rows shall not influence the measurement. A virtualized table measures its rendered cells; it does not render unseen rows to measure them. Widths are measured in layout pixels: an ancestor `transform` scale or CSS `zoom` is accounted for once, so a content track keeps the same CSS width at any scale and is only drawn larger or smaller.
+`width="content"` shall fit the widest rendered header or data cell in the column, including controls and the containing page's typography and spacing, using measured pixel tracks. Measurements shall update after cell or header content changes, host size changes and fonts finish loading, and may shrink as well as grow. Only the containing table's own cells shall be treated as members of a measured column; synthetic group, detail, notice and trailing rows shall not influence the measurement. A virtualized table measures its rendered cells; it does not render unseen rows to measure them. Widths are measured in layout pixels: an ancestor `transform` scale or CSS `zoom` is accounted for once, so a content track keeps the same CSS width at any scale and is only drawn larger or smaller.
 
 Before layout is available, the column shall use its minimum, or 75 pixels without one. Measurements and explicit resizes obey numeric `minWidth` and `maxWidth`, with a maximum never below the minimum. An explicit resized or restored width takes precedence over measurements until the caller removes that stored width. Measurements alone shall neither call `onColumnWidthsChange` nor persist a width. Columns without `width` retain `1fr`; flexible columns share the remaining width and the existing scroll container handles tracks wider than the available space. Data column headers publish `data-sizing`: `content` while measured, `flex` for an `fr` track, and `fixed` for an explicit pixel or percentage track, including a restored resize.
 
 Implementation: `src/components/table/column-sizing.ts`, `src/components/table/measure-content-widths.ts`, `src/components/table/use-content-widths.ts`, `src/components/table/table-column.tsx`, `src/components/table/table-header.tsx`, `src/components/table/table.tsx`, `labs/src/table-content-contracts.tsx`
 Verification: `src/components/table/column-sizing.test.ts`, `src/components/table/use-content-widths.test.tsx`, `e2e/table-content-contracts.spec.ts`
+
+### UIC-TABLE-4.6 - CSS column layout
+
+A static table shall lay out its columns in CSS, so flexible and percentage columns follow the container's size in the same frame as the container changes, with no measuring pass between them. The grid publishes the measured `--ui-table-columns`, its column tracks in display order: a pixel width as pixels, a percentage clamped to the column's bounds, an `fr` share as `minmax(<minimum>, <share>)` (or `minmax(<minimum>, <maximum>)` for a bounded column), the selection column's 44 pixels and the actions column's `actionsColumnWidth`. The reference stylesheet draws the grid as a CSS grid whose sections and rows are subgrids sharing those tracks; spanning notice cells take every track, and a group header cell publishes the measured `--ui-table-span`, its number of columns. Tracks wider than the scroll area overflow it, which scrolls sideways. A virtualized table keeps React Aria's measured layout and publishes no tracks.
+
+Implementation: `src/components/table/table-grid-tracks.ts`, `src/components/table/table-scroll.tsx`, `src/components/table/table.tsx`, `src/components/table/table-group-header.tsx`, `labs/reference/table.css`, `labs/src/table-content-contracts.tsx`
+Verification: `src/components/table/table-grid-tracks.test.ts`, `e2e/table-fluid-columns.spec.ts`
 
 ## UIC-TABLE-5 - Reordering
 
@@ -356,7 +363,7 @@ Verification: `src/components/table/use-column-reorder.test.tsx`, `e2e/table.spe
 
 ### UIC-TABLE-8.6 - Pinned columns
 
-A column with `pin` (`start` or `end`) shall be drawn among the first or last columns, keeping their order, and stay at its edge while the scroll area scrolls sideways: its header, cells and summary cell publish `data-pinned` and the measured `--ui-table-pin-offset`, the width of the pinned columns between it and its edge from React Aria's column widths, from which the stylesheet makes it sticky. The selection column pins with the start columns and the actions column with the end columns. Offsets follow every width React Aria lays out, live during a resize. A virtualized table positions every cell itself and pins nothing. Column ids are keys like any other: an id such as `__proto__`, `constructor` or `valueOf` keeps its pin, offset, width and filter.
+A column with `pin` (`start` or `end`) shall be drawn among the first or last columns, keeping their order, and stay at its edge while the scroll area scrolls sideways: its header, cells and summary cell publish `data-pinned` and the measured `--ui-table-pin-offset`, the width of the pinned columns between it and its edge, measured from the drawn header cells in a static table, from which the stylesheet makes it sticky. The selection column pins with the start columns and the actions column with the end columns. Offsets follow every drawn width, live during a resize and as the container's CSS sizing changes. A virtualized table positions every cell itself and pins nothing. Column ids are keys like any other: an id such as `__proto__`, `constructor` or `valueOf` keeps its pin, offset, width and filter.
 
 Implementation: `src/components/table/table-columns.ts`, `src/components/table/use-pinned-offsets.ts`, `src/components/table/table-header.tsx`, `src/components/table/table-structure.ts`, `src/components/table/table-column.tsx`, `src/components/table/table-row.tsx`, `src/components/table/table-data-cell.tsx`
 Verification: `src/components/table/use-pinned-offsets.test.tsx`, `e2e/table.spec.ts`
@@ -697,7 +704,7 @@ Verification: `src/components/table/table-bulk-edit.test.tsx`, `e2e/table.spec.t
 | `data-allows-dragging`           | state     | `true`                         | React Aria's drag support, on every grid: use `data-reordering`.               |
 | `data-dragging`                  | state     | `true`                         | A row being dragged (React Aria), or a column header whose column drags.       |
 | `data-drop-target`               | state     | `true`                         | The drop indicator or grid targeted by a drag (React Aria).                    |
-| `data-resizing`                  | state     | `true`                         | A column or resizer being resized (React Aria).                                |
+| `data-resizing`                  | state     | `true`                         | A resizer being resized, or a virtualized column (React Aria).                 |
 | `data-selected`                  | state     | `true`                         | A selected row or checked checkbox (React Aria).                               |
 | `data-indeterminate`             | state     | `true`                         | The header checkbox while some rows are selected (React Aria).                 |
 | `data-disabled`                  | state     | `true`                         | A disabled row, checkbox or drag handle (React Aria).                          |
@@ -708,4 +715,6 @@ Verification: `src/components/table/table-bulk-edit.test.tsx`, `e2e/table.spec.t
 | `data-focus-visible-within`      | state     | `true`                         | Keyboard focus inside a row (React Aria).                                      |
 | `data-focus-visible-within-row`  | state     | `true`                         | Keyboard focus inside a cell's row, on the cell (React Aria).                  |
 | `--ui-table-pin-offset`          | property  |                                | A pinned header's or cell's distance from its edge, in pixels.                 |
+| `--ui-table-columns`             | property  |                                | A static table grid's column tracks, for `grid-template-columns`.              |
+| `--ui-table-span`                | property  |                                | A group header cell's number of columns.                                       |
 | `--ui-table-level`               | property  |                                | A tree column or group header cell's nesting level, from 1.                    |

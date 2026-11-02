@@ -2,11 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { useContentWidths } from './use-content-widths.js';
-import {
-  ResizableTableContainer,
-  Table as AriaTable,
-  useDragAndDrop,
-} from '../../primitives/index.js';
+import { Table as AriaTable, useDragAndDrop } from '../../primitives/index.js';
 import type {
   AriaLabellingProps,
   CollectionSelectionProps,
@@ -28,9 +24,11 @@ import { getColumnText, type TableColumnGroup, type TableColumnLayout } from './
 import { TableSearch } from './table-search.js';
 import { isEmptyFilterValue, setColumnFilter, type TableFilter } from './table-filters.js';
 import { hasTableFooter, TableFooter } from './table-footer.js';
-import { TableVirtualizer } from './table-virtualizer.js';
-import { hasGroupRow, renderTableWithTracks } from './table-group-header.js';
-import { TableHeader, type TableHeaderModel } from './table-header.js';
+import { TableScroll } from './table-scroll.js';
+import { readGridTracks } from './table-grid-tracks.js';
+import { measuredProperty } from '../../core/hooks.js';
+import { hasGroupRow } from './table-group-header.js';
+import { selectionColumnWidth, TableHeader, type TableHeaderModel } from './table-header.js';
 import { tableHooks as hooks } from './table-hooks.js';
 import type { TableCellWrap, TableColumn, TableRow } from './table-rows.js';
 import { TableToolbar } from './table-toolbar.js';
@@ -161,6 +159,8 @@ function createHeaderModel<T extends TableRow>(
   return {
     widths: grid.widths.widths,
     contentWidths,
+    onColumnResize: grid.widths.resizeColumn,
+    onColumnResizeEnd: grid.widths.endColumnResize,
     groups: options.columnGroups ?? [],
     rowHeight: options.rowHeight,
     pinOffsets: grid.pinOffsets,
@@ -206,9 +206,20 @@ function TableGridElement<T extends TableRow>({
       {...ariaProps}
       ref={gridRef}
       className={hooks.slotClass('grid')}
-      // A static table's group row needs column tracks; a virtualized one places its cells itself.
-      render={
-        hasGroupRow(header.groups) && !structure.isVirtualized ? renderTableWithTracks : undefined
+      // A static table is a CSS grid of these tracks (UIC-TABLE-4.6); a virtualized one places its
+      // cells itself from React Aria's measured widths.
+      style={
+        structure.isVirtualized
+          ? undefined
+          : measuredProperty(
+              'table-columns',
+              readGridTracks({
+                structure,
+                widths: header.widths,
+                contentWidths: header.contentWidths,
+                selectionWidth: selectionColumnWidth,
+              }),
+            )
       }
       treeColumn={structure.treeColumn === null ? undefined : toCollectionKey(structure.treeColumn)}
       sortDescriptor={
@@ -298,19 +309,14 @@ export function Table<T extends TableRow>({
         layout={layout}
       />
       {grid.selectionBar ? <TableSelectionBar {...grid.selectionBar} /> : null}
-      <ResizableTableContainer
-        className={hooks.slotClass('scroll')}
-        onResize={grid.widths.onResize}
-        onResizeEnd={grid.widths.onResizeEnd}
+      <TableScroll
+        isVirtualized={virtualized === true}
+        rowHeight={height}
+        hasGroupRow={hasGroupRow(rest.columnGroups ?? [])}
+        widths={grid.widths}
       >
-        {virtualized ? (
-          <TableVirtualizer rowHeight={height} hasGroupRow={hasGroupRow(rest.columnGroups ?? [])}>
-            {element}
-          </TableVirtualizer>
-        ) : (
-          element
-        )}
-      </ResizableTableContainer>
+        {element}
+      </TableScroll>
       {view.pages ? (
         <Pagination
           className={hooks.slotClass('pagination')}

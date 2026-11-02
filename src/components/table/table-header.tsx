@@ -2,7 +2,7 @@
 
 import { CheckGlyph, MinusGlyph } from '../../core/glyphs.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
-import { useContext, useLayoutEffect, type ReactNode } from 'react';
+import { useContext, useLayoutEffect, useRef, type ReactNode } from 'react';
 import {
   Checkbox as AriaCheckbox,
   Column,
@@ -41,6 +41,9 @@ export interface TableHeaderModel<T> {
   /** A virtualized table's row height, which its group header row takes. */
   rowHeight: number;
   pinOffsets: TablePinOffsets;
+  /** Previews and then keeps a static table's column resize (UIC-TABLE-4.2). */
+  onColumnResize: (id: string, width: number) => void;
+  onColumnResizeEnd: (id: string, width: number) => void;
   /** Takes the pinned offsets the header measures. */
   onPinOffsets: (offsets: TablePinOffsets) => void;
   /** The sorted columns in priority order. */
@@ -59,7 +62,8 @@ interface TableHeaderProps<T> {
   model: TableHeaderModel<T>;
 }
 
-const selectionColumnWidth = 44;
+/** The selection column's width, in pixels. */
+export const selectionColumnWidth = 44;
 
 /** The pin of every drawn column, fixed ones included, by column key. */
 function collectPins<T>(structure: TableStructure<T>): Record<string, TableColumnPin | undefined> {
@@ -75,7 +79,7 @@ function collectPins<T>(structure: TableStructure<T>): Record<string, TableColum
 }
 
 /**
- * Reports the pinned offsets from React Aria's column widths. It renders inside the header, so it
+ * Reports a virtualized table's pinned offsets from React Aria's column widths. It renders inside the header, so it
  * follows every layout React Aria draws, live during a resize.
  */
 function PinnedOffsetsProbe({
@@ -96,6 +100,48 @@ function PinnedOffsetsProbe({
   );
   useLayoutEffect(() => onMeasure(offsets));
   return null;
+}
+
+/**
+ * Reports the pinned offsets of a static table, whose columns are CSS grid tracks: it measures the
+ * drawn header cells, on every render and whenever the column row resizes, so offsets follow the
+ * container's CSS sizing as it changes.
+ */
+function GridPinnedOffsetsProbe({
+  pins,
+  onMeasure,
+}: {
+  pins: Readonly<Record<string, TableColumnPin | undefined>>;
+  onMeasure: (offsets: TablePinOffsets) => void;
+}) {
+  const state = useContext(TableStateContext);
+  const ref = useRef<HTMLSpanElement>(null);
+  const keys = (state?.collection.columns ?? []).map((column) =>
+    String(fromCollectionKey(column.key)),
+  );
+  useLayoutEffect(() => {
+    const row = ref.current?.closest('tr');
+    if (!row) return undefined;
+    const measure = () => {
+      const cells = [...row.cells];
+      onMeasure(
+        computePinOffsets(
+          keys.map((key, index) => ({
+            key,
+            width: cells[index]?.offsetWidth ?? 0,
+            pin: readOwn(pins, key),
+          })),
+        ),
+      );
+    };
+    measure();
+    const view = row.ownerDocument.defaultView;
+    if (!view?.ResizeObserver) return undefined;
+    const observer = new view.ResizeObserver(measure);
+    for (const cell of row.cells) observer.observe(cell);
+    return () => observer.disconnect();
+  });
+  return <span ref={ref} hidden />;
 }
 
 function FixedColumn({
@@ -161,6 +207,8 @@ function getHeaderState<T>(
     isRowHeader: getRowHeaderColumns(structure.columns).includes(column),
     pin,
     pinOffset: pin ? readOwn(model.pinOffsets, column.id) : undefined,
+    onResize: (width) => model.onColumnResize(column.id, width),
+    onResizeEnd: (width) => model.onColumnResizeEnd(column.id, width),
     sortDirection: model.sort[sortIndex]?.direction,
     sortPriority: model.isMultipleSort && sortIndex !== -1 ? sortIndex + 1 : undefined,
     drag: model.columnDrag,
@@ -182,8 +230,9 @@ export function TableHeader<T>(props: TableHeaderProps<T>) {
   const selectionPin = getColumnPin(structure, 'selection');
   const actionsPin = getColumnPin(structure, 'actions');
   const pins = collectPins(structure);
+  const Probe = structure.isVirtualized ? PinnedOffsetsProbe : GridPinnedOffsetsProbe;
   const probe = Object.values(pins).some(Boolean) ? (
-    <PinnedOffsetsProbe pins={pins} onMeasure={model.onPinOffsets} />
+    <Probe pins={pins} onMeasure={model.onPinOffsets} />
   ) : null;
   return (
     <AriaTableHeader

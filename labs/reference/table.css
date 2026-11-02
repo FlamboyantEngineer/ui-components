@@ -97,6 +97,32 @@
   border-spacing: 0;
   outline: none;
 }
+/*
+ * A static table is a CSS grid of its column tracks (--ui-table-columns): the sections and rows
+ * take the grid's tracks as subgrids, so the columns follow the scroll area's width in the same
+ * layout pass, and the grid scrolls once the tracks' minimums no longer fit.
+ */
+.ui-table:not([data-virtualized]) > .ui-table__scroll > .ui-table__grid {
+  display: grid;
+  grid-template-columns: var(--ui-table-columns);
+}
+.ui-table:not([data-virtualized]) > .ui-table__scroll > .ui-table__grid > :is(thead, tbody, tfoot),
+.ui-table:not([data-virtualized]) > .ui-table__scroll > .ui-table__grid > * > tr {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+}
+.ui-table:not([data-virtualized]) > .ui-table__scroll > .ui-table__grid > * > tr > [colspan] {
+  grid-column: 1 / -1;
+}
+.ui-table:not([data-virtualized])
+  > .ui-table__scroll
+  > .ui-table__grid
+  > *
+  > tr
+  > .ui-table__column-group {
+  grid-column: span var(--ui-table-span);
+}
 .ui-table__grid[data-focus-visible] {
   outline: var(--ref-focus-ring);
   outline-offset: -2px;
@@ -123,6 +149,26 @@
 }
 .ui-table[data-size='sm'] :is(.ui-table__column, .ui-table__cell, .ui-table__footer-cell) {
   height: 32px;
+}
+/* A static table's cells are grid items, not table cells: they centre their content in the row
+   themselves, and cells that wrap grow past the row height instead of clipping. */
+.ui-table:not([data-virtualized])
+  :is(
+    .ui-table__column,
+    .ui-table__column-group,
+    .ui-table__cell,
+    .ui-table__footer-cell,
+    .ui-table__group-cell,
+    .ui-table__aggregate-cell
+  ) {
+  align-content: center;
+}
+.ui-table:not([data-virtualized]) :is(.ui-table__cell, .ui-table__footer-cell) {
+  height: auto;
+  min-height: 40px;
+}
+.ui-table:not([data-virtualized])[data-size='sm'] :is(.ui-table__cell, .ui-table__footer-cell) {
+  min-height: 32px;
 }
 :is(.ui-table__cell, .ui-table__footer-cell, .ui-table__aggregate-cell):is(
   [data-wrap='wrap'],
@@ -537,6 +583,18 @@
   position: sticky;
   bottom: 0;
   z-index: 1;
+}
+/* A static table's rows are subgrids no taller than themselves, so its header and footer
+   sections stick as a whole. */
+.ui-table[data-sticky-header]:not([data-virtualized]) :is(.ui-table__header, .ui-table__footer) {
+  position: sticky;
+  z-index: 2;
+}
+.ui-table[data-sticky-header]:not([data-virtualized]) .ui-table__header {
+  top: 0;
+}
+.ui-table[data-sticky-header]:not([data-virtualized]) .ui-table__footer {
+  bottom: 0;
 }
 
 .ui-table__pagination {

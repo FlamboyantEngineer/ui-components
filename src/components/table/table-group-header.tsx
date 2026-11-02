@@ -1,8 +1,8 @@
 'use client';
 
 import { useContext, type CSSProperties, type JSX } from 'react';
+import { measuredProperty } from '../../core/hooks.js';
 import { TableColumnResizeStateContext, TableStateContext } from '../../primitives/index.js';
-import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { groupColumnCells } from './table-columns.js';
 import { tableHooks as hooks } from './table-hooks.js';
 import type { TableHeaderModel } from './table-header.js';
@@ -13,38 +13,6 @@ import type { TableStructure } from './table-structure.js';
 /** Whether the header draws a group row: some column groups exist. */
 export function hasGroupRow(groups: readonly unknown[]): boolean {
   return groups.length > 0;
-}
-
-/**
- * The widths of React Aria's columns as layout tracks. A fixed table layout takes its column widths
- * from its first row, which a group row would otherwise decide.
- */
-function TableColumnTracks() {
-  const state = useContext(TableStateContext);
-  const layout = useContext(TableColumnResizeStateContext);
-  return (
-    <colgroup>
-      {(state?.collection.columns ?? []).map((column) => (
-        <col
-          key={toKeyIdentity(column.key)}
-          style={{ width: layout?.getColumnWidth(column.key) }}
-        />
-      ))}
-    </colgroup>
-  );
-}
-
-/** The grid's `table` element with column tracks first, for a table with a group row. */
-export function renderTableWithTracks(
-  props: JSX.IntrinsicElements['table'] | JSX.IntrinsicElements['div'],
-) {
-  // Groups draw only in a table element, so the props are a `table`'s.
-  return (
-    <table {...(props as JSX.IntrinsicElements['table'])}>
-      <TableColumnTracks />
-      {props.children}
-    </table>
-  );
 }
 
 type GroupCells = ReturnType<typeof groupColumnCells>;
@@ -61,6 +29,7 @@ function StaticGroupRow({ cells }: { cells: GroupCells }) {
             scope="colgroup"
             colSpan={span}
             className={hooks.slotClass('column-group')}
+            style={measuredProperty('table-span', String(span))}
           >
             {group.header}
           </th>
@@ -70,6 +39,7 @@ function StaticGroupRow({ cells }: { cells: GroupCells }) {
             colSpan={span}
             aria-hidden="true"
             {...hooks.slot('column-group', { ungrouped: true })}
+            style={measuredProperty('table-span', String(span))}
           />
         ),
       )}

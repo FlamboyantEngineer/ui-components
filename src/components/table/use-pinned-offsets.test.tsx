@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Table, type TableProps } from './table.js';
 import type { TableColumn } from './table-rows.js';
@@ -39,8 +39,30 @@ function renderCities(props: Partial<TableProps<City>> = {}) {
   );
 }
 
+/**
+ * jsdom lays nothing out: a cell is as wide as its pixel track in the grid's
+ * `--ui-table-columns`, as the reference stylesheet's grid draws it (UIC-TABLE-4.6).
+ */
+function drawTracks() {
+  return vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockImplementation(function (
+    this: HTMLElement,
+  ) {
+    const row = this.closest('tr');
+    const grid = this.closest<HTMLElement>('table');
+    if (!(this instanceof HTMLTableCellElement) || !row || !grid) return 0;
+    const tracks = grid.style.getPropertyValue('--ui-table-columns').split(' ');
+    return Number.parseFloat(tracks[[...row.cells].indexOf(this)] ?? '0') || 0;
+  });
+}
+
 // Full React Aria tables are slow in jsdom on a busy machine.
 describe('Table pinned columns', { timeout: 15_000 }, () => {
+  let tracks: ReturnType<typeof drawTracks>;
+  beforeEach(() => {
+    tracks = drawTracks();
+  });
+  afterEach(() => tracks.mockRestore());
+
   it('UIC-TABLE-8.6 draws pinned columns at their edges with offsets from the column widths', () => {
     const { container } = renderCities();
     const headers = screen.getAllByRole('columnheader').map((cell) => cell.textContent);
