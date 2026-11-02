@@ -159,17 +159,37 @@ function useThumbDrag(thumb: ThumbProps, travel: number) {
   });
 }
 
+/**
+ * The thumb's length and its offset from the track's start, in the track's pixels: as long as the
+ * visible share of the content, but at least `MIN_THUMB_SIZE`, and as far along its travel as the
+ * scroll position is along `max`.
+ */
+export function getThumbSpan({
+  track,
+  page,
+  max,
+  value,
+}: {
+  track: number;
+  page: number;
+  max: number;
+  value: number;
+}): { size: number; offset: number } {
+  const size =
+    max > 0 ? Math.min(track, Math.max(MIN_THUMB_SIZE, (track * page) / (max + page))) : track;
+  const offset = max > 0 ? (clamp(value, 0, max) / max) * (track - size) : 0;
+  return { size, offset };
+}
+
 function OverlayThumb({ onFocusChange, ...props }: ThumbProps & FocusProps) {
   const { orientation, viewport, viewportId, track, page, max, value, rtl } = props;
   const strings = useUiStrings();
   const thumb = useFocusHandback(viewport, onFocusChange);
   useThumbWheel(thumb, { viewport, page, rtl });
   const vertical = orientation === 'vertical';
-  const size =
-    max > 0 ? Math.min(track, Math.max(MIN_THUMB_SIZE, (track * page) / (max + page))) : track;
+  const { size, offset } = getThumbSpan({ track, page, max, value });
   const travel = track - size;
   const position = clamp(value, 0, max);
-  const offset = max > 0 ? (position / max) * travel : 0;
   const dragHandlers = useThumbDrag(props, travel);
 
   return (
