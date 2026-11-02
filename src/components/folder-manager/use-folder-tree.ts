@@ -67,7 +67,8 @@ function initialKeys<M extends FolderSelectionMode>(options: FolderSelectionOpti
 function reportSelection(options: FolderSelectionOptions, keys: Key[]) {
   // The handler's shape follows `selectionMode`, which the caller's type already matched.
   const onSelectionChange = options.onSelectionChange as
-    ((selection: Key | null | Set<Key>) => void) | undefined;
+    | ((selection: Key | null | Set<Key>) => void)
+    | undefined;
   if (options.selectionMode !== 'multiple') {
     onSelectionChange?.(keys[0] ?? null);
     return;

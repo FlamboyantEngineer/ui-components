@@ -13,7 +13,13 @@ import { toLocalDay } from '../../utils/local-day.js';
 
 /** A record's value for one field: a scalar, a date, a list of values or nothing. */
 export type FilterRecordValue =
-  string | number | boolean | Date | readonly (string | number)[] | null | undefined;
+  | string
+  | number
+  | boolean
+  | Date
+  | readonly (string | number)[]
+  | null
+  | undefined;
 
 /** Reads a record's value for a field. */
 export type FilterValueGetter<T> = (record: T, fieldId: string) => FilterRecordValue;

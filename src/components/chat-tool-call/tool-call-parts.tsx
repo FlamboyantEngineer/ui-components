@@ -29,7 +29,13 @@ import { toolCallHooks as hooks } from './tool-call-hooks.js';
 
 /** Where a tool call stands, from queued to finished. */
 export type ChatToolCallStatus =
-  'pending' | 'running' | 'approval-requested' | 'succeeded' | 'failed' | 'denied' | 'cancelled';
+  | 'pending'
+  | 'running'
+  | 'approval-requested'
+  | 'succeeded'
+  | 'failed'
+  | 'denied'
+  | 'cancelled';
 
 /** What a tool call does, which picks its glyph and how a group of steps sums it up. */
 export type ChatToolCallKind = 'read' | 'edit' | 'command' | 'search' | 'fetch' | 'other';

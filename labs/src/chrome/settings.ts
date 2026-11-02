@@ -3,7 +3,9 @@
 import { createSafeStorage, type UiStorage } from '../../../src/core/storage.js';
 
 export type StylesheetChoice =
-  { kind: 'none' } | { kind: 'reference' } | { kind: 'custom'; url: string };
+  | { kind: 'none' }
+  | { kind: 'reference' }
+  | { kind: 'custom'; url: string };
 
 export interface LabSettings {
   stylesheet: StylesheetChoice;

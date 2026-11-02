@@ -130,7 +130,7 @@ function findGrammarError(source: string): number | null {
  */
 export function tokenizeJson(source: string): CodeToken[] {
   const tokens: CodeToken[] = [];
-  for (let index = 0; index < source.length;) {
+  for (let index = 0; index < source.length; ) {
     const token = readToken(source, index);
     tokens.push(token);
     index += token.text.length;

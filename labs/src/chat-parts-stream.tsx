@@ -177,11 +177,13 @@ const meanwhileAt = (count: number): ChatPart => ({
 /** A booking that waits for approval, then text streamed after it. */
 const approvalFrames: ReplyFrame[] = [
   { parts: [bookingCall], status: 'streaming', statusText: 'Waiting for approval…' },
-  ...[5, 11, 99].map((count): ReplyFrame => ({
-    parts: [bookingCall, meanwhileAt(count)],
-    status: 'streaming',
-    statusText: 'Writing the plan…',
-  })),
+  ...[5, 11, 99].map(
+    (count): ReplyFrame => ({
+      parts: [bookingCall, meanwhileAt(count)],
+      status: 'streaming',
+      statusText: 'Writing the plan…',
+    }),
+  ),
 ];
 
 /** A tool call waiting for approval while text streams after it, which keeps its Deny form. */

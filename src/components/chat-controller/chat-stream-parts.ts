@@ -14,7 +14,9 @@ export interface ChatStreamContext {
 
 /** How a reply ended: complete, stopped by the reader, or failed. */
 export type ChatReplyOutcome =
-  { status: 'complete' } | { status: 'cancelled' } | { status: 'error'; error: string };
+  | { status: 'complete' }
+  | { status: 'cancelled' }
+  | { status: 'error'; error: string };
 
 type PartOf<T extends ChatPart['type']> = Extract<ChatPart, { type: T }>;
 

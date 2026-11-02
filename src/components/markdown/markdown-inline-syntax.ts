@@ -51,7 +51,7 @@ export function runEnd(text: string, at: number, char: string): number {
 export function readCodeSpan(text: string, at: number): { text: string; end: number } | null {
   const openEnd = runEnd(text, at, '`');
   const size = openEnd - at;
-  for (let search = text.indexOf('`', openEnd); search !== -1;) {
+  for (let search = text.indexOf('`', openEnd); search !== -1; ) {
     const closeEnd = runEnd(text, search, '`');
     if (closeEnd - search === size) {
       const content = text.slice(openEnd, search).replaceAll('\n', ' ');

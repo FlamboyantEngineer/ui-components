@@ -61,7 +61,8 @@ export interface CompletionListProps extends BaseProps, AriaLabellingProps {
   onAction: (key: Key) => void;
   /** Draws an option's content instead of its label and description. */
   renderItem?:
-    ((item: CompletionListItem, state: CompletionListItemState) => ReactNode) | undefined;
+    | ((item: CompletionListItem, state: CompletionListItemState) => ReactNode)
+    | undefined;
   /** Shown instead of the options while there are none, such as `No people found`. */
   renderEmptyState?: (() => ReactNode) | undefined;
   /** A line after the options, such as a match count and key hints. */

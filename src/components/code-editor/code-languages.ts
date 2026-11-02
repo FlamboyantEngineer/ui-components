@@ -2,7 +2,15 @@ import type { CodeToken, CodeTokenizer } from './code-layers.js';
 import { tokenizeJson } from './json-text.js';
 
 export type CodeLanguage =
-  'text' | 'json' | 'javascript' | 'typescript' | 'html' | 'css' | 'sql' | 'python' | 'markdown';
+  | 'text'
+  | 'json'
+  | 'javascript'
+  | 'typescript'
+  | 'html'
+  | 'css'
+  | 'sql'
+  | 'python'
+  | 'markdown';
 export interface CodeSyntaxRule {
   /** Styling token kind, such as keyword, string, number or comment. */
   type: string;
@@ -88,7 +96,7 @@ export function createCodeTokenizer(syntax: CodeSyntax): CodeTokenizer {
   return (source) => {
     const tokens: CodeToken[] = [];
     let plain = '';
-    for (let offset = 0; offset < source.length;) {
+    for (let offset = 0; offset < source.length; ) {
       const match = rules
         .map((rule) => {
           rule.pattern.lastIndex = offset;

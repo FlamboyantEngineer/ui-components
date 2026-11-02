@@ -109,7 +109,8 @@ export interface MessageComposerProps extends MessageComposerSharedProps {
   completions?: readonly Completion[] | CompletionSource | undefined;
   /** Draws a completion's content in the list instead of its label and description. */
   renderCompletion?:
-    ((completion: Completion, state: CompletionListItemState) => ReactNode) | undefined;
+    | ((completion: Completion, state: CompletionListItemState) => ReactNode)
+    | undefined;
   onFocus?: ((event: FocusEvent<HTMLTextAreaElement>) => void) | undefined;
   onBlur?: ((event: FocusEvent<HTMLTextAreaElement>) => void) | undefined;
   /** The text area. */

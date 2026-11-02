@@ -1,7 +1,7 @@
 'use client';
 
 import { DownloadGlyph, RotateGlyph } from '../../core/glyphs.js';
-import type { ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -12,6 +12,7 @@ import { Icon } from '../icon/icon.js';
 import { Link } from '../link/link.js';
 import { ZoomControl } from '../zoom-control/zoom-control.js';
 import { FallbackImage } from '../../utils/fallback-image.js';
+import { useScrollStripOverflow } from '../../utils/use-scroll-strip-overflow.js';
 
 /** One file a media viewer shows: an image it draws itself, or another file the caller renders. */
 export interface MediaViewerItem {
@@ -130,8 +131,11 @@ export function MediaThumbnails({
   onSelect: (key: Key) => void;
 }) {
   const strings = useUiStrings();
+  const stripRef = useRef<HTMLDivElement>(null);
+  // The vertical wheel scrolls the strip sideways, and the page stays put while it overflows.
+  useScrollStripOverflow(stripRef);
   return (
-    <div {...hooks.slot('thumbnails')} role="group" aria-label={strings.thumbnails}>
+    <div ref={stripRef} {...hooks.slot('thumbnails')} role="group" aria-label={strings.thumbnails}>
       {items.map((item) => {
         const url = item.thumbnailUrl ?? (isImageItem(item) ? item.src : undefined);
         const glyph = (

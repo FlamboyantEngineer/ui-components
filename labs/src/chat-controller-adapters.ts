@@ -76,7 +76,8 @@ export async function* fromAgUi(events: AsyncIterable<AgUiEvent>): AsyncGenerato
   const state: AgUiState = { calls: new Map(), thinking: 0 };
   for await (const event of events) {
     const map = agUiMappers[event.type] as
-      ((event: AgUiEvent, state: AgUiState) => ChatStreamEvent | undefined) | undefined;
+      | ((event: AgUiEvent, state: AgUiState) => ChatStreamEvent | undefined)
+      | undefined;
     const mapped = map?.(event, state);
     if (mapped) yield mapped;
   }

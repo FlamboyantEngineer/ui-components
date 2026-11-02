@@ -21,7 +21,11 @@ export type { SplitViewPane, SplitViewPaneUnit } from './split-layout.js';
  * sized to its content before or after a flexible one.
  */
 export type SplitViewRatio =
-  'equal' | 'main-sidebar' | 'main-rail' | 'content-main' | 'main-content';
+  | 'equal'
+  | 'main-sidebar'
+  | 'main-rail'
+  | 'content-main'
+  | 'main-content';
 
 /** Collapses, opens and resizes the panes of a resizable split. */
 export interface SplitViewHandle {

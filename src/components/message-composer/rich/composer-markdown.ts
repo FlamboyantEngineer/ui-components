@@ -114,7 +114,7 @@ export function parseComposerMessage(message: MessageComposerMessage): Node {
   const lines = message.text.split('\n');
   const blocks: Node[] = [];
   let start = 0;
-  for (let index = 0; index < lines.length;) {
+  for (let index = 0; index < lines.length; ) {
     const line = lines[index] ?? '';
     const close = findClosingFence(lines, index);
     if (close === -1) {

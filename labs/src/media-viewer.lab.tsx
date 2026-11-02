@@ -56,6 +56,8 @@ const photos: MediaViewerItem[] = [
   },
 ];
 
+const brokenThumbnail = 'data:image/png;base64,bm90IGFuIGltYWdl';
+
 const mixed: MediaViewerItem[] = [
   photos[0] as MediaViewerItem,
   {
@@ -67,6 +69,9 @@ const mixed: MediaViewerItem[] = [
     downloadUrl: sampleUrl,
   },
   { id: 'notes', src: 'notes.txt', name: 'Notes.txt', type: 'text/plain' },
+  { id: 'archive', src: 'files.zip', name: 'Files.zip', type: 'application/zip' },
+  // The thumbnail is not an image and fails to decode, so the strip shows the image glyph instead.
+  { ...requireDefined(photos[1]), id: 'no-thumbnail', thumbnailUrl: brokenThumbnail },
 ];
 
 const typed: MediaViewerItem[] = [
@@ -152,7 +157,7 @@ mountLab(
   <>
     <LabSection
       title="Sets"
-      description="Photos of three shapes, a mixed set with a PDF (in the PDF viewer) and a text file without a preview, a single photo, and two photos with distinct numeric and text keys of the same spelling, opened at the first or last item."
+      description="Photos of three shapes, a mixed set with a PDF (in the PDF viewer), a text file and an archive without a preview and a photo whose thumbnail fails to load, a single photo, and two photos with distinct numeric and text keys of the same spelling, opened at the first or last item."
     >
       <StateMatrix
         axes={{ set: Object.keys(sets) as SetName[], opens: ['first', 'last'] }}

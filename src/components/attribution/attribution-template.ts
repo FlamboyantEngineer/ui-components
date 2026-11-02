@@ -2,7 +2,8 @@
 
 /** One piece of a template: literal text, the time or the person. */
 type AttributionSegment =
-  { kind: 'text'; text: string; offset: number } | { kind: 'time' | 'person'; offset: number };
+  | { kind: 'text'; text: string; offset: number }
+  | { kind: 'time' | 'person'; offset: number };
 
 const tokenPattern = /\{(time|person)\}/g;
 

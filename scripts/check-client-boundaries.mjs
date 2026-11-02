@@ -288,7 +288,7 @@ for (const module of modules.values()) {
   module.uses = valueUses(module, imports);
   module.used = module.uses.filter((use) => use.origin);
 }
-for (let changed = true; changed;) {
+for (let changed = true; changed; ) {
   changed = false;
   for (const module of modules.values()) {
     if (module.reason) continue;

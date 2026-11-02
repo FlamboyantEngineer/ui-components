@@ -15,7 +15,11 @@ import type { RichEditorHandle } from './rich-editor.js';
  * editor is `unavailable` (not mounted).
  */
 export type MessageComposerInsertResult =
-  'inserted' | 'disabled' | 'editing' | 'submitting' | 'unavailable';
+  | 'inserted'
+  | 'disabled'
+  | 'editing'
+  | 'submitting'
+  | 'unavailable';
 
 /** What a host's own controls call on a rich composer, through `handleRef`. */
 export interface MessageComposerHandle {

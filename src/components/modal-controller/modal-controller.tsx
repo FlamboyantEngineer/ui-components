@@ -56,7 +56,8 @@ export interface ModalRenderOptions<T = unknown> {
 export type ModalOpenOptions<T = unknown> = ModalContentOptions<T> | ModalRenderOptions<T>;
 
 export type ModalUpdateOptions<T = unknown> =
-  Partial<ModalContentOptions<T>> | Partial<ModalRenderOptions<T>>;
+  | Partial<ModalContentOptions<T>>
+  | Partial<ModalRenderOptions<T>>;
 
 /** An open modal as the controller lists it, in opening order. */
 export interface ModalEntry {

@@ -52,7 +52,8 @@ export type EmojiSelection =
 
 /** Either kind of emoji, as the picker lists it. */
 export type EmojiEntry =
-  { kind: 'native'; emoji: NativeEmoji } | { kind: 'custom'; emoji: CustomEmoji };
+  | { kind: 'native'; emoji: NativeEmoji }
+  | { kind: 'custom'; emoji: CustomEmoji };
 
 export const skinTones: readonly SkinTone[] = [
   'default',

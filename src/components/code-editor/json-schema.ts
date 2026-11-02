@@ -7,7 +7,13 @@ import type { JsonNode, JsonPathStep } from './json-tree.js';
 import { isJsonValueEqual, stringifyJsonValue } from './json-value.js';
 
 export type JsonSchemaType =
-  'object' | 'array' | 'string' | 'number' | 'integer' | 'boolean' | 'null';
+  | 'object'
+  | 'array'
+  | 'string'
+  | 'number'
+  | 'integer'
+  | 'boolean'
+  | 'null';
 
 /** The JSON Schema keywords the JSON editor understands; others are ignored. */
 export interface JsonSchema {
