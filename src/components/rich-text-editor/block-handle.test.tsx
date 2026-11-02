@@ -211,9 +211,29 @@ describe('BlockHandle', () => {
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
+  it('UIC-RICH-TEXT-EDITOR-9.4 sizes the gutter for the configured controls and releases it', () => {
+    const editor = (controls?: { grip: boolean; menu: boolean }) => (
+      <RichTextEditor label="Body" defaultValue={blocks}>
+        {controls ? <BlockHandle {...controls} /> : null}
+      </RichTextEditor>
+    );
+    const { rerender } = render(editor({ grip: true, menu: true }));
+    expect(surface()).toHaveAttribute('data-gutter', 'both');
+    rerender(editor({ grip: true, menu: false }));
+    expect(surface()).toHaveAttribute('data-gutter', 'grip');
+    rerender(editor({ grip: false, menu: true }));
+    expect(surface()).toHaveAttribute('data-gutter', 'menu');
+    rerender(editor({ grip: false, menu: false }));
+    expect(surface()).not.toHaveAttribute('data-gutter');
+    rerender(editor({ grip: true, menu: true }));
+    expect(surface()).toHaveAttribute('data-gutter', 'both');
+    rerender(editor());
+    expect(surface()).not.toHaveAttribute('data-gutter');
+  });
+
   it('UIC-RICH-TEXT-EDITOR-9.4 shows the chosen controls and keeps a gutter only for a handle', () => {
     const { unmount } = renderHandle({ menu: false });
-    expect(surface()).toHaveAttribute('data-gutter', 'true');
+    expect(surface()).toHaveAttribute('data-gutter', 'grip');
     selectRange(7);
     expect(document.querySelector('.ui-block-handle__grip')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Block actions' })).not.toBeInTheDocument();

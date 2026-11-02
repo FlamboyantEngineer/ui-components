@@ -90,14 +90,14 @@ function selectBlock(view: EditorView, pos: number) {
  * `RichTextEditor`, for its children: a grip that drags the block and a menu that turns it into
  * another type, moves, duplicates or deletes it. Alt+Shift+Up and Down move the block from the
  * keyboard. `grip` and `menu` choose the controls; while either shows, the surface keeps a gutter
- * for the handle (`data-gutter`). An editor without a block handle leaves `BlockHandle` out.
+ * as wide as those controls (`data-gutter`: `both`, `grip` or `menu`). An editor without a block handle leaves `BlockHandle` out.
  */
 export function BlockHandle({ className, grip = true, menu = true, ...rest }: BlockHandleProps) {
   const strings = useUiStrings();
   const controller = useRichTextController();
   const { surfaceRef, reserveGutter } = useRichTextEditorContext('BlockHandle');
   const hasControls = grip || menu;
-  useLayoutEffect(() => (hasControls ? reserveGutter() : undefined), [hasControls, reserveGutter]);
+  useLayoutEffect(() => reserveGutter({ grip, menu }), [grip, menu, reserveGutter]);
   const { ref: returnFocusRef, request: returnFocus } = useFocusReturn(controller);
   const [isMenuOpen, setMenuOpen] = useState(false);
   // The dragged block's position, held so the handle, and its grip that ends the drag, stay.
