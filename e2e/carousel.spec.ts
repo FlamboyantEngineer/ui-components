@@ -25,6 +25,38 @@ test.describe('Carousel lab', () => {
     await expect(looping.locator('.ui-carousel__slide[data-current]')).toContainText('Quito');
   });
 
+  test('UIC-CAROUSEL-1.1 keeps every page the same size while moving through them', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('carousel');
+    const carousel = page.getByRole('region', { name: 'Cities, thumbnails, loop' });
+    const next = carousel.getByRole('button', { name: 'Next slide' });
+    const parts = [
+      carousel.locator('.ui-carousel__viewport'),
+      next,
+      carousel.locator('.ui-carousel__pagination'),
+    ];
+    const bounds = () => Promise.all(parts.map((part) => part.boundingBox()));
+    for (const width of [1280, 360]) {
+      await page.setViewportSize({ width, height: 800 });
+      await carousel.scrollIntoViewIfNeeded();
+      const first = await bounds();
+      for (const name of ['Oslo', 'Kyoto', 'Quito', 'Lisbon']) {
+        await next.click();
+        const current = carousel.locator('.ui-carousel__slide[data-current]');
+        await expect(current).toContainText(name);
+        // The picture has loaded, and the long caption is shown whole.
+        await expect(current.getByRole('img')).toHaveJSProperty('complete', true);
+        expect(await current.evaluate((slide) => slide.scrollHeight <= slide.clientHeight)).toBe(
+          true,
+        );
+        expect(await bounds()).toEqual(first);
+      }
+    }
+    await expect(carousel.locator('.ui-carousel__slide:visible')).toHaveCount(1);
+  });
+
   test('UIC-CAROUSEL-1.3 picks slides from dots and thumbnails', async ({ page, lab }) => {
     await lab.open('carousel');
     const dots = page.getByRole('region', { name: 'Cities, dots, no loop' });
