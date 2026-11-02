@@ -3,6 +3,7 @@ import { Button } from '../../src/components/button/button.js';
 import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import { FindBar, type FindBarProps } from '../../src/components/find-bar/find-bar.js';
 import type { Key } from '../../src/core/props.js';
+import { FindBarReplacementCases } from './find-bar-replacement-cases.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const states = ['empty', 'matches', 'no-results', 'searching'] as const;
@@ -257,5 +258,6 @@ mountLab(
     >
       <ChangingControls />
     </LabSection>
+    <FindBarReplacementCases />
   </>,
 );

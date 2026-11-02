@@ -13,6 +13,7 @@ import {
 } from '../../src/components/emoji-picker/index.js';
 import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
 import { UiProvider } from '../../src/core/provider.js';
+import { EmojiPickerLifetimeCases } from './emoji-picker-lifetime-cases.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const loaders = {
@@ -233,5 +234,6 @@ mountLab(
     >
       <PickerInModal />
     </LabSection>
+    <EmojiPickerLifetimeCases />
   </>,
 );

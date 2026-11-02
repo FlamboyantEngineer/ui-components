@@ -307,3 +307,53 @@ test.describe('Four Side Property Strip lab', () => {
     await lab.expectAccessible();
   });
 });
+
+test('UIC-FOUR-SIDE-PROPERTY-STRIP-1.5 reports linked edits to the page that owns the values', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('four-side-property-strip');
+  const pairs = page.locator('[data-lab-owned-strip="pairs"]');
+  const pairSides = pairs.locator('[data-lab-output="sides pairs"]');
+  await pairs.getByRole('textbox', { name: 'Border pairs top' }).fill('6');
+  await expect(pairSides).toHaveText('top 6, bottom 6, left 8, right 8');
+  await pairs.getByRole('textbox', { name: 'Border pairs left' }).fill('2');
+  await expect(pairSides).toHaveText('top 6, bottom 6, left 2, right 8');
+  await pairs.getByRole('button', { name: 'Link left and right' }).click();
+  await expect(pairs.locator('[data-lab-output="linked pairs"]')).toHaveText(
+    'vertical, horizontal',
+  );
+  await pairs.getByRole('textbox', { name: 'Border pairs right' }).fill('5');
+  await expect(pairSides).toHaveText('top 6, bottom 6, left 5, right 5');
+  await pairs.getByRole('button', { name: 'Reset the pairs border' }).click();
+  await expect(pairSides).toHaveText('top 4, bottom 4, left 8, right 8');
+  await expect(pairs.getByRole('textbox', { name: 'Border pairs top' })).toHaveValue('4');
+
+  const all = page.locator('[data-lab-owned-strip="all"]');
+  await all.getByRole('textbox', { name: 'Border all bottom' }).fill('3');
+  await expect(all.locator('[data-lab-output="sides all"]')).toHaveText(
+    'top 3, bottom 3, left 3, right 3',
+  );
+  await all.getByRole('button', { name: 'Link all sides' }).click();
+  await expect(all.locator('[data-lab-output="linked all"]')).toHaveText('none');
+  await all.getByRole('textbox', { name: 'Border all left' }).fill('9');
+  await expect(all.locator('[data-lab-output="sides all"]')).toHaveText(
+    'top 3, bottom 3, left 9, right 3',
+  );
+});
+
+test('UIC-FOUR-SIDE-PROPERTY-STRIP-1.2 shows the row description and a working action in a narrow panel', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('four-side-property-strip');
+  const demo = page.locator('[data-lab-described-strip]');
+  await expect(demo.getByText('Space between the frame and its content.')).toBeVisible();
+  const reset = demo.getByRole('button', { name: 'Reset inset' });
+  await reset.click();
+  for (const side of ['top', 'bottom', 'left', 'right'])
+    await expect(demo.getByRole('textbox', { name: `Inset ${side}` })).toHaveValue('0');
+  await expect(reset).toBeDisabled();
+  expect(await demo.evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(true);
+  await lab.expectAccessible('[data-lab-described-strip]');
+});

@@ -186,3 +186,40 @@ test.describe('Find Bar lab', () => {
     await lab.expectAccessible();
   });
 });
+
+test('UIC-FIND-BAR-1.5 replaces with the replacement text the page holds', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('find-bar');
+  const demo = page.locator('[data-lab-demo="host-replacement"]');
+  const box = demo.getByRole('textbox', { name: 'Replace with' });
+  const text = demo.locator('[data-lab-text]');
+  const reports = demo.locator('[data-lab-output="reports"] li');
+  await expect(box).toHaveValue('');
+  await demo.getByRole('button', { name: 'Preset: marmalade' }).click();
+  await expect(box).toHaveValue('marmalade');
+  await expect(demo.locator('[data-lab-output="replacement"]')).toHaveText('"marmalade"');
+  await demo.getByRole('button', { name: 'Replace', exact: true }).click();
+  await expect(text).toHaveText('Stir the marmalade, jar the jam, then label each jam jar.');
+
+  await box.fill('honey');
+  await expect(reports.last()).toHaveText('typed: honey');
+  await demo.getByRole('button', { name: 'Replace', exact: true }).click();
+  await expect(text).toHaveText('Stir the marmalade, jar the honey, then label each jam jar.');
+
+  await demo.getByRole('button', { name: 'Reset the replacement' }).click();
+  await expect(box).toHaveValue('');
+  await demo.getByRole('button', { name: 'Preset: marmalade' }).click();
+  await demo.getByRole('button', { name: 'Replace all' }).click();
+  await expect(text).toHaveText(
+    'Stir the marmalade, jar the honey, then label each marmalade jar.',
+  );
+  await expect(reports).toHaveText([
+    'replace: marmalade',
+    'typed: honey',
+    'replace: honey',
+    'replace all: marmalade',
+  ]);
+  await lab.expectAccessible('[data-lab-demo="host-replacement"]');
+});

@@ -16,6 +16,7 @@ import { SearchField } from '../../src/components/search-field/search-field.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { Switch } from '../../src/components/switch/switch.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
+import { FormBlockerCases } from './form-blocker-cases.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { ShadowFormCase } from './form-shadow-cases.js';
 import { ExternalSave } from './form-validity-cases.js';
@@ -378,5 +379,6 @@ mountLab(
     >
       <OverlaysInForm />
     </LabSection>
+    <FormBlockerCases />
   </>,
 );
