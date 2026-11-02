@@ -93,6 +93,56 @@ test.describe('Relation Matrix lab', () => {
     await expect(output).toHaveText('column test-4: move-before');
   });
 
+  test('UIC-RELATION-MATRIX-2.5 offers only the header actions given', async ({ page, lab }) => {
+    await lab.open('relation-matrix');
+    const section = demo(page, 'axis-subsets');
+    const choose = (name: string) => section.getByRole('radio', { name }).click();
+    const firstRow = () => section.getByRole('rowheader').first();
+    const items = () => page.getByRole('menu').getByRole('menuitem');
+
+    await firstRow().click({ button: 'right' });
+    await expect(items()).toHaveText(['Move up', 'Move down']);
+    await page.getByRole('menuitem', { name: 'Move down' }).click();
+    await expect(section.locator('[data-lab-output]')).toHaveText('row req-1: move-after');
+
+    await choose('Insert and remove');
+    await firstRow().click({ button: 'right' });
+    await expect(items()).toHaveText(['Insert above', 'Insert below', /^Remove /]);
+    await page.getByRole('menuitem', { name: 'Insert below' }).click();
+    await expect(section.locator('[data-lab-output]')).toHaveText('row req-1: insert-after');
+
+    await choose('None');
+    await firstRow().click({ button: 'right' });
+    await expect(page.getByRole('menu')).toHaveCount(0);
+    await expect(section.locator('[data-lab-output]')).toHaveText('No change yet');
+  });
+
+  test('UIC-RELATION-MATRIX-3.1 keeps headers and cells in line at a taller row height', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('relation-matrix');
+    const section = demo(page, 'large');
+    await section.getByRole('radio', { name: '48 pixels' }).click();
+    const matrix = section.getByRole('grid', { name: 'Large matrix' });
+    await matrix.evaluate((node) => {
+      node.scrollTop = 48 * 1000;
+    });
+    const row = matrix.locator('[role="row"][aria-rowindex="1003"]');
+    await expect(row).toBeVisible();
+    const header = await row.getByRole('rowheader').boundingBox();
+    const first = await row.locator('[aria-colindex="2"]').boundingBox();
+    expect(Math.round(header?.height ?? 0)).toBe(48);
+    expect(Math.abs((first?.y ?? 0) - (header?.y ?? 0))).toBeLessThan(1);
+    expect(Math.round(first?.height ?? 0)).toBe(48);
+    await row.locator('[aria-colindex="2"]').click();
+    await page.keyboard.press('ArrowDown');
+    const below = matrix.locator('[role="row"][aria-rowindex="1004"] > [aria-colindex="2"]');
+    await expect(below).toBeFocused();
+    const next = await below.boundingBox();
+    expect(Math.round((next?.y ?? 0) - (first?.y ?? 0))).toBe(48);
+  });
+
   test('UIC-RELATION-MATRIX-2.4 edits a cell of a windowed matrix far from the start', async ({
     page,
     lab,
