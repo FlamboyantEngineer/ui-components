@@ -164,13 +164,20 @@ export interface FieldState<T> {
 /**
  * Holds a field's changes while a native form reset goes through its listeners, so a building block
  * that resets itself (as React Aria's controls do) changes nothing until the reset is known not to
- * be cancelled (UIC-FIELD-2.6). The form binding reads it from the state under this key.
+ * be cancelled (UIC-FIELD-2.6). The form binding reads it, with the field's value equality, from the
+ * state under this key.
  */
-export const fieldChangeHold = Symbol('fieldChangeHold');
+export const fieldReset = Symbol('fieldReset');
 
 /** Whether the field's changes are held; `setValue` ignores changes while they are. */
 export interface FieldChangeHold {
   isHeld: boolean;
+}
+
+/** What a native reset needs from the field: its change hold and its value equality. */
+export interface FieldResetContract<T> {
+  hold: FieldChangeHold;
+  isEqual: (left: T, right: T) => boolean;
 }
 
 function firstDefined<T>(...values: Array<T | undefined>): T {
@@ -375,7 +382,7 @@ export function useFieldState<T>(
     touch: reveal.touch,
     revealValidation: reveal.revealValidation,
     setDraftIssue,
-    [fieldChangeHold]: hold,
+    [fieldReset]: { hold, isEqual } satisfies FieldResetContract<T>,
   };
   return state;
 }

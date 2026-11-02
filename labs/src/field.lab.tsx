@@ -297,6 +297,26 @@ function DirtyAndRestore() {
   );
 }
 
+const sameMembers = (left: ReadonlySet<string>, right: ReadonlySet<string>) =>
+  left.size === right.size && [...left].every((member) => right.has(member));
+
+/** A value the field compares by its own rule: a set of tags, equal when it has the same members. */
+function CustomValueReset() {
+  const state = useFieldState<ReadonlySet<string>>(
+    { defaultValue: new Set(['red']) },
+    { isEqual: sameMembers },
+  );
+  return (
+    <form aria-label="Custom value">
+      <Field state={state} label="Tags" description="Pick blue, then reset the form.">
+        {(control) => <input {...control} readOnly value={[...state.value].join(', ')} />}
+      </Field>
+      <Button onPress={() => state.setValue(new Set(['blue']))}>Pick blue</Button>
+      <Button type="reset">Reset</Button>
+    </form>
+  );
+}
+
 function PlainInput() {
   const [text, setText] = useState('Plum');
   return (
@@ -484,6 +504,12 @@ mountLab(
     <TooltipMessagesSection />
     <LabSection title="Dirty and restore" description="Restore puts the committed value back.">
       <DirtyAndRestore />
+    </LabSection>
+    <LabSection
+      title="Reset a custom value"
+      description="A form reset restores a value the field compares with its own equality, such as a set of tags."
+    >
+      <CustomValueReset />
     </LabSection>
     <LabSection
       title="Plain input"
