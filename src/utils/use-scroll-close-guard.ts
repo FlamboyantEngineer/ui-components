@@ -33,6 +33,9 @@ function isUnmoved(offsets: Offsets, element: Element | null | undefined): boole
   );
 }
 
+/** The input with which a reader scrolls: a wheel, a touch, a scrollbar press or a scroll key. */
+const readerInputs = ['wheel', 'touchmove', 'pointerdown', 'keydown'] as const;
+
 export interface ScrollCloseGuardOptions {
   /** The overlay follows the page, so any scroll of the page itself leaves it open. */
   followsPage: boolean;
@@ -41,9 +44,12 @@ export interface ScrollCloseGuardOptions {
 /**
  * Whether a scroll that reaches React Aria at this moment should leave an open nonmodal overlay
  * alone, while `isActive`. React Aria closes one on any scroll of its trigger's scroll containers.
- * A queued scroll event of an ancestor, or of the page, that has not moved since the overlay opened
- * (the reveal scroll that opened it, delivered late) is ignored, and with `followsPage` so is every
- * scroll of the page. A real scroll of an element holding the trigger still closes the overlay.
+ * Only a scroll the reader makes after the overlay opened closes it: until the reader turns a
+ * wheel, moves a touch, presses a pointer or a key, scrolls are the page's own (a reveal or
+ * focus scroll still running, or its queued event) and are ignored. After that, a queued scroll
+ * event of an ancestor, or of the page, that has not moved since the overlay opened is ignored,
+ * and with `followsPage` so is every scroll of the page. A real scroll of an element holding the
+ * trigger still closes the overlay.
  */
 export function useScrollCloseGuard(
   isActive: boolean,
@@ -59,6 +65,10 @@ export function useScrollCloseGuard(
     // the guard after the task.
     const view = getOwnerWindow(triggerRef.current);
     const offsets = readScrollOffsets(triggerRef.current);
+    let hasReaderInput = false;
+    const onReaderInput = () => {
+      hasReaderInput = true;
+    };
     let timer: ReturnType<typeof setTimeout> | undefined;
     const onScrolled = () => {
       clearTimeout(timer);
@@ -67,9 +77,10 @@ export function useScrollCloseGuard(
     const onScroll = (event: Event) => {
       const target = event.composedPath()[0] ?? event.target;
       isIgnored.current =
-        target instanceof view.Element
+        !hasReaderInput ||
+        (target instanceof view.Element
           ? isUnmoved(offsets, target)
-          : followsPage || isUnmoved(offsets, view.document.scrollingElement);
+          : followsPage || isUnmoved(offsets, view.document.scrollingElement));
       if (!isIgnored.current) return;
       clearTimeout(timer);
       timer = setTimeout(onScrolled);
@@ -77,10 +88,12 @@ export function useScrollCloseGuard(
     const options = { capture: true, passive: true };
     view.addEventListener('scroll', onScroll, options);
     view.addEventListener('scroll', onScrolled, { passive: true });
+    for (const type of readerInputs) view.addEventListener(type, onReaderInput, options);
     return () => {
       onScrolled();
       view.removeEventListener('scroll', onScroll, options);
       view.removeEventListener('scroll', onScrolled);
+      for (const type of readerInputs) view.removeEventListener(type, onReaderInput, options);
     };
   }, [isActive, triggerRef, followsPage]);
   return () => isIgnored.current;

@@ -338,6 +338,7 @@ describe('Popover', () => {
     await userEvent.click(field());
     await waitFor(() => expect(panel()).toBeNull());
     await open();
+    fireEvent.wheel(document);
     fireEvent.scroll(document);
     await waitFor(() => expect(panel()).toBeNull());
   });
