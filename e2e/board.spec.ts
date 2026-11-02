@@ -305,6 +305,52 @@ test.describe('Board lab', () => {
     await expect(cards(board, 'Done')).toHaveText(['Clean the pond', 'New chore 8']);
   });
 
+  test('UIC-BOARD-1.4 follows collapsed columns and lanes owned by the host', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('board');
+    const section = demo(page, 'controlled-collapse');
+    const out = (name: string) => section.locator(`[data-lab-output="${name}"]`);
+    await expect(section.getByRole('button', { name: 'Expand Doing' })).toBeVisible();
+    await expect(out('collapsed-columns')).toHaveText('doing');
+    await section.getByRole('button', { name: 'Collapse Done only' }).click();
+    await expect(section.getByRole('button', { name: 'Expand Done' })).toBeVisible();
+    await expect(section.getByRole('button', { name: 'Collapse Doing' })).toBeVisible();
+    await section.getByRole('button', { name: 'Collapse To do' }).click();
+    await expect(out('collapsed-columns')).toHaveText('done, todo');
+    await section.getByRole('button', { name: 'Reopen every column' }).click();
+    await expect(section.locator('.ui-board__column[data-collapsed]')).toHaveCount(0);
+    await section.getByRole('button', { name: 'Collapse the Kitchen lane' }).click();
+    await expect(section.getByRole('group', { name: 'Kitchen', exact: true })).toHaveAttribute(
+      'data-collapsed',
+      'true',
+    );
+    await section.getByRole('button', { name: 'Expand Kitchen' }).click();
+    await expect(out('collapsed-lanes')).toHaveText('none');
+    await expect(out('controlled-stored')).toHaveText('columns nothing; lanes nothing');
+    await lab.expectAccessible('[data-lab-demo="controlled-collapse"]');
+  });
+
+  test('UIC-BOARD-1.4 starts lanes collapsed and remembers changes over the default', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('board');
+    const section = () => demo(page, 'default-lanes');
+    const kitchen = () => section().getByRole('group', { name: 'Kitchen', exact: true });
+    await expect(kitchen()).toHaveAttribute('data-collapsed', 'true');
+    await section().getByRole('button', { name: 'Expand Kitchen' }).click();
+    await expect(kitchen()).not.toHaveAttribute('data-collapsed');
+    await expect(section().locator('[data-lab-output="lane-changes"]')).toHaveText('none');
+    await page.reload();
+    await expect(kitchen()).not.toHaveAttribute('data-collapsed');
+    await expect(section().locator('[data-lab-output="default-stored"]')).toContainText('lanes []');
+    await section().getByRole('button', { name: 'Forget the stored sets' }).click();
+    await page.reload();
+    await expect(kitchen()).toHaveAttribute('data-collapsed', 'true');
+  });
+
   test('UIC-BOARD-1.3 UIC-BOARD-1.4 repeats columns in collapsible lanes', async ({
     page,
     lab,

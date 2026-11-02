@@ -22,6 +22,7 @@ import {
 import type { Key } from '../../src/core/props.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { TypedBoard } from './collection-identity-cases.js';
+import { ControlledCollapse, DefaultCollapsedLanes } from './board-collapse-cases.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { RowMenu } from './row-menu.js';
 
@@ -433,6 +434,18 @@ mountLab(
       description="The columns repeated per area, with icons before the column and lane titles. Lanes and columns collapse, and the board remembers which ones through the provider storage."
     >
       <LaneBoard />
+    </LabSection>
+    <LabSection
+      title="Collapse owned by the host"
+      description="collapsedColumns and collapsedLanes come from the host: Doing starts collapsed, the buttons collapse and reopen columns and lanes from outside, and the board's own toggles report through onCollapsedColumnsChange and onCollapsedLanesChange, shown below. The controlled sets win over persistKey, so the stored line stays empty."
+    >
+      <ControlledCollapse />
+    </LabSection>
+    <LabSection
+      title="Lanes collapsed at first"
+      description="defaultCollapsedLanes starts the Kitchen lane collapsed; from there the board owns it, reports each change and remembers it under persistKey, and the stored set wins over the default when the page is opened again. Forget the stored sets, then reload, to start from the default once more."
+    >
+      <DefaultCollapsedLanes />
     </LabSection>
     <LabSection
       title="Long columns"
