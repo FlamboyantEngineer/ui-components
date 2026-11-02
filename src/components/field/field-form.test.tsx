@@ -24,6 +24,46 @@ function OwnedField({ form }: { form: string }) {
   );
 }
 
+const sameMembers = (left: ReadonlySet<string>, right: ReadonlySet<string>) =>
+  left.size === right.size && [...left].every((member) => right.has(member));
+
+/** A field whose value is a set, compared by its members; a button picks another set. */
+function SetField() {
+  const state = useFieldState<ReadonlySet<string>>(
+    { defaultValue: new Set(['A']) },
+    { isEqual: sameMembers },
+  );
+  return (
+    <Field state={state} label="Custom selection">
+      {(control) => (
+        <>
+          <Input {...control} readOnly value={[...state.value].join(',')} />
+          <button type="button" onClick={() => state.setValue(new Set(['B']))}>
+            Pick B
+          </button>
+        </>
+      )}
+    </Field>
+  );
+}
+
+/** A field whose value the default comparison cannot read: a bigint, compared by identity. */
+function CountField() {
+  const state = useFieldState<bigint>({ defaultValue: 1n }, { isEqual: (a, b) => a === b });
+  return (
+    <Field state={state} label="Count">
+      {(control) => (
+        <>
+          <Input {...control} readOnly value={state.value.toString()} />
+          <button type="button" onClick={() => state.setValue(state.value + 1n)}>
+            Add one
+          </button>
+        </>
+      )}
+    </Field>
+  );
+}
+
 const warning = { severity: 'warning', message: 'Check the spelling.' } as const;
 
 function resetForm(id: string) {
@@ -143,6 +183,32 @@ describe('Field in a form', () => {
     });
     expect(inner).toHaveAttribute('data-validation', 'invalid');
     expect(outer).toHaveAttribute('data-validation', 'valid');
+  });
+
+  it('UIC-FIELD-2.6 restores a custom value by the field’s own value equality', async () => {
+    const user = userEvent.setup();
+    const settle = () => act(() => new Promise((resolve) => setTimeout(resolve, 10)));
+    render(
+      <form aria-label="Custom">
+        <SetField />
+        <CountField />
+        <TextField label="Note" options={{ defaultValue: 'initial' }} />
+        <button type="reset">Reset</button>
+      </form>,
+    );
+    const selection = screen.getByRole('textbox', { name: 'Custom selection' });
+    const count = screen.getByRole('textbox', { name: 'Count' });
+    const note = screen.getByRole('textbox', { name: 'Note' });
+    await user.type(note, ' edited');
+    await user.click(screen.getByRole('button', { name: 'Pick B' }));
+    await user.click(screen.getByRole('button', { name: 'Add one' }));
+    expect(selection).toHaveValue('B');
+    expect(count).toHaveValue('2');
+    await user.click(screen.getByRole('button', { name: 'Reset' }));
+    await settle();
+    expect(selection).toHaveValue('A');
+    expect(count).toHaveValue('1');
+    expect(note).toHaveValue('initial');
   });
 
   it('UIC-FIELD-2.6 resets with the form its control belongs to now', async () => {

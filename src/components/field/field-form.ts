@@ -10,7 +10,7 @@ import { useLatest } from '../../utils/use-latest.js';
 import { useStableArray } from '../../utils/use-stable-array.js';
 import { isOwnFieldTarget } from './field-root.js';
 import { useFieldScope } from './field-scope.js';
-import { fieldChangeHold, type FieldChangeHold, type FieldState } from './field-state.js';
+import { fieldReset, type FieldResetContract, type FieldState } from './field-state.js';
 import { isFieldValueEqual } from './field-value.js';
 import { hasNativeFormOwner } from '../../utils/form-owner.js';
 import { getTreeRoot } from '../../utils/owner-window.js';
@@ -68,9 +68,11 @@ function findForm(slots: FieldSlots): HTMLFormElement | null {
   return slots.read('root')?.closest('form') ?? null;
 }
 
-/** The hold the field state keeps for a native reset, when the state has one. */
-function readHold(state: FieldState<unknown>): FieldChangeHold | undefined {
-  return (state as FieldState<unknown> & { [fieldChangeHold]?: FieldChangeHold })[fieldChangeHold];
+/** The change hold and value equality the field state keeps for a native reset, when it has them. */
+function readResetContract(state: FieldState<unknown>): FieldResetContract<unknown> | undefined {
+  return (state as FieldState<unknown> & { [fieldReset]?: FieldResetContract<unknown> })[
+    fieldReset
+  ];
 }
 
 /**
@@ -78,7 +80,8 @@ function readHold(state: FieldState<unknown>): FieldChangeHold | undefined {
  * own controls, so every field control resets alike whatever element it renders. The field holds
  * its changes from the moment the reset starts (the capture phase of its tree's root) until every listener
  * has seen it, so a building block that resets itself waits too; then a reset a listener cancelled
- * (`preventDefault`) changes nothing, and any other puts the initial value back.
+ * (`preventDefault`) changes nothing, and any other puts the initial value back unless the field's
+ * own value equality finds it already there.
  */
 function useFormReset(state: FieldState<unknown>, slots: FieldSlots) {
   const latest = useLatest(state);
@@ -90,12 +93,14 @@ function useFormReset(state: FieldState<unknown>, slots: FieldSlots) {
     // A reset does not leave a shadow root, so the listener sits on the root of the field's tree.
     const root = getTreeRoot(node);
     // The same hold for the field's whole life.
-    const hold = readHold(latest.current);
+    const hold = readResetContract(latest.current)?.hold;
     let timer: number | undefined;
     const restore = (event: Event) => {
       if (hold) hold.isHeld = false;
       if (event.defaultPrevented) return;
-      if (!isFieldValueEqual(latest.current.value, initial)) latest.current.setValue(initial);
+      // The field's own equality, as its dirty state and history use, decides whether to restore.
+      const isEqual = readResetContract(latest.current)?.isEqual ?? isFieldValueEqual;
+      if (!isEqual(latest.current.value, initial)) latest.current.setValue(initial);
     };
     const onReset = (event: Event) => {
       // The form that owns the control now, read at each reset, so a control moved to another
