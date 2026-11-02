@@ -67,13 +67,21 @@ function Sample({
   return <SignaturePad label="Signature" labelLayout={layout} {...props} />;
 }
 
-const menuValues = ['empty', 'image', 'drawn', 'typed'] as const;
+const menuValues = ['empty draw', 'drawn', 'empty type', 'typed', 'empty image', 'image'] as const;
 const menuLocks = ['editable', 'read-only', 'disabled'] as const;
 const menuSamples: Record<(typeof menuValues)[number], SignatureValue | null> = {
-  empty: null,
+  'empty draw': null,
+  'empty type': null,
+  'empty image': null,
   image: imageSignature,
   drawn: signature,
   typed: { kind: 'typed', text: 'Ada Lovelace' },
+};
+
+/** Each empty pad starts in its own mode, the first offered. */
+const menuModes: Partial<Record<(typeof menuValues)[number], readonly SignaturePadMode[]>> = {
+  'empty type': ['type', 'draw', 'image'],
+  'empty image': ['image', 'draw', 'type'],
 };
 
 /** A pad whose field menu offers its own actions, with what it last committed. */
@@ -90,6 +98,7 @@ function MenuSample({
       <SignaturePad
         label="Signature"
         defaultValue={menuSamples[value]}
+        modes={menuModes[value]}
         isReadOnly={lock === 'read-only'}
         isDisabled={lock === 'disabled'}
         onCommit={(next) =>
@@ -97,9 +106,11 @@ function MenuSample({
             next?.kind === 'drawn' ? `drawn, ${next.paths.length}` : (next?.kind ?? 'none'),
           )
         }
-        data-lab-field={`menu-${value}-${lock}`}
+        data-lab-field={`menu-${value.replace(' ', '-')}-${lock}`}
       />
-      {lock === 'editable' ? <LabOutput name={`menu-${value}`}>{committed}</LabOutput> : null}
+      {lock === 'editable' ? (
+        <LabOutput name={`menu-${value.replace(' ', '-')}`}>{committed}</LabOutput>
+      ) : null}
     </>
   );
 }
@@ -239,7 +250,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Field menu"
-      description="Right-click anywhere in a pad, long-press it, or press Shift+F10 or the Context Menu key inside it. Upload image and Paste image show while the image mode applies (an empty pad switches to it), Delete image replaces Clear while an image is held, and Undo stroke shows on a drawing. Read-only pads show them disabled; disabled pads open no menu."
+      description="Right-click anywhere in a pad, long-press it, or press Shift+F10 or the Context Menu key inside it. The pad's actions follow the mode chosen and the value: the image mode offers Upload image and Paste image, even when empty, and Delete image in place of Clear while it holds one; the draw mode offers Undo stroke while it has a stroke; the type mode adds none. Switch the mode to see the menu change. Read-only pads show them disabled; disabled pads open no menu."
     >
       <StateMatrix
         axes={{ value: menuValues, lock: menuLocks }}
