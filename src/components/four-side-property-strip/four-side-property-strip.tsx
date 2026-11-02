@@ -19,6 +19,12 @@ export type BoxSide = 'top' | 'bottom' | 'left' | 'right';
 /** One side of a box in flow-relative terms, which follow the writing direction. */
 export type LogicalBoxSide = 'block-start' | 'block-end' | 'inline-start' | 'inline-end';
 
+/** An opposite pair of sides: `vertical` is top and bottom, `horizontal` left and right. */
+export type BoxAxis = 'vertical' | 'horizontal';
+
+/** An opposite pair of flow-relative sides: `block` is block start and end, `inline` their inline pair. */
+export type LogicalBoxAxis = 'block' | 'inline';
+
 /** What linked sides share: one edit sets `all` four sides, or the side and its opposite (`pairs`). */
 export type FourSidePropertyStripLink = 'all' | 'pairs';
 
@@ -33,7 +39,7 @@ export interface FourSideField<T> {
   onChange: (value: T) => void;
 }
 
-interface FourSideOptions<S extends string, T> extends Omit<
+interface FourSideOptions<S extends string, A extends string, T> extends Omit<
   PropertyRowProps,
   'children' | 'keywords' | 'htmlFor'
 > {
@@ -45,22 +51,28 @@ interface FourSideOptions<S extends string, T> extends Omit<
   defaultValue?: FourSideValues<S, T> | undefined;
   /** Called with every side's value when one changes. */
   onChange?: ((value: FourSideValues<S, T>) => void) | undefined;
-  /** Offers a toggle that links the sides, so one edit sets all four or each opposite pair. */
+  /**
+   * Offers toggles that link the sides: one for all four, or one for each opposite pair, so one
+   * edit sets all four or the side and its opposite.
+   */
   link?: FourSidePropertyStripLink | undefined;
-  /** Whether the sides are linked, controlled. */
-  isLinked?: boolean | undefined;
-  /** Whether the sides start linked, uncontrolled. */
-  defaultLinked?: boolean | undefined;
-  /** Called when the reader links or unlinks the sides. */
-  onLinkedChange?: ((isLinked: boolean) => void) | undefined;
+  /**
+   * The linked pairs, controlled: each pair listed links its two sides, and with `link="all"` the
+   * four sides are linked while both pairs are.
+   */
+  linked?: readonly A[] | undefined;
+  /** The pairs linked to start with, uncontrolled. */
+  defaultLinked?: readonly A[] | undefined;
+  /** Called with the linked pairs when the reader links or unlinks some. */
+  onLinkedChange?: ((linked: readonly A[]) => void) | undefined;
 }
 
 export type FourSidePropertyStripProps<T = string> =
-  | (FourSideOptions<BoxSide, T> & {
+  | (FourSideOptions<BoxSide, BoxAxis, T> & {
       /** `physical` (the default) edits top, bottom, left and right. */
       sides?: 'physical' | undefined;
     })
-  | (FourSideOptions<LogicalBoxSide, T> & {
+  | (FourSideOptions<LogicalBoxSide, LogicalBoxAxis, T> & {
       /** `logical` edits block start and end, then inline start and end, which follow the direction. */
       sides: 'logical';
     });
@@ -73,29 +85,49 @@ const logicalSides: readonly LogicalBoxSide[] = [
   'inline-end',
 ];
 
-const hooks = createHooks('four-side-property-strip', ['side', 'bracket', 'link', 'glyph']);
+const noAxes: readonly string[] = [];
+const physicalAxes: readonly BoxAxis[] = ['vertical', 'horizontal'];
+const logicalAxes: readonly LogicalBoxAxis[] = ['block', 'inline'];
 
-/** The side across the box from `index`: sides come in opposite pairs, in order. */
-function opposite<S>(sides: readonly S[], index: number): S | undefined {
-  return sides[index % 2 === 0 ? index + 1 : index - 1];
+const hooks = createHooks('four-side-property-strip', ['side', 'bracket', 'link']);
+
+/** Sides one toggle links, drawn as a bracket below their cells: all four, or an opposite pair. */
+interface LinkGroup {
+  /** `all`, or the pair's axis. */
+  key: string;
+  sides: readonly string[];
+  /** The pairs the group links. */
+  axes: readonly string[];
 }
 
-/** The sides one edit sets together, each group drawn as a bracket below its cells. */
-function linkGroups<S>(sides: readonly S[], link: FourSidePropertyStripLink): S[][] {
-  return link === 'all' ? [[...sides]] : [sides.slice(0, 2), sides.slice(2)];
+/** The groups `link` offers: sides come in opposite pairs, in order, one pair per axis. */
+function linkGroups(
+  sides: readonly string[],
+  axes: readonly string[],
+  link: FourSidePropertyStripLink,
+): LinkGroup[] {
+  if (link === 'all') return [{ key: 'all', sides, axes }];
+  return axes.map((axis, index) => ({
+    key: axis,
+    sides: sides.slice(index * 2, index * 2 + 2),
+    axes: [axis],
+  }));
 }
 
-/** The values after `side` takes `value`, with the sides linked to it. */
-function setSide<S extends string, T>(
-  values: FourSideValues<S, T>,
-  { sides, side, value }: { sides: readonly S[]; side: S; value: T },
-  link: FourSidePropertyStripLink | null,
-): FourSideValues<S, T> {
-  const index = sides.indexOf(side);
-  const pair = opposite(sides, index);
-  const linked = link === 'all' ? sides : link === 'pairs' && pair ? [side, pair] : [side];
-  const next: Partial<Record<S, T>> = { ...values };
-  for (const each of linked) next[each] = value;
+/** Whether every pair `group` links is linked. */
+function isGroupLinked(group: LinkGroup, linked: readonly string[]): boolean {
+  return group.axes.every((axis) => linked.includes(axis));
+}
+
+/** The values after `side` takes `value`, with the sides of its linked group. */
+function setSide<T>(
+  values: FourSideValues<string, T>,
+  { side, value }: { side: string; value: T },
+  groups: readonly LinkGroup[],
+): FourSideValues<string, T> {
+  const group = groups.find((each) => each.sides.includes(side));
+  const next: Partial<Record<string, T>> = { ...values };
+  for (const each of group?.sides ?? [side]) next[each] = value;
   return next;
 }
 
@@ -117,38 +149,44 @@ function useBatchedEdits<V>(values: V, setValues: (next: V) => void) {
 }
 
 /**
- * A bracket below each group of sides one edit sets together, its ends at the group's outer
- * cells: the first holds the toggle that links the sides, and a later one repeats its glyph.
+ * A bracket below each group of sides a toggle links, its ends at the group's outer cells and its
+ * own toggle at its centre, named after the sides it links.
  */
 function LinkBrackets({
-  sides,
-  label,
-  link,
-  isLinked,
+  groups,
+  axes,
+  linked,
   onLinkedChange,
 }: {
-  sides: readonly string[];
-  label: string;
-  link: FourSidePropertyStripLink;
-  isLinked: boolean;
-  onLinkedChange: (isLinked: boolean) => void;
+  groups: readonly LinkGroup[];
+  axes: readonly string[];
+  linked: readonly string[];
+  onLinkedChange: (linked: readonly string[]) => void;
 }) {
-  return linkGroups(sides, link).map((group, index) => (
-    <span key={group.join(' ')} {...hooks.slot('bracket', { sides: group.join(' ') })}>
-      {index === 0 ? (
+  const strings = useUiStrings();
+  const toggle = (group: LinkGroup, isLinked: boolean) => {
+    const rest = linked.filter((axis) => !group.axes.includes(axis));
+    const next = isLinked ? [...rest, ...group.axes] : rest;
+    onLinkedChange(axes.filter((axis) => next.includes(axis)));
+  };
+  return groups.map((group) => {
+    const isLinked = isGroupLinked(group, linked);
+    return (
+      <span
+        key={group.key}
+        {...hooks.slot('bracket', { sides: group.sides.join(' '), linked: isLinked })}
+      >
         <Button
           className={hooks.slotClass('link')}
           icon={LinkGlyph}
           size="sm"
-          label={label}
+          label={strings.linkSides(group.key as 'all' | BoxAxis | LogicalBoxAxis)}
           isSelected={isLinked}
-          onChange={onLinkedChange}
+          onChange={(next) => toggle(group, next)}
         />
-      ) : (
-        <LinkGlyph className={hooks.slotClass('glyph')} />
-      )}
-    </span>
-  ));
+      </span>
+    );
+  });
 }
 
 /**
@@ -159,31 +197,33 @@ function LinkBrackets({
  */
 export function FourSidePropertyStrip<T = string>(props: FourSidePropertyStripProps<T>) {
   const { sides: mode, renderSide, value, defaultValue, onChange, className, ...row } = props;
-  const { link, isLinked, defaultLinked, onLinkedChange, ...rest } = row;
+  const { link, linked: linkedProp, defaultLinked, onLinkedChange, ...rest } = row;
   const strings = useUiStrings();
   const [values, setValues] = useControllableState<FourSideValues<string, T>>(
     value,
     defaultValue ?? {},
     onChange as ((next: FourSideValues<string, T>) => void) | undefined,
   );
-  const [linked, setLinked] = useControllableState(
-    isLinked,
-    defaultLinked ?? false,
-    onLinkedChange,
+  const [linked, setLinked] = useControllableState<readonly string[]>(
+    linkedProp,
+    defaultLinked ?? noAxes,
+    onLinkedChange as ((next: readonly string[]) => void) | undefined,
   );
   const sides: readonly string[] = mode === 'logical' ? logicalSides : physicalSides;
+  const axes: readonly string[] = mode === 'logical' ? logicalAxes : physicalAxes;
+  const groups = link ? linkGroups(sides, axes, link) : [];
+  const linkedGroups = groups.filter((group) => isGroupLinked(group, linked));
   const nameOf = (side: string) =>
     mode === 'logical'
       ? strings.logicalBoxSide(side as LogicalBoxSide)
       : strings.boxSide(side as BoxSide);
   const edit = useBatchedEdits(values, setValues);
   const draw = renderSide as (side: string, field: FourSideField<T>) => ReactNode;
-  const activeLink = link && linked ? link : null;
 
   return (
     <PropertyRow
       {...rest}
-      {...dataAttributes({ link, linked: activeLink !== null })}
+      {...dataAttributes({ link })}
       className={mergeClassNames(hooks.className, className)}
       keywords={sides.map(nameOf)}
     >
@@ -192,13 +232,13 @@ export function FourSidePropertyStrip<T = string>(props: FourSidePropertyStripPr
           const name = nameOf(side);
           const field: FourSideField<T> = {
             value: values[side],
-            onChange: (next) =>
-              edit((base) => setSide(base, { sides, side, value: next }, activeLink)),
+            onChange: (next) => edit((base) => setSide(base, { side, value: next }, linkedGroups)),
           };
+          const isLinked = linkedGroups.some((group) => group.sides.includes(side));
           return (
             <PropertyStripCell
               key={side}
-              {...hooks.slot('side', { side })}
+              {...hooks.slot('side', { side, linked: isLinked })}
               letter={Array.from(name)[0] ?? ''}
               label={name}
             >
@@ -206,15 +246,7 @@ export function FourSidePropertyStrip<T = string>(props: FourSidePropertyStripPr
             </PropertyStripCell>
           );
         })}
-        {link ? (
-          <LinkBrackets
-            sides={sides}
-            label={strings.linkSides(link)}
-            link={link}
-            isLinked={linked}
-            onLinkedChange={setLinked}
-          />
-        ) : null}
+        <LinkBrackets groups={groups} axes={axes} linked={linked} onLinkedChange={setLinked} />
       </PropertyStrip>
     </PropertyRow>
   );
