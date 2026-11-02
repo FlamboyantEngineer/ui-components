@@ -6,6 +6,7 @@ import type {
   CompletionResult,
 } from '../../src/components/completion-list/completion-list.js';
 import { QueryField, type QueryGrammar } from '../../src/components/query-field/query-field.js';
+import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const column: CSSProperties = { width: 460 };
@@ -126,7 +127,22 @@ const longCompletions: Completion[] = [
   { label: 'NOT', kind: 'keyword', description: 'Leaves out the term' },
 ];
 
-const shapes = ['short', 'long', 'slow', 'no matches'] as const;
+/** Every combination of kind, description and label length, to line up in one list. */
+const mixedCompletions: Completion[] = [
+  { label: 'genre', insertText: 'genre:', kind: 'field', description: 'Shelf section' },
+  { label: 'NOT', kind: 'keyword' },
+  { label: 'history' },
+  { label: 'reader', insertText: 'reader:', description: 'No kind tag' },
+  {
+    label: 'first-publication-date-of-the-original-edition',
+    insertText: 'published:',
+    kind: 'field',
+    description: 'The year the first edition of the book reached the shelves',
+  },
+  { label: 'maria', kind: 'value', description: 'Reader' },
+];
+
+const shapes = ['short', 'long', 'mixed', 'slow', 'no matches'] as const;
 
 const wait = (milliseconds: number) =>
   new Promise((resolve) => {
@@ -136,6 +152,7 @@ const wait = (milliseconds: number) =>
 const shapeGrammars: Readonly<Record<(typeof shapes)[number], QueryGrammar>> = {
   short: grammar,
   long: { ...grammar, complete: () => longCompletions },
+  mixed: { ...grammar, complete: () => ({ options: mixedCompletions, filter: false }) },
   slow: {
     ...grammar,
     complete: async (context) => {
@@ -191,7 +208,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Suggestion shapes"
-      description="Type in each query: short names with a kind tag and a description, long names that wrap while long descriptions truncate, a source that answers after a second (the list keeps its narrowed options until the answer comes, and a Tab pressed meanwhile waits for it instead of leaving), and a source with no matches, which opens no list and leaves Tab to move on."
+      description="Type in each query: short names with a kind tag and a description, long names that wrap while long descriptions truncate, a mix of options with and without kinds and descriptions whose tag, label and description line up on the first line's baseline, a source that answers after a second (the list keeps its narrowed options until the answer comes, and a Tab pressed meanwhile waits for it instead of leaving), and a source with no matches, which opens no list and leaves Tab to move on."
     >
       <StateMatrix
         axes={{ suggestions: shapes }}
@@ -206,6 +223,20 @@ mountLab(
           </div>
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Right to left"
+      description="Type any letter for the mixed suggestions in an Arabic locale: the kind tag, the label and the description line up from the right, on the first line's baseline."
+    >
+      <UiProvider locale="ar-EG">
+        <div dir="rtl" data-lab-demo="rtl" style={column}>
+          <QueryField
+            label="Query, right to left"
+            grammar={shapeGrammars.mixed}
+            placeholder="genre:history"
+          />
+        </div>
+      </UiProvider>
     </LabSection>
     <LabSection
       title="Completing and submitting"
