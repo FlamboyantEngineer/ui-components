@@ -4,6 +4,7 @@ import { Outline, type OutlineHeading } from '../../src/components/outline/outli
 import { ScrollRegion } from '../../src/components/scroll-region/scroll-region.js';
 import type { Key } from '../../src/core/props.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { OutlineSeededCases } from './outline-seeded-cases.js';
 import { ShadowRootHost } from './shadow-root-host.js';
 
 const guide: readonly OutlineHeading[] = [
@@ -228,5 +229,6 @@ mountLab(
     >
       <ReturningSection />
     </LabSection>
+    <OutlineSeededCases />
   </>,
 );

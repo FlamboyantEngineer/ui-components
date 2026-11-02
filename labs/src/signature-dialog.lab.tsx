@@ -6,6 +6,7 @@ import {
   type SignatureDialogCredentials,
   type SignatureDialogEntry,
 } from '../../src/components/signature-dialog/signature-dialog.js';
+import { SignatureDialogSizeCases } from './signature-dialog-size-cases.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const meaningSets = {
@@ -268,5 +269,6 @@ mountLab(
         render={({ reason, drawing }) => <Entries reason={reason} drawing={drawing} />}
       />
     </LabSection>
+    <SignatureDialogSizeCases />
   </>,
 );

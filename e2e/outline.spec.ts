@@ -208,3 +208,32 @@ test('UIC-OUTLINE-4.2 forgets a toggle once its heading leaves the outline', asy
   await demo.getByRole('button', { name: 'Bring Pears back' }).click();
   await expect(pears).toHaveAttribute('aria-expanded', 'false');
 });
+
+test('UIC-OUTLINE-4.2 starts from seeded sections and toggles them independently', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('outline');
+  const demo = page.locator('[data-lab-demo="seeded"]');
+  const outline = demo.getByRole('navigation', { name: 'Menu sections' });
+  const toggle = (name: string) => outline.getByRole('button', { name: `Sections in ${name}` });
+  await expect(toggle('Starters')).toHaveAttribute('aria-expanded', 'true');
+  await expect(toggle('Mains')).toHaveAttribute('aria-expanded', 'false');
+  await expect(toggle('Desserts')).toHaveAttribute('aria-expanded', 'true');
+  await expect(outline.getByRole('link', { name: 'Soups' })).toBeVisible();
+  await expect(outline.getByRole('link', { name: 'Fish' })).toBeHidden();
+
+  await toggle('Mains').click();
+  await toggle('Starters').click();
+  await expect(outline.getByRole('link', { name: 'Fish' })).toBeVisible();
+  await expect(outline.getByRole('link', { name: 'Soups' })).toBeHidden();
+  await expect(demo.locator('[data-lab-output="expanded"]')).toHaveText(
+    'menu-mains, menu-desserts',
+  );
+
+  await demo.getByRole('button', { name: 'Mount again' }).click();
+  await expect(demo.locator('[data-lab-output="mounts"]')).toHaveText('2');
+  await expect(toggle('Starters')).toHaveAttribute('aria-expanded', 'true');
+  await expect(toggle('Mains')).toHaveAttribute('aria-expanded', 'false');
+  await lab.expectAccessible('[data-lab-demo="seeded"]');
+});

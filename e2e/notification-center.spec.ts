@@ -1,4 +1,5 @@
 import { cellSelector, expect, matrixCell, test } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 const cell = (id: string) => `${cellSelector(id)} .ui-notification-center`;
 
@@ -180,5 +181,116 @@ test.describe('Notification Center lab', () => {
     await page.keyboard.press('ArrowDown');
     await expect(inbox.getByRole('button', { name: /Lena Ortiz invited you/ })).toBeFocused();
     await lab.expectAccessible();
+  });
+});
+
+test.describe('Notification Center host cases', () => {
+  test('UIC-NOTIFICATION-CENTER-2.1 UIC-NOTIFICATION-CENTER-2.2 UIC-NOTIFICATION-CENTER-1.5 follows a page that owns the panel and filter', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('notification-center');
+    const demo = page.locator('[data-lab-demo="owned-center"]');
+    const bell = demo.locator('.ui-notification-center__trigger');
+    const panel = page.locator('.ui-notification-center__panel');
+    const output = (name: string) => demo.locator(`[data-lab-output="${name}"]`);
+    await expect(demo.locator('.ui-notification-center__count')).toHaveText('9+');
+    await demo
+      .getByRole('radiogroup', { name: 'Count maximum' })
+      .getByRole('radio', { name: '99' })
+      .click();
+    await expect(demo.locator('.ui-notification-center__count')).toHaveText('12');
+
+    // Room above and below the bell, so the panel takes the placement asked rather than flipping.
+    await bell.evaluate((node) => node.scrollIntoView({ block: 'center' }));
+    await demo.getByRole('button', { name: 'Open from the page' }).click();
+    await expect(panel).toBeVisible();
+    await expect(output('open')).toHaveText('open');
+    const bellBox = requireDefined(await bell.boundingBox());
+    const below = requireDefined(await panel.boundingBox());
+    expect(Math.round(below.x)).toBe(Math.round(bellBox.x));
+    expect(below.y).toBeGreaterThan(bellBox.y + bellBox.height);
+
+    await panel.getByRole('radio', { name: 'Unread' }).click();
+    await expect(output('filter')).toHaveText('unread, loading');
+    await expect(output('filter')).toHaveText('unread');
+    await expect(panel.getByText('Import of Orchard.csv finished')).toHaveCount(0);
+    await expect(output('requests')).toHaveText('unread');
+    await page.keyboard.press('Escape');
+    await expect(panel).toHaveCount(0);
+    await expect(output('open')).toHaveText('closed');
+
+    await demo
+      .getByRole('radiogroup', { name: 'Placement' })
+      .getByRole('radio', { name: 'top' })
+      .click();
+    await bell.evaluate((node) => node.scrollIntoView({ block: 'center' }));
+    await bell.click();
+    await expect(panel).toBeVisible();
+    const top = requireDefined(await bell.boundingBox());
+    const above = requireDefined(await panel.boundingBox());
+    expect(above.y + above.height).toBeLessThan(top.y);
+    await expect(panel.getByRole('radio', { name: 'Unread' })).toBeChecked();
+    await page.keyboard.press('Escape');
+
+    await demo
+      .getByRole('radiogroup', { name: 'Presentation' })
+      .getByRole('radio', { name: 'drawer' })
+      .click();
+    await demo.getByRole('button', { name: 'Open from the page' }).click();
+    await expect(page.getByRole('dialog', { name: 'Notifications' })).toBeVisible();
+    await expect(page.locator('.ui-drawer.ui-notification-center__panel')).toBeVisible();
+  });
+
+  test('UIC-NOTIFICATION-CENTER-2.1 opens a bell as it mounts with defaultOpen', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('notification-center');
+    const demo = page.locator('[data-lab-demo="center-open-on-mount"]');
+    await expect(page.getByRole('dialog', { name: 'Kitchen alerts' })).toHaveCount(0);
+    await demo.getByRole('button', { name: 'Mount a bell open' }).click();
+    const panel = page.getByRole('dialog', { name: 'Kitchen alerts' });
+    await expect(panel).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(panel).toHaveCount(0);
+  });
+});
+
+test.describe('Notification list quiet arrivals and time policy', () => {
+  test.use({ timezoneId: 'Asia/Tokyo' });
+
+  test('UIC-NOTIFICATION-CENTER-3.1 UIC-NOTIFICATION-CENTER-1.2 leaves arrivals to the page and reads times in the chosen zone', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('notification-center');
+    const demo = page.locator('[data-lab-demo="quiet-list"]');
+    const list = demo.locator('.ui-notification-list');
+    const headings = list.locator('.ui-notification-list__group-title');
+    const proofing = list.locator('.ui-notification-list__item', { hasText: 'Proofing finished' });
+    await expect(headings).toHaveText(['Yesterday', 'Friday, April 17']);
+    await expect(proofing).toContainText('Yesterday');
+
+    await demo.getByRole('button', { name: 'Add an arrival' }).click();
+    await expect(demo.locator('[data-lab-output="arrivals"]')).toHaveText('1');
+    await expect(demo.locator('[data-lab-host-announcement]')).toHaveText(
+      'New in the kitchen: Batch 2 ready',
+    );
+    await expect(list.locator('.ui-notification-list__announcement')).toHaveCount(0);
+    await expect(demo.getByRole('status').filter({ hasText: 'Batch 2 ready' })).toHaveCount(1);
+
+    await demo
+      .getByRole('radiogroup', { name: 'Provider time zone' })
+      .getByRole('radio', { name: 'London' })
+      .click();
+    await expect(headings).toHaveText(['Today', 'Sunday, April 19', 'Friday, April 17']);
+    await expect(proofing).toContainText('2 days ago');
+    await demo
+      .getByRole('radiogroup', { name: 'Dates after (days)' })
+      .getByRole('radio', { name: '1' })
+      .click();
+    await expect(proofing).toContainText(/Apr 19, 2026, 11:00\sPM/);
+    await lab.expectAccessible('[data-lab-demo="quiet-list"]');
   });
 });

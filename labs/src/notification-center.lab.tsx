@@ -7,6 +7,7 @@ import {
   NotificationList,
   type NotificationItem,
 } from '../../src/components/notification-center/index.js';
+import { NotificationCenterHostCases } from './notification-center-host-cases.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { samplePicture } from './people-samples.js';
 
@@ -225,5 +226,6 @@ mountLab(
     >
       <LiveDemo />
     </LabSection>
+    <NotificationCenterHostCases />
   </>,
 );

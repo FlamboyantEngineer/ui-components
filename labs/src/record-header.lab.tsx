@@ -10,6 +10,7 @@ import {
   type TransitionMenuState,
 } from '../../src/components/transition-menu/transition-menu.js';
 import type { Key } from '../../src/core/props.js';
+import { RecordHeaderEmptyCases } from './record-header-empty-cases.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 /** A fixed clock, so every time in the matrix reads the same on every day. */
@@ -152,5 +153,6 @@ mountLab(
     >
       <RequirementHeader />
     </LabSection>
+    <RecordHeaderEmptyCases />
   </>,
 );
