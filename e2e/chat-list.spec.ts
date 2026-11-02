@@ -63,12 +63,22 @@ test.describe('Chat List lab', () => {
     await page.keyboard.press('ArrowDown');
     await expect(row(page, 'Recipe swap')).toBeFocused();
     await page.keyboard.press('ArrowRight');
-    await expect(page.getByRole('button', { name: 'More for Recipe swap' })).toBeFocused();
+    const more = page.getByRole('button', { name: 'More for Recipe swap' });
+    await expect(more).toBeFocused();
+    // Enter and Space open the menu after moving through the rows, and Escape returns to the button.
+    for (const key of ['Enter', 'Space']) {
+      await page.keyboard.press(key);
+      await expect(page.getByRole('menu')).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(page.getByRole('menu')).toHaveCount(0);
+      await expect(more).toBeFocused();
+    }
+    await expect(log).toHaveText('Open: Ana Lima');
     await page.keyboard.press('Enter');
     await page.getByRole('menuitem', { name: 'Unmute' }).click();
     await expect(row(page, 'Recipe swap')).not.toHaveAttribute('data-muted');
     // The changed conversation redraws its row, and focus returns to the menu's button.
-    await expect(page.getByRole('button', { name: 'More for Recipe swap' })).toBeFocused();
+    await expect(more).toBeFocused();
     await page.keyboard.press('ArrowLeft');
     await expect(row(page, 'Recipe swap')).toBeFocused();
     await page.keyboard.press('Space');
