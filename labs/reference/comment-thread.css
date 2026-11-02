@@ -123,6 +123,11 @@
   --ref-comment-thread-indent: 32px;
 }
 
+/* With indentReplies, every reply sits whole, avatar included, past the opening comment's avatar. */
+.ui-comment-thread[data-indent-replies] .ui-comment-thread__item[data-reply] {
+  margin-inline-start: var(--ref-comment-thread-indent);
+}
+
 /* A body the host renders in blocks (paragraphs, chat parts) keeps the reply's tight rhythm. */
 .ui-comment-thread-reply__body > :first-child,
 .ui-comment-thread-reply__body > :first-child > :first-child {

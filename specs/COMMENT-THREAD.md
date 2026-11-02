@@ -27,7 +27,7 @@ Verification: `src/components/comment-thread/comment-thread.test.tsx`, `e2e/comm
 
 ### UIC-COMMENT-THREAD-1.4 - Resolve and reopen
 
-The resolved state shall be controlled by `isResolved` or start at `defaultResolved`. While resolved, the root carries `data-resolved`, the header shows a success `Badge` in `ui-comment-thread__status` reading the provider's `resolved` string, and the composer is hidden: replying needs the thread reopened ([UIC-COMMENT-THREAD-1.9](#uic-comment-thread-19---replies-outlast-a-closed-thread)). With `onResolvedChange`, the header has a ghost `Button` in `ui-comment-thread__resolve`, reading `resolve` with the `check` glyph, or `reopen` with the `undo` glyph while resolved, that flips the state and reports it.
+The resolved state shall be controlled by `isResolved` or start at `defaultResolved`. While resolved, the root carries `data-resolved`, the header shows a success `Badge` in `ui-comment-thread__status` reading the provider's `resolved` string, and the composer is hidden: replying needs the thread reopened ([UIC-COMMENT-THREAD-1.9](#uic-comment-thread-19---replies-outlast-a-closed-thread)). With `onResolvedChange`, the header has a ghost `Button` in `ui-comment-thread__resolve`, reading `resolve` with the `check` glyph, or `reopen` with the `undo` glyph while resolved, that flips the state and reports it. With `resolveIconOnly`, the button shows only its glyph, named by the same string, which its tooltip shows on hover and keyboard focus (UIC-BUTTON-1.9); it flips and reports the state as before.
 
 Implementation: `src/components/comment-thread/comment-thread.tsx`
 Verification: `src/components/comment-thread/comment-thread.test.tsx`, `e2e/comment-thread.spec.ts`
@@ -66,6 +66,13 @@ Once the thread has drawn its composer, the composer shall stay mounted while th
 
 Implementation: `src/components/comment-thread/comment-thread.tsx`
 Verification: `src/components/comment-thread/comment-thread-drafts.test.tsx`, `e2e/comment-thread.spec.ts`
+
+### UIC-COMMENT-THREAD-1.10 - Indented replies
+
+Every reply's list item, and the `ui-comment-thread__more` item, shall publish `data-reply`; the opening comment's does not. With `indentReplies`, the root publishes `data-indent-replies` and the reference stylesheet indents each reply whole (its author, header, body and reactions) and the button for hidden replies from the inline start, so the indent mirrors right to left; replies shown at first, added later or revealed are indented alike, and the opening comment is not.
+
+Implementation: `src/components/comment-thread/comment-thread.tsx`, `labs/reference/comment-thread.css`
+Verification: `src/components/comment-thread/comment-thread.test.tsx`, `e2e/comment-thread.spec.ts`
 
 ## UIC-COMMENT-THREAD-2 - Comments
 
@@ -120,31 +127,33 @@ Verification: `src/components/comment-thread/comment-thread-reply-mutations.test
 
 ## Hooks
 
-| Hook                                 | Kind  | Values | Description                                                      |
-| ------------------------------------ | ----- | ------ | ---------------------------------------------------------------- |
-| `ui-comment-thread`                  | root  |        | The `role="group"` thread.                                       |
-| `ui-comment-thread__header`          | slot  |        | The quote, the resolved badge and the resolve button.            |
-| `ui-comment-thread__quote`           | slot  |        | The quoted anchor (`<blockquote>`).                              |
-| `ui-comment-thread__status`          | slot  |        | The resolved badge (also `ui-badge`).                            |
-| `ui-comment-thread__resolve`         | slot  |        | The resolve or reopen button (also `ui-button`).                 |
-| `ui-comment-thread__comments`        | slot  |        | The ordered list of comments.                                    |
-| `ui-comment-thread__item`            | slot  |        | One comment's list item.                                         |
-| `ui-comment-thread__more`            | slot  |        | The list item holding the button that reveals hidden replies.    |
-| `ui-comment-thread__show-more`       | slot  |        | That button (also `ui-button`).                                  |
-| `ui-comment-thread__error`           | slot  |        | The error (also `ui-inline-error`).                              |
-| `ui-comment-thread__composer`        | slot  |        | The composer: the default `CommentComposer` or the caller's.     |
-| `data-resolved`                      | state | `true` | The discussion is closed.                                        |
-| `data-readonly`                      | state | `true` | The thread refuses changes.                                      |
-| `data-selected`                      | state | `true` | The thread is the current one.                                   |
-| `ui-comment-thread-reply`            | root  |        | One comment (`<article>`).                                       |
-| `ui-comment-thread-reply__header`    | slot  |        | The author and the menu.                                         |
-| `ui-comment-thread-reply__author`    | slot  |        | The author (also `ui-user-identity`).                            |
-| `ui-comment-thread-reply__time`      | slot  |        | When it was posted (also `ui-attribution`).                      |
-| `ui-comment-thread-reply__edited`    | slot  |        | The edited marker.                                               |
-| `ui-comment-thread-reply__actions`   | slot  |        | The comment menu button (also `ui-dropdown-menu`).               |
-| `ui-comment-thread-reply__error`     | slot  |        | Why the last save of the editor failed (also `ui-inline-error`). |
-| `ui-comment-thread-reply__body`      | slot  |        | The body.                                                        |
-| `ui-comment-thread-reply__editor`    | slot  |        | The editor that replaces the body while editing.                 |
-| `ui-comment-thread-reply__reactions` | slot  |        | The reactions under the body.                                    |
-| `data-edited`                        | state | `true` | The comment changed after it was posted (on the reply).          |
-| `data-editing`                       | state | `true` | The reader is editing the comment (on the reply).                |
+| Hook                                 | Kind      | Values | Description                                                      |
+| ------------------------------------ | --------- | ------ | ---------------------------------------------------------------- |
+| `ui-comment-thread`                  | root      |        | The `role="group"` thread.                                       |
+| `ui-comment-thread__header`          | slot      |        | The quote, the resolved badge and the resolve button.            |
+| `ui-comment-thread__quote`           | slot      |        | The quoted anchor (`<blockquote>`).                              |
+| `ui-comment-thread__status`          | slot      |        | The resolved badge (also `ui-badge`).                            |
+| `ui-comment-thread__resolve`         | slot      |        | The resolve or reopen button (also `ui-button`).                 |
+| `ui-comment-thread__comments`        | slot      |        | The ordered list of comments.                                    |
+| `ui-comment-thread__item`            | slot      |        | One comment's list item.                                         |
+| `ui-comment-thread__more`            | slot      |        | The list item holding the button that reveals hidden replies.    |
+| `ui-comment-thread__show-more`       | slot      |        | That button (also `ui-button`).                                  |
+| `ui-comment-thread__error`           | slot      |        | The error (also `ui-inline-error`).                              |
+| `ui-comment-thread__composer`        | slot      |        | The composer: the default `CommentComposer` or the caller's.     |
+| `data-resolved`                      | state     | `true` | The discussion is closed.                                        |
+| `data-readonly`                      | state     | `true` | The thread refuses changes.                                      |
+| `data-selected`                      | state     | `true` | The thread is the current one.                                   |
+| `data-reply`                         | state     | `true` | On a reply's list item and the hidden replies' item.             |
+| `data-indent-replies`                | attribute | `true` | `indentReplies`: every reply is indented.                        |
+| `ui-comment-thread-reply`            | root      |        | One comment (`<article>`).                                       |
+| `ui-comment-thread-reply__header`    | slot      |        | The author and the menu.                                         |
+| `ui-comment-thread-reply__author`    | slot      |        | The author (also `ui-user-identity`).                            |
+| `ui-comment-thread-reply__time`      | slot      |        | When it was posted (also `ui-attribution`).                      |
+| `ui-comment-thread-reply__edited`    | slot      |        | The edited marker.                                               |
+| `ui-comment-thread-reply__actions`   | slot      |        | The comment menu button (also `ui-dropdown-menu`).               |
+| `ui-comment-thread-reply__error`     | slot      |        | Why the last save of the editor failed (also `ui-inline-error`). |
+| `ui-comment-thread-reply__body`      | slot      |        | The body.                                                        |
+| `ui-comment-thread-reply__editor`    | slot      |        | The editor that replaces the body while editing.                 |
+| `ui-comment-thread-reply__reactions` | slot      |        | The reactions under the body.                                    |
+| `data-edited`                        | state     | `true` | The comment changed after it was posted (on the reply).          |
+| `data-editing`                       | state     | `true` | The reader is editing the comment (on the reply).                |

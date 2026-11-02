@@ -212,6 +212,25 @@ function CallerContent() {
   );
 }
 
+/** A long thread with icon-only Resolve and Reopen, indented or flat. */
+function IndentedThread({ isIndented }: { isIndented: boolean }) {
+  const [isResolved, setIsResolved] = useState(false);
+  return (
+    <CommentThread
+      quote={quote}
+      resolveIconOnly
+      indentReplies={isIndented}
+      isResolved={isResolved}
+      onResolvedChange={setIsResolved}
+      visibleReplies={2}
+      onReply={() => {}}
+      data-lab-thread={isIndented ? 'indented' : 'flat'}
+    >
+      {renderComments(longThread.slice(0, 5))}
+    </CommentThread>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -242,6 +261,15 @@ mountLab(
         {renderComments(longThread.slice(0, 1))}
         <>{renderComments(longThread.slice(1))}</>
       </CommentThread>
+    </LabSection>
+    <LabSection
+      title="Icon resolve and indented replies"
+      description="Resolve and Reopen as icon buttons named by their tooltip, and every reply indented whole under the opening comment, beside flat replies. The long thread shows its latest two replies: reveal the rest, which indent alike. Resolve, then reopen."
+    >
+      <StateMatrix
+        axes={{ replies: ['indented', 'flat'] }}
+        render={({ replies }) => <IndentedThread isIndented={replies === 'indented'} />}
+      />
     </LabSection>
     <LabSection
       title="Live"
