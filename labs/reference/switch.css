@@ -1,9 +1,17 @@
 /*
- * Switch: a 30 by 18 pixel track with a sliding thumb, before its label, in a row as tall as a
- * control of its size; a label that wraps makes the row taller.
+ * Switch: a track with a sliding thumb, before its label, in a row as tall as a control of its
+ * size; a label that wraps makes the row taller. The size scales the track and thumb too (22 by
+ * 12 with a 6 pixel thumb at xs up to 34 by 20 with a 12 pixel thumb at lg), for a bare switch
+ * and a Boolean Field's alike. An indeterminate switch keeps its thumb in the middle.
  */
 
 .ui-switch {
+  --ref-switch-track-width: 30px;
+  --ref-switch-track-height: 18px;
+  --ref-switch-thumb: 10px;
+  /* The gap between the thumb and the track's inner edge, across and at the ends. */
+  --ref-switch-inset: calc((var(--ref-switch-track-height) - 2px - var(--ref-switch-thumb)) / 2);
+
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -16,16 +24,28 @@
 }
 
 .ui-switch[data-size='xs'] {
+  --ref-switch-track-width: 22px;
+  --ref-switch-track-height: 12px;
+  --ref-switch-thumb: 6px;
+
   min-height: var(--ref-control-height-xs);
   font-size: var(--ref-font-size-xs);
 }
 
 .ui-switch[data-size='sm'] {
+  --ref-switch-track-width: 26px;
+  --ref-switch-track-height: 14px;
+  --ref-switch-thumb: 8px;
+
   min-height: var(--ref-control-height-sm);
   font-size: var(--ref-font-size-sm);
 }
 
 .ui-switch[data-size='lg'] {
+  --ref-switch-track-width: 34px;
+  --ref-switch-track-height: 20px;
+  --ref-switch-thumb: 12px;
+
   min-height: var(--ref-control-height-lg);
   font-size: var(--ref-font-size);
 }
@@ -39,8 +59,8 @@
   display: inline-block;
   flex: none;
   box-sizing: border-box;
-  width: 30px;
-  height: 18px;
+  width: var(--ref-switch-track-width);
+  height: var(--ref-switch-track-height);
   border: 1px solid var(--ref-border-strong);
   border-radius: var(--ref-radius-full);
   background: var(--ref-surface);
@@ -48,10 +68,10 @@
 
 .ui-switch__thumb {
   position: absolute;
-  top: 3px;
-  inset-inline-start: 3px;
-  width: 10px;
-  height: 10px;
+  top: var(--ref-switch-inset);
+  inset-inline-start: var(--ref-switch-inset);
+  width: var(--ref-switch-thumb);
+  height: var(--ref-switch-thumb);
   border-radius: 50%;
   background: var(--ref-border-strong);
   transition: inset-inline-start var(--ref-duration-fast);
@@ -63,7 +83,9 @@
 }
 
 .ui-switch[data-selected] .ui-switch__thumb {
-  inset-inline-start: 15px;
+  inset-inline-start: calc(
+    var(--ref-switch-track-width) - 2px - var(--ref-switch-thumb) - var(--ref-switch-inset)
+  );
   background: var(--ref-on-fill);
 }
 
@@ -95,4 +117,14 @@
 
 .ui-switch__label {
   color: var(--ref-text);
+}
+
+.ui-switch[data-indeterminate] .ui-switch__thumb {
+  inset-inline-start: calc((var(--ref-switch-track-width) - 2px - var(--ref-switch-thumb)) / 2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-switch__thumb {
+    transition: none;
+  }
 }

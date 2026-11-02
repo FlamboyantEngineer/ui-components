@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { BooleanField } from '../../src/components/boolean-field/boolean-field.js';
 import { Button } from '../../src/components/button/button.js';
 import { Switch } from '../../src/components/switch/switch.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
@@ -6,6 +7,8 @@ import { LabOutput } from './lab-output.js';
 
 const values = ['off', 'on'] as const;
 const states = ['resting', 'read-only', 'disabled'] as const;
+const sizes = ['xs', 'sm', 'md', 'lg'] as const;
+const sizedValues = ['off', 'on', 'unset'] as const;
 
 /** A settings list: each switch applies at once and reports its state. */
 function Settings() {
@@ -60,6 +63,31 @@ mountLab(
           >
             {`Option, ${state}, ${value}`}
           </Switch>
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Sizes"
+      description="A switch and a Boolean Field switch share one size scale: the same track and thumb at each size, off, on and unset."
+    >
+      <StateMatrix
+        axes={{ size: sizes, value: sizedValues }}
+        render={({ size, value }) => (
+          <>
+            <Switch
+              size={size}
+              isSelected={value === 'on'}
+              isIndeterminate={value === 'unset'}
+              aria-label={`Bare switch, ${size}, ${value}`}
+            />
+            <BooleanField
+              label={`Field switch, ${size}, ${value}`}
+              variant="switch"
+              size={size}
+              allowsUnset
+              value={value === 'unset' ? null : value === 'on'}
+            />
+          </>
         )}
       />
     </LabSection>

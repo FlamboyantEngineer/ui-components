@@ -1,5 +1,5 @@
-/* Boolean Field: a switch with a sliding thumb and a toggle button; the checkbox, segments and
-   dropdown use their own sheets. */
+/* Boolean Field: the toggle button; the switch, checkbox, segments and dropdown use their own
+   sheets. */
 
 /* The control keeps its own size, so a label after it sits right beside it. */
 .ui-boolean-field .ui-field__control {
@@ -11,93 +11,10 @@
   flex: 1 0 auto;
 }
 
-/* The switch scales with the field's size: track width and height, and the thumb inside it. */
-.ui-boolean-field {
-  --ref-boolean-field-track-width: 30px;
-  --ref-boolean-field-track-height: 18px;
-  --ref-boolean-field-thumb: 10px;
-}
-
-.ui-boolean-field[data-size='xs'] {
-  --ref-boolean-field-track-width: 22px;
-  --ref-boolean-field-track-height: 12px;
-  --ref-boolean-field-thumb: 6px;
-}
-
-.ui-boolean-field[data-size='sm'] {
-  --ref-boolean-field-track-width: 26px;
-  --ref-boolean-field-track-height: 14px;
-  --ref-boolean-field-thumb: 8px;
-}
-
-.ui-boolean-field[data-size='lg'] {
-  --ref-boolean-field-track-width: 34px;
-  --ref-boolean-field-track-height: 20px;
-  --ref-boolean-field-thumb: 12px;
-}
-
+/* The switch is the library Switch, which sizes its track and thumb from the field's size; it
+   never grows past its row. */
 .ui-boolean-field__switch {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: var(--ref-field-height);
-  cursor: pointer;
-}
-
-.ui-boolean-field__track {
-  position: relative;
-  display: inline-block;
-  flex: none;
-  box-sizing: border-box;
-  width: var(--ref-boolean-field-track-width);
-  height: var(--ref-boolean-field-track-height);
-  border: 1px solid var(--ref-border-strong);
-  border-radius: var(--ref-radius-full);
-  background: var(--ref-surface);
-}
-
-.ui-boolean-field__thumb {
-  position: absolute;
-  /* Centred in the track inside its 1px border, with the same gap at the start. */
-  top: calc((var(--ref-boolean-field-track-height) - 2px - var(--ref-boolean-field-thumb)) / 2);
-  inset-inline-start: calc(
-    (var(--ref-boolean-field-track-height) - 2px - var(--ref-boolean-field-thumb)) / 2
-  );
-  width: var(--ref-boolean-field-thumb);
-  height: var(--ref-boolean-field-thumb);
-  border-radius: 50%;
-  background: var(--ref-border-strong);
-  transition: inset-inline-start var(--ref-duration-fast);
-}
-
-.ui-boolean-field__switch[data-selected] .ui-boolean-field__track {
-  border-color: var(--ref-accent);
-  background: var(--ref-accent);
-}
-
-.ui-boolean-field__switch[data-selected] .ui-boolean-field__thumb {
-  inset-inline-start: calc(
-    var(--ref-boolean-field-track-width) - 2px - var(--ref-boolean-field-thumb) -
-      (var(--ref-boolean-field-track-height) - 2px - var(--ref-boolean-field-thumb)) / 2
-  );
-  background: var(--ref-on-fill);
-}
-
-.ui-boolean-field__switch[data-focus-visible] .ui-boolean-field__track {
-  outline: var(--ref-focus-ring);
-  outline-offset: 2px;
-}
-
-.ui-boolean-field__switch[data-readonly] {
-  cursor: default;
-}
-
-.ui-boolean-field__switch[data-readonly] .ui-boolean-field__track {
-  border-style: dashed;
-}
-
-.ui-boolean-field__switch[data-disabled] {
-  cursor: not-allowed;
+  max-width: 100%;
 }
 
 .ui-boolean-field__caption {
@@ -167,7 +84,7 @@
 }
 
 .ui-boolean-field[data-dirty]
-  :is(.ui-boolean-field__track, .ui-checkbox__box, .ui-boolean-field__toggle-button) {
+  :is(.ui-switch__track, .ui-checkbox__box, .ui-boolean-field__toggle-button) {
   border-color: var(--ref-dirty);
 }
 
@@ -197,7 +114,7 @@
 
 .ui-boolean-field[data-validation='invalid']
   :is(
-    .ui-boolean-field__track,
+    .ui-switch__track,
     .ui-checkbox__box,
     .ui-segmented-choice,
     .ui-boolean-field__toggle-button
@@ -205,17 +122,6 @@
   border-color: var(--ref-danger);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .ui-boolean-field__thumb {
-    transition: none;
-  }
-}
-
-.ui-boolean-field__switch[data-indeterminate] .ui-boolean-field__thumb {
-  inset-inline-start: calc(
-    (var(--ref-boolean-field-track-width) - 2px - var(--ref-boolean-field-thumb)) / 2
-  );
-}
 .ui-boolean-field__toggle-button[data-indeterminate] {
   border-style: dashed;
   background: var(--ref-hover);

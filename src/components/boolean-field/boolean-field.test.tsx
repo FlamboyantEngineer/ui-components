@@ -82,7 +82,10 @@ describe('BooleanField', () => {
     expect(toggle).toBeChecked();
     expect(root(container)).toHaveAttribute('data-variant', 'switch');
     expect(container.querySelector('.ui-boolean-field__switch')?.tagName).toBe('LABEL');
-    expectHooksMatchSpec(container, 'BOOLEAN-FIELD', { slots: ['switch', 'track', 'thumb'] });
+    // The switch is the library Switch, with its own track, thumb and size.
+    expect(container.querySelector('.ui-boolean-field__switch')).toHaveClass('ui-switch');
+    expectHooksMatchSpec(container, 'BOOLEAN-FIELD', { slots: ['switch'] });
+    expectHooksMatchSpec(container, 'SWITCH', { slots: ['track', 'thumb'] });
 
     rerender(<BooleanField label="Ripe" variant="segmented" value={false} />);
     const group = screen.getByRole('radiogroup', { name: 'Ripe' });
@@ -106,7 +109,7 @@ describe('BooleanField', () => {
     const { container, rerender } = render(
       <BooleanField label="Notify" variant="switch" value={false} />,
     );
-    const caption = () => container.querySelector('.ui-boolean-field__caption');
+    const caption = () => container.querySelector('.ui-boolean-field__switch .ui-switch__label');
     expect(caption()).toBeNull();
     rerender(<BooleanField label="Notify" variant="switch" value={null} />);
     expect(caption()).toHaveTextContent('Unset');

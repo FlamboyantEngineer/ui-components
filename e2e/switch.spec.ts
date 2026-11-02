@@ -66,6 +66,45 @@ test.describe('Switch lab', () => {
     await expect(output(page, 'Submitted')).toHaveText('email, push');
   });
 
+  test('UIC-SWITCH-1.4 sizes the track and thumb as a Boolean Field switch does', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('switch');
+    const tracks = { xs: [22, 12, 6], sm: [26, 14, 8], md: [30, 18, 10], lg: [34, 20, 12] };
+    /** The track and thumb of the bare switch and of the field's, in each size and value. */
+    const measure = async () => {
+      const result: number[][] = [];
+      for (const size of ['xs', 'sm', 'md', 'lg'] as const) {
+        for (const value of ['off', 'on', 'unset']) {
+          const scope = matrixCell(page, `size=${size} value=${value}`);
+          for (const owner of [':scope > .ui-switch', '.ui-boolean-field .ui-switch']) {
+            const control = scope.locator(owner);
+            const track = await box(control.locator('.ui-switch__track'));
+            const thumb = await box(control.locator('.ui-switch__thumb'));
+            expect([track.width, track.height, thumb.width]).toEqual(tracks[size]);
+            result.push([thumb.x - track.x, thumb.y - track.y]);
+          }
+        }
+      }
+      return result;
+    };
+    const pairs = (all: number[][]) => all.filter((_, index) => index % 2 === 0);
+    const ltr = await measure();
+    // The field's switch sits exactly where the bare one does inside its track.
+    expect(pairs(ltr)).toEqual(ltr.filter((_, index) => index % 2 === 1));
+    // A larger root font leaves the geometry alone, and right to left mirrors it the same way.
+    await page.evaluate(() => {
+      document.documentElement.style.fontSize = '20px';
+      document.documentElement.dir = 'rtl';
+    });
+    const rtl = await measure();
+    expect(pairs(rtl)).toEqual(rtl.filter((_, index) => index % 2 === 1));
+    await expect(
+      matrixCell(page, 'size=xs value=unset').locator(':scope > .ui-switch'),
+    ).toHaveAttribute('data-indeterminate', 'true');
+  });
+
   test('UIC-SWITCH-1.1 passes axe in the dark theme', async ({ page, lab }) => {
     await lab.open('switch', { theme: 'dark' });
     await expect(cell(page, 'resting', 'on').locator('.ui-switch__track')).toHaveCSS(

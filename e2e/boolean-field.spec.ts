@@ -27,8 +27,8 @@ test.describe('Boolean Field lab', () => {
     const switchCell = cell(page, 'switch', 'resting');
     const toggle = switchCell.getByRole('switch', { name: 'Ripe' });
     await expect(toggle).toBeChecked();
-    const track = switchCell.locator('.ui-boolean-field__track');
-    const thumb = switchCell.locator('.ui-boolean-field__thumb');
+    const track = switchCell.locator('.ui-switch__track');
+    const thumb = switchCell.locator('.ui-switch__thumb');
     const on = await thumb.boundingBox();
     const box = await track.boundingBox();
     expect((on?.x ?? 0) - (box?.x ?? 0)).toBeGreaterThan((box?.width ?? 0) / 2);
@@ -65,15 +65,13 @@ test.describe('Boolean Field lab', () => {
     await expect(output(page, 'Value')).toHaveText('false');
     await page.keyboard.press('Space');
     await expect(output(page, 'Value')).toHaveText('unset');
-    await expect(field(page, 'unset-switch').locator('.ui-boolean-field__caption')).toHaveText(
-      'Inherited',
-    );
+    await expect(field(page, 'unset-switch').locator('.ui-switch__label')).toHaveText('Inherited');
     const segmented = field(page, 'unset-segmented');
     await segmented.getByRole('radio', { name: 'False' }).click();
     await expect(output(page, 'Value')).toHaveText('false');
     await segmented.getByRole('radio', { name: 'Inherited' }).click();
     await expect(output(page, 'Value')).toHaveText('unset');
-    await expect(field(page, 'captioned').locator('.ui-boolean-field__caption')).toHaveText('No');
+    await expect(field(page, 'captioned').locator('.ui-switch__label')).toHaveText('No');
   });
 
   test('UIC-BOOLEAN-FIELD-2.3 refuses presses while read-only, undoes and restores', async ({
@@ -100,7 +98,7 @@ test.describe('Boolean Field lab', () => {
 
   test('UIC-BOOLEAN-FIELD-1.4 passes axe in the dark theme', async ({ page, lab }) => {
     await lab.open('boolean-field', { theme: 'dark' });
-    await expect(cell(page, 'switch', 'resting').locator('.ui-boolean-field__track')).toHaveCSS(
+    await expect(cell(page, 'switch', 'resting').locator('.ui-switch__track')).toHaveCSS(
       'background-color',
       'rgb(31, 111, 235)',
     );
@@ -287,7 +285,7 @@ test.describe('Boolean Field lab', () => {
       expect((await sized('checkbox', size, '.ui-checkbox__box').boundingBox())?.height).toBe(
         boxes[size],
       );
-      const track = await sized('switch', size, '.ui-boolean-field__track').boundingBox();
+      const track = await sized('switch', size, '.ui-switch__track').boundingBox();
       expect([track?.width, track?.height]).toEqual([...tracks[size]]);
       const font = await sized('switch', size, '.ui-field__label').evaluate((node) =>
         Number.parseFloat(getComputedStyle(node).fontSize),
@@ -298,8 +296,8 @@ test.describe('Boolean Field lab', () => {
     // The thumb sits at either end, or in the middle while unset, at the smallest size too.
     const thumbGap = async (state: string) => {
       const scope = matrixCell(page, `variant=switch state=${state} size=xs`);
-      const track = await scope.locator('.ui-boolean-field__track').boundingBox();
-      const thumb = await scope.locator('.ui-boolean-field__thumb').boundingBox();
+      const track = await scope.locator('.ui-switch__track').boundingBox();
+      const thumb = await scope.locator('.ui-switch__thumb').boundingBox();
       return [
         (thumb?.x ?? 0) - (track?.x ?? 0),
         (track?.x ?? 0) + (track?.width ?? 0) - (thumb?.x ?? 0) - (thumb?.width ?? 0),

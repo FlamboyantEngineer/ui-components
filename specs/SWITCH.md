@@ -6,7 +6,7 @@
 
 ### UIC-SWITCH-1.1 - Track, thumb and label
 
-`Switch` shall render a `<label>` (`ui-switch`) around a visually hidden native input with role `switch`, a track (`ui-switch__track`, hidden from assistive technology) holding a thumb (`ui-switch__thumb`), and its children in `ui-switch__label`, which name the input. Children that render nothing (`null`, `undefined`, a boolean or an empty string) draw no label slot; any other content, `0` included, draws it. The reference thumb shall stay circular while pressed and throughout its slide between states. It takes `isSelected` (controlled) or `defaultSelected` (uncontrolled) with `onChange`, `name` and `value`, `isReadOnly`, `isDisabled`, `autoFocus` (focus the input when it mounts), `inputRef` (the native input) and the labelling props. Unlike `Checkbox`, it takes no `isRequired`, `isInvalid` or `validationBehavior`: an on-off setting has no invalid state, and React Aria's switch has no validation.
+`Switch` shall render a `<label>` (`ui-switch`) around a visually hidden native input with role `switch`, a track (`ui-switch__track`, hidden from assistive technology) holding a thumb (`ui-switch__thumb`), and its children in `ui-switch__label`, which name the input. Children that render nothing (`null`, `undefined`, a boolean or an empty string) draw no label slot; any other content, `0` included, draws it. The reference thumb shall stay circular while pressed and throughout its slide between states. It takes `isSelected` (controlled) or `defaultSelected` (uncontrolled) with `onChange`, `name` and `value`, `isReadOnly`, `isDisabled`, `autoFocus` (focus the input when it mounts), `inputRef` (the native input) and the labelling props, and `isRequired`, `isInvalid` and `validationBehavior` for a switch inside a field (a Boolean Field's). `isIndeterminate` publishes `data-indeterminate` for a value that is neither on nor off, such as a Boolean Field's unset value; the reference thumb then sits in the middle of the track.
 
 Implementation: `src/components/switch/switch.tsx`, `labs/reference/switch.css`
 Verification: `src/components/switch/switch.test.tsx`, `e2e/switch.spec.ts`
@@ -27,10 +27,10 @@ Verification: `src/components/switch/switch.test.tsx`, `e2e/switch.spec.ts`
 
 ### UIC-SWITCH-1.4 - Hooks and caller attributes
 
-`Switch` shall carry the hooks below, append the caller's `className` to its root and forward caller `data-*` attributes to it. `size` (`xs`, `sm`, `md` by default, `lg`) shall publish `data-size` on the root, so a stylesheet gives the row the height of that size on the control scale.
+`Switch` shall carry the hooks below, append the caller's `className` to its root and forward caller `data-*` attributes to it. `size` (`xs`, `sm`, `md` by default, `lg`) shall publish `data-size` on the root, so a stylesheet gives the row the height of that size on the control scale and sizes the track and thumb with it: the reference sheet draws 22×12, 26×14, 30×18 and 34×20 pixel tracks with 6, 8, 10 and 12 pixel thumbs that keep the same inset at either end, the one geometry a bare switch and a Boolean Field's switch share.
 
 Implementation: `src/components/switch/switch.tsx`
-Verification: `src/components/switch/switch.test.tsx`
+Verification: `src/components/switch/switch.test.tsx`, `e2e/switch.spec.ts`
 
 ### UIC-SWITCH-1.5 - Native form reset
 
@@ -49,6 +49,8 @@ Verification: `src/components/switch/switch.test.tsx`
 | `ui-switch__label`   | slot      |                        | The visible label text.                    |
 | `data-size`          | attribute | `xs`, `sm`, `md`, `lg` | Row size.                                  |
 | `data-selected`      | state     | `true`                 | On (React Aria).                           |
+| `data-indeterminate` | state     | `true`                 | Neither on nor off (`isIndeterminate`).    |
+| `data-invalid`       | state     | `true`                 | Invalid (`isInvalid`, React Aria).         |
 | `data-pressed`       | state     | `true`                 | Being pressed (React Aria).                |
 | `data-hovered`       | state     | `true`                 | Under the pointer (React Aria).            |
 | `data-focused`       | state     | `true`                 | The input has focus (React Aria).          |
