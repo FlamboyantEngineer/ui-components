@@ -132,30 +132,46 @@ const fluidRows = [
 
 /**
  * A fluid table beside a resizable pane: its flexible Name column follows the pane's CSS width as
- * the separator moves, in the same frame.
+ * the separator moves, in the same frame. Its widths are kept under one of two layouts; switching
+ * layout in the middle of a resize cancels it.
  */
 export function FluidColumns() {
+  const [layout, setLayout] = useState('first');
   return (
-    <div data-lab="fluid-columns" style={{ height: 220 }}>
-      <SplitView
-        panes={[{ id: 'fluid-side' }, { id: 'fluid-table' }]}
-        defaultSize={30}
-        separatorLabel="Resize the side panel"
-      >
-        {[
-          <div key="side">Side panel</div>,
-          <div key="table" data-lab-fluid-space style={{ minWidth: 0 }}>
-            <Table
-              aria-label="Fluid columns"
-              rows={fluidRows}
-              columns={[
-                { id: 'name', header: 'Name', minWidth: 200, allowsResizing: true },
-                { id: 'state', header: 'State', width: 100 },
-              ]}
-            />
-          </div>,
+    <div data-lab="fluid-columns" style={{ display: 'grid', gap: 8 }}>
+      <SegmentedChoice
+        aria-label="Widths kept under"
+        size="sm"
+        sizing="content"
+        options={[
+          { value: 'first', label: 'Layout A' },
+          { value: 'second', label: 'Layout B' },
         ]}
-      </SplitView>
+        value={layout}
+        onChange={(value) => setLayout(String(value))}
+      />
+      <div style={{ height: 220 }}>
+        <SplitView
+          panes={[{ id: 'fluid-side' }, { id: 'fluid-table' }]}
+          defaultSize={30}
+          separatorLabel="Resize the side panel"
+        >
+          {[
+            <div key="side">Side panel</div>,
+            <div key="table" data-lab-fluid-space style={{ minWidth: 0 }}>
+              <Table
+                aria-label="Fluid columns"
+                rows={fluidRows}
+                columns={[
+                  { id: 'name', header: 'Name', minWidth: 200, allowsResizing: true },
+                  { id: 'state', header: 'State', width: 100 },
+                ]}
+                persistKey={`lab.table.fluid.${layout}`}
+              />
+            </div>,
+          ]}
+        </SplitView>
+      </div>
     </div>
   );
 }

@@ -44,6 +44,9 @@ export interface TableHeaderModel<T> {
   /** Previews and then keeps a static table's column resize (UIC-TABLE-4.2). */
   onColumnResize: (id: string, width: number) => void;
   onColumnResizeEnd: (id: string, width: number) => void;
+  onColumnResizeCancel: () => void;
+  /** Who keeps the widths: a resize begun for another owner is cancelled (UIC-TABLE-4.2). */
+  widthsOwner: object;
   /** Takes the pinned offsets the header measures. */
   onPinOffsets: (offsets: TablePinOffsets) => void;
   /** The sorted columns in priority order. */
@@ -209,6 +212,8 @@ function getHeaderState<T>(
     pinOffset: pin ? readOwn(model.pinOffsets, column.id) : undefined,
     onResize: (width) => model.onColumnResize(column.id, width),
     onResizeEnd: (width) => model.onColumnResizeEnd(column.id, width),
+    onResizeCancel: model.onColumnResizeCancel,
+    widthsOwner: model.widthsOwner,
     sortDirection: model.sort[sortIndex]?.direction,
     sortPriority: model.isMultipleSort && sortIndex !== -1 ? sortIndex + 1 : undefined,
     drag: model.columnDrag,

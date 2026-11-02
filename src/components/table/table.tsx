@@ -161,6 +161,8 @@ function createHeaderModel<T extends TableRow>(
     contentWidths,
     onColumnResize: grid.widths.resizeColumn,
     onColumnResizeEnd: grid.widths.endColumnResize,
+    onColumnResizeCancel: grid.widths.cancelColumnResize,
+    widthsOwner: grid.widths.owner,
     groups: options.columnGroups ?? [],
     rowHeight: options.rowHeight,
     pinOffsets: grid.pinOffsets,

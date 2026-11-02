@@ -3,10 +3,20 @@
 // The resizer of a static table's column: the table draws its columns as CSS grid tracks, so a
 // resize sets the column's track in pixels, by pointer or by keyboard (specs/TABLE.md, UIC-TABLE-4.2).
 
-import { useContext, useId, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
+import {
+  useContext,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type RefObject,
+} from 'react';
 import { TableStateContext, useFocusRing, useHover, useLocale } from '../../primitives/index.js';
 import { clamp } from '../../utils/clamp.js';
 import { measureScale } from '../../utils/element-scale.js';
+import { useLatest } from '../../utils/use-latest.js';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { tableHooks as hooks } from './table-hooks.js';
@@ -33,8 +43,15 @@ interface TableColumnResizerProps {
   width: number | null;
   minWidth?: number | undefined;
   maxWidth?: number | undefined;
+  /**
+   * Who keeps the widths: when it changes, or the resizer goes, a resize under way is cancelled,
+   * neither kept nor reported.
+   */
+  owner: object;
   onResize: (width: number) => void;
   onResizeEnd: (width: number) => void;
+  /** Drops the preview of a cancelled resize. */
+  onResizeCancel: () => void;
 }
 
 /** The column header the resizer sits in. */
@@ -60,6 +77,10 @@ function useResize(props: TableColumnResizerProps, ref: RefObject<HTMLDivElement
       setResized(null);
       props.onResizeEnd(width);
     },
+    cancel: () => {
+      setResized(null);
+      props.onResizeCancel();
+    },
   };
 }
 
@@ -70,14 +91,42 @@ type Resize = ReturnType<typeof useResize>;
  * Enter, Escape, Space, Tab or leaving the resizer end it. While it lasts, the grid's arrow keys
  * resize instead of moving focus.
  */
-function useResizeKeys(resize: Resize) {
+function useResizeKeys(resize: Resize, owner: object) {
   const table = useContext(TableStateContext);
   const isRtl = useLocale().direction === 'rtl';
-  const [isResizing, setResizing] = useState(false);
+  // The owner a keyboard resize began for, while one lasts.
+  const [session, setSession] = useState<object | null>(null);
+  // A keyboard resize begun for another owner is over.
+  const isResizing = session === owner;
   const setMode = (next: boolean) => {
-    setResizing(next);
+    setSession(next ? owner : null);
     table?.setKeyboardNavigationDisabled(next);
   };
+  const latest = useLatest({
+    session,
+    table,
+    cancel: () => {
+      setSession(null);
+      resize.cancel();
+    },
+  });
+  // A new owner cancels the resize, and so does the resizer going: removing a focused element
+  // need not blur it, so navigation is given back here.
+  useLayoutEffect(() => {
+    const { session: begun, table: grid, cancel } = latest.current;
+    if (begun === null || begun === owner) return;
+    grid?.setKeyboardNavigationDisabled(false);
+    cancel();
+  }, [latest, owner]);
+  useEffect(
+    () => () => {
+      const { session: begun, table: grid, cancel } = latest.current;
+      if (begun === null) return;
+      grid?.setKeyboardNavigationDisabled(false);
+      cancel();
+    },
+    [latest],
+  );
   const end = () => {
     setMode(false);
     resize.finish(resize.readWidth());
@@ -111,10 +160,14 @@ export function TableColumnResizer(props: TableColumnResizerProps) {
   const ref = useRef<HTMLDivElement>(null);
   const id = useId();
   const resize = useResize(props, ref);
-  const keys = useResizeKeys(resize);
+  const keys = useResizeKeys(resize, props.owner);
   const { hoverProps, isHovered } = useHover({});
   const { focusProps, isFocusVisible } = useFocusRing();
   const pointer = usePointerDrag<HTMLDivElement, DragState>({
+    // A new owner, or the resizer going, cancels a drag: its preview is dropped, nothing kept.
+    resetKey: props.owner,
+    onCancel: () => resize.cancel(),
+    cancelsOnUnmount: true,
     onStart: (press) => ({
       x: press.clientX,
       from: resize.readWidth(),
