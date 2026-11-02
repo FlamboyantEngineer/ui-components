@@ -29,6 +29,14 @@ export interface DashboardStrings {
   tileMoved: (tile: string, column: number, row: number) => string;
   /** Announces the columns and rows a resized dashboard tile now spans. */
   tileResized: (tile: string, columns: number, rows: number) => string;
+  /** Removes a dashboard tile from the layout, from its menu, by the tile's label. */
+  removeTile: (tile: string) => string;
+  /** Announces a dashboard tile removed from the layout. */
+  tileRemoved: (tile: string) => string;
+  /** Names a dashboard tile's context menu, by the tile's label. */
+  tileActions: (tile: string) => string;
+  /** Names the context menu of a dashboard grid's empty space. */
+  gridSpaceActions: string;
 }
 
 /** The module's text, with the message values each text function reads its arguments as. */
@@ -42,4 +50,7 @@ export const dashboardStrings = defineStrings<DashboardStrings>({
   resizeTile: (tile) => ({ tile }),
   tileMoved: (tile, column, row) => ({ tile, column, row }),
   tileResized: (tile, columns, rows) => ({ tile, columns, rows }),
+  removeTile: (tile) => ({ tile }),
+  tileRemoved: (tile) => ({ tile }),
+  tileActions: (tile) => ({ tile }),
 });

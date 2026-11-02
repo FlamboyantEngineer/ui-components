@@ -2,7 +2,7 @@
 
 import { isFocused } from '../../utils/focus-target.js';
 import { DragHandleGlyph, ResizeGlyph } from '../../core/glyphs.js';
-import { useLayoutEffect, useRef, type ReactNode } from 'react';
+import { useLayoutEffect, useMemo, useRef, type ReactNode, type Ref, type RefObject } from 'react';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import {
@@ -11,6 +11,7 @@ import {
   type DashboardGridTileState,
 } from './dashboard-grid.js';
 import { useTileMove, type TileMoveKind } from './use-tile-move.js';
+import { useTileMenu } from './dashboard-grid-menu.js';
 
 export interface DashboardTileProps extends BaseProps, RefProps<HTMLDivElement> {
   /** Names the tile and its handles, such as the title of the card it holds. */
@@ -25,6 +26,7 @@ export interface DashboardTileProps extends BaseProps, RefProps<HTMLDivElement> 
 
 interface TileHandleProps {
   grid: DashboardGridTileState;
+  handleRef: RefObject<HTMLButtonElement | null>;
   kind: TileMoveKind;
   label: string;
   minColumnSpan: number;
@@ -32,9 +34,15 @@ interface TileHandleProps {
 }
 
 /** A move or resize handle: a button that drags by pointer and steps by the arrow keys. */
-function TileHandle({ grid, kind, label, minColumnSpan, minRowSpan }: TileHandleProps) {
+function TileHandle({
+  grid,
+  handleRef: ref,
+  kind,
+  label,
+  minColumnSpan,
+  minRowSpan,
+}: TileHandleProps) {
   const strings = useUiStrings();
-  const ref = useRef<HTMLButtonElement>(null);
   const moveProps = useTileMove({
     item: grid.item,
     kind,
@@ -76,6 +84,17 @@ function TileHandle({ grid, kind, label, minColumnSpan, minRowSpan }: TileHandle
   );
 }
 
+const moveSelector = `.${hooks.slotClass('move')}`;
+
+/** The move handle of the tile after `tile`, else of the one before, for focus after a removal. */
+function findFallback(tile: HTMLElement): HTMLElement | null {
+  for (const sibling of [tile.nextElementSibling, tile.previousElementSibling]) {
+    const handle = sibling?.querySelector<HTMLElement>(moveSelector);
+    if (handle) return handle;
+  }
+  return null;
+}
+
 /**
  * One tile of a `DashboardGrid`: a named group placed on the grid's cells from its layout item.
  * In edit mode it shows a move handle before its content and a resize handle after it.
@@ -86,24 +105,35 @@ export function DashboardTile({
   minColumnSpan = 1,
   minRowSpan = 1,
   className,
+  ref,
   ...rest
 }: DashboardTileProps) {
   const grid = useDashboardGridTile();
   const item = grid?.item;
   const moving = grid?.moving;
+  const moveRef = useRef<HTMLButtonElement>(null);
+  const resizeRef = useRef<HTMLButtonElement>(null);
+  const handles = useMemo(() => ({ move: moveRef, resize: resizeRef }), []);
   const handle = (kind: TileMoveKind) =>
     grid?.isEditing ? (
       <TileHandle
         grid={grid}
+        handleRef={handles[kind]}
         kind={kind}
         label={label}
         minColumnSpan={minColumnSpan}
         minRowSpan={minRowSpan}
       />
     ) : null;
+  const tileMenu = useTileMenu(grid, label, {
+    handles,
+    ownRef: ref as Ref<HTMLElement> | undefined,
+    findFallback,
+  });
   return (
     <div
       {...rest}
+      {...tileMenu.targetProps}
       {...hooks.slot(
         'tile',
         { moving: moving === 'move', resizing: moving === 'resize' },
@@ -123,6 +153,7 @@ export function DashboardTile({
       {handle('move')}
       <div {...hooks.slot('tile-content')}>{children}</div>
       {handle('resize')}
+      {tileMenu.menu}
     </div>
   );
 }
