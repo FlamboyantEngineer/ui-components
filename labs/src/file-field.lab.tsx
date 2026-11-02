@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
+import { Button } from '../../src/components/button/button.js';
+import { Form, type FormBlocker } from '../../src/components/form/form.js';
 import {
   FileField,
   type FileFieldItem,
@@ -137,10 +139,11 @@ function toUpload(file: File): SimulatedUpload {
  * Plays the owner's storage: chosen files upload over a few ticks, a file named "fail…" fails
  * halfway, and finished uploads join the field's value as stored files with download links.
  */
-function useSimulatedStorage(initial: FileFieldItem[]) {
+function useSimulatedStorage(initial: FileFieldItem[], isPaused = false) {
   const [storage, setStorage] = useState<SimulatedStorage>({ value: initial, uploads: [] });
   const { value, uploads } = storage;
-  const running = uploads.some((upload) => !upload.error && (upload.progress ?? 0) < 100);
+  const running =
+    !isPaused && uploads.some((upload) => !upload.error && (upload.progress ?? 0) < 100);
   useEffect(() => {
     if (!running) return undefined;
     const timer = setInterval(() => setStorage(advanceStorage), 150);
@@ -165,6 +168,7 @@ function useSimulatedStorage(initial: FileFieldItem[]) {
 function Uploading(props: Partial<FileFieldProps> & { lab: string; initial: FileFieldItem[] }) {
   const { lab, initial, ...rest } = props;
   const storage = useSimulatedStorage(initial);
+  const [received, setReceived] = useState<string[]>([]);
   return (
     <div style={{ width: 420 }}>
       <FileField
@@ -172,12 +176,16 @@ function Uploading(props: Partial<FileFieldProps> & { lab: string; initial: File
         value={storage.value}
         onChange={storage.setValue}
         uploads={storage.uploads}
-        onSelect={storage.select}
+        onSelect={(files) => {
+          setReceived((names) => [...names, ...files.map((file) => file.name)]);
+          storage.select(files);
+        }}
         onUploadRemove={storage.removeUpload}
         data-lab-field={lab}
         {...rest}
       />
       <LabOutput name={`${lab}-value`}>{formatFiles(storage.value)}</LabOutput>
+      <LabOutput name={`${lab}-received`}>{received.join(' | ') || 'none'}</LabOutput>
     </div>
   );
 }
@@ -238,6 +246,77 @@ function SlowOwner() {
         data-lab-field="slow"
       />
       <LabOutput name="slow-received">{received}</LabOutput>
+    </div>
+  );
+}
+
+/** The form's entries as `name=value` pairs, in order. */
+function describeEntries(form: HTMLFormElement): string {
+  const entries = [...new FormData(form)].map(
+    ([name, value]) => `${name}=${typeof value === 'string' ? value : value.name}`,
+  );
+  return entries.join(', ') || 'nothing';
+}
+
+/**
+ * Named file fields in a library `Form`: each held file submits its id, never its bytes or an
+ * upload row; a disabled field submits nothing. An empty required field, or an upload still
+ * running (pause them to keep one running), keeps the form from submitting.
+ */
+function FilesForm() {
+  const [isPaused, setPaused] = useState(false);
+  const attachments = useSimulatedStorage([report, notes], isPaused);
+  const signed = useSimulatedStorage([], isPaused);
+  const [submitted, setSubmitted] = useState('not yet');
+  const [blockers, setBlockers] = useState<readonly FormBlocker[]>([]);
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setSubmitted(describeEntries(event.currentTarget));
+  };
+  return (
+    <div style={{ width: 420 }}>
+      <Form aria-label="Files form" onSubmit={submit} onValidityChange={setBlockers}>
+        <FileField
+          label="Form attachments"
+          name="attachments"
+          allowsMultiple
+          value={attachments.value}
+          onChange={attachments.setValue}
+          uploads={attachments.uploads}
+          onSelect={attachments.select}
+          onUploadRemove={attachments.removeUpload}
+          data-lab-field="form-attachments"
+        />
+        <FileField
+          label="Signed copy"
+          name="signed"
+          isRequired
+          value={signed.value}
+          onChange={signed.setValue}
+          uploads={signed.uploads}
+          onSelect={signed.select}
+          onUploadRemove={signed.removeUpload}
+          data-lab-field="form-signed"
+        />
+        <FileField
+          label="Archived files"
+          name="archived"
+          isDisabled
+          defaultValue={[harbour]}
+          onSelect={() => {}}
+        />
+        <Button type="submit" variant="primary">
+          Submit files
+        </Button>{' '}
+        <Button type="reset">Reset files</Button>
+      </Form>
+      <Button onPress={() => setPaused(!isPaused)}>
+        {isPaused ? 'Resume uploads' : 'Pause uploads'}
+      </Button>
+      <LabOutput name="Files submitted">{submitted}</LabOutput>
+      <LabOutput name="Files blockers">
+        {blockers.map((blocker) => `${blocker.label} ${blocker.status}`).join(', ') || 'none'}
+      </LabOutput>
     </div>
   );
 }
@@ -312,6 +391,24 @@ mountLab(
       description='Choose files: the lab plays the owner, uploads them and adds them to the value. A file whose name starts with "fail" fails halfway; dismiss it with its remove button.'
     >
       <Uploading lab="uploads" initial={[report]} allowsMultiple maxSize={5 * 1024 * 1024} />
+    </LabSection>
+    <LabSection
+      title="At most three files"
+      description='The field holds two committed files and takes at most three, counting held files and uploads: choose two files at once and the second is refused. A failed upload (a name starting with "fail") still takes a slot until dismissed. Remove a held file to free a slot; while the field is full again, the removed file cannot be put back. Received lists the files the owner was handed.'
+    >
+      <Uploading
+        lab="capped"
+        initial={[report, harbour]}
+        committedValue={[report, harbour]}
+        allowsMultiple
+        maxFiles={3}
+      />
+    </LabSection>
+    <LabSection
+      title="Named in a form"
+      description="Submit sends each held file's id under the field's name, and nothing for the disabled field. The empty required field blocks the submit until it holds a file. Pause uploads, then choose a file: the running upload makes the field pending and blocks the submit until it finishes or is removed. Reset puts the first files back."
+    >
+      <FilesForm />
     </LabSection>
     <LabSection
       title="One image, dropped"

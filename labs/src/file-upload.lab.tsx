@@ -7,6 +7,7 @@ import {
   type FileUploadProps,
   type FileUploadVariant,
 } from '../../src/components/file-upload/file-upload.js';
+import { Button } from '../../src/components/button/button.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { formatBytes } from '../../src/utils/index.js';
 import { LabHelperCalls } from './lab-helper-calls.js';
@@ -274,18 +275,23 @@ function ManyPhotos() {
   );
 }
 
-function SingleFileUpload() {
+/**
+ * One PDF at a time. With `reject`, an offer of several files is refused whole; with `first`, the
+ * first file is taken and the rest are left out, unreported.
+ */
+function SingleFileUpload({ behavior }: { behavior: 'first' | 'reject' }) {
   const [files, setFiles] = useState<FileUploadItem[]>([]);
   const [refused, setRefused] = useState('none');
+  const lab = behavior === 'reject' ? 'single' : 'single-first';
   return (
     <>
       <FileUpload
         variant="dropzone"
-        label="Drop one PDF here"
+        label={behavior === 'reject' ? 'Drop one PDF here' : 'Drop PDFs, the first is kept'}
         acceptedFileTypes={['.pdf']}
-        multipleFileBehavior="reject"
+        multipleFileBehavior={behavior}
         files={files}
-        data-lab-upload="single"
+        data-lab-upload={lab}
         onSelect={([file]) => {
           if (!file) return;
           setFiles([{ id: 'current', name: file.name, size: file.size }]);
@@ -294,9 +300,78 @@ function SingleFileUpload() {
         onReject={(rejections) => setRefused(describeRefusals(rejections))}
       />
       <p>
-        Refused: <output data-lab-output="single-refused">{refused}</output>
+        Refused: <output data-lab-output={`${lab}-refused`}>{refused}</output>
       </p>
     </>
+  );
+}
+
+const sharedFiles: FileUploadItem[] = [
+  { id: 'plan', name: 'Floor plan.png', size: 310_000, previewUrl: swatch('#a855f7') },
+  { id: 'minutes', name: 'Minutes.txt', size: 2_400, type: 'text/plain' },
+  { id: 'brief', name: 'Brief.pdf', size: 820_000, type: 'application/pdf' },
+];
+
+/** A short text badge for a file without a thumbnail, from its extension. */
+function ExtensionBadge({ name }: { name: string }) {
+  return <span data-lab-preview>{name.split('.').pop()?.toUpperCase()}</span>;
+}
+
+/**
+ * Listed files with the host's own previews and actions. Read-only hides the chooser and the
+ * remove buttons, while the previews and the Open actions stay. The description is the host's
+ * own, in place of the generated one about types and limits.
+ */
+function ReadOnlyFiles() {
+  const [files, setFiles] = useState(sharedFiles);
+  const [isReadOnly, setReadOnly] = useState(false);
+  const [opened, setOpened] = useState('nothing');
+  return (
+    <div data-lab-demo="read-only-files">
+      <FileUpload
+        label="Shared files"
+        allowsMultiple
+        maxSize={5 * 1024 * 1024}
+        description="Shared with the review group for 30 days."
+        isReadOnly={isReadOnly}
+        files={files}
+        onSelect={() => {}}
+        onRemove={(id) => setFiles((current) => current.filter((file) => file.id !== id))}
+        renderFilePreview={(file) => (file.previewUrl ? null : <ExtensionBadge name={file.name} />)}
+        renderFileActions={(file) => (
+          <Button size="sm" onPress={() => setOpened(file.name)}>
+            {`Open ${file.name}`}
+          </Button>
+        )}
+      />
+      <Button onPress={() => setReadOnly(!isReadOnly)}>
+        {isReadOnly ? 'Make the files editable' : 'Make the files read-only'}
+      </Button>{' '}
+      <Button onPress={() => setFiles(sharedFiles)}>Put the files back</Button>
+      <p>
+        Opened: <output data-lab-output="shared-opened">{opened}</output>
+      </p>
+    </div>
+  );
+}
+
+/**
+ * An owner that labels the chooser and focuses it: the label names the upload's command through
+ * `commandId`, and the button focuses it through `commandRef`.
+ */
+function OwnedCommand() {
+  const commandRef = useRef<HTMLButtonElement>(null);
+  return (
+    <div data-lab-demo="owned-command">
+      <label htmlFor="supporting-documents">Supporting documents</label>
+      <FileUpload
+        label="Choose files"
+        commandId="supporting-documents"
+        commandRef={commandRef}
+        onSelect={() => {}}
+      />
+      <Button onPress={() => commandRef.current?.focus()}>Focus the chooser</Button>
+    </div>
   );
 }
 
@@ -371,9 +446,22 @@ mountLab(
     </LabSection>
     <LabSection
       title="One file at a time"
-      description="Choose or drop one PDF to select or replace it. Dropping several files refuses the whole offer and keeps the current file."
+      description="Choose or drop one PDF to select or replace it. Dropping several files on the first zone (multipleFileBehavior reject) refuses the whole offer and keeps the current file; the second (first) keeps the first file and leaves the rest out without refusing them."
     >
-      <SingleFileUpload />
+      <SingleFileUpload behavior="reject" />
+      <SingleFileUpload behavior="first" />
+    </LabSection>
+    <LabSection
+      title="Read-only files, previews and actions"
+      description="The host draws a badge for files without a thumbnail and adds an Open action to each. Make the files read-only: the chooser and remove buttons go, the previews and Open actions stay. The description is the host's own, in place of the generated size limit."
+    >
+      <ReadOnlyFiles />
+    </LabSection>
+    <LabSection
+      title="An owner's label and focus"
+      description="The label beside the upload names its chooser button through commandId, and Focus the chooser moves focus to it through commandRef."
+    >
+      <OwnedCommand />
     </LabSection>
     <LabSection
       title="In a form"
