@@ -27,6 +27,16 @@ export interface TimelineStrings {
   timelineEndColumn: string;
   /** Heads the table view's column of progress. */
   timelineProgressColumn: string;
+  /** Names an item's context menu, from the item's name. */
+  timelineItemActions: (item: string) => string;
+  /** Titles the item editor, from the item's name. */
+  timelineEditItem: (item: string) => string;
+  /** Labels the item editor's name field. */
+  timelineNameField: string;
+  /** Labels the item editor's dates field, for a bar. */
+  timelineDatesField: string;
+  /** Labels the item editor's day field, for a milestone. */
+  timelineDayField: string;
 }
 
 /** The module's text, with the message values each text function reads its arguments as. */
@@ -37,4 +47,6 @@ export const timelineStrings = defineStrings<TimelineStrings>({
   timelineDependsOn: (names) => ({ names }),
   timelineKeyboardHint: (kind) => ({ kind }),
   timelineQuarter: (quarter) => ({ quarter }),
+  timelineItemActions: (item) => ({ item }),
+  timelineEditItem: (item) => ({ item }),
 });

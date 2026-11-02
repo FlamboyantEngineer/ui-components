@@ -19,6 +19,7 @@ import { timelineHooks as hooks } from './timeline-hooks.js';
 import { layoutTimeline } from './timeline-layout.js';
 import { collectGroupKeys, flattenTimelineRows, type TimelineRow } from './timeline-rows.js';
 import { TimelineTable } from './timeline-table.js';
+import type { TimelineItemMenu } from './timeline-item-menu.js';
 
 export type {
   TimelineDependency,
@@ -29,6 +30,7 @@ export type {
   TimelineScale,
 } from './timeline-geometry.js';
 export type { TimelineRow } from './timeline-rows.js';
+export type { TimelineItemMenu } from './timeline-item-menu.js';
 
 /** `chart` draws the items on the time scale; `table` lists them in a table. */
 export type TimelineView = 'chart' | 'table';
@@ -64,6 +66,14 @@ export interface TimelineProps
   rowHeight?: number | undefined;
   /** Called with an item's new days after a drag or a key moves or resizes it; without it items stay put. */
   onItemChange?: ((change: TimelineItemChange) => void) | undefined;
+  /**
+   * The entries of an item's context menu in the chart, or a function of the item that returns
+   * them. An item without entries keeps the browser's menu. Pair an Edit entry with
+   * `TimelineItemEditor`.
+   */
+  itemMenu?: TimelineItemMenu | undefined;
+  /** Called with the key of the entry chosen in an item's menu, and that item. */
+  onItemMenuAction?: ((key: Key, item: TimelineItem) => void) | undefined;
 }
 
 type StoredSelection = ReadonlySet<Key> | 'all';
@@ -138,6 +148,25 @@ function useRowExpansion(props: ExpansionProps, rows: readonly TimelineRow[]) {
   return { expanded, change };
 }
 
+/** How the chart selects, edits and expands, from the timeline's state and callbacks. */
+function toChartActions(
+  selection: ReturnType<typeof useItemSelection>,
+  onExpandedChange: TimelineChartActions['onExpandedChange'],
+  edits: Pick<TimelineChartActions, 'onDraft' | 'itemMenu'> & Pick<TimelineProps, 'onItemChange'>,
+): TimelineChartActions {
+  const { onItemChange, onDraft, itemMenu } = edits;
+  return {
+    isSelectable: selection.selectionMode !== 'none',
+    selectedKeys: selection.selected,
+    onToggleSelection: selection.toggle,
+    isEditable: (item) => onItemChange !== undefined && !item.isReadOnly,
+    onDraft,
+    onCommit: (change) => onItemChange?.(change),
+    onExpandedChange,
+    itemMenu,
+  };
+}
+
 /**
  * A Gantt-style timeline: rows of bars and milestones on a zoomable time scale, with progress,
  * dependency connectors, a today marker and collapsible row groups. Items move and resize by pointer
@@ -153,6 +182,8 @@ export function Timeline({
   view = 'chart',
   rowHeight = 36,
   onItemChange,
+  itemMenu,
+  onItemMenuAction,
   expandedKeys,
   defaultExpandedKeys,
   onExpandedChange,
@@ -169,15 +200,11 @@ export function Timeline({
   const currentDay = useToday();
   const day = today ?? currentDay;
   const named = rest['aria-label'] !== undefined || rest['aria-labelledby'] !== undefined;
-  const actions: TimelineChartActions = {
-    isSelectable: selection.selectionMode !== 'none',
-    selectedKeys: selection.selected,
-    onToggleSelection: selection.toggle,
-    isEditable: (item) => onItemChange !== undefined && !item.isReadOnly,
+  const actions = toChartActions(selection, expansion.change, {
+    onItemChange,
     onDraft: setDraft,
-    onCommit: (change) => onItemChange?.(change),
-    onExpandedChange: expansion.change,
-  };
+    itemMenu: { entries: itemMenu, onAction: onItemMenuAction },
+  });
   const visibleRows = flattenTimelineRows(rows, expansion.expanded);
   const laidOut = layoutTimeline({
     rows: visibleRows,

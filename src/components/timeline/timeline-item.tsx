@@ -13,6 +13,7 @@ import {
   type TimelineScale,
 } from './timeline-geometry.js';
 import { timelineHooks as hooks } from './timeline-hooks.js';
+import { useItemMenu, type TimelineItemMenuOptions } from './timeline-item-menu.js';
 import type { ItemPredecessors, PlacedItem } from './timeline-layout.js';
 import { useTimelineDrag } from './use-timeline-drag.js';
 import { isFreeEditKey } from '../../utils/is-free-edit-key.js';
@@ -30,6 +31,7 @@ interface TimelineItemButtonProps {
   dayWidth: number;
   isEditable: boolean;
   selection: TimelineItemSelection;
+  menu: TimelineItemMenuOptions;
   onDraft: (change: TimelineItemChange | null) => void;
   onCommit: (change: TimelineItemChange) => void;
 }
@@ -69,6 +71,7 @@ export function TimelineItemButton({
   dayWidth,
   isEditable,
   selection,
+  menu,
   onDraft,
   onCommit,
 }: TimelineItemButtonProps) {
@@ -82,7 +85,7 @@ export function TimelineItemButton({
   });
   const progress = readTimelineProgress(placed.item);
   const isBar = read.kind === 'bar';
-  const onKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+  const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     const key = { key: event.key, shiftKey: event.shiftKey, isRtl };
     // Only plain arrows and Shift with arrows edit; other chords and composing keys pass by.
     const isEditKey = isEditable && isFreeEditKey(event.nativeEvent);
@@ -91,45 +94,49 @@ export function TimelineItemButton({
     event.preventDefault();
     if (change.start !== read.start || change.end !== read.end) onCommit(change);
   };
+  const itemMenu = useItemMenu(item, menu, { onKeyDown });
   return (
-    <button
-      type="button"
-      {...hooks.slot('item', {
-        kind: read.kind,
-        tone: item.tone ?? 'neutral',
-        selected: selection.isSelectable && selection.isSelected,
-        dragging: drag.isDragging,
-        readonly: !isEditable,
-        conflict: predecessors?.hasConflict,
-      })}
-      style={{
-        position: 'absolute',
-        ...toInlineStart(left, isRtl),
-        width: isBar ? right - left : undefined,
-        touchAction: isEditable ? 'none' : undefined,
-      }}
-      aria-label={item.label}
-      aria-describedby={descriptionId}
-      aria-pressed={selection.isSelectable ? selection.isSelected : undefined}
-      onClick={() => {
-        if (!drag.consumeDrag() && selection.isSelectable) selection.onToggle(item.id);
-      }}
-      onKeyDown={onKeyDown}
-      {...drag.handlers}
-    >
-      {progress === undefined ? null : (
-        <span {...hooks.slot('progress')} style={{ width: `${progress * 100}%` }} />
-      )}
-      <span {...hooks.slot('item-label')}>{item.label}</span>
-      {isBar && isEditable ? (
-        <>
-          <span {...hooks.slot('handle', { edge: 'start' })} />
-          <span {...hooks.slot('handle', { edge: 'end' })} />
-        </>
-      ) : null}
-      <span id={descriptionId} hidden>
-        {description}
-      </span>
-    </button>
+    <>
+      <button
+        type="button"
+        {...hooks.slot('item', {
+          kind: read.kind,
+          tone: item.tone ?? 'neutral',
+          selected: selection.isSelectable && selection.isSelected,
+          dragging: drag.isDragging,
+          readonly: !isEditable,
+          conflict: predecessors?.hasConflict,
+        })}
+        style={{
+          position: 'absolute',
+          ...toInlineStart(left, isRtl),
+          width: isBar ? right - left : undefined,
+          touchAction: isEditable ? 'none' : undefined,
+        }}
+        aria-label={item.label}
+        aria-describedby={descriptionId}
+        aria-pressed={selection.isSelectable ? selection.isSelected : undefined}
+        onClick={() => {
+          if (!drag.consumeDrag() && selection.isSelectable) selection.onToggle(item.id);
+        }}
+        {...drag.handlers}
+        {...itemMenu.targetProps}
+      >
+        {progress === undefined ? null : (
+          <span {...hooks.slot('progress')} style={{ width: `${progress * 100}%` }} />
+        )}
+        <span {...hooks.slot('item-label')}>{item.label}</span>
+        {isBar && isEditable ? (
+          <>
+            <span {...hooks.slot('handle', { edge: 'start' })} />
+            <span {...hooks.slot('handle', { edge: 'end' })} />
+          </>
+        ) : null}
+        <span id={descriptionId} hidden>
+          {description}
+        </span>
+      </button>
+      {itemMenu.menu}
+    </>
   );
 }
