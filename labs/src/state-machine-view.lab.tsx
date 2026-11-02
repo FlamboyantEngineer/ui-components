@@ -43,6 +43,48 @@ const orderTransitions: StateMachineTransition[] = [
   { id: 'remind', from: 'placed', to: 'placed', label: 'remind' },
 ];
 
+// Listed out of order on purpose: the machine starts in Cold, the second state, not the first.
+const kettleStates: StateMachineState[] = [
+  { id: 'done', label: 'Done', isFinal: true },
+  { id: 'cold', label: 'Cold' },
+  { id: 'heating', label: 'Heating' },
+];
+
+const kettleTransitions: StateMachineTransition[] = [
+  { id: 'switch-on', from: 'cold', to: 'heating', label: 'switch on' },
+  { id: 'boil', from: 'heating', to: 'done', label: 'boil' },
+  { id: 'switch-off', from: 'heating', to: 'cold', label: 'switch off' },
+];
+
+/**
+ * The same machine twice: started in the outline with `defaultView`, and in the default canvas.
+ * `initialState` names Cold although Done is listed first, and Heating is current.
+ */
+function Kettle() {
+  return (
+    <div
+      style={{
+        display: 'grid',
+        gap: 12,
+        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+      }}
+    >
+      {(['outline', 'canvas'] as const).map((view) => (
+        <StateMachineView
+          key={view}
+          aria-label={`Kettle, starts in ${view}`}
+          data-lab-field={`kettle-${view}`}
+          states={kettleStates}
+          transitions={kettleTransitions}
+          initialState="cold"
+          currentKey="heating"
+          defaultView={view}
+        />
+      ))}
+    </div>
+  );
+}
+
 const states = ['resting', 'current', 'editing'] as const;
 const orientations: readonly Orientation[] = ['horizontal', 'vertical'];
 
@@ -152,6 +194,12 @@ mountLab(
       description="Follow a transition with the buttons; the current state moves and its outgoing transitions change. Tab to a state and move between connected states with the arrow keys. Switch to the outline: each state's entry reads whether it is the initial, current or a final state."
     >
       <Orders />
+    </LabSection>
+    <LabSection
+      title="Initial state and starting view"
+      description="Done is listed first, yet initialState makes Cold the initial state: it carries the initial marker and reads Initial state, while Heating is current and Done final. The first copy starts in the outline (defaultView outline), the second in the canvas default; each switches with its own Diagram and Outline choice."
+    >
+      <Kettle />
     </LabSection>
     <LabSection
       title="Edit mode"
