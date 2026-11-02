@@ -7,6 +7,7 @@ import {
 } from '../../src/components/html-markup/index.js';
 import { SearchField } from '../../src/components/search-field/search-field.js';
 import { TextMatchProvider } from '../../src/components/text-match/text-match.js';
+import { HtmlMarkupCoverageSections } from './html-markup-coverage-cases.js';
 import { LargeInputDemo } from './large-input-demo.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -192,5 +193,6 @@ mountLab(
         {(markup) => <HtmlMarkup markup={markup} />}
       </LargeInputDemo>
     </LabSection>
+    <HtmlMarkupCoverageSections />
   </>,
 );

@@ -11,6 +11,7 @@ import { TextMatchProvider } from '../../src/components/text-match/text-match.js
 import { LargeInputDemo } from './large-input-demo.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { StreamingDemo } from './markdown-streaming-demo.js';
+import { MarkdownOverrideSections } from './markdown-override-cases.js';
 
 const samples = {
   text: [
@@ -253,6 +254,7 @@ mountLab(
     >
       <Markdown source={overrides} renderNode={renderOverride} data-lab-overrides />
     </LabSection>
+    <MarkdownOverrideSections />
     <LabSection
       title="Streaming"
       description="A long answer streams in chunk by chunk: incomplete emphasis, links, fences and table rows never flash raw markers, code renders through createCodeBlockOverride and [n] markers through createCitationOverride, and only the block a chunk changed renders again."

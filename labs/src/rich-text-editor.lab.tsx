@@ -6,6 +6,7 @@ import {
   type RichTextEditorProps,
 } from '../../src/components/rich-text-editor/index.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { RichTextFieldSections } from './rich-text-editor-field-cases.js';
 import {
   BlockHandleChoices,
   ControlledEditor,
@@ -68,6 +69,7 @@ mountLab(
         )}
       />
     </LabSection>
+    <RichTextFieldSections />
     <LabSection
       title="Toolbar, selection toolbar, slash menu and block handle"
       description="Type a slash and a command label or keyword; equally good matches keep their menu order."

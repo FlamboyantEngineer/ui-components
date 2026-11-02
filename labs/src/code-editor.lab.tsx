@@ -1,3 +1,4 @@
+import { CodeEditorCoverageSections } from './code-editor-coverage-cases.js';
 import { jsonExamples } from './code-json.js';
 import { languageExamples } from './code-languages.js';
 import { useState } from 'react';
@@ -585,6 +586,7 @@ mountLab(
           lineNumbers
         />
       </LabSection>
+      <CodeEditorCoverageSections />
     </div>
   </>,
 );
