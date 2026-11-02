@@ -81,6 +81,22 @@ test.describe('Select Field lab', () => {
     }
   });
 
+  test('UIC-SELECT-FIELD-12.1 forwards caller popup attributes and restores focus on dismissal', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('select-field');
+    const field = page.locator('[data-lab-field="short"]');
+    const trigger = field.locator('.ui-select-field__trigger');
+    await trigger.click();
+    const popup = page.locator('.ui-select-field__popover[data-popup-density="compact"]');
+    await expect(popup).toBeVisible();
+    await expect(field).not.toHaveAttribute('data-popup-density');
+    await page.keyboard.press('Escape');
+    await expect(popup).toBeHidden();
+    await expect(trigger).toBeFocused();
+  });
+
   test('UIC-SELECT-FIELD-1.1 UIC-SELECT-FIELD-1.3 UIC-SELECT-FIELD-2.1 UIC-SELECT-FIELD-2.3 draws every layout and state', async ({
     page,
     lab,
@@ -180,6 +196,38 @@ test.describe('Select Field lab', () => {
     await expect(trigger).toHaveAccessibleName('Fig Fruit');
   });
 
+  test('UIC-SELECT-FIELD-2.2 reveals the full truncated choice on hover without opening its list', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('select-field');
+    const long = field(page, 'long');
+    const trigger = long.locator('.ui-select-field__trigger');
+    await trigger.scrollIntoViewIfNeeded();
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+        ),
+    );
+    await trigger.click();
+    const text = 'A considerably longer option label than the column';
+    await page.getByRole('option', { name: text, exact: true }).click();
+    const label = long.locator('.ui-select-field__value-label');
+    await expect(label).toHaveText(text);
+    await expect(async () =>
+      expect(await label.evaluate((node) => node.scrollWidth > node.clientWidth)).toBe(true),
+    ).toPass();
+    await expect(label).toHaveCSS('text-overflow', 'ellipsis');
+    await label.hover();
+    await expect(page.getByRole('tooltip')).toHaveText(text);
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.getByRole('listbox')).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('tooltip')).toHaveCount(0);
+    await expect(trigger).toHaveAccessibleName(`${text} Long`);
+  });
+
   test('UIC-SELECT-FIELD-3.1 locks page scrolling while open and closes on an outside press', async ({
     page,
     lab,
@@ -220,6 +268,25 @@ test.describe('Select Field lab', () => {
     await page.keyboard.press('Backspace');
     await expect(output(page, 'Value')).toHaveText('apple, pear, fig');
     await expect(page.getByRole('listbox')).toBeHidden();
+  });
+
+  test('UIC-SELECT-FIELD-3.1 UIC-SELECT-FIELD-3.5 cancels a seeded filter with one Escape', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('select-field');
+    const trigger = field(page, 'filter').getByRole('button', { name: 'Kiwi Orchard' });
+    await trigger.focus();
+    await page.keyboard.type('m');
+    const search = page.getByRole('searchbox', { name: 'Search' });
+    await expect(search).toBeFocused();
+    await expect(search).toHaveValue('m');
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('listbox')).toHaveCount(0);
+    await expect(trigger).toHaveAccessibleName('Kiwi Orchard');
+    await expect(trigger).toBeFocused();
+    await trigger.click();
+    await expect(search).toHaveValue('');
   });
 
   test('UIC-SELECT-FIELD-3.5 UIC-SELECT-FIELD-3.6 filters from a key typed on the closed trigger', async ({

@@ -4,7 +4,7 @@ import type { Ref } from 'react';
 import type { TreeItemData } from '../tree/tree.js';
 import { SelectTreeField, type SelectTreeFieldProps } from './select-tree-field.js';
 import type { OpenStateProps } from '../../core/events.js';
-import type { Key } from '../../core/props.js';
+import type { BaseProps, Key } from '../../core/props.js';
 import {
   Field,
   useFieldControl,
@@ -70,6 +70,8 @@ interface SelectListFieldProps<M extends SelectFieldSelectionMode = 'single'>
   name?: string | undefined;
   /** Receives the trigger button, the field's focusable control, while it is on the page. */
   triggerRef?: Ref<HTMLButtonElement> | undefined;
+  /** Attributes and hook classes for the portalled popover, independent of the field. */
+  popoverProps?: BaseProps | undefined;
 }
 
 /**

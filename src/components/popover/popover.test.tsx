@@ -90,6 +90,88 @@ describe('Popover', () => {
     expect(screen.getByRole('dialog', { name: 'Filters' })).toBeInTheDocument();
   });
 
+  it.each([false, true])(
+    'UIC-POPOVER-1.1 UIC-POPOVER-2.3 a non-modal opener toggles once with controlled=%s',
+    async (controlled) => {
+      const user = userEvent.setup();
+      const onOpenChange = vi.fn();
+      function Controlled() {
+        const [isOpen, setOpen] = useState(false);
+        const triggerRef = useRef<HTMLButtonElement>(null);
+        const change = (next: boolean) => {
+          onOpenChange(next);
+          setOpen(next);
+        };
+        return (
+          <PopoverTrigger isOpen={isOpen} onOpenChange={change}>
+            <Button ref={triggerRef}>Filters</Button>
+            <Popover
+              isNonModal
+              isOpen={isOpen}
+              onOpenChange={change}
+              triggerRef={triggerRef}
+              title="Filters"
+            >
+              <input aria-label="City" />
+            </Popover>
+          </PopoverTrigger>
+        );
+      }
+      render(controlled ? <Controlled /> : <Page isNonModal triggerProps={{ onOpenChange }} />);
+      const trigger = screen.getByRole('button', { name: 'Filters' });
+      await user.click(trigger);
+      const dialog = await screen.findByRole('dialog', { name: 'Filters' });
+      await waitFor(() => expect(dialog).toHaveFocus());
+      await user.click(trigger);
+      await waitFor(() =>
+        expect(screen.queryByRole('dialog', { name: 'Filters' })).not.toBeInTheDocument(),
+      );
+      expect(trigger).toHaveAttribute('aria-expanded', 'false');
+      expect(onOpenChange.mock.calls).toEqual([[true], [false]]);
+      await waitFor(() => expect(trigger).toHaveFocus());
+      await user.keyboard('{Enter}');
+      await screen.findByRole('dialog', { name: 'Filters' });
+      await user.keyboard('{Escape}');
+      await waitFor(() => expect(trigger).toHaveFocus());
+    },
+  );
+
+  it('UIC-POPOVER-1.2 UIC-POPOVER-2.1 a non-modal opener uses its own trigger while outside refusal keeps its custom anchor open', async () => {
+    const user = userEvent.setup();
+    const shouldClose = vi.fn(() => false);
+    function Anchored() {
+      const anchor = useRef<HTMLInputElement>(null);
+      return (
+        <>
+          <input ref={anchor} aria-label="Summary" />
+          <PopoverTrigger>
+            <Button>Filters</Button>
+            <Popover
+              isNonModal
+              triggerRef={anchor}
+              title="Filters"
+              shouldCloseOnInteractOutside={shouldClose}
+            >
+              <input aria-label="City" />
+            </Popover>
+          </PopoverTrigger>
+        </>
+      );
+    }
+    render(<Anchored />);
+    const trigger = screen.getByRole('button', { name: 'Filters' });
+    await user.click(trigger);
+    const dialog = await screen.findByRole('dialog', { name: 'Filters' });
+    await waitFor(() => expect(dialog).toHaveFocus());
+    await user.click(screen.getByRole('textbox', { name: 'Summary' }));
+    expect(shouldClose).toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: 'Filters' })).toBeInTheDocument();
+    await user.click(trigger);
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: 'Filters' })).not.toBeInTheDocument(),
+    );
+  });
+
   it('UIC-POPOVER-1.2 UIC-POPOVER-3.2 opens a controlled popover against a chosen element', async () => {
     const onOpenChange = vi.fn();
     function Standalone() {

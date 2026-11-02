@@ -25,6 +25,26 @@ import {
 } from './table-cases.js';
 import { BulkEdit, Grouping, SmallSteps, Spreadsheet } from './table-sheet-cases.js';
 import { GroupKeyTable, ObjectKeyTable, TypedTable } from './collection-identity-cases.js';
+import { HeaderFilter, PickerCell } from './table-control-cases.js';
+import { ContentWidths, GroupedReordering } from './table-content-contracts.js';
+import { RepeatedSelection } from './table-selection-cases.js';
+
+function TrailingActions() {
+  const [count, setCount] = useState(0);
+  return (
+    <>
+      <Table
+        aria-label="Trailing actions"
+        rows={fruit}
+        columns={columns}
+        trailingContent={<Button onPress={() => setCount((value) => value + 1)}>Add item</Button>}
+      />
+      <output role="status" aria-label="Added items">
+        {count}
+      </output>
+    </>
+  );
+}
 
 interface Fruit {
   id: string;
@@ -321,6 +341,18 @@ function Notices() {
 
 mountLab(
   <>
+    <LabSection
+      title="Content widths"
+      description="Content-sized header and cells beside a flexible column; resize to keep an explicit width."
+    >
+      <ContentWidths />
+    </LabSection>
+    <LabSection
+      title="Moves within groups"
+      description="Move eligible rows inside their current group; fixed rows and group headers never drag."
+    >
+      <GroupedReordering />
+    </LabSection>
     <LabSection title="States" description="Each state at both row sizes.">
       <StateMatrix
         axes={{ state: states, size: ['md', 'sm'] }}
@@ -346,12 +378,25 @@ mountLab(
       description="Checkboxes, select all, a disabled row and an actions column."
     >
       <Selection />
+      <RepeatedSelection />
     </LabSection>
     <LabSection
       title="A control in a header"
       description="The weight header holds a checkbox that switches the unit; the select-all checkbox keeps its own role."
     >
       <HeaderControls />
+    </LabSection>
+    <LabSection
+      title="A search field in a sortable header"
+      description="Edit with caret keys, spaces and Enter. Control+Enter or Command+Enter applies the modal; direct header activation still sorts."
+    >
+      <HeaderFilter />
+    </LabSection>
+    <LabSection
+      title="A picker in a cell"
+      description="ArrowDown opens the cell's listbox; Escape returns focus without moving or selecting the row."
+    >
+      <PickerCell />
     </LabSection>
     <LabSection
       title="Resizing"
@@ -455,6 +500,12 @@ mountLab(
       description="F2, Enter or a double click opens a cell's editor; Enter commits and Escape cancels. In Weight, plain decimal text such as 12.5 becomes a number, while 0x10, 1e3 or an integer too large to hold exactly stays text. A disabled row opens no editor, and disabling the row of an open editor closes it without an edit. With a Japanese, Chinese or Korean input method, Enter and Escape confirm or cancel the candidate and leave the editor open."
     >
       <Editing />
+    </LabSection>
+    <LabSection
+      title="Trailing action"
+      description="An ordinary action spans the columns without selecting a data row."
+    >
+      <TrailingActions />
     </LabSection>
     <LabSection title="Summary row" description="Totals of every row the filter keeps.">
       <Summary />

@@ -239,6 +239,58 @@ test.describe('Scroll Region lab', () => {
     expect(region.y + region.height - (horizontal.y + horizontal.height)).toBeGreaterThan(50);
   });
 
+  test('UIC-TABLE-7.2 UIC-SCROLL-REGION-2.5 clears flat and grouped native Table headers', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('scroll-region');
+    const region = page.locator('[data-lab-region="native-table-header"]');
+    const root = region.locator('.ui-scroll-region');
+    const viewport = region.getByRole('region', { name: 'Cities with native Table headers' });
+    const header = region.locator('.ui-table__header');
+    const vertical = region.getByRole('scrollbar', { name: 'Scroll vertically' });
+    const inset = () =>
+      root.evaluate((node) =>
+        Number.parseFloat(
+          (node as HTMLElement).style.getPropertyValue('--ui-scroll-region-header-size'),
+        ),
+      );
+    let flatHeight = 0;
+    for (const grouped of [false, true]) {
+      if (grouped) {
+        await page.getByRole('button', { name: 'Group city columns', exact: true }).click();
+      }
+      await region.scrollIntoViewIfNeeded();
+      await expect
+        .poll(async () => Math.abs((await inset()) - (await box(header)).height))
+        .toBeLessThan(1);
+      const heading = await box(header);
+      const thumb = await box(vertical);
+      expect(heading.height).toBeGreaterThan(0);
+      expect(thumb.y).toBeGreaterThanOrEqual(heading.y + heading.height - 1);
+      if (grouped) expect(heading.height).toBeGreaterThan(flatHeight + 16);
+      else flatHeight = heading.height;
+
+      await vertical.focus();
+      await page.keyboard.press('PageDown');
+      const visible = (await metrics(viewport)).clientHeight - heading.height;
+      await expect
+        .poll(async () => Math.abs((await metrics(viewport)).scrollTop - visible))
+        .toBeLessThan(1);
+      await page.keyboard.press('Home');
+      await expect.poll(async () => (await metrics(viewport)).scrollTop).toBe(0);
+    }
+
+    await page.getByRole('button', { name: 'Remove city header inset', exact: true }).click();
+    await expect.poll(inset).toBe(0);
+    const heading = await box(header);
+    expect((await box(vertical)).y).toBeLessThan(heading.y + heading.height);
+    await page.getByRole('button', { name: 'Inset city header', exact: true }).click();
+    await expect
+      .poll(async () => Math.abs((await inset()) - (await box(header)).height))
+      .toBeLessThan(1);
+  });
+
   test('UIC-SCROLL-REGION-2.1 paints the overlay thumb above a sticky header', async ({
     page,
     lab,

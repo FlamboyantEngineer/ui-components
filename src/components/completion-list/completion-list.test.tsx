@@ -149,6 +149,27 @@ describe('CompletionList', () => {
     expect(input).toHaveFocus();
   });
 
+  it('UIC-COMPLETION-LIST-1.3 keeps the active option on layout entry until the mouse moves', async () => {
+    const user = userEvent.setup();
+    const onActiveKeyChange = vi.fn();
+    render(<Harness onActiveKeyChange={onActiveKeyChange} />);
+    const jon = await screen.findByRole('option', { name: 'Jon Berg' });
+    if (typeof globalThis.PointerEvent !== 'undefined') {
+      // eslint-disable-next-line testing-library/prefer-user-event -- Layout emits entry beneath a stationary mouse without the move that user.hover includes.
+      fireEvent.pointerOver(jon, { pointerType: 'mouse' });
+    } else {
+      // eslint-disable-next-line testing-library/prefer-user-event -- Simulate the same layout-only entry in the mouse fallback.
+      fireEvent.mouseOver(jon);
+    }
+    expect(onActiveKeyChange).not.toHaveBeenCalled();
+    expect(screen.getByRole('option', { name: 'Maria Santos Design' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    await user.hover(jon);
+    expect(onActiveKeyChange).toHaveBeenCalledExactlyOnceWith('jon');
+  });
+
   it('UIC-COMPLETION-LIST-1.3 acts only on a press released over the option, and a touch does not hover', async () => {
     const user = userEvent.setup();
     const onAction = vi.fn();

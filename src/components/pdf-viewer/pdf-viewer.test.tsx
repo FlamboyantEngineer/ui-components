@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen, waitFor, within } from '@testing-librar
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { pressComposingKeys } from '../../../test/composition.js';
 import {
   createEngine,
   createTextContent,
@@ -211,6 +212,33 @@ describe('PdfViewer', () => {
     expect(field).toHaveValue('3');
     expect(scroller.scrollTop).toBe(1600);
     expect(screen.getByRole('button', { name: 'Next page' })).toBeDisabled();
+  });
+
+  it('UIC-PDF-VIEWER-4.2 cancels a page draft without moving and leaves composition keys to the input method', async () => {
+    const user = userEvent.setup();
+    stubLayout();
+    const onPageChange = vi.fn();
+    await renderReady({ defaultZoom: 100, onPageChange });
+    const field = screen.getByLabelText('Page', { exact: true });
+    const scroller = screen.getByRole('document');
+    await user.click(screen.getByRole('button', { name: 'Next page' }));
+    expect(field).toHaveValue('2');
+    expect(scroller.scrollTop).toBe(800);
+    onPageChange.mockClear();
+    await user.clear(field);
+    await user.type(field, '3');
+    pressComposingKeys(field);
+    expect(field).toHaveValue('3');
+    expect(onPageChange).not.toHaveBeenCalled();
+    await user.keyboard('{Escape}');
+    expect(field).toHaveValue('2');
+    expect(field).toHaveFocus();
+    expect(scroller.scrollTop).toBe(800);
+    expect(onPageChange).not.toHaveBeenCalled();
+    await user.clear(field);
+    await user.type(field, '9{Enter}');
+    expect(field).toHaveValue('3');
+    expect(onPageChange).toHaveBeenLastCalledWith(2);
   });
 
   it('UIC-PDF-VIEWER-5.1 UIC-PDF-VIEWER-5.2 highlights every match and counts them', async () => {

@@ -198,6 +198,15 @@ test.describe('PDF Viewer lab', () => {
     await expect(field).toHaveValue('2');
     expect(await offsetInScroller(pages.nth(1))).toBeCloseTo(restingTop, 0);
 
+    const committedPosition = await scroller.evaluate((element) => element.scrollTop);
+    await field.fill('3');
+    await field.press('Escape');
+    await expect(field).toHaveValue('2');
+    await expect(field).toBeFocused();
+    await expect(async () => {
+      expect(await scroller.evaluate((element) => element.scrollTop)).toBe(committedPosition);
+    }).toPass();
+
     await field.fill('3');
     await field.press('Enter');
     await expect(field).toHaveValue('3');

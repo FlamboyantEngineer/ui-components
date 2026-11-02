@@ -204,6 +204,20 @@ describe('UserCardTrigger opening', () => {
     );
   }
 
+  it('UIC-USER-CARD-TRIGGER-1.3 closes a hovered card on Escape while focus remains on the page', async () => {
+    useFakeClock();
+    renderHoverTrigger({ delay: 0 });
+    const trigger = screen.getByRole('button', { name: 'Maria Santos' });
+    await hover(trigger);
+    await advance(1);
+    expect(screen.getByRole('dialog', { name: 'Maria Santos' })).toBeInTheDocument();
+    expect(document.body).toHaveFocus();
+    await user.keyboard('{Escape}');
+    await advance(1000);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(document.body).toHaveFocus();
+  });
+
   it('UIC-USER-CARD-TRIGGER-1.3 opens on hover after the delay without taking focus, then closes', async () => {
     useFakeClock();
     const onPress = vi.fn();

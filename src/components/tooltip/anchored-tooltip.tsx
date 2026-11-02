@@ -236,6 +236,7 @@ export function AnchoredTooltip({
         ref={panelRef}
         id={id}
         role="tooltip"
+        data-react-aria-top-layer="true"
         aria-hidden={relationship === 'none' || undefined}
         style={{ ...position.overlayProps.style, zIndex }}
       >

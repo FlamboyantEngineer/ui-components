@@ -220,7 +220,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="A long list"
-      description="Tab into the editor from the last matrix cell: the list stays open after the page scrolls. Arrow keys scroll the active option within the list; hovering an option makes it active, and pressing it inserts it while the caret stays in the editor. The footer counts matches and lists the keys."
+      description="Tab into the editor from the last matrix cell: the list stays open after the page scrolls. Arrow keys scroll the active option within the list; moving the mouse or pen over an option makes it active, and pressing it inserts it while the caret stays in the editor. A list that opens beneath a stationary pointer keeps its active option. The footer counts matches and lists the keys."
     >
       <Note>The input keeps focus throughout: the list only draws what the input asks for.</Note>
       <DemoEditor

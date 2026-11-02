@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import type { ReactNode } from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { CardGrid, CardGridItem } from '../components/card/card-grid.js';
 import { Combobox } from '../components/combobox/combobox.js';
 import { ListView, ListViewItem } from '../components/list-row/list-view.js';
@@ -9,7 +9,7 @@ import { NumberField } from '../components/number-field/number-field.js';
 import { Table } from '../components/table/table.js';
 import { TextField } from '../components/text-field/text-field.js';
 import { Tree } from '../components/tree/tree.js';
-import { isTextControlKey } from './text-control-keys.js';
+import { isTextControlKey, keepTextControlKeys } from './text-control-keys.js';
 
 interface Fruit {
   id: string;
@@ -130,4 +130,46 @@ describe('text controls inside collections', () => {
     expect(isTextControlKey({ key: 'ArrowDown', target: box })).toBe(false);
     expect(isTextControlKey({ key: 'ArrowDown', target: null })).toBe(false);
   });
+
+  it.each(['button', 'div'])(
+    'UIC-TABLE-3.4 reserves picker keys for a %s listbox trigger and its children',
+    (tag) => {
+      const trigger = document.createElement(tag);
+      trigger.setAttribute('role', 'button');
+      trigger.setAttribute('aria-haspopup', 'listbox');
+      const label = document.createElement('span');
+      trigger.append(label);
+      expect(isTextControlKey({ key: 'ArrowDown', target: label })).toBe(true);
+      expect(isTextControlKey({ key: 'Tab', target: label })).toBe(false);
+      expect(isTextControlKey({ key: 'Escape', target: label })).toBe(false);
+      trigger.setAttribute('aria-haspopup', 'menu');
+      expect(isTextControlKey({ key: 'ArrowDown', target: label })).toBe(false);
+      trigger.removeAttribute('aria-haspopup');
+      expect(isTextControlKey({ key: 'ArrowDown', target: label })).toBe(false);
+    },
+  );
+
+  it.each(['Control', 'Meta'])(
+    'UIC-TABLE-3.4 forwards %s+Enter from a picker to enclosing shortcuts',
+    async (modifier) => {
+      const user = userEvent.setup();
+      const collection = vi.fn();
+      const enclosing = vi.fn();
+      render(
+        <div onKeyDown={enclosing}>
+          <div {...keepTextControlKeys({ onKeyDown: collection, onKeyDownCapture: collection })}>
+            <button aria-haspopup="listbox">Pick fruit</button>
+          </div>
+        </div>,
+      );
+      await user.click(screen.getByRole('button', { name: 'Pick fruit' }));
+      await user.keyboard(`{${modifier}>}`);
+      collection.mockClear();
+      enclosing.mockClear();
+      await user.keyboard('{Enter}');
+      expect(collection).not.toHaveBeenCalled();
+      expect(enclosing).toHaveBeenCalledOnce();
+      await user.keyboard(`{/${modifier}}`);
+    },
+  );
 });

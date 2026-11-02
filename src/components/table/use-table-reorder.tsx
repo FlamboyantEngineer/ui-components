@@ -24,6 +24,7 @@ import { tableHooks } from './table-hooks.js';
 import { isEffectiveTableMove, type TableMove, type TableRow } from './table-rows.js';
 import { isEditableTarget } from '../../utils/is-editable-target.js';
 import { isElement } from '../../utils/is-element.js';
+import { isWithinReorderGroup } from './table-reorder-groups.js';
 
 /** Opt-in row reordering: which rows move and what to do with a move. */
 export interface TableReorderOptions<T> {
@@ -36,6 +37,8 @@ export interface TableReorderOptions<T> {
    * (`handle`), which leaves presses elsewhere in the row to the row.
    */
   dragTrigger?: TableDragTrigger | undefined;
+  /** Allows visible data-row moves inside their leaf group; grouping otherwise suspends moves. */
+  grouped?: 'within-group' | undefined;
   /** The image that follows the pointer during a drag, from the dragged rows. */
   renderDragPreview?: ((rows: T[]) => ReactNode) | undefined;
 }
@@ -60,6 +63,7 @@ interface ReorderSnapshot<T> {
   reorder: TableReorderOptions<T> | undefined;
   /** Whether a row is disabled, which keeps it from moving. */
   isRowDisabled: (row: T) => boolean;
+  groupKeys?: ReadonlyMap<Key, Key>;
 }
 
 interface IndexedReorderSnapshot<T> extends ReorderSnapshot<T> {
@@ -107,7 +111,9 @@ function resolveDrop<T extends TableRow>(
   });
   if (moved.length === 0) return null;
   const move = { keys: moved, targetKey, position: target.dropPosition };
-  return isEffectiveTableMove(snapshot.rows, move) ? move : null;
+  return isWithinReorderGroup(snapshot.groupKeys, move) && isEffectiveTableMove(snapshot.rows, move)
+    ? move
+    : null;
 }
 
 /** The move of `row` one step up or down, or null at either end. */
@@ -118,7 +124,12 @@ function resolveStep<T extends TableRow>(
 ): TableMove | null {
   const target = snapshot.rows[snapshot.rows.indexOf(row) + step];
   if (!target) return null;
-  return { keys: [row.id], targetKey: target.id, position: step === 1 ? 'after' : 'before' };
+  const move: TableMove = {
+    keys: [row.id],
+    targetKey: target.id,
+    position: step === 1 ? 'after' : 'before',
+  };
+  return isWithinReorderGroup(snapshot.groupKeys, move) ? move : null;
 }
 
 function renderDropIndicator(target: CollectionDropTarget) {
@@ -145,7 +156,7 @@ function createDragPreview<T extends TableRow>(snapshot: ReorderSnapshot<T>) {
  * moves of the focused row. Every check reads the rows last rendered.
  */
 export function useTableReorder<T extends TableRow>(snapshot: ReorderSnapshot<T>): TableReorder<T> {
-  const { reorder } = snapshot;
+  const { reorder, isRowDisabled } = snapshot;
   const keys = useMemo(
     () => (reorder ? createKeyIndex(snapshot.rows.map((row) => row.id)) : new Map()),
     [snapshot.rows, reorder],
@@ -161,8 +172,8 @@ export function useTableReorder<T extends TableRow>(snapshot: ReorderSnapshot<T>
   // Only the top-level rows of the page move, so nested rows draw disabled handles.
   const topLevel = useMemo(() => new Set(snapshot.rows), [snapshot.rows]);
   const isMovable = useCallback(
-    (row: T) => topLevel.has(row) && canMoveRow(reorder, row),
-    [topLevel, reorder],
+    (row: T) => topLevel.has(row) && canMoveRow(reorder, row) && !isRowDisabled(row),
+    [topLevel, reorder, isRowDisabled],
   );
 
   const onKeyDownCapture = (event: KeyboardEvent<HTMLElement>) => {

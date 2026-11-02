@@ -21,7 +21,7 @@ import type { OverlayPositionProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useFollowAnchor } from '../../utils/use-follow-anchor.js';
-import { usePageScrollGuard } from '../../utils/use-page-scroll-guard.js';
+import { useScrollCloseGuard } from '../../utils/use-scroll-close-guard.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { PopoverPresence } from '../popover/popover.js';
 import { useLayerZIndex, type PortalProps } from '../portal/portal.js';
@@ -76,6 +76,7 @@ const MenuSurfaceContext = createContext<Set<HTMLElement> | null>(null);
 /** Portalled submenus belong to the same outside-press boundary as their parent menu. */
 function useMenuSurface({ ref, isNonModal, shouldCloseOnInteractOutside }: MenuOverlayProps) {
   const state = useContext(RootMenuTriggerStateContext);
+  const popover = useSlottedContext(PopoverContext);
   const inherited = useContext(MenuSurfaceContext);
   const [own] = useState(() => new Set<HTMLElement>());
   const group = inherited ?? own;
@@ -95,6 +96,9 @@ function useMenuSurface({ ref, isNonModal, shouldCloseOnInteractOutside }: MenuO
       const target = event.target;
       if (!isElement(target)) return;
       if ([...group].some((element) => element.contains(target))) return;
+      // The trigger toggles on press; an outside close first would let that press reopen it.
+      if (popover?.trigger === 'MenuTrigger' && popover.triggerRef?.current?.contains(target))
+        return;
       if (shouldCloseOnInteractOutside?.(target) !== false) state?.close();
     },
   });
@@ -104,7 +108,8 @@ function useMenuSurface({ ref, isNonModal, shouldCloseOnInteractOutside }: MenuO
 /**
  * Keeps a root menu on its trigger, or its point, as the page moves under it or the point changes.
  * A nonmodal one also stays open while the page scrolls: React Aria closes it on any scroll of the
- * trigger's scroll containers, the page included; only a scroll of an element holding the trigger
+ * trigger's scroll containers, the page included, and a queued scroll event of an ancestor that
+ * has not moved since opening is ignored too; only a real scroll of an element holding the trigger
  * still closes it, since the popover cannot follow that.
  */
 function useMenuFollow(isSubmenu: boolean, isNonModal: boolean, props: MenuOverlayProps) {
@@ -119,13 +124,15 @@ function useMenuFollow(isSubmenu: boolean, isNonModal: boolean, props: MenuOverl
     isOpen: isOpen && !isSubmenu,
     target: props.getTargetRect,
   });
-  const isPageScrolling = usePageScrollGuard(isActive && isOpen, triggerRef);
+  const isScrollCloseIgnored = useScrollCloseGuard(isActive && isOpen, triggerRef, {
+    followsPage: true,
+  });
   if (isSubmenu) return {};
   if (!isActive) return { shouldUpdatePosition };
   return {
     isOpen,
     onOpenChange: (open: boolean) => {
-      if (open || !isPageScrolling()) setOpen?.(open);
+      if (open || !isScrollCloseIgnored()) setOpen?.(open);
     },
     shouldUpdatePosition,
   };

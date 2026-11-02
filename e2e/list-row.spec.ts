@@ -86,6 +86,38 @@ test.describe('List Row lab', () => {
     await expect(page.locator('[data-fruit="Damson"] .ui-list-row__primary')).toBeFocused();
   });
 
+  test('UIC-LIST-ROW-1.5 cancels row-removal recovery when its window loses focus', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('list-row');
+    const basket = page.getByRole('list', { name: 'Fruit basket' });
+    const remove = basket.getByRole('button', { name: 'Remove Banana' });
+    await remove.focus();
+    await remove.evaluate((element: HTMLButtonElement) => {
+      const owner = element.ownerDocument.defaultView;
+      if (!owner) throw new Error('The row has no window');
+      owner.dispatchEvent(new Event('blur'));
+      // A pending action can complete while the browser still names this control as active.
+      element.click();
+    });
+    await expect(remove).toHaveCount(0);
+    expect(await page.evaluate(() => Boolean(document.activeElement?.closest('.ui-list')))).toBe(
+      false,
+    );
+    await expect(basket.getByRole('button', { name: 'Cherry', exact: true })).toHaveAttribute(
+      'tabindex',
+      '0',
+    );
+    await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+    expect(await page.evaluate(() => Boolean(document.activeElement?.closest('.ui-list')))).toBe(
+      false,
+    );
+    await basket.getByRole('button', { name: 'Remove Cherry' }).focus();
+    await page.keyboard.press('Enter');
+    await expect(basket.getByRole('button', { name: 'Damson', exact: true })).toBeFocused();
+  });
+
   test('UIC-LIST-ROW-1.6 UIC-LIST-ROW-2.9 draws dividers, ellipsizes text and wraps trailing content in narrow rows', async ({
     page,
     lab,

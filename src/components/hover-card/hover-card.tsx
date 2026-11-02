@@ -15,6 +15,8 @@ import { HOVER_CARD_CLOSE_DELAY, HOVER_CARD_DELAY } from '../../utils/overlay-de
 import { usePreviewState } from '../../utils/use-preview-state.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { useCloseWhenLocked } from '../../utils/use-close-when-locked.js';
+import { usePointerEntry } from '../../utils/use-pointer-entry.js';
+import { usePreviewEscape } from '../../utils/use-preview-escape.js';
 
 /** A focusable trigger and the `HoverCard` it opens on hover and focus. */
 export interface HoverCardTriggerProps extends OpenStateProps {
@@ -47,7 +49,18 @@ const hooks = createHooks('hover-card', ['arrow']);
  */
 function TriggerProps({ isEnabled, children }: { isEnabled: boolean; children: ReactNode }) {
   const props = useContext(FocusableContext);
-  return <FocusableContext value={isEnabled ? props : null}>{children}</FocusableContext>;
+  const continued = usePointerEntry(props ?? {}, !isEnabled);
+  const onKeyDown: typeof continued.onKeyDown = (event) => {
+    continued.onKeyDown?.(event);
+    // The trigger moved focus into the open card; a collection around it (a tag's row) must not
+    // move it back.
+    if (event.key === 'Tab' && event.defaultPrevented) event.stopPropagation();
+  };
+  return (
+    <FocusableContext value={isEnabled && props ? { ...continued, onKeyDown } : null}>
+      {children}
+    </FocusableContext>
+  );
 }
 
 /**
@@ -78,6 +91,7 @@ export function HoverCardTrigger({
   });
   const triggerRef = useRef<HTMLElement>(null);
   const popoverRef = useRef<HTMLElement>(null);
+  usePreviewEscape(state, { triggerRef, popoverRef });
   const { triggerProps, popoverProps } = usePreviewTrigger(
     { isDisabled, triggerRef, popoverRef },
     state,

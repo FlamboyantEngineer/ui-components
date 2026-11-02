@@ -8,6 +8,8 @@
 
 `Button` shall render a native `<button>` of type `button` unless `type` asks for `submit` or `reset`. It shall report activation through `onPress` (a library `PressEvent`) for pointer, keyboard (Enter and Space) and virtual clicks, and work as the trigger of the library's overlays (menus, dialogs, popovers and tooltips). Its accessible name is its label, or `aria-label`; `aria-haspopup`, `aria-expanded`, `aria-controls`, `aria-current` and `aria-describedby` pass through.
 
+Inside a Modal, modified Enter belongs to the dialog's primary shortcut ([UIC-MODAL-6.1](MODAL.md#uic-modal-61---controlenter)): the button leaves it to the bubbling dialog handler, while its caller key handler still runs once and may consume it. Unmodified Enter and Space, and buttons outside that boundary, retain their ordinary press behavior.
+
 Implementation: `src/components/button/button.tsx`
 Verification: `src/components/button/button.test.tsx`, `e2e/button.spec.ts`
 
@@ -41,10 +43,10 @@ Verification: `src/components/button/button.test.tsx`, `e2e/button.spec.ts`
 
 ### UIC-BUTTON-1.6 - Tooltip
 
-`tooltip` shall show its content in a [Tooltip](TOOLTIP.md) for the button, opened by hover and keyboard focus, without wrapping the `<button>` in another element. A pending button still shows it. A natively disabled button receives no hover or focus and so shows no tooltip; with `focusableWhenDisabled` it does, which explains why a command is unavailable. A tooltip or shortcut that comes or goes, or a hint that changes, keeps the same `<button>` or link element, its ref, its content and its focus; a hint that goes while open closes its tooltip. A button inside a caller's own `Tooltip` or `HoverCard` trigger, with a hint or without, leaves that trigger to the caller: its own hint yields, so the caller's tooltip or card opens on hover, focus and long press and the button keeps the caller's `aria-haspopup`, `aria-expanded` and description.
+`tooltip` shall show its content in a [Tooltip](TOOLTIP.md) for the button, opened by hover and keyboard focus, without wrapping the `<button>` in another element. A pending button still shows it, on the first pointer entry after keyboard use too, as does a Hover Card around a pending button. A natively disabled button receives no hover or focus and so shows no tooltip; with `focusableWhenDisabled` it does, which explains why a command is unavailable. A tooltip or shortcut that comes or goes, or a hint that changes, keeps the same `<button>` or link element, its ref, its content and its focus; a hint that goes while open closes its tooltip. A button inside a caller's own `Tooltip` or `HoverCard` trigger, with a hint or without, leaves that trigger to the caller: its own hint yields, so the caller's tooltip or card opens on hover, focus and long press and the button keeps the caller's `aria-haspopup`, `aria-expanded` and description.
 
 Implementation: `src/components/button/button.tsx`, `src/components/tooltip/tooltip.tsx`, `src/components/tooltip/caller-trigger.ts`
-Verification: `src/components/button/button.test.tsx`, `e2e/tooltip.spec.ts`
+Verification: `src/components/button/button.test.tsx`, `src/components/button/button-pending-hover.test.tsx`, `e2e/tooltip.spec.ts`
 
 ### UIC-BUTTON-1.7 - Keyboard shortcut
 
@@ -67,7 +69,7 @@ With `href` the button shall be a link: an `<a>` with the same hooks and parts, 
 `underline` (`none` by default, `hover` or `always`, the [Link](LINK.md) values) shall say when the `link` variant's text is underlined, published as `data-underline` on a `link` variant only: `none` draws no underline in any state, hover and keyboard focus included, `hover` underlines it while hovered or keyboard-focused, and `always` underlines it at rest. The reference stylesheet removes the native underline of every button drawn as an `<a>`, so only `data-underline` adds one, and keyboard focus draws the focus ring whatever the underline. Other variants never underline.
 
 Implementation: `src/components/button/button.tsx`, `src/components/button/button-state.tsx`
-Verification: `src/components/button/button.test.tsx`, `e2e/button.spec.ts`
+Verification: `src/components/button/button.test.tsx`, `test/bundle.test.ts`, `e2e/button.spec.ts`
 
 ### UIC-BUTTON-1.10 - Handlers and focus options
 
@@ -80,7 +82,7 @@ Verification: `src/components/button/button.test.tsx`, `src/components/button/bu
 
 ### UIC-BUTTON-2.1 - Disabled
 
-`isDisabled` shall set the native `disabled` attribute and `data-disabled`. With `focusableWhenDisabled` the button stays in the focus order with `aria-disabled="true"` and `data-disabled`, keeps its focus, hover and tooltip, and never submits a form. It refuses every activation by pointer, keyboard (Enter, Space and the arrow keys a menu trigger opens with) or programmatic and virtual click: its own `onPress` and press lifecycle callbacks (`onPressStart`, `onPressEnd`, `onPressUp`, `onPressChange`) and the handlers a trigger it sits in adds, such as a `MenuTrigger`'s or `PopoverTrigger`'s, never run. A `render` callback receives `isDisabled: true`. A press on a natively disabled button ends with the pointer's release, so the first press once it is enabled again runs `onPress`.
+`isDisabled` shall set the native `disabled` attribute and `data-disabled`. With `focusableWhenDisabled` the button stays in the focus order with `aria-disabled="true"` and `data-disabled`, keeps its focus, hover and tooltip (including the first physical pointer entry before any earlier pointer interaction), and never submits a form. It refuses every activation by pointer, keyboard (Enter, Space and the arrow keys a menu trigger opens with) or programmatic and virtual click: its own `onPress` and press lifecycle callbacks (`onPressStart`, `onPressEnd`, `onPressUp`, `onPressChange`) and the handlers a trigger it sits in adds, such as a `MenuTrigger`'s or `PopoverTrigger`'s, never run. A `render` callback receives `isDisabled: true`. A press on a natively disabled button ends with the pointer's release, so the first press once it is enabled again runs `onPress`.
 
 Implementation: `src/components/button/button.tsx`, `src/components/button/button-state.tsx`
 Verification: `src/components/button/button.test.tsx`, `src/components/button/button-inherited-press.test.tsx`, `e2e/button.spec.ts`

@@ -251,3 +251,19 @@
 .ui-tabs__list[data-orientation='vertical'] .ui-tabs__tab[data-drop-position='after'] {
   box-shadow: inset 0 -2px 0 var(--ref-accent);
 }
+
+.ui-tabs__action {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+}
+
+/* The semantic owner is independent of the measured visual row. */
+.ui-tabs__owner {
+  position: absolute;
+}
+
+/* Collapsing children must not shrink the room used to choose menu versus scroll. */
+.ui-tabs__bar[data-inline-actions] {
+  flex: 1;
+}

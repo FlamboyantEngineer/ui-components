@@ -99,7 +99,7 @@ export function TableDataCell<T extends TableRow>(props: {
     >
       {(values) => (
         <>
-          {model.isReorderable && isFirst ? (
+          {model.isReorderable && isFirst && (!model.hideFixedHandles || model.isMovable(row)) ? (
             <DragHandle
               className={hooks.slotClass('drag-handle')}
               isDisabled={!model.isMovable(row)}

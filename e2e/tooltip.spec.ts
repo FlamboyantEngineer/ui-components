@@ -19,6 +19,38 @@ async function usePointer(page: Page) {
 }
 
 test.describe('Tooltip lab', () => {
+  test('UIC-TOOLTIP-1.3 Escape remains available to the owning surface', async ({ page, lab }) => {
+    await lab.open('tooltip');
+    const demo = page.locator('[data-lab-demo="escape-owner"]');
+    await demo.getByRole('button', { name: 'Before the hint', exact: true }).focus();
+    await page.keyboard.press('Tab');
+    const trigger = demo.getByRole('button', { name: 'Hinted command', exact: true });
+    await expect(trigger).toBeFocused();
+    await expect(page.getByRole('tooltip', { name: 'A hint for the command' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('tooltip', { name: 'A hint for the command' })).toHaveCount(0);
+    await expect(trigger).toBeFocused();
+    await expect(demo.locator('[data-lab-output="owner-escapes"]')).toHaveText('1');
+  });
+
+  test('UIC-TOOLTIP-1.2 UIC-TOOLTIP-1.3 opens on the first pointer entry and closes on leave', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tooltip');
+    const trigger = matrixCell(page, 'placement=bottom').getByRole('button');
+    const hint = page.getByRole('tooltip', { name: 'Placed bottom' });
+    await bringIntoView(page, trigger);
+    await trigger.hover();
+    await expect(hint).toBeVisible();
+    await expect(trigger).toHaveAttribute(
+      'aria-describedby',
+      (await hint.getAttribute('id')) ?? '',
+    );
+    await page.mouse.move(0, 0);
+    await expect(hint).toHaveCount(0);
+  });
+
   test('UIC-TOOLTIP-1.1 UIC-TOOLTIP-1.2 opens after the hover delay and at once on keyboard focus', async ({
     page,
     lab,
@@ -72,19 +104,37 @@ test.describe('Tooltip lab', () => {
       await trigger.focus();
       const hint = page.getByRole('tooltip', { name: `Placed ${placement}` });
       await expect(hint).toBeVisible();
-      const triggerBox = await trigger.boundingBox();
-      const hintBox = await hint.boundingBox();
-      if (!triggerBox || !hintBox) throw new Error('missing boxes');
-      if (placement === 'top') {
-        expect(hintBox.y + hintBox.height).toBeLessThanOrEqual(triggerBox.y);
-      }
-      if (placement === 'bottom') {
-        expect(Math.round(hintBox.y - (triggerBox.y + triggerBox.height))).toBe(8);
-      }
-      if (placement === 'end') {
-        expect(hintBox.x).toBeGreaterThanOrEqual(triggerBox.x + triggerBox.width);
-        await expect(hint).toHaveAttribute('data-placement', 'right');
-      }
+      const triggerElement = await trigger.elementHandle();
+      // Read both rectangles together and wait for frame-driven placement to settle.
+      await expect(async () => {
+        const boxes = await hint.evaluate((hintElement, triggerElement) => {
+          if (!triggerElement) throw new Error('missing trigger');
+          const trigger = triggerElement.getBoundingClientRect();
+          const panel = hintElement.getBoundingClientRect();
+          return {
+            trigger: { x: trigger.x, y: trigger.y, bottom: trigger.bottom, right: trigger.right },
+            panel: { x: panel.x, y: panel.y, bottom: panel.bottom },
+            scrollY: window.scrollY,
+          };
+        }, triggerElement);
+        const geometry = JSON.stringify(boxes);
+        if (placement === 'top') {
+          expect(boxes.panel.bottom, geometry).toBeLessThanOrEqual(boxes.trigger.y);
+        }
+        if (placement === 'bottom') {
+          // React Aria floors the document position after adding the placement offset.
+          expect(
+            Math.round(boxes.panel.y + boxes.scrollY) -
+              Math.floor(boxes.trigger.bottom + boxes.scrollY),
+            geometry,
+          ).toBe(8);
+        }
+        if (placement === 'end') {
+          expect(boxes.panel.x, geometry).toBeGreaterThanOrEqual(boxes.trigger.right);
+          await expect(hint).toHaveAttribute('data-placement', 'right');
+        }
+      }).toPass();
+      await triggerElement?.dispose();
       await expect(hint.locator('.ui-tooltip__arrow')).toHaveAttribute(
         'data-placement',
         placement === 'end' ? 'right' : placement,
@@ -154,6 +204,27 @@ test.describe('Tooltip lab', () => {
 });
 
 test.describe('Anchored tooltip lab', () => {
+  test('UIC-TOOLTIP-1.5 UIC-TOOLTIP-2.1 keeps a modal anchor hint accessible above its backdrop', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tooltip');
+    await page.getByRole('button', { name: 'Open build details', exact: true }).click();
+    const dialog = page.getByRole('dialog', { name: 'Build details', exact: true });
+    await expect(dialog).toBeVisible();
+    const hint = page.getByRole('tooltip', { name: 'All modal checks passed' });
+    await expect(hint).toBeVisible();
+    await expect(
+      dialog.getByRole('status', { name: 'Modal build status' }),
+    ).toHaveAccessibleDescription('All modal checks passed');
+    expect(
+      await hint.evaluate((node) => node.closest('[inert],[aria-hidden="true"]') === null),
+    ).toBe(true);
+    await expect(hint).toHaveAttribute('data-layer', 'tooltip');
+    await dialog.locator('.ui-modal__cancel').click();
+    await expect(hint).toHaveCount(0);
+  });
+
   test('UIC-TOOLTIP-2.1 UIC-TOOLTIP-2.3 shows a hint the page opens on an element it owns', async ({
     page,
     lab,

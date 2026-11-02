@@ -2,6 +2,7 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 import { useRef, useState } from 'react';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { Modal } from '../modal/modal.js';
 import { AnchoredTooltip, type AnchoredTooltipProps, type TooltipAnchor } from './tooltip.js';
 
 const tooltip = () => document.querySelector<HTMLElement>('.ui-tooltip');
@@ -21,6 +22,29 @@ function HostChip(props: Omit<AnchoredTooltipProps, 'anchor' | 'content'>) {
 }
 
 describe('AnchoredTooltip', () => {
+  it('UIC-TOOLTIP-1.5 keeps a modal anchor hint outside the inert background', async () => {
+    function DialogHint() {
+      const anchor = useRef<HTMLSpanElement>(null);
+      return (
+        <>
+          <Modal isOpen title="Build details" cancelAction={{ label: 'Close' }}>
+            <span ref={anchor} role="status" aria-label="Build status">
+              Passing
+            </span>
+          </Modal>
+          <AnchoredTooltip isOpen anchor={anchor} content="All checks passed" />
+        </>
+      );
+    }
+    render(<DialogHint />);
+    const panel = await screen.findByRole('tooltip');
+    expect(panel.closest('[inert], [aria-hidden="true"]')).toBeNull();
+    expect(panel).toHaveAttribute('data-react-aria-top-layer', 'true');
+    expect(screen.getByRole('status', { name: 'Build status' })).toHaveAccessibleDescription(
+      'All checks passed',
+    );
+  });
+
   it('UIC-TOOLTIP-2.1 UIC-TOOLTIP-2.3 shows on an existing element and describes it while open', () => {
     const { rerender } = render(<HostChip isOpen={false} />);
     const chip = screen.getByRole('note', { name: 'Status chip' });

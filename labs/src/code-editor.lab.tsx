@@ -15,6 +15,7 @@ import type {
   CompletionSource,
 } from '../../src/components/completion-list/completion-list.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { CompletingCell } from './table-control-cases.js';
 
 const keywords = new Set(['let', 'if', 'else', 'return', 'pick', 'and', 'or', 'not']);
 const parts = /(\/\/[^\n]*|"(?:\\.|[^"\\])*"?|\d+(?:\.\d+)?|[A-Za-z_][\w.]*|\s+|.)/g;
@@ -477,8 +478,14 @@ mountLab(
         <CheckedEditor />
       </LabSection>
       <LabSection
+        title="Completions in a table cell"
+        description="Type fru in the cell and accept fruit.count with Tab; the caller owns the expression outside the table."
+      >
+        <CompletingCell />
+      </LabSection>
+      <LabSection
         title="Completions"
-        description="A small word list (see Autocomplete above for the full tour). Type fruit. or b: the list opens at the caret. Arrow keys move, Enter or Tab inserts, Escape closes."
+        description="A small word list (see Autocomplete above for the full tour). Type fruit. or b: the list opens at the caret. Arrow keys move, Enter or Tab inserts, Escape closes. Input-method composition hides suggestions until its final text commits."
       >
         <CompletingEditor />
       </LabSection>

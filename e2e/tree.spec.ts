@@ -83,6 +83,33 @@ test.describe('Tree lab', () => {
     await lab.expectAccessible('[data-lab-cell^="current="]');
   });
 
+  test('UIC-TREE-3.6 keeps row Enter and delegates modified Enter to its modal', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tree');
+    const demo = page.locator('[data-lab-demo="modal-tree"]');
+    for (const [index, modifier] of ['Control', 'Meta'].entries()) {
+      await demo.getByRole('button', { name: 'Choose destination' }).click();
+      const dialog = page.getByRole('dialog', { name: 'Destination', exact: true });
+      const row = dialog.getByRole('row', { name: 'Lisbon', exact: true });
+      await row.focus();
+      await row.press('Enter');
+      await expect(dialog).toBeVisible();
+      await expect(demo.getByRole('status', { name: 'Place actions' })).toHaveText(
+        String(index + 1),
+      );
+      await row.press(`${modifier}+Enter`);
+      await expect(dialog).toHaveCount(0);
+      await expect(demo.getByRole('status', { name: 'Applied destinations' })).toHaveText(
+        String(index + 1),
+      );
+      await expect(demo.getByRole('status', { name: 'Place actions' })).toHaveText(
+        String(index + 1),
+      );
+    }
+  });
+
   test('UIC-TREE-1.3 points a collapsed chevron to the inline end right to left', async ({
     page,
     lab,

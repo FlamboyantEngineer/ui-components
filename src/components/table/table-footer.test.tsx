@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { Table, type TableProps } from './table.js';
+import { Button } from '../button/button.js';
 import type { TableColumn } from './table-rows.js';
 
 interface Fruit {
@@ -91,6 +92,29 @@ describe('Table summary row', { timeout: 15_000 }, () => {
     const { container: empty } = renderFruit({ rows: [] });
     expect(empty.querySelector('.ui-table__footer')).toBeNull();
   });
+
+  it.each<Partial<TableProps<Fruit>>>([
+    { rows: [] },
+    { isPending: true },
+    { errorMessage: 'Try again' },
+  ])(
+    'UIC-TABLE-1.7 UIC-TABLE-12.1 keeps trailing actions while a notice hides the summary %j',
+    async (notice) => {
+      const user = userEvent.setup();
+      const onPress = vi.fn();
+      const onRowAction = vi.fn();
+      renderFruit({
+        ...notice,
+        onRowAction,
+        trailingContent: <Button onPress={onPress}>Add fruit</Button>,
+      });
+      expect(screen.queryByRole('row', { name: 'Summary' })).not.toBeInTheDocument();
+      const add = screen.getByRole('button', { name: 'Add fruit' });
+      await user.click(add);
+      expect(onPress).toHaveBeenCalledOnce();
+      expect(onRowAction).not.toHaveBeenCalled();
+    },
+  );
 
   it('UIC-TABLE-12.1 UIC-TABLE-7.3 keeps the summary row of a virtualized table out of view on the page', () => {
     // React Aria's virtualizer treats an unmocked test DOM as infinitely large.

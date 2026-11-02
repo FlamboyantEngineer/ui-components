@@ -96,6 +96,25 @@ test.describe('Button lab', () => {
     await expect(demo.locator('[data-lab-output="sent"]')).toHaveText('Sent: 1');
   });
 
+  test('UIC-BUTTON-1.6 explains a disabled command on the first physical hover', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('button');
+    const area = matrix(page, 'button-trigger-cases');
+    const locked = area.getByRole('button', { name: 'Locked commands' });
+    await locked.hover();
+    await expect(page.getByRole('tooltip')).toHaveText('Unavailable while saving');
+    await expect(locked).toHaveAttribute('aria-disabled', 'true');
+    const bounds = await locked.boundingBox();
+    if (!bounds) throw new Error('The disabled command must remain visible.');
+    await page.mouse.click(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+    await expect(locked).toBeFocused();
+    for (const key of ['Enter', 'Space', 'ArrowDown']) await page.keyboard.press(key);
+    await expect(page.getByRole('menu')).toHaveCount(0);
+    await expect(area.locator('[data-lab-output="Runs"]')).toHaveText('0');
+  });
+
   test('UIC-BUTTON-2.1 keeps a focusable disabled menu button shut while its tooltip explains it', async ({
     page,
     lab,

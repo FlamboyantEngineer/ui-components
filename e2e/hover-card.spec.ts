@@ -8,6 +8,48 @@ async function boxOf(locator: Locator) {
 }
 
 test.describe('Hover Card lab', () => {
+  test('UIC-HOVER-CARD-1.3 Escape closes a hovered card without taking focus from the page', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('hover-card');
+    const trigger = page.locator('[data-lab-trigger="bottom-arrow"]');
+    await trigger.scrollIntoViewIfNeeded();
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+        ),
+    );
+    const card = page.getByRole('dialog', { name: 'About Lisbon' });
+    await trigger.hover();
+    await expect(card).toBeVisible();
+    await card.hover();
+    await expect(page.locator('body')).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(card).toHaveCount(0);
+    await expect(page.locator('body')).toBeFocused();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  test('UIC-HOVER-CARD-1.2 UIC-HOVER-CARD-1.3 opens on the first pointer entry and closes after leaving', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('hover-card');
+    const trigger = page.locator('[data-lab-trigger="bottom-arrow"]');
+    const card = page.getByRole('dialog', { name: 'About Lisbon' });
+    await trigger.hover();
+    await expect(card).toBeVisible();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    const bounds = await card.boundingBox();
+    if (!bounds) throw new Error('card is not rendered');
+    await page.mouse.move(bounds.x + 20, bounds.y + 20, { steps: 8 });
+    await expect(card).toBeVisible();
+    await page.mouse.move(0, 0);
+    await expect(card).toHaveCount(0);
+  });
+
   test('UIC-HOVER-CARD-1.1 UIC-BUTTON-1.6 opens from a trigger with a hint of its own, by hover and by keyboard', async ({
     page,
     lab,

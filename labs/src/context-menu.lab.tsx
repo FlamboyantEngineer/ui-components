@@ -201,6 +201,29 @@ function Controller() {
   );
 }
 
+function SelectedText() {
+  const [last, setLast] = useState('none');
+  return (
+    <>
+      <StateMatrix
+        axes={{ mode: ['modal', 'non-modal'] }}
+        render={({ mode }) => (
+          <ContextMenuTrigger isNonModal={mode === 'non-modal'}>
+            <p>Selected text remains readable.</p>
+            <Menu
+              aria-label="Selection actions"
+              onAction={() => setLast(window.getSelection()?.toString() ?? '')}
+            >
+              <MenuItem id="copy">Copy selection</MenuItem>
+            </Menu>
+          </ContextMenuTrigger>
+        )}
+      />
+      <Feedback name="Selected text">{last}</Feedback>
+    </>
+  );
+}
+
 function Layers() {
   const dropdown = useMenuController();
   const context = useMenuController();
@@ -246,6 +269,12 @@ mountLab(
       description="Something outside the menu opens it at a point or below an element, and can move it while it is open."
     >
       <Controller />
+    </LabSection>
+    <LabSection
+      title="Selected text"
+      description="Select a word, then right-click it. A non-modal menu preserves the selection and leaves the page reachable; the default modal menu blocks the page."
+    >
+      <SelectedText />
     </LabSection>
     <LabSection
       title="Layers"

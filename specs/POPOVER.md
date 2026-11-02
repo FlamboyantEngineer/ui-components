@@ -6,7 +6,7 @@
 
 ### UIC-POPOVER-1.1 - Trigger and opening
 
-`PopoverTrigger` shall hold one pressable trigger, such as a `Button`, and a `Popover`, and add no element of its own. Pressing the trigger opens the popover, which renders in an overlay at the end of the document body as the `ui-popover` panel holding the `ui-popover__dialog` element with `role="dialog"`; the trigger reports it in `aria-expanded`. `isOpen` with `onOpenChange` on the trigger controls the popover, `defaultOpen` opens it at first, and `onOpenChange` reports each change the reader asks for. A closed popover renders nothing.
+`PopoverTrigger` shall hold one pressable trigger, such as a `Button`, and a `Popover`, and add no element of its own. Pressing the trigger opens the popover, which renders in an overlay at the end of the document body as the `ui-popover` panel holding the `ui-popover__dialog` element with `role="dialog"`; the trigger reports it in `aria-expanded`. `isOpen` with `onOpenChange` on the trigger controls the popover, `defaultOpen` opens it at first, and `onOpenChange` reports each change the reader asks for. A closed popover renders nothing. A second press on a non-modal popover’s own trigger shall close it once, without a focus-leave close followed by reopening. This holds for controlled and uncontrolled triggers, including a popover that receives the same controlled state and an explicit anchor ref. A custom anchor changes placement, not which trigger toggles the popover.
 
 Implementation: `src/components/popover/popover.tsx`
 Verification: `src/components/popover/popover.test.tsx`, `e2e/popover.spec.ts`
@@ -57,10 +57,10 @@ Verification: `src/components/popover/popover.test.tsx`, `e2e/popover.spec.ts`
 
 ### UIC-POPOVER-2.3 - Blocking the page
 
-While a popover is open, the content outside it shall be hidden from assistive technology and inert, and page scrolling locked. With `isNonModal`, the popover leaves the page visible to assistive technology, reachable by the pointer and scrollable; an outside press does not close it by itself, but it closes when focus leaves it or the page scrolls.
+While a popover is open, the content outside it shall be hidden from assistive technology and inert, and page scrolling locked. With `isNonModal`, the popover leaves the page visible to assistive technology, reachable by the pointer and scrollable; an outside press does not close it by itself, but it closes when focus leaves both the popover and its own `PopoverTrigger` opener, or when the page or an element holding its trigger scrolls after it opened. A scroll finished before it opened, whose event arrives later with the position unchanged, leaves the new panel and its focus alone, and does not keep a later Escape or outside press from closing it.
 
-Implementation: `src/components/popover/popover.tsx`
-Verification: `src/components/popover/popover.test.tsx`, `e2e/popover.spec.ts`
+Implementation: `src/components/popover/popover.tsx`, `src/utils/use-scroll-close-guard.ts`
+Verification: `src/components/popover/popover.test.tsx`, `src/components/popover/popover-scroll.test.tsx`, `e2e/popover.spec.ts`
 
 ## UIC-POPOVER-3 - Content
 

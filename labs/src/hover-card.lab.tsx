@@ -144,7 +144,7 @@ mountLab(
   <>
     <LabSection
       title="Placements and arrow"
-      description="Rest the pointer on a button or focus it with the keyboard: its card opens on that side after the delay, with or without an arrow, and closes once the pointer and focus leave both."
+      description="The first pointer entry or keyboard focus opens the card on that side after the delay, with or without an arrow. It closes once the pointer and focus leave both. Escape closes a hovered card even while focus stays on the page."
     >
       <StateMatrix
         axes={{ placement: placements, arrow: arrows }}

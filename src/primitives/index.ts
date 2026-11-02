@@ -20,6 +20,7 @@ export {
   useFocusRing,
   useFocusVisible,
   useFocusWithin,
+  getInteractionModality,
 } from './focus.js';
 export {
   Button,

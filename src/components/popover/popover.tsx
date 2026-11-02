@@ -1,14 +1,26 @@
 'use client';
 
 import { CloseGlyph } from '../../core/glyphs.js';
-import { useContext, useState, type CSSProperties, type ReactNode, type RefObject } from 'react';
+import {
+  createContext,
+  useContext,
+  useMemo,
+  useState,
+  type CSSProperties,
+  type JSX,
+  type ReactElement,
+  type ReactNode,
+  type RefObject,
+} from 'react';
 import {
   Dialog,
   DialogTrigger,
   Heading,
   OverlayArrow,
   OverlayTriggerStateContext,
+  PopoverContext,
   Popover as AriaPopover,
+  useSlottedContext,
 } from '../../primitives/index.js';
 import type {
   OpenStateProps,
@@ -24,6 +36,7 @@ import { Button } from '../button/button.js';
 import { useLayerZIndex } from '../portal/portal.js';
 import { PopoverPresence } from './popover-presence.js';
 import { usePopoverGutter } from './use-popover-gutter.js';
+import { useScrollCloseGuard } from '../../utils/use-scroll-close-guard.js';
 import { POPOVER_ARROW_OFFSET, POPOVER_OFFSET } from '../../utils/overlay-defaults.js';
 import { HeadingLevelContext, dialogTitleLevel } from '../../core/heading-level.js';
 import { FormBoundary } from '../../utils/form-boundary.js';
@@ -41,6 +54,8 @@ interface PopoverPanelProps
     OverlayPositionProps,
     Omit<OverlayDismissProps, 'isDismissable'>,
     Pick<OpenStateProps, 'isOpen' | 'onOpenChange'> {
+  /** Internal panel composition, preserving a caller DOM id independently of a dialog's id. */
+  render?: ((props: JSX.IntrinsicElements['div']) => ReactElement) | undefined;
   /** The element it is placed against, outside a trigger or instead of the trigger. */
   triggerRef?: RefObject<Element | null> | undefined;
   /** Leaves the page outside reachable, visible to assistive technology and scrollable. */
@@ -92,6 +107,21 @@ interface PopoverHeaderProps extends Pick<PopoverProps, 'title' | 'showCloseButt
 }
 
 const hooks = createHooks('popover', ['arrow', 'dialog', 'header', 'title', 'close', 'body']);
+const PopoverTriggerContext = createContext(false);
+
+/** The opener toggles on press; its focus must not close the popover before that press ends. */
+function useTriggerDismissal(
+  shouldClose: PopoverProps['shouldCloseOnInteractOutside'],
+  isNonModal: boolean,
+) {
+  const inTrigger = useContext(PopoverTriggerContext);
+  const triggerRef = useSlottedContext(PopoverContext)?.triggerRef;
+  const onOutside = (element: Element) => {
+    if (triggerRef?.current?.contains(element)) return false;
+    return shouldClose?.(element) ?? true;
+  };
+  return inTrigger && isNonModal ? onOutside : shouldClose;
+}
 
 function PopoverHeader({ title, showCloseButton, onClose }: PopoverHeaderProps) {
   const strings = useUiStrings();
@@ -118,7 +148,64 @@ function PopoverHeader({ title, showCloseButton, onClose }: PopoverHeaderProps) 
 
 /** Opens the `Popover` among its children when its trigger, such as a `Button`, is pressed. */
 export function PopoverTrigger({ children, ...openState }: PopoverTriggerProps) {
-  return <DialogTrigger {...openState}>{children}</DialogTrigger>;
+  return (
+    <DialogTrigger {...openState}>
+      <PopoverTriggerContext value>{children}</PopoverTriggerContext>
+    </DialogTrigger>
+  );
+}
+
+const noTrigger: RefObject<Element | null> = { current: null };
+
+interface ScrollGuardOptions {
+  isOpen: boolean | undefined;
+  onOpenChange: ((isOpen: boolean) => void) | undefined;
+  triggerRef: RefObject<Element | null> | undefined;
+  isNonModal: boolean;
+}
+
+/**
+ * The open state a nonmodal panel hands React Aria, which ignores the closes `useScrollCloseGuard`
+ * refuses: a queued scroll event of an ancestor that has not moved since the panel opened. React
+ * Aria closes through the trigger's state inside a trigger and through `onOpenChange` otherwise, so
+ * both are guarded.
+ */
+function useScrollGuardedState({
+  isOpen,
+  onOpenChange,
+  triggerRef,
+  isNonModal,
+}: ScrollGuardOptions) {
+  const context = useContext(OverlayTriggerStateContext);
+  const anchor = useSlottedContext(PopoverContext)?.triggerRef;
+  const isIgnored = useScrollCloseGuard(
+    isNonModal && (isOpen ?? context?.isOpen ?? false),
+    triggerRef ?? anchor ?? noTrigger,
+    // The panel stays where it opened, so a real scroll of the page still closes it.
+    { followsPage: false },
+  );
+  const state = useMemo(
+    () =>
+      context && {
+        ...context,
+        close: () => {
+          if (!isIgnored()) context.close();
+        },
+        setOpen: (open: boolean) => {
+          if (open || !isIgnored()) context.setOpen(open);
+        },
+        toggle: () => {
+          if (!context.isOpen || !isIgnored()) context.toggle();
+        },
+      },
+    [context, isIgnored],
+  );
+  return {
+    state,
+    onOpenChange: (open: boolean) => {
+      if (open || !isIgnored()) onOpenChange?.(open);
+    },
+  };
 }
 
 /**
@@ -135,8 +222,14 @@ export function PopoverPanel({
   const zIndex = useLayerZIndex('dropdown');
   const [panel, setPanel] = useState<HTMLElement | null>(null);
   const gutter = usePopoverGutter(panel);
+  const guarded = useScrollGuardedState({
+    isOpen: rest.isOpen,
+    onOpenChange: rest.onOpenChange,
+    triggerRef: rest.triggerRef,
+    isNonModal: rest.isNonModal ?? false,
+  });
   return (
-    <>
+    <OverlayTriggerStateContext value={guarded.state}>
       {isHint ? null : (
         <PopoverPresence
           isOpen={rest.isOpen}
@@ -146,6 +239,7 @@ export function PopoverPanel({
       )}
       <AriaPopover
         {...rest}
+        onOpenChange={guarded.onOpenChange}
         style={({ placement }) => ({
           ...style,
           zIndex,
@@ -156,7 +250,7 @@ export function PopoverPanel({
         {arrowClassName ? <OverlayArrow className={arrowClassName} /> : null}
         <FormBoundary>{children}</FormBoundary>
       </AriaPopover>
-    </>
+    </OverlayTriggerStateContext>
   );
 }
 
@@ -179,40 +273,47 @@ export function Popover({
   ...rest
 }: PopoverProps) {
   const trigger = useContext(OverlayTriggerStateContext);
+  const shouldCloseOnInteractOutside = useTriggerDismissal(
+    rest.shouldCloseOnInteractOutside,
+    rest.isNonModal === true,
+  );
   // A controlled popover outside a trigger closes through its caller.
   const close = () => (rest.isOpen === undefined ? trigger?.close() : rest.onOpenChange?.(false));
   return (
     <PopoverPanel
       {...rest}
+      shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}
       offset={offset ?? (showArrow ? POPOVER_ARROW_OFFSET : POPOVER_OFFSET)}
       {...hooks.root({ className, props: rest })}
       arrowClassName={showArrow ? hooks.slotClass('arrow') : undefined}
     >
-      <Dialog
-        id={id}
-        aria-label={ariaLabel}
-        aria-labelledby={ariaLabelledby}
-        className={hooks.slotClass('dialog')}
-        // React Aria's Dialog forwards no keyboard handlers, so the listener goes on its element: an
-        // Escape the content already handled stops there, before React Aria's popover closes.
-        render={(props) => (
-          <section
-            {...props}
-            onKeyDown={(event) => {
-              stopConsumedEscape(event);
-            }}
-          />
-        )}
-      >
-        <PopoverHeader title={title} showCloseButton={showCloseButton} onClose={close} />
-        {children === undefined || children === null ? null : (
-          <div {...hooks.slot('body')}>
-            <HeadingLevelContext value={dialogTitleLevel}>
-              {typeof children === 'function' ? children({ close }) : children}
-            </HeadingLevelContext>
-          </div>
-        )}
-      </Dialog>
+      <PopoverTriggerContext value={false}>
+        <Dialog
+          id={id}
+          aria-label={ariaLabel}
+          aria-labelledby={ariaLabelledby}
+          className={hooks.slotClass('dialog')}
+          // React Aria's Dialog forwards no keyboard handlers, so the listener goes on its element: an
+          // Escape the content already handled stops there, before React Aria's popover closes.
+          render={(props) => (
+            <section
+              {...props}
+              onKeyDown={(event) => {
+                stopConsumedEscape(event);
+              }}
+            />
+          )}
+        >
+          <PopoverHeader title={title} showCloseButton={showCloseButton} onClose={close} />
+          {children === undefined || children === null ? null : (
+            <div {...hooks.slot('body')}>
+              <HeadingLevelContext value={dialogTitleLevel}>
+                {typeof children === 'function' ? children({ close }) : children}
+              </HeadingLevelContext>
+            </div>
+          )}
+        </Dialog>
+      </PopoverTriggerContext>
     </PopoverPanel>
   );
 }

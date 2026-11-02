@@ -1,7 +1,12 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
-import { Button as AriaButton, Link as AriaLink, ProgressBar } from '../../primitives/index.js';
+import { useContext, useState, type ComponentProps, type ReactNode } from 'react';
+import {
+  Button as AriaButton,
+  FocusableContext,
+  Link as AriaLink,
+  ProgressBar,
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { ExternalLinkGlyph } from '../../core/glyphs.js';
@@ -14,6 +19,7 @@ import { Tooltip } from '../tooltip/tooltip.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { useButtonAction, type ButtonActionProps } from './button-action.js';
+import { usePrimaryActionKeys } from './button-primary-keys.js';
 import {
   toAriaButtonProps,
   toAriaLinkProps,
@@ -247,6 +253,27 @@ function toRootData(
   return { ...given, variant, content, selected: isSelected, underline };
 }
 
+/**
+ * React Aria's button drops its move handler while pending, but a tooltip or hover card around it
+ * starts its hover on the first real move after keyboard use (`usePointerEntry`), so the trigger's
+ * move handler is put back.
+ */
+function PointerMoveButton(props: ComponentProps<typeof AriaButton>) {
+  const focusable = useContext(FocusableContext);
+  const onPointerMove = props.isPending ? focusable?.onPointerMove : undefined;
+  if (!onPointerMove) return <AriaButton {...props} />;
+  const { render } = props;
+  return (
+    <AriaButton
+      {...props}
+      render={(dom, state) => {
+        const restored = { ...dom, onPointerMove };
+        return render ? render(restored, state) : <button {...restored} />;
+      }}
+    />
+  );
+}
+
 /** A labelled command button, or a link drawn as one with `href`. */
 export function Button({
   variant,
@@ -277,7 +304,7 @@ export function Button({
   });
   const isDisabled = useInheritedDisabled(given);
   const newTab = useNewTab({ ...given, isExternal, endIcon }, { ...presentation, isDisabled });
-  const rest = { ...given, target: newTab.target };
+  const rest = usePrimaryActionKeys({ ...given, target: newTab.target });
   const own = { ...rest, isDisabled };
   const selection = useButtonSelection(own);
   const { isBusy, ...action } = useButtonAction({ ...own, ...selection, onError, pendingDelay });
@@ -312,13 +339,13 @@ export function Button({
       {parts}
     </AriaLink>
   ) : (
-    <AriaButton
+    <PointerMoveButton
       {...toAriaButtonProps({ ...own, ...selection, ...action }, options)}
       {...hookProps}
       aria-label={newTab.ariaLabel}
     >
       {parts}
-    </AriaButton>
+    </PointerMoveButton>
   );
   return (
     <ButtonTooltip tooltip={presentation.hint} shortcut={rest.shortcut}>

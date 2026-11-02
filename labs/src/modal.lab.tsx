@@ -110,7 +110,8 @@ function SaveForm() {
         data-lab-modal="save"
         footerContent={
           <>
-            Enter in City or <Shortcut chord="Ctrl+Enter" /> saves.{' '}
+            Enter in City or <Shortcut chord="Ctrl+Enter" /> saves, including while Cancel has
+            focus.{' '}
             <Button
               size="sm"
               data-lab-action="finish"

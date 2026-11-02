@@ -30,10 +30,14 @@ describe('icon tree shaking', () => {
     ).toEqual(['arrowTopRightOnSquarePath']);
   });
 
-  it('UIC-ICON-1.1 retains only the requested icon through the package root', async () => {
+  it('UIC-ICON-1.1 UIC-BUTTON-1.9 retains only the Button default and requested icon through the package root', async () => {
     expect(await retainedIcons("export { Button, PlusGlyph } from './src/index.ts'")).toEqual([
       'arrowTopRightOnSquarePath',
       'plusPath',
     ]);
+  });
+
+  it('UIC-ICON-1.1 retains only the requested glyph without Button through the package root', async () => {
+    expect(await retainedIcons("export { PlusGlyph } from './src/index.ts'")).toEqual(['plusPath']);
   });
 });

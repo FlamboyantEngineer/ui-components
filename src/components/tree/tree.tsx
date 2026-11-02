@@ -7,7 +7,9 @@ import {
   useDragAndDrop,
   Virtualizer,
 } from '../../primitives/index.js';
-import { useMemo } from 'react';
+import { useContext, useMemo } from 'react';
+import { PrimaryActionKeysContext } from '../../utils/primary-action-keys.js';
+import { keepTreePrimaryKeys } from './tree-primary-keys.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { useCarriedFocus } from '../../utils/use-carried-focus.js';
@@ -41,6 +43,7 @@ export type { TreeLoads } from './use-tree-loads.js';
  * row, in-place renaming and opt-in reordering. Items are plain data; render callbacks draw them.
  */
 export function Tree<T extends TreeItemData>(props: TreeProps<T>) {
+  const isBoundary = useContext(PrimaryActionKeysContext);
   const {
     root,
     aria,
@@ -87,14 +90,15 @@ export function Tree<T extends TreeItemData>(props: TreeProps<T>) {
       dragAndDropHooks={dragAndDropHooks}
       render={(domProps) => (
         <div
-          {...domProps}
+          {...keepTreePrimaryKeys(domProps, isBoundary)}
           // An empty pending tree holds the loading status, which a busy ancestor would hold back.
           aria-busy={
             (isPending && !(domProps as { 'data-empty'?: boolean })['data-empty']) || undefined
           }
           onKeyDownCapture={(event) => {
             keys.onKeyDownCapture(event);
-            if (!event.isPropagationStopped()) domProps.onKeyDownCapture?.(event);
+            if (!event.isPropagationStopped())
+              keepTreePrimaryKeys(domProps, isBoundary).onKeyDownCapture?.(event);
           }}
           // With handle drags only a press on a row's handle makes that row draggable.
           onPointerDownCapture={(event) => {

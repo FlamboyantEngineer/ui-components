@@ -50,10 +50,10 @@ Verification: `src/components/select-field/select-field.test.tsx`, `e2e/select-f
 
 ### UIC-SELECT-FIELD-2.2 - Width
 
-The select shall measure the widest of its options' labels, its placeholder (or empty label) and, for a multiple select, the `selectedCount` text for all its options in the trigger's font on a canvas and publish it, in pixels, as `--ui-select-field-label-width` on `ui-select-field__select`; its root publishes `data-icons` when any option has an icon. It measures once per set of labels and again when the document's fonts finish loading; opening, filtering and search results never change it. The reference sheet sizes the trigger to that width plus its padding, chevron and, with `data-icons`, an icon, capped at the width of the field's control slot, so the trigger keeps its width as the choice changes.
+The select shall measure the widest of its options' labels, its placeholder (or empty label) and, for a multiple select, the `selectedCount` text for all its options in the trigger's font on a canvas and publish it, in pixels, as `--ui-select-field-label-width` on `ui-select-field__select`; its root publishes `data-icons` when any option has an icon. It measures once per set of labels and again when the document's fonts finish loading; opening, filtering and search results never change it. The value label is a [Truncation Tooltip](TRUNCATION-TOOLTIP.md): when the stylesheet cuts its current choice, summary or placeholder short, hover or keyboard focus shows the complete text without opening the list; Escape dismisses that hint. The reference sheet sizes the trigger to that width plus its padding, chevron and, with `data-icons`, an icon, capped at the width of the field's control slot, so the trigger keeps its width as the choice changes.
 
-Implementation: `src/utils/use-widest-text-width.ts`, `src/components/select-field/select-control.tsx`, `labs/reference/select-field.css`
-Verification: `src/components/select-field/select-field.test.tsx`, `e2e/select-field.spec.ts`
+Implementation: `src/utils/use-widest-text-width.ts`, `src/components/select-field/select-control.tsx`, `src/components/select-field/select-trigger.tsx`, `labs/reference/select-field.css`
+Verification: `src/components/select-field/select-field.test.tsx`, `src/components/select-field/select-trigger.test.tsx`, `e2e/select-field.spec.ts`
 
 ### UIC-SELECT-FIELD-2.3 - Previous value
 
@@ -73,10 +73,10 @@ Verification: `src/components/select-field/select-trigger.test.tsx`, `e2e/select
 
 ### UIC-SELECT-FIELD-3.1 - Opening
 
-Pressing the trigger, or Enter, Space, Arrow Down or Arrow Up on it, shall open the options in a popover (`ui-select-field__popover`) anchored below the trigger on the `dropdown` layer, publishing `data-layer` and taking its z-index from `useLayerZIndex('dropdown')`, and publishing the trigger's width as `--ui-trigger-width`. React Aria keeps focus in the list, moves it to the chosen option, locks page scrolling while the list is open, and closes the list on Escape or a press outside it. `isOpen`, `defaultOpen` and `onOpenChange` control the open state.
+Pressing the trigger, or Enter, Space, Arrow Down or Arrow Up on it, shall open the options in a popover (`ui-select-field__popover`) anchored below the trigger on the `dropdown` layer, publishing `data-layer` and taking its z-index from `useLayerZIndex('dropdown')`, and publishing the trigger's width as `--ui-trigger-width`. React Aria keeps focus in the list, moves it to the chosen option, locks page scrolling while the list is open, and closes the list on Escape or a press outside it. One Escape in a nonempty filter closes the list, clears the filter, returns focus to the trigger and retains the value, without closing an enclosing modal; a composing Escape remains with the input method. `isOpen`, `defaultOpen` and `onOpenChange` control the open state.
 
 Implementation: `src/components/select-field/select-list.tsx`, `src/components/select-field/select-control.tsx`
-Verification: `src/components/select-field/select-list.test.tsx`, `e2e/select-field.spec.ts`
+Verification: `src/components/select-field/select-list.test.tsx`, `src/components/select-field/select-escape.test.tsx`, `e2e/select-field.spec.ts`
 
 ### UIC-SELECT-FIELD-3.2 - Options
 
@@ -232,12 +232,12 @@ Verification: `src/components/select-field/select-tree-field.test.tsx`, `e2e/sel
 
 ### UIC-SELECT-FIELD-9.2 - Popover
 
-Pressing the trigger shall open a popover (`ui-select-field__popover`) below it, publishing the trigger's width as `--ui-trigger-width`, holding a dialog (`ui-select-field__dialog`) named by the field's label, with a [Search Field](SEARCH-FIELD.md) (`ui-select-field__search`) named by the provider's `filterLabel` string with the label, which takes focus, and a `Tree` in its `picker` variant (`ui-select-field__tree`) named by the label, its chosen rows selected. Every opening starts afresh: the search is empty and the tree opens with the ancestors of the chosen nodes expanded. Escape, or a press outside, closes the popover and returns focus to the trigger; Escape in the tree closes it rather than clearing a multiple choice. The open state follows `isOpen`, `defaultOpen` and `onOpenChange`.
+Pressing the trigger shall open a popover (`ui-select-field__popover`) below it, publishing the trigger's width as `--ui-trigger-width`, holding a dialog (`ui-select-field__dialog`) named by the field's label, with a [Search Field](SEARCH-FIELD.md) (`ui-select-field__search`) named by the provider's `filterLabel` string with the label, which takes focus, and a `Tree` in its `picker` variant (`ui-select-field__tree`) named by the label, its chosen rows selected. Every opening starts afresh: the search is empty and the tree opens with the ancestors of the chosen nodes expanded. Escape, or a press outside, closes the popover and returns focus to the trigger; Escape in the tree closes it rather than clearing a multiple choice, and Escape in the search field closes it at once, even with text there, rather than clearing that text first; a containing modal stays open. The open state follows `isOpen`, `defaultOpen` and `onOpenChange`.
 
 Indexing the loaded hierarchy shall use an explicit traversal stack. Opening at multiple selected nodes shall collect their distinct ancestors without revisiting shared parent paths.
 
 Implementation: `src/components/select-field/tree-select-control.tsx`, `src/components/select-field/tree-select-popover.tsx`, `src/components/select-field/tree-index.ts`
-Verification: `src/components/select-field/tree-index.test.ts`, `src/components/select-field/select-tree-field.test.tsx`, `e2e/select-tree.spec.ts`
+Verification: `src/components/select-field/tree-index.test.ts`, `src/components/select-field/select-tree-field.test.tsx`, `src/components/select-field/select-dismissal.test.tsx`, `e2e/select-tree.spec.ts`
 
 ### UIC-SELECT-FIELD-9.3 - Single choice
 
@@ -351,6 +351,15 @@ Icon choices use the ordinary `ui-select-field` root and slots, append the calle
 
 Implementation: `src/components/select-field/select-field.tsx`
 Verification: `src/components/select-field/select-icons.test.tsx`
+
+## UIC-SELECT-FIELD-12 - Popup attributes
+
+### UIC-SELECT-FIELD-12.1 - Popup attributes
+
+`popoverProps` shall forward caller attributes and class names to the portalled list or tree popover without moving them onto the field. Library hook classes, layer and mode remain authoritative. A caller popup ID shall remain distinct from the inner tree dialog's accessibility ID; trigger ownership, dismissal and focus restoration remain unchanged.
+
+Implementation: `src/components/select-field/select-list.tsx`, `src/components/select-field/tree-select-popover.tsx`
+Verification: `src/components/select-field/select-popup.test.tsx`, `e2e/select-field.spec.ts`
 
 ## Hooks
 

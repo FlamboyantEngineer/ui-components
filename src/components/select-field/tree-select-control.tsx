@@ -197,6 +197,7 @@ export function TreeSelectControl<T extends TreeItemData>(props: TreeSelectContr
         }}
         popover={
           <TreeSelectPopover
+            popoverProps={props.popoverProps}
             label={label}
             items={props.items}
             getTextValue={props.getTextValue}

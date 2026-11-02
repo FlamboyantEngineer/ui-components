@@ -11,6 +11,7 @@ import {
   useIsHidden,
   useMenuTrigger,
   useMenuTriggerState,
+  type PressEvent,
 } from '../../primitives/index.js';
 import type { OpenStateProps } from '../../core/events.js';
 import { useCloseWhenLocked } from '../../utils/use-close-when-locked.js';
@@ -42,6 +43,14 @@ export function MenuTrigger({ isDisabled = false, children, ...openState }: Menu
   const ref = useRef<HTMLElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { menuTriggerProps, menuProps } = useMenuTrigger({ type: 'menu', isDisabled }, state, ref);
+  const handlePressStart = (event: PressEvent) => {
+    // React Aria opens mouse menus on press start and toggles only touch menus.
+    if (state.isOpen && event.pointerType !== 'touch' && event.pointerType !== 'keyboard') {
+      state.close();
+    } else {
+      menuTriggerProps.onPressStart?.(event);
+    }
+  };
   // An open menu whose trigger turns disabled closes once, through the ordinary close, so it stays
   // closed when the trigger is enabled again.
   useCloseWhenLocked(isOpen ?? state.isOpen, isDisabled, () => {
@@ -68,6 +77,7 @@ export function MenuTrigger({ isDisabled = false, children, ...openState }: Menu
     >
       <PressResponder
         {...(isDisabled ? {} : menuTriggerProps)}
+        onPressStart={isDisabled ? undefined : handlePressStart}
         ref={ref}
         isPressed={!isDisabled && state.isOpen}
       >
