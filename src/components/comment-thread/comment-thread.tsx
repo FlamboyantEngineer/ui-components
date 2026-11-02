@@ -30,6 +30,10 @@ export interface CommentThreadProps
   defaultResolved?: boolean | undefined;
   /** Offers Resolve and Reopen; called with the new state. */
   onResolvedChange?: ((isResolved: boolean) => void) | undefined;
+  /** Shows Resolve and Reopen as icon buttons, named by their label, which their tooltip shows. */
+  resolveIconOnly?: boolean | undefined;
+  /** Indents every reply, whole, under the opening comment. */
+  indentReplies?: boolean | undefined;
   /** Shows the comments without the composer, the resolve button or the comments' menus. */
   isReadOnly?: boolean | undefined;
   /** The thread is the current one, such as when its anchor is selected. */
@@ -83,7 +87,7 @@ function CommentList({
     <ol {...hooks.slot('comments')}>
       <li {...hooks.slot('item')}>{first}</li>
       {hidden > 0 ? (
-        <li {...hooks.slot('more')}>
+        <li {...hooks.slot('more', { reply: true })}>
           <Button
             variant="ghost"
             size="sm"
@@ -97,7 +101,7 @@ function CommentList({
       {shown.map((reply, index) => (
         <li
           key={isValidElement(reply) ? reply.key : index}
-          {...hooks.slot('item')}
+          {...hooks.slot('item', { reply: true })}
           {...(isExpanded && index === 0 ? { ref: revealedRef, tabIndex: -1 } : {})}
         >
           {reply}
@@ -112,8 +116,15 @@ function CommentThreadHeader({
   quote,
   isResolved,
   onToggle,
-}: Pick<CommentThreadProps, 'quote'> & { isResolved: boolean; onToggle: (() => void) | null }) {
+  iconOnly,
+}: Pick<CommentThreadProps, 'quote'> & {
+  isResolved: boolean;
+  onToggle: (() => void) | null;
+  iconOnly: boolean;
+}) {
   const strings = useUiStrings();
+  const label = isResolved ? strings.reopen : strings.resolve;
+  const icon = isResolved ? UndoGlyph : CheckGlyph;
   if (isEmptyNode(quote) && !isResolved && !onToggle) return null;
   return (
     <div {...hooks.slot('header')}>
@@ -127,12 +138,10 @@ function CommentThreadHeader({
         <Button
           variant="ghost"
           size="sm"
-          startIcon={isResolved ? UndoGlyph : CheckGlyph}
           className={hooks.slotClass('resolve')}
           onPress={onToggle}
-        >
-          {isResolved ? strings.reopen : strings.resolve}
-        </Button>
+          {...(iconOnly ? { icon, label, tooltip: label } : { startIcon: icon, children: label })}
+        />
       ) : null}
     </div>
   );
@@ -176,6 +185,8 @@ export function CommentThread({
   isResolved,
   defaultResolved = false,
   onResolvedChange,
+  resolveIconOnly = false,
+  indentReplies = false,
   isReadOnly = false,
   isSelected = false,
   visibleReplies,
@@ -202,7 +213,12 @@ export function CommentThread({
       {...rest}
       {...hooks.root({
         className,
-        data: { resolved, readonly: isReadOnly, selected: isSelected },
+        data: {
+          resolved,
+          readonly: isReadOnly,
+          selected: isSelected,
+          indentReplies,
+        },
       })}
       role="group"
       aria-label={
@@ -214,6 +230,7 @@ export function CommentThread({
           quote={quote}
           isResolved={resolved}
           onToggle={onResolvedChange && !isReadOnly ? () => setResolved(!resolved) : null}
+          iconOnly={resolveIconOnly}
         />
         <CommentList visibleReplies={visibleReplies} comments={comments} />
         {isEmptyNode(error) ? null : (

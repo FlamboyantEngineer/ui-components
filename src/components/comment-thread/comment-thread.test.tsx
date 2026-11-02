@@ -200,4 +200,44 @@ describe('CommentThread', () => {
     expect(thread).toHaveAttribute('data-test', 't');
     expectHooksMatchSpec(container, 'COMMENT-THREAD', { callerAttributes: ['data-test'] });
   });
+
+  it('UIC-COMMENT-THREAD-1.4 shows Resolve and Reopen as named icon buttons with a tooltip', async () => {
+    const user = userEvent.setup();
+    const onResolvedChange = vi.fn();
+    render(
+      <CommentThread resolveIconOnly onResolvedChange={onResolvedChange}>
+        {replies(1)}
+      </CommentThread>,
+    );
+    const resolve = screen.getByRole('button', { name: 'Resolve' });
+    expect(resolve).toHaveAttribute('data-content', 'icon');
+    expect(resolve).not.toHaveTextContent('Resolve');
+    await user.tab();
+    expect(resolve).toHaveFocus();
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('Resolve');
+    await user.click(resolve);
+    expect(onResolvedChange).toHaveBeenLastCalledWith(true);
+    expect(screen.getByRole('button', { name: 'Reopen' })).toHaveAttribute('data-content', 'icon');
+  });
+
+  it('UIC-COMMENT-THREAD-1.10 marks every reply, shown or revealed, and indents them on request', async () => {
+    const user = userEvent.setup();
+    const { container, rerender } = render(
+      <CommentThread visibleReplies={1}>{replies(4)}</CommentThread>,
+    );
+    const root = requireDefined(container.querySelector('.ui-comment-thread'));
+    expect(root).not.toHaveAttribute('data-indent-replies');
+    rerender(
+      <CommentThread visibleReplies={1} indentReplies>
+        {replies(4)}
+      </CommentThread>,
+    );
+    expect(root).toHaveAttribute('data-indent-replies', 'true');
+    const flags = () =>
+      screen.getAllByRole('listitem').map((item) => item.getAttribute('data-reply'));
+    expect(flags()).toEqual([null, 'true', 'true']);
+    await user.click(screen.getByRole('button', { name: 'Show 2 more replies' }));
+    expect(flags()).toEqual([null, 'true', 'true', 'true']);
+    expectHooksMatchSpec(container, 'COMMENT-THREAD');
+  });
 });

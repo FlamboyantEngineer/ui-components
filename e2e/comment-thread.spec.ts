@@ -267,4 +267,43 @@ test.describe('Comment Thread lab', () => {
       expect(layout.composerFill, name).toBeGreaterThan(0.99);
     }
   });
+
+  test('UIC-COMMENT-THREAD-1.4 UIC-COMMENT-THREAD-1.10 resolves from an icon button and indents every reply whole', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('comment-thread');
+    const thread = page.locator('[data-lab-thread="indented"]');
+    const flat = page.locator('[data-lab-thread="flat"]');
+    const resolve = thread.getByRole('button', { name: 'Resolve' });
+    await resolve.focus();
+    // A keyboard focus shows the tooltip.
+    await page.keyboard.press('Shift+Tab');
+    await page.keyboard.press('Tab');
+    await expect(resolve).toBeFocused();
+    await expect(
+      page.locator('.ui-tooltip:not([data-exiting])', { hasText: 'Resolve' }),
+    ).toBeVisible();
+    await resolve.click();
+    await expect(thread).toHaveAttribute('data-resolved', 'true');
+    await thread.getByRole('button', { name: 'Reopen' }).click();
+    await expect(thread).not.toHaveAttribute('data-resolved');
+
+    const left = (locator: typeof thread) =>
+      locator.evaluate((element) => element.getBoundingClientRect().left);
+    const articles = thread.getByRole('article');
+    const opening = await left(articles.first());
+    const indent = (await left(articles.nth(1))) - opening;
+    expect(indent).toBeGreaterThan(20);
+    expect(
+      (await left(flat.getByRole('article').nth(1))) -
+        (await left(flat.getByRole('article').first())),
+    ).toBe(0);
+    await thread.getByRole('button', { name: 'Show 2 more replies' }).click();
+    await expect(articles).toHaveCount(5);
+    for (const index of [1, 2, 3, 4]) {
+      expect((await left(articles.nth(index))) - opening).toBe(indent);
+    }
+    await expect(thread.getByRole('listitem').nth(1)).toBeFocused();
+  });
 });
