@@ -32,9 +32,9 @@ Verification: `src/components/status-light/status-light.test.tsx`, `e2e/status-l
 Implementation: `src/components/status-light/status-light.tsx`, `src/core/strings/common.ts`, `labs/reference/status-light.css`
 Verification: `src/components/status-light/status-light.test.tsx`, `e2e/status-light.spec.ts`
 
-### UIC-STATUS-LIGHT-1.5 - Processing
+### UIC-STATUS-LIGHT-1.5 - Pending
 
-`isProcessing` shall publish `data-processing` while the status is still in progress, such as a deployment that runs; the reference sheet pulses the dot unless the reader prefers reduced motion. The label states the progress (`Deploying`).
+`isPending` shall publish `data-pending` while the status is still in progress, such as a deployment that runs; the reference sheet pulses the dot unless the reader prefers reduced motion. The label states the progress (`Deploying`). The flag is the same `isPending` that Banner and InlineError take for work in progress, so one pending state drives them all.
 
 Implementation: `src/components/status-light/status-light.tsx`, `labs/reference/status-light.css`
 Verification: `src/components/status-light/status-light.test.tsx`, `e2e/status-light.spec.ts`
@@ -72,4 +72,4 @@ Verification: `src/components/status-light/status-light.test.tsx`, `e2e/status-l
 | `data-tone`              | attribute | `neutral`, `info`, `success`, `warning`, `danger` | The status's tone.                      |
 | `data-size`              | attribute | `sm`, `md`, `lg`                                  | Dot and text size.                      |
 | `data-status`            | attribute | `active`, `away`, `busy`, `idle`                  | A presence state, when `status` is set. |
-| `data-processing`        | state     | `true`                                            | The status is still in progress.        |
+| `data-pending`           | state     | `true`                                            | The status is still in progress.        |

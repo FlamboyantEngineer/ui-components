@@ -64,7 +64,7 @@ test.describe('Status Light lab', () => {
     await lab.expectAccessible();
   });
 
-  test('UIC-STATUS-LIGHT-1.5 UIC-STATUS-LIGHT-2.2 pulses a processing dot and takes no tab stop', async ({
+  test('UIC-STATUS-LIGHT-1.5 UIC-STATUS-LIGHT-2.2 pulses a pending dot and takes no tab stop', async ({
     page,
     lab,
   }) => {
@@ -73,10 +73,10 @@ test.describe('Status Light lab', () => {
     const light = demo.locator('.ui-status-light');
     const start = demo.getByRole('button', { name: 'Start deployment' });
     await expect(light).toHaveText('Live');
-    await expect(light).not.toHaveAttribute('data-processing');
+    await expect(light).not.toHaveAttribute('data-pending');
     await start.click();
     await expect(light).toHaveText('Deploying');
-    await expect(light).toHaveAttribute('data-processing', 'true');
+    await expect(light).toHaveAttribute('data-pending', 'true');
     await expect(light.locator('.ui-status-light__dot')).toHaveCSS(
       'animation-name',
       'ref-status-light-pulse',

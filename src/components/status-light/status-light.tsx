@@ -20,7 +20,7 @@ export interface StatusLightProps extends BaseProps, Pick<NativeProps<'span'>, '
   /** Dot and text size. Defaults to `md`. */
   size?: StatusLightSize | undefined;
   /** The status is still in progress, such as a deployment running; the stylesheet may pulse the dot. */
-  isProcessing?: boolean | undefined;
+  isPending?: boolean | undefined;
 }
 
 const hooks = createHooks('status-light', ['dot', 'label']);
@@ -34,7 +34,7 @@ export function StatusLight({
   tone = 'neutral',
   status,
   size = 'md',
-  isProcessing = false,
+  isPending = false,
   className,
   'aria-label': ariaLabel,
   ...rest
@@ -42,7 +42,7 @@ export function StatusLight({
   const strings = useUiStrings();
   const presenceLabel = status && !ariaLabel ? strings.presenceStatus(status) : undefined;
   const label = isEmptyNode(children) ? presenceLabel : children;
-  const data = { tone, size, status, processing: isProcessing };
+  const data = { tone, size, status, pending: isPending };
   const name = label === undefined && ariaLabel ? ariaLabel : undefined;
   return (
     <span

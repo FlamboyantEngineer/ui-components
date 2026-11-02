@@ -62,16 +62,16 @@ describe('StatusLight', () => {
     expect(container.firstElementChild).toHaveTextContent('[idle]');
   });
 
-  it('UIC-STATUS-LIGHT-1.5 publishes the processing state', () => {
+  it('UIC-STATUS-LIGHT-1.5 publishes the pending state', () => {
     const { container, rerender } = render(<StatusLight tone="info">Deploying</StatusLight>);
     const root = container.firstElementChild as HTMLElement;
-    expect(root).not.toHaveAttribute('data-processing');
+    expect(root).not.toHaveAttribute('data-pending');
     rerender(
-      <StatusLight tone="info" isProcessing>
+      <StatusLight tone="info" isPending>
         Deploying
       </StatusLight>,
     );
-    expect(root).toHaveAttribute('data-processing', 'true');
+    expect(root).toHaveAttribute('data-pending', 'true');
     expectHooksMatchSpec(container, 'STATUS-LIGHT');
   });
 

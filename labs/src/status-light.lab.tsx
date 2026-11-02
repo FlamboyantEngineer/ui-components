@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { Banner } from '../../src/components/banner/banner.js';
 import { Button } from '../../src/components/button/button.js';
+import { InlineError } from '../../src/components/inline-error/inline-error.js';
 import { StatusLight } from '../../src/components/status-light/status-light.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -14,7 +16,7 @@ const toneLabels = {
 const services = [
   { name: 'Recipe search', tone: 'success', label: 'Running' },
   { name: 'Image upload', tone: 'warning', label: 'Slow responses' },
-  { name: 'Weekly digest', tone: 'info', label: 'Sending', isProcessing: true },
+  { name: 'Weekly digest', tone: 'info', label: 'Sending', isPending: true },
   { name: 'Old archive', tone: 'danger', label: 'Stopped' },
 ] as const;
 
@@ -27,9 +29,18 @@ function Deployment() {
           {isDeploying ? 'Finish deployment' : 'Start deployment'}
         </Button>
       </p>
-      <StatusLight tone={isDeploying ? 'info' : 'success'} isProcessing={isDeploying}>
+      <StatusLight tone={isDeploying ? 'info' : 'success'} isPending={isDeploying}>
         {isDeploying ? 'Deploying' : 'Live'}
       </StatusLight>
+      {/* One pending flag drives every feedback primitive the same way. */}
+      <Banner
+        tone="info"
+        isPending={isDeploying}
+        title={isDeploying ? 'Deployment running' : 'Deployment finished'}
+      />
+      <InlineError tone="success" isPending={isDeploying}>
+        {isDeploying ? 'Checking the release' : 'The release passed its checks'}
+      </InlineError>
     </div>
   );
 }
@@ -70,14 +81,14 @@ mountLab(
       />
     </LabSection>
     <LabSection
-      title="Processing"
+      title="Pending"
       description="A status still in progress pulses its dot; the label says so."
     >
       <StateMatrix
-        axes={{ processing: ['still', 'processing'] }}
-        render={({ processing }) => (
-          <StatusLight tone="info" isProcessing={processing === 'processing'}>
-            {processing === 'processing' ? 'Deploying' : 'Scheduled'}
+        axes={{ pending: ['still', 'pending'] }}
+        render={({ pending }) => (
+          <StatusLight tone="info" isPending={pending === 'pending'}>
+            {pending === 'pending' ? 'Deploying' : 'Scheduled'}
           </StatusLight>
         )}
       />
@@ -94,7 +105,7 @@ mountLab(
             <StatusLight
               tone={service.tone}
               size="sm"
-              isProcessing={'isProcessing' in service ? service.isProcessing : false}
+              isPending={'isPending' in service ? service.isPending : false}
             >
               {service.label}
             </StatusLight>

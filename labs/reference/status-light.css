@@ -60,7 +60,7 @@
   background: transparent;
 }
 
-.ui-status-light[data-processing] .ui-status-light__dot {
+.ui-status-light[data-pending] .ui-status-light__dot {
   animation: ref-status-light-pulse var(--ref-duration-loop) ease-in-out infinite;
 }
 
@@ -71,7 +71,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ui-status-light[data-processing] .ui-status-light__dot {
+  .ui-status-light[data-pending] .ui-status-light__dot {
     animation: none;
   }
 }
