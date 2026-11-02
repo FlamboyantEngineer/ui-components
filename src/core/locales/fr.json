@@ -208,7 +208,7 @@
   "clearFilter": "Effacer le filtre",
   "boxSide": "{side, select, top {Haut} right {Droite} bottom {Bas} other {Gauche}}",
   "logicalBoxSide": "{side, select, blockStart {Haut} blockEnd {Bas} inlineStart {Début} other {Fin}}",
-  "linkSides": "{link, select, all {Lier tous les côtés} other {Lier les côtés opposés}}",
+  "linkSides": "{group, select, all {Lier tous les côtés} vertical {Lier haut et bas} horizontal {Lier gauche et droite} block {Lier haut et bas} other {Lier début et fin}}",
   "sign": "Signer",
   "signingAs": "Signature en tant que {userName}",
   "signatureMeaning": "Signification de la signature",

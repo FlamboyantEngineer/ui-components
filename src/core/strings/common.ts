@@ -153,8 +153,11 @@ export interface CommonStrings {
   boxSide: (side: 'top' | 'right' | 'bottom' | 'left') => string;
   /** The name of one flow-relative side of a box, which follows the writing direction. */
   logicalBoxSide: (side: 'block-start' | 'block-end' | 'inline-start' | 'inline-end') => string;
-  /** The toggle that links a box's sides, so one edit sets all four or each opposite pair. */
-  linkSides: (link: 'all' | 'pairs') => string;
+  /**
+   * The toggle that links a box's sides, so one edit sets all four (`all`) or an opposite pair:
+   * top and bottom (`vertical`), left and right (`horizontal`), or the block or inline start and end.
+   */
+  linkSides: (group: 'all' | 'vertical' | 'horizontal' | 'block' | 'inline') => string;
   /** The action that signs, in a signature dialog. */
   sign: string;
   /** Says who signs, from the signer's user name. */
@@ -260,7 +263,7 @@ export const commonStrings = defineStrings<CommonStrings>({
   noPropertyMatches: (query) => ({ query }),
   boxSide: (side) => ({ side }),
   logicalBoxSide: (side) => ({ side: toSelectKey(side) }),
-  linkSides: (link) => ({ link }),
+  linkSides: (group) => ({ group }),
   signingAs: (userName) => ({ userName }),
   signatureMeaningIs: (meaning) => ({ meaning }),
   appFramePanel: (panel) => ({ panel }),

@@ -71,41 +71,44 @@
 
 .ui-four-side-property-strip__bracket::before {
   border-inline-start-width: 1px;
-  border-end-start-radius: var(--ref-radius-xs);
+  border-end-start-radius: var(--ref-radius-sm);
 }
 
 .ui-four-side-property-strip__bracket::after {
   border-inline-end-width: 1px;
-  border-end-end-radius: var(--ref-radius-xs);
+  border-end-end-radius: var(--ref-radius-sm);
 }
 
-.ui-four-side-property-strip[data-linked] .ui-four-side-property-strip__bracket {
+.ui-four-side-property-strip__bracket[data-linked] {
   --ref-four-side-property-strip-rule: var(--ref-accent-ink);
-  color: var(--ref-accent-ink);
 }
 
-.ui-four-side-property-strip[data-linked] .ui-four-side-property-strip__bracket::before,
-.ui-four-side-property-strip[data-linked] .ui-four-side-property-strip__bracket::after {
+.ui-four-side-property-strip__bracket[data-linked]::before,
+.ui-four-side-property-strip__bracket[data-linked]::after {
   border-style: solid;
 }
 
-.ui-four-side-property-strip__link {
+/* Every toggle alike: a bare glyph, muted while unlinked and in the accent colour while linked. */
+.ui-four-side-property-strip__link.ui-button {
   flex: none;
+  border-color: transparent;
+  background: transparent;
+  color: inherit;
 }
 
-.ui-four-side-property-strip__link[data-selected] {
+.ui-four-side-property-strip__link.ui-button[data-hovered] {
+  background: var(--ref-hover);
+}
+
+.ui-four-side-property-strip__link.ui-button[data-selected] {
+  border-color: transparent;
   color: var(--ref-accent-ink);
 }
 
-.ui-four-side-property-strip__glyph {
-  flex: none;
-  box-sizing: content-box;
-  width: var(--ref-icon-size-md);
-  height: var(--ref-icon-size-md);
-  /* As wide as the toggle beside the other pair, so both brackets draw alike. */
-  padding-inline: calc((var(--ref-control-height-sm) - var(--ref-icon-size-md)) / 2);
+.ui-four-side-property-strip__link.ui-button[data-selected]:not([data-hovered]) {
+  background: transparent;
 }
 
-.ui-four-side-property-strip[data-linked] .ui-four-side-property-strip__side > input {
+.ui-four-side-property-strip__side[data-linked] > input {
   border-style: dashed;
 }

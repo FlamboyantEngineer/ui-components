@@ -155,21 +155,70 @@ describe('FourSidePropertyStrip', () => {
     await userEvent.type(input('top'), '0');
     expect(input('top')).toHaveValue('10');
     expect(input('bottom')).toHaveValue('2');
-    const toggle = screen.getByRole('button', { name: 'Link opposite sides' });
-    expect(toggle).toHaveClass('ui-four-side-property-strip__link', 'ui-button');
-    expect(toggle).toHaveAttribute('aria-pressed', 'false');
-    await userEvent.click(toggle);
-    expect(onLinkedChange).toHaveBeenLastCalledWith(true);
-    expect(toggle).toHaveAttribute('aria-pressed', 'true');
-    const row = container.querySelector('.ui-four-side-property-strip');
-    expect(row).toHaveAttribute('data-linked', 'true');
+    const vertical = screen.getByRole('button', { name: 'Link top and bottom' });
+    const horizontal = screen.getByRole('button', { name: 'Link left and right' });
+    expect(horizontal).toHaveClass('ui-four-side-property-strip__link', 'ui-button');
+    expect(horizontal).toHaveAttribute('aria-pressed', 'false');
+    await userEvent.click(horizontal);
+    expect(onLinkedChange).toHaveBeenLastCalledWith(['horizontal']);
+    expect(horizontal).toHaveAttribute('aria-pressed', 'true');
+    expect(vertical).toHaveAttribute('aria-pressed', 'false');
+    const linkedSides = () =>
+      [...container.querySelectorAll('.ui-four-side-property-strip__side[data-linked]')].map(
+        (cell) => cell.getAttribute('data-side'),
+      );
+    expect(linkedSides()).toEqual(['left', 'right']);
     expect(input('bottom')).toHaveValue('2');
+    // Only the linked pair moves together; the other pair keeps its values and its state.
     await userEvent.type(input('left'), '5');
     expect(input('left')).toHaveValue('35');
     expect(input('right')).toHaveValue('35');
-    expect(input('top')).toHaveValue('10');
-    expect(onChange).toHaveBeenLastCalledWith({ top: '10', bottom: '2', left: '35', right: '35' });
+    await userEvent.type(input('top'), '1');
+    expect(input('top')).toHaveValue('101');
+    expect(input('bottom')).toHaveValue('2');
+    expect(onChange).toHaveBeenLastCalledWith({ top: '101', bottom: '2', left: '35', right: '35' });
+    await userEvent.click(vertical);
+    expect(onLinkedChange).toHaveBeenLastCalledWith(['vertical', 'horizontal']);
+    await userEvent.type(input('bottom'), '7');
+    expect(input('top')).toHaveValue('27');
+    await userEvent.click(horizontal);
+    expect(onLinkedChange).toHaveBeenLastCalledWith(['vertical']);
+    expect(linkedSides()).toEqual(['top', 'bottom']);
+    await userEvent.type(input('right'), '0');
+    expect(input('right')).toHaveValue('350');
+    expect(input('left')).toHaveValue('35');
     expectHooksMatchSpec(container, 'FOUR-SIDE-PROPERTY-STRIP', { slots: 'all' });
+  });
+
+  it('UIC-FOUR-SIDE-PROPERTY-STRIP-1.5 keeps controlled linked pairs coherent across modes', async () => {
+    const onLinkedChange = vi.fn();
+    const strip = (link: 'all' | 'pairs', linked: readonly ('block' | 'inline')[]) => (
+      <FourSidePropertyStrip
+        label="Inset"
+        sides="logical"
+        link={link}
+        linked={linked}
+        onLinkedChange={onLinkedChange}
+        renderSide={(side) => <input aria-label={`Inset ${side}`} />}
+      />
+    );
+    const { rerender } = render(strip('pairs', ['inline']));
+    const pressed = () =>
+      screen.getAllByRole('button').map((button) => button.getAttribute('aria-pressed'));
+    expect(pressed()).toEqual(['false', 'true']);
+    await userEvent.click(screen.getByRole('button', { name: 'Link top and bottom' }));
+    expect(onLinkedChange).toHaveBeenLastCalledWith(['block', 'inline']);
+    // Not accepted by the owner: the toggles keep showing what the owner holds.
+    expect(pressed()).toEqual(['false', 'true']);
+    // All sides are linked only while both pairs are.
+    rerender(strip('all', ['inline']));
+    expect(pressed()).toEqual(['false']);
+    await userEvent.click(screen.getByRole('button', { name: 'Link all sides' }));
+    expect(onLinkedChange).toHaveBeenLastCalledWith(['block', 'inline']);
+    rerender(strip('all', ['block', 'inline']));
+    expect(pressed()).toEqual(['true']);
+    await userEvent.click(screen.getByRole('button', { name: 'Link all sides' }));
+    expect(onLinkedChange).toHaveBeenLastCalledWith([]);
   });
 
   it('UIC-FOUR-SIDE-PROPERTY-STRIP-1.5 links all four sides under a controlled value', async () => {
@@ -181,7 +230,7 @@ describe('FourSidePropertyStrip', () => {
           value={values}
           onChange={setValues}
           link="all"
-          defaultLinked
+          defaultLinked={['vertical', 'horizontal']}
           renderSide={(side, field) => (
             <button type="button" onClick={() => field.onChange((field.value ?? 0) + 1)}>
               {`Grow ${side} ${field.value ?? 0}`}
@@ -191,18 +240,14 @@ describe('FourSidePropertyStrip', () => {
       );
     }
     const { container } = render(<Controlled />);
-    expect(container.querySelector('.ui-four-side-property-strip')).toHaveAttribute(
-      'data-linked',
-      'true',
-    );
+    const bracket = () => container.querySelector('.ui-four-side-property-strip__bracket');
+    expect(bracket()).toHaveAttribute('data-linked', 'true');
     await userEvent.click(screen.getByRole('button', { name: 'Grow top 4' }));
     for (const side of ['top', 'bottom', 'left', 'right']) {
       expect(screen.getByRole('button', { name: `Grow ${side} 5` })).toBeInTheDocument();
     }
     await userEvent.click(screen.getByRole('button', { name: 'Link all sides' }));
-    expect(container.querySelector('.ui-four-side-property-strip')).not.toHaveAttribute(
-      'data-linked',
-    );
+    expect(bracket()).not.toHaveAttribute('data-linked');
     await userEvent.click(screen.getByRole('button', { name: 'Grow left 5' }));
     expect(screen.getByRole('button', { name: 'Grow left 6' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Grow right 5' })).toBeInTheDocument();
@@ -219,7 +264,7 @@ describe('FourSidePropertyStrip', () => {
           value={props.value}
           onChange={onChange}
           link={props.link}
-          defaultLinked
+          defaultLinked={['vertical', 'horizontal']}
           renderSide={(side, field) => {
             fields.set(side, field);
             return <output aria-label={`Margin ${side}`}>{field.value ?? ''}</output>;
@@ -308,16 +353,17 @@ describe('FourSidePropertyStrip', () => {
       );
     expect(brackets()).toEqual(['block-start block-end', 'inline-start inline-end']);
     const [first, second] = container.querySelectorAll('.ui-four-side-property-strip__bracket');
-    expect(first).toContainElement(screen.getByRole('button', { name: 'Link opposite sides' }));
-    expect(screen.getAllByRole('button')).toHaveLength(1);
-    const glyph = second?.querySelector('.ui-four-side-property-strip__glyph');
-    expect(glyph).toHaveAttribute('aria-hidden', 'true');
+    // Each pair has its own toggle, named after its sides.
+    expect(first).toContainElement(screen.getByRole('button', { name: 'Link top and bottom' }));
+    expect(second).toContainElement(screen.getByRole('button', { name: 'Link start and end' }));
+    expect(screen.getAllByRole('button')).toHaveLength(2);
     // The brackets follow the cells, so the cells keep their order for reading and Tab.
     const lastCell = container.querySelector('[data-side="inline-end"]');
     expect(lastCell?.compareDocumentPosition(first as Node)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     rerender(<FourSidePropertyStrip label="Inset" link="all" renderSide={renderSide} />);
     expect(row).toHaveAttribute('data-link', 'all');
     expect(brackets()).toEqual(['top bottom left right']);
+    expect(screen.getByRole('button', { name: 'Link all sides' })).toBeInTheDocument();
     rerender(<FourSidePropertyStrip label="Inset" renderSide={renderSide} />);
     expect(row).not.toHaveAttribute('data-link');
     expect(brackets()).toEqual([]);

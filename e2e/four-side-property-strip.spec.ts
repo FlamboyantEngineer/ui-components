@@ -39,34 +39,85 @@ test.describe('Four Side Property Strip lab', () => {
     await lab.expectAccessible();
   });
 
-  test('UIC-FOUR-SIDE-PROPERTY-STRIP-1.5 links opposite sides or all four from the toggle', async ({
+  test('UIC-FOUR-SIDE-PROPERTY-STRIP-1.5 links each opposite pair on its own or all four', async ({
     page,
     lab,
   }) => {
     await lab.open('four-side-property-strip');
-    const pairs = matrixCell(page, 'link=pairs start=unlinked');
-    const side = (area: typeof pairs, link: string, name: string) =>
-      area.getByRole('textbox', {
-        name: `Padding ${link} ${link === 'all' ? 'linked' : 'unlinked'} ${name}`,
-      });
-    const toggle = pairs.getByRole('button', { name: 'Link opposite sides' });
-    await expect(toggle).toHaveAttribute('aria-pressed', 'false');
-    await toggle.click();
-    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
-    await expect(pairs.locator('.ui-four-side-property-strip')).toHaveAttribute(
-      'data-linked',
-      'true',
-    );
-    await side(pairs, 'pairs', 'left').fill('20');
-    await expect(side(pairs, 'pairs', 'right')).toHaveValue('20');
-    await expect(side(pairs, 'pairs', 'top')).toHaveValue('8');
+    const pairs = matrixCell(page, 'link=pairs start=none');
+    const side = (area: typeof pairs, prefix: string, name: string) =>
+      area.getByRole('textbox', { name: `Padding ${prefix} ${name}` });
+    const vertical = pairs.getByRole('button', { name: 'Link top and bottom' });
+    const horizontal = pairs.getByRole('button', { name: 'Link left and right' });
+    await expect(vertical).toHaveAttribute('aria-pressed', 'false');
+    await expect(horizontal).toHaveAttribute('aria-pressed', 'false');
+    // By keyboard: Tab from the last cell reaches the first pair's toggle, then the second's.
+    await side(pairs, 'pairs none', 'right').focus();
+    await page.keyboard.press('Tab');
+    await expect(vertical).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(horizontal).toBeFocused();
+    await page.keyboard.press('Space');
+    await expect(horizontal).toHaveAttribute('aria-pressed', 'true');
+    await expect(vertical).toHaveAttribute('aria-pressed', 'false');
+    await side(pairs, 'pairs none', 'left').fill('20');
+    await expect(side(pairs, 'pairs none', 'right')).toHaveValue('20');
+    await side(pairs, 'pairs none', 'top').fill('3');
+    await expect(side(pairs, 'pairs none', 'bottom')).toHaveValue('8');
+    await vertical.click();
+    await side(pairs, 'pairs none', 'bottom').fill('5');
+    await expect(side(pairs, 'pairs none', 'top')).toHaveValue('5');
+    await expect(side(pairs, 'pairs none', 'left')).toHaveValue('20');
 
-    const all = matrixCell(page, 'link=all start=linked');
-    await side(all, 'all', 'bottom').fill('6');
+    // Every combination starts as given: neither, either pair, or both.
+    for (const [start, pressed] of [
+      ['vertical', ['true', 'false']],
+      ['horizontal', ['false', 'true']],
+      ['both', ['true', 'true']],
+    ] as const) {
+      const toggles = matrixCell(page, `link=pairs start=${start}`).getByRole('button');
+      await expect(toggles).toHaveCount(2);
+      for (const [index, state] of pressed.entries()) {
+        await expect(toggles.nth(index)).toHaveAttribute('aria-pressed', state);
+      }
+    }
+
+    // All four sides are linked only while both pairs are.
+    await expect(
+      matrixCell(page, 'link=all start=vertical').getByRole('button', { name: 'Link all sides' }),
+    ).toHaveAttribute('aria-pressed', 'false');
+    const all = matrixCell(page, 'link=all start=both');
+    await side(all, 'all both', 'bottom').fill('6');
     for (const name of ['top', 'left', 'right']) {
-      await expect(side(all, 'all', name)).toHaveValue('6');
+      await expect(side(all, 'all both', name)).toHaveValue('6');
     }
     await lab.expectAccessible();
+  });
+
+  test('UIC-FOUR-SIDE-PROPERTY-STRIP-1.5 keeps one link state across modes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('four-side-property-strip');
+    const demo = page.locator('[data-lab-demo="switching"]');
+    const output = demo.locator('[data-lab-output="linked"]');
+    await expect(output).toHaveText('Linked pairs: horizontal');
+    await demo.getByRole('checkbox').check();
+    const all = demo.getByRole('button', { name: 'Link all sides' });
+    await expect(all).toHaveAttribute('aria-pressed', 'false');
+    await all.click();
+    await expect(output).toHaveText('Linked pairs: vertical, horizontal');
+    await demo.getByRole('checkbox').uncheck();
+    await expect(demo.getByRole('button', { name: 'Link top and bottom' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    await demo.getByRole('button', { name: 'Link left and right' }).click();
+    await expect(output).toHaveText('Linked pairs: vertical');
+    await demo.getByRole('textbox', { name: 'Margin switching left' }).fill('2');
+    await expect(demo.getByRole('textbox', { name: 'Margin switching right' })).toHaveValue('8');
+    await demo.getByRole('textbox', { name: 'Margin switching top' }).fill('4');
+    await expect(demo.getByRole('textbox', { name: 'Margin switching bottom' })).toHaveValue('4');
   });
 
   test('UIC-FOUR-SIDE-PROPERTY-STRIP-1.4 orders flow-relative sides by the reading direction', async ({
@@ -115,13 +166,11 @@ test.describe('Four Side Property Strip lab', () => {
         expect(Math.abs(icon.left + icon.width / 2 - middle)).toBeLessThanOrEqual(1.5);
       }
     };
-    await check('link=pairs start=linked', 'Padding pairs linked', [
+    await check('link=pairs start=both', 'Padding pairs both', [
       ['top', 'bottom'],
       ['left', 'right'],
     ]);
-    await check('link=all start=unlinked', 'Padding all unlinked', [
-      ['top', 'bottom', 'left', 'right'],
-    ]);
+    await check('link=all start=none', 'Padding all none', [['top', 'bottom', 'left', 'right']]);
     await check('link=pairs direction=rtl', 'Inset pairs rtl', [
       ['block-start', 'block-end'],
       ['inline-start', 'inline-end'],
@@ -129,14 +178,45 @@ test.describe('Four Side Property Strip lab', () => {
     await check('link=all direction=rtl', 'Inset all rtl', [
       ['block-start', 'block-end', 'inline-start', 'inline-end'],
     ]);
-    // Unlinked rules are dashed; linked ones solid.
-    const style = (cell: string) =>
+    // Unlinked rules are dashed; linked ones solid, each pair's on its own.
+    const bracketStyle = (cell: string, index: number) =>
       matrixCell(page, cell)
         .locator('.ui-four-side-property-strip__bracket')
-        .first()
-        .evaluate((node) => getComputedStyle(node, '::before').borderBottomStyle);
-    expect(await style('link=all start=unlinked')).toBe('dashed');
-    expect(await style('link=all start=linked')).toBe('solid');
+        .nth(index)
+        .evaluate((node) => {
+          const rule = getComputedStyle(node, '::before');
+          return { style: rule.borderBottomStyle, radius: parseFloat(rule.borderBottomLeftRadius) };
+        });
+    expect((await bracketStyle('link=all start=none', 0)).style).toBe('dashed');
+    expect((await bracketStyle('link=all start=both', 0)).style).toBe('solid');
+    expect((await bracketStyle('link=pairs start=horizontal', 0)).style).toBe('dashed');
+    expect((await bracketStyle('link=pairs start=horizontal', 1)).style).toBe('solid');
+    // The bends are rounder than the smallest radius.
+    expect((await bracketStyle('link=pairs start=both', 0)).radius).toBeGreaterThan(2);
+
+    // Every toggle has the same geometry; a linked one is a coloured glyph on no background.
+    const toggles = matrixCell(page, 'link=pairs start=horizontal').getByRole('button');
+    const look = (index: number) =>
+      toggles.nth(index).evaluate((node) => {
+        const style = getComputedStyle(node);
+        const box = node.getBoundingClientRect();
+        return {
+          background: style.backgroundColor,
+          color: style.color,
+          width: box.width,
+          height: box.height,
+        };
+      });
+    const unlinked = await look(0);
+    const linked = await look(1);
+    expect(linked.background).toBe('rgba(0, 0, 0, 0)');
+    expect(unlinked.background).toBe('rgba(0, 0, 0, 0)');
+    expect(linked.color).not.toBe(unlinked.color);
+    expect([linked.width, linked.height]).toEqual([unlinked.width, unlinked.height]);
+    await toggles.nth(1).focus();
+    await page.keyboard.press('Shift+Tab');
+    await page.keyboard.press('Tab');
+    await expect(toggles.nth(1)).toHaveAttribute('data-focus-visible', 'true');
     await lab.expectAccessible();
   });
 });

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import {
   FourSidePropertyStrip,
+  type BoxAxis,
   type BoxSide,
   type FourSidePropertyStripLink,
 } from '../../src/components/four-side-property-strip/four-side-property-strip.js';
@@ -51,8 +52,17 @@ function Filtered() {
   );
 }
 
+const linkStarts = ['none', 'vertical', 'horizontal', 'both'] as const;
+
+const startPairs: Record<(typeof linkStarts)[number], readonly BoxAxis[]> = {
+  none: [],
+  vertical: ['vertical'],
+  horizontal: ['horizontal'],
+  both: ['vertical', 'horizontal'],
+};
+
 /**
- * A strip holding its values, whose link toggle sets all four sides or each opposite pair. The
+ * A strip holding its values, whose link toggles set all four sides or each opposite pair. The
  * bracket below the cells joins the sides one edit sets together.
  */
 function Linked({
@@ -60,14 +70,14 @@ function Linked({
   start,
 }: {
   link: FourSidePropertyStripLink;
-  start: 'unlinked' | 'linked';
+  start: (typeof linkStarts)[number];
 }) {
   return (
     <FourSidePropertyStrip
       label="Padding"
       unit="px"
       link={link}
-      defaultLinked={start === 'linked'}
+      defaultLinked={startPairs[start]}
       defaultValue={{ top: '8', bottom: '8', left: '12', right: '12' }}
       renderSide={(side, field) => (
         <input
@@ -97,7 +107,7 @@ function LinkedLogical({
             label="Inset"
             sides="logical"
             link={link}
-            defaultLinked
+            defaultLinked={['block', 'inline']}
             defaultValue={{
               'block-start': '4',
               'block-end': '4',
@@ -116,6 +126,42 @@ function LinkedLogical({
         </PropertyPanel>
       </div>
     </UiProvider>
+  );
+}
+
+/** One controlled link state, shared as the strip switches between pairs and all sides. */
+function SwitchingModes() {
+  const [link, setLink] = useState<FourSidePropertyStripLink>('pairs');
+  const [linked, setLinked] = useState<readonly BoxAxis[]>(['horizontal']);
+  return (
+    <div data-lab-demo="switching" data-lab-column="400" style={{ width: 400 }}>
+      <label>
+        <input
+          type="checkbox"
+          checked={link === 'all'}
+          onChange={(event) => setLink(event.target.checked ? 'all' : 'pairs')}
+        />{' '}
+        Link all four sides together
+      </label>
+      <PropertyPanel aria-label="Margin across modes">
+        <FourSidePropertyStrip
+          label="Margin"
+          link={link}
+          linked={linked}
+          onLinkedChange={setLinked}
+          defaultValue={{ top: '0', bottom: '0', left: '8', right: '8' }}
+          renderSide={(side, field) => (
+            <input
+              aria-label={`Margin switching ${side}`}
+              value={field.value ?? ''}
+              size={3}
+              onChange={(event) => field.onChange(event.target.value)}
+            />
+          )}
+        />
+      </PropertyPanel>
+      <output data-lab-output="linked">Linked pairs: {linked.join(', ') || 'none'}</output>
+    </div>
   );
 }
 
@@ -179,10 +225,10 @@ mountLab(
     </LabSection>
     <LabSection
       title="Linked sides"
-      description="A bracket below the cells joins the sides one edit sets: pairs bracket top with bottom and left with right, all brackets the four. The toggle at the first bracket's centre links them; linked brackets are solid, unlinked ones dashed."
+      description="A bracket below the cells joins the sides one edit sets: pairs bracket top with bottom and left with right, all brackets the four. Each bracket's toggle links its own sides, so either pair, both or neither can be linked; with all, the four sides are linked while both pairs are. Linked brackets are solid with an accent glyph, unlinked ones dashed. Tab reaches each toggle after the cells, and Space or Enter presses it."
     >
       <StateMatrix
-        axes={{ link: ['pairs', 'all'], start: ['unlinked', 'linked'] }}
+        axes={{ link: ['pairs', 'all'], start: linkStarts }}
         render={({ link, start }) => (
           <div data-lab-column="400" style={{ width: 400 }}>
             <PropertyPanel aria-label={`Linked ${link} ${start}`}>
@@ -191,6 +237,12 @@ mountLab(
           </div>
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Switching modes"
+      description="One controlled list of linked pairs, kept as the strip switches between pairs and all sides: linking all four lists both pairs, and unlinking them lists neither."
+    >
+      <SwitchingModes />
     </LabSection>
     <LabSection
       title="Linked logical sides"

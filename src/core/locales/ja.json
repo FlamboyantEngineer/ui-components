@@ -208,7 +208,7 @@
   "clearFilter": "フィルターをクリア",
   "boxSide": "{side, select, top {上} right {右} bottom {下} other {左}}",
   "logicalBoxSide": "{side, select, blockStart {上} blockEnd {下} inlineStart {先頭} other {末尾}}",
-  "linkSides": "{link, select, all {すべての辺を連動} other {向かい合う辺を連動}}",
+  "linkSides": "{group, select, all {すべての辺を連動} vertical {上下を連動} horizontal {左右を連動} block {上下を連動} other {先頭と末尾を連動}}",
   "sign": "署名",
   "signingAs": "{userName}として署名",
   "signatureMeaning": "署名の意味",
