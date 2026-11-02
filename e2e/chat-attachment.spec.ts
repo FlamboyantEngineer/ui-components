@@ -93,6 +93,36 @@ test.describe('Chat Attachment lab', () => {
     await expect(opener).toBeFocused();
   });
 
+  test('UIC-CHAT-ATTACHMENT-1.2 UIC-CHAT-ATTACHMENT-2.1 lists the thumbnail and views and downloads the original', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-attachment');
+    const list = page
+      .locator('[data-lab-demo="thumbnails"]')
+      .getByRole('list', { name: 'Thumbnails and originals' });
+    const lagoon = list.getByRole('button', { name: 'View Lagoon.svg' });
+    await expect(lagoon.locator('img')).toHaveAttribute('src', /Thumbnail/);
+    await expect(lagoon.locator('img')).not.toHaveAttribute('src', /Original/);
+    await lagoon.click();
+    await settledViewer(page);
+    const dialog = page.getByRole('dialog', { name: 'Lagoon.svg' });
+    await expect(dialog.locator('.ui-media-viewer__image')).toHaveAttribute('src', /Original/);
+    await expect(dialog.getByRole('link', { name: 'Download Lagoon.svg' })).toHaveAttribute(
+      'href',
+      /Original/,
+    );
+    await page.keyboard.press('ArrowRight');
+    const cove = page.getByRole('dialog', { name: 'Cove.svg' });
+    await expect(cove.locator('.ui-media-viewer__image')).toHaveAttribute(
+      'src',
+      /Thumbnail%20only/,
+    );
+    await expect(cove.getByRole('link', { name: 'Download Cove.svg' })).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await expect(lagoon).toBeFocused();
+  });
+
   test('UIC-CHAT-ATTACHMENT-2.2 ends the viewer when its gallery empties and opens nothing once refilled', async ({
     page,
     lab,

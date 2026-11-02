@@ -11,6 +11,7 @@ import {
   attachmentKinds,
   composerAttachments,
   kindSamples,
+  thumbnailAttachments,
   tripAttachments,
 } from './chat-attachment-samples.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
@@ -155,6 +156,19 @@ function Gallery() {
   );
 }
 
+/**
+ * A photo whose thumbnail and original differ: the list shows the thumbnail, the viewer the
+ * original with its download; a photo with a thumbnail only shows it in both, with no download.
+ */
+function ThumbnailGallery() {
+  return (
+    <div data-lab-demo="thumbnails">
+      <h3 id="thumbnail-files">Thumbnails and originals</h3>
+      <ChatAttachmentList aria-labelledby="thumbnail-files" attachments={thumbnailAttachments} />
+    </div>
+  );
+}
+
 /** How long the emptying gallery waits before its owner clears it. */
 const clearDelay = 1500;
 
@@ -226,6 +240,12 @@ mountLab(
       description="A list named by its heading: the photos open the media viewer on the pressed one, with the other photos to page through; the PDF and the text file are chips."
     >
       <Gallery />
+    </LabSection>
+    <LabSection
+      title="Thumbnail and original"
+      description="thumbnailUrl is the small image the list shows; url is the original the media viewer opens and downloads. Lagoon's thumbnail and original carry different captions; Cove has a thumbnail only, which the viewer shows too, without a download."
+    >
+      <ThumbnailGallery />
     </LabSection>
     <LabSection
       title="Gallery that empties"
