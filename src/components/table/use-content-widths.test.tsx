@@ -25,20 +25,25 @@ function Measurement({ value }: { value: string }) {
   );
 }
 
+/**
+ * Client rects as a browser draws them under an ancestor scale: a cell 8 layout pixels a character
+ * wide, any element of a stated pixel width that wide, and the rest 800, all times `scale`.
+ */
+function stubRects(scale: number) {
+  vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+    this: HTMLElement,
+  ) {
+    const stated = this.style.width.endsWith('px') ? Number.parseFloat(this.style.width) : 800;
+    const layout = this.hasAttribute('data-column') ? (this.textContent?.length ?? 0) * 8 : stated;
+    return new DOMRect(0, 0, layout * scale, 24 * scale);
+  });
+}
+
 afterEach(() => vi.restoreAllMocks());
 
 describe('content column measurements', () => {
   it('UIC-TABLE-4.5 measures committed headers and updates after cell text changes without retaining clones', async () => {
-    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
-      this: HTMLElement,
-    ) {
-      return new DOMRect(
-        0,
-        0,
-        this.hasAttribute('data-column') ? (this.textContent?.length ?? 0) * 8 : 800,
-        24,
-      );
-    });
+    stubRects(1);
     const { rerender } = render(<Measurement value="Pear" />);
     await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('{"name":32}'));
     rerender(<Measurement value="A longer name" />);
@@ -47,6 +52,16 @@ describe('content column measurements', () => {
     await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('{"name":32}'));
     expect(document.querySelectorAll('.ui-table__grid')).toHaveLength(1);
     expect(document.querySelectorAll('#measured-table')).toHaveLength(1);
+  });
+
+  it('UIC-TABLE-4.5 measures layout pixels once under an ancestor scale or zoom', async () => {
+    for (const scale of [0.5, 2, 1.5]) {
+      vi.restoreAllMocks();
+      stubRects(scale);
+      const { unmount } = render(<Measurement value="A longer name" />);
+      await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('{"name":104}'));
+      unmount();
+    }
   });
 
   it('UIC-TABLE-4.5 leaves hidden or unlaid-out tables unmeasured', () => {

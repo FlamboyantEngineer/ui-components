@@ -78,15 +78,45 @@ function prepareMeasurement(grid: HTMLElement): HTMLTableElement {
   return table;
 }
 
-/** Intrinsic header and rendered-cell widths in the containing page's typography and spacing. */
+/** A layout length the scale of the measurement is read from: exact, unlike a rounded `offsetWidth`. */
+const probeLength = 1000;
+
+/**
+ * Viewport pixels per layout pixel where the measurement table sits, through every ancestor
+ * `transform` scale and CSS `zoom`: a hidden element of a known layout width, measured on screen.
+ */
+function measureScale(parent: HTMLElement): number {
+  const probe = parent.ownerDocument.createElement('div');
+  probe.setAttribute('aria-hidden', 'true');
+  Object.assign(probe.style, {
+    position: 'absolute',
+    visibility: 'hidden',
+    width: `${probeLength}px`,
+    height: '0',
+    padding: '0',
+    border: '0',
+  });
+  parent.append(probe);
+  const scale = probe.getBoundingClientRect().width / probeLength;
+  probe.remove();
+  return scale > 0 ? scale : 1;
+}
+
+/**
+ * Intrinsic header and rendered-cell widths in the containing page's typography and spacing, in
+ * layout pixels: the CSS widths that fit the content, whatever an ancestor's scale or zoom.
+ */
 export function measureContentWidths(
   root: HTMLElement,
   columns: readonly string[],
 ): Readonly<Record<string, number>> | null {
   const grid = root.querySelector<HTMLElement>('.ui-table__grid');
   if (!grid || grid.getBoundingClientRect().width === 0) return null;
+  const parent = grid.parentElement;
+  if (!parent) return null;
+  const scale = measureScale(parent);
   const table = prepareMeasurement(grid);
-  grid.parentElement?.append(table);
+  parent.append(table);
   try {
     const wanted = new Set(columns);
     const widths = Object.create(null) as Record<string, number>;
@@ -95,7 +125,8 @@ export function measureContentWidths(
     )) {
       const id = cell.dataset.column;
       if (!id || !wanted.has(id) || cell.closest('.ui-table__grid') !== table) continue;
-      const width = Math.ceil(cell.getBoundingClientRect().width);
+      // Rounded up to whole layout pixels; a scaled rect's float error is no reason to add one.
+      const width = Math.ceil(cell.getBoundingClientRect().width / scale - 0.001);
       if (width > 0) widths[id] = Math.max(widths[id] ?? 0, width);
     }
     return widths;

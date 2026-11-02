@@ -343,7 +343,7 @@ mountLab(
   <>
     <LabSection
       title="Content widths"
-      description="Content-sized header and cells beside a flexible column; resize to keep an explicit width."
+      description="Content-sized header and cells beside a flexible column; resize to keep an explicit width. Pick an ancestor scale or zoom: the content columns keep the same layout width, only drawn larger or smaller."
     >
       <ContentWidths />
     </LabSection>
