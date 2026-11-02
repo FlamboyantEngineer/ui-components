@@ -1,5 +1,5 @@
 import { PlusGlyph } from '../../core/glyphs.js';
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -7,6 +7,7 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { pressReset, readPantry, ResetForm } from '../../../test/reset-fixtures.js';
 import { UiProvider } from '../../core/provider.js';
 import { requireDefined } from '../../utils/require-defined.js';
+import { TextField } from '../text-field/text-field.js';
 import { Combobox, type ComboboxItem } from './combobox.js';
 
 const fruit: ComboboxItem[] = [
@@ -394,6 +395,29 @@ describe('Combobox', () => {
     expect(input()).toHaveFocus();
     await user.keyboard('{ArrowDown}');
     expect(input()).toHaveAttribute('aria-activedescendant');
+  });
+
+  it('UIC-COMBOBOX-5.5 opens with a library field, menu and all, in the list header', async () => {
+    const user = userEvent.setup();
+    render(
+      <Combobox
+        label="Fruit"
+        defaultItems={fruit}
+        listHeader={<TextField label="Starts with" size="sm" />}
+      />,
+    );
+    await user.click(screen.getByRole('combobox', { name: 'Fruit' }));
+    await user.keyboard('{ArrowDown}');
+    const listbox = await screen.findByRole('listbox');
+    expect(
+      within(listbox)
+        .getAllByRole('option')
+        .map((option) => option.textContent),
+    ).toEqual(expect.arrayContaining([expect.stringContaining('Apple'), 'Banana']));
+    expect(within(listbox).queryByRole('menuitem')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('textbox', { name: 'Starts with' }));
+    await user.keyboard('ap');
+    expect(screen.getByRole('textbox', { name: 'Starts with' })).toHaveValue('ap');
   });
 
   it('UIC-COMBOBOX-5.5 lets text fields and selects in the list header keep focus', async () => {
