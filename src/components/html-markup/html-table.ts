@@ -8,9 +8,16 @@ import {
   pushOpen,
   type OpenElements,
 } from '../../utils/open-elements.js';
-import type { RawElement } from './html-tree.js';
+import { requireDefined } from '../../utils/require-defined.js';
+import type { RawElement, RawNode } from './html-tree.js';
 
 type Stack = OpenElements<RawElement>;
+
+interface TableLevel {
+  iterator: Iterator<RawNode>;
+  parent: RawElement | null;
+  table: RawElement | null;
+}
 
 /** Elements whose content model is table structure: no text, and other elements are fostered. */
 export const tableContexts: ReadonlySet<string> = new Set([
@@ -36,6 +43,22 @@ export const tableParts: ReadonlySet<string> = new Set([
 ]);
 
 const sections = ['thead', 'tbody', 'tfoot'];
+
+const tableParents: ReadonlyMap<string, readonly string[]> = new Map([
+  ['caption', ['table']],
+  ['colgroup', ['table']],
+  ['col', ['colgroup']],
+  ...sections.map((tag) => [tag, ['table']] as const),
+  ['tr', sections],
+  ['td', ['tr']],
+  ['th', ['tr']],
+]);
+
+function isValidTableChild(tag: string, parent: string): boolean {
+  const parents = tableParents.get(tag);
+  if (parents) return parents.includes(parent);
+  return !tableContexts.has(parent);
+}
 
 function openImplied(stack: Stack, tag: string): void {
   const element: RawElement = { tag, attributes: {}, children: [] };
@@ -108,4 +131,42 @@ export function fosterElement(stack: Stack, element: RawElement): boolean {
   const tableElement = stack.elements[table] as RawElement;
   parent.children.splice(parent.children.lastIndexOf(tableElement), 0, element);
   return true;
+}
+
+/**
+ * A partial table policy can expose orphaned parts or flow content in table structure. Unwrap
+ * that table's scaffold rather than synthesize excluded parts or lose the exposed content.
+ * Record failures before changing ancestry, so nested tables are validated independently.
+ */
+export function reconcileTablePolicy(
+  nodes: readonly RawNode[],
+  elements: ReadonlySet<string>,
+): void {
+  const invalid = new Set<RawElement>();
+  const levels: TableLevel[] = [{ iterator: nodes[Symbol.iterator](), parent: null, table: null }];
+  while (levels.length > 0) {
+    const level = requireDefined(levels.at(-1));
+    const next = level.iterator.next();
+    if (next.done) {
+      levels.pop();
+      continue;
+    }
+    const node = next.value;
+    const parentTag = level.parent?.tag ?? '';
+    if (typeof node === 'string') {
+      if (tableContexts.has(parentTag) && level.table) invalid.add(level.table);
+      continue;
+    }
+    const isKept = elements.has(node.tag) && !node.isUnwrapped;
+    if (isKept && !isValidTableChild(node.tag, parentTag)) {
+      if (level.table) invalid.add(level.table);
+      else node.isUnwrapped = true;
+    }
+    levels.push({
+      iterator: node.children[Symbol.iterator](),
+      parent: isKept ? node : level.parent,
+      table: node.tag === 'table' ? node : level.table,
+    });
+  }
+  for (const table of invalid) table.isUnwrapped = true;
 }
