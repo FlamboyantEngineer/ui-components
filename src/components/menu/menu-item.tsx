@@ -65,6 +65,11 @@ export interface MenuItemProps
   description?: ReactNode;
   /** A keyboard chord shown after the label. */
   shortcut?: ShortcutProps['chord'] | undefined;
+  /**
+   * Non-interactive content at the row's trailing edge, after the shortcut and before the submenu
+   * arrow, such as a count `Badge`. Its text joins the item's accessible name.
+   */
+  trailing?: ReactNode;
   /** Defaults to `neutral`. */
   tone?: MenuItemTone | undefined;
   /** Keeps the item visible but out of reach. */
@@ -102,12 +107,16 @@ const itemHooks = createHooks('menu-item', [
   'label',
   'description',
   'shortcut',
+  'trailing',
   'submenu-indicator',
 ]);
 const sectionHooks = createHooks('menu-section', ['header']);
 const separatorHooks = createHooks('menu-separator');
 
-interface MenuItemContentProps extends Pick<MenuItemProps, 'icon' | 'description' | 'shortcut'> {
+interface MenuItemContentProps extends Pick<
+  MenuItemProps,
+  'icon' | 'description' | 'shortcut' | 'trailing'
+> {
   state: MenuItemRenderState;
   /** Draws the check slot: the item belongs to a selection or is a check item of its own. */
   hasCheck: boolean;
@@ -212,6 +221,7 @@ function MenuItemContent({
   icon,
   description,
   shortcut,
+  trailing,
   isPending,
   children,
 }: MenuItemContentProps) {
@@ -242,6 +252,12 @@ function MenuItemContent({
           <Shortcut chord={shortcut} className={itemHooks.slotClass('shortcut')} />
         </KeyboardContext>
       ) : null}
+      {isEmptyNode(trailing) ? null : (
+        <>
+          {' '}
+          <span {...itemHooks.slot('trailing')}>{trailing}</span>
+        </>
+      )}
       {state.hasSubmenu ? (
         <Glyph
           icon={direction === 'rtl' ? ChevronLeftGlyph : ChevronRightGlyph}
@@ -252,13 +268,14 @@ function MenuItemContent({
   );
 }
 
-/** One menu row: selection check, icon, label, description, shortcut and submenu arrow. */
+/** One menu row: selection check, icon, label, description, shortcut, trailing content and submenu arrow. */
 export function MenuItem({
   id,
   children,
   icon,
   description,
   shortcut,
+  trailing,
   tone = 'neutral',
   isPending = false,
   isDisabled = false,
@@ -291,6 +308,7 @@ export function MenuItem({
             icon={icon}
             description={description}
             shortcut={shortcut}
+            trailing={trailing}
             isPending={isPending}
           >
             {children}

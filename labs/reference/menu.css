@@ -110,9 +110,13 @@
   margin: 2px;
 }
 
+/*
+ * A zero basis keeps a long label wrapping beside the shortcut and trailing content; it shrinks no
+ * narrower than its longest word, so the row wraps instead of drawing them over the label.
+ */
 .ui-menu-item__label {
-  flex: 1 1 auto;
-  min-width: 0;
+  flex: 1 1 0;
+  min-width: min-content;
 }
 
 .ui-menu-item__description {
@@ -157,6 +161,15 @@
 .ui-menu-item__shortcut .ui-shortcut__key {
   font-size: var(--ref-font-size-xs);
   line-height: 0.875rem;
+}
+
+/* Trailing content, such as a count badge, holds the row's trailing edge, centred on the label. */
+.ui-menu-item__trailing {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  /* Keeps the trailing edge when the row is too narrow and it wraps below the shortcut. */
+  margin-inline-start: auto;
 }
 
 .ui-menu-item__submenu-indicator {
