@@ -64,6 +64,7 @@ function OptionList(props: SelectListProps) {
   const list = (
     <ListBox
       className={hooks.slotClass('listbox')}
+      shouldSelectOnPressUp={isMultiple ? false : undefined}
       renderEmptyState={() => <span {...hooks.slot('empty')}>{emptyMessage}</span>}
     >
       <SelectListItems items={items} display={display} />
