@@ -5,7 +5,6 @@ import { CloseGlyph } from '../../core/glyphs.js';
 import {
   createContext,
   useContext,
-  useMemo,
   useState,
   type CSSProperties,
   type JSX,
@@ -37,7 +36,7 @@ import { Button } from '../button/button.js';
 import { useLayerZIndex } from '../portal/portal.js';
 import { PopoverPresence } from './popover-presence.js';
 import { usePopoverGutter } from './use-popover-gutter.js';
-import { useScrollCloseGuard } from '../../utils/use-scroll-close-guard.js';
+import { useScrollGuardedState } from '../../utils/use-scroll-guarded-state.js';
 import { POPOVER_ARROW_OFFSET, POPOVER_OFFSET } from '../../utils/overlay-defaults.js';
 import { HeadingLevelContext, dialogTitleLevel } from '../../core/heading-level.js';
 import { FormBoundary } from '../../utils/form-boundary.js';
@@ -173,42 +172,15 @@ interface ScrollGuardOptions {
  * Aria closes through the trigger's state inside a trigger and through `onOpenChange` otherwise, so
  * both are guarded.
  */
-function useScrollGuardedState({
-  isOpen,
-  onOpenChange,
-  triggerRef,
-  isNonModal,
-}: ScrollGuardOptions) {
-  const context = useContext(OverlayTriggerStateContext);
+function usePanelState({ isOpen, onOpenChange, triggerRef, isNonModal }: ScrollGuardOptions) {
   const anchor = useSlottedContext(PopoverContext)?.triggerRef;
-  const isIgnored = useScrollCloseGuard(
-    isNonModal && (isOpen ?? context?.isOpen ?? false),
-    triggerRef ?? anchor ?? noTrigger,
-    // The panel stays where it opened, so a real scroll of the page still closes it.
-    { followsPage: false },
-  );
-  const state = useMemo(
-    () =>
-      context && {
-        ...context,
-        close: () => {
-          if (!isIgnored()) context.close();
-        },
-        setOpen: (open: boolean) => {
-          if (open || !isIgnored()) context.setOpen(open);
-        },
-        toggle: () => {
-          if (!context.isOpen || !isIgnored()) context.toggle();
-        },
-      },
-    [context, isIgnored],
-  );
-  return {
-    state,
-    onOpenChange: (open: boolean) => {
-      if (open || !isIgnored()) onOpenChange?.(open);
-    },
-  };
+  return useScrollGuardedState({
+    isOpen,
+    onOpenChange,
+    triggerRef: triggerRef ?? anchor ?? noTrigger,
+    isGuarded: isNonModal,
+    followsPage: false,
+  });
 }
 
 /**
@@ -221,41 +193,44 @@ export function PopoverPanel({
   isHint = false,
   children,
   style,
+  isOpen,
+  onOpenChange,
   ...rest
 }: PopoverPanelProps) {
   const zIndex = useLayerZIndex('dropdown');
   const [panel, setPanel] = useState<HTMLElement | null>(null);
   const panelRefs = useMergedRefs(setPanel, ref);
   const gutter = usePopoverGutter(panel);
-  const guarded = useScrollGuardedState({
-    isOpen: rest.isOpen,
-    onOpenChange: rest.onOpenChange,
+  const guarded = usePanelState({
+    isOpen,
+    onOpenChange,
     triggerRef: rest.triggerRef,
     isNonModal: rest.isNonModal ?? false,
   });
   return (
-    <OverlayTriggerStateContext value={guarded.state}>
+    <>
       {isHint ? null : (
         <PopoverPresence
-          isOpen={rest.isOpen}
+          isOpen={isOpen}
           triggerRef={rest.triggerRef}
-          onClose={() => rest.onOpenChange?.(false)}
+          onClose={() => onOpenChange?.(false)}
         />
       )}
-      <AriaPopover
-        {...rest}
-        onOpenChange={guarded.onOpenChange}
-        style={({ placement }) => ({
-          ...style,
-          zIndex,
-          translate: placement === 'left' && gutter > 0 ? `${gutter}px 0` : style?.translate,
-        })}
-        ref={panelRefs}
-      >
-        {arrowClassName ? <OverlayArrow className={arrowClassName} /> : null}
-        <FormBoundary>{children}</FormBoundary>
-      </AriaPopover>
-    </OverlayTriggerStateContext>
+      <OverlayTriggerStateContext value={guarded}>
+        <AriaPopover
+          {...rest}
+          style={({ placement }) => ({
+            ...style,
+            zIndex,
+            translate: placement === 'left' && gutter > 0 ? `${gutter}px 0` : style?.translate,
+          })}
+          ref={panelRefs}
+        >
+          {arrowClassName ? <OverlayArrow className={arrowClassName} /> : null}
+          <FormBoundary>{children}</FormBoundary>
+        </AriaPopover>
+      </OverlayTriggerStateContext>
+    </>
   );
 }
 

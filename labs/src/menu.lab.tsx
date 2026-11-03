@@ -532,7 +532,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Long menu"
-      description="The popover fits its height to the viewport and scrolls. The page stays scrollable while it is open, and the menu stays open and follows its trigger as the page scrolls."
+      description="The popover fits its height to the viewport and scrolls; move to the last city with End, then resize the viewport to keep that focused city in view. The page stays scrollable while it is open, and the menu stays open and follows its trigger as the page scrolls."
     >
       <MenuButton label="Cities" items={cityEntries} />
     </LabSection>

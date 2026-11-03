@@ -450,7 +450,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Scrolling with the calendar open"
-      description="Open a calendar and scroll the page: it stays open beside its field. The second field sits in a scrolling box; scrolling that box scrolls it and closes the calendar, which cannot follow it."
+      description="Open a calendar and scroll the page: it stays open beside its field. Escape closes it even while that scroll settles. The second field sits in a scrolling box; scrolling that box scrolls it and closes the calendar, which cannot follow it."
     >
       <DateTimeField label="Arrival" defaultValue="2026-04-13" data-lab-field="scroll-page" />
       <div data-lab-scroll-box style={{ height: 120, overflow: 'auto', border: '1px dashed' }}>

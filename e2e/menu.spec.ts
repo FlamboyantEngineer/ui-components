@@ -325,6 +325,9 @@ test.describe('Menu lab', () => {
     const last = item(page, 'Turin 45');
     await expect(last).toBeFocused();
     await expect(last).toBeInViewport();
+    await page.setViewportSize({ width: 800, height: 650 });
+    await expect(last).toBeFocused();
+    await expect(last).toBeInViewport();
   });
 
   test('UIC-MENU-4.3 scrolls the page under an open menu, which follows its trigger', async ({

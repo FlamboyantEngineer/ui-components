@@ -21,7 +21,7 @@ import type { OverlayPositionProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useFollowAnchor } from '../../utils/use-follow-anchor.js';
-import { useScrollCloseGuard } from '../../utils/use-scroll-close-guard.js';
+import { useScrollGuardedState } from '../../utils/use-scroll-guarded-state.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { PopoverPresence } from '../popover/popover.js';
 import { useLayerZIndex, type PortalProps } from '../portal/portal.js';
@@ -102,7 +102,7 @@ function useMenuSurface({ ref, isNonModal, shouldCloseOnInteractOutside }: MenuO
       if (shouldCloseOnInteractOutside?.(target) !== false) state?.close();
     },
   });
-  return { group, ref: setRef };
+  return { group, ref: setRef, scrollRef: surface };
 }
 
 /**
@@ -116,7 +116,6 @@ function useMenuFollow(isSubmenu: boolean, isNonModal: boolean, props: MenuOverl
   const state = useContext(OverlayTriggerStateContext);
   const popover = useSlottedContext(PopoverContext);
   const isOpen = props.isOpen ?? state?.isOpen ?? false;
-  const setOpen = props.onOpenChange ?? state?.setOpen;
   const triggerRef = props.triggerRef ?? popover?.triggerRef ?? noTrigger;
   const isActive = isNonModal && !isSubmenu;
   const shouldUpdatePosition = useFollowAnchor({
@@ -124,18 +123,14 @@ function useMenuFollow(isSubmenu: boolean, isNonModal: boolean, props: MenuOverl
     isOpen: isOpen && !isSubmenu,
     target: props.getTargetRect,
   });
-  const isScrollCloseIgnored = useScrollCloseGuard(isActive && isOpen, triggerRef, {
+  const guarded = useScrollGuardedState({
+    isOpen: props.isOpen,
+    onOpenChange: props.onOpenChange,
+    triggerRef,
+    isGuarded: isActive && !isSubmenu,
     followsPage: true,
   });
-  if (isSubmenu) return {};
-  if (!isActive) return { shouldUpdatePosition };
-  return {
-    isOpen,
-    onOpenChange: (open: boolean) => {
-      if (open || !isScrollCloseIgnored()) setOpen?.(open);
-    },
-    shouldUpdatePosition,
-  };
+  return { state: guarded, shouldUpdatePosition };
 }
 
 /**
@@ -152,38 +147,55 @@ export function MenuOverlay({
   children,
   ref,
   isNonModal,
+  isOpen,
+  onOpenChange,
   ...rest
 }: MenuOverlayProps) {
   const inheritedNonModal = useContext(MenuNonModalContext);
   const nonModal = isNonModal ?? inheritedNonModal;
-  const { group, ref: surfaceRef } = useMenuSurface({ ...rest, ref, isNonModal: nonModal });
+  const {
+    group,
+    ref: surfaceRef,
+    scrollRef,
+  } = useMenuSurface({
+    ...rest,
+    ref,
+    isNonModal: nonModal,
+  });
   const inherited = useContext(MenuLayerContext);
   const resolved = layer ?? inherited ?? 'dropdown';
   const zIndex = useLayerZIndex(resolved);
   const isSubmenu = useSlottedContext(PopoverContext)?.trigger === 'SubmenuTrigger';
-  const open = useMenuFollow(isSubmenu, nonModal, rest);
+  const open = useMenuFollow(isSubmenu, nonModal, { ...rest, isOpen, onOpenChange });
   return (
     <>
-      <PopoverPresence />
-      <AriaPopover
-        {...rest}
-        {...open}
-        ref={surfaceRef}
-        isNonModal={nonModal}
-        {...hooks.root({ className, props: rest, data: { layer: resolved } })}
-        offset={offset ?? (isSubmenu ? SUBMENU_OFFSET : DEFAULT_DROPDOWN_OFFSET)}
-        crossOffset={crossOffset ?? (isSubmenu ? SUBMENU_CROSS_OFFSET : 0)}
-        containerPadding={containerPadding}
-        style={{ zIndex }}
-      >
-        <MenuSurfaceContext value={group}>
-          <MenuNonModalContext value={nonModal}>
-            <MenuLayerContext value={resolved}>
-              <FormBoundary>{children}</FormBoundary>
-            </MenuLayerContext>
-          </MenuNonModalContext>
-        </MenuSurfaceContext>
-      </AriaPopover>
+      <PopoverPresence
+        isOpen={isOpen}
+        triggerRef={rest.triggerRef}
+        onClose={() => onOpenChange?.(false)}
+      />
+      <OverlayTriggerStateContext value={open.state}>
+        <AriaPopover
+          {...rest}
+          shouldUpdatePosition={open.shouldUpdatePosition}
+          ref={surfaceRef}
+          scrollRef={scrollRef}
+          isNonModal={nonModal}
+          {...hooks.root({ className, props: rest, data: { layer: resolved } })}
+          offset={offset ?? (isSubmenu ? SUBMENU_OFFSET : DEFAULT_DROPDOWN_OFFSET)}
+          crossOffset={crossOffset ?? (isSubmenu ? SUBMENU_CROSS_OFFSET : 0)}
+          containerPadding={containerPadding}
+          style={{ zIndex }}
+        >
+          <MenuSurfaceContext value={group}>
+            <MenuNonModalContext value={nonModal}>
+              <MenuLayerContext value={resolved}>
+                <FormBoundary>{children}</FormBoundary>
+              </MenuLayerContext>
+            </MenuNonModalContext>
+          </MenuSurfaceContext>
+        </AriaPopover>
+      </OverlayTriggerStateContext>
     </>
   );
 }

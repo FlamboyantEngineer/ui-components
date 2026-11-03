@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useRef, useState } from 'react';
 import { describe, expect, it } from 'vitest';
@@ -65,6 +65,25 @@ for (const controlled of [false, true]) {
       viewport.scrollTop = 40;
       fireEvent.scroll(viewport);
       await waitFor(() => expect(dialog).not.toBeInTheDocument());
+    });
+
+    it('UIC-POPOVER-2.1 UIC-POPOVER-2.3 honors Escape before a rejected scroll close can commit', async () => {
+      const user = userEvent.setup();
+      render(<Example controlled={controlled} />);
+      const trigger = screen.getByRole('button', { name: 'Preview' });
+      await user.click(trigger);
+      const dialog = await screen.findByRole('dialog', { name: 'Details' });
+      const viewport = screen.getByRole('region', { name: 'Scrollable items' });
+      const inside = screen.getByRole('button', { name: 'Inside' });
+      // Batch the native events so a rejected scroll cannot commit before Escape arrives.
+      act(() => {
+        viewport.dispatchEvent(new Event('scroll'));
+        inside.dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
+        );
+      });
+      await waitFor(() => expect(dialog).not.toBeInTheDocument());
+      await waitFor(() => expect(trigger).toHaveFocus());
     });
 
     it('UIC-POPOVER-2.1 UIC-POPOVER-2.2 a finished scroll never suppresses Escape or outside focus', async () => {

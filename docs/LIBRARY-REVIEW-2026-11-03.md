@@ -26,7 +26,7 @@ PDF page prefetching had the same width-based margin error as early loading. It 
 
 ## Scope and validation
 
-Behavior changes include regression tests and corresponding spec and lab updates. The package changeset is minor because FileUpload gains an `onError` callback. Existing demonstrations cover the tag validation behavior; its optimization adds a bounded-work regression instead of an artificial demo.
+Behavior changes include regression tests and corresponding spec and lab updates. The package changeset is minor because FileUpload gains an `onError` callback and OverflowList render state gains `itemContainerRef`. Existing demonstrations cover the tag validation behavior; its optimization adds a bounded-work regression instead of an artificial demo.
 
 Hosted validation also exposed a workflow permission error: the install job's changed-file filter could not read pull request files with a contents-only token. That job now receives `pull-requests: read`, alongside its existing contents read permission. Other jobs keep their existing permissions.
 
@@ -39,5 +39,11 @@ The full browser run exposed two further behavior bugs: an ignored scroll could 
 The labs retain their varying-content field examples alongside a strict same-content state matrix; missing-value placeholders and saved-value wrapping have dedicated checks. Segmented glyph examples are split across two matrices that fit the viewport. Card action-row checks now follow the existing Card contract, and geometry checks distinguish component layout from page scrolling and native paging distance. The obsolete standalone slider lab check is removed; NumberField continues to exercise its slider matrices.
 
 Chromium coverage is split across six CI shards instead of three after the original shards took up to 25 minutes against a 30-minute budget. Coverage and timeouts remain unchanged.
+
+Further full-suite validation exposed shared test-environment state: native observers from an earlier file could hide a later file's document, despite manual module and DOM resets. Unit files now receive separate DOM realms and module graphs. A two-file subprocess regression preserves accessible role queries and verifies that an old observer cannot reach the next document.
+
+Long menus also exposed a mismatch between the element that scrolls and the element whose offset React Aria preserves during positioning. Menu popovers now supply their actual surface as the scroll reference, keeping the focused item visible when their available height changes. The lab demonstrates the long menu, and its browser regression covers keyboard navigation and viewport resizing.
+
+An ignored scroll dismissal could also mutate React Aria's internal controlled-state reference before the guard rejected the close. An Escape pressed before the next commit was then discarded as a duplicate close. Menus, popovers and date calendars now guard the state methods before mutation. Same-task regressions reproduce the failure against the previous implementation and verify explicit dismissal without waiting for a render.
 
 Validation results are recorded in the review pull request and its checks.

@@ -84,3 +84,12 @@ Verification: `src/testing/queries.test.tsx`
 
 Implementation: `src/testing/queries.ts`
 Verification: `src/testing/queries.test.tsx`
+
+## UIC-TESTING-4 - Library test harness
+
+### UIC-TESTING-4.1 - Isolated test files
+
+The library's unit runner shall give each test file a separate DOM realm and module graph, including React Aria's module state. A native observer left by one file shall not hide or alter the next file's rendered controls. Tests shall still unmount rendered roots after each test and query controls through their accessible roles; clearing hidden attributes or including inaccessible elements is not a substitute for isolation.
+
+Implementation: `vitest.config.ts`, `test/setup.ts`
+Verification: `test/isolation.test.ts`

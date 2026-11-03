@@ -9,3 +9,5 @@ Add `itemContainerRef` to OverflowList render state so nested toolbar strips can
 Correct code editor indentation selections, reversed date-range formatting, pagination numeric inputs, translated notification announcements, native table testing queries, early-loading distances and PDF page prefetching. Keep rebuilt deep tree comparisons safe and validate supplied tags in linear time.
 
 Preserve explicit overlay dismissal after ignored scrolls and capture completions at the final caret position after paired edits. Keep date feedback and saved values within their controls, and draw annotation underlines inside clipped marks.
+
+Preserve the focused item's visible position in long menus when the popover's available height changes. Guard ignored scroll dismissals before they change internal state, so immediate Escape presses still close menus, popovers and date calendars.
