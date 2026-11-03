@@ -66,6 +66,29 @@ A state and a transition may share an id, and ids of different types (`1` and `'
 Implementation: `src/components/state-machine-view/state-machine-view.tsx`
 Verification: `src/components/state-machine-view/state-machine-view.test.tsx`, `e2e/state-machine-view.spec.ts`
 
+## UIC-STATE-MACHINE-VIEW-4 - Sequence presentation
+
+### UIC-STATE-MACHINE-VIEW-4.1 - Ordered state row
+
+With `presentation="sequence"`, the view shall place states in caller array order on one horizontal row, including when there are no transitions. Connectivity and the current state shall not determine state placement. The existing graph presentation remains the default.
+
+Implementation: `src/components/state-machine-view/state-machine-view.tsx`
+Verification: `src/components/state-machine-view/sequence-presentation.test.tsx`
+
+### UIC-STATE-MACHINE-VIEW-4.2 - Forward and reverse lanes
+
+In the sequence presentation, transitions to later states shall run above the state row and transitions to earlier states below it, with their labels outside the row on the corresponding side. Routes shall not move the states to make room for transitions.
+
+Implementation: `src/components/state-machine-view/state-machine-view.tsx`
+Verification: `src/components/state-machine-view/sequence-presentation.test.tsx`
+
+### UIC-STATE-MACHINE-VIEW-4.3 - Inert connectors and focusable labels
+
+In the sequence presentation, connector paths and route wrappers shall be decorative and inert, with no pointer hit target or focus. Each named transition label alone shall be an independent focusable control exposed to assistive technology.
+
+Implementation: `src/components/state-machine-view/state-machine-view.tsx`
+Verification: `src/components/state-machine-view/sequence-presentation.test.tsx`
+
 ## Hooks
 
 | Hook                                    | Kind      | Values                   | Description                                 |
