@@ -96,8 +96,10 @@ Verification: `src/components/select-field/select-list.test.tsx`, `e2e/select-fi
 
 In a multiple select, picking an option shall toggle it in the value and keep the list open. Every option draws a check slot (`ui-select-field__option-check`, hidden from assistive technology) holding the `check` glyph while it is chosen; the option's `aria-selected` carries the state.
 
-Implementation: `src/components/select-field/select-control.tsx`, `src/components/select-field/select-list.tsx`
-Verification: `src/components/select-field/select-list.test.tsx`, `e2e/select-field.spec.ts`
+An option's `isIndeterminate` shall draw the `minus` glyph and publish `data-indeterminate="true"` on the check slot in multiple list mode. The caller describes the mixed state through the option's accessible `description` and owns its per-record semantics. The flag changes only the indicator; chosen values, chips, submission and selection callbacks still follow `value`. A single select ignores it.
+
+Implementation: `src/components/select-field/select-control.tsx`, `src/components/select-field/select-list.tsx`, `src/components/select-field/select-options.ts`, `src/components/select-field/select-option.tsx`
+Verification: `src/components/select-field/select-list.test.tsx`, `src/components/select-field/select-mixed.test.tsx`, `e2e/select-field.spec.ts`, `e2e/select-field-mixed.spec.ts`
 
 ### UIC-SELECT-FIELD-3.5 - Filtering
 
@@ -416,6 +418,7 @@ Verification: `src/components/select-field/select-popup.test.tsx`, `e2e/select-f
 | `data-invalid`                        | state     | `true`                                     | Invalid (React Aria, on the select and search field).                    |
 | `data-required`                       | state     | `true`                                     | Required (React Aria, on the select).                                    |
 | `data-selected`                       | state     | `true`                                     | A chosen option (React Aria).                                            |
+| `data-indeterminate`                  | state     | `true`                                     | A multiple option's check slot represents mixed values.                  |
 | `data-empty`                          | state     | `true`                                     | An empty list or filter (React Aria).                                    |
 | `data-allows-removing`                | state     | `true`                                     | A removable chip (React Aria).                                           |
 | `data-placement`                      | state     | `top`, `bottom`, `left`, `right`, `center` | Side of the trigger the popover opened on (React Aria).                  |

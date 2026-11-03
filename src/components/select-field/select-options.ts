@@ -1,16 +1,21 @@
 // The option model of a select field: chosen keys, their order, their options and what changed.
 
 import type { Key } from '../../core/props.js';
-import type { PickerItem, PickerOption, PickerSection } from '../field/field.js';
+import type { PickerOption, PickerSection } from '../field/field.js';
 
 /** One choice of a select field. */
-export type SelectFieldOption = PickerOption;
+export interface SelectFieldOption extends PickerOption {
+  /** In a multiple select, draws a mixed indicator. Describe its meaning in `description`. */
+  isIndeterminate?: boolean | undefined;
+}
 
 /** A section of a select field's options; a section without a label only sets them apart. */
-export type SelectFieldGroup = PickerSection;
+export interface SelectFieldGroup extends Omit<PickerSection, 'options'> {
+  options: readonly SelectFieldOption[];
+}
 
 /** An entry of a select field's options: one option or a group of them. */
-export type SelectFieldItem = PickerItem;
+export type SelectFieldItem = SelectFieldOption | SelectFieldGroup;
 
 /** The option the field shows for a chosen key; a key no option names is shown as itself. */
 export interface ChosenSelectOption extends SelectFieldOption {

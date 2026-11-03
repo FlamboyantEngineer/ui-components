@@ -14,6 +14,7 @@ import {
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 import { Paged } from './select-field-paged.js';
+import { MixedChoice } from './select-field-mixed.js';
 import { TriggerRefField } from './select-field-trigger-cases.js';
 import { OpenStates } from './select-field-open-cases.js';
 import { ChangeFit, ChangeMatrix } from './select-field-changes.js';
@@ -490,6 +491,12 @@ mountLab(
       </LabSection>
       <LabSection title="Custom options" description="renderOption draws each option's content.">
         <Custom />
+      </LabSection>
+      <LabSection
+        title="Mixed choices"
+        description="Bulk choices cycle from retaining mixed values, to adding for all, to removing for all."
+      >
+        <MixedChoice />
       </LabSection>
       <LabSection title="Clearing and limits" description="A clear button and a maximum of values.">
         <Limits />

@@ -1,6 +1,6 @@
 'use client';
 
-import { CheckGlyph } from '../../core/glyphs.js';
+import { CheckGlyph, MinusGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import { Collection, Header, ListBoxSection } from '../../primitives/index.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
@@ -45,8 +45,15 @@ function OptionRow({
       renderLead={
         isMultiple
           ? (state) => (
-              <span {...hooks.slot('option-check')} aria-hidden="true">
-                {state.isSelected ? <Glyph icon={CheckGlyph} /> : null}
+              <span
+                {...hooks.slot('option-check', { indeterminate: option.isIndeterminate })}
+                aria-hidden="true"
+              >
+                {option.isIndeterminate ? (
+                  <Glyph icon={MinusGlyph} />
+                ) : state.isSelected ? (
+                  <Glyph icon={CheckGlyph} />
+                ) : null}
               </span>
             )
           : undefined
