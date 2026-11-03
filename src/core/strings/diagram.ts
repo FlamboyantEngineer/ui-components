@@ -51,6 +51,8 @@ export interface DiagramStrings {
   stateMachineFinal: string;
   /** Names a state's port that starts a new transition. */
   stateMachineAddTransition: string;
+  /** Names the note a state machine sequence shows while it has no states. */
+  stateMachineEmpty: string;
 }
 
 /** The module's text, with the message values each text function reads its arguments as. */

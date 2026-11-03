@@ -35,8 +35,8 @@ export function SequenceExamples() {
   const [isReordered, setReordered] = useState(false);
   const [hasTransitions, setTransitions] = useState(true);
   const [hasLongLabel, setLongLabel] = useState(false);
-  const [selectedKey, setSelectedKey] = useState<Key>('review');
-  const [activeTransitionKey, setActiveTransitionKey] = useState<Key>(1);
+  const [selectedKey, setSelectedKey] = useState<Key | null>('review');
+  const [selectedTransitionKey, setSelectedTransitionKey] = useState<Key | null>(1);
   const [lastAction, setLastAction] = useState('None');
   const items = isReordered ? [...states].reverse() : states;
   const links = hasTransitions
@@ -46,10 +46,7 @@ export function SequenceExamples() {
           : transition,
       )
     : [];
-  const selectTransition = (key: Key) => {
-    setActiveTransitionKey(key);
-    setLastAction(`${typeof key}:${String(key)}`);
-  };
+  const activateTransition = (key: Key) => setLastAction(`${typeof key}:${String(key)}`);
   return (
     <div
       data-lab-demo="sequence"
@@ -76,9 +73,10 @@ export function SequenceExamples() {
           currentKey="1"
           selectedKey={selectedKey}
           onSelectionChange={setSelectedKey}
-          activeTransitionKey={activeTransitionKey}
-          onTransitionAction={selectTransition}
-          onTransitionContextMenu={(key, event) => {
+          selectedTransitionKey={selectedTransitionKey}
+          onTransitionSelectionChange={setSelectedTransitionKey}
+          onTransitionAction={activateTransition}
+          onTransitionContextMenu={(key, _transition, event) => {
             event.preventDefault();
             setLastAction(`Context ${typeof key}:${String(key)}`);
           }}

@@ -13,7 +13,7 @@ Verification: `src/components/state-machine-view/state-machine-view.test.tsx`, `
 
 ### UIC-STATE-MACHINE-VIEW-1.2 - Initial, final and current states
 
-The initial state (`initialState`, by default the first state) shall carry `data-initial` and an initial marker (`ui-state-machine-view__initial-marker`, hidden from assistive technology); a state with `isFinal` carries `data-final`; the state `currentKey` names carries `data-current`. Each node's description reads the provider's `stateMachineCurrent`, `stateMachineInitial` and `stateMachineFinal` strings as they apply, before its transitions; the outline view shows and reads the same status on each state's entry, without its transitions, which the outline lists.
+The initial state (`initialState`, by default the first state) shall carry `data-initial` and an initial marker (`ui-state-machine-view__initial-marker`, hidden from assistive technology); a state with `isFinal` carries `data-final`; the state `currentKey` names carries `data-current`. Each node's description reads the provider's `stateMachineCurrent`, `stateMachineInitial` and `stateMachineFinal` strings as they apply, then the state's own `description`, before its transitions; the outline view shows and reads the same status on each state's entry, without its transitions, which the outline lists. A state's `status` and `tone` are published on its `ui-state-machine-view__state` element as `data-status` and `data-tone` in both presentations, so a status the sequence shows keeps an accessible equivalent when the reader switches views.
 
 Implementation: `src/components/state-machine-view/state-machine-view.tsx`, `src/components/state-machine-view/state-machine-graph.tsx`
 Verification: `src/components/state-machine-view/state-machine-view.test.tsx`, `e2e/state-machine-view.spec.ts`
@@ -92,7 +92,7 @@ Verification: `src/components/state-machine-view/sequence-presentation.test.tsx`
 
 ### UIC-STATE-MACHINE-VIEW-4.3 - Inert connectors and focusable labels
 
-In the sequence presentation, connector paths and route wrappers shall be decorative and inert, with no pointer hit target or focus. Each nonblank named transition label alone shall be an independent focusable button, with its `label` as accessible name. Labels follow caller transition order, independent of line stacking. Enter, Space and pointer activation call `onTransitionAction(id)`; `onTransitionContextMenu(id, event)` receives right-click context-menu requests and may prevent the browser menu. `getTransitionTooltip(transition)` supplies a label-only tooltip on hover/focus. `renderTransitionLabel(transition)` may replace the visible content with non-interactive content while preserving the accessible name. Unnamed transitions retain their connector without a control.
+In the sequence presentation, connector paths and route wrappers shall be decorative and inert, with no pointer hit target or focus. Each nonblank named transition label alone shall be an independent focusable button, with its `label` as accessible name. Labels follow caller transition order, independent of line stacking. Activation and context menu requests follow UIC-STATE-MACHINE-VIEW-5. `getTransitionTooltip(transition)` supplies a label-only tooltip on hover/focus, following UIC-STATE-MACHINE-VIEW-6.3. `renderTransitionLabel(transition)` may replace the visible content with non-interactive content while preserving the accessible name. Unnamed transitions retain their connector without a control.
 
 Implementation: `src/components/state-machine-view/state-machine-view.tsx`, `src/components/state-machine-view/state-machine-sequence.tsx`, `src/components/state-machine-view/sequence-layout.ts`, `src/components/state-machine-view/sequence-routes.ts`
 Verification: `src/components/state-machine-view/sequence-presentation.test.tsx`, `src/components/state-machine-view/sequence-layout.test.ts`, `e2e/state-machine-view-sequence.spec.ts`, `e2e/state-machine-view-sequence-paint.spec.ts`
@@ -101,53 +101,122 @@ Verification: `src/components/state-machine-view/sequence-presentation.test.tsx`
 
 Connectors and arrowheads shall paint above state backgrounds so attachments inside states stay visible in both directions and same-state loops. They remain pointer-inert; states remain selectable and every transition label paints above every route.
 
-`currentKey` marks the machine's current state (`data-current`, `aria-current="step"` on the state button); `selectedKey` independently marks the host-selected state (`data-selected`, `aria-pressed`). Selecting any sequence state by pointer or keyboard calls `onSelectionChange(id)` without changing the current state. State status descriptions use the provider strings for current, initial and final. Both selection and `activeTransitionKey` are controlled. Outgoing transitions from `selectedKey` carry `data-outgoing`; the active transition carries `data-active` on its route and label. Outgoing lines stack above ordinary lines and active lines above outgoing lines. All labels stack above every line. Highlight changes do not change route coordinates.
+`currentKey` marks the machine's current state (`data-current`, `aria-current="step"` on the state button); `selectedKey` independently marks the host-selected state (`data-selected`, `aria-pressed`), and `selectedTransitionKey` the host-selected transition (`data-selected` on its route and label, `aria-pressed` on the label), as UIC-STATE-MACHINE-VIEW-5.1 describes. State status descriptions use the provider strings for current, initial and final. Outgoing transitions from `selectedKey` carry `data-outgoing`. Outgoing lines stack above ordinary lines and selected lines above outgoing lines. All labels stack above every line. Highlight changes do not change route coordinates.
 
 Implementation: `src/components/state-machine-view/state-machine-sequence.tsx`
 Verification: `src/components/state-machine-view/sequence-presentation.test.tsx`, `e2e/state-machine-view-sequence.spec.ts`, `e2e/state-machine-view-sequence-paint.spec.ts`
 
 ### UIC-STATE-MACHINE-VIEW-4.5 - Measurement and horizontal scrolling
 
-One horizontal viewport contains the forward routes, state row and reverse routes; its scrollbar is below all content. The viewport hook supplies horizontal overflow containment in the host stylesheet, as in ScrollRegion; the reference stylesheet contains overflow within the host width. States, paths and labels share content coordinates, so scrolling preserves attachments. A ResizeObserver measures viewport-only width changes and intrinsic state/transition content changes; content commits and font/content resize trigger remeasurement. Observers disconnect on unmount and ignore stale notifications. SSR uses deterministic fallback geometry and no browser globals during render; hydration measures after commit. The caller never calculates paths, lane positions or measurements.
+One horizontal viewport contains the forward routes, state row and reverse routes; its scrollbar is below all content. The viewport hook supplies horizontal overflow containment in the host stylesheet, as in ScrollRegion; the reference stylesheet contains overflow within the host width. States, paths and labels share content coordinates, so scrolling preserves attachments. A ResizeObserver measures viewport-only width changes and intrinsic state content (`ui-state-machine-view__state-content`, with its adornment, label and count) and transition label changes; content commits and font/content resize trigger remeasurement. Observers disconnect on unmount and ignore stale notifications. SSR uses deterministic fallback geometry and no browser globals during render; hydration measures after commit. The caller never calculates paths, lane positions or measurements.
 
 Implementation: `src/components/state-machine-view/use-sequence-measurements.ts`, `src/components/state-machine-view/state-machine-sequence.tsx`
 Verification: `src/components/state-machine-view/sequence-presentation.test.tsx`, `e2e/state-machine-view-sequence.spec.ts`
 
+## UIC-STATE-MACHINE-VIEW-5 - Sequence interaction
+
+### UIC-STATE-MACHINE-VIEW-5.1 - Activation and selection
+
+In the sequence presentation, every pointer press, Enter or Space on an enabled state shall call `onStateAction(key, state, event)` with the caller's own key, the state's definition and the [press event](PRIMITIVES.md), the current and the selected state included; a press on a state other than `selectedKey` first calls `onSelectionChange(key)`. Every press, Enter or Space on a named transition label calls `onTransitionAction(key, transition, event)`, after `onTransitionSelectionChange(key)` when the label is not already `selectedTransitionKey`. Focus movement never selects or activates, and nothing changes `currentKey`. Selection is controlled: highlights follow `selectedKey` and `selectedTransitionKey` alone, so an owner that declines a change keeps the old highlight, and `null` selects nothing. States and transitions are separate key spaces, and `1` and `'1'` are different keys.
+
+Implementation: `src/components/state-machine-view/sequence-states.tsx`, `src/components/state-machine-view/state-machine-sequence.tsx`
+Verification: `src/components/state-machine-view/sequence-interaction.test.tsx`, `e2e/state-machine-view-sequence-interaction.spec.ts`
+
+### UIC-STATE-MACHINE-VIEW-5.2 - Roving tab stop
+
+The state buttons shall form one tab stop inside the named root group: the state focused last, else the selected state, else the current state, else the first enabled state. ArrowRight and ArrowDown move focus to the next enabled state, ArrowLeft and ArrowUp to the previous, Home and End to the first and last, without wrapping. A state with `isDisabled` carries `data-disabled`, is skipped and cannot be focused, selected or activated. Transition labels stay separate tab stops after the states. When an update removes or disables the focused state, focus moves to its nearest surviving neighbour in the previous order (the next first), or to the empty note (UIC-STATE-MACHINE-VIEW-6.4) when no state is left, without remounting the root.
+
+Implementation: `src/components/state-machine-view/sequence-states.tsx`
+Verification: `src/components/state-machine-view/sequence-interaction.test.tsx`, `e2e/state-machine-view-sequence-interaction.spec.ts`
+
+### UIC-STATE-MACHINE-VIEW-5.3 - Selection reconciliation
+
+When the state `selectedKey` names, shown and enabled in a previous commit, is removed or disabled, the view shall call `onSelectionChange(null)` once and stop highlighting it; when the transition `selectedTransitionKey` names loses its label control (removed, unnamed or with an unknown endpoint), it calls `onTransitionSelectionChange(null)` once. A key that has not been shown yet is left alone, so a host may select ahead of its data, and an owner that keeps the key is not asked again until the target returns and leaves again.
+
+Implementation: `src/components/state-machine-view/sequence-interaction.ts`, `src/components/state-machine-view/state-machine-sequence.tsx`
+Verification: `src/components/state-machine-view/sequence-interaction.test.tsx`
+
+### UIC-STATE-MACHINE-VIEW-5.4 - Context menu requests
+
+A secondary click, the Context Menu key or Shift+F10 on a state shall call `onStateContextMenu(key, state, event)`, on a named transition label `onTransitionContextMenu(key, transition, event)`, and on the viewport background or the empty note `onBackgroundContextMenu(event)`. A request on a state or label never reaches the background callback, handled or not. The event carries `anchor` (the pointer's viewport point, or the target element from the keyboard, the shapes a [Context Menu](CONTEXT-MENU.md) controller opens at), `target` (the element the request reached), `pointerType` (`keyboard` from a key) and `preventDefault()`: the browser's own menu opens unless the host prevents the request's default, also for the `contextmenu` event a browser sends after the key. Without a callback the browser's menu is untouched. The library composes no menu.
+
+Implementation: `src/components/state-machine-view/sequence-interaction.ts`, `src/components/state-machine-view/sequence-states.tsx`, `src/components/state-machine-view/state-machine-sequence.tsx`
+Verification: `src/components/state-machine-view/sequence-interaction.test.tsx`, `e2e/state-machine-view-sequence-interaction.spec.ts`
+
+## UIC-STATE-MACHINE-VIEW-6 - Sequence content
+
+### UIC-STATE-MACHINE-VIEW-6.1 - Statuses and adornments
+
+A state's `status` (the host's own name, such as `pending`, `complete`, `blocked` or `error`) and `tone` (`Tone`) shall be published as `data-status` and `data-tone` on its state button and position, and its `description` read after the machine status (current, initial, final) in the button's accessible description, so host status, machine state and host selection stay distinct for assistive technology. `renderStateAdornment(state)` draws decorative content before the label in `ui-state-machine-view__state-adornment`, hidden from assistive technology. The library holds no lifecycle policy: the host maps its statuses to these fields.
+
+Implementation: `src/components/state-machine-view/sequence-states.tsx`, `src/components/state-machine-view/describe-state.ts`
+Verification: `src/components/state-machine-view/sequence-content.test.tsx`
+
+### UIC-STATE-MACHINE-VIEW-6.2 - Counts
+
+A state's count shall show inline after its label in `ui-state-machine-view__count`, a small [Badge](BADGE.md) in the same row, hidden from assistive technology. A structural `count` shows its exact whole value, zero included, in a neutral subtle badge (`data-kind="structural"`). A `notificationCount` shows only when positive, as a solid danger badge capped at `9+` (`data-kind="notification"`). A structural count wins when both are given. The button's description reads the shown count once, as `countLabel` or the provider's `itemCount` with the exact count. Counts keep their content and semantics in both densities and on disabled states.
+
+Implementation: `src/components/state-machine-view/sequence-states.tsx`, `src/components/state-machine-view/describe-state.ts`
+Verification: `src/components/state-machine-view/sequence-content.test.tsx`, `e2e/state-machine-view-sequence-interaction.spec.ts`
+
+### UIC-STATE-MACHINE-VIEW-6.3 - Tooltips
+
+`getStateTooltip(state)` shall give a state a [Tooltip](TOOLTIP.md), opened on hover and keyboard focus above the row, or below it with `stateTooltipPlacement="bottom"`; `getTransitionTooltip(transition)` gives a transition label its own. Tooltips render in the shared overlay layer, so chevrons and the scrolling viewport never clip them. A hint, and a transition's `description`, are also read, always, in the control's accessible description, from a visually hidden element whose id is unique per mounted instance, so it is never announced twice. Only transition label controls carry transition descriptions; routes stay inert.
+
+Implementation: `src/components/state-machine-view/sequence-states.tsx`, `src/components/state-machine-view/state-machine-sequence.tsx`
+Verification: `src/components/state-machine-view/sequence-content.test.tsx`, `e2e/state-machine-view-sequence-interaction.spec.ts`
+
+### UIC-STATE-MACHINE-VIEW-6.4 - Empty sequence
+
+With no states the root shall carry `data-empty` and its viewport hold a focusable note (`ui-state-machine-view__empty`, `role="note"`) named by `emptyLabel` or the provider's `stateMachineEmpty`, and described by `renderEmptyState()` content in `ui-state-machine-view__empty-content`. The Context Menu key or Shift+F10 on the note, or a secondary click on it, calls `onBackgroundContextMenu` with the note as anchor. Adding states replaces the note, and removing them all brings it back, in the same root element; a read-only host without callbacks still shows the note.
+
+Implementation: `src/components/state-machine-view/state-machine-sequence.tsx`
+Verification: `src/components/state-machine-view/sequence-content.test.tsx`, `e2e/state-machine-view-sequence-interaction.spec.ts`
+
 ## Hooks
 
-| Hook                                      | Kind      | Values                   | Description                                                              |
-| ----------------------------------------- | --------- | ------------------------ | ------------------------------------------------------------------------ |
-| `ui-state-machine-view`                   | root      |                          | Graph canvas root (also `ui-diagram-canvas`) or sequence root.           |
-| `ui-state-machine-view__state`            | slot      |                          | A state's content; a button in sequence mode.                            |
-| `ui-state-machine-view__state-label`      | slot      |                          | A state's label.                                                         |
-| `ui-state-machine-view__initial-marker`   | slot      |                          | The marker drawn on the initial state.                                   |
-| `data-orientation`                        | attribute | `horizontal`, `vertical` | On the root: which way the layers run.                                   |
-| `data-current`                            | state     | `true`                   | On the state the machine is in.                                          |
-| `data-initial`                            | state     | `true`                   | On the initial state.                                                    |
-| `data-final`                              | state     | `true`                   | On a final state.                                                        |
-| `data-presentation`                       | attribute | `graph`, `sequence`      | On the root: chosen presentation.                                        |
-| `data-density`                            | attribute | `default`, `compact`     | Sequence root density.                                                   |
-| `ui-state-machine-view__viewport`         | slot      |                          | Sequence horizontal scrolling viewport.                                  |
-| `ui-state-machine-view__content`          | slot      |                          | Shared measured coordinate space.                                        |
-| `ui-state-machine-view__state-row`        | slot      |                          | Ordered state layer.                                                     |
-| `ui-state-machine-view__state-position`   | slot      |                          | Positioned state group.                                                  |
-| `ui-state-machine-view__routes`           | slot      |                          | Decorative SVG, without pointer events or focus.                         |
-| `ui-state-machine-view__route`            | slot      |                          | Decorative route group.                                                  |
-| `ui-state-machine-view__connector`        | slot      |                          | Rounded orthogonal stroke.                                               |
-| `ui-state-machine-view__arrow`            | slot      |                          | Open-stroke arrowhead.                                                   |
-| `ui-state-machine-view__transition-label` | slot      |                          | Independent transition button.                                           |
-| `data-key`                                | attribute |                          | Typed state/transition identity on positioned states, routes and labels. |
-| `data-first`                              | state     | `true`                   | On the first sequence state and its position.                            |
-| `data-last`                               | state     | `true`                   | On the last sequence state and its position.                             |
-| `data-selected`                           | state     | `true`                   | On a selected sequence state and its position.                           |
-| `data-direction`                          | attribute | `forward`, `reverse`     | On each route and label. Loops are forward.                              |
-| `data-lane`                               | attribute |                          | Zero-based lane index on its side, on route and label.                   |
-| `data-active`                             | state     | `true`                   | On the active route and label.                                           |
-| `data-outgoing`                           | state     | `true`                   | Route/label starts at the selected state.                                |
-| `data-hovered`                            | state     | `true`                   | On a hovered sequence state or label button.                             |
-| `data-pressed`                            | state     | `true`                   | On a pressed sequence state or label button.                             |
-| `data-focused`                            | state     | `true`                   | On a focused sequence state or label button.                             |
-| `data-focus-visible`                      | state     | `true`                   | On a keyboard-focused sequence state or label button.                    |
-| `--ui-sequence-lane-pitch`                | property  |                          | Resolved lane pitch, on content.                                         |
-| `--ui-sequence-state-gap`                 | property  |                          | Resolved state gap, on content.                                          |
-| `--ui-sequence-row-spacer`                | property  |                          | Resolved row clearance, on content.                                      |
+| Hook                                      | Kind      | Values                                            | Description                                                                 |
+| ----------------------------------------- | --------- | ------------------------------------------------- | --------------------------------------------------------------------------- |
+| `ui-state-machine-view`                   | root      |                                                   | Graph canvas root (also `ui-diagram-canvas`) or sequence root.              |
+| `ui-state-machine-view__state`            | slot      |                                                   | A state's content; a button in sequence mode.                               |
+| `ui-state-machine-view__state-content`    | slot      |                                                   | A sequence state's measured content: adornment, label and count.            |
+| `ui-state-machine-view__state-adornment`  | slot      |                                                   | Decorative content before a sequence state's label.                         |
+| `ui-state-machine-view__state-label`      | slot      |                                                   | A state's label.                                                            |
+| `ui-state-machine-view__count`            | slot      |                                                   | A sequence state's count badge.                                             |
+| `ui-state-machine-view__initial-marker`   | slot      |                                                   | The marker drawn on the initial state.                                      |
+| `data-orientation`                        | attribute | `horizontal`, `vertical`                          | On the root: which way the layers run.                                      |
+| `data-current`                            | state     | `true`                                            | On the state the machine is in.                                             |
+| `data-initial`                            | state     | `true`                                            | On the initial state.                                                       |
+| `data-final`                              | state     | `true`                                            | On a final state.                                                           |
+| `data-presentation`                       | attribute | `graph`, `sequence`                               | On the root: chosen presentation.                                           |
+| `data-density`                            | attribute | `default`, `compact`                              | Sequence root density.                                                      |
+| `ui-state-machine-view__viewport`         | slot      |                                                   | Sequence horizontal scrolling viewport.                                     |
+| `ui-state-machine-view__content`          | slot      |                                                   | Shared measured coordinate space.                                           |
+| `ui-state-machine-view__state-row`        | slot      |                                                   | Ordered state layer.                                                        |
+| `ui-state-machine-view__state-position`   | slot      |                                                   | Positioned state group.                                                     |
+| `ui-state-machine-view__routes`           | slot      |                                                   | Decorative SVG, without pointer events or focus.                            |
+| `ui-state-machine-view__route`            | slot      |                                                   | Decorative route group.                                                     |
+| `ui-state-machine-view__connector`        | slot      |                                                   | Rounded orthogonal stroke.                                                  |
+| `ui-state-machine-view__arrow`            | slot      |                                                   | Open-stroke arrowhead.                                                      |
+| `ui-state-machine-view__transition-label` | slot      |                                                   | Independent transition button.                                              |
+| `ui-state-machine-view__empty`            | slot      |                                                   | The focusable note of an empty sequence.                                    |
+| `ui-state-machine-view__empty-content`    | slot      |                                                   | The host's empty content inside the note.                                   |
+| `data-key`                                | attribute |                                                   | Typed state/transition identity on positioned states, routes and labels.    |
+| `data-first`                              | state     | `true`                                            | On the first sequence state and its position.                               |
+| `data-last`                               | state     | `true`                                            | On the last sequence state and its position.                                |
+| `data-selected`                           | state     | `true`                                            | On the selected sequence state and position, or transition route and label. |
+| `data-direction`                          | attribute | `forward`, `reverse`                              | On each route and label. Loops are forward.                                 |
+| `data-lane`                               | attribute |                                                   | Zero-based lane index on its side, on route and label.                      |
+| `data-disabled`                           | state     | `true`                                            | On a disabled sequence state and its position.                              |
+| `data-status`                             | attribute |                                                   | The host's status name, on a state and its position.                        |
+| `data-tone`                               | attribute | `neutral`, `info`, `success`, `warning`, `danger` | A state's status tone.                                                      |
+| `data-kind`                               | attribute | `structural`, `notification`                      | On a count: which count it shows.                                           |
+| `data-empty`                              | state     | `true`                                            | On a sequence root without states.                                          |
+| `data-outgoing`                           | state     | `true`                                            | Route/label starts at the selected state.                                   |
+| `data-hovered`                            | state     | `true`                                            | On a hovered sequence state or label button.                                |
+| `data-pressed`                            | state     | `true`                                            | On a pressed sequence state or label button.                                |
+| `data-focused`                            | state     | `true`                                            | On a focused sequence state or label button.                                |
+| `data-focus-visible`                      | state     | `true`                                            | On a keyboard-focused sequence state or label button.                       |
+| `--ui-sequence-lane-pitch`                | property  |                                                   | Resolved lane pitch, on content.                                            |
+| `--ui-sequence-state-gap`                 | property  |                                                   | Resolved state gap, on content.                                             |
+| `--ui-sequence-row-spacer`                | property  |                                                   | Resolved row clearance, on content.                                         |

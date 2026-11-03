@@ -26,8 +26,16 @@ const transitions: StateMachineTransition[] = [
 
 const sequencePresentation = { presentation: 'sequence' } as const;
 
+function getStatePosition(name: string, scope: HTMLElement = document.body) {
+  return requireDefined(
+    within(scope)
+      .getByRole('button', { name })
+      .closest<HTMLElement>('.ui-state-machine-view__state-position'),
+  );
+}
+
 function readStatePosition(name: string) {
-  const element = screen.getByRole('group', { name });
+  const element = getStatePosition(name);
   return {
     x: parseFloat(element.style.left),
     y: parseFloat(element.style.top),
@@ -126,7 +134,7 @@ describe('StateMachineView sequence interactions', () => {
         transitions={transitions}
         currentKey="blue"
         selectedKey="alpha"
-        activeTransitionKey="advance"
+        selectedTransitionKey="advance"
         className="host"
         id="sequence"
         ref={ref}
@@ -145,7 +153,7 @@ describe('StateMachineView sequence interactions', () => {
     expect(screen.getByRole('button', { name: 'Alpha' })).toHaveAttribute('data-first', 'true');
     expect(screen.getByRole('button', { name: 'Gamma' })).toHaveAttribute('data-last', 'true');
     expectHooksMatchSpec(container, 'STATE-MACHINE-VIEW', {
-      slots: 'all',
+      slots: ['state', 'state-content', 'state-label', 'initial-marker', 'state-position', 'route'],
       callerAttributes: ['data-example'],
     });
   });
@@ -167,7 +175,7 @@ describe('StateMachineView sequence interactions', () => {
           { id: '1', from: '1', to: 1, label: 'Text action' },
         ]}
         currentKey={1}
-        selectedKey="1"
+        selectedKey={1}
         onSelectionChange={onSelectionChange}
         onTransitionAction={onTransitionAction}
         onTransitionContextMenu={onTransitionContextMenu}
@@ -179,20 +187,29 @@ describe('StateMachineView sequence interactions', () => {
     expect(onSelectionChange).toHaveBeenLastCalledWith('1');
     expect(screen.getByRole('button', { name: 'Number' })).toHaveAttribute('aria-current', 'step');
     await user.click(screen.getByRole('button', { name: 'Numeric action' }));
-    expect(onTransitionAction).toHaveBeenLastCalledWith(1);
+    expect(onTransitionAction).toHaveBeenLastCalledWith(
+      1,
+      expect.objectContaining({ id: 1 }),
+      expect.objectContaining({ type: 'press' }),
+    );
     await user.tab();
     expect(screen.getByRole('button', { name: 'Text action' })).toHaveFocus();
     await user.keyboard('{Enter}');
-    expect(onTransitionAction).toHaveBeenLastCalledWith('1');
+    expect(onTransitionAction).toHaveBeenLastCalledWith(
+      '1',
+      expect.objectContaining({ id: '1' }),
+      expect.objectContaining({ pointerType: 'keyboard' }),
+    );
     await user.keyboard(' ');
-    expect(onTransitionAction).toHaveBeenLastCalledWith('1');
+    expect(onTransitionAction).toHaveBeenCalledTimes(3);
     await user.pointer({
       keys: '[MouseRight]',
       target: screen.getByRole('button', { name: 'Text action' }),
     });
     expect(onTransitionContextMenu).toHaveBeenLastCalledWith(
       '1',
-      expect.objectContaining({ type: 'contextmenu' }),
+      expect.objectContaining({ id: '1' }),
+      expect.objectContaining({ pointerType: 'mouse' }),
     );
   });
 
@@ -222,11 +239,11 @@ describe('StateMachineView sequence interactions', () => {
         states={states}
         transitions={transitions}
         selectedKey="alpha"
-        activeTransitionKey="return"
+        selectedTransitionKey="return"
       />,
     );
     const routes = () => [...container.querySelectorAll('.ui-state-machine-view__route')];
-    expect(routes().at(-1)).toHaveAttribute('data-active', 'true');
+    expect(routes().at(-1)).toHaveAttribute('data-selected', 'true');
     expect(routes().at(-2)).toHaveAttribute('data-outgoing', 'true');
     const paths = routes()
       .map((route) => route.querySelector('path')?.getAttribute('d'))
@@ -237,7 +254,7 @@ describe('StateMachineView sequence interactions', () => {
         states={states}
         transitions={transitions}
         selectedKey="blue"
-        activeTransitionKey="advance"
+        selectedTransitionKey="advance"
       />,
     );
     expect(
@@ -261,12 +278,12 @@ describe('StateMachineView sequence interactions', () => {
     const host = document.createElement('div');
     host.innerHTML = renderToString(machine);
     document.body.append(host);
-    const before = within(host).getByRole('group', { name: 'Blue' }).getAttribute('style');
+    const before = getStatePosition('Blue', host).getAttribute('style');
     let root: ReturnType<typeof hydrateRoot> | undefined;
     await act(() => {
       root = hydrateRoot(host, machine);
     });
-    expect(within(host).getByRole('group', { name: 'Blue' })).toHaveAttribute('style', before);
+    expect(getStatePosition('Blue', host)).toHaveAttribute('style', before);
     render(
       <StateMachineView
         presentation="sequence"

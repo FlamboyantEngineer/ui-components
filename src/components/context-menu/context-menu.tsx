@@ -36,7 +36,7 @@ export {
   useMenuController,
   useMenuControllerState,
 } from './menu-controller.js';
-export type { MenuController } from './menu-controller.js';
+export type { MenuAnchor, MenuController, MenuPoint } from './menu-controller.js';
 
 export interface ContextMenuProps extends RefProps<HTMLElement>, BaseProps {
   /** Holds the open state and anchor; open, move and close the menu through it. */

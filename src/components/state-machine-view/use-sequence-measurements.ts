@@ -41,7 +41,7 @@ function readSizes(root: HTMLElement, states: boolean): Sizes {
   for (const element of root.querySelectorAll<HTMLElement>(`.${selector}`)) {
     const key = element.getAttribute('data-key');
     const label = states
-      ? element.querySelector<HTMLElement>(`.${hooks.slotClass('state-label')}`)
+      ? element.querySelector<HTMLElement>(`.${hooks.slotClass('state-content')}`)
       : element;
     if (!key || !label) continue;
     const rect = label.getBoundingClientRect();
@@ -87,7 +87,7 @@ export function useSequenceMeasurements(root: HTMLDivElement | null): SequenceMe
         ? [
             root,
             ...root.querySelectorAll(
-              `.${hooks.slotClass('state-label')}, .${hooks.slotClass('transition-label')}`,
+              `.${hooks.slotClass('state-content')}, .${hooks.slotClass('transition-label')}`,
             ),
           ]
         : [],

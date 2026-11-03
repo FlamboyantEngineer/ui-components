@@ -3,7 +3,6 @@
 import { useMemo } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import type { UiStrings } from '../../core/strings.js';
 import { layoutLayeredGraph } from '../../utils/layered-layout.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import {
@@ -12,27 +11,19 @@ import {
   type DiagramNode,
 } from '../diagram-canvas/diagram-canvas.js';
 
-import type { StateMachineState, StateMachineViewProps } from './state-machine-view.js';
+import { describeState } from './describe-state.js';
+import type {
+  StateMachineSequenceProps,
+  StateMachineState,
+  StateMachineViewProps,
+} from './state-machine-view.js';
 import { hooks } from './state-machine-view-hooks.js';
 
+/** The graph presentation's props: everything but the sequence-only ones. */
 type StateMachineGraphProps = Omit<
   StateMachineViewProps,
-  | 'presentation'
-  | 'density'
-  | 'sequenceGeometry'
-  | 'selectedKey'
-  | 'onSelectionChange'
-  | 'activeTransitionKey'
-  | 'onTransitionAction'
-  | 'onTransitionContextMenu'
-  | 'renderTransitionLabel'
-  | 'getTransitionTooltip'
+  'presentation' | keyof StateMachineSequenceProps
 >;
-
-interface StateFlags {
-  isCurrent: boolean;
-  isInitial: boolean;
-}
 
 const stateWidth = 144;
 const stateHeight = 44;
@@ -44,19 +35,9 @@ const layerGap = 112;
 const stateNodeId = (key: Key) => `state:${toKeyIdentity(key)}`;
 const transitionEdgeId = (key: Key) => `transition:${toKeyIdentity(key)}`;
 
-function describeState(state: StateMachineState, flags: StateFlags, strings: UiStrings): string {
-  return [
-    flags.isCurrent ? strings.stateMachineCurrent : '',
-    flags.isInitial ? strings.stateMachineInitial : '',
-    state.isFinal ? strings.stateMachineFinal : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
-}
-
 /** The states as diagram nodes, placed by the layered layout unless they carry a position. */
 function useStateNodes(
-  props: Pick<StateMachineViewProps, 'states' | 'transitions' | 'orientation' | 'isEditing'> & {
+  props: Pick<StateMachineGraphProps, 'states' | 'transitions' | 'orientation' | 'isEditing'> & {
     initial: Key | undefined;
     current: Key | undefined;
   },
@@ -83,7 +64,6 @@ function useStateNodes(
   return states.map((state) => {
     const id = stateNodeId(state.id);
     const placed = positions.get(id);
-    const flags = { isCurrent: state.id === current, isInitial: state.id === initial };
     return {
       id,
       x: state.x ?? placed?.x ?? 0,
@@ -91,7 +71,7 @@ function useStateNodes(
       width: stateWidth,
       height: stateHeight,
       label: state.label,
-      description: describeState(state, flags, strings),
+      description: describeState(state, { initial, current, withCount: false }, strings),
       ports: isEditing
         ? [
             {
@@ -160,6 +140,8 @@ export function StateMachineGraph({
             current: node.data?.id === currentKey,
             initial: node.data?.id === initial,
             final: node.data?.isFinal ?? false,
+            status: node.data?.status,
+            tone: node.data?.tone,
           })}
         >
           {node.data?.id === initial ? (

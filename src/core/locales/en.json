@@ -383,6 +383,7 @@
   "stateMachineInitial": "Initial state.",
   "stateMachineFinal": "Final state.",
   "stateMachineAddTransition": "new transition",
+  "stateMachineEmpty": "No states",
   "textDiffSummary": "{added, plural, one {# line} other {# lines}} added, {removed, plural, one {# line} other {# lines}} removed",
   "textDiffLine": "{change, select, added {Added} removed {Removed} other {Unchanged}}{hasOld, select, true {, old line {oldNumber}} other {}}{hasNew, select, true {, new line {newNumber}} other {}}",
   "textDiffShowLines": "{count, plural, one {Show # more line} other {Show # more lines}}",

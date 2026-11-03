@@ -2,7 +2,10 @@ import { createHooks } from '../../core/hooks.js';
 
 export const hooks = createHooks('state-machine-view', [
   'state',
+  'state-content',
+  'state-adornment',
   'state-label',
+  'count',
   'initial-marker',
   'viewport',
   'content',
@@ -13,4 +16,6 @@ export const hooks = createHooks('state-machine-view', [
   'connector',
   'arrow',
   'transition-label',
+  'empty',
+  'empty-content',
 ]);

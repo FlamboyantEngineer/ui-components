@@ -36,7 +36,11 @@ for (const density of ['default', 'compact']) {
             stroke,
             strokeWidth,
             arrowOnTop: hits[0] === element,
-            target: { x: point.x, y: point.y, label: state?.getAttribute('aria-label') ?? '' },
+            target: {
+              x: point.x,
+              y: point.y,
+              label: state?.querySelector('.ui-state-machine-view__state-label')?.textContent ?? '',
+            },
           };
         } finally {
           element.style.pointerEvents = previous;

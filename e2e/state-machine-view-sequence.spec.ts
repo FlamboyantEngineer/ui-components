@@ -245,7 +245,7 @@ test('UIC-STATE-MACHINE-VIEW-4.3 UIC-STATE-MACHINE-VIEW-4.4 activates labels alo
   await label.focus();
   await expect(page.getByRole('tooltip')).toHaveText('Details for Alternate');
   await page.keyboard.press('Escape');
-  await expect(scope.locator('.ui-state-machine-view__route[data-active]')).toHaveCount(1);
+  await expect(scope.locator('.ui-state-machine-view__route[data-selected]')).toHaveCount(1);
   const hit = await scope
     .locator('.ui-state-machine-view__connector')
     .first()

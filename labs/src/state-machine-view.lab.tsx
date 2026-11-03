@@ -8,6 +8,7 @@ import {
 } from '../../src/components/state-machine-view/state-machine-view.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { SequenceExamples } from './state-machine-view-sequence.js';
+import { SequenceHostExamples } from './state-machine-view-sequence-host.js';
 
 const doorStates: StateMachineState[] = [
   { id: 'closed', label: 'Closed' },
@@ -186,6 +187,12 @@ mountLab(
       description="Default and compact rows share one scrolling viewport with forward and reverse lanes, parallel transitions and a loop. Select a state independently of the current state, activate or right-click a label, and resize or reorder the sequence."
     >
       <SequenceExamples />
+    </LabSection>
+    <LabSection
+      title="Sequence host events"
+      description="Statuses, structural and notification counts, adornments and hints on a compact row. Every activation, selection and context menu request is logged; the host can decline selection, disable a state, move hints below the row, and replace the data, emptying it into a focusable note that takes the background menu."
+    >
+      <SequenceHostExamples />
     </LabSection>
     <LabSection
       title="States"

@@ -1,100 +1,40 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { useId, useMemo, useRef, useState, type MouseEvent } from 'react';
 import { measuredProperty } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
-import type { UiStrings } from '../../core/strings.js';
 import { Button } from '../../primitives/index.js';
+import { isElement } from '../../utils/is-element.js';
+import { mergeRefs } from '../../utils/merge-props.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { Tooltip } from '../tooltip/tooltip.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { layoutSequence, type SequenceLayout } from './sequence-layout.js';
+import {
+  getContextMenuRequestHandlers,
+  useReleaseMissingSelection,
+} from './sequence-interaction.js';
+import { SequenceStates, useStateFocusRecovery } from './sequence-states.js';
 import { hooks } from './state-machine-view-hooks.js';
 import { useSequenceMeasurements } from './use-sequence-measurements.js';
-import type { StateMachineState, StateMachineViewProps } from './state-machine-view.js';
+import type { StateMachineViewProps } from './state-machine-view.js';
+
+type SequenceProps = Omit<StateMachineViewProps, 'presentation'>;
 
 interface SequencePartsProps {
-  props: StateMachineViewProps;
+  props: SequenceProps;
   layout: SequenceLayout;
 }
 
-function describeState(
-  state: StateMachineState,
-  props: StateMachineViewProps,
-  strings: UiStrings,
-): string {
-  return [
-    state.id === props.currentKey ? strings.stateMachineCurrent : '',
-    state.id === (props.initialState ?? props.states[0]?.id) ? strings.stateMachineInitial : '',
-    state.isFinal ? strings.stateMachineFinal : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
-}
+/** A state button or transition label, whose own context menu requests never reach the background. */
+const targetSelector = `.${hooks.slotClass('state')}, .${hooks.slotClass('transition-label')}`;
 
-function StateMachineSequenceStates({ props, layout }: SequencePartsProps) {
-  const strings = useUiStrings();
-  const descriptionId = useId();
-  const initial = props.initialState ?? props.states[0]?.id;
-  return (
-    <div
-      {...hooks.slot('state-row')}
-      style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none' }}
-    >
-      {layout.states.map(({ state, x, width }, index) => {
-        const flags = {
-          current: state.id === props.currentKey,
-          initial: state.id === initial,
-          final: state.isFinal,
-          selected: state.id === props.selectedKey,
-          first: index === 0,
-          last: index === layout.states.length - 1,
-        };
-        return (
-          <div
-            key={toKeyIdentity(state.id)}
-            {...hooks.slot('state-position', { ...flags, key: toKeyIdentity(state.id) })}
-            role="group"
-            aria-label={state.label}
-            style={{
-              position: 'absolute',
-              left: x,
-              top: layout.rowY,
-              width,
-              height: layout.rowHeight,
-              pointerEvents: 'auto',
-            }}
-          >
-            <Button
-              {...hooks.slot('state', flags)}
-              aria-label={state.label}
-              aria-describedby={`${descriptionId}-${index}`}
-              aria-current={flags.current ? 'step' : undefined}
-              aria-pressed={flags.selected}
-              onPress={() => props.onSelectionChange?.(state.id)}
-              style={{ width: '100%', height: '100%' }}
-            >
-              {flags.initial ? <span {...hooks.slot('initial-marker')} aria-hidden="true" /> : null}
-              <span {...hooks.slot('state-label')} style={{ width: 'max-content' }}>
-                {state.label}
-              </span>
-            </Button>
-            <VisuallyHidden as="span" id={`${descriptionId}-${index}`}>
-              {describeState(state, props, strings)}
-            </VisuallyHidden>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-function getRouteFlags(route: SequenceLayout['routes'][number], props: StateMachineViewProps) {
+function getRouteFlags(route: SequenceLayout['routes'][number], props: SequenceProps) {
   return {
     direction: route.direction,
     lane: route.lane,
     key: toKeyIdentity(route.transition.id),
-    active: route.transition.id === props.activeTransitionKey,
+    selected: route.transition.id === props.selectedTransitionKey,
     outgoing: route.transition.from === props.selectedKey,
   };
 }
@@ -102,7 +42,7 @@ function getRouteFlags(route: SequenceLayout['routes'][number], props: StateMach
 function StateMachineSequenceRoutes({ props, layout }: SequencePartsProps) {
   const routes = [...layout.routes].sort((a, b) => {
     const priority = (route: typeof a) =>
-      Number(route.transition.id === props.activeTransitionKey) * 2 +
+      Number(route.transition.id === props.selectedTransitionKey) * 2 +
       Number(route.transition.from === props.selectedKey);
     return priority(a) - priority(b);
   });
@@ -130,35 +70,101 @@ function StateMachineSequenceRoutes({ props, layout }: SequencePartsProps) {
 }
 
 function StateMachineSequenceLabels({ props, layout }: SequencePartsProps) {
+  const descriptionId = useId();
   // Label reading/focus order follows caller order, independently of lane packing and line stacking.
   const routes = new Map(layout.routes.map((route) => [route.transition.id, route]));
-  return props.transitions.map((transition) => {
+  return props.transitions.map((transition, index) => {
     const route = routes.get(transition.id);
     if (!route || !transition.label?.trim()) return null;
+    const flags = getRouteFlags(route, props);
+    const menu = getContextMenuRequestHandlers(
+      props.onTransitionContextMenu &&
+        ((event) => props.onTransitionContextMenu?.(transition.id, transition, event)),
+    );
+    const hint = props.getTransitionTooltip?.(transition);
+    const isDescribed = Boolean(transition.description) || hint != null;
+    const id = `${descriptionId}-${index}`;
     return (
-      <Tooltip
-        key={toKeyIdentity(transition.id)}
-        content={props.getTransitionTooltip?.(transition)}
-        isDisabled={!props.getTransitionTooltip}
-      >
-        <Button
-          {...hooks.slot('transition-label', getRouteFlags(route, props))}
-          aria-label={transition.label}
-          onPress={() => props.onTransitionAction?.(transition.id)}
-          onContextMenu={(event) => props.onTransitionContextMenu?.(transition.id, event)}
-          style={{
-            position: 'absolute',
-            left: route.labelX,
-            top: route.labelY,
-            width: 'max-content',
-            zIndex: 2,
-          }}
-        >
-          {props.renderTransitionLabel?.(transition) ?? transition.label}
-        </Button>
-      </Tooltip>
+      <span key={toKeyIdentity(transition.id)}>
+        <Tooltip content={hint} isDisabled={hint == null}>
+          <Button
+            {...hooks.slot('transition-label', flags)}
+            aria-label={transition.label}
+            aria-describedby={isDescribed ? id : undefined}
+            aria-pressed={flags.selected}
+            onPress={(event) => {
+              if (transition.id !== props.selectedTransitionKey) {
+                props.onTransitionSelectionChange?.(transition.id);
+              }
+              props.onTransitionAction?.(transition.id, transition, event);
+            }}
+            onKeyDown={(event) => {
+              menu.onKeyDown?.(event);
+              event.continuePropagation();
+            }}
+            onContextMenu={menu.onContextMenu}
+            style={{
+              position: 'absolute',
+              left: route.labelX,
+              top: route.labelY,
+              width: 'max-content',
+              zIndex: 2,
+            }}
+          >
+            {props.renderTransitionLabel?.(transition) ?? transition.label}
+          </Button>
+        </Tooltip>
+        {isDescribed ? (
+          // The hint is read here too, always, so its own description never repeats it.
+          <VisuallyHidden as="span" id={id}>
+            {transition.description} {hint}
+          </VisuallyHidden>
+        ) : null}
+      </span>
     );
   });
+}
+
+/** The focusable note shown while there are no states, the keyboard's way to the background menu. */
+function StateMachineSequenceEmpty({ props }: { props: SequenceProps }) {
+  const strings = useUiStrings();
+  const contentId = useId();
+  const menu = getContextMenuRequestHandlers(props.onBackgroundContextMenu);
+  const content = props.renderEmptyState?.();
+  return (
+    <div
+      {...hooks.slot('empty')}
+      role="note"
+      tabIndex={0}
+      aria-label={props.emptyLabel ?? strings.stateMachineEmpty}
+      aria-describedby={content == null ? undefined : contentId}
+      onKeyDown={menu.onKeyDown}
+    >
+      {content == null ? null : (
+        <div {...hooks.slot('empty-content')} id={contentId}>
+          {content}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Whether every state and transition the host selected is still shown, and so selectable. */
+function useSelectionReconciliation(props: SequenceProps, layout: SequenceLayout) {
+  const selectedState = props.states.find((state) => state.id === props.selectedKey);
+  useReleaseMissingSelection(
+    props.selectedKey,
+    Boolean(selectedState && !selectedState.isDisabled),
+    props.onSelectionChange,
+  );
+  const selectedRoute = layout.routes.find(
+    (route) => route.transition.id === props.selectedTransitionKey,
+  );
+  useReleaseMissingSelection(
+    props.selectedTransitionKey,
+    Boolean(selectedRoute?.transition.label?.trim()),
+    props.onTransitionSelectionChange,
+  );
 }
 
 export function StateMachineSequence({
@@ -168,8 +174,11 @@ export function StateMachineSequence({
   'aria-describedby': ariaDescribedby,
   'aria-details': ariaDetails,
   ...props
-}: StateMachineViewProps) {
+}: SequenceProps) {
   const strings = useUiStrings();
+  const rootRef = useRef<HTMLDivElement>(null);
+  const rootRefs = useMemo(() => mergeRefs(rootRef, ref), [ref]);
+  const focus = useStateFocusRecovery(rootRef, props.states);
   const [viewport, setViewport] = useState<HTMLDivElement | null>(null);
   const measurements = useSequenceMeasurements(viewport);
   const layout = layoutSequence({
@@ -179,6 +188,14 @@ export function StateMachineSequence({
     geometry: props.sequenceGeometry,
     measurements,
   });
+  useSelectionReconciliation(props, layout);
+  const background = getContextMenuRequestHandlers(props.onBackgroundContextMenu);
+  const onBackgroundContextMenu = (event: MouseEvent<HTMLDivElement>) => {
+    // A state or label request belongs to its target alone, handled or not.
+    if (isElement(event.target) && event.target.closest(targetSelector)) return;
+    background.onContextMenu?.(event);
+  };
+  const isEmpty = props.states.length === 0;
   return (
     <div
       {...hooks.root({
@@ -188,10 +205,11 @@ export function StateMachineSequence({
           presentation: 'sequence',
           density: props.density ?? 'default',
           orientation: 'horizontal',
+          empty: isEmpty,
         },
       })}
       id={props.id}
-      ref={ref}
+      ref={rootRefs}
       role="group"
       aria-labelledby={ariaLabelledby}
       aria-label={ariaLabel ?? (ariaLabelledby ? undefined : strings.stateMachine)}
@@ -202,23 +220,28 @@ export function StateMachineSequence({
       <div
         {...hooks.slot('viewport')}
         ref={setViewport}
+        onContextMenu={onBackgroundContextMenu}
         style={{ position: 'relative', maxWidth: '100%' }}
       >
-        <div
-          {...hooks.slot('content')}
-          style={{
-            position: 'relative',
-            width: layout.width,
-            height: layout.height,
-            ...measuredProperty('sequence-lane-pitch', layout.lanePitch),
-            ...measuredProperty('sequence-state-gap', layout.stateGap),
-            ...measuredProperty('sequence-row-spacer', layout.rowSpacer),
-          }}
-        >
-          <StateMachineSequenceRoutes props={props} layout={layout} />
-          <StateMachineSequenceStates props={props} layout={layout} />
-          <StateMachineSequenceLabels props={props} layout={layout} />
-        </div>
+        {isEmpty ? (
+          <StateMachineSequenceEmpty props={props} />
+        ) : (
+          <div
+            {...hooks.slot('content')}
+            style={{
+              position: 'relative',
+              width: layout.width,
+              height: layout.height,
+              ...measuredProperty('sequence-lane-pitch', layout.lanePitch),
+              ...measuredProperty('sequence-state-gap', layout.stateGap),
+              ...measuredProperty('sequence-row-spacer', layout.rowSpacer),
+            }}
+          >
+            <StateMachineSequenceRoutes props={props} layout={layout} />
+            <SequenceStates props={props} layout={layout} rootRef={rootRef} focus={focus} />
+            <StateMachineSequenceLabels props={props} layout={layout} />
+          </div>
+        )}
       </div>
     </div>
   );
