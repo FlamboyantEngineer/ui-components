@@ -44,7 +44,7 @@ export const tableParts: ReadonlySet<string> = new Set([
 
 const sections = ['thead', 'tbody', 'tfoot'];
 
-const tableParents: ReadonlyMap<string, readonly string[]> = new Map([
+const tableParents: ReadonlyMap<string, readonly string[]> = new Map<string, readonly string[]>([
   ['caption', ['table']],
   ['colgroup', ['table']],
   ['col', ['colgroup']],
