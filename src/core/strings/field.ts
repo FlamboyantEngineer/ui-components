@@ -99,6 +99,8 @@ export interface FieldStrings {
   clearValue: (label: string) => string;
   /** The text of a select that has no value and no placeholder of its own. */
   selectPlaceholder: string;
+  /** Describes a multiple select option with mixed membership across records. */
+  selectOptionIndeterminate: string;
   /** Names the group of a multiple select's chosen values, from the field's label. */
   selectedValues: (label: string) => string;
   /** The action row of a combobox that adds the typed text as a new option. */
