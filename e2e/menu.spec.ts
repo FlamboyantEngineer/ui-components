@@ -557,4 +557,64 @@ test.describe('Menu lab', () => {
       'false',
     );
   });
+  test('UIC-MENU-2.8 holds count badges at the trailing edge, centred on the label', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('menu');
+    const trailing = section(page, 'Trailing badges');
+    for (const direction of ['ltr', 'rtl'] as const) {
+      for (const width of ['wide', 'narrow'] as const) {
+        const menu = matrixCell(trailing, `direction=${direction} width=${width}`).getByRole(
+          'menu',
+        );
+        for (const name of ['Inbox', 'Mentions', 'Updates', 'Weekly digest', 'Archived']) {
+          const row = menu.getByRole('menuitem', { name: new RegExp(`^${name}`) });
+          const [rowBox, labelBox, badgeBox] = await Promise.all([
+            row.boundingBox(),
+            row.locator('.ui-menu-item__label').boundingBox(),
+            row.locator('.ui-menu-item__trailing').boundingBox(),
+          ]);
+          if (!rowBox || !labelBox || !badgeBox) throw new Error(`${name} is not drawn`);
+          const inset =
+            direction === 'ltr'
+              ? rowBox.x + rowBox.width - (badgeBox.x + badgeBox.width)
+              : badgeBox.x - rowBox.x;
+          expect(inset, `${name} ${direction} ${width}`).toBeLessThanOrEqual(10);
+          // A narrow row too small for the label, the chord and the count moves the count below.
+          if (name === 'Updates' && width === 'narrow') {
+            expect(badgeBox.y).toBeGreaterThan(labelBox.y + labelBox.height / 2);
+            continue;
+          }
+          const labelMiddle = labelBox.y + labelBox.height / 2;
+          const badgeMiddle = badgeBox.y + badgeBox.height / 2;
+          expect(Math.abs(labelMiddle - badgeMiddle), `${name} centre`).toBeLessThanOrEqual(1);
+        }
+        const teams = menu.getByRole('menuitem', { name: /^Teams/ });
+        const [badge, arrow] = await Promise.all([
+          teams.locator('.ui-menu-item__trailing').boundingBox(),
+          teams.locator('.ui-menu-item__submenu-indicator').boundingBox(),
+        ]);
+        if (!badge || !arrow) throw new Error('Teams is not drawn');
+        if (direction === 'ltr') expect(badge.x + badge.width).toBeLessThanOrEqual(arrow.x);
+        else expect(arrow.x + arrow.width).toBeLessThanOrEqual(badge.x);
+      }
+    }
+    const menu = matrixCell(trailing, 'direction=ltr width=narrow').getByRole('menu');
+    await expect(menu.getByRole('menuitem', { name: /^Weekly digest/ })).toHaveAccessibleName(
+      'Weekly digest of every shared folder you follow 3 unread',
+    );
+    await expect(menu.getByRole('menuitem', { name: /^Updates/ })).toHaveAccessibleName(
+      'Updates Control U 12 unread',
+    );
+    await expect(menu.getByRole('menuitem', { name: /^Updates/ })).toContainText('9+');
+    await expect(menu.getByRole('menuitem', { name: /^Mentions/ })).toHaveAccessibleName(
+      'Mentions 0 unread',
+    );
+    await menu.getByRole('menuitem', { name: /^Inbox/ }).focus();
+    await page.keyboard.press('w');
+    await expect(menu.getByRole('menuitem', { name: /^Weekly digest/ })).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(trailing.locator('[data-lab-output="trailing-ltr-narrow"]')).toHaveText('digest');
+  });
 });

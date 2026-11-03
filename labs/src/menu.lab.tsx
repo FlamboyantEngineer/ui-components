@@ -28,6 +28,7 @@ import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 import { MenuCoverageSections } from './menu-coverage-cases.js';
 import { MenuKeyCase } from './menu-key-case.js';
+import { MenuTrailingSection } from './menu-trailing-cases.js';
 
 const sizes = ['sm', 'md', 'lg'] as const;
 
@@ -604,6 +605,7 @@ mountLab(
     >
       <MenuKeyCase />
     </LabSection>
+    <MenuTrailingSection />
     <MenuCoverageSections />
   </>,
 );

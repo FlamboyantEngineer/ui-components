@@ -6,6 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { MenuButton, actionKeys, fruitEntries, openMenu } from '../../../test/menu-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { Badge } from '../badge/badge.js';
 import { Button } from '../button/button.js';
 import {
   Menu,
@@ -88,6 +89,80 @@ describe('MenuItem, MenuSection and MenuSeparator', () => {
       'data-glyph',
       'chevron-left',
     );
+  });
+
+  it('UIC-MENU-2.8 draws trailing content after the shortcut and before the submenu arrow', async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    render(
+      <MenuButton aria-label="Account" onAction={onAction}>
+        <MenuItem
+          id="inbox"
+          shortcut="Ctrl+I"
+          trailing={<Badge count={12} max={9} aria-label="12 unread" />}
+        >
+          Inbox
+        </MenuItem>
+        <MenuItem id="zero" trailing={<Badge count={0} />}>
+          Mentions
+        </MenuItem>
+        <MenuItem id="none" trailing={false}>
+          Settings
+        </MenuItem>
+        <MenuItem id="off" isDisabled trailing={<Badge count={3} />}>
+          Archive
+        </MenuItem>
+        <SubmenuTrigger>
+          <MenuItem id="teams" trailing={<Badge count={2} />}>
+            Teams
+          </MenuItem>
+          <MenuPopover>
+            <Menu aria-label="Teams">
+              <MenuItem id="north">North</MenuItem>
+            </Menu>
+          </MenuPopover>
+        </SubmenuTrigger>
+      </MenuButton>,
+    );
+    await openMenu(user);
+    const inbox = screen.getByRole('menuitem', { name: /^Inbox/ });
+    expect(inbox).toHaveAccessibleName('Inbox Control I 12 unread');
+    expect([...inbox.children].map((child) => child.getAttribute('class'))).toEqual([
+      'ui-menu-item__label',
+      'ui-shortcut ui-menu-item__shortcut',
+      'ui-menu-item__trailing',
+    ]);
+    expect(within(inbox).getByText('9+')).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Mentions 0' })).toBeInTheDocument();
+    const settings = screen.getByRole('menuitem', { name: 'Settings' });
+    expect(settings.querySelector('.ui-menu-item__trailing')).toBeNull();
+    const archive = screen.getByRole('menuitem', { name: 'Archive 3' });
+    expect(archive).toHaveAttribute('aria-disabled', 'true');
+    expect(archive.querySelector('.ui-menu-item__trailing')).not.toBeNull();
+    const teams = screen.getByRole('menuitem', { name: 'Teams 2' });
+    expect([...teams.children].map((child) => child.getAttribute('class')).slice(-2)).toEqual([
+      'ui-menu-item__trailing',
+      'ui-glyph ui-menu-item__submenu-indicator',
+    ]);
+    expectHooksMatchSpec(document.body, 'MENU', { slots: ['label', 'shortcut', 'trailing'] });
+    // Type-to-select still matches the label, not the count.
+    await user.keyboard('m');
+    expect(screen.getByRole('menuitem', { name: 'Mentions 0' })).toHaveFocus();
+    await user.keyboard('{Enter}');
+    expect(onAction).toHaveBeenCalledWith('zero');
+  });
+
+  it('UIC-MENU-2.8 takes trailing content on an item entry', async () => {
+    const user = userEvent.setup();
+    render(
+      <MenuButton
+        aria-label="Account"
+        items={[{ id: 'inbox', label: 'Inbox', trailing: <Badge count={7} /> }]}
+      />,
+    );
+    await openMenu(user);
+    const inbox = screen.getByRole('menuitem', { name: 'Inbox 7' });
+    expect(inbox.querySelector('.ui-menu-item__trailing')).toHaveTextContent('7');
   });
 
   it('UIC-MENU-2.2 draws custom content from a render function with the item state', async () => {
