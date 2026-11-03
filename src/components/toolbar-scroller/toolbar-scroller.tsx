@@ -5,7 +5,7 @@ import { useMemo, type ReactNode } from 'react';
 import { Toolbar } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { mergeRefs } from '../../utils/merge-props.js';
@@ -35,7 +35,10 @@ export interface ToolbarScrollerItem {
 }
 
 export interface ToolbarScrollerProps<T extends ToolbarScrollerItem = ToolbarScrollerItem>
-  extends Pick<AriaLabellingProps, 'aria-label' | 'aria-labelledby'>, BaseProps {
+  extends
+    RefProps<HTMLDivElement>,
+    Pick<AriaLabellingProps, 'aria-label' | 'aria-labelledby'>,
+    BaseProps {
   /** The tools. They stay direct children of the scrolling strip, at their natural size and order. */
   children?: ReactNode;
   /** Show a scroll button at each edge that hides tools. Defaults to `true`; edge fades always render. */

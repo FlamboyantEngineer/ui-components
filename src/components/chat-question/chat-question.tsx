@@ -1,9 +1,10 @@
 'use client';
 
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { containsFocus, isFocusLost } from '../../utils/focus-target.js';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import {
   chatQuestionHooks as hooks,
@@ -25,7 +26,7 @@ export type {
   ChatQuestionStatus,
 } from './chat-question-model.js';
 
-export interface ChatQuestionProps extends BaseProps, ChatQuestionData {
+export interface ChatQuestionProps extends RefProps<HTMLDivElement>, BaseProps, ChatQuestionData {
   /** Identifies the card, and is its root element's id. */
   id: string;
   /**
@@ -72,6 +73,7 @@ function useSettledFocus(status: ChatQuestionData['status']) {
  * answers and a dismissed one says so.
  */
 export function ChatQuestion({
+  ref,
   id,
   questions,
   status,
@@ -84,6 +86,7 @@ export function ChatQuestion({
 }: ChatQuestionProps) {
   const strings = useUiStrings();
   const { rootRef, settle } = useSettledFocus(status);
+  const rootRefs = useMergedRefs(rootRef, ref);
   // The live region exists before its text arrives, so the text is announced: the empty region must
   // be committed first.
   const [isAnnounced, setAnnounced] = useState(false);
@@ -103,7 +106,7 @@ export function ChatQuestion({
     <div
       {...hooks.root({ className, props: rest, data })}
       id={id}
-      ref={rootRef}
+      ref={rootRefs}
       role="group"
       aria-label={name}
       tabIndex={isPending ? undefined : -1}

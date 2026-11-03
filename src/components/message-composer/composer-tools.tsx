@@ -1,5 +1,6 @@
 'use client';
 
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import {
   AttachGlyph,
   CloseGlyph,
@@ -11,7 +12,7 @@ import {
 import { useLayoutEffect } from 'react';
 import { FileTrigger } from '../../primitives/index.js';
 import { mergeClassNames } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useFocusHandback } from '../../utils/use-focus-handback.js';
 import { EmojiPickerTrigger } from '../emoji-picker/emoji-picker.js';
@@ -20,11 +21,11 @@ import { useComposerControlsValue, type ComposerControlsValue } from './composer
 import { composerHooks as hooks } from './composer-hooks.js';
 import { attachChosenFiles } from './use-file-drop.js';
 
-export type MessageComposerAttachButtonProps = BaseProps;
+export type MessageComposerAttachButtonProps = RefProps<HTMLButtonElement> & BaseProps;
 
-export type MessageComposerEmojiButtonProps = BaseProps;
+export type MessageComposerEmojiButtonProps = RefProps<HTMLButtonElement> & BaseProps;
 
-export type MessageComposerSendButtonProps = BaseProps;
+export type MessageComposerSendButtonProps = RefProps<HTMLButtonElement> & BaseProps;
 
 /** What the action button does: send, stop the pending reply, or save the edited message. */
 type ComposerActionMode = 'send' | 'stop' | 'save';
@@ -67,6 +68,8 @@ export function MessageComposerEmojiButton(props: MessageComposerEmojiButtonProp
   const strings = useUiStrings();
   const composer = useComposerControlsValue('MessageComposerEmojiButton');
   const { ref: returnFocusRef, request: returnFocus } = useFocusHandback(composer.focusInput);
+  const { ref } = props;
+  const buttonRef = useMergedRefs(returnFocusRef, ref);
   return (
     <EmojiPickerTrigger
       isDisabled={composer.isDisabled}
@@ -79,7 +82,7 @@ export function MessageComposerEmojiButton(props: MessageComposerEmojiButtonProp
     >
       <Button
         {...props}
-        ref={returnFocusRef}
+        ref={buttonRef}
         className={mergeClassNames(hooks.slotClass('emoji'), props.className)}
         icon={EmojiGlyph}
         label={strings.insertEmoji}

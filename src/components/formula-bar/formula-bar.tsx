@@ -11,7 +11,7 @@ import {
 } from 'react';
 import { Input } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps, ControlSize } from '../../core/props.js';
+import type { BaseProps, ControlSize, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import {
   formatCellReference,
@@ -26,7 +26,7 @@ import { formulaBarHooks as hooks } from './formula-bar-hooks.js';
 import { Button } from '../button/button.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 
-export interface FormulaBarProps extends BaseProps, AriaLabellingProps {
+export interface FormulaBarProps extends RefProps<HTMLDivElement>, BaseProps, AriaLabellingProps {
   /** The active cell, by zero-based row and column; null while no cell is active. */
   cell: CellCoordinates | null;
   /** The active cell's raw content as the caller stores it, such as a formula. */

@@ -16,7 +16,7 @@ import { useRef, type ReactNode, type SyntheticEvent } from 'react';
 import { Toolbar } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
@@ -24,7 +24,7 @@ import type { ChatFeedbackRating, MessageCommands } from './message-commands.js'
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { REANNOUNCE_MARK } from '../../utils/reannounce.js';
 
-interface MessageActionsBarProps extends BaseProps, AriaLabellingProps {
+interface MessageActionsBarProps extends BaseProps, RefProps<HTMLDivElement>, AriaLabellingProps {
   state: MessageCommands;
   /** The overlays, when the bar owns them. */
   children?: ReactNode;

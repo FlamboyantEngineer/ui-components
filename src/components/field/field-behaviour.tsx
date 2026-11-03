@@ -4,7 +4,16 @@
 // its message tooltip.
 
 import { getComposedActiveElement, isFocusLost } from '../../utils/focus-target.js';
-import { useCallback, useContext, useEffect, useRef, useState, type FocusEvent } from 'react';
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type FocusEvent,
+  type Ref,
+} from 'react';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { DialogEnteringContext } from '../../utils/dialog-entering.js';
 import type { Key } from '../../core/props.js';
 import type { SlotRegistry } from '../../utils/slot-registry.js';
@@ -77,6 +86,8 @@ interface FieldBehaviourOptions {
   messageDisplay: FieldMessageDisplay;
   /** The field has help, which its menu offers. */
   hasHelp: boolean;
+  /** The caller's ref to the root element. */
+  ref: Ref<HTMLDivElement> | undefined;
 }
 
 /**
@@ -107,8 +118,9 @@ export function useFieldBehaviour(
     state.validation.message ?? null,
     focus.isFocused,
   );
+  const rootRef = useMergedRefs(slots.ref('root'), options.ref);
   const contextMenu = useFieldContextMenu(menuModel, {
-    ref: slots.ref('root'),
+    ref: rootRef,
     onKeyDown: (event) => {
       onKeyDown(event);
       tooltip.onKeyDown(event);

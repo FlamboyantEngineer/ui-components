@@ -1,9 +1,10 @@
 'use client';
 
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import type { ReactNode } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { ToolbarRow, ToolbarRowSeparator } from '../layout/layout.js';
 import { BlockTypeSelect, FormatButtons, LinkButton } from './format-controls.js';
@@ -14,7 +15,8 @@ import { useFocusReturn } from './use-focus-return.js';
 /** How the block type select draws its options. */
 export type BlockTypeLabels = 'plain' | 'preview';
 
-export interface FormatToolbarProps extends BaseProps, AriaLabellingProps {
+export interface FormatToolbarProps
+  extends RefProps<HTMLDivElement>, BaseProps, AriaLabellingProps {
   /** Controls after the built-in ones, such as an `InsertMenuButton` or the caller's own. */
   children?: ReactNode;
   /**
@@ -33,6 +35,7 @@ const hooks = createHooks('format-toolbar', ['block-type', 'block-preview', 'lin
  * Commands the schema lacks are left out.
  */
 export function FormatToolbar({
+  ref,
   className,
   children,
   blockTypeLabels = 'plain',
@@ -41,6 +44,7 @@ export function FormatToolbar({
   const strings = useUiStrings();
   const controller = useRichTextController();
   const { ref: returnFocusRef, request: returnFocus } = useFocusReturn(controller);
+  const rootRefs = useMergedRefs(returnFocusRef, ref);
   const label = rest['aria-labelledby']
     ? undefined
     : (rest['aria-label'] ?? strings.textFormatting);
@@ -51,7 +55,7 @@ export function FormatToolbar({
       className={mergeClassNames(hooks.className, className)}
       justify="start"
       space="xs"
-      ref={returnFocusRef}
+      ref={rootRefs}
     >
       <FormatButtons controller={controller} items={getHistoryItems(strings)} />
       <ToolbarRowSeparator />

@@ -12,7 +12,7 @@ import {
 } from '../../primitives/index.js';
 import type { FocusEventProps, KeyboardEventProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, ControlSize } from '../../core/props.js';
+import type { BaseProps, ControlSize, RefProps } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { useNativeReset } from '../../utils/use-native-reset.js';
@@ -35,7 +35,12 @@ import { leaveComposingEnter } from '../../utils/is-composing-key.js';
 export type SearchFieldLabelLayout = Extract<FieldLabelLayout, 'label-control' | 'control-only'>;
 
 export interface SearchFieldProps
-  extends BaseProps, FieldTextInputProps, FocusEventProps, KeyboardEventProps {
+  extends
+    RefProps<HTMLDivElement>,
+    BaseProps,
+    FieldTextInputProps,
+    FocusEventProps,
+    KeyboardEventProps {
   /** The accessible name of the search box, and its visible label in the `label-control` layout. */
   label: string;
   /** The query, controlled. */

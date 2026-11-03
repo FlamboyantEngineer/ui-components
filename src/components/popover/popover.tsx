@@ -1,5 +1,6 @@
 'use client';
 
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { CloseGlyph } from '../../core/glyphs.js';
 import {
   createContext,
@@ -28,7 +29,7 @@ import type {
   OverlayPositionProps,
 } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { stopConsumedEscape } from '../../utils/consumed-escape.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
@@ -51,6 +52,7 @@ export interface PopoverTriggerProps extends OpenStateProps {
 interface PopoverPanelProps
   extends
     BaseProps,
+    RefProps<HTMLElement>,
     OverlayPositionProps,
     Omit<OverlayDismissProps, 'isDismissable'>,
     Pick<OpenStateProps, 'isOpen' | 'onOpenChange'> {
@@ -80,6 +82,7 @@ export interface PopoverRenderProps {
 
 export interface PopoverProps
   extends
+    RefProps<HTMLElement>,
     BaseProps,
     OverlayPositionProps,
     Omit<OverlayDismissProps, 'isDismissable'>,
@@ -213,6 +216,7 @@ function useScrollGuardedState({
  * layer, with an optional arrow. It adds no hooks of its own; the caller passes them.
  */
 export function PopoverPanel({
+  ref,
   arrowClassName,
   isHint = false,
   children,
@@ -221,6 +225,7 @@ export function PopoverPanel({
 }: PopoverPanelProps) {
   const zIndex = useLayerZIndex('dropdown');
   const [panel, setPanel] = useState<HTMLElement | null>(null);
+  const panelRefs = useMergedRefs(setPanel, ref);
   const gutter = usePopoverGutter(panel);
   const guarded = useScrollGuardedState({
     isOpen: rest.isOpen,
@@ -245,7 +250,7 @@ export function PopoverPanel({
           zIndex,
           translate: placement === 'left' && gutter > 0 ? `${gutter}px 0` : style?.translate,
         })}
-        ref={setPanel}
+        ref={panelRefs}
       >
         {arrowClassName ? <OverlayArrow className={arrowClassName} /> : null}
         <FormBoundary>{children}</FormBoundary>

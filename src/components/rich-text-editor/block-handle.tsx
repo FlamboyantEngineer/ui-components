@@ -1,12 +1,13 @@
 'use client';
 
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { DragHandleGlyph, MoreVerticalGlyph } from '../../core/glyphs.js';
 import { useEditorEventCallback } from '@handlewithcare/react-prosemirror';
 import { NodeSelection, TextSelection } from 'prosemirror-state';
 import type { EditorView } from 'prosemirror-view';
 import { useLayoutEffect, useState, type DragEvent, type FocusEvent } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
@@ -22,7 +23,7 @@ import { useRichTextEditorContext } from './rich-text-context.js';
 import { useFocusReturn } from './use-focus-return.js';
 import { isHTMLElement } from '../../utils/is-element.js';
 
-export interface BlockHandleProps extends BaseProps {
+export interface BlockHandleProps extends RefProps<HTMLDivElement>, BaseProps {
   /** Shows the grip that drags the block. Defaults to `true`. */
   grip?: boolean | undefined;
   /** Shows the block menu. Defaults to `true`. */
@@ -92,13 +93,15 @@ function selectBlock(view: EditorView, pos: number) {
  * keyboard. `grip` and `menu` choose the controls; while either shows, the surface keeps a gutter
  * as wide as those controls (`data-gutter`: `both`, `grip` or `menu`). An editor without a block handle leaves `BlockHandle` out.
  */
-export function BlockHandle({ className, grip = true, menu = true, ...rest }: BlockHandleProps) {
+export function BlockHandle({ className, grip = true, menu = true, ...props }: BlockHandleProps) {
+  const { ref, ...rest } = props;
   const strings = useUiStrings();
   const controller = useRichTextController();
   const { surfaceRef, reserveGutter } = useRichTextEditorContext('BlockHandle');
   const hasControls = grip || menu;
   useLayoutEffect(() => reserveGutter({ grip, menu }), [grip, menu, reserveGutter]);
   const { ref: returnFocusRef, request: returnFocus } = useFocusReturn(controller);
+  const rootRefs = useMergedRefs(returnFocusRef, ref);
   const [isMenuOpen, setMenuOpen] = useState(false);
   // The dragged block and its document, held so the handle, and its grip that ends the drag, stay.
   const [dragged, setDragged] = useState<BlockDragSource | null>(null);
@@ -130,7 +133,7 @@ export function BlockHandle({ className, grip = true, menu = true, ...rest }: Bl
       <div
         {...hooks.root({ className, props: rest, data: { dragging: dragged !== null } })}
         style={{ position: 'absolute', top: target.top }}
-        ref={returnFocusRef}
+        ref={rootRefs}
         onFocus={target.onFocus}
         onBlur={(event: FocusEvent) => target.onBlur(event)}
       >

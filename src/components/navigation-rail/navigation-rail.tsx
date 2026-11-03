@@ -1,11 +1,12 @@
 'use client';
 
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { ChevronDoubleLeftGlyph, ChevronDoubleRightGlyph } from '../../core/glyphs.js';
 import { useId, useMemo, useRef, type ReactNode, type RefObject } from 'react';
 import { FocusScope, useFocusManager, useLocale } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { measuredProperty } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStorage, useUiStrings } from '../../core/provider.js';
 import { booleanCodec, numberCodec } from '../../utils/json-codec.js';
 import { useOwnedPreview } from '../../utils/use-owned-preview.js';
@@ -24,7 +25,7 @@ import { Button } from '../button/button.js';
 import { ResizeHandle } from '../split-view/split-view.js';
 import { NavigationRailContext, navigationRailHooks as hooks } from './navigation-rail-state.js';
 
-export interface NavigationRailProps extends BaseProps, AriaLabellingProps {
+export interface NavigationRailProps extends RefProps<HTMLElement>, BaseProps, AriaLabellingProps {
   /** The `NavigationRailSection`s. */
   children?: ReactNode;
   /** Content above the sections, such as a product link; the collapse button follows it. */
@@ -181,6 +182,7 @@ function useRailFocusRecovery(rootRef: RefObject<HTMLElement | null>) {
  * can be resized, and its collapsed state and width persist through the provider storage.
  */
 export function NavigationRail({
+  ref,
   children,
   header,
   footer,
@@ -199,6 +201,7 @@ export function NavigationRail({
 }: NavigationRailProps) {
   const bodyId = `${useId()}-body`;
   const rootRef = useRef<HTMLElement>(null);
+  const rootRefs = useMergedRefs(rootRef, ref);
   useRailFocusRecovery(rootRef);
   const [isCollapsed, setCollapsed] = usePersistedValue({
     value: collapsedProp,
@@ -223,16 +226,15 @@ export function NavigationRail({
     () => ({ isCollapsed, expand: () => setCollapsed(false) }),
     [isCollapsed, setCollapsed],
   );
-  const style = isResizable ? measuredProperty('navigation-rail-width', width) : undefined;
   return (
     <nav
-      ref={rootRef}
+      ref={rootRefs}
       {...rest}
       {...hooks.root({
         className,
         data: { collapsed: isCollapsed, resizable: isResizable, resizing: liveWidth !== null },
       })}
-      style={style}
+      style={isResizable ? measuredProperty('navigation-rail-width', width) : undefined}
     >
       <NavigationRailContext value={state}>
         <div {...hooks.slot('header')}>

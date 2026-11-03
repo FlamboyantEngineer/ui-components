@@ -1,9 +1,10 @@
 'use client';
 
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { CheckGlyph, ErrorGlyph, OfflineGlyph, type GlyphComponent } from '../../core/glyphs.js';
 import { useRef } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useEnterExit } from '../../utils/use-enter-exit.js';
 import { useDelayedFlag } from '../../utils/use-delayed-flag.js';
@@ -20,7 +21,7 @@ export type SaveStatusPhase = 'idle' | 'dirty' | 'saving' | 'saved' | 'error' | 
 /** The phases that show a label. */
 export type SaveStatusLabelPhase = Exclude<SaveStatusPhase, 'idle'>;
 
-export interface SaveStatusProps extends BaseProps {
+export interface SaveStatusProps extends RefProps<HTMLSpanElement>, BaseProps {
   /** Where the changes stand. */
   phase: SaveStatusPhase;
   /** Replaces the provider's label of any phase, such as the reason a save failed. */
@@ -44,6 +45,7 @@ const phaseGlyphs: Partial<Record<SaveStatusPhase, GlyphComponent>> = {
  * is announced without moving focus, and a Retry button after a failed save.
  */
 export function SaveStatus({
+  ref,
   phase,
   labels,
   onRetry,
@@ -52,9 +54,10 @@ export function SaveStatus({
   ...rest
 }: SaveStatusProps) {
   const strings = useUiStrings();
-  const ref = useRef<HTMLSpanElement>(null);
+  const rootRef = useRef<HTMLSpanElement>(null);
+  const rootRefs = useMergedRefs(rootRef, ref);
   const isHidden = useDelayedFlag(phase === 'saved', hideSavedAfter);
-  const { isMounted, isEntering, isExiting } = useEnterExit(ref, phase !== 'idle' && !isHidden);
+  const { isMounted, isEntering, isExiting } = useEnterExit(rootRef, phase !== 'idle' && !isHidden);
   const glyph = phaseGlyphs[phase];
   const showLabel = isMounted && phase !== 'idle';
   return (
@@ -64,7 +67,7 @@ export function SaveStatus({
         className,
         data: { phase, entering: isEntering, exiting: isExiting },
       })}
-      ref={ref}
+      ref={rootRefs}
     >
       <span {...hooks.slot('message')} role="status">
         {showLabel ? (

@@ -4,12 +4,12 @@
 // (specs/MESSAGE-COMPOSER.md, UIC-MESSAGE-COMPOSER-8).
 
 import { mergeClassNames } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import type { IconSource } from '../icon/icon.js';
 import { ComposerControlButton } from './composer-control-button.js';
 import { composerHooks as hooks } from './composer-hooks.js';
 
-export interface MessageComposerToggleProps extends BaseProps {
+export interface MessageComposerToggleProps extends RefProps<HTMLButtonElement>, BaseProps {
   /** The mode's name: the button's label and accessible name. */
   label: string;
   /** Drawn before the label, and alone while the composer is compact. */

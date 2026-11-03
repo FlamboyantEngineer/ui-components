@@ -17,7 +17,7 @@ import {
 } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks, measuredProperty, pickDataAttributes } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { mergeProps } from '../../utils/merge-props.js';
@@ -59,12 +59,13 @@ export type {
 export type { ToastStackSettings } from './toast-stack.js';
 export type { ToastSwipeDirection } from './use-toast-swipe.js';
 
-export interface ToastRegionProps extends ToastStackSettings, AriaLabellingProps, BaseProps {
+export interface ToastRegionProps
+  extends RefProps<HTMLDivElement>, ToastStackSettings, AriaLabellingProps, BaseProps {
   /** The queue whose toasts the region shows. */
   queue: ToastQueue;
 }
 
-export interface ToastListProps extends ToastStackSettings, BaseProps {
+export interface ToastListProps extends RefProps<HTMLOListElement>, ToastStackSettings, BaseProps {
   /** The queue whose toasts the list draws. */
   queue: ToastQueue;
 }
@@ -253,6 +254,7 @@ export function ToastRegion({
  * for previews and pages that place a static stack themselves.
  */
 export function ToastList({
+  ref,
   queue,
   swipeDirection,
   swipeThreshold,
@@ -278,6 +280,7 @@ export function ToastList({
     <ToastStackProvider value={stack}>
       <ToastStateContext value={state}>
         <AriaToastList
+          ref={ref}
           className={listHooks.root({ className }).className}
           render={(props) => <ol {...props} {...attributes} />}
         >

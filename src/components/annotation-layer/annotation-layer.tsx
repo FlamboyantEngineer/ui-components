@@ -1,5 +1,6 @@
 'use client';
 
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import {
   useCallback,
   useImperativeHandle,
@@ -11,7 +12,7 @@ import {
   type Ref,
 } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { AnnotationContext } from './annotation-context.js';
@@ -34,7 +35,7 @@ export { AnnotationMargin } from './annotation-margin.js';
 export type { AnnotationCardState, AnnotationMarginProps } from './annotation-margin.js';
 export type { Annotation, AnnotationRect } from './anchor-geometry.js';
 
-export interface AnnotationLayerProps extends BaseProps {
+export interface AnnotationLayerProps extends RefProps<HTMLDivElement>, BaseProps {
   /** The annotations, each anchored by rectangles or by an element inside the layer. */
   annotations: readonly Annotation[];
   /** The active annotation, controlled; `null` for none. */
@@ -107,6 +108,7 @@ const noRects: readonly AnnotationRect[] = [];
  * each annotation.
  */
 export function AnnotationLayer({
+  ref,
   annotations,
   currentKey,
   defaultCurrentKey = null,
@@ -122,6 +124,7 @@ export function AnnotationLayer({
     onCurrentKeyChange,
   );
   const [layer, setLayer] = useState<HTMLDivElement | null>(null);
+  const rootRefs = useMergedRefs(setLayer, ref);
   const { measured, remeasure } = useMeasuredTargets(layer, annotations, children);
   useImperativeHandle(handleRef, () => ({ remeasure }), [remeasure]);
 
@@ -156,7 +159,7 @@ export function AnnotationLayer({
     <div
       {...rest}
       {...hooks.root({ className, props: rest })}
-      ref={setLayer}
+      ref={rootRefs}
       style={{ position: 'relative' }}
       onClick={onClick}
     >

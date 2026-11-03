@@ -5,13 +5,14 @@ import type { PointerEvent } from 'react';
 import { Button as AriaButton } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { armElementDrag } from '../../utils/pointer-drag.js';
 import { Icon } from '../icon/icon.js';
 import { isElement } from '../../utils/is-element.js';
 import { getOwnerWindow } from '../../utils/owner-window.js';
 
-export interface DragHandleProps extends BaseProps, AriaLabellingProps {
+export interface DragHandleProps
+  extends RefProps<HTMLButtonElement>, BaseProps, AriaLabellingProps {
   /** Refuses dragging, for a row that cannot move. */
   isDisabled?: boolean | undefined;
   /** Keeps the handle out of the tab sequence. Defaults to `true`; the arrow keys reach it. */

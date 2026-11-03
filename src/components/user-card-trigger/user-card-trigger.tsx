@@ -1,11 +1,12 @@
 'use client';
 
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { createContext, useContext, useId, useRef, type ReactNode } from 'react';
 import { Button as AriaButton, Provider } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { OpenStateProps, PressEventProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { HoverCard, type HoverCardTriggerProps } from '../hover-card/hover-card.js';
 import { PopoverPanel } from '../popover/popover.js';
 import { containsFocus } from '../../utils/focus-target.js';
@@ -16,6 +17,7 @@ export type { UserCardTriggerType } from './user-card-opening.js';
 
 export interface UserCardTriggerProps
   extends
+    RefProps<HTMLButtonElement>,
     OpenStateProps,
     Pick<HoverCardTriggerProps, 'delay' | 'closeDelay'>,
     PressEventProps,
@@ -65,6 +67,7 @@ export function useUserCardOwner(): UserCardOwner | null {
  * stays the same element while `card` comes and goes.
  */
 export function UserCardTrigger({
+  ref,
   card,
   children,
   trigger = 'press',
@@ -82,6 +85,7 @@ export function UserCardTrigger({
   // A card open when the trigger turns disabled closes once and stays closed when it is enabled.
   useCloseWhenLocked(isOpen, Boolean(isDisabled), () => setOpen(false));
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const rootRefs = useMergedRefs(buttonRef, ref);
   const hasCard = card !== undefined && card !== null && card !== false;
   const isPreview = trigger === 'hover';
   const fallbackId = useId();
@@ -116,7 +120,7 @@ export function UserCardTrigger({
         {...rest}
         {...opening.triggerProps}
         id={triggerId}
-        ref={buttonRef}
+        ref={rootRefs}
         isDisabled={isDisabled}
         onPress={(event) => {
           onPress?.(event);

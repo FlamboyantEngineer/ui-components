@@ -5,7 +5,7 @@
 
 import { useCallback, useRef, useState, type FormEvent, type RefObject } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { DateTimeField } from '../date-time-field/date-time-field.js';
@@ -30,7 +30,7 @@ export interface TimelineItemEdit {
   assignees: readonly TimelinePerson[] | undefined;
 }
 
-export interface TimelineItemEditorProps extends BaseProps {
+export interface TimelineItemEditorProps extends RefProps<HTMLDivElement>, BaseProps {
   /** The item to edit; the editor is open while it is set. */
   item: TimelineItem | null;
   /** Called once with the edited item when Save finds every field valid; the editor then closes. */
@@ -183,6 +183,7 @@ function ItemForm({ item, people, formRef, onSave }: ItemFormProps) {
  * closing, starts a new draft from the item as it is then, which saves once.
  */
 export function TimelineItemEditor({
+  ref,
   item,
   onSave,
   onClose,
@@ -203,6 +204,7 @@ export function TimelineItemEditor({
   const label = shown?.label ?? '';
   return (
     <Modal
+      ref={ref}
       {...hooks.root({ className })}
       isOpen={item !== null}
       onOpenChange={(isOpen) => {

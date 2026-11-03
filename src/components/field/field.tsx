@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState, type ReactNode, type RefObject } from 'react';
-import type { BaseProps, ControlSize, Key } from '../../core/props.js';
+import type { BaseProps, ControlSize, Key, RefProps } from '../../core/props.js';
 import { createSlotRegistry } from '../../utils/slot-registry.js';
 import {
   defaultFieldMenu,
@@ -29,7 +29,7 @@ import type { FieldIssue, FieldState, FieldValidation } from './field-state.js';
 import { FieldMessageTooltip, type FieldMessageDisplay } from './field-message-tooltip.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 
-export interface FieldProps<T> extends BaseProps {
+export interface FieldProps<T> extends BaseProps, RefProps<HTMLDivElement> {
   /** The field's controller, from `useFieldState`. */
   state: FieldState<T>;
   /** The field's name: the label text, and the accessible name of its control. */
@@ -247,13 +247,14 @@ export function Field<T>({
   children,
   className,
   id,
+  ref,
   ...rest
 }: FieldProps<T>) {
   const ids = useFieldIds(id);
   const [slots] = useState<FieldSlots>(() => createSlotRegistry());
   const behaviour = useFieldBehaviour(state, slots, {
     ...{ label, menu, menuIcons, onMenuAction },
-    ...{ commitOnBlur, autoFocus, messageDisplay },
+    ...{ commitOnBlur, autoFocus, messageDisplay, ref },
     hasHelp: !isEmptyNode(help),
   });
   const controlSlot = useRef<HTMLDivElement>(null);

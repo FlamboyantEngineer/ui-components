@@ -3,7 +3,7 @@
 import { ChevronDownGlyph } from '../../core/glyphs.js';
 import { useState, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key, Tone } from '../../core/props.js';
+import type { BaseProps, Key, Tone, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Badge } from '../badge/badge.js';
 import { Button } from '../button/button.js';
@@ -49,7 +49,7 @@ export interface TransitionMenuChange {
   comment?: string | undefined;
 }
 
-export interface TransitionMenuProps extends BaseProps {
+export interface TransitionMenuProps extends RefProps<HTMLSpanElement>, BaseProps {
   /** Every state, to name and colour the current one and the targets. */
   states: readonly TransitionMenuState[];
   /** The `id` of the current state. */
@@ -175,6 +175,7 @@ function useTransitionDialog(
  * may ask for confirmation or a required comment in a dialog before it runs.
  */
 export function TransitionMenu({
+  ref,
   states,
   value,
   transitions,
@@ -213,7 +214,7 @@ export function TransitionMenu({
   };
   const data = { pending: isPending, disabled: isDisabled, readonly: transitions.length === 0 };
   return (
-    <span id={id} {...hooks.root({ className, props: rest, data })}>
+    <span ref={ref} id={id} {...hooks.root({ className, props: rest, data })}>
       {transitions.length === 0 ? (
         badge
       ) : (

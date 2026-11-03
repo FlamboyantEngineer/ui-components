@@ -3,7 +3,7 @@
 import { CheckGlyph, CloseGlyph } from '../../core/glyphs.js';
 import { useId, useState, type ReactNode } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
-import type { BaseProps, ControlSize } from '../../core/props.js';
+import type { BaseProps, ControlSize, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { Form } from '../form/form.js';
@@ -28,7 +28,7 @@ export type {
   DecisionControlSignature,
 } from './decision-parts.js';
 
-export interface DecisionControlProps extends BaseProps {
+export interface DecisionControlProps extends RefProps<HTMLDivElement>, BaseProps {
   /** Names the choice of decision. Defaults to the provider's `yourDecision` string. */
   label?: string | undefined;
   /** The decisions, in order. Defaults to Approve, then Reject, which asks for a comment. */

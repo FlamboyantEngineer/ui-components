@@ -14,7 +14,7 @@ import {
   type KeyboardEvent,
 } from '../../primitives/index.js';
 import { mergeClassNames } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { useExpandGlyph } from '../expand-toggle/expand-toggle.js';
@@ -26,12 +26,12 @@ import {
   type DisclosureIndicatorPosition,
 } from './disclosure-hooks.js';
 
-export interface DisclosureHeaderProps extends BaseProps {
+export interface DisclosureHeaderProps extends RefProps<HTMLDivElement>, BaseProps {
   /** A `DisclosureTitle` and the controls beside it, which do not toggle the disclosure. */
   children?: ReactNode;
 }
 
-export interface DisclosureTitleProps extends BaseProps {
+export interface DisclosureTitleProps extends RefProps<HTMLHeadingElement>, BaseProps {
   /** The title, inside the trigger. */
   children?: ReactNode;
   /** The trigger button, such as to move focus to it. */
@@ -47,7 +47,7 @@ export interface DisclosurePanelRenderState {
   isFocusVisibleWithin: boolean;
 }
 
-export interface DisclosurePanelProps extends BaseProps {
+export interface DisclosurePanelProps extends RefProps<HTMLDivElement>, BaseProps {
   /** The panel's role. Defaults to `group`. */
   role?: DisclosurePanelRole | undefined;
   /** The content that the disclosure shows and hides. */

@@ -11,7 +11,14 @@ import {
 } from '../../primitives/index.js';
 import type { PressEventProps, SelectionProps } from '../../core/events.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
-import type { BaseProps, Key, SelectableState, SelectionMode, Tone } from '../../core/props.js';
+import type {
+  BaseProps,
+  Key,
+  SelectableState,
+  SelectionMode,
+  Tone,
+  RefProps,
+} from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
 import { toCollectionSelectionProps } from '../../utils/collection-selection.js';
 import { keyCollectionChildren } from '../../utils/key-collection-children.js';
@@ -36,7 +43,8 @@ export interface MenuItemRenderState extends SelectableState {
   isOpen: boolean;
 }
 
-export interface MenuItemProps extends Omit<BaseProps, 'id'>, PressEventProps {
+export interface MenuItemProps
+  extends RefProps<HTMLDivElement>, Omit<BaseProps, 'id'>, PressEventProps {
   /** Identifies the item in `onAction`, selections and `disabledKeys`. */
   id?: Key | undefined;
   /** Makes the item a link to this URL, navigated through the provider's `navigate` when set. */
@@ -73,7 +81,7 @@ export interface MenuItemProps extends Omit<BaseProps, 'id'>, PressEventProps {
 }
 
 export interface MenuSectionProps
-  extends Omit<BaseProps, 'id'>, Omit<SelectionProps, 'disabledKeys'> {
+  extends RefProps<HTMLElement>, Omit<BaseProps, 'id'>, Omit<SelectionProps, 'disabledKeys'> {
   /** Identifies the section among the menu's entries. */
   id?: Key | undefined;
   /** A heading drawn above the section's items, which also names the group. */
@@ -85,7 +93,7 @@ export interface MenuSectionProps
   children?: ReactNode;
 }
 
-export type MenuSeparatorProps = Omit<BaseProps, 'id'>;
+export type MenuSeparatorProps = RefProps<HTMLElement> & Omit<BaseProps, 'id'>;
 
 const itemHooks = createHooks('menu-item', [
   'check',

@@ -4,7 +4,7 @@ import { PlusGlyph } from '../../core/glyphs.js';
 import { useRef, useState, type ReactNode } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { assignOccurrenceKeys, toOccurrenceKey } from '../../utils/stable-keys.js';
 import { Button } from '../button/button.js';
@@ -13,7 +13,7 @@ import { filterBarHooks as hooks } from './filter-bar-hooks.js';
 import { FilterChip } from './filter-chip.js';
 import { createFilterCondition, type FilterCondition, type FilterField } from './filter-model.js';
 
-export interface FilterBarProps extends BaseProps, AriaLabellingProps {
+export interface FilterBarProps extends RefProps<HTMLDivElement>, BaseProps, AriaLabellingProps {
   /** The fields records can be filtered by, in the order the add menu lists them. */
   fields: readonly FilterField[];
   /** The active filters, controlled. */

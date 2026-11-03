@@ -2,7 +2,7 @@
 
 import { useId } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { ChatSourceSummary, type ChatSource } from './chat-source-summary.js';
 
@@ -17,7 +17,7 @@ export interface ChatSourcesData {
   sources: readonly ChatSource[];
 }
 
-export interface ChatSourcesProps extends BaseProps, ChatSourcesData {}
+export interface ChatSourcesProps extends RefProps<HTMLDivElement>, BaseProps, ChatSourcesData {}
 
 const hooks = createHooks('chat-sources', ['label', 'list', 'item', 'title', 'site', 'snippet']);
 
@@ -25,11 +25,11 @@ const hooks = createHooks('chat-sources', ['label', 'list', 'item', 'title', 'si
  * The sources an answer drew on, as a numbered list labelled by their count: each one's title
  * (linking to it when it has a URL), its site and a snippet. Numbers match `ChatCitation` markers.
  */
-export function ChatSources({ sources, className, id, ...rest }: ChatSourcesProps) {
+export function ChatSources({ ref, sources, className, id, ...rest }: ChatSourcesProps) {
   const strings = useUiStrings();
   const labelId = useId();
   return (
-    <div {...hooks.root({ className, props: rest })} id={id}>
+    <div ref={ref} {...hooks.root({ className, props: rest })} id={id}>
       <span {...hooks.slot('label')} id={labelId}>
         {strings.chatSourcesLabel(sources.length)}
       </span>

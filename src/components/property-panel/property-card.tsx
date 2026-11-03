@@ -10,7 +10,7 @@ import {
 } from '../../primitives/index.js';
 import { FieldScopeContext, useRevealScope } from '../field/field.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { useExpandGlyph } from '../expand-toggle/expand-toggle.js';
@@ -27,7 +27,8 @@ import {
   type PropertyExpansionProps,
 } from './property-disclosure.js';
 
-export interface PropertyCardProps extends Omit<BaseProps, 'id'>, PropertyExpansionProps {
+export interface PropertyCardProps
+  extends RefProps<HTMLDivElement>, Omit<BaseProps, 'id'>, PropertyExpansionProps {
   /** The card's name, in its trigger. A query matches it for every row inside. */
   name: string;
   /** A short summary of the values inside, after the name. */

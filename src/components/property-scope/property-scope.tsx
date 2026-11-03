@@ -3,7 +3,7 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import { useLatest } from '../../utils/use-latest.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { EmptyState } from '../empty-state/empty-state.js';
@@ -15,7 +15,7 @@ import {
   type PropertyScopeFilter,
 } from './scope-tally.js';
 
-export interface PropertyScopeProps extends BaseProps {
+export interface PropertyScopeProps extends RefProps<HTMLDivElement>, BaseProps {
   /** The query as typed. Property rows below stay visible only while their texts hold every term. */
   query?: string | undefined;
   /**

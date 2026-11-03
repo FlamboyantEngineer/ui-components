@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { CopyButton } from '../copy-button/copy-button.js';
@@ -12,7 +12,7 @@ import { MetaLine } from '../meta-line/meta-line.js';
 import { RecordLabel } from '../record-label/record-label.js';
 import { useHeadingLevel, type HeadingLevel } from '../section-header/section-header.js';
 
-export interface RecordHeaderProps extends BaseProps {
+export interface RecordHeaderProps extends RefProps<HTMLDivElement>, BaseProps {
   /** The record's identifier, such as `REQ-12`, shown with a button that copies it. */
   identifier: string;
   /** A icon component or rendered element for the record's kind, before the identifier. Decorative. */
@@ -51,6 +51,7 @@ const hooks = createHooks('record-header', [
  * place, its state, a line of metadata and its actions.
  */
 export function RecordHeader({
+  ref,
   identifier,
   icon,
   title,
@@ -68,7 +69,11 @@ export function RecordHeader({
   const level = useHeadingLevel(headingLevel);
   const Heading = `h${level}` as const;
   return (
-    <div id={id} {...hooks.root({ className, props: rest, data: { editable: !!onTitleChange } })}>
+    <div
+      ref={ref}
+      id={id}
+      {...hooks.root({ className, props: rest, data: { editable: !!onTitleChange } })}
+    >
       <div {...hooks.slot('identity')}>
         <RecordLabel
           identifier={identifier}

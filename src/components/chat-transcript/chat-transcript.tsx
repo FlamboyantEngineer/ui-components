@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { ScrollRegion } from '../scroll-region/scroll-region.js';
 import { TranscriptAnnouncerRegion } from './transcript-announcer.js';
@@ -28,7 +28,8 @@ export type { ChatTranscriptScrollMode } from './transcript-runtime.js';
 /** `framed` draws the transcript on its own canvas; `embedded` uses the surface it sits in. */
 export type ChatTranscriptPresentation = 'framed' | 'embedded';
 
-export interface ChatTranscriptProps extends BaseProps, AriaLabellingProps {
+export interface ChatTranscriptProps
+  extends RefProps<HTMLDivElement>, BaseProps, AriaLabellingProps {
   /** The messages, usually `ChatMessage` elements with an `id` each, oldest first. */
   children?: ReactNode;
   /** Shown while there are no messages, such as suggested first questions. */
@@ -103,6 +104,7 @@ function useFeedLabelling(labelling: AriaLabellingProps): AriaLabellingProps {
 
 /** The transcript of one conversation; `ChatTranscript` starts it over for another. */
 function TranscriptView({
+  ref,
   children,
   emptyState,
   scrollMode = 'follow',
@@ -138,6 +140,7 @@ function TranscriptView({
   });
   return (
     <div
+      ref={ref}
       {...hooks.root({
         className,
         props: rest,

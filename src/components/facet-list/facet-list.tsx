@@ -4,7 +4,7 @@ import { useId, useState, type FocusEvent } from 'react';
 import { CheckboxGroup as AriaCheckboxGroup, useNumberFormatter } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { Checkbox } from '../checkbox/checkbox.js';
@@ -13,7 +13,7 @@ import { useHeadingLevel } from '../section-header/section-header.js';
 import { listFacetOptions, type FacetListOption } from './facet-options.js';
 import { isFilterableLength } from '../../utils/filterable-list.js';
 
-export interface FacetListProps extends BaseProps {
+export interface FacetListProps extends RefProps<HTMLDivElement>, BaseProps {
   /** The facet's name: the visible heading, which names the group of values. */
   label: string;
   /** The facet's values, in order. */
@@ -95,12 +95,38 @@ function FacetOption({
   );
 }
 
+interface FoldButtonProps {
+  isExpanded: boolean;
+  hiddenCount: number;
+  /** The id of the options it folds. */
+  controls: string;
+  onToggle: () => void;
+}
+
+/** Shows the values past the limit, or folds them away again. */
+function FoldButton({ isExpanded, hiddenCount, controls, onToggle }: FoldButtonProps) {
+  const strings = useUiStrings();
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      className={hooks.slotClass('toggle')}
+      aria-expanded={isExpanded}
+      aria-controls={controls}
+      onPress={onToggle}
+    >
+      {isExpanded ? strings.showLess : strings.showMoreValues(hiddenCount)}
+    </Button>
+  );
+}
+
 /**
  * The values of one facet as checkboxes with record counts, for narrowing a collection: an optional
  * search within the values, a fold past `limit` with a button to show the rest, and optionally the
  * ticked values first.
  */
 export function FacetList({
+  ref,
   label,
   options,
   value: controlledValue,
@@ -137,6 +163,7 @@ export function FacetList({
   const canFold = !activeQuery.trim() && options.length > limit;
   return (
     <div
+      ref={ref}
       {...hooks.root({ className, props: rest, data: { expanded: isExpanded && canFold } })}
       id={id}
       onFocus={frozen.onFocus}
@@ -167,16 +194,12 @@ export function FacetList({
       </AriaCheckboxGroup>
       {matchCount === 0 ? <p {...hooks.slot('empty')}>{strings.noResults}</p> : null}
       {canFold ? (
-        <Button
-          variant="ghost"
-          size="sm"
-          className={hooks.slotClass('toggle')}
-          aria-expanded={isExpanded}
-          aria-controls={optionsId}
-          onPress={() => setExpanded(!isExpanded)}
-        >
-          {isExpanded ? strings.showLess : strings.showMoreValues(hiddenCount)}
-        </Button>
+        <FoldButton
+          isExpanded={isExpanded}
+          hiddenCount={hiddenCount}
+          controls={optionsId}
+          onToggle={() => setExpanded(!isExpanded)}
+        />
       ) : null}
     </div>
   );

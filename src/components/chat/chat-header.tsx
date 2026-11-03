@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Avatar, splitAvatarIdentity } from '../avatar/avatar.js';
 import { AvatarGroup, type AvatarGroupPerson } from '../avatar-group/avatar-group.js';
@@ -10,7 +10,7 @@ import { useHeadingLevel } from '../section-header/section-header.js';
 import { chatHeaderHooks as hooks } from './chat-hooks.js';
 import { toMessageAuthor } from './chat-model.js';
 
-export interface ChatHeaderProps extends BaseProps {
+export interface ChatHeaderProps extends RefProps<HTMLDivElement>, BaseProps {
   /** The conversation's name, drawn as a heading. */
   title: string;
   /**
@@ -68,6 +68,7 @@ function HeaderAvatar({ participants }: { participants: readonly ChatParticipant
  * doing, and the host's controls.
  */
 export function ChatHeader({
+  ref,
   title,
   participants = [],
   status,
@@ -78,7 +79,7 @@ export function ChatHeader({
 }: ChatHeaderProps) {
   const Heading = `h${useHeadingLevel(undefined)}` as const;
   return (
-    <div id={id} {...hooks.root({ className, props: rest })}>
+    <div ref={ref} id={id} {...hooks.root({ className, props: rest })}>
       <HeaderAvatar participants={participants} />
       <div {...hooks.slot('text')}>
         <Heading {...hooks.slot('title')}>{title}</Heading>

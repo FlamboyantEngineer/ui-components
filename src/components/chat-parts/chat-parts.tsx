@@ -2,7 +2,7 @@
 
 import { readOwn } from '../../utils/read-own.js';
 import type { ReactNode } from 'react';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { ChatSteps } from '../chat-activity/chat-activity.js';
 import type { RecordLabelResolver } from '../record-label/record-label.js';
 import type {
@@ -64,7 +64,7 @@ export interface ChatToolRenderer {
   replaces?: 'body' | 'card' | undefined;
 }
 
-export interface ChatPartsProps extends BaseProps {
+export interface ChatPartsProps extends RefProps<HTMLDivElement>, BaseProps {
   /** The message's parts, in the order they were written. */
   parts: readonly ChatPart[];
   /** Prefixes the DOM ids of tool calls and questions, so equal part ids in two messages differ. */
@@ -173,6 +173,7 @@ export function toPartDomId(messageId: string, partId: string): string {
  * open on their own while they run, unless `expandsActivity` is false.
  */
 export function ChatParts({
+  ref,
   parts,
   messageId,
   isStreaming = false,
@@ -195,7 +196,7 @@ export function ChatParts({
     expansion,
   };
   return (
-    <div {...hooks.root({ className, props: rest })} id={id}>
+    <div ref={ref} {...hooks.root({ className, props: rest })} id={id}>
       {items.map((item, index) =>
         item.kind === 'steps' ? (
           <StepsView

@@ -1,5 +1,6 @@
 'use client';
 
+import type { RefProps } from '../../core/props.js';
 import { BellGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
@@ -24,7 +25,8 @@ export type NotificationCenterPresentation = 'popover' | 'drawer';
 
 export interface NotificationCenterProps
   extends
-    Omit<NotificationListProps, 'announcesArrivals'>,
+    RefProps<HTMLSpanElement>,
+    Omit<NotificationListProps, 'announcesArrivals' | 'ref'>,
     OpenStateProps,
     Pick<OverlayPositionProps, 'placement'> {
   /** How the list opens. Defaults to `popover`. */
@@ -43,6 +45,7 @@ const hooks = createHooks('notification-center', ['trigger', 'count', 'panel', '
  * the list is open or not.
  */
 export function NotificationCenter({
+  ref,
   presentation = 'popover',
   countMax = 99,
   title,
@@ -84,6 +87,7 @@ export function NotificationCenter({
   const openState = { isOpen, onOpenChange: setOpen };
   return (
     <span
+      ref={ref}
       {...dataAttributes}
       {...hooks.root({ className, data: { presentation, open: isOpen } })}
       id={id}

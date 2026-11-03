@@ -4,7 +4,7 @@ import { PlusGlyph } from '../../core/glyphs.js';
 import { useState, type ReactNode } from 'react';
 import { GridList, useFilter } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps, Selection } from '../../core/props.js';
+import type { BaseProps, Selection, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { EmptyState } from '../empty-state/empty-state.js';
@@ -17,6 +17,7 @@ import { ChatListRow, listHooks, type ChatConversation } from './chat-list-row.j
 
 export interface ChatListProps
   extends
+    RefProps<HTMLDivElement>,
     BaseProps,
     AriaLabellingProps,
     Pick<AttributionProps, 'fallbackAfterDays' | 'getNow' | 'timeZone'> {

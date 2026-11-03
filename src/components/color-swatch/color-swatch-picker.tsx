@@ -20,7 +20,7 @@ import {
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Size } from '../../core/props.js';
+import type { BaseProps, Size, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { ColorSwatch, isSwatchColor } from './color-swatch.js';
 import { useScopedDisabled } from '../field/field.js';
@@ -28,7 +28,8 @@ import { useScopedDisabled } from '../field/field.js';
 /** How the swatches are laid out: a grid (the arrow keys move in two dimensions) or a stack. */
 export type ColorSwatchPickerLayout = 'grid' | 'stack';
 
-export interface ColorSwatchPickerProps extends BaseProps, AriaLabellingProps {
+export interface ColorSwatchPickerProps
+  extends RefProps<HTMLDivElement>, BaseProps, AriaLabellingProps {
   /**
    * The picked colour, as a hex, `rgb()`, `hsl()` or `hsb()` string (controlled). Empty or unreadable
    * text picks nothing.
@@ -46,7 +47,8 @@ export interface ColorSwatchPickerProps extends BaseProps, AriaLabellingProps {
   children: ReactNode;
 }
 
-export interface ColorSwatchPickerItemProps extends Omit<BaseProps, 'id'> {
+export interface ColorSwatchPickerItemProps
+  extends RefProps<HTMLDivElement>, Omit<BaseProps, 'id'> {
   /**
    * The colour, as a hex, `rgb()`, `hsl()` or `hsb()` string; it is also what `onChange` receives.
    * An item whose colour is in another notation is left out.

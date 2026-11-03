@@ -1,7 +1,7 @@
 'use client';
 
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { AvatarGroup, type AvatarGroupPerson } from '../avatar-group/avatar-group.js';
 import { getDisplayName } from '../avatar/avatar.js';
@@ -9,7 +9,7 @@ import { getDisplayName } from '../avatar/avatar.js';
 /** Someone who has read up to a message. */
 export type ChatReader = AvatarGroupPerson;
 
-export interface ChatReadReceiptsProps extends BaseProps {
+export interface ChatReadReceiptsProps extends RefProps<HTMLSpanElement>, BaseProps {
   /** Who has read up to this message, in the order they read it. */
   readers: readonly ChatReader[];
   /** Show at most this many avatars; the rest join the `+N` count. Defaults to 3. */

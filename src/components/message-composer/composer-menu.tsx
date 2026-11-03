@@ -1,12 +1,13 @@
 'use client';
 
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { PlusGlyph } from '../../core/glyphs.js';
 // The composer's "+" menu: the host's categories of items, whose actions get the composer's helpers
 // (specs/MESSAGE-COMPOSER.md, UIC-MESSAGE-COMPOSER-5).
 
 import { useRef, type ReactElement } from 'react';
 import { mergeClassNames } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useFocusHandback } from '../../utils/use-focus-handback.js';
 import { Button } from '../button/button.js';
@@ -77,7 +78,7 @@ export interface MessageComposerMenuSection {
   items: readonly MessageComposerMenuItem[];
 }
 
-export interface MessageComposerMenuButtonProps extends BaseProps {
+export interface MessageComposerMenuButtonProps extends RefProps<HTMLButtonElement>, BaseProps {
   /** The menu's categories, in order. */
   sections: readonly MessageComposerMenuSection[];
   /** Leads the menu with a search field that narrows the items by label and description. */
@@ -163,6 +164,7 @@ function useComposerHelpers(composer: ComposerControlsValue) {
  * hidden file input, since the press that opens it is the host's menu item rather than a button.
  */
 export function MessageComposerMenuButton({
+  ref,
   sections,
   filterable,
   ...props
@@ -171,13 +173,14 @@ export function MessageComposerMenuButton({
   const composer = useComposerControlsValue('MessageComposerMenuButton');
   const { rootRef, isDisabled, onAttach } = composer;
   const { helpers, returnFocusRef, chooserRef } = useComposerHelpers(composer);
+  const rootRefs = useMergedRefs(returnFocusRef, ref);
   return (
     <>
       {/* Disabled with the composer, the trigger refuses to open and an open menu closes. */}
       <MenuTrigger isDisabled={isDisabled}>
         <Button
           {...props}
-          ref={returnFocusRef}
+          ref={rootRefs}
           className={mergeClassNames(hooks.slotClass('menu-button'), props.className)}
           icon={PlusGlyph}
           label={strings.composerMenu}

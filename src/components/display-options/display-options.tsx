@@ -2,7 +2,7 @@
 
 import { AdjustmentsGlyph } from '../../core/glyphs.js';
 import { useControllableState } from '../../core/controllable-state.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { Popover, PopoverTrigger } from '../popover/popover.js';
@@ -26,7 +26,7 @@ export type {
   DisplayOptionsValue,
 } from './display-options-model.js';
 
-export interface DisplayOptionsProps extends BaseProps {
+export interface DisplayOptionsProps extends RefProps<HTMLSpanElement>, BaseProps {
   /** The properties the collection has, in their declared order. */
   properties: readonly DisplayOptionsProperty[];
   /** How the collection shows its rows, controlled. */
@@ -49,6 +49,7 @@ export interface DisplayOptionsProps extends BaseProps {
  * row spacing. The value is plain data the caller applies to a table, a board or a timeline.
  */
 export function DisplayOptions({
+  ref,
   properties,
   value: valueProp,
   defaultValue,
@@ -68,7 +69,11 @@ export function DisplayOptions({
   );
   const section = { properties, value, onChange };
   return (
-    <span id={id} {...hooks.root({ className, props: rest, data: { disabled: isDisabled } })}>
+    <span
+      ref={ref}
+      id={id}
+      {...hooks.root({ className, props: rest, data: { disabled: isDisabled } })}
+    >
       <PopoverTrigger>
         <Button
           className={hooks.slotClass('trigger')}

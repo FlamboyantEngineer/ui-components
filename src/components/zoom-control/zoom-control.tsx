@@ -5,7 +5,7 @@ import { useId, useMemo, type ReactNode } from 'react';
 import { useNumberFormatter } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, NativeProps, ControlSize } from '../../core/props.js';
+import type { BaseProps, NativeProps, ControlSize, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 
 import { Button } from '../button/button.js';
@@ -18,7 +18,10 @@ import {
 } from './zoom-levels.js';
 
 export interface ZoomControlProps
-  extends Pick<NativeProps<'div'>, 'aria-label' | 'aria-labelledby'>, BaseProps {
+  extends
+    RefProps<HTMLDivElement>,
+    Pick<NativeProps<'div'>, 'aria-label' | 'aria-labelledby'>,
+    BaseProps {
   /** Finite zoom levels in percent (`100` means 100%). Sorted ascending; duplicates are ignored. */
   levels?: readonly number[] | undefined;
   /** The current zoom in percent (controlled). It may lie between levels, for example a fit-to-width value. */

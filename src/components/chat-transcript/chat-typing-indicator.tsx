@@ -1,11 +1,11 @@
 'use client';
 
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { getDisplayName } from '../avatar/avatar.js';
 
-export interface ChatTypingIndicatorProps extends BaseProps {
+export interface ChatTypingIndicatorProps extends RefProps<HTMLDivElement>, BaseProps {
   /** Who is typing, in the order they started. Nobody typing leaves the indicator empty. */
   names?: readonly string[] | undefined;
 }

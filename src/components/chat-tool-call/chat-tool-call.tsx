@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState, type ReactNode } from 'react';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { Disclosure, DisclosurePanel } from '../disclosure/disclosure.js';
 import { formatToolName } from './format-tool-call.js';
 import { ToolCallApproval, type ChatToolCallApproval } from './tool-call-approval.js';
@@ -48,7 +48,8 @@ export interface ChatToolCallData {
 /** How a tool call shows: a bordered `card`, or a quiet `row` among the steps of a reply. */
 export type ChatToolCallVariant = 'card' | 'row';
 
-export interface ChatToolCallProps extends Omit<BaseProps, 'id'>, ChatToolCallData {
+export interface ChatToolCallProps
+  extends RefProps<HTMLDivElement>, Omit<BaseProps, 'id'>, ChatToolCallData {
   /** How the call shows, published as `data-variant`: `card` (the default) or `row`. */
   variant?: ChatToolCallVariant | undefined;
   /** Lets the call run once. Shows Approve while the approval is pending. */
@@ -105,6 +106,7 @@ function useToolCallExpansion({
  * allow, with keyboard shortcuts, then the decision.
  */
 export function ChatToolCall({
+  ref,
   id,
   name,
   label,
@@ -141,6 +143,7 @@ export function ChatToolCall({
   const data = { variant, status, kind, autoApproved: approval?.isAutoApproved };
   return (
     <div
+      ref={ref}
       {...hooks.root({ className, props: rest, data })}
       id={id}
       aria-busy={status === 'running' || undefined}

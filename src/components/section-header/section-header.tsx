@@ -8,7 +8,7 @@ import {
   type DisclosureState,
 } from '../../primitives/index.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
 import { containsFocus } from '../../utils/focus-target.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
@@ -24,7 +24,7 @@ import {
 export { HeadingLevelContext, useHeadingLevel } from '../../core/heading-level.js';
 export type { HeadingLevel } from '../../core/heading-level.js';
 
-export interface SectionHeaderProps extends BaseProps {
+export interface SectionHeaderProps extends RefProps<HTMLElement>, BaseProps {
   /** The heading text. */
   title: ReactNode;
   /** Supporting text under the title. Omitted when it renders nothing. */

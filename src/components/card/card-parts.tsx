@@ -2,14 +2,15 @@
 
 // The parts a custom card header composes: the title that names the card and the whole-card action.
 
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { createContext, useContext, type ReactNode, type RefCallback } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { mergeClassNames } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useHeadingLevel, type HeadingLevel } from '../section-header/section-header.js';
 import { CardActionTitle, type CardActionOptions } from './card-action.js';
 
-export interface CardTitleProps extends Omit<BaseProps, 'id'> {
+export interface CardTitleProps extends RefProps<HTMLHeadingElement>, Omit<BaseProps, 'id'> {
   /** The title's content, which names the card. */
   children?: ReactNode;
 }
@@ -43,15 +44,16 @@ export const CardHeaderContext = createContext<CardHeaderParts | null>(null);
  * The title of a card's custom header: a heading at the card's level with the card's title id and
  * hook class, which names the card. Outside a custom header it is a plain heading.
  */
-export function CardTitle({ children, className, ...rest }: CardTitleProps) {
+export function CardTitle({ ref, children, className, ...rest }: CardTitleProps) {
   const parts = useContext(CardHeaderContext);
+  const titleRef = useMergedRefs(parts?.title.ref, ref);
   const automaticLevel = useHeadingLevel(undefined);
   const Heading = `h${parts?.title.level ?? automaticLevel}` as const;
   return (
     <Heading
       {...rest}
       id={parts?.title.id}
-      ref={parts?.title.ref}
+      ref={titleRef}
       className={mergeClassNames(parts?.title.className, className) || undefined}
     >
       {children}

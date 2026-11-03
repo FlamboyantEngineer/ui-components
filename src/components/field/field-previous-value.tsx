@@ -2,11 +2,11 @@
 
 import { createContext, use, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { FieldRestoreButton } from './field-restore-button.js';
 import type { FieldChangeLayout } from './field-parts.js';
 
-export interface FieldPreviousValueProps extends BaseProps {
+export interface FieldPreviousValueProps extends RefProps<HTMLSpanElement>, BaseProps {
   /** The value the edit replaced or removed: text, or an icon with its label. */
   children: ReactNode;
   /** Puts this one value back. Without it the marker only shows the value. */
@@ -27,6 +27,7 @@ export const FieldChangeLayoutContext = createContext<FieldChangeLayout>('inline
  * element, and, when the control can put that one value back, a restore button.
  */
 export function FieldPreviousValue({
+  ref,
   children,
   onRestore,
   restoreLabel,
@@ -43,7 +44,7 @@ export function FieldPreviousValue({
   // A field that hides what its edits replaced draws no marker, for sighted and assistive readers.
   if (use(FieldChangeLayoutContext) === 'hidden') return null;
   return (
-    <span {...hooks.root({ className, props: rest })} id={id}>
+    <span ref={ref} {...hooks.root({ className, props: rest })} id={id}>
       <del {...hooks.slot('value')} ref={valueRef}>
         {children}
       </del>

@@ -1,7 +1,8 @@
 'use client';
 
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { useId, useState, useSyncExternalStore } from 'react';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { FieldSeverity } from '../field/field.js';
 import { useFormProblems, type FormProblem, type FormProblemSource } from '../form/form.js';
@@ -16,7 +17,7 @@ import { getElementByIdFrom } from '../../utils/owner-window.js';
 
 export type { ProblemListItem } from './problem-list-items.js';
 
-export interface ProblemListProps extends BaseProps {
+export interface ProblemListProps extends RefProps<HTMLElement>, BaseProps {
   /** The problems to list. Without them, a list inside a `Form` lists the problems its fields show. */
   problems?: readonly ProblemListItem[] | undefined;
   /** The heading. Defaults to the provider's `problems` string. */
@@ -58,6 +59,7 @@ function worstSeverity(problems: readonly ShownProblem[]): FieldSeverity | null 
  * a caller gives, such as a document's checks.
  */
 export function ProblemList({
+  ref,
   problems,
   title,
   onAction,
@@ -73,6 +75,7 @@ export function ProblemList({
   const collected = useSyncExternalStore(source.subscribe, source.getProblems, source.getProblems);
   // The list's root finds a target by id in its own document, so it is held in state.
   const [root, setRoot] = useState<HTMLElement | null>(null);
+  const rootRefs = useMergedRefs(setRoot, ref);
   const shown =
     problems === undefined ? collected.map(fromForm) : problems.map((item) => fromItem(item, root));
   const errors = shown.filter(({ severity }) => severity === 'error').length;
@@ -80,7 +83,7 @@ export function ProblemList({
   return (
     <section
       {...hooks.root({ className, props: rest, data })}
-      ref={setRoot}
+      ref={rootRefs}
       id={id}
       aria-labelledby={titleId}
     >

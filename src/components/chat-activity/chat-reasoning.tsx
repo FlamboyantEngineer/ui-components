@@ -1,7 +1,7 @@
 'use client';
 
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Markdown } from '../markdown/markdown.js';
 import { ActivityDisclosure, type ActivityExpansionProps } from './activity-disclosure.js';
@@ -12,7 +12,11 @@ import {
 } from './chat-activity.js';
 
 export interface ChatReasoningProps
-  extends Omit<BaseProps, 'id'>, ChatReasoningData, ActivityExpansionProps {
+  extends
+    RefProps<HTMLDivElement>,
+    Omit<BaseProps, 'id'>,
+    ChatReasoningData,
+    ActivityExpansionProps {
   /** How the text renders. Defaults to `markdown`. */
   format?: ChatReasoningFormat | undefined;
 }

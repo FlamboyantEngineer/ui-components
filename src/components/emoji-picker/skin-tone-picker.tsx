@@ -1,14 +1,14 @@
 'use client';
 
 import { Radio, RadioGroup } from '../../primitives/index.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { skinTones, withSkinTone, type SkinTone } from './emoji-catalog.js';
 import { useEmojiPickerContext } from './emoji-picker-context.js';
 import { emojiPickerHooks as hooks } from './emoji-picker-hooks.js';
 
 /** The skin tone part: caller attributes and class go on the radio group. */
-export type EmojiPickerSkinTonesProps = BaseProps;
+export type EmojiPickerSkinTonesProps = RefProps<HTMLDivElement> & BaseProps;
 
 /** A row of raised-hand swatches, one radio per skin tone, for the enclosing picker. */
 export function EmojiPickerSkinTones({ className, ...rest }: EmojiPickerSkinTonesProps) {

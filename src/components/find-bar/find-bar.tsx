@@ -5,7 +5,7 @@ import type { KeyboardEvent, RefObject } from 'react';
 import { Input } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { Button } from '../button/button.js';
@@ -20,7 +20,7 @@ export interface FindBarOption {
   label: string;
 }
 
-export interface FindBarProps extends BaseProps {
+export interface FindBarProps extends RefProps<HTMLDivElement>, BaseProps {
   /** Names the find box. Defaults to the provider's `find` string. */
   label?: string | undefined;
   /** Hint shown in the empty find box. */
@@ -270,6 +270,7 @@ function FindBarFind({
  * Escape closes the bar when it can close.
  */
 export function FindBar({
+  ref,
   label,
   placeholder,
   query,
@@ -322,6 +323,7 @@ export function FindBar({
   const hasMatches = (matchCount ?? 0) > 0;
   return (
     <div
+      ref={ref}
       {...hooks.root({ className, props: rest, data: { pending: isPending } })}
       id={id}
       onKeyDownCapture={onKeyDownCapture}

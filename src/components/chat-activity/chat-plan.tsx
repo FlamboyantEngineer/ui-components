@@ -10,7 +10,7 @@ import {
 import { useId, useState } from 'react';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { ActivityAnnouncer, type ActivityAnnouncerProps } from './activity-announcer.js';
 import {
@@ -22,7 +22,7 @@ import {
   type ChatPlanStepStatus,
 } from './chat-activity.js';
 
-export interface ChatPlanProps extends BaseProps, ChatPlanData {}
+export interface ChatPlanProps extends RefProps<HTMLDivElement>, BaseProps, ChatPlanData {}
 
 const hooks = createHooks('chat-plan', [
   'header',

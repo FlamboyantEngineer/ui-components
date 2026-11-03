@@ -1,5 +1,6 @@
 'use client';
 
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import {
   createContext,
   useContext,
@@ -12,7 +13,7 @@ import {
 import { createPortal } from 'react-dom';
 import { UNSAFE_PortalProvider as AriaPortalProvider } from '../../primitives/index.js';
 import { createHooks, measuredProperty } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { omitUndefined } from '../../utils/omit-undefined.js';
 import { defaultLayerZIndex, isLayerAbove, type OverlayLayer } from './layers.js';
 import { usePreservedTabOrder } from './tab-order.js';
@@ -28,7 +29,7 @@ export interface PortalContainerProviderProps {
   children?: ReactNode;
 }
 
-export interface PortalHostProps extends BaseProps {
+export interface PortalHostProps extends RefProps<HTMLDivElement>, BaseProps {
   /** The content whose portals render into the host's container. */
   children?: ReactNode;
   /** Replaces the z-index of some layers for portals in this host. */
@@ -106,12 +107,13 @@ export function PortalContainerProvider({
  * Renders its children followed by a container element, and makes that element the container of
  * every `Portal` below. Overlays stay inside the host's part of the page and leave with it.
  */
-export function PortalHost({ children, layerZIndex, className, ...rest }: PortalHostProps) {
+export function PortalHost({ ref, children, layerZIndex, className, ...rest }: PortalHostProps) {
   const [host, setHost] = useState<HTMLDivElement | null>(null);
+  const hostRef = useMergedRefs(setHost, ref);
   return (
     <PortalContainerProvider container={host} layerZIndex={layerZIndex}>
       {children}
-      <div {...rest} ref={setHost} {...hostHooks.root({ className })} />
+      <div {...rest} ref={hostRef} {...hostHooks.root({ className })} />
     </PortalContainerProvider>
   );
 }

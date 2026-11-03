@@ -15,13 +15,14 @@ import {
 } from '../../primitives/index.js';
 import type { AriaLabellingProps, CollectionSelectionProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Checkbox } from '../checkbox/checkbox.js';
 import { EmptyState } from '../empty-state/empty-state.js';
 import { useCarriedFocus } from '../../utils/use-carried-focus.js';
 import { useHeldSelection } from '../../utils/use-held-selection.js';
 import { keepControlFocusReturn } from '../../utils/keep-control-focus-return.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { renderTextKeyRow } from '../../utils/text-control-keys.js';
 import { CardSelectionContext, useCardSelectionSlot } from './card-selection.js';
 
@@ -35,7 +36,7 @@ export interface CardGridItemSize {
 }
 
 export interface CardGridProps<T extends object>
-  extends BaseProps, AriaLabellingProps, CollectionSelectionProps {
+  extends RefProps<HTMLDivElement>, BaseProps, AriaLabellingProps, CollectionSelectionProps {
   /** The cards as data, drawn by the function in `children`. */
   items?: Iterable<T> | undefined;
   /** `CardGridItem`s, or a function drawing one from each of `items`. */
@@ -64,7 +65,7 @@ export interface CardGridItemState {
   isSelected: boolean;
 }
 
-export interface CardGridItemProps extends Omit<BaseProps, 'id'> {
+export interface CardGridItemProps extends RefProps<HTMLDivElement>, Omit<BaseProps, 'id'> {
   /** The item's key in the grid. */
   id?: Key | undefined;
   /** The text typeahead matches and the item's accessible name. */
@@ -136,6 +137,7 @@ export function CardGrid<T extends object>({
   defaultSelectedKeys,
   onSelectionChange,
   className,
+  ref,
   ...rest
 }: CardGridProps<T>) {
   const emptyState = useMemo(
@@ -144,7 +146,8 @@ export function CardGrid<T extends object>({
   );
   const selection = useHeldSelection({ selectedKeys, defaultSelectedKeys, onSelectionChange });
   const isVirtual = virtualized || layout !== 'grid';
-  const gridRef = useCarriedFocus<HTMLDivElement>(isVirtual ? layout : 'plain');
+  const carriedRef = useCarriedFocus<HTMLDivElement>(isVirtual ? layout : 'plain');
+  const gridRef = useMergedRefs(carriedRef, ref);
   const grid = (
     <GridList
       {...rest}
@@ -182,12 +185,13 @@ function CardGridItemContent({ checkbox, children }: { checkbox: ReactNode; chil
  * selection checkbox: the card it holds draws it at the start of its header row, and content that
  * is no card has it before it. A render function receives the item's `isSelected` for the card.
  */
-export function CardGridItem({ className, children, ...rest }: CardGridItemProps) {
+export function CardGridItem({ ref, className, children, ...rest }: CardGridItemProps) {
+  const itemRef = useMergedRefs(keepControlFocusReturn, ref);
   return (
     <GridListItem
       {...rest}
       {...itemHooks.root({ className, props: rest })}
-      ref={keepControlFocusReturn}
+      ref={itemRef}
       render={renderTextKeyRow}
     >
       {({ selectionMode, selectionBehavior, isSelected }) => (

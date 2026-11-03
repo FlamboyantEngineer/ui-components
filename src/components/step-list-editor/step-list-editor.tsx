@@ -1,11 +1,12 @@
 'use client';
 
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { getComposedActiveElement } from '../../utils/focus-target.js';
 import { PlusGlyph } from '../../core/glyphs.js';
 import { useMemo, useRef, type RefObject } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { formatOutlineNumber } from '../../utils/outline-number.js';
 import { useFocusRequest } from '../../utils/use-focus-request.js';
@@ -32,7 +33,8 @@ import { useStepDrag } from './use-step-drag.js';
 import { isHTMLElement } from '../../utils/is-element.js';
 import { getOwnerDocument } from '../../utils/owner-window.js';
 
-export interface StepListEditorProps extends BaseProps, AriaLabellingProps {
+export interface StepListEditorProps
+  extends RefProps<HTMLDivElement>, BaseProps, AriaLabellingProps {
   /** The text columns of every step, in order, such as an action and its expected result. */
   columns: readonly StepListEditorColumn[];
   /** The steps, controlled. */
@@ -119,6 +121,7 @@ function useStepActions(options: {
  * data.
  */
 export function StepListEditor({
+  ref,
   columns,
   value,
   defaultValue = noSteps,
@@ -132,6 +135,7 @@ export function StepListEditor({
   const strings = useUiStrings();
   const [steps, setSteps] = useControllableState(value, defaultValue, onChange);
   const root = useRef<HTMLDivElement>(null);
+  const rootRefs = useMergedRefs(root, ref);
   const actions = useStepActions({ steps, setSteps, root });
   const drag = useStepDrag({ steps, onMove: actions.move });
   const committedById = useMemo(
@@ -144,7 +148,7 @@ export function StepListEditor({
   return (
     <div
       {...rest}
-      ref={root}
+      ref={rootRefs}
       {...hooks.root({ className, props: rest, data: { dirty: isDirty, readonly: isReadOnly } })}
       role="group"
       aria-label={label}

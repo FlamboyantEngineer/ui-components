@@ -9,8 +9,9 @@ import {
 } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { renderElement, type ElementRender } from '../../utils/render-element.js';
 import { Checkbox } from '../checkbox/checkbox.js';
 import { ChoiceContext } from './choice-group.js';
@@ -23,7 +24,7 @@ export interface ChoiceRenderState {
   isInvalid: boolean;
   isRequired: boolean;
 }
-export interface ChoiceProps extends BaseProps, AriaLabellingProps {
+export interface ChoiceProps extends RefProps<HTMLDivElement>, BaseProps, AriaLabellingProps {
   /** Value chosen by this item, submitted under the group's name. */
   value: string;
   isDisabled?: boolean | undefined;
@@ -39,13 +40,15 @@ export interface ChoiceProps extends BaseProps, AriaLabellingProps {
 const hooks = createHooks('choice', ['button', 'indicator', 'label', 'description']);
 
 /** One radio or checkbox according to its ChoiceGroup's selection mode. */
-export function Choice({ children, description, className, ...rest }: ChoiceProps) {
+export function Choice({ ref, children, description, className, ...rest }: ChoiceProps) {
   const settings = useContext(ChoiceContext);
   const group = useContext(CheckboxGroupStateContext);
   const descriptionId = useId();
+  // A `render` prop takes the ref as a callback, which nothing reads while rendering.
+  const rootRef = useMergedRefs(ref);
   if (settings.selectionMode === 'single')
     return (
-      <RadioField {...rest} {...hooks.root({ className, props: rest })}>
+      <RadioField {...rest} ref={ref} {...hooks.root({ className, props: rest })}>
         <RadioButton {...hooks.slot('button')}>
           <span {...hooks.slot('indicator')} aria-hidden="true" />
           {isEmptyNode(children) ? null : <span {...hooks.slot('label')}>{children}</span>}
@@ -70,6 +73,7 @@ export function Choice({ children, description, className, ...rest }: ChoiceProp
   return renderElement(
     'div',
     {
+      ref: rootRef,
       ...hooks.root({
         className,
         data: {

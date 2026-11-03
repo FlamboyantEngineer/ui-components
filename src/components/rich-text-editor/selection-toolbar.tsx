@@ -11,7 +11,7 @@ import { useRef, useState, type FocusEvent, type KeyboardEvent, type ReactNode }
 import { Popover, useLocale, type Placement } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { ToolbarRow } from '../layout/layout.js';
 import { useLayerZIndex } from '../portal/portal.js';
@@ -24,7 +24,8 @@ import { DEFAULT_OVERLAY_GAP } from '../../utils/overlay-defaults.js';
 import { isElement } from '../../utils/is-element.js';
 import { autoUpdateOverlay } from '../../utils/overlay-auto-update.js';
 
-export interface SelectionToolbarProps extends BaseProps, AriaLabellingProps {
+export interface SelectionToolbarProps
+  extends RefProps<HTMLElement>, BaseProps, AriaLabellingProps {
   /** Controls after the marks and the link button. */
   children?: ReactNode;
 }
@@ -108,7 +109,7 @@ function useSelectionBox(): SelectionBox | null {
  * A toolbar floating above selected text in the enclosing `RichTextEditor`, for its children: the
  * marks and the link button. Alt+F10 moves focus into it from the document and Escape returns.
  */
-export function SelectionToolbar({ className, children, ...rest }: SelectionToolbarProps) {
+export function SelectionToolbar({ ref, className, children, ...rest }: SelectionToolbarProps) {
   const strings = useUiStrings();
   const controller = useRichTextController();
   const { ref: returnFocusRef, request: returnFocus } = useFocusReturn(controller);
@@ -148,11 +149,13 @@ export function SelectionToolbar({ className, children, ...rest }: SelectionTool
   const onBlur = (event: FocusEvent) => {
     if (!isInsideToolbar(event.relatedTarget, rowRef.current)) setOwnFocus(false);
   };
+  const ownFocusHandlers = { onFocus: () => setOwnFocus(true), onBlur, onKeyDown };
   const label = rest['aria-labelledby']
     ? undefined
     : (rest['aria-label'] ?? strings.selectionFormatting);
   return (
     <Popover
+      ref={ref}
       {...hooks.root({ className, props: rest })}
       isOpen={isOpen}
       isNonModal
@@ -162,12 +165,7 @@ export function SelectionToolbar({ className, children, ...rest }: SelectionTool
       offset={DEFAULT_OVERLAY_GAP}
       style={{ zIndex }}
     >
-      <div
-        ref={returnFocusRef}
-        onFocus={() => setOwnFocus(true)}
-        onBlur={onBlur}
-        onKeyDown={onKeyDown}
-      >
+      <div ref={returnFocusRef} {...ownFocusHandlers}>
         <ToolbarRow
           ref={rowRef}
           className={hooks.slotClass('row')}

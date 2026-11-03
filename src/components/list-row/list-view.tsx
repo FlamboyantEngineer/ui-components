@@ -25,7 +25,7 @@ import {
 } from '../../primitives/index.js';
 import type { AriaLabellingProps, CollectionSelectionProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
@@ -72,7 +72,7 @@ export interface ListViewReorderOptions {
 export type ListViewChildren<T> = ReactNode | ((item: T) => ReactElement);
 
 export interface ListViewProps<T extends object>
-  extends BaseProps, AriaLabellingProps, CollectionSelectionProps {
+  extends RefProps<HTMLDivElement>, BaseProps, AriaLabellingProps, CollectionSelectionProps {
   /** The rows or sections as data, drawn by the function in `children`. */
   items?: Iterable<T> | undefined;
   /** `ListViewItem`s and `ListViewSection`s, or a function drawing one from each of `items`. */
@@ -100,7 +100,10 @@ export interface ListViewProps<T extends object>
 }
 
 export interface ListViewItemProps
-  extends Omit<BaseProps, 'id'>, Pick<ListRowContentProps, 'title' | 'meta' | 'icon' | 'leading'> {
+  extends
+    RefProps<HTMLDivElement>,
+    Omit<BaseProps, 'id'>,
+    Pick<ListRowContentProps, 'title' | 'meta' | 'icon' | 'leading'> {
   /** The row's key in the list. */
   id?: Key | undefined;
   /** The text typeahead matches. Defaults to a string `title`. */
@@ -113,7 +116,8 @@ export interface ListViewItemProps
   tone?: ListRowTone | undefined;
 }
 
-export interface ListViewSectionProps<T extends object> extends Omit<BaseProps, 'id'> {
+export interface ListViewSectionProps<T extends object>
+  extends RefProps<HTMLDivElement>, Omit<BaseProps, 'id'> {
   /** The section's key in the list. */
   id?: Key | undefined;
   /** The section's header row, which also names the section. */
@@ -224,6 +228,7 @@ export function ListView<T extends object>({
   onSelectionChange,
   onAction,
   className,
+  ref,
   ...rest
 }: ListViewProps<T>) {
   // Read once per new iterable, which may be one-shot, and shared by the selection and drops.
@@ -232,7 +237,7 @@ export function ListView<T extends object>({
   const selection = useHeldSelection({ selectedKeys, defaultSelectedKeys, onSelectionChange });
   const carriedRef = useCarriedFocus<HTMLDivElement>(String(virtualized));
   const keptRef = useKeptCollectionAttributes<HTMLDivElement>(rest);
-  const listRef = useMergedRefs(carriedRef, keptRef);
+  const listRef = useMergedRefs(carriedRef, keptRef, ref);
   const emptyState = useMemo(
     () => renderEmptyState && (() => renderEmptyState()),
     [renderEmptyState],

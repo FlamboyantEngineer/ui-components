@@ -5,7 +5,7 @@ import { isEmptyValue } from '../../utils/is-empty-value.js';
 import { useId, type ReactNode, type Ref } from 'react';
 import { Button as AriaButton } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { InlineError } from '../inline-error/inline-error.js';
@@ -36,7 +36,7 @@ export interface InlineEditEditorProps<T> {
   isDisabled: boolean;
 }
 
-export interface InlineEditProps<T = string> extends BaseProps {
+export interface InlineEditProps<T = string> extends RefProps<HTMLDivElement>, BaseProps {
   /** The saved value, shown in the read view. */
   value: T;
   /**
@@ -182,6 +182,7 @@ function InlineEditRead({
  * asynchronous: the editor stays open and pending until it settles, and shows why it failed.
  */
 export function InlineEdit<T = string>(props: InlineEditProps<T>) {
+  const { ref } = props;
   const { value, label, renderValue, renderEditor = renderTextEditor, placeholder } = props;
   const { showActions = false, className, id, ...rest } = props;
   const isDisabled = useScopedDisabled(props.isDisabled);
@@ -208,7 +209,7 @@ export function InlineEdit<T = string>(props: InlineEditProps<T>) {
     disabled: isDisabled,
   };
   return (
-    <div id={id} {...hooks.root({ className, props: rest, data })}>
+    <div ref={ref} id={id} {...hooks.root({ className, props: rest, data })}>
       {isEditing ? (
         <div ref={editorRef} {...hooks.slot('editor')} {...editorHandlers}>
           <div {...hooks.slot('control')}>

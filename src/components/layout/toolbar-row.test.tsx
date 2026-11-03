@@ -249,3 +249,18 @@ describe('ToolbarRow', () => {
     expectHooksMatchSpec(container, 'LAYOUT', { slots: ['strip', 'group'] });
   });
 });
+
+describe('ToolbarRow refs', () => {
+  it('UIC-LAYOUT-3.3 UIC-COMPOSITION-2.5 hands ref the root and stripRef the strip', () => {
+    const ref = { current: null as HTMLDivElement | null };
+    const stripRef = { current: null as HTMLDivElement | null };
+    const { container } = render(
+      <ToolbarRow ref={ref} stripRef={stripRef} aria-label="Format">
+        <button type="button">Bold</button>
+      </ToolbarRow>,
+    );
+    expect(ref.current).toBe(container.querySelector('.ui-toolbar-row'));
+    expect(stripRef.current).toBe(screen.getByRole('toolbar', { name: 'Format' }));
+    expect(stripRef.current).toHaveClass('ui-toolbar-row__strip');
+  });
+});

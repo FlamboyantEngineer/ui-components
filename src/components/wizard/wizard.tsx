@@ -3,7 +3,7 @@
 import { useId, type ReactNode } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key, Orientation } from '../../core/props.js';
+import type { BaseProps, Key, Orientation, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { Button } from '../button/button.js';
@@ -35,7 +35,7 @@ export interface WizardStep {
   validate?: ((signal: AbortSignal) => WizardValidation | Promise<WizardValidation>) | undefined;
 }
 
-export interface WizardProps extends BaseProps, AriaLabellingProps {
+export interface WizardProps extends RefProps<HTMLDivElement>, BaseProps, AriaLabellingProps {
   /** The steps, in order. */
   steps: readonly WizardStep[];
   /** The shown step, controlled. */

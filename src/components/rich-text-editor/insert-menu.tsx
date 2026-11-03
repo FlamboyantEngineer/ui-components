@@ -1,10 +1,11 @@
 'use client';
 
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { PlusGlyph } from '../../core/glyphs.js';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { CompletionList, getCompletionOptionId } from '../completion-list/completion-list.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
@@ -14,12 +15,12 @@ import { useRichTextController } from './rich-text-controller.js';
 import { useFocusReturn } from './use-focus-return.js';
 import { useSlashMenu } from './use-slash-menu.js';
 
-export interface InsertMenuProps extends BaseProps, AriaLabellingProps {
+export interface InsertMenuProps extends RefProps<HTMLElement>, BaseProps, AriaLabellingProps {
   /** Entries after the built-in blocks, such as a template or a custom node. */
   items?: readonly InsertMenuItem[] | undefined;
 }
 
-export interface InsertMenuButtonProps extends BaseProps {
+export interface InsertMenuButtonProps extends RefProps<HTMLButtonElement>, BaseProps {
   /** Entries after the built-in blocks. */
   items?: readonly InsertMenuItem[] | undefined;
 }
@@ -98,17 +99,18 @@ export function InsertMenu({ items, className, ...rest }: InsertMenuProps) {
  * A button that opens the menu of blocks to insert at the selection in the enclosing
  * `RichTextEditor`, for its toolbar.
  */
-export function InsertMenuButton({ items, className, ...rest }: InsertMenuButtonProps) {
+export function InsertMenuButton({ ref, items, className, ...rest }: InsertMenuButtonProps) {
   const strings = useUiStrings();
   const controller = useRichTextController();
   const { ref: returnFocusRef, request: returnFocus } = useFocusReturn(controller);
+  const rootRefs = useMergedRefs(returnFocusRef, ref);
   const available = useAvailableItems(items);
   const [isOpen, setOpen] = useState(false);
   if (isOpen && !controller.isEditable) setOpen(false);
   return (
     <DropdownMenu
       {...rest}
-      ref={returnFocusRef}
+      ref={rootRefs}
       className={mergeClassNames(buttonHooks.className, className)}
       label={strings.insert}
       icon={PlusGlyph}

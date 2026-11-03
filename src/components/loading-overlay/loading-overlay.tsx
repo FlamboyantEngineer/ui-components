@@ -1,5 +1,6 @@
 'use client';
 
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { useId, useRef, type ReactNode } from 'react';
 import { useNumberFormatter } from '../../primitives/index.js';
 import { createHooks, splitDataAttributes } from '../../core/hooks.js';
@@ -37,7 +38,7 @@ export interface LoadingStep {
   total: number;
 }
 
-export interface LoadingCardProps extends BaseProps {
+export interface LoadingCardProps extends RefProps<HTMLDivElement>, BaseProps {
   /** What is loading; the card announces it politely. Defaults to the provider's `loading` string. */
   label?: ReactNode;
   /** A longer explanation under the bar. */
@@ -68,10 +69,8 @@ export interface LoadingOverlayProps extends LoadingCardProps, RefProps<HTMLDivE
   isExiting?: boolean | undefined;
 }
 
-export interface LoadingRegionProps extends Omit<
-  LoadingOverlayProps,
-  'isEntering' | 'isExiting' | 'ref'
-> {
+export interface LoadingRegionProps
+  extends RefProps<HTMLDivElement>, Omit<LoadingOverlayProps, 'isEntering' | 'isExiting' | 'ref'> {
   /** While true (after `delay`) the region is busy, its content is inert and the overlay covers it. */
   isLoading?: boolean | undefined;
   /** The region's content. */
@@ -246,6 +245,7 @@ export function LoadingOverlay({
  * exit transition (`useEnterExit`).
  */
 export function LoadingRegion({
+  ref,
   isLoading = false,
   delay = 0,
   children,
@@ -257,6 +257,7 @@ export function LoadingRegion({
   const overlayRef = useRef<HTMLDivElement>(null);
   const { isMounted, isEntering, isExiting } = useEnterExit(overlayRef, isBlocked);
   const rootRef = useRef<HTMLDivElement>(null);
+  const rootRefs = useMergedRefs(rootRef, ref);
   const contentRef = useRef<HTMLDivElement>(null);
   const holdFocus = useBlockedFocus({ rootRef, contentRef, isBlocked });
   const [data, overlayProps] = splitDataAttributes(rest);
@@ -265,7 +266,7 @@ export function LoadingRegion({
       {...data}
       {...regionHooks.root({ className, data: { loading: isBlocked } })}
       id={id}
-      ref={rootRef}
+      ref={rootRefs}
       tabIndex={isBlocked ? -1 : undefined}
     >
       {/* Only the content is busy: a busy ancestor would hold back the card's announcement. */}

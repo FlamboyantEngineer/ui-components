@@ -2,7 +2,7 @@
 
 import { useMemo, useState, type ReactNode } from 'react';
 import type { OpenStateProps } from '../../core/events.js';
-import type { BaseProps, Placement } from '../../core/props.js';
+import type { BaseProps, Placement, RefProps } from '../../core/props.js';
 import { usePersistentState } from '../../core/provider.js';
 import { booleanCodec } from '../../utils/json-codec.js';
 import { PopoverPanel } from '../popover/popover.js';
@@ -27,7 +27,7 @@ export interface TourStep {
   placement?: Placement | undefined;
 }
 
-export interface TourProps extends BaseProps, OpenStateProps {
+export interface TourProps extends RefProps<HTMLElement>, BaseProps, OpenStateProps {
   /** The steps, in order. */
   steps: readonly TourStep[];
   /** The shown step's index (controlled). */

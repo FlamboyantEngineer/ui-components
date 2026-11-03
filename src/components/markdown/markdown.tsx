@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useStableArray } from '../../utils/use-stable-array.js';
 import { useMarkdownBlocks } from './markdown-block-cache.js';
 import { listMarkdownHeadings } from './markdown-headings.js';
@@ -15,7 +15,7 @@ import { parseStreamingMarkdown, type StreamingMarkdownParse } from './parse-str
 export type { MarkdownNode } from './markdown-nodes.js';
 export { parseMarkdown } from './parse-markdown.js';
 
-export interface MarkdownProps extends BaseProps {
+export interface MarkdownProps extends RefProps<HTMLDivElement>, BaseProps {
   /** Markdown text, or a document `parseMarkdown` returned, to share one parse with an outline. */
   source: string | MarkdownDocument;
   /** Gives headings `id`s: this prefix and the heading's slug. Without it headings have no id. */
@@ -64,6 +64,7 @@ function useMarkdownDocument(
  * finished blocks are not rendered again.
  */
 export function Markdown({
+  ref,
   source,
   headingIdPrefix,
   renderNode,
@@ -83,7 +84,11 @@ export function Markdown({
   );
   const blocks = useMarkdownBlocks(tree.children, context, isStreaming);
   return (
-    <div {...hooks.root({ className, props: rest, data: { streaming: isStreaming } })} id={id}>
+    <div
+      ref={ref}
+      {...hooks.root({ className, props: rest, data: { streaming: isStreaming } })}
+      id={id}
+    >
       {blocks}
     </div>
   );

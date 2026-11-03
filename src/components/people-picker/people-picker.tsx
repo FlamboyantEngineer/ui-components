@@ -3,7 +3,7 @@
 import { useCallback, useId, useMemo, useState } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
-import type { BaseProps, ControlSize, Key } from '../../core/props.js';
+import type { BaseProps, ControlSize, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Avatar, splitAvatarIdentity, type AvatarIdentity } from '../avatar/avatar.js';
 import {
@@ -44,6 +44,7 @@ export type PeoplePickerLoader = RemoteLoader<PeoplePickerPerson>;
 
 export interface PeoplePickerProps<M extends ComboboxSelectionMode = 'single'>
   extends
+    RefProps<HTMLDivElement>,
     BaseProps,
     AriaLabellingProps,
     Pick<

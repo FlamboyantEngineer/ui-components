@@ -4,7 +4,7 @@ import { SearchGlyph } from '../../core/glyphs.js';
 import { useId, useMemo, type KeyboardEvent } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { CodeEditor, type CodeDiagnostic, type CodeTokenizer } from '../code-editor/code-editor.js';
 import type { Completions } from '../completion-list/completion-list.js';
@@ -21,7 +21,7 @@ export interface QueryGrammar {
   diagnose?: ((query: string) => readonly CodeDiagnostic[]) | undefined;
 }
 
-export interface QueryFieldProps extends BaseProps {
+export interface QueryFieldProps extends RefProps<HTMLDivElement>, BaseProps {
   /** The visible label, which names the input. */
   label: string;
   /** The language: tokens, completions and problems. */
@@ -50,6 +50,7 @@ const hooks = createHooks('query-field', ['label', 'control', 'editor', 'submit'
  * completion is open, or the run button submits a query without errors.
  */
 export function QueryField({
+  ref,
   label,
   grammar,
   value: controlledValue,
@@ -78,6 +79,7 @@ export function QueryField({
   };
   return (
     <div
+      ref={ref}
       {...hooks.root({ className, props: rest, data: { invalid: hasError, disabled: isDisabled } })}
       id={id}
     >
