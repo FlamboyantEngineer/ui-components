@@ -75,7 +75,7 @@ Verification: `src/components/notification-center/notification-list.test.tsx`
 
 ### UIC-NOTIFICATION-CENTER-2.1 - Bell
 
-`NotificationCenter` shall render a `ui-notification-center` `<span>` holding a `bell` `Button` (`ui-notification-center__trigger`) named by the provider's `notificationsWithCount` string for the unread count (`Notifications, 3 unread`, or `Notifications` with none), and an overlay `info` count `Badge` (`ui-notification-center__count`) of that count, capped at `countMax` (99 by default), hidden from assistive technology because the bell's name carries the count, and absent while the count is 0. The count is `unreadCount`, or the number of unread `items`.
+`NotificationCenter` shall render a `ui-notification-center` `<span>` holding a `bell` `Button` (`ui-notification-center__trigger`) named by the provider's `notificationsWithCount` string for the unread count (`Notifications, 3 unread`, or `Notifications` with none), and an explicitly `solid` overlay `info` count `Badge` (`ui-notification-center__count`) of that count, capped at `countMax` (99 by default), hidden from assistive technology because the bell's name carries the count, and absent while the count is 0. The count is `unreadCount`, or the number of unread `items`.
 
 Implementation: `src/components/notification-center/notification-center.tsx`, `src/core/strings/content.ts`, `src/core/glyphs.tsx`
 Verification: `src/components/notification-center/notification-center.test.tsx`, `e2e/notification-center.spec.ts`

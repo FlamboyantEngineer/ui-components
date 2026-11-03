@@ -27,7 +27,7 @@ export type DockPanelPosition = 'start' | 'end' | 'bottom';
 /** What a pane's tab and launcher show. */
 export type DockPanelLauncherPane = Pick<
   DockPanelPaneProps,
-  'id' | 'label' | 'icon' | 'count' | 'isDisabled'
+  'id' | 'label' | 'icon' | 'count' | 'countVariant' | 'launcherCountVariant' | 'isDisabled'
 >;
 
 /** What the launchers and the toggle drive: the selected pane and whether it shows. */
@@ -136,6 +136,7 @@ function DockPanelLauncher({
         <>
           <Badge
             className={hooks.slotClass('count')}
+            variant={pane.launcherCountVariant ?? 'solid'}
             count={count}
             max={dockPanelCountMax}
             size="sm"

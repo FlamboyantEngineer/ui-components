@@ -188,7 +188,7 @@ mountLab(
   <>
     <LabSection
       title="Bell"
-      description="The bell's count and the panel it opens: a popover against the bell, or a drawer from the end edge for narrow screens. The clock is fixed at 20 April 2026, 10:30."
+      description="The bell's vibrant solid count and the panel it opens: a popover against the bell, or a drawer from the end edge for narrow screens. The clock is fixed at 20 April 2026, 10:30."
     >
       <StateMatrix
         axes={{

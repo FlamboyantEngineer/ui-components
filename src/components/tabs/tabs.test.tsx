@@ -572,3 +572,18 @@ describe('Tabs remembered selection', () => {
     expect(storage.getItem('second')).toBe('"cherry"');
   });
 });
+
+it('UIC-TABS-1.2 propagates the shared count appearance', () => {
+  const { container } = render(
+    <Tabs>
+      <TabList aria-label="Items">
+        <Tab id="notes" count={7} countVariant="solid">
+          Notes
+        </Tab>
+      </TabList>
+      <TabPanel id="notes">Content</TabPanel>
+    </Tabs>,
+  );
+  expect(container.querySelector('.ui-tabs__count')).toHaveClass('ui-badge');
+  expect(container.querySelector('.ui-tabs__count')).toHaveAttribute('data-variant', 'solid');
+});

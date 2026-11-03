@@ -55,7 +55,7 @@ describe('SegmentedChoice counts', () => {
       'aria-hidden',
       'true',
     );
-    expect(radio('Done, 99+')).toHaveTextContent('Done99+');
+    expect(radio('Done, 120')).toHaveTextContent('Done99+');
     expect(radio('All').querySelector('.ui-segmented-choice__count')).toBeNull();
     expectHooksMatchSpec(container, 'SEGMENTED-CHOICE', { slots: ['segment', 'label', 'count'] });
 
@@ -73,7 +73,7 @@ describe('SegmentedChoice counts', () => {
     );
     expect(radio('Open, 2')).toBeInTheDocument();
     expect(radio('Done')).toBeInTheDocument();
-    expect(radio('All, 9+')).toBeInTheDocument();
+    expect(radio('All, 12')).toBeInTheDocument();
   });
 });
 
@@ -91,9 +91,9 @@ describe('SegmentedChoice asynchronous change', () => {
       />,
     );
     const group = screen.getByRole('radiogroup', { name: 'Show' });
-    await user.click(radio('Done, 99+'));
+    await user.click(radio('Done, 120'));
     expect(onChange).toHaveBeenCalledWith('done');
-    expect(radio('Done, 99+')).toHaveAttribute('aria-checked', 'true');
+    expect(radio('Done, 120')).toHaveAttribute('aria-checked', 'true');
     expect(group).toHaveAttribute('data-pending', 'true');
     expect(group).toHaveAttribute('aria-busy', 'true');
     expectHooksMatchSpec(container, 'SEGMENTED-CHOICE');
@@ -106,7 +106,7 @@ describe('SegmentedChoice asynchronous change', () => {
     await act(async () => change.resolve());
     expect(group).not.toHaveAttribute('data-pending');
     expect(group).not.toHaveAttribute('aria-busy');
-    expect(radio('Done, 99+')).toHaveAttribute('aria-checked', 'true');
+    expect(radio('Done, 120')).toHaveAttribute('aria-checked', 'true');
   });
 
   it('UIC-SEGMENTED-CHOICE-2.6 puts the value back when the promise rejects', async () => {
@@ -148,15 +148,15 @@ describe('SegmentedChoice asynchronous change', () => {
       );
     }
     render(<Saved />);
-    await user.click(radio('Done, 99+'));
-    expect(radio('Done, 99+')).toHaveAttribute('aria-checked', 'true');
+    await user.click(radio('Done, 120'));
+    expect(radio('Done, 120')).toHaveAttribute('aria-checked', 'true');
     await act(async () => pending[0]?.resolve());
-    expect(radio('Done, 99+')).toHaveAttribute('aria-checked', 'true');
+    expect(radio('Done, 120')).toHaveAttribute('aria-checked', 'true');
     expect(screen.getByRole('radiogroup')).not.toHaveAttribute('data-pending');
 
     await user.click(radio('All'));
     await act(async () => pending[1]?.reject(new Error('Offline')));
-    expect(radio('Done, 99+')).toHaveAttribute('aria-checked', 'true');
+    expect(radio('Done, 120')).toHaveAttribute('aria-checked', 'true');
   });
 
   it('UIC-SEGMENTED-CHOICE-2.6 applies a change at once when onChange returns no promise', async () => {
@@ -174,4 +174,50 @@ describe('SegmentedChoice asynchronous change', () => {
     expect(screen.getByRole('button', { name: 'All' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('toolbar')).not.toHaveAttribute('data-pending');
   });
+});
+
+it('UIC-SEGMENTED-CHOICE-1.9 shows optional zero and propagates a shared count variant and per-option cap', () => {
+  const { container } = render(
+    <SegmentedChoice
+      aria-label="Show"
+      options={[
+        { value: 'zero', label: 'Zero', count: 0 },
+        { value: 'many', label: 'Many', count: 125, countMax: 100 },
+      ]}
+      showZero
+      countVariant="solid"
+    />,
+  );
+  expect(screen.getByRole('radio', { name: 'Zero, 0' })).toHaveTextContent('0');
+  expect(screen.getByRole('radio', { name: 'Many, 125' })).toHaveTextContent('100+');
+  expect(container.querySelector('.ui-segmented-choice__count')).toHaveAttribute(
+    'data-variant',
+    'solid',
+  );
+});
+
+it('UIC-SEGMENTED-CHOICE-2.6 handles a rejected promise when its handler removes the choice before pending commits', async () => {
+  const user = userEvent.setup();
+  const change = deferred();
+  function RemovedChoice() {
+    const [isShown, setShown] = useState(true);
+    return isShown ? (
+      <SegmentedChoice
+        aria-label="Show"
+        options={filters}
+        defaultValue="open"
+        onChange={() => {
+          setShown(false);
+          return change.promise;
+        }}
+      />
+    ) : (
+      <p>Choice closed</p>
+    );
+  }
+  render(<RemovedChoice />);
+  await user.click(radio('All'));
+  expect(screen.getByText('Choice closed')).toBeVisible();
+  await act(async () => change.reject(new Error('Cancelled')));
+  expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
 });

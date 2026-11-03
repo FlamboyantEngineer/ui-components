@@ -63,6 +63,7 @@ describe('NotificationCenter', () => {
     const count = root.querySelector('.ui-notification-center__count');
     expect(count).toHaveClass('ui-badge');
     expect(count).toHaveAttribute('data-placement', 'overlay');
+    expect(count).toHaveAttribute('data-variant', 'solid');
     expect(count).toHaveAttribute('aria-hidden', 'true');
     expect(count).toHaveTextContent('2');
     expectHooksMatchSpec(container, 'NOTIFICATION-CENTER', {

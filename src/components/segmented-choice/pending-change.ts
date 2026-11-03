@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { isShallowEqual } from '../../utils/is-shallow-equal.js';
 import { isThenable } from '../../utils/is-thenable.js';
 
@@ -39,36 +39,48 @@ export function usePendingChange<T>(
 ): PendingChange<T> {
   const [own, setOwn] = useState(defaultValue);
   const [initial] = useState(() => value ?? defaultValue);
-  const [pending, setPending] = useState<{ value: T } | null>(null);
-  // Counts resets, so a change pending across one settles without effect.
-  const resets = useRef(0);
+  const [pending, setPending] = useState<{
+    value: T;
+    base: T;
+    result: PromiseLike<unknown>;
+  } | null>(null);
   const isControlled = value !== undefined;
   const current = isControlled ? value : own;
-  const shown = pending ? pending.value : current;
+  const isStale =
+    pending !== null && !isSameValue(current, pending.base) && !isSameValue(current, pending.value);
+  if (isStale) setPending(null);
+  const shown = pending && !isStale ? pending.value : current;
+
+  useLayoutEffect(() => {
+    if (!pending || isStale) return;
+    let active = true;
+    const settle = (isApplied: boolean) => {
+      if (!active) return;
+      if (isApplied && !isControlled) setOwn(pending.value);
+      setPending(null);
+    };
+    pending.result.then(
+      () => settle(true),
+      () => settle(false),
+    );
+    return () => {
+      active = false;
+    };
+  }, [pending, isStale, isControlled]);
 
   const change = (next: T) => {
-    if (pending) return;
+    if (pending && !isStale) return;
     const result = onChange?.(next);
     if (!isThenable(result)) {
       if (!isControlled) setOwn(next);
       return;
     }
-    setPending({ value: next });
-    const generation = resets.current;
-    const settle = (isApplied: boolean) => {
-      if (generation !== resets.current) return;
-      if (isApplied && !isControlled) setOwn(next);
-      setPending(null);
-    };
-    result.then(
-      () => settle(true),
-      // The caller reports its own failure; the choice only goes back.
-      () => settle(false),
-    );
+    // A handler can remove the choice before its pending effect commits.
+    result.then(undefined, () => undefined);
+    setPending({ value: next, base: current, result });
   };
 
   const reset = () => {
-    resets.current += 1;
     setPending(null);
     if (!isControlled) setOwn(initial);
     if (isSameValue(current, initial)) return;
@@ -77,5 +89,5 @@ export function usePendingChange<T>(
     if (isThenable(result)) result.then(undefined, () => undefined);
   };
 
-  return { value: shown, isPending: pending !== null, change, reset };
+  return { value: shown, isPending: pending !== null && !isStale, change, reset };
 }

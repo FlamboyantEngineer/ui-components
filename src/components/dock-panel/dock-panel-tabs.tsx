@@ -102,6 +102,7 @@ export function DockPanelTabList({
           ref={focus.tabRef(pane.id)}
           icon={pane.icon}
           count={pane.count}
+          countVariant={pane.countVariant}
           countMax={dockPanelCountMax}
           isDisabled={pane.isDisabled}
           {...hooks.slot('tab')}

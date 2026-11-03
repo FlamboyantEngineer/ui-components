@@ -16,6 +16,8 @@ export type BadgeSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 /** `subtle` is a tinted pill, `solid` a filled token, `status` a tone dot before the label. */
 export type BadgeVariant = 'subtle' | 'solid' | 'status';
 
+export type BadgeCountVariant = Extract<BadgeVariant, 'subtle' | 'solid'>;
+
 export type BadgePlacement = 'inline' | 'overlay';
 
 interface BadgeCommonProps
@@ -62,7 +64,8 @@ export interface BadgeCountProps extends BadgeCommonProps {
   placement?: BadgePlacement | undefined;
   /** Show a count of zero. Defaults to `true`; `false` renders nothing while the count is zero. */
   showZero?: boolean | undefined;
-  variant?: never;
+  /** Count appearance, independent of tone. Defaults to `subtle`. */
+  variant?: BadgeCountVariant | undefined;
   children?: never;
   announce?: never;
   mutedDot?: never;
@@ -132,6 +135,7 @@ function CountBadge({
   size = 'md',
   bare = false,
   showZero = true,
+  variant = 'subtle',
   className,
   'aria-label': ariaLabel,
   ...rest
@@ -141,7 +145,7 @@ function CountBadge({
   const visible = formatCount(count, locale, { max, more });
   const spoken = describeCount({ count, more, 'aria-label': ariaLabel }, strings, locale);
   const isSeparate = !isAriaHidden(rest['aria-hidden']) && spoken !== visible;
-  const data = { variant: 'count', tone, size, placement, bare };
+  const data = { variant, count: true, tone, size, placement, bare };
   if (!showZero && normalizeCount(count) === 0 && !more) return null;
 
   return (

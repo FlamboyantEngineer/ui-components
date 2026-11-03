@@ -108,6 +108,7 @@ export function NotificationCenter({
         </PopoverTrigger>
       )}
       <Badge
+        variant="solid"
         count={unread}
         max={countMax}
         showZero={false}

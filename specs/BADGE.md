@@ -13,7 +13,7 @@ Verification: `src/components/badge/badge.test.tsx`, `e2e/badge.spec.ts`
 
 ### UIC-BADGE-1.2 - Variants
 
-`variant` shall publish `data-variant`: `subtle` (the default, a tinted pill), `solid` (a filled token), `status` (a tone dot before the label) or `dot` (a marker with no text, [UIC-BADGE-4.1](#uic-badge-41---dot-marker)). A count badge publishes `count`.
+`variant` shall publish `data-variant`: `subtle` (the default, a tinted pill), `solid` (a filled token), `status` (a tone dot before the label) or `dot` (a marker with no text, [UIC-BADGE-4.1](#uic-badge-41---dot-marker)). A count badge accepts `BadgeCountVariant` (`subtle` by default or `solid`) and additionally publishes `data-count`, separating numeric geometry from appearance and semantic tone.
 
 Implementation: `src/components/badge/badge.tsx`, `labs/reference/badge.css`
 Verification: `src/components/badge/badge.test.tsx`, `e2e/badge.spec.ts`
@@ -73,7 +73,7 @@ Verification: `src/components/badge/badge.test.tsx`, `e2e/badge.spec.ts`
 
 ### UIC-BADGE-3.1 - Count display
 
-A badge given `count` shall show `formatCount(count, locale, { max, more })` in the provider locale ([COUNT.md](COUNT.md)) in its label slot and accept no children; its type refuses children, a variant and a string count. It uses the same tones and sizes as label badges.
+A badge given `count` shall show `formatCount(count, locale, { max, more })` in the provider locale ([COUNT.md](COUNT.md)) in its label slot and accept no children; its type refuses children, status/dot variants and a string count. Counts default to the quiet `subtle` appearance; `solid` explicitly requests a vibrant filled count, including icon notifications. Both share geometry and typography independent of parent font and selected styles. It uses the same tones and sizes as label badges.
 
 Implementation: `src/components/badge/badge.tsx`, `src/utils/count.ts`
 Verification: `src/components/badge/badge.test.tsx`, `e2e/badge.spec.ts`
@@ -118,7 +118,8 @@ Verification: `src/components/badge/badge.test.tsx`, `e2e/badge.spec.ts`
 | `ui-badge__label`            | slot      |                                                   | The visible label or formatted count.                                       |
 | `ui-badge__end-icon`         | slot      |                                                   | The icon after a label (also `ui-icon`).                                    |
 | `ui-badge__accessible-label` | slot      |                                                   | Visually hidden `aria-label` or count text that assistive technology reads. |
-| `data-variant`               | attribute | `subtle`, `solid`, `status`, `count`, `dot`       | Shape; `count` for count badges, `dot` for markers.                         |
+| `data-variant`               | attribute | `subtle`, `solid`, `status`, `dot`                | Appearance; `dot` for markers.                                              |
+| `data-count`                 | state     | `true`                                            | Numeric geometry, independent of variant and tone.                          |
 | `data-tone`                  | attribute | `neutral`, `info`, `success`, `warning`, `danger` | Tone.                                                                       |
 | `data-size`                  | attribute | `sm`, `md`, `lg`                                  | Scale.                                                                      |
 | `data-placement`             | attribute | `inline`, `overlay`                               | Count and dot badges: inline or pinned to a corner.                         |

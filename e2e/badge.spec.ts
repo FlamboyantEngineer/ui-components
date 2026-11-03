@@ -160,3 +160,57 @@ test('UIC-COUNT-1.2 UIC-COUNT-1.3 UIC-COUNT-1.4 shows the count helpers in a hos
   await expect(call("formatCount(12, 'en-US', { more: true })")).toHaveText('12+');
   await expect(call("formatCount(12345, 'fr-FR')")).toHaveText('12\u202f345');
 });
+
+test('UIC-BADGE-3.1 UIC-BADGE-1.2 shares count geometry and typography across appearances and selected parents in both themes', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('badge');
+  const section = page.getByRole('region', { name: 'Count appearances', exact: true });
+  for (const theme of ['light', 'dark']) {
+    await page.locator('#lab-chrome').getByLabel('Theme', { exact: true }).selectOption(theme);
+    for (const count of ['0', '7', '12', '128']) {
+      const read = async (variant: string) =>
+        matrixCell(section, `variant=${variant} count=${count}`)
+          .locator('.ui-badge')
+          .evaluateAll((badges) =>
+            badges.map((badge) => {
+              const box = badge.getBoundingClientRect();
+              const style = getComputedStyle(badge);
+              return {
+                width: box.width,
+                height: box.height,
+                font: `${style.fontFamily} ${style.fontSize} ${style.lineHeight}`,
+                weight: style.fontWeight,
+                spacing: style.letterSpacing,
+                color: style.color,
+                background: style.backgroundColor,
+              };
+            }),
+          );
+      const quiet = await read('subtle');
+      const solid = await read('solid');
+      expect(quiet).toHaveLength(4);
+      expect(solid).toHaveLength(4);
+      for (const styles of [quiet, solid]) {
+        const [first, ...others] = styles;
+        if (!first) throw new Error('No count sample rendered.');
+        const { width: expectedWidth, ...expectedAppearance } = first;
+        for (const { width, ...appearance } of others) {
+          // Bidi inline layout rounds widths to adjacent 1/64px positions.
+          expect(width).toBeCloseTo(expectedWidth, 1);
+          expect(appearance).toEqual(expectedAppearance);
+        }
+      }
+      const geometry = (style: (typeof quiet)[number] | undefined) => ({
+        height: style?.height,
+        font: style?.font,
+        weight: style?.weight,
+        spacing: style?.spacing,
+      });
+      expect(geometry(quiet[0])).toEqual(geometry(solid[0]));
+      expect(quiet[0]?.width).toBeCloseTo(solid[0]?.width ?? 0, 1);
+      expect(quiet[0]?.background).not.toBe(solid[0]?.background);
+    }
+  }
+});

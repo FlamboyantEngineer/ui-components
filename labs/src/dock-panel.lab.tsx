@@ -15,6 +15,7 @@ import { DockPanel, DockPanelPane } from '../../src/components/dock-panel/dock-p
 import type { Key } from '../../src/core/props.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { requireDefined } from './require-defined.js';
+import { FilterDockExample } from './list-filter-examples.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 type Position = 'start' | 'end' | 'bottom';
@@ -535,6 +536,23 @@ function DragToExpand({ rtl }: { rtl: boolean }) {
 
 mountLab(
   <>
+    <LabSection title="Count appearance overrides">
+      <DockPanel label="Count appearances" defaultExpanded={false}>
+        <DockPanelPane
+          id="quiet-launcher"
+          label="Quiet launcher"
+          icon={InfoGlyph}
+          count={7}
+          countVariant="solid"
+          launcherCountVariant="subtle"
+        >
+          Expanded solid, collapsed subtle.
+        </DockPanelPane>
+      </DockPanel>
+    </LabSection>
+    <LabSection title="Counted list filters">
+      <FilterDockExample />
+    </LabSection>
     <LabSection
       title="Positions and states"
       description="Each position expanded and collapsed. Expanded, one strip of tabs sits beside the collapse button; collapsed, a 40 pixel rail of launchers, read bottom to top beside a side edge. Counts above 9 show 9+; the last pane is disabled."

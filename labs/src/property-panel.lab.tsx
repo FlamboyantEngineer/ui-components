@@ -268,6 +268,18 @@ function RevealingForm() {
 
 mountLab(
   <>
+    <LabSection title="Count appearances">
+      <StateMatrix
+        axes={{ variant: ['subtle', 'solid'], count: ['0', '7', '12', '128'] }}
+        render={({ variant, count }) => (
+          <PropertyPanel>
+            <PropertySection title="Items" count={Number(count)} countVariant={variant}>
+              <p>Section content</p>
+            </PropertySection>
+          </PropertyPanel>
+        )}
+      />
+    </LabSection>
     <LabSection
       title="Rows"
       description="Each row state in a 300 and 440 pixel panel. The responsive layout stacks labels below 360 pixels; inline keeps them beside."

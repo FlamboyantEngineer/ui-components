@@ -7,6 +7,7 @@ import type { MouseEvent, PointerEvent } from 'react';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { formatCount } from '../../utils/count.js';
 import { useLocale } from '../../primitives/index.js';
+import { Badge, type BadgeCountVariant } from '../badge/badge.js';
 import { tabsHooks as hooks } from './tab-hooks.js';
 
 interface TabCountProps {
@@ -14,16 +15,24 @@ interface TabCountProps {
   count: number;
   countMax: number;
   countLabel: string | undefined;
+  countVariant: BadgeCountVariant | undefined;
 }
 
 /** A tab's shown count, and the hidden description that gives the full count. */
-export function TabCount({ id, count, countMax, countLabel }: TabCountProps) {
+export function TabCount({ id, count, countMax, countLabel, countVariant }: TabCountProps) {
   const strings = useUiStrings();
   const { locale } = useLocale();
   return (
     <>
       {' '}
-      <span {...hooks.slot('count')}>{formatCount(count, locale, { max: countMax })}</span>
+      <Badge
+        className={hooks.slotClass('count')}
+        aria-label={formatCount(count, locale, { max: countMax })}
+        count={count}
+        max={countMax}
+        variant={countVariant}
+        size="sm"
+      />
       <span id={id} hidden>
         {countLabel ?? strings.itemCount(count)}
       </span>
