@@ -251,6 +251,33 @@ test.describe('Markdown lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-MARKDOWN-1.13 UIC-MARKDOWN-2.5 draws a wide table with escaped pipes and padded cells', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('markdown');
+    const demo = page.locator('[data-lab-demo="wide-table"]');
+    await expect(demo.getByRole('table')).toHaveCount(0);
+    await demo.getByRole('button', { name: 'Load 128-column table' }).click();
+    const table = demo.getByRole('table');
+    const headers = table.getByRole('columnheader');
+    const rows = table.getByRole('row');
+    await expect(headers).toHaveCount(128);
+    await expect(headers.last()).toHaveText('Column 128');
+    await expect(rows).toHaveCount(3);
+    const cells = rows.nth(1).getByRole('cell');
+    await expect(cells).toHaveCount(128);
+    await expect(cells.first()).toHaveText('A|B');
+    await expect(cells.first()).toHaveAttribute('data-align', 'start');
+    await expect(cells.last().locator('.ui-markdown__code')).toHaveText('c|d');
+    await expect(cells.last()).toHaveAttribute('data-align', 'end');
+    const short = rows.last().getByRole('cell');
+    await expect(short).toHaveCount(128);
+    await expect(short.first()).toHaveText('Short');
+    await expect(short.last()).toBeEmpty();
+    await lab.expectAccessible('[data-lab-demo="wide-table"]');
+  });
+
   test('UIC-MARKUP-1.6 draws deep nesting without overflowing the stack', async ({ page, lab }) => {
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
