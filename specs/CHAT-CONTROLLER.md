@@ -74,10 +74,10 @@ Verification: `src/components/chat-controller/chat-stream.test.ts`
 
 ### UIC-CHAT-CONTROLLER-1.7 - Status, finish and errors
 
-A `status` shall set the reply's `statusText`, and an empty text shall clear it. A `finish` shall complete the reply: streaming parts complete, pending and running tool calls are cancelled, the status line clears, and approvals and questions that wait for the reader stay. An `error` shall end the reply the same way with `status: 'error'` and its `message` as `error`, and cancel the approvals and dismiss the questions that waited.
+A `status` shall set the reply's `statusText`, and an empty text shall clear it. A `finish`, or natural exhaustion of the controller's event iterator, shall successfully settle the stream: streaming parts complete, the status line clears, and approvals and questions that wait for the reader stay. Running tool calls with `approval.decision: 'approved'` or `'always'`, or `approval.isAutoApproved: true`, shall remain running until a later `tool-result` succeeds or fails them, even if another request delays continuation. Pending calls and other running calls shall be cancelled. An `error` shall end the reply with `status: 'error'` and its `message` as `error`, cancel every unfinished tool call regardless of approval, and dismiss pending questions. Stopping shall likewise cancel unfinished calls. Terminal tool states shall stay unchanged on settlement.
 
 Implementation: `src/components/chat-controller/chat-stream.ts`, `src/components/chat-controller/chat-stream-parts.ts`
-Verification: `src/components/chat-controller/chat-stream.test.ts`
+Verification: `src/components/chat-controller/chat-stream.test.ts`, `src/components/chat-controller/chat-continuations.test.ts`
 
 ### UIC-CHAT-CONTROLLER-1.8 - Purity
 
@@ -148,17 +148,17 @@ Verification: `src/components/chat-controller/chat-responses.test.ts`, `e2e/chat
 
 ### UIC-CHAT-CONTROLLER-3.2 - Responses that continue the reply
 
-Without `await`, the turn ends with the part waiting. A response shall be recorded on the part: an approved or always-allowed call runs, a denied one is `denied` with the reason, a card is `answered` with its answers or `dismissed`. Once nothing in the reply waits for the reader any more, `send` shall run again with the updated conversation, which ends with that reply, and stream into the same reply. A response given while the reply still runs continues it once it finishes. A response shall be ignored for a part that does not wait, or that it does not fit (a decision for a question card, answers or a dismissal for an approval request): it changes no part, resolves no `waitFor` and continues no reply, so a later response that fits still does. This holds for awaited parts ([UIC-CHAT-CONTROLLER-3.1](#uic-chat-controller-31---awaited-responses)) as for parts that continue the reply.
+Without `await`, the turn ends with the part waiting. A response shall be recorded on the part: an approved or always-allowed call runs, a denied one is `denied` with the reason, a card is `answered` with its answers or `dismissed`. Once nothing in the reply waits for the reader any more, `send` shall run again with the updated conversation, which ends with that reply, and stream into the same reply. A response given while the reply still runs continues it once it successfully finishes or its iterator exhausts. Approving before settlement shall pass the same reply and call IDs to `send` with the call still `running` and its approval metadata intact, just as approving after settlement does. The call shall remain running until its result arrives, including while another unanswered request delays continuation. Stop or error shall cancel unfinished calls and start no continuation. A response shall be ignored for a part that does not wait, or that it does not fit (a decision for a question card, answers or a dismissal for an approval request): it changes no part, resolves no `waitFor` and continues no reply, so a later response that fits still does. This holds for awaited parts ([UIC-CHAT-CONTROLLER-3.1](#uic-chat-controller-31---awaited-responses)) as for parts that continue the reply.
 
 Implementation: `src/components/chat-controller/chat-run.ts`, `src/components/chat-controller/chat-reply.ts`, `src/components/chat-controller/chat-engine.ts`
-Verification: `src/components/chat-controller/chat-responses.test.ts`, `src/components/chat-controller/chat-reply.test.ts`, `src/components/chat-controller/chat-response-fit.test.ts`, `e2e/chat-controller.spec.ts`
+Verification: `src/components/chat-controller/chat-responses.test.ts`, `src/components/chat-controller/chat-continuations.test.ts`, `src/components/chat-controller/chat-reply.test.ts`, `src/components/chat-controller/chat-response-fit.test.ts`, `e2e/chat-controller.spec.ts`
 
 ### UIC-CHAT-CONTROLLER-3.3 - Always allow
 
-`props.onAlwaysAllow(callId)` shall add the call's tool name to the tools the reader always allows, which the controller keeps unless the host controls them with `alwaysAllowed`, report the new list through `onAlwaysAllowedChange`, and record the decision `always`. Later approval requests for that tool run without asking, with `approval.isAutoApproved`: an awaited one resolves `waitFor` with `{ type: 'approval', decision: 'approved', isAutoApproved: true }`, and one that is not awaited continues the reply once it finishes.
+`props.onAlwaysAllow(callId)` shall add the call's tool name to the tools the reader always allows, which the controller keeps unless the host controls them with `alwaysAllowed`, report the new list through `onAlwaysAllowedChange`, and record the decision `always`. Later approval requests for that tool run without asking, with `approval.isAutoApproved`: an awaited one resolves `waitFor` with `{ type: 'approval', decision: 'approved', isAutoApproved: true }`, and one that is not awaited continues the reply once it successfully finishes or its iterator exhausts. Successful settlement shall preserve that call's running status and automatic approval metadata for the continuation, even without an explicit `approval.decision`; stop and error shall still cancel it if unfinished.
 
 Implementation: `src/components/chat-controller/chat-engine.ts`, `src/components/chat-controller/chat-run.ts`, `src/components/chat-controller/chat-stream.ts`
-Verification: `src/components/chat-controller/chat-responses.test.ts`, `e2e/chat-controller.spec.ts`
+Verification: `src/components/chat-controller/chat-responses.test.ts`, `src/components/chat-controller/chat-continuations.test.ts`, `e2e/chat-controller.spec.ts`
 
 ### UIC-CHAT-CONTROLLER-3.4 - Sending dismisses
 
