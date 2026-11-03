@@ -45,12 +45,23 @@ const ARIA = `${'react-aria'}-components`;
 
 function check(files: Record<string, string>, ...args: string[]) {
   const dir = mkdtempSync(join(tmpdir(), 'ui-public-types-'));
+  // These are partial component trees, so the library-wide rootless registry does not apply.
+  const components = args.length
+    ? args
+    : [
+        ...new Set(
+          Object.keys(files).flatMap((path) => {
+            const [, name] = /^components\/([^/]+)\//.exec(path) ?? [];
+            return name ? [name] : [];
+          }),
+        ),
+      ];
   try {
     for (const [path, text] of Object.entries(files)) {
       mkdirSync(join(dir, path, '..'), { recursive: true });
       writeFileSync(join(dir, path), text);
     }
-    return spawnSync('node', ['scripts/check-public-types.mjs', '--dir', dir, ...args], {
+    return spawnSync('node', ['scripts/check-public-types.mjs', '--dir', dir, ...components], {
       encoding: 'utf8',
     });
   } finally {

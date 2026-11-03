@@ -202,6 +202,34 @@ describe('OverflowList', () => {
     expect(shownItems()).toEqual(['Apple']);
   });
 
+  it('UIC-OVERFLOW-LIST-2.1 measures a toolbar strip while forwarding the caller ref to its outer root', () => {
+    const ref = createRef<HTMLDivElement>();
+    render(
+      <OverflowList
+        ref={ref}
+        data-room={500}
+        items={fruit}
+        getKey={(item) => item}
+        renderItem={(item) => item}
+        renderOverflow={(hidden) => `+${hidden.length}`}
+        render={({ children, ...props }, { itemContainerRef }) => (
+          <div {...props}>
+            <div role="toolbar" aria-label="Fruit tools" data-room={120} ref={itemContainerRef}>
+              {children}
+            </div>
+          </div>
+        )}
+      />,
+    );
+    const toolbar = screen.getByRole('toolbar', { name: 'Fruit tools' });
+    expect(ref.current).toHaveClass('ui-overflow-list');
+    expect(ref.current).not.toBe(toolbar);
+    expect(ref.current).toContainElement(toolbar);
+    expect(ref.current).toHaveAttribute('data-overflowing', 'true');
+    expect(shownItems()).toEqual(['Apple']);
+    expect(screen.getByText('+3')).toBeInTheDocument();
+  });
+
   it('UIC-OVERFLOW-LIST-2.2 forwards the caller id, attributes and ref to the root', () => {
     const ref = createRef<HTMLDivElement>();
     render(

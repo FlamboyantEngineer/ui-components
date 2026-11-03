@@ -31,10 +31,11 @@ function run(script) {
     let output = '';
     child.stdout.on('data', (chunk) => (output += chunk));
     child.stderr.on('data', (chunk) => (output += chunk));
-    child.on('close', (code) => {
+    child.on('close', (code, signal) => {
       const seconds = ((Date.now() - started) / 1000).toFixed(1);
       const passed = code === 0;
-      console.log(`${passed ? 'passed' : 'FAILED'}  ${script} (${seconds}s)`);
+      const status = passed ? 'passed' : `FAILED (${signal ?? `exit ${code}`})`;
+      console.log(`${status}  ${script} (${seconds}s)`);
       if (!passed && output.trim()) console.log(output.trimEnd(), '\n');
       resolve(passed);
     });
@@ -45,7 +46,8 @@ for (const stage of STAGES) {
   const results = await Promise.all(stage.map(run));
   if (results.includes(false)) {
     console.log(`\n${stage.filter((_, index) => !results[index]).join(', ')} failed.`);
-    process.exit(1);
+    process.exitCode = 1;
+    break;
   }
 }
-console.log('\nEvery check passed.');
+if (!process.exitCode) console.log('\nEvery check passed.');

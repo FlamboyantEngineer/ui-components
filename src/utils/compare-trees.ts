@@ -208,26 +208,28 @@ export function compareTrees<T extends CompareTreeNode>(
   return { rows: alignRows(left, right, comparison), counts: comparison.counts };
 }
 
-/** Whether two nodes hold the same own fields (shallowly) and the same children in order. */
-function isSameNode(left: CompareTreeNode, right: CompareTreeNode): boolean {
-  if (left === right) return true;
-  const { children: leftChildren = [], ...leftFields } = left;
-  const { children: rightChildren = [], ...rightFields } = right;
-  return isShallowEqual(leftFields, rightFields) && isSameTrees(leftChildren, rightChildren);
-}
-
 /**
  * Whether two lists of trees hold the same nodes in the same shape, as a parent that rebuilds its
  * data on each render passes them: each node's own fields are compared shallowly and its children
- * in order, so the check costs no more than walking the trees once.
+ * in order. An explicit stack keeps the comparison safe for deeply nested trees.
  */
 export function isSameTrees(
   left: readonly CompareTreeNode[],
   right: readonly CompareTreeNode[],
 ): boolean {
-  return (
-    left === right ||
-    (left.length === right.length &&
-      left.every((node, index) => isSameNode(node, requireDefined(right[index]))))
-  );
+  const stack = [{ left, right }];
+  while (stack.length > 0) {
+    const pair = requireDefined(stack.pop());
+    if (pair.left === pair.right) continue;
+    if (pair.left.length !== pair.right.length) return false;
+    for (const [index, node] of pair.left.entries()) {
+      const other = requireDefined(pair.right[index]);
+      if (node === other) continue;
+      const { children: leftChildren = [], ...leftFields } = node;
+      const { children: rightChildren = [], ...rightFields } = other;
+      if (!isShallowEqual(leftFields, rightFields)) return false;
+      stack.push({ left: leftChildren, right: rightChildren });
+    }
+  }
+  return true;
 }

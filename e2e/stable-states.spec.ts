@@ -13,7 +13,7 @@ const labs: Record<
   button: {},
   'boolean-field': {},
   'color-field': {},
-  'date-time-field': {},
+  'date-time-field': { matrixSelector: `${familySelector('stable')} table[data-lab-matrix]` },
   field: {},
   'inline-edit': {},
   'code-editor': {
@@ -27,7 +27,6 @@ const labs: Record<
   'choice-group': {},
   'relative-date-field': {},
   'select-field': { contentAxes: ['mode'] },
-  slider: {},
   'text-field': {},
   tooltip: {},
 };

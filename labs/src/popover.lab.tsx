@@ -300,7 +300,7 @@ mountLab(
   <>
     <LabSection
       title="Placements and arrow"
-      description="Each cell opens a popover on that side of its button, with consistent spacing even when the browser reserves scrollbar space, with or without an arrow. Escape, the close button or a press outside closes it and focus returns to the button."
+      description="Each cell opens a popover on that side of its button, with consistent spacing even when the browser reserves scrollbar space, with or without an arrow. Escape, the close button or a press outside closes it and focus returns to the button, including Escape pressed as an opening focus scroll settles."
     >
       <StateMatrix
         axes={{ placement: placements, arrow: arrows }}

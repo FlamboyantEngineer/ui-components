@@ -105,6 +105,13 @@ test.describe('Progress Bar lab', () => {
     );
     expect(colours.size).toBe(4);
     expect(await fillColour('neutral', '100%')).toBe(await fillColour('success', '60%'));
+    for (const tone of ['neutral', 'success', 'warning', 'danger']) {
+      const indeterminate = bar(tone, 'indeterminate');
+      await expect(indeterminate).toHaveAttribute('data-tone', tone);
+      await expect(indeterminate).toHaveAttribute('data-indeterminate', 'true');
+      await expect(indeterminate).not.toHaveAttribute('data-complete');
+      await expect(indeterminate).not.toHaveAttribute('aria-valuenow');
+    }
     await lab.expectAccessible();
   });
 

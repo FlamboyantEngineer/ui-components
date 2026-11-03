@@ -47,6 +47,21 @@ test.describe('lab harness', () => {
     await expect(chrome.getByLabel('Theme value')).toHaveValue('night');
   });
 
+  test('UIC-LABS-2.2 keeps query theme text out of event-handler attributes', async ({
+    page,
+    lab,
+  }) => {
+    const theme = 'document.documentElement.dataset.executed="yes"';
+    await lab.open('provider', { stylesheet: 'none', theme, themeAttribute: 'onpointerover' });
+    await expect(page.locator('html')).not.toHaveAttribute('onpointerover');
+    await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+    await page.locator('html').dispatchEvent('pointerover');
+    await expect(page.locator('html')).not.toHaveAttribute('data-executed');
+    await expect(
+      page.locator('#lab-chrome').getByRole('textbox', { name: 'on', exact: true }),
+    ).toHaveValue('data-theme');
+  });
+
   test("UIC-LABS-2.2 follows the reader's colour scheme until a light or dark theme is chosen", async ({
     page,
     lab,

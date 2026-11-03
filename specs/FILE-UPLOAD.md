@@ -34,10 +34,10 @@ Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-uploa
 
 ### UIC-FILE-UPLOAD-1.5 - Folders
 
-With `acceptDirectory`, the system chooser shall pick a folder and every file in it is offered, as with `allowsMultiple`; a folder dropped on the drop zone is read, through its subfolders, for its files. Files retain their entry order, with a subfolder's files before the next sibling entry; large folders shall not be limited by JavaScript's function argument count. Without it a dropped folder is ignored. The drop is read as library dropped items (`DroppedFile`, `DroppedDirectory` and `DroppedText`, which is ignored), whatever building block reports it.
+With `acceptDirectory`, the system chooser shall pick a folder and every file in it is offered, as with `allowsMultiple`; a folder dropped on the drop zone is read, through its subfolders, for its files. Files retain their entry order, with a subfolder's files before the next sibling entry; large folders shall not be limited by JavaScript's function argument count. Without it a dropped folder is ignored. The drop is read as library dropped items (`DroppedFile`, `DroppedDirectory` and `DroppedText`, which is ignored), whatever building block reports it. If a file or folder cannot be read, the whole offer is abandoned, `onError(error)` receives the failure when supplied, and the refusal alert shows its message or the provider's `actionFailed` fallback. A later offer replaces that error. A read finishing after the upload unmounts or becomes disabled or read-only calls nothing and shows nothing.
 
-Implementation: `src/components/file-upload/file-upload.tsx`, `src/components/file-upload/file-upload-drop.tsx`
-Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-upload.spec.ts`
+Implementation: `src/components/file-upload/file-upload.tsx`, `src/components/file-upload/file-upload-intake.ts`, `src/components/file-upload/file-upload-drop.tsx`
+Verification: `src/components/file-upload/file-upload.test.tsx`, `src/components/file-upload/file-upload-read.test.tsx`, `e2e/file-upload.spec.ts`
 
 ### UIC-FILE-UPLOAD-1.6 - Read-only
 
@@ -50,7 +50,7 @@ Verification: `src/components/file-upload/file-upload-files.test.tsx`, `src/comp
 
 `aria-labelledby` shall name the command (the drop zone's Browse button) by those elements followed by the command's own text, and `aria-label` by that text followed by the command's own text, so the name keeps what the command shows; `aria-describedby` adds to the command's description. `commandRef` receives the command's button, so an owner such as [File Field](FILE-FIELD.md) can focus it, and `commandId` gives the button its id, so an owner's label can point at it; `id` stays on the root.
 
-Implementation: `src/components/file-upload/file-upload.tsx`, `src/components/file-upload/file-upload-drop.tsx`
+Implementation: `src/components/file-upload/file-upload.tsx`, `src/components/file-upload/file-upload-intake.ts`, `src/components/file-upload/file-upload-drop.tsx`
 Verification: `src/components/file-upload/file-upload-files.test.tsx`
 
 ## UIC-FILE-UPLOAD-2 - Checking files
@@ -101,10 +101,10 @@ Verification: `src/components/file-upload/file-rules.test.ts`, `src/components/f
 
 ### UIC-FILE-UPLOAD-2.7 - Owner's check
 
-`validate` shall check each offered file that matches the types and fits the size limits, given the files of the same offer accepted before it, so it can refuse names, duplicates or image dimensions: a message it returns refuses the file with the reason `invalid` and that message. It may answer with a promise; the offer is then handed on once every answer has come. An offer made while an earlier one still waits for its answers is checked after the earlier one is handed on, so overlapping offers never pass `maxFiles` together and the refusals shown are the latest offer's. A `validate` that throws, or answers with a promise that rejects, refuses its file as `unchecked` and the offer goes on with the next file, so no error or rejection from the check escapes; errors the `onSelect` and `onReject` callbacks throw are not caught. An answer reaches the `onSelect` and `onReject` the upload last rendered with. When the upload unmounts, or becomes disabled or read-only, while offers wait for their answers, they are abandoned with the offers queued behind them: their answers call nothing and show nothing, and an offer made after the upload is enabled again is checked on its own. The checks run in this order: type, size, `validate`, count.
+`validate` shall check each offered file that matches the types and fits the size limits, given the files of the same offer accepted before it, so it can refuse names, duplicates or image dimensions: a message it returns refuses the file with the reason `invalid` and that message. It may answer with a promise, including one from another window; the offer is then handed on once every answer has come. File reads and validation share one offer queue: an offer made while an earlier one still waits for a file read or its validation answers is processed after the earlier one is handed on or its read failure is reported, so overlapping offers never pass `maxFiles` together and the refusals shown are the latest offer's. A `validate` that throws, or answers with a promise that rejects, refuses its file as `unchecked` and the offer goes on with the next file, so no error or rejection from the check escapes; errors the `onSelect` and `onReject` callbacks throw are not caught. An answer reaches the `onSelect` and `onReject` the upload last rendered with. When the upload unmounts, or becomes disabled or read-only, while offers wait for their answers, they are abandoned with the offers queued behind them: their answers call nothing and show nothing, and an offer made after the upload is enabled again is checked on its own. The checks run in this order: type, size, `validate`, count.
 
 Implementation: `src/components/file-upload/file-rules.ts`, `src/components/file-upload/file-upload.tsx`, `src/core/strings.ts`
-Verification: `src/components/file-upload/file-rules.test.ts`, `src/components/file-upload/file-upload.test.tsx`, `e2e/file-upload.spec.ts`
+Verification: `src/components/file-upload/file-rules.test.ts`, `src/components/file-upload/file-upload.test.tsx`, `src/components/file-upload/file-upload-read.test.tsx`, `e2e/file-upload.spec.ts`
 
 ### UIC-FILE-UPLOAD-2.8 - Drag feedback
 
@@ -196,37 +196,37 @@ Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-uploa
 
 ## Hooks
 
-| Hook                            | Kind      | Values                                       | Description                                                  |
-| ------------------------------- | --------- | -------------------------------------------- | ------------------------------------------------------------ |
-| `ui-file-upload`                | root      |                                              | The upload's `<div>`.                                        |
-| `ui-file-upload__dropzone`      | slot      |                                              | The drop zone of the `dropzone` variant.                     |
-| `ui-file-upload__icon`          | slot      |                                              | The drop zone's glyph (also `ui-icon`).                      |
-| `ui-file-upload__label`         | slot      |                                              | The drop zone's title.                                       |
-| `ui-file-upload__description`   | slot      |                                              | The description.                                             |
-| `ui-file-upload__browse`        | slot      |                                              | The drop zone's Browse button (also `ui-button`).            |
-| `ui-file-upload__rejections`    | slot      |                                              | The refusal message (also `ui-inline-error`).                |
-| `ui-file-upload__error`         | slot      |                                              | The required or invalid message (also `ui-inline-error`).    |
-| `ui-file-upload__files`         | slot      |                                              | The list of files.                                           |
-| `ui-file-upload__file`          | slot      |                                              | A listed file.                                               |
-| `ui-file-upload__file-preview`  | slot      |                                              | A file's image thumbnail.                                    |
-| `ui-file-upload__file-media`    | slot      |                                              | A file's caller preview, from `renderFilePreview`.           |
-| `ui-file-upload__file-icon`     | slot      |                                              | A file's type glyph (also `ui-icon`).                        |
-| `ui-file-upload__file-name`     | slot      |                                              | A file's name.                                               |
-| `ui-file-upload__file-size`     | slot      |                                              | A file's size.                                               |
-| `ui-file-upload__file-progress` | slot      |                                              | A file's upload progress (also `ui-progress-bar`).           |
-| `ui-file-upload__file-error`    | slot      |                                              | A file's upload error (also `ui-inline-error`).              |
-| `ui-file-upload__file-actions`  | slot      |                                              | A file's caller actions, from `renderFileActions`.           |
-| `ui-file-upload__file-remove`   | slot      |                                              | A file's remove button (also `ui-button`).                   |
-| `data-variant`                  | attribute | `button`, `dropzone`                         | The command.                                                 |
-| `data-status`                   | state     | `selected`, `uploading`, `complete`, `error` | On a listed file: where its upload stands.                   |
-| `data-change`                   | state     | `added`                                      | On a listed file: an edit added it.                          |
-| `data-disabled`                 | state     | `true`                                       | Disabled (root, and the drop zone through React Aria).       |
-| `data-readonly`                 | state     | `true`                                       | Read-only: no command and no removal (root).                 |
-| `data-required`                 | state     | `true`                                       | A form needs a file (root).                                  |
-| `data-invalid`                  | state     | `true`                                       | The required or invalid message shows (root).                |
-| `data-drop-accept`              | state     | `true`                                       | A drag over the drop zone would be accepted.                 |
-| `data-drop-reject`              | state     | `true`                                       | A drag over the drop zone would be refused.                  |
-| `data-drop-target`              | state     | `true`                                       | A drag is over the drop zone (React Aria).                   |
-| `data-hovered`                  | state     | `true`                                       | Pointer over the drop zone (React Aria).                     |
-| `data-focused`                  | state     | `true`                                       | The drop zone's keyboard drop target has focus (React Aria). |
-| `data-focus-visible`            | state     | `true`                                       | Keyboard focus on the drop zone (React Aria).                |
+| Hook                            | Kind      | Values                                       | Description                                                        |
+| ------------------------------- | --------- | -------------------------------------------- | ------------------------------------------------------------------ |
+| `ui-file-upload`                | root      |                                              | The upload's `<div>`.                                              |
+| `ui-file-upload__dropzone`      | slot      |                                              | The drop zone of the `dropzone` variant.                           |
+| `ui-file-upload__icon`          | slot      |                                              | The drop zone's glyph (also `ui-icon`).                            |
+| `ui-file-upload__label`         | slot      |                                              | The drop zone's title.                                             |
+| `ui-file-upload__description`   | slot      |                                              | The description.                                                   |
+| `ui-file-upload__browse`        | slot      |                                              | The drop zone's Browse button (also `ui-button`).                  |
+| `ui-file-upload__rejections`    | slot      |                                              | The refusal or drop-read failure message (also `ui-inline-error`). |
+| `ui-file-upload__error`         | slot      |                                              | The required or invalid message (also `ui-inline-error`).          |
+| `ui-file-upload__files`         | slot      |                                              | The list of files.                                                 |
+| `ui-file-upload__file`          | slot      |                                              | A listed file.                                                     |
+| `ui-file-upload__file-preview`  | slot      |                                              | A file's image thumbnail.                                          |
+| `ui-file-upload__file-media`    | slot      |                                              | A file's caller preview, from `renderFilePreview`.                 |
+| `ui-file-upload__file-icon`     | slot      |                                              | A file's type glyph (also `ui-icon`).                              |
+| `ui-file-upload__file-name`     | slot      |                                              | A file's name.                                                     |
+| `ui-file-upload__file-size`     | slot      |                                              | A file's size.                                                     |
+| `ui-file-upload__file-progress` | slot      |                                              | A file's upload progress (also `ui-progress-bar`).                 |
+| `ui-file-upload__file-error`    | slot      |                                              | A file's upload error (also `ui-inline-error`).                    |
+| `ui-file-upload__file-actions`  | slot      |                                              | A file's caller actions, from `renderFileActions`.                 |
+| `ui-file-upload__file-remove`   | slot      |                                              | A file's remove button (also `ui-button`).                         |
+| `data-variant`                  | attribute | `button`, `dropzone`                         | The command.                                                       |
+| `data-status`                   | state     | `selected`, `uploading`, `complete`, `error` | On a listed file: where its upload stands.                         |
+| `data-change`                   | state     | `added`                                      | On a listed file: an edit added it.                                |
+| `data-disabled`                 | state     | `true`                                       | Disabled (root, and the drop zone through React Aria).             |
+| `data-readonly`                 | state     | `true`                                       | Read-only: no command and no removal (root).                       |
+| `data-required`                 | state     | `true`                                       | A form needs a file (root).                                        |
+| `data-invalid`                  | state     | `true`                                       | The required or invalid message shows (root).                      |
+| `data-drop-accept`              | state     | `true`                                       | A drag over the drop zone would be accepted.                       |
+| `data-drop-reject`              | state     | `true`                                       | A drag over the drop zone would be refused.                        |
+| `data-drop-target`              | state     | `true`                                       | A drag is over the drop zone (React Aria).                         |
+| `data-hovered`                  | state     | `true`                                       | Pointer over the drop zone (React Aria).                           |
+| `data-focused`                  | state     | `true`                                       | The drop zone's keyboard drop target has focus (React Aria).       |
+| `data-focus-visible`            | state     | `true`                                       | Keyboard focus on the drop zone (React Aria).                      |

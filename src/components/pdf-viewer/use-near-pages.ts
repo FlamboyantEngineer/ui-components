@@ -1,6 +1,14 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+  type RefObject,
+} from 'react';
 
 export interface NearPages {
   /** Every registered page element, by page index. */
@@ -8,6 +16,13 @@ export interface NearPages {
   /** Pages within a screen of the view; `null` when the platform cannot tell, so every page renders. */
   nearPages: ReadonlySet<number> | null;
   registerPage(pageIndex: number, element: HTMLElement | null): void;
+}
+
+interface PageObservation {
+  elements: RefObject<Map<number, HTMLElement>>;
+  indexes: RefObject<WeakMap<Element, number>>;
+  observer: RefObject<IntersectionObserver | null>;
+  setNearPages: Dispatch<SetStateAction<ReadonlySet<number> | null>>;
 }
 
 /** The near pages after a batch of intersection changes. */
@@ -28,20 +43,23 @@ function updateNearPages(
   return next ?? previous;
 }
 
-/** Tracks which pages are near the view with an `IntersectionObserver` rooted at the scroller. */
-export function useNearPages(scrollerRef: RefObject<HTMLElement | null>): NearPages {
-  const elements = useRef(new Map<number, HTMLElement>());
-  const indexes = useRef(new WeakMap<Element, number>());
-  const observer = useRef<IntersectionObserver | null>(null);
-  const [nearPages, setNearPages] = useState<ReadonlySet<number> | null>(() => new Set());
-
-  useEffect(() => {
-    const root = scrollerRef.current;
-    const Observer = root?.ownerDocument.defaultView?.IntersectionObserver;
-    if (!root || typeof Observer !== 'function') {
-      setNearPages(null);
-      return undefined;
-    }
+/** Observes pages within one scroller height, rebuilding the observer when that height changes. */
+function observeNearPages(
+  root: HTMLElement | null,
+  { elements, indexes, observer, setNearPages }: PageObservation,
+) {
+  const Observer = root?.ownerDocument.defaultView?.IntersectionObserver;
+  if (!root || typeof Observer !== 'function') {
+    setNearPages(null);
+    return undefined;
+  }
+  const view = root.ownerDocument.defaultView;
+  let height = -1;
+  let isActive = true;
+  const observe = () => {
+    if (!isActive || height === root.clientHeight) return;
+    height = root.clientHeight;
+    observer.current?.disconnect();
     const created = new Observer(
       (entries) => {
         if (observer.current !== created) return;
@@ -51,16 +69,36 @@ export function useNearPages(scrollerRef: RefObject<HTMLElement | null>): NearPa
             : previous,
         );
       },
-      { root, rootMargin: '100% 0px' },
+      { root, rootMargin: `${height}px 0px` },
     );
     observer.current = created;
-    setNearPages(new Set());
     for (const element of elements.current.values()) created.observe(element);
-    return () => {
-      created.disconnect();
-      if (observer.current === created) observer.current = null;
-    };
-  }, [scrollerRef]);
+  };
+  setNearPages(new Set());
+  observe();
+  const resize = view?.ResizeObserver ? new view.ResizeObserver(observe) : null;
+  resize?.observe(root);
+  view?.addEventListener('resize', observe);
+  return () => {
+    isActive = false;
+    observer.current?.disconnect();
+    observer.current = null;
+    resize?.disconnect();
+    view?.removeEventListener('resize', observe);
+  };
+}
+
+/** Tracks which pages are near the view with an `IntersectionObserver` rooted at the scroller. */
+export function useNearPages(scrollerRef: RefObject<HTMLElement | null>): NearPages {
+  const elements = useRef(new Map<number, HTMLElement>());
+  const indexes = useRef(new WeakMap<Element, number>());
+  const observer = useRef<IntersectionObserver | null>(null);
+  const [nearPages, setNearPages] = useState<ReadonlySet<number> | null>(() => new Set());
+
+  useEffect(
+    () => observeNearPages(scrollerRef.current, { elements, indexes, observer, setNearPages }),
+    [scrollerRef],
+  );
 
   const registerPage = useCallback((pageIndex: number, element: HTMLElement | null) => {
     const previous = elements.current.get(pageIndex) ?? null;

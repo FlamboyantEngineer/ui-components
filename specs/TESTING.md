@@ -57,7 +57,7 @@ Verification: `src/testing/collections.test.tsx`
 
 ### UIC-TESTING-2.6 - Find a table cell
 
-`getTableCell(table, rowName, columnName)` shall return the cell of a table or grid in the row named `rowName` (rows are named by their row header cells) under the column header named `columnName`, matching `aria-colindex` when the row's cells carry it and the header's position otherwise, and throw when there is none.
+`getTableCell(table, rowName, columnName)` shall return the cell of a table or grid in the row named `rowName` (rows are named by their row header cells) under the column header named `columnName`, matching `aria-colindex` when the row's cells carry it and the header's position otherwise, and throw when there is none. Native `tr`, `th` and `td` elements work through their implicit roles, without explicit `role` attributes.
 
 Implementation: `src/testing/collections.ts`
 Verification: `src/testing/collections.test.tsx`
@@ -84,3 +84,12 @@ Verification: `src/testing/queries.test.tsx`
 
 Implementation: `src/testing/queries.ts`
 Verification: `src/testing/queries.test.tsx`
+
+## UIC-TESTING-4 - Library test harness
+
+### UIC-TESTING-4.1 - Isolated test files
+
+The library's unit runner shall give each test file a separate DOM realm and module graph, including React Aria's module state. A native observer left by one file shall not hide or alter the next file's rendered controls. Tests shall still unmount rendered roots after each test and query controls through their accessible roles; clearing hidden attributes or including inaccessible elements is not a substitute for isolation.
+
+Implementation: `vitest.config.ts`, `test/setup.ts`
+Verification: `test/isolation.test.ts`

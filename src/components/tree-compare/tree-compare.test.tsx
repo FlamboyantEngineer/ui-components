@@ -248,6 +248,24 @@ describe('TreeCompare', () => {
     expect(row('Introduction')).toHaveAttribute('aria-expanded', 'true');
   });
 
+  it('UIC-TREE-COMPARE-3.1 rerenders rebuilt deeply nested trees while keeping visible expansion', async () => {
+    const user = userEvent.setup();
+    const create = (): CompareTreeNode[] => {
+      let nodes: CompareTreeNode[] = [];
+      for (let id = 99; id >= 0; id--) nodes = [{ id, label: `Node ${id}`, children: nodes }];
+      return nodes;
+    };
+    const draw = () => <TreeCompare aria-label="Deep hierarchy" left={create()} right={create()} />;
+    const { rerender } = render(draw());
+    const first = screen.getByRole('row', { name: 'Node 0' });
+    first.focus();
+    await user.keyboard('{ArrowRight}');
+    expect(screen.getByRole('row', { name: 'Node 1' })).toBeInTheDocument();
+    rerender(draw());
+    expect(first).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('row', { name: 'Node 1' })).toBeInTheDocument();
+  });
+
   it('UIC-TREE-COMPARE-3.2 keeps only the differences and the rows above them', async () => {
     const user = userEvent.setup();
     const onChangesOnlyChange = vi.fn();

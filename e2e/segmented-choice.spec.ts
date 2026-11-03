@@ -412,9 +412,13 @@ test('UIC-SEGMENTED-CHOICE-1.3 shows every label and count in full in the equal 
     ),
   ).toBe(true);
   // The samples fit the page without scrolling it sideways.
-  const table = await page.locator('table[data-lab-matrix="size segments"]').boundingBox();
+  const tables = page.locator('[data-lab-section="Glyph room"] table');
+  await expect(tables).toHaveCount(2);
   const width = await page.evaluate(() => document.documentElement.clientWidth);
-  expect((table?.x ?? 0) + (table?.width ?? Infinity)).toBeLessThanOrEqual(width);
+  for (const table of await tables.all()) {
+    const box = await table.boundingBox();
+    expect((box?.x ?? 0) + (box?.width ?? Infinity)).toBeLessThanOrEqual(width);
+  }
 });
 
 test('UIC-SEGMENTED-CHOICE-1.3 gives equal segments the widest label in a content-sized row', async ({

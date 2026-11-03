@@ -141,7 +141,7 @@ test.describe('Breadcrumb lab', () => {
       const link = narrow.getByRole('link', { name: seasonal });
       await expect(link).toBeFocused();
       // The previous crumb's panel may still be fading out.
-      await expect(page.getByRole('tooltip', { name: seasonal })).toBeVisible();
+      await expect(page.getByRole('tooltip').filter({ hasText: seasonal })).toBeVisible();
       await expect(link).not.toHaveAttribute('aria-describedby');
       await page.keyboard.press('Tab');
       await expect(page.getByRole('tooltip')).toHaveCount(0);

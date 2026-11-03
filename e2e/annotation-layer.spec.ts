@@ -124,7 +124,7 @@ test.describe('Annotation Layer lab', () => {
     }).toPass();
   });
 
-  test('UIC-ANNOTATION-LAYER-1.4 follows a phrase moved by its own content and a nested scroll', async ({
+  test('UIC-ANNOTATION-LAYER-1.4 UIC-ANNOTATION-LAYER-1.5 follows a phrase moved by its own content and a nested scroll', async ({
     page,
     lab,
   }) => {
@@ -178,9 +178,18 @@ test.describe('Annotation Layer lab', () => {
     await scrollPhraseTo(height - 8);
     await expect(async () => {
       const [edge, box, anchor] = [await boxOf(region), await boxOf(mark), await boxOf(phrase)];
+      const border = await region.evaluate((node) => node.clientTop);
       expect(Math.abs(box.y - anchor.y)).toBeLessThan(1);
-      expect(Math.abs(box.y + box.height - (edge.y + height))).toBeLessThan(2);
+      expect(Math.abs(box.y + box.height - (edge.y + border + height))).toBeLessThan(2);
       expect(box.height).toBeLessThan(anchor.height);
+    }).toPass();
+    await scrollPhraseTo(height - 1);
+    await expect(async () => {
+      const [edge, box] = [await boxOf(region), await boxOf(mark)];
+      const border = await region.evaluate((node) => node.clientTop);
+      expect(box.height).toBeGreaterThan(0);
+      expect(box.height).toBeLessThan(2);
+      expect(Math.abs(box.y + box.height - (edge.y + border + height))).toBeLessThan(1);
     }).toPass();
     await scrollPhraseTo(40);
     await expectMarkOnPhrase();

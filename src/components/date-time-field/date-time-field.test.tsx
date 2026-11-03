@@ -25,6 +25,22 @@ function segment(name: RegExp) {
 const plain = (text: string | null | undefined) => (text ?? '').replace(/\s/g, ' ');
 
 describe('DateTimeField field', () => {
+  it('UIC-DATE-TIME-FIELD-2.1 honors Escape before an ignored page scroll can commit', async () => {
+    const user = userEvent.setup();
+    renderInLocale(<DateTimeField label="Arrival" defaultValue="2026-04-13" />);
+    const trigger = screen.getByRole('button', { name: /Calendar/ });
+    await user.click(trigger);
+    const dialog = await screen.findByRole('dialog');
+    act(() => {
+      document.dispatchEvent(new Event('scroll', { bubbles: true }));
+      dialog.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
+      );
+    });
+    await waitFor(() => expect(dialog).not.toBeInTheDocument());
+    await waitFor(() => expect(trigger).toHaveFocus());
+  });
+
   it('UIC-DATE-TIME-FIELD-1.1 renders a date picker group of segments with a calendar button', () => {
     const { container } = renderInLocale(
       <DateTimeField

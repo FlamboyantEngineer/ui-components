@@ -1,10 +1,13 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import type { Completion, CompletionSource } from '../completion-list/completion-list.js';
 import { CodeEditor, type CodeEditorSurfaceProps } from './code-editor.js';
+import { ControlCompletionList } from '../completion-list/completion-list.js';
+import { useCodeCompletion } from './use-code-completion.js';
+import { useCodeSnippet } from './use-code-snippet.js';
 
 function Editor({
   initialValue = '',
@@ -42,7 +45,53 @@ const fruit: Completion[] = [
   { label: 'basket', kind: 'keyword', insertText: 'basket {\n  ${}\n}' },
 ];
 
+/** A browser edit reports input before the editor restores its final caret. */
+function RestoredCaretEditor({ completions }: { completions: CompletionSource }) {
+  const [value, setValue] = useState('');
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const snippet = useCodeSnippet(inputRef);
+  const completion = useCodeCompletion({
+    value,
+    completions,
+    inputRef,
+    isLocked: false,
+    applyEdit: () => {},
+    snippet,
+  });
+  return (
+    <>
+      <textarea
+        ref={inputRef}
+        aria-label="Source"
+        value={value}
+        onChange={(event) => {
+          setValue(event.target.value);
+          completion.track('input');
+          event.target.setSelectionRange(0, 0);
+        }}
+      />
+      <ControlCompletionList
+        model={completion}
+        listId="restored-completions"
+        anchorRef={inputRef}
+        className="ui-code-editor__popover"
+      />
+    </>
+  );
+}
+
 describe('CodeEditor completion sources', () => {
+  it('UIC-CODE-EDITOR-4.2 UIC-CODE-EDITOR-6.1 completes at the final restored caret of an editor input', async () => {
+    const user = userEvent.setup();
+    const completions: CompletionSource = ({ caret }) => ({
+      options: [{ label: caret === 0 ? 'At the start' : 'At the end' }],
+      filter: false,
+    });
+    render(<RestoredCaretEditor completions={completions} />);
+    await user.type(input(), 'x');
+    expect(await screen.findByRole('option', { name: 'At the start' })).toBeVisible();
+    expect(input().selectionStart).toBe(0);
+  });
   it('UIC-CODE-EDITOR-4.4 inserts a label containing snippet syntax literally', async () => {
     const user = userEvent.setup();
     render(<Editor completions={[{ label: '${literal}' }]} />);

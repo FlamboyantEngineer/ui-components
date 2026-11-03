@@ -105,6 +105,39 @@ describe('MenuPopover and SubmenuTrigger', () => {
     await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
   });
 
+  it('UIC-MENU-4.3 closes on reader Escape while an ignored ancestor scroll awaits cleanup', async () => {
+    const user = userEvent.setup({ delay: null });
+    render(
+      <div role="region" aria-label="List">
+        <MenuButton items={fruitEntries} aria-label="Fruit" />
+      </div>,
+    );
+    const trigger = screen.getByRole('button', { name: 'Actions' });
+    await openMenu(user);
+    // Element scroll events do not bubble, so the guard's deferred cleanup has not run yet.
+    fireEvent.scroll(screen.getByRole('region', { name: 'List' }));
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
+    await waitFor(() => expect(trigger).toHaveFocus());
+  });
+
+  it('UIC-MENU-4.3 honors Escape before a rejected scroll close can commit', async () => {
+    const user = userEvent.setup();
+    render(<MenuButton items={fruitEntries} aria-label="Fruit" />);
+    const trigger = screen.getByRole('button', { name: 'Actions' });
+    await openMenu(user);
+    const menu = screen.getByRole('menu');
+    // Native events in one batch leave no render between a rejected scroll and the reader's key.
+    act(() => {
+      document.dispatchEvent(new Event('scroll', { bubbles: true }));
+      menu.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
+      );
+    });
+    await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
+    await waitFor(() => expect(trigger).toHaveFocus());
+  });
+
   it('UIC-MENU-4.4 stacks the popover on its layer, honouring provider z-indexes', async () => {
     const user = userEvent.setup();
     const { unmount } = render(<MenuButton items={fruitEntries} aria-label="Fruit" />);

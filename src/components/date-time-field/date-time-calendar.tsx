@@ -229,24 +229,26 @@ function DateActions({ mode, settings, onPick }: Omit<CalendarPopoverProps, 'chi
  */
 export function CalendarPopover({ mode, settings, onPick, children }: CalendarPopoverProps) {
   const zIndex = useLayerZIndex('dropdown');
-  const anchoring = useCalendarAnchoring();
+  const { state, ...anchoring } = useCalendarAnchoring();
   return (
     <>
       <PopoverPresence />
-      <Popover
-        {...anchoring}
-        isNonModal
-        {...hooks.slot('popover', { layer: 'dropdown' })}
-        offset={DEFAULT_DROPDOWN_OFFSET}
-        containerPadding={DEFAULT_OVERLAY_GUTTER}
-        style={{ zIndex }}
-      >
-        <Dialog className={hooks.slotClass('dialog')}>
-          <DatePresets settings={settings} onPick={onPick} />
-          {children}
-          <DateActions mode={mode} settings={settings} onPick={onPick} />
-        </Dialog>
-      </Popover>
+      <OverlayTriggerStateContext value={state}>
+        <Popover
+          {...anchoring}
+          isNonModal
+          {...hooks.slot('popover', { layer: 'dropdown' })}
+          offset={DEFAULT_DROPDOWN_OFFSET}
+          containerPadding={DEFAULT_OVERLAY_GUTTER}
+          style={{ zIndex }}
+        >
+          <Dialog className={hooks.slotClass('dialog')}>
+            <DatePresets settings={settings} onPick={onPick} />
+            {children}
+            <DateActions mode={mode} settings={settings} onPick={onPick} />
+          </Dialog>
+        </Popover>
+      </OverlayTriggerStateContext>
     </>
   );
 }

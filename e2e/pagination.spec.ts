@@ -32,6 +32,21 @@ test.describe('Pagination lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-PAGINATION-1.2 keeps fractional and unreadable pages on whole page buttons', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('pagination');
+    for (const [state, current] of [
+      ['fractional page', '4'],
+      ['unreadable page', '1'],
+    ]) {
+      const nav = page.getByRole('navigation', { name: `Pages, ${String(state)}` });
+      await expect(nav.locator('[aria-current="page"]')).toHaveText(String(current));
+      await expect(nav.getByRole('button', { name: /NaN|\d\.\d/ })).toHaveCount(0);
+    }
+  });
+
   test('UIC-PAGINATION-1.4 shows gaps for skipped pages in the dark theme', async ({
     page,
     lab,

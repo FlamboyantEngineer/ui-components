@@ -102,13 +102,17 @@ mountLab(
         description="Each tone, measured and indeterminate; a full bar also publishes completion."
       >
         <StateMatrix
-          axes={{ tone: ['neutral', 'success', 'warning', 'danger'], progress: ['60%', '100%'] }}
+          axes={{
+            tone: ['neutral', 'success', 'warning', 'danger'],
+            progress: ['60%', '100%', 'indeterminate'],
+          }}
           render={({ tone, progress }) => (
             <div style={{ width: 200 }}>
               <ProgressBar
                 label={tone === 'danger' ? 'Upload failed' : 'Uploading'}
                 tone={tone}
-                value={Number.parseInt(progress, 10)}
+                value={progress === 'indeterminate' ? undefined : Number.parseInt(progress, 10)}
+                isIndeterminate={progress === 'indeterminate'}
               />
             </div>
           )}

@@ -269,6 +269,23 @@ function StartingExpansion() {
   );
 }
 
+/** Equal deeply nested data can be rebuilt while the visible rows keep their expansion. */
+function RebuiltDeepTree() {
+  const [refreshes, setRefreshes] = useState(0);
+  const create = (): CompareTreeNode[] => {
+    let nodes: CompareTreeNode[] = [];
+    for (let id = 99; id >= 0; id--) nodes = [{ id, label: `Node ${id}`, children: nodes }];
+    return nodes;
+  };
+  return (
+    <div data-lab-demo="rebuilt-deep-tree">
+      <Button onPress={() => setRefreshes((count) => count + 1)}>Reload the deep hierarchy</Button>
+      <output data-lab-output="refreshes">{refreshes}</output>
+      <TreeCompare aria-label="Deep hierarchy" left={create()} right={create()} />
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -304,6 +321,12 @@ mountLab(
       description="defaultExpandedKeys sets which rows an uncontrolled comparison opens with: every row closed with an empty set, or Wheels and Level 0 only, rather than the paths to each change. Expand and collapse rows from there; Start again remounts it at the chosen set."
     >
       <StartingExpansion />
+    </LabSection>
+    <LabSection
+      title="Rebuilt deep hierarchy"
+      description="One hundred nested unchanged nodes start collapsed. Reload their data after expanding a row: the visible expansion stays. The comparison helpers handle twenty thousand levels; React's nested collection commits impose a separate limit on the rendered widget's depth."
+    >
+      <RebuiltDeepTree />
     </LabSection>
     <LabSection
       title="Nested changes"

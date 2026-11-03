@@ -147,6 +147,7 @@ describe('useInView', () => {
     scroller.style.overflowY = 'auto';
     Object.defineProperty(scroller, 'scrollHeight', { configurable: true, value: 400 });
     Object.defineProperty(scroller, 'clientHeight', { configurable: true, value: 100 });
+    Object.defineProperty(scroller, 'clientWidth', { configurable: true, value: 200 });
     const element = scroller.appendChild(document.createElement('div'));
     const { result, rerender } = renderHook(
       ({ scrollOffset }: { scrollOffset?: number }) => useInView(element, { scrollOffset }),
@@ -156,14 +157,70 @@ describe('useInView', () => {
 
     rerender({ scrollOffset: 1.5 });
     const observer = latestObserver();
-    expect(observer.init).toEqual({ root: scroller, rootMargin: '0px 150% 150% 150%' });
+    expect(observer.init).toEqual({ root: scroller, rootMargin: '0px 300px 150px 300px' });
     act(() => observer.report(element, true));
     expect(result.current).toBe(true);
 
     scroller.remove();
     document.body.appendChild(element);
     rerender({ scrollOffset: -1 });
-    expect(latestObserver().init).toEqual({ root: null, rootMargin: '0px 0% 0% 0%' });
+    expect(latestObserver().init).toEqual({ root: null, rootMargin: '0px 0px 0px 0px' });
     element.remove();
+  });
+
+  it('UIC-MEASUREMENT-4.3 follows the viewport dimensions when it resizes', () => {
+    const element = document.body.appendChild(document.createElement('div'));
+    vi.stubGlobal('innerWidth', 800);
+    vi.stubGlobal('innerHeight', 400);
+    const { unmount } = renderHook(() => useInView(element, { scrollOffset: 0.5 }));
+    const old = latestObserver();
+    expect(old.init).toEqual({ root: null, rootMargin: '0px 400px 200px 400px' });
+    vi.stubGlobal('innerHeight', 600);
+    act(() => {
+      window.dispatchEvent(new Event('resize'));
+    });
+    expect(latestObserver().init).toEqual({ root: null, rootMargin: '0px 400px 300px 400px' });
+    expect(old.disconnected).toBe(true);
+    unmount();
+    const count = FakeIntersectionObserver.instances.length;
+    window.dispatchEvent(new Event('resize'));
+    expect(FakeIntersectionObserver.instances).toHaveLength(count);
+    element.remove();
+  });
+
+  it('UIC-MEASUREMENT-4.3 follows resized containers and ignores their released observations', () => {
+    let resize: ResizeObserverCallback = () => {};
+    const disconnect = vi.fn();
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(callback: ResizeObserverCallback) {
+          resize = callback;
+        }
+        observe() {}
+        disconnect = disconnect;
+      },
+    );
+    const scroller = document.body.appendChild(document.createElement('div'));
+    scroller.style.overflowY = 'auto';
+    Object.defineProperties(scroller, {
+      scrollHeight: { configurable: true, value: 1000 },
+      clientHeight: { configurable: true, value: 200 },
+      clientWidth: { configurable: true, value: 400 },
+    });
+    const element = scroller.appendChild(document.createElement('div'));
+    const { result, unmount } = renderHook(() => useInView(element, { scrollOffset: 1 }));
+    const old = latestObserver();
+    expect(old.init?.rootMargin).toBe('0px 400px 200px 400px');
+    Object.defineProperty(scroller, 'clientHeight', { configurable: true, value: 300 });
+    act(() => resize([], {} as ResizeObserver));
+    expect(latestObserver().init?.rootMargin).toBe('0px 400px 300px 400px');
+    act(() => old.report(element, true));
+    expect(result.current).toBe(false);
+    act(() => latestObserver().report(element, true));
+    expect(result.current).toBe(true);
+    unmount();
+    expect(disconnect).toHaveBeenCalled();
+    scroller.remove();
   });
 });

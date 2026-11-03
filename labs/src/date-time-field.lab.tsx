@@ -60,10 +60,12 @@ function MatrixField({
   state,
   mode,
   layout,
+  stable = false,
 }: {
   state: FieldStateName;
   mode: DateTimeFieldMode;
   layout: FieldLabelLayout;
+  stable?: boolean;
 }) {
   const sample = samples[mode];
   const [value, setValue] = useState<AnyValue>(sample.value);
@@ -75,6 +77,7 @@ function MatrixField({
       labelLayout={layout}
       mode={mode}
       {...stateProps(state, mode)}
+      {...(stable ? { defaultValue: sample.value, changeLayout: 'hidden' as const } : {})}
       {...dirty}
     />
   );
@@ -115,6 +118,23 @@ function Range() {
         Committed: <output data-lab-output="Range">{JSON.stringify(committed)}</output>
       </p>
     </>
+  );
+}
+
+function CorrectedRange() {
+  const [value, setValue] = useState<DateRangeValue | null>({
+    start: '2026-04-01',
+    end: '2026-04-03',
+  });
+  return (
+    <DateTimeField
+      label="Corrected stay"
+      mode="date-range"
+      value={value}
+      onChange={setValue}
+      committedValue={{ start: '2026-04-03', end: '2026-04-01' }}
+      data-lab-field="reversed-previous"
+    />
   );
 }
 
@@ -315,13 +335,53 @@ mountLab(
     >
       <DateStates />
     </LabSection>
-    <LabSection title="Modes and states" description="Each mode in every state.">
-      <StateMatrix
-        axes={{ state: fieldStates, mode: modes }}
-        render={({ state, mode }) => (
-          <MatrixField state={state} mode={mode} layout="label-control" />
-        )}
-      />
+    <LabSection
+      title="Modes and states"
+      description="Each mode in every state. Required fields show empty placeholders, and dirty fields add the saved value; these different contents take the room they need."
+    >
+      <div data-lab-family="modes">
+        <StateMatrix
+          axes={{ state: fieldStates, mode: modes }}
+          render={({ state, mode }) => (
+            <MatrixField state={state} mode={mode} layout="label-control" />
+          )}
+        />
+      </div>
+    </LabSection>
+    <LabSection
+      title="Stable state layout"
+      description="The same value in every state and mode, with saved text hidden by changeLayout: only the state marks, feedback and reserved restore button change. Each field keeps its size."
+    >
+      <div data-lab-family="stable">
+        <StateMatrix
+          axes={{ state: fieldStates, mode: modes }}
+          render={({ state, mode }) => (
+            <MatrixField state={state} mode={mode} layout="label-control" stable />
+          )}
+        />
+      </div>
+    </LabSection>
+    <LabSection
+      title="Saved values and placeholders in narrow columns"
+      description="In a 240px column, saved values shorten before the current segments; a range wraps complete runs onto further rows. Empty required fields keep every placeholder segment reachable too. Feedback stays within the field's width."
+    >
+      <div data-lab-family="narrow">
+        <StateMatrix
+          axes={{
+            content: ['saved value', 'empty'],
+            mode: ['date-time', 'date-range', 'date-time-range'],
+          }}
+          render={({ content, mode }) => (
+            <div style={{ width: 240 }}>
+              <MatrixField
+                state={content === 'empty' ? 'required' : 'dirty'}
+                mode={mode}
+                layout="label-control"
+              />
+            </div>
+          )}
+        />
+      </div>
     </LabSection>
     <LabSection title="Layouts" description="A date field in every label layout.">
       <StateMatrix
@@ -340,6 +400,12 @@ mountLab(
     </LabSection>
     <LabSection title="Range" description="One range calendar of two months.">
       <Range />
+    </LabSection>
+    <LabSection
+      title="Corrected range"
+      description="A reversed saved range remains readable as the previous value while its corrected draft is shown."
+    >
+      <CorrectedRange />
     </LabSection>
     <LabSection
       title="Unavailable dates and presets"
@@ -384,7 +450,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Scrolling with the calendar open"
-      description="Open a calendar and scroll the page: it stays open beside its field. The second field sits in a scrolling box; scrolling that box scrolls it and closes the calendar, which cannot follow it."
+      description="Open a calendar and scroll the page: it stays open beside its field. Escape closes it even while that scroll settles. The second field sits in a scrolling box; scrolling that box scrolls it and closes the calendar, which cannot follow it."
     >
       <DateTimeField label="Arrival" defaultValue="2026-04-13" data-lab-field="scroll-page" />
       <div data-lab-scroll-box style={{ height: 120, overflow: 'auto', border: '1px dashed' }}>

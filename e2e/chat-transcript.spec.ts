@@ -72,10 +72,22 @@ test.describe('Chat Transcript lab: transcript behaviour', () => {
     await composer.focus();
     await page.keyboard.press('Shift+Tab');
     await expect(feed.locator('#k5')).toBeFocused();
-    await page.keyboard.press('PageUp');
-    await page.keyboard.press('PageUp');
-    await expect.poll(() => viewport.evaluate((node) => node.scrollTop)).toBe(0);
-    await expect(feed.locator('#k1')).toBeFocused();
+    const first = feed.locator('#k1');
+    for (let step = 0; step < 5; step += 1) {
+      if ((await offsetInView(first)) >= 0) break;
+      const before = await viewport.evaluate((node) => node.scrollTop);
+      const active = await feed.evaluate((node) => node.ownerDocument.activeElement?.id);
+      await page.keyboard.press('PageUp');
+      await expect
+        .poll(() => feed.evaluate((node) => node.ownerDocument.activeElement?.id))
+        .not.toBe(active);
+      await expect.poll(() => viewport.evaluate((node) => node.scrollTop)).toBeLessThan(before);
+    }
+    await expect(first).toBeFocused();
+    const [row, view] = [await first.boundingBox(), await viewport.boundingBox()];
+    if (!row || !view) throw new Error('The first message and its viewport must be rendered.');
+    expect(row.y).toBeGreaterThanOrEqual(view.y);
+    expect(row.y + row.height).toBeLessThanOrEqual(view.y + view.height);
     await page.keyboard.press('Escape');
     await expect(composer).toBeFocused();
   });

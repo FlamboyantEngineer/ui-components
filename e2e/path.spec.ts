@@ -103,10 +103,15 @@ test.describe('Path lab', () => {
       await expect(panel).toHaveCount(0);
 
       await whole.click();
+      // Keyboard scrolling must not put a cut path under the pointer and reopen its hover hint.
+      await page.mouse.move(0, 0);
       await page.keyboard.press('Tab');
       await expect(page.locator('[data-lab-path="link"]')).toBeFocused();
       await expect(page.getByRole('tooltip')).toHaveText(longPath);
       await page.keyboard.press('Tab');
+      await expect(
+        page.locator('[data-lab-row="long"]').getByRole('button', { name: 'Manage' }),
+      ).toBeFocused();
       await expect(page.getByRole('tooltip')).toHaveCount(0);
     });
   }

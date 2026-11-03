@@ -171,6 +171,24 @@ test.describe('Notification Center lab', () => {
     await expect(status).toHaveText('New notification: Build 2 passed');
   });
 
+  test('UIC-NOTIFICATION-CENTER-3.1 translates an existing arrival without a new notification', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('notification-center');
+    const inbox = page.locator('[data-lab-inbox]');
+    await inbox.locator('.ui-notification-list__load-more').scrollIntoViewIfNeeded();
+    await expect(inbox.locator('.ui-notification-list__load-more')).toHaveCount(0);
+    const demo = page.locator('[data-lab-demo="live-announcements"]');
+    await demo.getByRole('button', { name: 'Add a notification' }).click();
+    const status = demo.locator('.ui-notification-center__announcement');
+    await expect(status).toHaveText('New notification: Build 1 passed');
+    await demo.getByRole('radio', { name: 'French' }).click();
+    await expect(status).toHaveText('Nouvelle notification : Build 1 passed');
+    await demo.getByRole('radio', { name: 'English' }).click();
+    await expect(status).toHaveText('New notification: Build 1 passed');
+  });
+
   test('UIC-NOTIFICATION-CENTER-3.2 moves between rows with the arrow keys and passes axe', async ({
     page,
     lab,

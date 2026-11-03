@@ -1,5 +1,8 @@
 import { BellGlyph, ErrorGlyph, InfoGlyph, SuccessGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
+import { UiProvider } from '../../src/core/provider.js';
+import { fr } from '../../src/core/locales/index.js';
+import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { Button } from '../../src/components/button/button.js';
 import { Link } from '../../src/components/link/link.js';
 import { NotificationCenter } from '../../src/components/notification-center/notification-center.js';
@@ -132,6 +135,7 @@ function UnreadLaterDemo() {
 
 /** A bell on the real clock: each new notification is announced, open or closed. */
 function LiveDemo() {
+  const [isFrench, setFrench] = useState(false);
   const [items, setItems] = useState<NotificationItem[]>(() => [
     {
       id: 'live-0',
@@ -152,18 +156,30 @@ function LiveDemo() {
       ...list,
     ]);
   return (
-    <div>
-      <NotificationCenter
-        data-lab-live
-        items={items}
-        onReadChange={(key, isRead) =>
-          setItems((list) => list.map((item) => (item.id === key ? { ...item, isRead } : item)))
-        }
-        onMarkAllRead={() => setItems((list) => list.map((item) => ({ ...item, isRead: true })))}
-      />{' '}
-      <Button size="sm" onPress={add}>
-        Add a notification
-      </Button>
+    <div data-lab-demo="live-announcements">
+      <SegmentedChoice
+        aria-label="Notification language"
+        sizing="content"
+        options={[
+          { value: 'en', label: 'English' },
+          { value: 'fr', label: 'French' },
+        ]}
+        value={isFrench ? 'fr' : 'en'}
+        onChange={(value) => setFrench(value === 'fr')}
+      />
+      <UiProvider locale={isFrench ? 'fr-FR' : 'en-US'} messages={isFrench ? fr : undefined}>
+        <NotificationCenter
+          data-lab-live
+          items={items}
+          onReadChange={(key, isRead) =>
+            setItems((list) => list.map((item) => (item.id === key ? { ...item, isRead } : item)))
+          }
+          onMarkAllRead={() => setItems((list) => list.map((item) => ({ ...item, isRead: true })))}
+        />{' '}
+        <Button size="sm" onPress={add}>
+          Add a notification
+        </Button>
+      </UiProvider>
     </div>
   );
 }
@@ -222,7 +238,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Live"
-      description="Notifications stamped on the real clock. Each arrival is announced politely, whether the panel is open or not. The filter chosen in the panel stays when it closes and opens again."
+      description="Notifications stamped on the real clock. Each arrival is announced politely, whether the panel is open or not. Switch languages after an arrival to translate the announcement immediately. The filter chosen in the panel stays when it closes and opens again."
     >
       <LiveDemo />
     </LabSection>

@@ -23,6 +23,7 @@ const BUILD_SOURCES = [
   'tsconfig.json',
   'scripts/build-labs.mjs',
   'scripts/lib/labs.mjs',
+  'scripts/lib/reference-stylesheet.mjs',
 ];
 
 function stat(path, follow = true) {

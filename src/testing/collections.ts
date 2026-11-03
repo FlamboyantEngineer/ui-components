@@ -2,7 +2,7 @@ import { within } from '@testing-library/dom';
 import type { NameMatch, TestUser } from './test-user.js';
 
 const cellSelector =
-  ':scope > :is([role="cell"], [role="gridcell"], [role="rowheader"], [role="columnheader"])';
+  ':scope > :is(td, th, [role="cell"], [role="gridcell"], [role="rowheader"], [role="columnheader"])';
 
 function cellsOf(row: Element): Element[] {
   return [...row.querySelectorAll(cellSelector)];
@@ -27,8 +27,10 @@ export function getTableCell(
 ): HTMLElement {
   const queries = within(table as HTMLElement);
   const header = queries.getByRole('columnheader', { name: columnName });
-  const headerRow = header.closest('[role="row"]');
-  const row = queries.getByRole('row', { name: rowName });
+  const headerRow = header.closest('tr, [role="row"]');
+  const row =
+    queries.queryByRole('rowheader', { name: rowName })?.closest('tr, [role="row"]') ??
+    queries.getByRole('row', { name: rowName });
   const index = headerRow ? cellsOf(headerRow).indexOf(header) : -1;
   const column = header.getAttribute('aria-colindex');
   const cell =

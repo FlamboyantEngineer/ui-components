@@ -1,16 +1,6 @@
 'use client';
 
-import {
-  useId,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-  type DragEvent,
-  type ReactNode,
-  type Ref,
-  type RefObject,
-} from 'react';
+import { useId, useMemo, useRef, type ReactNode, type Ref, type RefObject } from 'react';
 import { FileTrigger, useLocale } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
@@ -18,29 +8,19 @@ import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { formatBytes } from '../../utils/format-bytes.js';
 import { mergeRefs } from '../../utils/merge-props.js';
-import { useLatest } from '../../utils/use-latest.js';
 import { useRemovalFocus } from '../../utils/use-removal-focus.js';
+import { toErrorMessage } from '../../utils/to-error-message.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import { formatMetaLine } from '../meta-line/meta-line.js';
-import {
-  canAcceptDrag,
-  partitionFiles,
-  type FilePartition,
-  type FileRejection,
-  type FileRules,
-} from './file-rules.js';
-import {
-  ButtonCommand,
-  DropZoneCommand,
-  readDraggedItems,
-  type CommandProps,
-} from './file-upload-drop.js';
+import type { FileRejection, FileRules } from './file-rules.js';
+import { ButtonCommand, DropZoneCommand, type CommandProps } from './file-upload-drop.js';
 import {
   FileUploadFiles,
   fileUploadHooks as hooks,
   type FileUploadItem,
 } from './file-upload-files.js';
 import { useFileForm } from './file-upload-form.js';
+import { useFileIntake } from './file-upload-intake.js';
 
 /** `button` is one command among others; `dropzone` is a drop target that also offers Browse. */
 export type FileUploadVariant = 'button' | 'dropzone';
@@ -67,6 +47,8 @@ export interface FileUploadProps
   onSelect: (files: File[]) => void;
   /** Receives the chosen or dropped files that were refused, and why. */
   onReject?: ((rejections: FileRejection[]) => void) | undefined;
+  /** Receives a dropped file or folder read failure; the offer is abandoned and its error shown. */
+  onError?: ((error: unknown) => void) | undefined;
   isDisabled?: boolean | undefined;
   /** Files to list below the command, with their upload progress or error. */
   files?: readonly FileUploadItem[] | undefined;
@@ -115,92 +97,6 @@ function rejectionMessage(rejections: readonly FileRejection[], strings: UiStrin
 }
 
 /**
- * Checks offered files, reports the refusals and hands on the accepted ones, and judges a drag
- * before the drop. `listed` are the owner's files. Files handed on stay counted against `maxFiles`
- * until the owner gives a new `files` list, however often the upload renders itself, so offers
- * made before the owner lists them never pass the limit together. An offer made while an earlier
- * one still waits for `validate` is checked once the earlier one is handed on, and the latest
- * offer's refusals are the ones shown. Offers still waiting when the upload unmounts or becomes
- * disabled or read-only are abandoned: they call nothing and show nothing.
- */
-function useFileIntake(props: FileUploadProps, listed: readonly FileUploadItem[]) {
-  const held = listed.length;
-  const { allowsMultiple, acceptDirectory, isDisabled, isReadOnly } = props;
-  const { acceptedFileTypes, maxSize, minSize, maxFiles, validate } = props;
-  const rules: FileRules = { acceptedFileTypes, maxSize, minSize, maxFiles, validate };
-  const [rejections, setRejections] = useState<FileRejection[]>([]);
-  const [isDragAcceptable, setDragAcceptable] = useState(true);
-  const count = useRef({ held, accepted: 0 });
-  const queue = useRef<Promise<void> | null>(null);
-  // The intake's current lifetime; offers made in an earlier one are abandoned.
-  const lifetime = useRef({});
-  const callbacks = useLatest({ onSelect: props.onSelect, onReject: props.onReject });
-  const isLocked = Boolean(isDisabled || isReadOnly);
-  // A new list is the owner's answer to the files handed on: listed, refused or removed.
-  useLayoutEffect(() => {
-    count.current = { held, accepted: 0 };
-  }, [listed, held]);
-  useLayoutEffect(() => {
-    if (!isLocked) return undefined;
-    lifetime.current = {};
-    queue.current = null;
-    return undefined;
-  }, [isLocked]);
-  useLayoutEffect(
-    () => () => {
-      lifetime.current = {};
-      queue.current = null;
-    },
-    [],
-  );
-  const isMultiple = Boolean(allowsMultiple || acceptDirectory);
-  const rejectsMultiple = !isMultiple && props.multipleFileBehavior === 'reject';
-  const report = (result: FilePartition) => {
-    count.current.accepted += result.accepted.length;
-    setRejections(result.rejections);
-    if (result.rejections.length > 0) callbacks.current.onReject?.(result.rejections);
-    if (result.accepted.length > 0) callbacks.current.onSelect(result.accepted);
-  };
-  const judge = (offered: readonly File[], owner: object): Promise<void> | undefined => {
-    if (owner !== lifetime.current) return undefined;
-    const files = isMultiple ? offered : offered.slice(0, 1);
-    const outcome: FilePartition | Promise<FilePartition> =
-      rejectsMultiple && offered.length > 1
-        ? { accepted: [], rejections: offered.map((file) => ({ file, reason: 'count' })) }
-        : partitionFiles(files, rules, count.current.held + count.current.accepted);
-    if (!(outcome instanceof Promise)) {
-      report(outcome);
-      return undefined;
-    }
-    return outcome.then((result) => {
-      if (owner === lifetime.current) report(result);
-    });
-  };
-  return {
-    rejections,
-    isDragAcceptable,
-    receive(offered: readonly File[]) {
-      if (isLocked) return;
-      const owner = lifetime.current;
-      const run = () => judge(offered, owner);
-      const outcome = queue.current ? queue.current.then(run, run) : run();
-      if (!outcome) return;
-      const settled: Promise<void> = outcome.finally(() => {
-        if (queue.current === settled) queue.current = null;
-      });
-      queue.current = settled;
-    },
-    onDragEnter(event: DragEvent) {
-      const items = readDraggedItems(event);
-      const tooMany = rejectsMultiple && items.filter(({ kind }) => kind === 'file').length > 1;
-      setDragAcceptable(
-        !tooMany && canAcceptDrag(isMultiple ? items : items.slice(0, 1), rules, held),
-      );
-    },
-  };
-}
-
-/**
  * The command's props: its label and naming, its description (by default the accepted types and
  * limits) and error, the chooser and the intake, and its button ref, shared with the owner's.
  */
@@ -241,6 +137,7 @@ function useFileCommand(
       </FileTrigger>
     ),
     receive: intake.receive,
+    readDrop: intake.readDrop,
     isDragAcceptable: intake.isDragAcceptable,
     acceptDirectory,
     commandRef: mergedRef,
@@ -285,9 +182,11 @@ export function FileUpload(props: FileUploadProps) {
     >
       {isReadOnly ? null : <Command {...command} />}
       {form.message}
-      {intake.rejections.length > 0 && !isReadOnly ? (
+      {(intake.readFailure !== null || intake.rejections.length > 0) && !isReadOnly ? (
         <InlineError className={hooks.slotClass('rejections')}>
-          {rejectionMessage(intake.rejections, strings)}
+          {intake.readFailure
+            ? toErrorMessage(intake.readFailure.error, strings.actionFailed)
+            : rejectionMessage(intake.rejections, strings)}
         </InlineError>
       ) : null}
       {files.length > 0 ? (

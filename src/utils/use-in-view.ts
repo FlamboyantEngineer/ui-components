@@ -21,10 +21,15 @@ export interface InViewOptions {
 /** Observer options that extend the nearest scrolling container's view by `scrollOffset`, or none. */
 function toObserverInit(element: Element, scrollOffset: number | undefined) {
   if (scrollOffset === undefined || !Number.isFinite(scrollOffset)) return undefined;
-  const margin = `${Math.max(0, scrollOffset) * 100}%`;
+  const root = findOverlayScrollContainer(element);
+  const view = element.ownerDocument.defaultView;
+  const offset = Math.max(0, scrollOffset);
+  // IntersectionObserver resolves every percentage against width, including vertical margins.
+  const width = (root?.clientWidth ?? view?.innerWidth ?? 0) * offset;
+  const height = (root?.clientHeight ?? view?.innerHeight ?? 0) * offset;
   return {
-    root: findOverlayScrollContainer(element),
-    rootMargin: `0px ${margin} ${margin} ${margin}`,
+    root,
+    rootMargin: `0px ${width}px ${height}px ${width}px`,
   };
 }
 
@@ -42,21 +47,38 @@ export function useInView(
   const element = useTargetElement(target);
 
   useEffect(() => {
-    const Observer = element?.ownerDocument.defaultView?.IntersectionObserver;
+    const view = element?.ownerDocument.defaultView;
+    const Observer = view?.IntersectionObserver;
     if (!enabled || !element || typeof Observer !== 'function') return undefined;
     let active = true;
-    const observer = new Observer(
-      (entries) => {
-        if (!active) return;
+    let observer: IntersectionObserver | null = null;
+    let previous: ReturnType<typeof toObserverInit>;
+    const observe = () => {
+      if (!active) return;
+      const init = toObserverInit(element, scrollOffset);
+      if (observer && init?.root === previous?.root && init?.rootMargin === previous?.rootMargin)
+        return;
+      observer?.disconnect();
+      previous = init;
+      const next: IntersectionObserver = new Observer((entries) => {
+        if (observer !== next) return;
         const entry = entries.findLast((candidate) => candidate.target === element);
         if (entry) setInView(entry.isIntersecting);
-      },
-      toObserverInit(element, scrollOffset),
-    );
-    observer.observe(element);
+      }, init);
+      observer = next;
+      observer.observe(element);
+    };
+    observe();
+    const hasOffset = scrollOffset !== undefined && Number.isFinite(scrollOffset);
+    const resize = hasOffset && view?.ResizeObserver ? new view.ResizeObserver(observe) : null;
+    if (resize) resize.observe(previous?.root ?? element.ownerDocument.documentElement);
+    if (hasOffset) view?.addEventListener('resize', observe);
     return () => {
       active = false;
-      observer.disconnect();
+      observer?.disconnect();
+      observer = null;
+      resize?.disconnect();
+      if (hasOffset) view?.removeEventListener('resize', observe);
       setInView(false);
     };
   }, [element, enabled, scrollOffset]);

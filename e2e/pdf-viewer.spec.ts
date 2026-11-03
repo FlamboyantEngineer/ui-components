@@ -123,6 +123,31 @@ test.describe('PDF Viewer lab', () => {
     await expect(reader.locator('.ui-pdf-viewer__match')).toHaveCount(0);
   });
 
+  test('UIC-PDF-VIEWER-2.1 renders ahead by the viewport height and follows its resize', async ({
+    page,
+    lab,
+  }) => {
+    const reader = await openCase(page, lab, 'viewport-height');
+    const third = reader.locator('.ui-pdf-viewer__page').nth(2);
+    const canvas = third.locator('canvas');
+    const dimensions = await reader.locator('.ui-pdf-viewer__scroller').evaluate((scroller) => ({
+      width: scroller.clientWidth,
+      height: scroller.clientHeight,
+    }));
+    expect(dimensions.height).toBeGreaterThan(dimensions.width * 2);
+    await expect
+      .poll(() => canvas.evaluate((element: HTMLCanvasElement) => element.width))
+      .toBeGreaterThan(0);
+    const toggle = reader.getByRole('switch', { name: 'Tall viewport' });
+    await toggle.focus();
+    await page.keyboard.press('Space');
+    await expect.poll(() => canvas.evaluate((element: HTMLCanvasElement) => element.width)).toBe(0);
+    await page.keyboard.press('Space');
+    await expect
+      .poll(() => canvas.evaluate((element: HTMLCanvasElement) => element.width))
+      .toBeGreaterThan(0);
+  });
+
   test('UIC-PDF-VIEWER-2.2 selects page text with the pointer', async ({ page, lab }) => {
     const reader = await openReader(page, lab);
     const line = reader

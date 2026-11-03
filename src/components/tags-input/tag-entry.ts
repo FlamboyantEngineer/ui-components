@@ -88,14 +88,18 @@ export function hasNoTagText(value: readonly string[]): boolean {
 /** The first tag a given value repeats, as an issue, while the field refuses duplicates. */
 export function checkGivenTags(value: readonly string[], rules: TagRules): FieldIssue | null {
   if (rules.allowsDuplicates) return null;
-  const repeated = value.find((tag, index) => value.indexOf(tag) !== index);
-  return repeated === undefined
-    ? null
-    : {
+  const seen = new Set<string>();
+  for (const tag of value) {
+    if (seen.has(tag)) {
+      return {
         severity: 'error',
-        message: rules.strings.duplicateValue(repeated),
+        message: rules.strings.duplicateValue(tag),
         validity: 'customError',
       };
+    }
+    seen.add(tag);
+  }
+  return null;
 }
 
 /**

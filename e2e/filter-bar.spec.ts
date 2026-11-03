@@ -35,10 +35,15 @@ test.describe('Filter Bar lab', () => {
     const cell = matrixCell(page, 'type=choice state=incomplete');
     await cell.locator('.ui-filter-bar__chip').getByRole('button').first().click();
     const dialog = page.getByRole('dialog', { name: 'Genre' });
-    await dialog.getByRole('button', { name: /Value/ }).click();
+    const value = dialog.getByRole('button', { name: /Value/ });
+    await value.click();
     await page.getByRole('option', { name: 'History' }).click();
     await page.keyboard.press('Escape');
-    await page.keyboard.press('Escape');
+    await expect(page.getByRole('listbox')).toBeHidden();
+    await expect(value).toBeFocused();
+    await expect(dialog).toBeVisible();
+    // The refocused summary can show a truncation hint; dismiss the editor from its own dialog.
+    await dialog.press('Escape');
     await expect(dialog).toBeHidden();
     await expect(cell.locator('.ui-filter-bar__chip')).not.toHaveAttribute('data-incomplete');
   });

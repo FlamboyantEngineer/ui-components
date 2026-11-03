@@ -2,6 +2,7 @@ import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { UiProvider } from '../../core/provider.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { NotificationCenter } from './notification-center.js';
 import type { NotificationItem } from './notification-list.js';
@@ -214,6 +215,23 @@ describe('NotificationCenter', () => {
     expect(within(dialog).queryByText('Nothing unread')).not.toBeInTheDocument();
     await userEvent.click(within(dialog).getByRole('button', { name: 'Load more' }));
     expect(onLoadMore).toHaveBeenCalled();
+  });
+
+  it('UIC-NOTIFICATION-CENTER-3.1 translates the latest arrival when provider messages change', () => {
+    const arrival = { id: 'new', title: 'Build passed', time: now.toISOString() };
+    const draw = (entries: NotificationItem[], isFrench: boolean) => (
+      <UiProvider messages={isFrench ? { newNotifications: 'Notification : {title}' } : {}}>
+        <NotificationCenter items={entries} getNow={getNow} />
+      </UiProvider>
+    );
+    const { container, rerender } = render(draw(items, false));
+    rerender(draw([arrival, ...items], false));
+    const status = container.querySelector('.ui-notification-center__announcement');
+    expect(status).toHaveTextContent('New notification: Build passed');
+    rerender(draw([arrival, ...items], true));
+    expect(status).toHaveTextContent('Notification : Build passed');
+    rerender(draw([arrival, ...items], false));
+    expect(status).toHaveTextContent('New notification: Build passed');
   });
 
   it('UIC-NOTIFICATION-CENTER-3.1 announces arrivals once, open or closed', async () => {

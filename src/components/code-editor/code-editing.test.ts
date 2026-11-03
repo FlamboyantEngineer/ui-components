@@ -40,7 +40,20 @@ describe('code editing', () => {
     expect(applied('one\ntwo', indentSelection('one\ntwo', { start: 1, end: 4 }, 2))).toBe(
       '  o[ne\n]two',
     );
-    expect(applied('a b', indentSelection('a b', { start: 2, end: 3 }, 2))).toBe('  a [b]');
+    expect(applied('a b', indentSelection('a b', { start: 2, end: 3 }, 2))).toBe('a   |');
+  });
+
+  it('UIC-CODE-EDITOR-6.3 keeps both selection ends inside removed indentation on their line', () => {
+    expect(applied('    one', outdentSelection('    one', caret(0), 4))).toBe('|one');
+    expect(applied('one\n    two', outdentSelection('one\n    two', caret(6), 4))).toBe(
+      'one\n|two',
+    );
+    expect(
+      applied('  one\n    two', outdentSelection('  one\n    two', { start: 0, end: 8 }, 4)),
+    ).toBe('[one\n]two');
+    expect(
+      applied('  one\n    two', outdentSelection('  one\n    two', { start: 0, end: 6 }, 4)),
+    ).toBe('[one\n]    two');
   });
 
   it('UIC-CODE-EDITOR-6.3 outdents each touched line by one level or nothing', () => {

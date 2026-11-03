@@ -1,10 +1,10 @@
 import type { Locator, Page } from '@playwright/test';
-import { controlHeight, expect, matrixCell, test } from './fixtures.js';
+import { controlHeight, expect, matrix, matrixCell, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 import { expectPopoverFits } from './date-popover-fit.js';
 
 function cell(page: Page, state: string, mode: string): Locator {
-  return matrixCell(page, `state=${state} mode=${mode}`);
+  return matrixCell(page, `state=${state} mode=${mode}`, { family: 'modes' });
 }
 
 function field(page: Page, name: string): Locator {
@@ -14,9 +14,49 @@ function field(page: Page, name: string): Locator {
 const committed = (page: Page) => page.locator('[data-lab-output="Committed"]');
 
 test.describe('Date Time Field lab', () => {
+  test('UIC-DATE-TIME-FIELD-1.1 UIC-DATE-TIME-FIELD-1.6 keeps saved values and empty segments within narrow frames', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('date-time-field');
+    const narrow = matrix(page, 'narrow');
+    await expect(narrow.locator('.ui-date-time-field__previous')).toHaveCount(3);
+    await expect(narrow.locator('[data-placeholder]').first()).toBeVisible();
+    const contained = await narrow.locator('.ui-date-time-field__group').evaluateAll((frames) =>
+      frames.every((frame) => {
+        const box = frame.getBoundingClientRect();
+        return [
+          ...frame.querySelectorAll(
+            '.ui-date-time-field__segment, .ui-date-time-field__previous, .ui-date-time-field__button',
+          ),
+        ].every((part) => {
+          const rect = part.getBoundingClientRect();
+          return (
+            rect.left >= box.left - 0.5 &&
+            rect.right <= box.right + 0.5 &&
+            rect.top >= box.top - 0.5 &&
+            rect.bottom <= box.bottom + 0.5
+          );
+        });
+      }),
+    );
+    expect(contained).toBe(true);
+    const last = narrow.locator('[data-type="minute"]').last();
+    await last.click();
+    await expect(last).toBeFocused();
+  });
+
+  test('UIC-DATE-TIME-FIELD-1.6 keeps a reversed previous range readable', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('date-time-field');
+    const previous = field(page, 'reversed-previous').locator('.ui-date-time-field__previous');
+    await expect(previous).toHaveText('Apr 3, 2026 – Apr 1, 2026');
+  });
   test('UIC-DATE-TIME-FIELD-1.1 draws each mode in every state', async ({ page, lab }) => {
     await lab.open('date-time-field');
-    const cells = page.locator('table[data-lab-matrix="state mode"] td[data-lab-cell]');
+    const cells = matrix(page, 'modes').locator('td[data-lab-cell]');
     expect(await cells.count()).toBe(8 * 5);
     const date = cell(page, 'resting', 'date');
     await expect(date.getByRole('group', { name: 'Due' })).toHaveCSS(

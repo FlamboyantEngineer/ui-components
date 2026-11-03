@@ -44,6 +44,11 @@ function toPageCount(pageCount: number) {
   return Number.isFinite(pageCount) ? Math.max(1, Math.floor(pageCount)) : 1;
 }
 
+/** The requested page as a whole page in range; an unreadable number starts at the first. */
+function toCurrentPage(page: number, count: number): number {
+  return Number.isNaN(page) ? 1 : clamp(Math.floor(page), 1, count);
+}
+
 /**
  * The entries of a page list: every page when they fit in seven entries, else the first and last
  * pages, the current page with one page on each side, and a gap wherever pages are skipped. A gap
@@ -52,7 +57,7 @@ function toPageCount(pageCount: number) {
 export function getPaginationItems(page: number, pageCount: number): PaginationItem[] {
   const count = toPageCount(pageCount);
   if (count <= maxEntries) return listPages(1, count);
-  const current = clamp(page, 1, count);
+  const current = toCurrentPage(page, count);
   const lastMiddle = count - edgePages - 1;
   const start = clamp(current - siblingPages, edgePages + 2, lastMiddle - 2 * siblingPages);
   const end = clamp(current + siblingPages, edgePages + 2 * siblingPages + 2, lastMiddle);
@@ -87,7 +92,7 @@ export function Pagination({
   const numberFormat = useNumberFormatter();
   const [requested, setPage] = useControllableState(page, defaultPage, onPageChange);
   const count = toPageCount(pageCount);
-  const current = clamp(requested, 1, count);
+  const current = toCurrentPage(requested, count);
   const goTo = (next: number) => {
     if (next !== current) setPage(next);
   };

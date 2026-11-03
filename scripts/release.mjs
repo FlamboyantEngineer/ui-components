@@ -7,12 +7,13 @@
 // Run on `main`, up to date with `origin/main`, with a clean tree, after the version bump merged.
 
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { packTarball, runNpm } from './lib/npm.mjs';
 import { REFERENCE_STYLESHEET } from './lib/reference-stylesheet.mjs';
 import { root } from './lib/script.mjs';
+import { extractTarGz } from './lib/tar.mjs';
 
 const BUILT = ['dist', REFERENCE_STYLESHEET];
 
@@ -59,16 +60,21 @@ try {
   git(['update-index', '--cacheinfo', `100644,${manifestBlob},package.json`], { env });
   const tree = git(['write-tree'], { env });
   const commit = git(['commit-tree', tree, '-p', 'HEAD', '-m', `Release ${tag}`]);
+
+  // The tagged manifest omits prepare; pack that tree rather than the checkout's manifest.
+  const archive = join(indexDir, 'release.tgz');
+  const packageDir = join(indexDir, 'package');
+  git(['archive', '--format=tar.gz', '--output', archive, commit]);
+  mkdirSync(packageDir);
+  extractTarGz(archive, packageDir);
+  const pack = packTarball(packageDir, root);
   git(['tag', '--annotate', tag, commit, '--message', tag]);
+  console.log(
+    `Tagged ${tag} on ${git(['rev-parse', '--short', `${tag}^{commit}`])} and packed ${pack.filename}.`,
+  );
+  console.log(
+    `Publish with: git push origin ${tag}. The release workflow attaches the archives; where it does not run, attach ${pack.filename} and ui-components-labs-${version}.tgz to the ${tag} GitHub Release.`,
+  );
 } finally {
   rmSync(indexDir, { recursive: true, force: true });
 }
-
-// Packed as built, from the files the tag holds.
-const pack = packTarball(root);
-console.log(
-  `Tagged ${tag} on ${git(['rev-parse', '--short', `${tag}^{commit}`])} and packed ${pack.filename}.`,
-);
-console.log(
-  `Publish with: git push origin ${tag}. The release workflow attaches the archives; where it does not run, attach ${pack.filename} and ui-components-labs-${version}.tgz to the ${tag} GitHub Release.`,
-);

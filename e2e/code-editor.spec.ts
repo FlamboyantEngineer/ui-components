@@ -18,6 +18,32 @@ async function box(locator: Locator) {
 }
 
 test.describe('Code Editor lab', () => {
+  test('UIC-CODE-EDITOR-6.3 keeps outdented endpoints on their line and replaces a selection within one line', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('code-editor');
+    const input = editor(page, 'editing').getByRole('textbox', { name: 'Editable source' });
+    await input.fill('one\n    two');
+    await input.evaluate((element: HTMLTextAreaElement) => element.setSelectionRange(6, 6));
+    await input.press('Shift+Tab');
+    await expect(input).toHaveValue('one\ntwo');
+    expect(
+      await input.evaluate((element: HTMLTextAreaElement) => [
+        element.selectionStart,
+        element.selectionEnd,
+      ]),
+    ).toEqual([4, 4]);
+    await input.evaluate((element: HTMLTextAreaElement) => element.setSelectionRange(4, 7));
+    await input.press('Tab');
+    await expect(input).toHaveValue('one\n    ');
+    expect(
+      await input.evaluate((element: HTMLTextAreaElement) => [
+        element.selectionStart,
+        element.selectionEnd,
+      ]),
+    ).toEqual([8, 8]);
+  });
   test('UIC-CODE-EDITOR-4.2 suspends suggestions throughout input-method composition', async ({
     page,
     lab,
@@ -460,12 +486,17 @@ test.describe('Code Editor lab', () => {
     await expect(shownOption).toHaveCount(0);
     await page.keyboard.press('Control+z');
     await expect(input).not.toHaveValue(/pick\(test/);
-    // Tab indents the restored line instead of selecting a field of the undone snippet.
+    expect(await selection()).toBe('pi');
+    // Tab replaces the restored single-line selection, rather than stepping an undone snippet.
     await page.keyboard.press('Tab');
-    await expect(input).toHaveValue(/\n {4}pi$/);
-    expect(await selection()).toBe('    pi');
+    await expect(input).toHaveValue(/\n {4}$/);
+    expect(await selection()).toBe('');
+    expect(await input.evaluate((area: HTMLTextAreaElement) => area.selectionStart)).toBe(
+      (await input.inputValue()).length,
+    );
     await page.keyboard.press('End');
     await page.keyboard.press('Control+Space');
+    await page.keyboard.type('pi');
     await expect(shownOption).toBeVisible();
     await page.keyboard.press('Enter');
     await expect(input).toHaveValue(/pick\(test, yes, no\)$/);

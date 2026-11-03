@@ -79,9 +79,10 @@ function ToolRow() {
         <OverflowList
           items={tools}
           getKey={(tool) => tool}
-          render={(props) => (
+          render={(props, { itemContainerRef }) => (
             <ToolbarRow
               {...props}
+              stripRef={itemContainerRef}
               role="toolbar"
               aria-label="Text tools"
               justify="start"
@@ -147,7 +148,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Rendered as a toolbar"
-      description="The render prop swaps the root for a React Aria toolbar: arrow keys move between the visible tools and the menu of the others."
+      description="The render prop swaps the root for a ToolbarRow, with itemContainerRef on its stripRef so the controls are measured: arrow keys move between the visible tools and the menu of the others."
     >
       <ToolRow />
     </LabSection>
