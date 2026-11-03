@@ -239,6 +239,8 @@ type EdgeCase =
   | 'checked radios'
   | 'unchecked radios'
   | 'empty'
+  | 'CSS hidden'
+  | 'all CSS hidden'
   | 'two portals'
   | 'nested'
   | 'container before'
@@ -257,6 +259,33 @@ function EdgePortal({ id, mode, children }: { id: string; mode: EdgeMode; childr
 
 function EdgeContent({ id, mode, edge }: { id: string; mode: EdgeMode; edge: EdgeCase }) {
   switch (edge) {
+    case 'CSS hidden':
+    case 'all CSS hidden':
+      return (
+        <EdgePortal id={id} mode={mode}>
+          <button type="button" style={{ display: 'none' }}>
+            Hidden first
+          </button>
+          <div style={{ display: 'none' }}>
+            <button type="button">Hidden ancestor</button>
+          </div>
+          <div style={{ visibility: 'hidden' }}>
+            <button type="button">Invisible ancestor</button>
+            {edge === 'CSS hidden' ? (
+              <button type="button" style={{ visibility: 'visible' }}>
+                Restored tool
+              </button>
+            ) : null}
+          </div>
+          {edge === 'CSS hidden' ? <button type="button">Last tool</button> : null}
+          <button type="button" style={{ visibility: 'hidden' }}>
+            Hidden last
+          </button>
+          <div style={{ display: 'none' }}>
+            <button type="button">Hidden end</button>
+          </div>
+        </EdgePortal>
+      );
     case 'checked radios':
     case 'unchecked radios':
       return (
@@ -403,7 +432,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Tab order at the edges"
-      description="Each case with focus guards (kept) and in place. Radio groups take one stop, their checked radio; at the end of the page focus leaves the document and comes back to its first control, as it would in place. The browser test makes each case the whole page."
+      description="Each case with focus guards (kept) and in place. CSS-hidden controls are skipped, while descendants restoring visibility stay reachable. Radio groups take one stop, their checked radio; at the end of the page focus leaves the document and comes back to its first control, as it would in place. The browser test makes each case the whole page."
     >
       <StateMatrix
         axes={{
@@ -411,6 +440,8 @@ mountLab(
             'checked radios',
             'unchecked radios',
             'empty',
+            'CSS hidden',
+            'all CSS hidden',
             'two portals',
             'nested',
             'container before',

@@ -1,5 +1,7 @@
 // Which elements Tab reaches, for components that move focus or manage tab stops by hand.
 
+import { getOwnerWindow } from './owner-window.js';
+
 /** Elements that can join the tab order. */
 export const tabbableSelector = [
   'a[href]',
@@ -16,6 +18,29 @@ export const tabbableSelector = [
   '[tabindex]',
 ].join(', ');
 
+/** Rendered visibility for engines without checkVisibility; no layout-size assumptions. */
+function isVisible(element: HTMLElement): boolean {
+  const owner = getOwnerWindow(element);
+  const style = owner.getComputedStyle(element);
+  // Visibility is inherited, but descendants may explicitly restore it.
+  if (style.visibility === 'hidden' || style.visibility === 'collapse') return false;
+  if (style.display === 'contents') return false;
+  for (let node: Element | null = element; node; node = node.parentElement) {
+    const currentStyle = owner.getComputedStyle(node);
+    if (currentStyle.display === 'none') return false;
+    if (node === element) continue;
+    // These hide contents, not the container's own box or its first summary.
+    if (currentStyle.contentVisibility === 'hidden') return false;
+    if (
+      node.matches('details:not([open])') &&
+      !node.querySelector(':scope > summary')?.contains(element)
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
 /** Whether Tab reaches `element`: in the tab order, enabled, rendered and not hidden or inert. */
 export function isTabbable(element: HTMLElement): boolean {
   if (
@@ -26,8 +51,8 @@ export function isTabbable(element: HTMLElement): boolean {
     return false;
   }
   return typeof element.checkVisibility === 'function'
-    ? element.checkVisibility({ visibilityProperty: true })
-    : true;
+    ? element.checkVisibility({ visibilityProperty: true, checkVisibilityCSS: true })
+    : isVisible(element);
 }
 
 /** The elements inside `root` that Tab reaches, in document order. */
