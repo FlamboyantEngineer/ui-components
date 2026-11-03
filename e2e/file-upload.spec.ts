@@ -352,6 +352,77 @@ test.describe('File Upload lab', () => {
   });
 
   for (const fallback of [false, true]) {
+    for (const shadow of ['upload-name', 'control-name', 'control-id'] as const) {
+      test(`UIC-FILE-UPLOAD-4.2 repairs files when ${shadow} shadows form.elements ${fallback ? 'without' : 'with'} DataTransfer`, async ({
+        page,
+        lab,
+      }) => {
+        if (fallback) {
+          await page.addInitScript(() => {
+            Object.defineProperty(window, 'DataTransfer', { value: undefined, configurable: true });
+          });
+        }
+        await lab.open('file-upload');
+        const form = page.locator('[data-lab-form="shared-uploads"]');
+        for (const [variant, name, text] of [
+          ['shared-first', 'a.txt', 'first'],
+          ['shared-second', 'b.txt', 'second'],
+        ] as const) {
+          await upload(page, variant)
+            .locator('input[type="file"]:not([hidden])')
+            .setInputFiles({
+              name,
+              mimeType: 'text/plain',
+              buffer: Buffer.from(text),
+            });
+        }
+        await expect(form.locator('.ui-file-upload__file-name')).toHaveText(['a.txt', 'b.txt']);
+        const result = await form.evaluate(async (element: HTMLFormElement, kind) => {
+          const first = element.querySelector<HTMLInputElement>(
+            '[data-lab-upload="shared-first"] input[hidden]',
+          );
+          const note = element.querySelector<HTMLInputElement>('input[name="note"]');
+          if (!first || !note) throw new Error('Missing shared form controls');
+          note.removeAttribute('id');
+          if (kind === 'upload-name') first.name = 'elements';
+          else if (kind === 'control-name') note.name = 'elements';
+          else note.id = 'elements';
+          element.id = 'shared-documents-form';
+          // An external native placeholder must precede the managed files in native order.
+          const external = document.createElement('input');
+          external.type = 'file';
+          external.name = 'docs';
+          external.setAttribute('form', element.id);
+          element.before(external);
+          // Force the repair path even when DataTransfer populated the inputs successfully.
+          for (const input of element.querySelectorAll<HTMLInputElement>('input[hidden]')) {
+            input.value = '';
+          }
+          const isShadowed = element.elements instanceof HTMLInputElement;
+          const read = () =>
+            Promise.all(
+              Array.from(new FormData(element), async ([name, value]) => [
+                name,
+                typeof value === 'string' ? value : `${value.name}:${await value.text()}`,
+              ]),
+            );
+          return { isShadowed, first: await read(), repeated: await read() };
+        }, shadow);
+        const expected = [
+          ['docs', ':'],
+          ['docs', 'existing'],
+          ['docs', ':'],
+          [shadow === 'upload-name' ? 'elements' : 'docs', 'a.txt:first'],
+          [shadow === 'control-name' ? 'elements' : 'note', 'For review'],
+          ['docs', 'reference'],
+          ['docs', 'b.txt:second'],
+          ['docs', ':'],
+          ['docs', 'last'],
+        ];
+        expect(result).toEqual({ isShadowed: true, first: expected, repeated: expected });
+      });
+    }
+
     test(`UIC-FILE-UPLOAD-4.2 preserves shared controls and native files ${fallback ? 'without' : 'with'} DataTransfer`, async ({
       page,
       lab,

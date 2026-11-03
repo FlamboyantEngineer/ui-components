@@ -227,7 +227,7 @@ function SharedNameForm() {
         data-lab-upload="shared-first"
       />
       <label>
-        Note <input name="note" defaultValue="For review" />
+        Note <input id="elements" name="note" defaultValue="For review" />
       </label>
       <label>
         Document reference <input name="docs" defaultValue="reference" />

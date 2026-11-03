@@ -37,8 +37,11 @@ function findReplacements(
   const positions = indexFiles(entries);
   const offsets = new Map<string, number>();
   const replacements = new Map<number, readonly File[]>();
+  // Named controls can shadow form.elements; invoke the native getter with the form as receiver.
+  const prototype = getOwnerWindow(form).HTMLFormElement.prototype;
+  const controls = Reflect.get(prototype, 'elements', form) as HTMLFormControlsCollection;
   // Include unmanaged file inputs: even an empty one contributes a native File placeholder.
-  for (const input of Array.from(form.elements).filter(isSuccessfulFileInput)) {
+  for (const input of Array.from(controls).filter(isSuccessfulFileInput)) {
     const offset = offsets.get(input.name) ?? 0;
     const count = Math.max(1, input.files?.length ?? 0);
     offsets.set(input.name, offset + count);
