@@ -16,6 +16,44 @@ const mixed: SelectFieldOption = {
 const grouped: SelectFieldItem[] = [{ id: 'fruit', label: 'Fruit', options: [mixed] }];
 
 describe('SelectField mixed membership', () => {
+  for (const filterable of [false, true]) {
+    it(`UIC-SELECT-FIELD-3.1 UIC-SELECT-FIELD-3.4 ignores the opening release with filterable=${String(filterable)}`, async () => {
+      const user = userEvent.setup();
+      const onChange = vi.fn();
+      const onCommit = vi.fn();
+      render(
+        <SelectField
+          label="Produce"
+          name="produce"
+          selectionMode="multiple"
+          options={[{ id: 'apple', label: 'Apple' }, mixed]}
+          defaultValue={['apple']}
+          onChange={onChange}
+          onCommit={onCommit}
+          filterable={filterable}
+        />,
+      );
+      const trigger = screen.getByRole('button', { name: /Produce$/ });
+      await user.pointer({ target: trigger, keys: '[MouseLeft>]' });
+      const pear = await screen.findByRole('option', { name: 'Pear Crisp and sweet' });
+      await user.pointer({ target: pear, keys: '[/MouseLeft]' });
+      expect(onChange).not.toHaveBeenCalled();
+      expect(onCommit).not.toHaveBeenCalled();
+      expect(pear).toHaveAttribute('aria-selected', 'false');
+      expect(pear).toHaveAccessibleDescription('Selected for some records');
+      expect(trigger).toHaveAccessibleName('1 selected Produce');
+      expect(document.querySelector('input[name="produce"]')).toHaveValue('apple');
+      expect(document.querySelectorAll('input[name="produce"]')).toHaveLength(1);
+      await user.click(pear);
+      expect(onChange).toHaveBeenLastCalledWith(['apple', 'pear']);
+      expect(onCommit).toHaveBeenLastCalledWith(['apple', 'pear']);
+      await user.keyboard('{Enter}');
+      expect(onChange).toHaveBeenLastCalledWith(['apple']);
+      expect(onCommit).toHaveBeenLastCalledWith(['apple']);
+      expect(pear).toHaveAttribute('aria-selected', 'false');
+    });
+  }
+
   it('UIC-SELECT-FIELD-3.4 keeps native callbacks, filtering, keyboard toggles and chips', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();

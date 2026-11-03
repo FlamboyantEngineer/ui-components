@@ -27,7 +27,7 @@ async function width(locator: Locator): Promise<number> {
 }
 
 test.describe('Select Field lab', () => {
-  test('UIC-SELECT-FIELD-3.4 cycles controlled bulk memberships and retains untouched records', async ({
+  test('UIC-SELECT-FIELD-3.1 UIC-SELECT-FIELD-3.4 opens without edits and cycles controlled bulk memberships', async ({
     page,
     lab,
   }) => {
@@ -40,10 +40,22 @@ test.describe('Select Field lab', () => {
       '[{"name":"First","memberships":["apple","pear","plum"]},{"name":"Second","memberships":["apple"]}]';
     await expect(preview).toHaveText(original);
     await expect(trigger).toHaveAccessibleName('1 selected Shared fruit');
-    await trigger.focus();
-    await trigger.press('Enter');
+    await trigger.scrollIntoViewIfNeeded();
+    await trigger.hover();
+    await page.mouse.down();
     const pear = page.getByRole('option', { name: 'Pear Crisp and sweet' });
     const indicator = pear.locator('.ui-select-field__option-check');
+    await pear.hover();
+    await page.mouse.up();
+    await expect(demo.locator('[data-lab-output="Membership value"]')).toHaveText('["apple"]');
+    await expect(demo.locator('[data-lab-output="Membership change events"]')).toHaveText('[]');
+    await expect(demo.locator('[data-lab-output="Membership commits"]')).toHaveText('[]');
+    await expect(changes).toHaveText('{}');
+    await expect(preview).toHaveText(original);
+    await expect(demo.locator('input[name="shared-fruit"]')).toHaveCount(1);
+    await expect(demo.locator('input[name="shared-fruit"]')).toHaveValue('apple');
+    await expect(demo.locator('.ui-select-field__chip-label')).toHaveText('Apple');
+    await expect(trigger).toHaveAccessibleName('1 selected Shared fruit');
     await expect(pear).toHaveAttribute('aria-selected', 'false');
     await expect(pear).toHaveAccessibleDescription('Selected for some records');
     await expect(indicator).toHaveAttribute('data-indeterminate', 'true');
@@ -54,8 +66,13 @@ test.describe('Select Field lab', () => {
     );
     await lab.expectAccessible('.ui-select-field__popover');
     await page.getByRole('searchbox').fill('crisp');
-    await page.keyboard.press('ArrowDown');
-    await page.keyboard.press('Enter');
+    await pear.click();
+    await expect(demo.locator('[data-lab-output="Membership change events"]')).toHaveText(
+      '[["apple","pear"]]',
+    );
+    await expect(demo.locator('[data-lab-output="Membership commits"]')).toHaveText(
+      '[["apple","pear"]]',
+    );
     await expect(changes).toHaveText('{"pear":"add"}');
     await expect(pear).toHaveAttribute('aria-selected', 'true');
     await expect(indicator).not.toHaveAttribute('data-indeterminate');

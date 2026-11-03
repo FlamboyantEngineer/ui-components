@@ -73,10 +73,10 @@ Verification: `src/components/select-field/select-trigger.test.tsx`, `e2e/select
 
 ### UIC-SELECT-FIELD-3.1 - Opening
 
-Pressing the trigger, or Enter, Space, Arrow Down or Arrow Up on it, shall open the options in a popover (`ui-select-field__popover`) anchored below the trigger on the `dropdown` layer, publishing `data-layer` and taking its z-index from `useLayerZIndex('dropdown')`, and publishing the trigger's width as `--ui-trigger-width`. React Aria keeps focus in the list, moves it to the chosen option, locks page scrolling while the list is open, and closes the list on Escape or a press outside it. One Escape in a nonempty filter closes the list, clears the filter, returns focus to the trigger and retains the value, without closing an enclosing modal; a composing Escape remains with the input method. `isOpen`, `defaultOpen` and `onOpenChange` control the open state.
+Pressing the trigger, or Enter, Space, Arrow Down or Arrow Up on it, shall open the options in a popover (`ui-select-field__popover`) anchored below the trigger on the `dropdown` layer, publishing `data-layer` and taking its z-index from `useLayerZIndex('dropdown')`, and publishing the trigger's width as `--ui-trigger-width`. React Aria keeps focus in the list, moves it to the chosen option, locks page scrolling while the list is open, and closes the list on Escape or a press outside it. One Escape in a nonempty filter closes the list, clears the filter, returns focus to the trigger and retains the value, without closing an enclosing modal; a composing Escape remains with the input method. `isOpen`, `defaultOpen` and `onOpenChange` control the open state. Opening a multiple list never edits its value: releasing the trigger's opening pointer press over an option leaves the value, callbacks and memberships unchanged; selecting an option requires a fresh press on it or a selection key.
 
 Implementation: `src/components/select-field/select-list.tsx`, `src/components/select-field/select-control.tsx`
-Verification: `src/components/select-field/select-list.test.tsx`, `src/components/select-field/select-escape.test.tsx`, `e2e/select-field.spec.ts`
+Verification: `src/components/select-field/select-list.test.tsx`, `src/components/select-field/select-escape.test.tsx`, `src/components/select-field/select-indeterminate.test.tsx`, `e2e/select-field.spec.ts`
 
 ### UIC-SELECT-FIELD-3.2 - Options
 

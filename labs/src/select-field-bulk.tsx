@@ -30,6 +30,8 @@ const some = new Set(
 
 /** The host retains untouched memberships and cycles originally mixed options through overrides. */
 export function BulkMembershipEditor() {
+  const [changeEvents, setChangeEvents] = useState<Key[][]>([]);
+  const [commits, setCommits] = useState<Key[][]>([]);
   const [changes, setChanges] = useState<Partial<Record<Key, 'add' | 'remove'>>>({});
   const value = options
     .filter(
@@ -70,12 +72,19 @@ export function BulkMembershipEditor() {
           isIndeterminate: some.has(option.id) && changes[option.id] === undefined,
         }))}
         value={value}
-        onChange={update}
+        onChange={(next) => {
+          setChangeEvents((previous) => [...previous, next]);
+          update(next);
+        }}
+        onCommit={(next) => setCommits((previous) => [...previous, next])}
         filterable
       />
       <button type="button" onClick={() => setChanges({})}>
         Retain original memberships
       </button>
+      <LabOutput name="Membership value">{JSON.stringify(value)}</LabOutput>
+      <LabOutput name="Membership change events">{JSON.stringify(changeEvents)}</LabOutput>
+      <LabOutput name="Membership commits">{JSON.stringify(commits)}</LabOutput>
       <LabOutput name="Membership changes">{JSON.stringify(changes)}</LabOutput>
       <LabOutput name="Preview memberships">{JSON.stringify(preview)}</LabOutput>
     </div>
