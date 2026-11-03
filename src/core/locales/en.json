@@ -765,5 +765,6 @@
   "copyIdentifier": "Copy {identifier}",
   "status": "Status",
   "stateTrigger": "{label}: {state}",
-  "transitionTo": "Move to {state}"
+  "transitionTo": "Move to {state}",
+  "selectOptionIndeterminate": "Selected for some records"
 }

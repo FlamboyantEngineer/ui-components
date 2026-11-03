@@ -16,6 +16,7 @@ import { LabOutput } from './lab-output.js';
 import { Paged } from './select-field-paged.js';
 import { TriggerRefField } from './select-field-trigger-cases.js';
 import { OpenStates } from './select-field-open-cases.js';
+import { BulkMembershipEditor } from './select-field-bulk.js';
 import { ChangeFit, ChangeMatrix } from './select-field-changes.js';
 import { fieldLayouts, fieldStates, type FieldStateName } from './field-states.js';
 
@@ -444,6 +445,12 @@ mountLab(
           defaultValue="kiwi"
           data-lab-field="filter"
         />
+      </LabSection>
+      <LabSection
+        title="Bulk memberships"
+        description="Apple belongs to both records; Pear and disabled Plum belong only to the first. Pear cycles from mixed to selected for all, removed for all, then back to mixed. The host keeps each record's untouched memberships and previews the changes."
+      >
+        <BulkMembershipEditor />
       </LabSection>
       <LabSection title="Search" description="Options load as you type at least 2 characters.">
         <Search />
