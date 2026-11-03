@@ -35,6 +35,33 @@ describe('snapNumberValue', () => {
     { value: 4.5e15, bounds: { step: 2, maxValue: 4.5e15 + 1 }, expected: 4.5e15 },
     { value: 0.30000000000000004, bounds: { step: 0.1 }, expected: 0.3 },
     { value: 0.15, bounds: { step: 0.1 }, expected: 0.2 },
+    { value: -0.15, bounds: { step: 0.1 }, expected: -0.2 },
+    { value: -0.3, bounds: { step: 0.2 }, expected: -0.4 },
+    {
+      value: 4503599627370495.5,
+      bounds: { minValue: 0, maxValue: 4503599627370495.5, step: 2 },
+      expected: 4503599627370494,
+    },
+    {
+      value: 2251799813685248.5,
+      bounds: { step: 2 },
+      expected: 2251799813685248,
+    },
+    {
+      value: -2251799813685248.5,
+      bounds: { step: 2 },
+      expected: -2251799813685248,
+    },
+    {
+      value: 2251799813685249,
+      bounds: { step: 2 },
+      expected: 2251799813685250,
+    },
+    {
+      value: -2251799813685249,
+      bounds: { step: 2 },
+      expected: -2251799813685250,
+    },
   ])('UIC-NUMBER-FIELD-2.2 snaps $value to $expected', ({ value, bounds, expected }) => {
     expect(snapNumberValue(value, bounds)).toBe(expected);
   });

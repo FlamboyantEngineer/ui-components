@@ -453,6 +453,26 @@ export function NumberFieldSliderSections() {
               String(snapToStep(0.1 + 0.2, { minValue: 0, maxValue: 1, step: 0.1 })),
             ],
             [
+              'snapToStep(2251799813685248.5, { minValue: 0, maxValue: 4503599627370496, step: 2 })',
+              String(
+                snapToStep(2251799813685248.5, {
+                  minValue: 0,
+                  maxValue: 4503599627370496,
+                  step: 2,
+                }),
+              ),
+            ],
+            [
+              'snapToStep(4503599627370495.5, { minValue: 0, maxValue: 4503599627370495.5, step: 2 })',
+              String(
+                snapToStep(4503599627370495.5, {
+                  minValue: 0,
+                  maxValue: 4503599627370495.5,
+                  step: 2,
+                }),
+              ),
+            ],
+            [
               'normalizeSliderValue([80, 20], { minValue: 0, maxValue: 50, step: 10 })',
               JSON.stringify(
                 normalizeSliderValue([80, 20], { minValue: 0, maxValue: 50, step: 10 }),

@@ -11,6 +11,34 @@ describe('slider values', () => {
     { minValue: 0.25, maxValue: 3, step: 1, given: 1.25, expected: 1.25 },
     { minValue: 5e-8, maxValue: 1e-6, step: 1e-7, given: 2.5e-7, expected: 2.5e-7 },
     { minValue: 0, maxValue: 0.3, step: 0.1, given: 0.3, expected: 0.3 },
+    {
+      minValue: 0,
+      maxValue: 4503599627370495.5,
+      step: 2,
+      given: 4503599627370495.5,
+      expected: 4503599627370494,
+    },
+    {
+      minValue: 0,
+      maxValue: 4503599627370496,
+      step: 2,
+      given: 2251799813685248.5,
+      expected: 2251799813685248,
+    },
+    {
+      minValue: 0,
+      maxValue: 4503599627370496,
+      step: 2,
+      given: 2251799813685249,
+      expected: 2251799813685250,
+    },
+    {
+      minValue: 0,
+      maxValue: 4503599627370496,
+      step: 2,
+      given: 562949953421312.75,
+      expected: 562949953421312,
+    },
     { minValue: 0.05, maxValue: 1, step: 0.1, given: Number.NaN, expected: 0.05 },
     { minValue: 0.05, maxValue: 1, step: 0.1, given: Infinity, expected: 0.95 },
     { minValue: 0.05, maxValue: 1, step: 0.1, given: -Infinity, expected: 0.05 },
@@ -24,6 +52,13 @@ describe('slider values', () => {
       expect(snapToStep(once, grid)).toBe(once);
     },
   );
+
+  it('UIC-NUMBER-FIELD-5.2 preserves large step counts at both range endpoints', () => {
+    const grid = { minValue: 0, maxValue: 4503599627370495.5, step: 2 };
+    const once = normalizeSliderValue([4503599627370495.5, 2251799813685248.5], grid);
+    expect(once).toEqual([2251799813685248, 4503599627370494]);
+    expect(normalizeSliderValue(once, grid)).toEqual(once);
+  });
 
   it.each([
     { given: [0.05, 0.85], expected: [0.05, 0.85] },

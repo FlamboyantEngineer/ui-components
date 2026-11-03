@@ -245,7 +245,7 @@ test.describe('Number Field lab, slider display', () => {
   });
 });
 
-test('UIC-NUMBER-FIELD-8.3 shows the exported helpers in a host-side snippet', async ({
+test('UIC-NUMBER-FIELD-8.3 UIC-NUMBER-FIELD-5.2 shows the exported helpers and large step counts in a host-side snippet', async ({
   page,
   lab,
 }) => {
@@ -254,6 +254,12 @@ test('UIC-NUMBER-FIELD-8.3 shows the exported helpers in a host-side snippet', a
   await expect(
     call('keepThumbsApart([40, 45], [30, 45], { distance: 10, minValue: 0, maxValue: 100 })'),
   ).toHaveText('[35,45]');
+  await expect(
+    call('snapToStep(2251799813685248.5, { minValue: 0, maxValue: 4503599627370496, step: 2 })'),
+  ).toHaveText('2251799813685248');
+  await expect(
+    call('snapToStep(4503599627370495.5, { minValue: 0, maxValue: 4503599627370495.5, step: 2 })'),
+  ).toHaveText('4503599627370494');
 });
 
 test('UIC-NUMBER-FIELD-5.2 keeps the held value on the grid as the bounds change', async ({
