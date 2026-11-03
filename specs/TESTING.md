@@ -57,7 +57,7 @@ Verification: `src/testing/collections.test.tsx`
 
 ### UIC-TESTING-2.6 - Find a table cell
 
-`getTableCell(table, rowName, columnName)` shall return the cell of a table or grid in the row named `rowName` (rows are named by their row header cells) under the column header named `columnName`, matching `aria-colindex` when the row's cells carry it and the header's position otherwise, and throw when there is none.
+`getTableCell(table, rowName, columnName)` shall return the cell of a table or grid in the row named `rowName` (rows are named by their row header cells) under the column header named `columnName`, matching `aria-colindex` when the row's cells carry it and the header's position otherwise, and throw when there is none. Native `tr`, `th` and `td` elements work through their implicit roles, without explicit `role` attributes.
 
 Implementation: `src/testing/collections.ts`
 Verification: `src/testing/collections.test.tsx`

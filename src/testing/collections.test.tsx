@@ -56,4 +56,30 @@ describe('testing collections', () => {
     expect(getTableCell(table, 'Banana', /^Weight/)).toHaveTextContent('120');
     expect(getTableCell(table, 'Banana', 'Name')).toHaveAttribute('role', 'rowheader');
   });
+
+  it('UIC-TESTING-2.6 finds native table cells without explicit roles and rejects missing cells', () => {
+    render(
+      <table aria-label="Native fruit">
+        <thead>
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Colour</th>
+            <th scope="col">Weight</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Apple</th>
+            <td>Red</td>
+          </tr>
+        </tbody>
+      </table>,
+    );
+    const table = screen.getByRole('table', { name: 'Native fruit' });
+    expect(getTableCell(table, 'Apple', 'Colour')).toHaveTextContent('Red');
+    expect(getTableCell(table, 'Apple', 'Name')).toBe(screen.getByRole('rowheader'));
+    expect(() => getTableCell(table, 'Apple', 'Weight')).toThrow(
+      'No cell in row Apple under Weight.',
+    );
+  });
 });

@@ -1,6 +1,6 @@
 # Pagination
 
-`Pagination` moves through a list shown one page at a time: previous and next buttons around one button per page, with gaps where a long run of pages is skipped. It is built on the library's `Button` and `Button` and holds no rows itself; [Table](TABLE.md#uic-table-10---pagination) draws one under a paginated grid.
+`Pagination` moves through a list shown one page at a time: previous and next buttons around one button per page, with gaps where a long run of pages is skipped. It is built on the library's `Button` and holds no rows itself; [Table](TABLE.md#uic-table-10---pagination) draws one under a paginated grid.
 
 ## UIC-PAGINATION-1 - Pages
 
@@ -13,7 +13,7 @@ Verification: `src/components/pagination/pagination.test.tsx`, `e2e/pagination.s
 
 ### UIC-PAGINATION-1.2 - Current page
 
-The current page's button shall carry `aria-current="page"` and `data-current`. `page` controls the current page, else the pagination owns it starting at `defaultPage` (1 by default); a page outside 1 to `pageCount` shows the nearest one, and a `pageCount` below one or not finite (`NaN`, `Infinity`) counts as one.
+`getPaginationItems` applies the same normalization when listing pages. The current page's button shall carry `aria-current="page"` and `data-current`. `page` controls the current page, else the pagination owns it starting at `defaultPage` (1 by default); a fractional page is rounded down, `NaN` shows the first page, a page outside 1 to `pageCount` (including either infinity) shows the nearest one, and a `pageCount` below one or not finite (`NaN`, `Infinity`) counts as one.
 
 Implementation: `src/components/pagination/pagination.tsx`
 Verification: `src/components/pagination/pagination.test.tsx`

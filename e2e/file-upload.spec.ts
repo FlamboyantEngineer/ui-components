@@ -10,6 +10,46 @@ function upload(page: Page, variant: string): Locator {
 }
 
 test.describe('File Upload lab', () => {
+  test('UIC-FILE-UPLOAD-1.5 shows a folder read failure and notifies the host', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('file-upload');
+    const target = upload(page, 'folder');
+    const transfer = await page.evaluateHandle(() => {
+      const data = new DataTransfer();
+      data.items.add(new File(['x'], 'Documents'));
+      DataTransferItem.prototype.webkitGetAsEntry = () =>
+        ({
+          isDirectory: true,
+          name: 'Documents',
+          createReader: () => ({
+            readEntries: (_success: unknown, fail: (error: Error) => void) =>
+              fail(new Error('Folder access was refused.')),
+          }),
+        }) as unknown as FileSystemEntry;
+      return data;
+    });
+    await target
+      .locator('.ui-file-upload__dropzone')
+      .dispatchEvent('drop', { dataTransfer: transfer });
+    await expect(target.getByRole('alert')).toHaveText('Folder access was refused.');
+    await expect(page.locator('[data-lab-output="folder-error"]')).toHaveText(
+      'Folder access was refused.',
+    );
+    const readable = await page.evaluateHandle(() => {
+      const data = new DataTransfer();
+      data.items.add(new File(['notes'], 'Notes.txt', { type: 'text/plain' }));
+      DataTransferItem.prototype.webkitGetAsEntry = () =>
+        ({ isFile: true, isDirectory: false }) as FileSystemEntry;
+      return data;
+    });
+    await target
+      .locator('.ui-file-upload__dropzone')
+      .dispatchEvent('drop', { dataTransfer: readable });
+    await expect(target.getByRole('alert')).toBeHidden();
+    await expect(target.locator('.ui-file-upload__file-name')).toHaveText('Notes.txt');
+  });
   test('UIC-FILE-UPLOAD-2.6 UIC-FILE-UPLOAD-2.8 rejects whole single-file offers and permits replacement', async ({
     page,
     lab,

@@ -4,6 +4,7 @@ import { getDefaultStrings } from '../../core/strings.js';
 const defaultStrings = getDefaultStrings();
 import {
   checkTag,
+  checkGivenTags,
   hasTagDelimiter,
   resolveTagEntry,
   splitTagText,
@@ -19,6 +20,25 @@ const rules: TagRules = {
 };
 
 describe('tag entry', () => {
+  it('UIC-TAGS-INPUT-3.3 checks a large given list with one read per tag', () => {
+    const count = 5000;
+    let reads = 0;
+    const value = new Proxy(
+      [...Array.from({ length: count }, (_, index) => `Tag ${index}`), 'Tag 42'],
+      {
+        get(target, key, receiver) {
+          if (typeof key === 'string' && /^\d+$/.test(key)) reads++;
+          return Reflect.get(target, key, receiver) as unknown;
+        },
+      },
+    );
+    expect(checkGivenTags(value, rules)?.message).toBe('“Tag 42” is already added.');
+    expect(reads).toBe(count + 1);
+    reads = 0;
+    expect(checkGivenTags(value, { ...rules, allowsDuplicates: true })).toBeNull();
+    expect(reads).toBe(0);
+  });
+
   it.each([false, true])(
     'UIC-TAGS-INPUT-2.2 UIC-TAGS-INPUT-3.3 reads existing tags once at most for a large paste when duplicates are %s',
     (allowsDuplicates) => {

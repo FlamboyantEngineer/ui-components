@@ -118,6 +118,23 @@ function Range() {
   );
 }
 
+function CorrectedRange() {
+  const [value, setValue] = useState<DateRangeValue | null>({
+    start: '2026-04-01',
+    end: '2026-04-03',
+  });
+  return (
+    <DateTimeField
+      label="Corrected stay"
+      mode="date-range"
+      value={value}
+      onChange={setValue}
+      committedValue={{ start: '2026-04-03', end: '2026-04-01' }}
+      data-lab-field="reversed-previous"
+    />
+  );
+}
+
 function Availability() {
   const [committed, setCommitted] = useState<AnyValue>(null);
   return (
@@ -340,6 +357,12 @@ mountLab(
     </LabSection>
     <LabSection title="Range" description="One range calendar of two months.">
       <Range />
+    </LabSection>
+    <LabSection
+      title="Corrected range"
+      description="A reversed saved range remains readable as the previous value while its corrected draft is shown."
+    >
+      <CorrectedRange />
     </LabSection>
     <LabSection
       title="Unavailable dates and presets"

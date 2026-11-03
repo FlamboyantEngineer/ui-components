@@ -80,7 +80,7 @@ Verification: `src/components/tags-input/tags-input.test.tsx`, `src/components/t
 
 ### UIC-TAGS-INPUT-3.3 - Duplicates
 
-A tag equal to one the field holds (compared exactly, after trimming) shall be refused with the provider string `duplicateValue` (“Apple” is already added., validity `customError`), unless `allowsDuplicates` is set. A given value that repeats a tag shows every tag but reports the first repeated one with the same message, as an error, until one copy is removed. With `allowsDuplicates`, equal tags show as separate tags, each removable on its own.
+A tag equal to one the field holds (compared exactly, after trimming) shall be refused with the provider string `duplicateValue` (“Apple” is already added., validity `customError`), unless `allowsDuplicates` is set. A given value that repeats a tag shows every tag but reports the first repeated one with the same message, as an error, until one copy is removed. Checking a given list shall read each tag at most once, so typing remains responsive with many tags. With `allowsDuplicates`, equal tags show as separate tags, each removable on its own.
 
 Implementation: `src/components/tags-input/tag-entry.ts`, `src/components/tags-input/tags-input-parts.tsx`, `src/core/strings/field.ts`
 Verification: `src/components/tags-input/tags-input.test.tsx`, `src/components/tags-input/tag-entry.test.ts`

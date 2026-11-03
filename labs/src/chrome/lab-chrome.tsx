@@ -225,7 +225,7 @@ function ThemeFields({ chrome }: { chrome: ChromeState }) {
         }}
       />
       <span id={`${ids.attribute}-hint`} className="visually-hidden">
-        Root element attribute that receives the theme value
+        Root data attribute that receives the theme value, excluding data-lab attributes
       </span>
     </>
   );

@@ -86,6 +86,25 @@ describe('Pagination', () => {
     }
   });
 
+  it.each([
+    [4.8, 4],
+    [Number.NaN, 1],
+    [Number.POSITIVE_INFINITY, 12],
+    [Number.NEGATIVE_INFINITY, 1],
+  ])('UIC-PAGINATION-1.2 normalizes requested page %s to %s', async (page, expected) => {
+    const user = userEvent.setup();
+    const onPageChange = vi.fn();
+    render(<Pagination pageCount={12} page={page} onPageChange={onPageChange} />);
+    expect(screen.getByRole('button', { name: `Page ${String(expected)}` })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    expect(getPaginationItems(page, 12)).toEqual(getPaginationItems(expected, 12));
+    const direction = expected === 12 ? 'Previous page' : 'Next page';
+    await user.click(screen.getByRole('button', { name: direction }));
+    expect(onPageChange).toHaveBeenCalledExactlyOnceWith(expected === 12 ? 11 : expected + 1);
+  });
+
   it('UIC-PAGINATION-1.3 moves by page buttons, previous and next, and ignores the current page', async () => {
     const user = userEvent.setup();
     const onPageChange = vi.fn();

@@ -39,6 +39,17 @@ function marked() {
 }
 
 describe('CodeEditor editing keys', () => {
+  it('UIC-CODE-EDITOR-6.3 replaces a selection within one line and keeps an outdented caret on its line', async () => {
+    const user = userEvent.setup();
+    render(<Editor initialValue={'one\n    two'} indentWithTab indent={4} />);
+    await user.click(input());
+    input().setSelectionRange(6, 6);
+    await user.keyboard('{Shift>}{Tab}{/Shift}');
+    expect(marked()).toBe('one\n|two');
+    input().setSelectionRange(4, 7);
+    await user.keyboard('{Tab}');
+    expect(marked()).toBe('one\n    |');
+  });
   it('UIC-CODE-EDITOR-6.1 reports its own edits through onChange and restores their selection', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();

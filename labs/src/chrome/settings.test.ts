@@ -66,6 +66,15 @@ describe('readSettings', () => {
     expect(readSettings('', refusing)).toEqual(defaultSettings);
     expect(() => rememberSettings(defaultSettings, refusing)).not.toThrow();
   });
+
+  it('UIC-LABS-2.2 rejects event handlers and reserved lab attributes from queries and storage', () => {
+    for (const attribute of ['onpointerover', 'style', 'class', 'data-lab-stylesheet-state']) {
+      expect(readSettings(`?themeAttribute=${attribute}`, null).themeAttribute).toBe('data-theme');
+      expect(
+        readSettings('', memoryStorage({ 'ui-labs:theme-attribute': attribute })).themeAttribute,
+      ).toBe('data-theme');
+    }
+  });
 });
 
 describe('settings round trip', () => {
@@ -93,6 +102,20 @@ describe('settings round trip', () => {
 });
 
 describe('applySettings', () => {
+  it('UIC-LABS-2.2 writes theme text only to safe data attributes', () => {
+    const theme = 'document.documentElement.dataset.executed="yes"';
+    applySettings({ ...defaultSettings, theme, themeAttribute: 'onpointerover' });
+    expect(document.documentElement).not.toHaveAttribute('onpointerover');
+    expect(document.documentElement).toHaveAttribute('data-theme', theme);
+    applySettings({
+      ...defaultSettings,
+      theme: 'hidden',
+      themeAttribute: 'data-lab-stylesheet-state',
+    });
+    expect(document.documentElement).toHaveAttribute('data-lab-stylesheet-state', 'loading');
+    expect(document.documentElement).toHaveAttribute('data-theme', 'hidden');
+  });
+
   it('UIC-LABS-2.1 reports an invalid stylesheet URL and recovers on the next choice', () => {
     applySettings(defaultSettings);
     applySettings({

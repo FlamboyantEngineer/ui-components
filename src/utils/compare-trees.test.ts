@@ -205,6 +205,16 @@ describe('compareTrees', () => {
 });
 
 describe('isSameTrees', () => {
+  it('UIC-TREE-COMPARE-3.1 compares twenty thousand rebuilt nested nodes without recursion', () => {
+    const create = (leaf: string): CompareTreeNode[] => {
+      let nodes: CompareTreeNode[] = [{ id: 'leaf', label: leaf }];
+      for (let id = 19_998; id >= 0; id--) nodes = [{ id, label: `Node ${id}`, children: nodes }];
+      return nodes;
+    };
+    expect(isSameTrees(create('Same'), create('Same'))).toBe(true);
+    expect(isSameTrees(create('Same'), create('Changed'))).toBe(false);
+  });
+
   it('UIC-TREE-COMPARE-3.1 matches rebuilt trees by their nodes and shape', () => {
     const tree: CompareTreeNode[] = [
       { id: 'p', label: 'Parent', children: [{ id: 'a', label: 'A' }] },

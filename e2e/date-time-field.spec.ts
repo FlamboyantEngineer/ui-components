@@ -14,6 +14,14 @@ function field(page: Page, name: string): Locator {
 const committed = (page: Page) => page.locator('[data-lab-output="Committed"]');
 
 test.describe('Date Time Field lab', () => {
+  test('UIC-DATE-TIME-FIELD-1.6 keeps a reversed previous range readable', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('date-time-field');
+    const previous = field(page, 'reversed-previous').locator('.ui-date-time-field__previous');
+    await expect(previous).toHaveText('Apr 3, 2026 – Apr 1, 2026');
+  });
   test('UIC-DATE-TIME-FIELD-1.1 draws each mode in every state', async ({ page, lab }) => {
     await lab.open('date-time-field');
     const cells = page.locator('table[data-lab-matrix="state mode"] td[data-lab-cell]');

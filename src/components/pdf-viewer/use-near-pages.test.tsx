@@ -35,7 +35,9 @@ function createScroller(Observer: unknown) {
     configurable: true,
     value: Observer,
   });
-  return owner.body.appendChild(owner.createElement('div'));
+  const scroller = owner.body.appendChild(owner.createElement('div'));
+  Object.defineProperty(scroller, 'clientHeight', { configurable: true, value: 600 });
+  return scroller;
 }
 
 afterEach(() => {
@@ -61,7 +63,7 @@ describe('useNearPages', () => {
     act(() => result.current.registerPage(0, page));
     expect(Observer).toHaveBeenCalledWith(expect.any(Function), {
       root: scroller,
-      rootMargin: '100% 0px',
+      rootMargin: '600px 0px',
     });
     expect(instances[0]?.observe).toHaveBeenCalledWith(page);
     act(() => instances[0]?.report(page, true));
@@ -69,6 +71,41 @@ describe('useNearPages', () => {
     expect(near).toEqual(new Set([0]));
     act(() => instances[0]?.report(page, true));
     expect(result.current.nearPages).toBe(near);
+  });
+
+  it('UIC-PDF-VIEWER-2.1 tracks a screen by height and ignores old reports after the scroller resizes', () => {
+    const { Observer, instances } = createObserver();
+    const scroller = createScroller(Observer);
+    const resized = vi.fn();
+    const ResizeObserver = vi.fn(function (callback: ResizeObserverCallback) {
+      resized.mockImplementation(callback);
+      return { observe: vi.fn(), disconnect: vi.fn() };
+    });
+    Object.defineProperty(scroller.ownerDocument.defaultView, 'ResizeObserver', {
+      configurable: true,
+      value: ResizeObserver,
+    });
+    const page = scroller.ownerDocument.createElement('div');
+    const scrollerRef = { current: scroller };
+    const { result } = renderHook(() => useNearPages(scrollerRef));
+    act(() => result.current.registerPage(0, page));
+    act(() => instances[0]?.report(page, true));
+    const before = result.current.nearPages;
+    Object.defineProperty(scroller, 'clientHeight', { configurable: true, value: 900 });
+    act(() => {
+      resized();
+    });
+    expect(Observer).toHaveBeenLastCalledWith(expect.any(Function), {
+      root: scroller,
+      rootMargin: '900px 0px',
+    });
+    expect(instances[0]?.disconnect).toHaveBeenCalledOnce();
+    expect(instances[1]?.observe).toHaveBeenCalledWith(page);
+    expect(result.current.nearPages).toBe(before);
+    act(() => instances[0]?.report(page, false));
+    expect(result.current.nearPages).toBe(before);
+    act(() => instances[1]?.report(page, false));
+    expect(result.current.nearPages).toEqual(new Set());
   });
 
   it('UIC-PDF-VIEWER-2.1 ignores retired page elements when their intersection arrives late', () => {

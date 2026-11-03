@@ -285,7 +285,7 @@ describe('LoadMore', () => {
     rerender(<LoadMore autoLoad scrollOffset={1} onLoadMore={onLoadMore} />);
     expect(FakeIntersectionObserver.instances.at(-1)?.init).toEqual({
       root: null,
-      rootMargin: '0px 100% 100% 100%',
+      rootMargin: `0px ${window.innerWidth}px ${window.innerHeight}px ${window.innerWidth}px`,
     });
     setInView(true);
     expect(onLoadMore).toHaveBeenCalledTimes(1);

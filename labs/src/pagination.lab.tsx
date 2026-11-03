@@ -12,6 +12,8 @@ const states = [
   'one page',
   'no results',
   'disabled',
+  'fractional page',
+  'unreadable page',
 ] as const;
 
 const stateProps: Record<(typeof states)[number], { pageCount: number; page: number }> = {
@@ -22,6 +24,8 @@ const stateProps: Record<(typeof states)[number], { pageCount: number; page: num
   'one page': { pageCount: 1, page: 1 },
   'no results': { pageCount: 0, page: 1 },
   disabled: { pageCount: 12, page: 6 },
+  'fractional page': { pageCount: 12, page: 4.8 },
+  'unreadable page': { pageCount: 12, page: Number.NaN },
 };
 
 const cities = ['Lisbon', 'Oslo', 'Quito', 'Cairo', 'Porto', 'Seville', 'Napier', 'Izmir', 'Lima'];
@@ -87,7 +91,7 @@ mountLab(
   <>
     <LabSection
       title="States"
-      description="Gaps stand for skipped pages; previous and next stay focusable at either end."
+      description="Gaps stand for skipped pages; previous and next stay focusable at either end. A fractional requested page rounds down; an unreadable page starts at one."
     >
       <StateMatrix
         axes={{ state: states }}

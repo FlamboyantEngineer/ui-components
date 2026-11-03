@@ -377,16 +377,23 @@ function OwnedCommand() {
 
 function FolderUpload() {
   const upload = useSimulatedUpload();
+  const [error, setError] = useState('none');
   return (
-    <FileUpload
-      variant="dropzone"
-      label="Drop or choose a folder"
-      acceptDirectory
-      files={upload.files}
-      onSelect={upload.add}
-      onRemove={upload.remove}
-      data-lab-upload="folder"
-    />
+    <>
+      <FileUpload
+        variant="dropzone"
+        label="Drop or choose a folder"
+        acceptDirectory
+        files={upload.files}
+        onSelect={upload.add}
+        onRemove={upload.remove}
+        onError={(failure) => setError(failure instanceof Error ? failure.message : 'Read failed')}
+        data-lab-upload="folder"
+      />
+      <p>
+        Read failure: <output data-lab-output="folder-error">{error}</output>
+      </p>
+    </>
   );
 }
 
@@ -434,7 +441,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Folders"
-      description="Choose or drop a folder: every file in it, through its subfolders, is listed in entry order."
+      description="Choose or drop a folder: every file in it, through its subfolders, is listed in entry order. A failed read abandons the offer, shows its error and reports it to the host below."
     >
       <FolderUpload />
     </LabSection>

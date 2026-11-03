@@ -149,6 +149,19 @@ describe('date values', () => {
     expect(formatDateValue('someday', 'date', { locale: 'en-US' })).toBe('someday');
   });
 
+  it('UIC-DATE-TIME-FIELD-1.6 formats reversed ranges as their localized endpoints', () => {
+    const value = { start: '2026-04-03', end: '2026-04-01' };
+    expect(formatDateValue(value, 'date-range', { locale: 'en-US' })).toBe(
+      'Apr 3, 2026 – Apr 1, 2026',
+    );
+    expect(
+      formatDateValue(value, 'date-range', {
+        locale: 'en-US',
+        joinRange: (start, end) => `${start} / ${end}`,
+      }),
+    ).toBe('Apr 3, 2026 / Apr 1, 2026');
+  });
+
   it('UIC-DATE-TIME-FIELD-3.1 asks about the date of a value, either end of a range included', () => {
     const asked: string[] = [];
     const isDateUnavailable = (date: string) => {

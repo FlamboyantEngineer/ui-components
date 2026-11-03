@@ -57,20 +57,26 @@ function shiftLines(value: string, selection: CodeSelection, size: number): Code
   if (widths.every((width) => width === 0)) return null;
   const text = lines.map((line, index) => line.slice(widths[index])).join('\n');
   const first = Math.min(widths[0] ?? 0, selection.start - from);
+  const last = lines.length - 1;
+  const lastStart = to - (lines[last]?.length ?? 0);
+  const afterEnd = Math.max(0, (widths[last] ?? 0) - (selection.end - lastStart));
   return {
     start: from,
     end: to,
     text,
-    selection: { start: selection.start - first, end: selection.end - (to - from - text.length) },
+    selection: {
+      start: selection.start - first,
+      end: selection.end - (to - from - text.length) + afterEnd,
+    },
   };
 }
 
 /**
- * Tab: a caret takes spaces up to the next indentation stop; a selection indents each non-empty
- * line it touches by one level.
+ * Tab: a caret or selection within one line takes spaces up to the next indentation stop; a
+ * selection across lines indents each non-empty line it touches by one level.
  */
 export function indentSelection(value: string, selection: CodeSelection, size: number): CodeEdit {
-  if (selection.start === selection.end) {
+  if (!value.slice(selection.start, selection.end).includes('\n')) {
     const column = selection.start - findLineStart(value, selection.start);
     const text = ' '.repeat(size - (column % size));
     const caret = selection.start + text.length;

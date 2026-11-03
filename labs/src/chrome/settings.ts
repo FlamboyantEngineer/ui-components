@@ -12,7 +12,7 @@ export interface LabSettings {
    * written to `themeAttribute` on the root element as it is, and empty writes nothing.
    */
   theme: string;
-  /** Root attribute the host's theme switch reads, `data-theme` by default. */
+  /** Root data attribute the host's theme switch reads, excluding `data-lab-*`. */
   themeAttribute: string;
 }
 
@@ -34,7 +34,7 @@ const storageKeys = {
   themeAttribute: 'ui-labs:theme-attribute',
 } as const;
 
-const attributeNamePattern = /^[a-z][a-z0-9-]*$/i;
+const attributeNamePattern = /^data-(?!lab-)[a-z0-9][a-z0-9-]*$/i;
 
 export const defaultSettings: LabSettings = {
   stylesheet: { kind: 'reference' },
@@ -183,14 +183,19 @@ export function watchColorScheme(onChange: () => void, view: Window = window): (
 export function applySettings(settings: LabSettings, doc: Document = document): void {
   const root = doc.documentElement;
   applyStylesheet(settings.stylesheet, doc);
+  const attribute = isValidThemeAttribute(settings.themeAttribute)
+    ? settings.themeAttribute
+    : DEFAULT_THEME_ATTRIBUTE;
   const previous = root.dataset.labThemeAttribute;
-  if (previous && previous !== settings.themeAttribute) root.removeAttribute(previous);
+  if (previous && previous !== attribute && isValidThemeAttribute(previous)) {
+    root.removeAttribute(previous);
+  }
   const value = resolveTheme(settings.theme, doc.defaultView);
   if (value) {
-    root.setAttribute(settings.themeAttribute, value);
-    root.dataset.labThemeAttribute = settings.themeAttribute;
+    root.setAttribute(attribute, value);
+    root.dataset.labThemeAttribute = attribute;
   } else {
-    root.removeAttribute(settings.themeAttribute);
+    root.removeAttribute(attribute);
     delete root.dataset.labThemeAttribute;
   }
   if (value === 'light' || value === 'dark') root.dataset.labScheme = value;

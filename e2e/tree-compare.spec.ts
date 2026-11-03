@@ -236,6 +236,22 @@ test.describe('Tree Compare lab', () => {
     await expect(row('Hub, moved here')).toBeFocused();
   });
 
+  test('UIC-TREE-COMPARE-3.1 keeps visible expansion after rebuilding nested nodes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tree-compare');
+    const demo = page.locator('[data-lab-demo="rebuilt-deep-tree"]');
+    const first = demo.getByRole('row', { name: 'Node 0', exact: true });
+    await first.focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(demo.getByRole('row', { name: 'Node 1', exact: true })).toBeVisible();
+    await demo.getByRole('button', { name: 'Reload the deep hierarchy' }).click();
+    await expect(demo.locator('[data-lab-output="refreshes"]')).toHaveText('1');
+    await expect(first).toHaveAttribute('aria-expanded', 'true');
+    await expect(demo.getByRole('row', { name: 'Node 1', exact: true })).toBeVisible();
+  });
+
   test('UIC-TREE-COMPARE-6.1 passes axe', async ({ page, lab }) => {
     await lab.open('tree-compare');
     await expect(page.getByRole('treegrid', { name: /^Specification/ })).toBeVisible();

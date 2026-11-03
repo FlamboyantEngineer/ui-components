@@ -34,6 +34,7 @@ export interface CommandProps {
   /** Wraps a button so pressing it opens the system file chooser. */
   withChooser: (button: ReactElement) => ReactElement;
   receive: (files: readonly File[]) => void;
+  readDrop: (read: Promise<File[]>) => void;
   /** Whether the files of the drag in progress would be accepted, as far as a drag can tell. */
   isDragAcceptable: boolean;
   /** Dropped folders are read for their files. */
@@ -108,7 +109,7 @@ export function readDraggedItems(event: DragEvent): DraggedItem[] {
  * Browse button. While a drag is over it, it says whether the dragged files would be accepted.
  */
 export function DropZoneCommand(props: CommandProps) {
-  const { label, hint, isDisabled, withChooser, receive, isDragAcceptable, acceptDirectory } =
+  const { label, hint, isDisabled, withChooser, readDrop, isDragAcceptable, acceptDirectory } =
     props;
   const { commandId, commandRef, naming, describedBy } = props;
   const strings = useUiStrings();
@@ -126,7 +127,7 @@ export function DropZoneCommand(props: CommandProps) {
       onDropExit={() => setOver(false)}
       onDrop={(event) => {
         setOver(false);
-        void readDroppedFiles(event.items, acceptDirectory).then(receive);
+        readDrop(readDroppedFiles(event.items, acceptDirectory));
       }}
       data-drop-accept={(isOver && isDragAcceptable) || undefined}
       data-drop-reject={(isOver && !isDragAcceptable) || undefined}

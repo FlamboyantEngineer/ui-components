@@ -32,7 +32,7 @@ Verification: `test/start-labs.test.ts`
 Installing a branch or commit shall run `prepare` (`scripts/prepare.mjs`), which runs `npm run build:package` to compile the library entry points and declarations and bundle the reference stylesheet (UIC-LABS-1.6). It shall not build or install the labs themselves. The script builds only when npm prepares or packs the package (npm then names the directory in `npm_package_resolved`), so `npm ci` in a checkout builds nothing, and packing with `--ignore-scripts` packs the tree as built: `npm run check:package`, `npm run check:server-components` and `npm run release` build once and never pack a tree that a check running beside them reads. A release tag (`npm run release`, from `main` matching `origin/main`) is a commit that adds every exported build output, `dist/` and the reference stylesheet, with a manifest that has no `prepare` script, so installing a tag installs no development dependencies and builds nothing; the library tarball attached to the release is packed from that tree. `npm run check:git-install` verifies a clean consumer through `npm install` and `npm ci`, checks rendering, public declarations and the installed reference stylesheet, and rejects any other installed lab file. Hosted CI runs it whenever a change reaches installation: the manifest, lockfile, Node version, TypeScript build setup, an entry point, the reference stylesheet or a script the install runs (`prepare`, `clean`, `copy-locales`, `build-labs` and the `scripts/lib` helpers they import).
 
 Implementation: `package.json`, `scripts/prepare.mjs`, `scripts/build-labs.mjs`, `scripts/check-git-install.mjs`, `scripts/check-package.mjs`, `scripts/check-server-components.mjs`, `scripts/release.mjs`, `.github/workflows/ci.yml`
-Verification: `test/package.test.ts`
+Verification: `test/package.test.ts`, `test/release.test.ts`
 
 ### UIC-LABS-1.5 - Usable source maps
 
@@ -66,7 +66,7 @@ Verification: `e2e/lab-harness.spec.ts`, `labs/src/chrome/settings.test.ts`
 
 ### UIC-LABS-2.2 - Theme
 
-The toolbar shall offer a theme picker: System (the default), Light, Dark and Custom, and the root-element attribute the theme is written to (`data-theme` by default). System writes `light` or `dark` from the reader's colour scheme and follows it when it changes; Light and Dark write `light` and `dark`, which the reference stylesheet draws; Custom writes a value typed in, nothing while it is empty, so a host stylesheet's own theme switch can be exercised. The toolbar draws itself in the colour scheme a light or dark theme sets.
+The toolbar shall offer a theme picker: System (the default), Light, Dark and Custom, and the root-element data attribute the theme is written to (`data-theme` by default). Only `data-*` attributes outside the reserved `data-lab-*` namespace are allowed; an invalid attribute from the query string, storage or a direct settings call falls back to `data-theme`, so theme text never becomes an event handler or overwrites lab bookkeeping. System writes `light` or `dark` from the reader's colour scheme and follows it when it changes; Light and Dark write `light` and `dark`, which the reference stylesheet draws; Custom writes a value typed in, nothing while it is empty, so a host stylesheet's own theme switch can be exercised. The toolbar draws itself in the colour scheme a light or dark theme sets.
 
 Implementation: `labs/src/chrome/lab-chrome.tsx`, `labs/src/chrome/settings.ts`, `labs/src/chrome/mount.tsx`
 Verification: `e2e/lab-harness.spec.ts`, `labs/src/chrome/settings.test.ts`

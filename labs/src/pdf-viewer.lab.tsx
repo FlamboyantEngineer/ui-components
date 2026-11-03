@@ -71,6 +71,27 @@ function LongDocument() {
   );
 }
 
+/** Rendering ahead follows the viewport height while a narrow reader grows or shrinks. */
+function ViewportHeight() {
+  const [isTall, setTall] = useState(true);
+  return (
+    <div data-lab-case="viewport-height">
+      <Switch isSelected={isTall} onChange={setTall}>
+        Tall viewport
+      </Switch>
+      <Frame height={isTall ? 1100 : 500}>
+        <PdfViewer
+          aria-label="Report in a resizable viewport"
+          source={sampleUrl}
+          loadEngine={loadEngine}
+          workerSrc={workerSrc}
+          defaultZoom={100}
+        />
+      </Frame>
+    </div>
+  );
+}
+
 function Reader() {
   const [zoom, setZoom] = useState<number | null>(null);
   const [shares, setShares] = useState(0);
@@ -168,6 +189,12 @@ mountLab(
           )
         }
       />
+    </LabSection>
+    <LabSection
+      title="Tall and short viewports"
+      description="Pages within one viewport height above or below the visible area render ahead. Switch the narrow reader between tall and short viewports to change that distance."
+    >
+      <ViewportHeight />
     </LabSection>
     <LabSection
       title="Opening zoom"

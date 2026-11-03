@@ -104,6 +104,12 @@ describe('lab start', () => {
     ]);
   });
 
+  it('UIC-LABS-1.3 rebuilds after the stylesheet build targets change', () => {
+    expect(dryRun(checkout({ ...upToDate, 'scripts/lib/reference-stylesheet.mjs': 400 }))).toEqual([
+      'npm run build:labs: scripts/lib/reference-stylesheet.mjs changed since the last build',
+    ]);
+  });
+
   it('UIC-LABS-1.3 leaves a node_modules linked from another checkout alone', () => {
     const other = checkout({ 'node_modules/.package-lock.json': 200 });
     const linked = checkout({ ...upToDate, 'package-lock.json': 400 });

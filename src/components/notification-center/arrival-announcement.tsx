@@ -12,7 +12,7 @@ interface Arrivals {
   seen: ReadonlySet<Key>;
   /** The latest time shown so far, in milliseconds; older entries are pages loaded later. */
   latest: number;
-  message: string;
+  announcement: { count: number; title: string } | null;
 }
 
 interface ArrivalEntry {
@@ -40,7 +40,7 @@ function useArrivalAnnouncement(items: readonly ArrivalEntry[]): string {
   const [arrivals, setArrivals] = useState<Arrivals>(() => ({
     seen: new Set(items.map((item) => item.id)),
     latest: latestTime(items, -Infinity),
-    message: '',
+    announcement: null,
   }));
   const unseen = items.filter((item) => !arrivals.seen.has(item.id));
   if (unseen.length > 0) {
@@ -53,10 +53,13 @@ function useArrivalAnnouncement(items: readonly ArrivalEntry[]): string {
     setArrivals({
       seen: new Set([...arrivals.seen, ...unseen.map((item) => item.id)]),
       latest: latestTime(unseen, arrivals.latest),
-      message: fresh[0] ? strings.newNotifications(fresh.length, fresh[0].title) : arrivals.message,
+      announcement: fresh[0]
+        ? { count: fresh.length, title: fresh[0].title }
+        : arrivals.announcement,
     });
   }
-  return arrivals.message;
+  const { announcement } = arrivals;
+  return announcement ? strings.newNotifications(announcement.count, announcement.title) : '';
 }
 
 interface ArrivalAnnouncementProps {

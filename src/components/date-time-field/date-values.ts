@@ -247,6 +247,12 @@ export function formatDateValue(
     if (!start || !end) {
       return (options.joinRange ?? getDefaultStrings().valueRange)(value.start, value.end);
     }
+    if (end < start) {
+      return (options.joinRange ?? getDefaultStrings().valueRange)(
+        formatter.format(start),
+        formatter.format(end),
+      );
+    }
     return formatter.formatRange(start, end);
   }
   const date = toDate(value, single, options);
