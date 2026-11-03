@@ -383,6 +383,7 @@
   "stateMachineInitial": "初期状態。",
   "stateMachineFinal": "最終状態。",
   "stateMachineAddTransition": "新しい遷移",
+  "stateMachineEmpty": "状態がありません",
   "textDiffSummary": "{added} 行追加、{removed} 行削除",
   "textDiffLine": "{change, select, added {追加} removed {削除} other {変更なし}}{hasOld, select, true {、旧 {oldNumber} 行目} other {}}{hasNew, select, true {、新 {newNumber} 行目} other {}}",
   "textDiffShowLines": "さらに {count} 行を表示",
