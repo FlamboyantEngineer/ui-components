@@ -214,6 +214,8 @@ function useObservers(
     () =>
       runtime.registry.listen((key, entry) => {
         if (!runtime.streaming.has(key) || entry.status === 'streaming') return;
+        // A terminal presentation can grow before ResizeObserver gets a chance to measure it.
+        measureWindow(runtime, latest.current);
         runtime.streaming.delete(key);
         if (entry.status === 'complete') announceMessage(runtime, latest.current, key);
         // The terminal status must commit before an offscreen streaming message can unmount.

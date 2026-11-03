@@ -4,6 +4,8 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import {
   getViewport,
   installTranscriptLayout,
+  offsetInViewport,
+  resizeContent,
   scrollViewport,
   uninstallTranscriptLayout,
 } from '../../../test/transcript-layout-fixtures.js';
@@ -24,6 +26,7 @@ interface Line {
   text: string;
   origin?: ChatMessageProps['origin'];
   status?: ChatMessageProps['status'];
+  error?: string;
   author?: string;
 }
 
@@ -41,6 +44,7 @@ function Conversation({ lines, virtualized }: { lines: Line[]; virtualized?: boo
           id={line.id}
           origin={line.origin}
           status={line.status}
+          error={line.error}
           author={line.author ? { name: line.author } : undefined}
           time="2026-04-20T10:00:00"
           getNow={() => new Date('2026-04-20T10:30:00')}
@@ -92,32 +96,66 @@ describe('ChatTranscript announcements', () => {
   it.each(['complete', 'error', 'cancelled'] as const)(
     'UIC-CHAT-TRANSCRIPT-1.6 UIC-CHAT-TRANSCRIPT-3.6 retains an offscreen streaming arrival until %s then releases it',
     (terminal) => {
+      const layout = installTranscriptLayout();
+      // Measure all initial rows so the extent does not depend on estimated heights.
+      const initial = longHistory.slice(0, 30);
       const streaming = [
-        ...longHistory,
+        ...initial,
         { id: 'reply', text: 'Working', status: 'streaming' as const },
         ...batch.slice(1),
       ];
-      const { rerender } = render(<Conversation virtualized lines={longHistory} />);
-      scrollViewport(getViewport(), 2500);
+      const { rerender } = render(<Conversation virtualized lines={initial} />);
+      const viewport = getViewport();
+      scrollViewport(viewport, 500);
       rerender(<Conversation virtualized lines={streaming} />);
       expect(screen.getByText('Working')).toBeInTheDocument();
       expect(screen.queryByText('Reply 2')).not.toBeInTheDocument();
       expect(screen.getAllByRole('article').length).toBeLessThan(40);
+      expect(viewport.scrollHeight).toBe(6500);
       act(() => {
         vi.advanceTimersByTime(2000);
       });
       expect(announcer()).toHaveTextContent(/^98 new messages$/);
       const finished = streaming.map((line) =>
-        line.id === 'reply' ? { ...line, text: 'Finished', status: terminal } : line,
+        line.id === 'reply'
+          ? {
+              ...line,
+              text: 'Finished',
+              status: terminal,
+              error: terminal === 'error' ? 'Reply unavailable.' : undefined,
+            }
+          : line,
       );
+      layout.heights.set('reply', 500);
       rerender(<Conversation virtualized lines={finished} />);
       expect(screen.queryByText('Finished')).not.toBeInTheDocument();
       expect(screen.getAllByRole('article').length).toBeLessThan(40);
-      expect(getViewport().scrollTop).toBe(2500);
+      // Resize observers run after the layout effects that release the temporary mount.
+      resizeContent();
+      expect(viewport.scrollHeight).toBe(6950);
+      expect(viewport.scrollTop).toBe(500);
       const expected = terminal === 'complete' ? 'New message: Finished' : '98 new messages';
       expect(announcer()).toHaveTextContent(new RegExp(`^${expected}$`));
       rerender(<Conversation virtualized lines={[...finished]} />);
-      scrollViewport(getViewport(), 5000);
+      scrollViewport(viewport, 1500);
+      expect(screen.getByText('Finished').closest('article')).toHaveAttribute(
+        'data-status',
+        terminal,
+      );
+      if (terminal === 'error') {
+        expect(screen.getByRole('alert')).toHaveTextContent('Reply unavailable.');
+      }
+      expect(offsetInViewport(screen.getByText('Finished').closest('article') as HTMLElement)).toBe(
+        0,
+      );
+      expect(viewport.scrollHeight).toBe(6950);
+      scrollViewport(viewport, 2000);
+      expect(offsetInViewport(screen.getByText('Reply 2').closest('article') as HTMLElement)).toBe(
+        0,
+      );
+      scrollViewport(viewport, 500);
+      expect(screen.queryByText('Finished')).not.toBeInTheDocument();
+      expect(viewport.scrollHeight).toBe(6950);
       act(() => {
         vi.advanceTimersByTime(2000);
       });
