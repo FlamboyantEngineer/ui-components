@@ -70,12 +70,14 @@ Verification: `src/components/state-machine-view/state-machine-view.test.tsx`, `
 
 ### UIC-STATE-MACHINE-VIEW-4.1 - Ordered state row
 
+The sequence root shall preserve caller `aria-label`, `aria-labelledby`, `aria-describedby` and `aria-details` naming and description relationships.
+
 With `presentation="sequence"`, the view shall place states in caller array order on one horizontal row, including when there are no transitions. Connectivity and the current state shall not determine state placement. The existing graph presentation remains the default (`presentation="graph"`), including its outline and editing. Sequence mode is always horizontal and read only: graph position overrides, `orientation`, `defaultView` and editing callbacks do not apply. Initial/current state, cycles and hiding transitions do not change horizontal placement or caller reading order. Empty sequences reserve only a small empty viewport; a single state is a rectangle. Numeric and text keys remain distinct in states, transitions, selection and callbacks, and instances share no ids or measurements.
 
 `density="default"` has minimum state width/height 144/44 CSS pixels; `compact` uses 112/32. Measured state content can increase these sizes. Equal-width states fill the available viewport when it is wider than their minimum row; otherwise the row scrolls. State buttons expose first/last hooks for a host to draw a leading notch and trailing chevron, square first leading and terminal trailing edges, or a single rectangle. Host styles provide the shape, borders, colors and current/selected treatments.
 
 Implementation: `src/components/state-machine-view/state-machine-view.tsx`, `src/components/state-machine-view/state-machine-sequence.tsx`, `src/components/state-machine-view/sequence-layout.ts`, `src/components/state-machine-view/sequence-routes.ts`
-Verification: `src/components/state-machine-view/sequence-presentation.test.tsx`, `src/components/state-machine-view/sequence-layout.test.ts`, `e2e/state-machine-view-sequence.spec.ts`
+Verification: `src/components/state-machine-view/sequence-presentation.test.tsx`, `src/components/state-machine-view/sequence-layout.test.ts`, `e2e/state-machine-view-sequence.spec.ts`, `e2e/state-machine-view-sequence-paint.spec.ts`
 
 ### UIC-STATE-MACHINE-VIEW-4.2 - Forward and reverse lanes
 
@@ -93,14 +95,16 @@ Verification: `src/components/state-machine-view/sequence-presentation.test.tsx`
 In the sequence presentation, connector paths and route wrappers shall be decorative and inert, with no pointer hit target or focus. Each nonblank named transition label alone shall be an independent focusable button, with its `label` as accessible name. Labels follow caller transition order, independent of line stacking. Enter, Space and pointer activation call `onTransitionAction(id)`; `onTransitionContextMenu(id, event)` receives right-click context-menu requests and may prevent the browser menu. `getTransitionTooltip(transition)` supplies a label-only tooltip on hover/focus. `renderTransitionLabel(transition)` may replace the visible content with non-interactive content while preserving the accessible name. Unnamed transitions retain their connector without a control.
 
 Implementation: `src/components/state-machine-view/state-machine-view.tsx`, `src/components/state-machine-view/state-machine-sequence.tsx`, `src/components/state-machine-view/sequence-layout.ts`, `src/components/state-machine-view/sequence-routes.ts`
-Verification: `src/components/state-machine-view/sequence-presentation.test.tsx`, `src/components/state-machine-view/sequence-layout.test.ts`, `e2e/state-machine-view-sequence.spec.ts`
+Verification: `src/components/state-machine-view/sequence-presentation.test.tsx`, `src/components/state-machine-view/sequence-layout.test.ts`, `e2e/state-machine-view-sequence.spec.ts`, `e2e/state-machine-view-sequence-paint.spec.ts`
 
 ### UIC-STATE-MACHINE-VIEW-4.4 - Selection and highlighting
+
+Connectors and arrowheads shall paint above state backgrounds so attachments inside states stay visible in both directions and same-state loops. They remain pointer-inert; states remain selectable and every transition label paints above every route.
 
 `currentKey` marks the machine's current state (`data-current`, `aria-current="step"` on the state button); `selectedKey` independently marks the host-selected state (`data-selected`, `aria-pressed`). Selecting any sequence state by pointer or keyboard calls `onSelectionChange(id)` without changing the current state. State status descriptions use the provider strings for current, initial and final. Both selection and `activeTransitionKey` are controlled. Outgoing transitions from `selectedKey` carry `data-outgoing`; the active transition carries `data-active` on its route and label. Outgoing lines stack above ordinary lines and active lines above outgoing lines. All labels stack above every line. Highlight changes do not change route coordinates.
 
 Implementation: `src/components/state-machine-view/state-machine-sequence.tsx`
-Verification: `src/components/state-machine-view/sequence-presentation.test.tsx`, `e2e/state-machine-view-sequence.spec.ts`
+Verification: `src/components/state-machine-view/sequence-presentation.test.tsx`, `e2e/state-machine-view-sequence.spec.ts`, `e2e/state-machine-view-sequence-paint.spec.ts`
 
 ### UIC-STATE-MACHINE-VIEW-4.5 - Measurement and horizontal scrolling
 

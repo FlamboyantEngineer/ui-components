@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import {
@@ -29,6 +29,8 @@ const transitions: StateMachineTransition[] = [
 
 /** Shared controls exercise resize, content changes and ordering without graph layout changes. */
 export function SequenceExamples() {
+  const descriptionId = useId();
+  const detailsId = useId();
   const [isNarrow, setNarrow] = useState(false);
   const [isReordered, setReordered] = useState(false);
   const [hasTransitions, setTransitions] = useState(true);
@@ -59,12 +61,16 @@ export function SequenceExamples() {
         <Button onPress={() => setTransitions(!hasTransitions)}>Toggle sequence transitions</Button>{' '}
         <Button onPress={() => setLongLabel(!hasLongLabel)}>Change transition label</Button>
       </p>
+      <p id={descriptionId}>States follow the supplied order.</p>
+      <p id={detailsId}>Choose a state to highlight its outgoing transitions.</p>
       {(['default', 'compact'] as const).map((density: StateMachineViewDensity) => (
         <StateMachineView
           key={density}
           presentation="sequence"
           density={density}
           aria-label={`Sequence ${density}`}
+          aria-describedby={descriptionId}
+          aria-details={detailsId}
           states={items}
           transitions={links}
           currentKey="1"

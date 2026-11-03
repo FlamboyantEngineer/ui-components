@@ -92,6 +92,30 @@ describe('StateMachineView sequence presentation', () => {
 });
 
 describe('StateMachineView sequence interactions', () => {
+  it('UIC-STATE-MACHINE-VIEW-4.1 preserves accessible root naming, description and details relationships', () => {
+    render(
+      <>
+        <h2 id="sequence-name">Ordered states</h2>
+        <p id="sequence-description">States follow the supplied order.</p>
+        <p id="sequence-details">Choose a state to highlight its outgoing transitions.</p>
+        <StateMachineView
+          presentation="sequence"
+          states={states}
+          transitions={transitions}
+          aria-labelledby="sequence-name"
+          aria-describedby="sequence-description"
+          aria-details="sequence-details"
+        />
+      </>,
+    );
+    const root = screen.getByRole('group', { name: 'Ordered states' });
+    expect(root).toHaveAccessibleDescription('States follow the supplied order.');
+    expect(root).toHaveAttribute(
+      'aria-details',
+      screen.getByText('Choose a state to highlight its outgoing transitions.').id,
+    );
+  });
+
   it('UIC-STATE-MACHINE-VIEW-4.1 UIC-STATE-MACHINE-VIEW-4.4 exposes hooks, status, density and root attributes', () => {
     const ref = createRef<HTMLDivElement>();
     const { container } = render(

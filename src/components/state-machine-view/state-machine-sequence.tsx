@@ -39,7 +39,7 @@ function StateMachineSequenceStates({ props, layout }: SequencePartsProps) {
   return (
     <div
       {...hooks.slot('state-row')}
-      style={{ position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none' }}
+      style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none' }}
     >
       {layout.states.map(({ state, x, width }, index) => {
         const flags = {
@@ -114,7 +114,7 @@ function StateMachineSequenceRoutes({ props, layout }: SequencePartsProps) {
       width={layout.width}
       height={layout.height}
       viewBox={`0 0 ${layout.width} ${layout.height}`}
-      style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }}
+      style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 1 }}
     >
       {routes.map((route) => (
         <g
@@ -165,6 +165,8 @@ export function StateMachineSequence({
   ref,
   'aria-label': ariaLabel,
   'aria-labelledby': ariaLabelledby,
+  'aria-describedby': ariaDescribedby,
+  'aria-details': ariaDetails,
   ...props
 }: StateMachineViewProps) {
   const strings = useUiStrings();
@@ -193,6 +195,8 @@ export function StateMachineSequence({
       role="group"
       aria-labelledby={ariaLabelledby}
       aria-label={ariaLabel ?? (ariaLabelledby ? undefined : strings.stateMachine)}
+      aria-describedby={ariaDescribedby}
+      aria-details={ariaDetails}
       style={{ minWidth: 0, maxWidth: '100%' }}
     >
       <div
