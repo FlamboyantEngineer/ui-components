@@ -67,3 +67,138 @@
   margin: 0 0 10px;
   transform: translateX(-50%);
 }
+
+.ui-state-machine-view[data-presentation='sequence'] {
+  width: 100%;
+}
+
+.ui-state-machine-view[data-presentation='sequence'] .ui-state-machine-view__state {
+  --ref-state-machine-view-fill: var(--ref-raised);
+  --ref-state-machine-view-edge: var(--ref-border-strong);
+
+  position: relative;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 0;
+  min-width: calc(100% + 12px);
+  padding: 4px 18px;
+  background: var(--ref-state-machine-view-edge);
+  color: var(--ref-text);
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%, 12px 50%);
+}
+
+.ui-state-machine-view[data-presentation='sequence'] .ui-state-machine-view__state::before {
+  position: absolute;
+  inset: 1px;
+  background: var(--ref-state-machine-view-fill);
+  clip-path: inherit;
+  content: '';
+}
+
+.ui-state-machine-view[data-presentation='sequence'] .ui-state-machine-view__state[data-first] {
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%);
+}
+
+.ui-state-machine-view[data-presentation='sequence'] .ui-state-machine-view__state[data-last] {
+  min-width: 100%;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 12px 50%);
+}
+
+.ui-state-machine-view[data-presentation='sequence']
+  .ui-state-machine-view__state[data-first][data-last] {
+  clip-path: none;
+}
+
+.ui-state-machine-view[data-presentation='sequence'] .ui-state-machine-view__state-label {
+  position: relative;
+  z-index: 1;
+  flex: none;
+}
+
+.ui-state-machine-view[data-presentation='sequence'] .ui-state-machine-view__state[data-current] {
+  --ref-state-machine-view-fill: var(--ref-accent);
+
+  color: var(--ref-on-fill);
+}
+
+.ui-state-machine-view[data-presentation='sequence'] .ui-state-machine-view__state[data-selected] {
+  --ref-state-machine-view-edge: var(--ref-accent);
+
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.ui-state-machine-view__state-position:focus-within {
+  outline: 2px solid var(--ref-accent);
+  outline-offset: 2px;
+}
+
+.ui-state-machine-view[data-presentation='sequence'] .ui-state-machine-view__initial-marker {
+  display: none;
+}
+
+.ui-state-machine-view__connector,
+.ui-state-machine-view__arrow {
+  fill: none;
+  stroke: var(--ref-border-strong);
+  stroke-width: 1.5px;
+}
+
+.ui-state-machine-view__route[data-outgoing]
+  :is(.ui-state-machine-view__connector, .ui-state-machine-view__arrow),
+.ui-state-machine-view__route[data-active]
+  :is(.ui-state-machine-view__connector, .ui-state-machine-view__arrow) {
+  stroke: var(--ref-accent);
+  stroke-width: 2px;
+}
+
+.ui-state-machine-view__transition-label {
+  box-sizing: border-box;
+  border: 1px solid var(--ref-border-strong);
+  border-radius: var(--ref-radius-sm);
+  padding: 2px 6px;
+  background: var(--ref-surface);
+  color: var(--ref-text);
+  font: inherit;
+  font-size: var(--ref-font-size-sm);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ui-state-machine-view__transition-label[data-active],
+.ui-state-machine-view__transition-label[data-outgoing] {
+  border-color: var(--ref-accent);
+}
+
+.ui-state-machine-view__transition-label[data-hovered] {
+  background: var(--ref-raised);
+}
+
+.ui-state-machine-view__transition-label[data-focus-visible] {
+  outline: 2px solid var(--ref-accent);
+  outline-offset: 2px;
+}
+
+.ui-state-machine-view__viewport {
+  overflow: auto hidden;
+  overscroll-behavior: contain auto;
+}
+
+.ui-state-machine-view__content,
+.ui-state-machine-view__state-row {
+  isolation: isolate;
+}
+
+.ui-state-machine-view__routes {
+  stroke-linejoin: round;
+}
+
+.ui-state-machine-view__transition-label {
+  scroll-margin-block: max(var(--ui-sequence-row-spacer), calc(var(--ui-sequence-lane-pitch) / 2));
+  scroll-margin-inline: max(var(--ui-sequence-state-gap), 8px);
+}
+
+.ui-state-machine-view[data-presentation='sequence'][data-density='compact']
+  .ui-state-machine-view__state {
+  padding-inline: 10px;
+}
