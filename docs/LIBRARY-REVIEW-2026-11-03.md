@@ -28,4 +28,6 @@ PDF page prefetching had the same width-based margin error as early loading. It 
 
 Behavior changes include regression tests and corresponding spec and lab updates. The package changeset is minor because FileUpload gains an `onError` callback. Existing demonstrations cover the tag validation behavior; its optimization adds a bounded-work regression instead of an artificial demo.
 
+Hosted validation also exposed a workflow permission error: the install job's changed-file filter could not read pull request files with a contents-only token. That job now receives `pull-requests: read`, alongside its existing contents read permission. Other jobs keep their existing permissions.
+
 Validation results are recorded in the review pull request and its checks.
