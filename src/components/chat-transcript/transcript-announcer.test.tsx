@@ -2,7 +2,9 @@ import { act, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import {
+  getViewport,
   installTranscriptLayout,
+  scrollViewport,
   uninstallTranscriptLayout,
 } from '../../../test/transcript-layout-fixtures.js';
 import { ChatMessage, ChatTranscript, type ChatMessageProps } from './chat-transcript.js';
@@ -30,9 +32,9 @@ const history: Line[] = [
   { id: 'h2', text: 'Yes, the morning one.', author: 'Ana Lima' },
 ];
 
-function Conversation({ lines }: { lines: Line[] }) {
+function Conversation({ lines, virtualized }: { lines: Line[]; virtualized?: boolean }) {
   return (
-    <ChatTranscript>
+    <ChatTranscript virtualized={virtualized}>
       {lines.map((line) => (
         <ChatMessage
           key={line.id}
@@ -52,7 +54,77 @@ function Conversation({ lines }: { lines: Line[] }) {
 
 const announcer = () => screen.getByRole('status');
 
+const longHistory: Line[] = Array.from({ length: 100 }, (_, index) => ({
+  id: `h${index + 1}`,
+  text: `Message ${index + 1}`,
+}));
+
+const batch: Line[] = Array.from({ length: 100 }, (_, index) => ({
+  id: `n${index + 1}`,
+  text: `Reply ${index + 1}`,
+}));
+
 describe('ChatTranscript announcements', () => {
+  it('UIC-CHAT-TRANSCRIPT-1.6 UIC-CHAT-TRANSCRIPT-3.6 announces every received arrival once after a batch releases', () => {
+    const lines = [
+      ...longHistory,
+      { id: 'sent', text: 'Thanks', origin: 'sent' as const },
+      ...batch,
+    ];
+    const { rerender } = render(<Conversation virtualized lines={longHistory} />);
+    rerender(<Conversation virtualized lines={lines} />);
+    expect(announcer()).toHaveTextContent(/^New message: Reply 1$/);
+    expect(screen.getAllByRole('article').length).toBeLessThan(40);
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(announcer()).toHaveTextContent(/^99 new messages$/);
+    scrollViewport(getViewport(), 2500);
+    rerender(<Conversation virtualized lines={[...lines]} />);
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
+    expect(announcer()).toHaveTextContent(/^99 new messages$/);
+    expect(screen.getAllByRole('article').length).toBeLessThan(40);
+    expect(screen.queryByText('Reply 1')).not.toBeInTheDocument();
+  });
+
+  it.each(['complete', 'error', 'cancelled'] as const)(
+    'UIC-CHAT-TRANSCRIPT-1.6 UIC-CHAT-TRANSCRIPT-3.6 retains an offscreen streaming arrival until %s then releases it',
+    (terminal) => {
+      const streaming = [
+        ...longHistory,
+        { id: 'reply', text: 'Working', status: 'streaming' as const },
+        ...batch.slice(1),
+      ];
+      const { rerender } = render(<Conversation virtualized lines={longHistory} />);
+      scrollViewport(getViewport(), 2500);
+      rerender(<Conversation virtualized lines={streaming} />);
+      expect(screen.getByText('Working')).toBeInTheDocument();
+      expect(screen.queryByText('Reply 2')).not.toBeInTheDocument();
+      expect(screen.getAllByRole('article').length).toBeLessThan(40);
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+      expect(announcer()).toHaveTextContent(/^98 new messages$/);
+      const finished = streaming.map((line) =>
+        line.id === 'reply' ? { ...line, text: 'Finished', status: terminal } : line,
+      );
+      rerender(<Conversation virtualized lines={finished} />);
+      expect(screen.queryByText('Finished')).not.toBeInTheDocument();
+      expect(screen.getAllByRole('article').length).toBeLessThan(40);
+      expect(getViewport().scrollTop).toBe(2500);
+      const expected = terminal === 'complete' ? 'New message: Finished' : '98 new messages';
+      expect(announcer()).toHaveTextContent(new RegExp(`^${expected}$`));
+      rerender(<Conversation virtualized lines={[...finished]} />);
+      scrollViewport(getViewport(), 5000);
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+      expect(announcer()).toHaveTextContent(new RegExp(`^${expected}$`));
+    },
+  );
+
   it('UIC-CHAT-TRANSCRIPT-3.6 announces an arriving message once, without the history', () => {
     const { container, rerender } = render(<Conversation lines={history} />);
     expect(announcer()).toHaveClass('ui-chat-transcript__announcer');
@@ -93,29 +165,44 @@ describe('ChatTranscript announcements', () => {
     expect(announcer()).toHaveTextContent(/^2 new messages$/);
   });
 
-  it('UIC-CHAT-TRANSCRIPT-3.6 announces a streamed reply once it completes', () => {
-    const reply = (text: string, status: Line['status']) => [
-      ...history,
-      { id: 'r1', text, status, author: 'Helper' },
-    ];
-    const { rerender } = render(<Conversation lines={history} />);
-    rerender(<Conversation lines={reply('The train', 'streaming')} />);
-    rerender(<Conversation lines={reply('The train leaves', 'streaming')} />);
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(announcer()).toHaveTextContent(/^$/);
-    rerender(<Conversation lines={reply('The train leaves at nine.', 'complete')} />);
-    expect(announcer()).toHaveTextContent('New message from Helper: The train leaves at nine.');
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    rerender(<Conversation lines={reply('The train leaves at nine.', 'complete')} />);
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(announcer()).toHaveTextContent('New message from Helper: The train leaves at nine.');
-  });
+  it.each([false, true])(
+    'UIC-CHAT-TRANSCRIPT-3.6 announces a streamed reply once it completes (virtualized=%s)',
+    (virtualized) => {
+      const reply = (text: string, status: Line['status']) => [
+        ...history,
+        { id: 'r1', text, status, author: 'Helper' },
+      ];
+      const { rerender } = render(<Conversation virtualized={virtualized} lines={history} />);
+      rerender(<Conversation virtualized={virtualized} lines={reply('The train', 'streaming')} />);
+      rerender(
+        <Conversation virtualized={virtualized} lines={reply('The train leaves', 'streaming')} />,
+      );
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+      expect(announcer()).toHaveTextContent(/^$/);
+      rerender(
+        <Conversation
+          virtualized={virtualized}
+          lines={reply('The train leaves at nine.', 'complete')}
+        />,
+      );
+      expect(announcer()).toHaveTextContent('New message from Helper: The train leaves at nine.');
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+      rerender(
+        <Conversation
+          virtualized={virtualized}
+          lines={reply('The train leaves at nine.', 'complete')}
+        />,
+      );
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+      expect(announcer()).toHaveTextContent('New message from Helper: The train leaves at nine.');
+    },
+  );
 
   it('UIC-CHAT-TRANSCRIPT-3.6 announces a notice without an author and reads a repeat again', () => {
     const notice = { id: 'n1', text: 'Ben Okafor joined.', origin: 'system' as const };
