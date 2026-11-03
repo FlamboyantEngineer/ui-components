@@ -1,6 +1,7 @@
 export { Badge } from './badge.js';
 export type {
   BadgeCountProps,
+  BadgeCountVariant,
   BadgeDotProps,
   BadgeLabelProps,
   BadgePlacement,

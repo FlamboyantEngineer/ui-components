@@ -452,5 +452,24 @@ mountLab(
     >
       <SwappedRoot />
     </LabSection>
+    <LabSection title="Count appearances">
+      <StateMatrix
+        axes={{ variant: ['subtle', 'solid'] }}
+        render={({ variant }) => (
+          <SegmentedChoice
+            aria-label={`${variant} counts`}
+            options={[
+              { value: 'zero', label: 'Zero', count: 0 },
+              { value: 'seven', label: 'Seven', count: 7 },
+              { value: 'many', label: 'Many', count: 128, countMax: 100 },
+            ]}
+            defaultValue="seven"
+            showZero
+            countVariant={variant}
+            sizing="content"
+          />
+        )}
+      />
+    </LabSection>
   </>,
 );

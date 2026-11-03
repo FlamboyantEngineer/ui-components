@@ -9,7 +9,7 @@ const tones = ['neutral', 'info', 'success', 'warning', 'danger'] as const;
 const sizes = ['sm', 'md', 'lg'] as const;
 const variants = ['subtle', 'solid', 'status'] as const;
 
-// Count badges own their text: no children, no variant and no string count.
+// Count badges own their text: no children, no status variant and no string count.
 const countProps: BadgeProps = { count: 12, max: 9 };
 // @ts-expect-error A count badge requires a number.
 const stringCount: BadgeProps = { count: '9+' };
@@ -17,8 +17,8 @@ const stringCount: BadgeProps = { count: '9+' };
 const countChildren: BadgeProps = { count: 12, children: '12' };
 // @ts-expect-error A label badge does not cap its children.
 const cappedLabel: BadgeProps = { children: 'Tag', max: 9 };
-// @ts-expect-error A count badge has no shape variant.
-const countVariant: BadgeProps = { count: 3, variant: 'solid' };
+// @ts-expect-error A count badge cannot be a status.
+const countVariant: BadgeProps = { count: 3, variant: 'status' };
 // @ts-expect-error A dot badge has no text.
 const dotChildren: BadgeProps = { variant: 'dot', children: 'New' };
 // @ts-expect-error A count badge takes no icons.
@@ -149,7 +149,7 @@ describe('Badge', () => {
   it('UIC-BADGE-3.1 formats counts in every tone and size', () => {
     const { container, rerender } = render(<Badge count={7} />);
     const root = container.firstElementChild as HTMLElement;
-    expect(root).toHaveAttribute('data-variant', 'count');
+    expect(root).toHaveAttribute('data-variant', 'subtle');
     expect(root.querySelector('.ui-badge__label')).toHaveTextContent('7');
     for (const tone of tones) {
       for (const size of sizes) {
@@ -336,4 +336,16 @@ describe('Badge root ref', () => {
     expect(ref.current).not.toBeNull();
     expect(ref.current).toBe(container.querySelector('.ui-badge'));
   });
+});
+
+it('UIC-BADGE-3.1 UIC-BADGE-1.2 shares numeric geometry hooks across subtle and solid independent of tone', () => {
+  const { container, rerender } = render(<Badge count={0} variant="subtle" tone="danger" />);
+  expect(container.firstElementChild).toHaveAttribute('data-count', 'true');
+  expect(container.firstElementChild).toHaveAttribute('data-variant', 'subtle');
+  expectHooksMatchSpec(container, 'BADGE');
+  rerender(<Badge count={128} variant="solid" tone="info" max={100} />);
+  expect(container.firstElementChild).toHaveAttribute('data-variant', 'solid');
+  expect(container.firstElementChild).toHaveAttribute('data-tone', 'info');
+  expect(screen.getByText('100+')).toBeInTheDocument();
+  expect(screen.getByText('128')).toBeInTheDocument();
 });

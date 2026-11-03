@@ -14,6 +14,7 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import { dataAttributes, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, Key, NativeProps, SelectableState, RefProps } from '../../core/props.js';
 import { mergeProps } from '../../utils/merge-props.js';
+import type { BadgeCountVariant } from '../badge/badge.js';
 import { normalizeCount } from '../../utils/count.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { toCollectionItemKey } from '../../utils/to-collection-key.js';
@@ -57,6 +58,8 @@ export interface TabProps
   count?: number | null | undefined;
   /** Counts above this show as `<max>+`. Defaults to 99. */
   countMax?: number | undefined;
+  /** Count appearance. Defaults to `subtle`. */
+  countVariant?: BadgeCountVariant | undefined;
   /** The tab's accessible description while it shows a count. Defaults to the provider's `itemCount`. */
   countLabel?: string | undefined;
 }
@@ -145,6 +148,7 @@ function TabItem({
   count,
   countMax = 99,
   countLabel,
+  countVariant,
   render,
   className,
   onContextMenu,
@@ -189,7 +193,13 @@ function TabItem({
         {children}
       </span>
       {shown === null ? null : (
-        <TabCount id={countId} count={shown} countMax={countMax} countLabel={countLabel} />
+        <TabCount
+          id={countId}
+          count={shown}
+          countMax={countMax}
+          countLabel={countLabel}
+          countVariant={countVariant}
+        />
       )}
       {onRemove && key !== undefined ? (
         <TabRemoveMark

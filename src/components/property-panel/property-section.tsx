@@ -14,7 +14,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
-import { Badge } from '../badge/badge.js';
+import { Badge, type BadgeCountVariant } from '../badge/badge.js';
 import { useExpandGlyph } from '../expand-toggle/expand-toggle.js';
 import {
   PropertyScopeContext,
@@ -47,6 +47,8 @@ export interface PropertySectionProps
   actions?: ReactNode;
   /** The count to show, zero included. Defaults to the number of properties inside, when any. */
   count?: number | undefined;
+  /** Count appearance. Defaults to `subtle`. */
+  countVariant?: BadgeCountVariant | undefined;
   /** The level of the heading around the trigger. Defaults to 3. */
   headingLevel?: HeadingLevel | undefined;
   /** Remembers whether the section is open through the provider storage under this key, unless the panel opens its sections. */
@@ -81,6 +83,7 @@ export function PropertySection({
   meta,
   actions,
   count,
+  countVariant,
   headingLevel = 3,
   persistKey,
   isExpanded,
@@ -91,8 +94,7 @@ export function PropertySection({
   className,
   ...rest
 }: PropertySectionProps) {
-  const level = usePropertyScopeLevel(title);
-  const { total, isFiltering, hasNoMatch } = level;
+  const { total, isFiltering, hasNoMatch, ...level } = usePropertyScopeLevel(title);
   useReportPropertyTally(level.parent, {
     ...total,
     matches: hidden ? 0 : total.matches,
@@ -130,7 +132,12 @@ export function PropertySection({
               </span>{' '}
               {total.isOverridden ? <OverrideMark className={hooks.slotClass('override')} /> : null}{' '}
               {shownCount === undefined ? null : (
-                <Badge count={shownCount} size="sm" className={hooks.slotClass('count')} />
+                <Badge
+                  variant={countVariant}
+                  count={shownCount}
+                  size="sm"
+                  className={hooks.slotClass('count')}
+                />
               )}{' '}
               {isEmptyNode(meta) ? null : <span {...hooks.slot('meta')}>{meta}</span>}
             </AriaButton>

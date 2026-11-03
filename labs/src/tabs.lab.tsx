@@ -161,6 +161,20 @@ function EditableTabs() {
 
 mountLab(
   <>
+    <LabSection title="Count appearances">
+      <Tabs>
+        <TabList aria-label="Count appearances">
+          <Tab id="quiet-count" count={7}>
+            Quiet
+          </Tab>
+          <Tab id="solid-count" count={128} countVariant="solid">
+            Vibrant
+          </Tab>
+        </TabList>
+        <TabPanel id="quiet-count">Quiet list counts</TabPanel>
+        <TabPanel id="solid-count">Vibrant count</TabPanel>
+      </Tabs>
+    </LabSection>
     <LabSection title="Orientation and sizes">
       <StateMatrix
         axes={{ orientation: ['horizontal', 'vertical'], size: sizes }}

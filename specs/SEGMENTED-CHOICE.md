@@ -62,9 +62,9 @@ Verification: `src/components/segmented-choice/segmented-choice.test.tsx`
 
 ### UIC-SEGMENTED-CHOICE-1.9 - Counts
 
-An option's `count` shall show a positive whole number after the label in the `ui-segmented-choice__count` slot, capped at `countMax` (99 by default) as `<max>+`, in the provider locale's digits ([COUNT.md](COUNT.md)); zero, negative and non-finite counts show nothing. The count is hidden from assistive technology and read in the segment's accessible name instead, joined to the label by the provider's `labelWithCount` string (`Open, 3`), also for an icon-only segment. The reference sheet draws one digit as a circle as wide as it is tall and widens more digits, or a capped `99+`, into a pill of the same height with the same inline padding, at every size and whether selected or not, without changing the segment's height.
+An option's `count` shall show a positive whole number after the label in the `ui-segmented-choice__count` slot, capped at `countMax` (99 by default) as `<max>+`, in the provider locale's digits ([COUNT.md](COUNT.md)); zero shows only with `showZero` (false by default); negative and non-finite counts show nothing. An option's `countMax` overrides the group cap. Counts use a small Badge with `countVariant` (`subtle` by default or `solid`), sharing its geometry and typography without selected-parent overrides. The count is hidden from assistive technology and read in the segment's accessible name instead through a visually hidden `ui-segmented-choice__accessible-label` that replaces the visible label for assistive technology, using the uncapped value, joined to the label by the provider's `labelWithCount` string (`Open, 3`), also for an icon-only segment. The reference sheet draws one digit as a circle as wide as it is tall and widens more digits, or a capped `99+`, into a pill of the same height with the same inline padding, at every size and whether selected or not, without changing the segment's height.
 
-Implementation: `src/components/segmented-choice/segmented-choice.tsx`, `src/core/strings/common.ts`, `labs/reference/segmented-choice.css`
+Implementation: `src/components/segmented-choice/segmented-choice.tsx`, `src/components/segmented-choice/segment.tsx`, `src/core/strings/common.ts`, `labs/reference/segmented-choice.css`
 Verification: `src/components/segmented-choice/pending-change.test.tsx`, `e2e/segmented-choice.spec.ts`
 
 ## UIC-SEGMENTED-CHOICE-2 - Behaviour
@@ -106,7 +106,7 @@ Verification: `src/components/segmented-choice/segmented-choice.test.tsx`
 
 ### UIC-SEGMENTED-CHOICE-2.6 - Asynchronous change
 
-When `onChange` returns a promise, the group shall show the new value at once and hold it pending until the promise settles: the root publishes `data-pending` and `aria-busy="true"`, and picks wait (they are ignored) meanwhile. Once the promise fulfils, an uncontrolled group keeps the new value and a controlled one shows the caller's `value`; once it rejects, the value in effect shows again. The caller reports a failure itself, for example in an [Inline Error](INLINE-ERROR.md) beside the group. A handler that returns no promise changes the value at once.
+When `onChange` returns a promise, the group shall show the new value at once and hold it pending until the promise settles: the root publishes `data-pending` and `aria-busy="true"`, and picks wait (they are ignored) meanwhile. Once the promise fulfils, an uncontrolled group keeps the new value and a controlled one shows the caller's `value`; once it rejects, the value in effect shows again. The caller reports a failure itself, for example in an [Inline Error](INLINE-ERROR.md) beside the group. A handler that returns no promise changes the value at once. A controlled value unrelated to a pending pick supersedes that pick immediately. Settling an obsolete promise or an unmounted choice changes nothing.
 
 Implementation: `src/components/segmented-choice/segmented-choice.tsx`, `src/components/segmented-choice/choice-selection.ts`, `src/components/segmented-choice/pending-change.ts`
 Verification: `src/components/segmented-choice/pending-change.test.tsx`, `e2e/segmented-choice.spec.ts`
@@ -150,30 +150,31 @@ Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/
 
 ## Hooks
 
-| Hook                             | Kind      | Values                   | Description                                         |
-| -------------------------------- | --------- | ------------------------ | --------------------------------------------------- |
-| `ui-segmented-choice`            | root      |                          | The group (`<div>`, a `radiogroup` or `toolbar`).   |
-| `ui-segmented-choice__segment`   | slot      |                          | One segment (`<button>`, role `radio` when single). |
-| `ui-segmented-choice__indicator` | slot      |                          | The selection indicator inside a selected segment.  |
-| `ui-segmented-choice__icon`      | slot      |                          | A segment's leading icon (also `ui-icon`).          |
-| `ui-segmented-choice__label`     | slot      |                          | A segment's label text.                             |
-| `ui-segmented-choice__count`     | slot      |                          | A segment's count after its label.                  |
-| `data-size`                      | attribute | `xs`, `sm`, `md`, `lg`   | Segment block size.                                 |
-| `data-sizing`                    | attribute | `equal`, `content`       | How segments share the width.                       |
-| `data-orientation`               | attribute | `horizontal`, `vertical` | Layout and arrow-key axis (React Aria).             |
-| `data-selection-mode`            | attribute | `single`, `multiple`     | One value, or independent toggles.                  |
-| `data-value`                     | attribute |                          | A segment's option value.                           |
-| `data-label`                     | attribute |                          | A label's text, for reserving its selected width.   |
-| `data-icon-only`                 | state     | `true`                   | Segments show only their icons.                     |
-| `data-inherited`                 | state     | `true`                   | The value in effect is inherited.                   |
-| `data-readonly`                  | state     | `true`                   | Read-only.                                          |
-| `data-invalid`                   | state     | `true`                   | Invalid.                                            |
-| `data-pending`                   | state     | `true`                   | A change waits for the promise `onChange` returned. |
-| `data-disabled`                  | state     | `true`                   | The group or a segment is disabled (React Aria).    |
-| `data-selected`                  | state     | `true`                   | The selected segment (React Aria).                  |
-| `data-hovered`                   | state     | `true`                   | Pointer over a segment.                             |
-| `data-pressed`                   | state     | `true`                   | A segment is being pressed.                         |
-| `data-focused`                   | state     | `true`                   | A segment is focused.                               |
-| `data-focus-visible`             | state     | `true`                   | A segment has keyboard focus.                       |
-| `data-entering`                  | state     | `true`                   | The indicator is entering (React Aria).             |
-| `data-exiting`                   | state     | `true`                   | The indicator is exiting (React Aria).              |
+| Hook                                    | Kind      | Values                   | Description                                         |
+| --------------------------------------- | --------- | ------------------------ | --------------------------------------------------- |
+| `ui-segmented-choice`                   | root      |                          | The group (`<div>`, a `radiogroup` or `toolbar`).   |
+| `ui-segmented-choice__segment`          | slot      |                          | One segment (`<button>`, role `radio` when single). |
+| `ui-segmented-choice__indicator`        | slot      |                          | The selection indicator inside a selected segment.  |
+| `ui-segmented-choice__icon`             | slot      |                          | A segment's leading icon (also `ui-icon`).          |
+| `ui-segmented-choice__label`            | slot      |                          | A segment's label text.                             |
+| `ui-segmented-choice__accessible-label` | slot      |                          | The complete localized name when a count is shown.  |
+| `ui-segmented-choice__count`            | slot      |                          | A segment's count after its label.                  |
+| `data-size`                             | attribute | `xs`, `sm`, `md`, `lg`   | Segment block size.                                 |
+| `data-sizing`                           | attribute | `equal`, `content`       | How segments share the width.                       |
+| `data-orientation`                      | attribute | `horizontal`, `vertical` | Layout and arrow-key axis (React Aria).             |
+| `data-selection-mode`                   | attribute | `single`, `multiple`     | One value, or independent toggles.                  |
+| `data-value`                            | attribute |                          | A segment's option value.                           |
+| `data-label`                            | attribute |                          | A label's text, for reserving its selected width.   |
+| `data-icon-only`                        | state     | `true`                   | Segments show only their icons.                     |
+| `data-inherited`                        | state     | `true`                   | The value in effect is inherited.                   |
+| `data-readonly`                         | state     | `true`                   | Read-only.                                          |
+| `data-invalid`                          | state     | `true`                   | Invalid.                                            |
+| `data-pending`                          | state     | `true`                   | A change waits for the promise `onChange` returned. |
+| `data-disabled`                         | state     | `true`                   | The group or a segment is disabled (React Aria).    |
+| `data-selected`                         | state     | `true`                   | The selected segment (React Aria).                  |
+| `data-hovered`                          | state     | `true`                   | Pointer over a segment.                             |
+| `data-pressed`                          | state     | `true`                   | A segment is being pressed.                         |
+| `data-focused`                          | state     | `true`                   | A segment is focused.                               |
+| `data-focus-visible`                    | state     | `true`                   | A segment has keyboard focus.                       |
+| `data-entering`                         | state     | `true`                   | The indicator is entering (React Aria).             |
+| `data-exiting`                          | state     | `true`                   | The indicator is exiting (React Aria).              |

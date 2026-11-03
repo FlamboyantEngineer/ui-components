@@ -403,3 +403,24 @@ describe('UIC-PROPERTY-PANEL-2.8 UIC-PROPERTY-SCOPE-1.7 UIC-FIELD-3.12 reveals a
     expectRevealed();
   });
 });
+
+it('UIC-PROPERTY-PANEL-2.2 propagates the section count appearance without slot-specific visuals', () => {
+  const { container, rerender } = render(
+    <PropertySection title="Items" count={0}>
+      <p>Content</p>
+    </PropertySection>,
+  );
+  expect(container.querySelector('.ui-property-section__count')).toHaveAttribute(
+    'data-variant',
+    'subtle',
+  );
+  rerender(
+    <PropertySection title="Items" count={7} countVariant="solid">
+      <p>Content</p>
+    </PropertySection>,
+  );
+  expect(container.querySelector('.ui-property-section__count')).toHaveAttribute(
+    'data-variant',
+    'solid',
+  );
+});

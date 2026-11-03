@@ -31,6 +31,7 @@ export * from './components/button/index.js';
 export * from './components/button-group/index.js';
 export * from './components/copy-button/index.js';
 export * from './components/segmented-choice/index.js';
+export * from './components/list-filter/index.js';
 export * from './components/tabs/index.js';
 export * from './components/link/index.js';
 export * from './components/breadcrumb/index.js';

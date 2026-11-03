@@ -38,14 +38,22 @@ function OverlayDemo() {
           variant="secondary"
           onPress={() => setUnread((value) => value + 1)}
         />
-        <Badge count={unread} max={9} tone="danger" size="sm" placement="overlay" aria-hidden />
+        <Badge
+          variant="solid"
+          count={unread}
+          max={9}
+          tone="danger"
+          size="sm"
+          placement="overlay"
+          aria-hidden
+        />
       </span>{' '}
       <span
         data-lab-overlay-host="mentions"
         style={{ position: 'relative', display: 'inline-flex' }}
       >
         <Button icon={MoreGlyph} label="Mentions, 3 new" variant="secondary" />
-        <Badge count={3} tone="info" size="sm" placement="overlay" aria-hidden />
+        <Badge variant="solid" count={3} tone="info" size="sm" placement="overlay" aria-hidden />
       </span>
       <p>
         Press the first button to add a message. Unread: <output>{unread}</output>
@@ -66,6 +74,7 @@ function ZeroDemo() {
           onPress={() => setUnread((value) => Math.max(0, value - 1))}
         />
         <Badge
+          variant="solid"
           count={unread}
           showZero={false}
           tone="danger"
@@ -124,6 +133,48 @@ mountLab(
       <StateMatrix
         axes={{ tone: tones, size: sizes }}
         render={({ tone, size }) => <Badge count={128} max={99} tone={tone} size={size} />}
+      />
+    </LabSection>
+    <LabSection
+      title="Count appearances"
+      description="Quiet subtle counts and vibrant solid counts share geometry in selected, disabled and RTL parents."
+    >
+      <StateMatrix
+        axes={{ variant: ['subtle', 'solid'], count: ['0', '7', '12', '128'] }}
+        render={({ variant, count }) => (
+          <div data-lab-count-appearance={variant} style={{ display: 'flex', gap: 8 }}>
+            <Badge
+              count={Number(count)}
+              max={count === '128' ? 100 : 9}
+              variant={variant}
+              size="sm"
+            />
+            <Button isSelected>
+              <Badge
+                count={Number(count)}
+                max={count === '128' ? 100 : 9}
+                variant={variant}
+                size="sm"
+              />
+            </Button>
+            <Button isDisabled>
+              <Badge
+                count={Number(count)}
+                max={count === '128' ? 100 : 9}
+                variant={variant}
+                size="sm"
+              />
+            </Button>
+            <span dir="rtl">
+              <Badge
+                count={Number(count)}
+                max={count === '128' ? 100 : 9}
+                variant={variant}
+                size="sm"
+              />
+            </span>
+          </div>
+        )}
       />
     </LabSection>
     <LabSection

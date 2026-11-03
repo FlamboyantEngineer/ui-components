@@ -1,22 +1,15 @@
 'use client';
 
-import {
-  SelectionIndicator,
-  ToggleButton,
-  ToggleButtonGroup,
-  useLocale,
-} from '../../primitives/index.js';
+import { ToggleButtonGroup } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
-import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Orientation, RefProps, ControlSize } from '../../core/props.js';
-import { useUiStrings } from '../../core/provider.js';
-import { formatCount, normalizeCount } from '../../utils/count.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { useNativeReset } from '../../utils/use-native-reset.js';
-import { Icon, type IconSource } from '../icon/icon.js';
-import { hasIcon, toIconProps } from '../icon/icon.js';
-import { Tooltip } from '../tooltip/tooltip.js';
+import type { IconSource } from '../icon/icon.js';
+import type { BadgeCountVariant } from '../badge/badge.js';
+import { Segment } from './segment.js';
+import { segmentedChoiceHooks as hooks } from './segmented-choice-hooks.js';
 import {
   useChoiceSelection,
   type SegmentedChoiceSelectionMode,
@@ -36,8 +29,10 @@ export interface SegmentedChoiceOption {
   label: string;
   /** A decorative icon before the label, or the whole segment with `iconOnly`. */
   icon?: IconSource;
-  /** A count after the label, also read in the segment's name. Zero, negative and non-finite values show nothing. */
+  /** A count after the label, also read in the segment's name. Zero is optional; negative and non-finite values show nothing. */
   count?: number | null | undefined;
+  /** This option's cap, overriding `countMax`. */
+  countMax?: number | undefined;
   isDisabled?: boolean | undefined;
 }
 
@@ -84,17 +79,14 @@ export interface SegmentedChoiceProps<M extends SegmentedChoiceSelectionMode = '
   iconOnly?: boolean | undefined;
   /** Option counts above this show as `<max>+`. Defaults to 99. */
   countMax?: number | undefined;
+  /** Show zero counts. Defaults to `false`. */
+  showZero?: boolean | undefined;
+  /** Count appearance. Defaults to `subtle`. */
+  countVariant?: BadgeCountVariant | undefined;
   /** Submits the value with a form under this name, one hidden input per selected value. */
   name?: string | undefined;
   /** Replaces the root `<div>` with the caller's own, given its props and the group's state. */
   render?: ElementRender<'div', SegmentedChoiceRenderState> | undefined;
-}
-
-interface SegmentProps {
-  option: SegmentedChoiceOption;
-  size: ControlSize;
-  iconOnly: boolean;
-  countMax: number;
 }
 
 interface GroupState {
@@ -104,8 +96,6 @@ interface GroupState {
   isInvalid: boolean;
   isPending: boolean;
 }
-
-const hooks = createHooks('segmented-choice', ['segment', 'indicator', 'icon', 'label', 'count']);
 
 /**
  * `aria-readonly`, `aria-invalid` and `aria-busy` on the group, which the building block does not
@@ -131,61 +121,6 @@ function renderGroupState(
   };
 }
 
-/** The shown text of a positive count, or `null` when the option shows none. */
-function formatOptionCount(
-  count: number | null | undefined,
-  max: number,
-  locale: string,
-): string | null {
-  const value = normalizeCount(count);
-  return value === undefined || value === 0 ? null : formatCount(value, locale, { max });
-}
-
-function Segment({ option, size, iconOnly, countMax }: SegmentProps) {
-  const strings = useUiStrings();
-  const { locale } = useLocale();
-  const showsIconOnly = iconOnly && hasIcon(option.icon);
-  const count = formatOptionCount(option.count, countMax, locale);
-  const name = count === null ? option.label : strings.labelWithCount(option.label, count);
-  const segment = (
-    <ToggleButton
-      id={option.value}
-      isDisabled={option.isDisabled}
-      aria-label={showsIconOnly || count !== null ? name : undefined}
-      {...hooks.slot('segment', { value: option.value })}
-    >
-      <SelectionIndicator className={hooks.slotClass('indicator')} />
-      {hasIcon(option.icon) ? (
-        <Icon
-          {...toIconProps(option.icon)}
-          size={size === 'xs' ? 'sm' : size}
-          className={hooks.slotClass('icon')}
-        />
-      ) : null}
-      {showsIconOnly ? null : (
-        <span {...hooks.slot('label', { label: option.label })}>{option.label}</span>
-      )}
-      {count === null ? null : (
-        <span {...hooks.slot('count')} aria-hidden="true">
-          {count}
-        </span>
-      )}
-    </ToggleButton>
-  );
-  // Every segment sits in a tooltip, enabled only while it shows its icon alone, so a change of
-  // `iconOnly` keeps the segment element and its focus. That tooltip repeats the segment's name, so
-  // it adds no description.
-  return (
-    <Tooltip
-      content={option.label}
-      relationship={showsIconOnly ? 'label' : 'description'}
-      isDisabled={!showsIconOnly}
-    >
-      {segment}
-    </Tooltip>
-  );
-}
-
 /**
  * One of a few mutually exclusive values, drawn as a run of segments, or with
  * `selectionMode="multiple"` a group of toggles that press independently. A selection indicator
@@ -205,6 +140,8 @@ export function SegmentedChoice<M extends SegmentedChoiceSelectionMode = 'single
   sizing = 'equal',
   iconOnly = false,
   countMax = 99,
+  showZero = false,
+  countVariant,
   name,
   render,
   className,
@@ -261,9 +198,7 @@ export function SegmentedChoice<M extends SegmentedChoiceSelectionMode = 'single
         <Segment
           key={option.value}
           option={option}
-          size={size}
-          iconOnly={iconOnly}
-          countMax={countMax}
+          {...{ size, iconOnly, countMax, showZero, countVariant }}
         />
       ))}
       <FieldFormValue name={name} value={selection.selectedKeys} isDisabled={isDisabled} />

@@ -1,0 +1,26 @@
+/* Filters scroll within their share of a single row; native actions keep their room and focus. */
+.ui-list-filter {
+  min-width: 0;
+  max-width: 100%;
+}
+.ui-list-filter__row {
+  flex-wrap: nowrap;
+}
+.ui-list-filter__row.ui-action-row > .ui-action-row__lead {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: none;
+  overflow: auto hidden;
+}
+.ui-list-filter__filters.ui-segmented-choice {
+  max-width: none;
+  vertical-align: top;
+}
+.ui-list-filter__filters .ui-segmented-choice__segment {
+  flex: none;
+}
+.ui-list-filter__row.ui-action-row > .ui-action-row__actions {
+  flex: 0 1 auto;
+  max-width: 40%;
+  min-width: var(--ref-control-height-sm);
+}

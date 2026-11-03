@@ -223,7 +223,7 @@ test.describe('Segmented Choice lab', () => {
   }) => {
     await lab.open('segmented-choice');
     const group = page.getByRole('radiogroup', { name: 'Notes, labels, md' });
-    const resolved = group.getByRole('radio', { name: 'Resolved, 99+' });
+    const resolved = group.getByRole('radio', { name: 'Resolved, 128' });
     const count = resolved.locator('.ui-segmented-choice__count');
     await expect(count).toHaveText('99+');
     const label = await resolved.locator('.ui-segmented-choice__label').boundingBox();
@@ -241,7 +241,7 @@ test.describe('Segmented Choice lab', () => {
     await lab.open('segmented-choice');
     const demo = page.locator('[data-lab-demo="saved"]');
     const group = demo.getByRole('radiogroup', { name: 'Notes to show' });
-    const resolved = group.getByRole('radio', { name: 'Resolved, 99+' });
+    const resolved = group.getByRole('radio', { name: 'Resolved, 128' });
     await resolved.click();
     await expect(resolved).toHaveAttribute('aria-checked', 'true');
     await expect(group).toHaveAttribute('data-pending', 'true');
@@ -251,8 +251,8 @@ test.describe('Segmented Choice lab', () => {
     await expect(demo.locator('[data-lab-output="saved"]')).toHaveText('Saved: resolved');
 
     await demo.getByText('Fail the next save').click();
-    await group.getByRole('radio', { name: 'All, 99+' }).click();
-    await expect(group.getByRole('radio', { name: 'All, 99+' })).toHaveAttribute(
+    await group.getByRole('radio', { name: 'All, 131' }).click();
+    await expect(group.getByRole('radio', { name: 'All, 131' })).toHaveAttribute(
       'aria-checked',
       'true',
     );

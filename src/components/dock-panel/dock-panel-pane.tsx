@@ -4,6 +4,7 @@ import { createContext, useContext, type ReactNode } from 'react';
 import { pickDataAttributes } from '../../core/hooks.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import type { BadgeCountVariant } from '../badge/badge.js';
 import { ActionRow, type ActionRowAction } from '../action-row/action-row.js';
 import type { IconSource } from '../icon/icon.js';
 import { TabPanel } from '../tabs/tabs.js';
@@ -18,6 +19,10 @@ export interface DockPanelPaneProps extends RefProps<HTMLDivElement>, Omit<BaseP
   icon: IconSource;
   /** A count on its tab and launcher. Zero, negative and non-finite values show none. */
   count?: number | null | undefined;
+  /** Expanded tab count appearance. Defaults to `subtle`. */
+  countVariant?: BadgeCountVariant | undefined;
+  /** Collapsed launcher count appearance. Defaults to `solid`. */
+  launcherCountVariant?: BadgeCountVariant | undefined;
   /** Refuses the pane's tab and launcher. */
   isDisabled?: boolean | undefined;
   /** Pane-local actions in a row above the content, as an `ActionRow` draws them. */
@@ -44,6 +49,8 @@ export function DockPanelPane({
   label: _label,
   icon: _icon,
   count: _count,
+  countVariant: _countVariant,
+  launcherCountVariant: _launcherCountVariant,
   isDisabled: _isDisabled,
   actions = noActions,
   footer,

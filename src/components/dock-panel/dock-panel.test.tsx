@@ -324,3 +324,31 @@ describe('DockPanel keyboard and focus', () => {
     expect(screen.getByRole('button', { name: 'Files' })).toHaveFocus();
   });
 });
+
+it('UIC-DOCK-PANEL-1.2 UIC-DOCK-PANEL-1.3 propagates independent expanded and collapsed count variants', () => {
+  const renderPanel = (isExpanded: boolean, custom = false) => (
+    <DockPanel label="Counts" isExpanded={isExpanded}>
+      <DockPanelPane
+        id="notes"
+        label="Notes"
+        icon={InfoGlyph}
+        count={128}
+        countVariant={custom ? 'solid' : undefined}
+        launcherCountVariant={custom ? 'subtle' : undefined}
+      >
+        Content
+      </DockPanelPane>
+    </DockPanel>
+  );
+  const { container, rerender } = render(renderPanel(true));
+  expect(container.querySelector('.ui-tabs__count')).toHaveAttribute('data-variant', 'subtle');
+  rerender(renderPanel(false));
+  expect(container.querySelector('.ui-dock-panel__count')).toHaveAttribute('data-variant', 'solid');
+  rerender(renderPanel(true, true));
+  expect(container.querySelector('.ui-tabs__count')).toHaveAttribute('data-variant', 'solid');
+  rerender(renderPanel(false, true));
+  expect(container.querySelector('.ui-dock-panel__count')).toHaveAttribute(
+    'data-variant',
+    'subtle',
+  );
+});

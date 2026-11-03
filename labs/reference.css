@@ -93,6 +93,7 @@
 @import url('reference/inline-text-diff.css') layer(ui-reference);
 @import url('reference/layout.css') layer(ui-reference);
 @import url('reference/link.css') layer(ui-reference);
+@import url('reference/list-filter.css') layer(ui-reference);
 @import url('reference/list-row.css') layer(ui-reference);
 @import url('reference/load-more.css') layer(ui-reference);
 @import url('reference/loading-overlay.css') layer(ui-reference);

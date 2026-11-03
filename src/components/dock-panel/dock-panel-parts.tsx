@@ -95,8 +95,12 @@ export function readPanes(children: ReactNode): PaneEntry[] {
         isValidElement(child) && child.type === DockPanelPane,
     )
     .map((element) => {
-      const { id, label, icon, count, isDisabled } = element.props;
-      return { element, launcher: { id, label, icon, count, isDisabled } };
+      const { id, label, icon, count, countVariant, launcherCountVariant, isDisabled } =
+        element.props;
+      return {
+        element,
+        launcher: { id, label, icon, count, countVariant, launcherCountVariant, isDisabled },
+      };
     });
 }
 
