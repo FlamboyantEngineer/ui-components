@@ -4,7 +4,7 @@ import { useContext, useId, useMemo, useState, type ReactNode } from 'react';
 import { DisclosureGroup, DisclosureGroupStateContext } from '../../primitives/index.js';
 import type { ExpansionProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, NativeProps } from '../../core/props.js';
+import type { BaseProps, NativeProps, RefProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { FieldScopeContext, useFieldScope } from '../field/field.js';
 import {
@@ -22,6 +22,7 @@ export type PropertyIconGroupVariant = 'separate' | 'segmented';
 
 export interface PropertyPanelProps
   extends
+    RefProps<HTMLElement>,
     BaseProps,
     Pick<NativeProps<'section'>, 'aria-label' | 'aria-labelledby'>,
     ExpansionProps {
@@ -39,7 +40,7 @@ export interface PropertyPanelProps
   children?: ReactNode;
 }
 
-export interface PropertyGroupProps extends BaseProps {
+export interface PropertyGroupProps extends RefProps<HTMLDivElement>, BaseProps {
   /** A heading over the rows, which also names the group. A query matches it for every row inside. */
   heading?: string | undefined;
   /** The group's rows and cards. */
@@ -47,7 +48,10 @@ export interface PropertyGroupProps extends BaseProps {
 }
 
 export interface PropertyIconGroupProps
-  extends BaseProps, Pick<NativeProps<'div'>, 'aria-label' | 'aria-labelledby'> {
+  extends
+    RefProps<HTMLDivElement>,
+    BaseProps,
+    Pick<NativeProps<'div'>, 'aria-label' | 'aria-labelledby'> {
   /** How the stylesheet frames the buttons. Defaults to `separate`. */
   variant?: PropertyIconGroupVariant | undefined;
   /** The icon buttons. */

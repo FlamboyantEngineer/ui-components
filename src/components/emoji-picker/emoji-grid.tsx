@@ -16,7 +16,7 @@ import {
   Virtualizer,
   type Key,
 } from '../../primitives/index.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import {
   applySkinTone,
   getEmojiKey,
@@ -27,7 +27,7 @@ import {
 import { emojiPickerHooks as hooks } from './emoji-picker-hooks.js';
 import { FallbackImage } from '../../utils/fallback-image.js';
 
-interface EmojiGridProps extends BaseProps {
+interface EmojiGridProps extends BaseProps, RefProps<HTMLDivElement> {
   /** The visible label that names the grid. */
   label: string;
   entries: readonly EmojiEntry[];

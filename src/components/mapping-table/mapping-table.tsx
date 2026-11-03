@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { Badge } from '../badge/badge.js';
@@ -21,7 +21,7 @@ import {
   type MappingTableValue,
 } from './mapping.js';
 
-export interface MappingTableProps extends BaseProps, AriaLabellingProps {
+export interface MappingTableProps extends RefProps<HTMLDivElement>, BaseProps, AriaLabellingProps {
   /** The source columns, one row each, in order. */
   columns: readonly MappingTableColumn[];
   /** The fields the columns can be imported into, in the order the choices list them. */

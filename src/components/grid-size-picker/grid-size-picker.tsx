@@ -6,7 +6,7 @@ import { useLayoutEffect, useRef, useState, type FocusEvent, type KeyboardEvent 
 import { useHover, useLocale, usePress } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { mergeProps } from '../../utils/merge-props.js';
 import { getShownGridSize, moveGridSize, type GridSize } from './grid-size.js';
@@ -14,7 +14,8 @@ import { useScopedDisabled } from '../field/field.js';
 
 export type { GridSize } from './grid-size.js';
 
-export interface GridSizePickerProps extends BaseProps, AriaLabellingProps {
+export interface GridSizePickerProps
+  extends RefProps<HTMLDivElement>, BaseProps, AriaLabellingProps {
   /** Called with the size of the cell the reader presses, or of the focused cell on Enter or Space. */
   onSelect: (size: GridSize) => void;
   /** The most rows the grid grows to. Defaults to 10. */
@@ -155,6 +156,7 @@ function useGridPreview(max: GridSize, autoFocus: boolean) {
  * from the focused cell; a press chooses the pressed cell, and Enter or Space the focused one.
  */
 export function GridSizePicker({
+  ref,
   onSelect,
   maxRows = 10,
   maxColumns = 10,
@@ -187,7 +189,11 @@ export function GridSizePicker({
     ...{ onPreview: setPreview, onFocusCell: focusCell },
   };
   return (
-    <div {...hooks.root({ className, props: rest, data: { disabled: isDisabled } })} id={id}>
+    <div
+      ref={ref}
+      {...hooks.root({ className, props: rest, data: { disabled: isDisabled } })}
+      id={id}
+    >
       <div
         {...hooks.slot('grid')}
         {...gridProps}

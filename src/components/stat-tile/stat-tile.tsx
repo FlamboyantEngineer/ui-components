@@ -4,7 +4,7 @@ import { TrendDownGlyph, TrendFlatGlyph, TrendUpGlyph } from '../../core/glyphs.
 import type { ReactNode } from 'react';
 import { useNumberFormatter } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Tone } from '../../core/props.js';
+import type { BaseProps, Tone, RefProps } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Card, type CardProps } from '../card/card.js';
@@ -19,7 +19,10 @@ export type StatTileGoal = 'increase' | 'decrease' | 'none';
 export type StatTileTone = Extract<Tone, 'neutral' | 'success' | 'danger'>;
 
 export interface StatTileProps
-  extends BaseProps, Pick<CardProps, 'href' | 'target' | 'rel' | 'onAction' | 'isLoading'> {
+  extends
+    RefProps<HTMLElement>,
+    BaseProps,
+    Pick<CardProps, 'href' | 'target' | 'rel' | 'onAction' | 'isLoading'> {
   /** Names the measure; the tile's heading, and its link or button with `href` or `onAction`. */
   label: ReactNode;
   /** The measure. */

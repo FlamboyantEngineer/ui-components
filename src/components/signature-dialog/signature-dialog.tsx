@@ -2,7 +2,7 @@
 
 import { useRef, useState, type ReactNode } from 'react';
 import { mergeClassNames } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Modal, useModalOpenState, type ModalProps } from '../modal/modal.js';
@@ -25,6 +25,7 @@ export type {
 
 export interface SignatureDialogProps
   extends
+    RefProps<HTMLDivElement>,
     Pick<ModalProps, 'isOpen' | 'defaultOpen' | 'onOpenChange' | 'title' | 'size'>,
     BaseProps {
   /** What is signed: a summary of the change or a count, above the entries. */

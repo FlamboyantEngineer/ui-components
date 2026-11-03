@@ -2,6 +2,7 @@
 
 import { useContext, useMemo, useRef, type ReactNode } from 'react';
 import { useLatest } from '../../utils/use-latest.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import {
   FocusScope,
   Modal as AriaModal,
@@ -12,7 +13,7 @@ import {
 import { useControllableState } from '../../core/controllable-state.js';
 import type { OpenStateProps, OverlayDismissProps } from '../../core/events.js';
 import { dataAttributes, type HookProps } from '../../core/hooks.js';
-import type { Placement } from '../../core/props.js';
+import type { Placement, RefProps } from '../../core/props.js';
 import { useEnterExit } from '../../utils/use-enter-exit.js';
 import { PopoverPanel } from '../popover/popover.js';
 import { OverlayLayerScope, Portal, useLayerZIndex } from '../portal/portal.js';
@@ -38,8 +39,8 @@ type ModalOpenOptions = OpenStateProps;
 
 interface ModalPresentationProps {
   state: ModalOpenState;
-  /** The root's hook classes and data attributes. */
-  rootProps: HookProps;
+  /** The root's hook classes and data attributes, and the caller's ref to it. */
+  rootProps: HookProps & RefProps<HTMLDivElement>;
   /** The dialog. */
   children: ReactNode;
 }
@@ -229,6 +230,7 @@ function AnchoredModal({
 function RetainedModal({ state, rootProps, children, ...dismissal }: BlockingModalProps) {
   const zIndex = useLayerZIndex('modal');
   const overlayRef = useRef<HTMLDivElement>(null);
+  const overlayRefs = useMergedRefs(overlayRef, rootProps.ref);
   const panelRef = useRef<HTMLDivElement>(null);
   const phase = useEnterExit(overlayRef, state.isOpen);
   const { modalProps, underlayProps } = useModalOverlay(dismissal, state, panelRef);
@@ -239,7 +241,7 @@ function RetainedModal({ state, rootProps, children, ...dismissal }: BlockingMod
         {...underlayProps}
         {...rootProps}
         {...dataAttributes({ entering: phase.isEntering, exiting: phase.isExiting, stackIndex })}
-        ref={overlayRef}
+        ref={overlayRefs}
         // Inert once its exit has ended, so focus stays in the leaving dialog until it returns.
         inert={!phase.isMounted}
         style={{ position: 'fixed', inset: 0, zIndex, ...retainedStyle(phase.isMounted) }}

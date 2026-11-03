@@ -52,7 +52,10 @@ export interface KeyHint {
 }
 
 export interface KeyHintsProps
-  extends BaseProps, Pick<MetaLineProps, 'aria-label' | 'aria-labelledby'> {
+  extends
+    RefProps<HTMLSpanElement>,
+    BaseProps,
+    Pick<MetaLineProps, 'aria-label' | 'aria-labelledby'> {
   /** The legend's entries, in order. */
   hints: readonly KeyHint[];
   /** The notation of every shortcut. Defaults to the detected platform. */

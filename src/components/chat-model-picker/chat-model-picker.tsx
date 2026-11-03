@@ -2,7 +2,7 @@
 
 import { SparklesGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Badge } from '../badge/badge.js';
 import type { IconSource } from '../icon/icon.js';
@@ -46,7 +46,7 @@ export interface ChatEffortOption {
   description?: string | undefined;
 }
 
-export interface ChatModelPickerProps extends BaseProps {
+export interface ChatModelPickerProps extends RefProps<HTMLButtonElement>, BaseProps {
   /** The models, in menu order. */
   models: readonly ChatModelOption[];
   /** The reasoning efforts, in menu order. Without them no model takes an effort. */
@@ -169,7 +169,7 @@ function ChatModelMenu({
  * takes. Each choice is controlled or held, optionally in the provider's storage.
  */
 export function ChatModelPicker(props: ChatModelPickerProps) {
-  const { models, className, id } = props;
+  const { models, className, id, ref } = props;
   const strings = useUiStrings();
   const composer = useMessageComposerControls();
   // Disabled itself or with its composer: the trigger refuses to open and an open menu closes.
@@ -187,6 +187,7 @@ export function ChatModelPicker(props: ChatModelPickerProps) {
           data: { hasEffort: effort !== undefined, compact: composer.isCompact },
         })}
         id={id}
+        ref={ref}
         icon={model.icon}
         compactIcon={model.icon ?? SparklesGlyph}
         name={name}

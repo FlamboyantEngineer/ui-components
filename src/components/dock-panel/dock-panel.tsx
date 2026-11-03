@@ -1,7 +1,8 @@
 'use client';
 
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { useId, useMemo, useRef, useState, type ReactNode } from 'react';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useIsHidden } from '../../primitives/index.js';
 import { Tabs } from '../tabs/tabs.js';
 import { dockPanelHooks as hooks } from './dock-panel-hooks.js';
@@ -26,7 +27,7 @@ import { useDockPanelState, type DockPanelState } from './use-dock-panel-state.j
 
 export type { DockPanelPosition } from './dock-panel-launchers.js';
 
-export interface DockPanelProps extends BaseProps {
+export interface DockPanelProps extends RefProps<HTMLElement>, BaseProps {
   /** Names the panel region, its tabs, its launchers, its toggle and its separator. */
   label: string;
   /** The frame edge it sits against. Defaults to `end`. */
@@ -154,6 +155,7 @@ function DockPanelLayout(props: DockPanelLayoutProps) {
  * each controlled or held by the panel, which saves them under `persistKey`.
  */
 export function DockPanel({
+  ref,
   label,
   position = 'end',
   children,
@@ -169,6 +171,7 @@ export function DockPanel({
 }: DockPanelProps) {
   const bodyId = `${useId()}-body`;
   const rootRef = useRef<HTMLElement>(null);
+  const rootRefs = useMergedRefs(rootRef, ref);
   const [isResizing, setResizing] = useState(false);
   const { isOverlay, largest } = useDockPanelBounds(rootRef, {
     ...{ position, minSize, maxSize, minMainSize, overlayBelow },
@@ -192,7 +195,7 @@ export function DockPanel({
   return (
     <section
       {...hooks.root({ className, props: rest, data })}
-      ref={rootRef}
+      ref={rootRefs}
       id={id}
       aria-label={label}
       style={isShown ? { [position === 'bottom' ? 'height' : 'width']: state.size } : undefined}

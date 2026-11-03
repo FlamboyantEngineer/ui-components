@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { DialogTrigger } from '../../primitives/index.js';
 import type { KeyboardEventProps, OpenStateProps, OverlayDismissProps } from '../../core/events.js';
 import { splitDataAttributes } from '../../core/hooks.js';
-import type { BaseProps, Placement, Size, Tone } from '../../core/props.js';
+import type { BaseProps, Placement, Size, Tone, RefProps } from '../../core/props.js';
 import type { ButtonProps, ButtonVariant } from '../button/button.js';
 import { ModalDialog } from './modal-dialog.js';
 import type { ModalFocusTarget } from './modal-focus.js';
@@ -64,7 +64,12 @@ export interface ModalTriggerProps extends OpenStateProps {
 export type ModalRole = 'dialog' | 'alertdialog';
 
 export interface ModalProps
-  extends OpenStateProps, OverlayDismissProps, Pick<KeyboardEventProps, 'onKeyDown'>, BaseProps {
+  extends
+    RefProps<HTMLDivElement>,
+    OpenStateProps,
+    OverlayDismissProps,
+    Pick<KeyboardEventProps, 'onKeyDown'>,
+    BaseProps {
   /** Defaults to `dialog`. */
   role?: ModalRole | undefined;
   /** Names the dialog instead of its title. */
@@ -145,17 +150,27 @@ export function Modal({
   initialFocus = 'first',
   keepMounted = false,
   className,
+  ref,
   ...rest
 }: ModalProps) {
   const ownState = useModalOpenState({ isOpen, defaultOpen, onOpenChange });
   const isRetained = useRetention(ownState, keepMounted && !placement);
   const [, dialogProps] = splitDataAttributes(rest);
   const isFloating = isNonModal && !placement;
-  const rootProps = hooks.root({
-    className,
-    props: rest,
-    data: { layer: placement ? 'dropdown' : 'modal', tone, size, bodyLayout, nonModal: isFloating },
-  });
+  const rootProps = {
+    ...hooks.root({
+      className,
+      props: rest,
+      data: {
+        layer: placement ? 'dropdown' : 'modal',
+        tone,
+        size,
+        bodyLayout,
+        nonModal: isFloating,
+      },
+    }),
+    ref,
+  };
   const dismissal = resolveDismissal({
     isDismissable,
     isKeyboardDismissDisabled,

@@ -3,7 +3,7 @@
 import { UsersGlyph } from '../../core/glyphs.js';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, NativeProps, PresenceStatus, Size } from '../../core/props.js';
+import type { BaseProps, NativeProps, PresenceStatus, Size, RefProps } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { getInitials } from '../../utils/initials.js';
@@ -76,7 +76,12 @@ export interface AvatarIdentity {
   shape?: AvatarShape | undefined;
 }
 
-export interface AvatarProps extends AvatarIdentity, AvatarBadgeProps, BaseProps {
+export interface AvatarProps
+  extends
+    RefProps<HTMLSpanElement | HTMLButtonElement>,
+    AvatarIdentity,
+    AvatarBadgeProps,
+    BaseProps {
   /** The person's presence, published as `data-status`. */
   status?: PresenceStatus | undefined;
   /** The status in words, added to the accessible name. Defaults to the provider's `presenceStatus`. */

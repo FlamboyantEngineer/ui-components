@@ -13,7 +13,7 @@ import {
 import { Group, Toolbar } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
-import type { BaseProps, ContainerProps, Orientation } from '../../core/props.js';
+import type { BaseProps, ContainerProps, Orientation, RefProps } from '../../core/props.js';
 import { Separator } from '../separator/separator.js';
 import { ScrollStrip, useToolbarScroll } from '../toolbar-scroller/toolbar-scroller.js';
 import {
@@ -37,6 +37,8 @@ export interface ToolbarRowProps
   extends Omit<ContainerProps<'div'>, 'role'>, BaseProps, LayoutContainmentProps {
   /** `toolbar` (default) moves focus by arrow keys, `group` keeps tab stops, `none` has no role. */
   role?: ToolbarRowRole | undefined;
+  /** The strip that holds the controls as its element children; `ref` is the row's root. */
+  stripRef?: Ref<HTMLDivElement> | undefined;
   /** `surface` asks the stylesheet for a surface behind the row. Defaults to `plain`. */
   variant?: ToolbarRowVariant | undefined;
   /** `vertical` stacks the controls, and a toolbar moves focus with Up and Down. Defaults to `horizontal`. */
@@ -51,14 +53,15 @@ export interface ToolbarRowProps
   isPending?: boolean | undefined;
 }
 
-export interface ToolbarRowGroupProps extends BaseProps, AriaLabellingProps {
+export interface ToolbarRowGroupProps
+  extends RefProps<HTMLDivElement>, BaseProps, AriaLabellingProps {
   /** The group's controls. Name the group with `aria-label` or `aria-labelledby`. */
   children?: ReactNode;
   /** Joins the controls into one segmented run, with no gap and shared borders. */
   attached?: boolean | undefined;
 }
 
-export type ToolbarRowSeparatorProps = BaseProps;
+export type ToolbarRowSeparatorProps = RefProps<HTMLElement> & BaseProps;
 
 const hooks = createHooks('toolbar-row', ['strip', 'group', 'separator', 'fade', 'scroll-button']);
 
@@ -116,8 +119,8 @@ function ToolbarRowStrip({ role, orientation, stripRef, children, ...rest }: Too
 /**
  * A row of controls, vertically centred, with a gap; or a column of them when vertical. The
  * controls always sit in the same strip, so changing the overflow or the orientation never
- * remounts them; `scroll` only adds edge controls beside the strip. `ref` reaches the strip, whose
- * element children are the controls.
+ * remounts them; `scroll` only adds edge controls beside the strip. `ref` reaches the row's root and
+ * `stripRef` the strip, whose element children are the controls.
  */
 export function ToolbarRow({
   children,
@@ -135,14 +138,14 @@ export function ToolbarRow({
   'aria-label': label,
   'aria-labelledby': labelledBy,
   onFocus,
-  ref,
+  stripRef: callerStripRef,
   ...rest
 }: ToolbarRowProps) {
   const overflow = resolveOverflow(requestedOverflow, orientation);
   const isScroll = overflow === 'scroll';
   const wrap = overflow === 'wrap' ? 'wrap' : 'nowrap';
   const scroll = useToolbarScroll(isScroll);
-  const stripRef = useMergedRefs(scroll.stripRef, ref);
+  const stripRef = useMergedRefs(scroll.stripRef, callerStripRef);
   // The row renders again as it scrolls; its controls read this only when it changes.
   const context = useMemo<ToolbarRowFlow>(() => ({ orientation, wrap }), [orientation, wrap]);
   const edges = isScroll ? scroll.edges : { start: false, end: false };

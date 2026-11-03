@@ -11,7 +11,7 @@ import {
 } from 'react';
 import { useLatest } from '../../utils/use-latest.js';
 import { useDrag, useDrop } from '../../primitives/index.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { mergeProps } from '../../utils/merge-props.js';
 import { Icon, type IconSource } from '../icon/icon.js';
 import { toIconProps } from '../icon/icon.js';
@@ -20,7 +20,7 @@ import { snapToGrid, toDiagramPoint } from './diagram-model.js';
 import type { DiagramPoint } from './edge-route.js';
 import type { DiagramController } from './use-diagram-controller.js';
 
-export interface DiagramPaletteItemProps extends BaseProps {
+export interface DiagramPaletteItemProps extends RefProps<HTMLButtonElement>, BaseProps {
   /** What the item adds, handed to the canvas's `onNodeAdd`. */
   type: string;
   /** The item's text and accessible name. */

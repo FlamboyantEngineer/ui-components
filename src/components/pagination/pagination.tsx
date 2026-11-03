@@ -4,12 +4,12 @@ import { ChevronLeftGlyph, ChevronRightGlyph } from '../../core/glyphs.js';
 import { useLocale, useNumberFormatter } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';
 import { Button } from '../button/button.js';
 
-export interface PaginationProps extends BaseProps {
+export interface PaginationProps extends RefProps<HTMLElement>, BaseProps {
   /** The number of pages; fewer than one counts as one. */
   pageCount: number;
   /** The current page, from 1 (controlled). */
@@ -71,6 +71,7 @@ export function getPaginationItems(page: number, pageCount: number): PaginationI
  * focusable at either end, so focus is never lost while paging with the keyboard.
  */
 export function Pagination({
+  ref,
   pageCount,
   page,
   defaultPage = 1,
@@ -93,6 +94,7 @@ export function Pagination({
   const isRtl = direction === 'rtl';
   return (
     <nav
+      ref={ref}
       {...hooks.root({ className, props: rest, data: { disabled: isDisabled } })}
       id={id}
       aria-label={label ?? strings.pagination}

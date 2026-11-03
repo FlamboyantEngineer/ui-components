@@ -11,7 +11,7 @@ import {
 } from '../../primitives/index.js';
 import { FieldScopeContext, useRevealScope } from '../field/field.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Badge } from '../badge/badge.js';
@@ -29,7 +29,8 @@ import {
   type PropertyExpansionProps,
 } from './property-disclosure.js';
 
-export interface PropertySectionProps extends Omit<BaseProps, 'id'>, PropertyExpansionProps {
+export interface PropertySectionProps
+  extends RefProps<HTMLDivElement>, Omit<BaseProps, 'id'>, PropertyExpansionProps {
   /** The section's key among the panel's `expandedKeys`. */
   id?: Key | undefined;
   /** Disables the trigger. */

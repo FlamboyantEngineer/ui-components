@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { measuredProperty } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import type { MenuEntry } from '../menu/menu.js';
 import { ProjectionContent } from '../projection/projection.js';
 import { pdfViewerHooks as hooks } from './styling-hooks.js';
@@ -44,7 +44,8 @@ export type { PdfMenuAction, PdfMenuIcons } from './use-pdf-context-menu.js';
 export interface PdfViewerProps<
   V extends PdfViewport = PdfViewport,
   C extends PdfTextContent = PdfTextContent,
-> extends BaseProps {
+>
+  extends RefProps<HTMLDivElement>, BaseProps {
   /**
    * The document's URL or bytes; `null` while the bytes are on their way. A new array is a new
    * document; a URL, as text or a `URL` object, is the same document while its address is.
@@ -151,6 +152,7 @@ export function PdfViewer<
   V extends PdfViewport = PdfViewport,
   C extends PdfTextContent = PdfTextContent,
 >(props: PdfViewerProps<V, C>) {
+  const { ref } = props;
   const { className, id, toolbarSlot } = props;
   const viewer = usePdfViewer(props);
   const { pdf, pages, zoom, search, keyboard, refs } = viewer;
@@ -174,6 +176,7 @@ export function PdfViewer<
   );
   return (
     <div
+      ref={ref}
       {...hooks.root({
         className,
         props,

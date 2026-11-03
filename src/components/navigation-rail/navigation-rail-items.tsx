@@ -11,7 +11,7 @@ import {
 } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { PressEvent } from '../../core/events.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { formatCount, normalizeCount } from '../../utils/count.js';
 import { getInitials } from '../../utils/initials.js';
@@ -31,14 +31,14 @@ import {
   useReportCurrent,
 } from './navigation-rail-state.js';
 
-export interface NavigationRailSectionProps extends BaseProps {
+export interface NavigationRailSectionProps extends RefProps<HTMLDivElement>, BaseProps {
   /** The section's title, which names its list. Without it the list is unnamed. */
   title?: string | undefined;
   /** The section's `NavigationRailItem`s and `NavigationRailGroup`s. */
   children?: ReactNode;
 }
 
-export interface NavigationRailItemProps extends BaseProps {
+export interface NavigationRailItemProps extends RefProps<HTMLLIElement>, BaseProps {
   /** The item's text, its tooltip while the rail is collapsed. */
   label: string;
   /** The destination, reached through the provider's link renderer. */
@@ -55,7 +55,7 @@ export interface NavigationRailItemProps extends BaseProps {
   isCurrent?: boolean | undefined;
 }
 
-export interface NavigationRailGroupProps extends BaseProps {
+export interface NavigationRailGroupProps extends RefProps<HTMLLIElement>, BaseProps {
   /** The group's text, on the button that opens it. */
   label: string;
   /** The icon before the label, the group's tile while the rail is collapsed. */

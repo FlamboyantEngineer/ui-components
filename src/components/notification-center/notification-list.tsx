@@ -1,10 +1,11 @@
 'use client';
 
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { BellGlyph } from '../../core/glyphs.js';
 import { useId, useRef, type ReactNode } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useNow, useTimeZone } from '../../core/clock.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
@@ -30,7 +31,8 @@ export type { NotificationItem } from './notification-row.js';
 /** Which notifications a list shows: every one, or only the unread ones. */
 export type NotificationFilter = 'all' | 'unread';
 
-export interface NotificationListProps extends BaseProps, NotificationRowActions {
+export interface NotificationListProps
+  extends RefProps<HTMLDivElement>, BaseProps, NotificationRowActions {
   /** The notifications, newest first. */
   items: readonly NotificationItem[];
   /**
@@ -166,6 +168,7 @@ function ListEmptyState({ filter, isLoading }: { filter: NotificationFilter; isL
  * notifications that arrive while it is shown. `NotificationCenter` opens it from a bell.
  */
 export function NotificationList({
+  ref,
   items,
   announcesArrivals = true,
   filter: filterProp,
@@ -200,6 +203,7 @@ export function NotificationList({
     unknownLabel: strings.earlier,
   });
   const rootRef = useRef<HTMLDivElement>(null);
+  const rootRefs = useMergedRefs(rootRef, ref);
   const focusHandlers = useRemovalFocus(rootRef);
   const time = { fallbackAfterDays, getNow, timeZone };
   const rowActions = { onAction, onReadChange, onDismiss, renderActions, ...time };
@@ -207,7 +211,7 @@ export function NotificationList({
     <div
       {...rest}
       {...focusHandlers}
-      ref={rootRef}
+      ref={rootRefs}
       {...hooks.root({ className, props: rest, data: { filter } })}
     >
       <ListToolbar

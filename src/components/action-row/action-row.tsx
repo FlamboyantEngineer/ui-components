@@ -3,7 +3,7 @@
 import { CloseGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps, ControlSize } from '../../core/props.js';
+import type { BaseProps, ControlSize, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 
@@ -16,7 +16,10 @@ import { actionRowHooks as hooks } from './action-row-hooks.js';
 export type ActionRowOverflow = 'visible' | 'menu';
 
 export interface ActionRowProps
-  extends Pick<AriaLabellingProps, 'aria-label' | 'aria-labelledby'>, BaseProps {
+  extends
+    RefProps<HTMLDivElement>,
+    Pick<AriaLabellingProps, 'aria-label' | 'aria-labelledby'>,
+    BaseProps {
   /** The actions, drawn as icon buttons: custom actions in their order, then the verbs in theirs. */
   actions: readonly ActionRowAction[];
   /** Content at the start of the row, before the actions (a title, a filter, a status line). */

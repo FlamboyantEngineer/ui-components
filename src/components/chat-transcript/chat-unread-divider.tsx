@@ -1,10 +1,10 @@
 'use client';
 
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 
-export type ChatUnreadDividerProps = BaseProps;
+export type ChatUnreadDividerProps = RefProps<HTMLDivElement> & BaseProps;
 
 const hooks = createHooks('chat-unread-divider', ['label']);
 

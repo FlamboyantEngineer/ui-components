@@ -13,7 +13,7 @@ import {
 import { TabListStateContext } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
@@ -45,7 +45,8 @@ export interface ViewSwitcherView {
 /** `tabs` lists the views as tabs; `menu` puts them in a menu, for many views or little room. */
 export type ViewSwitcherVariant = 'tabs' | 'menu';
 
-export interface ViewSwitcherProps extends BaseProps, AriaLabellingProps, ViewActionHandlers {
+export interface ViewSwitcherProps
+  extends RefProps<HTMLDivElement>, BaseProps, AriaLabellingProps, ViewActionHandlers {
   /** The saved views, in order. */
   views: readonly ViewSwitcherView[];
   /** The selected view's `id`, controlled. */
@@ -285,6 +286,7 @@ function useViewDialog(resolve: (request: ViewDialogRequest) => ViewDialog | nul
  * view, reset, rename, make it the default view or delete it, each tab also offering its own.
  */
 export function ViewSwitcher(props: ViewSwitcherProps) {
+  const { ref } = props;
   const { views, variant = 'tabs', isDirty = false, defaultViewKey = null } = props;
   const { className, id } = props;
   const strings = useUiStrings();
@@ -319,7 +321,7 @@ export function ViewSwitcher(props: ViewSwitcherProps) {
     ) : null;
   const data = { variant, dirty: isDirty };
   return (
-    <div id={id} {...hooks.root({ className, props, data })}>
+    <div ref={ref} id={id} {...hooks.root({ className, props, data })}>
       {variant === 'tabs' ? (
         <ViewTabs
           props={props}

@@ -2,13 +2,14 @@
 
 import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { toolCallKindGlyphs, type ChatToolCallKind } from '../chat-tool-call/chat-tool-call.js';
 import { ActivityDisclosure, type ActivityExpansionProps } from './activity-disclosure.js';
 import { toWholeSeconds } from './chat-activity.js';
 
-export interface ChatStepsProps extends Omit<BaseProps, 'id'>, ActivityExpansionProps {
+export interface ChatStepsProps
+  extends RefProps<HTMLDivElement>, Omit<BaseProps, 'id'>, ActivityExpansionProps {
   /** The run goes on: the group is open and busy. Defaults to `false`. */
   isRunning?: boolean | undefined;
   /** What the run is doing now, such as its reasoning's latest heading; labels it while it runs. */

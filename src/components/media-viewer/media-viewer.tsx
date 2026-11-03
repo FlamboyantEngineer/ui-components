@@ -5,7 +5,7 @@ import { useLocale } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { OpenStateProps } from '../../core/events.js';
 import { mergeClassNames } from '../../core/hooks.js';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { Modal } from '../modal/modal.js';
 import { defaultZoomLevels, findNextZoomLevel } from '../zoom-control/zoom-control.js';
 import { resolveMediaKey, type MediaKeyCommand } from './media-layout.js';
@@ -24,7 +24,7 @@ import { useRetainedKey } from '../../utils/use-retained-key.js';
 
 export type { MediaViewerItem } from './media-viewer-parts.js';
 
-export interface MediaViewerProps extends BaseProps, OpenStateProps {
+export interface MediaViewerProps extends RefProps<HTMLDivElement>, BaseProps, OpenStateProps {
   /** The files to page through, in order. */
   items: readonly MediaViewerItem[];
   /** The item shown, controlled. */

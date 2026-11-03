@@ -1,10 +1,11 @@
 'use client';
 
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { useContext, useRef, useState, type ReactNode } from 'react';
 import { Dialog, DialogTrigger, OverlayTriggerStateContext } from '../../primitives/index.js';
 import { PopoverPanel } from '../popover/popover.js';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useCloseWhenLocked } from '../../utils/use-close-when-locked.js';
 import { EmojiPickerBody } from './emoji-picker-body.js';
@@ -23,6 +24,7 @@ import { emojiPickerHooks as hooks } from './emoji-picker-hooks.js';
 
 export interface EmojiPickerProps
   extends
+    RefProps<HTMLElement>,
     AriaLabellingProps,
     SkinToneState,
     EmojiSources,
@@ -72,6 +74,7 @@ function EmojiPickerLayout({ hideSkinTones }: Pick<EmojiPickerProps, 'hideSkinTo
  * used emoji and a skin tone choice. Data comes in as props and leaves through callbacks.
  */
 export function EmojiPicker({
+  ref,
   onSelect,
   skinTone,
   defaultSkinTone,
@@ -94,6 +97,7 @@ export function EmojiPicker({
 }: EmojiPickerProps) {
   const strings = useUiStrings();
   const rootRef = useRef<HTMLElement>(null);
+  const rootRefs = useMergedRefs(rootRef, ref);
   const state = useEmojiPickerState({
     onSelect,
     skinTone,
@@ -115,7 +119,7 @@ export function EmojiPicker({
   return (
     <Dialog
       {...rest}
-      ref={rootRef}
+      ref={rootRefs}
       {...hooks.root({ className, data: { loading: !state.data.emoji && !state.data.failed } })}
       aria-label={rest['aria-label'] ?? strings.emojiPicker}
     >

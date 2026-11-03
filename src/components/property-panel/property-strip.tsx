@@ -1,13 +1,13 @@
 import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 
-export interface PropertyStripProps extends BaseProps {
+export interface PropertyStripProps extends RefProps<HTMLSpanElement>, BaseProps {
   /** The strip's cells. */
   children?: ReactNode;
 }
 
-export interface PropertyStripCellProps extends BaseProps {
+export interface PropertyStripCellProps extends RefProps<HTMLSpanElement>, BaseProps {
   /** A short visible label before the control, such as `T`. Decorative: the control names itself. */
   letter: string;
   /** The full name the letter stands for, shown as its native tooltip. */

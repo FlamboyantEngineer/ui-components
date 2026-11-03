@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useId, useRef, type MouseEvent, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import {
   ProjectionContent,
@@ -22,7 +22,7 @@ export type AppFrameBandSlot = 'leading' | 'status' | 'tools' | 'actions';
 /** The regions a frame names for assistive technology. */
 export type AppFrameLabelledRegion = 'main' | 'start-panel' | 'end-panel' | 'bottom-panel';
 
-export interface AppFrameProps extends BaseProps {
+export interface AppFrameProps extends RefProps<HTMLDivElement>, BaseProps {
   /** The main content. */
   children?: ReactNode;
   /** The bar along the top, such as an `AppFrameBand`: the banner. */

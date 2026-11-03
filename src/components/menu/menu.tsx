@@ -24,7 +24,7 @@ import {
 } from '../../primitives/index.js';
 import type { AriaLabellingProps, SelectionProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key, Selection } from '../../core/props.js';
+import type { BaseProps, Key, Selection, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { toCollectionSelectionProps } from '../../utils/collection-selection.js';
@@ -61,7 +61,8 @@ export interface MenuSeparatorEntry {
 
 export type MenuEntry = MenuItemEntry | MenuSectionEntry | MenuSeparatorEntry;
 
-export interface MenuProps extends BaseProps, AriaLabellingProps, SelectionProps {
+export interface MenuProps
+  extends RefProps<HTMLDivElement>, BaseProps, AriaLabellingProps, SelectionProps {
   /** Entries as data, used when there are no `children`. */
   items?: readonly MenuEntry[] | undefined;
   /** `MenuItem`, `MenuSection`, `MenuSeparator` and `SubmenuTrigger` elements. */

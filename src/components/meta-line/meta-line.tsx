@@ -1,13 +1,16 @@
 import { Fragment, isValidElement, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 
 /** A value the text form of a metadata line accepts. Blank strings, booleans and nullish values are skipped. */
 export type MetaLineTextItem = string | number | boolean | null | undefined;
 
 export interface MetaLineProps
-  extends BaseProps, Pick<AriaLabellingProps, 'aria-label' | 'aria-labelledby'> {
+  extends
+    RefProps<HTMLSpanElement>,
+    BaseProps,
+    Pick<AriaLabellingProps, 'aria-label' | 'aria-labelledby'> {
   /** The entries, in order. Empty entries are skipped without leaving a separator. */
   items: readonly ReactNode[];
 }

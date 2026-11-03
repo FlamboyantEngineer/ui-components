@@ -2,7 +2,7 @@
 
 import { useId, useMemo, useRef, type CSSProperties } from 'react';
 import { measuredProperty } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { Button } from '../button/button.js';
@@ -37,7 +37,7 @@ export interface CodeBlockData {
   variant?: CodeBlockVariant | undefined;
 }
 
-export interface CodeBlockProps extends BaseProps, CodeBlockData {
+export interface CodeBlockProps extends RefProps<HTMLDivElement>, BaseProps, CodeBlockData {
   /** Shows an Apply action that hands over the block's value, such as to insert it in a file. */
   onApply?: ((code: string) => void) | undefined;
   /** Names the Apply action. Defaults to the provider's `codeBlockApply` string. */
@@ -72,6 +72,7 @@ function readGutterStyle(numbered: number | null): CSSProperties | undefined {
  * commands.
  */
 export function CodeBlock({
+  ref,
   code,
   language,
   title,
@@ -99,6 +100,7 @@ export function CodeBlock({
   const numbered = lineNumbers ? countNumberedLines(code.split('\n').length, code) : null;
   return (
     <div
+      ref={ref}
       {...hooks.root({ className, props: rest, data: { variant, language } })}
       id={id}
       role="group"

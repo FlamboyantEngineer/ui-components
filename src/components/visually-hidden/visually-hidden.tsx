@@ -4,14 +4,18 @@ import { useState, type ReactNode } from 'react';
 import { VisuallyHidden as AriaVisuallyHidden, useFocusWithin } from '../../primitives/index.js';
 import type { FocusEventProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, NativeProps } from '../../core/props.js';
+import type { BaseProps, NativeProps, RefProps } from '../../core/props.js';
 import { mergeProps } from '../../utils/merge-props.js';
 
 /** The element that hides the content: a `<span>` keeps phrasing content valid. */
 export type VisuallyHiddenElement = 'div' | 'span';
 
 export interface VisuallyHiddenProps
-  extends BaseProps, Pick<FocusEventProps, 'onFocus' | 'onBlur'>, Pick<NativeProps<'div'>, 'role'> {
+  extends
+    RefProps<HTMLElement>,
+    BaseProps,
+    Pick<FocusEventProps, 'onFocus' | 'onBlur'>,
+    Pick<NativeProps<'div'>, 'role'> {
   /** The content only assistive technology perceives. */
   children?: ReactNode;
   /** The element to render. Defaults to `div`. */

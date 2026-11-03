@@ -1,8 +1,9 @@
 'use client';
 
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
@@ -20,7 +21,8 @@ export interface AnnotationCardState {
   isOrphaned: boolean;
 }
 
-export interface AnnotationMarginProps extends BaseProps, AriaLabellingProps {
+export interface AnnotationMarginProps
+  extends RefProps<HTMLDivElement>, BaseProps, AriaLabellingProps {
   /** Draws an annotation's card. */
   renderCard: (annotation: Annotation, state: AnnotationCardState) => ReactNode;
   /** Space kept between stacked cards, in pixels. Defaults to 8. */
@@ -75,6 +77,7 @@ function useMarginGeometry(margin: HTMLElement | null, layer: HTMLElement | null
  * Home and End move between them, and focusing a card makes its annotation active.
  */
 export function AnnotationMargin({
+  ref,
   renderCard,
   gap = 8,
   className,
@@ -83,6 +86,7 @@ export function AnnotationMargin({
   const strings = useUiStrings();
   const { anchors, currentKey, setCurrentKey, layer } = useAnnotationContext();
   const [margin, setMargin] = useState<HTMLDivElement | null>(null);
+  const rootRefs = useMergedRefs(setMargin, ref);
   const { geometry, cards, register } = useMarginGeometry(margin, layer);
   const byId = new Map(anchors.map((anchor) => [anchor.annotation.id, anchor.annotation]));
   const placements = stackAnnotationCards(
@@ -113,7 +117,7 @@ export function AnnotationMargin({
       aria-label={strings.annotations}
       {...rest}
       {...hooks.slot('margin', undefined, className)}
-      ref={setMargin}
+      ref={rootRefs}
       role="list"
       style={{ position: 'relative', minHeight: height }}
     >

@@ -5,7 +5,7 @@ import { readOwn } from '../../utils/read-own.js';
 import { useMemo, type ReactNode } from 'react';
 import { useTimeZone } from '../../core/clock.js';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { ChatMessageData, ChatParticipant } from '../chat-parts/chat-parts.js';
 import {
@@ -50,6 +50,7 @@ export type { ChatThinkingUntil } from './chat-model.js';
 
 export interface ChatProps
   extends
+    RefProps<HTMLDivElement>,
     BaseProps,
     AriaLabellingProps,
     ChatComposerOptions,
@@ -167,6 +168,7 @@ function useHeaderStatus({ props, participants }: Omit<ChatModel, 'context'>) {
  * `useChatController`'s `props` into it, or pass your own.
  */
 export function Chat(props: ChatProps) {
+  const { ref } = props;
   const { messages, participants: list, currentUserId, className, id } = props;
   const participants = useMemo(() => indexParticipants(list), [list]);
   const isAssistantChat = useMemo(() => hasAssistant(list), [list]);
@@ -185,7 +187,7 @@ export function Chat(props: ChatProps) {
     'aria-details': details,
   } = props;
   return (
-    <div id={id} {...hooks.root({ className, props })}>
+    <div ref={ref} id={id} {...hooks.root({ className, props })}>
       {showHeader ? (
         <ChatHeader
           title={props.title ?? ''}

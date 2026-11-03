@@ -1,13 +1,13 @@
 import { createElement, useId, useMemo, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { mapTreeToDepth } from '../../utils/map-tree.js';
 import { maxMarkupDepth } from '../../utils/markup.js';
 import { toImageProps } from '../icon/icon-props.js';
 import { parseSvgMarkup, type SvgElementNode, type SvgNode } from './parse-svg-markup.js';
 import { createSvgReferenceScope, type SvgReferenceScope } from './svg-references.js';
 
-export interface SvgMarkupProps extends BaseProps {
+export interface SvgMarkupProps extends RefProps<SVGSVGElement>, BaseProps {
   /** SVG markup with a root `<svg>` element, for example an entry of a host icon registry. */
   markup: string;
   /** Accessible name. Without one the drawing is decorative and hidden from assistive technology. */
@@ -107,7 +107,7 @@ export function renderSvgDrawing(tree: SvgElementNode, instanceId: string): SvgD
  * drawing. The drawing is parsed and scoped again only when `markup` changes.
  * Renders nothing when the markup has no `<svg>` root.
  */
-export function SvgMarkup({ markup, label, className, id, ...rest }: SvgMarkupProps) {
+export function SvgMarkup({ ref, markup, label, className, id, ...rest }: SvgMarkupProps) {
   const instanceId = useId();
   const tree = useMemo(() => parseSvgMarkup(markup), [markup]);
   const drawing = useMemo(
@@ -115,15 +115,16 @@ export function SvgMarkup({ markup, label, className, id, ...rest }: SvgMarkupPr
     [tree, instanceId],
   );
   if (!drawing) return null;
-  return createElement(
-    'svg',
-    {
-      ...drawing.rootProps,
-      ...hooks.root({ className, props: rest }),
-      id,
-      focusable: 'false',
-      ...toImageProps(label),
-    },
-    drawing.children,
+  return (
+    <svg
+      {...drawing.rootProps}
+      {...hooks.root({ className, props: rest })}
+      ref={ref}
+      id={id}
+      focusable="false"
+      {...toImageProps(label)}
+    >
+      {drawing.children}
+    </svg>
   );
 }

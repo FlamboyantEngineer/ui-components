@@ -1,5 +1,6 @@
 'use client';
 
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { SearchGlyph } from '../../core/glyphs.js';
 import { useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import {
@@ -15,7 +16,7 @@ import {
 import { useControllableState } from '../../core/controllable-state.js';
 import type { OpenStateProps } from '../../core/events.js';
 import { createHooks, splitDataAttributes } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { Menu, type MenuProps, type MenuSize } from '../menu/menu.js';
 import { useLayerZIndex, usePortalContainer } from '../portal/portal.js';
@@ -33,6 +34,7 @@ export type CommandPaletteFilter = (textValue: string, inputValue: string) => bo
 
 export interface CommandPaletteProps
   extends
+    RefProps<HTMLDivElement>,
     OpenStateProps,
     Pick<MenuProps, 'items' | 'children' | 'onAction' | 'isLoading' | 'renderEmptyState'>,
     BaseProps {
@@ -177,6 +179,7 @@ function useOpening(isOpen: boolean) {
  * where it was.
  */
 export function CommandPalette({
+  ref,
   isOpen,
   defaultOpen,
   onOpenChange,
@@ -195,9 +198,10 @@ export function CommandPalette({
   useDocumentShortcut(shortcut, () => changeOpen(true));
   const overlayRef = useRef<HTMLDivElement>(null);
   useReturnFocusOnClose(open, overlayRef);
+  const rootRefs = useMergedRefs(overlayRef, ref);
   return (
     <ModalOverlay
-      ref={overlayRef}
+      ref={rootRefs}
       {...hooks.root({ className, props: rest, data: { layer: 'modal', size } })}
       isOpen={open}
       onOpenChange={changeOpen}

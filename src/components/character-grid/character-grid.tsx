@@ -4,7 +4,7 @@ import { useMemo, useRef, useState, type KeyboardEvent, type RefObject } from 'r
 import { GridList, GridListHeader, GridListItem, GridListSection } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
@@ -21,7 +21,8 @@ import { useRecentCharacters } from './use-recent-characters.js';
 
 export type { CharacterGridCategory, CharacterGridCharacter } from './character-filter.js';
 
-export interface CharacterGridProps extends BaseProps, AriaLabellingProps {
+export interface CharacterGridProps
+  extends RefProps<HTMLDivElement>, BaseProps, AriaLabellingProps {
   /** The characters on offer, one section per category, in order. */
   categories: readonly CharacterGridCategory[];
   /** Called with the character the reader chooses. */
@@ -158,6 +159,7 @@ function useSections(
  * the grid (kept through the provider's storage), and a preview names the hovered or focused one.
  */
 export function CharacterGrid({
+  ref,
   categories,
   onSelect,
   persistKey,
@@ -190,6 +192,7 @@ export function CharacterGrid({
   };
   return (
     <div
+      ref={ref}
       {...hooks.root({ className, props: rest, data: { searching: query.trim() !== '' } })}
       id={id}
       role="group"

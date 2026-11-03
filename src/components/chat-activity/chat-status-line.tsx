@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { ActivityAnnouncer } from './activity-announcer.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
@@ -10,7 +10,7 @@ import { isEmptyNode } from '../../utils/is-empty-node.js';
 /** The assistant is `thinking` (or acting), or `writing` its answer. */
 export type ChatStatusLineActivity = 'thinking' | 'writing';
 
-export interface ChatStatusLineProps extends BaseProps {
+export interface ChatStatusLineProps extends RefProps<HTMLDivElement>, BaseProps {
   /** What the assistant is doing now, such as "Searching trains…". Defaults to "Thinking…". */
   text?: string | undefined;
   /** A decorative icon in place of the busy indicator. */

@@ -1,9 +1,10 @@
 'use client';
 
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { isFocusLost } from '../../utils/focus-target.js';
 import { useLayoutEffect, useRef, type RefObject } from 'react';
 import { useLocale } from '../../primitives/index.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import {
@@ -33,7 +34,8 @@ export type {
 } from './attachment-model.js';
 
 /** The attachment's data, with the commands its owner offers. `id` is the attachment's, not the element's. */
-export interface ChatAttachmentProps extends Omit<BaseProps, 'id'>, ChatAttachmentData {
+export interface ChatAttachmentProps
+  extends RefProps<HTMLDivElement>, Omit<BaseProps, 'id'>, ChatAttachmentData {
   /** Shows a remove button, as for a file attached in the composer. */
   onRemove?: (() => void) | undefined;
   /** Shows a Retry button with a failed upload's error. */
@@ -70,6 +72,7 @@ function useRetryFocus(
  * link once complete; and a remove button for the composer. Its kind, status and display are hooks.
  */
 export function ChatAttachment({
+  ref,
   id,
   name,
   mediaType,
@@ -88,6 +91,7 @@ export function ChatAttachment({
   const strings = useUiStrings();
   const { locale } = useLocale();
   const rootRef = useRef<HTMLDivElement>(null);
+  const rootRefs = useMergedRefs(rootRef, ref);
   const removeRef = useRef<HTMLElement>(null);
   const kind = getAttachmentKind(mediaType, name);
   const status = resolveAttachmentStatus({ status: givenStatus, error });
@@ -98,7 +102,7 @@ export function ChatAttachment({
   return (
     <div
       {...hooks.root({ className, props: rest, data: { kind, status, display } })}
-      ref={rootRef}
+      ref={rootRefs}
       // Focusable by script only, for the focus to land on after Retry when no control is left.
       tabIndex={-1}
     >

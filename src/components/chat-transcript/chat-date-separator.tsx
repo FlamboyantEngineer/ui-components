@@ -2,10 +2,11 @@
 
 import { parseIsoDate, parseIsoDateTime, toCalendarDate } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { RelativeTime, type RelativeTimeProps } from '../relative-time/relative-time.js';
 
-export interface ChatDateSeparatorProps extends BaseProps, Pick<RelativeTimeProps, 'getNow'> {
+export interface ChatDateSeparatorProps
+  extends RefProps<HTMLDivElement>, BaseProps, Pick<RelativeTimeProps, 'getNow'> {
   /**
    * The day the messages after it were written: an ISO 8601 date (`YYYY-MM-DD`), or a date and
    * time, read as the reader's local day.

@@ -3,7 +3,7 @@
 import { useContext, useId, type ReactNode } from 'react';
 import { FieldScopeContext, useRevealScope } from '../field/field.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import {
   PropertyScopeContext,
@@ -12,7 +12,7 @@ import {
 } from '../property-scope/property-scope.js';
 import { TextMatch } from '../text-match/text-match.js';
 
-export interface PropertyRowProps extends BaseProps {
+export interface PropertyRowProps extends RefProps<HTMLDivElement>, BaseProps {
   /** The property's name, beside its control. A text label takes part in filtering and is marked. */
   label: ReactNode;
   /** The id of the control the label names; the label is then a `<label>` for it. */

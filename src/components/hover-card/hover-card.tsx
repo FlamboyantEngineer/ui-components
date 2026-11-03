@@ -9,7 +9,7 @@ import {
 } from '../../primitives/index.js';
 import type { OpenStateProps, OverlayPositionProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { PopoverPanel } from '../popover/popover.js';
 import { HOVER_CARD_CLOSE_DELAY, HOVER_CARD_DELAY } from '../../utils/overlay-defaults.js';
 import { usePreviewState } from '../../utils/use-preview-state.js';
@@ -30,7 +30,7 @@ export interface HoverCardTriggerProps extends OpenStateProps {
   isDisabled?: boolean | undefined;
 }
 
-export interface HoverCardProps extends BaseProps, OverlayPositionProps {
+export interface HoverCardProps extends RefProps<HTMLElement>, BaseProps, OverlayPositionProps {
   /** Shows an arrow pointing at the trigger. */
   showArrow?: boolean | undefined;
   /** Names the card. */

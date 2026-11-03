@@ -1,7 +1,7 @@
 'use client';
 
 import { LockGlyph, WarningGlyph } from '../../core/glyphs.js';
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { mergeClassNames, type HookProps } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
@@ -20,18 +20,33 @@ const unavailableGlyphs = { restricted: LockGlyph, missing: WarningGlyph } as co
 
 /** The root: a link to the record, or a span. */
 function RecordLabelRoot({
+  ref,
   href,
   isExternal,
   children,
   ...rest
 }: HookProps &
   AriaLabellingProps &
-  Pick<RecordLabelProps, 'href' | 'isExternal' | 'id'> & {
+  Pick<RecordLabelProps, 'ref' | 'href' | 'isExternal' | 'id'> & {
     children: ReactNode;
   }) {
-  if (href === undefined) return <span {...rest}>{children}</span>;
+  // The root is this span or the link below, so each takes the ref as its own element's.
+  if (href === undefined) {
+    return (
+      <span {...rest} ref={ref as Ref<HTMLSpanElement> | undefined}>
+        {children}
+      </span>
+    );
+  }
   return (
-    <Link {...rest} href={href} isExternal={isExternal} variant="secondary" underline="hover">
+    <Link
+      {...rest}
+      ref={ref as Ref<HTMLAnchorElement> | undefined}
+      href={href}
+      isExternal={isExternal}
+      variant="secondary"
+      underline="hover"
+    >
       {children}
     </Link>
   );

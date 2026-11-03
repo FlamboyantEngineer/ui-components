@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react';
 import { Dialog } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, PresenceStatus } from '../../core/props.js';
+import type { BaseProps, PresenceStatus, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import {
   getDisplayName,
@@ -44,6 +44,7 @@ export interface UserCardAction {
 
 export interface UserCardProps
   extends
+    RefProps<HTMLElement>,
     AvatarIdentity,
     AvatarBadgeProps,
     Pick<UserIdentityProps, 'description' | 'colorCount'>,

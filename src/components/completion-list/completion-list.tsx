@@ -19,7 +19,7 @@ import { useFollowAnchor } from '../../utils/use-follow-anchor.js';
 import { useFrameFlag } from '../../utils/use-frame-flag.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { triggerWidthProperty, useLayerZIndex } from '../portal/portal.js';
 import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
@@ -43,7 +43,7 @@ export interface CompletionListItemState {
   isActive: boolean;
 }
 
-export interface CompletionListProps extends BaseProps, AriaLabellingProps {
+export interface CompletionListProps extends RefProps<HTMLElement>, BaseProps, AriaLabellingProps {
   /** Shows the list. It opens only with items or an empty state to show. */
   isOpen: boolean;
   /** Called when the popover asks to close. */
@@ -202,7 +202,7 @@ export function CompletionList(props: CompletionListProps) {
   const isMirrorScroll = useMirrorScrollHold(anchorRef, isShown);
   const documentation = items.find((item) => item.id === activeKey)?.documentation;
   const documentationId = documentation ? `${listId}-documentation` : undefined;
-  const { className, ...rest } = props;
+  const { className, ref, ...rest } = props;
   const label = props['aria-labelledby'] ? undefined : (props['aria-label'] ?? strings.suggestions);
   return (
     <>
@@ -213,6 +213,7 @@ export function CompletionList(props: CompletionListProps) {
       />
       <Popover
         {...hooks.root({ className, props: rest })}
+        ref={ref}
         isOpen={isShown}
         onOpenChange={(open) => {
           if (open || !isMirrorScroll()) onOpenChange?.(open);

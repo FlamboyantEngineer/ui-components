@@ -109,6 +109,7 @@ const layoutKeys = new Set<string>([
   'autoFocus',
   'className',
   'id',
+  'ref',
 ]);
 
 function bucketOf(key: string): 'state' | 'field' | 'rest' {

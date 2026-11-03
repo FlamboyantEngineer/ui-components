@@ -1,9 +1,10 @@
 'use client';
 
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isFocusLost, resolveFocusTarget, type FocusTarget } from '../../utils/focus-target.js';
 import { requireDefined } from '../../utils/require-defined.js';
@@ -23,7 +24,10 @@ import { ChatAttachment } from './chat-attachment.js';
 export type ChatAttachmentFocusTarget = FocusTarget;
 
 export interface ChatAttachmentListProps
-  extends BaseProps, Pick<AriaLabellingProps, 'aria-label' | 'aria-labelledby'> {
+  extends
+    RefProps<HTMLUListElement>,
+    BaseProps,
+    Pick<AriaLabellingProps, 'aria-label' | 'aria-labelledby'> {
   /** The attachments, in the order they show. */
   attachments: readonly ChatAttachmentData[];
   /** Shows a remove button on each attachment, which calls this with the attachment's id. */
@@ -112,6 +116,7 @@ function toGalleryItems(attachment: ChatAttachmentData): MediaViewerItem[] {
  * empty list renders nothing.
  */
 export function ChatAttachmentList({
+  ref,
   attachments,
   onRemove,
   onRetry,
@@ -124,6 +129,7 @@ export function ChatAttachmentList({
   const removal = useRemovalFocus(attachments, finalFocus);
   const [stored, setViewer] = useState<ViewerState | null>(null);
   const listRef = useRef<HTMLUListElement>(null);
+  const rootRefs = useMergedRefs(listRef, ref);
   const gallery = attachments.flatMap(toGalleryItems);
   const viewer = followGallery(stored, gallery);
   if (viewer !== stored) setViewer(viewer);
@@ -134,7 +140,7 @@ export function ChatAttachmentList({
   return (
     <AttachmentRemovalContext value={removal}>
       <ul
-        ref={listRef}
+        ref={rootRefs}
         {...hooks.root({ className, props: rest })}
         id={id}
         aria-label={

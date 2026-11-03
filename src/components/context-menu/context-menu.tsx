@@ -17,7 +17,7 @@ import {
   RootMenuTriggerStateContext,
   type RootMenuTriggerState,
 } from '../../primitives/index.js';
-import type { BaseProps, Key, Placement } from '../../core/props.js';
+import type { BaseProps, Key, Placement, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Menu, MenuOverlay, type MenuPopoverProps } from '../menu/menu.js';
 import { useContextMenuTarget, type ContextMenuTargetProps } from './context-menu-target.js';
@@ -38,7 +38,7 @@ export {
 } from './menu-controller.js';
 export type { MenuController } from './menu-controller.js';
 
-export interface ContextMenuProps extends BaseProps {
+export interface ContextMenuProps extends RefProps<HTMLElement>, BaseProps {
   /** Holds the open state and anchor; open, move and close the menu through it. */
   controller: MenuController;
   /** The `Menu` to show. Defaults to a `Menu` of the controller's entries. */

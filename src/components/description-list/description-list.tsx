@@ -44,7 +44,7 @@ type RowAttributes = Pick<
   | 'aria-describedby'
 >;
 
-export interface DescriptionRowProps extends BaseProps, RowAttributes {
+export interface DescriptionRowProps extends RefProps<HTMLDivElement>, BaseProps, RowAttributes {
   /** The term. Shown as given, with no punctuation added. */
   label: ReactNode;
   /** The value. Zero and empty values are shown as given. */

@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps, Size } from '../../core/props.js';
+import type { BaseProps, Size, RefProps } from '../../core/props.js';
 import type { IconSource } from '../icon/icon.js';
 import { RecordChipParts } from './record-chip-parts.js';
 import { RecordLabelText } from './record-label-text.js';
@@ -15,7 +15,8 @@ export type RecordUnavailable = 'restricted' | 'missing';
 export type RecordLabelMode = 'label' | 'chip';
 export type RecordLabelLayout = 'inline' | 'stacked';
 
-export interface RecordLabelProps extends BaseProps, AriaLabellingProps {
+export interface RecordLabelProps
+  extends RefProps<HTMLSpanElement | HTMLAnchorElement>, BaseProps, AriaLabellingProps {
   /** Plain label or a chip with metadata and removal. Defaults to `label`. */
   mode?: RecordLabelMode | undefined;
   /** The kind of record, shown in chip mode when present. */

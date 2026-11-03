@@ -5,7 +5,7 @@
 
 import { useControllableState } from '../../core/controllable-state.js';
 import { mergeClassNames } from '../../core/hooks.js';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { IconSource } from '../icon/icon.js';
 import { Menu, MenuItem, MenuPopover, MenuTrigger } from '../menu/menu.js';
@@ -29,7 +29,7 @@ export interface MessageComposerSelectOption {
   disabledReason?: string | undefined;
 }
 
-export interface MessageComposerSelectProps extends BaseProps {
+export interface MessageComposerSelectProps extends RefProps<HTMLButtonElement>, BaseProps {
   /** What the select chooses, such as "Approval": it names the trigger with the current option. */
   label: string;
   /** The options, in menu order. */

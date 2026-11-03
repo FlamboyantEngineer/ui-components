@@ -1,6 +1,6 @@
 import { Fragment } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import type { InlineTextDiffSegment } from './text-diff.js';
 
 export { createInlineWordDiff } from './text-diff.js';
@@ -9,7 +9,7 @@ export type { InlineTextDiffSegment } from './text-diff.js';
 /** `changes` marks the removed and added runs; `final` shows the resulting text alone. */
 export type InlineTextDiffView = 'changes' | 'final';
 
-export interface InlineTextDiffProps extends BaseProps {
+export interface InlineTextDiffProps extends RefProps<HTMLSpanElement>, BaseProps {
   /** Runs in reading order, from `createInlineTextDiffExcerpt` or `createInlineWordDiff`. */
   segments: readonly InlineTextDiffSegment[];
   /** What the diff shows. Defaults to `changes`. */

@@ -2,7 +2,7 @@
 
 import { useId, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { useFocusWithin, useHover } from '../../primitives/index.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { mergeProps } from '../../utils/merge-props.js';
 import { getDisplayName, type AvatarIdentity, type AvatarProps } from '../avatar/avatar.js';
@@ -48,7 +48,8 @@ export type ChatMessageGroupPosition = 'single' | 'first' | 'middle' | 'last';
 export interface ChatMessageAuthor
   extends AvatarIdentity, Pick<AvatarProps, 'status' | 'statusLabel'> {}
 
-export interface ChatMessageProps extends BaseProps, Pick<RelativeTimeProps, 'getNow'> {
+export interface ChatMessageProps
+  extends RefProps<HTMLElement>, BaseProps, Pick<RelativeTimeProps, 'getNow'> {
   /** Who the message is from, relative to the reader. Defaults to `received`. */
   origin?: ChatMessageOrigin | undefined;
   /** The person or assistant who wrote it, drawn as an avatar (with their presence) and a name. */

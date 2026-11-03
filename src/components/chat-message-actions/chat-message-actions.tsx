@@ -1,7 +1,7 @@
 'use client';
 
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { MessageActionsBar } from './message-actions-bar.js';
 import { MessageCommandOverlays } from './message-command-overlays.js';
 import {
@@ -12,7 +12,7 @@ import {
 } from './message-commands.js';
 
 export interface ChatMessageActionsProps
-  extends BaseProps, AriaLabellingProps, ChatMessageCommandProps {}
+  extends RefProps<HTMLDivElement>, BaseProps, AriaLabellingProps, ChatMessageCommandProps {}
 
 /**
  * The action bar for a message's `actions`: a toolbar of the commands whose callbacks are given

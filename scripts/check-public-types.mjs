@@ -2,7 +2,8 @@
 // Fails when a public type declaration exposes the library's building blocks (specs/PRIMITIVES.md):
 // every .d.ts under dist/, except dist/primitives/, must not import from the primitives directory
 // or from React Aria and its companion packages. Also fails when an exported type names a library
-// type that no entry point exports (coding guideline N4). Run after `npm run build`.
+// type that no entry point exports (coding guideline N4), or when an exported component with a root
+// element declares no `ref` (UIC-COMPOSITION-2.5). Run after `npm run build`.
 //   node scripts/check-public-types.mjs                      check all of dist/
 //   node scripts/check-public-types.mjs --dir <path>         check another declaration directory
 //   node scripts/check-public-types.mjs button menu          check only these components
@@ -10,6 +11,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { option, relativePosix, reportProblems, root, walk } from './lib/script.mjs';
+import { findMissingRootRefs } from './lib/root-refs.mjs';
 import { findUnexportedTypes } from './lib/unexported-types.mjs';
 
 const LEAK =
@@ -55,4 +57,17 @@ reportProblems(unexported, {
   heading: `${unexported.length} public type(s) name a type no entry point exports`,
   hint: "Export the named type from its component's index.ts (coding guideline N4).",
   success: 'Every type a public type names is exported.',
+});
+
+const componentEntries = entries.filter((path) => {
+  const rel = relativePosix(dir, path);
+  return (
+    components.length === 0 || components.some((name) => rel === `components/${name}/index.d.ts`)
+  );
+});
+const rootRefs = findMissingRootRefs(componentEntries, { checkRootless: components.length === 0 });
+reportProblems(rootRefs.problems, {
+  heading: `${rootRefs.problems.length} component(s) break the root ref contract`,
+  hint: 'Extend RefProps<E> and forward ref to the root, or list a rootless component in scripts/lib/root-refs.mjs (UIC-COMPOSITION-2.5).',
+  success: `Checked ${rootRefs.checked} exported components: each with a root element takes a ref.`,
 });

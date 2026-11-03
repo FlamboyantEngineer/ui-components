@@ -2,7 +2,7 @@
 
 import { createElement, Fragment, useMemo, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { UiLink } from '../../core/provider.js';
 import { mapTreeToDepth } from '../../utils/map-tree.js';
 import { maxMarkupDepth } from '../../utils/markup.js';
@@ -16,7 +16,7 @@ import {
   type HtmlPolicy,
 } from './sanitize-html.js';
 
-export interface HtmlMarkupProps extends BaseProps {
+export interface HtmlMarkupProps extends RefProps<HTMLDivElement>, BaseProps {
   /** The HTML fragment to show, for example stored rich text. It is sanitized before rendering. */
   markup: string;
   /** What the sanitizer keeps. Defaults to `defaultHtmlPolicy`. */
@@ -96,6 +96,7 @@ function renderNodes(nodes: readonly HtmlNode[], renderElement: ElementRenderer)
  * innerHTML. Links render through the provider's link renderer; text through `TextMatch`.
  */
 export function HtmlMarkup({
+  ref,
   markup,
   policy = defaultHtmlPolicy,
   renderElement,
@@ -105,7 +106,7 @@ export function HtmlMarkup({
 }: HtmlMarkupProps) {
   const nodes = useMemo(() => sanitizeHtml(markup, policy), [markup, policy]);
   return (
-    <div {...hooks.root({ className, props: rest })} id={id}>
+    <div ref={ref} {...hooks.root({ className, props: rest })} id={id}>
       {renderNodes(nodes, renderElement)}
     </div>
   );

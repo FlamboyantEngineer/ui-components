@@ -9,6 +9,8 @@ import local from '../eslint-rules/index.js';
 // @ts-expect-error The scripts are plain JavaScript modules without declarations.
 import { runNpm } from '../scripts/lib/npm.mjs';
 // @ts-expect-error The scripts are plain JavaScript modules without declarations.
+import { findMissingRootRefs } from '../scripts/lib/root-refs.mjs';
+// @ts-expect-error The scripts are plain JavaScript modules without declarations.
 import { relativePosix } from '../scripts/lib/script.mjs';
 // @ts-expect-error The scripts are plain JavaScript modules without declarations.
 import { createTarGz, extractTarGz } from '../scripts/lib/tar.mjs';
@@ -77,5 +79,38 @@ describe('script helpers', () => {
     });
     visitor?.ImportDeclaration?.({ source: { value: '../table/table-rows.js' } });
     expect(reports).toHaveLength(1);
+  });
+
+  it('UIC-COMPOSITION-2.5 reports a rooted component without a ref and a stale rootless entry', () => {
+    const dir = tempDir();
+    const entry = join(dir, 'index.d.ts');
+    writeFileSync(
+      entry,
+      [
+        'type ReactNode = string | null;',
+        'export declare function Rooted(props: { ref?: unknown; label: string }): ReactNode;',
+        'export declare function Bare(props: { label: string }): ReactNode;',
+        'export declare function Provider(props: { children: ReactNode }): ReactNode;',
+        'export declare function Listed(props: { ref?: unknown }): ReactNode;',
+        'export declare function format(value: string): string;',
+      ].join('\n'),
+    );
+    const rootless = new Map([
+      ['Provider', 'a context provider'],
+      ['Listed', 'a context provider'],
+      ['Gone', 'a context provider'],
+    ]);
+    expect(findMissingRootRefs([entry], { rootless })).toEqual({
+      problems: [
+        'Bare declares no ref for its root element',
+        'Listed takes a ref but is listed as rootless',
+        'Gone is listed as rootless but not exported',
+      ],
+      checked: 4,
+    });
+    expect(findMissingRootRefs([entry], { rootless, checkRootless: false }).problems).toEqual([
+      'Bare declares no ref for its root element',
+      'Listed takes a ref but is listed as rootless',
+    ]);
   });
 });

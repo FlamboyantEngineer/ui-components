@@ -1,9 +1,10 @@
 'use client';
 
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { useCallback, useId, useMemo, useRef, type RefObject } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useFocusRequest } from '../../utils/use-focus-request.js';
 import { useIdFactory } from '../../utils/use-id-factory.js';
@@ -31,7 +32,8 @@ import {
 import { isHTMLElement } from '../../utils/is-element.js';
 import { getElementByIdFrom } from '../../utils/owner-window.js';
 
-export interface ConditionBuilderProps extends BaseProps, AriaLabellingProps {
+export interface ConditionBuilderProps
+  extends RefProps<HTMLDivElement>, BaseProps, AriaLabellingProps {
   /** The fields rules can test, as for a `FilterBar`. */
   fields: readonly FilterField[];
   /** The root group, controlled. */
@@ -183,6 +185,7 @@ function useBuilderActions(options: {
  * validation message. The value is a plain tree.
  */
 export function ConditionBuilder({
+  ref,
   fields,
   value,
   defaultValue = emptyTree,
@@ -196,6 +199,7 @@ export function ConditionBuilder({
   ...rest
 }: ConditionBuilderProps) {
   const rootRef = useRef<HTMLDivElement>(null);
+  const rootRefs = useMergedRefs(rootRef, ref);
   const strings = useUiStrings();
   const [tree, setTree] = useControllableState(value, defaultValue, onChange);
   const baseId = useId();
@@ -211,7 +215,7 @@ export function ConditionBuilder({
   return (
     <div
       {...rest}
-      ref={rootRef}
+      ref={rootRefs}
       {...conditionBuilderHooks.root({ className, props: rest })}
       role="group"
       aria-label={ariaLabel ?? (rest['aria-labelledby'] ? undefined : strings.conditions)}

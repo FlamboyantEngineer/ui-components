@@ -1,9 +1,10 @@
 'use client';
 
+import type { Ref } from 'react';
 import { Button as AriaButton } from '../../primitives/index.js';
 import type { PressEvent } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { getDisplayName } from '../avatar/avatar.js';
 
@@ -17,7 +18,11 @@ export interface ChatQuoteData {
   messageId?: string | undefined;
 }
 
-export interface ChatQuoteProps extends Omit<ChatQuoteData, 'messageId'>, BaseProps {
+export interface ChatQuoteProps
+  extends
+    RefProps<HTMLQuoteElement | HTMLButtonElement>,
+    Omit<ChatQuoteData, 'messageId'>,
+    BaseProps {
   /** Makes the quote a button, such as one that jumps to the quoted message. */
   onPress?: ((event: PressEvent) => void) | undefined;
 }
@@ -29,7 +34,14 @@ const hooks = createHooks('chat-quote', ['author', 'excerpt']);
  * both when `onPress` makes it jump to the original. Used in a reply and in a composer's reply
  * banner.
  */
-export function ChatQuote({ authorName, excerpt, onPress, className, ...rest }: ChatQuoteProps) {
+export function ChatQuote({
+  ref,
+  authorName,
+  excerpt,
+  onPress,
+  className,
+  ...rest
+}: ChatQuoteProps) {
   const strings = useUiStrings();
   const name = getDisplayName(authorName, strings.unnamed);
   const rootProps = { ...rest, ...hooks.root({ className, props: rest }) };
@@ -39,9 +51,21 @@ export function ChatQuote({ authorName, excerpt, onPress, className, ...rest }: 
       <span {...hooks.slot('excerpt')}>{excerpt}</span>
     </>
   );
-  if (!onPress) return <blockquote {...rootProps}>{parts}</blockquote>;
+  // The root is a `<blockquote>` or a button, so each takes the caller's ref as its own element's.
+  if (!onPress) {
+    return (
+      <blockquote {...rootProps} ref={ref as Ref<HTMLQuoteElement> | undefined}>
+        {parts}
+      </blockquote>
+    );
+  }
   return (
-    <AriaButton {...rootProps} aria-label={strings.chatQuoteLabel(name, excerpt)} onPress={onPress}>
+    <AriaButton
+      {...rootProps}
+      ref={ref as Ref<HTMLButtonElement> | undefined}
+      aria-label={strings.chatQuoteLabel(name, excerpt)}
+      onPress={onPress}
+    >
       {parts}
     </AriaButton>
   );

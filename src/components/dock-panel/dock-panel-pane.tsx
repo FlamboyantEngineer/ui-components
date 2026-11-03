@@ -2,14 +2,14 @@
 
 import { createContext, useContext, type ReactNode } from 'react';
 import { pickDataAttributes } from '../../core/hooks.js';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { ActionRow, type ActionRowAction } from '../action-row/action-row.js';
 import type { IconSource } from '../icon/icon.js';
 import { TabPanel } from '../tabs/tabs.js';
 import { dockPanelHooks as hooks } from './dock-panel-hooks.js';
 
-export interface DockPanelPaneProps extends Omit<BaseProps, 'id'> {
+export interface DockPanelPaneProps extends RefProps<HTMLDivElement>, Omit<BaseProps, 'id'> {
   /** Identifies the pane in the panel's selection. */
   id: Key;
   /** Names the pane, its tab and its collapsed launcher. */
@@ -39,6 +39,7 @@ const noActions: readonly ActionRowAction[] = Object.freeze([]);
  * footer. While another pane is shown it stays mounted, hidden and inert, keeping its state.
  */
 export function DockPanelPane({
+  ref,
   id,
   label: _label,
   icon: _icon,
@@ -72,6 +73,7 @@ export function DockPanelPane({
   }
   return (
     <TabPanel
+      ref={ref}
       {...pickDataAttributes(rest)}
       id={id}
       shouldForceMount

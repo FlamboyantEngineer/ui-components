@@ -1,9 +1,10 @@
 'use client';
 
+import type { Ref } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { useGetNow, useIsClockReadable, useTimeZone } from '../../core/clock.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import {
   capitalizeText,
   describeRelativeTime,
@@ -21,7 +22,7 @@ export type {
   RelativeTimeUnitStyle,
 } from '../../utils/relative-time.js';
 
-export interface RelativeTimeProps extends BaseProps {
+export interface RelativeTimeProps extends RefProps<HTMLTimeElement | HTMLSpanElement>, BaseProps {
   /** An ISO 8601 date (`YYYY-MM-DD`) or date and time, local or with an offset. */
   value: string | null | undefined;
   /** Values this many calendar days away or more read as the absolute date. Defaults to 7. */
@@ -51,13 +52,17 @@ export interface RelativeTimeProps extends BaseProps {
 
 const hooks = createHooks('relative-time', ['tooltip']);
 
+// The root is a `<time>`, or a `<span>` for the placeholder, so each takes the ref as its own.
 /** The placeholder of a missing or unreadable value, or nothing without one. */
 function EmptyTime({
   placeholder,
   capitalize,
   className,
   ...rest
-}: Pick<RelativeTimeProps, 'placeholder' | 'className'> & { capitalize: boolean }) {
+}: Pick<RelativeTimeProps, 'placeholder' | 'className'> & {
+  capitalize: boolean;
+  ref: Ref<HTMLSpanElement> | undefined;
+}) {
   const { locale } = useLocale();
   if (!placeholder) return null;
   return (
@@ -81,6 +86,7 @@ function LiveTime({
   capitalize = true,
   placeholder,
   className,
+  ref,
   ...rest
 }: RelativeTimeProps) {
   const { locale } = useLocale();
@@ -91,11 +97,22 @@ function LiveTime({
   const text = value ? describeRelativeTime(value, options) : null;
   useClockTick(text?.nextChange ?? null, now.getTime());
   if (!text || !value) {
-    const empty = { ...rest, placeholder, capitalize, className };
+    const empty = {
+      ...rest,
+      placeholder,
+      capitalize,
+      className,
+      ref: ref as Ref<HTMLSpanElement> | undefined,
+    };
     return <EmptyTime {...empty} />;
   }
   const data = { relation: text.relation, format: text.isRelative ? 'relative' : 'absolute' };
-  const timeProps = { ...rest, ...hooks.root({ className, data }), dateTime: value };
+  const timeProps = {
+    ...rest,
+    ...hooks.root({ className, data }),
+    ref: ref as Ref<HTMLTimeElement> | undefined,
+    dateTime: value,
+  };
   const words =
     text.isRelative && capitalize ? capitalizeText(text.relative, locale) : text.relative;
   // A timestamp already read as the absolute date has nothing to add in a tooltip.
@@ -122,15 +139,27 @@ function StableTime({
   ...props
 }: RelativeTimeProps) {
   const { locale } = useLocale();
-  const { fallbackAfterDays, precision, unitStyle, getNow, timeZone, showTooltip, ...rest } = props;
+  const { fallbackAfterDays, precision, unitStyle, getNow, timeZone, showTooltip, ref, ...rest } =
+    props;
   const text = value ? formatStableTime(value, locale, { dateStyle, timeStyle }) : null;
   if (!text || !value) {
-    const empty = { ...rest, placeholder, capitalize, className };
+    const empty = {
+      ...rest,
+      placeholder,
+      capitalize,
+      className,
+      ref: ref as Ref<HTMLSpanElement> | undefined,
+    };
     return <EmptyTime {...empty} />;
   }
   const data = { format: 'absolute' };
   return (
-    <time {...rest} {...hooks.root({ className, data })} dateTime={value}>
+    <time
+      {...rest}
+      {...hooks.root({ className, data })}
+      ref={ref as Ref<HTMLTimeElement> | undefined}
+      dateTime={value}
+    >
       {text}
     </time>
   );

@@ -1,5 +1,6 @@
 'use client';
 
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { CloseGlyph } from '../../core/glyphs.js';
 import { useRef, useState, type KeyboardEvent, type ReactNode, type RefObject } from 'react';
 import {
@@ -14,7 +15,7 @@ import {
 } from '../../primitives/index.js';
 import type { OpenStateProps, OverlayDismissProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Size } from '../../core/props.js';
+import type { BaseProps, Size, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { stopConsumedEscape } from '../../utils/consumed-escape.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
@@ -55,7 +56,8 @@ export interface DrawerRenderProps {
 }
 
 // The overlay holds the sheet's swipe geometry, so its element is not swappable.
-export interface DrawerProps extends OpenStateProps, OverlayDismissProps, BaseProps {
+export interface DrawerProps
+  extends RefProps<HTMLDivElement>, OpenStateProps, OverlayDismissProps, BaseProps {
   /** The edge it slides in from. Defaults to `end`. */
   position?: DrawerPosition | undefined;
   /** Defaults to `md`. */
@@ -159,6 +161,7 @@ function DrawerOpening({
  * the trigger. Snap points, swipe directions and nested drawers come from React Aria.
  */
 export function Drawer({
+  ref,
   position = 'end',
   size = 'md',
   title,
@@ -176,6 +179,7 @@ export function Drawer({
   ...rest
 }: DrawerProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
+  const rootRefs = useMergedRefs(overlayRef, ref);
   const stackedLayer = useStackedLayer('drawer');
   const resolvedLayer = layer ?? stackedLayer;
   const zIndex = useLayerZIndex(resolvedLayer);
@@ -198,7 +202,7 @@ export function Drawer({
         isDismissable && (shouldCloseOnInteractOutside?.(element) ?? true)
       }
       style={{ zIndex }}
-      ref={overlayRef}
+      ref={rootRefs}
     >
       <DrawerOpening overlayRef={overlayRef}>
         <SheetBackdrop className={hooks.slotClass('backdrop')} />

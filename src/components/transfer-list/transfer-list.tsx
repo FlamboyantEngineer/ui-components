@@ -9,7 +9,7 @@ import {
   ChevronRightGlyph,
 } from '../../core/glyphs.js';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { TransferPane, type TransferListItem, type TransferListSide } from './transfer-pane.js';
@@ -18,7 +18,7 @@ import { transferListHooks as hooks } from './transfer-list-hooks.js';
 
 export type { TransferListItem, TransferListSide } from './transfer-pane.js';
 
-export interface TransferListProps extends BaseProps, AriaLabellingProps {
+export interface TransferListProps extends RefProps<HTMLDivElement>, BaseProps, AriaLabellingProps {
   /** Every item, in the order the available side lists them. */
   items: readonly TransferListItem[];
   /** The chosen item ids, in the chosen side's order, controlled. */

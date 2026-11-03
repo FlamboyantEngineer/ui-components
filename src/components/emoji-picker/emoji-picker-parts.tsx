@@ -7,7 +7,7 @@ import {
   SearchField,
   type KeyboardEvent as AriaKeyboardEvent,
 } from '../../primitives/index.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { useStoreValue } from '../../utils/use-store-value.js';
 import { isComposingKey, leaveComposingEnter } from '../../utils/is-composing-key.js';
@@ -17,10 +17,10 @@ import { EmojiContent } from './emoji-grid.js';
 import { emojiPickerHooks as hooks } from './emoji-picker-hooks.js';
 
 /** The search field part: caller attributes and class go on the field. */
-export type EmojiPickerSearchProps = BaseProps;
+export type EmojiPickerSearchProps = RefProps<HTMLDivElement> & BaseProps;
 
 /** The preview part: caller attributes and class go on the preview. */
-export type EmojiPickerPreviewProps = BaseProps;
+export type EmojiPickerPreviewProps = RefProps<HTMLDivElement> & BaseProps;
 
 // Down moves from the search field to the grid's first emoji, even from a field laid out after the
 // grid or a virtualized grid scrolled past it. The field's keys stay inside the picker, except

@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type Ref } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { HoverCard, HoverCardTrigger } from '../hover-card/hover-card.js';
@@ -18,7 +18,8 @@ export interface ChatCitationData {
   index: number;
 }
 
-export interface ChatCitationProps extends BaseProps, ChatCitationData {}
+export interface ChatCitationProps
+  extends RefProps<HTMLAnchorElement | HTMLButtonElement>, BaseProps, ChatCitationData {}
 
 const hooks = createHooks('chat-citation', ['marker', 'card', 'title', 'site', 'snippet']);
 
@@ -27,7 +28,7 @@ const hooks = createHooks('chat-citation', ['marker', 'card', 'title', 'site', '
  * `HoverCard` on hover, keyboard focus and long press; a source without a URL opens its card on
  * press instead.
  */
-export function ChatCitation({ source, index, className, id, ...rest }: ChatCitationProps) {
+export function ChatCitation({ ref, source, index, className, id, ...rest }: ChatCitationProps) {
   const strings = useUiStrings();
   const [isOpen, setOpen] = useState(false);
   const rootProps = { ...hooks.root({ className, props: rest }), id };
@@ -44,6 +45,8 @@ export function ChatCitation({ source, index, className, id, ...rest }: ChatCita
       {source.url ? (
         <Link
           {...rootProps}
+          // The root is this link or the button below, each typed as its own element.
+          ref={ref as Ref<HTMLAnchorElement> | undefined}
           href={source.url}
           isExternal={isExternalUrl(source.url)}
           underline="hover"
@@ -51,7 +54,13 @@ export function ChatCitation({ source, index, className, id, ...rest }: ChatCita
           {content}
         </Link>
       ) : (
-        <Button {...rootProps} variant="bare" content="parts" onPress={() => setOpen(true)}>
+        <Button
+          {...rootProps}
+          ref={ref}
+          variant="bare"
+          content="parts"
+          onPress={() => setOpen(true)}
+        >
           {content}
         </Button>
       )}

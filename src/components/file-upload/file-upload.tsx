@@ -13,7 +13,7 @@ import {
 } from 'react';
 import { FileTrigger, useLocale } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { formatBytes } from '../../utils/format-bytes.js';
@@ -47,6 +47,7 @@ export type FileUploadVariant = 'button' | 'dropzone';
 
 export interface FileUploadProps
   extends
+    RefProps<HTMLDivElement>,
     BaseProps,
     FileRules,
     Pick<AriaLabellingProps, 'aria-label' | 'aria-labelledby' | 'aria-describedby'> {
@@ -258,6 +259,7 @@ const noFiles: readonly FileUploadItem[] = [];
  * `name`.
  */
 export function FileUpload(props: FileUploadProps) {
+  const { ref } = props;
   const { variant = 'button', files = noFiles, className, id, isReadOnly } = props;
   const strings = useUiStrings();
   const { locale } = useLocale();
@@ -276,6 +278,7 @@ export function FileUpload(props: FileUploadProps) {
   const Command = variant === 'button' ? ButtonCommand : DropZoneCommand;
   return (
     <div
+      ref={ref}
       {...hooks.root({ className, props, data })}
       id={id}
       onDragEnterCapture={intake.onDragEnter}
