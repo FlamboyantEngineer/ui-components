@@ -9,6 +9,53 @@ function output(page: Page, name: string): Locator {
   return page.locator(`[data-lab-output="${name}"]`);
 }
 
+test('UIC-NUMBER-FIELD-5.2 preserves fractional origins and stays inside off-grid maxima', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('number-field');
+  const scalar = field(page, 'fractional-origin').getByRole('slider', {
+    name: 'Fractional amount',
+  });
+  const range = field(page, 'fractional-range');
+  const start = range.getByRole('slider', { name: 'Minimum Fractional range' });
+  const end = range.getByRole('slider', { name: 'Maximum Fractional range' });
+  const short = field(page, 'off-grid-maximum').getByRole('slider', { name: 'Short interval' });
+  await expect(scalar).toHaveValue('0.05');
+  await expect(output(page, 'Fractional amount')).toHaveText('0.05');
+  await expect(output(page, 'Fractional change')).toHaveText('none');
+  await expect(start).toHaveValue('0.05');
+  await expect(end).toHaveValue('0.95');
+  await expect(output(page, 'Fractional range')).toHaveText('0.05 to 0.95');
+  await expect(short).toHaveValue('0');
+
+  await scalar.focus();
+  await scalar.press('End');
+  await expect(scalar).toHaveValue('0.95');
+  await expect(output(page, 'Fractional amount')).toHaveText('0.95');
+  await expect(output(page, 'Fractional change')).toHaveText('0.95');
+  await scalar.press('Home');
+  await expect(scalar).toHaveValue('0.05');
+  await start.focus();
+  await start.press('End');
+  await expect(start).toHaveValue('0.95');
+  await end.focus();
+  await end.press('Home');
+  await expect(end).toHaveValue('0.95');
+  await start.focus();
+  await start.press('Home');
+  await end.focus();
+  await end.press('Home');
+  await expect(output(page, 'Fractional range')).toHaveText('0.05 to 0.05');
+  await end.press('End');
+  await expect(output(page, 'Fractional range')).toHaveText('0.05 to 0.95');
+  await short.focus();
+  await short.press('End');
+  await expect(short).toHaveValue('0');
+  await short.press('Home');
+  await expect(short).toHaveValue('0');
+});
+
 async function boxOf(locator: Locator) {
   const box = await locator.boundingBox();
   if (!box) throw new Error('The element has no layout box.');

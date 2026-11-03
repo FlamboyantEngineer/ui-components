@@ -29,7 +29,9 @@ export function snapNumberValue(value: number, bounds: NumberBounds): number {
   if (maxValue !== undefined) {
     const limit = (maxValue - origin) / step;
     const near = Math.round(limit);
-    const maximumCount = Math.abs(limit - near) <= tolerance ? near : Math.floor(limit);
+    // Only count roundoff at the upper bound may admit its nearest integer step.
+    const limitTolerance = Math.min(Number.EPSILON * Math.max(1, Math.abs(limit)) * 2, 0.25);
+    const maximumCount = Math.abs(limit - near) <= limitTolerance ? near : Math.floor(limit);
     count = Math.min(count, maximumCount);
   }
   const precision = Math.max(countDecimalPlaces(origin), countDecimalPlaces(step));

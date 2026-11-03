@@ -2,6 +2,44 @@ import { describe, expect, it } from 'vitest';
 import { normalizeSliderValue, snapToStep } from './slider-values.js';
 
 describe('slider values', () => {
+  it.each([
+    { minValue: 0.05, maxValue: 1, step: 0.1, given: 0.05, expected: 0.05 },
+    { minValue: 0, maxValue: 0.099, step: 0.1, given: 0.099, expected: 0 },
+    { minValue: 0.05, maxValue: 1, step: 0.1, given: 1, expected: 0.95 },
+    { minValue: -0.05, maxValue: 1, step: 0.1, given: 0.15, expected: 0.15 },
+    { minValue: -0.05, maxValue: 1, step: 0.1, given: -0.05, expected: -0.05 },
+    { minValue: 0.25, maxValue: 3, step: 1, given: 1.25, expected: 1.25 },
+    { minValue: 5e-8, maxValue: 1e-6, step: 1e-7, given: 2.5e-7, expected: 2.5e-7 },
+    { minValue: 0, maxValue: 0.3, step: 0.1, given: 0.3, expected: 0.3 },
+    { minValue: 0.05, maxValue: 1, step: 0.1, given: Number.NaN, expected: 0.05 },
+    { minValue: 0.05, maxValue: 1, step: 0.1, given: Infinity, expected: 0.95 },
+    { minValue: 0.05, maxValue: 1, step: 0.1, given: -Infinity, expected: 0.05 },
+  ])(
+    'UIC-NUMBER-FIELD-5.2 preserves origins and bounds for $given on $minValue/$step',
+    ({ given, expected, ...grid }) => {
+      const once = snapToStep(given, grid);
+      expect(once).toBe(expected);
+      expect(once).toBeGreaterThanOrEqual(grid.minValue);
+      expect(once).toBeLessThanOrEqual(grid.maxValue);
+      expect(snapToStep(once, grid)).toBe(once);
+    },
+  );
+
+  it.each([
+    { given: [0.05, 0.85], expected: [0.05, 0.85] },
+    { given: [1, 0.05], expected: [0.05, 0.95] },
+    { given: [0.85, 0.15], expected: [0.15, 0.85] },
+    { given: [Number.NaN, Infinity], expected: [0.05, 0.95] },
+  ])(
+    'UIC-NUMBER-FIELD-5.2 normalizes both fractional endpoints idempotently: $given',
+    ({ given, expected }) => {
+      const grid = { minValue: 0.05, maxValue: 1, step: 0.1 };
+      const once = normalizeSliderValue(given as [number, number], grid);
+      expect(once).toEqual(expected);
+      expect(normalizeSliderValue(once, grid)).toEqual(once);
+    },
+  );
+
   it('UIC-NUMBER-FIELD-5.2 snaps onto the step grid from the minimum, within the bounds', () => {
     const grid = { minValue: 0, maxValue: 100, step: 10 };
     expect(snapToStep(33, grid)).toBe(30);

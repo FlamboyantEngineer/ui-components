@@ -3,6 +3,11 @@ import { snapNumberValue } from './snap-number-value.js';
 
 describe('snapNumberValue', () => {
   it.each([
+    { value: 0.05, bounds: { minValue: 0.05, maxValue: 1, step: 0.1 }, expected: 0.05 },
+    { value: 0.099, bounds: { minValue: 0, maxValue: 0.099, step: 0.1 }, expected: 0 },
+    { value: 1, bounds: { minValue: 0.05, maxValue: 1, step: 0.1 }, expected: 0.95 },
+    { value: 0, bounds: { maxValue: 0.3, step: 0.1 }, expected: 0 },
+    { value: 2.5e-7, bounds: { minValue: 5e-8, step: 1e-7 }, expected: 2.5e-7 },
     { value: 12, bounds: { minValue: 0, maxValue: 10 }, expected: 10 },
     { value: -2, bounds: { minValue: 0, maxValue: 10 }, expected: 0 },
     { value: 3.3, bounds: { step: 0.5 }, expected: 3.5 },
