@@ -98,6 +98,8 @@ In a multiple select, picking an option shall toggle it in the value and keep th
 
 An option's `isIndeterminate` shall draw the `minus` glyph and publish `data-indeterminate="true"` on the check slot in multiple list mode. The caller describes the mixed state through the option's accessible `description` and owns its per-record semantics. The flag changes only the indicator; chosen values, chips, submission and selection callbacks still follow `value`. A single select ignores it.
 
+Opening a multiple select with a pointer shall not toggle an option if the opening press releases over the list, including when positioning or scrolling places an option under the pointer. Choosing an option requires its own press; single-select drag selection remains unchanged.
+
 Implementation: `src/components/select-field/select-control.tsx`, `src/components/select-field/select-list.tsx`, `src/components/select-field/select-options.ts`, `src/components/select-field/select-option.tsx`
 Verification: `src/components/select-field/select-list.test.tsx`, `src/components/select-field/select-mixed.test.tsx`, `e2e/select-field.spec.ts`, `e2e/select-field-mixed.spec.ts`
 

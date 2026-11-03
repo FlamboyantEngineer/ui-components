@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
-import { expect, it } from 'vitest';
+import { expect, it, vi } from 'vitest';
 import type { Key } from '../../core/props.js';
 import { SelectField } from './select-field.js';
 
@@ -51,4 +51,30 @@ it('UIC-SELECT-FIELD-3.4 shows mixed options without selecting or submitting the
   expect(new FormData(form).getAll('labels')).toEqual(['green']);
   await user.keyboard('{Enter}');
   expect(new FormData(form).getAll('labels')).toEqual([]);
+});
+
+it('UIC-SELECT-FIELD-3.4 does not toggle an option when the opening pointer releases over it', async () => {
+  const user = userEvent.setup();
+  const onChange = vi.fn();
+  render(
+    <SelectField
+      label="Labels"
+      selectionMode="multiple"
+      value={['blue']}
+      onChange={onChange}
+      options={[
+        { id: 'blue', label: 'Blue' },
+        { id: 'green', label: 'Green', isIndeterminate: true },
+      ]}
+    />,
+  );
+  await user.pointer({
+    target: screen.getByRole('button', { name: /Labels$/ }),
+    keys: '[MouseLeft>]',
+  });
+  const option = screen.getByRole('option', { name: 'Green' });
+  await user.pointer({ target: option, keys: '[/MouseLeft]' });
+  expect(onChange).not.toHaveBeenCalled();
+  await user.click(option);
+  expect(onChange).toHaveBeenLastCalledWith(['blue', 'green']);
 });
