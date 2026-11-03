@@ -62,7 +62,16 @@ test.describe('Carousel lab', () => {
       next,
       carousel.locator('.ui-carousel__pagination'),
     ];
-    const bounds = () => Promise.all(parts.map((part) => part.boundingBox()));
+    const bounds = async () => {
+      const origin = await carousel.boundingBox();
+      if (!origin) throw new Error('The carousel has no bounds.');
+      return Promise.all(
+        parts.map(async (part) => {
+          const box = await part.boundingBox();
+          return box ? { ...box, x: box.x - origin.x, y: box.y - origin.y } : null;
+        }),
+      );
+    };
     for (const width of [1280, 360]) {
       await page.setViewportSize({ width, height: 800 });
       await carousel.scrollIntoViewIfNeeded();
@@ -76,6 +85,7 @@ test.describe('Carousel lab', () => {
         expect(await current.evaluate((slide) => slide.scrollHeight <= slide.clientHeight)).toBe(
           true,
         );
+        // Clicking can scroll the page; each part keeps its geometry within the carousel.
         expect(await bounds()).toEqual(first);
       }
     }

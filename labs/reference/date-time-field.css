@@ -5,6 +5,16 @@
   flex: 0 1 auto;
 }
 
+.ui-date-time-field:not([data-density='compact']) .ui-field__control {
+  max-width: calc(100% - var(--ref-field-button) - 6px);
+}
+
+/* Stacked labels and feedback follow a content-sized range instead of setting its width. */
+.ui-date-time-field :is(.ui-field__description, .ui-field__message),
+.ui-date-time-field[data-label-layout='label-control'] > .ui-field__label {
+  contain: inline-size;
+}
+
 /* A date and time range is wider than a field's usual width: it takes the room its value needs. */
 .ui-date-time-field[data-mode='date-time-range'] {
   width: max-content;
@@ -68,7 +78,8 @@
 }
 
 .ui-date-time-field__previous {
-  flex: 0 1 auto;
+  flex: 1 1 0;
+  max-width: 50%;
   font-size: var(--ref-font-size-sm);
 }
 

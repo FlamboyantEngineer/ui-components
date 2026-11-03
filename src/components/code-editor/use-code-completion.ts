@@ -83,8 +83,13 @@ function useInputCompletionCommit(options: CodeCompletionOptions) {
       return;
     }
     pending.current = null;
-    if (hasSameInput(input, edit)) {
-      completed.current = edit;
+    if (input.value === edit.value) {
+      // Native editing emits input before an editor edit restores its final caret or selection.
+      completed.current = {
+        ...edit,
+        selectionStart: input.selectionStart,
+        selectionEnd: input.selectionEnd,
+      };
       trackRef.current?.('input');
     }
   });

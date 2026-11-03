@@ -60,10 +60,12 @@ function MatrixField({
   state,
   mode,
   layout,
+  stable = false,
 }: {
   state: FieldStateName;
   mode: DateTimeFieldMode;
   layout: FieldLabelLayout;
+  stable?: boolean;
 }) {
   const sample = samples[mode];
   const [value, setValue] = useState<AnyValue>(sample.value);
@@ -75,6 +77,7 @@ function MatrixField({
       labelLayout={layout}
       mode={mode}
       {...stateProps(state, mode)}
+      {...(stable ? { defaultValue: sample.value, changeLayout: 'hidden' as const } : {})}
       {...dirty}
     />
   );
@@ -332,13 +335,53 @@ mountLab(
     >
       <DateStates />
     </LabSection>
-    <LabSection title="Modes and states" description="Each mode in every state.">
-      <StateMatrix
-        axes={{ state: fieldStates, mode: modes }}
-        render={({ state, mode }) => (
-          <MatrixField state={state} mode={mode} layout="label-control" />
-        )}
-      />
+    <LabSection
+      title="Modes and states"
+      description="Each mode in every state. Required fields show empty placeholders, and dirty fields add the saved value; these different contents take the room they need."
+    >
+      <div data-lab-family="modes">
+        <StateMatrix
+          axes={{ state: fieldStates, mode: modes }}
+          render={({ state, mode }) => (
+            <MatrixField state={state} mode={mode} layout="label-control" />
+          )}
+        />
+      </div>
+    </LabSection>
+    <LabSection
+      title="Stable state layout"
+      description="The same value in every state and mode, with saved text hidden by changeLayout: only the state marks, feedback and reserved restore button change. Each field keeps its size."
+    >
+      <div data-lab-family="stable">
+        <StateMatrix
+          axes={{ state: fieldStates, mode: modes }}
+          render={({ state, mode }) => (
+            <MatrixField state={state} mode={mode} layout="label-control" stable />
+          )}
+        />
+      </div>
+    </LabSection>
+    <LabSection
+      title="Saved values and placeholders in narrow columns"
+      description="In a 240px column, saved values shorten before the current segments; a range wraps complete runs onto further rows. Empty required fields keep every placeholder segment reachable too. Feedback stays within the field's width."
+    >
+      <div data-lab-family="narrow">
+        <StateMatrix
+          axes={{
+            content: ['saved value', 'empty'],
+            mode: ['date-time', 'date-range', 'date-time-range'],
+          }}
+          render={({ content, mode }) => (
+            <div style={{ width: 240 }}>
+              <MatrixField
+                state={content === 'empty' ? 'required' : 'dirty'}
+                mode={mode}
+                layout="label-control"
+              />
+            </div>
+          )}
+        />
+      </div>
     </LabSection>
     <LabSection title="Layouts" description="A date field in every label layout.">
       <StateMatrix

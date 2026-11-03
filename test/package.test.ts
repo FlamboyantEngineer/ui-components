@@ -268,7 +268,9 @@ describe('hosted lab browser suite', () => {
     expect(labs).toContain('path: ~/.cache/ms-playwright');
     expect(labs).toContain('${{ steps.playwright.outputs.version }}-${{ matrix.browser }}');
     expect(labs).toContain('npx playwright install --with-deps ${{ matrix.browser }}');
-    expect(labs).toContain('--project=chromium --shard=1/3');
+    for (let shard = 1; shard <= 6; shard += 1) {
+      expect(labs).toContain(`--project=chromium --shard=${shard}/6`);
+    }
     expect(labs).toContain('--project=webkit --project=mobile-webkit');
     expect(labs).toContain('--project=firefox');
   });

@@ -248,7 +248,7 @@ export const jsonExamples = (
     </LabSection>
     <LabSection
       title="JSON: Schema"
-      description="Problems are underlined where they are and the first one is the field's message; rest the pointer on a key for its description, or press F8. Brackets and quotes pair up."
+      description="Problems are underlined where they are and the first one is the field's message; rest the pointer on a key for its description, or press F8. Brackets and quotes pair up; typing a quote offers the keys at the caret between its paired quotes."
     >
       <RecipeEditor />
     </LabSection>

@@ -182,6 +182,32 @@ const glyphRoom = {
   narrow: { width: 260 },
 } as const;
 
+/** One glyph sample, kept wide enough for whole labels except in the deliberately narrow case. */
+function GlyphRoom({
+  segments,
+  size,
+}: {
+  segments: keyof typeof glyphRoom;
+  size: 'xs' | (typeof sizes)[number];
+}) {
+  return (
+    <div style={glyphRoom[segments]}>
+      <SegmentedChoice
+        aria-label={`Glyphs, ${segments}, ${size}`}
+        size={size}
+        sizing={segments === 'content' ? 'content' : 'equal'}
+        defaultValue="typography"
+        data-lab-glyphs={`${segments}-${size}`}
+        options={[
+          { value: 'typography', label: 'Typography', count: 7 },
+          { value: 'quietly', label: 'Quietly gjpqy', count: 42 },
+          { value: 'accents', label: 'Émigré Åçñ', count: 1000 },
+        ]}
+      />
+    </div>
+  );
+}
+
 /** The caller's own root: it keeps the props and ref it is given and marks the group's state. */
 function framedRoot(props: JSX.IntrinsicElements['div'], state: SegmentedChoiceRenderState) {
   return (
@@ -404,24 +430,14 @@ mountLab(
       description="Descenders, accents and counts keep their whole glyphs at every size. Content-sized and equal segments show every label and count in full: equal segments as wide as the widest. Only the deliberately narrow row, equal segments squeezed into 260 pixels, clips its labels sideways, where a long label ends in an ellipsis."
     >
       <StateMatrix
-        axes={{ size: ['xs', ...sizes], segments: ['content', 'equal', 'narrow'] }}
-        render={({ segments, size }) => (
-          // Equal segments size to their widest label; the narrow row gives them less room.
-          <div style={glyphRoom[segments]}>
-            <SegmentedChoice
-              aria-label={`Glyphs, ${segments}, ${size}`}
-              size={size}
-              sizing={segments === 'content' ? 'content' : 'equal'}
-              defaultValue="typography"
-              data-lab-glyphs={`${segments}-${size}`}
-              options={[
-                { value: 'typography', label: 'Typography', count: 7 },
-                { value: 'quietly', label: 'Quietly gjpqy', count: 42 },
-                { value: 'accents', label: 'Émigré Åçñ', count: 1000 },
-              ]}
-            />
-          </div>
-        )}
+        axes={{ size: ['xs', ...sizes], segments: ['content', 'equal'] }}
+        caption="Whole labels and counts"
+        render={({ segments, size }) => <GlyphRoom segments={segments} size={size} />}
+      />
+      <StateMatrix
+        axes={{ size: ['xs', ...sizes], width: ['narrow'] }}
+        caption="Deliberately narrow equal segments"
+        render={({ size }) => <GlyphRoom segments="narrow" size={size} />}
       />
     </LabSection>
     <LabSection

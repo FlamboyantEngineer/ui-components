@@ -73,6 +73,12 @@ test.describe('Completion List lab', () => {
     await expect(field).not.toHaveAttribute('aria-controls');
     await page.clock.runFor(2000);
     await expect(options()).toHaveText(['Bellatrix', 'Betelgeuse']);
+    // The answer can resolve at the clock's final tick; give its list the frame it reports as shown.
+    await page.clock.runFor(32);
+    await expect(field).toHaveAttribute(
+      'aria-activedescendant',
+      (await options().first().getAttribute('id')) ?? '',
+    );
     await field.press('Enter');
     await expect(field).toHaveValue('Bellatrix');
   });
@@ -172,6 +178,15 @@ test.describe('Completion List lab', () => {
     await expect(input).toHaveValue('Lisbon');
     await input.fill('L');
     await expect(london).toBeVisible();
+    await expect(page.locator('.ui-completion-list').filter({ has: london })).not.toHaveAttribute(
+      'data-entering',
+    );
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+        ),
+    );
     const reopened = await london.boundingBox();
     if (!reopened) throw new Error('The reopened second completion has no bounds.');
     await page.mouse.move(reopened.x + reopened.width / 2 + 3, reopened.y + reopened.height / 2);

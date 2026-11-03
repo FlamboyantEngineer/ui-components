@@ -30,4 +30,14 @@ Behavior changes include regression tests and corresponding spec and lab updates
 
 Hosted validation also exposed a workflow permission error: the install job's changed-file filter could not read pull request files with a contents-only token. That job now receives `pull-requests: read`, alongside its existing contents read permission. Other jobs keep their existing permissions.
 
+Full CI identified two more implementation and demo issues. OverflowList could not measure the items inside ToolbarRow's nested strip, leaving its toolbar demonstration uncollapsed. Renderers now receive `itemContainerRef` for that strip while the caller's root ref retains the outer element. Four-side property units also sat above the inputs with some Linux font metrics; the reference sheet now centres them in the control's line box.
+
+Validation tooling now flushes complete failure output before exiting and reports the child's exit code or termination signal. Partial declaration fixtures explicitly select their supplied components, preserving the production check of the complete rootless component registry. Browser tests also wait for nested overlay focus restoration and keep pointer hover separate from keyboard tooltip checks.
+
+The full browser run exposed two further behavior bugs: an ignored scroll could suppress a later explicit Escape, and paired code edits captured completions before the caret reached its final position. Reader input now clears scroll suppression, and completion capture reads the restored caret. Date feedback and previous-value layout no longer enlarge or crowd their controls. Annotation underlines now draw inside the measured rectangle rather than adding a border beyond a clipped edge.
+
+The labs retain their varying-content field examples alongside a strict same-content state matrix; missing-value placeholders and saved-value wrapping have dedicated checks. Segmented glyph examples are split across two matrices that fit the viewport. Card action-row checks now follow the existing Card contract, and geometry checks distinguish component layout from page scrolling and native paging distance. The obsolete standalone slider lab check is removed; NumberField continues to exercise its slider matrices.
+
+Chromium coverage is split across six CI shards instead of three after the original shards took up to 25 minutes against a 30-minute budget. Coverage and timeouts remain unchanged.
+
 Validation results are recorded in the review pull request and its checks.

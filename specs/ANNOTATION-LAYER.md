@@ -36,7 +36,9 @@ Verification: `src/components/annotation-layer/annotation-layer.test.tsx`, `e2e/
 
 An anchor measured from a target element shall show only what the elements between the target and the layer let show: each of its boxes is cut to the area inside the border and scrollbars of every such element whose `overflow` clips (anything other than `visible`, on each axis on its own), and a box none of which shows is left out. The marks and hit testing use the same visible parts, so a press on content over a clipped part activates nothing. An anchor scrolled or clipped wholly out of view draws no mark and cannot be pressed, but keeps its annotation: its card is not orphaned and stays level with where the anchor is (the top of its visible parts, else of its boxes). Scrolling it back into view draws it again. The layer's own overflow clips its marks as it clips its content, and caller `rects` are drawn as given.
 
-Implementation: `src/components/annotation-layer/anchor-clip.ts`, `src/components/annotation-layer/anchor-geometry.ts`, `src/components/annotation-layer/annotation-layer.tsx`
+The reference underline shall stay inside the measured mark, including a clipped mark shorter than the underline's thickness, so its decoration never extends beyond the clipping edge.
+
+Implementation: `src/components/annotation-layer/anchor-clip.ts`, `src/components/annotation-layer/anchor-geometry.ts`, `src/components/annotation-layer/annotation-layer.tsx`, `labs/reference/annotation-layer.css`
 Verification: `src/components/annotation-layer/annotation-layer.test.tsx`, `e2e/annotation-layer.spec.ts`
 
 ## UIC-ANNOTATION-LAYER-2 - Margin

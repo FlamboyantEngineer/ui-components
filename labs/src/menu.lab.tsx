@@ -456,7 +456,7 @@ mountLab(
   <>
     <LabSection
       title="Hinted scrolling trigger"
-      description="The first press opens the menu after revealing its trigger; Escape closes it."
+      description="The first press opens the menu after revealing its trigger; Escape closes it even while that reveal's scroll is still settling."
     >
       <HintedScrollingMenu />
     </LabSection>

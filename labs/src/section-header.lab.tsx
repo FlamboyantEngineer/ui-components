@@ -136,7 +136,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Framed sections"
-      description="A framed section is a Card given the same title, description, actions and heading level: the same header parts, named by the title, at 420px and 220px."
+      description="A framed section is a Card given the same title, description, actions and heading level: matching heading typography and a region named by the title, at 420px and 220px. Card actions occupy their own row; section actions sit beside the text when space allows."
     >
       <StateMatrix
         axes={{ frame: ['section', 'card'], width: ['420', '220'] }}

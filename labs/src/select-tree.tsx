@@ -86,7 +86,7 @@ function StateSample({
     <SelectField
       mode="tree"
       {...props}
-      label={`Office, ${state}`}
+      label="Office"
       labelLayout={layout}
       items={places}
       getTextValue={getTextValue}

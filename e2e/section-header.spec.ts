@@ -65,7 +65,7 @@ test.describe('Section Header lab', () => {
   });
 
   for (const theme of ['light', 'dark']) {
-    test(`UIC-SECTION-HEADER-1.7 frames a section as a card with the same header and name in the ${theme} theme`, async ({
+    test(`UIC-SECTION-HEADER-1.7 frames a section with matching typography and a separate card action row in the ${theme} theme`, async ({
       page,
       lab,
     }) => {
@@ -83,19 +83,25 @@ test.describe('Section Header lab', () => {
           const descriptionBox = description.getBoundingClientRect();
           const actionsBox = actions.getBoundingClientRect();
           return {
-            title: style(title),
-            description: style(description),
-            gap: Math.round(descriptionBox.top - titleBox.bottom),
+            heading: {
+              title: style(title),
+              description: style(description),
+              gap: Math.round(descriptionBox.top - titleBox.bottom),
+              headers: root.querySelectorAll('header').length,
+            },
             besideText: Math.round(actionsBox.top) === Math.round(titleBox.top),
-            headers: root.querySelectorAll('header').length,
+            actionsBelow: actionsBox.top >= descriptionBox.bottom + 8 - 0.5,
           };
         });
       const section = await metrics('section 420');
       const card = await metrics('card 420');
-      expect(card).toEqual(section);
-      expect(card.headers).toBe(1);
-      expect(card.gap).toBe(4);
-      expect(card.besideText).toBe(true);
+      expect(card.heading).toEqual(section.heading);
+      expect(card.heading.headers).toBe(1);
+      expect(card.heading.gap).toBe(4);
+      expect(section.besideText).toBe(true);
+      expect(section.actionsBelow).toBe(false);
+      expect(card.besideText).toBe(false);
+      expect(card.actionsBelow).toBe(true);
 
       const region = page.getByRole('region', { name: 'Harbour, card 420', exact: true });
       const heading = region.getByRole('heading', { level: 3 });
@@ -105,7 +111,9 @@ test.describe('Section Header lab', () => {
       );
       const narrow = page.locator('[data-lab-frame="card 220"]');
       expect(await narrow.evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(true);
-      expect((await metrics('card 220')).besideText).toBe(false);
+      const narrowCard = await metrics('card 220');
+      expect(narrowCard.besideText).toBe(false);
+      expect(narrowCard.actionsBelow).toBe(true);
       await lab.expectAccessible();
     });
   }

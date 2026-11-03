@@ -270,9 +270,22 @@ test.describe('Signature Pad lab', () => {
     const field = page.locator('[data-lab-field="live"]');
     const undo = field.getByRole('button', { name: 'Undo stroke' });
     await expect(undo).toHaveAttribute('data-content', 'icon');
+    await field.scrollIntoViewIfNeeded();
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+        ),
+    );
+    // Establish keyboard modality before focusing the group, after its reveal scroll settles.
+    await page.keyboard.press('Tab');
     await field.getByRole('radio', { name: 'Draw' }).focus();
     await page.keyboard.press('ArrowRight');
     await expect(field.getByRole('radio', { name: 'Type' })).toBeFocused();
+    await expect(field.getByRole('radio', { name: 'Type' })).toHaveAttribute(
+      'data-focus-visible',
+      'true',
+    );
     await expect(
       page.locator('.ui-tooltip:not([data-exiting])', { hasText: 'Type' }),
     ).toBeVisible();

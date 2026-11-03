@@ -68,6 +68,7 @@ export function useScrollCloseGuard(
     let hasReaderInput = false;
     const onReaderInput = () => {
       hasReaderInput = true;
+      isIgnored.current = false;
     };
     let timer: ReturnType<typeof setTimeout> | undefined;
     const onScrolled = () => {

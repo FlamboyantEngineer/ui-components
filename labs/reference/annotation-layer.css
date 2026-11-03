@@ -13,13 +13,13 @@
 }
 
 .ui-annotation-layer__mark {
-  border-bottom: 2px solid color-mix(in srgb, var(--ref-warning) var(--ref-tint-solid), transparent);
+  box-shadow: inset 0 -2px color-mix(in srgb, var(--ref-warning) var(--ref-tint-solid), transparent);
   border-radius: var(--ref-radius-xs);
   background: color-mix(in srgb, var(--ref-warning) var(--ref-tint), transparent);
 }
 
 .ui-annotation-layer__mark[data-active] {
-  border-bottom-color: var(--ref-warning);
+  box-shadow: inset 0 -2px var(--ref-warning);
   background: color-mix(in srgb, var(--ref-warning) var(--ref-tint-strong), transparent);
 }
 
