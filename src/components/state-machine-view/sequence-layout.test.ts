@@ -30,6 +30,41 @@ function routeOf(result: ReturnType<typeof layoutSequence>, id: string | number)
 }
 
 describe('sequence geometry', () => {
+  it.each([
+    { size: 'xs', normal: [112, 28], compact: [80, 24] },
+    { size: 'sm', normal: [128, 36], compact: [96, 28] },
+    { size: 'md', normal: [144, 44], compact: [112, 32] },
+    { size: 'lg', normal: [160, 52], compact: [128, 36] },
+    { size: 'xl', normal: [176, 60], compact: [144, 40] },
+  ] as const)(
+    'UIC-STATE-MACHINE-VIEW-4.6 sizes $size independently of density',
+    ({ size, normal, compact }) => {
+      for (const density of ['default', 'compact'] as const) {
+        const [width, height] = density === 'compact' ? compact : normal;
+        const result = layout([transition('forward', 0, 1), transition('reverse', 1, 0)], {
+          size,
+          density,
+        });
+        expect(result.states.every((state) => state.width === width)).toBe(true);
+        expect(result.rowHeight).toBe(height);
+        for (const route of result.routes) {
+          const edge = result.rowY + (route.direction === 'forward' ? 0 : height);
+          expect(route.path.endsWith(`L ${route.targetX} ${edge}`)).toBe(true);
+        }
+        const measured = layout([], {
+          size,
+          density,
+          measurements: {
+            ...measurements,
+            states: new Map([[toKeyIdentity(0), { width: 360, height: 80 }]]),
+          },
+        });
+        expect(measured.states.every((state) => state.width === 360)).toBe(true);
+        expect(measured.rowHeight).toBe(80);
+      }
+    },
+  );
+
   it('UIC-STATE-MACHINE-VIEW-4.1 fixes array order independently of transitions and positions', () => {
     const empty = layout([]);
     const cyclic = layout([

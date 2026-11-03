@@ -1,4 +1,5 @@
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import type { Size } from '../../core/props.js';
 import { layoutSequenceRoutes, drawSequenceRoute } from './sequence-routes.js';
 import type { SequenceRoute } from './sequence-routes.js';
 import type {
@@ -42,9 +43,18 @@ interface LayoutInput {
   states: readonly StateMachineState[];
   transitions: readonly StateMachineTransition[];
   density?: StateMachineViewDensity | undefined;
+  size?: Size | undefined;
   geometry?: StateMachineViewSequenceGeometry | undefined;
   measurements: SequenceMeasurements;
 }
+
+const stateSizes = {
+  xs: { default: [112, 28], compact: [80, 24] },
+  sm: { default: [128, 36], compact: [96, 28] },
+  md: { default: [144, 44], compact: [112, 32] },
+  lg: { default: [160, 52], compact: [128, 36] },
+  xl: { default: [176, 60], compact: [144, 40] },
+} as const;
 
 function resolveDistance(value: number | undefined, fallback: number): number {
   return value !== undefined && Number.isFinite(value) && value >= 0 ? value : fallback;
@@ -54,9 +64,8 @@ function placeStates(
   input: LayoutInput,
   gap: number,
 ): { states: SequenceStatePosition[]; height: number } {
-  const compact = input.density === 'compact';
+  const [minimumWidth, minimumHeight] = stateSizes[input.size ?? 'md'][input.density ?? 'default'];
   const sizes = input.states.map((state) => input.measurements.states.get(toKeyIdentity(state.id)));
-  const minimumWidth = compact ? 112 : 144;
   const width = Math.max(
     minimumWidth,
     ...sizes.map((size) => size?.width ?? 0),
@@ -65,7 +74,7 @@ function placeStates(
   );
   return {
     states: input.states.map((state, index) => ({ state, x: 8 + index * (width + gap), width })),
-    height: Math.max(compact ? 32 : 44, ...sizes.map((size) => size?.height ?? 0)),
+    height: Math.max(minimumHeight, ...sizes.map((size) => size?.height ?? 0)),
   };
 }
 
