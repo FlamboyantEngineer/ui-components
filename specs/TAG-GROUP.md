@@ -46,6 +46,13 @@ Verification: `src/components/tag-group/tag-group.test.tsx`, `e2e/tag-group.spec
 Implementation: `src/components/tag-group/tag-group.tsx`
 Verification: `src/components/tag-group/tag-group.test.tsx`
 
+### UIC-TAG-GROUP-1.7 - Identity tags
+
+`Tag variant="identity"` shall publish `data-variant="identity"`. Its content may be a `UserIdentity`, including inside a bare preview button. The reference sheet removes leading and block padding when an avatar is present, so its outline bounds the pill; labels without an avatar retain normal padding. Removal, keyboard navigation, disabled state and accessible names remain the tag group's contract.
+
+Implementation: `src/components/tag-group/tag-group.tsx`, `labs/reference/tag-group.css`
+Verification: `src/components/tag-group/tag-group.test.tsx`, `e2e/tag-group.spec.ts`
+
 ## UIC-TAG-GROUP-2 - Interaction
 
 ### UIC-TAG-GROUP-2.1 - Keyboard
@@ -88,6 +95,7 @@ Verification: `src/components/tag-group/tag-group.test.tsx`, `e2e/tag-group.spec
 | `ui-tag-group__label`  | slot      |                                                   | A tag's content.                                                          |
 | `ui-tag-group__remove` | slot      |                                                   | A tag's remove button (also `ui-button`).                                 |
 | `ui-tag-group__empty`  | slot      |                                                   | The empty state inside the list.                                          |
+| `data-variant`         | attribute | `default`, `identity`                             | On a tag: plain value or avatar-bounded identity.                         |
 | `data-size`            | attribute | `sm`, `md`, `lg`                                  | On the root: the tags' scale.                                             |
 | `data-tone`            | attribute | `neutral`, `info`, `success`, `warning`, `danger` | On a tag: its tone.                                                       |
 | `data-key`             | attribute |                                                   | Opaque collection key (React Aria): not the `id`, not for styling.        |

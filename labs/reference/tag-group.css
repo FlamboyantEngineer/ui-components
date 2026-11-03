@@ -97,3 +97,20 @@
   font-size: var(--ref-font-size-sm);
   font-style: italic;
 }
+
+/* Identity tags follow the leading avatar's outline, including nested preview buttons. */
+.ui-tag-group__tag[data-variant='identity']:has(.ui-avatar) {
+  height: auto;
+  padding-block: 0;
+  padding-inline-start: 0;
+}
+.ui-tag-group__tag[data-variant='identity'] .ui-tag-group__label {
+  display: flex;
+  align-items: center;
+}
+.ui-tag-group__tag[data-variant='identity'] .ui-tag-group__label > .ui-button {
+  height: auto;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+}

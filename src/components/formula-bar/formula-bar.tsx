@@ -8,6 +8,7 @@ import {
   useState,
   type FocusEvent,
   type KeyboardEvent,
+  type ReactNode,
 } from 'react';
 import { Input } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
@@ -21,12 +22,15 @@ import {
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { CodeEditor, type CodeTokenizer } from '../code-editor/code-editor.js';
 import type { Completion, Completions } from '../completion-list/completion-list.js';
+import { FormulaBarControls } from './formula-bar-controls.js';
 import { FormulaBarFunctions } from './formula-bar-functions.js';
 import { formulaBarHooks as hooks } from './formula-bar-hooks.js';
 import { Button } from '../button/button.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 
 export interface FormulaBarProps extends RefProps<HTMLDivElement>, BaseProps, AriaLabellingProps {
+  /** Caller-owned reference and editor controls; the bar supplies only the group, glyph and layout. */
+  controls?: { reference: ReactNode; editor: ReactNode } | undefined;
   /** The active cell, by zero-based row and column; null while no cell is active. */
   cell: CellCoordinates | null;
   /** The active cell's raw content as the caller stores it, such as a formula. */
@@ -279,7 +283,7 @@ function useFormulaDraft({
  * caller's tokenizer. Enter or the confirm button commits the content, Escape or the cancel button
  * restores it, and the caller's evaluation shows the result; the library evaluates nothing.
  */
-export function FormulaBar({
+function FormulaBarEditor({
   cell,
   value,
   onCommit,
@@ -357,4 +361,9 @@ export function FormulaBar({
       {result ? <FormulaBarResult id={resultId} result={result} /> : null}
     </div>
   );
+}
+
+/** A formula bar with built-in editing or caller-owned controls for an external grid engine. */
+export function FormulaBar(props: FormulaBarProps) {
+  return props.controls ? <FormulaBarControls {...props} /> : <FormulaBarEditor {...props} />;
 }
