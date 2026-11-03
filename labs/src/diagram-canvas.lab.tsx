@@ -362,7 +362,7 @@ const logLines = Array.from({ length: 12 }, (_, index) => `Reading ${index + 1}:
 );
 
 const logNodes: DiagramNode[] = [
-  { id: 'log', x: 20, y: 20, width: 220, height: 120, label: 'Log' },
+  { id: 'log', x: 20, y: 20, width: 220, height: 180, label: 'Log' },
 ];
 
 function ScrollingNodes() {
@@ -380,6 +380,17 @@ function ScrollingNodes() {
           <>
             <strong>{node.label}</strong>
             <textarea aria-label={`${node.label} entries`} rows={3} defaultValue={logLines} />
+            <div
+              role="region"
+              aria-label={`${node.label} horizontal entries`}
+              tabIndex={0}
+              dir="rtl"
+              style={{ width: 180, overflowX: 'auto' }}
+            >
+              <div style={{ width: 480, whiteSpace: 'nowrap' }}>
+                Reading 1: steady · Reading 2: steady · Reading 3: steady
+              </div>
+            </div>
           </>
         )}
       />
@@ -583,7 +594,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Scrolling inside nodes"
-      description="The wheel over the log's entries scrolls them while they can scroll that way, then pans the view at their end. Ctrl or Command with the wheel zooms even over the entries. Wheel lines and pages count as pixels."
+      description="The wheel over the log's entries scrolls them while they can scroll that way, then pans the view at their end. The horizontal entries scroll right to left; horizontal wheel input stays with them until the corresponding limit. Ctrl or Command with the wheel zooms even over the entries. Wheel lines and pages count as pixels."
     >
       <ScrollingNodes />
     </LabSection>
