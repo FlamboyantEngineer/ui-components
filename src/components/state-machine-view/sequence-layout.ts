@@ -97,7 +97,7 @@ export function layoutSequence(input: LayoutInput): SequenceLayout {
     const forward = route.direction === 'forward';
     const offset = rowSpacer + labelHeight / 2 + route.lane * lanePitch;
     const y = forward ? rowY - offset : rowY + rowHeight + offset;
-    const attachmentY = forward ? rowY + 8 : rowY + rowHeight - 8;
+    const attachmentY = forward ? rowY : rowY + rowHeight;
     return {
       ...route,
       y,

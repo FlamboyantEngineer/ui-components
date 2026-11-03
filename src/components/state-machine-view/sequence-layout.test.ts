@@ -141,7 +141,7 @@ describe('sequence geometry', () => {
     });
     const route = routeOf(flat, 'short');
     expect(route.radius).toBeLessThanOrEqual(Math.abs(route.sourceX - route.targetX) / 2);
-    expect(route.radius).toBeLessThanOrEqual(Math.abs(route.y - (flat.rowY + 8)) / 2);
+    expect(route.radius).toBeLessThanOrEqual(Math.abs(route.y - flat.rowY) / 2);
     expect(route.path.match(/ Q /g)).toHaveLength(2);
     expect(route.arrow).not.toContain('Z');
     expect(flat.stateGap).toBe(5);
@@ -154,6 +154,56 @@ describe('sequence geometry', () => {
     const result = layout([transition('a', 0, 1), transition('ä', 0, 1), transition('B', 0, 1)]);
     expect(result.routes.map(({ transition: item }) => item.id)).toEqual(['B', 'a', 'ä']);
     expect(result.routes.map(({ lane }) => lane)).toEqual([0, 1, 2]);
+  });
+
+  it.each(['default', 'compact'] as const)(
+    'UIC-STATE-MACHINE-VIEW-4.4 meets the %s state boundaries without entering their interiors',
+    (density) => {
+      const result = layout(
+        [transition('forward', 0, 1), transition('reverse', 1, 0), transition('loop', 2, 2)],
+        { density },
+      );
+      for (const route of result.routes) {
+        const edge = route.direction === 'forward' ? result.rowY : result.rowY + result.rowHeight;
+        expect(route.path.startsWith(`M ${route.sourceX} ${edge} `)).toBe(true);
+        expect(route.path.endsWith(`L ${route.targetX} ${edge}`)).toBe(true);
+        expect(route.arrow).toContain(`L ${route.targetX} ${edge} `);
+        const arrowY = edge + (route.direction === 'forward' ? -6 : 6);
+        expect(route.arrow).toBe(
+          `M ${route.targetX - 4} ${arrowY} L ${route.targetX} ${edge} L ${route.targetX + 4} ${arrowY}`,
+        );
+      }
+    },
+  );
+
+  it('UIC-STATE-MACHINE-VIEW-4.2 nests shared attachments around shorter routes and loops', () => {
+    const result = layout([
+      transition('inner', 0, 1),
+      transition('outer', 0, 1),
+      transition('long', 0, 5),
+      transition('return-inner', 5, 0),
+      transition('return-outer', 5, 0),
+      transition('loop-inner', 0, 0),
+      transition('loop-outer', 0, 0),
+    ]);
+    const inner = routeOf(result, 'inner');
+    const outer = routeOf(result, 'outer');
+    expect(inner.sourceX).toBeGreaterThan(outer.sourceX);
+    expect(inner.targetX).toBeLessThan(outer.targetX);
+    expect(outer.sourceX).toBeGreaterThan(routeOf(result, 'long').sourceX);
+    expect(routeOf(result, 'loop-inner').sourceX).toBeLessThan(
+      routeOf(result, 'loop-outer').sourceX,
+    );
+    expect(routeOf(result, 'loop-inner').targetX).toBeGreaterThan(
+      routeOf(result, 'loop-outer').targetX,
+    );
+    expect(routeOf(result, 'loop-outer').sourceX).toBeLessThan(routeOf(result, 'long').sourceX);
+    expect(routeOf(result, 'return-inner').sourceX).toBeLessThan(
+      routeOf(result, 'return-outer').sourceX,
+    );
+    expect(routeOf(result, 'return-inner').targetX).toBeGreaterThan(
+      routeOf(result, 'return-outer').targetX,
+    );
   });
 
   it('UIC-STATE-MACHINE-VIEW-4.2 grows lane pitch and vertical bounds for tall measured content', () => {
