@@ -18,6 +18,16 @@ export const tabbableSelector = [
   '[tabindex]',
 ].join(', ');
 
+/** Rendering follows assigned slots and crosses shadow roots to their hosts. */
+function getRenderedParent(element: Element): Element | null {
+  const root = element.getRootNode();
+  return (
+    element.assignedSlot ??
+    element.parentElement ??
+    (root.nodeType === 11 ? (root as ShadowRoot).host : null)
+  );
+}
+
 /** Rendered visibility for engines without checkVisibility; no layout-size assumptions. */
 function isVisible(element: HTMLElement): boolean {
   const owner = getOwnerWindow(element);
@@ -25,18 +35,17 @@ function isVisible(element: HTMLElement): boolean {
   // Visibility is inherited, but descendants may explicitly restore it.
   if (style.visibility === 'hidden' || style.visibility === 'collapse') return false;
   if (style.display === 'contents') return false;
-  for (let node: Element | null = element; node; node = node.parentElement) {
+  let child: Element = element;
+  for (let node: Element | null = element; node; node = getRenderedParent(node)) {
     const currentStyle = owner.getComputedStyle(node);
     if (currentStyle.display === 'none') return false;
     if (node === element) continue;
     // These hide contents, not the container's own box or its first summary.
     if (currentStyle.contentVisibility === 'hidden') return false;
-    if (
-      node.matches('details:not([open])') &&
-      !node.querySelector(':scope > summary')?.contains(element)
-    ) {
+    if (node.matches('details:not([open])') && node.querySelector(':scope > summary') !== child) {
       return false;
     }
+    child = node;
   }
   return true;
 }

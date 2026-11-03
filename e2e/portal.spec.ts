@@ -213,7 +213,7 @@ test.describe('Portal lab', () => {
 
   // Chromium simulations of older API surfaces; these do not replace native historical Safari runs.
   for (const visibility of ['native', 'missing', 'legacy'] as const) {
-    for (const edge of ['CSS hidden', 'all CSS hidden']) {
+    for (const edge of ['CSS hidden', 'all CSS hidden', 'slotted CSS hidden']) {
       for (const mode of ['kept', 'in place']) {
         test(`UIC-PORTAL-3.4 skips ${edge} in ${mode} order with ${visibility} visibility API`, async ({
           page,
@@ -242,8 +242,8 @@ test.describe('Portal lab', () => {
           const after = demo.getByRole('button', { name: 'After', exact: true });
           const restored = tools.getByRole('button', { name: 'Restored tool', exact: true });
           const last = tools.getByRole('button', { name: 'Last tool', exact: true });
-          const forward = edge === 'CSS hidden' ? [restored, last, after] : [after];
-          const backward = edge === 'CSS hidden' ? [last, restored, before] : [before];
+          const forward = edge === 'all CSS hidden' ? [after] : [restored, last, after];
+          const backward = edge === 'all CSS hidden' ? [before] : [last, restored, before];
           await before.focus();
           for (const target of forward) {
             await page.keyboard.press('Tab');

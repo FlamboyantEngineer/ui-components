@@ -107,6 +107,55 @@ describe('listTabbables', () => {
       ]);
     });
 
+    it('UIC-PORTAL-3.4 follows slots through hidden shadow wrappers and display:contents', () => {
+      omitCheckVisibility();
+      const root = mount('<div><button>Slotted</button></div><button>Visible</button>');
+      const host = root.querySelector('div');
+      if (!host) throw new Error('Missing shadow host');
+      const shadow = host.attachShadow({ mode: 'open' });
+      shadow.innerHTML = '<div style="display:none"><slot></slot></div>';
+      expect(listTabbables(root).map((element) => element.textContent)).toEqual(['Visible']);
+      shadow.innerHTML = '<div style="content-visibility:hidden"><slot></slot></div>';
+      expect(listTabbables(root).map((element) => element.textContent)).toEqual(['Visible']);
+      shadow.innerHTML = '<div style="display:contents"><slot></slot></div>';
+      expect(listTabbables(root).map((element) => element.textContent)).toEqual([
+        'Slotted',
+        'Visible',
+      ]);
+    });
+
+    it('UIC-PORTAL-3.4 checks shadow hosts and their ancestors for controls inside a shadow root', () => {
+      omitCheckVisibility();
+      const root = mount('<section><div></div></section>');
+      const host = root.querySelector('div');
+      const ancestor = root.querySelector('section');
+      if (!host || !ancestor) throw new Error('Missing shadow host or ancestor');
+      const shadow = host.attachShadow({ mode: 'open' });
+      shadow.innerHTML = '<button>Shadow tool</button>';
+      host.style.display = 'none';
+      expect(listTabbables(shadow)).toEqual([]);
+      host.style.display = 'contents';
+      expect(listTabbables(shadow).map((element) => element.textContent)).toEqual(['Shadow tool']);
+      ancestor.style.display = 'none';
+      expect(listTabbables(shadow)).toEqual([]);
+    });
+
+    it('UIC-PORTAL-3.4 keeps shadow content inside the first summary of closed details', () => {
+      omitCheckVisibility();
+      const root = mount('<details><summary><span></span></summary><div></div></details>');
+      const summaryHost = root.querySelector('span');
+      const contentHost = root.querySelector('details > div');
+      if (!summaryHost || !contentHost) throw new Error('Missing shadow hosts');
+      const summary = summaryHost.attachShadow({ mode: 'open' });
+      const content = contentHost.attachShadow({ mode: 'open' });
+      summary.innerHTML = '<button>Summary tool</button>';
+      content.innerHTML = '<button>Closed content</button>';
+      expect(listTabbables(summary).map((element) => element.textContent)).toEqual([
+        'Summary tool',
+      ]);
+      expect(listTabbables(content)).toEqual([]);
+    });
+
     it('UIC-PORTAL-3.4 keeps the first summary and its controls while skipping closed details content', () => {
       omitCheckVisibility();
       const root = mount(`
