@@ -1,12 +1,12 @@
 'use client';
 
-import { CheckGlyph } from '../../core/glyphs.js';
+import { CheckGlyph, MinusGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
-import { Collection, Header, ListBoxSection } from '../../primitives/index.js';
+import { Collection, Header, ListBoxSection, Text } from '../../primitives/index.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import type { Key, SelectableState } from '../../core/props.js';
-import { Glyph } from '../../core/provider.js';
+import { Glyph, useUiStrings } from '../../core/provider.js';
 import { PickerOptionRow, isPickerSection } from '../field/field.js';
 import { type SelectFieldItem, type SelectFieldOption } from './select-options.js';
 import { selectFieldHooks as hooks } from './select-field-hooks.js';
@@ -36,6 +36,7 @@ function OptionRow({
   display: SelectOptionsDisplay;
 }) {
   const { isMultiple, blockedKeys, renderOption } = display;
+  const strings = useUiStrings();
   return (
     <PickerOptionRow
       id={id}
@@ -45,9 +46,25 @@ function OptionRow({
       renderLead={
         isMultiple
           ? (state) => (
-              <span {...hooks.slot('option-check')} aria-hidden="true">
-                {state.isSelected ? <Glyph icon={CheckGlyph} /> : null}
-              </span>
+              <>
+                <span
+                  {...hooks.slot('option-check', {
+                    indeterminate: !state.isSelected && option.isIndeterminate,
+                  })}
+                  aria-hidden="true"
+                >
+                  {state.isSelected ? (
+                    <Glyph icon={CheckGlyph} />
+                  ) : option.isIndeterminate ? (
+                    <Glyph icon={MinusGlyph} />
+                  ) : null}
+                </span>
+                {!state.isSelected && option.isIndeterminate ? (
+                  <Text slot="description" hidden>
+                    {strings.selectOptionIndeterminate}
+                  </Text>
+                ) : null}
+              </>
             )
           : undefined
       }

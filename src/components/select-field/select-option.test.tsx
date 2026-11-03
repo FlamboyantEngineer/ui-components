@@ -3,7 +3,7 @@ import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { SelectField, type SelectFieldItem } from './select-field.js';
+import { SelectField, type SelectFieldItem, type SelectFieldOption } from './select-field.js';
 
 const produce: SelectFieldItem[] = [
   { id: 'any', label: 'Anything' },
@@ -33,7 +33,7 @@ function trigger(name: RegExp | string = /Produce$/) {
 describe('SelectField option groups and content', () => {
   it('UIC-SELECT-FIELD-3.4 draws a minus for a mixed option without selecting, submitting or counting it', async () => {
     const user = userEvent.setup();
-    const mixedOption = { id: 'pear', label: 'Pear', isIndeterminate: true };
+    const mixedOption: SelectFieldOption = { id: 'pear', label: 'Pear', isIndeterminate: true };
     render(
       <form aria-label="Produce settings">
         <SelectField
@@ -66,7 +66,7 @@ describe('SelectField option groups and content', () => {
 
   it('UIC-SELECT-FIELD-3.4 explains a mixed option to assistive technology', async () => {
     const user = userEvent.setup();
-    const mixedOption = { id: 'pear', label: 'Pear', isIndeterminate: true };
+    const mixedOption: SelectFieldOption = { id: 'pear', label: 'Pear', isIndeterminate: true };
     render(
       <SelectField label="Produce" selectionMode="multiple" options={[mixedOption]} value={[]} />,
     );

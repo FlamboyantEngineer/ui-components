@@ -765,5 +765,6 @@
   "copyIdentifier": "{identifier}をコピー",
   "status": "ステータス",
   "stateTrigger": "{label}: {state}",
-  "transitionTo": "{state}へ移動"
+  "transitionTo": "{state}へ移動",
+  "selectOptionIndeterminate": "一部のレコードで選択済み"
 }

@@ -80,7 +80,7 @@ Verification: `src/components/select-field/select-list.test.tsx`, `src/component
 
 ### UIC-SELECT-FIELD-3.2 - Options
 
-Options and groups are the shared picker vocabulary (`PickerOption`, `PickerSection`, [UIC-FIELD-11.1](FIELD.md#uic-field-111---picker-vocabulary)) that `SelectFieldOption` and `SelectFieldGroup` name. Each option shall be a `role="option"` row (`ui-select-field__option`) drawing its icon (`ui-select-field__option-icon`), its label (`ui-select-field__option-label`) and its description (`ui-select-field__option-description`), named by its label and description text. A disabled option stays listed but cannot be picked by pointer or keyboard, and the arrow keys pass over it.
+Options and groups extend the shared picker vocabulary (`PickerOption`, `PickerSection`, [UIC-FIELD-11.1](FIELD.md#uic-field-111---picker-vocabulary)) through `SelectFieldOption` and `SelectFieldGroup`. Each option shall be a `role="option"` row (`ui-select-field__option`) drawing its icon (`ui-select-field__option-icon`), its label (`ui-select-field__option-label`) and its description (`ui-select-field__option-description`), named by its label and description text. A disabled option stays listed but cannot be picked by pointer or keyboard, and the arrow keys pass over it.
 
 Implementation: `src/components/select-field/select-list.tsx`
 Verification: `src/components/select-field/select-list.test.tsx`, `e2e/select-field.spec.ts`
@@ -96,8 +96,10 @@ Verification: `src/components/select-field/select-list.test.tsx`, `e2e/select-fi
 
 In a multiple select, picking an option shall toggle it in the value and keep the list open. Every option draws a check slot (`ui-select-field__option-check`, hidden from assistive technology) holding the `check` glyph while it is chosen; the option's `aria-selected` carries the state.
 
-Implementation: `src/components/select-field/select-control.tsx`, `src/components/select-field/select-list.tsx`
-Verification: `src/components/select-field/select-list.test.tsx`, `e2e/select-field.spec.ts`
+`SelectFieldOption.isIndeterminate` shall mark an unchosen option in a multiple list as selected for some records: its check slot publishes `data-indeterminate="true"` and draws the `minus` glyph. React Aria's option description announces the provider string `selectOptionIndeterminate` (by default `Selected for some records`), including with custom option content, while the existing label and description remain its accessible name. Mixed membership alone never adds a value, chip, selected count or form input; `value` remains authoritative and a chosen option always draws a check, with no mixed hook or explanation. Single-select indicators ignore `isIndeterminate`. Flat options, grouped options and search results accept the property. Filtering, pointer and keyboard selection, limits and disabled behavior continue to use ordinary selection: picking a mixed option requests its id through `onChange` and `onCommit`. The host owns per-record memberships and any mixed → selected for all → removed for all → retain mixed cycle by updating `value` and option metadata; the component adds no membership state or custom selection callback.
+
+Implementation: `src/components/select-field/select-control.tsx`, `src/components/select-field/select-list.tsx`, `src/components/select-field/select-option.tsx`, `src/components/select-field/select-options.ts`
+Verification: `src/components/select-field/select-list.test.tsx`, `src/components/select-field/select-option.test.tsx`, `src/components/select-field/select-indeterminate.test.tsx`, `e2e/select-field.spec.ts`
 
 ### UIC-SELECT-FIELD-3.5 - Filtering
 
@@ -415,6 +417,7 @@ Verification: `src/components/select-field/select-popup.test.tsx`, `e2e/select-f
 | `data-disabled`                       | state     | `true`                                     | Disabled (React Aria).                                                   |
 | `data-invalid`                        | state     | `true`                                     | Invalid (React Aria, on the select and search field).                    |
 | `data-required`                       | state     | `true`                                     | Required (React Aria, on the select).                                    |
+| `data-indeterminate`                  | state     | `true`                                     | On a multiple list option's check slot: mixed membership.                |
 | `data-selected`                       | state     | `true`                                     | A chosen option (React Aria).                                            |
 | `data-empty`                          | state     | `true`                                     | An empty list or filter (React Aria).                                    |
 | `data-allows-removing`                | state     | `true`                                     | A removable chip (React Aria).                                           |

@@ -765,5 +765,6 @@
   "copyIdentifier": "Copier {identifier}",
   "status": "Statut",
   "stateTrigger": "{label} : {state}",
-  "transitionTo": "Passer à {state}"
+  "transitionTo": "Passer à {state}",
+  "selectOptionIndeterminate": "Sélectionné pour certains enregistrements"
 }

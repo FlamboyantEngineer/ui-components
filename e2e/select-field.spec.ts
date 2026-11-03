@@ -27,6 +27,63 @@ async function width(locator: Locator): Promise<number> {
 }
 
 test.describe('Select Field lab', () => {
+  test('UIC-SELECT-FIELD-3.4 cycles controlled bulk memberships and retains untouched records', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('select-field');
+    const demo = page.locator('[data-lab-demo="bulk-memberships"]');
+    const trigger = demo.getByRole('button', { name: /Shared fruit$/ });
+    const changes = demo.locator('[data-lab-output="Membership changes"]');
+    const preview = demo.locator('[data-lab-output="Preview memberships"]');
+    const original =
+      '[{"name":"First","memberships":["apple","pear","plum"]},{"name":"Second","memberships":["apple"]}]';
+    await expect(preview).toHaveText(original);
+    await expect(trigger).toHaveAccessibleName('1 selected Shared fruit');
+    await trigger.focus();
+    await trigger.press('Enter');
+    const pear = page.getByRole('option', { name: 'Pear Crisp and sweet' });
+    const indicator = pear.locator('.ui-select-field__option-check');
+    await expect(pear).toHaveAttribute('aria-selected', 'false');
+    await expect(pear).toHaveAccessibleDescription('Selected for some records');
+    await expect(indicator).toHaveAttribute('data-indeterminate', 'true');
+    await expect(indicator.locator('[data-glyph="minus"]')).toBeVisible();
+    await expect(page.getByRole('option', { name: 'Plum' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+    await lab.expectAccessible('.ui-select-field__popover');
+    await page.getByRole('searchbox').fill('crisp');
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Enter');
+    await expect(changes).toHaveText('{"pear":"add"}');
+    await expect(pear).toHaveAttribute('aria-selected', 'true');
+    await expect(indicator).not.toHaveAttribute('data-indeterminate');
+    await expect(indicator.locator('[data-glyph="check"]')).toBeVisible();
+    await expect(pear).toHaveAccessibleDescription('');
+    await expect(
+      demo.locator('.ui-select-field__chip-label').filter({ hasText: 'Pear' }),
+    ).toHaveCount(1);
+    await expect(preview).toHaveText(
+      '[{"name":"First","memberships":["apple","pear","plum"]},{"name":"Second","memberships":["apple","pear"]}]',
+    );
+    await page.keyboard.press('Enter');
+    await expect(changes).toHaveText('{"pear":"remove"}');
+    await expect(pear).toHaveAttribute('aria-selected', 'false');
+    await expect(indicator.locator('[data-glyph="minus"]')).toHaveCount(0);
+    await expect(preview).toHaveText(
+      '[{"name":"First","memberships":["apple","plum"]},{"name":"Second","memberships":["apple"]}]',
+    );
+    await page.keyboard.press('Enter');
+    await expect(changes).toHaveText('{}');
+    await expect(pear).toHaveAccessibleDescription('Selected for some records');
+    await expect(indicator).toHaveAttribute('data-indeterminate', 'true');
+    await expect(preview).toHaveText(original);
+    await page.keyboard.press('Escape');
+    await expect(trigger).toBeFocused();
+    await expect(trigger).toHaveAccessibleName('1 selected Shared fruit');
+  });
+
   test('UIC-SELECT-FIELD-2.3 UIC-FIELD-1.13 places the saved value inline or stacked without overlap', async ({
     page,
     lab,
