@@ -4,4 +4,7 @@ export type {
   StateMachineTransition,
   StateMachineTransitionRequest,
   StateMachineViewProps,
+  StateMachineViewPresentation,
+  StateMachineViewDensity,
+  StateMachineViewSequenceGeometry,
 } from './state-machine-view.js';

@@ -7,6 +7,7 @@ import {
   type StateMachineTransition,
 } from '../../src/components/state-machine-view/state-machine-view.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { SequenceExamples } from './state-machine-view-sequence.js';
 
 const doorStates: StateMachineState[] = [
   { id: 'closed', label: 'Closed' },
@@ -180,6 +181,12 @@ function EditableDoor() {
 
 mountLab(
   <>
+    <LabSection
+      title="Ordered sequences"
+      description="Default and compact rows share one scrolling viewport with forward and reverse lanes, parallel transitions and a loop. Select a state independently of the current state, activate or right-click a label, and resize or reorder the sequence."
+    >
+      <SequenceExamples />
+    </LabSection>
     <LabSection
       title="States"
       description="A read-only machine, one with a current state, and edit mode with a transition port on each state, laid out left to right and top to bottom. Wide graphs and repeated connections keep a stable layout."
