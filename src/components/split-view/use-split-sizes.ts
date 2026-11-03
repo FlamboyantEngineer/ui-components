@@ -101,6 +101,17 @@ function toPair(size: number | undefined): number[] | undefined {
   return size === undefined ? undefined : [size, 100 - size];
 }
 
+/** Stored positions belong to a persistence owner; within it, committed sizes follow pane IDs. */
+function useStoredPaneIds(owner: object, ids: readonly string[]): [readonly string[], () => void] {
+  const [state, setState] = useState({ owner, ids });
+  let current = state;
+  if (state.owner !== owner) {
+    current = { owner, ids };
+    setState(current);
+  }
+  return [current.ids, () => setState({ owner, ids })];
+}
+
 /**
  * The panes' sizes: the controlled `sizes` (or two-pane `size`), else the live sizes during a drag,
  * else the committed sizes, which persist. Collapsing and opening a pane are reported, and the size
@@ -111,11 +122,11 @@ export function useSplitSizes(options: SplitSizesOptions): SplitSizes {
   const controlled = options.sizes ?? toPair(options.size);
   const persistedKey = controlled ? undefined : persistKey;
   const adapter = useUiStorage();
-  const owner = useShallowStable({
+  const persistence = useShallowStable({
     key: persistedKey,
     storage: persistedKey === undefined ? undefined : adapter,
-    shape: usePaneShape(panes),
   });
+  const owner = useShallowStable({ ...persistence, shape: usePaneShape(panes) });
   const codec = useMemo(() => createSizesCodec(panes), [panes]);
   const getInitial = () =>
     resolveInitialSplitSizes(panes, options.defaultSizes ?? toPair(options.defaultSize));
@@ -126,12 +137,11 @@ export function useSplitSizes(options: SplitSizesOptions): SplitSizes {
     persistKey: persistedKey,
     codec,
   });
-  // The panes the committed sizes were taken for: inserted, removed or moved panes keep theirs.
-  const [storedIds, setStoredIds] = useState(ids);
+  const [storedIds, setStoredIds] = useStoredPaneIds(persistence, ids);
   const committed = alignSplitSizes(stored, { from: storedIds, to: ids, initial: getInitial() });
   const setCommitted = (next: number[]) => {
     setStored(next);
-    setStoredIds(ids);
+    setStoredIds();
   };
   const [preview, setPreview] = useOwnedPreview<readonly number[]>(owner);
   const current = normalizeSplitSizes(panes, controlled ?? preview ?? committed);
