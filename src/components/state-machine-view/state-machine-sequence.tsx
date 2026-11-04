@@ -185,6 +185,7 @@ export function StateMachineSequence({
     states: props.states,
     transitions: props.transitions,
     density: props.density,
+    size: props.size,
     geometry: props.sequenceGeometry,
     measurements,
   });
@@ -203,6 +204,7 @@ export function StateMachineSequence({
         props,
         data: {
           presentation: 'sequence',
+          size: props.size ?? 'md',
           density: props.density ?? 'default',
           orientation: 'horizontal',
           empty: isEmpty,

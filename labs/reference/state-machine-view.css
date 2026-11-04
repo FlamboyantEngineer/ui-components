@@ -69,7 +69,25 @@
 }
 
 .ui-state-machine-view[data-presentation='sequence'] {
+  --ref-state-machine-view-padding: 4px 18px;
+
   width: 100%;
+}
+
+.ui-state-machine-view[data-presentation='sequence'][data-size='xs'] {
+  --ref-state-machine-view-padding: 2px 10px;
+}
+
+.ui-state-machine-view[data-presentation='sequence'][data-size='sm'] {
+  --ref-state-machine-view-padding: 3px 14px;
+}
+
+.ui-state-machine-view[data-presentation='sequence'][data-size='lg'] {
+  --ref-state-machine-view-padding: 6px 22px;
+}
+
+.ui-state-machine-view[data-presentation='sequence'][data-size='xl'] {
+  --ref-state-machine-view-padding: 8px 26px;
 }
 
 .ui-state-machine-view[data-presentation='sequence'] .ui-state-machine-view__state {
@@ -81,10 +99,27 @@
   border: 0;
   border-radius: 0;
   min-width: calc(100% + 12px);
-  padding: 4px 18px;
+  padding: var(--ref-state-machine-view-padding);
   background: var(--ref-state-machine-view-edge);
   color: var(--ref-text);
+  font-size: var(--ref-font-size-md);
   clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%, 12px 50%);
+}
+
+.ui-state-machine-view[data-presentation='sequence'][data-size='xs'] .ui-state-machine-view__state {
+  font-size: var(--ref-font-size-xs);
+}
+
+.ui-state-machine-view[data-presentation='sequence'][data-size='sm'] .ui-state-machine-view__state {
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-state-machine-view[data-presentation='sequence'][data-size='lg'] .ui-state-machine-view__state {
+  font-size: var(--ref-font-size-lg);
+}
+
+.ui-state-machine-view[data-presentation='sequence'][data-size='xl'] .ui-state-machine-view__state {
+  font-size: var(--ref-font-size-xl);
 }
 
 .ui-state-machine-view[data-presentation='sequence'] .ui-state-machine-view__state::before {
@@ -214,6 +249,21 @@
   font-size: var(--ref-font-size-sm);
   white-space: nowrap;
   cursor: pointer;
+}
+
+.ui-state-machine-view[data-size='xs']
+  :is(.ui-state-machine-view__transition-label, .ui-state-machine-view__empty-content) {
+  font-size: var(--ref-font-size-xs);
+}
+
+.ui-state-machine-view[data-size='lg']
+  :is(.ui-state-machine-view__transition-label, .ui-state-machine-view__empty-content) {
+  font-size: var(--ref-font-size-md);
+}
+
+.ui-state-machine-view[data-size='xl']
+  :is(.ui-state-machine-view__transition-label, .ui-state-machine-view__empty-content) {
+  font-size: var(--ref-font-size-lg);
 }
 
 .ui-state-machine-view__transition-label[data-selected],
