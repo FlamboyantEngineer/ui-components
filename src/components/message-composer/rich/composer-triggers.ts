@@ -91,7 +91,7 @@ export interface TriggerRange {
 }
 
 /** The entries whose label matches the query, best first, all of them for no query. */
-export function matchByLabel(items: readonly RichCompletionItem[], query: string) {
+function matchByLabel(items: readonly RichCompletionItem[], query: string) {
   return items
     .map((item) => ({ item, score: query ? scoreCompletion(item.label, query) : 0 }))
     .filter(({ score }) => score !== null)

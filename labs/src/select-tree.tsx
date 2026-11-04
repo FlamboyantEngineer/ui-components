@@ -9,7 +9,7 @@ import {
   type FieldStateName,
 } from './field-states.js';
 
-export interface Place {
+interface Place {
   id: string;
   name: string;
   children?: Place[];

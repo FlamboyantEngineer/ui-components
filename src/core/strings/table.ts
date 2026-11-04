@@ -1,6 +1,6 @@
 import { defineStrings } from '../message-format.js';
 /** Strings of a table's row groups and bulk edit. */
-export interface TableStrings {
+interface TableStrings {
   /** A group header's label, from the grouping's name and the group's value (`Colour: Red`). */
   groupHeading: (grouping: string, value: string) => string;
   /** Opens the bulk edit of the selected rows. */

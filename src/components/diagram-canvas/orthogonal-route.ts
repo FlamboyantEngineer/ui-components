@@ -2,7 +2,7 @@ import { requireDefined } from '../../utils/require-defined.js';
 import type { DiagramPoint, DiagramRect } from './edge-route.js';
 
 /** One end of an orthogonal route: its point and the outward direction of the side it leaves. */
-export interface OrthogonalEnd {
+interface OrthogonalEnd {
   point: DiagramPoint;
   normal: DiagramPoint;
 }
@@ -14,7 +14,7 @@ type Boxes = readonly [DiagramRect, DiagramRect];
  * The boxes to go around, and how far a parallel edge moves its free runs apart from the others
  * between the same ends.
  */
-export interface OrthogonalContext {
+interface OrthogonalContext {
   boxes: Boxes;
   shift: number;
 }

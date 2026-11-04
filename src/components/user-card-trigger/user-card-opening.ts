@@ -43,7 +43,7 @@ interface OpeningOptions {
   buttonRef: RefObject<HTMLButtonElement | null>;
 }
 
-export interface CardOpeningOptions extends Omit<OpeningOptions, 'isActive'> {
+interface CardOpeningOptions extends Omit<OpeningOptions, 'isActive'> {
   /** How the card opens; `undefined` without a card. */
   mode: UserCardTriggerType | undefined;
   /** The trigger button's id, which names the press card's dialog. */
@@ -56,7 +56,7 @@ export interface CardOpeningOptions extends Omit<OpeningOptions, 'isActive'> {
 }
 
 /** What the trigger renders: props for its button and the contexts around button and popover. */
-export interface CardOpening {
+interface CardOpening {
   triggerProps: Record<string, unknown> | undefined;
   onPress: (() => void) | undefined;
   /** Provider values, the same three contexts with or without a card. */

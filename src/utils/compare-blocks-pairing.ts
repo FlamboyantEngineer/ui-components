@@ -12,7 +12,7 @@ interface ChangeRun {
 }
 
 /** Both documents' blocks, and the blocks already paired as moves (old index ↔ new index). */
-export interface PairingBlocks<B extends DocumentBlock> {
+interface PairingBlocks<B extends DocumentBlock> {
   oldBlocks: readonly B[];
   newBlocks: readonly B[];
   movedTo: ReadonlyMap<number, number>;

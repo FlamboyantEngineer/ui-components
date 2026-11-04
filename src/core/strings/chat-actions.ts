@@ -1,6 +1,6 @@
 import { defineStrings } from '../message-format.js';
 /** Strings of a chat message's actions: the action bar, its context menu, feedback and deleting. */
-export interface ChatActionsStrings {
+interface ChatActionsStrings {
   /** Names a message's action bar and its context menu. */
   messageActions: string;
   /** Rates a reply as good (thumbs up). */

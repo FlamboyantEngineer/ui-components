@@ -1,6 +1,6 @@
 import { defineStrings } from '../message-format.js';
 /** Strings of the chat model picker: its trigger's name and its menu's section titles. */
-export interface ChatModelPickerStrings {
+interface ChatModelPickerStrings {
   /** Titles the menu's section of models. */
   chatModel: string;
   /** Titles the menu's section of reasoning efforts. */

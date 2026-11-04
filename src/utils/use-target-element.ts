@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 
 /** An element, or a ref to one. */
-export type ElementTarget<T extends Element = Element> = T | RefObject<T | null> | null | undefined;
+type ElementTarget<T extends Element = Element> = T | RefObject<T | null> | null | undefined;
 
 /**
  * The element `target` holds. A ref is read again after every commit, since its element changes in

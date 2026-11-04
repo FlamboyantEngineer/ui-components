@@ -34,7 +34,7 @@ interface UsePageRenderOptions<
 }
 
 /** A page's drawing: its text layer once rendered, the failure of its bitmap and a retry. */
-export interface PageRender {
+interface PageRender {
   textLayer: PdfTextLayer | null;
   /** The bitmap's drawing failed, until the page draws again. */
   failure: Error | null;

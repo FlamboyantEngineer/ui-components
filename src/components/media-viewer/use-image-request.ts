@@ -5,7 +5,7 @@ import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { isImageItem, type MediaViewerItem } from './media-viewer-parts.js';
 
 /** Where the shown image's request stands: still loading, drawn, or failed. */
-export type MediaImageStatus = 'loading' | 'loaded' | 'failed';
+type MediaImageStatus = 'loading' | 'loaded' | 'failed';
 
 /** The shown image's request and what it came to. */
 export interface MediaImageRequest {

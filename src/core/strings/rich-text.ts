@@ -1,6 +1,6 @@
 import { defineStrings } from '../message-format.js';
 /** Strings of the rich-text editor and its toolbars and menus. */
-export interface RichTextStrings {
+interface RichTextStrings {
   /** Names a rich-text editor's formatting toolbar. */
   textFormatting: string;
   /** Names the toolbar that floats over selected text. */

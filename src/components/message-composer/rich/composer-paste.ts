@@ -120,7 +120,7 @@ function settlePending(
 }
 
 /** What a paste needs from the composer. */
-export interface HostPasteOptions {
+interface HostPasteOptions {
   onPaste: (paste: MessageComposerPaste) => MessageComposerPasteResult;
   /** Whether a late answer may still edit: the same draft owner, editable and not sending. */
   isCurrent: () => boolean;

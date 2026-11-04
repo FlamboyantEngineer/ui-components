@@ -160,7 +160,7 @@ function StepsView({ item, isRunning, context }: StepsViewProps) {
  * holds none, then a hyphen and the part id. The first hyphen ends the message id, so two
  * messages' ids never meet in one DOM id (`m-1` and `p` against `m` and `1-p`).
  */
-export function toPartDomId(messageId: string, partId: string): string {
+function toPartDomId(messageId: string, partId: string): string {
   return `${encodeURIComponent(messageId).replace(/-/g, '%2D')}-${partId}`;
 }
 

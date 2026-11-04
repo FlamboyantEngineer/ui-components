@@ -51,7 +51,7 @@ function isVisible(element: HTMLElement): boolean {
 }
 
 /** Whether Tab reaches `element`: in the tab order, enabled, rendered and not hidden or inert. */
-export function isTabbable(element: HTMLElement): boolean {
+function isTabbable(element: HTMLElement): boolean {
   if (
     element.tabIndex < 0 ||
     element.matches(':disabled') ||

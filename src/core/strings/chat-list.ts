@@ -14,7 +14,7 @@ interface ChatConversationLabelParts {
 }
 
 /** Strings of the chat conversation list. */
-export interface ChatListStrings {
+interface ChatListStrings {
   /** Default name of a list of conversations. */
   conversations: string;
   /** Names and hints the search field of a list of conversations. */

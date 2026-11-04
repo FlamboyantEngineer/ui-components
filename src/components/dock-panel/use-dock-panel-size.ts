@@ -9,7 +9,7 @@ import { useOwnedPreview } from '../../utils/use-owned-preview.js';
 import { usePersistedValue } from '../../utils/use-persisted-value.js';
 import { useShallowStable } from '../../utils/use-shallow-stable.js';
 
-export interface DockPanelSizeOptions {
+interface DockPanelSizeOptions {
   /** The panel's element, whose window runs the preview frames. */
   rootRef: RefObject<HTMLElement | null>;
   size?: number | undefined;

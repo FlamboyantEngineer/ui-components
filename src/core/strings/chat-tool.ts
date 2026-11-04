@@ -1,6 +1,6 @@
 import { defineStrings, toSelectKey } from '../message-format.js';
 /** Strings of a chat's tool calls and their approvals. */
-export interface ChatToolStrings {
+interface ChatToolStrings {
   /** A tool call's status, shown beside its label. */
   toolCallStatus: (
     status:

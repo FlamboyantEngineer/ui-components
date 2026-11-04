@@ -6,7 +6,7 @@ import { useCallback, useState, type ImgHTMLAttributes, type ReactNode } from 'r
 
 type ImageProps = Omit<ImgHTMLAttributes<HTMLImageElement>, 'src' | 'onError' | 'children'>;
 
-export interface FallbackImageProps extends ImageProps {
+interface FallbackImageProps extends ImageProps {
   src: string;
   /** Drawn instead of the image once `src` has failed. */
   fallback: ReactNode;

@@ -150,7 +150,7 @@ export function useTileMenu(
 }
 
 /** The empty space menu options of a grid. */
-export interface DashboardSpaceMenuOptions {
+interface DashboardSpaceMenuOptions {
   entries: readonly MenuEntry[] | undefined;
   /** Called with the chosen entry and the cell the menu opened on, counting from 0. */
   onAction: ((key: Key, cell: { x: number; y: number }) => void) | undefined;
@@ -174,7 +174,7 @@ function cellAt(
  * the host's entries, which then hear the cell it opened on. A request on a tile, or anywhere when
  * there are no entries, keeps the browser's menu.
  */
-export function useSpaceMenu(
+function useSpaceMenu(
   options: DashboardSpaceMenuOptions,
   grid: {
     element: HTMLElement | null;

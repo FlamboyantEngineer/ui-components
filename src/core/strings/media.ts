@@ -1,6 +1,6 @@
 import { defineStrings } from '../message-format.js';
 /** Strings of media viewers and attached file lists. */
-export interface MediaStrings {
+interface MediaStrings {
   /** Names a link that downloads a file, from the file name. */
   downloadFile: (name: string) => string;
   /** Stands in for a file a media viewer cannot show. */

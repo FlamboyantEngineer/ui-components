@@ -7,7 +7,7 @@ import {
   type StylesheetChoice,
 } from './settings.js';
 
-export interface LabChromeProps {
+interface LabChromeProps {
   title: string;
   initial: LabSettings;
   /** Builds the href back to the lab index for the current settings; null hides the link. */

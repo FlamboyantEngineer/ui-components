@@ -21,7 +21,7 @@ import { selectFieldHooks as hooks } from './select-field-hooks.js';
 export type SelectFieldSelectionMode = 'single' | 'multiple';
 
 /** Where a multiple select draws its chips: on a row `below` its trigger, or `inside` its frame. */
-export type SelectFieldChipPlacement = 'below' | 'inside';
+type SelectFieldChipPlacement = 'below' | 'inside';
 
 /** One key or none for a single select, a list of keys for a multiple select. */
 export type SelectFieldValue<M extends SelectFieldSelectionMode = 'single'> = M extends 'multiple'

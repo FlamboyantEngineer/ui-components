@@ -4,7 +4,7 @@ import { defineStrings, toSelectKey } from '../message-format.js';
  * PDF viewer, data tables, timestamps, save status, record labels, outlines, state histories,
  * comments and reactions.
  */
-export interface ContentStrings {
+interface ContentStrings {
   newFolder: string;
   /** Names the field that names a new folder. */
   newFolderName: string;

@@ -25,7 +25,7 @@ function readDomSelection(view: EditorView): { anchor: number; head: number } | 
  * typed text, key or paste would land at the old place (UIC-RICH-TEXT-EDITOR-3.5). Leaves node
  * selections and compositions alone. Returns `false` so the event goes on to its usual handling.
  */
-export function syncDomSelection(view: EditorView): false {
+function syncDomSelection(view: EditorView): false {
   const { selection } = view.state;
   if (view.composing || !view.hasFocus() || !(selection instanceof TextSelection)) return false;
   const dom = readDomSelection(view);

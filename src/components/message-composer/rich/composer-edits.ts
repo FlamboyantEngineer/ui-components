@@ -80,7 +80,7 @@ export function toFragment(content: string | MessageComposerMessage): MessageCom
  * Replaces the document's content with `doc`'s, changing only what differs, so positions outside
  * the change (the selection, a pending paste) map through it.
  */
-export function replaceDocument(tr: Transaction, doc: Node): Transaction {
+function replaceDocument(tr: Transaction, doc: Node): Transaction {
   const current = tr.doc;
   const start = current.content.findDiffStart(doc.content);
   if (start === null) return tr;

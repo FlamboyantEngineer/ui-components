@@ -85,7 +85,7 @@ function hasFallenFromDisabled(root: HTMLElement, identity: string): boolean {
 }
 
 /** What the state buttons report to focus recovery. */
-export interface SequenceFocusHandlers {
+interface SequenceFocusHandlers {
   onStateFocus: (identity: string) => void;
   /** A blur to nowhere may be the state being disabled, which recovery then handles. */
   onStateBlur: (relatedTarget: EventTarget | null) => void;

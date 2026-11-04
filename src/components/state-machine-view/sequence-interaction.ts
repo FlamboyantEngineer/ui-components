@@ -28,7 +28,7 @@ interface MenuMouseEvent {
   preventDefault(): void;
 }
 
-export interface ContextMenuRequestHandlers {
+interface ContextMenuRequestHandlers {
   onContextMenu?: ((event: MenuMouseEvent) => void) | undefined;
   onKeyDown?: ((event: MenuKeyEvent) => void) | undefined;
 }

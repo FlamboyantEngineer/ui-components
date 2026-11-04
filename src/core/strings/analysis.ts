@@ -1,6 +1,6 @@
 import { defineStrings } from '../message-format.js';
 /** Strings of merge views and pivot tables. */
-export interface AnalysisStrings {
+interface AnalysisStrings {
   /** Names our side of a three-way merge. */
   mergeViewOurs: string;
   /** Names the common base of a three-way merge. */

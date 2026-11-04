@@ -19,7 +19,7 @@ export interface DayBounds {
 
 export type TimeColumnUnit = 'hour' | 'minute' | 'second' | 'dayPeriod';
 
-export interface TimeOption {
+interface TimeOption {
   /** The hour (of the period in a 12 hour cycle), minute or second; 0 for AM and 1 for PM. */
   id: number;
   isDisabled: boolean;

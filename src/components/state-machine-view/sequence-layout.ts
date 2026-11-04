@@ -15,7 +15,7 @@ export interface SequenceMeasurements {
   labels: ReadonlyMap<string, { width: number; height: number }>;
 }
 
-export interface SequenceStatePosition {
+interface SequenceStatePosition {
   state: StateMachineState;
   x: number;
   width: number;

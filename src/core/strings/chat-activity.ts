@@ -3,7 +3,7 @@ import { defineStrings, toSelectKey } from '../message-format.js';
 type ChatPlanStepStatus = 'pending' | 'in-progress' | 'done' | 'failed' | 'skipped';
 
 /** Strings of an assistant's activity in a chat: reasoning, groups of steps and plans. */
-export interface ChatActivityStrings {
+interface ChatActivityStrings {
   /** Labels reasoning while it streams in. */
   chatReasoningStreaming: string;
   /** Labels finished reasoning by how long it took in whole seconds; `0` or none reads as a moment. */

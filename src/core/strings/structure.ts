@@ -1,6 +1,6 @@
 import { defineStrings } from '../message-format.js';
 /** Strings of structure comparisons. */
-export interface StructureStrings {
+interface StructureStrings {
   /** Default accessible name of a tree comparison. */
   treeComparison: string;
   /** Names the switch that hides the rows without differences. */

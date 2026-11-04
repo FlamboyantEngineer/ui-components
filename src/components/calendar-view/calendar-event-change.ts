@@ -18,7 +18,7 @@ export interface EventShift {
 }
 
 /** A drag's change: its gesture and how far it took the event. */
-export interface EventChange {
+interface EventChange {
   gesture: CalendarEventGesture;
   shift: EventShift;
 }
@@ -27,7 +27,7 @@ export interface EventChange {
 export const snapMinutes = 15;
 
 /** The least a start or end drag leaves a timed event, in minutes. */
-export const leastChangeMinutes = 15;
+const leastChangeMinutes = 15;
 
 const minuteMs = 60_000;
 

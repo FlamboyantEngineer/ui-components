@@ -43,7 +43,7 @@ const run = (id: string, command: string, output: string) =>
 const text = (value: string): ChatPart => ({ type: 'text', text: value });
 
 /** The session's parts: reasoning and runs of calls, with the assistant's notes between them. */
-export const sessionParts: ChatPart[] = [
+const sessionParts: ChatPart[] = [
   {
     type: 'reasoning',
     id: 'session-plan',

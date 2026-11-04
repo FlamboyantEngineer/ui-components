@@ -170,7 +170,7 @@ export interface FieldState<T> {
 export const fieldReset = Symbol('fieldReset');
 
 /** Whether the field's changes are held; `setValue` ignores changes while they are. */
-export interface FieldChangeHold {
+interface FieldChangeHold {
   isHeld: boolean;
 }
 
