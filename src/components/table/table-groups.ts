@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { Key, SortDescriptor, SortDirection } from '../../core/props.js';
+import { isDate } from '../../utils/is-date.js';
 import { toLocalDay } from '../../utils/local-day.js';
 import { summarizeNumbers } from '../../utils/summarize-numbers.js';
 import { walkTree } from '../../utils/walk-tree.js';
@@ -77,7 +78,7 @@ export function isGroupNode<T>(node: TableBodyNode<T>): node is TableGroupNode<T
 
 /** Whether a value counts as no value: absent, null, empty text or an invalid date. */
 function isEmptyCellValue(value: TableCellValue): boolean {
-  if (value instanceof Date) return Number.isNaN(value.getTime());
+  if (isDate(value)) return Number.isNaN(value.getTime());
   return value === null || value === undefined || value === '';
 }
 
@@ -87,7 +88,7 @@ function isEmptyCellValue(value: TableCellValue): boolean {
  */
 export function formatGroupValue(value: TableCellValue): string {
   if (isEmptyCellValue(value)) return '';
-  if (value instanceof Date) return toLocalDay(value) ?? value.toISOString().split('T')[0] ?? '';
+  if (isDate(value)) return toLocalDay(value) ?? value.toISOString().split('T')[0] ?? '';
   return String(value);
 }
 
@@ -154,7 +155,7 @@ type GroupValueKind = (typeof groupValueKinds)[number];
 /** A value's kind: every empty value is one kind, and dates group by their day. */
 function getGroupValueKind(value: TableCellValue): GroupValueKind {
   if (isEmptyCellValue(value)) return 'empty';
-  if (value instanceof Date) return 'date';
+  if (isDate(value)) return 'date';
   return typeof value as 'string' | 'number' | 'boolean';
 }
 

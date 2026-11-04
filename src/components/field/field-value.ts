@@ -1,5 +1,7 @@
 // Value comparisons shared by the field state, its history and its menu.
 
+import { isDate } from '../../utils/is-date.js';
+
 /**
  * Keys already built, by object: field values are immutable, and a large one (a document) is
  * compared several times per change, so each object is walked once.
@@ -8,7 +10,7 @@ const objectKeys = new WeakMap<object, string>();
 
 function toObjectKey(value: object): string {
   if (Array.isArray(value)) return `[${value.map(toFieldValueKey).join(',')}]`;
-  if (value instanceof Date) return `date:${value.toISOString()}`;
+  if (isDate(value)) return `date:${value.toISOString()}`;
   const entries = Object.entries(value as Record<string, unknown>).sort(([left], [right]) =>
     left < right ? -1 : 1,
   );
@@ -19,7 +21,7 @@ function toObjectKey(value: object): string {
 export function toFieldValueKey(value: unknown): string {
   if (value === undefined) return 'undefined';
   if (value === null || typeof value !== 'object') return JSON.stringify(value) ?? String(value);
-  if (value instanceof Date) return toObjectKey(value);
+  if (isDate(value)) return toObjectKey(value);
   let key = objectKeys.get(value);
   if (key === undefined) {
     key = toObjectKey(value);

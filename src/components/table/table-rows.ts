@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { Key } from '../../core/props.js';
 import { getCollator } from '../../utils/intl-format.js';
+import { isDate } from '../../utils/is-date.js';
 import type { TableColumnSizing } from './column-sizing.js';
 import type { TableBulkEdit } from './table-bulk-edit.js';
 import type { TableColumnFilter } from './table-filters.js';
@@ -104,7 +105,7 @@ function isCellValue(value: unknown): value is TableCellValue {
   return (
     value === null ||
     value === undefined ||
-    value instanceof Date ||
+    isDate(value) ||
     ['string', 'number', 'boolean'].includes(typeof value)
   );
 }
@@ -117,7 +118,7 @@ export function isTextValue(value: TableCellValue): value is string | number {
 function toSortKey(value: TableCellValue): string | number {
   if (isTextValue(value)) return value;
   if (typeof value === 'boolean') return value ? 1 : 0;
-  return value instanceof Date ? value.getTime() : '';
+  return isDate(value) ? value.getTime() : '';
 }
 
 /** The value `column` reads from `row`. */

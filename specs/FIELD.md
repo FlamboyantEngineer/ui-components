@@ -113,7 +113,7 @@ Verification: `src/components/field/field-state.test.tsx`
 
 ### UIC-FIELD-2.3 - Dirty state
 
-A field shall be dirty while its value differs from its committed value by structure (key order and object identity do not count) and publish `data-dirty` on its root. A read-only or disabled field is never dirty.
+A field shall be dirty while its value differs from its committed value by structure (key order and object identity do not count; dates, including those made in another same-origin window, compare by their instant) and publish `data-dirty` on its root. A read-only or disabled field is never dirty.
 
 Values are compared as immutable data: an object or array value is read once, however often it is compared, so a large value costs one walk per change; a value changed in place is not seen as changed. A control may give its own comparison (`useFieldState`'s second argument, a `FieldValueContract`, or `isEqual` in `useFieldControl`'s options), which the field then uses for dirty state, history, actions, commits, external errors and the asynchronous check, so a control with large values, such as a document, compares them by the parts they share instead of walking them whole.
 
