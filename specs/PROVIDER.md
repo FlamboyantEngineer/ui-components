@@ -107,10 +107,10 @@ Verification: `src/core/provider.test.tsx`, `src/core/provider-options.test.tsx`
 
 ### UIC-PROVIDER-6.1 - Storage adapter
 
-Components that persist layout state (panel sizes, column widths, collapsed sections) shall read and write it only through the provider's `storage` adapter, under a key the caller supplies. Changing either the key or adapter reads that pair's stored value without remounting; state without a key survives an adapter change. Updates use the latest committed state, so a suspended render cannot change the value or destination of a visible control's write, and consecutive functional updates compose. The default adapter keeps values in memory for the page session. Library source never accesses browser storage directly.
+Components that persist layout state (panel sizes, column widths, collapsed sections) shall read and write it only through the provider's `storage` adapter, under a key the caller supplies. Changing either the key or adapter reads that pair's stored value without remounting; state without a key survives an adapter change. Neither the server render nor hydration reads the adapter: both show the initial value, so they agree whatever each side's storage holds, and the render after hydration reads the stored value as an adapter change would, without writing the initial value over it; a render on the client alone reads the store from its first render. Updates use the latest committed state, so a suspended render cannot change the value or destination of a visible control's write, and consecutive functional updates compose. The default adapter keeps values in memory for the page session. Library source never accesses browser storage directly.
 
-Implementation: `src/core/storage.ts`, `src/core/provider.tsx`, `eslint.config.js`
-Verification: `src/core/provider.test.tsx`, `src/core/provider-storage.test.tsx`, `e2e/provider.spec.ts`, `test/lint-rules.test.ts`
+Implementation: `src/core/storage.ts`, `src/core/provider.tsx`, `src/utils/use-is-client.ts`, `eslint.config.js`
+Verification: `src/core/provider.test.tsx`, `src/core/provider-storage.test.tsx`, `src/components/tabs/tabs.test.tsx`, `e2e/provider.spec.ts`, `test/lint-rules.test.ts`
 
 ### UIC-PROVIDER-6.2 - Unreadable values
 

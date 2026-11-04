@@ -7,7 +7,12 @@ import { glyphCatalog, glyphNames } from './glyph-catalog.js';
 import { ProviderClock } from './provider-clock-cases.js';
 import { PersistenceLifecycle, RoutedLinks } from './provider-host-cases.js';
 import { PausedShortcut } from './provider-overlay-cases.js';
-import { OptionalOptions, StorageSwitch, WrappedStorage } from './provider-storage-cases.js';
+import {
+  HydratedStorage,
+  OptionalOptions,
+  StorageSwitch,
+  WrappedStorage,
+} from './provider-storage-cases.js';
 
 const replacedGlyphs = Object.fromEntries(glyphNames.map((name) => [name, SquareGlyph]));
 
@@ -223,6 +228,12 @@ mountLab(
       description="Switch adapters and keys without remounting the counter. Each stored value stays with its own adapter and key."
     >
       <StorageSwitch />
+    </LabSection>
+    <LabSection
+      title="Storage after server rendering"
+      description="The zoom was rendered on a server with empty storage and hydrated over a store holding 150. Hydration matches the server's 100, with no mismatch, then the stored 150 replaces it; pressing Zoom stores the new value."
+    >
+      <HydratedStorage />
     </LabSection>
     <LabSection
       title="Storage wrapped anew"

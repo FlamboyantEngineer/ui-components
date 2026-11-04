@@ -1,10 +1,12 @@
 import { act, render, renderHook, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { type ReactNode, startTransition, Suspense, use, useState } from 'react';
+import { hydrateRoot } from 'react-dom/client';
+import { renderToString } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { numberCodec } from '../utils/json-codec.js';
 import { UiProvider, usePersistentState } from './provider.js';
-import { createMemoryStorage } from './storage.js';
+import { createMemoryStorage, type UiStorage } from './storage.js';
 
 describe('persistent state ownership', () => {
   it('UIC-PROVIDER-6.1 reads a replacement adapter before writing under the same key', () => {
@@ -102,5 +104,78 @@ describe('persistent state ownership', () => {
       return usePersistentState('count', 0);
     }
     expect(useUncheckedCount).toBeTypeOf('function');
+  });
+});
+
+describe('persistent state hydration', () => {
+  function StoredZoom() {
+    const [value, setValue] = usePersistentState('zoom', 100, { codec: numberCodec });
+    return (
+      <button type="button" onClick={() => setValue((previous) => previous + 10)}>
+        {value}
+      </button>
+    );
+  }
+
+  async function hydrate(serverStorage: UiStorage, clientStorage: UiStorage) {
+    const host = document.body.appendChild(document.createElement('div'));
+    host.innerHTML = renderToString(
+      <UiProvider locale="en-US" storage={serverStorage}>
+        <StoredZoom />
+      </UiProvider>,
+    );
+    const serverText = host.textContent;
+    const recoverable: unknown[] = [];
+    let app: ReturnType<typeof hydrateRoot> | undefined;
+    await act(async () => {
+      app = hydrateRoot(
+        host,
+        <UiProvider locale="en-US" storage={clientStorage}>
+          <StoredZoom />
+        </UiProvider>,
+        { onRecoverableError: (error) => recoverable.push(error) },
+      );
+    });
+    return { serverText, recoverable, unmount: () => act(() => app?.unmount()) };
+  }
+
+  it('UIC-PROVIDER-6.1 hydrates the fallback, then adopts the stored value', async () => {
+    const client = createMemoryStorage({ zoom: '150' });
+    const { serverText, recoverable, unmount } = await hydrate(createMemoryStorage(), client);
+    expect(serverText).toBe('100');
+    expect(recoverable).toEqual([]);
+    expect(screen.getByRole('button')).toHaveTextContent('150');
+    expect(client.getItem('zoom')).toBe('150');
+    await userEvent.click(screen.getByRole('button'));
+    expect(screen.getByRole('button')).toHaveTextContent('160');
+    expect(client.getItem('zoom')).toBe('160');
+    unmount();
+  });
+
+  it('UIC-PROVIDER-6.1 renders the fallback on the server even when its adapter has a value', async () => {
+    const { serverText, recoverable, unmount } = await hydrate(
+      createMemoryStorage({ zoom: '120' }),
+      createMemoryStorage(),
+    );
+    expect(serverText).toBe('100');
+    expect(recoverable).toEqual([]);
+    expect(screen.getByRole('button')).toHaveTextContent('100');
+    unmount();
+  });
+
+  it('UIC-PROVIDER-6.1 reads the store in the first render of a client-only mount', () => {
+    const storage = createMemoryStorage({ zoom: '150' });
+    const seen: number[] = [];
+    function Probe() {
+      const [value] = usePersistentState('zoom', 100, { codec: numberCodec });
+      seen.push(value);
+      return null;
+    }
+    render(
+      <UiProvider storage={storage}>
+        <Probe />
+      </UiProvider>,
+    );
+    expect(seen[0]).toBe(150);
   });
 });

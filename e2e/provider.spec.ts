@@ -95,6 +95,18 @@ test.describe('Provider lab', () => {
     ).toBeVisible();
   });
 
+  test('UIC-PROVIDER-6.1 hydrates the server value, then adopts the stored one', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('provider');
+    const section = page.locator('[data-lab-case="hydrated-storage"]');
+    await expect(section.locator('[data-lab-output="server"]')).toHaveText('Zoom 100%');
+    await section.getByRole('button', { name: 'Zoom 150%' }).click();
+    await expect(section.getByRole('button', { name: 'Zoom 160%' })).toBeVisible();
+    await expect(section.locator('[data-lab-output="mismatches"]')).toHaveText('0');
+  });
+
   test('UIC-PROVIDER-3.3 UIC-PROVIDER-5.2 keeps a draft while the locale and routing come and go', async ({
     page,
     lab,
