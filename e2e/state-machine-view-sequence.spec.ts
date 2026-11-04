@@ -12,18 +12,18 @@ async function geometry(scope: Locator) {
     const viewport = root.querySelector('.ui-state-machine-view__viewport');
     if (!(content instanceof HTMLElement) || !(viewport instanceof HTMLElement))
       throw new Error('Missing sequence viewport');
-    const states = [
-      ...root.querySelectorAll<HTMLElement>('.ui-state-machine-view__state-position'),
-    ].map((state) => {
-      const box = state.getBoundingClientRect();
-      return {
-        key: state.getAttribute('data-key'),
-        x: box.x,
-        y: box.y,
-        width: box.width,
-        height: box.height,
-      };
-    });
+    const states = [...root.querySelectorAll<HTMLElement>('.ui-state-machine-view__state')].map(
+      (state) => {
+        const box = state.getBoundingClientRect();
+        return {
+          key: state.getAttribute('data-key'),
+          x: box.x,
+          y: box.y,
+          width: box.width,
+          height: box.height,
+        };
+      },
+    );
     const svg = root.querySelector('svg');
     const matrix = svg?.getScreenCTM();
     if (!svg || !matrix) throw new Error('Missing sequence SVG geometry');
@@ -33,6 +33,9 @@ async function geometry(scope: Locator) {
         if (!path) throw new Error('Missing connector');
         const first = path.getPointAtLength(0).matrixTransform(matrix);
         const last = path.getPointAtLength(path.getTotalLength()).matrixTransform(matrix);
+        const arrow = route.querySelector<SVGPathElement>('.ui-state-machine-view__arrow');
+        if (!arrow) throw new Error('Missing arrowhead');
+        const tip = arrow.getPointAtLength(arrow.getTotalLength() / 2).matrixTransform(matrix);
         return {
           key: route.getAttribute('data-key'),
           direction: route.getAttribute('data-direction'),
@@ -41,6 +44,8 @@ async function geometry(scope: Locator) {
           sourceY: first.y,
           targetX: last.x,
           targetY: last.y,
+          arrowX: tip.x,
+          arrowY: tip.y,
         };
       },
     );
@@ -84,10 +89,11 @@ async function expectAttachments(scope: Locator) {
       expect(route.sourceX).toBeLessThan(source.x + source.width);
       expect(route.targetX).toBeGreaterThan(target.x);
       expect(route.targetX).toBeLessThan(target.x + target.width);
-      expect(route.sourceY).toBeGreaterThan(source.y);
-      expect(route.sourceY).toBeLessThan(source.y + source.height);
-      expect(route.targetY).toBeGreaterThan(target.y);
-      expect(route.targetY).toBeLessThan(target.y + target.height);
+      const forward = route.direction === 'forward';
+      expect(route.sourceY).toBeCloseTo(source.y + (forward ? 0 : source.height), 2);
+      expect(route.targetY).toBeCloseTo(target.y + (forward ? 0 : target.height), 2);
+      expect(route.arrowX).toBeCloseTo(route.targetX, 2);
+      expect(route.arrowY).toBeCloseTo(route.targetY, 2);
     }
   }).toPass();
 }

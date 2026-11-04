@@ -253,6 +253,51 @@ test.describe('Diagram Canvas lab', () => {
     await expect(view).not.toContainText('at 100%');
   });
 
+  for (const { position, delta, childScrolls } of [
+    { position: 'start', delta: -20, childScrolls: true },
+    { position: 'start', delta: 20, childScrolls: false },
+    { position: 'middle', delta: -20, childScrolls: true },
+    { position: 'middle', delta: 20, childScrolls: true },
+    { position: 'end', delta: -20, childScrolls: false },
+    { position: 'end', delta: 20, childScrolls: true },
+  ] as const) {
+    test(`UIC-DIAGRAM-CANVAS-3.1 routes RTL wheel delta ${delta} at the ${position}`, async ({
+      page,
+      lab,
+    }) => {
+      await lab.open('diagram-canvas');
+      const entries = page.getByRole('region', { name: 'Log horizontal entries' });
+      await entries.scrollIntoViewIfNeeded();
+      await entries.evaluate(
+        () =>
+          new Promise<void>((resolve) => {
+            requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+          }),
+      );
+      const start = await entries.evaluate((node, position) => {
+        const range = node.scrollWidth - node.clientWidth;
+        node.scrollLeft = position === 'start' ? 0 : position === 'end' ? -range : -range / 2;
+        return node.scrollLeft;
+      }, position);
+      const centre = await centreOf(entries);
+      await page.mouse.move(centre.x, centre.y);
+      const view = output(page, 'log-view');
+      await expect(view).toHaveText('0,0 at 100%');
+      await page.mouse.wheel(delta, 0);
+      await expect(async () => {
+        const offset = await entries.evaluate((node) => node.scrollLeft);
+        if (childScrolls) {
+          if (delta < 0) expect(offset).toBeLessThan(start);
+          else expect(offset).toBeGreaterThan(start);
+          await expect(view).toHaveText('0,0 at 100%');
+        } else {
+          expect(offset).toBe(start);
+          await expect(view).toHaveText(`${-delta},0 at 100%`);
+        }
+      }).toPass();
+    });
+  }
+
   test('UIC-DIAGRAM-CANVAS-2.1 routes same-side ports around both parts', async ({ page, lab }) => {
     await lab.open('diagram-canvas');
     const canvas = page.locator('[data-lab-field="same-side"]');

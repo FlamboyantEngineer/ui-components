@@ -10,6 +10,7 @@ import type { TableCellRange } from '../../src/components/table/index.js';
 import type { TableGroupBy } from '../../src/components/table/index.js';
 import type { TableColumn } from '../../src/components/table/index.js';
 import type { TableCellEdit } from '../../src/components/table/index.js';
+import { GroupParentIdentity, GroupPeerIdentity } from './table-group-identity-cases.js';
 
 interface Stock {
   id: string;
@@ -273,6 +274,8 @@ export function Grouping() {
           size="sm"
         />
       </div>
+      <GroupPeerIdentity />
+      <GroupParentIdentity />
       <h3>Virtualized groups</h3>
       <div data-lab="grouping-virtualized" style={{ height: 280 }}>
         <Table

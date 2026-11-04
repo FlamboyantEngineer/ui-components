@@ -49,9 +49,10 @@ function ControlledSplit() {
 
 const layouts = ['Reading', 'Editing'] as const;
 
-/** One split saved under a key per layout; switching layouts mid-drag abandons the drag. */
+/** One mounted split restores each layout's sizes in its own pane order. */
 function LayoutSplit() {
   const [layout, setLayout] = useState<(typeof layouts)[number]>('Reading');
+  const order = layout === 'Reading' ? ['list', 'detail'] : ['detail', 'list'];
   return (
     <div style={{ display: 'grid', gap: 8 }}>
       <fieldset style={{ display: 'flex', gap: 12, border: 0, padding: 0, margin: 0 }}>
@@ -70,12 +71,16 @@ function LayoutSplit() {
       </fieldset>
       <div style={frame(480, 140)} data-lab-split="layouts">
         <SplitView
-          panes={[{ id: 'layout-list' }, { id: 'layout-detail' }]}
+          panes={order.map((name) => ({ id: `layout-${name}` }))}
           defaultSize={40}
           persistKey={`split-view-lab.layout.${layout.toLowerCase()}`}
           separatorLabel="Resize layout panes"
         >
-          {[<Pane key="a">{layout} list</Pane>, <Pane key="b">{layout} detail</Pane>]}
+          {order.map((name) => (
+            <Pane key={name}>
+              {layout} {name}
+            </Pane>
+          ))}
         </SplitView>
       </div>
     </div>
@@ -271,7 +276,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Layouts saved apart"
-      description="Each layout saves its own size. Switching layouts during a drag abandons the drag, so it never lands in the other layout."
+      description="Each layout restores its saved sizes in its own pane order. Switching layouts during a drag abandons the drag, so it never lands in the other layout."
     >
       <LayoutSplit />
     </LabSection>

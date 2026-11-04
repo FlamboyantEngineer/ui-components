@@ -76,14 +76,22 @@ function resolveElement(anchor: TooltipAnchor | null | undefined): Element | nul
   return element?.isConnected ? element : null;
 }
 
-/** Adds `id` to an attribute's id list and returns the function that takes it out again. */
-function addIdToken(element: Element, attribute: RelatedAttribute, id: string): () => void {
-  const tokens = (element.getAttribute(attribute) ?? '').split(/\s+/).filter(Boolean);
-  if (!tokens.includes(id)) element.setAttribute(attribute, [...tokens, id].join(' '));
+/** Maintains `id` alongside the host's current tokens until the relationship is released. */
+function maintainIdToken(element: Element, attribute: RelatedAttribute, id: string): () => void {
+  const reconcile = () => {
+    const tokens = (element.getAttribute(attribute) ?? '').split(/\s+/).filter(Boolean);
+    if (!tokens.includes(id)) element.setAttribute(attribute, [...tokens, id].join(' '));
+  };
+  reconcile();
+  const view = element.ownerDocument.defaultView;
+  const observer = view ? new view.MutationObserver(reconcile) : null;
+  observer?.observe(element, { attributes: true, attributeFilter: [attribute] });
   return () => {
-    const rest = (element.getAttribute(attribute) ?? '')
-      .split(/\s+/)
-      .filter((token) => token && token !== id);
+    // Disconnect first so queued host updates cannot restore a released relationship.
+    observer?.disconnect();
+    const tokens = (element.getAttribute(attribute) ?? '').split(/\s+/).filter(Boolean);
+    if (!tokens.includes(id)) return;
+    const rest = tokens.filter((token) => token !== id);
     if (rest.length > 0) element.setAttribute(attribute, rest.join(' '));
     else element.removeAttribute(attribute);
   };
@@ -129,7 +137,7 @@ function useAnchorRelationship(
   useLayoutEffect(() => {
     if (!element || relationship === 'none') return undefined;
     const attribute = relationship === 'label' ? 'aria-labelledby' : 'aria-describedby';
-    return addIdToken(element, attribute, id);
+    return maintainIdToken(element, attribute, id);
   }, [element, id, relationship]);
 }
 
