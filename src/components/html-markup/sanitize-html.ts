@@ -3,7 +3,7 @@
 
 import { requireDefined } from '../../utils/require-defined.js';
 import { defaultUrlSchemes, isSafeUrl } from '../../utils/safe-url.js';
-import { buildHtmlTree, type RawElement, type RawNode } from './html-tree.js';
+import { buildHtmlTree, reconcileHtmlTree, type RawElement, type RawNode } from './html-tree.js';
 import { mergeSafeRel } from '../../utils/merge-safe-rel.js';
 
 export interface HtmlElementNode {
@@ -163,5 +163,7 @@ export function sanitizeHtml(
   markup: string,
   policy: HtmlPolicy = defaultHtmlPolicy,
 ): readonly HtmlNode[] {
-  return Object.freeze(filterNodes(buildHtmlTree(markup), policy));
+  const nodes = buildHtmlTree(markup);
+  reconcileHtmlTree(nodes, new Set(policy.elements));
+  return Object.freeze(filterNodes(nodes, policy));
 }

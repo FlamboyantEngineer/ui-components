@@ -305,6 +305,54 @@ const noteSchema = createRichTextSchema({
   },
 });
 
+const customTaskSchema = createRichTextSchema({
+  nodes: {
+    taskItem: {
+      content: 'paragraph block*',
+      defining: true,
+      attrs: { checked: { default: false } },
+      parseDOM: [{ tag: 'li[data-task-custom]', priority: 60 }],
+      toDOM: () => ['li', { 'data-task-custom': 'true' }, 0],
+    },
+  },
+});
+
+/** A replacement task renderer shared by the editable document and its HTML output. */
+export function CustomTaskEditor() {
+  const [value, setValue] = useState<RichTextDocument>({
+    type: 'doc',
+    content: [
+      {
+        type: 'taskList',
+        content: [
+          {
+            type: 'taskItem',
+            attrs: { checked: false },
+            content: [paragraph(text('Wash the fruit'))],
+          },
+        ],
+      },
+    ],
+  });
+  return (
+    <>
+      <RichTextEditor
+        label="Custom tasks"
+        data-lab-editor="custom-tasks"
+        schema={customTaskSchema}
+        value={value}
+        onChange={setValue}
+      />
+      <p>
+        HTML:{' '}
+        <output data-lab-output="custom-task-html">
+          {serializeRichTextHtml(value, { schema: customTaskSchema })}
+        </output>
+      </p>
+    </>
+  );
+}
+
 const calloutItem: InsertMenuItem = {
   id: 'callout',
   label: 'Callout',

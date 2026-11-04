@@ -11,6 +11,7 @@ import {
   BlockHandleChoices,
   ControlledEditor,
   CustomSchemaEditor,
+  CustomTaskEditor,
   FormEditor,
   RequiredEditor,
   FullEditor,
@@ -110,6 +111,12 @@ mountLab(
     </LabSection>
     <LabSection title="Custom schema">
       <CustomSchemaEditor />
+    </LabSection>
+    <LabSection
+      title="Custom task renderer"
+      description="This schema replaces task items with plain list items. Edit the text: the document and HTML output use the custom renderer, without a built-in checkbox."
+    >
+      <CustomTaskEditor />
     </LabSection>
     <LabSection title="Controlled value">
       <ControlledEditor />

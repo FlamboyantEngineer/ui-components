@@ -168,4 +168,30 @@ test.describe('HTML Markup lab', () => {
     expect(reparsed).toBe(true);
     await lab.expectAccessible('[data-lab-misnested]');
   });
+
+  test('UIC-HTML-MARKUP-1.2 UIC-HTML-MARKUP-1.3 UIC-HTML-MARKUP-2.1 preserves structure after removing scope boundaries', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('html-markup');
+    const scope = page.locator('[data-lab-removed-scope]');
+    await expect(scope.locator('p')).toHaveText(['BeforeInsidekeptAfter', 'EarlyHarvestLate']);
+    await expect(scope.locator('strong')).toHaveText('kept');
+    await expect(scope.locator('button, div, table, tbody, tr, td')).toHaveCount(0);
+    const list = page.locator('[data-lab-removed-list]');
+    await expect(list.getByRole('listitem')).toHaveText(['PearsPlumsFigs']);
+    await expect(list.locator('ol')).toHaveCount(0);
+    await expect(list.locator('em')).toHaveText('Plums');
+    for (const output of [scope, list]) {
+      expect(
+        await output.evaluate((element) => {
+          const copy = element.ownerDocument.createElement('div');
+          copy.innerHTML = element.innerHTML;
+          return copy.innerHTML === element.innerHTML;
+        }),
+      ).toBe(true);
+    }
+    await lab.expectAccessible('[data-lab-removed-scope]');
+    await lab.expectAccessible('[data-lab-removed-list]');
+  });
 });
