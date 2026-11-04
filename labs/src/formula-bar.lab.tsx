@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FormulaBar } from '../../src/components/formula-bar/formula-bar.js';
+import { FormulaBar, FormulaBarControls } from '../../src/components/formula-bar/index.js';
 import { Table } from '../../src/components/table/table.js';
 import { Button } from '../../src/components/button/button.js';
 import type { TableCellRange } from '../../src/components/table/index.js';
@@ -339,9 +339,7 @@ mountLab(
       title="Composed controls"
       description="An external editor keeps its native reference and content controls and commands."
     >
-      <FormulaBar
-        cell={null}
-        value=""
+      <FormulaBarControls
         controls={{
           reference: <input aria-label="Custom reference" defaultValue="B2:C3" />,
           editor: <input aria-label="Custom content" defaultValue="=SUM(B2:C3)" />,

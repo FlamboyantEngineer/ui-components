@@ -365,5 +365,6 @@ function FormulaBarEditor({
 
 /** A formula bar with built-in editing or caller-owned controls for an external grid engine. */
 export function FormulaBar(props: FormulaBarProps) {
-  return props.controls ? <FormulaBarControls {...props} /> : <FormulaBarEditor {...props} />;
+  if (props.controls) return <FormulaBarControls {...props} controls={props.controls} />;
+  return <FormulaBarEditor {...props} />;
 }
