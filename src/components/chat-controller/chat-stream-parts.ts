@@ -100,10 +100,19 @@ export function appendFile(
   ];
 }
 
-/** The part once its reply ended: nothing streams or runs any more. */
+function isApprovedCall({ approval }: PartOf<'tool-call'>): boolean {
+  return (
+    approval?.decision === 'approved' ||
+    approval?.decision === 'always' ||
+    approval?.isAutoApproved === true
+  );
+}
+
+/** Settles stream work; approved operations may keep running after a successful stream. */
 function settlePart(part: ChatPart, outcome: ChatReplyOutcome): ChatPart {
   const isCut = outcome.status !== 'complete';
   if (part.type === 'tool-call') {
+    if (!isCut && part.status === 'running' && isApprovedCall(part)) return part;
     const isWaiting = part.status === 'approval-requested' && part.approval?.decision === undefined;
     const isUnfinished = part.status === 'pending' || part.status === 'running';
     return isUnfinished || (isCut && isWaiting) ? { ...part, status: 'cancelled' } : part;
@@ -115,9 +124,9 @@ function settlePart(part: ChatPart, outcome: ChatReplyOutcome): ChatPart {
 }
 
 /**
- * The reply once it ended: streaming parts complete, unfinished tool calls cancelled, its status
- * line cleared. A complete reply keeps the approvals and questions that wait for the reader; a
- * stopped or failed one cancels them.
+ * The reply once its stream ends: streaming parts complete and its status line clears. Success
+ * keeps approved running calls and requests that wait for the reader, cancelling other unfinished
+ * calls. A stopped or failed stream cancels all unfinished calls and dismisses pending questions.
  */
 export function endChatReply(
   message: ChatMessageData,

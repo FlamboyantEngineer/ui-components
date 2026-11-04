@@ -50,10 +50,10 @@ Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.s
 
 ### UIC-TEXT-FIELD-2.3 - Length and format
 
-`minLength`, `maxLength`, `pattern` and `trim` shall check the value with `validateString` ([FIELD.md](FIELD.md#uic-field-7---string-rules)) and the provider's messages, before the caller's `validate`. They are not native constraints: a text longer than `maxLength` can be typed or pasted, and the field reports it. After them, an `email` field checks that its trimmed value is one email address (the HTML standard's valid email address) and a `url` field that it is an absolute URL, with the validity `typeMismatch` and the provider's `emailMismatch` or `urlMismatch` message; an empty value is not checked. The field, its form's verdict and a native submit therefore agree, in both validation behaviors.
+`minLength`, `maxLength`, `pattern` and `trim` shall check the value with `validateString` ([FIELD.md](FIELD.md#uic-field-7---string-rules)) and the provider's messages, before the caller's `validate`. They are not native constraints: a text longer than `maxLength` can be typed or pasted, and the field reports it. After them, an `email` field checks that its trimmed value is one email address (the HTML standard's valid email address) and a `url` field that it is an absolute URL, with the validity `typeMismatch` and the provider's `emailMismatch` or `urlMismatch` message; an empty value is not checked. URL validation shall accept absolute URLs of any scheme and reject relative and protocol-relative addresses, including on supported browsers without `URL.canParse`. Initial nonempty values and the first edit from empty shall return validation feedback without throwing; correcting or clearing an optional URL shall clear its type mismatch. The field, its form's verdict and a native submit therefore agree, in both validation behaviors.
 
 Implementation: `src/components/text-field/text-field.tsx`
-Verification: `src/components/text-field/text-field.test.tsx`, `src/components/text-field/text-field-type.test.tsx`
+Verification: `src/components/text-field/text-field.test.tsx`, `src/components/text-field/text-field-type.test.tsx`, `e2e/text-field.spec.ts`
 
 ### UIC-TEXT-FIELD-2.4 - Field behaviour
 

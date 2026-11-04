@@ -403,6 +403,58 @@ describe('NotificationList', () => {
     expect(status).toHaveTextContent('2 new notifications');
   });
 
+  it.each([1, 2])(
+    'UIC-NOTIFICATION-CENTER-3.1 reannounces repeated wording for batches of %i',
+    (count) => {
+      let entries = items.slice(0, 2);
+      const { rerender } = render(<NotificationList items={entries} getNow={getNow} />);
+      const status = screen.getByRole('status');
+      expect(status).toBeEmptyDOMElement();
+      const observer = new MutationObserver(() => {});
+      observer.observe(status, { childList: true, characterData: true, subtree: true });
+      const words = count === 1 ? 'New notification: Import finished' : '2 new notifications';
+      try {
+        for (let event = 1; event <= 3; event++) {
+          const previous = status.textContent;
+          const fresh = Array.from({ length: count }, (_, index) => ({
+            id: `arrival-${event}-${index}`,
+            title: 'Import finished',
+            time: new Date(now.getTime() + event * 2000).toISOString(),
+          }));
+          entries = [...fresh, ...entries];
+          rerender(<NotificationList items={entries} getNow={getNow} />);
+          expect(observer.takeRecords().length).toBeGreaterThan(0);
+          const current = status.textContent;
+          expect(current).not.toBe(previous);
+          expect(status.textContent?.replaceAll('\u200b', '')).toBe(words);
+
+          // New arrays, older history and already-read entries must not advance the announcement.
+          rerender(<NotificationList items={[...entries]} getNow={getNow} />);
+          expect(observer.takeRecords()).toHaveLength(0);
+          entries = [
+            ...entries,
+            { id: `history-${event}`, title: 'Earlier note', time: '2026-01-01' },
+          ];
+          rerender(<NotificationList items={entries} getNow={getNow} />);
+          expect(observer.takeRecords()).toHaveLength(0);
+          entries = [
+            {
+              id: `read-${event}`,
+              title: 'Read note',
+              time: new Date(now.getTime() + event * 2000 + 1000).toISOString(),
+              isRead: true,
+            },
+            ...entries,
+          ];
+          rerender(<NotificationList items={entries} getNow={getNow} />);
+          expect(observer.takeRecords()).toHaveLength(0);
+        }
+      } finally {
+        observer.disconnect();
+      }
+    },
+  );
+
   it('UIC-NOTIFICATION-CENTER-3.1 does not announce the first page of a list that started empty', () => {
     const { container, rerender } = render(<NotificationList items={[]} isLoading />);
     rerender(<NotificationList items={items} getNow={getNow} />);

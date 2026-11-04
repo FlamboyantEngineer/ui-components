@@ -17,15 +17,19 @@ Verification: `src/components/html-markup/sanitize-html.test.ts`
 
 The tree shall follow the structure an HTML parser gives the fragment: void elements (`br`, `img`, `hr`, …) take no children; an element closes the open elements it implies (a block, list item, term or description closes an open paragraph, a list item, term, row, cell or table section closes its open sibling, a link closes an open link, a heading an open heading); table parts go where an HTML parser puts them, so server HTML parses back into the same tree: a `col` outside a column group gets a `colgroup`, a row outside a table section a `tbody` and a cell outside a row a `tr`; a caption, column group or section closes what is open inside its table, a row what is open inside its section and a cell what is open inside its row; another element directly in table structure is placed before the table, and a `table` there closes the open table and follows it; a list item, term, description or link placed so in an open one of its kind, or a heading placed so directly in a heading, keeps only its content there, since its own tag would close that element when the server HTML is parsed again; a table part outside any table is ignored, its content kept; text directly in table structure is dropped; a closing tag closes the nearest open element of its name and a stray one is ignored.
 
+After policy filtering removes a scope boundary (such as a button, list, table or cell), a retained tag that would implicitly close an emitted ancestor shall also be unwrapped, preserving its allowed content in order. Heading opening tags shall be checked against their immediate emitted parent. If filtering breaks a table's required parent/child structure or exposes flow content in its scaffold, that table and its own structural tags shall be unwrapped; a table unwrapped by scope repair shall lose its scaffold too. Valid nested tables shall retain their independent structure. Repair shall never synthesize policy-excluded tags or drop newly exposed content, and shall remain iterative with work proportional to the tree size.
+
 Implementation: `src/components/html-markup/html-tree.ts`, `src/components/html-markup/html-table.ts`
-Verification: `src/components/html-markup/sanitize-html.test.ts`, `src/components/html-markup/html-table-hydration.test.tsx`, `e2e/html-markup.spec.ts`
+Verification: `src/components/html-markup/sanitize-html.test.ts`, `src/components/html-markup/html-table-hydration.test.tsx`, `src/components/html-markup/html-scope-hydration.test.tsx`, `e2e/html-markup.spec.ts`
 
 ### UIC-HTML-MARKUP-1.3 - Elements
 
 Elements the policy does not list shall be unwrapped, their content kept in their place, whatever their name: one an ordinary object inherits (`constructor`, `__proto__`, `toString`) reads as any unknown name does, at the root and inside open paragraphs, lists and tables. `script`, `style`, `template`, `iframe`, `frame`, `frameset`, `object`, `embed`, `applet`, `noscript`, `noembed`, `noframes`, `xmp`, `plaintext`, `title`, `textarea`, `select`, `svg`, `math`, `base`, `link` and `meta` shall be dropped with their content whatever the policy lists, up to the closing tag that matches them (nested elements of the same name are counted). The content of the ones an HTML parser reads as text (`script`, `style`, `iframe`, `noembed`, `noframes`, `noscript`, `xmp`, `plaintext`, `textarea` and `title`) is never parsed as markup.
 
+Unwrapping excluded elements shall apply the structure repair in UIC-HTML-MARKUP-1.2 to the ancestry that will actually be emitted, while preserving the element, attribute and URL allowlists.
+
 Implementation: `src/components/html-markup/html-tree.ts`, `src/components/html-markup/sanitize-html.ts`, `src/utils/markup.ts`
-Verification: `src/components/html-markup/sanitize-html.test.ts`, `src/components/html-markup/html-object-names.test.tsx`, `e2e/html-markup.spec.ts`
+Verification: `src/components/html-markup/sanitize-html.test.ts`, `src/components/html-markup/html-object-names.test.tsx`, `src/components/html-markup/html-scope-hydration.test.tsx`, `e2e/html-markup.spec.ts`
 
 ### UIC-HTML-MARKUP-1.4 - Attributes
 
@@ -65,8 +69,10 @@ An `<img>` comes from the content, so by default it sends no referrer (`referrer
 
 Building the React element tree shall use an iterative traversal, preserving each node's sibling key and calling element overrides after their rendered children.
 
+Without element overrides, the repaired markup shall parse from server HTML into the same structure and hydrate without recovery or replacing server nodes, including when the policy removes scope boundaries.
+
 Implementation: `src/components/html-markup/html-markup.tsx`, `src/utils/map-tree.ts`, `src/utils/safe-url.ts`
-Verification: `src/components/html-markup/html-markup.test.tsx`, `src/components/html-markup/html-markup-images.test.tsx`, `e2e/html-markup.spec.ts`
+Verification: `src/components/html-markup/html-markup.test.tsx`, `src/components/html-markup/html-markup-images.test.tsx`, `src/components/html-markup/html-scope-hydration.test.tsx`, `e2e/html-markup.spec.ts`
 
 ### UIC-HTML-MARKUP-2.2 - Links
 
