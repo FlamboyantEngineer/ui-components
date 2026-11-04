@@ -182,6 +182,30 @@ describe('CalendarView event menus', () => {
     );
   });
 
+  it('UIC-CALENDAR-VIEW-5.2 makes an event ending at midnight all-day over the day it occupied', async () => {
+    const user = userEvent.setup();
+    const onEventChange = vi.fn();
+    const late: CalendarViewEvent = {
+      id: 'late',
+      title: 'Late review',
+      start: '2026-03-18T22:00',
+      end: '2026-03-19T00:00',
+    };
+    render(<Calendar onEventChange={onEventChange} initial={[late]} />);
+    await user.click(within(await openMenu('Late review')).getByRole('menuitem', { name: 'Edit' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Edit event' });
+    const allDay = within(dialog).getByRole('checkbox', { name: 'All day' });
+    await user.click(allDay);
+    // Back to timed and to all-day again: the draft keeps the one day.
+    await user.click(allDay);
+    await user.click(allDay);
+    await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+    expect(onEventChange).toHaveBeenCalledWith(
+      { ...late, start: '2026-03-18', end: '2026-03-18' },
+      late,
+    );
+  });
+
   it('UIC-CALENDAR-VIEW-5.2 closes when its event leaves, giving focus to the day', async () => {
     const user = userEvent.setup();
     const onEventChange = vi.fn();

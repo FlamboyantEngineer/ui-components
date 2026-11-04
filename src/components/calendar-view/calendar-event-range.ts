@@ -27,10 +27,25 @@ function toDayText(text: string, timeZone: string): string {
   return value ? toCalendarDate(value).toString() : text;
 }
 
+/**
+ * The last day a timed range occupies in `timeZone`: its end's day, or the day before when it ends
+ * exactly at midnight after it starts, since a timed end is exclusive and an all-day end is not.
+ */
+function toLastDayText(range: EventRange, timeZone: string): string {
+  const end = parseIsoDateTime(range.end, timeZone);
+  if (!end) return range.end;
+  const start = parseIsoDateTime(range.start, timeZone);
+  const day = toCalendarDate(end);
+  const isMidnight =
+    end.hour === 0 && end.minute === 0 && end.second === 0 && end.millisecond === 0;
+  const isAfterStart = start !== null && end.compare(start) > 0;
+  return (isMidnight && isAfterStart ? day.subtract({ days: 1 }) : day).toString();
+}
+
 /** A range in the other form: the days a timed range covers, or the default hours of all-day days. */
 export function convertRange(range: EventRange, toAllDay: boolean, timeZone: string): EventRange {
   if (toAllDay)
-    return { start: toDayText(range.start, timeZone), end: toDayText(range.end, timeZone) };
+    return { start: toDayText(range.start, timeZone), end: toLastDayText(range, timeZone) };
   return {
     start: `${range.start}T${timedDefaults.start}`,
     end: `${range.end}T${timedDefaults.end}`,
