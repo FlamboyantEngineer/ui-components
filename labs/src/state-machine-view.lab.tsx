@@ -9,6 +9,7 @@ import {
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { SequenceExamples } from './state-machine-view-sequence.js';
 import { SequenceHostExamples } from './state-machine-view-sequence-host.js';
+import { SequenceSizeExamples } from './state-machine-view-sizes.js';
 
 const doorStates: StateMachineState[] = [
   { id: 'closed', label: 'Closed' },
@@ -182,6 +183,12 @@ function EditableDoor() {
 
 mountLab(
   <>
+    <LabSection
+      title="Sequence control sizes"
+      description="Compare xs, sm, md, lg and xl at default and compact density. Each example has the same states, counts and forward/reverse transitions. Select states and labels to try each size."
+    >
+      <SequenceSizeExamples />
+    </LabSection>
     <LabSection
       title="Ordered sequences"
       description="Default and compact rows share one scrolling viewport with forward and reverse lanes, parallel transitions and a loop. Select a state independently of the current state, activate or right-click a label, and resize or reorder the sequence."

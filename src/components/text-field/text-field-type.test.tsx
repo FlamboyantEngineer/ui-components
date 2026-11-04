@@ -5,6 +5,17 @@ import { describe, expect, it, vi } from 'vitest';
 import { Form } from '../form/form.js';
 import { TextField } from './text-field.js';
 
+async function withoutUrlCanParse(run: () => void | Promise<void>) {
+  const descriptor = Object.getOwnPropertyDescriptor(URL, 'canParse');
+  Object.defineProperty(URL, 'canParse', { configurable: true, value: undefined });
+  try {
+    await run();
+  } finally {
+    if (descriptor) Object.defineProperty(URL, 'canParse', descriptor);
+    else Reflect.deleteProperty(URL, 'canParse');
+  }
+}
+
 describe('TextField type checks', () => {
   it.each([
     {
@@ -45,6 +56,80 @@ describe('TextField type checks', () => {
       expect(container.querySelector('.ui-text-field')).toHaveAttribute('data-validation', 'valid');
     },
   );
+
+  it.each([
+    { value: 'https://example.com/a', isValid: true },
+    { value: '  https://example.com/a  ', isValid: true },
+    { value: 'mailto:ada@example.com', isValid: true },
+    { value: 'example.com', isValid: false },
+    { value: '/about', isValid: false },
+    { value: '//example.com', isValid: false },
+  ])(
+    'UIC-TEXT-FIELD-2.3 validates initial URL "$value" without URL.canParse',
+    async ({ value, isValid }) => {
+      await withoutUrlCanParse(() => {
+        render(
+          <TextField label="Website" type="url" defaultValue={value} validationMode="immediate" />,
+        );
+        const input = screen.getByRole('textbox', { name: 'Website' });
+        if (isValid) {
+          expect(input).not.toHaveAttribute('aria-invalid');
+          expect(input).not.toHaveAccessibleDescription();
+        } else {
+          expect(input).toHaveAttribute('aria-invalid', 'true');
+          expect(input).toHaveAccessibleDescription(
+            'Enter a full URL, such as https://example.com.',
+          );
+        }
+      });
+    },
+  );
+
+  it('UIC-TEXT-FIELD-2.3 validates the first URL edit and clears feedback without URL.canParse', async () => {
+    await withoutUrlCanParse(async () => {
+      const user = userEvent.setup();
+      render(<TextField label="Website" type="url" validationMode="immediate" />);
+      const input = screen.getByRole('textbox', { name: 'Website' });
+      expect(input).not.toHaveAttribute('aria-invalid');
+      await user.type(input, 'h');
+      expect(input).toHaveAttribute('aria-invalid', 'true');
+      expect(input).toHaveAccessibleDescription('Enter a full URL, such as https://example.com.');
+      await user.type(input, 'ttps://example.com');
+      expect(input).not.toHaveAttribute('aria-invalid');
+      expect(input).not.toHaveAccessibleDescription();
+      await user.clear(input);
+      expect(input).not.toHaveAttribute('aria-invalid');
+      expect(input).not.toHaveAccessibleDescription();
+    });
+  });
+
+  it('UIC-TEXT-FIELD-2.3 checks a URL value in its form without URL.canParse', async () => {
+    await withoutUrlCanParse(async () => {
+      const user = userEvent.setup();
+      const onSubmit = vi.fn((event: FormEvent<HTMLFormElement>) => event.preventDefault());
+      render(
+        <Form aria-label="Contact" validationBehavior="aria" onSubmit={onSubmit}>
+          <TextField label="Website" name="website" type="url" defaultValue="example.com" />
+          <button type="submit">Send</button>
+        </Form>,
+      );
+      const input = screen.getByRole('textbox', { name: 'Website' });
+      const send = screen.getByRole('button', { name: 'Send' });
+      await user.click(send);
+      expect(onSubmit).not.toHaveBeenCalled();
+      expect(input).toHaveAttribute('aria-invalid', 'true');
+      expect(input).toHaveAccessibleDescription('Enter a full URL, such as https://example.com.');
+      await user.clear(input);
+      await user.type(input, 'https://example.com');
+      await user.click(send);
+      expect(onSubmit).toHaveBeenCalledTimes(1);
+      expect(input).not.toHaveAttribute('aria-invalid');
+      await user.clear(input);
+      await user.click(send);
+      expect(onSubmit).toHaveBeenCalledTimes(2);
+      expect(input).not.toHaveAttribute('aria-invalid');
+    });
+  });
 
   it('UIC-TEXT-FIELD-4.2 submits a valid email that shows a display value', () => {
     const onSubmit = vi.fn((event: FormEvent<HTMLFormElement>) => event.preventDefault());
