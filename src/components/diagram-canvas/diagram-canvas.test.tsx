@@ -322,6 +322,50 @@ describe('DiagramCanvas', () => {
     expect(onViewportChange).toHaveBeenCalledTimes(3);
   });
 
+  it.each([
+    { position: 0, delta: -20, childScrolls: true },
+    { position: 0, delta: 20, childScrolls: false },
+    { position: -200, delta: -20, childScrolls: false },
+    { position: -200, delta: 20, childScrolls: true },
+  ])(
+    'UIC-DIAGRAM-CANVAS-3.1 routes RTL input at $position with physical delta $delta',
+    ({ position, delta, childScrolls }) => {
+      const onViewportChange = vi.fn();
+      const { container } = render(
+        <DiagramCanvas
+          nodes={pipeNodes.slice(0, 1)}
+          edges={[]}
+          defaultViewport={{ x: 0, y: 0, zoom: 100 }}
+          onViewportChange={onViewportChange}
+          renderNode={() => (
+            <div
+              role="region"
+              aria-label="Horizontal entries"
+              style={{ direction: 'rtl', overflowX: 'auto' }}
+            >
+              Entries
+            </div>
+          )}
+        />,
+      );
+      const entries = screen.getByRole('region', { name: 'Horizontal entries' });
+      Object.defineProperties(entries, {
+        scrollWidth: { value: 300 },
+        clientWidth: { value: 100 },
+      });
+      entries.scrollLeft = position;
+      // user-event cannot produce wheel input.
+      fireEvent.wheel(entries, { deltaX: delta });
+      if (childScrolls) {
+        expect(onViewportChange).not.toHaveBeenCalled();
+        expect(contentOf(container).style.transform).toBe('translate(0px, 0px) scale(1)');
+      } else {
+        expect(onViewportChange).toHaveBeenLastCalledWith({ x: -delta, y: 0, zoom: 100 });
+        expect(contentOf(container).style.transform).toBe(`translate(${-delta}px, 0px) scale(1)`);
+      }
+    },
+  );
+
   it('UIC-DIAGRAM-CANVAS-3.1 follows a controlled viewport', () => {
     const onViewportChange = vi.fn();
     const { container } = render(

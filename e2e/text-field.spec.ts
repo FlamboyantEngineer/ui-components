@@ -172,21 +172,50 @@ test.describe('Text Field lab', () => {
     await expect(reveal).toHaveAttribute('aria-pressed', 'false');
   });
 
-  test('UIC-TEXT-FIELD-2.3 checks a URL field value as the browser would', async ({
-    page,
-    lab,
-  }) => {
-    await lab.open('text-field');
-    const homepage = field(page, 'url-check');
-    const input = homepage.getByRole('textbox', { name: 'Homepage' });
-    await expect(input).toHaveAttribute('aria-invalid', 'true');
-    await expect(homepage).toContainText('Enter a full URL, such as https://example.com.');
-    expect(await input.evaluate((node: HTMLInputElement) => node.validity.typeMismatch)).toBe(true);
-    await input.fill('https://example.com');
-    await input.press('Enter');
-    await expect(input).not.toHaveAttribute('aria-invalid');
-    expect(await input.evaluate((node: HTMLInputElement) => node.validity.valid)).toBe(true);
-  });
+  for (const hasCanParse of [true, false]) {
+    test(`UIC-TEXT-FIELD-2.3 checks initial and edited URLs with URL.canParse ${hasCanParse ? 'available' : 'unavailable'}`, async ({
+      page,
+      lab,
+    }) => {
+      if (!hasCanParse) {
+        await page.addInitScript(() => {
+          Object.defineProperty(URL, 'canParse', { configurable: true, value: undefined });
+        });
+      }
+      await lab.open('text-field');
+      const homepage = field(page, 'url-check');
+      const input = homepage.getByRole('textbox', { name: 'Homepage' });
+      await expect(input).toHaveAttribute('aria-invalid', 'true');
+      await expect(homepage).toContainText('Enter a full URL, such as https://example.com.');
+      expect(await input.evaluate((node: HTMLInputElement) => node.validity.typeMismatch)).toBe(
+        true,
+      );
+      await input.fill('https://example.com');
+      await input.press('Enter');
+      await expect(input).not.toHaveAttribute('aria-invalid');
+      expect(await input.evaluate((node: HTMLInputElement) => node.validity.valid)).toBe(true);
+      await expect(homepage).not.toContainText('Enter a full URL, such as https://example.com.');
+
+      const website = field(page, 'empty-url-check');
+      const empty = website.getByRole('textbox', { name: 'Website' });
+      await expect(empty).toHaveValue('');
+      await expect(empty).not.toHaveAttribute('aria-invalid');
+      await empty.pressSequentially('h');
+      await expect(empty).toHaveAttribute('aria-invalid', 'true');
+      await expect(website).toContainText('Enter a full URL, such as https://example.com.');
+      expect(await empty.evaluate((node: HTMLInputElement) => node.validity.typeMismatch)).toBe(
+        true,
+      );
+      await empty.fill('https://example.com');
+      await expect(empty).not.toHaveAttribute('aria-invalid');
+      await expect(website).not.toContainText('Enter a full URL, such as https://example.com.');
+      expect(await empty.evaluate((node: HTMLInputElement) => node.validity.valid)).toBe(true);
+      await empty.clear();
+      await expect(empty).not.toHaveAttribute('aria-invalid');
+      await expect(website).not.toContainText('Enter a full URL, such as https://example.com.');
+      expect(await empty.evaluate((node: HTMLInputElement) => node.validity.valid)).toBe(true);
+    });
+  }
 
   test('UIC-TEXT-FIELD-3.3 grows an adorned text area inside its frame', async ({ page, lab }) => {
     await lab.open('text-field');
