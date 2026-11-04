@@ -531,3 +531,27 @@ describe('FormulaBar', () => {
     expectHooksMatchSpec(container, 'FORMULA-BAR', { callerAttributes: ['data-testid'] });
   });
 });
+
+it('UIC-FORMULA-BAR-4.3 composed controls own editing and commands', async () => {
+  const user = userEvent.setup();
+  const key = vi.fn();
+  render(
+    <FormulaBar
+      aria-label="Custom bar"
+      cell={null}
+      value=""
+      controls={{
+        reference: <input aria-label="Custom reference" defaultValue="B2:C3" />,
+        editor: <input aria-label="Custom content" defaultValue="=SUM(B2:C3)" onKeyDown={key} />,
+      }}
+    />,
+  );
+  const bar = screen.getByRole('group', { name: 'Custom bar' });
+  expect(bar).toHaveAttribute('data-composed', 'true');
+  expect(screen.queryByRole('button', { name: 'Confirm' })).not.toBeInTheDocument();
+  await user.click(screen.getByRole('textbox', { name: 'Custom content' }));
+  await user.keyboard('{Enter}{Escape}');
+  expect(key).toHaveBeenCalledTimes(2);
+  expect(screen.getByRole('textbox', { name: 'Custom content' })).toHaveValue('=SUM(B2:C3)');
+  expect(screen.getByRole('textbox', { name: 'Custom reference' })).toHaveValue('B2:C3');
+});

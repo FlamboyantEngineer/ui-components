@@ -143,3 +143,24 @@ test.describe('Tag Group lab', () => {
     await lab.expectAccessible();
   });
 });
+
+test('UIC-TAG-GROUP-1.7 identity pills meet the avatar and retain name-only labels', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('tag-group');
+  const person = page
+    .getByRole('grid', { name: 'People' })
+    .getByRole('row', { name: 'Alex Morgan' });
+  const gaps = await person.evaluate((tag) => {
+    const avatar = tag.querySelector('.ui-avatar');
+    if (!avatar) throw new Error('Expected an identity avatar');
+    const outer = tag.getBoundingClientRect();
+    const face = avatar.getBoundingClientRect();
+    return [face.left - outer.left, face.top - outer.top, outer.bottom - face.bottom];
+  });
+  expect(gaps.every((gap) => Math.abs(gap) <= 1)).toBe(true);
+  const service = page.getByRole('grid', { name: 'People' }).getByRole('row', { name: 'Service' });
+  await expect(service).toBeVisible();
+  await expect(service.locator('.ui-avatar')).toHaveCount(0);
+});

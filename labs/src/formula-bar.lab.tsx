@@ -336,6 +336,19 @@ mountLab(
       <Spreadsheet />
     </LabSection>
     <LabSection
+      title="Composed controls"
+      description="An external editor keeps its native reference and content controls and commands."
+    >
+      <FormulaBar
+        cell={null}
+        value=""
+        controls={{
+          reference: <input aria-label="Custom reference" defaultValue="B2:C3" />,
+          editor: <input aria-label="Custom content" defaultValue="=SUM(B2:C3)" />,
+        }}
+      />
+    </LabSection>
+    <LabSection
       title="Inside a form"
       description="Enter in the reference box always stays with the bar, whether the reference is unchanged, moves to a cell or is refused, so the form around it is submitted only by its own button. An Enter that confirms an input method composition goes to the input method."
     >

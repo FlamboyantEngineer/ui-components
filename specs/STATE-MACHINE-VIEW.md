@@ -130,6 +130,13 @@ Measurements can increase either dimension to fit state content, adornments and 
 Implementation: `src/components/state-machine-view/state-machine-view.tsx`, `src/components/state-machine-view/state-machine-sequence.tsx`, `src/components/state-machine-view/sequence-layout.ts`
 Verification: `src/components/state-machine-view/sequence-presentation.test.tsx`, `src/components/state-machine-view/sequence-layout.test.ts`, `e2e/state-machine-view-sizes.spec.ts`
 
+### UIC-STATE-MACHINE-VIEW-4.7 - Standalone sequence entry
+
+`StateMachineSequence` and `StateMachineSequenceViewProps` shall be exported from the component entry and the package root. The component shall render the same sequence as `StateMachineView` with `presentation="sequence"`, taking the same props except `presentation`. Importing only this entry shall allow a tree-shaking bundler to omit the graph canvas and its graph editing controls.
+
+Implementation: `src/components/state-machine-view/index.ts`, `src/components/state-machine-view/state-machine-sequence.tsx`
+Verification: `test/state-machine-sequence-entry.test.ts`, `e2e/state-machine-view-sequence.spec.ts`, `e2e/state-machine-view-sequence-interaction.spec.ts`
+
 ## UIC-STATE-MACHINE-VIEW-5 - Sequence interaction
 
 ### UIC-STATE-MACHINE-VIEW-5.1 - Activation and selection
