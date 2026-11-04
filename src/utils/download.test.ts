@@ -73,4 +73,39 @@ describe('downloadUrl', () => {
     );
     expect(clicks).toEqual([]);
   });
+
+  describe('under a base element', () => {
+    let base: HTMLBaseElement;
+    beforeEach(() => {
+      base = document.head.appendChild(document.createElement('base'));
+    });
+    afterEach(() => base.remove());
+
+    it('UIC-DOWNLOAD-1.2 resolves against a foreign base but compares with the page origin', () => {
+      base.href = 'https://cdn.example/assets/';
+      expect(() => downloadUrl('report.pdf', 'report.pdf')).toThrow('same origin');
+      expect(clicks).toEqual([]);
+      const own = new URL('/report.pdf', location.origin).href;
+      expect(downloadUrl(own, 'report.pdf')).toBe(true);
+      expect(downloadUrl('data:text/plain,hello', 'hello.txt')).toBe(true);
+      expect(downloadUrl(`blob:${location.origin}/file-9`, 'file.txt')).toBe(true);
+      expect(() => downloadUrl('blob:https://cdn.example/file-9', 'file.txt')).toThrow(
+        'same origin',
+      );
+      expect(clicks.map(({ href }) => href)).toEqual([
+        own,
+        'data:text/plain,hello',
+        `blob:${location.origin}/file-9`,
+      ]);
+    });
+
+    it('UIC-DOWNLOAD-1.2 resolves relative URLs against a same-origin base', () => {
+      base.href = new URL('/exports/', location.origin).href;
+      expect(downloadUrl('report.pdf', 'report.pdf')).toBe(true);
+      expect(() => downloadUrl('https://elsewhere.example/report.pdf')).toThrow('same origin');
+      expect(clicks.map(({ href }) => href)).toEqual([
+        new URL('/exports/report.pdf', location.origin).href,
+      ]);
+    });
+  });
 });

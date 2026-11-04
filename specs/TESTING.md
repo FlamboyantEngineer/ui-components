@@ -22,23 +22,23 @@ Verification: `src/testing/index.test.tsx`
 
 ### UIC-TESTING-2.1 - Select an option
 
-`selectOption(user, field, option)` shall press the button that opens a list box (`aria-haspopup="listbox"`) in `field`, which is a `SelectField` or `Combobox` root or that button itself, unless its control is already expanded (`aria-expanded="true"`), wait for the list box it opened (the one its control names in `aria-controls`, else the last in the document) and press the option named `option`. A multiple selection stays open, so consecutive calls pick several options without closing the list.
+`selectOption(user, field, option)` shall press the button that opens a list box (`aria-haspopup="listbox"`) in `field`, which is a `SelectField` or `Combobox` root or that button itself, unless its control is already expanded (`aria-expanded="true"`), wait for the list box it opened (the one its control names in `aria-controls`, else the last in the document; see UIC-TESTING-2.3 for how popups are found) and press the option named `option`. A multiple selection stays open, so consecutive calls pick several options without closing the list.
 
-Implementation: `src/testing/pickers.ts`, `src/testing/popups.ts`
+Implementation: `src/testing/pickers.ts`, `src/testing/popups.ts`, `src/testing/tree-scope.ts`
 Verification: `src/testing/pickers.test.tsx`
 
 ### UIC-TESTING-2.2 - Pick a combobox suggestion
 
 `pickComboboxOption(user, input, { text, option })` shall clear a combobox input, type `text`, wait for the list box and press the option named `option` (`text` when omitted). The typed text and the option travel in one object, since helpers take at most three parameters.
 
-Implementation: `src/testing/pickers.ts`, `src/testing/popups.ts`
+Implementation: `src/testing/pickers.ts`, `src/testing/popups.ts`, `src/testing/tree-scope.ts`
 Verification: `src/testing/pickers.test.tsx`
 
 ### UIC-TESTING-2.3 - Open a menu and choose an item
 
-`openMenu(user, trigger)` shall press a menu trigger and return the menu it opened (the one the trigger names in `aria-controls`, else the last in the document). `chooseMenuItem(user, trigger, name)` shall open the menu and press its item named `name`, whether a plain, checkbox or radio item.
+`openMenu(user, trigger)` shall press a menu trigger and return the menu it opened. Popup helpers find a popup in the tree that holds the trigger: the element the trigger names in `aria-controls`, looked up in the trigger's shadow root when it is inside one and else in its document, when that has the role or holds an element with it (while the element it names holds none, the helper keeps waiting rather than return another popup), else the last with the role in the trigger's shadow root, else the last in the document. `chooseMenuItem(user, trigger, name)` shall open the menu and press its item named `name`, whether a plain, checkbox or radio item.
 
-Implementation: `src/testing/menus.ts`, `src/testing/popups.ts`
+Implementation: `src/testing/menus.ts`, `src/testing/popups.ts`, `src/testing/tree-scope.ts`
 Verification: `src/testing/menus.test.tsx`
 
 ### UIC-TESTING-2.4 - Type a date
@@ -80,9 +80,9 @@ Verification: `src/testing/queries.test.tsx`
 
 ### UIC-TESTING-3.2 - Field messages
 
-`getFieldError(field)` shall return the text of the error a field's control announces: the element its `aria-describedby` names in an `__error` or `__message` slot, warnings (`data-severity="warning"`) excluded. `getFieldDescription(field)` shall return the text of the element it names in a `__description` slot. Both return `null` when there is none; `field` is the field's root or its control.
+`getFieldError(field)` shall return the text of the error a field's control announces: the element its `aria-describedby` names in an `__error` or `__message` slot, warnings (`data-severity="warning"`) excluded. `getFieldDescription(field)` shall return the text of the element it names in a `__description` slot. Both return `null` when there is none; `field` is the field's root or its control. The IDs resolve in the tree that holds the control: its shadow root when it is inside one, else its document.
 
-Implementation: `src/testing/queries.ts`
+Implementation: `src/testing/queries.ts`, `src/testing/tree-scope.ts`
 Verification: `src/testing/queries.test.tsx`
 
 ## UIC-TESTING-4 - Library test harness

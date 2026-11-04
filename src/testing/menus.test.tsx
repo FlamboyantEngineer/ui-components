@@ -66,3 +66,31 @@ describe('testing menus', () => {
     expect(menu).not.toBeInTheDocument();
   });
 });
+
+describe('testing menus in a shadow root', () => {
+  it('UIC-TESTING-2.3 returns the menu a shadow-root trigger controls, not one in the document', async () => {
+    const user = userEvent.setup();
+    document.body.insertAdjacentHTML('beforeend', '<div role="menu" id="menu">Page menu</div>');
+    const host = document.body.appendChild(document.createElement('div'));
+    const shadow = host.attachShadow({ mode: 'open' });
+    shadow.innerHTML =
+      '<button type="button" aria-controls="menu">Edit</button><div role="menu" id="menu">Own menu</div>';
+    const trigger = shadow.querySelector('button') as HTMLButtonElement;
+    const menu = await openMenu(user, trigger);
+    expect(menu).toHaveTextContent('Own menu');
+    expect(menu.getRootNode()).toBe(shadow);
+    // Without aria-controls, a menu in the trigger's shadow root comes before the document's.
+    trigger.removeAttribute('aria-controls');
+    expect(await openMenu(user, trigger)).toHaveTextContent('Own menu');
+    document.body.replaceChildren();
+  });
+
+  it('UIC-TESTING-2.3 finds a controlled menu inside the element the trigger controls', async () => {
+    const user = userEvent.setup();
+    document.body.innerHTML =
+      '<button type="button" aria-controls="popover">Edit</button><div id="popover"><div role="menu">Inner menu</div></div><div role="menu">Last menu</div>';
+    const menu = await openMenu(user, screen.getByRole('button', { name: 'Edit' }));
+    expect(menu).toHaveTextContent('Inner menu');
+    document.body.replaceChildren();
+  });
+});

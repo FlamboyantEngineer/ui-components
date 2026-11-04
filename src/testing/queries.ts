@@ -1,3 +1,5 @@
+import { getReferencedElement } from './tree-scope.js';
+
 const slotClassPattern = /^ui-[a-z0-9]+(?:-[a-z0-9]+)*__([a-z0-9]+(?:-[a-z0-9]+)*)$/;
 
 /** The control that carries the field's description references: `field` itself or its first descendant. */
@@ -5,11 +7,12 @@ function findDescribedControl(field: Element): Element | null {
   return field.hasAttribute('aria-describedby') ? field : field.querySelector('[aria-describedby]');
 }
 
-/** The elements the field's control names in `aria-describedby`, in order. */
+/** The elements the field's control names in `aria-describedby`, in order, in its own tree. */
 function describedBy(field: Element): HTMLElement[] {
-  const ids = findDescribedControl(field)?.getAttribute('aria-describedby')?.split(/\s+/) ?? [];
+  const control = findDescribedControl(field);
+  const ids = control?.getAttribute('aria-describedby')?.split(/\s+/) ?? [];
   return ids
-    .map((id) => field.ownerDocument.getElementById(id))
+    .map((id) => (control && id ? getReferencedElement(control, id) : null))
     .filter((element): element is HTMLElement => element !== null);
 }
 

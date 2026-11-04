@@ -11,7 +11,11 @@ import { Spinner } from '../../src/components/progress-bar/progress-bar.js';
 import { KeyHints } from '../../src/components/shortcut/shortcut.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { TriggeredNote } from './completion-list-note.js';
-import { ReloadedTextSection, SwitchedSourceSection } from './completion-list-reload.js';
+import {
+  FailedLookupSection,
+  ReloadedTextSection,
+  SwitchedSourceSection,
+} from './completion-list-reload.js';
 import { LabOutput } from './lab-output.js';
 import { ShadowRootApp } from './shadow-root-host.js';
 
@@ -291,6 +295,7 @@ mountLab(
     </LabSection>
     <ReloadedTextSection />
     <SwitchedSourceSection />
+    <FailedLookupSection />
     <LabSection
       title="Inside a shadow root"
       description="The long list inside an open shadow root with its portal host there too, as a web component keeps its styles inside. Arrow keys still scroll the active option into view within the list."

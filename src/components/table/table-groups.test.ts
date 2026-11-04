@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { createFrameRealm } from '../../../test/frame-realm.js';
 import { walkTree } from '../../utils/walk-tree.js';
 import {
   aggregateCellValues,
+  formatGroupValue,
   groupTableNodes,
   isGroupNode,
   listGroupKeys,
@@ -417,5 +419,13 @@ describe('table grouping by typed values', () => {
       { key: 'ui-table-group:code=2026-10-02:date', rows: ['morning', 'evening'] },
       { key: 'ui-table-group:code=', rows: ['null', 'blank'] },
     ]);
+  });
+});
+
+describe('table groups of values from another window', () => {
+  it('UIC-TABLE-2.1 groups a date of a frame by its day, as a local one', () => {
+    const realm = createFrameRealm();
+    expect(formatGroupValue(new realm.Date(2026, 10, 4, 12))).toBe('2026-11-04');
+    expect(formatGroupValue(new realm.Date(Number.NaN))).toBe('');
   });
 });

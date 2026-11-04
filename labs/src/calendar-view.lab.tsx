@@ -42,6 +42,8 @@ const events: CalendarViewEvent[] = [
   { id: 'night', title: 'Maintenance window', start: '2026-03-19T22:00', end: '2026-03-20T02:00' },
   { id: 'demo', title: 'Demo', start: '2026-03-05T15:00', end: '2026-03-05T16:00' },
   { id: 'dentist', title: 'Dentist', start: '2026-03-27T08:30', end: '2026-03-27T09:15' },
+  // Ends exactly at midnight: it occupies the 23rd only, also once made all-day.
+  { id: 'backup', title: 'Evening backup', start: '2026-03-23T22:00', end: '2026-03-24T00:00' },
 ];
 
 const crowded: CalendarViewEvent[] = [

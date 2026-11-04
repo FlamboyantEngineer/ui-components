@@ -154,7 +154,7 @@ Verification: `src/components/tabs/tab-menu.test.tsx`, `e2e/tabs.spec.ts`
 
 ### UIC-TABS-3.7 - Remembered selection
 
-With `persistKey` and no `selectedKey`, `Tabs` shall start from the selection stored under that key through the provider's storage ([PROVIDER.md](PROVIDER.md)) and store every selection, so a remounted `Tabs` restores it. With nothing stored, or an unreadable stored value, it starts from `defaultSelectedKey`; a stored key that no enabled tab has selects the first enabled tab, which is then stored. Another `persistKey` restores that key's selection. A controlled selection is never stored.
+With `persistKey` and no `selectedKey`, `Tabs` shall start from the selection stored under that key through the provider's storage ([PROVIDER.md](PROVIDER.md)) and store every selection, so a remounted `Tabs` restores it. With nothing stored, or an unreadable stored value, it starts from `defaultSelectedKey`; a stored key that no enabled tab has selects the first enabled tab, which is then stored. Another `persistKey` restores that key's selection. After server rendering, the tabs hydrate on the default selection and then restore the stored one ([UIC-PROVIDER-6.1](PROVIDER.md#uic-provider-61---storage-adapter)). A controlled selection is never stored.
 
 Implementation: `src/components/tabs/tabs.tsx`
 Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs.spec.ts`

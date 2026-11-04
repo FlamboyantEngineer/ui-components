@@ -18,6 +18,7 @@ import {
 } from 'react';
 import { I18nProvider, RouterProvider, useLocale } from '../primitives/index.js';
 import { omitUndefined } from '../utils/omit-undefined.js';
+import { useIsClient } from '../utils/use-is-client.js';
 import { useLatest } from '../utils/use-latest.js';
 import { useShallowStable } from '../utils/use-shallow-stable.js';
 import type { GlyphComponent, GlyphMap, GlyphName } from './glyph-types.js';
@@ -346,6 +347,7 @@ export function Glyph({ icon: Component, className }: GlyphProps) {
 /**
  * State persisted through the provider storage adapter under `key`. Without a key it is plain state.
  * Changing the key or adapter reads the new store. Unreadable values fall back to `initialValue`.
+ * The server render and hydration show `initialValue`, then the stored value is read, so both agree.
  * With `writeDelay`, the adapter write follows the last change of a burst; `flush` writes it now.
  */
 export function usePersistentState<T>(
@@ -355,7 +357,10 @@ export function usePersistentState<T>(
 ): PersistentState<T> {
   const { codec, writeDelay = 0 } = options;
   const adapter = useUiStorage();
-  const storage = key === undefined ? undefined : adapter;
+  // Neither the server render nor hydration reads the store, so both show the fallback; the render
+  // after hydration reads it as an adapter change would.
+  const isClient = useIsClient();
+  const storage = key === undefined || !isClient ? undefined : adapter;
   // Plain state does not belong to an adapter; persisted state belongs to both adapter and key. The
   // stored text read comes along, so a later read can tell whether the store changed since.
   const read = (): { value: T; raw: string | null } => {

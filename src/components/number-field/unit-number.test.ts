@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { type NumberFieldUnits, parseLocaleNumber, parseQuantity } from './unit-number.js';
+import {
+  type NumberFieldUnits,
+  parseLocaleNumber,
+  parseQuantity,
+  toQuantityFormatOptions,
+} from './unit-number.js';
 
 const lengths: NumberFieldUnits = { unit: 'mm', conversions: { cm: 10, m: 1000, in: 25.4 } };
 const accounting: Intl.NumberFormatOptions = {
@@ -129,5 +134,41 @@ describe('unit numbers', () => {
     expect(parseLocaleNumber('25', 'en-US', percent)).toBe(0.25);
     expect(parseQuantity('١٫٥ cm', lengths, { locale: 'ar-EG' })).toBe(15);
     expect(parseQuantity('٢٥٪ cm', lengths, { locale: 'ar-EG', options: percent })).toBe(2.5);
+  });
+
+  it('UIC-NUMBER-FIELD-3.4 drops compact notation from a quantity format and keeps the rest', () => {
+    expect(
+      toQuantityFormatOptions({
+        notation: 'compact',
+        compactDisplay: 'short',
+        maximumFractionDigits: 1,
+      }),
+    ).toEqual({ maximumFractionDigits: 1 });
+    const kept = { notation: 'scientific', style: 'percent' } as const;
+    expect(toQuantityFormatOptions(kept)).toBe(kept);
+    expect(toQuantityFormatOptions(undefined)).toBeUndefined();
+  });
+
+  it.each([
+    ['ar-EG', 'scientific'],
+    ['ar-EG', 'engineering'],
+    ['fa-IR', 'scientific'],
+    ['sv-SE', 'scientific'],
+    ['en-US', 'engineering'],
+  ] as const)('UIC-NUMBER-FIELD-3.4 reads back %s %s exponents', (locale, notation) => {
+    const options = { notation, maximumFractionDigits: 6 } as const;
+    const format = new Intl.NumberFormat(locale, options);
+    for (const value of [12_000, -12_000, 0.000123, -0.0045, 1.5]) {
+      expect(parseLocaleNumber(format.format(value), locale, options)).toBe(value);
+    }
+    expect(parseLocaleNumber('1.2e4', locale, options)).toBe(12_000);
+    expect(parseLocaleNumber('1.2E-4', locale, options)).toBe(0.00012);
+  });
+
+  it('UIC-NUMBER-FIELD-3.4 keeps malformed exponents unreadable', () => {
+    const options = { notation: 'scientific' } as const;
+    for (const text of ['١٫٢أس', 'أس٤', '١٫٢أس٤أس٢', '١٫٢أس--٤', '1.2e']) {
+      expect(parseLocaleNumber(text, 'ar-EG', options)).toBeNaN();
+    }
   });
 });

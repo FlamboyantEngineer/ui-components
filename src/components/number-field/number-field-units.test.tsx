@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
 import { NumberField } from './number-field.js';
@@ -218,5 +219,209 @@ describe('NumberField units', () => {
     await user.tab();
     expect(onChange).toHaveBeenLastCalledWith(12);
     expect(length).not.toHaveAttribute('aria-invalid');
+  });
+
+  it('UIC-NUMBER-FIELD-3.4 writes a compact-notation quantity in standard notation and refuses 12K', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    render(
+      <UiProvider locale="en-US">
+        <NumberField
+          label="Length"
+          defaultValue={12_000}
+          units={{ unit: 'm', conversions: { m: 1 } }}
+          formatOptions={{ notation: 'compact', compactDisplay: 'long' }}
+          onCommit={onCommit}
+        />
+      </UiProvider>,
+    );
+    const input = screen.getByRole('spinbutton', { name: 'Length' });
+    expect(input).toHaveValue('12,000');
+    await user.click(input);
+    await user.tab();
+    expect(input).not.toHaveAttribute('aria-invalid');
+    await user.clear(input);
+    await user.type(input, '12K{Enter}');
+    expect(onCommit).not.toHaveBeenCalledWith(12);
+    expect(input).toHaveValue('12K');
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(input).toHaveAttribute('aria-valuenow', '12000');
+    await user.clear(input);
+    await user.type(input, '12.5{Enter}');
+    expect(onCommit).toHaveBeenLastCalledWith(12.5);
+    expect(input).not.toHaveAttribute('aria-invalid');
+  });
+
+  it.each(['Enter', 'Tab', 'blur'])(
+    'UIC-NUMBER-FIELD-3.4 reads back an Arabic scientific quantity on %s',
+    async (action) => {
+      const user = userEvent.setup();
+      const onCommit = vi.fn();
+      const onChange = vi.fn();
+      render(
+        <UiProvider locale="ar-EG">
+          <NumberField
+            label="Length"
+            defaultValue={12_000}
+            units={{ unit: 'm', conversions: { m: 1 } }}
+            formatOptions={{ notation: 'scientific' }}
+            onChange={onChange}
+            onCommit={onCommit}
+          />
+          <button type="button">Continue</button>
+        </UiProvider>,
+      );
+      const input = screen.getByRole('spinbutton', { name: 'Length' });
+      const formatted = new Intl.NumberFormat('ar-EG', { notation: 'scientific' }).format(12_000);
+      expect(input).toHaveValue(formatted);
+      const finish = async () => {
+        if (action === 'Enter') await user.keyboard('{Enter}');
+        else if (action === 'Tab') await user.tab();
+        else await user.click(screen.getByRole('button', { name: 'Continue' }));
+      };
+      await user.click(input);
+      await finish();
+      expect(input).not.toHaveAttribute('aria-invalid');
+      expect(input).toHaveAttribute('aria-valuenow', '12000');
+      await user.clear(input);
+      await user.type(input, '٢٫٥أس-٣');
+      await finish();
+      expect(input).not.toHaveAttribute('aria-invalid');
+      expect(input).toHaveAttribute('aria-valuenow', '0.0025');
+      expect(onChange).toHaveBeenLastCalledWith(0.0025);
+      for (const [value] of onCommit.mock.calls) expect([12_000, 0.0025]).toContain(value);
+    },
+  );
+});
+
+describe('NumberField units precision', () => {
+  const metres: NumberFieldUnits = { unit: 'm', conversions: { m: 1 } };
+
+  it('UIC-NUMBER-FIELD-2.2 keeps a typed precise value through Enter and a later blur', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const onCommit = vi.fn();
+    render(
+      <UiProvider locale="en-US">
+        <form aria-label="Measurement">
+          <NumberField
+            label="Length"
+            name="length"
+            commitBehavior="validate"
+            units={metres}
+            onChange={onChange}
+            onCommit={onCommit}
+          />
+        </form>
+        <button type="button">Continue</button>
+      </UiProvider>,
+    );
+    const input = screen.getByRole('spinbutton', { name: 'Length' });
+    await user.type(input, '1.23456{Enter}');
+    expect(onCommit).toHaveBeenLastCalledWith(1.23456);
+    expect(input).toHaveValue('1.235');
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    await user.click(input);
+    await user.tab();
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    expect(input).toHaveAttribute('aria-valuenow', '1.23456');
+    expect(new FormData(screen.getByRole('form')).get('length')).toBe('1.23456');
+    for (const [value] of [...onChange.mock.calls, ...onCommit.mock.calls]) {
+      expect(value).toBe(1.23456);
+    }
+  });
+
+  it.each(['uncontrolled', 'controlled'])(
+    'UIC-NUMBER-FIELD-3.4 keeps an untouched %s precise value through focus and blur',
+    async (mode) => {
+      const user = userEvent.setup();
+      const onChange = vi.fn();
+      function Controlled() {
+        const [value, setValue] = useState<number | null>(1.23456);
+        return (
+          <NumberField
+            label="Length"
+            units={metres}
+            commitBehavior="validate"
+            value={value}
+            onChange={(next) => {
+              onChange(next);
+              setValue(next);
+            }}
+          />
+        );
+      }
+      render(
+        <UiProvider locale="en-US">
+          {mode === 'controlled' ? (
+            <Controlled />
+          ) : (
+            <NumberField
+              label="Length"
+              units={metres}
+              commitBehavior="validate"
+              defaultValue={1.23456}
+              onChange={onChange}
+            />
+          )}
+          <button type="button">Continue</button>
+        </UiProvider>,
+      );
+      const input = screen.getByRole('spinbutton', { name: 'Length' });
+      for (let round = 0; round < 2; round++) {
+        await user.click(input);
+        await user.keyboard('{Enter}');
+        await user.click(screen.getByRole('button', { name: 'Continue' }));
+      }
+      expect(input).toHaveValue('1.235');
+      expect(input).toHaveAttribute('aria-valuenow', '1.23456');
+      expect(onChange).not.toHaveBeenCalled();
+    },
+  );
+
+  it('UIC-NUMBER-FIELD-2.2 still snaps an untouched value off the step grid', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <UiProvider locale="en-US">
+        <NumberField
+          label="Length"
+          units={metres}
+          step={0.5}
+          defaultValue={1.23456}
+          onChange={onChange}
+        />
+      </UiProvider>,
+    );
+    const input = screen.getByRole('spinbutton', { name: 'Length' });
+    await user.click(input);
+    await user.tab();
+    expect(onChange).toHaveBeenLastCalledWith(1);
+    expect(input).toHaveAttribute('aria-valuenow', '1');
+  });
+
+  it('UIC-NUMBER-FIELD-2.1 replaces a draft with a new controlled value formatted like the last', async () => {
+    const user = userEvent.setup();
+    const field = (value: number) => (
+      <UiProvider locale="en-US">
+        <NumberField label="Length" value={value} units={metres} commitBehavior="validate" />
+      </UiProvider>
+    );
+    const { rerender } = render(field(1.23451));
+    const input = screen.getByRole('spinbutton', { name: 'Length' });
+    await user.clear(input);
+    await user.type(input, 'invalid');
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    // The same value keeps the typing; a new one replaces it and its issue.
+    rerender(field(1.23451));
+    expect(input).toHaveValue('invalid');
+    rerender(field(1.23452));
+    expect(input).toHaveValue('1.235');
+    expect(input).not.toHaveAttribute('aria-invalid');
+    expect(input).toHaveAttribute('aria-valuenow', '1.23452');
+    await user.clear(input);
+    await user.type(input, '1.2');
+    rerender(field(1.23453));
+    expect(input).toHaveValue('1.235');
   });
 });

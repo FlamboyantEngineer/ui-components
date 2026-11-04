@@ -204,6 +204,56 @@ describe('Completions engine', () => {
     expect(input()).toHaveValue('apricot');
   });
 
+  it.each(['rejects', 'throws'])(
+    'UIC-COMPLETION-LIST-2.2 hides the options kept while pending when the next lookup %s',
+    async (failure) => {
+      const user = userEvent.setup();
+      const pending: Array<{
+        resolve: (options: Completion[]) => void;
+        reject: (error: Error) => void;
+      }> = [];
+      const source: CompletionSource = ({ query }) => {
+        if (failure === 'throws' && query === 'al') throw new Error('Offline');
+        return new Promise<Completion[]>((resolve, reject) => pending.push({ resolve, reject }));
+      };
+      render(<Notes completions={source} />);
+      await user.click(input());
+      await user.keyboard('a');
+      await act(async () => pending.at(-1)?.resolve([{ label: 'alpha' }]));
+      await waitFor(() => expect(optionTexts()).toEqual(['alpha']));
+      await user.keyboard('l');
+      if (failure === 'rejects') {
+        // Kept while the answer is on its way, then gone when it fails.
+        expect(optionTexts()).toEqual(['alpha']);
+        await act(async () => pending.at(-1)?.reject(new Error('Offline')));
+      }
+      await waitFor(() => expect(screen.queryByRole('listbox')).not.toBeInTheDocument());
+      await user.keyboard('p');
+      expect(input()).toHaveValue('alp');
+      await act(async () => pending.at(-1)?.resolve([{ label: 'alpine' }]));
+      await waitFor(() => expect(optionTexts()).toEqual(['alpine']));
+    },
+  );
+
+  it('UIC-COMPLETION-LIST-2.2 lets an older lookup fail without hiding a newer answer', async () => {
+    const user = userEvent.setup();
+    const pending: Array<{
+      resolve: (options: Completion[]) => void;
+      reject: (error: Error) => void;
+    }> = [];
+    const source: CompletionSource = () =>
+      new Promise<Completion[]>((resolve, reject) => pending.push({ resolve, reject }));
+    render(<Notes completions={source} />);
+    await user.click(input());
+    await user.keyboard('a');
+    const older = requireDefined(pending.at(-1));
+    await user.keyboard('l');
+    await act(async () => pending.at(-1)?.resolve([{ label: 'alpha' }]));
+    await waitFor(() => expect(optionTexts()).toEqual(['alpha']));
+    await act(async () => older.reject(new Error('Offline')));
+    expect(optionTexts()).toEqual(['alpha']);
+  });
+
   it('UIC-COMPLETION-LIST-2.2 discards a pending answer when locked and requires a new lookup after unlocking', async () => {
     const user = userEvent.setup();
     const answers: Array<(options: Completion[]) => void> = [];

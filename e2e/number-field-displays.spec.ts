@@ -209,6 +209,59 @@ test.describe('Number Field typed units', () => {
     });
   }
 
+  test('UIC-NUMBER-FIELD-3.4 writes a compact quantity in standard notation and refuses 12K', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('number-field');
+    const field = page.locator('[data-lab-field="units-compact"]');
+    const input = field.getByRole('spinbutton', { name: 'Compact length' });
+    await expect(input).toHaveValue('12,000');
+    await input.fill('12K');
+    await input.press('Enter');
+    await expect(input).toHaveValue('12K');
+    await expect(input).toHaveAttribute('aria-invalid', 'true');
+    await expect(input).toHaveAttribute('aria-valuenow', '12000');
+  });
+
+  test('UIC-NUMBER-FIELD-3.4 reads back Arabic scientific exponents', async ({ page, lab }) => {
+    await lab.open('number-field');
+    const field = page.locator('[data-lab-field="units-arabic-scientific"]');
+    const input = field.getByRole('spinbutton', { name: 'Arabic scientific length' });
+    await expect(input).toHaveValue('١٫٢أس٤');
+    await input.focus();
+    await input.press('Enter');
+    await expect(input).not.toHaveAttribute('aria-invalid');
+    await expect(input).toHaveAttribute('aria-valuenow', '12000');
+    await input.fill('٢٫٥أس-٣');
+    await input.press('Enter');
+    await expect(input).toHaveAttribute('aria-valuenow', '0.0025');
+    await expect(input).not.toHaveAttribute('aria-invalid');
+  });
+
+  test('UIC-NUMBER-FIELD-3.4 keeps a precise value behind its rounded display', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('number-field');
+    const input = page.getByRole('spinbutton', { name: 'Precise length' });
+    const output = page.locator('[data-lab-output="Precise length value"]');
+    await expect(input).toHaveValue('1.235');
+    await input.focus();
+    await input.press('Enter');
+    await input.press('Tab');
+    await expect(output).toHaveText('1.23456');
+    await expect(input).toHaveAttribute('aria-valuenow', '1.23456');
+    await input.fill('unreadable');
+    await page.getByRole('button', { name: 'Replace the precise length' }).click();
+    await expect(input).toHaveValue('1.235');
+    await expect(input).not.toHaveAttribute('aria-invalid');
+    await expect(output).toHaveText('1.23457');
+    await input.fill('2.5');
+    await input.press('Enter');
+    await expect(output).toHaveText('2.5');
+  });
+
   test('UIC-NUMBER-FIELD-3.4 converts 5cm to 50 mm, keeps a wrong unit and restores', async ({
     page,
     lab,

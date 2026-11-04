@@ -132,6 +132,28 @@ function FormattedQuantities() {
   );
 }
 
+/** A value more precise than its display, which focus and blur leave as it is. */
+function PreciseLength() {
+  const [value, setValue] = useState<number | null>(1.23456);
+  return (
+    <>
+      <NumberField
+        label="Precise length"
+        value={value}
+        onChange={setValue}
+        units={{ unit: 'm', conversions: { m: 1 } }}
+        commitBehavior="validate"
+        description="The value is 1.23456 m, shown rounded as 1.235. Focusing and leaving the field, or pressing Enter, keeps 1.23456; typing a new number replaces it. Type some text, then replace the value with one that also shows 1.235: the text gives way to it."
+        data-lab-field="units-precise"
+      />
+      <Button onPress={() => setValue((current) => (current === 1.23456 ? 1.23457 : 1.23456))}>
+        Replace the precise length
+      </Button>
+      <LabOutput name="Precise length value">{value === null ? 'empty' : value}</LabOutput>
+    </>
+  );
+}
+
 /** Quantities typed in other units, converted to the field's own. */
 export function NumberFieldUnitsSection() {
   return (
@@ -149,6 +171,14 @@ export function NumberFieldUnitsSection() {
           description="Arabic digits and separators read back as typed: ١٫٥ cm is 15 mm."
           data-lab-field="units-arabic"
         />
+        <NumberField
+          label="Arabic scientific length"
+          defaultValue={12_000}
+          units={{ unit: 'm', conversions: { m: 1 } }}
+          formatOptions={{ notation: 'scientific' }}
+          description="Scientific notation in Arabic writes its exponent as أس: the value reads back unchanged when you leave the field, and ٢٫٥أس-٣ reads as 0.0025."
+          data-lab-field="units-arabic-scientific"
+        />
       </UiProvider>
       <NumberField
         label="Share of total"
@@ -158,6 +188,15 @@ export function NumberFieldUnitsSection() {
         formatOptions={{ style: 'percent' }}
         description="A percent format reads 25% and 25 alike as a quarter."
         data-lab-field="units-percent"
+      />
+      <PreciseLength />
+      <NumberField
+        label="Compact length"
+        defaultValue={12_000}
+        units={{ unit: 'm', conversions: { m: 1 } }}
+        formatOptions={{ notation: 'compact' }}
+        description="Asked for compact notation, a field with units writes 12,000 in standard notation, since 12K would not read back. Typing 12K reports the text as unreadable instead of committing 12."
+        data-lab-field="units-compact"
       />
     </LabSection>
   );

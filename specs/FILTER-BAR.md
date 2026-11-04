@@ -73,10 +73,10 @@ Verification: `src/components/filter-bar/filter-bar.test.tsx`
 
 ### UIC-FILTER-BAR-3.1 - Matching one condition
 
-`matchesFilterCondition(value, condition, field)` shall test a record's value for the field against a condition: text without case and as written, spaces included (contains, starts with, is), numbers by comparison or an inclusive range, dates by day (a `Date` in local time, read as a four-digit `YYYY-MM-DD` day in years 1 to 9999 and as no day outside them, or a text starting with `YYYY-MM-DD`) before, after, on or within an inclusive range, option values by membership, booleans by equality, and `empty` as `null`, `undefined`, an empty text or an empty list. A list value passes when one of its entries passes, and a negated operator (`not-contains`, `not-equals`, `none-of`) fails when one of its entries matches. A condition missing its value passes every record.
+`matchesFilterCondition(value, condition, field)` shall test a record's value for the field against a condition: text without case and as written, spaces included (contains, starts with, is), numbers by comparison or an inclusive range, dates by day (a `Date` of any same-origin window in local time, read as a four-digit `YYYY-MM-DD` day in years 1 to 9999 and as no day outside them, or a text starting with `YYYY-MM-DD`) before, after, on or within an inclusive range, option values by membership, booleans by equality, and `empty` as `null`, `undefined`, an empty text or an empty list. A list value passes when one of its entries passes, and a negated operator (`not-contains`, `not-equals`, `none-of`) fails when one of its entries matches. A condition missing its value passes every record.
 
-Implementation: `src/components/filter-bar/filter-matching.ts`
-Verification: `src/components/filter-bar/filter-matching.test.ts`
+Implementation: `src/components/filter-bar/filter-matching.ts`, `src/utils/is-date.ts`
+Verification: `src/components/filter-bar/filter-matching.test.ts`, `src/utils/is-date.test.ts`
 
 ### UIC-FILTER-BAR-3.2 - Matching a record
 

@@ -1,5 +1,6 @@
 // Tests records against filter conditions, so a host filters its own data the way the bar reads.
 
+import { isDate } from '../../utils/is-date.js';
 import { toLocalDay } from '../../utils/local-day.js';
 import {
   type FilterCondition,
@@ -37,7 +38,7 @@ function toScalars(value: FilterRecordValue): Scalar[] {
  * starting with one. Invalid dates and years outside that range have no day.
  */
 function toDay(value: Scalar): string | null {
-  if (value instanceof Date) return toLocalDay(value);
+  if (isDate(value)) return toLocalDay(value);
   return typeof value === 'string' && isoDay.test(value) ? value.slice(0, 10) : null;
 }
 

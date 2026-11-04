@@ -8,6 +8,7 @@ import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { keyCodec } from '../../utils/json-codec.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { toCollectionItemKey, toCollectionKey } from '../../utils/to-collection-key.js';
+import { useIsClient } from '../../utils/use-is-client.js';
 import { usePersistedValue } from '../../utils/use-persisted-value.js';
 import { TabsSharedContext, useTabsShared } from './tab-actions.js';
 import { tabsHooks as hooks } from './tab-hooks.js';
@@ -118,6 +119,7 @@ export function Tabs({
     defaultSelectedKey,
     onSelectionChange,
   });
+  const isClient = useIsClient();
   const disabledKeys = useMemo(
     () => rest.disabledKeys && Array.from(rest.disabledKeys, toCollectionKey),
     [rest.disabledKeys],
@@ -130,8 +132,9 @@ export function Tabs({
   return (
     <TabsSharedContext value={shared}>
       <AriaTabs
-        // Another storage key restores that key's selection.
-        key={persistKey}
+        // Another storage key restores that key's selection, as does the first render after
+        // hydration, which reads the store for the first time.
+        key={persistKey === undefined ? undefined : `${String(isClient)}:${persistKey}`}
         {...rest}
         selectedKey={toCollectionItemKey(selection.selectedKey)}
         defaultSelectedKey={toCollectionItemKey(selection.defaultSelectedKey)}

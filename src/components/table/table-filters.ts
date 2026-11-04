@@ -1,3 +1,4 @@
+import { isDate } from '../../utils/is-date.js';
 import { toLocalDay } from '../../utils/local-day.js';
 import type { DateRangeValue } from '../date-time-field/date-time-field.js';
 import {
@@ -66,7 +67,7 @@ function isBound(value: number | null | undefined): value is number {
  * starting with one.
  */
 function toDay(value: TableCellValue): string | null {
-  if (value instanceof Date) return toLocalDay(value);
+  if (isDate(value)) return toLocalDay(value);
   return typeof value === 'string' && isoDay.test(value) ? value.slice(0, 10) : null;
 }
 

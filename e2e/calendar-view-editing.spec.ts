@@ -113,6 +113,21 @@ test.describe('Calendar View event editing', () => {
     await expect(list.getByRole('button', { name: /^Supplier call,/ })).toBeFocused();
   });
 
+  test('UIC-CALENDAR-VIEW-5.2 makes an event ending at midnight all-day on its one day', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('calendar-view');
+    await event(page, 'Evening backup').click({ button: 'right' });
+    await page.getByRole('menuitem', { name: 'Edit' }).click();
+    await editor(page).getByText('All day').click();
+    await expect(editor(page).getByRole('spinbutton', { name: 'day, End Date, When' })).toHaveText(
+      '23',
+    );
+    await editor(page).getByRole('button', { name: 'Save' }).click();
+    await expect(output(page)).toHaveText('Saved Evening backup: 2026-03-23 to 2026-03-23');
+  });
+
   test('UIC-CALENDAR-VIEW-5.2 closes the editor when its event is removed', async ({
     page,
     lab,

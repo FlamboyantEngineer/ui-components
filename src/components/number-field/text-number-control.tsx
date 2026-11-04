@@ -59,30 +59,54 @@ function isUnreadable(value: number | null): boolean {
   return value !== null && Number.isNaN(value);
 }
 
+/**
+ * The input's text and whether the reader edited it since it last showed the value. Untouched text
+ * stands for the value itself, which formatting may have rounded (`1.235` for 1.23456).
+ */
+interface TextDraft {
+  text: string;
+  isEdited: boolean;
+}
+
+/**
+ * The input's text, replaced by the value's whenever the value or its formatting changes, even to
+ * a value formatted like the last one; a render with the same value keeps what is being typed.
+ */
+function useDraft(value: number | null, formatted: string) {
+  const [draft, setDraft] = useState<TextDraft>({ text: formatted, isEdited: false });
+  const [shown, setShown] = useState({ value, formatted });
+  if (!Object.is(shown.value, value) || shown.formatted !== formatted) {
+    setShown({ value, formatted });
+    setDraft({ text: formatted, isEdited: false });
+  }
+  return [draft, setDraft] as const;
+}
+
 function useTextEntry({ state, codec, config, steps }: TextNumberControlProps) {
   const formatted = codec.format(state.value);
-  const [draft, setDraft] = useState(formatted);
-  const [previous, setPrevious] = useState(formatted);
-  if (previous !== formatted) {
-    setPrevious(formatted);
-    setDraft(formatted);
-  }
-  const issue = codec.unreadable && isUnreadable(codec.parse(draft)) ? codec.unreadable : null;
+  const [draft, setDraft] = useDraft(state.value, formatted);
+  const issue =
+    codec.unreadable && draft.isEdited && isUnreadable(codec.parse(draft.text))
+      ? codec.unreadable
+      : null;
   const { setDraftIssue } = state;
   // After every commit: the field keeps the issue it has while the report says the same.
   useLayoutEffect(() => setDraftIssue(issue));
+  /** The number the input stands for: the value while untouched, else what its text spells. */
+  const read = () => (draft.isEdited ? codec.parse(draft.text) : state.value);
+  const show = (value: number | null) => setDraft({ text: codec.format(value), isEdited: false });
   const finish = (commit: boolean) => {
-    const value = codec.parse(draft);
+    const value = read();
     if (isUnreadable(value)) {
-      if (!codec.unreadable) setDraft(formatted);
+      if (!codec.unreadable) show(state.value);
       return;
     }
     const next =
       value === null || config.commitBehavior === 'validate'
         ? value
         : snapNumberValue(value, config);
-    state.setValue(next);
-    setDraft(codec.format(next));
+    if (draft.isEdited || !Object.is(next, state.value)) state.setValue(next);
+    show(next);
     if (commit) state.commit();
   };
   /**
@@ -91,7 +115,7 @@ function useTextEntry({ state, codec, config, steps }: TextNumberControlProps) {
    */
   const step = (direction: number, modifier?: number) => {
     if (state.isDisabled || state.isReadOnly) return;
-    const parsed = codec.parse(draft);
+    const parsed = read();
     const value = isUnreadable(parsed) ? state.value : parsed;
     const next =
       modifier === undefined
@@ -102,7 +126,7 @@ function useTextEntry({ state, codec, config, steps }: TextNumberControlProps) {
           })
         : addStep(value, direction * modifier, steps);
     state.setValue(next);
-    setDraft(codec.format(next));
+    show(next);
     state.commit();
   };
   const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -121,7 +145,8 @@ function useTextEntry({ state, codec, config, steps }: TextNumberControlProps) {
       step(event.key === 'ArrowUp' ? 1 : -1, modifier);
     }
   };
-  return { draft, setDraft, finish, step, onKeyDown };
+  const edit = (text: string) => setDraft({ text, isEdited: true });
+  return { draft: draft.text, edit, finish, step, onKeyDown };
 }
 
 /**
@@ -205,7 +230,7 @@ export function TextNumberControl(props: TextNumberControlProps) {
       {...toAriaControlProps(control)}
       {...hooks.slot('box')}
       value={entry.draft}
-      onChange={entry.setDraft}
+      onChange={entry.edit}
     >
       <Group {...hooks.slot('group')}>
         {hideStepper ? null : stepper(-1)}

@@ -3,11 +3,9 @@
 // Now, today and the time zone, read so a server render and its hydration agree: neither reads the
 // device's clock or zone, and the first client render after hydration does.
 
-import { useSyncExternalStore } from 'react';
 import { fromDate, getLocalTimeZone, toCalendarDate } from '../primitives/index.js';
+import { useIsClient } from '../utils/use-is-client.js';
 import { useUiClock } from './provider.js';
-
-const subscribeToNothing = () => () => {};
 
 /**
  * Whether the device's clock and zone may be read: false on the server and while hydrating, so both
@@ -15,11 +13,7 @@ const subscribeToNothing = () => () => {};
  * true from the start.
  */
 export function useIsClockReadable(): boolean {
-  return useSyncExternalStore(
-    subscribeToNothing,
-    () => true,
-    () => false,
-  );
+  return useIsClient();
 }
 
 /** The clock to read at an event: the given one, else the provider's. */

@@ -13,7 +13,7 @@ Verification: `src/utils/download.test.ts`
 
 ### UIC-DOWNLOAD-1.2 - URL download
 
-`downloadUrl` shall download a same-origin URL, resolved against the page, or a `data:` URL, directly through a temporary download link, without creating an object URL or navigating. An empty file name lets the browser choose one. A cross-origin URL, whose file name browsers ignore, shall throw.
+`downloadUrl` shall download a URL with the page's own origin, resolved against the page's base URL, or a `data:` URL, directly through a temporary download link, without creating an object URL or navigating. An empty file name lets the browser choose one. A cross-origin URL, whose file name browsers ignore, shall throw without clicking a link. A `<base>` element changes what relative URLs resolve against but not the page's origin, so a relative URL under a foreign base is cross-origin and an absolute URL on the page's origin is not.
 
 Implementation: `src/utils/download.ts`
 Verification: `src/utils/download.test.ts`

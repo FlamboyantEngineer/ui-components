@@ -35,6 +35,57 @@ describe('calendar event range', () => {
     });
   });
 
+  it('UIC-CALENDAR-VIEW-5.2 keeps the days a range occupies when it ends at midnight', () => {
+    const late = place({
+      id: 'late',
+      title: 'Late',
+      start: '2026-03-19T22:00',
+      end: '2026-03-20T00:00',
+    });
+    expect(late.endDay).toBe('2026-03-19');
+    expect(toEventRange(late, true, 'UTC')).toEqual({ start: '2026-03-19', end: '2026-03-19' });
+    // An implicit hour that ends at midnight.
+    const implicit = place({ id: 'implicit', title: 'Implicit', start: '2026-03-19T23:00' });
+    expect(toEventRange(implicit, true, 'UTC')).toEqual({ start: '2026-03-19', end: '2026-03-19' });
+    // Offsets and zones, read in the calendar's zone.
+    const zone = 'America/New_York';
+    const offset = place(
+      {
+        id: 'offset',
+        title: 'Offset',
+        start: '2026-03-19T22:00-04:00',
+        end: '2026-03-20T00:00-04:00',
+      },
+      zone,
+    );
+    expect(toEventRange(offset, true, zone)).toEqual({ start: '2026-03-19', end: '2026-03-19' });
+    const zoned = {
+      start: '2026-03-19T22:00:00-04:00[America/New_York]',
+      end: '2026-03-21T00:00:00-04:00[America/New_York]',
+    };
+    expect(convertRange(zoned, true, zone)).toEqual({ start: '2026-03-19', end: '2026-03-20' });
+    // Midnight in UTC is evening in New York, which is the day it covers there.
+    expect(
+      convertRange({ start: '2026-03-19T20:00Z', end: '2026-03-20T00:00Z' }, true, zone),
+    ).toEqual({
+      start: '2026-03-19',
+      end: '2026-03-19',
+    });
+    // Ends after midnight, and empty ranges at midnight, keep their end's day.
+    expect(
+      convertRange({ start: '2026-03-19T22:00', end: '2026-03-20T00:01' }, true, 'UTC'),
+    ).toEqual({
+      start: '2026-03-19',
+      end: '2026-03-20',
+    });
+    expect(
+      convertRange({ start: '2026-03-20T00:00', end: '2026-03-20T00:00' }, true, 'UTC'),
+    ).toEqual({
+      start: '2026-03-20',
+      end: '2026-03-20',
+    });
+  });
+
   it('UIC-CALENDAR-VIEW-5.2 accepts a range that ends no earlier than it starts', () => {
     expect(isOrderedRange({ start: '2026-03-02', end: '2026-03-02' }, true, 'UTC')).toBe(true);
     expect(isOrderedRange({ start: '2026-03-02', end: '2026-03-01' }, true, 'UTC')).toBe(false);
