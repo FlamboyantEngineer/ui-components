@@ -1,29 +1,29 @@
 'use client';
 
 import type { ReactNode, Ref, RefObject } from 'react';
-import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import type { BaseProps, Size } from '../../core/props.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import {
-  ControlCompletionList,
   type Completion,
   type CompletionSource,
+  ControlCompletionList,
 } from '../completion-list/completion-list.js';
-import type { CodeLanguage } from './code-languages.js';
-import { CodeScrollbars } from './code-scrollbars.js';
+import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { CodeArea, type CodeTextAreaProps } from './code-area.js';
+import { codeEditorHooks as hooks } from './code-editor-hooks.js';
 import { CodeHoverTooltip } from './code-hover.js';
+import type { CodeLanguage } from './code-languages.js';
 import {
+  type CodeDiagnostic,
   CodeDiagnostics,
   CodeGutter,
-  severitiesByLine,
-  type CodeDiagnostic,
   type CodeTokenizer,
+  severitiesByLine,
 } from './code-layers.js';
-import { codeEditorHooks as hooks } from './code-editor-hooks.js';
+import { CodeScrollbars } from './code-scrollbars.js';
 import { CodeSearchPanel } from './code-search.js';
 import type { CodeEditorModel } from './use-code-editor.js';
 import { useCodeSurface } from './use-code-surface.js';
-import { isEmptyNode } from '../../utils/is-empty-node.js';
 
 export type CodeEditorSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 

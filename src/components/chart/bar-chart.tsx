@@ -1,28 +1,28 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useLocale, useNumberFormatter } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, Orientation, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useLocale, useNumberFormatter } from '../../primitives/index.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import {
-  createBarValueScale,
-  resolveBarGeometry,
   type BarChartLayout,
   type BarGeometry,
   type BarGeometryInput,
+  createBarValueScale,
+  resolveBarGeometry,
 } from './bar-geometry.js';
 import { Chart, type ChartSeries, type ChartTable, type ChartViewProps } from './chart.js';
-import { resolvePlotBox } from './chart-layout.js';
 import { ChartAxis } from './chart-axis.js';
 import { barChartHooks, chartHooks } from './chart-hooks.js';
+import { resolvePlotBox } from './chart-layout.js';
 import {
+  type ChartHiddenKeysProps,
   ChartLegend,
   hasLegendByDefault,
   useHiddenKeys,
-  type ChartHiddenKeysProps,
 } from './chart-legend.js';
 import { ChartPlot, useChartPoints } from './chart-points.js';
 import { useValueSummary } from './chart-summary.js';

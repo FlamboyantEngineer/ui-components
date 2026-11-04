@@ -4,20 +4,20 @@
 // that is not meant for an inner control or a text selection activates it.
 
 import {
-  useCallback,
-  useRef,
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
   type RefCallback,
+  useCallback,
+  useRef,
 } from 'react';
-import { Button as AriaButton } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps } from '../../core/props.js';
 import { UiLink } from '../../core/provider.js';
+import { Button as AriaButton } from '../../primitives/index.js';
 import { isElement, isHTMLElement } from '../../utils/is-element.js';
-import { mergeSafeRel } from '../../utils/merge-safe-rel.js';
 import { clickOwnerSelector } from '../../utils/is-interactive-target.js';
+import { mergeSafeRel } from '../../utils/merge-safe-rel.js';
 
 /** What the whole card does when it is pressed: follow `href`, or run `onAction`. */
 export interface CardActionOptions {

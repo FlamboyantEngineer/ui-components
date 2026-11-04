@@ -8,17 +8,17 @@ import {
 import type { EditorState } from 'prosemirror-state';
 import type { EditorView } from 'prosemirror-view';
 import { useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { getCompletionOptionId } from '../../completion-list/completion-list.js';
 import { isThenable } from '../../../utils/is-thenable.js';
 import { useLatest } from '../../../utils/use-latest.js';
+import { getCompletionOptionId } from '../../completion-list/completion-list.js';
 import { tokenTriggers } from '../composer-message.js';
 import { replaceWithPill } from './composer-commands.js';
 import {
   findTrigger,
-  toBuiltInVocabulary,
-  toTriggerVocabulary,
   type MessageComposerTrigger,
   type RichCompletionItem,
+  toBuiltInVocabulary,
+  toTriggerVocabulary,
   type TriggerRange,
   type Vocabulary,
 } from './composer-triggers.js';

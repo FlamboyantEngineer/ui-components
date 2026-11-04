@@ -1,12 +1,12 @@
-import { InfoGlyph } from '../../core/glyphs.js';
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { createRef, Profiler, useState, type ReactNode } from 'react';
+import { createRef, Profiler, type ReactNode, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { deepActive, inShadow, ShadowHost } from '../../../test/shadow-fixtures.js';
-import { UiProvider, type UiLinkRenderer } from '../../core/provider.js';
-import { List, ListRow, ListRowContent, type ListHandle } from './list-row.js';
+import { InfoGlyph } from '../../core/glyphs.js';
+import { type UiLinkRenderer, UiProvider } from '../../core/provider.js';
+import { List, type ListHandle, ListRow, ListRowContent } from './list-row.js';
 
 const primaries = (container: HTMLElement) => [
   ...container.querySelectorAll<HTMLElement>('.ui-list-row__primary'),

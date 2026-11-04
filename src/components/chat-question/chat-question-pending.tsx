@@ -2,22 +2,22 @@
 
 import { useLayoutEffect, useRef, useState } from 'react';
 import { useUiStrings } from '../../core/provider.js';
+import { readOwn } from '../../utils/read-own.js';
 import { Button } from '../button/button.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import { QuestionItem } from './chat-question-item.js';
 import {
-  chatQuestionHooks as hooks,
-  isQuestionAnswered,
-  normalizeDraft,
-  toAnswer,
   type ChatQuestionAnswer,
   type ChatQuestionAnsweredMark,
+  chatQuestionHooks as hooks,
   type ChatQuestionItem,
+  isQuestionAnswered,
+  normalizeDraft,
   type QuestionDraft,
+  toAnswer,
 } from './chat-question-model.js';
 import type { QuestionRequestKind } from './chat-question-request.js';
 import { QuestionTabs } from './chat-question-tabs.js';
-import { readOwn } from '../../utils/read-own.js';
 
 type Drafts = Readonly<Record<string, QuestionDraft>>;
 

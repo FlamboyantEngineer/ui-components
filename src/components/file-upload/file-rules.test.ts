@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canAcceptDrag, partitionFiles, type FilePartition, type FileRules } from './file-rules.js';
+import { canAcceptDrag, type FilePartition, type FileRules, partitionFiles } from './file-rules.js';
 
 function file(name: string, type: string, size = 10): File {
   return new File(['x'.repeat(size)], name, { type });

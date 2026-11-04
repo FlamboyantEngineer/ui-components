@@ -1,29 +1,29 @@
 'use client';
 
-import { useMemo, type ReactNode } from 'react';
+import { type ReactNode, useMemo } from 'react';
 import type { Key, Selection } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { mergeProps } from '../../utils/merge-props.js';
 import type { CollectionDragAndDropOptions } from '../../utils/use-reorder-drag-and-drop.js';
 import type { TableProps } from './table.js';
+import { createTableAriaKeys, createTableRowAction, useTableKeyIndex } from './table-aria-keys.js';
 import type { TableBodyProps, TableStatus } from './table-body.js';
 import type { TableSelectionBarProps } from './table-bulk-edit.js';
 import { listVisibleRows } from './table-groups.js';
-import type { TableColumn, TableRow } from './table-rows.js';
 import { pickAriaProps, type TableAriaProps } from './table-props.js';
+import { resolveGroupReorder } from './table-reorder-groups.js';
+import type { TableColumn, TableRow } from './table-rows.js';
 import type { TableStructure } from './table-structure.js';
 import { useCellEditing } from './use-cell-editing.js';
-import { useColumnLayout, type ColumnLayout } from './use-column-layout.js';
-import { useColumnReorder, type ColumnReorder } from './use-column-reorder.js';
+import { type ColumnLayout, useColumnLayout } from './use-column-layout.js';
+import { type ColumnReorder, useColumnReorder } from './use-column-reorder.js';
 import { useColumnWidths } from './use-column-widths.js';
-import { usePinnedOffsets, type TablePinOffsets } from './use-pinned-offsets.js';
+import { type TablePinOffsets, usePinnedOffsets } from './use-pinned-offsets.js';
 import { useTableGrouping } from './use-table-grouping.js';
-import { useTableReorder, type TableReorder } from './use-table-reorder.js';
-import { useTableRows, type TableRowsView } from './use-table-rows.js';
 import { resolveSelectionBar, useCellsView, useRowModel } from './use-table-model.js';
+import { type TableReorder, useTableReorder } from './use-table-reorder.js';
+import { type TableRowsView, useTableRows } from './use-table-rows.js';
 import { useTableSelection } from './use-table-selection.js';
-import { createTableAriaKeys, createTableRowAction, useTableKeyIndex } from './table-aria-keys.js';
-import { resolveGroupReorder } from './table-reorder-groups.js';
 
 /** The props that shape the grid; the root's presentation is the table's own. */
 export type TableGridOptions<T extends TableRow> = Omit<

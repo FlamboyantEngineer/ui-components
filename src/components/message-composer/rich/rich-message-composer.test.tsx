@@ -9,9 +9,9 @@ import { createMemoryStorage } from '../../../core/storage.js';
 import { MessageComposerMenuButton } from '../composer-menu.js';
 import type { MessageComposerMessage } from '../composer-message.js';
 import {
-  RichMessageComposer,
   type MessageComposerCommand,
   type MessageComposerMention,
+  RichMessageComposer,
   type RichMessageComposerProps,
 } from './rich-message-composer.js';
 

@@ -1,25 +1,25 @@
-import { useState, type KeyboardEvent } from 'react';
-import {
-  KeyHints,
-  Shortcut,
-  ShortcutAppearanceContext,
-  matchesChord,
-  type ShortcutAppearance,
-} from '../../src/components/shortcut/shortcut.js';
+import { type KeyboardEvent, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Menu, MenuItem, MenuPopover, MenuTrigger } from '../../src/components/menu/menu.js';
-import { MoreGlyph, UndoGlyph } from '../../src/core/glyphs.js';
 import {
   detectShortcutPlatform,
-  formatShortcut,
   formatAriaKeyShortcuts,
+  formatShortcut,
   formatShortcutAccessibleText,
   formatShortcutDescription,
   formatShortcutKeys,
   formatShortcutTooltip,
   getShortcutPlatform,
 } from '../../src/components/shortcut/index.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import {
+  KeyHints,
+  matchesChord,
+  Shortcut,
+  type ShortcutAppearance,
+  ShortcutAppearanceContext,
+} from '../../src/components/shortcut/shortcut.js';
+import { MoreGlyph, UndoGlyph } from '../../src/core/glyphs.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabHelperCalls } from './lab-helper-calls.js';
 
 const platforms = ['mac', 'windows', 'linux'] as const;

@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import { chooseFieldMenuItem } from '../../../test/field-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { CodeEditor } from './code-editor.js';
-import { chooseFieldMenuItem } from '../../../test/field-fixtures.js';
 
 function field(container: HTMLElement) {
   return container.querySelector<HTMLElement>('.ui-field');

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { PivotTable, type PivotTableField } from '../../src/components/pivot-table/pivot-table.js';
 import type { PivotLayout } from '../../src/utils/pivot.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const regions = ['North', 'South', 'East'] as const;
 const fruits = ['Apple', 'Pear', 'Plum', 'Cherry'] as const;

@@ -1,24 +1,24 @@
 'use client';
 
-import { isFocused } from '../../utils/focus-target.js';
-import { useCallback, useLayoutEffect, useMemo, useRef, type CSSProperties } from 'react';
-import { Button as AriaButton } from '../../primitives/index.js';
+import { type CSSProperties, useCallback, useLayoutEffect, useMemo, useRef } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { Button as AriaButton } from '../../primitives/index.js';
+import { isFocused } from '../../utils/focus-target.js';
+import { mergeRefs } from '../../utils/merge-props.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { Button } from '../button/button.js';
 import { Popover, PopoverTrigger } from '../popover/popover.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
-import { mergeRefs } from '../../utils/merge-props.js';
-import { toKeyIdentity } from '../../utils/to-key-identity.js';
-import { useEventMenu, type CalendarEventMenuContext } from './calendar-event-menu.js';
 import {
+  type CalendarEventHandlesContext,
   EventEdge,
+  type EventPlacement,
   readGestures,
   useEventDrag,
   useRefocus,
-  type CalendarEventHandlesContext,
-  type EventPlacement,
 } from './calendar-event-handles.js';
+import { type CalendarEventMenuContext, useEventMenu } from './calendar-event-menu.js';
 import type { PlacedEvent, WeekSegment } from './calendar-layout.js';
 import { calendarViewHooks as hooks } from './calendar-view-hooks.js';
 import type { CalendarFormat } from './use-calendar-format.js';

@@ -3,8 +3,8 @@
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { AvatarGroup, type AvatarGroupPerson } from '../avatar-group/avatar-group.js';
 import { getDisplayName } from '../avatar/avatar.js';
+import { AvatarGroup, type AvatarGroupPerson } from '../avatar-group/avatar-group.js';
 
 /** Someone who has read up to a message. */
 export type ChatReader = AvatarGroupPerson;

@@ -1,8 +1,8 @@
 import { act, render, renderHook, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import type { Selection } from '../../core/props.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import type { Selection } from '../../core/props.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { Tree } from './tree.js';
 import type { TreeProps } from './tree-props.js';

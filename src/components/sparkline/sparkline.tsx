@@ -1,11 +1,11 @@
 'use client';
 
 import { useId } from 'react';
-import { useNumberFormatter } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useNumberFormatter } from '../../primitives/index.js';
 import {
   resolveSparklineGeometry,
   type SparklineGeometry,

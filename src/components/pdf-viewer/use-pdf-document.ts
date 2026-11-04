@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useLatest } from '../../utils/use-latest.js';
 import { mapBounded } from './map-bounded.js';
+import { toPageRotation } from './page-geometry.js';
 import {
-  toDocumentParams,
   type PdfDocument,
   type PdfDocumentOptions,
   type PdfEngine,
@@ -13,10 +14,9 @@ import {
   type PdfSource,
   type PdfTextContent,
   type PdfViewport,
+  toDocumentParams,
 } from './pdf-engine.js';
-import { toPageRotation } from './page-geometry.js';
 import type { PdfSize } from './pdf-zoom.js';
-import { useLatest } from '../../utils/use-latest.js';
 
 type PdfDocumentStatus = 'loading' | 'password' | 'ready' | 'error';
 

@@ -1,30 +1,30 @@
 'use client';
 
 import {
-  useCallback,
-  useMemo,
   type DragEvent,
   type KeyboardEvent,
   type PointerEvent,
   type ReactNode,
+  useCallback,
+  useMemo,
 } from 'react';
-import { DropIndicator } from '../../primitives/index.js';
 import type { Key } from '../../core/props.js';
+import { DropIndicator } from '../../primitives/index.js';
 import { createKeyIndex } from '../../utils/create-key-index.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
+import { isEditableTarget } from '../../utils/is-editable-target.js';
+import { isElement } from '../../utils/is-element.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import {
-  isMoveChord,
-  useReorderDragAndDrop,
   type CollectionDragAndDropOptions,
   type CollectionDropTarget,
+  isMoveChord,
+  useReorderDragAndDrop,
 } from '../../utils/use-reorder-drag-and-drop.js';
 import { armHandleDrag, keepHandleCellDraggable } from '../drag-handle/drag-handle.js';
 import { tableHooks } from './table-hooks.js';
-import { isEffectiveTableMove, type TableMove, type TableRow } from './table-rows.js';
-import { isEditableTarget } from '../../utils/is-editable-target.js';
-import { isElement } from '../../utils/is-element.js';
 import { isWithinReorderGroup } from './table-reorder-groups.js';
+import { isEffectiveTableMove, type TableMove, type TableRow } from './table-rows.js';
 
 /** Opt-in row reordering: which rows move and what to do with a move. */
 export interface TableReorderOptions<T> {

@@ -1,20 +1,20 @@
 'use client';
 
 import {
-  useLayoutEffect,
-  useRef,
   type FocusEvent,
   type KeyboardEvent,
   type RefObject,
+  useLayoutEffect,
+  useRef,
 } from 'react';
 import { useLocale } from '../../primitives/index.js';
-import type { CalendarViewMode } from './calendar-view.js';
-import { moveFocusedDay } from './calendar-days.js';
 import {
   containsComposed,
   getComposedActiveElement,
   isFocusLost,
 } from '../../utils/focus-target.js';
+import { moveFocusedDay } from './calendar-days.js';
+import type { CalendarViewMode } from './calendar-view.js';
 
 interface CalendarGridOptions {
   /** The focused day, which holds the grid's tab stop. */

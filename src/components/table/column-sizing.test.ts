@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   clampColumnWidth,
-  getColumnSizing,
   getColumnBounds,
+  getColumnSizing,
   isColumnSize,
   pickColumnWidths,
   resolveColumnWidth,

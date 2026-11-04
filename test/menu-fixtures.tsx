@@ -1,6 +1,4 @@
-import { PlusGlyph } from '../src/core/glyphs.js';
 // Shared fixtures for the menu family's unit tests.
-
 import { screen, waitFor } from '@testing-library/react';
 import type { userEvent } from '@testing-library/user-event';
 import type { ReactNode } from 'react';
@@ -8,13 +6,14 @@ import { expect, type Mock } from 'vitest';
 import { Button } from '../src/components/button/button.js';
 import {
   Menu,
-  MenuPopover,
-  MenuTrigger,
-  MenuItem,
   type MenuEntry,
+  MenuItem,
+  MenuPopover,
   type MenuPopoverProps,
   type MenuProps,
+  MenuTrigger,
 } from '../src/components/menu/menu.js';
+import { PlusGlyph } from '../src/core/glyphs.js';
 
 export interface MenuButtonProps extends MenuProps {
   children?: ReactNode;

@@ -2,7 +2,7 @@
 
 import type { Key } from '../../core/props.js';
 import type { UiStrings } from '../../core/strings.js';
-import type { CompareTreeNode, ComparedTreeRow } from '../../utils/compare-trees.js';
+import type { ComparedTreeRow, CompareTreeNode } from '../../utils/compare-trees.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { walkTree } from '../../utils/walk-tree.js';
 

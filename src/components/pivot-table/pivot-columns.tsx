@@ -2,6 +2,7 @@
 // column per column key and value, and the row totals, with column totals in the summary row.
 
 import type { UiStrings } from '../../core/strings.js';
+import { getNumberFormat } from '../../utils/intl-format.js';
 import type {
   PivotAggregates,
   PivotColumn,
@@ -15,7 +16,6 @@ import { requireDefined } from '../../utils/require-defined.js';
 import type { TableProps } from '../table/table.js';
 import { findField } from './pivot-fields.js';
 import { pivotTableHooks as hooks } from './pivot-table-hooks.js';
-import { getNumberFormat } from '../../utils/intl-format.js';
 
 /** A field the pivot table offers, by its id in the records. */
 export interface PivotTableField {

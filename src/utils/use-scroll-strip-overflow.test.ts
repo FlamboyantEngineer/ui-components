@@ -1,8 +1,8 @@
-import { act, createElement, useRef, type ReactElement } from 'react';
+import { act, createElement, type ReactElement, useRef } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { requireDefined } from './require-defined.js';
-import { useScrollStripOverflow, type ScrollStripState } from './use-scroll-strip-overflow.js';
+import { type ScrollStripState, useScrollStripOverflow } from './use-scroll-strip-overflow.js';
 
 let frames: Map<number, FrameRequestCallback>;
 let resize: () => void;

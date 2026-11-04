@@ -1,8 +1,8 @@
-import { RedoGlyph, UndoGlyph } from '../../src/core/glyphs.js';
 import { Button } from '../../src/components/button/button.js';
 import { ButtonGroup } from '../../src/components/button-group/button-group.js';
 import { DropdownMenu } from '../../src/components/dropdown-menu/dropdown-menu.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { RedoGlyph, UndoGlyph } from '../../src/core/glyphs.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const spacings = ['default', 'compact', 'attached'] as const;
 

@@ -5,15 +5,15 @@ import { useUiStrings } from '../../core/provider.js';
 import { ContextMenu, type ContextMenuProps } from '../context-menu/context-menu.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import { LoadingOverlay } from '../loading-overlay/loading-overlay.js';
-import { pdfViewerHooks as hooks } from './styling-hooks.js';
-import type { PdfTextContent, PdfViewport } from './pdf-engine.js';
-import type { PdfLinks } from './use-pdf-links.js';
 import type { PdfPageGeometry } from './page-geometry.js';
+import type { PdfTextContent, PdfViewport } from './pdf-engine.js';
 import type { PdfMatchRange } from './pdf-search.js';
 import { PdfViewerPage } from './pdf-viewer-page.js';
 import { PdfViewerPassword } from './pdf-viewer-password.js';
 import { PdfViewerSidebar } from './pdf-viewer-sidebar.js';
+import { pdfViewerHooks as hooks } from './styling-hooks.js';
 import type { LoadedPdf, PdfDocumentResult } from './use-pdf-document.js';
+import type { PdfLinks } from './use-pdf-links.js';
 import type { PdfPagesController } from './use-pdf-pages.js';
 import type { PdfSearchState } from './use-pdf-search.js';
 

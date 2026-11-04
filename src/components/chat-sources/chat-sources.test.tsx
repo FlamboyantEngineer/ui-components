@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { requireDefined } from '../../utils/require-defined.js';
-import { ChatSources, type ChatSource } from './chat-sources.js';
+import { type ChatSource, ChatSources } from './chat-sources.js';
 
 const sources: ChatSource[] = [
   {

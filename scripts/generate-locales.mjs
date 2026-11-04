@@ -5,7 +5,7 @@
 //   node scripts/generate-locales.mjs
 // src/core/locales/index.test.ts fails while a module and its JSON file disagree.
 
-import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { root } from './lib/script.mjs';
 

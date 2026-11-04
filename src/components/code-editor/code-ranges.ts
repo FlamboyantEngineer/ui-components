@@ -1,7 +1,7 @@
 // Ranges of the source a code editor marks: diagnostics, matching brackets and search matches.
 
-import type { CodeDiagnostic, CodeToken } from './code-layers.js';
 import { escapeRegExp } from '../../utils/escape-regexp.js';
+import type { CodeDiagnostic, CodeToken } from './code-layers.js';
 import { findLineStarts } from './find-line-starts.js';
 
 /** A run of the source, as text offsets. */

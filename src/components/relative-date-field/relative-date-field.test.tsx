@@ -1,13 +1,13 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState, type ReactElement } from 'react';
+import { type ReactElement, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { chooseFieldMenuItem } from '../../../test/field-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { DateTimeField } from '../date-time-field/date-time-field.js';
 import { Form } from '../form/form.js';
 import { RelativeDateField } from './relative-date-field.js';
-import { chooseFieldMenuItem } from '../../../test/field-fixtures.js';
 
 const getNow = () => new Date(2026, 4, 23, 10, 30, 0);
 

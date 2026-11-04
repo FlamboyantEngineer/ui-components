@@ -1,5 +1,4 @@
 import { useId, useState } from 'react';
-import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import {
   StateMachineSequence,
@@ -7,6 +6,7 @@ import {
   type StateMachineTransition,
   type StateMachineViewDensity,
 } from '../../src/components/state-machine-view/index.js';
+import type { Key } from '../../src/core/props.js';
 
 const states: StateMachineState[] = [
   { id: 1, label: 'Number one' },

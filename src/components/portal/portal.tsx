@@ -1,20 +1,20 @@
 'use client';
 
-import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import {
   createContext,
+  type CSSProperties,
+  type ReactNode,
   useContext,
   useMemo,
   useState,
   useSyncExternalStore,
-  type CSSProperties,
-  type ReactNode,
 } from 'react';
 import { createPortal } from 'react-dom';
-import { UNSAFE_PortalProvider as AriaPortalProvider } from '../../primitives/index.js';
 import { createHooks, measuredProperty } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
+import { UNSAFE_PortalProvider as AriaPortalProvider } from '../../primitives/index.js';
 import { omitUndefined } from '../../utils/omit-undefined.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { defaultLayerZIndex, isLayerAbove, type OverlayLayer } from './layers.js';
 import { usePreservedTabOrder } from './tab-order.js';
 

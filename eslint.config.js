@@ -1,6 +1,7 @@
 import js from '@eslint/js';
 import jestDom from 'eslint-plugin-jest-dom';
 import reactHooks from 'eslint-plugin-react-hooks';
+import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import testingLibrary from 'eslint-plugin-testing-library';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
@@ -174,8 +175,14 @@ export default tseslint.config(
     languageOptions: {
       globals: { ...globals.browser },
     },
+    plugins: { 'simple-import-sort': simpleImportSort },
     rules: {
-      '@typescript-eslint/consistent-type-imports': 'error',
+      // One import statement per module, sorted: packages first, then relative paths.
+      'no-duplicate-imports': 'error',
+      'simple-import-sort/imports': ['error', { groups: [['^\\u0000', '^node:', '^@?\\w', '^']] }],
+      'simple-import-sort/exports': 'error',
+      '@typescript-eslint/consistent-type-imports': ['error', { fixStyle: 'inline-type-imports' }],
+      '@typescript-eslint/no-import-type-side-effects': 'error',
       '@typescript-eslint/no-unused-vars': [
         'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_', ignoreRestSiblings: true },

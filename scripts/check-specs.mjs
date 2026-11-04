@@ -10,7 +10,7 @@
 //   - the reference stylesheet partials (labs/reference/) style every root and slot hook and read
 //     every measured property hook.
 
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { reportProblems, root } from './lib/script.mjs';
 

@@ -1,3 +1,8 @@
+import { useState } from 'react';
+import {
+  TransferList,
+  type TransferListItem,
+} from '../../src/components/transfer-list/transfer-list.js';
 import {
   CalendarGlyph,
   ClockGlyph,
@@ -8,13 +13,8 @@ import {
   StarGlyph,
   UsersGlyph,
 } from '../../src/core/glyphs.js';
-import { useState } from 'react';
 import type { Key } from '../../src/core/props.js';
-import {
-  TransferList,
-  type TransferListItem,
-} from '../../src/components/transfer-list/transfer-list.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const columns: TransferListItem[] = [
   { id: 'name', label: 'Name', icon: EditGlyph },

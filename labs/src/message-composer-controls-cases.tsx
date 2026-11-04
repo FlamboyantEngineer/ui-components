@@ -1,16 +1,7 @@
-import {
-  CheckGlyph,
-  EditGlyph,
-  FolderGlyph,
-  HandRaisedGlyph,
-  ListTaskGlyph,
-  LockGlyph,
-} from '../../src/core/glyphs.js';
 // The message composer's row of controls: the "+" menu, an approval select, a plan toggle and the
 // model picker at either end, the send button where the host puts it, a host's own control that
 // drops its label, and the same row at narrower widths, where the controls shrink to their icons.
 // Lab-only layout is inline.
-
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { ChatModelPicker } from '../../src/components/chat-model-picker/chat-model-picker.js';
@@ -20,13 +11,21 @@ import {
   MessageComposerEmojiButton,
   MessageComposerMenuButton,
   MessageComposerSelect,
+  type MessageComposerSelectOption,
   MessageComposerSendButton,
   MessageComposerToggle,
   useMessageComposerControls,
-  type MessageComposerSelectOption,
 } from '../../src/components/message-composer/index.js';
-import { LabSection } from './chrome/index.js';
+import {
+  CheckGlyph,
+  EditGlyph,
+  FolderGlyph,
+  HandRaisedGlyph,
+  ListTaskGlyph,
+  LockGlyph,
+} from '../../src/core/glyphs.js';
 import { describeModelChoice, labEfforts, labModels } from './chat-model-samples.js';
+import { LabSection } from './chrome/index.js';
 import { createLabComposerMenu } from './message-composer-menu-cases.js';
 
 export const labApprovalModes: MessageComposerSelectOption[] = [

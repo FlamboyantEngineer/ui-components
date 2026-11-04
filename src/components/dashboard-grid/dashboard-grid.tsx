@@ -1,47 +1,47 @@
 'use client';
 
-import { findMaximum } from '../../utils/find-maximum.js';
 import {
   createContext,
+  type CSSProperties,
   memo,
+  type ReactNode,
+  type RefObject,
   useCallback,
   useContext,
   useMemo,
   useState,
-  type CSSProperties,
-  type ReactNode,
-  type RefObject,
 } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { usePersistentState } from '../../core/provider.js';
+import { findMaximum } from '../../utils/find-maximum.js';
 import { isElement } from '../../utils/is-element.js';
 import { mergeRefs } from '../../utils/merge-props.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useElementSize } from '../../utils/use-element-size.js';
 import { useLatest } from '../../utils/use-latest.js';
-import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import type { MenuEntry } from '../menu/menu.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import {
+  type DashboardTileMenuEntry,
+  type DashboardTileMenuIcons,
+  type DashboardTileMenuOptions,
+  useGridMenus,
+} from './dashboard-grid-menu.js';
+import {
+  type DashboardGridItem,
   dashboardLayoutCodec,
   fitColumns,
   normalizeDashboardLayout,
   reflowDashboardLayout,
   toColumnCount,
-  type DashboardGridItem,
 } from './dashboard-layout.js';
 import type { CellStep, TileMoveKind } from './use-tile-move.js';
-import type { MenuEntry } from '../menu/menu.js';
-import {
-  useGridMenus,
-  type DashboardTileMenuEntry,
-  type DashboardTileMenuIcons,
-  type DashboardTileMenuOptions,
-} from './dashboard-grid-menu.js';
 import { isSameCells, readGap, useTileMoves } from './use-tile-moves.js';
 
-export type { DashboardGridItem } from './dashboard-layout.js';
 export type { DashboardTileAction, DashboardTileMenuEntry } from './dashboard-grid-menu.js';
+export type { DashboardGridItem } from './dashboard-layout.js';
 
 export interface DashboardGridProps
   extends BaseProps, AriaLabellingProps, RefProps<HTMLDivElement> {

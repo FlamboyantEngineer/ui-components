@@ -1,4 +1,3 @@
-export { ChatMessageActions, ChatMessageActionsMenu } from './chat-message-actions.js';
 export type {
   ChatFeedback,
   ChatFeedbackRating,
@@ -8,3 +7,4 @@ export type {
   ChatMessageMenuAction,
   ChatMessageMenuIcons,
 } from './chat-message-actions.js';
+export { ChatMessageActions, ChatMessageActionsMenu } from './chat-message-actions.js';

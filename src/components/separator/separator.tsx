@@ -1,10 +1,10 @@
 'use client';
 
-import { createElement, useId, type JSX, type ReactNode } from 'react';
-import { Separator as AriaSeparator } from '../../primitives/index.js';
+import { createElement, type JSX, type ReactNode, useId } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Orientation, RefProps } from '../../core/props.js';
+import { Separator as AriaSeparator } from '../../primitives/index.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import type { ElementRender } from '../../utils/render-element.js';
 

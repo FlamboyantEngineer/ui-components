@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Languages lab', () => {
   test('UIC-PROVIDER-3.3 UIC-PROVIDER-3.5 switches every component to the chosen language without a reload', async ({

@@ -5,7 +5,7 @@ import {
   type ProseTableRow,
 } from '../../src/components/prose-table/prose-table.js';
 import { ScrollRegion } from '../../src/components/scroll-region/scroll-region.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const header = [
   { key: 'fruit', content: 'Fruit' },

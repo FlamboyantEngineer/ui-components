@@ -1,49 +1,48 @@
 'use client';
 
-import { useLocale } from '../../primitives/index.js';
 import { useGetNow, useNow, useTimeZone } from '../../core/clock.js';
 import { useClockTick } from '../../core/clock-tick.js';
-import { untilMidnight } from '../../utils/relative-time.js';
 import type { OpenStateProps } from '../../core/events.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
+import { useLocale } from '../../primitives/index.js';
+import { formatStableTime, untilMidnight } from '../../utils/relative-time.js';
 import {
   DateFormInputs,
-  toEndpointErrorSources,
   type DateRangeValue,
+  toEndpointErrorSources,
 } from '../date-time-field/date-time-field.js';
 import {
   Field,
-  useFieldControl,
   type FieldInputProps,
   type FieldIssue,
   type FieldState,
   type FieldTextInputProps,
+  useFieldControl,
 } from '../field/field.js';
-import { PresetCalendar } from './relative-date-calendar.js';
-import { PresetSelect } from './relative-date-select.js';
 import {
   describeRelativeDate,
   describeRelativeRange,
   findRelativeBoundIssue,
-  isReadableRelativeValue,
   formatDay,
   formatDayRange,
   formatRelativePeriod,
   formatRelativePreset,
-  resolvePickedDate,
-  resolveRelativePreset,
-  resolveRelativeRange,
-  toZonedDay,
+  isReadableRelativeValue,
   type RelativeDateBounds,
   type RelativeDateComputedPreset,
   type RelativeDateFieldMode,
   type RelativeDatePreset,
   type RelativeDateText,
   type RelativeDateValue,
+  resolvePickedDate,
+  resolveRelativePreset,
+  resolveRelativeRange,
+  toZonedDay,
 } from './relative-date.js';
-import { formatStableTime } from '../../utils/relative-time.js';
+import { PresetCalendar } from './relative-date-calendar.js';
 import { relativeDateFieldHooks as hooks } from './relative-date-field-hooks.js';
+import { PresetSelect } from './relative-date-select.js';
 
 /** A `YYYY-MM-DD` date or local `YYYY-MM-DDTHH:mm` date and time, or a `{ start, end }` range of dates. */
 export type RelativeDateFieldValue<K extends RelativeDateFieldMode = 'date'> =

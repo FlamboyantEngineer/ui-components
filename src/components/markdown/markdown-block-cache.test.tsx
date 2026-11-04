@@ -2,9 +2,9 @@ import { render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
 import { requireDefined } from '../../utils/require-defined.js';
+import { Markdown } from './markdown.js';
 import { signMarkdownNode } from './markdown-block-cache.js';
 import type { MarkdownNode } from './markdown-nodes.js';
-import { Markdown } from './markdown.js';
 import { parseMarkdown } from './parse-markdown.js';
 
 const paragraphs = [

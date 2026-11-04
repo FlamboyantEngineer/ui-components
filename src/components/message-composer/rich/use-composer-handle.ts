@@ -4,17 +4,17 @@
 // outside the composer (specs/MESSAGE-COMPOSER.md, UIC-MESSAGE-COMPOSER-4.10 and 4.11).
 
 import type { EditorState } from 'prosemirror-state';
-import { useImperativeHandle, type Ref, type RefObject } from 'react';
+import { type Ref, type RefObject, useImperativeHandle } from 'react';
 import { useLatest } from '../../../utils/use-latest.js';
 import type { MessageComposerMessage, MessageComposerToken } from '../composer-message.js';
 import type { ComposerState } from '../use-composer-state.js';
 import {
   createTextSelection,
   isRangeWithin,
+  type MessageComposerRange,
   readTextSelection,
   replaceMessageRange,
   toFragment,
-  type MessageComposerRange,
 } from './composer-edits.js';
 import { serializeComposerDocument } from './composer-markdown.js';
 import type { RichEditorHandle } from './rich-editor.js';

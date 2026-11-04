@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { CalendarGlyph, CheckGlyph, EditGlyph, FolderGlyph } from '../../src/core/glyphs.js';
 import { Board, type BoardColumn, type BoardLane } from '../../src/components/board/index.js';
 import { Button } from '../../src/components/button/button.js';
+import { CalendarGlyph, CheckGlyph, EditGlyph, FolderGlyph } from '../../src/core/glyphs.js';
 import type { Key } from '../../src/core/props.js';
 import { useUiStorage } from '../../src/core/provider.js';
 

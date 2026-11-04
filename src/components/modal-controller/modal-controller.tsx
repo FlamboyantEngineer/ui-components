@@ -1,11 +1,11 @@
 'use client';
 
 import {
+  type ReactNode,
   useCallback,
   useLayoutEffect,
   useState,
   useSyncExternalStore,
-  type ReactNode,
 } from 'react';
 import { Modal, type ModalProps } from '../modal/modal.js';
 

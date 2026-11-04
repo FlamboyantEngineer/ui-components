@@ -1,22 +1,22 @@
 import {
   ChatDateSeparator,
+  type ChatGroupableMessage,
   ChatMessage,
   ChatReadReceipts,
+  type ChatSequenceItem,
   ChatTranscript,
   ChatTypingIndicator,
   ChatUnreadDivider,
   groupChatMessages,
-  type ChatGroupableMessage,
-  type ChatSequenceItem,
 } from '../../src/components/chat-transcript/index.js';
-import { useTimeZone } from '../../src/core/clock.js';
 import type { ReactionEntry } from '../../src/components/reaction-bar/reaction-bar.js';
+import { useTimeZone } from '../../src/core/clock.js';
 import {
+  at,
   CopyAction,
+  getNow,
   LabReactions,
   RetryingMessage,
-  at,
-  getNow,
   team,
   type TeamMemberId,
 } from './chat-transcript-message-samples.js';

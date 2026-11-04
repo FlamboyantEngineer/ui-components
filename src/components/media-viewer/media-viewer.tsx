@@ -1,26 +1,26 @@
 'use client';
 
-import { useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
-import { useLocale } from '../../primitives/index.js';
+import { type KeyboardEvent, type ReactNode, useRef, useState } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { OpenStateProps } from '../../core/events.js';
 import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
+import { useLocale } from '../../primitives/index.js';
+import { containsFocus, isFocused } from '../../utils/focus-target.js';
+import { isNode } from '../../utils/is-element.js';
+import { useRetainedKey } from '../../utils/use-retained-key.js';
 import { Modal } from '../modal/modal.js';
 import { defaultZoomLevels, findNextZoomLevel } from '../zoom-control/zoom-control.js';
-import { resolveMediaKey, type MediaKeyCommand } from './media-layout.js';
+import { type MediaKeyCommand, resolveMediaKey } from './media-layout.js';
 import { MediaStage } from './media-stage.js';
-import { useImageRequest } from './use-image-request.js';
-import { containsFocus, isFocused } from '../../utils/focus-target.js';
 import {
+  isImageItem,
   MediaHeaderActions,
   MediaThumbnails,
-  isImageItem,
   mediaViewerHooks as hooks,
   type MediaViewerItem,
 } from './media-viewer-parts.js';
-import { isNode } from '../../utils/is-element.js';
-import { useRetainedKey } from '../../utils/use-retained-key.js';
+import { useImageRequest } from './use-image-request.js';
 
 export type { MediaViewerItem } from './media-viewer-parts.js';
 

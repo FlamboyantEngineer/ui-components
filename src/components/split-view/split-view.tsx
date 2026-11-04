@@ -3,9 +3,9 @@
 import type { ReactNode, Ref } from 'react';
 import type { BaseProps, ContainerProps, ControlSize, Orientation } from '../../core/props.js';
 import {
-  resolveContainment,
   type LayoutContainmentProps,
   type LayoutSpace,
+  resolveContainment,
 } from '../layout/layout.js';
 import { ResizableSplitView } from './resizable-split-view.js';
 import type { SplitViewPane } from './split-layout.js';
@@ -125,9 +125,8 @@ export function SplitView(props: SplitViewProps) {
 }
 
 export { ResizeHandle } from './resize-handle.js';
-
 export {
-  RESIZE_KEYBOARD_STEP,
   RESIZE_KEYBOARD_FINE_STEP,
+  RESIZE_KEYBOARD_STEP,
   resolveResizeKeyboardValue,
 } from './resize-keyboard.js';

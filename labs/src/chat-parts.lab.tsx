@@ -1,5 +1,4 @@
-import { ChatParts, type ChatPart } from '../../src/components/chat-parts/index.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { type ChatPart, ChatParts } from '../../src/components/chat-parts/index.js';
 import {
   HyphenatedIds,
   KeptExpansion,
@@ -11,21 +10,22 @@ import { ActivityExpansion, AnsweredMarks } from './chat-parts-options.js';
 import {
   bookingCall,
   linesText,
-  partSamples,
-  referenceText,
-  referenceTokens,
-  partTypes,
-  renderLabPart,
-  searchCall,
   linkedReferenceText,
   linkedReferenceTokens,
   literalText,
   literalTokens,
+  partSamples,
+  partTypes,
+  referenceText,
+  referenceTokens,
+  renderLabPart,
+  searchCall,
   textTokens,
   tokenText,
 } from './chat-parts-samples.js';
 import { WorkingSession } from './chat-parts-session.js';
 import { ApprovalStream, StreamedAnswer } from './chat-parts-stream.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { getLabReference } from './reference-samples.js';
 
 const stepStates = [

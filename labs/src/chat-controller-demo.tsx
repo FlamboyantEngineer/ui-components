@@ -5,26 +5,26 @@ import { Button } from '../../src/components/button/button.js';
 import { ChatStatusLine } from '../../src/components/chat-activity/index.js';
 import { ChatAttachmentList } from '../../src/components/chat-attachment/chat-attachment.js';
 import {
-  isAwaitingReader,
-  useChatController,
   type ChatQueuedMessage,
   type ChatSendFunction,
   type ChatStreamEvent,
   type ChatUploadFunction,
+  isAwaitingReader,
+  useChatController,
 } from '../../src/components/chat-controller/chat-controller.js';
 import type { ChatMessageData } from '../../src/components/chat-parts/chat-parts.js';
 import { ChatTranscript } from '../../src/components/chat-transcript/index.js';
+import { Choice, ChoiceGroup } from '../../src/components/choice-group/choice-group.js';
 import { Cluster, Grid, Stack } from '../../src/components/layout/layout.js';
 import { MessageComposer } from '../../src/components/message-composer/message-composer.js';
-import { Choice, ChoiceGroup } from '../../src/components/choice-group/choice-group.js';
 import { ScrollRegion } from '../../src/components/scroll-region/scroll-region.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import {
   agents,
   helperId,
+  type LabScenario,
   readerId,
   scenarios,
-  type LabScenario,
 } from './chat-controller-agents.js';
 import { LabMessage } from './chat-controller-parts.js';
 

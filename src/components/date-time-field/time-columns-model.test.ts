@@ -4,8 +4,8 @@ import {
   noTime,
   pickTimePart,
   stepTimeOption,
-  wholeDay,
   type TimeColumn,
+  wholeDay,
 } from './time-columns-model.js';
 
 const at = (hour: number, minute = 0, second = 0) => ({ hour, minute, second });

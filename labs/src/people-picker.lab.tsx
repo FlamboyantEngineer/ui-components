@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import type { Key } from '../../src/core/props.js';
 import {
   PeoplePicker,
   type PeoplePickerLoader,
   type PeoplePickerPerson,
 } from '../../src/components/people-picker/people-picker.js';
+import type { Key } from '../../src/core/props.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { PeoplePickerPagedCases } from './people-picker-paged-cases.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const sizes = ['sm', 'md', 'lg'] as const;
 const states = ['resting', 'with value', 'disabled', 'read-only', 'invalid'] as const;

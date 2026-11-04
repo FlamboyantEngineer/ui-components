@@ -1,16 +1,16 @@
-import { DateStates } from './date-states.js';
 import { useState } from 'react';
-import type { FieldLabelLayout } from '../../src/components/field/field.js';
 import {
-  DateTimeField,
   type DateRangeValue,
+  DateTimeField,
   type DateTimeFieldMode,
   type DateTimeFieldProps,
 } from '../../src/components/date-time-field/date-time-field.js';
+import type { FieldLabelLayout } from '../../src/components/field/field.js';
 import { Form as UiForm } from '../../src/components/form/form.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { DateStates } from './date-states.js';
 import { HourGranularity, OpenPopups } from './date-time-open-cases.js';
-import { fieldLayouts, fieldStates, type FieldStateName } from './field-states.js';
+import { fieldLayouts, type FieldStateName, fieldStates } from './field-states.js';
 
 const modes = ['date', 'time', 'date-time', 'date-range', 'date-time-range'] as const;
 type AnyValue = string | DateRangeValue | null;

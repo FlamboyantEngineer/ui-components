@@ -2,10 +2,10 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { chooseFieldMenuItem } from '../../../test/field-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Form } from '../form/form.js';
-import { ChoiceGroup, Choice } from './choice-group.js';
-import { chooseFieldMenuItem } from '../../../test/field-fixtures.js';
+import { Choice, ChoiceGroup } from './choice-group.js';
 
 const toppings: Array<{ value: string; label: string; isDisabled?: boolean }> = [
   { value: 'basil', label: 'Basil' },

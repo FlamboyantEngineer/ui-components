@@ -1,13 +1,13 @@
-import { Glyph, UiProvider, useUiStrings } from '../../src/core/provider.js';
 import type { GlyphComponentProps } from '../../src/core/glyphs.js';
-import { glyphCatalog, glyphNames } from './glyph-catalog.js';
 import * as languages from '../../src/core/locales/index.js';
+import { Glyph, UiProvider, useUiStrings } from '../../src/core/provider.js';
 import type { UiStrings } from '../../src/core/strings.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { glyphCatalog, glyphNames } from './glyph-catalog.js';
 import { ProviderClock } from './provider-clock-cases.js';
+import { PersistenceLifecycle, RoutedLinks } from './provider-host-cases.js';
 import { PausedShortcut } from './provider-overlay-cases.js';
 import { OptionalOptions, StorageSwitch, WrappedStorage } from './provider-storage-cases.js';
-import { PersistenceLifecycle, RoutedLinks } from './provider-host-cases.js';
 
 const replacedGlyphs = Object.fromEntries(glyphNames.map((name) => [name, SquareGlyph]));
 

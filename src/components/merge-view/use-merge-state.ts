@@ -5,10 +5,10 @@ import { mergeThreeWay } from '../../utils/three-way-merge.js';
 import { useGeneration } from '../../utils/use-generation.js';
 import { useStateFor } from '../../utils/use-state-for.js';
 import {
-  createMergeBlocks,
-  createMergeText,
   type ConflictMarkers,
   type ConflictState,
+  createMergeBlocks,
+  createMergeText,
   type MergeBlock,
   type MergeResolution,
 } from './merge-blocks.js';

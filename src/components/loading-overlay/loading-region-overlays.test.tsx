@@ -3,11 +3,11 @@ import { userEvent } from '@testing-library/user-event';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Button } from '../button/button.js';
-import { Menu, MenuPopover, MenuTrigger } from '../menu/menu.js';
-import { SelectField } from '../select-field/select-field.js';
-import { Modal } from '../modal/modal.js';
-import { Drawer } from '../drawer/drawer.js';
 import { CommandPalette } from '../command-palette/command-palette.js';
+import { Drawer } from '../drawer/drawer.js';
+import { Menu, MenuPopover, MenuTrigger } from '../menu/menu.js';
+import { Modal } from '../modal/modal.js';
+import { SelectField } from '../select-field/select-field.js';
 import { Skeleton } from '../skeleton/skeleton.js';
 import { LoadingRegion } from './loading-overlay.js';
 

@@ -1,6 +1,6 @@
 import { act, render, renderHook, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { startTransition, Suspense, use, useState, type ReactNode } from 'react';
+import { type ReactNode, startTransition, Suspense, use, useState } from 'react';
 import { describe, expect, it } from 'vitest';
 import { numberCodec } from '../utils/json-codec.js';
 import { UiProvider, usePersistentState } from './provider.js';

@@ -1,14 +1,14 @@
-import { useMemo, useState, type CSSProperties } from 'react';
-import { ArrowDownGlyph, ArrowUpGlyph, DeleteGlyph } from '../../src/core/glyphs.js';
+import { type CSSProperties, useMemo, useState } from 'react';
 import {
   ConditionBuilder,
-  createConditionMatcher,
   type ConditionGroup,
   type ConditionRule,
+  createConditionMatcher,
 } from '../../src/components/condition-builder/condition-builder.js';
 import type { FilterField } from '../../src/components/filter-bar/filter-bar.js';
+import { ArrowDownGlyph, ArrowUpGlyph, DeleteGlyph } from '../../src/core/glyphs.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { ConditionBuilderMatcherCases } from './condition-builder-matcher-cases.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { bookFields, getBookValue, sampleBooks } from './filter-samples.js';
 
 const column: CSSProperties = { width: 640 };

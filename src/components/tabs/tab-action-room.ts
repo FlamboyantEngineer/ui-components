@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useLayoutEffect, useRef, useState, type RefObject } from 'react';
+import { type RefObject, useCallback, useLayoutEffect, useRef, useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { measureContentBox, tolerance } from '../../utils/overflow-measure.js';
 import { useResizeObserver } from '../../utils/use-resize-observer.js';

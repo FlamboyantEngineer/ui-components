@@ -1,2 +1,2 @@
+export type { StepsDensity, StepsItem, StepsProps, StepsStatus } from './steps.js';
 export { Steps } from './steps.js';
-export type { StepsItem, StepsProps, StepsStatus, StepsDensity } from './steps.js';

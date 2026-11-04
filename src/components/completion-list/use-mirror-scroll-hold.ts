@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useLayoutEffect, useRef, type RefObject } from 'react';
+import { type RefObject, useCallback, useLayoutEffect, useRef } from 'react';
 import { getComposedActiveElement } from '../../utils/composed-focus.js';
 import { getOwnerWindow } from '../../utils/owner-window.js';
 

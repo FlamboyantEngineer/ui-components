@@ -1,12 +1,11 @@
 import { useState } from 'react';
-import type { Key } from '../../src/core/props.js';
-import { PlusGlyph } from '../../src/core/glyphs.js';
 import type { FieldChangeLayout, FieldLabelLayout } from '../../src/components/field/field.js';
 import {
   SelectField,
   type SelectFieldOption,
 } from '../../src/components/select-field/select-field.js';
-import type { ControlSize } from '../../src/core/props.js';
+import { PlusGlyph } from '../../src/core/glyphs.js';
+import type { ControlSize, Key } from '../../src/core/props.js';
 import { StateMatrix } from './chrome/index.js';
 
 const produce: SelectFieldOption[] = [

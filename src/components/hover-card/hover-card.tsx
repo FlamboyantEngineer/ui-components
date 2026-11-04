@@ -1,22 +1,22 @@
 'use client';
 
-import { useContext, useMemo, useRef, type ReactNode } from 'react';
+import { type ReactNode, useContext, useMemo, useRef } from 'react';
+import { useControllableState } from '../../core/controllable-state.js';
+import type { OpenStateProps, OverlayPositionProps } from '../../core/events.js';
+import { createHooks } from '../../core/hooks.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import {
   FocusableContext,
   OverlayTriggerStateContext,
   PopoverContext,
   usePreviewTrigger,
 } from '../../primitives/index.js';
-import type { OpenStateProps, OverlayPositionProps } from '../../core/events.js';
-import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, RefProps } from '../../core/props.js';
-import { PopoverPanel } from '../popover/popover.js';
 import { HOVER_CARD_CLOSE_DELAY, HOVER_CARD_DELAY } from '../../utils/overlay-defaults.js';
-import { usePreviewState } from '../../utils/use-preview-state.js';
-import { useControllableState } from '../../core/controllable-state.js';
 import { useCloseWhenLocked } from '../../utils/use-close-when-locked.js';
 import { usePointerEntry } from '../../utils/use-pointer-entry.js';
 import { usePreviewEscape } from '../../utils/use-preview-escape.js';
+import { usePreviewState } from '../../utils/use-preview-state.js';
+import { PopoverPanel } from '../popover/popover.js';
 
 /** A focusable trigger and the `HoverCard` it opens on hover and focus. */
 export interface HoverCardTriggerProps extends OpenStateProps {

@@ -1,9 +1,9 @@
 'use client';
 
-import { useCallback, useLayoutEffect, useRef, type RefObject } from 'react';
+import { type RefObject, useCallback, useLayoutEffect, useRef } from 'react';
 import { clamp } from './clamp.js';
-import { mapScrollOffset, type ScrollAnchor } from './scroll-offset-map.js';
 import { isHTMLElement } from './is-element.js';
+import { mapScrollOffset, type ScrollAnchor } from './scroll-offset-map.js';
 
 /** A container to keep aligned: the element, or a ref whose element is stable. */
 export type SyncedScrollTarget = HTMLElement | RefObject<HTMLElement | null> | null | undefined;

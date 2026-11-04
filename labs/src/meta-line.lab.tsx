@@ -1,6 +1,6 @@
-import { useState, type ReactNode } from 'react';
-import { MetaLine, formatMetaLine } from '../../src/components/meta-line/meta-line.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { type ReactNode, useState } from 'react';
+import { formatMetaLine, MetaLine } from '../../src/components/meta-line/meta-line.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const entrySets: Record<string, readonly ReactNode[]> = {
   one: ['Lisbon'],

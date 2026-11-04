@@ -2,13 +2,13 @@
 
 import { useId, useLayoutEffect, useMemo, useRef } from 'react';
 import { splitDataAttributes } from '../../core/hooks.js';
+import { joinIds } from '../../utils/join-ids.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { useElementSize } from '../../utils/use-element-size.js';
-import type { CodeSurfaceProps } from './code-surface.js';
 import type { CodeTextAreaProps } from './code-area.js';
 import { toTextLines } from './code-ranges.js';
+import type { CodeSurfaceProps } from './code-surface.js';
 import { alignLayers, useCodeEditor } from './use-code-editor.js';
-import { joinIds } from '../../utils/join-ids.js';
 type ProblemOptions = Pick<CodeSurfaceProps, 'diagnostics' | 'listDiagnostics' | 'isInvalid'>;
 
 /** The problems' state: the reported ones, whether one is an error, and what describes the input. */

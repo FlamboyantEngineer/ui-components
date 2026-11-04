@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, test, waitForLab, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test, waitForLab } from './fixtures.js';
 
 /**
  * Makes one edge case the whole page: everything else turns inert, so Tab meets the document's

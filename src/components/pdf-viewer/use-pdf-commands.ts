@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useMemo, useRef, type RefObject } from 'react';
+import { type RefObject, useEffect, useMemo, useRef } from 'react';
+import { getOwnerDocument } from '../../utils/owner-window.js';
+import { useLatest } from '../../utils/use-latest.js';
 import { downloadPdf, printPdf, toPdfFileName } from './pdf-commands.js';
 import type { PdfDocument, PdfSource, PdfTextContent, PdfViewport } from './pdf-engine.js';
 import type { PdfCommands } from './pdf-viewer-toolbar.js';
 import type { LoadedPdf } from './use-pdf-document.js';
-import { getOwnerDocument } from '../../utils/owner-window.js';
-import { useLatest } from '../../utils/use-latest.js';
 
 /** A command of the toolbar's menu that can fail: printing or saving the document. */
 export type PdfCommandName = 'print' | 'download';

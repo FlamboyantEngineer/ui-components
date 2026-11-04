@@ -1,22 +1,21 @@
 'use client';
 
-import { useId, type ReactNode } from 'react';
-import { useLocale } from '../../primitives/index.js';
-import type { AriaLabellingProps } from '../../core/events.js';
+import { type ReactNode, useId } from 'react';
 import { useNow, useTimeZone } from '../../core/clock.js';
+import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useLocale } from '../../primitives/index.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { capitalizeText } from '../../utils/relative-time.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { Attribution, type AttributionProps } from '../attribution/attribution.js';
-import { Avatar, getDisplayName, type AvatarIdentity } from '../avatar/avatar.js';
+import { Avatar, type AvatarIdentity, getDisplayName } from '../avatar/avatar.js';
 import { EmptyState } from '../empty-state/empty-state.js';
-import { Icon, type IconSource } from '../icon/icon.js';
-import { toIconProps } from '../icon/icon.js';
+import { Icon, type IconSource, toIconProps } from '../icon/icon.js';
 import { LoadMore, type LoadMoreProps } from '../load-more/load-more.js';
-import { useHeadingLevel, type HeadingLevel } from '../section-header/section-header.js';
+import { type HeadingLevel, useHeadingLevel } from '../section-header/section-header.js';
 import { groupByDay } from './day-groups.js';
 
 /** One event: who did what to what, and when. */

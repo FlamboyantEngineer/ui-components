@@ -1,17 +1,17 @@
 'use client';
 
+import { useContext } from 'react';
+import { useControllableState } from '../../core/controllable-state.js';
 import {
   ChevronDownGlyph,
   ChevronLeftGlyph,
   ChevronRightGlyph,
   type GlyphComponent,
 } from '../../core/glyphs.js';
-import { useContext } from 'react';
-import { DisclosureStateContext, useLocale } from '../../primitives/index.js';
-import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { DisclosureStateContext, useLocale } from '../../primitives/index.js';
 import { Button, type ButtonProps } from '../button/button.js';
 import { hasIcon, type IconSource } from '../icon/icon.js';
 

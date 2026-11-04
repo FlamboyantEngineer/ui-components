@@ -1,15 +1,18 @@
-import { PlusGlyph } from '../../src/core/glyphs.js';
 // Cases of the table lab for sorting by several columns, column filters, the column layout,
 // nested and detail rows, pagination, editing, the summary row, loading more and cell wrapping.
-
 import { useRef, useState } from 'react';
-import type { Key, SortDescriptor } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
+import {
+  filterTableRows,
+  type TableColumn,
+  type TableColumnGroup,
+  type TableColumnLayout,
+  type TableFilter,
+} from '../../src/components/table/index.js';
 import { Table } from '../../src/components/table/table.js';
-import type { TableColumnGroup, TableColumnLayout } from '../../src/components/table/index.js';
-import { filterTableRows, type TableFilter } from '../../src/components/table/index.js';
-import type { TableColumn } from '../../src/components/table/index.js';
+import { PlusGlyph } from '../../src/core/glyphs.js';
+import type { Key, SortDescriptor } from '../../src/core/props.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { requireDefined } from './require-defined.js';
 

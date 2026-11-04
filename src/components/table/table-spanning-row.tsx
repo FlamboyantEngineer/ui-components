@@ -3,10 +3,10 @@
 // The cell element every table cell renders, and the full-width rows whose one cell spans every
 // column: detail rows and the notice row.
 
-import { keepTextControlKeys } from '../../utils/text-control-keys.js';
-import { useContext, useId, type FocusEvent, type JSX, type ReactNode } from 'react';
-import { Cell, Row, TableStateContext, type CellRenderProps } from '../../primitives/index.js';
+import { type FocusEvent, type JSX, type ReactNode, useContext, useId } from 'react';
 import type { Key } from '../../core/props.js';
+import { Cell, type CellRenderProps, Row, TableStateContext } from '../../primitives/index.js';
+import { keepTextControlKeys } from '../../utils/text-control-keys.js';
 
 type CellElementProps = JSX.IntrinsicElements['td' | 'div'];
 

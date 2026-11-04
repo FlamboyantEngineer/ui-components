@@ -3,8 +3,8 @@ import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { requireDefined } from '../../utils/require-defined.js';
-import { StepListEditor, type StepListEditorStep } from './step-list-editor.js';
 import { isStepDirty, readStepValue } from './step-list.js';
+import { StepListEditor, type StepListEditorStep } from './step-list-editor.js';
 
 const field = (number: number) =>
   within(screen.getByRole('group', { name: `Step ${number}` })).getByRole('textbox', {

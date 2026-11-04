@@ -1,8 +1,8 @@
 // Plain text and HTML from a document, without a browser document, so a server can render them.
 
 import type { DOMOutputSpec, Mark, Node } from 'prosemirror-model';
-import type { RichTextNode } from './rich-text-document.js';
 import { getEngineSchema } from './engine-schema.js';
+import type { RichTextNode } from './rich-text-document.js';
 import { getDefaultRichTextSchema, type RichTextSchema } from './rich-text-schema.js';
 
 export interface RichTextExportOptions {

@@ -1,9 +1,9 @@
-import { EditGlyph } from '../../core/glyphs.js';
 import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { EditGlyph } from '../../core/glyphs.js';
 import { UiProvider } from '../../core/provider.js';
 import { UserCard } from './user-card.js';
 

@@ -2,17 +2,17 @@
 // layout, a starting filter, selection modes and constraints, and a tree column that is not first.
 
 import { useState } from 'react';
-import type { Key, Selection, SortDescriptor } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import {
-  Table,
   sortTableRows,
+  Table,
   type TableColumn,
   type TableColumnLayout,
   type TableFilter,
   type TableProps,
 } from '../../src/components/table/index.js';
+import type { Key, Selection, SortDescriptor } from '../../src/core/props.js';
 
 interface Crop {
   id: string;

@@ -2,11 +2,11 @@
 
 // Runtime helpers come from their pure modules: filter-bar.tsx is a client module, whose exports a
 // server component receives as client references it cannot call.
-import { matchesFilterCondition, type FilterValueGetter } from '../filter-bar/filter-matching.js';
+import { type FilterValueGetter, matchesFilterCondition } from '../filter-bar/filter-matching.js';
 import {
-  isFilterConditionComplete,
   type FilterCondition,
   type FilterField,
+  isFilterConditionComplete,
 } from '../filter-bar/filter-model.js';
 
 /** `and` matches when every rule of a group matches, `or` when any does. */

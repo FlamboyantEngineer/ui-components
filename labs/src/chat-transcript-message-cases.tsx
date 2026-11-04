@@ -1,31 +1,31 @@
 import {
   ChatDateSeparator,
   ChatMessage,
+  type ChatMessageDelivery,
+  type ChatMessageGroupPosition,
+  type ChatMessageOrigin,
+  type ChatMessageStatus,
   ChatQuote,
   ChatReadReceipts,
   ChatTranscript,
   ChatTypingIndicator,
   ChatUnreadDivider,
-  type ChatMessageDelivery,
-  type ChatMessageGroupPosition,
-  type ChatMessageOrigin,
-  type ChatMessageStatus,
 } from '../../src/components/chat-transcript/index.js';
-import { LabSection, StateMatrix } from './chrome/index.js';
 import {
   GroupConversation,
   TimeZoneConversations,
 } from './chat-transcript-message-conversation.js';
 import {
-  CopyAction,
-  LabReactions,
-  RetryingMessage,
   at,
+  CopyAction,
   getNow,
   helper,
+  LabReactions,
   maria,
+  RetryingMessage,
   team,
 } from './chat-transcript-message-samples.js';
+import { LabSection, StateMatrix } from './chrome/index.js';
 
 const origins = ['sent', 'received', 'system'] as const satisfies readonly ChatMessageOrigin[];
 const states = [

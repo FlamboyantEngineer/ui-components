@@ -1,15 +1,15 @@
 import { useState } from 'react';
-import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
-import { UiProvider } from '../../src/core/provider.js';
 import { Button } from '../../src/components/button/button.js';
+import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import {
   StateTimeline,
   type StateTimelineEntry,
   type StateTimelineState,
 } from '../../src/components/state-timeline/state-timeline.js';
-import { requireDefined } from './require-defined.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { UiProvider } from '../../src/core/provider.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { samplePicture } from './people-samples.js';
+import { requireDefined } from './require-defined.js';
 
 /** A fixed clock, so every time in the matrices reads the same on every day. */
 const getNow = () => new Date(2026, 3, 20, 10, 30);

@@ -1,12 +1,12 @@
-import { SuccessGlyph } from '../../core/glyphs.js';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
-import { useState } from 'react';
 import { userEvent } from '@testing-library/user-event';
+import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { ShadowHost, deepActive, inShadow } from '../../../test/shadow-fixtures.js';
+import { deepActive, inShadow, ShadowHost } from '../../../test/shadow-fixtures.js';
+import { SuccessGlyph } from '../../core/glyphs.js';
 import { Section } from '../section-header/section-header.js';
-import { NotificationList, type NotificationItem } from './notification-list.js';
+import { type NotificationItem, NotificationList } from './notification-list.js';
 
 const now = new Date(2026, 4, 20, 10, 30);
 const getNow = () => now;

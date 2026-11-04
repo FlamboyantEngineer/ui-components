@@ -1,7 +1,7 @@
 // Anchor rectangles in the layer's own coordinates, measured from elements, and hit testing.
 
-import { getElementByIdWithin } from '../../utils/owner-window.js';
 import type { Key } from '../../core/props.js';
+import { getElementByIdWithin } from '../../utils/owner-window.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { toScale } from '../../utils/scroll-geometry.js';
 import { clipToAncestors } from './anchor-clip.js';

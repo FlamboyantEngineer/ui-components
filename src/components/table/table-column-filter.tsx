@@ -1,6 +1,7 @@
 'use client';
 
 import { FilterGlyph } from '../../core/glyphs.js';
+import { useUiStrings } from '../../core/provider.js';
 import {
   CheckboxContext,
   CheckboxFieldContext,
@@ -8,14 +9,13 @@ import {
   Provider,
   useLocale,
 } from '../../primitives/index.js';
-import { useUiStrings } from '../../core/provider.js';
+import { walkTree } from '../../utils/walk-tree.js';
 import { Button } from '../button/button.js';
-import { ChoiceGroup, Choice } from '../choice-group/choice-group.js';
-import { DateTimeField, type DateRangeValue } from '../date-time-field/date-time-field.js';
+import { Choice, ChoiceGroup } from '../choice-group/choice-group.js';
+import { type DateRangeValue, DateTimeField } from '../date-time-field/date-time-field.js';
 import { Modal } from '../modal/modal.js';
 import { NumberField } from '../number-field/number-field.js';
 import { TextField } from '../text-field/text-field.js';
-import { walkTree } from '../../utils/walk-tree.js';
 import {
   listFilterOptions,
   type TableColumnFilterValue,

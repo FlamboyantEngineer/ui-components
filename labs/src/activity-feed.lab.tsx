@@ -1,4 +1,3 @@
-import { RefreshGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import {
   ActivityFeed,
@@ -8,10 +7,11 @@ import { Button } from '../../src/components/button/button.js';
 import { ChangeList } from '../../src/components/change-list/change-list.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
-import { requireDefined } from './require-defined.js';
+import { RefreshGlyph } from '../../src/core/glyphs.js';
 import { ActivityFeedHostCases } from './activity-feed-host-cases.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { samplePicture } from './people-samples.js';
+import { requireDefined } from './require-defined.js';
 
 /** A fixed clock, so every heading and time in the matrices reads the same on every day. */
 const getNow = () => new Date(2026, 3, 20, 10, 30);

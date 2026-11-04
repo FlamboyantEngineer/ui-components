@@ -1,8 +1,8 @@
-import { useState, type CSSProperties } from 'react';
+import { type CSSProperties, useState } from 'react';
 import { Avatar } from '../../src/components/avatar/avatar.js';
 import { Button } from '../../src/components/button/button.js';
 import { Skeleton, SkeletonText } from '../../src/components/skeleton/skeleton.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const column = (width: number): CSSProperties => ({ width });
 const row: CSSProperties = { display: 'flex', alignItems: 'center', gap: 12 };

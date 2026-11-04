@@ -1,14 +1,14 @@
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState, type ReactNode } from 'react';
-import { Button as AriaButton } from '../../primitives/index.js';
+import { type ReactNode, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { Button as AriaButton } from '../../primitives/index.js';
 import { Button } from '../button/button.js';
 import { Portal, PortalContainerProvider } from '../portal/portal.js';
 import { Section, SectionHeader } from '../section-header/section-header.js';
-import { Modal, ModalTrigger, isModalPrimaryShortcut, type ModalProps } from './modal.js';
+import { isModalPrimaryShortcut, Modal, type ModalProps, ModalTrigger } from './modal.js';
 
 function deferred() {
   let resolve!: () => void;

@@ -1,17 +1,17 @@
 'use client';
 
-import { isFocused } from '../../utils/focus-target.js';
+import { type ReactNode, type Ref, type RefObject, useLayoutEffect, useMemo, useRef } from 'react';
 import { DragHandleGlyph, ResizeGlyph } from '../../core/glyphs.js';
-import { useLayoutEffect, useMemo, useRef, type ReactNode, type Ref, type RefObject } from 'react';
-import { Glyph, useUiStrings } from '../../core/provider.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
+import { Glyph, useUiStrings } from '../../core/provider.js';
+import { isFocused } from '../../utils/focus-target.js';
 import {
   dashboardGridHooks as hooks,
-  useDashboardGridTile,
   type DashboardGridTileState,
+  useDashboardGridTile,
 } from './dashboard-grid.js';
-import { useTileMove, type TileMoveKind } from './use-tile-move.js';
 import { useTileMenu } from './dashboard-grid-menu.js';
+import { type TileMoveKind, useTileMove } from './use-tile-move.js';
 
 export interface DashboardTileProps extends BaseProps, RefProps<HTMLDivElement> {
   /** Names the tile and its handles, such as the title of the card it holds. */

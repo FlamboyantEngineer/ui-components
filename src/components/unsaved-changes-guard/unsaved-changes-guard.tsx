@@ -2,6 +2,7 @@
 
 import {
   createContext,
+  type ReactNode,
   useCallback,
   useContext,
   useEffect,
@@ -11,7 +12,6 @@ import {
   useRef,
   useState,
   useSyncExternalStore,
-  type ReactNode,
 } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
@@ -19,11 +19,11 @@ import { useUiStrings } from '../../core/provider.js';
 import { Modal } from '../modal/modal.js';
 import {
   createUnsavedChangesStore,
+  isUnsavable,
   type UnsavedChangesAction,
   type UnsavedChangesEntry,
   type UnsavedChangesStore,
   type UnsavedChangesSummary,
-  isUnsavable,
 } from './unsaved-changes-store.js';
 
 export interface UnsavedChangesGuardProps extends BaseProps {

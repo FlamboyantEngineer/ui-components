@@ -1,21 +1,21 @@
 'use client';
 
 import { ChevronDownGlyph } from '../../core/glyphs.js';
+import { Glyph } from '../../core/provider.js';
 import {
   Button as AriaButton,
   CalendarMonthPicker,
   CalendarYearPicker,
+  type Key,
   ListBox,
   ListBoxItem,
+  Popover,
   Select,
   SelectValue,
-  type Key,
-  Popover,
 } from '../../primitives/index.js';
-import { PopoverPresence } from '../popover/popover.js';
-import { Glyph } from '../../core/provider.js';
-import { useLayerZIndex } from '../portal/portal.js';
 import { DEFAULT_POINT_OFFSET } from '../../utils/overlay-defaults.js';
+import { PopoverPresence } from '../popover/popover.js';
+import { useLayerZIndex } from '../portal/portal.js';
 import { dateTimeFieldHooks as hooks } from './date-time-field-hooks.js';
 
 interface HeadingSelectProps {

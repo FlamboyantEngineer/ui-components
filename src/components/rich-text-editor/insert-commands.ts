@@ -3,10 +3,10 @@
 import { setBlockType } from 'prosemirror-commands';
 import type { MarkType, NodeType, ResolvedPos } from 'prosemirror-model';
 import {
-  Selection,
-  TextSelection,
   type Command,
   type EditorState,
+  Selection,
+  TextSelection,
   type Transaction,
 } from 'prosemirror-state';
 import { isSafeUrl } from '../../utils/safe-url.js';

@@ -1,15 +1,15 @@
 'use client';
 
+import { Fragment, type ReactNode, useId } from 'react';
 import { CloseGlyph } from '../../core/glyphs.js';
-import { Fragment, useId, type ReactNode } from 'react';
 import { useUiStrings } from '../../core/provider.js';
-import { HoverCard, HoverCardTrigger } from '../hover-card/hover-card.js';
-import { Button } from '../button/button.js';
-import type { RecordLabelProps } from './record-label.js';
-import { RecordLabelText } from './record-label-text.js';
-import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';
-import { recordLabelHooks as hooks } from './record-label-hooks.js';
 import { joinIds } from '../../utils/join-ids.js';
+import { Button } from '../button/button.js';
+import { HoverCard, HoverCardTrigger } from '../hover-card/hover-card.js';
+import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';
+import type { RecordLabelProps } from './record-label.js';
+import { recordLabelHooks as hooks } from './record-label-hooks.js';
+import { RecordLabelText } from './record-label-text.js';
 
 /**
  * The label, opening the preview from the link of an available record. The trigger stays while the

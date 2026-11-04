@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
+import { Steps, type StepsItem, type StepsStatus } from '../../src/components/steps/steps.js';
 import {
   CalendarGlyph,
   EditGlyph,
@@ -6,11 +8,9 @@ import {
   UploadGlyph,
   UsersGlyph,
 } from '../../src/core/glyphs.js';
-import { Button } from '../../src/components/button/button.js';
-import { Steps, type StepsItem, type StepsStatus } from '../../src/components/steps/steps.js';
 import type { Key } from '../../src/core/props.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { requireDefined } from './require-defined.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const importSteps: StepsItem[] = [
   { id: 'upload', label: 'Upload', description: 'Choose a spreadsheet' },

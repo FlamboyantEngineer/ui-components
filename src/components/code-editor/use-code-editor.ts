@@ -1,18 +1,18 @@
 'use client';
 
-import { useLayoutEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
-import { revealRange } from './code-geometry.js';
-import { useCodeHover, type CodeHoverModel, type MarkedDiagnostic } from './code-hover.js';
-import type { CodeDiagnostic, CodeToken, CodeTokenizer } from './code-layers.js';
-import { findDiagnosticRange, matchBracket, type BracketMatch } from './code-ranges.js';
-import { findLineStarts } from './find-line-starts.js';
-import { splitSegments, type CodeDecorations, type CodeSegment } from './code-segments.js';
+import { type ReactNode, type RefObject, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { Completions, CompletionsModel } from '../completion-list/completion-list.js';
-import { useCodeCompletion, type CodeCompletionsModel } from './use-code-completion.js';
+import { revealRange } from './code-geometry.js';
+import { type CodeHoverModel, type MarkedDiagnostic, useCodeHover } from './code-hover.js';
+import type { CodeDiagnostic, CodeToken, CodeTokenizer } from './code-layers.js';
+import { type BracketMatch, findDiagnosticRange, matchBracket } from './code-ranges.js';
+import { type CodeDecorations, type CodeSegment, splitSegments } from './code-segments.js';
+import { findLineStarts } from './find-line-starts.js';
+import { type CodeCompletionsModel, useCodeCompletion } from './use-code-completion.js';
 import { useCodeEdits } from './use-code-edits.js';
 import { useCodeKeys } from './use-code-keys.js';
-import { useCodeSearch, type CodeSearchModel } from './use-code-search.js';
-import { useCodeSnippet, type CodeSnippetSession } from './use-code-snippet.js';
+import { type CodeSearchModel, useCodeSearch } from './use-code-search.js';
+import { type CodeSnippetSession, useCodeSnippet } from './use-code-snippet.js';
 
 interface CodeLayers {
   input: RefObject<HTMLTextAreaElement | null>;

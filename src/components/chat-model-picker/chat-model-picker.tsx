@@ -12,7 +12,7 @@ import {
   useMessageComposerControls,
 } from '../message-composer/message-composer.js';
 import { MetaLine } from '../meta-line/meta-line.js';
-import { useChatModelChoice, type ChatModelChoice } from './use-chat-model-choice.js';
+import { type ChatModelChoice, useChatModelChoice } from './use-chat-model-choice.js';
 
 /** A model the reader can send their messages to. */
 export interface ChatModelOption {

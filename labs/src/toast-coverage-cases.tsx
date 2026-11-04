@@ -6,9 +6,9 @@ import { Button } from '../../src/components/button/button.js';
 import { NumberField } from '../../src/components/number-field/number-field.js';
 import { Switch } from '../../src/components/switch/switch.js';
 import {
+  createToastQueue,
   ToastList,
   ToastRegion,
-  createToastQueue,
   type ToastSwipeDirection,
 } from '../../src/components/toast/toast.js';
 import { UiProvider } from '../../src/core/provider.js';

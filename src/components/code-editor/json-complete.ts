@@ -6,7 +6,7 @@ import type {
   CompletionResult,
   CompletionSource,
 } from '../completion-list/completion-list.js';
-import { findSubschema, listSchemaTypes, type JsonSchema } from './json-schema.js';
+import { findSubschema, type JsonSchema, listSchemaTypes } from './json-schema.js';
 import { findJsonContext, type JsonCaretContext } from './json-tree.js';
 import { stringifyJsonValue } from './json-value.js';
 

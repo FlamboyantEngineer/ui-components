@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import {
-  ChatMessageActionsMenu,
-  type ChatMessageMenuIcons,
   type ChatFeedback,
+  ChatMessageActionsMenu,
   type ChatMessageCommandProps,
+  type ChatMessageMenuIcons,
 } from '../../src/components/chat-message-actions/chat-message-actions.js';
 import {
   ChatMessage,

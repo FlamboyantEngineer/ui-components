@@ -1,6 +1,6 @@
 'use client';
 
-import { useContext, useLayoutEffect, useRef, useState, type RefObject } from 'react';
+import { type RefObject, useContext, useLayoutEffect, useRef, useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { ComboBoxStateContext } from '../../primitives/index.js';
 import { useNativeReset } from '../../utils/use-native-reset.js';

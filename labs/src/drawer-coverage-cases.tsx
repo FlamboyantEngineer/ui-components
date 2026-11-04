@@ -6,9 +6,9 @@ import { Button } from '../../src/components/button/button.js';
 import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import {
   Drawer,
-  DrawerTrigger,
   type DrawerPosition,
   type DrawerSwipeDirection,
+  DrawerTrigger,
 } from '../../src/components/drawer/drawer.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { LabSection } from './chrome/index.js';

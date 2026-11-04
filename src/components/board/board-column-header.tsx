@@ -1,28 +1,28 @@
 'use client';
 
-import { DragHandleGlyph } from '../../core/glyphs.js';
 import {
-  useRef,
   type ComponentProps,
   type DragEvent,
   type KeyboardEvent,
   type PointerEvent,
   type ReactNode,
+  useRef,
 } from 'react';
-import { useLocale } from '../../primitives/index.js';
+import { DragHandleGlyph } from '../../core/glyphs.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useLocale } from '../../primitives/index.js';
 import { formatCount } from '../../utils/count.js';
-import { useItemDrag } from '../../utils/use-item-drag.js';
+import { isElement } from '../../utils/is-element.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import { useItemDrag } from '../../utils/use-item-drag.js';
 import { isMoveChord } from '../../utils/use-reorder-drag-and-drop.js';
-import { ExpandToggle } from '../expand-toggle/expand-toggle.js';
 import { Button } from '../button/button.js';
-import { hasIcon, Icon, toIconProps, type IconSource } from '../icon/icon.js';
+import { ExpandToggle } from '../expand-toggle/expand-toggle.js';
+import { hasIcon, Icon, type IconSource, toIconProps } from '../icon/icon.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { boardHooks as hooks } from './board-hooks.js';
 import type { BoardColumnDrag } from './use-board-drag.js';
-import { isElement } from '../../utils/is-element.js';
 
 /** A column header's view of its column. */
 interface BoardColumnHeaderProps {

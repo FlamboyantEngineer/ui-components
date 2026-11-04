@@ -1,11 +1,11 @@
 // Heading ids and the outline of a parsed Markdown document (specs/MARKDOWN.md).
 
-import type { OutlineHeading } from '../outline/outline.js';
 import { walkTree } from '../../utils/walk-tree.js';
+import type { OutlineHeading } from '../outline/outline.js';
 import type {
+  MarkdownBlock,
   MarkdownDocument,
   MarkdownInline,
-  MarkdownBlock,
   MarkdownListItem,
 } from './markdown-nodes.js';
 

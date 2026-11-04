@@ -1,10 +1,10 @@
 'use client';
 
-import { useLayoutEffect, type RefObject } from 'react';
+import { type RefObject, useLayoutEffect } from 'react';
 import type { Orientation } from '../../core/props.js';
 import {
-  useScrollStripOverflow,
   type ScrollStripOverflow,
+  useScrollStripOverflow,
 } from '../../utils/use-scroll-strip-overflow.js';
 import { dockPanelHooks as hooks } from './dock-panel-hooks.js';
 

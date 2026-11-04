@@ -1,16 +1,16 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { DialogTrigger } from '../../primitives/index.js';
 import type { KeyboardEventProps, OpenStateProps, OverlayDismissProps } from '../../core/events.js';
 import { splitDataAttributes } from '../../core/hooks.js';
-import type { BaseProps, Placement, Size, Tone, RefProps } from '../../core/props.js';
+import type { BaseProps, Placement, RefProps, Size, Tone } from '../../core/props.js';
+import { DialogTrigger } from '../../primitives/index.js';
 import type { ButtonProps, ButtonVariant } from '../button/button.js';
 import { ModalDialog } from './modal-dialog.js';
 import type { ModalFocusTarget } from './modal-focus.js';
+import { modalHooks as hooks } from './modal-hooks.js';
 import { ModalPresentation, resolveDismissal, useModalOpenState } from './modal-presentations.js';
 import { useRetention } from './modal-retained.js';
-import { modalHooks as hooks } from './modal-hooks.js';
 
 /** Dialog width, which the host stylesheet maps to a length; `full` fills the viewport. */
 export type ModalSize = Extract<Size, 'sm' | 'md' | 'lg' | 'xl'> | 'full';
@@ -208,11 +208,10 @@ export function ModalTrigger({ children, ...openState }: ModalTriggerProps) {
   return <DialogTrigger {...openState}>{children}</DialogTrigger>;
 }
 
-export { isModalPrimaryShortcut } from './modal-shortcut.js';
-export { useModalOpenState } from './modal-presentations.js';
-export type { ModalFocusTarget } from './modal-focus.js';
-
-export { confirm } from './modal-confirm.js';
 export type { ConfirmOptions } from './modal-confirm.js';
-export { alert, prompt } from './modal-prompts.js';
+export { confirm } from './modal-confirm.js';
+export type { ModalFocusTarget } from './modal-focus.js';
+export { useModalOpenState } from './modal-presentations.js';
 export type { AlertOptions, PromptOptions } from './modal-prompts.js';
+export { alert, prompt } from './modal-prompts.js';
+export { isModalPrimaryShortcut } from './modal-shortcut.js';

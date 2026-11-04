@@ -1,8 +1,8 @@
 import { ChatSteps } from '../../src/components/chat-activity/index.js';
 import { ChatToolCall } from '../../src/components/chat-tool-call/index.js';
 import { ChatMessage, ChatTranscript } from '../../src/components/chat-transcript/index.js';
-import { LabSection, StateMatrix } from './chrome/index.js';
 import { at, getNow, helper, maria } from './chat-transcript-message-samples.js';
+import { LabSection, StateMatrix } from './chrome/index.js';
 
 const widths = { narrow: 320, wide: 560 } as const;
 const avatars = ['shown', 'hidden'] as const;

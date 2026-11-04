@@ -15,11 +15,11 @@ import type { CalendarEventMenuContext } from './calendar-event-menu.js';
 import {
   applyEdit,
   convertRange,
+  type EventRange,
   isOrderedRange,
   toEventRange,
-  type EventRange,
 } from './calendar-event-range.js';
-import { readEvents, type PlacedEvent } from './calendar-layout.js';
+import { type PlacedEvent, readEvents } from './calendar-layout.js';
 import type { CalendarViewEvent } from './calendar-view.js';
 import { calendarViewHooks as hooks } from './calendar-view-hooks.js';
 

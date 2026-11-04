@@ -3,14 +3,14 @@ import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import {
-  ViewProbe,
   getContent,
   installEditorDom,
   renderEditor,
   selectRange,
+  ViewProbe,
 } from '../../../test/rich-text-fixtures.js';
 import { InsertMenu, InsertMenuButton, type InsertMenuItem } from './insert-menu.js';
-import { RichTextEditor, type RichTextDocument } from './rich-text-editor.js';
+import { type RichTextDocument, RichTextEditor } from './rich-text-editor.js';
 
 installEditorDom();
 

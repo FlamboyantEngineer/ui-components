@@ -1,8 +1,8 @@
 import { isThenable } from '../../utils/is-thenable.js';
+import { isSameMessage } from '../message-composer/composer-message.js';
 import type { RichMessageComposerProps } from '../message-composer/rich/rich-message-composer.js';
 import type { ChatComposerProps } from './chat-composer.js';
 import { toDisplayTokens } from './chat-model.js';
-import { isSameMessage } from '../message-composer/composer-message.js';
 
 /** A message as the composer sends it: Markdown text and its tokens. */
 type ComposerMessage = Parameters<NonNullable<RichMessageComposerProps['onSubmit']>>[0];

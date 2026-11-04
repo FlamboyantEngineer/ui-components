@@ -1,22 +1,22 @@
-import { InfoGlyph, PlusGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import type { Completion } from '../../src/components/completion-list/completion-list.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
+import { InfoGlyph, PlusGlyph } from '../../src/core/glyphs.js';
 import { Glyph } from '../../src/core/provider.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import {
+  fieldLayouts,
+  type FieldStateName,
+  fieldStates,
+  useLabFieldState,
+} from './field-states.js';
 import { LabOutput } from './lab-output.js';
 import {
   DialogSuggestingField,
   EditorDrivenField,
   MultilineEditorBridge,
 } from './text-field-editor-cases.js';
-import {
-  fieldLayouts,
-  fieldStates,
-  useLabFieldState,
-  type FieldStateName,
-} from './field-states.js';
 
 const lines = ['single', 'multiline'] as const;
 

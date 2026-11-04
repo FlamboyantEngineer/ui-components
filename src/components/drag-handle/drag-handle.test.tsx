@@ -1,8 +1,8 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { userEvent, type UserEvent } from '@testing-library/user-event';
-import { GridList, GridListItem, useDragAndDrop } from '../../primitives/index.js';
+import { type UserEvent, userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { GridList, GridListItem, useDragAndDrop } from '../../primitives/index.js';
 import { armHandleDrag, DragHandle, keepHandleCellDraggable } from './drag-handle.js';
 
 const FRUIT = [

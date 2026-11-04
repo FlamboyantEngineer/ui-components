@@ -1,15 +1,15 @@
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
-import { I18nProvider } from '../../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { I18nProvider } from '../../primitives/index.js';
 import { PropertyScope } from '../property-scope/property-scope.js';
 import {
-  FourSidePropertyStrip,
   type BoxSide,
   type FourSideField,
+  FourSidePropertyStrip,
   type FourSideValues,
 } from './four-side-property-strip.js';
 

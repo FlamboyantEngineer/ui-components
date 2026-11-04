@@ -3,11 +3,11 @@ import { PropertyFilter } from '../../src/components/property-filter/property-fi
 import {
   PropertyCard,
   PropertyGroup,
-  PropertySection,
   type PropertyPanelLabelLayout,
+  PropertySection,
 } from '../../src/components/property-panel/property-panel.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { PropertyFilterHostCases } from './property-filter-host-cases.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { TextSetting } from './property-text-setting.js';
 
 const widths = { narrow: 300, wide: 440 } as const;

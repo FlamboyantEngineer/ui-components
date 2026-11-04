@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { CopyGlyph, StarGlyph } from '../../core/glyphs.js';
 import { MenuButton, openMenu, readMenuIcons } from '../../../test/menu-fixtures.js';
+import { CopyGlyph, StarGlyph } from '../../core/glyphs.js';
 import { resolveActionIcon } from './menu-action-icons.js';
 
 describe('resolveActionIcon', () => {

@@ -1,4 +1,4 @@
-import { FieldFormValue, type FieldErrorSource } from '../field/field.js';
+import { type FieldErrorSource, FieldFormValue } from '../field/field.js';
 import type { DateFieldValue } from './date-values.js';
 
 interface DateFormNames {

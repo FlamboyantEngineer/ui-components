@@ -9,8 +9,8 @@ import {
   removeStep,
   resolveStepDrop,
   resolveStepMove,
-  updateStep,
   type StepListEditorStep,
+  updateStep,
 } from './step-list.js';
 
 const steps: StepListEditorStep[] = [

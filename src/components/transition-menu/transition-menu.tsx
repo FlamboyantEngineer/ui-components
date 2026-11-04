@@ -1,13 +1,13 @@
 'use client';
 
+import { type ReactNode, useState } from 'react';
 import { ChevronDownGlyph } from '../../core/glyphs.js';
-import { useState, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key, Tone, RefProps } from '../../core/props.js';
+import type { BaseProps, Key, RefProps, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Badge } from '../badge/badge.js';
 import { Button } from '../button/button.js';
-import { Menu, MenuPopover, MenuTrigger, type MenuItemEntry } from '../menu/menu.js';
+import { Menu, type MenuItemEntry, MenuPopover, MenuTrigger } from '../menu/menu.js';
 import { StatusLight } from '../status-light/status-light.js';
 import { TransitionDialog, type TransitionDialogTarget } from './transition-dialog.js';
 

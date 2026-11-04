@@ -4,7 +4,7 @@
 // and only leaves are chosen; with `selectableBranches` the first press opens a closed branch and a
 // press on an open one chooses it (specs/SELECT-FIELD.md, UIC-SELECT-FIELD-9.6).
 
-import { useRef, type KeyboardEvent, type MouseEvent, type PointerEvent } from 'react';
+import { type KeyboardEvent, type MouseEvent, type PointerEvent, useRef } from 'react';
 import type { Key } from '../../core/props.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { isHTMLElement } from '../../utils/is-element.js';

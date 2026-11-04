@@ -1,8 +1,8 @@
-import { InfoGlyph, PlusGlyph } from '../../core/glyphs.js';
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { InfoGlyph, PlusGlyph } from '../../core/glyphs.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { IconLabel } from './icon-label.js';
 

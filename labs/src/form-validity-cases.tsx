@@ -5,7 +5,7 @@ import { useState, useSyncExternalStore } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { ColorField } from '../../src/components/color-field/color-field.js';
 import { DateTimeField } from '../../src/components/date-time-field/date-time-field.js';
-import { Form, useFormValidity, type FormValidity } from '../../src/components/form/form.js';
+import { Form, type FormValidity, useFormValidity } from '../../src/components/form/form.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { LabOutput } from './lab-output.js';
 

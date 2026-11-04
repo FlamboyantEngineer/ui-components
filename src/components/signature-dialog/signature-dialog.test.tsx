@@ -3,8 +3,8 @@ import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { UiProvider } from '../../core/provider.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import {
   SignatureDialog,
   type SignatureDialogProps,

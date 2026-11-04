@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
 import { useState } from 'react';
+import { describe, expect, it, vi } from 'vitest';
 import type { Key } from '../../core/props.js';
 import { Table, type TableProps } from './table.js';
 import type { TableGroup } from './table-groups.js';

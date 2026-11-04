@@ -9,8 +9,8 @@ import { Menu } from '../menu/menu.js';
 import { resolveActionIcon } from '../menu/menu-action-icons.js';
 import {
   conditionBuilderHooks as hooks,
-  useConditionBuilder,
   type ConditionMenuAction,
+  useConditionBuilder,
 } from './condition-context.js';
 
 interface ConditionActionsProps {

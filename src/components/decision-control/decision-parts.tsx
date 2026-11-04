@@ -1,23 +1,22 @@
 'use client';
 
-import { toErrorMessage } from '../../utils/to-error-message.js';
-import { useRef, useState, type ReactNode } from 'react';
+import { type ReactNode, useRef, useState } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { ControlSize } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { Button } from '../button/button.js';
-import { runPendingAction } from '../button/button.js';
+import { toErrorMessage } from '../../utils/to-error-message.js';
+import { useLatest } from '../../utils/use-latest.js';
+import { useLifetimeSignal } from '../../utils/use-lifetime-signal.js';
+import { Button, runPendingAction } from '../button/button.js';
 import type { IconSource } from '../icon/icon.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import {
-  SignatureDialog,
   type SignatureDetails,
+  SignatureDialog,
   type SignatureDialogCredentials,
   type SignatureDialogEntry,
 } from '../signature-dialog/signature-dialog.js';
 import { TextField } from '../text-field/text-field.js';
-import { useLifetimeSignal } from '../../utils/use-lifetime-signal.js';
-import { useLatest } from '../../utils/use-latest.js';
 
 /** One decision the reader can make: approve, reject, or a score on a vote. */
 export interface DecisionControlOption {

@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useRef, type DOMAttributes, type PointerEvent } from 'react';
+import { type DOMAttributes, type PointerEvent, useEffect, useRef } from 'react';
 import { useLocale, useMove } from '../../primitives/index.js';
 import { isFreeEditKey } from '../../utils/is-free-edit-key.js';
-import { useLatest } from '../../utils/use-latest.js';
 import { getOwnerWindow } from '../../utils/owner-window.js';
+import { useLatest } from '../../utils/use-latest.js';
 import type { DashboardGridItem } from './dashboard-layout.js';
 
 /** `move` shifts a tile; `resize` changes its span from its bottom end corner. */

@@ -2,13 +2,13 @@
 
 // The parts a custom card header composes: the title that names the card and the whole-card action.
 
-import { useMergedRefs } from '../../utils/use-merged-refs.js';
-import { createContext, useContext, type ReactNode, type RefCallback } from 'react';
+import { createContext, type ReactNode, type RefCallback, useContext } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
-import { useHeadingLevel, type HeadingLevel } from '../section-header/section-header.js';
-import { CardActionTitle, type CardActionOptions } from './card-action.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
+import { type HeadingLevel, useHeadingLevel } from '../section-header/section-header.js';
+import { type CardActionOptions, CardActionTitle } from './card-action.js';
 
 export interface CardTitleProps extends RefProps<HTMLHeadingElement>, Omit<BaseProps, 'id'> {
   /** The title's content, which names the card. */

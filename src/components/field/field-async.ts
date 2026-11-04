@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from 'react';
 import { useLatest } from '../../utils/use-latest.js';
-import { toIssueList, type FieldIssue, type FieldIssues } from './field-validation.js';
+import { type FieldIssue, type FieldIssues, toIssueList } from './field-validation.js';
 
 /** A check that may wait (for a server): it receives the value and a signal that aborts it. */
 export type FieldAsyncValidate<T> = (value: T, signal: AbortSignal) => Promise<FieldIssues>;

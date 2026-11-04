@@ -1,15 +1,15 @@
 'use client';
 
 import {
+  type ComponentProps,
   createContext,
   Fragment,
+  type ReactNode,
   useContext,
   useMemo,
-  type ComponentProps,
-  type ReactNode,
 } from 'react';
-import { CollectionRendererContext, type CollectionRenderer } from '../../primitives/index.js';
 import type { Key } from '../../core/props.js';
+import { type CollectionRenderer, CollectionRendererContext } from '../../primitives/index.js';
 
 type CollectionRootProps = ComponentProps<CollectionRenderer['CollectionRoot']>;
 

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { copyRichText, copyText, type ClipboardWriter } from './clipboard.js';
+import { type ClipboardWriter, copyRichText, copyText } from './clipboard.js';
 
 interface CopyCapture {
   data: Record<string, string>;

@@ -1,12 +1,3 @@
-export {
-  Menu,
-  MenuItem,
-  MenuPopover,
-  MenuSection,
-  MenuSeparator,
-  MenuTrigger,
-  SubmenuTrigger,
-} from './menu.js';
 export type {
   MenuEntry,
   MenuItemEntry,
@@ -23,5 +14,14 @@ export type {
   MenuTriggerProps,
   SubmenuTriggerProps,
 } from './menu.js';
-export { resolveActionIcon } from './menu-action-icons.js';
+export {
+  Menu,
+  MenuItem,
+  MenuPopover,
+  MenuSection,
+  MenuSeparator,
+  MenuTrigger,
+  SubmenuTrigger,
+} from './menu.js';
 export type { MenuActionIcons } from './menu-action-icons.js';
+export { resolveActionIcon } from './menu-action-icons.js';

@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef } from 'react';
 import { describe, expect, it } from 'vitest';
-import { ChatAttachmentList, type ChatAttachmentData } from './chat-attachment.js';
+import { type ChatAttachmentData, ChatAttachmentList } from './chat-attachment.js';
 
 const harbour: ChatAttachmentData = {
   id: 'harbour',

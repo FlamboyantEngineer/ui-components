@@ -2,20 +2,20 @@
 
 import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, PresenceStatus, Size, RefProps } from '../../core/props.js';
+import type { BaseProps, PresenceStatus, RefProps, Size } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
-import { toImageProps } from '../icon/icon.js';
 import {
   Avatar,
-  getDisplayName,
-  splitAvatarIdentity,
   type AvatarBadgeProps,
   type AvatarIdentity,
   type AvatarProps,
+  getDisplayName,
   resolveBadgePlacement,
   resolveStatusLabel,
+  splitAvatarIdentity,
 } from '../avatar/avatar.js';
+import { toImageProps } from '../icon/icon.js';
 
 export type UserIdentitySize = Extract<Size, 'xs' | 'sm' | 'md' | 'lg'>;
 

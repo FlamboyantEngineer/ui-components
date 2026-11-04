@@ -1,8 +1,8 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useUiStrings } from '../../core/provider.js';
 import type { Orientation } from '../../core/props.js';
+import { useUiStrings } from '../../core/provider.js';
 import {
   Field,
   type FieldControlProps,
@@ -12,12 +12,12 @@ import {
 import { NumberEndpoints } from './number-endpoints.js';
 import { numberFieldHooks as hooks } from './number-field-parts.js';
 import {
-  SliderControl,
-  useSliderField,
   type NumberFieldMark,
   type NumberFieldValueLabel,
+  SliderControl,
   type SliderFieldProps,
   type SliderOwnProps,
+  useSliderField,
 } from './number-slider-parts.js';
 import { normalizeSliderValue, type SliderGrid } from './slider-values.js';
 import { keepThumbsApart } from './thumb-spacing.js';

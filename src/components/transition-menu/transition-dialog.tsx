@@ -2,7 +2,7 @@
 
 // The dialog a transition opens before it runs: a confirmation, a required comment, or both.
 
-import { useState, type ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { Modal } from '../modal/modal.js';
 import { TextField } from '../text-field/text-field.js';

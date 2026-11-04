@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { SvgMarkup, parseSvgMarkup, type SvgNode } from '../../src/components/svg-markup/index.js';
+import { parseSvgMarkup, SvgMarkup, type SvgNode } from '../../src/components/svg-markup/index.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { LabSection } from './chrome/index.js';
 

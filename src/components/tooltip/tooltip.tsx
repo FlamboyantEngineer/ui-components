@@ -1,18 +1,18 @@
 'use client';
 
 import { cloneElement, isValidElement, type ReactNode, type RefObject } from 'react';
-import { OverlayArrow, Tooltip as AriaTooltip, TooltipTrigger } from '../../primitives/index.js';
+import { useControllableState } from '../../core/controllable-state.js';
 import type { OpenStateProps } from '../../core/events.js';
 import { splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps, Placement } from '../../core/props.js';
-import { useLayerZIndex } from '../portal/portal.js';
+import { OverlayArrow, Tooltip as AriaTooltip, TooltipTrigger } from '../../primitives/index.js';
 import { TOOLTIP_DELAY, TOOLTIP_OFFSET } from '../../utils/overlay-defaults.js';
-import { tooltipHooks as hooks } from './tooltip-hooks.js';
-import { useInCallerTrigger } from './caller-trigger.js';
-import { useControllableState } from '../../core/controllable-state.js';
 import { useCloseWhenLocked } from '../../utils/use-close-when-locked.js';
 import { PointerEntry } from '../../utils/use-pointer-entry.js';
+import { useLayerZIndex } from '../portal/portal.js';
+import { useInCallerTrigger } from './caller-trigger.js';
 import { TooltipEscape } from './tooltip-escape.js';
+import { tooltipHooks as hooks } from './tooltip-hooks.js';
 
 export type TooltipVariant = 'default' | 'info';
 
@@ -152,7 +152,6 @@ export function Tooltip({
   );
 }
 
-export { AnchoredTooltip } from './anchored-tooltip.js';
 export type {
   AnchoredTooltipProps,
   AnchoredTooltipRelationship,
@@ -160,5 +159,6 @@ export type {
   TooltipRect,
   TooltipVirtualAnchor,
 } from './anchored-tooltip.js';
-export { ManualTooltip, useManualTooltipState } from './manual-tooltip.js';
+export { AnchoredTooltip } from './anchored-tooltip.js';
 export type { ManualTooltipState } from './manual-tooltip.js';
+export { ManualTooltip, useManualTooltipState } from './manual-tooltip.js';

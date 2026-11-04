@@ -1,3 +1,11 @@
+import { type ReactNode, useEffect, useState } from 'react';
+import {
+  type MenuEntry,
+  MenuItem,
+  MenuSection,
+  MenuSeparator,
+} from '../../src/components/menu/menu.js';
+import { Menubar, MenubarMenu } from '../../src/components/menubar/menubar.js';
 import {
   CopyGlyph,
   DeleteGlyph,
@@ -7,17 +15,9 @@ import {
   SaveGlyph,
   UndoGlyph,
 } from '../../src/core/glyphs.js';
-import { useEffect, useState, type ReactNode } from 'react';
 import type { Key, Selection } from '../../src/core/props.js';
 import { UiProvider } from '../../src/core/provider.js';
-import {
-  MenuItem,
-  MenuSection,
-  MenuSeparator,
-  type MenuEntry,
-} from '../../src/components/menu/menu.js';
-import { Menubar, MenubarMenu } from '../../src/components/menubar/menubar.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const sizes = ['xs', 'sm', 'md', 'lg'] as const;
 const orientations = ['horizontal', 'vertical'] as const;

@@ -1,21 +1,21 @@
 import { useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
 import { CommentThread } from '../../src/components/comment-thread/comment-thread.js';
 import { CommentThreadReply } from '../../src/components/comment-thread/index.js';
-import { Button } from '../../src/components/button/button.js';
 import { ScrollRegion } from '../../src/components/scroll-region/scroll-region.js';
-import { TextField } from '../../src/components/text-field/text-field.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import {
   TextDiff,
   type TextDiffLayout,
   type TextDiffLine,
 } from '../../src/components/text-diff/text-diff.js';
+import { TextField } from '../../src/components/text-field/text-field.js';
+import { diffSequences, mapScrollOffset } from '../../src/utils/index.js';
 import type { ScrollAnchor } from '../../src/utils/scroll-offset-map.js';
 import { useSyncedScroll } from '../../src/utils/use-synced-scroll.js';
-import { ShadowRootApp } from './shadow-root-host.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-import { diffSequences, mapScrollOffset } from '../../src/utils/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabHelperCalls } from './lab-helper-calls.js';
+import { ShadowRootApp } from './shadow-root-host.js';
 
 const recipe = [
   'Lemon tart',

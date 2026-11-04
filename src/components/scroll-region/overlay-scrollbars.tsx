@@ -1,26 +1,26 @@
 'use client';
 
-import { measureScale } from '../../utils/element-scale.js';
-import { isFocused } from '../../utils/focus-target.js';
 import {
+  type KeyboardEvent,
+  type PointerEvent,
+  type ReactNode,
+  type RefObject,
   useCallback,
   useLayoutEffect,
   useRef,
   useState,
-  type KeyboardEvent,
-  type PointerEvent,
-  type RefObject,
-  type ReactNode,
 } from 'react';
 import type { Orientation } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';
+import { measureScale } from '../../utils/element-scale.js';
+import { isFocused } from '../../utils/focus-target.js';
 import { useEnterExit } from '../../utils/use-enter-exit.js';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
+import { MIN_THUMB_SIZE, THUMB_ARROW_STEP } from './scroll-region-defaults.js';
 import { scrollRegionHooks as hooks } from './styling-hooks.js';
 import type { OverlayMeasurement } from './use-overlay-metrics.js';
 import { useThumbWheel } from './use-thumb-wheel.js';
-import { MIN_THUMB_SIZE, THUMB_ARROW_STEP } from './scroll-region-defaults.js';
 
 interface OverlayScrollbarsProps {
   /** Tab order of the thumbs; native editable viewports already provide keyboard scrolling. */

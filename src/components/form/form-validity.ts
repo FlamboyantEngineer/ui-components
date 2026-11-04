@@ -4,7 +4,7 @@
 // button, that must not reveal validation, move focus or submit just to ask.
 
 import { createContext, useContext } from 'react';
-import { useWithinBoundary, type Bounded } from '../../utils/form-boundary.js';
+import { type Bounded, useWithinBoundary } from '../../utils/form-boundary.js';
 import type { FieldRegistration } from '../field/field.js';
 import { inDocumentOrder } from './form-problems.js';
 

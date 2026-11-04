@@ -1,18 +1,17 @@
 import { useState } from 'react';
-import { FormulaBar } from '../../src/components/formula-bar/formula-bar.js';
-import { Table } from '../../src/components/table/table.js';
 import { Button } from '../../src/components/button/button.js';
-import type { TableCellRange } from '../../src/components/table/index.js';
-import type { TableColumn } from '../../src/components/table/index.js';
-import { formatCellReference, type CellCoordinates } from '../../src/utils/cell-reference.js';
-import { requireDefined } from './require-defined.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { FormulaBar } from '../../src/components/formula-bar/formula-bar.js';
+import type { TableCellRange, TableColumn } from '../../src/components/table/index.js';
+import { Table } from '../../src/components/table/table.js';
+import { type CellCoordinates, formatCellReference } from '../../src/utils/cell-reference.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import {
   evaluateCell,
   formulaFunctions,
-  tokenizeFormula,
   type SheetCells,
+  tokenizeFormula,
 } from './formula-bar-sheet.js';
+import { requireDefined } from './require-defined.js';
 
 type Letter = 'A' | 'B' | 'C' | 'D';
 

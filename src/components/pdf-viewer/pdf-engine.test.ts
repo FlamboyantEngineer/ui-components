@@ -1,13 +1,13 @@
-import { readFileSync, readdirSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type * as Pdfjs from 'pdfjs-dist';
 import { describe, expect, it } from 'vitest';
 import {
   isTextItem,
-  toDocumentParams,
   type PdfEngine,
   type PdfTextContent,
   type PdfViewport,
+  toDocumentParams,
 } from './pdf-engine.js';
 
 function acceptEngine<V extends PdfViewport, C extends PdfTextContent>(engine: PdfEngine<V, C>) {

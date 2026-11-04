@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Modal } from '../modal/modal.js';
-import { CodeEditor, type CodeDiagnostic, type CodeEditorSurfaceProps } from './code-editor.js';
+import { type CodeDiagnostic, CodeEditor, type CodeEditorSurfaceProps } from './code-editor.js';
 
 const CHARACTER = { width: 10, height: 20 };
 

@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 const longPath =
   '/Garden/Vegetable beds/North side/Raised bed four/Tomatoes/Seed saving/Final notes';

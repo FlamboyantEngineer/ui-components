@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
   breakLine,
+  type CodeEdit,
   deletePair,
   indentSelection,
   insertPair,
   outdentSelection,
   skipCloser,
-  type CodeEdit,
 } from './code-editing.js';
 
 function caret(offset: number) {

@@ -1,15 +1,15 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
-import type { Key } from '../../src/core/props.js';
+import { type FormEvent, useEffect, useRef, useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
 import {
-  FileUpload,
   type FileRejection,
+  FileUpload,
   type FileUploadItem,
   type FileUploadProps,
   type FileUploadVariant,
 } from '../../src/components/file-upload/file-upload.js';
-import { Button } from '../../src/components/button/button.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import type { Key } from '../../src/core/props.js';
 import { formatBytes } from '../../src/utils/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabHelperCalls } from './lab-helper-calls.js';
 
 const variants = ['button', 'dropzone'] as const;

@@ -1,3 +1,13 @@
+import { useState } from 'react';
+import {
+  NavigationRailGroup,
+  NavigationRailItem,
+  NavigationRailSection,
+} from '../../src/components/navigation-rail/index.js';
+import {
+  NavigationRail,
+  type NavigationRailProps,
+} from '../../src/components/navigation-rail/navigation-rail.js';
 import {
   CalendarGlyph,
   EditGlyph,
@@ -7,16 +17,6 @@ import {
   UsersGlyph,
   WarningGlyph,
 } from '../../src/core/glyphs.js';
-import { useState } from 'react';
-import {
-  NavigationRail,
-  type NavigationRailProps,
-} from '../../src/components/navigation-rail/navigation-rail.js';
-import {
-  NavigationRailGroup,
-  NavigationRailItem,
-  NavigationRailSection,
-} from '../../src/components/navigation-rail/index.js';
 
 /** The pages of the sample kitchen workspace, by key. */
 export const kitchenPages = {

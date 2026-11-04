@@ -1,17 +1,17 @@
 'use client';
 
-import { stopConsumedEscape } from '../../utils/consumed-escape.js';
 import {
-  useContext,
   type KeyboardEvent,
   type MouseEvent,
   type ReactNode,
   type RefObject,
+  useContext,
 } from 'react';
-import { ComboBoxStateContext, useIsHidden } from '../../primitives/index.js';
 import type { HookProps } from '../../core/hooks.js';
-import { isElement, isHTMLElement } from '../../utils/is-element.js';
+import { ComboBoxStateContext, useIsHidden } from '../../primitives/index.js';
+import { stopConsumedEscape } from '../../utils/consumed-escape.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
+import { isElement, isHTMLElement } from '../../utils/is-element.js';
 
 interface ComboboxListHeaderProps {
   /** The hook attributes of the header slot. */

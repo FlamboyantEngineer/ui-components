@@ -4,8 +4,8 @@
 // text. Offsets count UTF-16 code units, as JavaScript strings and the editor do.
 
 import type { Node } from 'prosemirror-model';
-import { getPillText } from './composer-schema.js';
 import { toFence } from './composer-markdown.js';
+import { getPillText } from './composer-schema.js';
 
 /** Which way an offset inside a pill's text moves: to the pill's start or its end. */
 export type OffsetBias = -1 | 1;

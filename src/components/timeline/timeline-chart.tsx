@@ -1,31 +1,31 @@
 'use client';
 
 import { useId } from 'react';
-import { useLocale } from '../../primitives/index.js';
-import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { measuredProperty } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
+import { useLocale } from '../../primitives/index.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { ExpandToggle } from '../expand-toggle/expand-toggle.js';
 import {
   resolveScaleCells,
-  timelineScales,
-  toInlineStart,
   type TimelineAxis,
   type TimelineItem,
   type TimelineItemChange,
   type TimelineScale,
+  timelineScales,
+  toInlineStart,
 } from './timeline-geometry.js';
 import { TimelineHeader } from './timeline-header.js';
 import { timelineHooks as hooks } from './timeline-hooks.js';
 import { TimelineItemButton } from './timeline-item.js';
 import type { TimelineItemMenuOptions } from './timeline-item-menu.js';
 import type { TimelineLayout } from './timeline-layout.js';
-import type { VisibleRow } from './timeline-rows.js';
 import {
+  type TimelineRowColumnEntry,
   TimelineRowHeadings,
   TimelineRowValues,
-  type TimelineRowColumnEntry,
 } from './timeline-row-columns.js';
+import type { VisibleRow } from './timeline-rows.js';
 
 /** How the chart selects items, edits them and expands groups. */
 export interface TimelineChartActions {

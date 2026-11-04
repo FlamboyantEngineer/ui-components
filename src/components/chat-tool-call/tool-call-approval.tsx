@@ -2,15 +2,15 @@
 
 // A tool call's approval: the request with its buttons and deny reason form, then the decision.
 
-import { containsFocus } from '../../utils/focus-target.js';
-import { useId, useLayoutEffect, useRef, useState, type FocusEvent } from 'react';
+import { type FocusEvent, useId, useLayoutEffect, useRef, useState } from 'react';
 import { useUiStrings } from '../../core/provider.js';
+import { containsFocus } from '../../utils/focus-target.js';
+import { isNode } from '../../utils/is-element.js';
 import { Button } from '../button/button.js';
 import { Form } from '../form/form.js';
 import { TextField } from '../text-field/text-field.js';
 import { toolCallHooks as hooks } from './tool-call-hooks.js';
 import type { ToolCallApprovalState } from './use-tool-call-approval.js';
-import { isNode } from '../../utils/is-element.js';
 
 /** The reader's decision on an approval: approved once, denied, or always allowed. */
 export type ChatToolCallDecision = 'approved' | 'denied' | 'always';

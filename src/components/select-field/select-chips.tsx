@@ -1,18 +1,17 @@
 'use client';
 
 import { CloseGlyph } from '../../core/glyphs.js';
+import type { Key } from '../../core/props.js';
+import { useUiStrings } from '../../core/provider.js';
 import { Tag, TagGroup, TagList } from '../../primitives/index.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
-import type { Key } from '../../core/props.js';
-import { useUiStrings } from '../../core/provider.js';
-import { FieldPreviousValue } from '../field/field.js';
 import { Button } from '../button/button.js';
-import { Icon } from '../icon/icon.js';
-import { toIconProps } from '../icon/icon.js';
-import type { ChosenSelectOption } from './select-options.js';
+import { FieldPreviousValue } from '../field/field.js';
+import { Icon, toIconProps } from '../icon/icon.js';
 import { selectFieldHooks as hooks } from './select-field-hooks.js';
+import type { ChosenSelectOption } from './select-options.js';
 
 interface SelectChipsProps {
   /** The field's label, which names the group of chips. */

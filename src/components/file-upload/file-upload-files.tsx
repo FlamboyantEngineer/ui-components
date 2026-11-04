@@ -1,20 +1,20 @@
 'use client';
 
+import { type ReactNode, useEffect, useMemo, useRef } from 'react';
 import { CloseGlyph } from '../../core/glyphs.js';
-import { useEffect, useMemo, useRef, type ReactNode } from 'react';
-import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { FallbackImage } from '../../utils/fallback-image.js';
 import { getFileGlyph } from '../../utils/file-glyph.js';
 import { formatBytes } from '../../utils/format-bytes.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { RemovalFocus } from '../../utils/use-removal-focus.js';
 import { Button } from '../button/button.js';
 import { Icon } from '../icon/icon.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import { ProgressBar } from '../progress-bar/progress-bar.js';
-import { FallbackImage } from '../../utils/fallback-image.js';
 
 /** How a listed file differs from a list the owner compares against: `added` by an edit. */
 export type FileUploadChange = 'added';

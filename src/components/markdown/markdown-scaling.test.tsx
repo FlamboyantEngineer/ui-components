@@ -2,8 +2,8 @@ import { render, screen } from '@testing-library/react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { linearBudget, measure } from '../../../test/scaling.js';
-import { closeStreamingInlines } from './markdown-streaming-inlines.js';
 import { Markdown } from './markdown.js';
+import { closeStreamingInlines } from './markdown-streaming-inlines.js';
 import { parseMarkdown } from './parse-markdown.js';
 import { parseStreamingMarkdown } from './parse-streaming-markdown.js';
 

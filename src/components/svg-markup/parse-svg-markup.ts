@@ -1,9 +1,17 @@
 // A DOM-free parser for SVG markup strings. It reads the subset of XML that icon and illustration
 // files use and returns a plain, frozen tree that React can render without innerHTML.
 
-import { skipDroppedElements, tokenizeMarkup, type MarkupOpenToken } from '../../utils/markup.js';
-import { walkTree } from '../../utils/walk-tree.js';
 import { createLruCache } from '../../utils/lru-cache.js';
+import { type MarkupOpenToken, skipDroppedElements, tokenizeMarkup } from '../../utils/markup.js';
+import {
+  closeOpen,
+  createOpenElements,
+  currentOpen,
+  findOpen,
+  type OpenElements,
+  pushOpen,
+} from '../../utils/open-elements.js';
+import { walkTree } from '../../utils/walk-tree.js';
 import {
   filterSvgAttributes,
   isRefusedAnimation,
@@ -11,14 +19,6 @@ import {
   isUnwrappedSvgTag,
   toSvgTag,
 } from './svg-policy.js';
-import {
-  closeOpen,
-  createOpenElements,
-  currentOpen,
-  findOpen,
-  pushOpen,
-  type OpenElements,
-} from '../../utils/open-elements.js';
 
 export interface SvgElementNode {
   readonly type: 'element';

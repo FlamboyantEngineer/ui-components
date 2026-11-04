@@ -1,8 +1,8 @@
 // The document commands that leave the viewer: printing the pages and saving the file.
 
 import { downloadBlob } from '../../utils/download.js';
+import { type PageBitmap, renderPageBitmap } from './page-bitmap.js';
 import type { PdfSource, PdfTextContent, PdfViewport } from './pdf-engine.js';
-import { renderPageBitmap, type PageBitmap } from './page-bitmap.js';
 import type { LoadedPdf } from './use-pdf-document.js';
 
 // Printed pages are drawn at 150 dots per inch: sharp on paper without huge bitmaps.

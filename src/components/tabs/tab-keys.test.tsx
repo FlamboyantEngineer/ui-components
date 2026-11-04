@@ -4,10 +4,10 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   Tab,
   TabList,
-  TabPanel,
-  Tabs,
   type TabListProps,
+  TabPanel,
   type TabProps,
+  Tabs,
   type TabsProps,
 } from './tabs.js';
 

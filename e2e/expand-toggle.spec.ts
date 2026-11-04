@@ -1,4 +1,4 @@
-import { expect, familySelector, test, matrixCell } from './fixtures.js';
+import { expect, familySelector, matrixCell, test } from './fixtures.js';
 
 test.describe('Expand Toggle lab', () => {
   test('UIC-EXPAND-TOGGLE-1.5 gives a leaf the toggle box at every size', async ({ page, lab }) => {

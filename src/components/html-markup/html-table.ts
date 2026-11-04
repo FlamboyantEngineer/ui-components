@@ -5,8 +5,8 @@ import {
   closeOpen,
   currentOpen,
   findOpen,
-  pushOpen,
   type OpenElements,
+  pushOpen,
 } from '../../utils/open-elements.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import type { RawElement, RawNode } from './html-tree.js';

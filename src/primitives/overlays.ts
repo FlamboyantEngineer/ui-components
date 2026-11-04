@@ -3,6 +3,21 @@
 // Dialogs, modals, popovers, sheets, tooltips, previews and toasts.
 
 export {
+  UNSAFE_PortalProvider,
+  useInteractOutside,
+  useModalOverlay,
+  useOverlayPosition,
+  useOverlayTrigger,
+  usePreviewTrigger,
+  useTooltipTrigger,
+} from 'react-aria';
+export type {
+  Placement,
+  QueuedToast,
+  ToastState,
+  TooltipTriggerState,
+} from 'react-aria-components';
+export {
   Dialog,
   DialogContext,
   DialogTrigger,
@@ -29,18 +44,3 @@ export {
   UNSTABLE_ToastStateContext,
 } from 'react-aria-components';
 export { useOverlayTriggerState } from 'react-stately';
-export type {
-  Placement,
-  QueuedToast,
-  ToastState,
-  TooltipTriggerState,
-} from 'react-aria-components';
-export {
-  UNSAFE_PortalProvider,
-  useInteractOutside,
-  useModalOverlay,
-  useOverlayPosition,
-  useOverlayTrigger,
-  usePreviewTrigger,
-  useTooltipTrigger,
-} from 'react-aria';

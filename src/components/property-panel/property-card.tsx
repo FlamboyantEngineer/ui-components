@@ -1,30 +1,30 @@
 'use client';
 
-import { DisclosureContentScope } from '../disclosure/disclosure.js';
 import type { ReactNode } from 'react';
+import { createHooks } from '../../core/hooks.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
+import { Glyph } from '../../core/provider.js';
 import {
   Button as AriaButton,
   Disclosure,
   DisclosureGroupStateContext,
   DisclosurePanel,
 } from '../../primitives/index.js';
-import { FieldScopeContext, useRevealScope } from '../field/field.js';
-import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, RefProps } from '../../core/props.js';
-import { Glyph } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { DisclosureContentScope } from '../disclosure/disclosure.js';
 import { useExpandGlyph } from '../expand-toggle/expand-toggle.js';
+import { FieldScopeContext, useRevealScope } from '../field/field.js';
 import {
-  PropertyScopeContext,
   matchesPropertyScope,
+  PropertyScopeContext,
   usePropertyScopeLevel,
   useReportPropertyTally,
 } from '../property-scope/property-scope.js';
 import { TextMatch } from '../text-match/text-match.js';
 import {
   OverrideMark,
-  useScopedExpansion,
   type PropertyExpansionProps,
+  useScopedExpansion,
 } from './property-disclosure.js';
 
 export interface PropertyCardProps

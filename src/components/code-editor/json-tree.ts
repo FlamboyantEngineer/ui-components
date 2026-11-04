@@ -2,7 +2,7 @@
 // parse yet: the path of the value it is in and whether it is at a key or a value.
 
 import { requireDefined } from '../../utils/require-defined.js';
-import { placeJsonTokens, type PlacedJsonToken } from './json-text.js';
+import { type PlacedJsonToken, placeJsonTokens } from './json-text.js';
 
 /** A JSON value and where its text is. */
 export type JsonNode =

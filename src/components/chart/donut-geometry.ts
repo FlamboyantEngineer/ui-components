@@ -1,9 +1,9 @@
 // The slices of a donut chart, from its values and size (specs/CHART.md).
 
-import { roundCoordinate } from './chart-layout.js';
 import type { Key } from '../../core/props.js';
-import { toValueIdentity } from './chart-identity.js';
 import { resolveAmountShares } from '../../utils/resolve-amount-shares.js';
+import { toValueIdentity } from './chart-identity.js';
+import { roundCoordinate } from './chart-layout.js';
 
 /** A drawn segment: its position among the chart's segments and its value. */
 interface DonutGeometryValue {

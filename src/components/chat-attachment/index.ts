@@ -1,4 +1,3 @@
-export { ChatAttachment, ChatAttachmentList } from './chat-attachment.js';
 export type {
   ChatAttachmentData,
   ChatAttachmentFocusTarget,
@@ -7,3 +6,4 @@ export type {
   ChatAttachmentProps,
   ChatAttachmentStatus,
 } from './chat-attachment.js';
+export { ChatAttachment, ChatAttachmentList } from './chat-attachment.js';

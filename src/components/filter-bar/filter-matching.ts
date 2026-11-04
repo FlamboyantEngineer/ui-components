@@ -1,15 +1,15 @@
 // Tests records against filter conditions, so a host filters its own data the way the bar reads.
 
+import { toLocalDay } from '../../utils/local-day.js';
 import {
+  type FilterCondition,
+  type FilterField,
+  type FilterValue,
   getFilterValueKind,
   isDateRange,
   isFilterConditionComplete,
   isNumberRange,
-  type FilterCondition,
-  type FilterField,
-  type FilterValue,
 } from './filter-model.js';
-import { toLocalDay } from '../../utils/local-day.js';
 
 /** A record's value for one field: a scalar, a date, a list of values or nothing. */
 export type FilterRecordValue =

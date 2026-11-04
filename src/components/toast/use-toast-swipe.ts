@@ -3,11 +3,11 @@
 // Swiping a toast away: the pointer drags it along one direction, and a release past the threshold
 // dismisses it.
 
-import { measureScale, type ElementScale } from '../../utils/element-scale.js';
 import { useState } from 'react';
+import { measuredProperty } from '../../core/hooks.js';
+import { type ElementScale, measureScale } from '../../utils/element-scale.js';
 import { capturePointer } from '../../utils/pointer-drag.js';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
-import { measuredProperty } from '../../core/hooks.js';
 
 /**
  * The direction a toast is swiped to dismiss it: `start` and `end` follow the reading direction,

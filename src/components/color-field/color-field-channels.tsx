@@ -1,6 +1,7 @@
 'use client';
 
 import { useContext, useRef } from 'react';
+import { useUiStrings } from '../../core/provider.js';
 import {
   ColorField as AriaColorField,
   ColorFieldContext,
@@ -9,18 +10,17 @@ import {
   Label,
   useLocale,
 } from '../../primitives/index.js';
-import { useUiStrings } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';
 import { useWheelSteps } from '../../utils/use-wheel-steps.js';
 import { SegmentedChoice } from '../segmented-choice/segmented-choice.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
+import { colorFieldHooks as hooks } from './color-field-hooks.js';
 import {
-  describeFormatInputs,
   type ColorFieldFormat,
   type ColorFormatChannel,
   type ColorFormatSpace,
+  describeFormatInputs,
 } from './color-values.js';
-import { colorFieldHooks as hooks } from './color-field-hooks.js';
 
 interface ColorFormatChoiceProps {
   format: ColorFieldFormat;

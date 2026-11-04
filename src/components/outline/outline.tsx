@@ -1,18 +1,19 @@
 'use client';
 
-import { useId, useMemo, useRef, type MouseEvent, type ReactNode, type RefObject } from 'react';
+import { type MouseEvent, type ReactNode, type RefObject, useId, useMemo, useRef } from 'react';
 import type { AriaLabellingProps, ExpansionProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { isEmptyNode } from '../../utils/is-empty-node.js';
-import { getElementByIdFrom } from '../../utils/owner-window.js';
 import { containsComposed } from '../../utils/composed-focus.js';
-import { scrollToStartWithin } from '../../utils/scroll-geometry.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import {
   formatOutlineNumber,
   type FormatOutlineNumberOptions,
 } from '../../utils/outline-number.js';
+import { getElementByIdFrom } from '../../utils/owner-window.js';
+import { scrollToStartWithin } from '../../utils/scroll-geometry.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { EmptyState } from '../empty-state/empty-state.js';
 import { ExpandToggle } from '../expand-toggle/expand-toggle.js';
 import { useScrollSpy } from '../scroll-region/scroll-region.js';
@@ -24,7 +25,6 @@ import {
 } from './outline-tree.js';
 import { useOutlineExpansion } from './use-outline-expansion.js';
 import { useOutlineFocusRecovery } from './use-outline-focus.js';
-import { useMergedRefs } from '../../utils/use-merged-refs.js';
 
 export type { OutlineHeading } from './outline-tree.js';
 

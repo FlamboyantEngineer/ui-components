@@ -1,8 +1,8 @@
 // A completion source opened by trigger characters, such as `@` for people and `#` for references.
 
+import { findLineStart } from '../../utils/find-line-start.js';
 import type { Completion } from './completion-match.js';
 import type { CompletionAnswer, CompletionSource } from './use-completions.js';
-import { findLineStart } from '../../utils/find-line-start.js';
 
 /** A character that opens completions for the query typed after it. */
 export interface CompletionTrigger {

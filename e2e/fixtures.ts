@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test as base, type Locator, type Page } from '@playwright/test';
+import { expect, type Locator, type Page, test as base } from '@playwright/test';
 import {
   acceptedEverywhere,
   acceptedIncomplete,

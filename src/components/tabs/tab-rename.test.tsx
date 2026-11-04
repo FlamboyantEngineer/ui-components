@@ -5,7 +5,7 @@ import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { pressComposingKeys } from '../../../test/composition.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import type { Key } from '../../core/props.js';
-import { Tab, TabList, TabPanel, Tabs, type TabListProps } from './tabs.js';
+import { Tab, TabList, type TabListProps, TabPanel, Tabs } from './tabs.js';
 
 interface Fruit {
   id: string;

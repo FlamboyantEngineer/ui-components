@@ -6,13 +6,12 @@ import {
   StarGlyph,
   UndoGlyph,
 } from '../../core/glyphs.js';
-import { joinMenuGroups } from '../menu/menu-groups.js';
 // The actions a view switcher offers for a view, as menu entries for the actions menu and each
 // tab's own menu.
-
 import type { Key } from '../../core/props.js';
 import type { UiStrings } from '../../core/strings.js';
 import type { MenuEntry, MenuItemEntry } from '../menu/menu.js';
+import { joinMenuGroups } from '../menu/menu-groups.js';
 import type { ViewDialog, ViewDialogRequest } from './view-dialogs.js';
 
 /** The callbacks of the actions a view switcher's owner takes. */

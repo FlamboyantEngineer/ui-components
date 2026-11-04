@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { Link } from '../../src/components/link/link.js';
 import { Button } from '../../src/components/button/button.js';
 import {
   HoverCard,
-  HoverCardTrigger,
   type HoverCardProps,
+  HoverCardTrigger,
   type HoverCardTriggerProps,
 } from '../../src/components/hover-card/hover-card.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { Link } from '../../src/components/link/link.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { HoverCardCoverageSections } from './hover-card-coverage-cases.js';
 
 interface City {

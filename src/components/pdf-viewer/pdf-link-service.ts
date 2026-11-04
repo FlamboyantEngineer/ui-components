@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import type { PdfLinkService } from './pdf-engine.js';
 import { mergeSafeRel } from '../../utils/merge-safe-rel.js';
+import type { PdfLinkService } from './pdf-engine.js';
 
 interface LinkServiceActions {
   /** Sends the reader to a destination of the document. */

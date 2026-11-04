@@ -1,13 +1,13 @@
-import { LinkGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import { CommentComposer } from '../../src/components/comment-composer/comment-composer.js';
 import { CommentThread } from '../../src/components/comment-thread/comment-thread.js';
 import { CommentThreadReply } from '../../src/components/comment-thread/index.js';
 import { ReactionBar, type ReactionEntry } from '../../src/components/reaction-bar/reaction-bar.js';
 import { Switch } from '../../src/components/switch/switch.js';
-import { CommentThreadZoneCases } from './comment-thread-zone-cases.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LinkGlyph } from '../../src/core/glyphs.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { MentionThread } from './comment-thread-mentions.js';
+import { CommentThreadZoneCases } from './comment-thread-zone-cases.js';
 import { samplePicture } from './people-samples.js';
 
 const maria = { name: 'Maria Santos', colorKey: 'maria' };

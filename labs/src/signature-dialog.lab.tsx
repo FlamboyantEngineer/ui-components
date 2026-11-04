@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
-  SignatureDialog,
   type SignatureDetails,
+  SignatureDialog,
   type SignatureDialogCredentials,
   type SignatureDialogEntry,
 } from '../../src/components/signature-dialog/signature-dialog.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { SignatureDialogSizeCases } from './signature-dialog-size-cases.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const meaningSets = {
   one: [{ id: 'approve', label: 'Approved' }],

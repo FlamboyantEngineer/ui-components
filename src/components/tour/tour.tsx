@@ -1,17 +1,17 @@
 'use client';
 
-import { useMemo, useState, type ReactNode } from 'react';
+import { type ReactNode, useMemo, useState } from 'react';
 import type { OpenStateProps } from '../../core/events.js';
 import type { BaseProps, Placement, RefProps } from '../../core/props.js';
 import { usePersistentState } from '../../core/provider.js';
+import { clamp } from '../../utils/clamp.js';
 import { booleanCodec } from '../../utils/json-codec.js';
+import { useFollowAnchor } from '../../utils/use-follow-anchor.js';
 import { PopoverPanel } from '../popover/popover.js';
+import { tourHooks as hooks } from './tour-hooks.js';
 import { TourPanel } from './tour-panel.js';
 import { TourSpotlight } from './tour-spotlight.js';
-import { useTourTarget, type TourTarget } from './use-tour-target.js';
-import { clamp } from '../../utils/clamp.js';
-import { useFollowAnchor } from '../../utils/use-follow-anchor.js';
-import { tourHooks as hooks } from './tour-hooks.js';
+import { type TourTarget, useTourTarget } from './use-tour-target.js';
 
 export type { TourTarget } from './use-tour-target.js';
 

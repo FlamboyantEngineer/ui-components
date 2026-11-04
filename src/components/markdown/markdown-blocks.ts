@@ -1,8 +1,7 @@
 // Leaf block readers of the Markdown parser: code, headings, breaks, tables and paragraphs with
 // their link reference definitions (specs/MARKDOWN.md).
 
-import type { LinkTarget } from './markdown-inline-syntax.js';
-import { normalizeLabel, unescapeMarkdown } from './markdown-inline-syntax.js';
+import { type LinkTarget, normalizeLabel, unescapeMarkdown } from './markdown-inline-syntax.js';
 import {
   decodeBlockText,
   indentOf,

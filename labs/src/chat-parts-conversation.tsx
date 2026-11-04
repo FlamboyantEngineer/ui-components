@@ -4,10 +4,10 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
-  ChatParts,
   type ChatMessageData,
   type ChatPart,
   type ChatParticipant,
+  ChatParts,
   type ChatToolCallHandlers,
   type ChatToolCallPart,
   type ChatToolRenderer,

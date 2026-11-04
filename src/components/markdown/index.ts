@@ -1,7 +1,5 @@
-export { Markdown } from './markdown.js';
 export type { MarkdownProps } from './markdown.js';
-export type { MarkdownNodePlace, MarkdownRenderNode } from './markdown-place.js';
-export { parseMarkdown } from './parse-markdown.js';
+export { Markdown } from './markdown.js';
 export { listMarkdownHeadings } from './markdown-headings.js';
 export type {
   MarkdownAlign,
@@ -24,3 +22,5 @@ export type {
   MarkdownText,
   MarkdownThematicBreak,
 } from './markdown-nodes.js';
+export type { MarkdownNodePlace, MarkdownRenderNode } from './markdown-place.js';
+export { parseMarkdown } from './parse-markdown.js';

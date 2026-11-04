@@ -1,21 +1,20 @@
-import { ListTaskGlyph, QuoteGlyph } from '../../src/core/glyphs.js';
 // The Chat lab's host controls: Quote in an assistant chat, the composer's row of controls (the "+"
 // menu, an approval select and a Plan toggle at the start, a selection toggle and the model picker
 // at the end), Ctrl+Enter, blank messages carried by selected context or files, and sending the
 // host must accept.
-
 import { useState } from 'react';
 import { Chat } from '../../src/components/chat/index.js';
 import type { ChatAttachmentData } from '../../src/components/chat-attachment/index.js';
+import { ChatModelPicker } from '../../src/components/chat-model-picker/index.js';
 import type { ChatMessageData, ChatTextToken } from '../../src/components/chat-parts/index.js';
 import { Checkbox } from '../../src/components/checkbox/checkbox.js';
-import { ChatModelPicker } from '../../src/components/chat-model-picker/index.js';
 import { Stack } from '../../src/components/layout/layout.js';
 import {
   MessageComposerMenuButton,
   MessageComposerSelect,
   MessageComposerToggle,
 } from '../../src/components/message-composer/index.js';
+import { ListTaskGlyph, QuoteGlyph } from '../../src/core/glyphs.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { useLabModelChoice } from './chat-assistant-host.js';
 import {

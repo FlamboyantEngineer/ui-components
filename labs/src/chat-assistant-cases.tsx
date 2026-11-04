@@ -5,14 +5,14 @@ import { Chat } from '../../src/components/chat/index.js';
 import { useChatController } from '../../src/components/chat-controller/index.js';
 import { ChatModelPicker } from '../../src/components/chat-model-picker/index.js';
 import type { ChatMessageData } from '../../src/components/chat-parts/index.js';
-import { Stack } from '../../src/components/layout/layout.js';
 import { Choice, ChoiceGroup } from '../../src/components/choice-group/choice-group.js';
+import { Stack } from '../../src/components/layout/layout.js';
 import {
+  type AgentBehaviour,
   agentBehaviours,
   agents,
   fakeUpload,
   withModelNote,
-  type AgentBehaviour,
 } from './chat-agent.js';
 import { createReplyHandlers, useCallbackLog, useLabModelChoice } from './chat-assistant-host.js';
 import { forecastRenderer, renderLabPart } from './chat-parts-samples.js';

@@ -2,37 +2,37 @@
 
 import {
   createContext,
-  useContext,
-  useId,
   type CSSProperties,
   type RefCallback,
   type RefObject,
+  useContext,
+  useId,
 } from 'react';
 import { measuredProperty, splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps, ContainerProps } from '../../core/props.js';
 import type { ScrollOverviewLayer, ScrollOverviewMarker } from '../../utils/scroll-overview.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import {
-  resolveContainment,
-  resolveGridLayout,
   type GridColumns,
   type GridMinColumnWidth,
   type LayoutAlign,
   type LayoutContainmentProps,
   type LayoutSpace,
+  resolveContainment,
+  resolveGridLayout,
 } from '../layout/layout.js';
 import { OverlayScrollbars } from './overlay-scrollbars.js';
+import { DEFAULT_SCROLLBAR_HIDE_DELAY } from './scroll-region-defaults.js';
 import { scrollRegionHooks as hooks } from './styling-hooks.js';
-import { useScrollActivity, type ScrollRegionScrollbarVisibility } from './use-scroll-activity.js';
-import { useScrollEdges, type ScrollEdges } from './use-scroll-edges.js';
 import {
-  useOverlayMetrics,
   type HeaderRegistration,
   type OverlayMetrics,
+  useOverlayMetrics,
 } from './use-overlay-metrics.js';
-import { useScrollOverview, type ScrollOverviewPaint } from './use-scroll-overview.js';
+import { type ScrollRegionScrollbarVisibility, useScrollActivity } from './use-scroll-activity.js';
+import { type ScrollEdges, useScrollEdges } from './use-scroll-edges.js';
+import { type ScrollOverviewPaint, useScrollOverview } from './use-scroll-overview.js';
 import { useSharedViewportObserver } from './use-shared-viewport-observer.js';
-import { DEFAULT_SCROLLBAR_HIDE_DELAY } from './scroll-region-defaults.js';
 
 export type ScrollRegionAxis = 'x' | 'y' | 'both' | 'none';
 export type ScrollRegionOverscroll = 'contain' | 'auto';
@@ -322,14 +322,12 @@ export function ScrollRegion({
   );
 }
 
-export { useScrollSpy } from './use-scroll-spy.js';
-
 export { OverlayScrollbars } from './overlay-scrollbars.js';
-export { useOverlayMetrics } from './use-overlay-metrics.js';
-export { useSharedViewportObserver } from './use-shared-viewport-observer.js';
-
 export {
   DEFAULT_SCROLLBAR_HIDE_DELAY,
   MIN_THUMB_SIZE,
   THUMB_ARROW_STEP,
 } from './scroll-region-defaults.js';
+export { useOverlayMetrics } from './use-overlay-metrics.js';
+export { useScrollSpy } from './use-scroll-spy.js';
+export { useSharedViewportObserver } from './use-shared-viewport-observer.js';

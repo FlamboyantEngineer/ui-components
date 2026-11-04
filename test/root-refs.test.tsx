@@ -1,16 +1,23 @@
 import { render, waitFor } from '@testing-library/react';
 import type { ReactElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { requireDefined } from '../src/utils/require-defined.js';
-import { assistantPeople, getNow, helper } from './chat-fixtures.js';
-import { nameQuestion } from './chat-question-fixtures.js';
-import { toolCallBase } from './chat-tool-call-fixtures.js';
-import { ChatAttachment } from '../src/components/chat-attachment/chat-attachment.js';
-import { ChatAttachmentList } from '../src/components/chat-attachment/chat-attachment-list.js';
+import { ActionRow } from '../src/components/action-row/action-row.js';
+import { AnnotationLayer, AnnotationMargin } from '../src/components/annotation-layer/index.js';
+import { AppFrame } from '../src/components/app-frame/app-frame.js';
+import { AppFrameBand } from '../src/components/app-frame/app-frame-band.js';
+import { Avatar } from '../src/components/avatar/avatar.js';
+import { BooleanField } from '../src/components/boolean-field/boolean-field.js';
+import { Button } from '../src/components/button/button.js';
+import { Card, CardGrid, CardGridItem, CardTitle } from '../src/components/card/index.js';
+import { CharacterGrid } from '../src/components/character-grid/character-grid.js';
+import { Chat } from '../src/components/chat/chat.js';
+import { ChatHeader } from '../src/components/chat/chat-header.js';
 import { ChatPlan } from '../src/components/chat-activity/chat-plan.js';
 import { ChatReasoning } from '../src/components/chat-activity/chat-reasoning.js';
 import { ChatStatusLine } from '../src/components/chat-activity/chat-status-line.js';
 import { ChatSteps } from '../src/components/chat-activity/chat-steps.js';
+import { ChatAttachment } from '../src/components/chat-attachment/chat-attachment.js';
+import { ChatAttachmentList } from '../src/components/chat-attachment/chat-attachment-list.js';
 import { ChatList } from '../src/components/chat-list/chat-list.js';
 import { ChatMessageActions } from '../src/components/chat-message-actions/chat-message-actions.js';
 import { ChatModelPicker } from '../src/components/chat-model-picker/chat-model-picker.js';
@@ -26,38 +33,20 @@ import { ChatReadReceipts } from '../src/components/chat-transcript/chat-read-re
 import { ChatTranscript } from '../src/components/chat-transcript/chat-transcript.js';
 import { ChatTypingIndicator } from '../src/components/chat-transcript/chat-typing-indicator.js';
 import { ChatUnreadDivider } from '../src/components/chat-transcript/chat-unread-divider.js';
-import { BooleanField } from '../src/components/boolean-field/boolean-field.js';
 import { Choice, ChoiceGroup } from '../src/components/choice-group/index.js';
+import { CodeBlock } from '../src/components/code-block/code-block.js';
 import { CodeEditor } from '../src/components/code-editor/code-editor.js';
 import { ColorField } from '../src/components/color-field/color-field.js';
-import { DateTimeField } from '../src/components/date-time-field/date-time-field.js';
-import { FileField } from '../src/components/file-field/file-field.js';
-import { NumberField } from '../src/components/number-field/number-field.js';
-import { PinInput } from '../src/components/pin-input/pin-input.js';
-import { RelativeDateField } from '../src/components/relative-date-field/relative-date-field.js';
-import { RichTextEditor } from '../src/components/rich-text-editor/rich-text-editor.js';
-import { SelectField } from '../src/components/select-field/select-field.js';
-import { SignaturePad } from '../src/components/signature-pad/signature-pad.js';
-import { TagsInput } from '../src/components/tags-input/tags-input.js';
-import { TextField } from '../src/components/text-field/text-field.js';
 import {
   ColorSwatchPicker,
   ColorSwatchPickerItem,
 } from '../src/components/color-swatch/color-swatch-picker.js';
-import { FieldPreviousValue } from '../src/components/field/field-previous-value.js';
-import { FileUpload } from '../src/components/file-upload/file-upload.js';
-import { GridSizePicker } from '../src/components/grid-size-picker/grid-size-picker.js';
-import { PeoplePicker } from '../src/components/people-picker/people-picker.js';
-import { QueryField } from '../src/components/query-field/query-field.js';
-import { SearchField } from '../src/components/search-field/search-field.js';
-import { EmojiPickerSearch } from '../src/components/emoji-picker/index.js';
-import { ActionRow } from '../src/components/action-row/action-row.js';
-import { AnnotationLayer, AnnotationMargin } from '../src/components/annotation-layer/index.js';
-import { AppFrameBand } from '../src/components/app-frame/app-frame-band.js';
-import { Card, CardGrid, CardGridItem, CardTitle } from '../src/components/card/index.js';
-import { CharacterGrid } from '../src/components/character-grid/character-grid.js';
-import { CodeBlock } from '../src/components/code-block/code-block.js';
+import { CommandPalette } from '../src/components/command-palette/command-palette.js';
+import { CompletionList } from '../src/components/completion-list/completion-list.js';
 import { ConditionBuilder } from '../src/components/condition-builder/condition-builder.js';
+import { ContextMenu } from '../src/components/context-menu/context-menu.js';
+import { createMenuController } from '../src/components/context-menu/menu-controller.js';
+import { DateTimeField } from '../src/components/date-time-field/date-time-field.js';
 import { DecisionControl } from '../src/components/decision-control/decision-control.js';
 import { DescriptionList, DescriptionRow } from '../src/components/description-list/index.js';
 import { DiagramPaletteItem } from '../src/components/diagram-canvas/index.js';
@@ -70,10 +59,24 @@ import {
 import { DisplayOptions } from '../src/components/display-options/display-options.js';
 import { DockPanel, DockPanelPane } from '../src/components/dock-panel/index.js';
 import { DragHandle } from '../src/components/drag-handle/drag-handle.js';
+import { Drawer, DrawerTrigger } from '../src/components/drawer/drawer.js';
+import {
+  EmojiPicker,
+  EmojiPickerBody,
+  EmojiPickerPreview,
+  EmojiPickerSearch,
+  EmojiPickerSkinTones,
+} from '../src/components/emoji-picker/index.js';
 import { FacetList } from '../src/components/facet-list/facet-list.js';
+import { FieldPreviousValue } from '../src/components/field/field-previous-value.js';
+import { FileField } from '../src/components/file-field/file-field.js';
+import { FileUpload } from '../src/components/file-upload/file-upload.js';
 import { FilterBar } from '../src/components/filter-bar/filter-bar.js';
 import { FindBar } from '../src/components/find-bar/find-bar.js';
 import { FormulaBar } from '../src/components/formula-bar/formula-bar.js';
+import { FourSidePropertyStrip } from '../src/components/four-side-property-strip/four-side-property-strip.js';
+import { GridSizePicker } from '../src/components/grid-size-picker/grid-size-picker.js';
+import { HoverCard, HoverCardTrigger } from '../src/components/hover-card/hover-card.js';
 import { HtmlMarkup } from '../src/components/html-markup/html-markup.js';
 import { InlineEdit } from '../src/components/inline-edit/inline-edit.js';
 import { InlineTextDiff } from '../src/components/inline-text-diff/inline-text-diff.js';
@@ -87,6 +90,7 @@ import { LoadingCard, LoadingRegion } from '../src/components/loading-overlay/in
 import { MappingTable } from '../src/components/mapping-table/mapping-table.js';
 import { Markdown } from '../src/components/markdown/markdown.js';
 import { MediaViewer } from '../src/components/media-viewer/media-viewer.js';
+import { Menu, MenuItem, MenuSection, MenuSeparator } from '../src/components/menu/index.js';
 import {
   MessageComposer,
   MessageComposerAttachButton,
@@ -97,18 +101,20 @@ import {
   MessageComposerToggle,
 } from '../src/components/message-composer/index.js';
 import { MetaLine } from '../src/components/meta-line/meta-line.js';
-import { UserCard } from '../src/components/user-card/user-card.js';
-import { AppFrame } from '../src/components/app-frame/app-frame.js';
-import { Avatar } from '../src/components/avatar/avatar.js';
-import { CompletionList } from '../src/components/completion-list/completion-list.js';
-import { FourSidePropertyStrip } from '../src/components/four-side-property-strip/four-side-property-strip.js';
+import { Modal } from '../src/components/modal/modal.js';
 import {
   NavigationRail,
   NavigationRailGroup,
   NavigationRailItem,
   NavigationRailSection,
 } from '../src/components/navigation-rail/index.js';
+import { NotificationCenter } from '../src/components/notification-center/notification-center.js';
+import { NotificationList } from '../src/components/notification-center/notification-list.js';
+import { NumberField } from '../src/components/number-field/number-field.js';
 import { Pagination } from '../src/components/pagination/pagination.js';
+import { PeoplePicker } from '../src/components/people-picker/people-picker.js';
+import { PinInput } from '../src/components/pin-input/pin-input.js';
+import { Popover, PopoverTrigger } from '../src/components/popover/popover.js';
 import { PortalHost } from '../src/components/portal/portal.js';
 import { ProblemList } from '../src/components/problem-list/problem-list.js';
 import { PropertyFilter } from '../src/components/property-filter/property-filter.js';
@@ -124,48 +130,42 @@ import {
 } from '../src/components/property-panel/index.js';
 import { PropertyScope } from '../src/components/property-scope/property-scope.js';
 import { ProseTable } from '../src/components/prose-table/prose-table.js';
+import { QueryField } from '../src/components/query-field/query-field.js';
 import { RecordHeader } from '../src/components/record-header/record-header.js';
 import { RecordLabel } from '../src/components/record-label/record-label.js';
+import { RelativeDateField } from '../src/components/relative-date-field/relative-date-field.js';
 import { RelativeTime } from '../src/components/relative-time/relative-time.js';
 import { FormatToolbar, InsertMenuButton } from '../src/components/rich-text-editor/index.js';
+import { RichTextEditor } from '../src/components/rich-text-editor/rich-text-editor.js';
 import { SaveStatus } from '../src/components/save-status/save-status.js';
+import { SearchField } from '../src/components/search-field/search-field.js';
 import { Section, SectionHeader } from '../src/components/section-header/section-header.js';
+import { SelectField } from '../src/components/select-field/select-field.js';
 import { KeyHints } from '../src/components/shortcut/shortcut.js';
 import { SignatureDialog } from '../src/components/signature-dialog/signature-dialog.js';
+import { SignaturePad } from '../src/components/signature-pad/signature-pad.js';
 import { StatTile } from '../src/components/stat-tile/stat-tile.js';
 import { StepListEditor } from '../src/components/step-list-editor/step-list-editor.js';
 import { SvgMarkup } from '../src/components/svg-markup/svg-markup.js';
+import { TagsInput } from '../src/components/tags-input/tags-input.js';
+import { TextField } from '../src/components/text-field/text-field.js';
 import { TimelineItemEditor } from '../src/components/timeline/timeline-item-editor.js';
+import { createToastQueue, ToastList, ToastRegion } from '../src/components/toast/toast.js';
 import { ToolbarScroller } from '../src/components/toolbar-scroller/toolbar-scroller.js';
+import { Tour } from '../src/components/tour/tour.js';
 import { TransferList } from '../src/components/transfer-list/transfer-list.js';
+import { TransitionMenu } from '../src/components/transition-menu/transition-menu.js';
+import { UserCard } from '../src/components/user-card/user-card.js';
+import { UserCardTrigger } from '../src/components/user-card-trigger/user-card-trigger.js';
 import { ViewSwitcher } from '../src/components/view-switcher/view-switcher.js';
 import { VisuallyHidden } from '../src/components/visually-hidden/visually-hidden.js';
 import { Wizard } from '../src/components/wizard/wizard.js';
 import { ZoomControl } from '../src/components/zoom-control/zoom-control.js';
-import { Button } from '../src/components/button/button.js';
 import { PlusGlyph } from '../src/core/glyphs.js';
-import { CommandPalette } from '../src/components/command-palette/command-palette.js';
-import { ContextMenu } from '../src/components/context-menu/context-menu.js';
-import { Drawer, DrawerTrigger } from '../src/components/drawer/drawer.js';
-import {
-  EmojiPicker,
-  EmojiPickerBody,
-  EmojiPickerPreview,
-  EmojiPickerSkinTones,
-} from '../src/components/emoji-picker/index.js';
-import { HoverCard, HoverCardTrigger } from '../src/components/hover-card/hover-card.js';
-import { Menu, MenuItem, MenuSection, MenuSeparator } from '../src/components/menu/index.js';
-import { createMenuController } from '../src/components/context-menu/menu-controller.js';
-import { Modal } from '../src/components/modal/modal.js';
-import { NotificationCenter } from '../src/components/notification-center/notification-center.js';
-import { NotificationList } from '../src/components/notification-center/notification-list.js';
-import { Popover, PopoverTrigger } from '../src/components/popover/popover.js';
-import { ToastList, ToastRegion, createToastQueue } from '../src/components/toast/toast.js';
-import { Tour } from '../src/components/tour/tour.js';
-import { TransitionMenu } from '../src/components/transition-menu/transition-menu.js';
-import { UserCardTrigger } from '../src/components/user-card-trigger/user-card-trigger.js';
-import { Chat } from '../src/components/chat/chat.js';
-import { ChatHeader } from '../src/components/chat/chat-header.js';
+import { requireDefined } from '../src/utils/require-defined.js';
+import { assistantPeople, getNow, helper } from './chat-fixtures.js';
+import { nameQuestion } from './chat-question-fixtures.js';
+import { toolCallBase } from './chat-tool-call-fixtures.js';
 
 /** Hands the element a ref receives to `onElement`; a callback fits every root's element type. */
 type RefTo = (element: Element | null) => void;

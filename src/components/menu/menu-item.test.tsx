@@ -1,22 +1,22 @@
-import { PlusGlyph } from '../../core/glyphs.js';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { MenuButton, actionKeys, fruitEntries, openMenu } from '../../../test/menu-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { actionKeys, fruitEntries, MenuButton, openMenu } from '../../../test/menu-fixtures.js';
+import { PlusGlyph } from '../../core/glyphs.js';
 import { UiProvider } from '../../core/provider.js';
 import { Badge } from '../badge/badge.js';
 import { Button } from '../button/button.js';
 import {
   Menu,
   MenuItem,
+  type MenuItemRenderState,
   MenuPopover,
   MenuSection,
   MenuSeparator,
   MenuTrigger,
   SubmenuTrigger,
-  type MenuItemRenderState,
 } from './menu.js';
 
 describe('MenuItem, MenuSection and MenuSeparator', () => {

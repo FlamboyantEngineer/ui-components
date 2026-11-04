@@ -3,7 +3,7 @@
 import { useUiStrings } from '../../core/provider.js';
 import { assignOccurrenceKeys, type KeyedValue } from '../../utils/stable-keys.js';
 import { getDisplayName } from '../avatar/avatar.js';
-import type { AvatarGroupProps, AvatarGroupPerson } from './avatar-group.js';
+import type { AvatarGroupPerson, AvatarGroupProps } from './avatar-group.js';
 
 /** The people a strip shows and how many more it counts. */
 export interface AvatarGroupWindow {

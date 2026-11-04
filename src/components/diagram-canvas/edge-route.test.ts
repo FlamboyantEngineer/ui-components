@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
-  resolvePortPoint,
-  routeDiagramEdge,
   type DiagramEdgeEnd,
   type DiagramPortSide,
   type DiagramRect,
+  resolvePortPoint,
+  routeDiagramEdge,
 } from './edge-route.js';
 
 const left = { x: 0, y: 0, width: 100, height: 40 };

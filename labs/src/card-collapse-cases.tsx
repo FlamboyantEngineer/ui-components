@@ -1,21 +1,21 @@
 import { useState } from 'react';
-import type { Selection } from '../../src/core/props.js';
-import { UiProvider } from '../../src/core/provider.js';
 import { Badge } from '../../src/components/badge/badge.js';
 import { Button } from '../../src/components/button/button.js';
 import {
   Card,
   CardGrid,
   CardGridItem,
-  CardTitle,
   type CardPresentationSteps,
+  CardTitle,
 } from '../../src/components/card/index.js';
 import { Checkbox } from '../../src/components/checkbox/index.js';
-import { Switch } from '../../src/components/switch/switch.js';
 import { Link } from '../../src/components/link/index.js';
-import { ProgressBar } from '../../src/components/progress-bar/progress-bar.js';
 import { NumberField } from '../../src/components/number-field/index.js';
+import { ProgressBar } from '../../src/components/progress-bar/progress-bar.js';
+import { Switch } from '../../src/components/switch/switch.js';
 import { TextField } from '../../src/components/text-field/index.js';
+import type { Selection } from '../../src/core/props.js';
+import { UiProvider } from '../../src/core/provider.js';
 import { requireDefined } from './require-defined.js';
 
 /** A search box whose first Escape clears it and stays with it; the next one reaches the card. */

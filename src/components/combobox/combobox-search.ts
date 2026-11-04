@@ -2,10 +2,10 @@
 
 import { useEffect, useRef } from 'react';
 import {
-  useRemoteSearch,
   type RemoteLoader,
   type RemotePage,
   type RemoteSearch,
+  useRemoteSearch,
 } from '../../utils/use-remote-search.js';
 import type { ComboboxItem } from './combobox-options.js';
 

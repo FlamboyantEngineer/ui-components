@@ -1,25 +1,25 @@
 'use client';
 
+import { useId, useState } from 'react';
 import {
   ErrorGlyph,
+  type GlyphComponent,
   PendingGlyph,
   SkippedGlyph,
   SuccessGlyph,
-  type GlyphComponent,
 } from '../../core/glyphs.js';
-import { useId, useState } from 'react';
-import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
+import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { ActivityAnnouncer, type ActivityAnnouncerProps } from './activity-announcer.js';
 import {
-  countDoneSteps,
-  listChangedSteps,
-  mapStepStatuses,
   type ChatPlanData,
   type ChatPlanStep,
   type ChatPlanStepStatus,
+  countDoneSteps,
+  listChangedSteps,
+  mapStepStatuses,
 } from './chat-activity.js';
 
 export interface ChatPlanProps extends RefProps<HTMLDivElement>, BaseProps, ChatPlanData {}

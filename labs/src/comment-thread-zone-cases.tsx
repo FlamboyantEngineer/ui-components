@@ -1,6 +1,6 @@
 import { CommentThread, CommentThreadReply } from '../../src/components/comment-thread/index.js';
 import { LabSection } from './chrome/index.js';
-import { ZoneComparison, getNearMidnightNow, nearMidnightInstant } from './time-zone-samples.js';
+import { getNearMidnightNow, nearMidnightInstant, ZoneComparison } from './time-zone-samples.js';
 
 /** One reply read in the provider's zone beside the same reply with its own zone. */
 function ZonedReplies() {

@@ -1,5 +1,5 @@
-import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 
 const cell = (id: string) => `${cellSelector(id)} .ui-activity-feed`;
 

@@ -3,8 +3,8 @@ import { userEvent } from '@testing-library/user-event';
 import { useRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { ShadowHost, deepActive, inShadow } from '../../../test/shadow-fixtures.js';
-import { ChatAttachmentList, type ChatAttachmentData } from './chat-attachment.js';
+import { deepActive, inShadow, ShadowHost } from '../../../test/shadow-fixtures.js';
+import { type ChatAttachmentData, ChatAttachmentList } from './chat-attachment.js';
 
 const attachments: ChatAttachmentData[] = [
   { id: 'harbour', name: 'Harbour.png', mediaType: 'image/png', url: '/files/harbour.png' },

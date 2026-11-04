@@ -1,5 +1,5 @@
-import { expect, test, matrixCell } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Timeline lab', () => {
   test('UIC-TIMELINE-1.13 shows chosen row properties lined up with their headings', async ({

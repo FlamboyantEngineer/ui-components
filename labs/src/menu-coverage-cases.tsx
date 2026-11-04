@@ -7,11 +7,11 @@ import { Button } from '../../src/components/button/button.js';
 import type { IconSource } from '../../src/components/icon/icon.js';
 import {
   Menu,
+  type MenuActionIcons,
   MenuItem,
   MenuPopover,
   MenuTrigger,
   resolveActionIcon,
-  type MenuActionIcons,
 } from '../../src/components/menu/index.js';
 import {
   ChevronDownGlyph,

@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { Drawer, DrawerTrigger, type DrawerProps } from '../../src/components/drawer/drawer.js';
+import { Drawer, type DrawerProps, DrawerTrigger } from '../../src/components/drawer/drawer.js';
 import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { DrawerCoverageSections } from './drawer-coverage-cases.js';
 
 const positions = ['start', 'end', 'top', 'bottom'] as const;

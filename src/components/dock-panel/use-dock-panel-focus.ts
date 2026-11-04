@@ -1,6 +1,6 @@
 'use client';
 
-import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
+import { type RefObject, useLayoutEffect, useRef, useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { containsComposed, getComposedActiveElement } from '../../utils/focus-target.js';
 import { closestHiddenSubtree, useFocusRecovery } from '../../utils/use-focus-recovery.js';

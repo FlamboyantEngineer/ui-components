@@ -1,13 +1,13 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState, type ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import {
   UnsavedChangesGuard,
-  useUnsavedChanges,
-  useUnsavedChangesGuard,
   type UnsavedChangesGuardState,
   type UnsavedChangesOptions,
+  useUnsavedChanges,
+  useUnsavedChangesGuard,
 } from './unsaved-changes-guard.js';
 
 // The sources of an open question change under it (UIC-UNSAVED-CHANGES-GUARD-2.7).

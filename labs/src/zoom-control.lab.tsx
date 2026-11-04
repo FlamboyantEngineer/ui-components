@@ -1,11 +1,11 @@
-import { MinusGlyph, PlusGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { ZoomControl, type ZoomPreset } from '../../src/components/zoom-control/zoom-control.js';
-import { ZoomControlFormatCases } from './zoom-control-format-cases.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { defaultZoomLevels, findNextZoomLevel } from '../../src/components/zoom-control/index.js';
+import { ZoomControl, type ZoomPreset } from '../../src/components/zoom-control/zoom-control.js';
+import { MinusGlyph, PlusGlyph } from '../../src/core/glyphs.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabHelperCalls } from './lab-helper-calls.js';
+import { ZoomControlFormatCases } from './zoom-control-format-cases.js';
 
 const levels = [50, 75, 100, 125, 150, 200];
 const sizes = ['xs', 'sm', 'md', 'lg'] as const;

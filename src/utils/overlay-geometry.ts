@@ -3,14 +3,14 @@
 
 import { DEFAULT_OVERLAY_GUTTER } from './overlay-defaults.js';
 import {
-  resolveOverlayPlacement,
-  toOverlayRect,
   type OverlayAlign,
   type OverlayMode,
   type OverlayPlacement,
   type OverlayRect,
   type OverlaySide,
   type OverlaySize,
+  resolveOverlayPlacement,
+  toOverlayRect,
 } from './overlay-position.js';
 
 /** The boundary an overlay is solved against, measured by `getOverlayBoundary`. */

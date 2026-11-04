@@ -1,23 +1,23 @@
 'use client';
 
-import { useCallback, type MouseEvent, type RefObject } from 'react';
+import { type MouseEvent, type RefObject, useCallback } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { copyText } from '../../utils/clipboard.js';
+import { isNode } from '../../utils/is-element.js';
+import { useLatest } from '../../utils/use-latest.js';
 import { useMenuController } from '../context-menu/context-menu.js';
 import type { MenuEntry } from '../menu/menu.js';
-import { resolveActionIcon, type MenuActionIcons } from '../menu/menu-action-icons.js';
+import { type MenuActionIcons, resolveActionIcon } from '../menu/menu-action-icons.js';
 import {
   findPageIndex,
   locateRange,
   measurePageFrame,
-  toPagePoint,
   type PdfPagePoint,
   type PdfSelection,
+  toPagePoint,
 } from './page-geometry.js';
 import type { PdfTextContent, PdfViewport } from './pdf-engine.js';
 import type { LoadedPdf } from './use-pdf-document.js';
-import { useLatest } from '../../utils/use-latest.js';
-import { isNode } from '../../utils/is-element.js';
 
 interface UsePdfContextMenuOptions<
   V extends PdfViewport = PdfViewport,

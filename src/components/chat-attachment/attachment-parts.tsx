@@ -1,7 +1,7 @@
 'use client';
 
+import { type RefObject, useCallback, useContext, useState } from 'react';
 import { CloseGlyph, DownloadGlyph, type GlyphComponent } from '../../core/glyphs.js';
-import { useCallback, useContext, useState, type RefObject } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { formatBytes } from '../../utils/format-bytes.js';

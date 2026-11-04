@@ -1,4 +1,3 @@
-export { SignatureDialog } from './signature-dialog.js';
 export type {
   SignatureDetails,
   SignatureDialogCredentials,
@@ -6,3 +5,4 @@ export type {
   SignatureDialogProps,
   SignatureMeaning,
 } from './signature-dialog.js';
+export { SignatureDialog } from './signature-dialog.js';

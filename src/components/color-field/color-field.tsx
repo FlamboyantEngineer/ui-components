@@ -1,31 +1,31 @@
 'use client';
 
 import { useId, useState } from 'react';
-import { Button as AriaButton, ColorPicker, DialogTrigger } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { useUiStrings } from '../../core/provider.js';
+import { Button as AriaButton, ColorPicker, DialogTrigger } from '../../primitives/index.js';
 import { ColorSwatch } from '../color-swatch/color-swatch.js';
 import {
   Field,
-  FieldFormValue,
-  toAriaControlProps,
-  useFieldControl,
   type FieldControlProps,
+  FieldFormValue,
   type FieldInputProps,
   type FieldIssue,
-  type FieldTextInputProps,
   type FieldState,
+  type FieldTextInputProps,
+  toAriaControlProps,
+  useFieldControl,
 } from '../field/field.js';
 import { ColorEntry } from './color-field-entry.js';
-import { ColorFieldPanel } from './color-field-panel.js';
 import { colorFieldHooks as hooks } from './color-field-hooks.js';
+import { ColorFieldPanel } from './color-field-panel.js';
 import {
+  type ColorFieldFormat,
   formatColor,
   isTranslucent,
   keepAlpha,
   toColorText,
   toStoredValue,
-  type ColorFieldFormat,
 } from './color-values.js';
 
 /** The text-entry props the typed input takes (`placeholder` is also the trigger's empty text). */

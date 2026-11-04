@@ -1,15 +1,15 @@
 'use client';
 
-import { DragHandleGlyph } from '../../core/glyphs.js';
 import type { PointerEvent } from 'react';
-import { Button as AriaButton } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
+import { DragHandleGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
-import { armElementDrag } from '../../utils/pointer-drag.js';
-import { Icon } from '../icon/icon.js';
+import { Button as AriaButton } from '../../primitives/index.js';
 import { isElement } from '../../utils/is-element.js';
 import { getOwnerWindow } from '../../utils/owner-window.js';
+import { armElementDrag } from '../../utils/pointer-drag.js';
+import { Icon } from '../icon/icon.js';
 
 export interface DragHandleProps
   extends RefProps<HTMLButtonElement>, BaseProps, AriaLabellingProps {

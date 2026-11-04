@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { ChoiceGroup, Choice } from '../../src/components/choice-group/choice-group.js';
+import { Choice, ChoiceGroup } from '../../src/components/choice-group/choice-group.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
-import { LabOutput } from './lab-output.js';
 import {
   fieldLayouts,
+  type FieldStateName,
   fieldStates,
   useLabFieldState,
-  type FieldStateName,
 } from './field-states.js';
+import { LabOutput } from './lab-output.js';
 
 const fruit: Array<{ value: string; label: string; isDisabled?: boolean }> = [
   { value: 'apple', label: 'Apple' },

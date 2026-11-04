@@ -1,8 +1,8 @@
 import { Fragment, memo, type ReactNode, type Ref } from 'react';
 import { measuredProperty } from '../../core/hooks.js';
 import type { FieldSeverity } from '../field/field.js';
-import type { CodeSegment } from './code-segments.js';
 import { codeEditorHooks as hooks } from './code-editor-hooks.js';
+import type { CodeSegment } from './code-segments.js';
 
 /** A run of source text. `type` names its kind (`keyword`, `string`, …) for the stylesheet. */
 export interface CodeToken {

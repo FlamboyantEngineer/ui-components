@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 function cell(page: Page, query: string, clear = 'without'): Locator {
   return matrixCell(page, `query=${query} clear=${clear}`);

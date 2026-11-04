@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, type RefObject } from 'react';
+import { type RefObject, useEffect, useRef } from 'react';
 import { useUiStorage } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';
 import { numberCodec } from '../../utils/json-codec.js';

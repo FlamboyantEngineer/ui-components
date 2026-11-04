@@ -1,16 +1,16 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState, type ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import {
+  type ConfirmLeaveOptions,
   UnsavedChangesGuard,
+  type UnsavedChangesGuardState,
+  type UnsavedChangesOptions,
   useUnsavedChanges,
   useUnsavedChangesGuard,
-  type ConfirmLeaveOptions,
-  type UnsavedChangesOptions,
-  type UnsavedChangesGuardState,
 } from './unsaved-changes-guard.js';
 
 function deferred() {

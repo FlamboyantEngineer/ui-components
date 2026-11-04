@@ -2,7 +2,7 @@
 import { renderToString } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { PortalContainerProvider, PortalHost } from '../portal/portal.js';
-import { ToastRegion, createToastQueue } from './toast.js';
+import { createToastQueue, ToastRegion } from './toast.js';
 
 describe('ToastRegion on the server', () => {
   it.each([

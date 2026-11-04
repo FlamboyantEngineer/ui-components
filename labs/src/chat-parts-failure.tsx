@@ -3,7 +3,7 @@
 // error closed, and opens nothing: the group collapses once the answer follows.
 
 import type { ChatPart, ChatToolCallPart } from '../../src/components/chat-parts/index.js';
-import { ReplyStream, type ReplyFrame } from './chat-parts-stream.js';
+import { type ReplyFrame, ReplyStream } from './chat-parts-stream.js';
 
 type CallStatus = ChatToolCallPart['status'];
 

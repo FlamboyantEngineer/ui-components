@@ -1,14 +1,14 @@
 'use client';
 
+import type { FieldProps } from './field.js';
 import {
-  useFieldState,
   type FieldErrorSource,
   type FieldIssue,
   type FieldState,
   type FieldStateOptions,
   type FieldValueContract,
+  useFieldState,
 } from './field-state.js';
-import type { FieldProps } from './field.js';
 
 /**
  * The props a control hands to `Field`: its layout, parts and caller attributes. Whether the field

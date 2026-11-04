@@ -2,6 +2,7 @@
 // open, since only an open paragraph takes lazy continuation lines (specs/MARKDOWN.md).
 
 import {
+  type Fence,
   indentOf,
   interruptsParagraph,
   isBlank,
@@ -13,7 +14,6 @@ import {
   stripBlockquoteMarker,
   stripColumns,
   stripIndent,
-  type Fence,
 } from './markdown-lines.js';
 
 export interface ParagraphState {

@@ -1,14 +1,14 @@
 'use client';
 
+import { type RefObject, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { SearchGlyph } from '../../core/glyphs.js';
-import { useEffect, useId, useMemo, useRef, useState, type RefObject } from 'react';
 import { useUiStrings } from '../../core/provider.js';
+import { getElementByIdFrom } from '../../utils/owner-window.js';
+import { Button } from '../button/button.js';
 import type { ChatMessageData } from '../chat-parts/chat-parts.js';
 import { FindBar } from '../find-bar/find-bar.js';
-import { Button } from '../button/button.js';
 import { chatHooks as hooks } from './chat-hooks.js';
 import { findMessageMatches } from './chat-model.js';
-import { getElementByIdFrom } from '../../utils/owner-window.js';
 
 /** The search within a conversation: its query, the matching messages and the current one. */
 interface ChatSearchModel {

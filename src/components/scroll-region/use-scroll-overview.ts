@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, type RefObject } from 'react';
+import { type RefObject, useEffect, useMemo, useState } from 'react';
 import {
   buildScrollOverviewImage,
   resolveLayeredScrollOverviewSegments,

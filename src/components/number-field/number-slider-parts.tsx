@@ -1,29 +1,29 @@
 'use client';
 
-import { useLatest } from '../../utils/use-latest.js';
-import { useLayoutEffect, type ReactNode } from 'react';
+import { type ReactNode, useLayoutEffect } from 'react';
+import type { Orientation } from '../../core/props.js';
 import {
-  useObjectRef,
   Slider as AriaSlider,
   SliderFill,
   SliderOutput,
   SliderThumb,
   SliderTrack,
+  useObjectRef,
 } from '../../primitives/index.js';
-import { numberFieldHooks } from './number-field-parts.js';
-import type { Orientation } from '../../core/props.js';
 import { clamp } from '../../utils/clamp.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { useLatest } from '../../utils/use-latest.js';
 import {
-  isFieldValueEqual,
-  toAriaControlProps,
-  useFieldControl,
   type FieldControlProps,
   type FieldErrorSource,
   type FieldInputProps,
   type FieldState,
+  isFieldValueEqual,
+  toAriaControlProps,
+  useFieldControl,
 } from '../field/field.js';
+import { numberFieldHooks } from './number-field-parts.js';
 import { normalizeSliderValue, type SliderGrid } from './slider-values.js';
-import { isEmptyNode } from '../../utils/is-empty-node.js';
 
 /**
  * Where a slider shows its value: in an output beside the track, in a number input per thumb that

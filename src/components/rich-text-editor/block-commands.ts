@@ -2,10 +2,10 @@
 
 import {
   AllSelection,
-  Selection,
-  TextSelection,
   type Command,
   type EditorState,
+  Selection,
+  TextSelection,
   type Transaction,
 } from 'prosemirror-state';
 import { StepMap } from 'prosemirror-transform';

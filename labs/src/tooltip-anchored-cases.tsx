@@ -1,11 +1,11 @@
-import { PlusGlyph } from '../../src/core/glyphs.js';
-import { useId, useRef, useState, type RefObject } from 'react';
+import { type RefObject, useId, useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Modal } from '../../src/components/modal/modal.js';
 import {
   AnchoredTooltip,
   type AnchoredTooltipRelationship,
 } from '../../src/components/tooltip/tooltip.js';
+import { PlusGlyph } from '../../src/core/glyphs.js';
 
 const bars = [
   { label: 'Mon', value: 12 },

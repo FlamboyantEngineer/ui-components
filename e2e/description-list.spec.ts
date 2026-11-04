@@ -1,6 +1,6 @@
 import type { Locator } from '@playwright/test';
-import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 
 async function rects(locator: Locator) {
   return locator.evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().toJSON()));

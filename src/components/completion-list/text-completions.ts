@@ -1,13 +1,13 @@
 'use client';
 
+import { type KeyboardEvent, type RefObject, useId, useLayoutEffect, useRef } from 'react';
 import { isFocused } from '../../utils/focus-target.js';
-import { useId, useLayoutEffect, useRef, type KeyboardEvent, type RefObject } from 'react';
 import { getCompletionOptionId } from './completion-option-id.js';
 import {
-  useCompletions,
   type CompletionRange,
   type Completions,
   type CompletionsModel,
+  useCompletions,
 } from './use-completions.js';
 
 type TextControl = HTMLInputElement | HTMLTextAreaElement;

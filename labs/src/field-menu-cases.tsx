@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { CopyGlyph, StarGlyph } from '../../src/core/glyphs.js';
 import { NumberField } from '../../src/components/number-field/number-field.js';
 import { RichTextEditor } from '../../src/components/rich-text-editor/rich-text-editor.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
+import { CopyGlyph, StarGlyph } from '../../src/core/glyphs.js';
 import { shortNote } from './rich-text-editor-cases.js';
 
 /**

@@ -1,31 +1,31 @@
 'use client';
 
 import {
-  useId,
-  useLayoutEffect,
-  useMemo,
   type KeyboardEvent,
   type ReactNode,
   type RefObject,
+  useId,
+  useLayoutEffect,
+  useMemo,
 } from 'react';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import {
   GridLayout,
   GridList,
   GridListItem,
+  type Key,
   Size,
   Virtualizer,
-  type Key,
 } from '../../primitives/index.js';
-import type { BaseProps, RefProps } from '../../core/props.js';
+import { FallbackImage } from '../../utils/fallback-image.js';
 import {
   applySkinTone,
+  type EmojiEntry,
   getEmojiKey,
   getEmojiLabel,
-  type EmojiEntry,
   type SkinTone,
 } from './emoji-catalog.js';
 import { emojiPickerHooks as hooks } from './emoji-picker-hooks.js';
-import { FallbackImage } from '../../utils/fallback-image.js';
 
 interface EmojiGridProps extends BaseProps, RefProps<HTMLDivElement> {
   /** The visible label that names the grid. */

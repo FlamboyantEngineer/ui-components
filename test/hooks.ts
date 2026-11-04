@@ -1,6 +1,6 @@
 // Asserts that rendered markup matches the hook tables in specs/ (specs/README.md#hooks).
 
-import { readFileSync, readdirSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 export type HookKind = 'root' | 'slot' | 'attribute' | 'state' | 'property';

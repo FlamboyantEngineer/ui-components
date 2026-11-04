@@ -4,10 +4,10 @@ import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { Key } from '../../core/props.js';
 import {
-  StateMachineView,
   type StateMachineContextMenuEvent,
   type StateMachineState,
   type StateMachineTransition,
+  StateMachineView,
   type StateMachineViewProps,
 } from './state-machine-view.js';
 

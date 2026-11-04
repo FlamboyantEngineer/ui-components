@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
 import {
   CloseGlyph,
   DeleteGlyph,
@@ -7,8 +9,6 @@ import {
   MoreGlyph,
   UndoGlyph,
 } from '../../src/core/glyphs.js';
-import { useState } from 'react';
-import { Button } from '../../src/components/button/button.js';
 import { buttonSizes, buttonStates, buttonVariants } from './button-axes.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
 

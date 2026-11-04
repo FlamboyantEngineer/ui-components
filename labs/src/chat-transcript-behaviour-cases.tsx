@@ -3,21 +3,21 @@ import { Button } from '../../src/components/button/button.js';
 import {
   ChatMessage,
   ChatTranscript,
-  ChatUnreadDivider,
   type ChatTranscriptScrollMode,
+  ChatUnreadDivider,
 } from '../../src/components/chat-transcript/index.js';
 import { CopyButton } from '../../src/components/copy-button/copy-button.js';
 import { MessageComposer } from '../../src/components/message-composer/message-composer.js';
-import { LabSection, StateMatrix } from './chrome/index.js';
-import { ChatTranscriptVirtualizedCase } from './chat-transcript-virtualized-case.js';
 import {
   AnnouncementEcho,
-  SampleMessageView,
   planner,
   reader,
   sampleMessages,
+  SampleMessageView,
   useSimulatedChat,
 } from './chat-transcript-behaviour-samples.js';
+import { ChatTranscriptVirtualizedCase } from './chat-transcript-virtualized-case.js';
+import { LabSection, StateMatrix } from './chrome/index.js';
 
 const modes = ['follow', 'anchor'] as const satisfies readonly ChatTranscriptScrollMode[];
 

@@ -3,17 +3,17 @@
 // The More disclosure of an adaptive card: the regions a smaller presentation moves keep their
 // place and their mounted content, hidden until the More button opens them where they stand.
 
-import { useId, useState, type KeyboardEvent, type ReactNode } from 'react';
-import { isEmptyNode } from '../../utils/is-empty-node.js';
-import { isComposingKey } from '../../utils/is-composing-key.js';
+import { type KeyboardEvent, type ReactNode, useId, useState } from 'react';
 import { MinusGlyph, PlusGlyph } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
-import { Button } from '../button/button.js';
-import { cardHooks as hooks } from './card-hooks.js';
-import type { CardHeaderProps } from './card-header.js';
-import type { CardPresentation } from './card-presentation.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { joinIds } from '../../utils/join-ids.js';
 import { getElementByIdFrom } from '../../utils/owner-window.js';
+import { Button } from '../button/button.js';
+import type { CardHeaderProps } from './card-header.js';
+import { cardHooks as hooks } from './card-hooks.js';
+import type { CardPresentation } from './card-presentation.js';
 
 /** The More disclosure: whether the regions a smaller presentation moved show. */
 export interface CardMore {

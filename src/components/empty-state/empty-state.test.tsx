@@ -1,8 +1,8 @@
-import { FolderGlyph } from '../../core/glyphs.js';
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { FolderGlyph } from '../../core/glyphs.js';
 import { EmptyState } from './empty-state.js';
 
 describe('EmptyState', () => {

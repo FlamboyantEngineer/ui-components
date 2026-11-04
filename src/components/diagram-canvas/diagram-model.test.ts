@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { requireDefined } from '../../utils/require-defined.js';
 import {
+  type DiagramEdge,
+  type DiagramNode,
   findConnectedNode,
   findDiagramBounds,
   fitDiagramViewport,
@@ -10,8 +12,6 @@ import {
   spreadParallelEdges,
   toDiagramPoint,
   zoomDiagramViewport,
-  type DiagramEdge,
-  type DiagramNode,
 } from './diagram-model.js';
 
 const nodes: DiagramNode[] = [

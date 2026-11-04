@@ -1,11 +1,11 @@
-import { useState, type CSSProperties } from 'react';
+import { type CSSProperties, useState } from 'react';
 import { Card } from '../../src/components/card/card.js';
 import {
   HeadingLevelContext,
   Section,
   SectionHeader,
 } from '../../src/components/section-header/section-header.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { SectionHeaderHostCases } from './section-header-host-cases.js';
 
 /** A section that becomes collapsible on request, as after measuring space or loading preferences. */

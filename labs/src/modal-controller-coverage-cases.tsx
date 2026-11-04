@@ -3,14 +3,14 @@
 
 import { useState, useSyncExternalStore } from 'react';
 import { Button } from '../../src/components/button/button.js';
+import { Modal } from '../../src/components/modal/modal.js';
 import {
-  ModalHost,
   createModalController,
   type ModalEntry,
   type ModalEntryRenderProps,
   type ModalHandle,
+  ModalHost,
 } from '../../src/components/modal-controller/modal-controller.js';
-import { Modal } from '../../src/components/modal/modal.js';
 import { LabSection } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 

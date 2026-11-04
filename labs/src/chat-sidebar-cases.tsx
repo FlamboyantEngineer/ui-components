@@ -1,7 +1,5 @@
-import { PlusGlyph } from '../../src/core/glyphs.js';
 // The Chat lab's sidebar "+" buttons: a host inserting record references into the shown conversation's draft
 // through the composer handle, skipping records the draft holds, in a new chat and after a reply.
-
 import { useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Chat, type ChatComposerHandle, type ChatDraft } from '../../src/components/chat/index.js';
@@ -9,6 +7,7 @@ import type { ChatMessageData, ChatTextToken } from '../../src/components/chat-p
 import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import { Cluster, Stack } from '../../src/components/layout/layout.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
+import { PlusGlyph } from '../../src/core/glyphs.js';
 import {
   assistantPeople,
   nextLabId,

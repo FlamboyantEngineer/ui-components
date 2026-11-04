@@ -1,5 +1,6 @@
 'use client';
 
+import { createGlyph } from './glyph-component.js';
 import {
   adjustmentsHorizontalPath,
   archiveBoxPath,
@@ -10,6 +11,11 @@ import {
   arrowPathPath,
   arrowPathRoundedSquarePath,
   arrowRightPath,
+  arrowsDiagonalPath,
+  arrowsPointingInPath,
+  arrowsPointingOutPath,
+  arrowsRightLeftPath,
+  arrowsUpDownPath,
   arrowTopRightOnSquarePath,
   arrowTrendingDownPath,
   arrowTrendingUpPath,
@@ -17,11 +23,6 @@ import {
   arrowUpTrayPath,
   arrowUturnLeftPath,
   arrowUturnRightPath,
-  arrowsPointingInPath,
-  arrowsDiagonalPath,
-  arrowsPointingOutPath,
-  arrowsRightLeftPath,
-  arrowsUpDownPath,
   bars2Path,
   bars3BottomLeftPath,
   bellPath,
@@ -103,7 +104,6 @@ import {
   xCirclePath,
   xMarkPath,
 } from './glyph-paths.js';
-import { createGlyph } from './glyph-component.js';
 export type { GlyphComponent, GlyphComponentProps, GlyphMap, GlyphName } from './glyph-types.js';
 
 /** Individually imported defaults; each honors its UiProvider override. */

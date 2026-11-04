@@ -3,8 +3,8 @@ import { Button } from '../../src/components/button/button.js';
 import { ChatTranscript } from '../../src/components/chat-transcript/index.js';
 import { MessageComposer } from '../../src/components/message-composer/message-composer.js';
 import {
-  SampleMessageView,
   sampleMessages,
+  SampleMessageView,
   useSimulatedChat,
 } from './chat-transcript-behaviour-samples.js';
 

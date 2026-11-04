@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useRef, useState, type RefCallback, type RefObject } from 'react';
+import { type RefCallback, type RefObject, useCallback, useMemo, useRef, useState } from 'react';
 import { getOwnerWindow } from '../../utils/owner-window.js';
 
 /** What the composer edits instead of a new message: one of the reader's messages, or a queued one. */

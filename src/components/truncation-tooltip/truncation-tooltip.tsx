@@ -1,37 +1,37 @@
 'use client';
 
-import { useLatest } from '../../utils/use-latest.js';
 import {
+  type PointerEvent,
+  type ReactNode,
+  type RefObject,
   useCallback,
   useEffect,
   useId,
   useLayoutEffect,
   useRef,
   useState,
-  type PointerEvent,
-  type ReactNode,
-  type RefObject,
 } from 'react';
-import { useFocusVisible } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
-import { isOverflowing } from '../../utils/is-overflowing.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, ContainerProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useFocusVisible } from '../../primitives/index.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
+import { isOverflowing } from '../../utils/is-overflowing.js';
+import { TOOLTIP_DELAY } from '../../utils/overlay-defaults.js';
+import { getOwnerDocument } from '../../utils/owner-window.js';
 import { tabbableSelector } from '../../utils/tabbable.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
+import { useLatest } from '../../utils/use-latest.js';
 import { useLayoutChanges } from '../../utils/use-layout-changes.js';
 import { useResizeObserver } from '../../utils/use-resize-observer.js';
 import { Button } from '../button/button.js';
 import {
   ManualTooltip,
-  useManualTooltipState,
   type ManualTooltipState,
   type TooltipPlacement,
+  useManualTooltipState,
 } from '../tooltip/tooltip.js';
-import { TOOLTIP_DELAY } from '../../utils/overlay-defaults.js';
-import { isComposingKey } from '../../utils/is-composing-key.js';
-import { getOwnerDocument } from '../../utils/owner-window.js';
 
 /** The pointer handlers the component owns on its text. */
 type TruncationPointerHandler = 'onPointerEnter' | 'onPointerLeave' | 'onPointerDown';

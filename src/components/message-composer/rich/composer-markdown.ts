@@ -5,8 +5,8 @@ import type { MessageComposerMessage, MessageComposerToken } from '../composer-m
 import {
   composerSchema as schema,
   getPillText,
-  toPillText,
   type PillAttributes,
+  toPillText,
 } from './composer-schema.js';
 
 // A fence is three or more backticks; the opening one may name a language, and a run of at least

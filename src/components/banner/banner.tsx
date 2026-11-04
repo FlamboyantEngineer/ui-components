@@ -1,16 +1,15 @@
 'use client';
 
+import { type ReactNode, type Ref, useEffect, useRef } from 'react';
 import { CloseGlyph } from '../../core/glyphs.js';
-import { getToneGlyph } from '../../core/tone-glyphs.js';
-import { useEffect, useRef, type ReactNode, type Ref } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, NativeProps, Tone, RefProps } from '../../core/props.js';
+import type { BaseProps, NativeProps, RefProps, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { getToneGlyph } from '../../core/tone-glyphs.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { Button } from '../button/button.js';
-import { Icon, type IconSource } from '../icon/icon.js';
-import { toIconProps } from '../icon/icon.js';
+import { Icon, type IconSource, toIconProps } from '../icon/icon.js';
 
 export interface BannerProps
   extends BaseProps, Pick<NativeProps<'div'>, 'hidden' | 'aria-label'>, RefProps<HTMLElement> {

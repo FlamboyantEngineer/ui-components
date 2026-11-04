@@ -3,14 +3,14 @@
 // Steps the time parts of a date-time field's segments without typing: the wheel over a time
 // segment, and a time field's later and earlier buttons (specs/DATE-TIME-FIELD.md, UIC-DATE-TIME-FIELD-4.6).
 
-import { useContext, type RefObject } from 'react';
+import { type RefObject, useContext } from 'react';
+import { ChevronDownGlyph, ChevronUpGlyph } from '../../core/glyphs.js';
+import { Glyph, useUiStrings } from '../../core/provider.js';
 import {
   Button as AriaButton,
   DateFieldStateContext,
   TimeFieldStateContext,
 } from '../../primitives/index.js';
-import { ChevronDownGlyph, ChevronUpGlyph } from '../../core/glyphs.js';
-import { Glyph, useUiStrings } from '../../core/provider.js';
 import { useWheelSteps } from '../../utils/use-wheel-steps.js';
 import { dateTimeFieldHooks as hooks } from './date-time-field-hooks.js';
 

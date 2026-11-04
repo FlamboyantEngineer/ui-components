@@ -1,10 +1,10 @@
 import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState, createRef } from 'react';
+import { createRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import type { Key } from '../../core/props.js';
 import { UiProvider } from '../../core/provider.js';
-import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { RelationColumns, type RelationColumnsProps } from './relation-columns.js';
 import type { RelationColumnsPath, RelationDirection } from './relation-columns-model.js';
 

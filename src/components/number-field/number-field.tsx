@@ -1,30 +1,30 @@
 'use client';
 
 import type { ReactElement, ReactNode } from 'react';
-import { useLocale, useNumberFormatter } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
+import { useLocale, useNumberFormatter } from '../../primitives/index.js';
 import {
   Field,
-  useFieldControl,
   type FieldControlProps,
   type FieldInputProps,
   type FieldIssue,
   type FieldState,
   type FieldTextInputProps,
+  useFieldControl,
 } from '../field/field.js';
-import { TextNumberControl } from './text-number-control.js';
+import { DecimalControl } from './decimal-control.js';
 import { createQuantityCodec, createRadixCodec } from './number-codecs.js';
-import { formatRadixNumber, type NumberFieldRadix } from './radix-number.js';
-import type { NumberFieldUnits } from './unit-number.js';
+import { numberFieldHooks as hooks, type NumberSteps } from './number-field-parts.js';
 import {
   NumberRangeField,
-  NumberSliderField,
   type NumberRangeFieldProps,
+  NumberSliderField,
   type NumberSliderFieldProps,
 } from './number-slider.js';
-import { DecimalControl } from './decimal-control.js';
-import { numberFieldHooks as hooks, type NumberSteps } from './number-field-parts.js';
+import { formatRadixNumber, type NumberFieldRadix } from './radix-number.js';
+import { TextNumberControl } from './text-number-control.js';
+import type { NumberFieldUnits } from './unit-number.js';
 
 /**
  * What a commit does with a value outside the range or off the step: `snap` clamps it into the

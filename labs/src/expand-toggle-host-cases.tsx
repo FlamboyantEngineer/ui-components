@@ -1,6 +1,6 @@
-import { FolderGlyph } from '../../src/core/glyphs.js';
-import { useState, type KeyboardEvent } from 'react';
+import { type KeyboardEvent, useState } from 'react';
 import { ExpandToggle } from '../../src/components/expand-toggle/expand-toggle.js';
+import { FolderGlyph } from '../../src/core/glyphs.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
 
 const glyphs = {

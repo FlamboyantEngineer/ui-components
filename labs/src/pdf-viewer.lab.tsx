@@ -1,23 +1,23 @@
-import { useState, type ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { PdfViewer, type PdfViewerProps } from '../../src/components/pdf-viewer/pdf-viewer.js';
 import { Switch } from '../../src/components/switch/switch.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { LabOutput } from './lab-output.js';
+import { createLongPdf, longSampleMarkedPage } from './pdf-long-sample.js';
 import {
   AccentFind,
   AnnotatedReader,
   CallerOwnedFind,
-  ProjectedToolbar,
-  SidebarReader,
   loadEngine,
   lockedUrl,
+  ProjectedToolbar,
   sampleUrl,
+  SidebarReader,
   workerSrc,
 } from './pdf-viewer-cases.js';
-import { LabOutput } from './lab-output.js';
-import { createLongPdf, longSampleMarkedPage } from './pdf-long-sample.js';
-import { ReadingNotes } from './pdf-viewer-reading-cases.js';
 import { FailingPage } from './pdf-viewer-failure-cases.js';
+import { ReadingNotes } from './pdf-viewer-reading-cases.js';
 
 const notAPdf = new TextEncoder().encode('This file is not a PDF.');
 

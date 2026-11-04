@@ -1,4 +1,3 @@
-export { ActionRow } from './action-row.js';
 export type {
   ActionRowAction,
   ActionRowCustomAction,
@@ -7,4 +6,5 @@ export type {
   ActionRowVerbAction,
   ActionVerb,
 } from './action-row.js';
+export { ActionRow } from './action-row.js';
 export { actionVerbs, orderActions } from './action-verbs.js';

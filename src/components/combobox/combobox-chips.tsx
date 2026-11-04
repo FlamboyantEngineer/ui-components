@@ -1,25 +1,24 @@
 'use client';
 
 import {
+  type ReactNode,
+  type RefObject,
   useContext,
   useLayoutEffect,
   useRef,
   useState,
-  type ReactNode,
-  type RefObject,
 } from 'react';
-import { ComboBoxStateContext } from '../../primitives/index.js';
-import { fromCollectionKey } from '../../utils/from-collection-key.js';
-import { toCollectionKey } from '../../utils/to-collection-key.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { Icon } from '../icon/icon.js';
-import { toIconProps } from '../icon/icon.js';
-import { Tag, TagGroup, type TagGroupSize } from '../tag-group/tag-group.js';
-import type { ComboboxOption } from './combobox-options.js';
+import { ComboBoxStateContext } from '../../primitives/index.js';
+import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { getElementByIdFrom } from '../../utils/owner-window.js';
+import { toCollectionKey } from '../../utils/to-collection-key.js';
+import { Icon, toIconProps } from '../icon/icon.js';
+import { Tag, TagGroup, type TagGroupSize } from '../tag-group/tag-group.js';
 import { comboboxHooks as hooks } from './combobox-hooks.js';
+import type { ComboboxOption } from './combobox-options.js';
 
 export interface ComboboxChipsProps {
   /** The combobox's label text, which names the group of chips. */

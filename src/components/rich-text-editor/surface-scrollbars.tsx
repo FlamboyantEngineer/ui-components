@@ -2,15 +2,15 @@
 
 import { useEditorEffect } from '@handlewithcare/react-prosemirror';
 import type { EditorView } from 'prosemirror-view';
-import { useEffect, useState, type RefObject } from 'react';
+import { type RefObject, useEffect, useState } from 'react';
+import { isHTMLElement } from '../../utils/is-element.js';
+import { measureInScroller } from '../../utils/scroll-geometry.js';
+import type { FieldSeverity } from '../field/field.js';
 import {
   OverlayScrollbars,
   useOverlayMetrics,
   useSharedViewportObserver,
 } from '../scroll-region/scroll-region.js';
-import { isHTMLElement } from '../../utils/is-element.js';
-import { measureInScroller } from '../../utils/scroll-geometry.js';
-import type { FieldSeverity } from '../field/field.js';
 import type { PlacedMarker } from './block-markers.js';
 import { richTextEditorHooks as hooks } from './rich-text-context.js';
 

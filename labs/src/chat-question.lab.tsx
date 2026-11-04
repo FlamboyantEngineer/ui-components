@@ -7,7 +7,6 @@ import {
   type ChatQuestionItem,
   type ChatQuestionStatus,
 } from '../../src/components/chat-question/chat-question.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import {
   databaseQuestion,
   featuresQuestion,
@@ -19,6 +18,7 @@ import {
   toppingsQuestion,
   tripQuestions,
 } from './chat-question-samples.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const statuses = [
   'pending',

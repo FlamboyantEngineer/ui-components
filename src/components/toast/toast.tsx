@@ -1,30 +1,29 @@
 'use client';
 
-import { CloseGlyph } from '../../core/glyphs.js';
-import { getToneGlyph } from '../../core/tone-glyphs.js';
 import { useCallback, useContext, useMemo, useRef, useSyncExternalStore } from 'react';
+import type { AriaLabellingProps } from '../../core/events.js';
+import { CloseGlyph } from '../../core/glyphs.js';
+import { createHooks, measuredProperty, pickDataAttributes } from '../../core/hooks.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
+import { useUiStrings } from '../../core/provider.js';
+import { getToneGlyph } from '../../core/tone-glyphs.js';
 import {
+  type QueuedToast,
   Text,
+  type ToastState,
   UNSTABLE_Toast as AriaToast,
   UNSTABLE_ToastContent as AriaToastContent,
   UNSTABLE_ToastList as AriaToastList,
   UNSTABLE_ToastQueue as AriaToastQueue,
   UNSTABLE_ToastRegion as AriaToastRegion,
   UNSTABLE_ToastStateContext as ToastStateContext,
-  type QueuedToast,
-  type ToastState,
   useLocale,
 } from '../../primitives/index.js';
-import type { AriaLabellingProps } from '../../core/events.js';
-import { createHooks, measuredProperty, pickDataAttributes } from '../../core/hooks.js';
-import type { BaseProps, RefProps } from '../../core/props.js';
-import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { mergeProps } from '../../utils/merge-props.js';
 import { useEnterExit } from '../../utils/use-enter-exit.js';
 import { Button } from '../button/button.js';
-import { Icon } from '../icon/icon.js';
-import { toIconProps } from '../icon/icon.js';
+import { Icon, toIconProps } from '../icon/icon.js';
 import { useLayerZIndex } from '../portal/portal.js';
 import {
   createQueueOverStore,
@@ -37,11 +36,11 @@ import {
 } from './toast-queue.js';
 import {
   ToastStackProvider,
+  type ToastStackSettings,
   useIsStackPaused,
   useStackExpanded,
   useToastStack,
   useToastStackPosition,
-  type ToastStackSettings,
 } from './toast-stack.js';
 import { useToastPresence, useToastSnapshot, useToastTimer } from './use-toast-lifecycle.js';
 import { resolveSwipeDirection, useToastSwipe } from './use-toast-swipe.js';

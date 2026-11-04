@@ -1,12 +1,12 @@
 import { act, render, screen, within } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
 import { hydrateRoot } from 'react-dom/client';
 import { renderToString } from 'react-dom/server';
-import { userEvent } from '@testing-library/user-event';
-import { Button, Menu, MenuItem, Popover, Text } from '../../primitives/index.js';
-import { MenuTrigger } from '../menu/menu.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { Button, Menu, MenuItem, Popover, Text } from '../../primitives/index.js';
+import { MenuTrigger } from '../menu/menu.js';
 import { KeyHints, Shortcut, ShortcutAppearanceContext } from './shortcut.js';
 import { getShortcutPlatform } from './shortcut-format.js';
 

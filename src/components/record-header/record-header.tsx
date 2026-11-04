@@ -10,7 +10,7 @@ import type { IconSource } from '../icon/icon.js';
 import { InlineEdit } from '../inline-edit/inline-edit.js';
 import { MetaLine } from '../meta-line/meta-line.js';
 import { RecordLabel } from '../record-label/record-label.js';
-import { useHeadingLevel, type HeadingLevel } from '../section-header/section-header.js';
+import { type HeadingLevel, useHeadingLevel } from '../section-header/section-header.js';
 
 export interface RecordHeaderProps extends RefProps<HTMLDivElement>, BaseProps {
   /** The record's identifier, such as `REQ-12`, shown with a button that copies it. */

@@ -1,16 +1,16 @@
 import { useMemo, useState } from 'react';
+import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import {
   CodeBlock,
-  createCodeBlockOverride,
   type CodeBlockVariant,
+  createCodeBlockOverride,
 } from '../../src/components/code-block/index.js';
-import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import type { CodeEditorWrap, CodeToken } from '../../src/components/code-editor/code-editor.js';
 import { Markdown } from '../../src/components/markdown/markdown.js';
 import { SearchField } from '../../src/components/search-field/search-field.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { TextMatchProvider } from '../../src/components/text-match/text-match.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { languageSamples, largeFile, tokenizeTypeScript } from './code-block-samples.js';
 
 const keywords = new Set(['const', 'let', 'function', 'return', 'if', 'else', 'export', 'await']);

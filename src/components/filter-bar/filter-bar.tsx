@@ -1,9 +1,9 @@
 'use client';
 
-import { PlusGlyph } from '../../core/glyphs.js';
-import { useRef, useState, type ReactNode } from 'react';
+import { type ReactNode, useRef, useState } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
+import { PlusGlyph } from '../../core/glyphs.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { assignOccurrenceKeys, toOccurrenceKey } from '../../utils/stable-keys.js';
@@ -126,9 +126,8 @@ export function FilterBar({
 }
 
 export { FilterConditionFields } from './filter-editor.js';
-export { createFilterMatcher, matchesFilterCondition } from './filter-matching.js';
 export type { FilterRecordValue, FilterValueGetter } from './filter-matching.js';
-export { createFilterCondition, isFilterConditionComplete } from './filter-model.js';
+export { createFilterMatcher, matchesFilterCondition } from './filter-matching.js';
 export type {
   FilterCondition,
   FilterField,
@@ -137,6 +136,7 @@ export type {
   FilterOption,
   FilterValue,
 } from './filter-model.js';
+export { createFilterCondition, isFilterConditionComplete } from './filter-model.js';
 import { isFilterableLength } from '../../utils/filterable-list.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 export type { FilterOperator } from '../../core/strings/query.js';

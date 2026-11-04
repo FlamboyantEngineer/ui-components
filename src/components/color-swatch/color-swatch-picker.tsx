@@ -2,28 +2,28 @@
 
 import {
   createContext,
+  type ReactNode,
   useContext,
   useId,
   useLayoutEffect,
   useMemo,
   useState,
-  type ReactNode,
 } from 'react';
-import {
-  parseColor,
-  useLocale,
-  ColorSwatchPickerContext,
-  ListBox,
-  ListBoxItem,
-  type Color,
-} from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Size, RefProps } from '../../core/props.js';
+import type { BaseProps, RefProps, Size } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { ColorSwatch, isSwatchColor } from './color-swatch.js';
+import {
+  type Color,
+  ColorSwatchPickerContext,
+  ListBox,
+  ListBoxItem,
+  parseColor,
+  useLocale,
+} from '../../primitives/index.js';
 import { useScopedDisabled } from '../field/field.js';
+import { ColorSwatch, isSwatchColor } from './color-swatch.js';
 
 /** How the swatches are laid out: a grid (the arrow keys move in two dimensions) or a stack. */
 export type ColorSwatchPickerLayout = 'grid' | 'stack';

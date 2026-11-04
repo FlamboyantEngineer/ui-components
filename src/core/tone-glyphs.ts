@@ -1,5 +1,5 @@
-import { ErrorGlyph, InfoGlyph, SuccessGlyph, WarningGlyph } from './glyphs.js';
 import type { GlyphComponent } from './glyph-types.js';
+import { ErrorGlyph, InfoGlyph, SuccessGlyph, WarningGlyph } from './glyphs.js';
 import type { Tone } from './props.js';
 
 const toneGlyphs: Readonly<Record<Tone, GlyphComponent | null>> = {

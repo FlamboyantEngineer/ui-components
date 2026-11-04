@@ -1,12 +1,10 @@
-export { CodeEditor } from './code-editor.js';
-export { resolveCodeTokenizer } from './code-languages.js';
 export type {
   CodeDiagnostic,
+  CodeEditorFieldProps,
   CodeEditorProps,
   CodeEditorResize,
-  CodeEditorFieldProps,
-  CodeEditorSurfaceProps,
   CodeEditorSize,
+  CodeEditorSurfaceProps,
   CodeEditorWrap,
   CodeLanguage,
   CodeSyntax,
@@ -16,3 +14,5 @@ export type {
   JsonSchema,
   JsonSchemaType,
 } from './code-editor.js';
+export { CodeEditor } from './code-editor.js';
+export { resolveCodeTokenizer } from './code-languages.js';

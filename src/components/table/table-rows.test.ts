@@ -4,9 +4,9 @@ import { filterTableRows } from './table-filters.js';
 import {
   applyTableMove,
   compareCellValues,
-  getTextCollator,
   getCellValue,
   getRowText,
+  getTextCollator,
   isEffectiveTableMove,
   type TableColumn,
 } from './table-rows.js';

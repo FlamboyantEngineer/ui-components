@@ -1,43 +1,40 @@
 'use client';
 
-import { isEmptyNode } from '../../utils/is-empty-node.js';
-import { readOwn } from '../../utils/read-own.js';
-import { useMemo, type ReactNode } from 'react';
+import { type ReactNode, useMemo } from 'react';
 import { useTimeZone } from '../../core/clock.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { readOwn } from '../../utils/read-own.js';
 import type { ChatMessageData, ChatParticipant } from '../chat-parts/chat-parts.js';
 import {
   ChatDateSeparator,
   ChatTranscript,
+  type ChatTranscriptProps,
+  type ChatTranscriptScrollMode,
   ChatTypingIndicator,
   ChatUnreadDivider,
   groupChatMessages,
-  type ChatTranscriptProps,
-  type ChatTranscriptScrollMode,
 } from '../chat-transcript/chat-transcript.js';
 import { TextMatchProvider } from '../text-match/text-match.js';
 import { ChatComposer, type ChatComposerOptions } from './chat-composer.js';
 import { ChatHeader } from './chat-header.js';
 import { chatHooks as hooks } from './chat-hooks.js';
-import { useMessageDisplay, type ChatMessageDisplayOptions } from './chat-message-display.js';
-import { ChatMessageView, type ChatMessageContext } from './chat-message-view.js';
+import { type ChatMessageDisplayOptions, useMessageDisplay } from './chat-message-display.js';
+import { type ChatMessageContext, ChatMessageView } from './chat-message-view.js';
 import {
+  type ChatParticipantIndex,
   findStatusText,
   hasAssistant,
   indexParticipants,
   listReaders,
   listTypingNames,
-  type ChatParticipantIndex,
 } from './chat-model.js';
 import { ChatSearchBar, ChatSearchToggle, useChatSearch } from './chat-search.js';
-import { useChatState, type ChatState } from './use-chat-state.js';
-import { useMessageContext, type ChatMessageOptions } from './use-message-context.js';
+import { type ChatState, useChatState } from './use-chat-state.js';
+import { type ChatMessageOptions, useMessageContext } from './use-message-context.js';
 
-export { ChatHeader } from './chat-header.js';
-export type { ChatHeaderProps } from './chat-header.js';
-export type { ChatMessageTextHandler } from './chat-composer.js';
 export type {
   ChatComposerContent,
   ChatComposerEditResult,
@@ -45,7 +42,10 @@ export type {
   ChatComposerInsertOptions,
   ChatComposerInsertResult,
   ChatDraft,
+  ChatMessageTextHandler,
 } from './chat-composer-handle.js';
+export type { ChatHeaderProps } from './chat-header.js';
+export { ChatHeader } from './chat-header.js';
 export type { ChatThinkingUntil } from './chat-model.js';
 
 export interface ChatProps

@@ -2,10 +2,10 @@ import { act, render, renderHook, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { Table } from './table.js';
 import { applyTableMove, type TableMove } from './table-rows.js';
 import { useTableReorder } from './use-table-reorder.js';
-import { toCollectionKey } from '../../utils/to-collection-key.js';
 
 const entries = [
   { id: 'pear', name: 'Pear', kind: 'Fruit', isFixed: false },

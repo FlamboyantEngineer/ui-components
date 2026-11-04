@@ -2,7 +2,7 @@
 // (specs/CALENDAR-VIEW.md, UIC-CALENDAR-VIEW-6).
 
 import { formatIsoDate, fromDate, toCalendarDateTime, toZoned } from '../../primitives/index.js';
-import { isFreeEditKey, type EditKey } from '../../utils/is-free-edit-key.js';
+import { type EditKey, isFreeEditKey } from '../../utils/is-free-edit-key.js';
 import { shiftDay } from './calendar-days.js';
 import { toEventText } from './calendar-event-range.js';
 import type { PlacedEvent } from './calendar-layout.js';

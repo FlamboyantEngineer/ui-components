@@ -1,7 +1,8 @@
-import { requireDefined } from '../../utils/require-defined.js';
 import { isShallowEqual } from '../../utils/is-shallow-equal.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import {
   add,
+  type Anchor,
   center,
   findRightHand,
   length,
@@ -10,7 +11,6 @@ import {
   resolveSideAnchors,
   resolveStraightAnchors,
   subtract,
-  type Anchor,
 } from './edge-anchors.js';
 import { findOrthogonalCorners } from './orthogonal-route.js';
 

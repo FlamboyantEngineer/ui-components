@@ -3,9 +3,12 @@ import { userEvent } from '@testing-library/user-event';
 import { useRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import type { Completion, CompletionSource } from '../completion-list/completion-list.js';
+import {
+  type Completion,
+  type CompletionSource,
+  ControlCompletionList,
+} from '../completion-list/completion-list.js';
 import { CodeEditor, type CodeEditorSurfaceProps } from './code-editor.js';
-import { ControlCompletionList } from '../completion-list/completion-list.js';
 import { useCodeCompletion } from './use-code-completion.js';
 import { useCodeSnippet } from './use-code-snippet.js';
 

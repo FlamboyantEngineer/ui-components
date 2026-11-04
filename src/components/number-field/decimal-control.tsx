@@ -1,26 +1,26 @@
 'use client';
 
-import { useRef, type KeyboardEvent } from 'react';
+import { type KeyboardEvent, useRef } from 'react';
 import { Group, Input, NumberField as AriaNumberField } from '../../primitives/index.js';
-import { toAriaControlProps, type FieldControlProps, type FieldState } from '../field/field.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
+import { type FieldControlProps, type FieldState, toAriaControlProps } from '../field/field.js';
 import type {
   NumberControlConfig,
-  NumberFieldProps,
   NumberFieldCommitBehavior,
+  NumberFieldProps,
 } from './number-field.js';
 import {
-  NumberAdornment,
-  NumberScrubber,
-  NumberValue,
-  Stepper,
   addStep,
   createModifierStepHandler,
-  toModifiedPressProps,
+  NumberAdornment,
   numberFieldHooks as hooks,
+  NumberScrubber,
   type NumberSteps,
+  NumberValue,
+  Stepper,
+  toModifiedPressProps,
 } from './number-field-parts.js';
 import { snapNumberValue } from './snap-number-value.js';
-import { isComposingKey } from '../../utils/is-composing-key.js';
 interface DecimalControlProps {
   state: FieldState<number | null>;
   control: FieldControlProps;

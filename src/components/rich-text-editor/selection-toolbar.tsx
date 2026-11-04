@@ -7,12 +7,15 @@ import {
 } from '@handlewithcare/react-prosemirror';
 import { TextSelection } from 'prosemirror-state';
 import type { EditorView } from 'prosemirror-view';
-import { useRef, useState, type FocusEvent, type KeyboardEvent, type ReactNode } from 'react';
-import { Popover, useLocale, type Placement } from '../../primitives/index.js';
+import { type FocusEvent, type KeyboardEvent, type ReactNode, useRef, useState } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { type Placement, Popover, useLocale } from '../../primitives/index.js';
+import { isElement } from '../../utils/is-element.js';
+import { autoUpdateOverlay } from '../../utils/overlay-auto-update.js';
+import { DEFAULT_OVERLAY_GAP } from '../../utils/overlay-defaults.js';
 import { ToolbarRow } from '../layout/layout.js';
 import { useLayerZIndex } from '../portal/portal.js';
 import { FormatButtons, LinkButton } from './format-controls.js';
@@ -20,9 +23,6 @@ import { getMarkItems } from './format-items.js';
 import { useRichTextEditorContext } from './rich-text-context.js';
 import { useRichTextController } from './rich-text-controller.js';
 import { useFocusReturn } from './use-focus-return.js';
-import { DEFAULT_OVERLAY_GAP } from '../../utils/overlay-defaults.js';
-import { isElement } from '../../utils/is-element.js';
-import { autoUpdateOverlay } from '../../utils/overlay-auto-update.js';
 
 export interface SelectionToolbarProps
   extends RefProps<HTMLElement>, BaseProps, AriaLabellingProps {

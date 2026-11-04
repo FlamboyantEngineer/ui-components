@@ -1,15 +1,15 @@
 'use client';
 
-import { useEffect, useState, type RefObject } from 'react';
+import { type RefObject, useEffect, useState } from 'react';
 import { requireDefined } from '../../utils/require-defined.js';
+import { measureInScroller } from '../../utils/scroll-geometry.js';
 import {
   OverlayScrollbars,
   useOverlayMetrics,
   useSharedViewportObserver,
 } from '../scroll-region/scroll-region.js';
-import { type CodeDiagnostic } from './code-layers.js';
 import { codeEditorHooks as hooks } from './code-editor-hooks.js';
-import { measureInScroller } from '../../utils/scroll-geometry.js';
+import type { CodeDiagnostic } from './code-layers.js';
 
 interface CodeScrollbarsProps {
   input: RefObject<HTMLTextAreaElement | null>;

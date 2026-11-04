@@ -1,16 +1,16 @@
 'use client';
 
-import { useMergedRefs } from '../../utils/use-merged-refs.js';
-import { useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { type KeyboardEvent, type ReactNode, useLayoutEffect, useRef, useState } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { useResizeObserver } from '../../utils/use-resize-observer.js';
+import { type Annotation, getLayerFrame } from './anchor-geometry.js';
 import { useAnnotationContext } from './annotation-context.js';
 import { annotationLayerHooks as hooks } from './annotation-hooks.js';
-import { getLayerFrame, type Annotation } from './anchor-geometry.js';
 import { stackAnnotationCards } from './stack-cards.js';
 
 /** What a card shows about its annotation. */

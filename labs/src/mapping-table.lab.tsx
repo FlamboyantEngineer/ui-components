@@ -1,15 +1,15 @@
-import { useState, type CSSProperties } from 'react';
+import { type CSSProperties, useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
 import {
   MappingTable,
-  suggestMapping,
-  summarizeMapping,
   type MappingTableColumn,
   type MappingTableSuggest,
   type MappingTableTarget,
   type MappingTableValue,
+  suggestMapping,
+  summarizeMapping,
 } from '../../src/components/mapping-table/mapping-table.js';
-import { Button } from '../../src/components/button/button.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const column: CSSProperties = { width: 720 };
 

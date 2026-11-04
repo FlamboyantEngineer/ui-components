@@ -4,20 +4,20 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { ChatParts } from '../../src/components/chat-parts/index.js';
-import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import {
   ChatMessage,
   ChatTranscript,
 } from '../../src/components/chat-transcript/chat-transcript.js';
+import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import { MessageComposerMenuButton } from '../../src/components/message-composer/index.js';
 import {
-  RichMessageComposer,
   type MessageComposerMessage,
+  RichMessageComposer,
 } from '../../src/components/message-composer/rich/index.js';
-import { requireDefined } from './require-defined.js';
 import { LabSection } from './chrome/index.js';
 import { SentMessage } from './message-composer-rich-cases.js';
 import { getLabReference, labRecords, referenceMenuItems } from './reference-samples.js';
+import { requireDefined } from './require-defined.js';
 
 const [trip, note] = labRecords;
 

@@ -1,19 +1,19 @@
 'use client';
 
-import { useRef, useState, type KeyboardEvent } from 'react';
-import { Dialog } from '../../primitives/index.js';
+import { type KeyboardEvent, useRef, useState } from 'react';
 import type { Key, Selection } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { Dialog } from '../../primitives/index.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
+import { DEFAULT_DROPDOWN_OFFSET } from '../../utils/overlay-defaults.js';
 import { PopoverPanel } from '../popover/popover.js';
 import { triggerWidthProperty } from '../portal/portal.js';
 import { SearchField } from '../search-field/search-field.js';
 import { Tree, type TreeItemData } from '../tree/tree.js';
-import { collectAncestorKeys, type TreeIndex } from './tree-index.js';
-import { createBranchCheck, useBranchPress } from './tree-branch-press.js';
-import type { SelectTreeFieldProps } from './select-tree-field.js';
-import { DEFAULT_DROPDOWN_OFFSET } from '../../utils/overlay-defaults.js';
-import { isComposingKey } from '../../utils/is-composing-key.js';
 import { selectFieldHooks as hooks } from './select-field-hooks.js';
+import type { SelectTreeFieldProps } from './select-tree-field.js';
+import { createBranchCheck, useBranchPress } from './tree-branch-press.js';
+import { collectAncestorKeys, type TreeIndex } from './tree-index.js';
 
 interface TreeSelectPopoverProps<T extends TreeItemData> extends Pick<
   SelectTreeFieldProps<T, 'single' | 'multiple'>,

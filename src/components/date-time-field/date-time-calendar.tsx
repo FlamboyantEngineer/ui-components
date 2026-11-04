@@ -1,7 +1,9 @@
 'use client';
 
+import { type ReactNode, useContext, useId } from 'react';
+import { useGetNow, useTimeZone } from '../../core/clock.js';
 import { ChevronLeftGlyph, ChevronRightGlyph } from '../../core/glyphs.js';
-import { useContext, useId, type ReactNode } from 'react';
+import { useUiStrings } from '../../core/provider.js';
 import {
   CalendarCell,
   type CalendarDate,
@@ -15,18 +17,16 @@ import {
   Popover,
   useLocale,
 } from '../../primitives/index.js';
-import { PopoverPresence } from '../popover/popover.js';
-import { useGetNow, useTimeZone } from '../../core/clock.js';
-import { useUiStrings } from '../../core/provider.js';
+import { DEFAULT_DROPDOWN_OFFSET, DEFAULT_OVERLAY_GUTTER } from '../../utils/overlay-defaults.js';
 import { Button } from '../button/button.js';
+import { PopoverPresence } from '../popover/popover.js';
 import { useLayerZIndex } from '../portal/portal.js';
+import { useCalendarAnchoring } from './calendar-anchoring.js';
 import { CalendarHeadingSelects } from './date-time-calendar-heading.js';
 import type { DateTimeFieldDateState } from './date-time-field.js';
+import { dateTimeFieldHooks as hooks } from './date-time-field-hooks.js';
 import type { DateControlSettings } from './date-time-pickers.js';
 import { currentDateValue, type DateFieldValue, type DateTimeFieldMode } from './date-values.js';
-import { DEFAULT_DROPDOWN_OFFSET, DEFAULT_OVERLAY_GUTTER } from '../../utils/overlay-defaults.js';
-import { dateTimeFieldHooks as hooks } from './date-time-field-hooks.js';
-import { useCalendarAnchoring } from './calendar-anchoring.js';
 
 /** A named value offered beside the calendar, such as `Last 7 days`. */
 export interface DateTimeFieldPreset<V> {

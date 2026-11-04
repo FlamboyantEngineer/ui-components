@@ -1,10 +1,3 @@
-export {
-  Disclosure,
-  DisclosureGroup,
-  DisclosureHeader,
-  DisclosurePanel,
-  DisclosureTitle,
-} from './disclosure.js';
 export type {
   DisclosureGroupProps,
   DisclosureGroupRenderState,
@@ -16,4 +9,11 @@ export type {
   DisclosureProps,
   DisclosureRenderState,
   DisclosureTitleProps,
+} from './disclosure.js';
+export {
+  Disclosure,
+  DisclosureGroup,
+  DisclosureHeader,
+  DisclosurePanel,
+  DisclosureTitle,
 } from './disclosure.js';

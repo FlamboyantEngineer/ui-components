@@ -1,6 +1,6 @@
 'use client';
 
-import { useLayoutEffect, useState, type RefObject } from 'react';
+import { type RefObject, useLayoutEffect, useState } from 'react';
 
 /** Lets focus-driven scrolling settle before an overlay subscribes to scroll dismissal. */
 export function useFrameFlag(isActive: boolean, ownerRef: RefObject<Element | null>): boolean {

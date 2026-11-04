@@ -5,11 +5,11 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { Card } from '../card/card.js';
 import {
+  type HeadingLevel,
   HeadingLevelContext,
   Section,
   SectionHeader,
   useHeadingLevel,
-  type HeadingLevel,
 } from './section-header.js';
 
 function HostHeading({ children }: { children: string }) {

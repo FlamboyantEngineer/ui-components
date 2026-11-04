@@ -2,11 +2,11 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import {
   createRef,
+  type ReactNode,
+  type Ref,
   useImperativeHandle,
   useState,
   useSyncExternalStore,
-  type ReactNode,
-  type Ref,
 } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
@@ -14,7 +14,7 @@ import { requireDefined } from '../../utils/require-defined.js';
 import { ColorField } from '../color-field/color-field.js';
 import { DateTimeField } from '../date-time-field/date-time-field.js';
 import { TextField } from '../text-field/text-field.js';
-import { Form, useFormProblems, useFormValidity, type FormBlocker } from './form.js';
+import { Form, type FormBlocker, useFormProblems, useFormValidity } from './form.js';
 
 /** A Save button outside the submit: it saves only while nothing blocks, and asks nothing else. */
 function SaveBar({ onSave }: { onSave: () => void }) {

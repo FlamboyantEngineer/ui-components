@@ -6,9 +6,9 @@ import type {
   BaseProps,
   NativeProps,
   PresenceStatus,
+  RefProps,
   Size,
   Tone,
-  RefProps,
 } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';

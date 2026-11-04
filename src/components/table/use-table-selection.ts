@@ -1,9 +1,9 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useControllableState } from '../../core/controllable-state.js';
 import type { CollectionSelectionProps } from '../../core/events.js';
 import type { Key, Selection } from '../../core/props.js';
-import { useControllableState } from '../../core/controllable-state.js';
 import { walkTree } from '../../utils/walk-tree.js';
 import type { TableRow } from './table-rows.js';
 import type { TableNode } from './table-tree.js';

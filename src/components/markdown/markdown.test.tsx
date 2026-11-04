@@ -3,13 +3,13 @@ import { join } from 'node:path';
 import { render, renderHook, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { isValidElement } from 'react';
-import { maxMarkupDepth } from '../../utils/markup.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { maxMarkupDepth } from '../../utils/markup.js';
 import { TextMatchProvider } from '../text-match/text-match.js';
-import { listMarkdownHeadings } from './markdown-headings.js';
 import { Markdown } from './markdown.js';
+import { listMarkdownHeadings } from './markdown-headings.js';
 import { parseMarkdown } from './parse-markdown.js';
 
 const article = [

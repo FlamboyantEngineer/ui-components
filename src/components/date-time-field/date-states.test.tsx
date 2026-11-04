@@ -1,8 +1,8 @@
 import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { UiProvider } from '../../core/provider.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { UiProvider } from '../../core/provider.js';
 import { DateTimeField, type DateTimeFieldDateState } from './date-time-field.js';
 
 const getDateState = (date: string): DateTimeFieldDateState | undefined => {

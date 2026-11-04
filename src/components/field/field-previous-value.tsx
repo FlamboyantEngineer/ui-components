@@ -1,10 +1,10 @@
 'use client';
 
-import { createContext, use, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { createContext, type ReactNode, use, useLayoutEffect, useRef, useState } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
-import { FieldRestoreButton } from './field-restore-button.js';
 import type { FieldChangeLayout } from './field-parts.js';
+import { FieldRestoreButton } from './field-restore-button.js';
 
 export interface FieldPreviousValueProps extends RefProps<HTMLSpanElement>, BaseProps {
   /** The value the edit replaced or removed: text, or an icon with its label. */

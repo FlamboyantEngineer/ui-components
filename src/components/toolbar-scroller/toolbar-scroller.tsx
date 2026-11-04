@@ -1,14 +1,14 @@
 'use client';
 
-import { renderCaretKeyToolbar } from '../../utils/toolbar-caret-keys.js';
-import { useMemo, type ReactNode } from 'react';
-import { Toolbar } from '../../primitives/index.js';
+import { type ReactNode, useMemo } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import { Toolbar } from '../../primitives/index.js';
 import { mergeRefs } from '../../utils/merge-props.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import { renderCaretKeyToolbar } from '../../utils/toolbar-caret-keys.js';
 import { useOverflowFocus } from '../../utils/use-overflow-focus.js';
 import { useOverflowItems } from '../../utils/use-overflow-items.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';

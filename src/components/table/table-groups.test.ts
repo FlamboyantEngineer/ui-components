@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { walkTree } from '../../utils/walk-tree.js';
 import {
   aggregateCellValues,
   groupTableNodes,
@@ -10,7 +11,6 @@ import {
 } from './table-groups.js';
 import type { TableColumn } from './table-rows.js';
 import { buildTableNodes } from './table-tree.js';
-import { walkTree } from '../../utils/walk-tree.js';
 
 interface Item {
   id: string;

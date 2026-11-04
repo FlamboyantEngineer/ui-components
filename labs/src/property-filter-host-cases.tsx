@@ -1,13 +1,13 @@
 // Property Filter cases passing the panel's field state and expansion through the filtering wrapper.
 
 import { useState } from 'react';
-import type { Key } from '../../src/core/props.js';
 import { PropertyFilter } from '../../src/components/property-filter/property-filter.js';
 import {
   PropertyGroup,
   PropertySection,
 } from '../../src/components/property-panel/property-panel.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
+import type { Key } from '../../src/core/props.js';
 import { LabSection } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 import { TextSetting } from './property-text-setting.js';

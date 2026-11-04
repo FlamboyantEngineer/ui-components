@@ -1,9 +1,9 @@
 'use client';
 
-import { EyeDropperGlyph } from '../../core/glyphs.js';
 import { useContext, useEffect, useRef } from 'react';
-import { ColorPickerStateContext, parseColor } from '../../primitives/index.js';
+import { EyeDropperGlyph } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
+import { ColorPickerStateContext, parseColor } from '../../primitives/index.js';
 import { Button } from '../button/button.js';
 import { colorFieldHooks as hooks } from './color-field-hooks.js';
 

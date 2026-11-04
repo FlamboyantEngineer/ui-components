@@ -1,9 +1,9 @@
-import { CheckGlyph, HandRaisedGlyph, LockGlyph } from '../../core/glyphs.js';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { installComposerRow } from '../../../test/composer-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { CheckGlyph, HandRaisedGlyph, LockGlyph } from '../../core/glyphs.js';
 import {
   MessageComposerSelect,
   type MessageComposerSelectOption,

@@ -1,18 +1,18 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useNumberFormatter } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useNumberFormatter } from '../../primitives/index.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { Chart, type ChartSeries, type ChartViewProps } from './chart.js';
 import { chartHooks, donutChartHooks } from './chart-hooks.js';
-import { ChartLegend, useHiddenKeys, type ChartHiddenKeysProps } from './chart-legend.js';
+import { type ChartHiddenKeysProps, ChartLegend, useHiddenKeys } from './chart-legend.js';
 import { ChartPlot, useChartPoints } from './chart-points.js';
-import { resolveDonutGeometry, type DonutGeometry } from './donut-geometry.js';
-import { toDonutTable, type DonutFormats } from './donut-table.js';
+import { type DonutGeometry, resolveDonutGeometry } from './donut-geometry.js';
+import { type DonutFormats, toDonutTable } from './donut-table.js';
 
 /** One part of a donut chart's whole. */
 export interface DonutChartSegment extends ChartSeries {

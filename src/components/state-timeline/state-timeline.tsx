@@ -1,16 +1,16 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key, SortDirection, Tone, RefProps } from '../../core/props.js';
+import type { BaseProps, Key, RefProps, SortDirection, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { Attribution, type AttributionProps } from '../attribution/attribution.js';
 import type { AvatarIdentity } from '../avatar/avatar.js';
 import { Badge } from '../badge/badge.js';
+import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 
 /** A state in the history: its name in a toned badge. */
 export interface StateTimelineState {

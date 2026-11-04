@@ -1,6 +1,6 @@
 'use client';
 
-import { createElement, Fragment, useMemo, type ReactNode } from 'react';
+import { createElement, Fragment, type ReactNode, useMemo } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { UiLink } from '../../core/provider.js';
@@ -10,10 +10,10 @@ import { untrustedImageProps } from '../../utils/safe-url.js';
 import { TextMatch } from '../text-match/text-match.js';
 import {
   defaultHtmlPolicy,
-  sanitizeHtml,
   type HtmlElementNode,
   type HtmlNode,
   type HtmlPolicy,
+  sanitizeHtml,
 } from './sanitize-html.js';
 
 export interface HtmlMarkupProps extends RefProps<HTMLDivElement>, BaseProps {

@@ -1,6 +1,7 @@
 'use client';
 
-import { useRef, type ReactNode, type RefObject } from 'react';
+import { type ReactNode, type RefObject, useRef } from 'react';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import {
   ComposerControlsContext,
   useCompactRow,
@@ -8,12 +9,11 @@ import {
   useSendButtonRegistry,
 } from './composer-controls.js';
 import { composerHooks as hooks } from './composer-hooks.js';
+import type { ComposerKeys } from './composer-keys.js';
 import type { MessageComposerToken } from './composer-message.js';
 import { ComposerSendControl } from './composer-tools.js';
-import type { ComposerKeys } from './composer-keys.js';
 import type { MessageComposerSharedProps } from './message-composer.js';
 import { useFileDrop } from './use-file-drop.js';
-import { isEmptyNode } from '../../utils/is-empty-node.js';
 
 /** What the frame needs from the composer's input, plain or rich. */
 export interface ComposerFrameModel {

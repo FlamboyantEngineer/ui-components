@@ -1,18 +1,18 @@
 import { act, render, renderHook, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import {
+  createRef,
+  type Ref,
+  startTransition,
   StrictMode,
   Suspense,
-  createRef,
-  startTransition,
   use,
   useImperativeHandle,
   useState,
-  type Ref,
 } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
-import { useFieldState, type FieldStateOptions } from './field-state.js';
+import { type FieldStateOptions, useFieldState } from './field-state.js';
 
 /** Lets debounced checks start and settle. */
 const settle = () => act(() => new Promise((done) => setTimeout(done, 10)));

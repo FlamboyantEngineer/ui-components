@@ -10,7 +10,7 @@ import {
   useUnsavedChangesGuard,
 } from '../../src/components/unsaved-changes-guard/unsaved-changes-guard.js';
 import type { Key } from '../../src/core/props.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 

@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
-import { toolCallKindGlyphs, type ChatToolCallKind } from '../chat-tool-call/chat-tool-call.js';
+import { type ChatToolCallKind, toolCallKindGlyphs } from '../chat-tool-call/chat-tool-call.js';
 import { ActivityDisclosure, type ActivityExpansionProps } from './activity-disclosure.js';
 import { toWholeSeconds } from './chat-activity.js';
 

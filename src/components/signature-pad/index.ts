@@ -1,4 +1,3 @@
-export { SignaturePad } from './signature-pad.js';
 export type {
   DrawnSignature,
   ImageSignature,
@@ -9,4 +8,5 @@ export type {
   SignatureValue,
   TypedSignature,
 } from './signature-pad.js';
+export { SignaturePad } from './signature-pad.js';
 export { formatSignatureDataUrl, formatSignatureSvg } from './signature-path.js';

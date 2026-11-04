@@ -5,7 +5,7 @@
 //   S2 component directory layout, S3 re-export-only entry points, I2 props that extend BaseProps,
 //   N8 one createHooks declaration per component, S8 no import cycles between components.
 
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, join, sep } from 'node:path';
 import ts from 'typescript';
 import { relativePosix, reportProblems, root, walk } from './lib/script.mjs';

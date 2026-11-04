@@ -1,19 +1,19 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useContentWidths } from './use-content-widths.js';
-import { Table as AriaTable, useDragAndDrop } from '../../primitives/index.js';
 import type {
   AriaLabellingProps,
   CollectionSelectionProps,
   ExpansionProps,
 } from '../../core/events.js';
-import { splitDataAttributes } from '../../core/hooks.js';
-import type { BaseProps, Key, Size, RefProps } from '../../core/props.js';
+import { measuredProperty, splitDataAttributes } from '../../core/hooks.js';
+import type { BaseProps, Key, RefProps, Size } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { Table as AriaTable, useDragAndDrop } from '../../primitives/index.js';
+import { fromCollectionKey } from '../../utils/from-collection-key.js';
+import { readOwn } from '../../utils/read-own.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { useKeptCollectionAttributes } from '../../utils/use-kept-collection-attributes.js';
-import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import type { ActionRowAction } from '../action-row/action-row.js';
 import { Pagination } from '../pagination/pagination.js';
 import type { TableColumnWidths } from './column-sizing.js';
@@ -21,26 +21,25 @@ import { TableBody } from './table-body.js';
 import { TableSelectionBar } from './table-bulk-edit.js';
 import { TableColumnFilter } from './table-column-filter.js';
 import { getColumnText, type TableColumnGroup, type TableColumnLayout } from './table-columns.js';
-import { TableSearch } from './table-search.js';
 import { isEmptyFilterValue, setColumnFilter, type TableFilter } from './table-filters.js';
 import { hasTableFooter, TableFooter } from './table-footer.js';
-import { TableScroll } from './table-scroll.js';
 import { readGridTracks } from './table-grid-tracks.js';
-import { measuredProperty } from '../../core/hooks.js';
 import { hasGroupRow } from './table-group-header.js';
 import { selectionColumnWidth, TableHeader, type TableHeaderModel } from './table-header.js';
 import { tableHooks as hooks } from './table-hooks.js';
 import type { TableCellWrap, TableColumn, TableRow } from './table-rows.js';
+import { TableScroll } from './table-scroll.js';
+import { TableSearch } from './table-search.js';
 import { TableToolbar } from './table-toolbar.js';
 import type { TableChildRows } from './table-tree.js';
 import type { TableCellEdit } from './use-cell-editing.js';
 import type { TableSpreadsheetProps } from './use-cell-selection.js';
+import { useContentWidths } from './use-content-widths.js';
 import type { TableGroupingProps } from './use-table-expansion.js';
-import { useTableGrid, type TableGrid } from './use-table-grid.js';
+import { type TableGrid, useTableGrid } from './use-table-grid.js';
 import type { TableReorderOptions } from './use-table-reorder.js';
 import type { TablePagination } from './use-table-rows.js';
 import type { TableSortOptions } from './use-table-sort.js';
-import { readOwn } from '../../utils/read-own.js';
 
 export type TableSize = Extract<Size, 'sm' | 'md'>;
 

@@ -1,22 +1,22 @@
 'use client';
 
-import { isFocused } from '../../utils/focus-target.js';
 import {
-  useCallback,
-  useMemo,
-  useEffect,
-  useRef,
   type KeyboardEvent,
   type MouseEvent,
   type PointerEvent,
   type Ref,
   type RefCallback,
   type RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
 } from 'react';
-import { mergeRefs } from '../../utils/merge-props.js';
-import type { MenuController } from './menu-controller.js';
-import { LONG_PRESS_DELAY } from '../../utils/overlay-defaults.js';
+import { isFocused } from '../../utils/focus-target.js';
 import { isHTMLElement } from '../../utils/is-element.js';
+import { mergeRefs } from '../../utils/merge-props.js';
+import { LONG_PRESS_DELAY } from '../../utils/overlay-defaults.js';
+import type { MenuController } from './menu-controller.js';
 
 /** The props a context menu target receives; its own values are called first. */
 export interface ContextMenuTargetProps {

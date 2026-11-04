@@ -1,23 +1,23 @@
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { Autocomplete } from '../../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
-import { MenuButton, actionKeys, fruitEntries, openMenu } from '../../../test/menu-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { actionKeys, fruitEntries, MenuButton, openMenu } from '../../../test/menu-fixtures.js';
+import { Autocomplete } from '../../primitives/index.js';
 import { Button } from '../button/button.js';
 import { TextMatch, TextMatchProvider } from '../text-match/text-match.js';
 import {
   Menu,
+  type MenuEntry,
   MenuItem,
+  type MenuItemProps,
   MenuPopover,
+  type MenuProps,
   MenuSection,
+  type MenuSectionProps,
   MenuSeparator,
   MenuTrigger,
   SubmenuTrigger,
-  type MenuEntry,
-  type MenuItemProps,
-  type MenuProps,
-  type MenuSectionProps,
 } from './menu.js';
 
 /** Stubs IntersectionObserver and returns a function that reports the first observed element in view. */

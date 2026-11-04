@@ -4,19 +4,19 @@ import { useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Chat } from '../../src/components/chat/index.js';
 import {
-  useChatController,
   type ChatSendFunction,
+  useChatController,
 } from '../../src/components/chat-controller/index.js';
 import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import { Choice, ChoiceGroup } from '../../src/components/choice-group/choice-group.js';
 import { Cluster, Stack } from '../../src/components/layout/layout.js';
 import type { MessageComposerShortcuts } from '../../src/components/message-composer/index.js';
-import { KeyHints, type KeyHint } from '../../src/components/shortcut/index.js';
-import { requireDefined } from './require-defined.js';
+import { type KeyHint, KeyHints } from '../../src/components/shortcut/index.js';
 import { fakeUpload } from './chat-agent.js';
 import { agentTiming, sleep, streamText } from './chat-agent-stream.js';
 import { assistantPeople, plannerId, readerId } from './chat-samples.js';
 import { LabSection } from './chrome/index.js';
+import { requireDefined } from './require-defined.js';
 
 /** Thinks for a moment, then echoes the reader's latest message slowly, so a queue can build up. */
 const slowEcho: ChatSendFunction = async function* (messages, { signal }) {

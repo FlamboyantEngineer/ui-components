@@ -1,9 +1,9 @@
 'use client';
 
 import {
+  type NodeViewComponentProps,
   useEditorEventCallback,
   useStopEvent,
-  type NodeViewComponentProps,
 } from '@handlewithcare/react-prosemirror';
 import { useContext, useRef } from 'react';
 import { mergeClassNames } from '../../core/hooks.js';

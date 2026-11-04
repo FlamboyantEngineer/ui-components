@@ -8,7 +8,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { ToolbarRow } from '../layout/layout.js';
 import { ProjectionContent, useProjectedContent } from '../projection/projection.js';
-import { toAppFrameSlot, useIsInsideAppFrame, type AppFrameBandSlot } from './app-frame.js';
+import { type AppFrameBandSlot, toAppFrameSlot, useIsInsideAppFrame } from './app-frame.js';
 
 export interface AppFrameBandProps extends RefProps<HTMLDivElement>, BaseProps, AriaLabellingProps {
   /** The leading part: a title, a breadcrumb or fields. */

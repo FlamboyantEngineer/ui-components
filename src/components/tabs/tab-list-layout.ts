@@ -1,14 +1,14 @@
 'use client';
 
-import { useMemo, type RefCallback, type RefObject } from 'react';
+import { type RefCallback, type RefObject, useMemo } from 'react';
 import type { Key, Orientation } from '../../core/props.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { useToolbarScroll } from '../toolbar-scroller/toolbar-scroller.js';
+import { useTabActionScroll } from './tab-action-room.js';
 import type { TabListModel } from './tab-actions.js';
 import { useTabOverflow } from './tab-bar.js';
-import { useTabActionScroll } from './tab-action-room.js';
-import type { TabListPartsModel } from './tab-list-parts.js';
 import { useCenterSelectedTab, useListOverflow } from './tab-list-overflow.js';
+import type { TabListPartsModel } from './tab-list-parts.js';
 
 interface ListLayoutOptions {
   state: TabListModel | null;

@@ -17,8 +17,8 @@ import {
   existsSync,
   mkdirSync,
   mkdtempSync,
-  readFileSync,
   readdirSync,
+  readFileSync,
   rmSync,
   statSync,
   writeFileSync,
@@ -27,8 +27,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { runNpm } from './lib/npm.mjs';
-import { reportProblems, root } from './lib/script.mjs';
 import { REFERENCE_STYLESHEET, referenceStylesheetProblems } from './lib/reference-stylesheet.mjs';
+import { reportProblems, root } from './lib/script.mjs';
 
 const PACKAGE = '@flamboyantengineer/ui-components';
 const tsc = join(root, 'node_modules', 'typescript', 'bin', 'tsc');

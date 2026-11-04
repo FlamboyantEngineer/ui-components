@@ -1,13 +1,13 @@
 'use client';
 
-import { useLayoutEffect, useState, type Ref, type RefCallback } from 'react';
+import { type Ref, type RefCallback, useLayoutEffect, useState } from 'react';
+import { isShallowEqual } from '../../utils/is-shallow-equal.js';
 import { observeViewport } from '../../utils/observe-viewport.js';
 import { getOwnerWindow } from '../../utils/owner-window.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { useShallowStable } from '../../utils/use-shallow-stable.js';
-import { isShallowEqual } from '../../utils/is-shallow-equal.js';
 import type { TableColumnSizing } from './column-sizing.js';
 import { measureContentWidths } from './measure-content-widths.js';
-import { useMergedRefs } from '../../utils/use-merged-refs.js';
 
 interface ContentWidths {
   ref: RefCallback<HTMLDivElement>;

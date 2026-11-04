@@ -1,7 +1,7 @@
 import type { Locator, Page } from '@playwright/test';
-import { controlHeight, expect, matrix, matrixCell, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 import { expectPopoverFits } from './date-popover-fit.js';
+import { controlHeight, expect, matrix, matrixCell, test } from './fixtures.js';
 
 function cell(page: Page, state: string, mode: string): Locator {
   return matrixCell(page, `state=${state} mode=${mode}`, { family: 'modes' });

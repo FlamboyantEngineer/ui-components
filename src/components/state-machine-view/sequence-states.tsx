@@ -3,7 +3,7 @@
 // The sequence's state row: one roving tab stop over the enabled states, activation apart from
 // selection, counts, hints and context menu requests (specs/STATE-MACHINE-VIEW.md).
 
-import { useId, useLayoutEffect, useMemo, useRef, useState, type RefObject } from 'react';
+import { type RefObject, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../../primitives/index.js';
@@ -17,8 +17,8 @@ import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { describeState, getStateCount, notificationCountMax } from './describe-state.js';
 import { getContextMenuRequestHandlers, isKeyboardContextMenu } from './sequence-interaction.js';
 import type { SequenceLayout } from './sequence-layout.js';
-import { hooks } from './state-machine-view-hooks.js';
 import type { StateMachineState, StateMachineViewProps } from './state-machine-view.js';
+import { hooks } from './state-machine-view-hooks.js';
 
 type SequenceViewProps = Omit<StateMachineViewProps, 'presentation'>;
 

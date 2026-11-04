@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 import enJson from './en.json' with { type: 'json' };
 import esJson from './es.json' with { type: 'json' };
 import frJson from './fr.json' with { type: 'json' };
-import jaJson from './ja.json' with { type: 'json' };
 import * as locales from './index.js';
+import jaJson from './ja.json' with { type: 'json' };
 
 type Element = ReturnType<IntlMessageFormat['getAst']>[number];
 

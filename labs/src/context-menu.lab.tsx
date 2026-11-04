@@ -1,19 +1,19 @@
-import { PlusGlyph } from '../../src/core/glyphs.js';
-import { useState, type CSSProperties, type ReactNode } from 'react';
-import type { Key } from '../../src/core/props.js';
+import { type CSSProperties, type ReactNode, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { ContextMenuTrigger, ContextMenu } from '../../src/components/context-menu/context-menu.js';
+import { ContextMenu, ContextMenuTrigger } from '../../src/components/context-menu/context-menu.js';
 import { useMenuController } from '../../src/components/context-menu/index.js';
 import {
   Menu,
+  type MenuEntry,
   MenuItem,
   MenuPopover,
   MenuSeparator,
-  SubmenuTrigger,
-  type MenuEntry,
   type MenuSize,
+  SubmenuTrigger,
 } from '../../src/components/menu/menu.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { PlusGlyph } from '../../src/core/glyphs.js';
+import type { Key } from '../../src/core/props.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { ContextMenuCoverageSections } from './context-menu-coverage-cases.js';
 
 const sizes = ['sm', 'md', 'lg'] as const;

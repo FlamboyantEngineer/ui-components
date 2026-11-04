@@ -14,7 +14,7 @@ import {
   type TableChildRows,
   type TableNode,
 } from './table-tree.js';
-import { useTableSort, type TableSortOptions, type TableSortState } from './use-table-sort.js';
+import { type TableSortOptions, type TableSortState, useTableSort } from './use-table-sort.js';
 
 /** Shows the rows one page at a time under a page navigation. */
 export interface TablePagination {

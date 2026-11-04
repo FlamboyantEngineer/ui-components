@@ -3,7 +3,7 @@ import { Banner } from '../../src/components/banner/banner.js';
 import { Button } from '../../src/components/button/button.js';
 import { InlineError } from '../../src/components/inline-error/inline-error.js';
 import { StatusLight } from '../../src/components/status-light/status-light.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const toneLabels = {
   neutral: 'Unknown',

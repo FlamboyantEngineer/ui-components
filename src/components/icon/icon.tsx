@@ -3,7 +3,7 @@
 import type { ReactElement, ReactNode } from 'react';
 import type { GlyphComponent } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Size, RefProps } from '../../core/props.js';
+import type { BaseProps, RefProps, Size } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
 import { toImageProps } from './icon-props.js';
 
@@ -39,4 +39,4 @@ export function Icon({ icon, children, size = 'md', label, className, ...rest }:
   );
 }
 
-export { hasIcon, toImageProps, toIconProps } from './icon-props.js';
+export { hasIcon, toIconProps, toImageProps } from './icon-props.js';

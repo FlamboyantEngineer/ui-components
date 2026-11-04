@@ -1,13 +1,13 @@
 'use client';
 
-import { useMergedRefs } from '../../utils/use-merged-refs.js';
-import { CheckGlyph, ErrorGlyph, OfflineGlyph, type GlyphComponent } from '../../core/glyphs.js';
 import { useRef } from 'react';
+import { CheckGlyph, ErrorGlyph, type GlyphComponent, OfflineGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { useEnterExit } from '../../utils/use-enter-exit.js';
 import { useDelayedFlag } from '../../utils/use-delayed-flag.js';
+import { useEnterExit } from '../../utils/use-enter-exit.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { Button } from '../button/button.js';
 import { Icon } from '../icon/icon.js';
 import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';

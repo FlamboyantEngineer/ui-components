@@ -1,39 +1,39 @@
 'use client';
 
-import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import {
+  type MouseEvent,
+  type ReactNode,
+  type Ref,
   useCallback,
   useImperativeHandle,
   useLayoutEffect,
   useMemo,
   useState,
-  type MouseEvent,
-  type ReactNode,
-  type Ref,
 } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
+import { isElement } from '../../utils/is-element.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useLatest } from '../../utils/use-latest.js';
-import { AnnotationContext } from './annotation-context.js';
-import { annotationLayerHooks as hooks } from './annotation-hooks.js';
-import { observeTargets } from './observe-targets.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import {
+  type Annotation,
+  type AnnotationRect,
   findAnnotationAt,
   findTargets,
   getLayerFrame,
   isSameMeasurement,
+  type MeasuredAnchor,
   measureTargets,
   toAnchorTop,
-  type Annotation,
-  type AnnotationRect,
-  type MeasuredAnchor,
 } from './anchor-geometry.js';
-import { isElement } from '../../utils/is-element.js';
+import { AnnotationContext } from './annotation-context.js';
+import { annotationLayerHooks as hooks } from './annotation-hooks.js';
+import { observeTargets } from './observe-targets.js';
 
-export { AnnotationMargin } from './annotation-margin.js';
-export type { AnnotationCardState, AnnotationMarginProps } from './annotation-margin.js';
 export type { Annotation, AnnotationRect } from './anchor-geometry.js';
+export type { AnnotationCardState, AnnotationMarginProps } from './annotation-margin.js';
+export { AnnotationMargin } from './annotation-margin.js';
 
 export interface AnnotationLayerProps extends RefProps<HTMLDivElement>, BaseProps {
   /** The annotations, each anchored by rectangles or by an element inside the layer. */

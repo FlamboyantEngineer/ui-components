@@ -8,8 +8,8 @@ import { getValueLabel, type PivotTableField } from './pivot-columns.js';
 import {
   applyFieldMove,
   createFieldCards,
-  setValueAggregate,
   type PivotFieldCard,
+  setValueAggregate,
 } from './pivot-fields.js';
 import { pivotTableHooks as hooks } from './pivot-table-hooks.js';
 

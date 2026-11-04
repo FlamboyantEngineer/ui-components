@@ -1,16 +1,16 @@
 'use client';
 
-import { ColorArea, ColorSlider, ColorThumb, Dialog, SliderTrack } from '../../primitives/index.js';
-import { PopoverPanel } from '../popover/popover.js';
 import { useUiStrings } from '../../core/provider.js';
+import { ColorArea, ColorSlider, ColorThumb, Dialog, SliderTrack } from '../../primitives/index.js';
+import { DEFAULT_DROPDOWN_OFFSET } from '../../utils/overlay-defaults.js';
 import { Button } from '../button/button.js';
 import { ColorSwatchPicker, ColorSwatchPickerItem } from '../color-swatch/color-swatch.js';
 import type { FieldState } from '../field/field.js';
+import { PopoverPanel } from '../popover/popover.js';
 import { ColorChannelInputs, ColorFormatChoice } from './color-field-channels.js';
 import { ColorFieldEyeDropper } from './color-field-eye-dropper.js';
-import type { ColorFieldFormat } from './color-values.js';
-import { DEFAULT_DROPDOWN_OFFSET } from '../../utils/overlay-defaults.js';
 import { colorFieldHooks } from './color-field-hooks.js';
+import type { ColorFieldFormat } from './color-values.js';
 
 interface ColorFieldPanelProps {
   label: string;

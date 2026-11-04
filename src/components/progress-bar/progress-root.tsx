@@ -1,17 +1,17 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import type { ComponentHooks } from '../../core/hooks.js';
 import {
   Label,
-  ProgressBar as AriaProgressBar,
   Meter as AriaMeter,
+  ProgressBar as AriaProgressBar,
+  useNumberFormatter,
 } from '../../primitives/index.js';
-import type { ComponentHooks } from '../../core/hooks.js';
-import { useNumberFormatter } from '../../primitives/index.js';
 import { clamp } from '../../utils/clamp.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import type { ProgressBarProps, ProgressValues } from './progress-bar.js';
 import { resolveMeterTone } from './progress-meter.js';
-import { isEmptyNode } from '../../utils/is-empty-node.js';
 
 /** A progress indicator's root: a progress bar, its bounded range and the indicator's hooks. */
 interface ProgressRootProps extends Omit<

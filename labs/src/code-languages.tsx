@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { CodeEditor, type CodeLanguage } from '../../src/components/code-editor/code-editor.js';
 import { Button } from '../../src/components/button/button.js';
+import { CodeEditor, type CodeLanguage } from '../../src/components/code-editor/code-editor.js';
 import { LabSection } from './chrome/index.js';
 
 const samples: Record<CodeLanguage, string> = {

@@ -1,6 +1,6 @@
 // Shared lab helpers: a native form that shows what it submits, and a mount-on-demand switch.
 
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { type FormEvent, type ReactNode, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { LabOutput } from './lab-output.js';
 

@@ -1,14 +1,12 @@
-import { CalendarGlyph, FileGlyph, LinkGlyph } from '../../src/core/glyphs.js';
-
 // Sample records for the reference chips of the composer, Chat Parts and Chat labs: trip plans and
 // notes the host looks up by their opaque ids, one of them missing and one restricted.
-
 import type { MessageComposerMenuItem } from '../../src/components/message-composer/index.js';
 import type {
   RecordLabelPresentation,
   RecordLabelReference,
   RecordLabelResolver,
 } from '../../src/components/record-label/index.js';
+import { CalendarGlyph, FileGlyph, LinkGlyph } from '../../src/core/glyphs.js';
 
 interface LabRecord extends RecordLabelPresentation {
   id: string;

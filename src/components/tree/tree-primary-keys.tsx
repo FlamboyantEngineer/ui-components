@@ -1,13 +1,13 @@
 'use client';
 
 import {
-  useContext,
   type ComponentProps,
   type KeyboardEvent,
   type KeyboardEventHandler,
+  useContext,
 } from 'react';
-import { PrimaryActionKeysContext, passPrimaryActionKey } from '../../utils/primary-action-keys.js';
 import type { BaseProps } from '../../core/props.js';
+import { passPrimaryActionKey, PrimaryActionKeysContext } from '../../utils/primary-action-keys.js';
 
 interface KeyHandlers {
   onKeyDownCapture?: KeyboardEventHandler<HTMLDivElement> | undefined;

@@ -5,9 +5,9 @@ import { useControllableState } from '../../core/controllable-state.js';
 import { useUiStrings } from '../../core/provider.js';
 import {
   Field,
-  useFieldControl,
   type FieldInputProps,
   type FieldTextInputProps,
+  useFieldControl,
 } from '../field/field.js';
 import {
   checkGivenTags,

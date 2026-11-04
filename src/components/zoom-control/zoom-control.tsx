@@ -1,21 +1,20 @@
 'use client';
 
-import { MinusGlyph, PlusGlyph, RestoreGlyph, type GlyphComponent } from '../../core/glyphs.js';
-import { useId, useMemo, type ReactNode } from 'react';
-import { useNumberFormatter } from '../../primitives/index.js';
+import { type ReactNode, useId, useMemo } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
+import { type GlyphComponent, MinusGlyph, PlusGlyph, RestoreGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, NativeProps, ControlSize, RefProps } from '../../core/props.js';
+import type { BaseProps, ControlSize, NativeProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-
+import { useNumberFormatter } from '../../primitives/index.js';
 import { Button } from '../button/button.js';
-import { ZoomPresetMenu, type ZoomPreset } from './zoom-presets.js';
 import {
   defaultZoomLevels,
   resolveSliderStops,
   resolveZoomLevels,
   sortZoomLevels,
 } from './zoom-levels.js';
+import { type ZoomPreset, ZoomPresetMenu } from './zoom-presets.js';
 
 export interface ZoomControlProps
   extends
@@ -223,6 +222,5 @@ export function ZoomControl({
   );
 }
 
-export type { ZoomPreset } from './zoom-presets.js';
-
 export { defaultZoomLevels, findNearestZoomLevelIndex, findNextZoomLevel } from './zoom-levels.js';
+export type { ZoomPreset } from './zoom-presets.js';

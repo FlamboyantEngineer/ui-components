@@ -1,9 +1,9 @@
-import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { type CSSProperties, type ReactNode, useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { UiProvider } from '../../src/core/provider.js';
 import { ResizeHandle, resolveResizeKeyboardValue } from '../../src/components/split-view/index.js';
 import { SplitView, type SplitViewHandle } from '../../src/components/split-view/split-view.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { UiProvider } from '../../src/core/provider.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabHelperCalls } from './lab-helper-calls.js';
 import { SplitViewControlCases } from './split-view-control-cases.js';
 

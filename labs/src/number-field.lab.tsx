@@ -1,22 +1,22 @@
-import { Radices } from './number-radices.js';
-import {
-  NumberFieldDisplays,
-  NumberFieldUnitTypeSection,
-  NumberFieldUnitsSection,
-} from './number-field-displays.js';
-import { NumberFieldSliderSections } from './number-field-slider.js';
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { NumberField } from '../../src/components/number-field/number-field.js';
 import { UiProvider } from '../../src/core/provider.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-import { LabOutput } from './lab-output.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import {
   fieldLayouts,
+  type FieldStateName,
   fieldStates,
   useLabFieldState,
-  type FieldStateName,
 } from './field-states.js';
+import { LabOutput } from './lab-output.js';
+import {
+  NumberFieldDisplays,
+  NumberFieldUnitsSection,
+  NumberFieldUnitTypeSection,
+} from './number-field-displays.js';
+import { NumberFieldSliderSections } from './number-field-slider.js';
+import { Radices } from './number-radices.js';
 
 const steppers = ['shown', 'hidden'] as const;
 

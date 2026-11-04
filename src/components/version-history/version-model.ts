@@ -1,8 +1,8 @@
 // Pure rules of a version history: filtering, the people to filter by, the two-version selection
 // and the order a comparison reports.
 
-import { parseIsoDate, parseIsoDateTime } from '../../primitives/index.js';
 import type { Key } from '../../core/props.js';
+import { parseIsoDate, parseIsoDateTime } from '../../primitives/index.js';
 import { getDateFormatter } from '../../utils/intl-format.js';
 
 /** What a version needs for the rules here: its key, name, time and person. */

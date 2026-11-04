@@ -15,7 +15,7 @@
 // "<label>|<keywords>" line per emoji line of emoji-data.ts, in the same order. An empty label keeps
 // the English one. emoji-locales.ts loads each of them as a separate chunk.
 
-import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import { root } from './lib/script.mjs';

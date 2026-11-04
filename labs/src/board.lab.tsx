@@ -1,3 +1,17 @@
+import { type CSSProperties, type ReactNode, useState } from 'react';
+import { Badge } from '../../src/components/badge/badge.js';
+import {
+  applyBoardMove,
+  applyColumnMove,
+  Board,
+  type BoardCardState,
+  type BoardColumn,
+  type BoardLane,
+  type BoardMove,
+} from '../../src/components/board/index.js';
+import { Button } from '../../src/components/button/button.js';
+import { DropdownMenu } from '../../src/components/dropdown-menu/dropdown-menu.js';
+import { TextField } from '../../src/components/text-field/text-field.js';
 import {
   CalendarGlyph,
   CheckGlyph,
@@ -6,24 +20,10 @@ import {
   MoreVerticalGlyph,
   SearchGlyph,
 } from '../../src/core/glyphs.js';
-import { useState, type CSSProperties, type ReactNode } from 'react';
-import { Badge } from '../../src/components/badge/badge.js';
-import { Button } from '../../src/components/button/button.js';
-import { DropdownMenu } from '../../src/components/dropdown-menu/dropdown-menu.js';
-import {
-  Board,
-  applyBoardMove,
-  applyColumnMove,
-  type BoardCardState,
-  type BoardColumn,
-  type BoardLane,
-  type BoardMove,
-} from '../../src/components/board/index.js';
 import type { Key } from '../../src/core/props.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-import { TypedBoard } from './collection-identity-cases.js';
 import { ControlledCollapse, DefaultCollapsedLanes } from './board-collapse-cases.js';
-import { TextField } from '../../src/components/text-field/text-field.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { TypedBoard } from './collection-identity-cases.js';
 import { RowMenu } from './row-menu.js';
 
 interface Task {

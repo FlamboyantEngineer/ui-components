@@ -8,7 +8,7 @@ import {
 } from '../../src/components/property-panel/property-panel.js';
 import { PropertyScope } from '../../src/components/property-scope/property-scope.js';
 import { SearchField } from '../../src/components/search-field/search-field.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const queries = { none: '', title: 'colour', label: 'height', card: 'shadow', 'no match': 'zinc' };
 

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { SaveStatus, type SaveStatusPhase } from '../../src/components/save-status/save-status.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const phases: readonly SaveStatusPhase[] = ['idle', 'dirty', 'saving', 'saved', 'error', 'offline'];
 

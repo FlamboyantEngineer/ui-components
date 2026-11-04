@@ -4,13 +4,13 @@
 // cannot wrap: a timestamp, or text that shows a tooltip only while it is cut short.
 
 import {
+  type ReactNode,
+  type RefObject,
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
-  type ReactNode,
-  type RefObject,
 } from 'react';
 import { TooltipContext, TooltipTriggerStateContext } from '../../primitives/index.js';
 import { TOOLTIP_DELAY } from '../../utils/overlay-defaults.js';

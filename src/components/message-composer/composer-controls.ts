@@ -5,12 +5,12 @@
 
 import {
   createContext,
+  type RefObject,
   useCallback,
   useContext,
   useLayoutEffect,
   useMemo,
   useState,
-  type RefObject,
 } from 'react';
 import { useLatest } from '../../utils/use-latest.js';
 import { useResizeObserver } from '../../utils/use-resize-observer.js';

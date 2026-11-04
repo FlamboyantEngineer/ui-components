@@ -1,6 +1,6 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { useRemoteSearch, type RemoteLoader } from './use-remote-search.js';
+import { type RemoteLoader, useRemoteSearch } from './use-remote-search.js';
 
 const words = ['apple', 'apricot', 'banana', 'cherry'];
 

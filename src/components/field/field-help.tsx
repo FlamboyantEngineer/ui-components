@@ -3,10 +3,10 @@
 // The field's help: the help button, the content describing it, and the tooltip the context
 // menu's Help opens.
 
-import { useEffect, useState, type KeyboardEvent, type ReactNode, type RefObject } from 'react';
+import { type KeyboardEvent, type ReactNode, type RefObject, useEffect, useState } from 'react';
+import type { ControlSize } from '../../core/props.js';
 import { findOwnerDocument } from '../../utils/owner-window.js';
 import { AnchoredTooltip } from '../tooltip/tooltip.js';
-import type { ControlSize } from '../../core/props.js';
 import { FieldHelp, fieldHooks } from './field-parts.js';
 
 export interface FieldHelpTooltip {

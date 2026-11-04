@@ -1,16 +1,15 @@
 'use client';
 
-import { CloseGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
+import { CloseGlyph } from '../../core/glyphs.js';
 import type { BaseProps, ControlSize, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
-
 import { Button } from '../button/button.js';
 import { ActionRowActions, createClearKey } from './action-row-actions.js';
-import { orderActions, type ActionRowAction } from './action-verbs.js';
 import { actionRowHooks as hooks } from './action-row-hooks.js';
+import { type ActionRowAction, orderActions } from './action-verbs.js';
 
 /** `visible` keeps every action in the row; `menu` collapses those that do not fit into a menu. */
 export type ActionRowOverflow = 'visible' | 'menu';
@@ -113,10 +112,10 @@ export function ActionRow({
   );
 }
 
-export { actionVerbs, orderActions } from './action-verbs.js';
 export type {
   ActionRowAction,
   ActionRowCustomAction,
   ActionRowVerbAction,
   ActionVerb,
 } from './action-verbs.js';
+export { actionVerbs, orderActions } from './action-verbs.js';

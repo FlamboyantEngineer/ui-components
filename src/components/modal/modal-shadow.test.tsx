@@ -1,7 +1,7 @@
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import { useState } from 'react';
 import { describe, expect, it } from 'vitest';
-import { ShadowHost, deepActive, inShadow } from '../../../test/shadow-fixtures.js';
+import { deepActive, inShadow, ShadowHost } from '../../../test/shadow-fixtures.js';
 import { PortalHost } from '../portal/portal.js';
 import { Modal } from './modal.js';
 

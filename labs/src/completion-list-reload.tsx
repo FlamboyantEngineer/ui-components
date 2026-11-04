@@ -1,9 +1,9 @@
 import { useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
 import type {
   Completion,
   CompletionSource,
 } from '../../src/components/completion-list/completion-list.js';
-import { Button } from '../../src/components/button/button.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { LabSection } from './chrome/index.js';
 

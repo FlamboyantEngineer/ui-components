@@ -1,11 +1,11 @@
 import { useRef, useState } from 'react';
 import { Button, type ButtonVariant } from '../../src/components/button/button.js';
-import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { CopyButton } from '../../src/components/copy-button/copy-button.js';
-import { useClipboard } from '../../src/utils/use-clipboard.js';
+import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { copyRichText, type RichCopyResult } from '../../src/utils/index.js';
+import { useClipboard } from '../../src/utils/use-clipboard.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const states = ['rest', 'disabled'] as const;
 const variants = [

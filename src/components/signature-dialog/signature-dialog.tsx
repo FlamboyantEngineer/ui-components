@@ -1,17 +1,17 @@
 'use client';
 
-import { useRef, useState, type ReactNode } from 'react';
+import { type ReactNode, useRef, useState } from 'react';
 import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
-import { Modal, useModalOpenState, type ModalProps } from '../modal/modal.js';
+import { Modal, type ModalProps, useModalOpenState } from '../modal/modal.js';
 import {
-  SignatureForm,
-  signatureDialogHooks as hooks,
   type SignatureDetails,
   type SignatureDialogCredentials,
   type SignatureDialogEntry,
+  signatureDialogHooks as hooks,
+  SignatureForm,
   type SignatureMeaning,
   type SignatureSubmit,
 } from './signature-form.js';

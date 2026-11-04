@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
-import { useChartPoints, type ChartPoint } from './chart-points.js';
+import { type ChartPoint, useChartPoints } from './chart-points.js';
 
 const values: ChartPoint[] = [
   { key: 'middle', series: 0, index: 2 },
