@@ -2,7 +2,7 @@ import { expect, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 for (const density of ['default', 'compact']) {
-  test(`UIC-STATE-MACHINE-VIEW-4.3 UIC-STATE-MACHINE-VIEW-4.4 ${density} paints arrowheads above states and labels above routes`, async ({
+  test(`UIC-STATE-MACHINE-VIEW-4.3 UIC-STATE-MACHINE-VIEW-4.4 ${density} paints arrowheads outside states and labels above routes`, async ({
     page,
     lab,
   }) => {
@@ -20,6 +20,13 @@ for (const density of ['default', 'compact']) {
         const point = element
           .getPointAtLength(element.getTotalLength() / 4)
           .matrixTransform(matrix);
+        const tip = element.getPointAtLength(element.getTotalLength() / 2).matrixTransform(matrix);
+        const forward = element.parentElement?.getAttribute('data-direction') === 'forward';
+        const state = document
+          .elementFromPoint(tip.x, tip.y + (forward ? 2 : -2))
+          ?.closest('.ui-state-machine-view__state');
+        if (!state) throw new Error('Arrow does not meet a state boundary');
+        const box = state.getBoundingClientRect();
         const style = getComputedStyle(element);
         const pointerEvents = style.pointerEvents;
         const stroke = style.stroke;
@@ -30,15 +37,15 @@ for (const density of ['default', 'compact']) {
         element.style.pointerEvents = 'stroke';
         try {
           const hits = document.elementsFromPoint(point.x, point.y);
-          const state = hits.find((hit) => hit.matches('.ui-state-machine-view__state'));
           return {
             pointerEvents,
             stroke,
             strokeWidth,
             arrowOnTop: hits[0] === element,
+            outsideState: forward ? point.y < box.top : point.y > box.bottom,
             target: {
-              x: point.x,
-              y: point.y,
+              x: box.x + box.width / 2,
+              y: box.y + box.height / 2,
               label: state?.querySelector('.ui-state-machine-view__state-label')?.textContent ?? '',
             },
           };
@@ -51,6 +58,7 @@ for (const density of ['default', 'compact']) {
       expect(paint.strokeWidth).toBeGreaterThan(0);
       expect(paint.target.label).not.toBe('');
       expect(paint.arrowOnTop).toBe(true);
+      expect(paint.outsideState).toBe(true);
       lastTarget = paint.target;
     }
     const target = requireDefined(lastTarget);

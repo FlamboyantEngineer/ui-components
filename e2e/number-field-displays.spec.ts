@@ -156,6 +156,59 @@ test.describe('Number Field display choices', () => {
 });
 
 test.describe('Number Field typed units', () => {
+  test('UIC-NUMBER-FIELD-3.4 commits decimal commas without grouping', async ({ page, lab }) => {
+    await lab.open('number-field');
+    const input = page.getByRole('spinbutton', { name: 'Decimal length' });
+    await input.fill('1,5');
+    await input.press('Enter');
+    await expect(input).toHaveValue('1,5');
+    await expect(input).toHaveAttribute('aria-valuenow', '1.5');
+    await expect(page.locator('[data-lab-output="Decimal length committed"]')).toHaveText('1.5');
+  });
+
+  for (const action of ['Enter', 'Tab', 'pointer blur']) {
+    test(`UIC-NUMBER-FIELD-3.4 keeps untouched accounting amounts negative on ${action}`, async ({
+      page,
+      lab,
+    }) => {
+      await lab.open('number-field');
+      const input = page.getByRole('spinbutton', { name: 'Accounting amount' });
+      await expect(input).toHaveValue('($1.00)');
+      await input.focus();
+      if (action === 'pointer blur') {
+        const outside = page.getByRole('button', { name: 'Leave accounting amount' });
+        await outside.scrollIntoViewIfNeeded();
+        await page.evaluate(
+          () =>
+            new Promise<void>((resolve) =>
+              requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+            ),
+        );
+        await outside.click();
+      } else {
+        await input.press(action);
+        if (action === 'Tab') {
+          for (
+            let i = 0;
+            i < 4 &&
+            !(await page
+              .getByRole('button', { name: 'Leave accounting amount' })
+              .evaluate((node) => node === document.activeElement));
+            i++
+          )
+            await page.keyboard.press('Tab');
+          await expect(page.getByRole('button', { name: 'Leave accounting amount' })).toBeFocused();
+        }
+      }
+      await expect(input).toHaveValue('($1.00)');
+      await expect(input).toHaveAttribute('aria-valuenow', '-1');
+      await expect(input).not.toHaveAttribute('aria-invalid');
+      await expect(page.locator('[data-lab-output="Accounting amount committed"]')).toHaveText(
+        '-1',
+      );
+    });
+  }
+
   test('UIC-NUMBER-FIELD-3.4 converts 5cm to 50 mm, keeps a wrong unit and restores', async ({
     page,
     lab,

@@ -127,6 +127,18 @@ export function ButtonHostCases() {
   return (
     <div data-lab-family="button-host-cases">
       <LabSection
+        title="Reference stylesheet import"
+        description="The application opts into the reference styles with this import. Production bundles retain the stylesheet and remove unused JavaScript exports. Use the lab toolbar to preview the styles."
+      >
+        <pre>
+          <code>{`import '@flamboyantengineer/ui-components/reference.css';
+import { Button } from '@flamboyantengineer/ui-components';
+
+<Button>Save note</Button>`}</code>
+        </pre>
+        <Button>Save note</Button>
+      </LabSection>
+      <LabSection
         title="Focus policies"
         description="Mount the buttons: autoFocus focuses the first. Type in Search notes and press Keeps focus where it was: preventFocusOnPress leaves focus in the field. Tab skips the excludeFromTabOrder button."
       >

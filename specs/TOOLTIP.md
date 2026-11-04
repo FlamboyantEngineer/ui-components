@@ -85,10 +85,10 @@ Verification: `src/components/tooltip/anchored-tooltip.test.tsx`, `e2e/tooltip.s
 
 ### UIC-TOOLTIP-2.3 - Relationships
 
-The panel's `id` is the caller's `id`, or a stable generated one. While open, `relationship="description"` (the default) shall add it to an element anchor's `aria-describedby` and `relationship="label"` to its `aria-labelledby`, after the ids already there, and take it out again on close or unmount, leaving the other ids as they were (and no attribute when none remain). `relationship="none"` shows the hint visually only: the panel is `aria-hidden` and the anchor's name and description do not change, for a hint that repeats a name readers already hear. A rectangle anchor has no element, so no relationship.
+The panel's `id` is the caller's `id`, or a stable generated one. While open, `relationship="description"` (the default) shall add it to an element anchor's `aria-describedby` and `relationship="label"` to its `aria-labelledby`, after the ids already there. When the host changes or removes that attribute, including independently of the tooltip's renders, the relationship shall be restored on mutation delivery, preserving the current host tokens and their order. An attribute already containing the tooltip id shall remain unchanged, without duplicate tokens or repeated writes once settled. Closing, unmounting or changing the anchor, id or relationship shall release the previous relationship: remove only the tooltip id from the current token list (and the attribute when none remain), preserving the latest host tokens, even if a host update is pending delivery. Released relationships shall not be restored by later host updates. `relationship="none"` shows the hint visually only: the panel is `aria-hidden` and the anchor's name and description do not change, for a hint that repeats a name readers already hear. A rectangle anchor has no element, so no relationship.
 
 Implementation: `src/components/tooltip/anchored-tooltip.tsx`
-Verification: `src/components/tooltip/anchored-tooltip.test.tsx`
+Verification: `src/components/tooltip/anchored-tooltip.test.tsx`, `src/components/tooltip/anchored-tooltip-relationships.test.tsx`, `e2e/tooltip-relationships.spec.ts`
 
 ### UIC-TOOLTIP-2.4 - Following and cleaning up
 

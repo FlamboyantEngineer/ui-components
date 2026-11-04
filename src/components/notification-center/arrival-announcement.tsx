@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { REANNOUNCE_MARK } from '../../utils/reannounce.js';
 import { VisuallyHidden, type VisuallyHiddenElement } from '../visually-hidden/visually-hidden.js';
 
 interface Arrivals {
@@ -12,7 +13,7 @@ interface Arrivals {
   seen: ReadonlySet<Key>;
   /** The latest time shown so far, in milliseconds; older entries are pages loaded later. */
   latest: number;
-  announcement: { count: number; title: string } | null;
+  announcement: { count: number; title: string; isMarked: boolean } | null;
 }
 
 interface ArrivalEntry {
@@ -54,12 +55,18 @@ function useArrivalAnnouncement(items: readonly ArrivalEntry[]): string {
       seen: new Set([...arrivals.seen, ...unseen.map((item) => item.id)]),
       latest: latestTime(unseen, arrivals.latest),
       announcement: fresh[0]
-        ? { count: fresh.length, title: fresh[0].title }
+        ? {
+            count: fresh.length,
+            title: fresh[0].title,
+            isMarked: arrivals.announcement ? !arrivals.announcement.isMarked : false,
+          }
         : arrivals.announcement,
     });
   }
   const { announcement } = arrivals;
-  return announcement ? strings.newNotifications(announcement.count, announcement.title) : '';
+  if (!announcement) return '';
+  // Alternating the invisible mark gives repeated words a live-region text mutation.
+  return `${strings.newNotifications(announcement.count, announcement.title)}${announcement.isMarked ? REANNOUNCE_MARK : ''}`;
 }
 
 interface ArrivalAnnouncementProps {

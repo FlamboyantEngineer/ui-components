@@ -29,6 +29,8 @@ interface NumberNotation {
   digits: readonly string[];
   /** Signs around the number the format adds, as a percent or currency sign. */
   affixes: readonly string[];
+  /** Whether the format encloses negative magnitudes in accounting parentheses. */
+  accounting: boolean;
   /** Percent scaling: the number written is a hundred times the value. */
   scale: number;
 }
@@ -48,15 +50,22 @@ function readNotation(locale: string, options: Intl.NumberFormatOptions = {}): N
     parts.find((part) => part.type === type)?.value ?? fallback;
   const { numberingSystem } = formatter.resolvedOptions();
   const digitFormat = new Intl.NumberFormat(locale, { numberingSystem, useGrouping: false });
+  const decimal =
+    digitFormat.formatToParts(1.1).find((part) => part.type === 'decimal')?.value ?? '.';
+  const literals = parts
+    .filter((part) => part.type === 'literal')
+    .map((part) => part.value)
+    .join('');
   const notation: NumberNotation = {
-    group: find('group', ','),
-    decimal: find('decimal', '.'),
+    group: find('group', ''),
+    decimal: find('decimal', decimal),
     minus: find('minusSign', '-'),
     digits: numberingSystem === 'latn' ? [] : [...'0123456789'].map((d) => digitFormat.format(+d)),
     affixes: parts
       .filter((part) => !numberParts.has(part.type) && !exponentParts.test(part.type))
-      .map((part) => part.value.replace(spaces, ''))
+      .map((part) => part.value.replace(spaces, '').replace(/[()]/g, ''))
       .filter((value) => value !== ''),
+    accounting: literals.includes('(') && literals.includes(')'),
     scale: options.style === 'percent' ? 100 : 1,
   };
   notationCache.set(cacheKey, notation);
@@ -70,24 +79,36 @@ const plainNumber = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i;
  * `1 234,5`, `١٢٫٥`, `25%`), as a number; `NaN` when it is none. The locale's grouping is ignored,
  * its decimal sign, minus sign and digits read alongside ASCII ones, and the signs the format adds
  * (a percent or currency sign) dropped; a percent format reads the number as hundredths. The minus
- * sign (U+2212) counts as a hyphen.
+ * sign (U+2212) counts as a hyphen. Accounting parentheses enclose a negative magnitude when the
+ * format uses them; unmatched parentheses or a second leading sign are unreadable.
  */
 export function parseLocaleNumber(
   text: string,
   locale: string,
   options?: Intl.NumberFormatOptions,
 ): number {
-  const { group, decimal, minus, digits, affixes, scale } = readNotation(locale, options);
+  const { group, decimal, minus, digits, affixes, accounting, scale } = readNotation(
+    locale,
+    options,
+  );
   let plain = text.replace(spaces, '');
   for (const affix of affixes) plain = plain.replaceAll(affix, '');
   digits.forEach((digit, value) => {
     plain = plain.replaceAll(digit, String(value));
   });
   const groupSign = group.replace(spaces, '');
-  if (groupSign) plain = plain.replaceAll(groupSign, '');
+  if (groupSign && groupSign !== decimal) plain = plain.replaceAll(groupSign, '');
   plain = plain.replaceAll(minus, '-').replaceAll('\u2212', '-').replace(decimal, '.');
+  let sign = 1;
+  if (/[()]/.test(plain)) {
+    if (!accounting || !/^\([^()]*\)$/.test(plain)) return Number.NaN;
+    plain = plain.slice(1, -1);
+    if (/^[+-]/.test(plain)) return Number.NaN;
+    sign = -1;
+  }
   if (!plainNumber.test(plain)) return Number.NaN;
-  return scale === 1 ? Number(plain) : Number((Number(plain) / scale).toPrecision(15));
+  const value = sign * Number(plain);
+  return scale === 1 ? value : Number((value / scale).toPrecision(15));
 }
 
 /** The unit a text ends with, the longest first, matched exactly or else in any case. */
