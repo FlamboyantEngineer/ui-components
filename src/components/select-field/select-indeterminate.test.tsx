@@ -16,6 +16,45 @@ const mixed: SelectFieldOption = {
 const grouped: SelectFieldItem[] = [{ id: 'fruit', label: 'Fruit', options: [mixed] }];
 
 describe('SelectField mixed membership', () => {
+  it('UIC-SELECT-FIELD-3.4 summarizes mixed values without losing common selections', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const { rerender } = render(
+      <SelectField
+        label="Produce"
+        name="produce"
+        selectionMode="multiple"
+        options={[{ id: 'apple', label: 'Apple' }, mixed]}
+        value={['apple']}
+        isMixed
+        placeholder="Mixed values"
+        onChange={onChange}
+      />,
+    );
+    const trigger = screen.getByRole('button', { name: 'Mixed values Produce' });
+    expect(document.querySelector('.ui-select-field__chips')).toBeNull();
+    expect(document.querySelector('input[name="produce"]')).toHaveValue('apple');
+    await user.click(trigger);
+    expect(screen.getByRole('option', { name: 'Apple' })).toHaveAttribute('aria-selected', 'true');
+    await user.click(screen.getByRole('option', { name: 'Pear Crisp and sweet' }));
+    expect(onChange).toHaveBeenLastCalledWith(['apple', 'pear']);
+    await user.keyboard('{Escape}');
+    rerender(
+      <SelectField
+        label="Produce"
+        name="produce"
+        selectionMode="multiple"
+        options={[{ id: 'apple', label: 'Apple' }, mixed]}
+        value={['apple']}
+        isMixed={false}
+      />,
+    );
+    expect(trigger).toHaveAccessibleName('1 selected Produce');
+    expect(
+      screen.getByText('Apple', { selector: '.ui-select-field__chip-label' }),
+    ).toBeInTheDocument();
+  });
+
   for (const filterable of [false, true]) {
     it(`UIC-SELECT-FIELD-3.1 UIC-SELECT-FIELD-3.4 ignores the opening release with filterable=${String(filterable)}`, async () => {
       const user = userEvent.setup();
@@ -90,6 +129,9 @@ describe('SelectField mixed membership', () => {
     expect(indicator).not.toHaveAttribute('data-indeterminate');
     expect(indicator?.querySelector('[data-glyph="check"]')).not.toBeNull();
     expect(pear).not.toHaveAccessibleDescription();
+    for (const id of (pear.getAttribute('aria-describedby') ?? '').split(/\s+/).filter(Boolean)) {
+      expect(document.getElementById(id)).toBeInTheDocument();
+    }
     expect(
       screen.getByText('Pear', { selector: '.ui-select-field__chip-label' }),
     ).toBeInTheDocument();

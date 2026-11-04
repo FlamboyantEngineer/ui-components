@@ -60,6 +60,8 @@ interface SelectListFieldProps<M extends SelectFieldSelectionMode = 'single'>
    * frame before the trigger, like a token field.
    */
   chipPlacement?: SelectFieldChipPlacement | undefined;
+  /** A multiple value differs across records: show the placeholder instead of chips and a count. */
+  isMixed?: boolean | undefined;
   /** The most values a multiple select takes; once reached, the other options are disabled. */
   maxValues?: number | undefined;
   /** Draws each option's content in the list instead of its icon, label and description. */

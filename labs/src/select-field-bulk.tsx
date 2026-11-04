@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Key } from '../../src/core/props.js';
 import { SelectField, type SelectFieldOption } from '../../src/components/select-field/index.js';
 import { LabOutput } from './lab-output.js';
+import { Switch } from '../../src/components/switch/index.js';
 
 const options: SelectFieldOption[] = [
   { id: 'apple', label: 'Apple' },
@@ -30,6 +31,7 @@ const some = new Set(
 
 /** The host retains untouched memberships and cycles originally mixed options through overrides. */
 export function BulkMembershipEditor() {
+  const [summarizeMixed, setSummarizeMixed] = useState(false);
   const [changeEvents, setChangeEvents] = useState<Key[][]>([]);
   const [commits, setCommits] = useState<Key[][]>([]);
   const [changes, setChanges] = useState<Partial<Record<Key, 'add' | 'remove'>>>({});
@@ -63,10 +65,15 @@ export function BulkMembershipEditor() {
   }));
   return (
     <div data-lab-demo="bulk-memberships">
+      <Switch isSelected={summarizeMixed} onChange={setSummarizeMixed}>
+        Summarize mixed memberships
+      </Switch>
       <SelectField
         label="Shared fruit"
         name="shared-fruit"
         selectionMode="multiple"
+        isMixed={summarizeMixed && [...some].some((key) => changes[key] === undefined)}
+        placeholder="Mixed values"
         options={options.map((option) => ({
           ...option,
           isIndeterminate: some.has(option.id) && changes[option.id] === undefined,

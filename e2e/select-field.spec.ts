@@ -27,6 +27,37 @@ async function width(locator: Locator): Promise<number> {
 }
 
 test.describe('Select Field lab', () => {
+  test('UIC-SELECT-FIELD-3.4 mixed summaries retain checked common options', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('select-field');
+    const demo = page.locator('[data-lab-demo="bulk-memberships"]');
+    const summarySwitch = demo.getByRole('switch', { name: 'Summarize mixed memberships' });
+    await summarySwitch.focus();
+    await summarySwitch.press('Space');
+    await expect(summarySwitch).toBeChecked();
+    const trigger = demo.getByRole('button', { name: 'Mixed values Shared fruit' });
+    await expect(demo.locator('.ui-select-field__chips')).toHaveCount(0);
+    await expect(demo.locator('input[name="shared-fruit"]')).toHaveValue('apple');
+    await trigger.click();
+    await expect(page.getByRole('option', { name: 'Apple' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    const pear = page.getByRole('option', { name: 'Pear Crisp and sweet' });
+    await expect(pear).toHaveAttribute('aria-selected', 'false');
+    await pear.click();
+    await expect(pear).toHaveAttribute('aria-selected', 'true');
+    await expect(trigger).toHaveAccessibleName('Mixed values Shared fruit');
+    await lab.expectAccessible('.ui-select-field__popover');
+    await page.keyboard.press('Escape');
+    await summarySwitch.focus();
+    await summarySwitch.press('Space');
+    await expect(summarySwitch).not.toBeChecked();
+    await expect(demo.locator('.ui-select-field__chip-label')).toHaveText(['Apple', 'Pear']);
+  });
+
   test('UIC-SELECT-FIELD-3.1 UIC-SELECT-FIELD-3.4 opens without edits and cycles controlled bulk memberships', async ({
     page,
     lab,
