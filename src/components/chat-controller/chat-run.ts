@@ -167,7 +167,12 @@ async function streamRun(
         endRun(engine, run, { status: 'error', error: event.message || failureText });
         break;
       }
-      if (event.type === 'finish') break;
+      // Finish settles the reply before leaving the loop, which waits for the iterator's own
+      // cleanup; a cleanup that fails then finds the run ended and changes nothing.
+      if (event.type === 'finish') {
+        endRun(engine, run, { status: 'complete' });
+        break;
+      }
       applyEvent(engine, run, event);
     }
     endRun(engine, run, { status: 'complete' });

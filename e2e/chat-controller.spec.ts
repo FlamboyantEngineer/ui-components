@@ -68,6 +68,24 @@ test.describe('Chat Controller lab', () => {
     await expect(transcript(page).getByRole('article')).toHaveCount(4);
   });
 
+  test('UIC-CHAT-CONTROLLER-2.1 completes a reply at finish while its stream closes slowly and fails', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('chat-controller');
+    await choose(page, 'Slow, failing cleanup');
+    await sendMessage(page, 'Are the beans ready?');
+    await page.clock.runFor(1000);
+    const reply = lastMessage(page);
+    await expect(reply).toContainText('The beans are ready to serve.');
+    await expect(reply).toHaveAttribute('data-status', 'complete');
+    await expect(reply).not.toHaveAttribute('aria-busy', 'true');
+    await page.clock.runFor(4000);
+    await expect(reply).toHaveAttribute('data-status', 'complete');
+    await expect(reply.getByRole('alert')).toHaveCount(0);
+  });
+
   test('UIC-CHAT-CONTROLLER-3.1 UIC-CHAT-CONTROLLER-3.5 hands an awaited approval to the running reply', async ({
     page,
     lab,

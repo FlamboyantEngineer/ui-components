@@ -13,6 +13,7 @@ import { ChatMessage, ChatTranscript } from '../chat-transcript/chat-transcript.
 import {
   type ChatSendContext,
   type ChatSendFunction,
+  type ChatStreamEvent,
   useChatController,
 } from './chat-controller.js';
 
@@ -60,6 +61,61 @@ describe('useChatController runs', () => {
     expect(result.current.isPending).toBe(false);
     expect(result.current.messages[1]?.status).toBe('complete');
   });
+
+  it.each(['resolves', 'throws'])(
+    'UIC-CHAT-CONTROLLER-2.1 completes the reply at finish while the stream cleanup %s later',
+    async (cleanupOutcome) => {
+      let endCleanup: () => void = () => {};
+      const cleanup = new Promise<void>((resolve) => (endCleanup = resolve));
+      const finished: string[] = [];
+      // A stream whose cleanup (`return`, as a generator's finally runs it) takes time, then
+      // settles or fails.
+      const send: ChatSendFunction = () => {
+        const events: ChatStreamEvent[] = [
+          { type: 'text-delta', text: 'Complete.' },
+          { type: 'finish' },
+        ];
+        return {
+          [Symbol.asyncIterator]: () => ({
+            next: () => {
+              const value = events.shift();
+              return Promise.resolve(
+                value ? { value, done: false as const } : { value: undefined, done: true as const },
+              );
+            },
+            return: async () => {
+              await cleanup;
+              finished.push('cleaned up');
+              if (cleanupOutcome === 'throws') throw new Error('Cleanup failed');
+              return { value: undefined, done: true as const };
+            },
+          }),
+        };
+      };
+      const { result } = renderController({ send });
+      act(() => result.current.send('Plan dinner'));
+      await settle();
+      // The cleanup is still running, and the reply is already complete.
+      expect(finished).toEqual([]);
+      expect(result.current.isPending).toBe(false);
+      expect(result.current.messages[1]).toMatchObject({
+        status: 'complete',
+        parts: [{ type: 'text', text: 'Complete.', status: 'complete' }],
+      });
+      // A message sent now starts a new reply at once.
+      act(() => result.current.send('And dessert?'));
+      expect(result.current.isPending).toBe(true);
+      endCleanup();
+      await settle();
+      // Both replies' cleanups ran; a failed one turned neither reply into an error.
+      expect(finished).toEqual(['cleaned up', 'cleaned up']);
+      for (const index of [1, 3]) {
+        expect(result.current.messages[index]).toMatchObject({ status: 'complete' });
+        expect(result.current.messages[index]).not.toHaveProperty('error');
+      }
+      expect(result.current.isPending).toBe(false);
+    },
+  );
 
   it('UIC-CHAT-CONTROLLER-2.2 shows the status line while the reply runs', async () => {
     const { result, at } = renderController();
