@@ -215,15 +215,17 @@ function askSource(
     session.setState((state) => ({ ...next, revision: state.revision + 1 }));
     return next.isOpen ? 'options' : 'none';
   };
-  // A source that throws is a source that rejects: the lookup is dropped quietly.
+  // A source that throws is a source that rejects: the lookup shows nothing, quietly.
   const answer = callSettling(() => lookUp(completions, lookup));
   if (!isThenable(answer)) return show(answer);
   session.pendingRef.current = id;
   session.setState((state) =>
     isNewSource ? hideCompletionState(state) : toPendingState(state, lookup),
   );
+  // A failed lookup shows nothing, not the earlier options kept while it was pending; a failure of
+  // a lookup a newer one replaced changes nothing.
   answer.then(show, () => {
-    if (session.pendingRef.current === id) session.pendingRef.current = 0;
+    if (id === session.requestRef.current) closeCompletions(session);
   });
   return 'pending';
 }

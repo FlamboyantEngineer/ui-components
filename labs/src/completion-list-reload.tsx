@@ -57,6 +57,33 @@ function SwitchedField() {
   );
 }
 
+const nuts: Completion[] = [{ label: 'almond' }, { label: 'alpha nut' }, { label: 'brazil' }];
+
+/**
+ * A source that answers a one-letter word after half a second and fails for longer ones, as a
+ * service with a hiccup would.
+ */
+const flakySource: CompletionSource = ({ query }) =>
+  new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (query.length > 1) reject(new Error('The lookup failed.'));
+      else resolve(nuts);
+    }, 500);
+  });
+
+export function FailedLookupSection() {
+  return (
+    <LabSection
+      title="A lookup that fails"
+      description="Type a: almond and alpha nut show. Type l: they stay while the next lookup is on its way, then that lookup fails and the list closes, rather than offering the earlier answer. The field keeps working: clear it and type a again."
+    >
+      <div data-lab-demo="failed-lookup">
+        <TextField label="Nut" completions={flakySource} />
+      </div>
+    </LabSection>
+  );
+}
+
 export function ReloadedTextSection() {
   return (
     <LabSection
