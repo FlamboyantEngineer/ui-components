@@ -73,6 +73,7 @@ test.describe('SVG Markup lab', () => {
     for (const [name, color] of [
       ['Blue tone', 'rgb(37, 99, 235)'],
       ['Pink tone', 'rgb(219, 39, 119)'],
+      ['Green tone, spaced', 'rgb(5, 150, 105)'],
     ] as const) {
       const svg = page.getByRole('img', { name });
       const gradient = await svg.locator('linearGradient').getAttribute('id');
