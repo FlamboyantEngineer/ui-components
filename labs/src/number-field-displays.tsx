@@ -159,6 +159,14 @@ export function NumberFieldUnitsSection() {
         description="A percent format reads 25% and 25 alike as a quarter."
         data-lab-field="units-percent"
       />
+      <NumberField
+        label="Compact length"
+        defaultValue={12_000}
+        units={{ unit: 'm', conversions: { m: 1 } }}
+        formatOptions={{ notation: 'compact' }}
+        description="Asked for compact notation, a field with units writes 12,000 in standard notation, since 12K would not read back. Typing 12K reports the text as unreadable instead of committing 12."
+        data-lab-field="units-compact"
+      />
     </LabSection>
   );
 }

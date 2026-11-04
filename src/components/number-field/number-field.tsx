@@ -24,7 +24,7 @@ import {
 } from './number-slider.js';
 import { formatRadixNumber, type NumberFieldRadix } from './radix-number.js';
 import { TextNumberControl } from './text-number-control.js';
-import type { NumberFieldUnits } from './unit-number.js';
+import { type NumberFieldUnits, toQuantityFormatOptions } from './unit-number.js';
 
 /**
  * What a commit does with a value outside the range or off the step: `snap` clamps it into the
@@ -58,7 +58,11 @@ export interface NumberFieldProps
   maxValue?: number | undefined;
   /** The step of the buttons and the arrow keys, counted from `minValue` (or zero). Defaults to 1. */
   step?: number | undefined;
-  /** How the value is formatted and parsed in the locale: decimals, grouping, currency, percent, units. */
+  /**
+   * How the value is formatted and parsed in the locale: decimals, grouping, currency, percent,
+   * units. With `units`, compact notation (`1K`) is not taken: the field writes and reads the
+   * number in standard notation.
+   */
   formatOptions?: Intl.NumberFormatOptions | undefined;
   /** What a commit does with a value outside the rules. Defaults to `snap`. */
   commitBehavior?: NumberFieldCommitBehavior | undefined;
@@ -297,7 +301,11 @@ export function NumberField(
   if (props.range) return <NumberRangeField {...props} />;
   if (props.display === 'slider') return <NumberSliderField {...props} />;
   const { range: _range, display: _display, ...entry } = props;
-  return <NumberEntryField {...entry} />;
+  // A quantity's compact notation would not read back, so it is written in standard notation.
+  const formatOptions = entry.units
+    ? toQuantityFormatOptions(entry.formatOptions)
+    : entry.formatOptions;
+  return <NumberEntryField {...entry} formatOptions={formatOptions} />;
 }
 
 export type {

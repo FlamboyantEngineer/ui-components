@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { type NumberFieldUnits, parseLocaleNumber, parseQuantity } from './unit-number.js';
+import {
+  type NumberFieldUnits,
+  parseLocaleNumber,
+  parseQuantity,
+  toQuantityFormatOptions,
+} from './unit-number.js';
 
 const lengths: NumberFieldUnits = { unit: 'mm', conversions: { cm: 10, m: 1000, in: 25.4 } };
 const accounting: Intl.NumberFormatOptions = {
@@ -129,5 +134,18 @@ describe('unit numbers', () => {
     expect(parseLocaleNumber('25', 'en-US', percent)).toBe(0.25);
     expect(parseQuantity('١٫٥ cm', lengths, { locale: 'ar-EG' })).toBe(15);
     expect(parseQuantity('٢٥٪ cm', lengths, { locale: 'ar-EG', options: percent })).toBe(2.5);
+  });
+
+  it('UIC-NUMBER-FIELD-3.4 drops compact notation from a quantity format and keeps the rest', () => {
+    expect(
+      toQuantityFormatOptions({
+        notation: 'compact',
+        compactDisplay: 'short',
+        maximumFractionDigits: 1,
+      }),
+    ).toEqual({ maximumFractionDigits: 1 });
+    const kept = { notation: 'scientific', style: 'percent' } as const;
+    expect(toQuantityFormatOptions(kept)).toBe(kept);
+    expect(toQuantityFormatOptions(undefined)).toBeUndefined();
   });
 });

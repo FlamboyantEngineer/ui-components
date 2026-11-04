@@ -209,6 +209,21 @@ test.describe('Number Field typed units', () => {
     });
   }
 
+  test('UIC-NUMBER-FIELD-3.4 writes a compact quantity in standard notation and refuses 12K', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('number-field');
+    const field = page.locator('[data-lab-field="units-compact"]');
+    const input = field.getByRole('spinbutton', { name: 'Compact length' });
+    await expect(input).toHaveValue('12,000');
+    await input.fill('12K');
+    await input.press('Enter');
+    await expect(input).toHaveValue('12K');
+    await expect(input).toHaveAttribute('aria-invalid', 'true');
+    await expect(input).toHaveAttribute('aria-valuenow', '12000');
+  });
+
   test('UIC-NUMBER-FIELD-3.4 converts 5cm to 50 mm, keeps a wrong unit and restores', async ({
     page,
     lab,

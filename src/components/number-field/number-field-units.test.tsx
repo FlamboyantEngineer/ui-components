@@ -219,4 +219,35 @@ describe('NumberField units', () => {
     expect(onChange).toHaveBeenLastCalledWith(12);
     expect(length).not.toHaveAttribute('aria-invalid');
   });
+
+  it('UIC-NUMBER-FIELD-3.4 writes a compact-notation quantity in standard notation and refuses 12K', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    render(
+      <UiProvider locale="en-US">
+        <NumberField
+          label="Length"
+          defaultValue={12_000}
+          units={{ unit: 'm', conversions: { m: 1 } }}
+          formatOptions={{ notation: 'compact', compactDisplay: 'long' }}
+          onCommit={onCommit}
+        />
+      </UiProvider>,
+    );
+    const input = screen.getByRole('spinbutton', { name: 'Length' });
+    expect(input).toHaveValue('12,000');
+    await user.click(input);
+    await user.tab();
+    expect(input).not.toHaveAttribute('aria-invalid');
+    await user.clear(input);
+    await user.type(input, '12K{Enter}');
+    expect(onCommit).not.toHaveBeenCalledWith(12);
+    expect(input).toHaveValue('12K');
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(input).toHaveAttribute('aria-valuenow', '12000');
+    await user.clear(input);
+    await user.type(input, '12.5{Enter}');
+    expect(onCommit).toHaveBeenLastCalledWith(12.5);
+    expect(input).not.toHaveAttribute('aria-invalid');
+  });
 });

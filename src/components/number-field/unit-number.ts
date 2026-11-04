@@ -16,6 +16,18 @@ export function listUnits(units: NumberFieldUnits): [string, number][] {
   return Object.entries({ [units.unit]: 1, ...units.conversions });
 }
 
+/**
+ * The format options a field with units writes and reads numbers with. Compact notation (`12K`)
+ * cannot be read back, as only its magnitude's letters would be left out, so it becomes standard.
+ */
+export function toQuantityFormatOptions(
+  options: Intl.NumberFormatOptions | undefined,
+): Intl.NumberFormatOptions | undefined {
+  if (options?.notation !== 'compact') return options;
+  const { notation: _notation, compactDisplay: _compactDisplay, ...standard } = options;
+  return standard;
+}
+
 // `\s` covers the no-break spaces some locales group digits with; the marks are the bidi controls
 // right-to-left locales write around signs.
 const spaces = /[\s\u061c\u200e\u200f]/g;
