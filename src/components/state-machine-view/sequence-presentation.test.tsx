@@ -145,6 +145,7 @@ describe('StateMachineView sequence interactions', () => {
     expect(ref.current).toHaveAttribute('id', 'sequence');
     expect(ref.current).toHaveClass('host');
     expect(ref.current).toHaveAttribute('data-density', 'compact');
+    expect(ref.current).toHaveAttribute('data-size', 'md');
     expect(screen.getByRole('button', { name: 'Blue' })).toHaveAttribute('aria-current', 'step');
     expect(screen.getByRole('button', { name: 'Blue' })).toHaveAccessibleDescription(
       'Current state.',
@@ -298,6 +299,33 @@ describe('StateMachineView sequence interactions', () => {
     await act(() => root?.unmount());
     host.remove();
   });
+});
+
+it.each(['xs', 'sm', 'md', 'lg', 'xl'] as const)(
+  'UIC-STATE-MACHINE-VIEW-4.6 publishes %s and changes size without resetting selection or focus',
+  (size) => {
+    const props = { ...sequencePresentation, states, transitions, selectedKey: 'blue' };
+    const { rerender } = render(<StateMachineView {...props} size="xs" />);
+    const selected = screen.getByRole('button', { name: 'Blue' });
+    act(() => selected.focus());
+    rerender(<StateMachineView {...props} size={size} />);
+    const root = screen.getByRole('group', { name: 'State machine' });
+    expect(root).toHaveAttribute('data-size', size);
+    expect(selected).toHaveAttribute('aria-pressed', 'true');
+    expect(selected).toHaveFocus();
+    expectHooksMatchSpec(root, 'STATE-MACHINE-VIEW');
+    rerender(<StateMachineView {...props} size={size} states={[]} transitions={[]} />);
+    expect(root).toHaveAttribute('data-size', size);
+    expect(screen.getByRole('note')).toHaveAttribute('tabindex', '0');
+  },
+);
+
+it('UIC-STATE-MACHINE-VIEW-4.6 keeps sequence size out of the graph presentation', () => {
+  render(<StateMachineView states={states} transitions={transitions} size="xl" />);
+  const root = screen.getByRole('group', { name: 'State machine' });
+  expect(root).toHaveAttribute('data-presentation', 'graph');
+  expect(root).not.toHaveAttribute('data-size');
+  expect(root).not.toHaveAttribute('size');
 });
 
 it('UIC-STATE-MACHINE-VIEW-4.5 observes viewport/content changes and releases observations on unmount', () => {
