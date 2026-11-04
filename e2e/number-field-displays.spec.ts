@@ -252,6 +252,11 @@ test.describe('Number Field typed units', () => {
     await input.press('Tab');
     await expect(output).toHaveText('1.23456');
     await expect(input).toHaveAttribute('aria-valuenow', '1.23456');
+    await input.fill('unreadable');
+    await page.getByRole('button', { name: 'Replace the precise length' }).click();
+    await expect(input).toHaveValue('1.235');
+    await expect(input).not.toHaveAttribute('aria-invalid');
+    await expect(output).toHaveText('1.23457');
     await input.fill('2.5');
     await input.press('Enter');
     await expect(output).toHaveText('2.5');

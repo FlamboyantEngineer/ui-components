@@ -68,12 +68,15 @@ interface TextDraft {
   isEdited: boolean;
 }
 
-/** The input's text, replaced by the value's whenever the formatted value changes. */
-function useDraft(formatted: string) {
+/**
+ * The input's text, replaced by the value's whenever the value or its formatting changes, even to
+ * a value formatted like the last one; a render with the same value keeps what is being typed.
+ */
+function useDraft(value: number | null, formatted: string) {
   const [draft, setDraft] = useState<TextDraft>({ text: formatted, isEdited: false });
-  const [shown, setShown] = useState(formatted);
-  if (shown !== formatted) {
-    setShown(formatted);
+  const [shown, setShown] = useState({ value, formatted });
+  if (!Object.is(shown.value, value) || shown.formatted !== formatted) {
+    setShown({ value, formatted });
     setDraft({ text: formatted, isEdited: false });
   }
   return [draft, setDraft] as const;
@@ -81,7 +84,7 @@ function useDraft(formatted: string) {
 
 function useTextEntry({ state, codec, config, steps }: TextNumberControlProps) {
   const formatted = codec.format(state.value);
-  const [draft, setDraft] = useDraft(formatted);
+  const [draft, setDraft] = useDraft(state.value, formatted);
   const issue =
     codec.unreadable && draft.isEdited && isUnreadable(codec.parse(draft.text))
       ? codec.unreadable

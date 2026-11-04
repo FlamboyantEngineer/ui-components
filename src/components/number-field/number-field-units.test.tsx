@@ -399,4 +399,29 @@ describe('NumberField units precision', () => {
     expect(onChange).toHaveBeenLastCalledWith(1);
     expect(input).toHaveAttribute('aria-valuenow', '1');
   });
+
+  it('UIC-NUMBER-FIELD-2.1 replaces a draft with a new controlled value formatted like the last', async () => {
+    const user = userEvent.setup();
+    const field = (value: number) => (
+      <UiProvider locale="en-US">
+        <NumberField label="Length" value={value} units={metres} commitBehavior="validate" />
+      </UiProvider>
+    );
+    const { rerender } = render(field(1.23451));
+    const input = screen.getByRole('spinbutton', { name: 'Length' });
+    await user.clear(input);
+    await user.type(input, 'invalid');
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    // The same value keeps the typing; a new one replaces it and its issue.
+    rerender(field(1.23451));
+    expect(input).toHaveValue('invalid');
+    rerender(field(1.23452));
+    expect(input).toHaveValue('1.235');
+    expect(input).not.toHaveAttribute('aria-invalid');
+    expect(input).toHaveAttribute('aria-valuenow', '1.23452');
+    await user.clear(input);
+    await user.type(input, '1.2');
+    rerender(field(1.23453));
+    expect(input).toHaveValue('1.235');
+  });
 });

@@ -143,9 +143,12 @@ function PreciseLength() {
         onChange={setValue}
         units={{ unit: 'm', conversions: { m: 1 } }}
         commitBehavior="validate"
-        description="The value is 1.23456 m, shown rounded as 1.235. Focusing and leaving the field, or pressing Enter, keeps 1.23456; typing a new number replaces it."
+        description="The value is 1.23456 m, shown rounded as 1.235. Focusing and leaving the field, or pressing Enter, keeps 1.23456; typing a new number replaces it. Type some text, then replace the value with one that also shows 1.235: the text gives way to it."
         data-lab-field="units-precise"
       />
+      <Button onPress={() => setValue((current) => (current === 1.23456 ? 1.23457 : 1.23456))}>
+        Replace the precise length
+      </Button>
       <LabOutput name="Precise length value">{value === null ? 'empty' : value}</LabOutput>
     </>
   );
