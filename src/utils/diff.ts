@@ -151,6 +151,12 @@ function findSplit<T>(a: readonly T[], b: readonly T[]): [number, number] | null
   return null;
 }
 
+/** Whether two sequences share no token, found in linear time. */
+function isDisjoint<T>(a: readonly T[], b: readonly T[]): boolean {
+  const seen = new Set(a);
+  return !b.some((token) => seen.has(token));
+}
+
 function diffTokens<T>(
   a: readonly T[],
   b: readonly T[],
@@ -161,7 +167,9 @@ function diffTokens<T>(
   const oldMiddle = a.slice(prefix, a.length - suffix);
   const newMiddle = b.slice(prefix, b.length - suffix);
   edits.push({ kind: 'equal', tokens: a.slice(0, prefix) });
-  if (oldMiddle.length === 0 || newMiddle.length === 0) {
+  // Middles with nothing in common have one shortest edit, which the search would take quadratic
+  // time to find: delete the one and insert the other.
+  if (oldMiddle.length === 0 || newMiddle.length === 0 || isDisjoint(oldMiddle, newMiddle)) {
     edits.push({ kind: 'delete', tokens: oldMiddle }, { kind: 'insert', tokens: newMiddle });
   } else {
     const split = findSplit(oldMiddle, newMiddle);
