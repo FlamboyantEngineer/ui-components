@@ -543,6 +543,147 @@ describe('SplitView owners', () => {
   });
 });
 
+describe('SplitView reopening', () => {
+  function reopenable(ids: string[], extra: Partial<Parameters<typeof SplitView>[0]> = {}) {
+    return (
+      <SplitView
+        panes={ids.map((id) => ({ id, minSize: 10, collapsible: true }))}
+        defaultSizes={[20, 30, 50]}
+        separatorLabel={(index) => `Resize ${ids[index]}`}
+        {...extra}
+      >
+        {ids.map((id) => (
+          <button key={id}>Pane {id}</button>
+        ))}
+      </SplitView>
+    );
+  }
+
+  for (const unit of ['pixel', 'percent'] as const) {
+    it(`UIC-SPLIT-VIEW-2.1 UIC-SPLIT-VIEW-2.6 UIC-SPLIT-VIEW-2.7 restores a reordered ${unit} pane by ID`, async () => {
+      const user = userEvent.setup();
+      const handleRef = createRef<SplitViewHandle>();
+      const onSizesChangeEnd = vi.fn();
+      const onExpand = vi.fn();
+      const view = (ids: string[]) =>
+        reopenable(ids, {
+          panes: ids.map((id) => ({
+            id,
+            unit,
+            minSize: unit === 'pixel' ? 50 : 10,
+            collapsible: true,
+          })),
+          defaultSizes: unit === 'pixel' ? [100, 200, 300] : [20, 30, 50],
+          handleRef,
+          onSizesChangeEnd,
+          onExpand,
+        });
+      const { rerender } = render(view(['a', 'b', 'c']));
+      screen.getByRole('separator', { name: 'Resize a' }).focus();
+      await user.keyboard('{Enter}');
+      const pane = requireDefined(document.getElementById('a'));
+      expect(pane).toHaveAttribute('data-collapsed', 'true');
+      expect(pane).toHaveAttribute('inert');
+      onSizesChangeEnd.mockClear();
+      act(() => {
+        requireDefined(handleRef.current).expand(-1);
+        requireDefined(handleRef.current).expand(99);
+      });
+      expect(onSizesChangeEnd).not.toHaveBeenCalled();
+      expect(onExpand).not.toHaveBeenCalled();
+      rerender(view(['b', 'a', 'c']));
+      expect(pane).toHaveAttribute('data-collapsed', 'true');
+      act(() => requireDefined(handleRef.current).expand(1));
+      expect(onSizesChangeEnd).toHaveBeenLastCalledWith(
+        unit === 'pixel' ? [200, 100, 300] : [50, 20, 30],
+      );
+      expect(onExpand).toHaveBeenLastCalledWith(1);
+      expect(pane).not.toHaveAttribute('data-collapsed');
+      expect(pane).not.toHaveAttribute('inert');
+      expect(screen.getByRole('button', { name: 'Pane a' })).toBeVisible();
+      expect(screen.getByRole('separator', { name: 'Resize a' })).toHaveAttribute(
+        'aria-controls',
+        'a c',
+      );
+    });
+
+    it(`UIC-SPLIT-VIEW-2.1 UIC-SPLIT-VIEW-2.6 restores distinct ${unit} histories after reordering`, () => {
+      const handleRef = createRef<SplitViewHandle>();
+      const onSizesChangeEnd = vi.fn();
+      const view = (ids: string[]) =>
+        reopenable(ids, {
+          panes: ids.map((id) => ({
+            id,
+            unit,
+            minSize: unit === 'pixel' ? 50 : 5,
+            collapsible: true,
+          })),
+          defaultSizes: unit === 'pixel' ? [100, 200, 300, 400] : [20, 30, 10, 40],
+          handleRef,
+          onSizesChangeEnd,
+        });
+      const { rerender } = render(view(['a', 'x', 'b', 'y']));
+      act(() => requireDefined(handleRef.current).collapse(0));
+      act(() => requireDefined(handleRef.current).collapse(2));
+      rerender(view(['b', 'x', 'a', 'y']));
+      act(() => requireDefined(handleRef.current).expand(0));
+      expect(onSizesChangeEnd).toHaveBeenLastCalledWith(
+        unit === 'pixel' ? [300, 200, 0, 400] : [10, 40, 0, 50],
+      );
+      act(() => requireDefined(handleRef.current).expand(2));
+      expect(onSizesChangeEnd).toHaveBeenLastCalledWith(
+        unit === 'pixel' ? [300, 200, 100, 400] : [10, 40, 20, 30],
+      );
+    });
+  }
+
+  it('UIC-SPLIT-VIEW-2.4 UIC-SPLIT-VIEW-2.6 discards reopening history when the storage adapter changes', () => {
+    const handleRef = createRef<SplitViewHandle>();
+    const onSizesChangeEnd = vi.fn();
+    const first = createMemoryStorage({ split: '40' });
+    const second = createMemoryStorage({ split: '0' });
+    const view = (storage: typeof first) => (
+      <UiProvider storage={storage}>
+        {reopenable(['a', 'b'], { persistKey: 'split', handleRef, onSizesChangeEnd })}
+      </UiProvider>
+    );
+    const { rerender } = render(view(first));
+    act(() => requireDefined(handleRef.current).collapse(0));
+    rerender(view(second));
+    expect(document.getElementById('a')).toHaveAttribute('data-collapsed', 'true');
+    act(() => requireDefined(handleRef.current).expand(0));
+    expect(onSizesChangeEnd).toHaveBeenLastCalledWith([10, 90]);
+    expect(second.getItem('split')).toBe('10');
+    expect(first.getItem('split')).toBe('0');
+  });
+
+  for (const change of ['bounds', 'units'] as const) {
+    it(`UIC-SPLIT-VIEW-2.4 UIC-SPLIT-VIEW-2.6 discards reopening history when ${change} change`, () => {
+      const handleRef = createRef<SplitViewHandle>();
+      const onSizesChangeEnd = vi.fn();
+      const view = (changed: boolean) =>
+        reopenable(['a', 'b'], {
+          panes: ['a', 'b'].map((id) => ({
+            id,
+            collapsible: true,
+            maxSize: 100,
+            minSize: changed && change === 'bounds' ? 25 : 10,
+            unit: changed && change === 'units' ? 'pixel' : 'percent',
+          })),
+          defaultSizes: [40, 60],
+          handleRef,
+          onSizesChangeEnd,
+        });
+      const { rerender } = render(view(false));
+      act(() => requireDefined(handleRef.current).collapse(0));
+      rerender(view(true));
+      expect(document.getElementById('a')).toHaveAttribute('data-collapsed', 'true');
+      act(() => requireDefined(handleRef.current).expand(0));
+      expect(onSizesChangeEnd).toHaveBeenLastCalledWith(change === 'bounds' ? [25, 75] : [10, 100]);
+    });
+  }
+});
+
 describe('SplitView panes', () => {
   it("UIC-SPLIT-VIEW-2.1 keeps a pane's content, focus and size when a pane is inserted before it", async () => {
     const user = userEvent.setup();

@@ -1,8 +1,9 @@
 'use client';
 
-import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useUiStorage, type PersistCodec } from '../../core/provider.js';
 import { createJsonCodec } from '../../utils/json-codec.js';
+import { useLatest } from '../../utils/use-latest.js';
 import { usePersistedValue } from '../../utils/use-persisted-value.js';
 import { useOwnedPreview } from '../../utils/use-owned-preview.js';
 import { useShallowStable } from '../../utils/use-shallow-stable.js';
@@ -145,23 +146,20 @@ export function useSplitSizes(options: SplitSizesOptions): SplitSizes {
   };
   const [preview, setPreview] = useOwnedPreview<readonly number[]>(owner);
   const current = normalizeSplitSizes(panes, controlled ?? preview ?? committed);
-  const latest = useRef(current);
-  const reopened = useRef<Owned<Map<number, number>>>({ owner, value: new Map() });
+  const latestRef = useLatest(current);
+  const reopened = useRef<Owned<Map<string, number>>>({ owner, value: new Map() });
   // A pane reopens at its size before collapsing only under the owner it collapsed in.
   const reopen = () => {
     if (reopened.current.owner !== owner) reopened.current = { owner, value: new Map() };
     return reopened.current.value;
   };
-  useLayoutEffect(() => {
-    latest.current = current;
-  });
-
   const reportCollapse = (previous: readonly number[], next: readonly number[]) => {
-    next.forEach((size, index) => {
-      const was = isSplitPaneCollapsed(panes[index], previous[index] ?? 0);
-      const is = isSplitPaneCollapsed(panes[index], size);
+    panes.forEach((pane, index) => {
+      const size = next[index] ?? 0;
+      const was = isSplitPaneCollapsed(pane, previous[index] ?? 0);
+      const is = isSplitPaneCollapsed(pane, size);
       if (!was && is) {
-        reopen().set(index, previous[index] ?? 0);
+        reopen().set(pane.id, previous[index] ?? 0);
         options.onCollapse?.(index);
       } else if (was && !is) options.onExpand?.(index);
     });
@@ -169,8 +167,8 @@ export function useSplitSizes(options: SplitSizesOptions): SplitSizes {
   const update = (sizes: readonly number[], phase: SplitSizesPhase) => {
     const next = normalizeSplitSizes(panes, sizes);
     const isEnd = phase !== 'change';
-    reportCollapse(latest.current, next);
-    latest.current = next;
+    reportCollapse(latestRef.current, next);
+    latestRef.current = next;
     if (!controlled) {
       if (isEnd) setCommitted(next);
       setPreview(isEnd ? null : next);
@@ -189,13 +187,15 @@ export function useSplitSizes(options: SplitSizesOptions): SplitSizes {
     update,
     cancel: () => setPreview(null),
     collapse(index) {
-      const next = collapseSplitPane(panes, latest.current, index);
-      if (next !== latest.current) update(next, 'set');
+      const next = collapseSplitPane(panes, latestRef.current, index);
+      if (next !== latestRef.current) update(next, 'set');
     },
     expand(index) {
-      const size = reopen().get(index);
-      const next = expandSplitPane(panes, latest.current, { index, size });
-      if (next !== latest.current) update(next, 'set');
+      const pane = panes[index];
+      if (!pane) return;
+      const size = reopen().get(pane.id);
+      const next = expandSplitPane(panes, latestRef.current, { index, size });
+      if (next !== latestRef.current) update(next, 'set');
     },
   };
 }
