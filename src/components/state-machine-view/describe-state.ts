@@ -6,7 +6,7 @@ import type { StateMachineState } from './state-machine-view.js';
 /** A notification count shows only when positive, and caps at this value as `9+`. */
 export const notificationCountMax = 9;
 
-export interface StateCount {
+interface StateCount {
   value: number;
   kind: 'structural' | 'notification';
 }

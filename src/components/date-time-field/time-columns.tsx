@@ -18,7 +18,7 @@ import {
 import type { DateTimeFieldGranularity } from './date-values.js';
 import { dateTimeFieldHooks as hooks } from './date-time-field-hooks.js';
 
-export interface TimeColumnsProps {
+interface TimeColumnsProps {
   /** Names the group of columns. */
   label: string;
   /** The time the columns show chosen, or `null` for none. */

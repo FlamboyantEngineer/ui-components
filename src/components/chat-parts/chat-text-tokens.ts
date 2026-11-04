@@ -24,7 +24,7 @@ const markerEnd = '\uFFFB';
 export type TokenMarker = string;
 
 /** A Markdown source with its tokens replaced by markers, and the opening they share. */
-export interface TokenSource {
+interface TokenSource {
   source: string;
   marker: TokenMarker;
 }

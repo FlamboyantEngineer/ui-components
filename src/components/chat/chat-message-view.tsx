@@ -55,7 +55,7 @@ export type ChatPartOptions = Pick<
  * The options a message calls while it renders. A message draws with the ones of the render it
  * renders in, but a new function alone does not render a message again.
  */
-export interface ChatRenderOptions extends Pick<
+interface ChatRenderOptions extends Pick<
   ChatPartsProps,
   'toolRenderers' | 'renderPart' | 'getReference'
 > {

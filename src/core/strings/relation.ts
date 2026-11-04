@@ -1,6 +1,6 @@
 import { defineStrings } from '../message-format.js';
 /** Strings of relation matrices, permission matrices and relation columns. */
-export interface RelationStrings {
+interface RelationStrings {
   /** Names the column of row headers in a relation matrix, shown in its corner. */
   relationItems: string;
   /** Names the mark of a relation that has no kind of its own. */

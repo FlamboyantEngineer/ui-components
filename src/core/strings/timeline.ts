@@ -1,6 +1,6 @@
 import { defineStrings } from '../message-format.js';
 /** Strings of timelines: their default name, item descriptions, scale labels and table headings. */
-export interface TimelineStrings {
+interface TimelineStrings {
   /** Default accessible name of a timeline. */
   timeline: string;
   /** Describes a bar's dates, from its formatted first and last days. */

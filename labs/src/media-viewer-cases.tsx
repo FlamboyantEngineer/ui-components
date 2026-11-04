@@ -10,7 +10,7 @@ import { LabOutput } from './lab-output.js';
 const landscape = (query: string) => `build/samples/landscape.svg?${query}`;
 
 /** A hundred photos, each with its own URL and no thumbnail of its own. */
-export const largeSet: MediaViewerItem[] = Array.from({ length: 100 }, (_, index) => ({
+const largeSet: MediaViewerItem[] = Array.from({ length: 100 }, (_, index) => ({
   id: `photo-${index + 1}`,
   src: landscape(`photo=${index + 1}`),
   name: `Photo ${index + 1}.svg`,

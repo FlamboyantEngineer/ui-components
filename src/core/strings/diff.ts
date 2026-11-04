@@ -1,6 +1,6 @@
 import { defineStrings } from '../message-format.js';
 /** Strings of text diffs and annotation margins. */
-export interface DiffStrings {
+interface DiffStrings {
   /** The lines a text diff adds and removes, by their counts. */
   textDiffSummary: (added: number, removed: number) => string;
   /** Names one line of a text diff: how it changed, then its old and new numbers where it has them. */

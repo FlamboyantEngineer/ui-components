@@ -16,7 +16,7 @@ const tokenizeShell = resolveCodeTokenizer({
   ],
 });
 
-export interface LanguageSample {
+interface LanguageSample {
   title: string;
   language: string;
   code: string;

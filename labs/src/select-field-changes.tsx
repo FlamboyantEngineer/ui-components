@@ -31,7 +31,7 @@ type EditName = keyof typeof edits;
 
 const editNames = Object.keys(edits) as EditName[];
 
-export const changeLayouts: readonly FieldChangeLayout[] = ['inline', 'stacked', 'hidden'];
+const changeLayouts: readonly FieldChangeLayout[] = ['inline', 'stacked', 'hidden'];
 
 interface ChangeSampleProps {
   edit: EditName;

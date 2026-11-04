@@ -46,7 +46,7 @@ export type CalendarEventDragMode = 'move' | 'resize';
 export type CalendarEventChange = 'edit' | 'move' | 'resize';
 
 /** A drag in progress: the event as it is, and the event where it would land, if it changed. */
-export interface EventDrag {
+interface EventDrag {
   event: CalendarViewEvent;
   next: CalendarViewEvent | null;
 }

@@ -48,7 +48,7 @@ const actionKeys = new Set(['Enter', ' ']);
 const defaultPage = 10;
 
 /** The selector of the cell at `position`, through the grid's row and column indices. */
-export function selectMatrixCell({ row, column }: MatrixPosition): string {
+function selectMatrixCell({ row, column }: MatrixPosition): string {
   return `[role="row"][aria-rowindex="${row + 2}"] > [aria-colindex="${column + 2}"]`;
 }
 

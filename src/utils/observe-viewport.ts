@@ -8,7 +8,7 @@ import { listenFontsLoaded } from './listen-fonts-loaded.js';
  * The content changes that can change the scrollable extent without resizing the viewport or its
  * children: nodes, text and attributes (such as a class or style) anywhere inside it.
  */
-export const contentChanges: MutationObserverInit = {
+const contentChanges: MutationObserverInit = {
   childList: true,
   subtree: true,
   attributes: true,

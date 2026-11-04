@@ -16,7 +16,7 @@ import { measuredProperty } from '../../core/hooks.js';
 export type ToastSwipeDirection = 'up' | 'down' | 'left' | 'right' | 'start' | 'end';
 
 /** A swipe direction on the screen. */
-export type ToastSwipeEdge = Exclude<ToastSwipeDirection, 'start' | 'end'>;
+type ToastSwipeEdge = Exclude<ToastSwipeDirection, 'start' | 'end'>;
 
 /** The screen direction of `direction` in a reading direction. */
 export function resolveSwipeDirection(

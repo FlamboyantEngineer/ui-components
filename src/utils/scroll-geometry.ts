@@ -7,7 +7,7 @@ export function toScale(viewportSize: number, ownSize: number): number {
 }
 
 /** How many viewport pixels one of an element's own CSS pixels spans, across and down. */
-export interface ElementScale {
+interface ElementScale {
   x: number;
   y: number;
 }
@@ -22,7 +22,7 @@ export function measureScale(element: HTMLElement): ElementScale {
 }
 
 /** A box in a scroller's content, in the scroller's own CSS pixels. */
-export interface ScrollerBox {
+interface ScrollerBox {
   /** From the top of the scroller's padding box with nothing scrolled, as `scrollTop` counts. */
   top: number;
   /** From the inline-start side as `scrollLeft` counts, so negative scroll offsets carry over. */

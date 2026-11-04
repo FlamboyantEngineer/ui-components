@@ -26,7 +26,7 @@ import { decorateMarkers, placeMarkers, type RichTextBlockMarker } from './block
 import { SurfaceScrollbars } from './surface-scrollbars.js';
 
 /** The engine state behind an editor and the function that applies its transactions. */
-export interface SyncedEditor {
+interface SyncedEditor {
   state: EditorState;
   dispatchTransaction: (tr: Transaction) => void;
 }
@@ -57,7 +57,7 @@ function getMarkViewComponents(schema: Schema) {
   return schema.marks.link?.spec === defaultMarks.link ? defaultLinkViews : undefined;
 }
 
-export interface SyncedEditorOptions<T> {
+interface SyncedEditorOptions<T> {
   /** The engine schema: a new one starts a fresh state. */
   schema: Schema;
   /** The value the document shows. */

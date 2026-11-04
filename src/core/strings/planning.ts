@@ -1,6 +1,6 @@
 import { defineStrings } from '../message-format.js';
 /** Strings of boards and calendar views. */
-export interface PlanningStrings {
+interface PlanningStrings {
   /** The command that adds a card to a board column. */
   addCard: string;
   /** Fills a board cell that holds no card. */

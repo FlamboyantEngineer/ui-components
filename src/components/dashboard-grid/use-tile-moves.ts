@@ -13,7 +13,7 @@ import type { TileGesture } from './dashboard-grid.js';
 import type { CellStep, TileMoveKind } from './use-tile-move.js';
 
 /** The committed layout a gesture previews against, how to keep a new one, and who owns it. */
-export interface CommittedLayout {
+interface CommittedLayout {
   layout: DashboardGridItem[];
   commit: (next: DashboardGridItem[]) => void;
   /** Who the layout belongs to: a gesture started under one owner never writes to another. */

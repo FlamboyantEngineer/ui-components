@@ -131,7 +131,7 @@ function readChatDraft(
 }
 
 /** Content as the composer takes it: tokens by their bare labels. */
-export function toComposerContent(content: ChatComposerContent): MessageComposerContent {
+function toComposerContent(content: ChatComposerContent): MessageComposerContent {
   if (typeof content === 'string') return content;
   return { text: content.text, tokens: toComposerTokens(content.tokens) };
 }

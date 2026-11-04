@@ -6,7 +6,7 @@ import { ComboBoxStateContext } from '../../primitives/index.js';
 import { useNativeReset } from '../../utils/use-native-reset.js';
 
 /** The value React Aria's combobox state holds: a key, a list of keys, or none. */
-export type ComboboxStateValue = Key | Key[] | null;
+type ComboboxStateValue = Key | Key[] | null;
 
 function isSameValue(left: ComboboxStateValue, right: ComboboxStateValue): boolean {
   if (Array.isArray(left) && Array.isArray(right)) {

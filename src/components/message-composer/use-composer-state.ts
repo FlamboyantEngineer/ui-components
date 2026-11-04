@@ -73,7 +73,7 @@ interface EditState<T> {
 }
 
 /** How long typing pauses before the persisted draft is written to storage. */
-export const DRAFT_WRITE_DELAY = 300;
+const DRAFT_WRITE_DELAY = 300;
 
 /**
  * The draft: controlled by `value`, or the composer's own, kept under `persistKey`. Typing updates

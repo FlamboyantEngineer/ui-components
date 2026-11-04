@@ -1,6 +1,6 @@
 import { defineStrings } from '../message-format.js';
 /** Strings of view switchers, display options, inline edits, record headers and transition menus. */
-export interface ViewStrings {
+interface ViewStrings {
   /** Names a view switcher's list of saved views. */
   views: string;
   /** Names the menu of a view's actions, from the view's name. */

@@ -150,7 +150,7 @@ function useOwnedTabIds(listRef: RefObject<HTMLElement | null>, enabled: boolean
   return ids;
 }
 
-export interface TabListPartsProps extends BaseProps {
+interface TabListPartsProps extends BaseProps {
   model: TabListPartsModel | null;
   visible: ReadonlySet<string> | null;
   tabKeys: ReadonlySet<Key> | null;

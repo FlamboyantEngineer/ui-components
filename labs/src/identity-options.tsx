@@ -9,7 +9,7 @@ export const identityOptions = ['initials', 'color key', 'color slot', 'image pr
 export const badgePlacements = ['top-start', 'top-end', 'bottom-start', 'bottom-end'] as const;
 
 /** A picture with a sharper candidate for dense screens, loaded only near the viewport. */
-export const responsiveImage: AvatarImageProps = {
+const responsiveImage: AvatarImageProps = {
   srcSet: `${samplePicture} 1x, ${otherPicture} 2x`,
   sizes: '32px',
   loading: 'lazy',

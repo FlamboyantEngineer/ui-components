@@ -1,6 +1,6 @@
 import { defineStrings } from '../message-format.js';
 /** Strings of the cards in which an agent asks the reader questions in a chat. */
-export interface ChatQuestionStrings {
+interface ChatQuestionStrings {
   /** Sends the reader's answers to an agent's questions. */
   questionSubmit: string;
   /** The choice that answers a question in the reader's own words. */

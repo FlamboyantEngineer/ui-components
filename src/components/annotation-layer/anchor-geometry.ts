@@ -47,7 +47,7 @@ export function toAnchorTop(rects: readonly AnnotationRect[]): number | null {
 }
 
 /** A point in the layer's content coordinates. */
-export interface LayerPoint {
+interface LayerPoint {
   x: number;
   y: number;
 }
@@ -57,7 +57,7 @@ export interface LayerPoint {
  * its border, before its scroll, in its own CSS pixels. A scale its ancestors apply, the same or
  * different across and down, is divided out; a rotation or skew is not supported.
  */
-export interface LayerFrame {
+interface LayerFrame {
   toLocalPoint(x: number, y: number): LayerPoint;
   toLocalRect(box: { top: number; left: number; width: number; height: number }): AnnotationRect;
 }

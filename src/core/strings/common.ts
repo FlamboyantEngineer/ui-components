@@ -13,7 +13,7 @@ interface SegmentProgressText {
 }
 
 /** Strings shared by actions, navigation, overlays, collections and people. */
-export interface CommonStrings {
+interface CommonStrings {
   close: string;
   dismiss: string;
   confirm: string;

@@ -1,6 +1,6 @@
 import { defineStrings } from '../message-format.js';
 /** Strings of notification lists and centres, approval panels and decision controls. */
-export interface ReviewStrings {
+interface ReviewStrings {
   /** Names a notification list and the bell that opens it. */
   notifications: string;
   /** Names the notification bell with the unread count. */

@@ -3,7 +3,7 @@
 
 import type { MarkdownInline } from './markdown-nodes.js';
 
-export interface Delimiter {
+interface Delimiter {
   kind: 'delimiter';
   char: string;
   count: number;

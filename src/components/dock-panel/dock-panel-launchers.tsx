@@ -74,7 +74,7 @@ interface DockPanelToggleProps {
 export const dockPanelCountMax = 9;
 
 /** The toggle points the way the panel moves: toward its edge to collapse, away to expand. */
-export function resolveToggleGlyph(
+function resolveToggleGlyph(
   position: DockPanelPosition,
   isExpanded: boolean,
   isRtl: boolean,

@@ -10,7 +10,7 @@ export const signatureImageTypes = ['image/png', 'image/jpeg', 'image/webp', 'im
 /** Why a file is not taken as a signature image. */
 export type SignatureImageProblem = 'type' | 'size' | 'unreadable';
 
-export type SignatureImageResult = { image: ImageSignature } | { problem: SignatureImageProblem };
+type SignatureImageResult = { image: ImageSignature } | { problem: SignatureImageProblem };
 
 function readDataUrl(file: Blob): Promise<string | null> {
   return new Promise((resolve) => {

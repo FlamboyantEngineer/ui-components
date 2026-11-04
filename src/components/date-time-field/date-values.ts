@@ -93,7 +93,7 @@ export function isReadableValue(
 }
 
 /** The clock a field reads at an event: the moment, and the zone its wall clock is read in. */
-export interface DateClock {
+interface DateClock {
   now: Date;
   /** The zone of a floating value's wall clock; a zoned field reads its own `timeZone`. */
   zone: string;

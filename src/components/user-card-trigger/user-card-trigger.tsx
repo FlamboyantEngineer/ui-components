@@ -42,7 +42,7 @@ export interface UserCardTriggerProps
 const hooks = createHooks('user-card-trigger', ['popover']);
 
 /** The `UserCardTrigger` that opened a card, which its actions dismiss. */
-export interface UserCardOwner {
+interface UserCardOwner {
   /** The card opened on hover, where it must not take focus as a dialog would. */
   isPreview: boolean;
   /** Closes the card from the pressed action, returning focus to the trigger if the action held it. */

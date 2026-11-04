@@ -36,7 +36,7 @@ function isUnmoved(offsets: Offsets, element: Element | null | undefined): boole
 /** The input with which a reader scrolls: a wheel, a touch, a scrollbar press or a scroll key. */
 const readerInputs = ['wheel', 'touchmove', 'pointerdown', 'keydown'] as const;
 
-export interface ScrollCloseGuardOptions {
+interface ScrollCloseGuardOptions {
   /** The overlay follows the page, so any scroll of the page itself leaves it open. */
   followsPage: boolean;
 }

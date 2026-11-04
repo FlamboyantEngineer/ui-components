@@ -17,7 +17,7 @@ import { resolveActionIcon } from '../menu/menu-action-icons.js';
 import type { FieldMenuEntry, FieldMenuIcons } from './field-menu-entries.js';
 import type { FieldState } from './field-state.js';
 
-export interface FieldMenuModel {
+interface FieldMenuModel {
   /** The accessible name of both menus. */
   label: string;
   entries: MenuEntry[];

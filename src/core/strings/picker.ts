@@ -1,6 +1,6 @@
 import { defineStrings } from '../message-format.js';
 /** Strings of grid size pickers, character grids, transfer lists and tree select fields. */
-export interface PickerStrings {
+interface PickerStrings {
   /** Names a grid size picker that has no label of its own. */
   gridSizePicker: string;
   /** A grid size picker's readout of the previewed size (`3 × 4`). */
