@@ -397,6 +397,15 @@ test.describe('PDF Viewer lab', () => {
     await find.getByRole('button', { name: 'Back', exact: true }).click();
     await expect(matches).toHaveText('2 of 4');
 
+    const scroller = find.locator('.ui-pdf-viewer__scroller');
+    await scroller.evaluate((element) => {
+      element.scrollTop = element.scrollHeight;
+    });
+    await expect(find.getByLabel('Page', { exact: true })).toHaveValue('3');
+    await find.getByRole('button', { name: 'Reveal current match', exact: true }).click();
+    await expect(find.getByLabel('Page', { exact: true })).toHaveValue('1');
+    await expect(matches).toHaveText('2 of 4');
+
     await find.getByRole('button', { name: 'Find pears' }).click();
     await expect(field).toHaveValue('pear');
     await expect(matches).toHaveText(/of 2$/);

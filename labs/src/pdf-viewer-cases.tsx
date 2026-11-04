@@ -235,12 +235,16 @@ function CallerFindControls({ search }: { search: PdfSearchControls }) {
 export function CallerOwnedFind() {
   const [query, setQuery] = useState('');
   const [matchIndex, setMatchIndex] = useState(0);
+  const [matchRevealRequest, setMatchRevealRequest] = useState(0);
   const [searchOptions, setSearchOptions] = useState<PdfSearchOptions>({});
   return (
     <div data-lab-case="find">
       <p>
         <Button size="sm" onPress={() => setQuery('pear')}>
           Find pears
+        </Button>{' '}
+        <Button size="sm" onPress={() => setMatchRevealRequest((request) => request + 1)}>
+          Reveal current match
         </Button>{' '}
         Query: <output data-lab-output="query">{query}</output>; match:{' '}
         <output data-lab-output="match">{matchIndex}</output>; case:{' '}
@@ -256,6 +260,7 @@ export function CallerOwnedFind() {
           searchQuery={query}
           onSearchQueryChange={setQuery}
           matchIndex={matchIndex}
+          matchRevealRequest={matchRevealRequest}
           onMatchIndexChange={setMatchIndex}
           searchOptions={searchOptions}
           onSearchOptionsChange={setSearchOptions}

@@ -24,6 +24,8 @@ interface UsePdfSearchOptions {
   onSearchQueryChange?: ((query: string) => void) | undefined;
   /** The caller's current match, taken modulo the number of matches; `undefined` keeps it in the viewer. */
   matchIndex?: number | undefined;
+  /** Changes to reveal the current match again, including an unchanged controlled index. */
+  matchRevealRequest?: number | undefined;
   onMatchIndexChange?: ((index: number) => void) | undefined;
   /** The caller's find options; `undefined` keeps them in the viewer. */
   searchOptions?: PdfSearchOptions | undefined;
@@ -92,10 +94,10 @@ function wrapIndex(index: number, total: number): number {
 }
 
 /** A key that changes whenever the matches change or the current match is moved. */
-function useRevealKey(matches: readonly PdfMatch[], move: number): number {
-  const [reveal, setReveal] = useState({ matches, move, key: 0 });
-  if (reveal.matches !== matches || reveal.move !== move) {
-    setReveal({ matches, move, key: reveal.key + 1 });
+function useRevealKey(matches: readonly PdfMatch[], move: number, request = 0): number {
+  const [reveal, setReveal] = useState({ matches, move, request, key: 0 });
+  if (reveal.matches !== matches || reveal.move !== move || reveal.request !== request) {
+    setReveal({ matches, move, request, key: reveal.key + 1 });
   }
   return reveal.key;
 }
@@ -110,7 +112,11 @@ function useCurrentMatch(options: UsePdfSearchOptions, matches: readonly PdfMatc
   const total = matches.length;
   const isControlled = matchIndex !== undefined;
   const current = isControlled ? wrapIndex(matchIndex, total) : own.index;
-  const revealKey = useRevealKey(matches, isControlled ? matchIndex : own.moves);
+  const revealKey = useRevealKey(
+    matches,
+    isControlled ? matchIndex : own.moves,
+    options.matchRevealRequest,
+  );
 
   // A new query starts at its first match on or after the current page, also for the caller.
   const latest = useLatest(options);

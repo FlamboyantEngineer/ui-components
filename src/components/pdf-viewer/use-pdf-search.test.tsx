@@ -6,6 +6,7 @@ import {
   renderReady,
   renderViewer,
   searchStatus as status,
+  stubLayout,
 } from '../../../test/pdf-fixtures.js';
 import type { PdfSearchControls } from './use-pdf-search.js';
 
@@ -92,6 +93,34 @@ describe('PdfViewer find owned by the caller', () => {
     await waitFor(() =>
       expect(view.container.querySelectorAll('.ui-pdf-viewer__match')).toHaveLength(4),
     );
+  });
+
+  it('UIC-PDF-VIEWER-5.5 reveals an unchanged controlled match only for a fresh request', async () => {
+    stubLayout();
+    const onMatchIndexChange = vi.fn();
+    const props = { searchQuery: 'harvest', matchIndex: 0, onMatchIndexChange };
+    const view = await renderReady({ ...props, matchRevealRequest: 0 });
+    await waitFor(() => expect(status()).toHaveTextContent('1 of 4'));
+    const scroller = screen.getByRole('document', { name: 'Report' });
+    const mark = view.container.querySelector('.ui-pdf-viewer__match[data-current]');
+    expect(mark).not.toBeNull();
+    if (!mark) throw new Error('Expected a current match');
+    const getBounds = HTMLElement.prototype.getBoundingClientRect;
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return this.classList.contains('ui-pdf-viewer__match')
+        ? new DOMRect(0, 400 - scroller.scrollTop, 20, 20)
+        : getBounds.call(this);
+    });
+    scroller.scrollTop = 1500;
+    onMatchIndexChange.mockClear();
+    view.update({ ...props, matchRevealRequest: 0 });
+    expect(scroller.scrollTop).toBe(1500);
+    view.update({ ...props, matchRevealRequest: 1 });
+    await waitFor(() => expect(scroller.scrollTop).toBeLessThan(500));
+    expect(status()).toHaveTextContent('1 of 4');
+    expect(onMatchIndexChange).not.toHaveBeenCalled();
   });
 
   it('UIC-PDF-VIEWER-5.7 toggles the find options from their menu', async () => {

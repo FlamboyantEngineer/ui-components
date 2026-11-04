@@ -111,6 +111,8 @@ export interface PdfViewerProps<
   onSearchOptionsChange?: ((options: PdfSearchOptions) => void) | undefined;
   /** The current match, zero-based and taken modulo the number of matches; the caller owns it when set. */
   matchIndex?: number | undefined;
+  /** Change this request number to bring the current match back into view without changing it. */
+  matchRevealRequest?: number | undefined;
   /** Called with the match a step or a new query moves to. */
   onMatchIndexChange?: ((index: number) => void) | undefined;
   /** Draws the find controls in place of the viewer's own; returning `null` draws none. */

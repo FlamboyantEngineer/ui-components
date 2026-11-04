@@ -228,7 +228,7 @@ Verification: `src/components/pdf-viewer/use-pdf-search.test.tsx`, `e2e/pdf-view
 
 ### UIC-PDF-VIEWER-5.5 - Caller-owned current match
 
-`matchIndex` shall replace the viewer's own current match, taken modulo the number of matches, so a counter that rises and falls steps forwards and backwards through them. `onMatchIndexChange` shall receive the match a step moves to (the buttons, Enter and Shift + Enter, or `renderSearch`'s `findNext` and `findPrevious`) and, for a new set of matches, the first match on or after the current page. While `matchIndex` is set, the current match moves only when it changes, and each change brings the current match into view.
+`matchIndex` shall replace the viewer's own current match, taken modulo the number of matches, so a counter that rises and falls steps forwards and backwards through them. `onMatchIndexChange` shall receive the match a step moves to (the buttons, Enter and Shift + Enter, or `renderSearch`'s `findNext` and `findPrevious`) and, for a new set of matches, the first match on or after the current page. While `matchIndex` is set, the current match moves only when it changes, and each change brings the current match into view. Changing `matchRevealRequest` shall bring the current match back into view even when its index is unchanged, without reporting another index change. A request made before text is available shall reveal the match when extraction completes; clearing the query cancels it.
 
 Implementation: `src/components/pdf-viewer/use-pdf-search.ts`
 Verification: `src/components/pdf-viewer/use-pdf-search.test.tsx`, `e2e/pdf-viewer.spec.ts`
