@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { ChatTranscript } from '../../src/components/chat-transcript/index.js';
 import { MessageComposer } from '../../src/components/message-composer/message-composer.js';
-import { LabSection } from './chrome/index.js';
 import {
-  SampleMessageView,
   sampleMessages,
+  SampleMessageView,
   useSimulatedChat,
 } from './chat-transcript-behaviour-samples.js';
+import { LabSection } from './chrome/index.js';
 
 /**
  * A following transcript and a composer sharing one fixed-height column: the transcript takes the
