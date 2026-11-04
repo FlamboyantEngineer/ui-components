@@ -35,7 +35,7 @@ export interface TranscriptSettings {
   announcer: TranscriptAnnouncer;
   setUi: Dispatch<SetStateAction<TranscriptUi>>;
   setRange: Dispatch<SetStateAction<WindowRange | null>>;
-  /** Renders again, for a focus target that has to mount first. */
+  /** Renders again to mount a focus target or release temporary arrival mounts. */
   requestRender: () => void;
 }
 

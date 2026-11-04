@@ -25,8 +25,9 @@ function LongHistory({
   first = 1,
   last = 3000,
   lastSent = false,
+  sent,
   ...props
-}: { first?: number; last?: number; lastSent?: boolean } & ChatTranscriptProps) {
+}: { first?: number; last?: number; lastSent?: boolean; sent?: number } & ChatTranscriptProps) {
   return (
     <ChatTranscript virtualized {...props}>
       {Array.from({ length: last - first + 1 }, (_, index) => {
@@ -35,7 +36,7 @@ function LongHistory({
           <ChatMessage
             key={number}
             id={`m${number}`}
-            origin={lastSent && number === last ? 'sent' : 'received'}
+            origin={number === sent || (lastSent && number === last) ? 'sent' : 'received'}
           >
             Message {number}
           </ChatMessage>
@@ -48,6 +49,66 @@ function LongHistory({
 const article = (id: string) => document.getElementById(id);
 
 describe('ChatTranscript virtualized', () => {
+  it('UIC-CHAT-TRANSCRIPT-1.6 releases a large arrival batch after measuring it', () => {
+    const { rerender } = render(<LongHistory last={100} />);
+    const viewport = getViewport();
+    rerender(<LongHistory last={200} />);
+    expect(screen.getAllByRole('article').length).toBeLessThan(40);
+    expect(viewport.scrollHeight).toBe(10_000);
+    expect(distanceToBottom(viewport)).toBe(0);
+    expect(offsetInViewport(article('m200') as HTMLElement)).toBe(150);
+    for (const top of [2500, 1000, 2500]) {
+      scrollViewport(viewport, top);
+      rerender(<LongHistory last={200} />);
+      expect(screen.getAllByRole('article').length).toBeLessThan(40);
+      expect(offsetInViewport(article(`m${top / 50 + 1}`) as HTMLElement)).toBe(0);
+      expect(viewport.scrollHeight).toBe(10_000);
+      expect(article('m101')).toBeNull();
+      expect(article('m199')).toBeInTheDocument();
+      expect(article('m200')).toBeInTheDocument();
+    }
+  });
+
+  it('UIC-CHAT-TRANSCRIPT-1.6 keeps focus, the visible offset and the arrival count after release', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<LongHistory last={100} />);
+    const viewport = getViewport();
+    scrollViewport(viewport, 2510);
+    const focused = article('m51') as HTMLElement;
+    act(() => focused.focus());
+    rerender(<LongHistory last={200} />);
+    expect(focused).toHaveFocus();
+    expect(offsetInViewport(focused)).toBe(-10);
+    expect(viewport.scrollTop).toBe(2510);
+    expect(screen.getAllByRole('article').length).toBeLessThan(40);
+    expect(article('m101')).toBeNull();
+    await user.click(screen.getByRole('button', { name: '100 new messages' }));
+    expect(article('m200')).toHaveFocus();
+    expect(distanceToBottom(viewport)).toBe(0);
+    expect(screen.queryByRole('button', { name: /new messages/ })).not.toBeInTheDocument();
+  });
+
+  it('UIC-CHAT-TRANSCRIPT-1.6 retains a sent anchor and highlight after a batch and mounts keyboard targets', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<LongHistory last={100} scrollMode="anchor" />);
+    rerender(<LongHistory last={200} sent={101} scrollMode="anchor" />);
+    expect(offsetInViewport(article('m101') as HTMLElement)).toBe(0);
+    expect(article('m150')).toBeNull();
+    expect(screen.getAllByRole('article').length).toBeLessThan(40);
+    rerender(<LongHistory last={200} sent={101} scrollMode="anchor" highlightedMessageId="m150" />);
+    expect(article('m150')).toHaveFocus();
+    expect(article('m150')).toHaveAttribute('data-highlighted', 'true');
+    expect(offsetInViewport(article('m150') as HTMLElement)).toBe(75);
+    expect(article('m101')).toBeInTheDocument();
+    await user.keyboard('{Home}');
+    expect(article('m1')).toHaveFocus();
+    expect(article('m150')).toHaveAttribute('data-highlighted', 'true');
+    expect(screen.getAllByRole('article').length).toBeLessThan(40);
+    await user.keyboard('{End}');
+    expect(article('m200')).toHaveFocus();
+    expect(distanceToBottom(getViewport())).toBe(0);
+  });
+
   it('UIC-CHAT-TRANSCRIPT-1.6 mounts only the messages near the view of a long history', () => {
     const { container } = render(<LongHistory />);
     const viewport = getViewport();
