@@ -4,6 +4,7 @@ import { SegmentedChoice } from '../../src/components/segmented-choice/segmented
 import { ResizeHandle } from '../../src/components/split-view/index.js';
 import { SplitView, type SplitViewHandle } from '../../src/components/split-view/split-view.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
+import { SplitViewReorderingCase } from './split-view-reordering-case.js';
 
 // Lab-only frames so the panes are visible with or without a stylesheet.
 const frame = (width: number | string, height: number): CSSProperties => ({
@@ -179,6 +180,13 @@ export function SplitViewControlCases() {
         description="A pixel folders pane and two percent panes whose sizes live in the lab's state: onSizesChange writes the live sizes during a drag and on each key, onSizesChangeEnd the committed ones. The buttons resize from outside, collapse and expand."
       >
         <ControlledPanes />
+      </LabSection>
+      <LabSection
+        title="Reopening reordered panes"
+        description="Collapse Alpha, swap Alpha and Blue, then reopen Alpha. Each pane keeps its previous size by ID while the split stays mounted, in pixels and percent. Percent panes take the reopened share from their current neighbour."
+      >
+        <SplitViewReorderingCase unit="pixel" />
+        <SplitViewReorderingCase unit="percent" />
       </LabSection>
       <LabSection
         title="Standalone handle in rows"

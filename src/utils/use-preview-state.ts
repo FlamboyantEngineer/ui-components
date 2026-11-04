@@ -5,7 +5,7 @@
 // but kept apart from React Aria's registry of tooltips. In that registry a card closes when a
 // tooltip inside it opens, and reopening the card closes that tooltip.
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useOverlayTriggerState } from '../primitives/index.js';
 import { useLatest } from './use-latest.js';
 
@@ -57,6 +57,10 @@ function coolDown(closeDelay: number) {
   );
 }
 
+function release(card: object, closeDelay: number) {
+  if (openCards.delete(card) && openCards.size === 0) coolDown(closeDelay);
+}
+
 export function usePreviewState({
   delay,
   closeDelay,
@@ -65,14 +69,18 @@ export function usePreviewState({
   const overlay = useOverlayTriggerState(openState);
   const [isInstant, setInstant] = useState(false);
   const [card] = useState(() => ({}));
-  const latest = useLatest({ overlay, delay, closeDelay });
+  const latestRef = useLatest({ overlay, delay, closeDelay });
+  const releaseCard = useCallback(
+    () => release(card, latestRef.current.closeDelay),
+    [card, latestRef],
+  );
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(
     () => () => {
       if (timer.current) clearTimeout(timer.current);
-      openCards.delete(card);
+      releaseCard();
     },
-    [card],
+    [releaseCard],
   );
   const { isOpen } = overlay;
   const state = useMemo<PreviewState>(() => {
@@ -82,12 +90,11 @@ export function usePreviewState({
     };
     const hide = (instant: boolean) => {
       cancel();
-      openCards.delete(card);
+      releaseCard();
       // A card that opened without an animation leaves without one too: flipping the flag while it
       // leaves would stall its exit.
       if (instant) setInstant(true);
-      latest.current.overlay.close();
-      coolDown(latest.current.closeDelay);
+      latestRef.current.overlay.close();
     };
     const show = (instant: boolean) => {
       cancel();
@@ -95,7 +102,7 @@ export function usePreviewState({
       openCards.set(card, () => hide(true));
       setInstant(instant);
       warmUp();
-      latest.current.overlay.open();
+      latestRef.current.overlay.open();
     };
     const schedule = (wait: number, run: () => void) => {
       cancel();
@@ -112,20 +119,21 @@ export function usePreviewState({
       open(immediate) {
         if (isOpen) return cancel();
         if (immediate || isWarm) return show(isWarm && !immediate);
-        schedule(latest.current.delay, () => show(false));
+        schedule(latestRef.current.delay, () => show(false));
       },
       close(immediate) {
         if (!isOpen) return cancel();
-        schedule(immediate ? 0 : latest.current.closeDelay, () => hide(false));
+        schedule(immediate ? 0 : latestRef.current.closeDelay, () => hide(false));
       },
     };
-  }, [isOpen, isInstant, card, latest]);
+  }, [isOpen, isInstant, card, latestRef, releaseCard]);
   useEffect(() => {
     if (!isOpen) return;
     openCards.set(card, () => state.close(true));
+    warmUp();
     return () => {
-      openCards.delete(card);
+      releaseCard();
     };
-  }, [isOpen, card, state]);
+  }, [isOpen, card, state, releaseCard]);
   return state;
 }

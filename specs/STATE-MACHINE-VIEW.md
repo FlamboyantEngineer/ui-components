@@ -74,7 +74,7 @@ The sequence root shall preserve caller `aria-label`, `aria-labelledby`, `aria-d
 
 With `presentation="sequence"`, the view shall place states in caller array order on one horizontal row, including when there are no transitions. Connectivity and the current state shall not determine state placement. The existing graph presentation remains the default (`presentation="graph"`), including its outline and editing. Sequence mode is always horizontal and read only: graph position overrides, `orientation`, `defaultView` and editing callbacks do not apply. Initial/current state, cycles and hiding transitions do not change horizontal placement or caller reading order. Empty sequences reserve only a small empty viewport; a single state is a rectangle. Numeric and text keys remain distinct in states, transitions, selection and callbacks, and instances share no ids or measurements.
 
-`density="default"` has minimum state width/height 144/44 CSS pixels; `compact` uses 112/32. Measured state content can increase these sizes. Equal-width states fill the available viewport when it is wider than their minimum row; otherwise the row scrolls. State buttons expose first/last hooks for a host to draw a leading notch and trailing chevron, square first leading and terminal trailing edges, or a single rectangle. Host styles provide the shape, borders, colors and current/selected treatments.
+At the default `size="md"`, `density="default"` has minimum state width/height 144/44 CSS pixels; `compact` uses 112/32. Other sizes follow UIC-STATE-MACHINE-VIEW-4.6. Measured state content can increase these sizes. Equal-width states fill the available viewport when it is wider than their minimum row; otherwise the row scrolls. State buttons expose first/last hooks for a host to draw a leading notch and trailing chevron, square first leading and terminal trailing edges, or a single rectangle. Host styles provide the shape, borders, colors and current/selected treatments.
 
 Implementation: `src/components/state-machine-view/state-machine-view.tsx`, `src/components/state-machine-view/state-machine-sequence.tsx`, `src/components/state-machine-view/sequence-layout.ts`, `src/components/state-machine-view/sequence-routes.ts`
 Verification: `src/components/state-machine-view/sequence-presentation.test.tsx`, `src/components/state-machine-view/sequence-layout.test.ts`, `e2e/state-machine-view-sequence.spec.ts`, `e2e/state-machine-view-sequence-paint.spec.ts`
@@ -83,7 +83,7 @@ Verification: `src/components/state-machine-view/sequence-presentation.test.tsx`
 
 In the sequence presentation, transitions to later states shall run above the state row and transitions to earlier states below it, with their labels outside the row on the corresponding side. State widths and horizontal placement shall depend only on the state content and viewport, never on transitions. The content reserves vertical space above/below the row for its lanes.
 
-Same-state loops use forward lanes above the row, with separate source and target attachments inside the same state. Unknown endpoints are omitted. Routes are sorted by absolute array-index span, then locale-independent typed transition identity; shorter spans occupy nearer lanes. Each span group starts beyond all shorter-span lanes. Within a group, a lane is shared only if padded horizontal connector and measured label reservations do not overlap. Parallel routes get separate lanes and fanned attachments; forward sources/targets occupy the right/left interior halves of their states, reversed for backward routes. This makes packing deterministic under transition-array reordering.
+Same-state loops use forward lanes above the row, with separate source and target attachments on the same state. Unknown endpoints are omitted. Routes are sorted by absolute array-index span, then locale-independent typed transition identity; shorter spans occupy nearer lanes. Each span group starts beyond all shorter-span lanes. Within a group, a lane is shared only if padded horizontal connector and measured label reservations do not overlap. Parallel routes get separate lanes and fanned attachments; forward sources/targets occupy the right/left halves of their states, reversed for backward routes. Outer routes fan around inner routes at shared endpoints, with loops between incoming and outgoing attachments. This makes packing deterministic under transition-array reordering.
 
 `sequenceGeometry` optionally supplies finite nonnegative CSS-pixel distances: `lanePitch` (26), `stateGap` (0), `rowSpacer` (15) and `cornerRadius` (10). Invalid distances use the defaults. The lane pitch grows when label height needs more clearance. `rowSpacer` is the clear distance from the row to the nearest label reservation. Each orthogonal route uses the same radius at both bends, capped by its horizontal/vertical clearance and `cornerRadius`. SVG coordinates, dimensions and viewBox use measured CSS pixels without scaling. Arrowheads are open strokes; colors and stroke styles belong to the host.
 
@@ -99,7 +99,7 @@ Verification: `src/components/state-machine-view/sequence-presentation.test.tsx`
 
 ### UIC-STATE-MACHINE-VIEW-4.4 - Selection and highlighting
 
-Connectors and arrowheads shall paint above state backgrounds so attachments inside states stay visible in both directions and same-state loops. They remain pointer-inert; states remain selectable and every transition label paints above every route.
+Connectors shall start and end at the top state boundary for forward routes and loops, and the bottom boundary for reverse routes. Arrow tips shall coincide with connector endpoints at those boundaries, with the arrowhead entirely outside the state interior. Connectors and arrowheads paint above state backgrounds. They remain pointer-inert; states remain selectable and every transition label paints above every route.
 
 `currentKey` marks the machine's current state (`data-current`, `aria-current="step"` on the state button); `selectedKey` independently marks the host-selected state (`data-selected`, `aria-pressed`), and `selectedTransitionKey` the host-selected transition (`data-selected` on its route and label, `aria-pressed` on the label), as UIC-STATE-MACHINE-VIEW-5.1 describes. State status descriptions use the provider strings for current, initial and final. Outgoing transitions from `selectedKey` carry `data-outgoing`. Outgoing lines stack above ordinary lines and selected lines above outgoing lines. All labels stack above every line. Highlight changes do not change route coordinates.
 
@@ -112,6 +112,23 @@ One horizontal viewport contains the forward routes, state row and reverse route
 
 Implementation: `src/components/state-machine-view/use-sequence-measurements.ts`, `src/components/state-machine-view/state-machine-sequence.tsx`
 Verification: `src/components/state-machine-view/sequence-presentation.test.tsx`, `e2e/state-machine-view-sequence.spec.ts`
+
+### UIC-STATE-MACHINE-VIEW-4.6 - Sequence sizes
+
+The sequence presentation shall accept `size` from the shared `Size` vocabulary (`xs`, `sm`, `md`, `lg`, `xl`), defaulting to `md`, and publish the resolved value as `data-size` on its root. Size and density are independent. The graph presentation ignores `size`. The following minimum state width/height pairs are CSS pixels, before intrinsic content measurements:
+
+| Size | Default density | Compact density |
+| ---- | --------------- | --------------- |
+| xs   | 112 / 28        | 80 / 24         |
+| sm   | 128 / 36        | 96 / 28         |
+| md   | 144 / 44        | 112 / 32        |
+| lg   | 160 / 52        | 128 / 36        |
+| xl   | 176 / 60        | 144 / 40        |
+
+Measurements can increase either dimension to fit state content, adornments and counts. Changing size shall remeasure state and transition content, preserving the shared coordinate space and boundary attachments, without resetting selection or focus. The reference stylesheet scales state and transition typography and state padding with size; host styles own those visual choices. Empty sequences retain their focusable note at every size.
+
+Implementation: `src/components/state-machine-view/state-machine-view.tsx`, `src/components/state-machine-view/state-machine-sequence.tsx`, `src/components/state-machine-view/sequence-layout.ts`
+Verification: `src/components/state-machine-view/sequence-presentation.test.tsx`, `src/components/state-machine-view/sequence-layout.test.ts`, `e2e/state-machine-view-sizes.spec.ts`
 
 ## UIC-STATE-MACHINE-VIEW-5 - Sequence interaction
 
@@ -190,6 +207,7 @@ Verification: `src/components/state-machine-view/sequence-content.test.tsx`, `e2
 | `data-final`                              | state     | `true`                                            | On a final state.                                                           |
 | `data-presentation`                       | attribute | `graph`, `sequence`                               | On the root: chosen presentation.                                           |
 | `data-density`                            | attribute | `default`, `compact`                              | Sequence root density.                                                      |
+| `data-size`                               | attribute | `xs`, `sm`, `md`, `lg`, `xl`                      | Sequence root size; defaults to `md`.                                       |
 | `ui-state-machine-view__viewport`         | slot      |                                                   | Sequence horizontal scrolling viewport.                                     |
 | `ui-state-machine-view__content`          | slot      |                                                   | Shared measured coordinate space.                                           |
 | `ui-state-machine-view__state-row`        | slot      |                                                   | Ordered state layer.                                                        |

@@ -65,10 +65,16 @@ function attachRoutes(routes: SequenceRoute[], boxes: ReadonlyMap<Key, SequenceB
     }
   }
   for (const group of attachments.values()) {
-    group.forEach(({ route, source }, index) => {
+    const first = group[0];
+    if (!first) continue;
+    const right = first.source === (first.route.direction === 'forward');
+    const loops = group.filter(({ route }) => route.span === 0);
+    const spans = group.filter(({ route }) => route.span !== 0);
+    // Outer routes wrap around inner ones; loops stay between incoming and outgoing ports.
+    const ordered = right ? [...loops, ...spans.reverse()] : [...spans, ...loops.reverse()];
+    ordered.forEach(({ route, source }, index) => {
       const box = boxes.get(source ? route.transition.from : route.transition.to);
       if (!box) return;
-      const right = source === (route.direction === 'forward');
       const x =
         box.x + box.width * ((right ? 0.55 : 0.2) + (0.25 * (index + 1)) / (group.length + 1));
       if (source) route.sourceX = x;
