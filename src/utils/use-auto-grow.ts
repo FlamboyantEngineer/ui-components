@@ -15,14 +15,51 @@ export interface AutoGrowOptions {
   value: string;
 }
 
+/** The nearest box around `area` that a minimum height holds: past `display: contents` and inline boxes. */
+function findSlot(area: HTMLTextAreaElement, view: Window): HTMLElement | null {
+  let slot = area.parentElement;
+  while (slot) {
+    const { display } = view.getComputedStyle(slot);
+    if (display !== 'contents' && display !== 'inline') return slot;
+    slot = slot.parentElement;
+  }
+  return null;
+}
+
+/**
+ * Runs `measure` while the box around `area` keeps its current height, so emptying the text area
+ * to measure it never gives its neighbours its room for a moment: a scroll region beside it would
+ * clamp its scroll position to that larger viewport and stay off its end once the room is back.
+ * The box gets back its own inline minimum, and that minimum's priority, afterwards.
+ */
+function holdingSlot(area: HTMLTextAreaElement, measure: () => void) {
+  const view = area.ownerDocument.defaultView;
+  const slot = view ? findSlot(area, view) : null;
+  if (!view || !slot) {
+    measure();
+    return;
+  }
+  const { style } = slot;
+  const before = style.getPropertyValue('min-height');
+  const priority = style.getPropertyPriority('min-height');
+  style.setProperty('min-height', view.getComputedStyle(slot).height, 'important');
+  try {
+    measure();
+  } finally {
+    style.setProperty('min-height', before, priority);
+  }
+}
+
 /** Sets the text area's height to its text's, between the given rows, in its own line height. */
 function fitRows(area: HTMLTextAreaElement, minRows: number, maxRows: number) {
   const box = readLineBox(area);
   if (!box) return;
   const { lineHeight, padding, frame } = box;
-  area.style.height = '0px';
-  const content = clamp(area.scrollHeight - padding, minRows * lineHeight, maxRows * lineHeight);
-  area.style.height = `${content + frame}px`;
+  holdingSlot(area, () => {
+    area.style.height = '0px';
+    const content = clamp(area.scrollHeight - padding, minRows * lineHeight, maxRows * lineHeight);
+    area.style.height = `${content + frame}px`;
+  });
 }
 
 /** Whether a text area grows with its text: when either row limit is set. */
@@ -36,7 +73,8 @@ export function isAutoGrowing({ minRows, maxRows }: Pick<AutoGrowOptions, 'minRo
  * late, a resized container) or fonts that finish loading wrap the text anew, so it measures again.
  * The height it writes is its own while it grows: once neither limit is set, or the hook unmounts,
  * the text area gets back the inline height it had before, so the stylesheet (or the caller's
- * height) sizes it again.
+ * height) sizes it again. While it measures, the box around the text area keeps its height, so a
+ * neighbour (a transcript above a composer) never gets its room, nor scrolls, for a moment.
  */
 export function useAutoGrow(area: RefObject<HTMLTextAreaElement | null>, options: AutoGrowOptions) {
   const { minRows, maxRows, value } = options;

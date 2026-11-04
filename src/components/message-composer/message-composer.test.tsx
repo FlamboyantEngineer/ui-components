@@ -113,6 +113,31 @@ describe('MessageComposer', () => {
     expectHooksMatchSpec(container, 'MESSAGE-COMPOSER', { slots: ['input', 'footer', 'action'] });
   });
 
+  it('UIC-MESSAGE-COMPOSER-1.1 holds the box around the text area while it measures', async () => {
+    const user = userEvent.setup();
+    render(<MessageComposer maxRows={3} />);
+    const area = screen.getByRole<HTMLTextAreaElement>('textbox', { name: 'Message' });
+    const slot = area.parentElement;
+    if (!slot) throw new Error('The text area has no box around it.');
+    slot.style.height = '48px';
+    slot.style.setProperty('min-height', '12px');
+    area.style.lineHeight = '20px';
+    area.style.padding = '0px';
+    const held: string[] = [];
+    Object.defineProperty(area, 'scrollHeight', {
+      configurable: true,
+      get: () => {
+        held.push(`${slot.style.minHeight} ${slot.style.getPropertyPriority('min-height')}`);
+        return 20;
+      },
+    });
+    await user.type(area, 'a');
+    expect(held.at(-1)).toBe('48px important');
+    expect(area.style.height).toBe('20px');
+    expect(slot.style.minHeight).toBe('12px');
+    expect(slot.style.getPropertyPriority('min-height')).toBe('');
+  });
+
   it('UIC-MESSAGE-COMPOSER-1.2 sends on Enter or the button and empties, keeping blank text', async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
