@@ -54,16 +54,18 @@ Verification: `src/components/rich-text-editor/rich-text-schema.test.ts`, `e2e/r
 
 ### UIC-RICH-TEXT-EDITOR-2.2 - Extending or replacing the schema
 
-`createRichTextSchema({ nodes, marks })` shall return a `RichTextSchema` (its node and mark names, in order) built from the defaults with the caller's types: a new name is added, a default's name replaces it in place, and `null` removes it (`doc` and `text` stay). Specs are library-owned (`RichTextNodeSpec`, `RichTextMarkSpec`): ProseMirror's content expressions, groups, attributes with defaults, parse rules by tag and a renderer returning a tag, attributes and the content hole (`['aside', { class: 'note' }, 0]`). The editor's `schema` prop takes one, created once outside render; chrome leaves out commands its types do not support.
+`createRichTextSchema({ nodes, marks })` shall return a `RichTextSchema` (its node and mark names, in order) built from the defaults with the caller's types: a new name is added, a default's name replaces it in place, and `null` removes it (`doc` and `text` stay). Specs are library-owned (`RichTextNodeSpec`, `RichTextMarkSpec`): ProseMirror's content expressions, groups, attributes with defaults, parse rules by tag and a renderer returning a tag, attributes and the content hole (`['aside', { class: 'note' }, 0]`). A replacement's renderer applies both in the editor and in HTML serialization. The editor's `schema` prop takes one, created once outside render; chrome leaves out commands its types do not support.
 
-Implementation: `src/components/rich-text-editor/rich-text-schema.ts`, `src/components/rich-text-editor/engine-schema.ts`, `src/components/rich-text-editor/rich-text-editor.tsx`
-Verification: `src/components/rich-text-editor/rich-text-schema.test.ts`, `e2e/rich-text-editor.spec.ts`
+Implementation: `src/components/rich-text-editor/rich-text-schema.ts`, `src/components/rich-text-editor/engine-schema.ts`, `src/components/rich-text-editor/rich-text-editor.tsx`, `src/components/rich-text-editor/editor-surface.tsx`
+Verification: `src/components/rich-text-editor/rich-text-schema.test.ts`, `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/rich-text-editor.spec.ts`
 
 ### UIC-RICH-TEXT-EDITOR-2.3 - Task items
 
-The editor shall draw each task item as `ui-rich-text-editor__task-item` (with `data-checked` while ticked), holding a `Checkbox` named by the provider string `taskDone` in `ui-rich-text-editor__task-checkbox` and the item's content in `ui-rich-text-editor__task-content`. Toggling the checkbox sets the item's `checked` attribute as an edit. A read-only editor's checkboxes are read-only and stay focusable; a disabled editor's checkboxes are disabled and out of the tab sequence, as its content is (UIC-RICH-TEXT-EDITOR-4.1).
+While the schema uses the unchanged default `taskItem` specification, the editor shall draw each task item as `ui-rich-text-editor__task-item` (with `data-checked` while ticked), holding a `Checkbox` named by the provider string `taskDone` in `ui-rich-text-editor__task-checkbox` and the item's content in `ui-rich-text-editor__task-content`. Toggling the checkbox sets the item's `checked` attribute as an edit. A read-only editor's checkboxes are read-only and stay focusable; a disabled editor's checkboxes are disabled and out of the tab sequence, as its content is (UIC-RICH-TEXT-EDITOR-4.1).
 
-Implementation: `src/components/rich-text-editor/task-item-view.tsx`, `src/core/strings/rich-text.ts`
+A replacement `taskItem` uses its own renderer, without the default task wrappers or checkbox behaviour.
+
+Implementation: `src/components/rich-text-editor/editor-surface.tsx`, `src/components/rich-text-editor/task-item-view.tsx`, `src/core/strings/rich-text.ts`
 Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/rich-text-editor.spec.ts`
 
 ## UIC-RICH-TEXT-EDITOR-3 - Editing
@@ -319,9 +321,9 @@ Verification: `src/components/rich-text-editor/block-markers.test.ts`, `src/comp
 | `data-severity`                      | state     | `error`, `warning`                                    | On a marked block and its scroll marker: the marker's severity.                 |
 | `ui-rich-text-editor__content`       | slot      |                                                       | The editable document (role `textbox`), also ProseMirror's `ProseMirror` class. |
 | `ui-rich-text-editor__placeholder`   | slot      |                                                       | The empty document's only block, which shows the placeholder.                   |
-| `ui-rich-text-editor__task-item`     | slot      |                                                       | A task list item.                                                               |
-| `ui-rich-text-editor__task-checkbox` | slot      |                                                       | The task item's checkbox holder, alongside a `ui-checkbox`.                     |
-| `ui-rich-text-editor__task-content`  | slot      |                                                       | The task item's content.                                                        |
+| `ui-rich-text-editor__task-item`     | slot      |                                                       | A task list item in the default task-item view.                                 |
+| `ui-rich-text-editor__task-checkbox` | slot      |                                                       | The default task-item view's checkbox holder, alongside a `ui-checkbox`.        |
+| `ui-rich-text-editor__task-content`  | slot      |                                                       | The default task-item view's content.                                           |
 | `ui-format-toolbar`                  | root      |                                                       | `FormatToolbar`'s row, alongside `ui-toolbar-row`.                              |
 | `ui-format-toolbar__block-type`      | slot      |                                                       | The block type select, alongside `ui-select-field`.                             |
 | `ui-format-toolbar__block-preview`   | slot      |                                                       | A block type option's name drawn as a preview, with `data-block`.               |

@@ -18,7 +18,7 @@ import {
   type GutterControls,
   type RichTextEditorContextValue,
 } from './rich-text-context.js';
-import { defaultMarks } from './default-schema.js';
+import { defaultMarks, defaultNodes } from './default-schema.js';
 import { LinkMarkView } from './link-mark-view.js';
 import { TaskItemView } from './task-item-view.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
@@ -45,8 +45,12 @@ const noMarkers: readonly RichTextBlockMarker[] = [];
 
 type ContentAttributes = Readonly<Record<string, string | undefined>>;
 
-const nodeViewComponents = { taskItem: TaskItemView };
+const defaultTaskViews = { taskItem: TaskItemView };
 const defaultLinkViews = { link: LinkMarkView };
+
+function getNodeViewComponents(schema: Schema) {
+  return schema.nodes.taskItem?.spec === defaultNodes.taskItem ? defaultTaskViews : undefined;
+}
 
 /** The mark views of a schema: the default link's anchor, which leaves the tab sequence when disabled. */
 function getMarkViewComponents(schema: Schema) {
@@ -187,7 +191,7 @@ export function EditorSurface(props: EditorSurfaceProps) {
       dispatchTransaction={dispatchTransaction}
       editable={editable}
       decorations={decorations}
-      nodeViewComponents={nodeViewComponents}
+      nodeViewComponents={getNodeViewComponents(state.schema)}
       markViewComponents={getMarkViewComponents(state.schema)}
       handleDOMEvents={domSelectionEvents}
     >
