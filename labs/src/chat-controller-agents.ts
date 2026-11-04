@@ -106,6 +106,8 @@ const approvalTurn: ChatSendFunction = async function* (messages, { signal }) {
       label: 'Rename the recipe to Weeknight chili',
     };
     yield { type: 'approval-request', id, scopeLabel: 'this conversation' };
+    yield { type: 'status', text: 'Finishing the approval request…' };
+    await sleep(1000, signal);
     yield { type: 'finish' };
     return;
   }
