@@ -250,4 +250,45 @@ describe('NumberField units', () => {
     expect(onCommit).toHaveBeenLastCalledWith(12.5);
     expect(input).not.toHaveAttribute('aria-invalid');
   });
+
+  it.each(['Enter', 'Tab', 'blur'])(
+    'UIC-NUMBER-FIELD-3.4 reads back an Arabic scientific quantity on %s',
+    async (action) => {
+      const user = userEvent.setup();
+      const onCommit = vi.fn();
+      const onChange = vi.fn();
+      render(
+        <UiProvider locale="ar-EG">
+          <NumberField
+            label="Length"
+            defaultValue={12_000}
+            units={{ unit: 'm', conversions: { m: 1 } }}
+            formatOptions={{ notation: 'scientific' }}
+            onChange={onChange}
+            onCommit={onCommit}
+          />
+          <button type="button">Continue</button>
+        </UiProvider>,
+      );
+      const input = screen.getByRole('spinbutton', { name: 'Length' });
+      const formatted = new Intl.NumberFormat('ar-EG', { notation: 'scientific' }).format(12_000);
+      expect(input).toHaveValue(formatted);
+      const finish = async () => {
+        if (action === 'Enter') await user.keyboard('{Enter}');
+        else if (action === 'Tab') await user.tab();
+        else await user.click(screen.getByRole('button', { name: 'Continue' }));
+      };
+      await user.click(input);
+      await finish();
+      expect(input).not.toHaveAttribute('aria-invalid');
+      expect(input).toHaveAttribute('aria-valuenow', '12000');
+      await user.clear(input);
+      await user.type(input, '٢٫٥أس-٣');
+      await finish();
+      expect(input).not.toHaveAttribute('aria-invalid');
+      expect(input).toHaveAttribute('aria-valuenow', '0.0025');
+      expect(onChange).toHaveBeenLastCalledWith(0.0025);
+      for (const [value] of onCommit.mock.calls) expect([12_000, 0.0025]).toContain(value);
+    },
+  );
 });

@@ -224,6 +224,21 @@ test.describe('Number Field typed units', () => {
     await expect(input).toHaveAttribute('aria-valuenow', '12000');
   });
 
+  test('UIC-NUMBER-FIELD-3.4 reads back Arabic scientific exponents', async ({ page, lab }) => {
+    await lab.open('number-field');
+    const field = page.locator('[data-lab-field="units-arabic-scientific"]');
+    const input = field.getByRole('spinbutton', { name: 'Arabic scientific length' });
+    await expect(input).toHaveValue('١٫٢أس٤');
+    await input.focus();
+    await input.press('Enter');
+    await expect(input).not.toHaveAttribute('aria-invalid');
+    await expect(input).toHaveAttribute('aria-valuenow', '12000');
+    await input.fill('٢٫٥أس-٣');
+    await input.press('Enter');
+    await expect(input).toHaveAttribute('aria-valuenow', '0.0025');
+    await expect(input).not.toHaveAttribute('aria-invalid');
+  });
+
   test('UIC-NUMBER-FIELD-3.4 converts 5cm to 50 mm, keeps a wrong unit and restores', async ({
     page,
     lab,

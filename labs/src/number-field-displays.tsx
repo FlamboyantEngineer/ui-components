@@ -149,6 +149,14 @@ export function NumberFieldUnitsSection() {
           description="Arabic digits and separators read back as typed: ١٫٥ cm is 15 mm."
           data-lab-field="units-arabic"
         />
+        <NumberField
+          label="Arabic scientific length"
+          defaultValue={12_000}
+          units={{ unit: 'm', conversions: { m: 1 } }}
+          formatOptions={{ notation: 'scientific' }}
+          description="Scientific notation in Arabic writes its exponent as أس: the value reads back unchanged when you leave the field, and ٢٫٥أس-٣ reads as 0.0025."
+          data-lab-field="units-arabic-scientific"
+        />
       </UiProvider>
       <NumberField
         label="Share of total"

@@ -148,4 +148,27 @@ describe('unit numbers', () => {
     expect(toQuantityFormatOptions(kept)).toBe(kept);
     expect(toQuantityFormatOptions(undefined)).toBeUndefined();
   });
+
+  it.each([
+    ['ar-EG', 'scientific'],
+    ['ar-EG', 'engineering'],
+    ['fa-IR', 'scientific'],
+    ['sv-SE', 'scientific'],
+    ['en-US', 'engineering'],
+  ] as const)('UIC-NUMBER-FIELD-3.4 reads back %s %s exponents', (locale, notation) => {
+    const options = { notation, maximumFractionDigits: 6 } as const;
+    const format = new Intl.NumberFormat(locale, options);
+    for (const value of [12_000, -12_000, 0.000123, -0.0045, 1.5]) {
+      expect(parseLocaleNumber(format.format(value), locale, options)).toBe(value);
+    }
+    expect(parseLocaleNumber('1.2e4', locale, options)).toBe(12_000);
+    expect(parseLocaleNumber('1.2E-4', locale, options)).toBe(0.00012);
+  });
+
+  it('UIC-NUMBER-FIELD-3.4 keeps malformed exponents unreadable', () => {
+    const options = { notation: 'scientific' } as const;
+    for (const text of ['١٫٢أس', 'أس٤', '١٫٢أس٤أس٢', '١٫٢أس--٤', '1.2e']) {
+      expect(parseLocaleNumber(text, 'ar-EG', options)).toBeNaN();
+    }
+  });
 });
