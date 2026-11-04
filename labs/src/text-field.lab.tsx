@@ -322,6 +322,13 @@ mountLab(
         validationMode="immediate"
         data-lab-field="url-check"
       />
+      <TextField
+        label="Website"
+        type="url"
+        description="Enter an absolute address, such as https://example.com."
+        validationMode="immediate"
+        data-lab-field="empty-url-check"
+      />
     </LabSection>
     <LabSection
       title="Dirty, restore, undo and the field menu"

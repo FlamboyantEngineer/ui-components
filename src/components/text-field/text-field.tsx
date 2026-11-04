@@ -86,6 +86,15 @@ function countCharacters(value: string, { trim, getLength }: StringRules): numbe
 const emailPattern =
   /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
+function isAbsoluteUrl(text: string): boolean {
+  try {
+    new URL(text);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * The browser's type check of an email or URL field, made on the value itself, so the field, its
  * form and a native submit agree: an email field takes one email address, a URL field an absolute
@@ -101,7 +110,7 @@ function checkTextType(value: string, type: TextFieldType | undefined, strings: 
       validity: 'typeMismatch' as const,
     };
   }
-  if (type === 'url' && !URL.canParse(text)) {
+  if (type === 'url' && !isAbsoluteUrl(text)) {
     return {
       severity: 'error' as const,
       message: strings.urlMismatch,
