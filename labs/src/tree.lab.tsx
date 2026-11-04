@@ -589,7 +589,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Loading on demand"
-      description="Opening a region loads its towns in their given order. South fails the first time: its row shows why, with a retry."
+      description="Opening a region loads its towns in their given order. South fails the first time: its row shows why, with a retry. East waits until Finish East's loads: open it, remove it and restore it while it waits, and opening it again asks again (the count goes up) instead of waiting on the forgotten load."
     >
       <LoadingTree />
     </LabSection>
