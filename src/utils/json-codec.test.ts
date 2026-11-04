@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import * as core from '../core/index.js';
 import { isKey } from './is-key.js';
 import {
   booleanCodec,
@@ -66,8 +67,7 @@ describe('stored list and boolean codecs', () => {
     }
   });
 
-  it('UIC-PROVIDER-6.2 ships the codecs from the core entry point', async () => {
-    const core = await import('../core/index.js');
+  it('UIC-PROVIDER-6.2 ships the codecs from the core entry point', () => {
     expect(core.createJsonCodec).toBe(createJsonCodec);
     expect(core.numberCodec.parse('3')).toBe(3);
     expect(() => core.booleanCodec.parse('"yes"')).toThrow();

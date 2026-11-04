@@ -187,6 +187,16 @@ Node.js 22 is required.
 npm ci
 npm run check       # lint, format, types, references, specs, labs, structure, client boundaries, builds, unit tests, public types, package, labs archive
 npm run test:labs   # Playwright against the built labs
+npm run cleanup     # return to dev, delete working branches and remove test output
 ```
+
+Run `./cleanup` on Unix or `cleanup.cmd` on Windows for the same cleanup, including
+from another working directory. It switches to local `dev` tracking `origin/dev`
+(creating `dev` if needed), preserves local `dev` commits and deletes every other
+local branch, including branches with unmerged commits. It uses the existing
+`origin/dev` reference without fetching and stops if Git cannot safely switch.
+Cleanup then removes `coverage/`, `test-results/`,
+`playwright-report/`, `blob-report/`, `node_modules/.cache/` and `node_modules/.vite/`.
+It keeps installed dependencies and built package and lab output.
 
 [CONTRIBUTING.md](CONTRIBUTING.md) covers branches, versioning and the source rules.
