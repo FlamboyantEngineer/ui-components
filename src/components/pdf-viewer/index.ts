@@ -1,21 +1,4 @@
-export { PdfViewer } from './pdf-viewer.js';
-export type {
-  PdfCommandName,
-  PdfMenuAction,
-  PdfMenuIcons,
-  PdfDocumentAccess,
-  PdfPageContent,
-  PdfPageGeometry,
-  PdfPagePoint,
-  PdfPageRect,
-  PdfPoint,
-  PdfRect,
-  PdfSearchControls,
-  PdfSearchOptions,
-  PdfSelection,
-  PdfViewerProps,
-  PdfVisiblePosition,
-} from './pdf-viewer.js';
+export { findBoxAtPoint } from './page-geometry.js';
 export type {
   PdfAnnotationLayer,
   PdfAnnotationLayerOptions,
@@ -39,5 +22,23 @@ export type {
   PdfTouchManagerOptions,
   PdfViewport,
 } from './pdf-engine.js';
+export type {
+  PdfCommandName,
+  PdfDocumentAccess,
+  PdfMenuAction,
+  PdfMenuIcons,
+  PdfPageContent,
+  PdfPageGeometry,
+  PdfPagePoint,
+  PdfPageRect,
+  PdfPoint,
+  PdfRect,
+  PdfSearchControls,
+  PdfSearchOptions,
+  PdfSearchResult,
+  PdfSelection,
+  PdfViewerProps,
+  PdfVisiblePosition,
+} from './pdf-viewer.js';
+export { PdfViewer } from './pdf-viewer.js';
 export type { PdfZoom } from './pdf-zoom.js';
-export { findBoxAtPoint } from './page-geometry.js';

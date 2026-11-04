@@ -1,15 +1,15 @@
 'use client';
 
-import { readCommandKey } from '../shortcut/shortcut.js';
-import { useCallback, type KeyboardEvent, type RefObject } from 'react';
-import { findNextZoomLevel } from '../zoom-control/zoom-control.js';
-import { pdfZoomLevels, type PdfZoom } from './pdf-zoom.js';
-import { useLatest } from '../../utils/use-latest.js';
-import type { PdfPagesController } from './use-pdf-pages.js';
-import type { PdfZoomState } from './use-pdf-zoom.js';
-import { isNode } from '../../utils/is-element.js';
+import { type KeyboardEvent, type RefObject, useCallback } from 'react';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { isEditableTarget } from '../../utils/is-editable-target.js';
+import { isNode } from '../../utils/is-element.js';
+import { useLatest } from '../../utils/use-latest.js';
+import { readCommandKey } from '../shortcut/shortcut.js';
+import { findNextZoomLevel } from '../zoom-control/zoom-control.js';
+import { type PdfZoom, resolveZoomLevels } from './pdf-zoom.js';
+import type { PdfPagesController } from './use-pdf-pages.js';
+import type { PdfZoomState } from './use-pdf-zoom.js';
 
 /** Widgets a caller may draw over a page that use Home, End and the page keys themselves. */
 const keyOwningWidgets = [
@@ -42,7 +42,7 @@ function isOwnedInside(event: KeyboardEvent<HTMLElement>) {
 
 interface UsePdfKeyboardOptions {
   isReady: boolean;
-  zoom: Pick<PdfZoomState, 'zoom' | 'percent' | 'setZoom'>;
+  zoom: Pick<PdfZoomState, 'zoom' | 'percent' | 'setZoom'> & Partial<Pick<PdfZoomState, 'levels'>>;
   /** The zoom Ctrl + 0 returns to. */
   defaultZoom: PdfZoom;
   pages: Pick<PdfPagesController, 'currentPage' | 'scrollToPage'>;
@@ -120,7 +120,11 @@ export function usePdfKeyboard(options: UsePdfKeyboardOptions): PdfKeyboard {
       if (!isReady || shortcut === null || shortcut === 'find') return;
       event.preventDefault();
       if (shortcut === 'zoom-reset') return zoom.setZoom(defaultZoom);
-      const level = findNextZoomLevel(pdfZoomLevels, zoom.percent, shortcut === 'zoom-in' ? 1 : -1);
+      const level = findNextZoomLevel(
+        resolveZoomLevels(zoom.levels),
+        zoom.percent,
+        shortcut === 'zoom-in' ? 1 : -1,
+      );
       if (level !== undefined) zoom.setZoom(level);
     },
     [latest],

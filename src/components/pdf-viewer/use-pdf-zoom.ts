@@ -1,22 +1,23 @@
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useState, type RefObject } from 'react';
+import { type RefObject, useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import { getOwnerWindow } from '../../utils/owner-window.js';
+import { useLatest } from '../../utils/use-latest.js';
 import { useResizeObserver } from '../../utils/use-resize-observer.js';
 import { findNextZoomLevel } from '../zoom-control/zoom-control.js';
 import {
   findLargestPage,
-  pdfZoomLevels,
-  resolveZoomPercent,
-  toCssScale,
   type PdfSize,
   type PdfZoom,
+  resolveZoomLevels,
+  resolveZoomPercent,
+  toCssScale,
 } from './pdf-zoom.js';
 import type { PdfPagesController } from './use-pdf-pages.js';
-import { useLatest } from '../../utils/use-latest.js';
-import { getOwnerWindow } from '../../utils/owner-window.js';
 
 interface UsePdfZoomOptions {
   defaultZoom: PdfZoom;
+  zoomLevels?: readonly number[] | undefined;
   /** Page sizes in points; a fit holds for the largest. */
   sizes: readonly PdfSize[];
   scrollerRef: RefObject<HTMLElement | null>;
@@ -31,6 +32,8 @@ export interface PdfZoomState {
   zoom: PdfZoom;
   /** The applied zoom in percent. */
   percent: number;
+  /** The resolved zoom ladder used by every zoom gesture. */
+  levels: readonly number[];
   /** CSS pixels per point at the applied zoom. */
   scale: number;
   setZoom(zoom: PdfZoom): void;
@@ -71,7 +74,7 @@ function useAvailableSize(
 function useWheelZoom(
   scrollerRef: RefObject<HTMLElement | null>,
   percent: number,
-  setZoom: (zoom: PdfZoom) => void,
+  { setZoom, levels }: Pick<PdfZoomState, 'setZoom' | 'levels'>,
 ) {
   useEffect(() => {
     const scroller = scrollerRef.current;
@@ -82,12 +85,12 @@ function useWheelZoom(
       if (!event.ctrlKey && !event.metaKey) return;
       event.preventDefault();
       if (event.deltaY === 0) return;
-      const level = findNextZoomLevel(pdfZoomLevels, percent, event.deltaY < 0 ? 1 : -1);
+      const level = findNextZoomLevel(levels, percent, event.deltaY < 0 ? 1 : -1);
       if (level !== undefined) setZoom(level);
     };
     scroller.addEventListener('wheel', onWheel, { passive: false });
     return () => scroller.removeEventListener('wheel', onWheel);
-  }, [percent, scrollerRef, setZoom]);
+  }, [percent, scrollerRef, setZoom, levels]);
 }
 
 /**
@@ -100,7 +103,8 @@ export function usePdfZoom(options: UsePdfZoomOptions): PdfZoomState {
   const [zoom, setZoomState] = useState<PdfZoom>(defaultZoom);
   const available = useAvailableSize(scrollerRef, pagesRef);
   const largest = useMemo(() => findLargestPage(sizes), [sizes]);
-  const percent = resolveZoomPercent({ zoom, page: largest, available });
+  const levels = resolveZoomLevels(options.zoomLevels);
+  const percent = resolveZoomPercent({ zoom, page: largest, available, zoomLevels: levels });
   const scale = toCssScale(percent);
   const latest = useLatest(options);
 
@@ -111,11 +115,11 @@ export function usePdfZoom(options: UsePdfZoomOptions): PdfZoomState {
     },
     [captureAnchor],
   );
-  useWheelZoom(scrollerRef, percent, setZoom);
+  useWheelZoom(scrollerRef, percent, { setZoom, levels });
   useLayoutEffect(() => restoreAnchor(), [scale, restoreAnchor]);
   useEffect(() => {
     if (largest) latest.current.onZoomChange?.(percent);
   }, [largest, percent, latest]);
 
-  return { zoom, percent, scale, setZoom };
+  return { zoom, percent, scale, setZoom, levels };
 }

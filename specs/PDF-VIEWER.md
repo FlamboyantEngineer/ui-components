@@ -143,6 +143,13 @@ On a touch screen, two fingers pinching over the pages shall scale the page colu
 Implementation: `src/components/pdf-viewer/use-pinch-zoom.ts`
 Verification: `src/components/pdf-viewer/use-pinch-zoom.test.tsx`, `e2e/pdf-viewer.spec.ts`
 
+### UIC-PDF-VIEWER-3.7 - Caller zoom ladder
+
+`zoomLevels` shall accept at least two finite, positive, strictly increasing percentages. Invalid configurations use the default ladder. Slider, buttons, keyboard, wheel, pinch and numeric zoom use its endpoints and steps. Fit modes retain their normal fit behavior within those endpoints.
+
+Implementation: `src/components/pdf-viewer/pdf-zoom.ts`, `src/components/pdf-viewer/use-pdf-zoom.ts`, `src/components/pdf-viewer/use-pdf-keyboard.ts`, `src/components/pdf-viewer/use-pinch-zoom.ts`
+Verification: `src/components/pdf-viewer/pdf-zoom.test.ts`, `e2e/pdf-viewer.spec.ts`
+
 ## UIC-PDF-VIEWER-4 - Page navigation
 
 ### UIC-PDF-VIEWER-4.1 - Current page
@@ -246,6 +253,20 @@ With focus in the viewer or its toolbar, Ctrl or Command with F (on a non-Latin 
 
 Implementation: `src/components/pdf-viewer/use-pdf-keyboard.ts`, `src/components/pdf-viewer/pdf-viewer-search.tsx`
 Verification: `src/components/pdf-viewer/use-pdf-keyboard.test.tsx`, `e2e/pdf-viewer.spec.ts`
+
+### UIC-PDF-VIEWER-5.9 - Ordered search results
+
+Caller search controls shall expose readonly ordered `results` with zero-based page index, source text and start/end offsets. `selectResult(index)` activates a result with the same wrapping and reveal behavior as stepping, without extracting text again.
+
+Implementation: `src/components/pdf-viewer/use-pdf-search.ts`
+Verification: `src/components/pdf-viewer/use-pdf-search.test.tsx`
+
+### UIC-PDF-VIEWER-5.10 - Search text status
+
+Caller controls shall expose `status`: idle for an empty query, loading while awaiting a document or its text, ready after extraction, unavailable when all pages have no searchable text, or error when the document or any text extraction failed. Successful partial matches may remain available on error. Source changes and cancellation shall discard stale outcomes.
+
+Implementation: `src/components/pdf-viewer/use-pdf-page-texts.ts`, `src/components/pdf-viewer/use-pdf-search.ts`
+Verification: `src/components/pdf-viewer/use-pdf-search.test.tsx`
 
 ## UIC-PDF-VIEWER-6 - Toolbar
 

@@ -5,7 +5,6 @@ import { measuredProperty } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import type { MenuEntry } from '../menu/menu.js';
 import { ProjectionContent } from '../projection/projection.js';
-import { pdfViewerHooks as hooks } from './styling-hooks.js';
 import type { PdfPageGeometry, PdfPagePoint, PdfPageRect, PdfSelection } from './page-geometry.js';
 import type {
   PdfDocumentOptions,
@@ -18,14 +17,14 @@ import type { PdfSearchOptions } from './pdf-search.js';
 import { PdfViewerStage } from './pdf-viewer-stage.js';
 import { PdfViewerToolbar } from './pdf-viewer-toolbar.js';
 import type { PdfZoom } from './pdf-zoom.js';
+import { pdfViewerHooks as hooks } from './styling-hooks.js';
 import type { PdfDocumentAccess } from './use-pdf-access.js';
 import type { PdfCommandName } from './use-pdf-commands.js';
 import type { PdfMenuIcons } from './use-pdf-context-menu.js';
 import type { PdfSearchControls } from './use-pdf-search.js';
-import type { PdfVisiblePosition } from './use-pdf-visible-position.js';
 import { usePdfViewer } from './use-pdf-viewer.js';
+import type { PdfVisiblePosition } from './use-pdf-visible-position.js';
 
-export { findBoxAtPoint } from './page-geometry.js';
 export type {
   PdfPageGeometry,
   PdfPagePoint,
@@ -34,12 +33,13 @@ export type {
   PdfRect,
   PdfSelection,
 } from './page-geometry.js';
+export { findBoxAtPoint } from './page-geometry.js';
 export type { PdfSearchOptions } from './pdf-search.js';
 export type { PdfDocumentAccess, PdfPageContent } from './use-pdf-access.js';
-export type { PdfVisiblePosition } from './use-pdf-visible-position.js';
-export type { PdfSearchControls } from './use-pdf-search.js';
 export type { PdfCommandName } from './use-pdf-commands.js';
 export type { PdfMenuAction, PdfMenuIcons } from './use-pdf-context-menu.js';
+export type { PdfSearchControls, PdfSearchResult } from './use-pdf-search.js';
+export type { PdfVisiblePosition } from './use-pdf-visible-position.js';
 
 export interface PdfViewerProps<
   V extends PdfViewport = PdfViewport,
@@ -61,6 +61,8 @@ export interface PdfViewerProps<
   'aria-label'?: string | undefined;
   /** The zoom the viewer opens at. Defaults to `page-width`. */
   defaultZoom?: PdfZoom | undefined;
+  /** Positive, strictly increasing zoom percentages; invalid ladders use 25–1000% in 25% steps. */
+  zoomLevels?: readonly number[] | undefined;
   /** Called with the applied zoom in percent whenever it changes. */
   onZoomChange?: ((percent: number) => void) | undefined;
   /** Controls placed at the end of the toolbar, after the viewer's own. */

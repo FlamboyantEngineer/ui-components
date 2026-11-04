@@ -173,6 +173,14 @@ function CallerFindControls({ search }: { search: PdfSearchControls }) {
         value={search.query}
         onChange={search.setQuery}
       />
+      <output aria-label="Text state">{search.status}</output>
+      {search.results.map((result, index) => (
+        <Button
+          key={index}
+          size="sm"
+          onPress={() => search.selectResult(index)}
+        >{`Page ${result.pageIndex + 1}: ${result.text.slice(result.start, result.end)}`}</Button>
+      ))}
       <output aria-label="Matches" data-lab-output="matches">
         {describeMatches(search)}
       </output>
@@ -241,6 +249,7 @@ export function CallerOwnedFind() {
       <div style={{ height: 420, maxWidth: 1000 }}>
         <PdfViewer
           aria-label="Report with its own find"
+          zoomLevels={[25, 50, 75, 100, 125, 150, 175, 200, 225, 250, 275, 300, 325, 350, 375, 400]}
           source={sampleUrl}
           loadEngine={loadEngine}
           workerSrc={workerSrc}

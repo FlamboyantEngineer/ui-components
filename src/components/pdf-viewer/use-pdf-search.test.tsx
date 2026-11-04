@@ -1,7 +1,12 @@
 import { act, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { renderReady, searchStatus as status } from '../../../test/pdf-fixtures.js';
+import {
+  createEngine,
+  renderReady,
+  renderViewer,
+  searchStatus as status,
+} from '../../../test/pdf-fixtures.js';
 import type { PdfSearchControls } from './use-pdf-search.js';
 
 const currentMatchPage = (container: HTMLElement) => {
@@ -155,4 +160,55 @@ describe('PdfViewer find owned by the caller', () => {
     view.update({ ...props, searchOptions: { wholeWords: true } });
     await waitFor(() => expect(matches).toHaveTextContent('1/2'));
   });
+});
+
+function ResultControls({ search }: { search: PdfSearchControls }) {
+  return (
+    <section aria-label="Search results">
+      <output aria-label="Text state">{search.status}</output>
+      <output aria-label="Current result">{search.current}</output>
+      {search.results.map((result, index) => (
+        <button key={index} onClick={() => search.selectResult(index)}>
+          {`Page ${result.pageIndex + 1}: ${result.text.slice(result.start, result.end)}`}
+        </button>
+      ))}
+    </section>
+  );
+}
+
+it('UIC-PDF-VIEWER-5.9 exposes ordered source offsets and activates result rows', async () => {
+  const user = userEvent.setup();
+  const view = await renderReady({
+    searchQuery: 'pear',
+    renderSearch: (search) => <ResultControls search={search} />,
+  });
+  const first = await screen.findByRole('button', { name: 'Page 1: pear' });
+  const second = screen.getByRole('button', { name: 'Page 2: Pear' });
+  await user.click(second);
+  expect(screen.getByRole('status', { name: 'Current result' })).toHaveTextContent('1');
+  expect(currentMatchPage(view.container)).toBe(1);
+  await user.click(first);
+  expect(currentMatchPage(view.container)).toBe(0);
+});
+
+it('UIC-PDF-VIEWER-5.10 distinguishes unavailable text and extraction failure from no matches', async () => {
+  const engine = createEngine({ lines: [['']] });
+  const view = renderViewer(
+    { searchQuery: 'pear', renderSearch: (search) => <ResultControls search={search} /> },
+    engine,
+  );
+  await waitFor(() =>
+    expect(screen.getByRole('status', { name: 'Text state' })).toHaveTextContent('unavailable'),
+  );
+  const failed = createEngine();
+  const page = await failed.pdf.getPage(1);
+  page.getTextContent.mockRejectedValue(new Error('Cannot extract text'));
+  view.unmount();
+  renderViewer(
+    { searchQuery: 'pear', renderSearch: (search) => <ResultControls search={search} /> },
+    failed,
+  );
+  await waitFor(() =>
+    expect(screen.getByRole('status', { name: 'Text state' })).toHaveTextContent('error'),
+  );
 });

@@ -986,3 +986,21 @@ test.describe('PDF Viewer lab', () => {
     expect(await drawnPages()).toBeLessThan(10);
   });
 });
+
+test('UIC-PDF-VIEWER-3.7 UIC-PDF-VIEWER-5.9 caller results activate and zoom respects the custom ladder', async ({
+  page,
+  lab,
+}) => {
+  const reader = await openCase(page, lab, 'find');
+  const slider = reader.getByRole('slider', { name: 'Zoom level' });
+  await slider.focus();
+  await page.keyboard.press('End');
+  await expect(reader.locator('.ui-zoom-control__value')).toHaveText('400%');
+  await reader.locator('.ui-pdf-viewer__scroller').focus();
+  await page.keyboard.press('Control++');
+  await expect(reader.locator('.ui-zoom-control__value')).toHaveText('400%');
+  await page.keyboard.press('Control+0');
+  await reader.getByRole('button', { name: 'Find pears', exact: true }).click();
+  await reader.getByRole('button', { name: 'Page 2: Pear', exact: true }).click();
+  await expect(reader.locator('[data-lab-output="match"]')).toHaveText('1');
+});

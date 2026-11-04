@@ -1,24 +1,23 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useControllableState } from '../../core/controllable-state.js';
+import { useLatest } from '../../utils/use-latest.js';
 import {
-  createPageText,
   findMatchFrom,
   findTextMatches,
   groupMatchRanges,
   type PdfMatch,
   type PdfMatchRange,
-  type PdfPageText,
   type PdfSearchOptions,
 } from './pdf-search.js';
-import { pdfRequestLimit, type LoadedPdf } from './use-pdf-document.js';
-import { useControllableState } from '../../core/controllable-state.js';
-import { mapBounded } from './map-bounded.js';
-import { useLatest } from '../../utils/use-latest.js';
+import type { LoadedPdf } from './use-pdf-document.js';
+import { usePdfPageTexts } from './use-pdf-page-texts.js';
 import type { PdfPagesController } from './use-pdf-pages.js';
 
 interface UsePdfSearchOptions {
   loaded: Pick<LoadedPdf, 'pages' | 'getTextContent'> | null;
+  isDocumentError?: boolean;
   pages: Pick<PdfPagesController, 'currentPage' | 'nearPages' | 'scrollToPage'>;
   /** The caller's query; `undefined` keeps the query in the viewer. */
   searchQuery?: string | undefined;
@@ -31,6 +30,14 @@ interface UsePdfSearchOptions {
   onSearchOptionsChange?: ((options: PdfSearchOptions) => void) | undefined;
 }
 
+/** One ordered result, with offsets into its page's source text. */
+export interface PdfSearchResult {
+  readonly pageIndex: number;
+  readonly start: number;
+  readonly end: number;
+  readonly text: string;
+}
+
 /** What find controls read and do: the query, the result count and stepping through matches. */
 export interface PdfSearchControls {
   query: string;
@@ -40,6 +47,12 @@ export interface PdfSearchControls {
   setOptions(options: PdfSearchOptions): void;
   /** A query is waiting for the document or its text. */
   isPending: boolean;
+  /** Text extraction state; errors never masquerade as a successful empty search. */
+  status: 'idle' | 'loading' | 'ready' | 'unavailable' | 'error';
+  /** Ordered results, shared with the viewer's highlighting pass. */
+  results: readonly PdfSearchResult[];
+  /** Activates an index in the complete result set, wrapping it. */
+  selectResult(index: number): void;
   total: number;
   /** The current match, zero-based. */
   current: number;
@@ -62,7 +75,6 @@ interface OwnSelection {
   moves: number;
 }
 
-const emptyText: PdfPageText = { text: '', starts: [], lengths: [] };
 const noOptions: PdfSearchOptions = {};
 
 /** Every find option, with its default where it is not set. */
@@ -73,33 +85,6 @@ function resolveSearchOptions(options: PdfSearchOptions): Required<PdfSearchOpti
     ignoreAccents: options.ignoreAccents ?? false,
     wholeWords: options.wholeWords ?? false,
   };
-}
-
-/** Extracts every page's text once per document, while a query needs it. */
-function usePageTexts(
-  loaded: UsePdfSearchOptions['loaded'],
-  isNeeded: boolean,
-): PdfPageText[] | null {
-  const [extracted, setExtracted] = useState<{
-    loaded: NonNullable<UsePdfSearchOptions['loaded']>;
-    texts: PdfPageText[];
-  } | null>(null);
-  const texts = extracted && extracted.loaded === loaded ? extracted.texts : null;
-  useEffect(() => {
-    if (!loaded || !isNeeded || texts) return undefined;
-    let isCancelled = false;
-    void mapBounded(
-      loaded.pages.length,
-      (pageIndex) => loaded.getTextContent(pageIndex).then(createPageText, () => emptyText),
-      { limit: pdfRequestLimit, isCancelled: () => isCancelled },
-    ).then((pageTexts) => {
-      if (!isCancelled) setExtracted({ loaded, texts: pageTexts });
-    });
-    return () => {
-      isCancelled = true;
-    };
-  }, [loaded, isNeeded, texts]);
-  return texts;
 }
 
 function wrapIndex(index: number, total: number): number {
@@ -134,14 +119,14 @@ function useCurrentMatch(options: UsePdfSearchOptions, matches: readonly PdfMatc
     if (matches.length > 0) report?.(findMatchFrom(matches, latestPages.currentPage));
   }, [matches, latest]);
 
-  const step = (delta: number) => {
+  const selectResult = (index: number) => {
     if (total === 0) return;
-    const next = wrapIndex(current + delta, total);
+    const next = wrapIndex(index, total);
     if (!isControlled)
       setOwn((previous) => ({ ...previous, index: next, moves: previous.moves + 1 }));
     onMatchIndexChange?.(next);
   };
-  return { current, revealKey, step };
+  return { current, revealKey, selectResult };
 }
 
 /** The find options, kept by the viewer or by the caller. */
@@ -170,14 +155,15 @@ export function usePdfSearch(options: UsePdfSearchOptions): PdfSearchState {
   const { nearPages, scrollToPage } = pages;
   const [query, setQuery] = useControllableState(options.searchQuery, '', onSearchQueryChange);
   const isSearching = query.trim() !== '';
-  const texts = usePageTexts(loaded, isSearching);
+  const extraction = usePdfPageTexts(loaded, isSearching);
+  const texts = extraction?.texts ?? null;
   const search = useSearchOptions(options);
   const { matchCase, ignoreAccents, wholeWords, highlightAll } = search.options;
   const matches = useMemo(
     () => (texts ? findTextMatches(texts, query, { matchCase, ignoreAccents, wholeWords }) : []),
     [texts, query, matchCase, ignoreAccents, wholeWords],
   );
-  const { current, revealKey, step } = useCurrentMatch(options, matches);
+  const { current, revealKey, selectResult } = useCurrentMatch(options, matches);
 
   // A match on a page that is not rendered yet is reached by scrolling to its page first.
   const revealed = useRef(0);
@@ -190,6 +176,23 @@ export function usePdfSearch(options: UsePdfSearchOptions): PdfSearchState {
     }
   }, [currentMatch, nearPages, scrollToPage, revealKey]);
 
+  const results = useMemo(
+    () =>
+      matches.map((match) => ({
+        ...match,
+        text: texts?.[match.pageIndex]?.text ?? '',
+      })),
+    [matches, texts],
+  );
+  const status = !isSearching
+    ? 'idle'
+    : options.isDocumentError || extraction?.hasError
+      ? 'error'
+      : !texts
+        ? 'loading'
+        : texts.some((text) => text.text.trim())
+          ? 'ready'
+          : 'unavailable';
   const rangesByPage = useMemo(
     () => groupMatchRanges(texts ?? [], matches, { current, highlightAll }),
     [texts, matches, current, highlightAll],
@@ -198,11 +201,14 @@ export function usePdfSearch(options: UsePdfSearchOptions): PdfSearchState {
     ...search,
     query,
     setQuery,
-    isPending: isSearching && texts === null,
+    isPending: status === 'loading',
+    status,
+    results,
+    selectResult,
     total: matches.length,
     current,
-    findNext: () => step(1),
-    findPrevious: () => step(-1),
+    findNext: () => selectResult(current + 1),
+    findPrevious: () => selectResult(current - 1),
     rangesByPage,
     revealKey,
   };
