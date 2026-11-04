@@ -1,4 +1,4 @@
-// Hover Card cases for tuning its position near the top of the viewport and opening on mount.
+// Hover Card cases for position tuning, opening on mount and trigger removal.
 
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
@@ -61,6 +61,45 @@ function OpenOnMount() {
   );
 }
 
+function PreviewLifecycle() {
+  const [isMounted, setMounted] = useState(false);
+  const [isOpen, setOpen] = useState(false);
+  return (
+    <div data-lab-demo="hover-lifecycle">
+      <Button
+        size="sm"
+        variant="secondary"
+        onPress={() => {
+          setMounted(true);
+          setOpen(false);
+        }}
+      >
+        Add lifecycle preview
+      </Button>{' '}
+      {isMounted ? (
+        <HoverCardTrigger isOpen={isOpen} onOpenChange={setOpen} closeDelay={100}>
+          <Link href="#kyoto">Kyoto</Link>
+          <HoverCard aria-label="About Kyoto">
+            <p>Kyoto, Japan. Gardens and wooden temples.</p>
+            <Button size="sm" onPress={() => setMounted(false)}>
+              Remove this preview
+            </Button>{' '}
+            <Button size="sm" onPress={() => setOpen(false)}>
+              Close preview externally
+            </Button>
+          </HoverCard>
+        </HoverCardTrigger>
+      ) : null}{' '}
+      <HoverCardTrigger delay={600} closeDelay={100}>
+        <Link href="#nara">Nara</Link>
+        <HoverCard aria-label="About Nara">
+          <p>Nara, Japan. A park with free-roaming deer.</p>
+        </HoverCard>
+      </HoverCardTrigger>
+    </div>
+  );
+}
+
 export function HoverCardCoverageSections() {
   return (
     <>
@@ -75,6 +114,12 @@ export function HoverCardCoverageSections() {
         description="defaultOpen opens an uncontrolled card as soon as its trigger mounts; leaving the link and card closes it as usual. Changes after mounting are listed."
       >
         <OpenOnMount />
+      </LabSection>
+      <LabSection
+        title="Preview lifecycle"
+        description="Add a preview and hover Kyoto, then remove its trigger or close it through its controlled state. Nara opens immediately during the 500 ms handoff window; after that it waits its 600 ms delay."
+      >
+        <PreviewLifecycle />
       </LabSection>
     </>
   );
