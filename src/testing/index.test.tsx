@@ -1,10 +1,10 @@
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { readFileSync, readdirSync } from 'node:fs';
-import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { UiProvider } from '../core/provider.js';
 import { Tab, TabList, TabPanel, Tabs } from '../components/tabs/tabs.js';
+import { UiProvider } from '../core/provider.js';
 import { createMemoryStorage } from './index.js';
 
 const testingDir = join(process.cwd(), 'src', 'testing');

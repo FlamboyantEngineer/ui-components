@@ -1,15 +1,15 @@
 'use client';
 
-import { SearchGlyph } from '../../core/glyphs.js';
-import { useId, useMemo, type KeyboardEvent } from 'react';
+import { type KeyboardEvent, useId, useMemo } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
+import { SearchGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { CodeEditor, type CodeDiagnostic, type CodeTokenizer } from '../code-editor/code-editor.js';
-import type { Completions } from '../completion-list/completion-list.js';
-import { Button } from '../button/button.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
+import { Button } from '../button/button.js';
+import { type CodeDiagnostic, CodeEditor, type CodeTokenizer } from '../code-editor/code-editor.js';
+import type { Completions } from '../completion-list/completion-list.js';
 
 /** A query language, as the functions that read it. */
 export interface QueryGrammar {

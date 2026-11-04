@@ -3,11 +3,11 @@
 // The palette's document-wide shortcut.
 
 import { useEffect } from 'react';
-import { formatAriaKeyShortcuts, isChordPress, type ShortcutChord } from '../shortcut/shortcut.js';
-import { useLatest } from '../../utils/use-latest.js';
 import { isElement } from '../../utils/is-element.js';
 import { getOwnerDocument } from '../../utils/owner-window.js';
+import { useLatest } from '../../utils/use-latest.js';
 import { usePortalContainer } from '../portal/portal.js';
+import { formatAriaKeyShortcuts, isChordPress, type ShortcutChord } from '../shortcut/shortcut.js';
 
 interface ShortcutEntry {
   readonly current: { chord: ShortcutChord | null; onPress: () => void };

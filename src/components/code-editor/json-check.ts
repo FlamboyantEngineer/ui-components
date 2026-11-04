@@ -2,11 +2,11 @@
 // diagnostics and as the field's message.
 
 import type { UiStrings } from '../../core/strings.js';
-import { findLineStarts } from './find-line-starts.js';
 import { requireDefined } from '../../utils/require-defined.js';
-import type { CodeDiagnostic } from './code-editor.js';
 import type { FieldIssue } from '../field/field.js';
-import { validateJsonSchema, type JsonSchema } from './json-schema.js';
+import type { CodeDiagnostic } from './code-editor.js';
+import { findLineStarts } from './find-line-starts.js';
+import { type JsonSchema, validateJsonSchema } from './json-schema.js';
 import { findJsonError } from './json-text.js';
 import { parseJsonTree } from './json-tree.js';
 

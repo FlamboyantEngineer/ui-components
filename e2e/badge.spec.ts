@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Badge lab', () => {
   test('UIC-BADGE-1.2 UIC-BADGE-1.3 UIC-BADGE-1.4 draws every variant and tone at three heights', async ({

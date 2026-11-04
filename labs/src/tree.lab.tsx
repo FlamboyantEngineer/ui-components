@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import {
   Tree,
@@ -7,6 +6,7 @@ import {
   type TreeItemState,
   type TreeMarks,
 } from '../../src/components/tree/tree.js';
+import type { Key } from '../../src/core/props.js';
 import { UiProvider } from '../../src/core/provider.js';
 import {
   applyTreeMove,
@@ -14,9 +14,9 @@ import {
   resolveTreeMove,
   type TreeMove,
 } from '../../src/utils/index.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabHelperCalls } from './lab-helper-calls.js';
-import { LockedRenameTree } from './tree-rename-lock.js';
+import { RowMenu } from './row-menu.js';
 import {
   CheckboxTree,
   FilterTree,
@@ -26,9 +26,9 @@ import {
   NestedTree,
   PrimitiveTree,
 } from './tree-cases.js';
-import { RowMenu } from './row-menu.js';
 import { ModalTree } from './tree-modal-case.js';
 import { CallerFilterTree, RequiredSelectionTree, TallRowsTree } from './tree-option-cases.js';
+import { LockedRenameTree } from './tree-rename-lock.js';
 import { SectionsTree, VirtualSectionsTree } from './tree-sections-cases.js';
 
 interface Entry {

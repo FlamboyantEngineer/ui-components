@@ -1,4 +1,3 @@
-export { FileUpload } from './file-upload.js';
 export type {
   FileRejection,
   FileRejectionReason,
@@ -8,3 +7,4 @@ export type {
   FileUploadVariant,
   FileValidator,
 } from './file-upload.js';
+export { FileUpload } from './file-upload.js';

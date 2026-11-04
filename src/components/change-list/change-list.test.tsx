@@ -1,9 +1,9 @@
-import { createRef } from 'react';
 import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { createRef } from 'react';
 import { describe, expect, it } from 'vitest';
-import { UiProvider } from '../../core/provider.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { UiProvider } from '../../core/provider.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { ChangeList, type ChangeListChange } from './change-list.js';
 import { compareLists, resolveChangeKind } from './list-changes.js';

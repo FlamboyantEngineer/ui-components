@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { usePersistentState, useUiStorage, type PersistCodec } from '../../core/provider.js';
+import { type PersistCodec, usePersistentState, useUiStorage } from '../../core/provider.js';
+import { type Submitter, useDraftSubmission } from '../../utils/use-draft-submission.js';
 import { useShallowStable } from '../../utils/use-shallow-stable.js';
-import { useDraftSubmission, type Submitter } from '../../utils/use-draft-submission.js';
 
 /** How a composer reads its value as text and turns text back into its value. */
 export interface ComposerFormat<T> {

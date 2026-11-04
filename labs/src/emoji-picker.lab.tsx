@@ -2,19 +2,19 @@ import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { EmojiPicker, EmojiPickerTrigger } from '../../src/components/emoji-picker/emoji-picker.js';
 import {
+  type CustomEmoji,
   EmojiPickerBody,
   EmojiPickerSearch,
   EmojiPickerSkinTones,
-  useActiveEmoji,
-  type CustomEmoji,
   type EmojiSelection,
   type NativeEmoji,
   type SkinTone,
+  useActiveEmoji,
 } from '../../src/components/emoji-picker/index.js';
 import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
 import { UiProvider } from '../../src/core/provider.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { EmojiPickerLifetimeCases } from './emoji-picker-lifetime-cases.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const loaders = {
   loading: () => new Promise<readonly NativeEmoji[]>(() => {}),

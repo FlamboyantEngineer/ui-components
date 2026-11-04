@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import type { Key } from '../../src/core/props.js';
 import { SelectField, type SelectFieldOption } from '../../src/components/select-field/index.js';
+import type { Key } from '../../src/core/props.js';
 import { LabOutput } from './lab-output.js';
 
 const options: SelectFieldOption[] = [

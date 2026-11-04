@@ -1,9 +1,9 @@
 'use client';
 
-import { createDropIndicator } from '../../utils/create-drop-indicator.js';
-import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { useCallback, useMemo } from 'react';
 import type { Key } from '../../core/props.js';
+import { createDropIndicator } from '../../utils/create-drop-indicator.js';
+import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import {
   getVisibleTreeRows,
   resolveTreeDrop,
@@ -13,15 +13,15 @@ import {
   type TreeMove,
   type TreeMoveRow,
 } from '../../utils/tree-reorder.js';
+import { useLatest } from '../../utils/use-latest.js';
 import {
-  useReorderDragAndDrop,
   type CollectionDragAndDropOptions,
   type CollectionDropTarget,
+  useReorderDragAndDrop,
 } from '../../utils/use-reorder-drag-and-drop.js';
-import type { TreeItemData } from './tree-props.js';
 import { treeHooks as hooks } from './tree-hooks.js';
+import type { TreeItemData } from './tree-props.js';
 import type { TreeExpansion } from './use-tree-expansion.js';
-import { useLatest } from '../../utils/use-latest.js';
 
 /** The owner's half of a reorderable tree: which rows move, where they may go, and what to do. */
 export interface TreeReorderOptions<T> {

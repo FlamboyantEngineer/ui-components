@@ -1,6 +1,6 @@
 'use client';
 
-import { useMergedRefs } from '../../utils/use-merged-refs.js';
+import { useLayoutEffect } from 'react';
 import {
   AttachGlyph,
   CloseGlyph,
@@ -9,15 +9,15 @@ import {
   SendGlyph,
   StopGlyph,
 } from '../../core/glyphs.js';
-import { useLayoutEffect } from 'react';
-import { FileTrigger } from '../../primitives/index.js';
 import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { FileTrigger } from '../../primitives/index.js';
 import { useFocusHandback } from '../../utils/use-focus-handback.js';
-import { EmojiPickerTrigger } from '../emoji-picker/emoji-picker.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { Button } from '../button/button.js';
-import { useComposerControlsValue, type ComposerControlsValue } from './composer-controls.js';
+import { EmojiPickerTrigger } from '../emoji-picker/emoji-picker.js';
+import { type ComposerControlsValue, useComposerControlsValue } from './composer-controls.js';
 import { composerHooks as hooks } from './composer-hooks.js';
 import { attachChosenFiles } from './use-file-drop.js';
 

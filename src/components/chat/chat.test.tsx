@@ -1,6 +1,6 @@
-import { act, screen, waitFor, within } from '@testing-library/react';
 import { readFileSync } from 'node:fs';
 import { join, sep } from 'node:path';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import {
   article,

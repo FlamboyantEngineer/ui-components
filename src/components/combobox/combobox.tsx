@@ -1,26 +1,26 @@
 'use client';
 
-import { useRef, type ReactNode, type Ref } from 'react';
-import { ComboBox as AriaComboBox, FieldError, Label, Text } from '../../primitives/index.js';
+import { type ReactNode, type Ref, useRef } from 'react';
 import type { AriaLabellingProps, OpenStateProps } from '../../core/events.js';
 import type { BaseProps, ControlSize, Key, RefProps } from '../../core/props.js';
-import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
+import { ComboBox as AriaComboBox, FieldError, Label, Text } from '../../primitives/index.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
-import { decodeComboboxValue, useComboboxValues } from './combobox-values.js';
+import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
+import { useScopedDisabled } from '../field/field.js';
 import { useChipsLabel } from './combobox-chips.js';
 import { ComboboxField, ComboboxInputs } from './combobox-field.js';
-import { ComboboxReset, useHeldChange } from './combobox-reset.js';
+import { comboboxHooks as hooks } from './combobox-hooks.js';
 import type { ComboboxItem, ComboboxOption } from './combobox-options.js';
+import { ComboboxReset, useHeldChange } from './combobox-reset.js';
 import type { ComboboxLoader } from './combobox-search.js';
 import {
+  type ComboboxModelOptions,
   useComboboxCollection,
   useComboboxModel,
   useInlineCompletionState,
-  type ComboboxModelOptions,
 } from './combobox-state.js';
-import { ComboboxSuggestions, type ComboboxOptionRenderer } from './combobox-suggestions.js';
-import { comboboxHooks as hooks } from './combobox-hooks.js';
-import { useScopedDisabled } from '../field/field.js';
+import { type ComboboxOptionRenderer, ComboboxSuggestions } from './combobox-suggestions.js';
+import { decodeComboboxValue, useComboboxValues } from './combobox-values.js';
 
 /** `search` leads the field with a search glyph, for a query completed from suggestions. */
 export type ComboboxVariant = 'default' | 'search';

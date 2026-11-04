@@ -1,8 +1,8 @@
 'use client';
 
 import type { ReactNode, Ref } from 'react';
-import { Focusable } from '../../primitives/index.js';
 import type { BaseProps } from '../../core/props.js';
+import { Focusable } from '../../primitives/index.js';
 import { toImageProps } from '../icon/icon.js';
 import { UserCardTrigger } from '../user-card-trigger/user-card-trigger.js';
 import type { AvatarProps } from './avatar.js';

@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Barcode, encodeBarcode, type BarcodeFormat } from '../../src/components/barcode/index.js';
+import { Barcode, type BarcodeFormat, encodeBarcode } from '../../src/components/barcode/index.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const formats = ['code128', 'ean13', 'upca', 'ean8'] as const;
 

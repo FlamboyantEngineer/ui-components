@@ -1,10 +1,10 @@
-import { MoreGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
-import { ChatList, type ChatConversation } from '../../src/components/chat-list/chat-list.js';
 import { Button } from '../../src/components/button/button.js';
+import { type ChatConversation, ChatList } from '../../src/components/chat-list/chat-list.js';
 import { Menu, MenuItem, MenuPopover, MenuTrigger } from '../../src/components/menu/menu.js';
+import { MoreGlyph } from '../../src/core/glyphs.js';
 import { getNow, manyConversations, minutesAgo, rowKinds } from './chat-list-samples.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const kinds = ['person', 'group', 'assistant'] as const;
 const rowStates = ['read', 'unread', 'muted', 'muted-unread'] as const;

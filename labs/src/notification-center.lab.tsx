@@ -1,17 +1,17 @@
-import { BellGlyph, ErrorGlyph, InfoGlyph, SuccessGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
-import { UiProvider } from '../../src/core/provider.js';
-import { fr } from '../../src/core/locales/index.js';
-import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { Button } from '../../src/components/button/button.js';
 import { Link } from '../../src/components/link/link.js';
-import { NotificationCenter } from '../../src/components/notification-center/notification-center.js';
 import {
-  NotificationList,
   type NotificationItem,
+  NotificationList,
 } from '../../src/components/notification-center/index.js';
+import { NotificationCenter } from '../../src/components/notification-center/notification-center.js';
+import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
+import { BellGlyph, ErrorGlyph, InfoGlyph, SuccessGlyph } from '../../src/core/glyphs.js';
+import { fr } from '../../src/core/locales/index.js';
+import { UiProvider } from '../../src/core/provider.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { NotificationCenterHostCases } from './notification-center-host-cases.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { samplePicture } from './people-samples.js';
 
 /** A fixed clock, so the matrices read the same days and times on every day. */

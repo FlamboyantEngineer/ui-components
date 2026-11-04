@@ -1,4 +1,3 @@
-export { FourSidePropertyStrip } from './four-side-property-strip.js';
 export type {
   BoxAxis,
   BoxSide,
@@ -10,3 +9,4 @@ export type {
   LogicalBoxAxis,
   LogicalBoxSide,
 } from './four-side-property-strip.js';
+export { FourSidePropertyStrip } from './four-side-property-strip.js';

@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
-import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 
 /** The box whose height each control of the control sizes lab takes from its size. */
 const boxes: Record<string, string> = {

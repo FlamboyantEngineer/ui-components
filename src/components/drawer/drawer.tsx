@@ -1,11 +1,16 @@
 'use client';
 
-import { useMergedRefs } from '../../utils/use-merged-refs.js';
+import { type KeyboardEvent, type ReactNode, type RefObject, useRef, useState } from 'react';
+import type { OpenStateProps, OverlayDismissProps } from '../../core/events.js';
 import { CloseGlyph } from '../../core/glyphs.js';
-import { useRef, useState, type KeyboardEvent, type ReactNode, type RefObject } from 'react';
+import { dialogTitleLevel, HeadingLevelContext } from '../../core/heading-level.js';
+import { createHooks } from '../../core/hooks.js';
+import { AvailableLoadingBoundary, useHoldFocusOnLeave } from '../../core/loading-boundary.js';
+import type { BaseProps, RefProps, Size } from '../../core/props.js';
+import { useUiStrings } from '../../core/provider.js';
 import {
-  Heading,
   DialogContext,
+  Heading,
   Sheet,
   SheetBackdrop,
   SheetContent,
@@ -13,27 +18,22 @@ import {
   SheetTrigger,
   useSlottedContext,
 } from '../../primitives/index.js';
-import type { OpenStateProps, OverlayDismissProps } from '../../core/events.js';
-import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Size, RefProps } from '../../core/props.js';
-import { useUiStrings } from '../../core/provider.js';
 import { stopConsumedEscape } from '../../utils/consumed-escape.js';
-import { isEmptyNode } from '../../utils/is-empty-node.js';
-import { Button } from '../button/button.js';
 import { DialogEnteringContext } from '../../utils/dialog-entering.js';
+import { getDeepActiveElement } from '../../utils/focus-target.js';
+import { FormBoundary } from '../../utils/form-boundary.js';
+import { isHTMLElement } from '../../utils/is-element.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { getOwnerDocument } from '../../utils/owner-window.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
+import { Button } from '../button/button.js';
+import type { OverlayLayer } from '../portal/layers.js';
 import {
   OverlayLayerScope,
   useLayerZIndex,
   usePortalContainer,
   useStackedLayer,
 } from '../portal/portal.js';
-import { AvailableLoadingBoundary, useHoldFocusOnLeave } from '../../core/loading-boundary.js';
-import { getDeepActiveElement } from '../../utils/focus-target.js';
-import { getOwnerDocument } from '../../utils/owner-window.js';
-import { isHTMLElement } from '../../utils/is-element.js';
-import type { OverlayLayer } from '../portal/layers.js';
-import { HeadingLevelContext, dialogTitleLevel } from '../../core/heading-level.js';
-import { FormBoundary } from '../../utils/form-boundary.js';
 
 /** A pressable trigger and the `Drawer` it opens. */
 export interface DrawerTriggerProps extends OpenStateProps {

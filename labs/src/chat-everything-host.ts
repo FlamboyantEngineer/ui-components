@@ -5,9 +5,9 @@
 import { useState } from 'react';
 import type { ChatAttachmentData } from '../../src/components/chat-attachment/chat-attachment.js';
 import {
-  useChatController,
   type ChatControllerProps,
   type ChatSendFunction,
+  useChatController,
 } from '../../src/components/chat-controller/index.js';
 import type { ChatMessageData, ChatTextToken } from '../../src/components/chat-parts/index.js';
 import { agents, fakeUpload, withModelNote } from './chat-agent.js';

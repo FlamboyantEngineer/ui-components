@@ -4,11 +4,11 @@ import { useId } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { ChatSourceSummary, type ChatSource } from './chat-source-summary.js';
+import { type ChatSource, ChatSourceSummary } from './chat-source-summary.js';
 
-export type { ChatSource } from './chat-source-summary.js';
-export { ChatCitation } from './chat-citation.js';
 export type { ChatCitationData, ChatCitationProps } from './chat-citation.js';
+export { ChatCitation } from './chat-citation.js';
+export type { ChatSource } from './chat-source-summary.js';
 export { createCitationOverride } from './markdown-citations.js';
 
 /** The data of a sources list, as a message part carries it. */

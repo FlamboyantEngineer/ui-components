@@ -1,14 +1,14 @@
 'use client';
 
 import type { FocusEvent, Ref, RefObject, TextareaHTMLAttributes } from 'react';
-import { TextArea } from '../../primitives/index.js';
 import type { AriaLabellingProps, KeyboardEventProps } from '../../core/events.js';
+import { TextArea } from '../../primitives/index.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 import { toCompletionInputAttributes } from '../completion-list/completion-list.js';
 import type { FieldTextInputProps } from '../field/field.js';
-import { CodeHighlight } from './code-layers.js';
 import { codeEditorHooks as hooks } from './code-editor-hooks.js';
+import { CodeHighlight } from './code-layers.js';
 import { alignLayers, type CodeEditorModel } from './use-code-editor.js';
-import { isComposingKey } from '../../utils/is-composing-key.js';
 
 /**
  * The caller's props the text area takes as they are. Of the text-entry attributes it takes the

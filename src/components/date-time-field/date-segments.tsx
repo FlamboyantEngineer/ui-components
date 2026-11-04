@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, type ComponentProps } from 'react';
+import { type ComponentProps, useRef } from 'react';
 import { DateInput, DateSegment } from '../../primitives/index.js';
 import { normalizeIntlSpaces } from '../../utils/intl-format.js';
 import { DraftAwareSegment } from './date-draft.js';

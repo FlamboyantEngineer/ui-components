@@ -1,9 +1,9 @@
 'use client';
 
-import { toErrorMessage } from '../../utils/to-error-message.js';
 import { useMemo, useRef, useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { toErrorMessage } from '../../utils/to-error-message.js';
 import { useLatest } from '../../utils/use-latest.js';
 
 /** Where loading a branch's children stands: loading, loaded, or failed with a message. */

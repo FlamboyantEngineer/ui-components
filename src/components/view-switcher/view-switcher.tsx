@@ -1,27 +1,27 @@
 'use client';
 
-import { StarGlyph } from '../../core/glyphs.js';
 import {
+  type ReactNode,
+  type RefObject,
   useContext,
   useEffect,
   useLayoutEffect,
   useRef,
   useState,
-  type ReactNode,
-  type RefObject,
 } from 'react';
-import { TabListStateContext } from '../../primitives/index.js';
+import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
+import { StarGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
-import { useControllableState } from '../../core/controllable-state.js';
+import { TabListStateContext } from '../../primitives/index.js';
+import { listTabbables } from '../../utils/tabbable.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import type { IconSource } from '../icon/icon.js';
 import type { MenuEntry } from '../menu/menu.js';
 import { Tab, TabList, Tabs } from '../tabs/tabs.js';
-import { listTabbables } from '../../utils/tabbable.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import {
   closedViewDialog,
@@ -30,7 +30,7 @@ import {
   type ViewActionContext,
   type ViewActionHandlers,
 } from './view-actions.js';
-import { ViewDialogs, type ViewDialog, type ViewDialogRequest } from './view-dialogs.js';
+import { type ViewDialog, type ViewDialogRequest, ViewDialogs } from './view-dialogs.js';
 
 /** One saved view of a collection. */
 export interface ViewSwitcherView {

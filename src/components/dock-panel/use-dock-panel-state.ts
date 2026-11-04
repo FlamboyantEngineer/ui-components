@@ -2,11 +2,11 @@
 
 import type { RefObject } from 'react';
 import type { Key } from '../../core/props.js';
-import { booleanCodec, keyCodec } from '../../utils/json-codec.js';
 import { isKey } from '../../utils/is-key.js';
+import { booleanCodec, keyCodec } from '../../utils/json-codec.js';
 import { usePersistedValue } from '../../utils/use-persisted-value.js';
 import { useRetainedKey } from '../../utils/use-retained-key.js';
-import { useDockPanelSize, type DockPanelSize } from './use-dock-panel-size.js';
+import { type DockPanelSize, useDockPanelSize } from './use-dock-panel-size.js';
 
 interface DockPanelStateOptions {
   rootRef: RefObject<HTMLElement | null>;

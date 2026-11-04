@@ -1,25 +1,23 @@
 'use client';
 
-import { MinusGlyph, PlusGlyph, type GlyphComponent } from '../../core/glyphs.js';
 // The anatomy of one tree row, inside React Aria's row content.
-
 import type { ReactNode } from 'react';
-import { Button as AriaButton } from '../../primitives/index.js';
+import { type GlyphComponent, MinusGlyph, PlusGlyph } from '../../core/glyphs.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { Button as AriaButton } from '../../primitives/index.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { keepControlFocusReturn } from '../../utils/keep-control-focus-return.js';
 import { Checkbox } from '../checkbox/checkbox.js';
 import { DragHandle } from '../drag-handle/drag-handle.js';
 import { useExpandGlyph } from '../expand-toggle/expand-toggle.js';
-import { Icon } from '../icon/icon.js';
-import { toIconProps } from '../icon/icon.js';
+import { Icon, toIconProps } from '../icon/icon.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import { TextMatch } from '../text-match/text-match.js';
-import type { TreeExpandGlyph, TreeItemData, TreeItemState } from './tree-props.js';
-import type { TreeRowOptions } from './tree-item.js';
 import { treeHooks as hooks } from './tree-hooks.js';
+import type { TreeRowOptions } from './tree-item.js';
+import type { TreeExpandGlyph, TreeItemData, TreeItemState } from './tree-props.js';
 import type { TreeLoads } from './use-tree-loads.js';
-import { keepControlFocusReturn } from '../../utils/keep-control-focus-return.js';
 
 /** What every row's content reads. */
 export type RowContentOptions<T extends TreeItemData> = Pick<

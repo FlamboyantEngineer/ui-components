@@ -2,6 +2,8 @@
 
 // Breadcrumbs, tabs and disclosures.
 
+export { useDisclosure } from 'react-aria';
+export type { DisclosureState, TabListState } from 'react-aria-components';
 export {
   Breadcrumb,
   Breadcrumbs,
@@ -17,5 +19,3 @@ export {
   Tabs,
   TabsContext,
 } from 'react-aria-components';
-export type { DisclosureState, TabListState } from 'react-aria-components';
-export { useDisclosure } from 'react-aria';

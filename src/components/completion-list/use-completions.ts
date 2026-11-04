@@ -1,32 +1,32 @@
 'use client';
 
 import {
-  useLayoutEffect,
-  useRef,
-  useState,
   type Dispatch,
   type KeyboardEvent,
   type RefObject,
   type SetStateAction,
+  useLayoutEffect,
+  useRef,
+  useState,
 } from 'react';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 import { callSettling, isThenable } from '../../utils/is-thenable.js';
+import { useLatest } from '../../utils/use-latest.js';
 import type { Completion } from './completion-match.js';
 import {
   closed,
-  hideCompletionState,
-  isSameSource,
-  lookUp,
-  toPendingState,
-  toState,
   type CompletionAnswer,
   type CompletionRange,
   type CompletionReason,
   type Completions,
   type CompletionState,
+  hideCompletionState,
+  isSameSource,
   type Lookup,
+  lookUp,
+  toPendingState,
+  toState,
 } from './completion-state.js';
-import { useLatest } from '../../utils/use-latest.js';
-import { isComposingKey } from '../../utils/is-composing-key.js';
 
 export type {
   CompletionAnswer,

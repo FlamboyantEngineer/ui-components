@@ -1,3 +1,13 @@
+import { useState } from 'react';
+import {
+  DisplayOptions,
+  type DisplayOptionsValue,
+} from '../../src/components/display-options/display-options.js';
+import { Switch } from '../../src/components/switch/switch.js';
+import {
+  ViewSwitcher,
+  type ViewSwitcherView,
+} from '../../src/components/view-switcher/view-switcher.js';
 import {
   ClockGlyph,
   FilterGlyph,
@@ -5,21 +15,11 @@ import {
   StarGlyph,
   UsersGlyph,
 } from '../../src/core/glyphs.js';
-import { useState } from 'react';
-import { Switch } from '../../src/components/switch/switch.js';
-import {
-  DisplayOptions,
-  type DisplayOptionsValue,
-} from '../../src/components/display-options/display-options.js';
-import {
-  ViewSwitcher,
-  type ViewSwitcherView,
-} from '../../src/components/view-switcher/view-switcher.js';
 import type { Key } from '../../src/core/props.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { recipeProperties, recipes, RecipeTable } from './recipe-samples.js';
 import { requireDefined } from './require-defined.js';
 import { ViewSwitcherCases } from './view-switcher-cases.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-import { RecipeTable, recipeProperties, recipes } from './recipe-samples.js';
 
 const noop = () => undefined;
 

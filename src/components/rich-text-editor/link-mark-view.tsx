@@ -1,7 +1,7 @@
 'use client';
 
 import type { MarkViewComponentProps } from '@handlewithcare/react-prosemirror';
-import { useContext, type ReactNode } from 'react';
+import { type ReactNode, useContext } from 'react';
 import { toLinkAttributes } from './default-schema.js';
 import { RichTextEditorContext } from './rich-text-context.js';
 

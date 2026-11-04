@@ -1,18 +1,18 @@
 'use client';
 
-import type { RefProps } from '../../core/props.js';
-import { BellGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { OpenStateProps, OverlayPositionProps } from '../../core/events.js';
+import { BellGlyph } from '../../core/glyphs.js';
 import { createHooks, splitDataAttributes } from '../../core/hooks.js';
+import type { RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Badge } from '../badge/badge.js';
-import { Drawer, DrawerTrigger } from '../drawer/drawer.js';
 import { Button } from '../button/button.js';
+import { Drawer, DrawerTrigger } from '../drawer/drawer.js';
 import { Popover, PopoverTrigger } from '../popover/popover.js';
-import { NotificationList, type NotificationListProps } from './notification-list.js';
 import { ArrivalAnnouncement } from './arrival-announcement.js';
+import { NotificationList, type NotificationListProps } from './notification-list.js';
 
 export type {
   NotificationFilter,

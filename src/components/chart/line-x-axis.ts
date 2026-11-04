@@ -1,9 +1,9 @@
 // The x axis of a line chart: ISO 8601 dates on a time scale, or numbers on a linear one.
 
-import { createLinearScale, type ScaleTick } from '../../utils/linear-scale.js';
-import { createTimeScale } from '../../utils/time-scale.js';
 import { getDateTimeFormat, getNumberFormat } from '../../utils/intl-format.js';
+import { createLinearScale, type ScaleTick } from '../../utils/linear-scale.js';
 import { readTimeInstant } from '../../utils/read-time-instant.js';
+import { createTimeScale } from '../../utils/time-scale.js';
 
 /** Where a value sits along a line chart's x axis: an ISO 8601 date or date-time, or a number. */
 export type LineChartX = string | number;

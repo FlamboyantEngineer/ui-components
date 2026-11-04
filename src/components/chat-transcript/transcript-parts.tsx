@@ -1,7 +1,7 @@
 'use client';
 
+import { type ReactNode, useId } from 'react';
 import { ArrowDownGlyph, ArrowUpGlyph } from '../../core/glyphs.js';
-import { useId, type ReactNode } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { Spinner } from '../progress-bar/progress-bar.js';

@@ -1,9 +1,9 @@
-import { CheckGlyph, EditGlyph, LinkGlyph, WarningGlyph } from '../../src/core/glyphs.js';
 import { useEffect, useState } from 'react';
 import { Badge } from '../../src/components/badge/badge.js';
 import { Button } from '../../src/components/button/button.js';
 import { RecordLabel } from '../../src/components/record-label/record-label.js';
 import { StatusLight } from '../../src/components/status-light/status-light.js';
+import { CheckGlyph, EditGlyph, LinkGlyph, WarningGlyph } from '../../src/core/glyphs.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
 
 const sizes = ['sm', 'md', 'lg'] as const;

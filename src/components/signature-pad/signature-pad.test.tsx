@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { Form } from '../form/form.js';
-import { SignaturePad, type DrawnSignature, type SignatureValue } from './signature-pad.js';
+import { type DrawnSignature, SignaturePad, type SignatureValue } from './signature-pad.js';
 
 const drawing: DrawnSignature = {
   kind: 'drawn',

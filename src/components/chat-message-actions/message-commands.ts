@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, type RefObject } from 'react';
+import { type RefObject, useState } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
-import { useClipboard, type CopyStatus } from '../../utils/use-clipboard.js';
+import { type CopyStatus, useClipboard } from '../../utils/use-clipboard.js';
 import { useLatestSettledCount } from '../../utils/use-latest-settled-count.js';
 import type { EmojiPickerProps } from '../emoji-picker/emoji-picker.js';
 

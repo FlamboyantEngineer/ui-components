@@ -1,7 +1,7 @@
 'use client';
 
-import { AdjustmentsGlyph } from '../../core/glyphs.js';
 import { useControllableState } from '../../core/controllable-state.js';
+import { AdjustmentsGlyph } from '../../core/glyphs.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';

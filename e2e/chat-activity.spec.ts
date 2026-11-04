@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 const section = (page: Page, title: string) => page.locator(`[data-lab-section="${title}"]`);
 const sim = (page: Page, part: string) => page.locator(`[data-lab-sim="${part}"]`);
 

@@ -3,11 +3,11 @@
 // block must start stay as they were parsed, and only the source after it is parsed again.
 
 import {
+  type Fence,
   isFenceClose,
   readFence,
   readListMarker,
   toBlockLine,
-  type Fence,
 } from './markdown-lines.js';
 import type { MarkdownBlock, MarkdownDocument } from './markdown-nodes.js';
 import { parseMarkdownBlocks } from './parse-markdown.js';

@@ -1,9 +1,9 @@
 'use client';
 
 import { ChevronLeftGlyph, ChevronRightGlyph } from '../../core/glyphs.js';
-import { useLocale } from '../../primitives/index.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useLocale } from '../../primitives/index.js';
 import { Button } from './button.js';
 
 interface ScrollStripButtonProps extends BaseProps {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
+import { type RefObject, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 /** An element, or a ref to one. */
 type ElementTarget<T extends Element = Element> = T | RefObject<T | null> | null | undefined;

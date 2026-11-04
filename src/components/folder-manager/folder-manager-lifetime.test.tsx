@@ -1,8 +1,8 @@
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import type { Key } from '../../core/props.js';
 import { describe, expect, it, vi } from 'vitest';
-import { FolderManager, type FolderItem } from './folder-manager.js';
+import type { Key } from '../../core/props.js';
+import { type FolderItem, FolderManager } from './folder-manager.js';
 
 interface Folder extends FolderItem {
   children?: Folder[];

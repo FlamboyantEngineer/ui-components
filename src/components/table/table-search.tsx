@@ -1,8 +1,8 @@
 'use client';
 
 import { CloseGlyph, SearchGlyph } from '../../core/glyphs.js';
-import { Button as AriaButton, Input, SearchField } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
+import { Button as AriaButton, Input, SearchField } from '../../primitives/index.js';
 import { Icon } from '../icon/icon.js';
 import { tableHooks as hooks } from './table-hooks.js';
 

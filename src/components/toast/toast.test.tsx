@@ -1,15 +1,15 @@
-import { StrictMode, useEffect, useState, type ReactNode } from 'react';
-import { HelpGlyph } from '../../core/glyphs.js';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
+import { type ReactNode, StrictMode, useEffect, useState } from 'react';
 import { hydrateRoot } from 'react-dom/client';
 import { renderToString } from 'react-dom/server';
-import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { HelpGlyph } from '../../core/glyphs.js';
 import { UiProvider } from '../../core/provider.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { PortalContainerProvider, PortalHost } from '../portal/portal.js';
-import { ToastList, ToastRegion, createToastQueue } from './toast.js';
+import { createToastQueue, ToastList, ToastRegion } from './toast.js';
 
 const tones = ['info', 'success', 'warning', 'danger'] as const;
 const toneGlyphs = { info: 'info', success: 'success', warning: 'warning', danger: 'error' };

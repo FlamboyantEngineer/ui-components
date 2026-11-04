@@ -1,10 +1,10 @@
-import { useState, useCallback } from 'react';
-import { UiProvider } from '../../src/core/provider.js';
-import { PlusGlyph, InfoGlyph } from '../../src/core/glyphs.js';
+import { useCallback, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Cluster } from '../../src/components/layout/layout.js';
 import { Tab, TabList, TabPanel, Tabs } from '../../src/components/tabs/tabs.js';
+import { InfoGlyph, PlusGlyph } from '../../src/core/glyphs.js';
 import type { Key } from '../../src/core/props.js';
+import { UiProvider } from '../../src/core/provider.js';
 
 export function InlineActionTabs({ overflow = 'scroll' }: { overflow?: 'scroll' | 'menu' }) {
   const [selected, setSelected] = useState<Key>('inbox');

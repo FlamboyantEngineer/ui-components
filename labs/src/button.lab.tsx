@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
+import type { IconSource } from '../../src/components/icon/icon.js';
 import {
   ChevronDownGlyph,
   ChevronRightGlyph,
@@ -6,16 +9,13 @@ import {
   PlusGlyph,
   SaveGlyph,
 } from '../../src/core/glyphs.js';
-import type { IconSource } from '../../src/components/icon/icon.js';
+import { mergeProps } from '../../src/utils/merge-props.js';
 import { ButtonActionCases } from './button-action-cases.js';
+import { buttonSizes, buttonStates, buttonVariants } from './button-axes.js';
+import { ButtonHostCases } from './button-host-cases.js';
 import { ButtonIconCases } from './button-icon-cases.js';
 import { ButtonTriggerCases } from './button-trigger-cases.js';
-import { useState } from 'react';
-import { Button } from '../../src/components/button/button.js';
-import { mergeProps } from '../../src/utils/merge-props.js';
-import { buttonSizes, buttonStates, buttonVariants } from './button-axes.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-import { ButtonHostCases } from './button-host-cases.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const hints = ['tooltip', 'shortcut', 'tooltip and shortcut'] as const;
 

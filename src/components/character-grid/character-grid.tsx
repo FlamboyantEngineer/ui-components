@@ -1,21 +1,21 @@
 'use client';
 
-import { useMemo, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
-import { GridList, GridListHeader, GridListItem, GridListSection } from '../../primitives/index.js';
+import { type KeyboardEvent, type RefObject, useMemo, useRef, useState } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { GridList, GridListHeader, GridListItem, GridListSection } from '../../primitives/index.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { useStoreValue } from '../../utils/use-store-value.js';
 import { createValueStore, type ValueStore } from '../../utils/value-store.js';
 import { SearchField } from '../search-field/search-field.js';
 import {
-  filterCharacterCategories,
-  formatCodePoints,
   type CharacterGridCategory,
   type CharacterGridCharacter,
+  filterCharacterCategories,
+  formatCodePoints,
 } from './character-filter.js';
 import { useRecentCharacters } from './use-recent-characters.js';
 

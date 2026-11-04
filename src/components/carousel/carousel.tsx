@@ -1,22 +1,22 @@
 'use client';
 
-import { Children, isValidElement, useId, useRef, type KeyboardEvent, type ReactNode } from 'react';
-import { useLocale } from '../../primitives/index.js';
+import { Children, isValidElement, type KeyboardEvent, type ReactNode, useId, useRef } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useLocale } from '../../primitives/index.js';
+import { clamp } from '../../utils/clamp.js';
 import { isEditableTarget } from '../../utils/is-editable-target.js';
 import { isHTMLElement } from '../../utils/is-element.js';
 import { useFocusRecovery } from '../../utils/use-focus-recovery.js';
+import { carouselHooks as hooks } from './carousel-hooks.js';
 import {
   CarouselControls,
-  CarouselPaginationButtons,
   type CarouselPagination,
+  CarouselPaginationButtons,
 } from './carousel-parts.js';
 import { useCarouselAutoplay } from './use-carousel-autoplay.js';
-import { clamp } from '../../utils/clamp.js';
-import { carouselHooks as hooks } from './carousel-hooks.js';
 
 export type { CarouselPagination } from './carousel-parts.js';
 

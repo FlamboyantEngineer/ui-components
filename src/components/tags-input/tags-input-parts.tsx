@@ -1,24 +1,24 @@
 'use client';
 
-import { isComposingInput, isComposingKey } from '../../utils/is-composing-key.js';
 import {
+  type ClipboardEvent,
+  type FocusEvent,
+  type KeyboardEvent,
   memo,
   useCallback,
   useMemo,
   useState,
-  type ClipboardEvent,
-  type FocusEvent,
-  type KeyboardEvent,
 } from 'react';
-import { Group, Input, useLocale, type Key } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
+import { Group, Input, type Key, useLocale } from '../../primitives/index.js';
+import { isComposingInput, isComposingKey } from '../../utils/is-composing-key.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { createSlotRegistry, type SlotRegistry } from '../../utils/slot-registry.js';
 import { assignOccurrenceKeys, type KeyedValue } from '../../utils/stable-keys.js';
 import {
-  FieldFormValue,
   type FieldControlProps,
+  FieldFormValue,
   type FieldState,
   type FieldTextInputProps,
 } from '../field/field.js';

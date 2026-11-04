@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { CopyButton } from '../../src/components/copy-button/copy-button.js';
 import {
   ChatMessage,
   type ChatMessageDelivery,
   type ChatMessageProps,
 } from '../../src/components/chat-transcript/index.js';
+import { CopyButton } from '../../src/components/copy-button/copy-button.js';
 import { ReactionBar, type ReactionEntry } from '../../src/components/reaction-bar/reaction-bar.js';
 import { samplePicture } from './people-samples.js';
 

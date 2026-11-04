@@ -1,19 +1,19 @@
 'use client';
 
-import { useRef, type ReactNode } from 'react';
+import { type ReactNode, useRef } from 'react';
+import type { OpenStateProps } from '../../core/events.js';
 import {
   MenuContext,
   OverlayTriggerStateContext,
   PopoverContext,
+  type PressEvent,
   PressResponder,
   Provider,
   RootMenuTriggerStateContext,
   useIsHidden,
   useMenuTrigger,
   useMenuTriggerState,
-  type PressEvent,
 } from '../../primitives/index.js';
-import type { OpenStateProps } from '../../core/events.js';
 import { useCloseWhenLocked } from '../../utils/use-close-when-locked.js';
 import { MenuTriggerPress } from './menu-trigger-press.js';
 

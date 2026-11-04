@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { CheckGlyph, InfoGlyph, UsersGlyph } from '../../src/core/glyphs.js';
-import { ListFilter } from '../../src/components/list-filter/list-filter.js';
 import { DockPanel, DockPanelPane } from '../../src/components/dock-panel/dock-panel.js';
+import { ListFilter } from '../../src/components/list-filter/list-filter.js';
+import { CheckGlyph, InfoGlyph, UsersGlyph } from '../../src/core/glyphs.js';
 import type { ControlSize } from '../../src/core/props.js';
 
 type Filter = 'unread' | 'all' | 'mentions';

@@ -1,15 +1,15 @@
 'use client';
 
-import { createContext, useContext, useId, useRef, type MouseEvent, type ReactNode } from 'react';
+import { createContext, type MouseEvent, type ReactNode, useContext, useId, useRef } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import {
   ProjectionContent,
   ProjectionProvider,
   useProjectedContent,
 } from '../projection/projection.js';
-import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 
 /** A region around the frame's main content that `AppFrameContent` can fill from anywhere below. */

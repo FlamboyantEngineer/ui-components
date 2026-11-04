@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
-import type { Key } from '../../core/props.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import type { Key } from '../../core/props.js';
 import { Field, Fieldset, useFieldState } from '../field/field.js';
 import { PropertyScope } from '../property-scope/property-scope.js';
 import {

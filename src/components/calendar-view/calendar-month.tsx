@@ -2,11 +2,12 @@
 
 import { findMaximum } from '../../utils/find-maximum.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
-import { CalendarDayCell, findDayEvents, type CalendarDayContext } from './calendar-day.js';
+import { CalendarDayCell, type CalendarDayContext, findDayEvents } from './calendar-day.js';
+import { getMonthWeeks, isSameMonth } from './calendar-days.js';
 import {
+  type CalendarEventContext,
   CalendarEventLanes,
   CalendarMoreEvents,
-  type CalendarEventContext,
 } from './calendar-event.js';
 import {
   countVisibleLanes,
@@ -15,7 +16,6 @@ import {
   type PlacedEvent,
   type WeekSegment,
 } from './calendar-layout.js';
-import { getMonthWeeks, isSameMonth } from './calendar-days.js';
 import { calendarViewHooks as hooks } from './calendar-view-hooks.js';
 import type { CalendarGrid } from './use-calendar-grid.js';
 

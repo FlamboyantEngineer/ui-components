@@ -1,26 +1,26 @@
 'use client';
 
-import { useMergedRefs } from '../../utils/use-merged-refs.js';
-import { useContext, useRef, useState, type ReactNode } from 'react';
-import { Dialog, DialogTrigger, OverlayTriggerStateContext } from '../../primitives/index.js';
-import { PopoverPanel } from '../popover/popover.js';
+import { type ReactNode, useContext, useRef, useState } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { Dialog, DialogTrigger, OverlayTriggerStateContext } from '../../primitives/index.js';
 import { useCloseWhenLocked } from '../../utils/use-close-when-locked.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
+import { PopoverPanel } from '../popover/popover.js';
 import { EmojiPickerBody } from './emoji-picker-body.js';
 import { EmojiPickerContext, EmojiPickerDismissContext } from './emoji-picker-context.js';
+import { emojiPickerHooks as hooks } from './emoji-picker-hooks.js';
 import { EmojiPickerPreview, EmojiPickerSearch } from './emoji-picker-parts.js';
 import {
-  useEmojiPickerState,
   type EmojiChoiceFilters,
   type EmojiChoiceHandlers,
   type EmojiPickerStateOptions,
   type EmojiSources,
   type SkinToneState,
+  useEmojiPickerState,
 } from './emoji-picker-state.js';
 import { EmojiPickerSkinTones } from './skin-tone-picker.js';
-import { emojiPickerHooks as hooks } from './emoji-picker-hooks.js';
 
 export interface EmojiPickerProps
   extends

@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useImperativeHandle, useState, type KeyboardEvent } from 'react';
+import { Fragment, type KeyboardEvent, useImperativeHandle, useState } from 'react';
 import type { ControlSize, Orientation } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useElementSize } from '../../utils/use-element-size.js';
@@ -17,7 +17,7 @@ import {
 } from './split-layout.js';
 import type { ResizableSplitViewProps } from './split-view.js';
 import { splitViewHooks as hooks } from './styling-hooks.js';
-import { useSplitSizes, type SplitSizes, type SplitSizesOptions } from './use-split-sizes.js';
+import { type SplitSizes, type SplitSizesOptions, useSplitSizes } from './use-split-sizes.js';
 
 interface SeparatorHandleProps {
   /** The separator's position: between pane `index` and the next one. */

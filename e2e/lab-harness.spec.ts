@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, formatLabUrl, test, waitForLab, matrixCell } from './fixtures.js';
+import { expect, formatLabUrl, matrixCell, test, waitForLab } from './fixtures.js';
 
 const customSheet = 'data:text/css,html%7Bbackground-color%3Argb(1%2C%202%2C%203)%7D';
 

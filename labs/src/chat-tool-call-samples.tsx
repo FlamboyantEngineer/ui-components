@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { LabOutput } from './lab-output.js';
 import {
   ChatToolCall,
   type ChatToolCallApproval,
   type ChatToolCallStatus,
 } from '../../src/components/chat-tool-call/chat-tool-call.js';
+import { LabOutput } from './lab-output.js';
 
 /** What a recipe search takes and returns, the matrices' sample call. */
 export const recipeArgs = { query: 'lentil soup', servings: 4, diet: ['vegetarian'] };

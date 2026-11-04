@@ -1,14 +1,14 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import { highlightTextRuns } from './highlights.js';
-import type { PdfPageGeometry } from './page-geometry.js';
-import { pdfViewerHooks as hooks } from './styling-hooks.js';
-import type { PdfMatchRange } from './pdf-search.js';
-import type { PdfLinkService, PdfTextContent, PdfTextLayer, PdfViewport } from './pdf-engine.js';
 import { measureCanvasPixels } from './page-bitmap.js';
+import type { PdfPageGeometry } from './page-geometry.js';
+import type { PdfLinkService, PdfTextContent, PdfTextLayer, PdfViewport } from './pdf-engine.js';
+import type { PdfMatchRange } from './pdf-search.js';
+import { pdfViewerHooks as hooks } from './styling-hooks.js';
 import { usePageRender } from './use-page-render.js';
 import type { LoadedPdf } from './use-pdf-document.js';
 import type { PdfPagesController } from './use-pdf-pages.js';

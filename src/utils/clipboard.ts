@@ -1,8 +1,7 @@
 // Copying text to the system clipboard: the asynchronous Clipboard API first, then a selection copy
 // for pages where that API is missing (insecure origins, older browsers) or refuses.
 
-import { isFocused } from './composed-focus.js';
-import { getDeepActiveElement } from './composed-focus.js';
+import { getDeepActiveElement, isFocused } from './composed-focus.js';
 import { isHTMLElement } from './is-element.js';
 import { getOwnerDocument } from './owner-window.js';
 

@@ -1,26 +1,26 @@
 'use client';
 
 import {
+  type RefCallback,
+  type RefObject,
   useCallback,
   useLayoutEffect,
   useMemo,
   useReducer,
   useRef,
   useState,
-  type RefCallback,
-  type RefObject,
 } from 'react';
+import { flushSync } from 'react-dom';
+import { measureScale } from './element-scale.js';
 import {
+  type MeasureCache,
   measureCommit,
   measureContentBox,
-  tolerance,
-  type MeasureCache,
+  measureLayoutWidth,
   type OverflowCollapseFrom,
   type RenderedItems,
-  measureLayoutWidth,
+  tolerance,
 } from './overflow-measure.js';
-import { measureScale } from './element-scale.js';
-import { flushSync } from 'react-dom';
 import { useResizeObserver } from './use-resize-observer.js';
 
 export type { OverflowCollapseFrom, OverflowCountInput } from './overflow-measure.js';

@@ -1,6 +1,6 @@
-export { Table } from './table.js';
-export type { TableProps, TableRowAttributes, TableSize } from './table.js';
 export type { TableColumnSize, TableColumnWidths } from './column-sizing.js';
+export type { TableProps, TableRowAttributes, TableSize } from './table.js';
+export { Table } from './table.js';
 export type { TableBulkEdit } from './table-bulk-edit.js';
 export type {
   TableCellPosition,
@@ -8,14 +8,14 @@ export type {
   TableCellSelectionMode,
 } from './table-cell-range.js';
 export type { TableColumnGroup, TableColumnLayout } from './table-columns.js';
-export { filterTableRows } from './table-filters.js';
 export type {
   TableColumnFilter,
   TableColumnFilterValue,
   TableFilter,
   TableNumberRange,
 } from './table-filters.js';
-export { applyTableMove } from './table-rows.js';
+export { filterTableRows } from './table-filters.js';
+export type { TableAggregate, TableGroup, TableGroupBy, TableGrouping } from './table-groups.js';
 export type {
   TableCellEditor,
   TableCellValue,
@@ -27,9 +27,9 @@ export type {
   TableRow,
   TableValueColumn,
 } from './table-rows.js';
-export { sortTableRows } from './table-sort.js';
+export { applyTableMove } from './table-rows.js';
 export type { TableRowsSort, TableSort } from './table-sort.js';
-export type { TableAggregate, TableGroup, TableGroupBy, TableGrouping } from './table-groups.js';
+export { sortTableRows } from './table-sort.js';
 export type { TableChildRows } from './table-tree.js';
 export type { TableCellEdit } from './use-cell-editing.js';
 export type { TableSpreadsheetProps } from './use-cell-selection.js';

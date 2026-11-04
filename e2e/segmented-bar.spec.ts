@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Segmented Bar lab', () => {
   test('UIC-SEGMENTED-BAR-1.1 UIC-SEGMENTED-BAR-1.6 UIC-SEGMENTED-BAR-2.1 draws named groups with 4 to 24 pixel tracks', async ({

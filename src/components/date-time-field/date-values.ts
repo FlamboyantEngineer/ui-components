@@ -12,8 +12,8 @@ import {
   toCalendarDate,
   toCalendarDateTime,
 } from '../../primitives/index.js';
+import { type BoundIssue, findOrderedBoundIssue } from '../../utils/date-bounds.js';
 import { getDateFormatter } from '../../utils/intl-format.js';
-import { findOrderedBoundIssue, type BoundIssue } from '../../utils/date-bounds.js';
 
 /**
  * `date` (`YYYY-MM-DD`), `time` (`HH:mm`), `date-time` (`YYYY-MM-DDTHH:mm`, or zoned with

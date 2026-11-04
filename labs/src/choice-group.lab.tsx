@@ -1,21 +1,21 @@
-import { multipleChoices } from './choice-group-multiple.js';
-import { useRef, useState, type JSX } from 'react';
+import { type JSX, useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { Form } from '../../src/components/form/form.js';
 import {
   Choice,
   ChoiceGroup,
   type ChoiceRenderState,
 } from '../../src/components/choice-group/choice-group.js';
+import { Form } from '../../src/components/form/form.js';
 import type { ControlSize } from '../../src/core/props.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-import { LabOutput } from './lab-output.js';
+import { multipleChoices } from './choice-group-multiple.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import {
   fieldLayouts,
+  type FieldStateName,
   fieldStates,
   useLabFieldState,
-  type FieldStateName,
 } from './field-states.js';
+import { LabOutput } from './lab-output.js';
 
 const sizes = ['xs', 'sm', 'md', 'lg'] as const satisfies readonly ControlSize[];
 const orientations = ['vertical', 'horizontal'] as const;

@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { copyText, type CopyOptions } from './clipboard.js';
+import { type CopyOptions, copyText } from './clipboard.js';
 import { DEFAULT_COPY_TIMEOUT } from './copy-timeout.js';
 
 /** The outcome of the last copy, until `timeout` returns it to `idle`. */

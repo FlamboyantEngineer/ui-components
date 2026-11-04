@@ -1,14 +1,14 @@
 'use client';
 
-import { measureScale, type ElementScale } from '../../utils/element-scale.js';
 import { useState } from 'react';
-import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import type { SelectionMode } from '../../core/props.js';
+import { type ElementScale, measureScale } from '../../utils/element-scale.js';
+import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import {
+  type DiagramViewport,
   isRectOverlap,
   resolveNodeRect,
   toDiagramPoint,
-  type DiagramViewport,
 } from './diagram-model.js';
 import type { DiagramRect } from './edge-route.js';
 import type { DiagramController } from './use-diagram-controller.js';

@@ -1,16 +1,16 @@
 'use client';
 
-import { useMergedRefs } from '../../utils/use-merged-refs.js';
-import { createContext, useContext, useId, useRef, type ReactNode } from 'react';
-import { Button as AriaButton, Provider } from '../../primitives/index.js';
+import { createContext, type ReactNode, useContext, useId, useRef } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { OpenStateProps, PressEventProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
-import { HoverCard, type HoverCardTriggerProps } from '../hover-card/hover-card.js';
-import { PopoverPanel } from '../popover/popover.js';
+import { Button as AriaButton, Provider } from '../../primitives/index.js';
 import { containsFocus } from '../../utils/focus-target.js';
 import { useCloseWhenLocked } from '../../utils/use-close-when-locked.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
+import { HoverCard, type HoverCardTriggerProps } from '../hover-card/hover-card.js';
+import { PopoverPanel } from '../popover/popover.js';
 import { restoreFocus, useCardOpening, type UserCardTriggerType } from './user-card-opening.js';
 
 export type { UserCardTriggerType } from './user-card-opening.js';

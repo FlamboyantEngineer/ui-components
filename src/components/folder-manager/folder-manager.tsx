@@ -1,35 +1,35 @@
 'use client';
 
 import { DeleteGlyph, EditGlyph } from '../../core/glyphs.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
+import { useUiStrings } from '../../core/provider.js';
+import type { UiStrings } from '../../core/strings.js';
 import { findMaximum } from '../../utils/find-maximum.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { walkTree } from '../../utils/walk-tree.js';
-import type { Key, BaseProps, RefProps } from '../../core/props.js';
-import { useUiStrings } from '../../core/provider.js';
-import type { UiStrings } from '../../core/strings.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import type { MenuEntry } from '../menu/menu.js';
-import { resolveActionIcon, type MenuActionIcons } from '../menu/menu-action-icons.js';
+import { type MenuActionIcons, resolveActionIcon } from '../menu/menu-action-icons.js';
 import { SearchField } from '../search-field/search-field.js';
 import {
-  FolderToolbar,
   folderManagerHooks as hooks,
+  FolderToolbar,
   type FolderToolbarProps,
 } from './folder-manager-parts.js';
 import {
-  getFolderHeight,
-  listFolderDestinations,
   type FolderDestination,
   type FolderItem,
+  getFolderHeight,
+  listFolderDestinations,
 } from './folder-model.js';
 import { FolderTree } from './folder-tree.js';
-import type { FolderSelectionMode } from './use-folder-tree.js';
 import {
-  useFolderManager,
   type FolderManagerModel,
   type FolderManagerOptions,
+  useFolderManager,
 } from './use-folder-manager.js';
+import type { FolderSelectionMode } from './use-folder-tree.js';
 
 export interface FolderManagerProps<
   T extends FolderItem,

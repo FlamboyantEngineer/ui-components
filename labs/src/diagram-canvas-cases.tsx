@@ -1,17 +1,17 @@
 import { useState } from 'react';
-import type { Key, Selection } from '../../src/core/props.js';
+import { Button } from '../../src/components/button/button.js';
 import {
   DiagramCanvas,
-  routeDiagramEdge,
   type DiagramEdge,
   type DiagramEdgeRouting,
   type DiagramNode,
   type DiagramRect,
   type DiagramView,
   type DiagramViewport,
+  routeDiagramEdge,
 } from '../../src/components/diagram-canvas/index.js';
-import { Button } from '../../src/components/button/button.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
+import type { Key, Selection } from '../../src/core/props.js';
 
 function Output({ name, value }: { name: string; value: string }) {
   return (

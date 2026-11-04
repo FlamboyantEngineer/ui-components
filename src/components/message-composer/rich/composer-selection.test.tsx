@@ -5,10 +5,10 @@ import { describe, expect, it, vi } from 'vitest';
 import { installEditorDom } from '../../../../test/rich-text-fixtures.js';
 import type { MessageComposerMessage } from '../composer-message.js';
 import {
-  RichMessageComposer,
   type MessageComposerHandle,
   type MessageComposerPaste,
   type MessageComposerPasteResult,
+  RichMessageComposer,
   type RichMessageComposerProps,
 } from './rich-message-composer.js';
 

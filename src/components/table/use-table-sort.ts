@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useMemo, useRef, type KeyboardEvent, type PointerEvent } from 'react';
-import type { SortDescriptor } from '../../core/props.js';
+import { type KeyboardEvent, type PointerEvent, useEffect, useMemo, useRef } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
+import type { SortDescriptor } from '../../core/props.js';
 import { nextSortDescriptor, nextSortDescriptors, toSortDescriptors } from './table-sort.js';
 
 /** A table's sort props: one column, or several in priority order. */

@@ -1,7 +1,7 @@
 import { act, render, screen } from '@testing-library/react';
 import { useRef } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ShadowHost, inShadow } from '../../../test/shadow-fixtures.js';
+import { inShadow, ShadowHost } from '../../../test/shadow-fixtures.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { getCompletionOptionId } from './completion-option-id.js';
 import { useActiveCompletion } from './use-active-completion.js';

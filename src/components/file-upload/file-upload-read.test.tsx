@@ -1,8 +1,8 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { requireDefined } from '../../utils/require-defined.js';
 import { UiProvider } from '../../core/provider.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { FileUpload } from './file-upload.js';
 
 function chooser(container: HTMLElement) {

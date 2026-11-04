@@ -1,10 +1,10 @@
-import { RestoreGlyph } from '../../src/core/glyphs.js';
 import { useRef, useState } from 'react';
 import { Banner } from '../../src/components/banner/banner.js';
 import { Button } from '../../src/components/button/button.js';
-import { useEnterExit } from '../../src/utils/use-enter-exit.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { RestoreGlyph } from '../../src/core/glyphs.js';
 import type { Tone } from '../../src/core/props.js';
+import { useEnterExit } from '../../src/utils/use-enter-exit.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const tones: Tone[] = ['neutral', 'info', 'success', 'warning', 'danger'];
 const messages: Record<Tone, string> = {

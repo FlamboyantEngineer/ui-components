@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 const inbox = (page: Page) => page.locator('[data-lab-demo="inbox"]');
 const grid = (page: Page) => inbox(page).getByRole('grid', { name: 'Conversations' });

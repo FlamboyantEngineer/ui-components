@@ -1,19 +1,20 @@
 'use client';
 
 import {
+  type ReactNode,
+  type RefObject,
   useCallback,
   useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
-  type ReactNode,
-  type RefObject,
 } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { isShallowEqual } from '../../utils/is-shallow-equal.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { useShallowStable } from '../../utils/use-shallow-stable.js';
+import { useTranscriptAnnouncer } from './transcript-announcer.js';
 import {
   announceMessage,
   applyArrivals,
@@ -22,7 +23,6 @@ import {
   focusMessage,
   noteOlder,
 } from './transcript-commit.js';
-import { useTranscriptAnnouncer } from './transcript-announcer.js';
 import {
   collectTranscriptItems,
   diffTranscriptKeys,

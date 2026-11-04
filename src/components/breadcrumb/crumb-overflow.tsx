@@ -1,10 +1,10 @@
 'use client';
 
-import { useId, useMemo, type ReactNode, type RefCallback } from 'react';
-import { Breadcrumb as AriaBreadcrumb } from '../../primitives/index.js';
+import { type ReactNode, type RefCallback, useId, useMemo } from 'react';
 import { mergeClassNames } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { Breadcrumb as AriaBreadcrumb } from '../../primitives/index.js';
 import { useOverflowItems } from '../../utils/use-overflow-items.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import type { MenuEntry } from '../menu/menu.js';

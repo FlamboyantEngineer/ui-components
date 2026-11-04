@@ -3,7 +3,7 @@
 // The card's header: the title block, metadata and actions, the expand and collapse control, and
 // the More button that reveals what an adaptive card leaves out of a smaller presentation.
 
-import { useId, useMemo, type ReactNode } from 'react';
+import { type ReactNode, useId, useMemo } from 'react';
 import { ChevronDownGlyph } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
@@ -11,16 +11,16 @@ import { Button } from '../button/button.js';
 import type { HeadingLevel } from '../section-header/section-header.js';
 import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
-import { CardActionTitle, type CardActionOptions } from './card-action.js';
-import { CardHeaderContext, type CardHeaderParts } from './card-parts.js';
+import { type CardActionOptions, CardActionTitle } from './card-action.js';
 import { cardHooks } from './card-hooks.js';
 import {
+  type CardMore,
   MoreControl,
+  type MovableRegion,
   useMoreEscape,
   useRegions,
-  type CardMore,
-  type MovableRegion,
 } from './card-more.js';
+import { CardHeaderContext, type CardHeaderParts } from './card-parts.js';
 import type { CardPresentation } from './card-presentation.js';
 
 const hooks = cardHooks;

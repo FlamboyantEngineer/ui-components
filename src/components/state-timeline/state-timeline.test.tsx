@@ -2,8 +2,8 @@ import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { UiProvider } from '../../core/provider.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { UiProvider } from '../../core/provider.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { StateTimeline, type StateTimelineEntry } from './state-timeline.js';
 

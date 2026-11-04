@@ -5,7 +5,7 @@ import {
 } from '../../src/components/approval-panel/approval-panel.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { LabSection } from './chrome/index.js';
-import { ZoneComparison, getNearMidnightNow, nearMidnightInstant } from './time-zone-samples.js';
+import { getNearMidnightNow, nearMidnightInstant, ZoneComparison } from './time-zone-samples.js';
 
 /** Decisions against a clock at 23:30 UTC on 20 April: near the day boundary, and three days back. */
 const approvers: readonly ApprovalPanelApprover[] = [

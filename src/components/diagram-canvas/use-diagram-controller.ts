@@ -1,28 +1,28 @@
 'use client';
 
-import { toLocalPoint } from '../../utils/element-scale.js';
-import { useCallback, useMemo, useState, type RefCallback } from 'react';
+import { type RefCallback, useCallback, useMemo, useState } from 'react';
 import type { Key, Selection, SelectionMode } from '../../core/props.js';
-import { indexDiagramLinks, type DiagramLinks } from './diagram-links.js';
+import { toLocalPoint } from '../../utils/element-scale.js';
+import { getOwnerDocument } from '../../utils/owner-window.js';
 import { diagramHooks as hooks } from './diagram-hooks.js';
+import { type DiagramLinks, indexDiagramLinks } from './diagram-links.js';
 import {
-  findDiagramBounds,
-  resolveNodeRect,
-  toDiagramPoint,
   type DiagramEdge,
   type DiagramNode,
   type DiagramViewport,
+  findDiagramBounds,
+  resolveNodeRect,
+  toDiagramPoint,
 } from './diagram-model.js';
 import type { DiagramPoint } from './edge-route.js';
 import {
-  useDiagramConnect,
   type DiagramConnect,
   type DiagramConnection,
+  useDiagramConnect,
 } from './use-diagram-connect.js';
-import { useDiagramSelection, type DiagramSelection } from './use-diagram-selection.js';
-import { useDiagramViewport, type DiagramViewportState } from './use-diagram-viewport.js';
-import { useNodeMoves, type NodeMoves } from './use-node-moves.js';
-import { getOwnerDocument } from '../../utils/owner-window.js';
+import { type DiagramSelection, useDiagramSelection } from './use-diagram-selection.js';
+import { type DiagramViewportState, useDiagramViewport } from './use-diagram-viewport.js';
+import { type NodeMoves, useNodeMoves } from './use-node-moves.js';
 
 /** A node, or one of its ports, under the pointer. */
 export interface DiagramTarget {

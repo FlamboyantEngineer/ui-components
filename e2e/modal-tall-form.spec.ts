@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
+import { expect, test } from './fixtures.js';
 
 /** The outer overlay's scroll state and the panel's box. */
 async function frame(page: Page) {

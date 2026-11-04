@@ -3,18 +3,18 @@
 // The collapsible frame reasoning and groups of steps share: a trigger with a label and a busy
 // indicator, and a panel that opens while the work goes on and collapses once it ends.
 
-import { DisclosureContentScope } from '../disclosure/disclosure.js';
-import { useState, type ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
+import type { ComponentHooks, DataValues } from '../../core/hooks.js';
+import type { BaseProps } from '../../core/props.js';
+import { Glyph } from '../../core/provider.js';
 import {
   Button as AriaButton,
   Disclosure,
   DisclosurePanel,
   useFocusWithin,
 } from '../../primitives/index.js';
-import type { ComponentHooks, DataValues } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
-import { Glyph } from '../../core/provider.js';
 import { mergeProps } from '../../utils/merge-props.js';
+import { DisclosureContentScope } from '../disclosure/disclosure.js';
 import { useExpandGlyph } from '../expand-toggle/expand-toggle.js';
 
 /** Whether an activity part is open, which follows its progress until the reader chooses. */

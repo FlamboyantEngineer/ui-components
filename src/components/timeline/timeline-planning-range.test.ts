@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
   createTimelineAxis,
+  type ReadItem,
   readTimelineItem,
   resolveDragChange,
   resolveItemSpan,
   resolveKeyboardChange,
   resolveTimelineRange,
-  type ReadItem,
 } from './timeline-geometry.js';
 
 const item = (start: string, end = start) => ({ id: 'a', rowId: 'r', label: 'Plan', start, end });

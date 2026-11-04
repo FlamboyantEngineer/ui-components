@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useLayoutEffect, useReducer, useRef, type CompositionEvent } from 'react';
+import { type CompositionEvent, useCallback, useLayoutEffect, useReducer, useRef } from 'react';
 
 type TextControl = HTMLInputElement | HTMLTextAreaElement;
 

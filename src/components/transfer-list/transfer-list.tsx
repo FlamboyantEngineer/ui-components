@@ -1,5 +1,6 @@
 'use client';
 
+import type { AriaLabellingProps } from '../../core/events.js';
 import {
   ArrowDownGlyph,
   ArrowUpGlyph,
@@ -8,13 +9,12 @@ import {
   ChevronLeftGlyph,
   ChevronRightGlyph,
 } from '../../core/glyphs.js';
-import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
-import { TransferPane, type TransferListItem, type TransferListSide } from './transfer-pane.js';
-import { useTransferList, type TransferSide } from './use-transfer-list.js';
 import { transferListHooks as hooks } from './transfer-list-hooks.js';
+import { type TransferListItem, type TransferListSide, TransferPane } from './transfer-pane.js';
+import { type TransferSide, useTransferList } from './use-transfer-list.js';
 
 export type { TransferListItem, TransferListSide } from './transfer-pane.js';
 

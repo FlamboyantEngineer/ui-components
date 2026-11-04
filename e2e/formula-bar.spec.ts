@@ -1,7 +1,7 @@
-import { toCollectionKey } from '../src/utils/to-collection-key.js';
 import type { Page } from '@playwright/test';
-import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
+import { toCollectionKey } from '../src/utils/to-collection-key.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 
 function spreadsheet(page: Page) {
   const root = page.locator('[data-lab-demo="spreadsheet"]');

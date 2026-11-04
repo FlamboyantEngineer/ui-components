@@ -7,8 +7,8 @@ import {
   TooltipTriggerStateContext,
   useSlottedContext,
 } from '../../primitives/index.js';
-import { getOwnerDocument } from '../../utils/owner-window.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
+import { getOwnerDocument } from '../../utils/owner-window.js';
 
 /** Dismiss the hint before React Aria's global listener can consume its owner's Escape. */
 export function TooltipEscape() {

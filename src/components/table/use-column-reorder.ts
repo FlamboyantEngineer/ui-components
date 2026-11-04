@@ -1,13 +1,13 @@
 'use client';
 
-import { isFocused } from '../../utils/focus-target.js';
-import { useId, useLayoutEffect, useRef, type KeyboardEvent, type RefObject } from 'react';
+import { type KeyboardEvent, type RefObject, useId, useLayoutEffect, useRef } from 'react';
 import { useLocale } from '../../primitives/index.js';
+import { isFocused } from '../../utils/focus-target.js';
+import { isEditableTarget } from '../../utils/is-editable-target.js';
+import { isElement } from '../../utils/is-element.js';
 import { isMoveChord } from '../../utils/use-reorder-drag-and-drop.js';
 import { stepColumnMove, type TableColumnMove } from './table-columns.js';
 import type { TableColumn } from './table-rows.js';
-import { isEditableTarget } from '../../utils/is-editable-target.js';
-import { isElement } from '../../utils/is-element.js';
 
 /** What every reorderable header of one table shares for dragging columns (`useColumnDrag`). */
 export interface TableColumnDrag {

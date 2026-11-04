@@ -1,9 +1,9 @@
 import {
   AudioGlyph,
   FileGlyph,
+  type GlyphComponent,
   ImageGlyph,
   VideoGlyph,
-  type GlyphComponent,
 } from '../core/glyphs.js';
 // The glyph that stands for a file of a given MIME type.
 

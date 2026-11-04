@@ -1,5 +1,5 @@
 import { TruncationTooltip } from '../../src/components/truncation-tooltip/truncation-tooltip.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { TruncationTooltipCoverageSections } from './truncation-tooltip-coverage-cases.js';
 
 const longText = 'Quarterly report for the northern region, final edition.pdf';

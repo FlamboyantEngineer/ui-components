@@ -4,7 +4,7 @@ import { SearchField } from '../../src/components/search-field/search-field.js';
 import { Tour, type TourStep } from '../../src/components/tour/tour.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { createMemoryStorage } from '../../src/core/storage.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const placements = ['top', 'bottom', 'start', 'end'] as const;
 const modalities = ['modal', 'non-modal'] as const;

@@ -1,10 +1,10 @@
-import { useState } from 'react';
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { UiProvider } from '../../core/provider.js';
 import type { Key } from '../../core/props.js';
+import { UiProvider } from '../../core/provider.js';
 import { SelectField, type SelectFieldItem, type SelectFieldOption } from './select-field.js';
 
 const mixed: SelectFieldOption = {

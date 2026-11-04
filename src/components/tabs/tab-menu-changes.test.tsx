@@ -3,7 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import type { Key } from '../../core/props.js';
 import type { MenuEntry } from '../menu/menu.js';
-import { Tab, TabList, Tabs, type TabListProps } from './tabs.js';
+import { Tab, TabList, type TabListProps, Tabs } from './tabs.js';
 
 interface ListOptions extends Partial<TabListProps> {
   isDisabled?: boolean;

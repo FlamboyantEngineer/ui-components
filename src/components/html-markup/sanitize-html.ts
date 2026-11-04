@@ -1,10 +1,10 @@
 // An allowlist HTML sanitizer that returns a plain, frozen tree instead of markup
 // (specs/HTML-MARKUP.md). It never touches the DOM, so it also runs on the server.
 
+import { mergeSafeRel } from '../../utils/merge-safe-rel.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { defaultUrlSchemes, isSafeUrl } from '../../utils/safe-url.js';
-import { buildHtmlTree, reconcileHtmlTree, type RawElement, type RawNode } from './html-tree.js';
-import { mergeSafeRel } from '../../utils/merge-safe-rel.js';
+import { buildHtmlTree, type RawElement, type RawNode, reconcileHtmlTree } from './html-tree.js';
 
 export interface HtmlElementNode {
   readonly type: 'element';

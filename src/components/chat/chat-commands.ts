@@ -3,7 +3,7 @@ import type {
   ChatMessageCommandProps,
 } from '../chat-message-actions/chat-message-actions.js';
 import type { ChatMessageData } from '../chat-parts/chat-parts.js';
-import { isOwnText, readMessageText, type ChatParticipantIndex } from './chat-model.js';
+import { type ChatParticipantIndex, isOwnText, readMessageText } from './chat-model.js';
 
 /**
  * The message commands a chat offers, each bound to a message id and present only when the chat

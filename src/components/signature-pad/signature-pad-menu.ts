@@ -6,17 +6,17 @@
 import { ClipboardGlyph, DeleteGlyph, UndoGlyph, UploadGlyph } from '../../core/glyphs.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import type { FieldState } from '../field/field.js';
 import {
   defaultFieldMenu,
   type FieldMenuAction,
   type FieldMenuEntry,
 } from '../field/field-menu-entries.js';
-import type { FieldState } from '../field/field.js';
-import { resolveActionIcon, type MenuActionIcons } from '../menu/menu-action-icons.js';
 import type { IconSource } from '../icon/icon.js';
 import type { MenuItemEntry } from '../menu/menu.js';
+import { type MenuActionIcons, resolveActionIcon } from '../menu/menu-action-icons.js';
 import type { ImageIntake } from './signature-image.js';
-import { withoutLastStroke, type SignatureValue } from './signature-path.js';
+import { type SignatureValue, withoutLastStroke } from './signature-path.js';
 
 /** The signature pad's own menu actions, offered before the field's. */
 export type SignaturePadAction = 'upload-image' | 'paste-image' | 'delete-image' | 'undo-stroke';

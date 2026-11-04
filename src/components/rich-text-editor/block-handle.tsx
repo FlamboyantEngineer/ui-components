@@ -1,27 +1,26 @@
 'use client';
 
-import { useMergedRefs } from '../../utils/use-merged-refs.js';
-import { DragHandleGlyph, MoreVerticalGlyph } from '../../core/glyphs.js';
 import { useEditorEventCallback } from '@handlewithcare/react-prosemirror';
 import { NodeSelection, TextSelection } from 'prosemirror-state';
 import type { EditorView } from 'prosemirror-view';
-import { useLayoutEffect, useState, type DragEvent, type FocusEvent } from 'react';
+import { type DragEvent, type FocusEvent, useLayoutEffect, useState } from 'react';
+import { DragHandleGlyph, MoreVerticalGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
+import { isHTMLElement } from '../../utils/is-element.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import type { MenuEntry } from '../menu/menu.js';
 import { findTopBlocks } from './block-commands.js';
 import { getBlockItems, getWrapItems } from './format-items.js';
 import type { RichTextCommand } from './rich-text-command.js';
-import type { RichTextController } from './rich-text-controller.js';
-import { useRichTextController } from './rich-text-controller.js';
-import { useBlockDrop, type BlockDragSource } from './use-block-drop.js';
-import { useBlockTarget } from './use-block-target.js';
 import { useRichTextEditorContext } from './rich-text-context.js';
+import { type RichTextController, useRichTextController } from './rich-text-controller.js';
+import { type BlockDragSource, useBlockDrop } from './use-block-drop.js';
+import { useBlockTarget } from './use-block-target.js';
 import { useFocusReturn } from './use-focus-return.js';
-import { isHTMLElement } from '../../utils/is-element.js';
 
 export interface BlockHandleProps extends RefProps<HTMLDivElement>, BaseProps {
   /** Shows the grip that drags the block. Defaults to `true`. */

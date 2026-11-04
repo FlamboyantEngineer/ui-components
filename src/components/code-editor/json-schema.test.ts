@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { getDefaultStrings } from '../../core/strings.js';
 
 const defaultStrings = getDefaultStrings();
-import { findSubschema, validateJsonSchema, type JsonSchema } from './json-schema.js';
+import { findSubschema, type JsonSchema, validateJsonSchema } from './json-schema.js';
 import { parseJsonTree } from './json-tree.js';
 
 const recipe: JsonSchema = {

@@ -1,14 +1,14 @@
 'use client';
 
-import { useState, type ReactNode, type Ref } from 'react';
+import { type ReactNode, type Ref, useState } from 'react';
 import { mergeClassNames } from '../../core/hooks.js';
+import type { Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Button, type ButtonVariant } from '../button/button.js';
 import type { ModalAction, ModalCancelAction, ModalProps } from './modal.js';
-import type { ModalActionSlot, ModalActions } from './use-modal-actions.js';
 import { modalHooks as hooks } from './modal-hooks.js';
-import type { Tone } from '../../core/props.js';
+import type { ModalActions, ModalActionSlot } from './use-modal-actions.js';
 
 interface ModalFooterProps extends Pick<
   ModalProps,

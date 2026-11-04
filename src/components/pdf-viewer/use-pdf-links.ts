@@ -1,11 +1,11 @@
 'use client';
 
 import { useCallback, useEffect, useRef } from 'react';
+import { useLatest } from '../../utils/use-latest.js';
 import { resolveDestination } from './pdf-destination.js';
 import type { PdfLinkService, PdfTextContent, PdfViewport } from './pdf-engine.js';
 import { useLinkService } from './pdf-link-service.js';
 import type { LoadedPdf } from './use-pdf-document.js';
-import { useLatest } from '../../utils/use-latest.js';
 import type { PdfNavigationOrder } from './use-pdf-navigation.js';
 import type { PdfPagesController } from './use-pdf-pages.js';
 

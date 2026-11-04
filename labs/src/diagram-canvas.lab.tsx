@@ -1,18 +1,18 @@
-import { PlusGlyph } from '../../src/core/glyphs.js';
-import { useState, type CSSProperties } from 'react';
-import type { Key, Selection } from '../../src/core/props.js';
+import { type CSSProperties, useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
 import {
   DiagramCanvas,
-  DiagramPaletteItem,
   type DiagramEdge,
   type DiagramEdgeRouting,
   type DiagramNode,
   type DiagramNodeAddRequest,
+  DiagramPaletteItem,
   type DiagramViewport,
 } from '../../src/components/diagram-canvas/diagram-canvas.js';
-import { Button } from '../../src/components/button/button.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { PlusGlyph } from '../../src/core/glyphs.js';
+import type { Key, Selection } from '../../src/core/props.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { ControlledSelection, GridAndViewport, RouteHelper } from './diagram-canvas-cases.js';
 
 interface Part {

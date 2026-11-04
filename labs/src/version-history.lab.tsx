@@ -6,9 +6,9 @@ import {
   type VersionHistoryVersion,
 } from '../../src/components/version-history/version-history.js';
 import type { Key } from '../../src/core/props.js';
-import { requireDefined } from './require-defined.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { samplePicture } from './people-samples.js';
+import { requireDefined } from './require-defined.js';
 import {
   ControlledFilter,
   CustomEmpty,

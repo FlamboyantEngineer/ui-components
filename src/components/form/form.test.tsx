@@ -1,19 +1,19 @@
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { createRef, useState, type FormEvent } from 'react';
+import { createRef, type FormEvent, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { TextField as PlainField } from '../../../test/field-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { BooleanField } from '../boolean-field/boolean-field.js';
 import { Button } from '../button/button.js';
 import { Fieldset } from '../field/field.js';
-import { NumberField } from '../number-field/number-field.js';
 import { Modal, ModalTrigger } from '../modal/modal.js';
+import { NumberField } from '../number-field/number-field.js';
 import { Popover, PopoverTrigger } from '../popover/popover.js';
 import { ProblemList } from '../problem-list/problem-list.js';
 import { Table } from '../table/table.js';
 import { TextField } from '../text-field/text-field.js';
-import { Form, useFormValidity, type FormBlocker, type FormProps } from './form.js';
+import { Form, type FormBlocker, type FormProps, useFormValidity } from './form.js';
 
 function field(name: string) {
   return screen.getByRole('textbox', { name }).closest('.ui-field');

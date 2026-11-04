@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { UiStrings } from '../../core/strings.js';
+import { REANNOUNCE_MARK } from '../../utils/reannounce.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { transcriptHooks as hooks } from './transcript-hooks.js';
-import { REANNOUNCE_MARK } from '../../utils/reannounce.js';
 
 /** A message to announce: its author's name (`null` for a notice) and its text. */
 interface MessageAnnouncement {

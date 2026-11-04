@@ -1,11 +1,13 @@
 'use client';
-import { useId, type ReactNode } from 'react';
+import { type ReactNode, useId } from 'react';
+import { readOwn } from '../../utils/read-own.js';
 import { ChatPlan, ChatReasoning } from '../chat-activity/chat-activity.js';
 import { ChatAttachmentList } from '../chat-attachment/chat-attachment.js';
 import { ChatQuestion } from '../chat-question/chat-question.js';
 import { ChatSources } from '../chat-sources/chat-sources.js';
 import { ChatToolCall } from '../chat-tool-call/chat-tool-call.js';
 import { CodeBlock } from '../code-block/code-block.js';
+import type { MarkdownRenderNode } from '../markdown/markdown-place.js';
 import { TextDiff } from '../text-diff/text-diff.js';
 import type {
   ChatCodePart,
@@ -18,10 +20,8 @@ import type {
 } from './chat-part.js';
 import type { ChatPartsProps, ChatToolCallHandlers } from './chat-parts.js';
 import { chatPartsHooks as hooks } from './chat-parts-hooks.js';
-import type { MarkdownRenderNode } from '../markdown/markdown-place.js';
 import { ChatTextPartView } from './chat-text-part.js';
 import type { PartsExpansion } from './use-parts-expansion.js';
-import { readOwn } from '../../utils/read-own.js';
 
 /** What every part view draws with: the message's callbacks, overrides and expansion. */
 export interface PartContext extends Pick<

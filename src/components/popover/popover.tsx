@@ -1,45 +1,45 @@
 'use client';
 
-import { useMergedRefs } from '../../utils/use-merged-refs.js';
-import { CloseGlyph } from '../../core/glyphs.js';
 import {
   createContext,
-  useContext,
-  useState,
   type CSSProperties,
   type JSX,
   type ReactElement,
   type ReactNode,
   type RefObject,
+  useContext,
+  useState,
 } from 'react';
+import type {
+  OpenStateProps,
+  OverlayDismissProps,
+  OverlayPositionProps,
+} from '../../core/events.js';
+import { CloseGlyph } from '../../core/glyphs.js';
+import { dialogTitleLevel, HeadingLevelContext } from '../../core/heading-level.js';
+import { createHooks } from '../../core/hooks.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
+import { useUiStrings } from '../../core/provider.js';
 import {
   Dialog,
   DialogTrigger,
   Heading,
   OverlayArrow,
   OverlayTriggerStateContext,
-  PopoverContext,
   Popover as AriaPopover,
+  PopoverContext,
   useSlottedContext,
 } from '../../primitives/index.js';
-import type {
-  OpenStateProps,
-  OverlayDismissProps,
-  OverlayPositionProps,
-} from '../../core/events.js';
-import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, RefProps } from '../../core/props.js';
-import { useUiStrings } from '../../core/provider.js';
 import { stopConsumedEscape } from '../../utils/consumed-escape.js';
+import { FormBoundary } from '../../utils/form-boundary.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { POPOVER_ARROW_OFFSET, POPOVER_OFFSET } from '../../utils/overlay-defaults.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
+import { useScrollGuardedState } from '../../utils/use-scroll-guarded-state.js';
 import { Button } from '../button/button.js';
 import { useLayerZIndex } from '../portal/portal.js';
 import { PopoverPresence } from './popover-presence.js';
 import { usePopoverGutter } from './use-popover-gutter.js';
-import { useScrollGuardedState } from '../../utils/use-scroll-guarded-state.js';
-import { POPOVER_ARROW_OFFSET, POPOVER_OFFSET } from '../../utils/overlay-defaults.js';
-import { HeadingLevelContext, dialogTitleLevel } from '../../core/heading-level.js';
-import { FormBoundary } from '../../utils/form-boundary.js';
 
 /** A pressable trigger and the `Popover` it opens. */
 export interface PopoverTriggerProps extends OpenStateProps {

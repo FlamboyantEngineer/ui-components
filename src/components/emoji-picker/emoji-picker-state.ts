@@ -1,38 +1,38 @@
 'use client';
 
 import {
+  type ReactNode,
+  type RefObject,
   useContext,
   useEffect,
   useMemo,
   useRef,
   useState,
-  type ReactNode,
-  type RefObject,
 } from 'react';
-import { useLocale } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
+import { useLocale } from '../../primitives/index.js';
+import { callSettling } from '../../utils/is-thenable.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { useRetainedKey } from '../../utils/use-retained-key.js';
 import { createValueStore, type ValueStore } from '../../utils/value-store.js';
 import {
   addRecentEmoji,
-  getEmojiKey,
-  resolveEmojiKeys,
-  searchEmoji,
-  toEmojiSelection,
   type CustomEmoji,
+  type EmojiCategory,
   type EmojiEntry,
   type EmojiSelection,
-  type EmojiCategory,
+  getEmojiKey,
   type NativeEmoji,
+  resolveEmojiKeys,
+  searchEmoji,
   type SkinTone,
+  toEmojiSelection,
 } from './emoji-catalog.js';
 import { filterNativeEmoji } from './emoji-filter.js';
 import type { EmojiGridOptions } from './emoji-grid.js';
 import { loadEmojiData, resolveEmojiLocale } from './emoji-locale.js';
 import { EmojiPickerDismissContext } from './emoji-picker-context.js';
 import { useEmojiSupport } from './emoji-support.js';
-import { callSettling } from '../../utils/is-thenable.js';
 
 interface EmojiData {
   emoji: readonly NativeEmoji[] | null;

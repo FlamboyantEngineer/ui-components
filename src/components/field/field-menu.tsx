@@ -1,16 +1,16 @@
 'use client';
 
-import { CloseGlyph, HelpGlyph, RefreshGlyph, RestoreGlyph } from '../../core/glyphs.js';
 import { useEffect, useRef } from 'react';
-import { getComposedActiveElement } from '../../utils/focus-target.js';
+import { CloseGlyph, HelpGlyph, RefreshGlyph, RestoreGlyph } from '../../core/glyphs.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
+import { getComposedActiveElement } from '../../utils/focus-target.js';
 import {
   ContextMenu,
+  type ContextMenuTargetProps,
   useContextMenuTarget,
   useMenuController,
-  type ContextMenuTargetProps,
 } from '../context-menu/context-menu.js';
 import { Menu, type MenuEntry } from '../menu/menu.js';
 import { resolveActionIcon } from '../menu/menu-action-icons.js';

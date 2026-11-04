@@ -1,8 +1,8 @@
 'use client';
 
 import { CloseGlyph } from '../../core/glyphs.js';
-import { Heading } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
+import { Heading } from '../../primitives/index.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Button } from '../button/button.js';
 import type { ModalProps } from './modal.js';

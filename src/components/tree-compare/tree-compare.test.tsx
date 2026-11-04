@@ -1,10 +1,10 @@
 import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState, createRef } from 'react';
+import { createRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { UiProvider } from '../../core/provider.js';
 import type { Key } from '../../core/props.js';
+import { UiProvider } from '../../core/provider.js';
 import type { CompareTreeNode } from '../../utils/compare-trees.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { TreeCompare, type TreeCompareProps } from './tree-compare.js';

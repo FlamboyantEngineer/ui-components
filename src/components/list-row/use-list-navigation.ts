@@ -2,6 +2,10 @@
 
 import {
   createContext,
+  type FocusEvent,
+  type KeyboardEvent,
+  type Ref,
+  type RefObject,
   useCallback,
   useContext,
   useId,
@@ -11,16 +15,12 @@ import {
   useRef,
   useState,
   useSyncExternalStore,
-  type FocusEvent,
-  type KeyboardEvent,
-  type Ref,
-  type RefObject,
 } from 'react';
 import { clamp } from '../../utils/clamp.js';
 import { isFocusLost } from '../../utils/focus-target.js';
+import { isNode } from '../../utils/is-element.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import type { ListHandle } from './list-row.js';
-import { isNode } from '../../utils/is-element.js';
 
 interface ListNavigationOptions {
   /** The class of the rows' primary controls, the elements navigation moves between. */

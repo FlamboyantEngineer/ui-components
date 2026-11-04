@@ -1,5 +1,5 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
-import { userEvent, type UserEvent } from '@testing-library/user-event';
+import { type UserEvent, userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Combobox, type ComboboxLoader, type ComboboxPage } from './combobox.js';
 

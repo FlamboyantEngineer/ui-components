@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { prepareStreamingMarkdown } from './markdown-streaming.js';
 import type { MarkdownBlock } from './markdown-nodes.js';
+import { prepareStreamingMarkdown } from './markdown-streaming.js';
 import { parseMarkdown } from './parse-markdown.js';
 import { parseStreamingMarkdown, type StreamingMarkdownParse } from './parse-streaming-markdown.js';
 

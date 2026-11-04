@@ -1,26 +1,26 @@
 'use client';
 
 import { useState } from 'react';
-import { useLocale } from '../../primitives/index.js';
 import { useToday } from '../../core/clock.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps, ExpansionProps, SelectionProps } from '../../core/events.js';
-import type { BaseProps, Key, Selection, SelectionMode, RefProps } from '../../core/props.js';
+import type { BaseProps, Key, RefProps, Selection, SelectionMode } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useLocale } from '../../primitives/index.js';
 import { TimelineChart, type TimelineChartActions } from './timeline-chart.js';
-import {
-  type TimelineDependency,
-  type TimelineItem,
-  type TimelineItemChange,
-  type TimelineRange,
-  type TimelineScale,
+import type {
+  TimelineDependency,
+  TimelineItem,
+  TimelineItemChange,
+  TimelineRange,
+  TimelineScale,
 } from './timeline-geometry.js';
 import { timelineHooks as hooks } from './timeline-hooks.js';
+import type { TimelineItemMenu } from './timeline-item-menu.js';
 import { layoutTimeline } from './timeline-layout.js';
+import type { TimelineRowColumnEntry } from './timeline-row-columns.js';
 import { collectGroupKeys, flattenTimelineRows, type TimelineRow } from './timeline-rows.js';
 import { TimelineTable } from './timeline-table.js';
-import type { TimelineItemMenu } from './timeline-item-menu.js';
-import type { TimelineRowColumnEntry } from './timeline-row-columns.js';
 
 export type {
   TimelineDependency,
@@ -31,7 +31,6 @@ export type {
   TimelineRange,
   TimelineScale,
 } from './timeline-geometry.js';
-export type { TimelineRow } from './timeline-rows.js';
 export type { TimelineItemMenu } from './timeline-item-menu.js';
 export type {
   TimelineRowColumn,
@@ -39,6 +38,7 @@ export type {
   TimelineRowColumnKind,
   TimelineRowContext,
 } from './timeline-row-columns.js';
+export type { TimelineRow } from './timeline-rows.js';
 
 /** `chart` draws the items on the time scale; `table` lists them in a table. */
 export type TimelineView = 'chart' | 'table';

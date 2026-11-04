@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
   MediaViewer,
@@ -6,10 +6,8 @@ import {
 } from '../../src/components/media-viewer/media-viewer.js';
 import { PdfViewer } from '../../src/components/pdf-viewer/pdf-viewer.js';
 import type { Key } from '../../src/core/props.js';
-import { requireDefined } from './require-defined.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
-import { loadEngine, sampleUrl, workerSrc } from './pdf-viewer-cases.js';
 import {
   ArrivingItems,
   FailingImages,
@@ -17,6 +15,8 @@ import {
   NoteDrafts,
   RefreshingList,
 } from './media-viewer-cases.js';
+import { loadEngine, sampleUrl, workerSrc } from './pdf-viewer-cases.js';
+import { requireDefined } from './require-defined.js';
 
 /** A drawn landscape of the given size, as an SVG data URL. */
 function scene(width: number, height: number, sky: string, ground: string): string {

@@ -13,8 +13,8 @@ import {
   ChatStatusLine,
   ChatSteps,
 } from '../../src/components/chat-activity/index.js';
-import { ChatMessage } from '../../src/components/chat-transcript/chat-transcript.js';
 import type { ChatToolCallKind } from '../../src/components/chat-tool-call/chat-tool-call.js';
+import { ChatMessage } from '../../src/components/chat-transcript/chat-transcript.js';
 import { Stack } from '../../src/components/layout/layout.js';
 import { Markdown } from '../../src/components/markdown/markdown.js';
 import { LabToolCall, reasoningText } from './chat-activity-samples.js';

@@ -1,9 +1,9 @@
 'use client';
 
-import { useMemo, type ReactNode } from 'react';
+import { type ReactNode, useMemo } from 'react';
+import { useControllableState } from '../../core/controllable-state.js';
 import type { ExpansionProps } from '../../core/events.js';
 import type { Key } from '../../core/props.js';
-import { useControllableState } from '../../core/controllable-state.js';
 import type { TableGroup, TableGroupBy } from './table-groups.js';
 
 /** A table's row grouping: the groupings, the group headers and which groups are collapsed. */

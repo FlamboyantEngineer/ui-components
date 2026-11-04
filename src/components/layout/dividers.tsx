@@ -1,4 +1,4 @@
-import { Children, Fragment, createElement, isValidElement, type ReactNode } from 'react';
+import { Children, createElement, Fragment, isValidElement, type ReactNode } from 'react';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import type { LayoutElement } from './layout.js';
 

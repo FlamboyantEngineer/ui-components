@@ -1,15 +1,15 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useEffect, type ReactNode } from 'react';
+import { type ReactNode, useEffect } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { I18nProvider, Link, useLocale } from '../primitives/index.js';
 import { CloseGlyph, PauseGlyph } from './glyphs.js';
 import {
+  type UiNavigate,
   UiProvider,
   useFormatMessage,
   useGlyph,
   useUiStrings,
-  type UiNavigate,
 } from './provider.js';
 
 // Optional provider options come and go without remounting the children (UIC-PROVIDER-3.3).

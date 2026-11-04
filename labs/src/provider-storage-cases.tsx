@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Link } from '../../src/components/link/link.js';
+import { NumberField } from '../../src/components/number-field/number-field.js';
 import { Switch } from '../../src/components/switch/switch.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
-import { NumberField } from '../../src/components/number-field/number-field.js';
 import { createJsonCodec, numberCodec } from '../../src/core/index.js';
 import { UiProvider, usePersistentState } from '../../src/core/provider.js';
 import { createMemoryStorage, createSafeStorage } from '../../src/core/storage.js';

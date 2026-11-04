@@ -1,13 +1,13 @@
 'use client';
 
-import { useId, type ReactNode } from 'react';
+import { type ReactNode, useId } from 'react';
 import type { Key, Selection } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { IconSource } from '../icon/icon.js';
 import { ListView, ListViewItem } from '../list-row/list-row.js';
 import { SearchField } from '../search-field/search-field.js';
-import type { TransferDrop } from './transfer-moves.js';
 import { transferListHooks as hooks } from './transfer-list-hooks.js';
+import type { TransferDrop } from './transfer-moves.js';
 
 /** An item a transfer list moves between its sides. */
 export interface TransferListItem {

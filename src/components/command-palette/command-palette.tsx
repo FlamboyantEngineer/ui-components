@@ -1,8 +1,13 @@
 'use client';
 
-import { useMergedRefs } from '../../utils/use-merged-refs.js';
+import { type KeyboardEvent, useMemo, useRef, useState } from 'react';
+import { useControllableState } from '../../core/controllable-state.js';
+import type { OpenStateProps } from '../../core/events.js';
 import { SearchGlyph } from '../../core/glyphs.js';
-import { useMemo, useRef, useState, type KeyboardEvent } from 'react';
+import { createHooks, splitDataAttributes } from '../../core/hooks.js';
+import { AvailableLoadingBoundary, useHoldFocusOnLeave } from '../../core/loading-boundary.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
+import { Glyph, useUiStrings } from '../../core/provider.js';
 import {
   Autocomplete,
   Dialog,
@@ -13,21 +18,16 @@ import {
   SearchField,
   useFilter,
 } from '../../primitives/index.js';
-import { useControllableState } from '../../core/controllable-state.js';
-import type { OpenStateProps } from '../../core/events.js';
-import { createHooks, splitDataAttributes } from '../../core/hooks.js';
-import type { BaseProps, RefProps } from '../../core/props.js';
-import { Glyph, useUiStrings } from '../../core/provider.js';
+import { getDeepActiveElement } from '../../utils/focus-target.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
+import { isHTMLElement } from '../../utils/is-element.js';
+import { getOwnerDocument } from '../../utils/owner-window.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { Menu, type MenuProps, type MenuSize } from '../menu/menu.js';
 import { useLayerZIndex, usePortalContainer } from '../portal/portal.js';
-import { AvailableLoadingBoundary, useHoldFocusOnLeave } from '../../core/loading-boundary.js';
-import { getDeepActiveElement } from '../../utils/focus-target.js';
-import { getOwnerDocument } from '../../utils/owner-window.js';
-import { isHTMLElement } from '../../utils/is-element.js';
 import { isChordPress, type ShortcutChord } from '../shortcut/shortcut.js';
-import { useDocumentShortcut } from './command-palette-shortcut.js';
 import { useReturnFocusOnClose } from './command-palette-focus.js';
-import { isComposingKey } from '../../utils/is-composing-key.js';
+import { useDocumentShortcut } from './command-palette-shortcut.js';
 
 /** Whether a command whose text is `textValue` matches the typed `inputValue`. */
 export type CommandPaletteFilter = (textValue: string, inputValue: string) => boolean;

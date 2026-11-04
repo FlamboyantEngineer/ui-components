@@ -2,8 +2,8 @@
 
 // Whether focus is inside a field, and the moment it leaves.
 
+import { type FocusEvent, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { isFocusLost } from '../../utils/focus-target.js';
-import { useEffect, useLayoutEffect, useRef, useState, type FocusEvent } from 'react';
 import { useLatest } from '../../utils/use-latest.js';
 
 interface FieldFocusOptions {

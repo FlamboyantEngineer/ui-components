@@ -3,8 +3,8 @@ import { userEvent } from '@testing-library/user-event';
 import { expect } from 'vitest';
 import type {
   CompletionResult,
-  CompletionSource,
   Completions,
+  CompletionSource,
 } from '../src/components/completion-list/completion-list.js';
 
 /** A completion source whose answers the test gives, one lookup at a time. */

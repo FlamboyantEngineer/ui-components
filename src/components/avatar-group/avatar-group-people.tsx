@@ -2,13 +2,12 @@
 
 import { Fragment } from 'react';
 import { useUiStrings } from '../../core/provider.js';
-import { Avatar, splitAvatarIdentity } from '../avatar/avatar.js';
-import { resolveAvatarColor } from '../avatar/avatar.js';
+import { Avatar, resolveAvatarColor, splitAvatarIdentity } from '../avatar/avatar.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
-import type { AvatarGroupProps, AvatarGroupPerson } from './avatar-group.js';
-import type { AvatarGroupWindow } from './avatar-group-window.js';
-import { AvatarGroupOverflowMenu } from './avatar-group-overflow-menu.js';
+import type { AvatarGroupPerson, AvatarGroupProps } from './avatar-group.js';
 import { avatarGroupHooks as hooks } from './avatar-group-hooks.js';
+import { AvatarGroupOverflowMenu } from './avatar-group-overflow-menu.js';
+import type { AvatarGroupWindow } from './avatar-group-window.js';
 
 function AvatarGroupPersonView({
   person,

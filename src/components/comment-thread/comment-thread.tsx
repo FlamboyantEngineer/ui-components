@@ -1,23 +1,23 @@
 'use client';
 
-import { CheckGlyph, UndoGlyph } from '../../core/glyphs.js';
-import { isValidElement, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import type { AriaLabellingProps } from '../../core/events.js';
+import { isValidElement, type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
+import type { AriaLabellingProps } from '../../core/events.js';
+import { CheckGlyph, UndoGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { Focusable } from '../../primitives/index.js';
 import { flattenChildren } from '../../utils/flatten-children.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Badge } from '../badge/badge.js';
 import { Button } from '../button/button.js';
-import { Focusable } from '../../primitives/index.js';
-import { Tooltip } from '../tooltip/tooltip.js';
 import {
   CommentComposer,
   type CommentComposerProps,
 } from '../comment-composer/comment-composer.js';
 import { InlineError } from '../inline-error/inline-error.js';
+import { Tooltip } from '../tooltip/tooltip.js';
 import { CommentThreadContext } from './comment-thread-context.js';
 
 export interface CommentThreadProps

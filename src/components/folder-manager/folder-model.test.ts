@@ -4,14 +4,14 @@ import {
   collectBranchKeys,
   findFolderPath,
   folderDraftKey,
+  type FolderItem,
   folderRootKey,
+  fromFolderRowKey,
   getFolderHeight,
   listFolderDestinations,
   listSelectedFolders,
   listTopmostFolders,
-  fromFolderRowKey,
   toFolderRowKey,
-  type FolderItem,
 } from './folder-model.js';
 import { planFolderMoves } from './folder-moves.js';
 

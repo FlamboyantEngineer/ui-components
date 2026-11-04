@@ -1,11 +1,11 @@
 'use client';
 
-import { ErrorGlyph } from '../../core/glyphs.js';
-import { getToneGlyph } from '../../core/tone-glyphs.js';
 import type { ReactNode } from 'react';
+import { ErrorGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, NativeProps, Tone, RefProps } from '../../core/props.js';
+import type { BaseProps, NativeProps, RefProps, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { getToneGlyph } from '../../core/tone-glyphs.js';
 import { Button } from '../button/button.js';
 import { Icon } from '../icon/icon.js';
 

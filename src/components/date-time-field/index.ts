@@ -1,11 +1,11 @@
-export { DateTimeField } from './date-time-field.js';
 export type {
   DateRangeValue,
   DateTimeFieldCalendarHeading,
+  DateTimeFieldDateState,
   DateTimeFieldGranularity,
   DateTimeFieldMode,
   DateTimeFieldPreset,
   DateTimeFieldProps,
-  DateTimeFieldDateState,
   DateTimeFieldValue,
 } from './date-time-field.js';
+export { DateTimeField } from './date-time-field.js';

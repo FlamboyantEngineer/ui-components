@@ -1,5 +1,5 @@
-import type { ReactionEntry } from '../../src/components/reaction-bar/reaction-bar.js';
 import type { CustomEmoji } from '../../src/components/emoji-picker/index.js';
+import type { ReactionEntry } from '../../src/components/reaction-bar/reaction-bar.js';
 
 function badge(text: string, ground: string): string {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><circle cx="16" cy="16" r="15" fill="${ground}"/><text x="16" y="21" font-size="13" font-family="sans-serif" text-anchor="middle" fill="#fff">${text}</text></svg>`;

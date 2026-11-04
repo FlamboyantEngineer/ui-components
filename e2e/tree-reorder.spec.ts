@@ -1,5 +1,5 @@
-import { expect, test, matrixCell } from './fixtures.js';
 import type { Locator } from '@playwright/test';
+import { expect, matrixCell, test } from './fixtures.js';
 
 const order = (tree: Locator) =>
   tree

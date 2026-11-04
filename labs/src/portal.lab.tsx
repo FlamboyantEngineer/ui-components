@@ -1,10 +1,10 @@
-import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { type CSSProperties, type ReactNode, useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Menu, MenuPopover, MenuTrigger } from '../../src/components/menu/menu.js';
 import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
 import { isLayerAbove, overlayLayers } from '../../src/components/portal/index.js';
 import { Portal, PortalContainerProvider, PortalHost } from '../../src/components/portal/portal.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabHelperCalls } from './lab-helper-calls.js';
 import { PortalLayerSections } from './portal-layer-cases.js';
 

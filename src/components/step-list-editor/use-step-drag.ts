@@ -1,12 +1,12 @@
 'use client';
 
-import { useMemo, useRef, type HTMLAttributes, type RefObject } from 'react';
+import { type HTMLAttributes, type RefObject, useMemo, useRef } from 'react';
 import type { PressEvent } from '../../core/events.js';
-import { useItemDrag } from '../../utils/use-item-drag.js';
-import { useDragType } from '../../utils/use-drag-type.js';
 import { armElementDrag } from '../../utils/pointer-drag.js';
-import { resolveStepDrop, type StepListEditorStep, type StepMove } from './step-list.js';
+import { useDragType } from '../../utils/use-drag-type.js';
+import { useItemDrag } from '../../utils/use-item-drag.js';
 import { useLatest } from '../../utils/use-latest.js';
+import { resolveStepDrop, type StepListEditorStep, type StepMove } from './step-list.js';
 
 /** What every step's drag and drop shares: the editor's media type, the dragged step and the move. */
 export interface StepDrag {

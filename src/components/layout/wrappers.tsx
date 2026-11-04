@@ -1,6 +1,6 @@
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, ContainerProps } from '../../core/props.js';
-import { resolveContainment, type LayoutContainmentProps } from './layout.js';
+import { type LayoutContainmentProps, resolveContainment } from './layout.js';
 
 export type ContentsProps = ContainerProps<'div'> & BaseProps;
 

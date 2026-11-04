@@ -1,18 +1,18 @@
 'use client';
 
-import { ArrowDownGlyph, ArrowUpGlyph, ChevronDownGlyph, CloseGlyph } from '../../core/glyphs.js';
 import type { KeyboardEvent, RefObject } from 'react';
-import { Input } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
+import { ArrowDownGlyph, ArrowUpGlyph, ChevronDownGlyph, CloseGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
+import { Input } from '../../primitives/index.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
+import { isNode } from '../../utils/is-element.js';
 import { Button } from '../button/button.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import { SearchField } from '../search-field/search-field.js';
-import { isComposingKey } from '../../utils/is-composing-key.js';
-import { isNode } from '../../utils/is-element.js';
 
 /** A way of matching the reader can turn on or off, such as matching case or whole words. */
 export interface FindBarOption {

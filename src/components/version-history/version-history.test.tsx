@@ -2,9 +2,9 @@ import { act, fireEvent, render, screen, waitFor, within } from '@testing-librar
 import { userEvent } from '@testing-library/user-event';
 import { createRef } from 'react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import type { Key } from '../../core/props.js';
 import { UiProvider } from '../../core/provider.js';
-import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import {
   VersionHistory,

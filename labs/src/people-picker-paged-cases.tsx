@@ -1,13 +1,13 @@
 // People Picker case for a remote directory that answers in pages, fails on request and logs aborts.
 
 import { useState } from 'react';
-import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import {
   PeoplePicker,
   type PeoplePickerLoader,
   type PeoplePickerPerson,
 } from '../../src/components/people-picker/people-picker.js';
+import type { Key } from '../../src/core/props.js';
 import { LabSection } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 

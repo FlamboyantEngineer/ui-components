@@ -1,7 +1,8 @@
-import { summarizeNumbers } from '../../utils/summarize-numbers.js';
-import { walkTree } from '../../utils/walk-tree.js';
 import type { ReactNode } from 'react';
 import type { Key, SortDescriptor, SortDirection } from '../../core/props.js';
+import { toLocalDay } from '../../utils/local-day.js';
+import { summarizeNumbers } from '../../utils/summarize-numbers.js';
+import { walkTree } from '../../utils/walk-tree.js';
 import { getColumnText } from './table-columns.js';
 import {
   compareCellValues,
@@ -12,7 +13,6 @@ import {
   type TableRow,
 } from './table-rows.js';
 import type { TableNode } from './table-tree.js';
-import { toLocalDay } from '../../utils/local-day.js';
 
 /** A grouping by a computed value: its id, its name in group headers and each row's value. */
 export interface TableGrouping<T> {

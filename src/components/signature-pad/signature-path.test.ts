@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  type DrawnSignature,
   formatSignatureDataUrl,
   formatSignatureStroke,
   formatSignatureSvg,
-  type DrawnSignature,
 } from './signature-path.js';
 
 describe('signature paths', () => {

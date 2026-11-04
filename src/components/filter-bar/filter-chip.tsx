@@ -8,9 +8,9 @@ import { filterBarHooks as hooks } from './filter-bar-hooks.js';
 import { FilterConditionFields } from './filter-editor.js';
 import { joinFilterConditionText, useFilterConditionText } from './filter-format.js';
 import {
-  isFilterConditionComplete,
   type FilterCondition,
   type FilterField,
+  isFilterConditionComplete,
 } from './filter-model.js';
 
 interface FilterChipProps {

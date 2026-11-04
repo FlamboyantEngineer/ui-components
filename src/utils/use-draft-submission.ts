@@ -4,7 +4,7 @@
 // UIC-MESSAGE-COMPOSER-3.9; specs/COMMENT-COMPOSER.md, UIC-COMMENT-COMPOSER-1.3).
 
 import { useRef, useState } from 'react';
-import { useUiStorage, type PersistCodec } from '../core/provider.js';
+import { type PersistCodec, useUiStorage } from '../core/provider.js';
 import type { UiStorage } from '../core/storage.js';
 import { isThenable } from './is-thenable.js';
 import { useLatest } from './use-latest.js';

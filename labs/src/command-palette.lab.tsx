@@ -1,3 +1,17 @@
+import { type ReactNode, useEffect, useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
+import {
+  CommandPalette,
+  type CommandPaletteProps,
+} from '../../src/components/command-palette/command-palette.js';
+import { type MenuEntry, MenuItem, MenuSection } from '../../src/components/menu/menu.js';
+import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
+import { TextField } from '../../src/components/text-field/text-field.js';
+import {
+  splitMatchTerms,
+  TextMatch,
+  textMatchesTerms,
+} from '../../src/components/text-match/text-match.js';
 import {
   DeleteGlyph,
   ExpandGlyph,
@@ -8,23 +22,9 @@ import {
   SaveGlyph,
   SidebarGlyph,
 } from '../../src/core/glyphs.js';
-import { useEffect, useState, type ReactNode } from 'react';
 import type { Key } from '../../src/core/props.js';
-import { Button } from '../../src/components/button/button.js';
-import {
-  CommandPalette,
-  type CommandPaletteProps,
-} from '../../src/components/command-palette/command-palette.js';
-import { MenuItem, MenuSection, type MenuEntry } from '../../src/components/menu/menu.js';
-import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
-import { TextField } from '../../src/components/text-field/text-field.js';
-import {
-  TextMatch,
-  splitMatchTerms,
-  textMatchesTerms,
-} from '../../src/components/text-match/text-match.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { CommandPaletteMountCases } from './command-palette-mount-cases.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const sizes = ['sm', 'md', 'lg'] as const;
 const states = ['default', 'typed', 'no match', 'custom empty', 'loading'] as const;

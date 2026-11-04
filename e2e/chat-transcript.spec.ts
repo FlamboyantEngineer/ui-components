@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Chat Transcript lab: transcript behaviour', () => {
   const transcript = (page: Page, name: string) => page.locator(`[data-lab-transcript="${name}"]`);

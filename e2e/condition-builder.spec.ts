@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Condition Builder lab', () => {
   test('UIC-CONDITION-BUILDER-1.2 UIC-CONDITION-BUILDER-1.6 UIC-CONDITION-BUILDER-3.1 draws groups, rules and messages', async ({

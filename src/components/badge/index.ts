@@ -1,4 +1,3 @@
-export { Badge } from './badge.js';
 export type {
   BadgeCountProps,
   BadgeCountVariant,
@@ -9,3 +8,4 @@ export type {
   BadgeSize,
   BadgeVariant,
 } from './badge.js';
+export { Badge } from './badge.js';

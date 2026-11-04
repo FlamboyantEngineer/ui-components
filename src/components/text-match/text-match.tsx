@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useMemo, type ReactNode } from 'react';
+import { createContext, type ReactNode, useContext, useEffect, useMemo } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { findTermRanges, splitMatchTerms } from './match-ranges.js';

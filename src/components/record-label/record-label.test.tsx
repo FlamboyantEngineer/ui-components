@@ -1,7 +1,7 @@
-import { FolderGlyph } from '../../core/glyphs.js';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { FolderGlyph } from '../../core/glyphs.js';
 import { UiProvider } from '../../core/provider.js';
 import { RecordLabel } from './record-label.js';
 

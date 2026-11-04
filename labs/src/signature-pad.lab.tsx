@@ -1,30 +1,30 @@
-import { useState, type FormEvent } from 'react';
+import { type FormEvent, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Form } from '../../src/components/form/form.js';
-import {
-  SignaturePad,
-  type DrawnSignature,
-  type SignaturePadMenuIcons,
-  type SignaturePadMode,
-  type SignatureValue,
-} from '../../src/components/signature-pad/signature-pad.js';
-import { StarGlyph } from '../../src/core/glyphs.js';
 import {
   formatSignatureDataUrl,
   formatSignatureSvg,
 } from '../../src/components/signature-pad/index.js';
+import {
+  type DrawnSignature,
+  SignaturePad,
+  type SignaturePadMenuIcons,
+  type SignaturePadMode,
+  type SignatureValue,
+} from '../../src/components/signature-pad/signature-pad.js';
 import { SvgMarkup } from '../../src/components/svg-markup/svg-markup.js';
-import { SignaturePadLimitCases } from './signature-pad-limit-cases.js';
-import { imageSignature } from './signature-samples.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-import { LabOutput } from './lab-output.js';
+import { StarGlyph } from '../../src/core/glyphs.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import {
   fieldLayouts,
-  fieldStates,
-  useLabFieldState,
   type FieldStateName,
+  fieldStates,
   type SampleValues,
+  useLabFieldState,
 } from './field-states.js';
+import { LabOutput } from './lab-output.js';
+import { SignaturePadLimitCases } from './signature-pad-limit-cases.js';
+import { imageSignature } from './signature-samples.js';
 
 const loop = 'M40 140 Q70 40 100 120 Q130 190 160 100 Q190 30 220 110 Q250 170 290 90 L330 120';
 const tail = 'M360 150 Q400 60 440 130 Q470 180 520 70';

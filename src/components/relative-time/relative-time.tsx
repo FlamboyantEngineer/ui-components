@@ -1,10 +1,11 @@
 'use client';
 
 import type { Ref } from 'react';
-import { useLocale } from '../../primitives/index.js';
 import { useGetNow, useIsClockReadable, useTimeZone } from '../../core/clock.js';
+import { useClockTick } from '../../core/clock-tick.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
+import { useLocale } from '../../primitives/index.js';
 import {
   capitalizeText,
   describeRelativeTime,
@@ -13,7 +14,6 @@ import {
   type RelativeTimeStyle,
   type RelativeTimeUnitStyle,
 } from '../../utils/relative-time.js';
-import { useClockTick } from '../../core/clock-tick.js';
 import { TimeWithTooltip } from './relative-time-tooltip.js';
 
 export type {

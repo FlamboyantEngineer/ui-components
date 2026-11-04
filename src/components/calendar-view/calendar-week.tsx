@@ -1,17 +1,17 @@
 'use client';
 
-import { useLocale } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useLocale } from '../../primitives/index.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
-import { CalendarDayCell, findDayEvents, type CalendarDayContext } from './calendar-day.js';
+import { CalendarDayCell, type CalendarDayContext, findDayEvents } from './calendar-day.js';
+import { getWeekDays } from './calendar-days.js';
 import {
   CalendarEventButton,
+  type CalendarEventContext,
   CalendarEventLanes,
   toEventKey,
-  type CalendarEventContext,
 } from './calendar-event.js';
 import { layoutDay, layoutWeek, type PlacedEvent, type WeekSegment } from './calendar-layout.js';
-import { getWeekDays } from './calendar-days.js';
 import { calendarViewHooks as hooks } from './calendar-view-hooks.js';
 import type { CalendarGrid } from './use-calendar-grid.js';
 

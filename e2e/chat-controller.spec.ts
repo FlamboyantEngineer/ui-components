@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 const demo = (page: Page) => page.locator('[data-lab-demo="controller"]');
 const transcript = (page: Page) => page.getByRole('feed', { name: 'Conversation with the helper' });

@@ -5,13 +5,13 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { requireDefined } from '../../utils/require-defined.js';
 import { TextField, type TextFieldType } from '../text-field/text-field.js';
 import {
+  type Completion,
+  type CompletionsModel,
+  type CompletionSource,
   ControlCompletionList,
   matchCompletions,
   scoreCompletion,
   useTextCompletions,
-  type Completion,
-  type CompletionSource,
-  type CompletionsModel,
 } from './completion-list.js';
 
 const fruit: Completion[] = [

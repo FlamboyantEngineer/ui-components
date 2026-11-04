@@ -4,7 +4,6 @@
 // their captions (detailed), drawn per value type.
 
 import type { ReactNode } from 'react';
-import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import {
@@ -12,6 +11,7 @@ import {
   InlineTextDiff,
   type InlineTextDiffSegment,
 } from '../inline-text-diff/inline-text-diff.js';
+import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { compareLists, isBlankValue, type ListItemChange } from './list-changes.js';
 
 /** How a change's values are compared and drawn. */

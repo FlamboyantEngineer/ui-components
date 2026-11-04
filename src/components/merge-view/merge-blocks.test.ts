@@ -2,11 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { requireDefined } from '../../utils/require-defined.js';
 import { mergeThreeWay } from '../../utils/three-way-merge.js';
 import {
+  type ConflictState,
   createMergeBlocks,
   createMergeText,
   getCleanLines,
   getConflictText,
-  type ConflictState,
 } from './merge-blocks.js';
 
 const base = ['flour', 'sugar', 'eggs', 'milk', 'salt'].join('\n');

@@ -1,4 +1,3 @@
-export { ChangeList } from './change-list.js';
 export type {
   ChangeListChange,
   ChangeListProps,
@@ -7,3 +6,4 @@ export type {
   ChangeListValueType,
   ChangeListVariant,
 } from './change-list.js';
+export { ChangeList } from './change-list.js';

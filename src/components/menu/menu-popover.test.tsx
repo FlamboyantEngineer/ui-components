@@ -1,8 +1,8 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { MenuButton, actionKeys, fruitEntries, openMenu } from '../../../test/menu-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { actionKeys, fruitEntries, MenuButton, openMenu } from '../../../test/menu-fixtures.js';
 import { UiProvider } from '../../core/provider.js';
 import { PortalContainerProvider } from '../portal/portal.js';
 import { Menu, MenuItem, MenuPopover, SubmenuTrigger } from './menu.js';

@@ -1,7 +1,7 @@
-import { useRef, useState, type DragEvent } from 'react';
+import { type DragEvent, useRef, useState } from 'react';
 import {
-  DragHandle,
   armHandleDrag,
+  DragHandle,
   keepHandleCellDraggable,
 } from '../../src/components/drag-handle/index.js';
 import { TextField } from '../../src/components/text-field/text-field.js';

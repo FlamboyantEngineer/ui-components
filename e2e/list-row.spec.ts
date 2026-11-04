@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 import { expectRowMenuReturnsFocus } from './row-menu.js';
 
 test.describe('List Row lab', () => {

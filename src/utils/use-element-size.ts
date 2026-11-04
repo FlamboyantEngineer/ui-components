@@ -1,8 +1,8 @@
 'use client';
 
-import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
-import { useResizeObserver } from './use-resize-observer.js';
+import { type RefObject, useLayoutEffect, useRef, useState } from 'react';
 import { isShallowEqual } from './is-shallow-equal.js';
+import { useResizeObserver } from './use-resize-observer.js';
 import { useTargetElement } from './use-target-element.js';
 
 /**

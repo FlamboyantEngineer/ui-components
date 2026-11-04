@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, type RefObject } from 'react';
+import { type RefObject, useEffect } from 'react';
+import { useLatest } from '../../utils/use-latest.js';
 import type { PdfEngine } from './pdf-engine.js';
 import { resolveZoomPercent } from './pdf-zoom.js';
-import { useLatest } from '../../utils/use-latest.js';
 import type { PdfZoomState } from './use-pdf-zoom.js';
 
 interface UsePinchZoomOptions {

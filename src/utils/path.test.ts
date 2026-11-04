@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PATH_SEPARATOR, formatFolderPath, formatPath, type PathFolder } from './path.js';
+import { formatFolderPath, formatPath, PATH_SEPARATOR, type PathFolder } from './path.js';
 
 describe('formatPath', () => {
   it('UIC-PATH-1.1 joins trimmed nonblank labels with one separator, keeping array entries whole', () => {

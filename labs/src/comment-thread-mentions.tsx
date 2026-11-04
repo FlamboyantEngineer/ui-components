@@ -3,9 +3,9 @@ import { ChatParts } from '../../src/components/chat-parts/index.js';
 import { CommentThread, CommentThreadReply } from '../../src/components/comment-thread/index.js';
 import { MessageComposerEmojiButton } from '../../src/components/message-composer/index.js';
 import {
-  RichMessageComposer,
   type MessageComposerMention,
   type MessageComposerMessage,
+  RichMessageComposer,
 } from '../../src/components/message-composer/rich/index.js';
 import { ReactionBar, type ReactionEntry } from '../../src/components/reaction-bar/reaction-bar.js';
 import { samplePicture } from './people-samples.js';

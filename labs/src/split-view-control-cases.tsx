@@ -1,4 +1,4 @@
-import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { type CSSProperties, type ReactNode, useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { ResizeHandle } from '../../src/components/split-view/index.js';

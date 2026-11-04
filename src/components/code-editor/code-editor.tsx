@@ -1,10 +1,10 @@
 'use client';
 
-import { CodeField } from './code-field.js';
-import { CodeSurface, type CodeSurfaceProps, type CodeEditorSize } from './code-surface.js';
 import type { FieldInputProps } from '../field/field.js';
+import { CodeField } from './code-field.js';
+import { type CodeLanguage, type CodeSyntax, resolveCodeTokenizer } from './code-languages.js';
+import { type CodeEditorSize, CodeSurface, type CodeSurfaceProps } from './code-surface.js';
 import type { JsonSchema } from './json-schema.js';
-import { resolveCodeTokenizer, type CodeLanguage, type CodeSyntax } from './code-languages.js';
 
 interface CodeLanguageOptions {
   /** Basic syntax preset. Defaults to plain `text`. */
@@ -43,7 +43,7 @@ export function CodeEditor(props: CodeEditorProps) {
   );
 }
 
-export type { CodeEditorResize, CodeEditorSize, CodeEditorWrap } from './code-surface.js';
-export type { CodeDiagnostic, CodeToken, CodeTokenizer } from './code-layers.js';
 export type { CodeLanguage, CodeSyntax, CodeSyntaxRule } from './code-languages.js';
+export type { CodeDiagnostic, CodeToken, CodeTokenizer } from './code-layers.js';
+export type { CodeEditorResize, CodeEditorSize, CodeEditorWrap } from './code-surface.js';
 export type { JsonSchema, JsonSchemaType } from './json-schema.js';

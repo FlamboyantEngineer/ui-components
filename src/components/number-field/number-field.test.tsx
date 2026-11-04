@@ -2,11 +2,11 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { chooseFieldMenuItem } from '../../../test/field-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { NumberField, type NumberFieldProps } from './number-field.js';
-import { chooseFieldMenuItem } from '../../../test/field-fixtures.js';
 
 function root(container: HTMLElement) {
   return container.querySelector<HTMLElement>('.ui-field');

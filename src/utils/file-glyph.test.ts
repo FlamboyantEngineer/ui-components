@@ -1,5 +1,5 @@
-import { AudioGlyph, FileGlyph, ImageGlyph, VideoGlyph } from '../core/glyphs.js';
 import { describe, expect, it } from 'vitest';
+import { AudioGlyph, FileGlyph, ImageGlyph, VideoGlyph } from '../core/glyphs.js';
 import { getFileGlyph } from './file-glyph.js';
 
 describe('getFileGlyph', () => {

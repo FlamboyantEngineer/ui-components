@@ -1,14 +1,14 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { render, screen } from '@testing-library/react';
+import { act } from 'react';
 import { hydrateRoot } from 'react-dom/client';
 import { renderToStaticMarkup, renderToString } from 'react-dom/server';
-import { act } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Icon } from '../icon/icon.js';
 import { parseSvgMarkup } from './parse-svg-markup.js';
-import { SvgMarkup, renderSvgDrawing } from './svg-markup.js';
+import { renderSvgDrawing, SvgMarkup } from './svg-markup.js';
 
 const outlineMarkup =
   '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="source" width="24" height="24" style="color: red" id="source" role="presentation" focusable="true" tabindex="0">' +

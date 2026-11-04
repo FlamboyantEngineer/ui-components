@@ -1,36 +1,36 @@
 'use client';
 
 import {
+  type ChangeEvent,
+  type KeyboardEvent,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
-  type ChangeEvent,
-  type KeyboardEvent,
 } from 'react';
-import { Group, Input, useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
+import { Group, Input, useLocale } from '../../primitives/index.js';
 import { clamp } from '../../utils/clamp.js';
 import { containsFocus } from '../../utils/focus-target.js';
 import { isComposingInput, isComposingKey } from '../../utils/is-composing-key.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { createSlotRegistry, type SlotRegistry } from '../../utils/slot-registry.js';
 import {
-  FieldFormValue,
-  toAriaControlProps,
   type FieldControlProps,
   type FieldEnterKeyHint,
+  FieldFormValue,
   type FieldState,
+  toAriaControlProps,
 } from '../field/field.js';
 import {
   filterPinCharacters,
   findActivePinCell,
   isPinCodeComplete,
-  readEnteredText,
-  writePinCharacters,
   type PinInputEdit,
   type PinInputType,
+  readEnteredText,
+  writePinCharacters,
 } from './pin-value.js';
 
 /** A code's length and the characters its cells take. */

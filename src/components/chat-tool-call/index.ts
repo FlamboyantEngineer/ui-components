@@ -1,4 +1,3 @@
-export { ChatToolCall } from './chat-tool-call.js';
 export type {
   ChatToolCallApproval,
   ChatToolCallData,
@@ -8,3 +7,4 @@ export type {
   ChatToolCallStatus,
   ChatToolCallVariant,
 } from './chat-tool-call.js';
+export { ChatToolCall } from './chat-tool-call.js';

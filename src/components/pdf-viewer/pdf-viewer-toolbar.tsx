@@ -1,28 +1,28 @@
 'use client';
 
+import type { KeyboardEvent, ReactNode, RefObject } from 'react';
 import {
   ChevronDownGlyph,
   ChevronUpGlyph,
   FitPageGlyph,
   FitWidthGlyph,
+  type GlyphComponent,
   MoreVerticalGlyph,
   SidebarGlyph,
-  type GlyphComponent,
 } from '../../core/glyphs.js';
-import type { KeyboardEvent, ReactNode, RefObject } from 'react';
-import { Input, Label, NumberField, useLocale } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
-import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
+import { Input, Label, NumberField, useLocale } from '../../primitives/index.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Button } from '../button/button.js';
+import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import { ToolbarScroller } from '../toolbar-scroller/toolbar-scroller.js';
 import { ZoomControl } from '../zoom-control/zoom-control.js';
-import { pdfViewerHooks as hooks } from './styling-hooks.js';
-import { pdfZoomLevels } from './pdf-zoom.js';
 import { PdfViewerSearch } from './pdf-viewer-search.js';
+import { pdfZoomLevels } from './pdf-zoom.js';
+import { pdfViewerHooks as hooks } from './styling-hooks.js';
 import type { PdfSearchControls, PdfSearchState } from './use-pdf-search.js';
 import type { PdfZoomState } from './use-pdf-zoom.js';
-import { isEmptyNode } from '../../utils/is-empty-node.js';
-import { isComposingKey } from '../../utils/is-composing-key.js';
 
 /** The document commands of the toolbar's menu. */
 export interface PdfCommands {

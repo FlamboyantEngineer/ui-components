@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState, type RefObject } from 'react';
+import { type RefObject, useEffect, useState } from 'react';
 import { observeViewport } from '../../utils/observe-viewport.js';
 import { getElementByIdFrom } from '../../utils/owner-window.js';
+import { measureScale } from '../../utils/scroll-geometry.js';
 import { useStableArray } from '../../utils/use-stable-array.js';
 import { useTargetElement } from '../../utils/use-target-element.js';
-import { measureScale } from '../../utils/scroll-geometry.js';
 
 export interface ScrollSpyOptions {
   /** The ids of the sections to follow, in document order. */

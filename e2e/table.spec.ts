@@ -1,5 +1,5 @@
-import { toCollectionKey } from '../src/utils/to-collection-key.js';
 import type { Locator, Page } from '@playwright/test';
+import { toCollectionKey } from '../src/utils/to-collection-key.js';
 import { expect, test } from './fixtures.js';
 
 const section = (page: Page, name: string) => page.locator(`[data-lab="${name}"]`);

@@ -1,11 +1,11 @@
+import { useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
+import { ProgressBar, Spinner } from '../../src/components/progress-bar/progress-bar.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { ProgressMeterCases } from './progress-meter-cases.js';
 import { ProgressRangeCases } from './progress-range-cases.js';
 import { ProgressRingCases } from './progress-ring-cases.js';
 import { ProgressSegmentCases } from './progress-segment-cases.js';
-import { useState } from 'react';
-import { Button } from '../../src/components/button/button.js';
-import { ProgressBar, Spinner } from '../../src/components/progress-bar/progress-bar.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const sizes = ['sm', 'md', 'lg'] as const;
 const states = ['empty', 'partial', 'complete', 'indeterminate'] as const;

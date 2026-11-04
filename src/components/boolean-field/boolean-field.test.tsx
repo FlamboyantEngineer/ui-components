@@ -1,10 +1,10 @@
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { chooseFieldMenuItem } from '../../../test/field-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Form } from '../form/form.js';
 import { BooleanField, type BooleanFieldVariant } from './boolean-field.js';
-import { chooseFieldMenuItem } from '../../../test/field-fixtures.js';
 
 function root(container: HTMLElement) {
   return container.querySelector<HTMLElement>('.ui-field');

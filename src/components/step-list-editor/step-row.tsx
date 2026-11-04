@@ -1,20 +1,19 @@
 'use client';
 
-import { isEditableTarget } from '../../utils/is-editable-target.js';
-import { DragHandleGlyph } from '../../core/glyphs.js';
 // One step of a step list editor: its drag handle, number, text fields and menu.
-
 import type { KeyboardEvent } from 'react';
+import { DragHandleGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { isMoveChord } from '../../utils/use-reorder-drag-and-drop.js';
-import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
-import { Button } from '../button/button.js';
-import { TextField } from '../text-field/text-field.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
+import { isEditableTarget } from '../../utils/is-editable-target.js';
+import { isMoveChord } from '../../utils/use-reorder-drag-and-drop.js';
+import { Button } from '../button/button.js';
+import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
+import { TextField } from '../text-field/text-field.js';
 import { isStepDirty, readStepValue, type StepListEditorStep } from './step-list.js';
-import { useStepRowDrag, type StepDrag } from './use-step-drag.js';
+import { type StepDrag, useStepRowDrag } from './use-step-drag.js';
 
 /** A text column every step fills. */
 export interface StepListEditorColumn {

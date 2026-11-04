@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { Form } from '../form/form.js';
-import { SignaturePad, type ImageSignature } from './signature-pad.js';
+import { type ImageSignature, SignaturePad } from './signature-pad.js';
 
 const image: ImageSignature = {
   kind: 'image',

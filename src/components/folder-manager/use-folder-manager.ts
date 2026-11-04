@@ -1,37 +1,37 @@
 'use client';
 
-import { containsFocus, isFocusLost } from '../../utils/focus-target.js';
-import { useCallback, useId, useMemo, useRef, useState, type RefObject } from 'react';
+import { type RefObject, useCallback, useId, useMemo, useRef, useState } from 'react';
 import type { Key } from '../../core/props.js';
+import { containsFocus, isFocusLost } from '../../utils/focus-target.js';
 import { getOwnerDocument } from '../../utils/owner-window.js';
 import type { TreeMove } from '../../utils/tree-reorder.js';
 import { splitMatchTerms } from '../text-match/text-match.js';
-import { useTreeLoads, type TreeLoads } from '../tree/tree.js';
+import { type TreeLoads, useTreeLoads } from '../tree/tree.js';
 import {
   buildFolderNodes,
   collectBranchKeys,
   findFolderPath,
   folderDraftKey,
+  type FolderItem,
+  type FolderNode,
   folderRootKey,
   listSelectedFolders,
   listTopmostFolders,
   toFolderRowKey,
-  type FolderItem,
-  type FolderNode,
 } from './folder-model.js';
 import { planFolderMoves } from './folder-moves.js';
 import {
-  useFolderActions,
   type FolderActions,
   type FolderCallbacks,
+  useFolderActions,
 } from './use-folder-actions.js';
 import {
-  useFolderExpansion,
-  useFolderSelection,
-  useRowFocus,
   type FolderExpansion,
   type FolderSelectionMode,
   type FolderSelectionOptions,
+  useFolderExpansion,
+  useFolderSelection,
+  useRowFocus,
 } from './use-folder-tree.js';
 
 export interface FolderManagerOptions<

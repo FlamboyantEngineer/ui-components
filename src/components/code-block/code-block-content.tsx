@@ -3,7 +3,7 @@
 // The preformatted content of a code block: highlighted tokens, or terminal lines whose commands
 // follow a prompt, each line numbered on request (specs/CODE-BLOCK.md).
 
-import { useMemo, type ReactNode } from 'react';
+import { type ReactNode, useMemo } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { CodeToken, CodeTokenizer } from '../code-editor/code-editor.js';
 import { TextMatch } from '../text-match/text-match.js';

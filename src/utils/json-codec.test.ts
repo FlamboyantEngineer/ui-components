@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { isKey } from './is-key.js';
 import {
   booleanCodec,
   createJsonCodec,
@@ -6,7 +7,6 @@ import {
   keyListCodec,
   numberCodec,
 } from './json-codec.js';
-import { isKey } from './is-key.js';
 
 describe('createJsonCodec', () => {
   const codec = createJsonCodec((value) => {

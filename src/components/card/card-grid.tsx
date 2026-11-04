@@ -2,7 +2,11 @@
 
 // Card collections: React Aria's grid list in its grid layout, one item per card.
 
-import { useMemo, type ReactElement, type ReactNode } from 'react';
+import { type ReactElement, type ReactNode, useMemo } from 'react';
+import type { AriaLabellingProps, CollectionSelectionProps } from '../../core/events.js';
+import { createHooks } from '../../core/hooks.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
+import { useUiStrings } from '../../core/provider.js';
 import {
   Collection,
   GridLayout,
@@ -13,17 +17,13 @@ import {
   Virtualizer,
   WaterfallLayout,
 } from '../../primitives/index.js';
-import type { AriaLabellingProps, CollectionSelectionProps } from '../../core/events.js';
-import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key, RefProps } from '../../core/props.js';
-import { useUiStrings } from '../../core/provider.js';
-import { Checkbox } from '../checkbox/checkbox.js';
-import { EmptyState } from '../empty-state/empty-state.js';
+import { keepControlFocusReturn } from '../../utils/keep-control-focus-return.js';
+import { renderTextKeyRow } from '../../utils/text-control-keys.js';
 import { useCarriedFocus } from '../../utils/use-carried-focus.js';
 import { useHeldSelection } from '../../utils/use-held-selection.js';
-import { keepControlFocusReturn } from '../../utils/keep-control-focus-return.js';
 import { useMergedRefs } from '../../utils/use-merged-refs.js';
-import { renderTextKeyRow } from '../../utils/text-control-keys.js';
+import { Checkbox } from '../checkbox/checkbox.js';
+import { EmptyState } from '../empty-state/empty-state.js';
 import { CardSelectionContext, useCardSelectionSlot } from './card-selection.js';
 
 /** `grid` lines cards up in rows and columns; `waterfall` stacks cards of different heights in columns. */

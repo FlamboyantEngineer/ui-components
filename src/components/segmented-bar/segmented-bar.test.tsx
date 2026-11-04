@@ -1,9 +1,9 @@
 import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, expectTypeOf, it } from 'vitest';
+import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import type { Size } from '../../core/props.js';
 import { UiProvider } from '../../core/provider.js';
-import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { SegmentedBar, type SegmentedBarSegment, type SegmentedBarSize } from './segmented-bar.js';
 
 const results: SegmentedBarSegment[] = [

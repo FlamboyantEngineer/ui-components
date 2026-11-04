@@ -1,5 +1,5 @@
-import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Shortcut lab', () => {
   test('UIC-SHORTCUT-1.2 UIC-SHORTCUT-2.1 draws each notation as keycaps on one line', async ({

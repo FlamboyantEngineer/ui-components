@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { Key } from '../../core/props.js';
 import { stubTextLayout } from '../../../test/overflow-fixtures.js';
+import type { Key } from '../../core/props.js';
 import { OverflowList } from './overflow-list.js';
 
 interface Fruit {

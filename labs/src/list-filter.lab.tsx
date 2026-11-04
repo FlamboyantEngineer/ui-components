@@ -1,6 +1,6 @@
-import { UiProvider } from '../../src/core/provider.js';
 import { ListFilter } from '../../src/components/list-filter/list-filter.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { UiProvider } from '../../src/core/provider.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { FilterDockExample, ListFilterExample } from './list-filter-examples.js';
 
 const sizes = ['xs', 'sm', 'md', 'lg'] as const;

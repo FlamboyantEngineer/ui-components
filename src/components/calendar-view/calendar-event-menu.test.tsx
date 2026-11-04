@@ -2,9 +2,9 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { readMenuIcons } from '../../../test/menu-fixtures.js';
 import { CopyGlyph, EditGlyph } from '../../core/glyphs.js';
 import { UiProvider } from '../../core/provider.js';
-import { readMenuIcons } from '../../../test/menu-fixtures.js';
 import type { CalendarEventMenuEntry } from './calendar-event-menu.js';
 import { CalendarView, type CalendarViewEvent, type CalendarViewProps } from './calendar-view.js';
 

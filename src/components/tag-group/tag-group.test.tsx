@@ -1,14 +1,14 @@
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
-import type { Key, Selection } from '../../core/props.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import type { Key, Selection } from '../../core/props.js';
+import { UiProvider } from '../../core/provider.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
-import { UiProvider } from '../../core/provider.js';
-import { UserIdentity } from '../user-identity/user-identity.js';
 import { Button } from '../button/button.js';
+import { UserIdentity } from '../user-identity/user-identity.js';
 import { Tag, TagGroup, type TagProps } from './tag-group.js';
 
 interface Fruit {

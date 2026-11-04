@@ -6,13 +6,13 @@ import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { TextMatch } from '../text-match/text-match.js';
 import {
   Menu,
+  type MenuEntry,
   MenuItem,
+  MenuPopover,
+  type MenuProps,
   MenuSection,
   MenuSeparator,
   SubmenuTrigger,
-  MenuPopover,
-  type MenuEntry,
-  type MenuProps,
 } from './menu.js';
 
 /** The menu's parts, keyed by their `id`: its `children`, or the parts drawn from its data entries. */

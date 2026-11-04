@@ -2,9 +2,9 @@
 // with units.
 
 import type { UiStrings } from '../../core/strings.js';
+import { formatRadixNumber, type NumberFieldRadix, parseRadixNumber } from './radix-number.js';
 import type { NumberTextCodec } from './text-number-control.js';
-import { formatRadixNumber, parseRadixNumber, type NumberFieldRadix } from './radix-number.js';
-import { listUnits, parseQuantity, type NumberFieldUnits } from './unit-number.js';
+import { listUnits, type NumberFieldUnits, parseQuantity } from './unit-number.js';
 
 /** A nondecimal base: prefixed integers (`0x1f`), and text that is none put back. */
 export function createRadixCodec(radix: NumberFieldRadix): NumberTextCodec {

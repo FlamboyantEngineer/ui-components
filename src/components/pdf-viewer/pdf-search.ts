@@ -1,5 +1,5 @@
-import { isTextItem, type PdfTextContent } from './pdf-engine.js';
 import { escapeRegExp } from '../../utils/escape-regexp.js';
+import { isTextItem, type PdfTextContent } from './pdf-engine.js';
 
 /** A page's searchable text: its runs joined, with a line break after each run that ends a line. */
 export interface PdfPageText {

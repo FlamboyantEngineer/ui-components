@@ -1,11 +1,13 @@
 'use client';
 
+import { type ReactNode, type Ref, useId, useMemo } from 'react';
 import {
   ClockGlyph,
   EditGlyph,
   ErrorGlyph,
   FileTextGlyph,
   GlobeGlyph,
+  type GlyphComponent,
   HandRaisedGlyph,
   NoSymbolGlyph,
   RefreshGlyph,
@@ -14,16 +16,14 @@ import {
   TerminalGlyph,
   WrenchGlyph,
   XCircleGlyph,
-  type GlyphComponent,
 } from '../../core/glyphs.js';
-import { useId, useMemo, type ReactNode, type Ref } from 'react';
-import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Badge } from '../badge/badge.js';
-import { DisclosureTitle } from '../disclosure/disclosure.js';
 import { CopyButton } from '../copy-button/copy-button.js';
+import { DisclosureTitle } from '../disclosure/disclosure.js';
 import { ScrollRegion } from '../scroll-region/scroll-region.js';
+import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { formatToolValue } from './format-tool-call.js';
 import { toolCallHooks as hooks } from './tool-call-hooks.js';
 

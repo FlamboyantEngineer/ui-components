@@ -1,10 +1,10 @@
-import { useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react';
+import { type CSSProperties, type KeyboardEvent, type ReactNode, useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import { FindBar, type FindBarProps } from '../../src/components/find-bar/find-bar.js';
 import type { Key } from '../../src/core/props.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { FindBarReplacementCases } from './find-bar-replacement-cases.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const states = ['empty', 'matches', 'no-results', 'searching'] as const;
 const layouts = ['find', 'replace', 'options'] as const;

@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useLayoutEffect, useMemo, useRef, type ReactNode } from 'react';
+import { createContext, type ReactNode, useContext, useLayoutEffect, useMemo, useRef } from 'react';
 import { containsComposed, getComposedActiveElement } from '../utils/composed-focus.js';
 import { useLatest } from '../utils/use-latest.js';
 

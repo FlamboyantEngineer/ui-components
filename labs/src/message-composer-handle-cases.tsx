@@ -5,9 +5,9 @@ import { useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { MessageComposer } from '../../src/components/message-composer/message-composer.js';
 import {
-  RichMessageComposer,
   type MessageComposerHandle,
   type MessageComposerMessage,
+  RichMessageComposer,
 } from '../../src/components/message-composer/rich/index.js';
 import { NumberField } from '../../src/components/number-field/number-field.js';
 import { LabSection } from './chrome/index.js';

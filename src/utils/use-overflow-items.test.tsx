@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { useOverflowItems, type OverflowCollapseFrom } from './use-overflow-items.js';
 import { stubTextLayout } from '../../test/overflow-fixtures.js';
+import { type OverflowCollapseFrom, useOverflowItems } from './use-overflow-items.js';
 
 interface RowProps {
   room: number;

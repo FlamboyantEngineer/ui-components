@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { type ReactNode, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { createRoot, type Root } from 'react-dom/client';
 import { enableShadowRoots } from '../../src/components/portal/index.js';

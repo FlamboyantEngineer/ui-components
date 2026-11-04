@@ -1,28 +1,28 @@
 'use client';
 
-import { useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { type ReactNode, useId, useLayoutEffect, useRef, useState } from 'react';
 import {
-  Button as AriaButton,
-  useDisclosure,
-  useFocusRing,
-  type DisclosureState,
-} from '../../primitives/index.js';
+  type HeadingLevel,
+  HeadingLevelContext,
+  useHeadingLevel,
+} from '../../core/heading-level.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
+import {
+  Button as AriaButton,
+  type DisclosureState,
+  useDisclosure,
+  useFocusRing,
+} from '../../primitives/index.js';
 import { containsFocus } from '../../utils/focus-target.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { mergeProps } from '../../utils/merge-props.js';
 import { useExpandGlyph } from '../expand-toggle/expand-toggle.js';
-import { Stack, type LayoutContainmentProps, type LayoutSpace } from '../layout/layout.js';
-import {
-  HeadingLevelContext,
-  useHeadingLevel,
-  type HeadingLevel,
-} from '../../core/heading-level.js';
+import { type LayoutContainmentProps, type LayoutSpace, Stack } from '../layout/layout.js';
 
-export { HeadingLevelContext, useHeadingLevel } from '../../core/heading-level.js';
 export type { HeadingLevel } from '../../core/heading-level.js';
+export { HeadingLevelContext, useHeadingLevel } from '../../core/heading-level.js';
 
 export interface SectionHeaderProps extends RefProps<HTMLElement>, BaseProps {
   /** The heading text. */

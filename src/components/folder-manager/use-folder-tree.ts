@@ -1,12 +1,12 @@
 'use client';
 
-import { containsFocus, isFocusLost } from '../../utils/focus-target.js';
-import { useEffect, useState, type RefObject } from 'react';
+import { type RefObject, useEffect, useState } from 'react';
 import type { Key } from '../../core/props.js';
-import { toCollectionKey } from '../../utils/to-collection-key.js';
+import { containsFocus, isFocusLost } from '../../utils/focus-target.js';
 import { isNode } from '../../utils/is-element.js';
+import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { walkTree } from '../../utils/walk-tree.js';
-import { fromFolderRowKey, type FolderItem, type FolderNode } from './folder-model.js';
+import { type FolderItem, type FolderNode, fromFolderRowKey } from './folder-model.js';
 
 /** `single` selects one folder; `multiple` lets the reader select several. */
 export type FolderSelectionMode = 'single' | 'multiple';

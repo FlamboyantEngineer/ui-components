@@ -3,8 +3,8 @@
 import type { ReactNode } from 'react';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
-import type { CalendarViewDay } from './calendar-view.js';
 import type { PlacedEvent } from './calendar-layout.js';
+import type { CalendarViewDay } from './calendar-view.js';
 import { calendarViewHooks as hooks } from './calendar-view-hooks.js';
 import type { CalendarFormat } from './use-calendar-format.js';
 

@@ -3,8 +3,8 @@
 // The engine state behind the editor: created from a document, replaced when the value changes.
 
 import { reactKeys } from '@handlewithcare/react-prosemirror';
-import type { Node, Schema } from 'prosemirror-model';
 import { closeHistory } from 'prosemirror-history';
+import type { Node, Schema } from 'prosemirror-model';
 import { EditorState, type Plugin } from 'prosemirror-state';
 import { Decoration, DecorationSet } from 'prosemirror-view';
 import {

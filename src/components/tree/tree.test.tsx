@@ -1,10 +1,10 @@
-import { MinusGlyph, MoreGlyph, PlusGlyph } from '../../core/glyphs.js';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { expectRowMenuReturnsFocus, RowMenuButton } from '../../../test/menu-fixtures.js';
+import { MinusGlyph, MoreGlyph, PlusGlyph } from '../../core/glyphs.js';
 import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage } from '../../core/storage.js';
 import { Button } from '../button/button.js';

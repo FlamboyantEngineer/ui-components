@@ -1,22 +1,22 @@
-import { StarGlyph } from '../../src/core/glyphs.js';
 import { useMemo, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Form } from '../../src/components/form/form.js';
 import {
   BlockHandle,
+  createRichTextSchema,
   FormatToolbar,
   InsertMenu,
   InsertMenuButton,
+  type InsertMenuItem,
+  type RichTextBlockMarker,
+  type RichTextDocument,
   RichTextEditor,
   SelectionToolbar,
-  createRichTextSchema,
   serializeRichTextHtml,
   serializeRichTextText,
   useRichTextController,
-  type RichTextBlockMarker,
-  type InsertMenuItem,
-  type RichTextDocument,
 } from '../../src/components/rich-text-editor/index.js';
+import { StarGlyph } from '../../src/core/glyphs.js';
 
 const text = (value: string, marks?: RichTextDocument['marks']) => ({
   type: 'text',

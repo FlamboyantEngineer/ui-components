@@ -2,13 +2,13 @@
 // zone, shifts by days, weeks and months, the days of a week or a month, and keyboard moves.
 
 import {
+  type CalendarDate,
   fromDate,
   parseIsoDate,
   startOfWeek,
   toCalendarDate,
   toCalendarDateTime,
   toZoned,
-  type CalendarDate,
 } from '../../primitives/index.js';
 import type { CalendarViewMode } from './calendar-view.js';
 

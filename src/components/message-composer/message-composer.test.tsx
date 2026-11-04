@@ -1,7 +1,7 @@
-import { fireEvent, render, screen, type RenderResult } from '@testing-library/react';
-import { userEvent } from '@testing-library/user-event';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { fireEvent, render, type RenderResult, screen } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
 import { createRef, useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -12,9 +12,9 @@ import {
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { collectPackages } from '../../../test/module-imports.js';
 import {
-  createTriggerCompletions,
   type Completion,
   type Completions,
+  createTriggerCompletions,
 } from '../completion-list/completion-list.js';
 import { MessageComposerAttachButton, MessageComposerEmojiButton } from './composer-tools.js';
 import { MessageComposer, type MessageComposerProps } from './message-composer.js';

@@ -1,4 +1,3 @@
-export { Chat, ChatHeader } from './chat.js';
 export type {
   ChatComposerContent,
   ChatComposerEditResult,
@@ -11,3 +10,4 @@ export type {
   ChatProps,
   ChatThinkingUntil,
 } from './chat.js';
+export { Chat, ChatHeader } from './chat.js';

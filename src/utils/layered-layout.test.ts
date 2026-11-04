@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { layoutLayeredGraph, type LayeredLayoutNode } from './layered-layout.js';
+import { type LayeredLayoutNode, layoutLayeredGraph } from './layered-layout.js';
 import { requireDefined } from './require-defined.js';
 
 const box = (id: string): LayeredLayoutNode => ({ id, width: 100, height: 40 });

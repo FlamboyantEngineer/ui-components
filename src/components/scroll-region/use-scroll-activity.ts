@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
+import { type PointerEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 /**
  * When overlay scrollbars show: `auto` while an axis overflows, `always` on every scrolling axis

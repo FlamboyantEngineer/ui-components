@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { TextField } from '../../../test/field-fixtures.js';
 import { Input } from '../../primitives/index.js';
-import { Field, useFieldState, type FieldStateOptions } from './field.js';
+import { Field, type FieldStateOptions, useFieldState } from './field.js';
 
 function root(container: HTMLElement) {
   return container.querySelector<HTMLElement>('.ui-field');

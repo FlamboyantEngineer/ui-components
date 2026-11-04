@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import type { TableColumnPin } from './table-rows.js';
 import { isShallowEqual } from '../../utils/is-shallow-equal.js';
+import type { TableColumnPin } from './table-rows.js';
 
 /** How far each pinned column sits from its edge, in pixels, by column key. */
 export type TablePinOffsets = Readonly<Record<string, number>>;

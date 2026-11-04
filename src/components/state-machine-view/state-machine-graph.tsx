@@ -10,7 +10,6 @@ import {
   type DiagramEdge,
   type DiagramNode,
 } from '../diagram-canvas/diagram-canvas.js';
-
 import { describeState } from './describe-state.js';
 import type {
   StateMachineSequenceProps,

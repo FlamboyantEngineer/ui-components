@@ -1,3 +1,9 @@
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
+import { createRef } from 'react';
+import { describe, expect, it, vi } from 'vitest';
+import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { deepActive, inShadow, ShadowHost } from '../../../test/shadow-fixtures.js';
 import {
   DeleteGlyph,
   ExpandGlyph,
@@ -6,14 +12,8 @@ import {
   SortAscendingGlyph,
   UploadGlyph,
 } from '../../core/glyphs.js';
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { userEvent } from '@testing-library/user-event';
-import { createRef } from 'react';
-import { describe, expect, it, vi } from 'vitest';
-import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { deepActive, inShadow, ShadowHost } from '../../../test/shadow-fixtures.js';
 import { UiProvider } from '../../core/provider.js';
-import { ActionRow, actionVerbs, orderActions, type ActionRowAction } from './action-row.js';
+import { ActionRow, type ActionRowAction, actionVerbs, orderActions } from './action-row.js';
 
 const noop = () => undefined;
 

@@ -1,14 +1,14 @@
 'use client';
 
-import { readOwn } from '../../utils/read-own.js';
 import type { ReactNode } from 'react';
 import type { BaseProps, RefProps } from '../../core/props.js';
+import { readOwn } from '../../utils/read-own.js';
 import { ChatSteps } from '../chat-activity/chat-activity.js';
-import type { RecordLabelResolver } from '../record-label/record-label.js';
 import type {
   ChatQuestionAnswer,
   ChatQuestionAnsweredMark,
 } from '../chat-question/chat-question.js';
+import type { RecordLabelResolver } from '../record-label/record-label.js';
 import type {
   ChatCodePart,
   ChatCustomPart,
@@ -18,19 +18,20 @@ import type {
 } from './chat-part.js';
 import { ChatPartView, type PartContext } from './chat-part-view.js';
 import {
+  type ChatPartsItem,
+  type ChatStepPart,
+  type ChatStepsItem,
   groupChatParts,
   isAwaitingApproval,
   isStepActive,
   summarizeSteps,
   toPartKey,
-  type ChatPartsItem,
-  type ChatStepPart,
-  type ChatStepsItem,
 } from './chat-parts-grouping.js';
 import { chatPartsHooks as hooks } from './chat-parts-hooks.js';
 import { usePartsRenderNode } from './chat-text-part.js';
-import { usePartsExpansion, usePartsReveal, type PartsReveal } from './use-parts-expansion.js';
+import { type PartsReveal, usePartsExpansion, usePartsReveal } from './use-parts-expansion.js';
 
+export type { ChatMessageData, ChatParticipant, ChatParticipantKind } from './chat-conversation.js';
 export type {
   ChatCodePart,
   ChatCustomPart,
@@ -47,7 +48,6 @@ export type {
   ChatTextToken,
   ChatToolCallPart,
 } from './chat-part.js';
-export type { ChatMessageData, ChatParticipant, ChatParticipantKind } from './chat-conversation.js';
 
 /** A tool call's approval callbacks, bound to the call; each is absent when the host gave none. */
 export interface ChatToolCallHandlers {

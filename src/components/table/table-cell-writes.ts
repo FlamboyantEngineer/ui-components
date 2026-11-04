@@ -1,7 +1,7 @@
-import { findMaximum } from '../../utils/find-maximum.js';
 import { countDecimalPlaces } from '../../utils/count-decimal-places.js';
+import { findMaximum } from '../../utils/find-maximum.js';
 import { formatTsv } from '../../utils/tsv.js';
-import { listBoundsCells, type CellBounds, type CellGrid } from './table-cell-range.js';
+import { type CellBounds, type CellGrid, listBoundsCells } from './table-cell-range.js';
 import {
   getCellValue,
   type TableCellValue,

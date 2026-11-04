@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, type DragEvent } from 'react';
+import { type DragEvent, useRef, useState } from 'react';
 
 interface FileDrop {
   /** A drag carrying files is over the composer. */

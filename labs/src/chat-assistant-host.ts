@@ -4,8 +4,8 @@
 import { useState } from 'react';
 import type { ChatFeedback } from '../../src/components/chat-message-actions/index.js';
 import type { ChatModelPickerProps } from '../../src/components/chat-model-picker/index.js';
-import type { LabSetMessages } from './chat-people-host.js';
 import { describeModelChoice, labEfforts, labModels } from './chat-model-samples.js';
+import type { LabSetMessages } from './chat-people-host.js';
 
 const feedbackReasons = ['Accurate', 'Helpful', 'Too long', 'Out of date'];
 

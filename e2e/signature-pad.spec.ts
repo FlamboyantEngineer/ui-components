@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
-import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 
 /** A 2 × 1 PNG: one opaque dark pixel beside a transparent one. */
 const tinyPng = Buffer.from(

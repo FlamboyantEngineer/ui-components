@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import type { Key, Orientation } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import {
-  StateMachineView,
   type StateMachineState,
   type StateMachineTransition,
+  StateMachineView,
 } from '../../src/components/state-machine-view/state-machine-view.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import type { Key, Orientation } from '../../src/core/props.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { SequenceExamples } from './state-machine-view-sequence.js';
 import { SequenceHostExamples } from './state-machine-view-sequence-host.js';
 import { SequenceSizeExamples } from './state-machine-view-sizes.js';

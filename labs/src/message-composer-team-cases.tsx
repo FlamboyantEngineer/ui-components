@@ -4,14 +4,14 @@ import {
   ChatMessage,
   ChatTranscript,
 } from '../../src/components/chat-transcript/chat-transcript.js';
-import {
-  RichMessageComposer,
-  type MessageComposerMessage,
-} from '../../src/components/message-composer/rich/index.js';
 import { MessageComposerEmojiButton } from '../../src/components/message-composer/index.js';
+import {
+  type MessageComposerMessage,
+  RichMessageComposer,
+} from '../../src/components/message-composer/rich/index.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { LabSection } from './chrome/index.js';
-import { ComposerBanner, SentMessage, labPeople } from './message-composer-rich-cases.js';
+import { ComposerBanner, labPeople, SentMessage } from './message-composer-rich-cases.js';
 
 interface TeamMessage extends MessageComposerMessage {
   id: number;

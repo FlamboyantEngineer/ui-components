@@ -5,8 +5,8 @@ import {
   type GlyphComponent,
 } from '../../core/glyphs.js';
 import { getFileGlyph } from '../../utils/file-glyph.js';
-import { isSafeUrl } from '../../utils/safe-url.js';
 import { readOwn } from '../../utils/read-own.js';
+import { isSafeUrl } from '../../utils/safe-url.js';
 
 /** The kinds an attachment can be: `file` is any other or unknown type. */
 export type ChatAttachmentKind = 'image' | 'pdf' | 'archive' | 'text' | 'file';

@@ -1,16 +1,16 @@
 'use client';
 
-import { LinkGlyph } from '../../core/glyphs.js';
-import { useLayoutEffect, useRef, type ReactNode } from 'react';
+import { type ReactNode, useLayoutEffect, useRef } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
+import { LinkGlyph } from '../../core/glyphs.js';
 import { createHooks, dataAttributes, mergeClassNames } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import {
   PropertyRow,
+  type PropertyRowProps,
   PropertyStrip,
   PropertyStripCell,
-  type PropertyRowProps,
 } from '../property-panel/property-panel.js';
 
 /** One side of a box, such as a margin. */

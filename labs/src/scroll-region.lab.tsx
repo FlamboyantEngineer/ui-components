@@ -1,17 +1,17 @@
-import { useRef, useState, type CSSProperties } from 'react';
-import {
-  ScrollRegion,
-  useScrollRegionHeaderRef,
-  type ScrollRegionProps,
-} from '../../src/components/scroll-region/scroll-region.js';
-import { resolveScrollSpy, useScrollSpy } from '../../src/components/scroll-region/index.js';
+import { type CSSProperties, useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { ProseTable } from '../../src/components/prose-table/prose-table.js';
+import { resolveScrollSpy, useScrollSpy } from '../../src/components/scroll-region/index.js';
+import {
+  ScrollRegion,
+  type ScrollRegionProps,
+  useScrollRegionHeaderRef,
+} from '../../src/components/scroll-region/scroll-region.js';
 import { Table } from '../../src/components/table/table.js';
+import { useScrollStripOverflow } from '../../src/utils/use-scroll-strip-overflow.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 import { requireDefined } from './require-defined.js';
-import { useScrollStripOverflow } from '../../src/utils/use-scroll-strip-overflow.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { ScrollRegionOptionCases } from './scroll-region-options.js';
 
 const cities = [

@@ -1,12 +1,12 @@
 import {
-  reduceChatStream,
   type ChatStreamEvent,
+  reduceChatStream,
 } from '../../src/components/chat-controller/chat-controller.js';
 import type { ChatMessageData } from '../../src/components/chat-parts/chat-parts.js';
 import { helperId } from './chat-controller-agents.js';
 import { ChatControllerDemo } from './chat-controller-demo.js';
 import { LabMessage } from './chat-controller-parts.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const reply: ChatMessageData = {
   id: 'matrix-reply',

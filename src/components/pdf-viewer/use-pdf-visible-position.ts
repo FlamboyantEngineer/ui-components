@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useRef, type RefObject } from 'react';
-import { measurePageFrame } from './page-geometry.js';
+import { type RefObject, useEffect, useRef } from 'react';
 import { useLatest } from '../../utils/use-latest.js';
+import { measurePageFrame } from './page-geometry.js';
 
 /** Where the top edge of the view falls in the document. */
 export interface PdfVisiblePosition {

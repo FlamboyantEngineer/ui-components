@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test, matrixCell, controlHeight } from './fixtures.js';
+import { controlHeight, expect, matrixCell, test } from './fixtures.js';
 
 function cell(page: Page, state: string, size: string): Locator {
   return matrixCell(page, `state=${state} size=${size}`);

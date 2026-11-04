@@ -1,9 +1,9 @@
 'use client';
 
-import { readCommandKey } from '../shortcut/shortcut.js';
+import { type KeyboardEvent, useEffect } from 'react';
 import { isComposingKey } from '../../utils/is-composing-key.js';
+import { readCommandKey } from '../shortcut/shortcut.js';
 import { isOwnFieldTarget } from './field-root.js';
-import { useEffect, type KeyboardEvent } from 'react';
 
 /** The undo and redo of one field, as its root element registers them. */
 export interface FieldUndo {

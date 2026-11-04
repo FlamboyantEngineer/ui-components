@@ -1,4 +1,3 @@
-export { DecisionControl } from './decision-control.js';
 export type {
   DecisionControlComment,
   DecisionControlDetails,
@@ -6,3 +5,4 @@ export type {
   DecisionControlProps,
   DecisionControlSignature,
 } from './decision-control.js';
+export { DecisionControl } from './decision-control.js';

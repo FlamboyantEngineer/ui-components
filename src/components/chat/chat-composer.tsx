@@ -1,42 +1,45 @@
 'use client';
 
-import { CloseGlyph } from '../../core/glyphs.js';
 import {
+  type KeyboardEvent,
+  type ReactNode,
   useEffect,
   useId,
   useMemo,
   useRef,
   useState,
-  type KeyboardEvent,
-  type ReactNode,
 } from 'react';
+import { CloseGlyph } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
-import { ChatAttachmentList, type ChatAttachmentData } from '../chat-attachment/chat-attachment.js';
+import { Button } from '../button/button.js';
+import { type ChatAttachmentData, ChatAttachmentList } from '../chat-attachment/chat-attachment.js';
 import type { ChatQueuedMessage } from '../chat-controller/chat-controller.js';
 import type { ChatMessageData, ChatTextToken } from '../chat-parts/chat-parts.js';
 import { ChatQuote, type ChatQuoteData } from '../chat-transcript/chat-transcript.js';
-import { Button } from '../button/button.js';
 import {
   MessageComposerAttachButton,
   MessageComposerEmojiButton,
 } from '../message-composer/message-composer.js';
 import {
-  RichMessageComposer,
   type MessageComposerHandle,
+  RichMessageComposer,
   type RichMessageComposerProps,
 } from '../message-composer/rich/rich-message-composer.js';
-import type { ChatDraftOptions } from './chat-composer-handle.js';
-import { toComposerDraftProps, useChatComposerHandle } from './chat-composer-handle.js';
+import {
+  type ChatDraftOptions,
+  toComposerDraftProps,
+  useChatComposerHandle,
+} from './chat-composer-handle.js';
 import { chatHooks as hooks } from './chat-hooks.js';
 import {
+  type ChatMessageText,
+  type ChatParticipantIndex,
   findLastOwnText,
   readMessageText,
   toComposerTokens,
   toExcerpt,
   toMessageText,
-  type ChatMessageText,
-  type ChatParticipantIndex,
 } from './chat-model.js';
 import { ChatQueue } from './chat-queue.js';
 import { sendMessageNow, submitMessage } from './chat-submit.js';

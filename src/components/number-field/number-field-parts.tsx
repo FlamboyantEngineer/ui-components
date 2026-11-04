@@ -1,25 +1,25 @@
 'use client';
 
-import { isComposingKey } from '../../utils/is-composing-key.js';
-import { MinusGlyph, PlusGlyph, ScrubGlyph } from '../../core/glyphs.js';
 import {
-  useId,
-  useRef,
   type KeyboardEvent,
   type MouseEvent,
   type PointerEvent,
   type ReactNode,
   type RefObject,
+  useId,
+  useRef,
 } from 'react';
-import { Button as AriaButton, useLocale } from '../../primitives/index.js';
+import { MinusGlyph, PlusGlyph, ScrubGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import { Glyph } from '../../core/provider.js';
+import { Button as AriaButton, useLocale } from '../../primitives/index.js';
 import { clamp } from '../../utils/clamp.js';
-import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { countDecimalPlaces } from '../../utils/count-decimal-places.js';
+import { FreeControls } from '../../utils/free-controls.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import { useWheelSteps } from '../../utils/use-wheel-steps.js';
-import { FreeControls } from '../../utils/free-controls.js';
 import type { FieldState } from '../field/field.js';
 
 export const numberFieldHooks = createHooks('number-field', [

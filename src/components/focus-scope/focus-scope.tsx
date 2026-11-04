@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useMemo, useRef, type ReactNode, type RefObject } from 'react';
+import { type ReactNode, type RefObject, useEffect, useMemo, useRef } from 'react';
+import { createHooks } from '../../core/hooks.js';
+import type { BaseProps, ContainerProps } from '../../core/props.js';
 import {
   FocusScope as AriaFocusScope,
   useFocusManager as useAriaFocusManager,
 } from '../../primitives/index.js';
-import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, ContainerProps } from '../../core/props.js';
-import { resolveFocusTarget, useFocusReturn, type FocusTarget } from '../../utils/focus-target.js';
+import { type FocusTarget, resolveFocusTarget, useFocusReturn } from '../../utils/focus-target.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 
 /** An element to focus: a ref, or a function asked for the element when focus moves. */

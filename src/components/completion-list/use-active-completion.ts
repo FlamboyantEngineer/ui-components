@@ -1,11 +1,11 @@
 'use client';
 
-import { useLayoutEffect, type RefObject } from 'react';
-import { findOverlayScrollContainer } from '../../utils/overlay-geometry.js';
+import { type RefObject, useLayoutEffect } from 'react';
 import type { Key } from '../../core/props.js';
+import { findOverlayScrollContainer } from '../../utils/overlay-geometry.js';
 import { getElementByIdFrom, getElementByIdWithin } from '../../utils/owner-window.js';
-import { getCompletionOptionId } from './completion-option-id.js';
 import { measureInScroller } from '../../utils/scroll-geometry.js';
+import { getCompletionOptionId } from './completion-option-id.js';
 
 /** Reveals an active option within its own list without scrolling the editor or the document. */
 export function useActiveCompletion(

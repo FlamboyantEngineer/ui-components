@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Markdown lab', () => {
   test('UIC-MARKDOWN-2.1 UIC-MARKDOWN-3.1 renders each construct with native semantics', async ({

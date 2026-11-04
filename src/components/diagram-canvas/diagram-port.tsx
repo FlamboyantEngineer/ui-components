@@ -1,8 +1,8 @@
 'use client';
 
 import type { CSSProperties, RefCallback, RefObject } from 'react';
-import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import { useUiStrings } from '../../core/provider.js';
+import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import { diagramHooks as hooks } from './diagram-hooks.js';
 import type { DiagramNode, DiagramPort } from './diagram-model.js';
 import type { DiagramController, DiagramTarget } from './use-diagram-controller.js';

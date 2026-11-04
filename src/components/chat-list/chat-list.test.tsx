@@ -1,12 +1,12 @@
-import { MoreGlyph } from '../../core/glyphs.js';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { MoreGlyph } from '../../core/glyphs.js';
 import { UiProvider } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { Menu, MenuItem, MenuPopover, MenuTrigger } from '../menu/menu.js';
-import { ChatList, type ChatConversation } from './chat-list.js';
+import { type ChatConversation, ChatList } from './chat-list.js';
 
 const getNow = () => new Date('2026-04-20T10:30:00');
 

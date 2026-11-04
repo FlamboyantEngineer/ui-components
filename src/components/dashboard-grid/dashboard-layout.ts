@@ -1,8 +1,8 @@
 // Tile layouts on a column grid: normalising, placing with push-down, and reflowing to fewer
 // columns (specs/DASHBOARD-GRID.md).
 
-import type { PersistCodec } from '../../core/provider.js';
 import type { Key } from '../../core/props.js';
+import type { PersistCodec } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';
 import { isKey } from '../../utils/is-key.js';
 import { createListCodec } from '../../utils/json-codec.js';

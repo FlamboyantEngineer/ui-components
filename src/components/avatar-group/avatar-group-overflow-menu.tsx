@@ -1,9 +1,9 @@
 'use client';
 
-import { Button as AriaButton } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
+import { Button as AriaButton } from '../../primitives/index.js';
 import type { KeyedValue } from '../../utils/stable-keys.js';
-import { getDisplayName, splitAvatarIdentity, type AvatarProps } from '../avatar/avatar.js';
+import { type AvatarProps, getDisplayName, splitAvatarIdentity } from '../avatar/avatar.js';
 import { Menu, MenuItem, MenuPopover, MenuTrigger } from '../menu/menu.js';
 import { UserIdentity } from '../user-identity/user-identity.js';
 import type { AvatarGroupPerson } from './avatar-group.js';

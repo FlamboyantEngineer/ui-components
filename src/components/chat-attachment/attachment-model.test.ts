@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest';
 import {
   AudioGlyph,
   FileArchiveGlyph,
@@ -6,7 +7,6 @@ import {
   FileTextGlyph,
   ImageGlyph,
 } from '../../core/glyphs.js';
-import { describe, expect, it } from 'vitest';
 import {
   getAttachmentGlyph,
   getAttachmentImage,

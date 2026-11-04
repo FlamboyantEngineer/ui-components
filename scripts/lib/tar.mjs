@@ -2,7 +2,7 @@
 // regular files and directories, and reads them back, along with the pax and GNU long-name headers
 // npm writes for long paths.
 
-import { mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { gunzipSync, gzipSync } from 'node:zlib';
 

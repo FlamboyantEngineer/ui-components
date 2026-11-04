@@ -1,21 +1,21 @@
 'use client';
 
-import { useMergedRefs } from '../../utils/use-merged-refs.js';
-import { useId, useRef, type ReactNode } from 'react';
-import { useNumberFormatter } from '../../primitives/index.js';
+import { type ReactNode, useId, useRef } from 'react';
 import { createHooks, splitDataAttributes } from '../../core/hooks.js';
-import type { BaseProps, RefProps } from '../../core/props.js';
 import { LoadingBoundaryProvider } from '../../core/loading-boundary.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useNumberFormatter } from '../../primitives/index.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { useActiveAfter } from '../../utils/use-delayed-flag.js';
 import { useEnterExit } from '../../utils/use-enter-exit.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { Portal } from '../portal/portal.js';
 import {
   ProgressBar,
+  type ProgressBarProps,
   resolveProgressRange,
   toProgressRatio,
-  type ProgressBarProps,
 } from '../progress-bar/progress-bar.js';
 import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';
 import { useBlockedFocus } from './use-blocked-focus.js';

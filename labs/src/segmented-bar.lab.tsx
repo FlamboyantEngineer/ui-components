@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from 'react';
+import { type CSSProperties, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
   SegmentedBar,
@@ -6,7 +6,7 @@ import {
   type SegmentedBarShape,
   type SegmentedBarSize,
 } from '../../src/components/segmented-bar/segmented-bar.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const column = (width: number): CSSProperties => ({ width });
 

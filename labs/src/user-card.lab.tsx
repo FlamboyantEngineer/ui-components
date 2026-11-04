@@ -1,17 +1,17 @@
-import { EditGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
 import { UserCard } from '../../src/components/user-card/user-card.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-import { samplePicture } from './people-samples.js';
+import { EditGlyph } from '../../src/core/glyphs.js';
 import { badges } from './avatar-badge-cases.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import {
   badgePlacements,
   identityOptionProps,
   identityOptions,
   identityShapes,
 } from './identity-options.js';
+import { samplePicture } from './people-samples.js';
 
 const statuses = ['active', 'away', 'busy', 'idle'] as const;
 const statusTexts: Record<(typeof statuses)[number], string> = {

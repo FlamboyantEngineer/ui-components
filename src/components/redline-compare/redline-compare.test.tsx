@@ -1,12 +1,12 @@
+import { render, screen, within } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
 import { act, createRef } from 'react';
 import { hydrateRoot } from 'react-dom/client';
 import { renderToString } from 'react-dom/server';
-import { render, screen, within } from '@testing-library/react';
-import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { compareBlocks, type DocumentBlock } from '../../utils/compare-blocks.js';
-import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { RedlineCompare } from './redline-compare.js';
 

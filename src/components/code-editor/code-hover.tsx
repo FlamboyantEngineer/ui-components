@@ -1,24 +1,24 @@
 'use client';
 
 import {
+  type PointerEvent,
+  type ReactNode,
+  type RefObject,
   useCallback,
   useEffect,
   useRef,
   useState,
-  type PointerEvent,
-  type ReactNode,
-  type RefObject,
 } from 'react';
 import { Popover } from '../../primitives/index.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
-import { useLayerZIndex } from '../portal/portal.js';
-import { findOffsetAt, measureRange, readCopyText, type CopyText } from './code-geometry.js';
-import { type CodeDiagnostic } from './code-layers.js';
-import { codeEditorHooks as hooks } from './code-editor-hooks.js';
-import type { CodeRange } from './code-ranges.js';
-import type { CodeSegment } from './code-segments.js';
 import { DEFAULT_DROPDOWN_OFFSET } from '../../utils/overlay-defaults.js';
 import { getOwnerWindow } from '../../utils/owner-window.js';
+import { useLayerZIndex } from '../portal/portal.js';
+import { codeEditorHooks as hooks } from './code-editor-hooks.js';
+import { type CopyText, findOffsetAt, measureRange, readCopyText } from './code-geometry.js';
+import type { CodeDiagnostic } from './code-layers.js';
+import type { CodeRange } from './code-ranges.js';
+import type { CodeSegment } from './code-segments.js';
 
 /** A diagnostic and the source it marks. */
 export interface MarkedDiagnostic {

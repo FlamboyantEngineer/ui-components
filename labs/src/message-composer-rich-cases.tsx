@@ -1,20 +1,20 @@
-import { CloseGlyph } from '../../src/core/glyphs.js';
-import { useEffect, useState, type ReactNode } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
   ChatMessage,
   ChatTranscript,
 } from '../../src/components/chat-transcript/chat-transcript.js';
 import {
-  RichMessageComposer,
-  type MessageComposerCommand,
-  type MessageComposerMention,
-  type MessageComposerMessage,
-} from '../../src/components/message-composer/rich/index.js';
-import {
   MessageComposerAttachButton,
   MessageComposerEmojiButton,
 } from '../../src/components/message-composer/index.js';
+import {
+  type MessageComposerCommand,
+  type MessageComposerMention,
+  type MessageComposerMessage,
+  RichMessageComposer,
+} from '../../src/components/message-composer/rich/index.js';
+import { CloseGlyph } from '../../src/core/glyphs.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
 import { samplePicture } from './people-samples.js';
 

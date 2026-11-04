@@ -2,7 +2,7 @@
 
 import { Fragment } from 'react';
 import { Input, NumberField as AriaNumberField } from '../../primitives/index.js';
-import { toAriaControlProps, type FieldControlProps, type FieldState } from '../field/field.js';
+import { type FieldControlProps, type FieldState, toAriaControlProps } from '../field/field.js';
 import { numberFieldHooks as hooks } from './number-field-parts.js';
 
 type EndpointValue = number | [number, number];

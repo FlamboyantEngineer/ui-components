@@ -1,6 +1,6 @@
-import { createRef } from 'react';
 import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { createRef } from 'react';
 import { hydrateRoot } from 'react-dom/client';
 import { renderToString } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';

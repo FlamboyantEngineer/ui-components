@@ -1,14 +1,14 @@
-import { HelpGlyph, InfoGlyph, SuccessGlyph, WarningGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
-import type { Key } from '../../src/core/props.js';
 import type { FieldLabelLayout } from '../../src/components/field/field.js';
 import {
   SelectField,
   type SelectFieldOption,
   type SelectFieldProps,
 } from '../../src/components/select-field/select-field.js';
+import { HelpGlyph, InfoGlyph, SuccessGlyph, WarningGlyph } from '../../src/core/glyphs.js';
+import type { Key } from '../../src/core/props.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
-import { fieldLayouts, fieldStates, type FieldStateName } from './field-states.js';
+import { fieldLayouts, type FieldStateName, fieldStates } from './field-states.js';
 
 const square = (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>

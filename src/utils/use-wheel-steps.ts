@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, type RefObject } from 'react';
+import { type RefObject, useEffect } from 'react';
 import { useLatest } from './use-latest.js';
 import { toWheelPixels } from './wheel-scroll.js';
 

@@ -3,19 +3,19 @@
 // The validation a field's state holds: the value's issues, the control's draft issue, and what is
 // shown of them.
 
-import { isEmptyValue } from '../../utils/is-empty-value.js';
 import { useCallback, useState } from 'react';
 import { useUiStrings } from '../../core/provider.js';
+import { isEmptyValue } from '../../utils/is-empty-value.js';
 import { useAsyncCheck } from './field-async.js';
 import type { FieldScope } from './field-scope.js';
 import type { FieldStateOptions } from './field-state.js';
 import {
   checkFieldValue,
+  type FieldIssue,
   resolveFieldValidation,
   selectShownValidation,
   useExternalIssues,
   useFieldReveal,
-  type FieldIssue,
 } from './field-validation.js';
 
 /**

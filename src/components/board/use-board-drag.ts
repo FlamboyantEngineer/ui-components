@@ -1,17 +1,17 @@
 'use client';
 
-import { useMemo, useRef, type RefObject } from 'react';
+import { type RefObject, useMemo, useRef } from 'react';
 import type { Key } from '../../core/props.js';
 import { useDragType } from '../../utils/use-drag-type.js';
 import { useLatest } from '../../utils/use-latest.js';
 import type { CollectionDropTarget } from '../../utils/use-reorder-drag-and-drop.js';
 import {
-  resolveBoardDrop,
-  resolveColumnDrop,
   type BoardCellAddress,
   type BoardColumnMove,
   type BoardLayout,
   type BoardMove,
+  resolveBoardDrop,
+  resolveColumnDrop,
 } from './board-moves.js';
 
 /** What every cell's drag and drop shares while the board takes card moves. */

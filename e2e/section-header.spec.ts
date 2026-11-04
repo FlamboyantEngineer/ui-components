@@ -1,6 +1,6 @@
 import type { Locator } from '@playwright/test';
-import { expect, familySelector, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
+import { expect, familySelector, test } from './fixtures.js';
 
 async function box(locator: Locator) {
   const rect = await locator.boundingBox();

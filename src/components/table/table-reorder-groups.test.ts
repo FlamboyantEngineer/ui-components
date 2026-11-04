@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { groupTableNodes, listGroupKeys, resolveGroupings } from './table-groups.js';
-import { buildTableNodes } from './table-tree.js';
 import { isWithinReorderGroup, resolveGroupReorder } from './table-reorder-groups.js';
+import { buildTableNodes } from './table-tree.js';
 
 const rows = [
   { id: 'pear', kind: 'Fruit' },

@@ -5,7 +5,6 @@ import {
   type ChatToolCallStatus,
   type ChatToolCallVariant,
 } from '../../src/components/chat-tool-call/chat-tool-call.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import {
   ApprovalDemo,
   ControlledDemo,
@@ -15,6 +14,7 @@ import {
   recipeResult,
   timetableResult,
 } from './chat-tool-call-samples.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const statuses = [
   'pending',

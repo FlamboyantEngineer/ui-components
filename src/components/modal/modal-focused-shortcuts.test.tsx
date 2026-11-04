@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState, type KeyboardEvent } from 'react';
+import { type KeyboardEvent, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { Button } from '../button/button.js';
 import { Modal } from './modal.js';

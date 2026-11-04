@@ -1,3 +1,12 @@
+import { type JSX, useId, useState } from 'react';
+import { Checkbox } from '../../src/components/checkbox/checkbox.js';
+import { InlineError } from '../../src/components/inline-error/inline-error.js';
+import {
+  SegmentedChoice,
+  type SegmentedChoiceOption,
+  type SegmentedChoiceRenderState,
+} from '../../src/components/segmented-choice/segmented-choice.js';
+import { Switch } from '../../src/components/switch/switch.js';
 import {
   CheckGlyph,
   EditGlyph,
@@ -8,16 +17,7 @@ import {
   SortAscendingGlyph,
   SortDescendingGlyph,
 } from '../../src/core/glyphs.js';
-import { useId, useState, type JSX } from 'react';
-import { Switch } from '../../src/components/switch/switch.js';
-import { Checkbox } from '../../src/components/checkbox/checkbox.js';
-import { InlineError } from '../../src/components/inline-error/inline-error.js';
-import {
-  SegmentedChoice,
-  type SegmentedChoiceOption,
-  type SegmentedChoiceRenderState,
-} from '../../src/components/segmented-choice/segmented-choice.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabForm } from './lab-form.js';
 import { LabOutput } from './lab-output.js';
 

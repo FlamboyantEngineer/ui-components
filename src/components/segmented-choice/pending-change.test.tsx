@@ -1,9 +1,9 @@
-import { FilterGlyph } from '../../core/glyphs.js';
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { FilterGlyph } from '../../core/glyphs.js';
 import { UiProvider } from '../../core/provider.js';
 import { SegmentedChoice, type SegmentedChoiceOption } from './segmented-choice.js';
 

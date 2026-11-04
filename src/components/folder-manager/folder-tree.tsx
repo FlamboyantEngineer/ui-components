@@ -1,30 +1,30 @@
 'use client';
 
+import { type KeyboardEvent, useCallback, useState } from 'react';
 import { FolderGlyph } from '../../core/glyphs.js';
-import { useCallback, useState, type KeyboardEvent } from 'react';
 import type { Key, Selection } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { fromCollectionKey } from '../../utils/from-collection-key.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
+import { isElement } from '../../utils/is-element.js';
 import type { TreeMove } from '../../utils/tree-reorder.js';
 import { walkTree } from '../../utils/walk-tree.js';
-import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { ContextMenuTrigger } from '../context-menu/context-menu.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import { Menu, type MenuEntry } from '../menu/menu.js';
 import { TextMatch, TextMatchProvider } from '../text-match/text-match.js';
 import { Tree, type TreeProps } from '../tree/tree.js';
-import { isComposingKey } from '../../utils/is-composing-key.js';
-import { FolderNameInput, folderManagerHooks as hooks } from './folder-manager-parts.js';
+import { folderManagerHooks as hooks, FolderNameInput } from './folder-manager-parts.js';
 import {
   findFolderPath,
   folderDraftKey,
-  fromFolderRowKey,
-  getFolderHeight,
   type FolderItem,
   type FolderNode,
+  fromFolderRowKey,
+  getFolderHeight,
 } from './folder-model.js';
 import { planFolderMoves } from './folder-moves.js';
 import type { FolderManagerModel } from './use-folder-manager.js';
-import { isElement } from '../../utils/is-element.js';
 
 interface FolderTreeProps<T extends FolderItem> {
   model: FolderManagerModel<T>;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { matchInsertItems, type InsertMenuItem } from './insert-items.js';
+import { type InsertMenuItem, matchInsertItems } from './insert-items.js';
 
 const item = (id: string, label: string, keywords: readonly string[]): InsertMenuItem => ({
   id,

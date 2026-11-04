@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, type RefObject } from 'react';
+import { createContext, type RefObject, useContext } from 'react';
 import { createHooks } from '../../core/hooks.js';
 
 /** What the editor shares with the chrome rendered inside it. */

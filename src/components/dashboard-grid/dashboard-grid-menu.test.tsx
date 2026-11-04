@@ -1,16 +1,16 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import type { DashboardTileMenuIcons } from './dashboard-grid-menu.js';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { readMenuIcons } from '../../../test/menu-fixtures.js';
 import { DeleteGlyph, MoveGlyph } from '../../core/glyphs.js';
 import { requireDefined } from '../../utils/require-defined.js';
-import { readMenuIcons } from '../../../test/menu-fixtures.js';
 import {
   DashboardGrid,
   type DashboardGridItem,
   type DashboardTileMenuEntry,
 } from './dashboard-grid.js';
+import type { DashboardTileMenuIcons } from './dashboard-grid-menu.js';
 import { DashboardTile } from './dashboard-tile.js';
 
 const layout: DashboardGridItem[] = [

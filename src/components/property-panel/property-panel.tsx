@@ -1,10 +1,10 @@
 'use client';
 
-import { useContext, useId, useMemo, useState, type ReactNode } from 'react';
-import { DisclosureGroup, DisclosureGroupStateContext } from '../../primitives/index.js';
+import { type ReactNode, useContext, useId, useMemo, useState } from 'react';
 import type { ExpansionProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, RefProps } from '../../core/props.js';
+import { DisclosureGroup, DisclosureGroupStateContext } from '../../primitives/index.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { FieldScopeContext, useFieldScope } from '../field/field.js';
 import {
@@ -189,11 +189,11 @@ export function PropertyIconGroup({
   );
 }
 
-export { PropertyCard } from './property-card.js';
 export type { PropertyCardProps } from './property-card.js';
-export { PropertyRow } from './property-row.js';
+export { PropertyCard } from './property-card.js';
 export type { PropertyRowProps } from './property-row.js';
-export { PropertySection } from './property-section.js';
+export { PropertyRow } from './property-row.js';
 export type { PropertySectionProps } from './property-section.js';
-export { PropertyStrip, PropertyStripCell } from './property-strip.js';
+export { PropertySection } from './property-section.js';
 export type { PropertyStripCellProps, PropertyStripProps } from './property-strip.js';
+export { PropertyStrip, PropertyStripCell } from './property-strip.js';

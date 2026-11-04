@@ -1,13 +1,13 @@
 'use client';
 
-import { useContext, useId, type ReactNode } from 'react';
-import { FieldScopeContext, useRevealScope } from '../field/field.js';
+import { type ReactNode, useContext, useId } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { FieldScopeContext, useRevealScope } from '../field/field.js';
 import {
-  PropertyScopeContext,
   matchesPropertyScope,
+  PropertyScopeContext,
   useReportPropertyTally,
 } from '../property-scope/property-scope.js';
 import { TextMatch } from '../text-match/text-match.js';

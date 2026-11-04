@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useMemo, useRef, type CSSProperties } from 'react';
+import { type CSSProperties, useId, useMemo, useRef } from 'react';
 import { measuredProperty } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -9,18 +9,18 @@ import { Button } from '../button/button.js';
 import type { CodeEditorWrap, CodeTokenizer } from '../code-editor/code-editor.js';
 import { CopyButton } from '../copy-button/copy-button.js';
 import {
-  CodeTokens,
-  TerminalLines,
   codeBlockHooks as hooks,
+  CodeTokens,
   countNumberedLines,
   readCodeBlockValue,
   splitTerminalLines,
   type TerminalLine,
+  TerminalLines,
 } from './code-block-content.js';
 import { useScrollOverflow } from './use-scroll-overflow.js';
 
-export { createCodeBlockOverride } from './markdown-code-block.js';
 export type { CodeBlockOverrideOptions } from './markdown-code-block.js';
+export { createCodeBlockOverride } from './markdown-code-block.js';
 
 /** `code` shows source; `terminal` shows commands after a prompt and their output. */
 export type CodeBlockVariant = 'code' | 'terminal';

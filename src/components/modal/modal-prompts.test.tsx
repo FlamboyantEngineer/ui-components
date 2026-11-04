@@ -2,7 +2,7 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
-import { ModalHost, createModalController } from '../modal-controller/modal-controller.js';
+import { createModalController, ModalHost } from '../modal-controller/modal-controller.js';
 import { alert, prompt } from './modal-prompts.js';
 
 function mountHost() {

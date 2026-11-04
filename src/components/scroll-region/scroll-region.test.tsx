@@ -4,10 +4,10 @@ import { createRef, type ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
-import { Table } from '../table/table.js';
 import { requireDefined } from '../../utils/require-defined.js';
-import { MIN_THUMB_SIZE, THUMB_ARROW_STEP } from './scroll-region-defaults.js';
+import { Table } from '../table/table.js';
 import { ScrollRegion, useScrollRegionHeaderRef } from './scroll-region.js';
+import { MIN_THUMB_SIZE, THUMB_ARROW_STEP } from './scroll-region-defaults.js';
 import { readScrollEdges } from './use-scroll-edges.js';
 
 interface Geometry {

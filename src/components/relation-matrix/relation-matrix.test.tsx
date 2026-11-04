@@ -1,15 +1,15 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState, createRef } from 'react';
+import { createRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { UiProvider } from '../../core/provider.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { UiProvider } from '../../core/provider.js';
 import {
   RelationMatrix,
   type RelationMatrixCell,
   type RelationMatrixProps,
 } from './relation-matrix.js';
-import { toggleRelation, type RelationMatrixRelation } from './relation-matrix-model.js';
+import { type RelationMatrixRelation, toggleRelation } from './relation-matrix-model.js';
 
 const rows = [
   { id: 'r1', label: 'Requirement 1' },

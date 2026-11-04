@@ -7,8 +7,8 @@ import { liftListItem, wrapInList } from 'prosemirror-schema-list';
 import type { Command, EditorState } from 'prosemirror-state';
 import { deleteBlock, duplicateBlock, moveBlock } from './block-commands.js';
 import { insertNode, setLink } from './insert-commands.js';
-import type { RichTextAttributes } from './rich-text-document.js';
 import type { RichTextCommand } from './rich-text-command.js';
+import type { RichTextAttributes } from './rich-text-document.js';
 
 function isListType(type: NodeType): boolean {
   return type.isInGroup('list');

@@ -8,17 +8,17 @@ import { Attribution, type AttributionProps } from '../attribution/attribution.j
 import type { AvatarIdentity } from '../avatar/avatar.js';
 import {
   DescriptionList,
-  DescriptionRow,
   type DescriptionListProps,
+  DescriptionRow,
 } from '../description-list/description-list.js';
 import { EmptyState } from '../empty-state/empty-state.js';
 import {
-  ChangeValues,
   changeListHooks as hooks,
   type ChangeListValue,
+  type ChangeListValueRenderer,
   type ChangeListValueType,
   type ChangeListVariant,
-  type ChangeListValueRenderer,
+  ChangeValues,
 } from './change-values.js';
 import { resolveChangeKind } from './list-changes.js';
 

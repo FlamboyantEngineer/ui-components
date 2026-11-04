@@ -1,15 +1,15 @@
-import {
-  CheckGlyph,
-  CloseGlyph,
-  HelpGlyph,
-  InfoGlyph,
-  PlusGlyph,
-  type GlyphComponentProps,
-} from '../../core/glyphs.js';
 import { render, screen } from '@testing-library/react';
 import type { SVGProps } from 'react';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import {
+  CheckGlyph,
+  CloseGlyph,
+  type GlyphComponentProps,
+  HelpGlyph,
+  InfoGlyph,
+  PlusGlyph,
+} from '../../core/glyphs.js';
 import { UiProvider } from '../../core/provider.js';
 import { Icon } from './icon.js';
 import { toIconProps, toImageProps } from './icon-props.js';

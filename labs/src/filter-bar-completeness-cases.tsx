@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import {
-  FilterBar,
   createFilterMatcher,
-  isFilterConditionComplete,
+  FilterBar,
   type FilterCondition,
+  isFilterConditionComplete,
 } from '../../src/components/filter-bar/filter-bar.js';
 import { LabSection } from './chrome/index.js';
-import { LabOutput } from './lab-output.js';
 import { bookFields, getBookValue, sampleBooks } from './filter-samples.js';
+import { LabOutput } from './lab-output.js';
 
 /** A mix: a value still to type, an operator that needs none, a half range and a full list. */
 const startingConditions: FilterCondition[] = [

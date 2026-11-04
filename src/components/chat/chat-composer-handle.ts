@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useImperativeHandle, type Ref, type RefObject } from 'react';
+import { type Ref, type RefObject, useEffect, useImperativeHandle } from 'react';
 import { useLatest } from '../../utils/use-latest.js';
 import type { ChatTextToken } from '../chat-parts/chat-parts.js';
 import type {

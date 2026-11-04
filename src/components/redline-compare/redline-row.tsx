@@ -6,10 +6,10 @@ import type { BlockChange, ComparedBlockRow } from '../../utils/compare-blocks.j
 import { requireDefined } from '../../utils/require-defined.js';
 import { Button } from '../button/button.js';
 import {
-  RedlineBlock,
-  RedlineMarker,
   nameBlockType,
+  RedlineBlock,
   redlineCompareHooks as hooks,
+  RedlineMarker,
 } from './redline-compare-parts.js';
 import { createRedlineWords, type RedlineSide } from './redline-text.js';
 

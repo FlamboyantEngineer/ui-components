@@ -1,9 +1,9 @@
 'use client';
 
-import { Radio, RadioGroup } from '../../primitives/index.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { skinTones, withSkinTone, type SkinTone } from './emoji-catalog.js';
+import { Radio, RadioGroup } from '../../primitives/index.js';
+import { type SkinTone, skinTones, withSkinTone } from './emoji-catalog.js';
 import { useEmojiPickerContext } from './emoji-picker-context.js';
 import { emojiPickerHooks as hooks } from './emoji-picker-hooks.js';
 

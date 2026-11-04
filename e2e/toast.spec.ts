@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Toast lab', () => {
   test('UIC-TOAST-2.3 UIC-TOAST-3.1 draws every tone and content in place', async ({

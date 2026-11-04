@@ -3,8 +3,8 @@
 import { useId, useMemo } from 'react';
 import type { Key } from '../../core/props.js';
 import type { BoardColumn, BoardLane, BoardProps } from './board.js';
-import { createBoardLayout, getCellCards, type BoardLayout } from './board-moves.js';
-import { useCollapsedKeys, type CollapsedKeys } from './use-board-collapse.js';
+import { type BoardLayout, createBoardLayout, getCellCards } from './board-moves.js';
+import { type CollapsedKeys, useCollapsedKeys } from './use-board-collapse.js';
 
 /** What the board's parts read: its cells, counts, collapsed state and title ids. */
 export interface BoardModel<T> {

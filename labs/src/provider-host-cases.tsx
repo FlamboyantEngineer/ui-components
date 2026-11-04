@@ -6,7 +6,7 @@ import { SegmentedChoice } from '../../src/components/segmented-choice/segmented
 import { Switch } from '../../src/components/switch/switch.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { createJsonCodec } from '../../src/core/index.js';
-import { UiProvider, usePersistentState, type UiLinkRenderer } from '../../src/core/provider.js';
+import { type UiLinkRenderer, UiProvider, usePersistentState } from '../../src/core/provider.js';
 import { createMemoryStorage, type UiStorage } from '../../src/core/storage.js';
 
 /**

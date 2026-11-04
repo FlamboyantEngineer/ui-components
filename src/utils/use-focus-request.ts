@@ -1,8 +1,8 @@
 'use client';
 
+import { useCallback, useLayoutEffect, useRef } from 'react';
 import { containsComposed, getComposedActiveElement, isFocused } from './focus-target.js';
 import { isElement } from './is-element.js';
-import { useCallback, useLayoutEffect, useRef } from 'react';
 
 /** Finds the element a focus request moves focus to, once the edit that asked for it has rendered. */
 type FocusRequestTarget = () => HTMLElement | null | undefined;

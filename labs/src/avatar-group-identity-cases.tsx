@@ -1,9 +1,9 @@
 import { useState } from 'react';
+import { resolveAvatarColor } from '../../src/components/avatar/index.js';
 import {
   AvatarGroup,
   type AvatarGroupPerson,
 } from '../../src/components/avatar-group/avatar-group.js';
-import { resolveAvatarColor } from '../../src/components/avatar/index.js';
 import { Button } from '../../src/components/button/button.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { LabSection } from './chrome/index.js';

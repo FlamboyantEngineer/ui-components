@@ -1,32 +1,31 @@
 'use client';
 
-import { useContext, useState, type ComponentProps, type ReactNode } from 'react';
+import { type ComponentProps, type ReactNode, useContext, useState } from 'react';
+import { ExternalLinkGlyph } from '../../core/glyphs.js';
+import { createHooks } from '../../core/hooks.js';
+import type { BaseProps, ControlSize } from '../../core/props.js';
+import { useUiStrings } from '../../core/provider.js';
 import {
   Button as AriaButton,
   FocusableContext,
   Link as AriaLink,
   ProgressBar,
 } from '../../primitives/index.js';
-import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, ControlSize } from '../../core/props.js';
-import { ExternalLinkGlyph } from '../../core/glyphs.js';
-import { useUiStrings } from '../../core/provider.js';
-import { Icon, type IconSource } from '../icon/icon.js';
-import { hasIcon, toIconProps } from '../icon/icon.js';
-import { Shortcut, useDetectedPlatform } from '../shortcut/shortcut.js';
-import type { LinkUnderline } from '../link/link.js';
-import { Tooltip } from '../tooltip/tooltip.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { hasIcon, Icon, type IconSource, toIconProps } from '../icon/icon.js';
+import type { LinkUnderline } from '../link/link.js';
+import { Shortcut, useDetectedPlatform } from '../shortcut/shortcut.js';
+import { Tooltip } from '../tooltip/tooltip.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
-import { useButtonAction, type ButtonActionProps } from './button-action.js';
+import { type ButtonActionProps, useButtonAction } from './button-action.js';
 import { usePrimaryActionKeys } from './button-primary-keys.js';
 import {
+  type ButtonStateProps,
   toAriaButtonProps,
   toAriaLinkProps,
   toKeyShortcuts,
   useButtonSelection,
   useInheritedDisabled,
-  type ButtonStateProps,
 } from './button-state.js';
 
 export type ButtonVariant =
@@ -347,10 +346,8 @@ export function Button({
   );
 }
 
-export type { ButtonRenderState } from './button-state.js';
-
 export { usePendingAction } from './button-action.js';
-export { ScrollStripButton } from './scroll-strip-button.js';
-
-export { runPendingAction } from './pending-action.js';
+export type { ButtonRenderState } from './button-state.js';
 export { useInheritedDisabled } from './button-state.js';
+export { runPendingAction } from './pending-action.js';
+export { ScrollStripButton } from './scroll-strip-button.js';

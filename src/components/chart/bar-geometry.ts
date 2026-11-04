@@ -1,18 +1,17 @@
 // The bars of a bar chart and its scales, from its values and box (specs/CHART.md).
 
-import type { Orientation } from '../../core/props.js';
-import { createBandScale, type BandScale } from '../../utils/band-scale.js';
-import { createLinearScale, type LinearScale } from '../../utils/linear-scale.js';
+import type { Key, Orientation } from '../../core/props.js';
+import { type BandScale, createBandScale } from '../../utils/band-scale.js';
 import { getNumberFormat } from '../../utils/intl-format.js';
+import { createLinearScale, type LinearScale } from '../../utils/linear-scale.js';
 import { requireDefined } from '../../utils/require-defined.js';
-import type { Key } from '../../core/props.js';
 import { createPlaceIdentities, toValueIdentity } from './chart-identity.js';
 import {
+  type ChartBox,
+  type ChartMargin,
   countTicks,
   resolvePlotBox,
   roundCoordinate,
-  type ChartBox,
-  type ChartMargin,
 } from './chart-layout.js';
 
 /** `grouped` sets a category's bars side by side; `stacked` piles them into one bar. */

@@ -1,12 +1,12 @@
 'use client';
 
+import { type RefObject, useId } from 'react';
 import { CloseGlyph, EditGlyph } from '../../core/glyphs.js';
-import { useId, type RefObject } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { useRemovalFocus } from '../../utils/use-removal-focus.js';
-import type { ChatQueuedMessage } from '../chat-controller/chat-controller.js';
 import { Button } from '../button/button.js';
 import { ChatAttachmentList } from '../chat-attachment/chat-attachment.js';
+import type { ChatQueuedMessage } from '../chat-controller/chat-controller.js';
 import { chatHooks as hooks } from './chat-hooks.js';
 
 interface ChatQueueProps {

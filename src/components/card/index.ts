@@ -1,4 +1,3 @@
-export { Card } from './card.js';
 export type {
   CardBreakpoint,
   CardPresentation,
@@ -6,10 +5,8 @@ export type {
   CardProps,
   CardVariant,
 } from './card.js';
+export { Card } from './card.js';
 export type { CardActionOptions } from './card-action.js';
-export { CardAction, CardTitle } from './card-parts.js';
-export type { CardActionProps, CardTitleProps } from './card-parts.js';
-export { CardGrid, CardGridItem } from './card-grid.js';
 export type {
   CardGridItemProps,
   CardGridItemSize,
@@ -17,3 +14,6 @@ export type {
   CardGridLayout,
   CardGridProps,
 } from './card-grid.js';
+export { CardGrid, CardGridItem } from './card-grid.js';
+export type { CardActionProps, CardTitleProps } from './card-parts.js';
+export { CardAction, CardTitle } from './card-parts.js';

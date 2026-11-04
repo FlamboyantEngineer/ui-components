@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useState, type RefObject } from 'react';
+import { type RefObject, useEffect, useLayoutEffect, useState } from 'react';
 import { autoUpdateOverlay } from './overlay-auto-update.js';
 
 interface FollowAnchorOptions {

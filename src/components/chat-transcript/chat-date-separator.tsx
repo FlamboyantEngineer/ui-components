@@ -1,8 +1,8 @@
 'use client';
 
-import { parseIsoDate, parseIsoDateTime, toCalendarDate } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
+import { parseIsoDate, parseIsoDateTime, toCalendarDate } from '../../primitives/index.js';
 import { RelativeTime, type RelativeTimeProps } from '../relative-time/relative-time.js';
 
 export interface ChatDateSeparatorProps

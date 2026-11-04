@@ -1,21 +1,21 @@
 'use client';
 
-import { getElementByIdWithin } from '../../utils/owner-window.js';
 import { useId, useMemo, useState } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { getElementByIdWithin } from '../../utils/owner-window.js';
 import { requireDefined } from '../../utils/require-defined.js';
+import { measureInScroller } from '../../utils/scroll-geometry.js';
+import type { ScrollAnchor } from '../../utils/scroll-offset-map.js';
+import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { useSyncedScroll } from '../../utils/use-synced-scroll.js';
-import { type ScrollAnchor } from '../../utils/scroll-offset-map.js';
 import { ChangeNavigation } from '../text-diff/text-diff.js';
 import type { MergeSide } from './merge-blocks.js';
 import { mergeViewHooks as hooks } from './merge-view-hooks.js';
-import { getConflictId, MergeResultPane, type MergeLabels } from './merge-view-result.js';
+import { getConflictId, type MergeLabels, MergeResultPane } from './merge-view-result.js';
 import { MergeSidePane } from './merge-view-sides.js';
-import { useMergeState, type MergeViewResult } from './use-merge-state.js';
-import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
-import { measureInScroller } from '../../utils/scroll-geometry.js';
+import { type MergeViewResult, useMergeState } from './use-merge-state.js';
 
 export type { MergeResolution } from './merge-blocks.js';
 export type { MergeViewResult } from './use-merge-state.js';

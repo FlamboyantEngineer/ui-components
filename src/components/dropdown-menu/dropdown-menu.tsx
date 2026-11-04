@@ -1,22 +1,22 @@
 'use client';
 
-import { ChevronDownGlyph, MoreGlyph } from '../../core/glyphs.js';
-import { useContext, type ReactNode } from 'react';
-import { OverlayTriggerStateContext } from '../../primitives/index.js';
+import { type ReactNode, useContext } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
+import { ChevronDownGlyph, MoreGlyph } from '../../core/glyphs.js';
 import { createHooks, splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps, Placement } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
+import { OverlayTriggerStateContext } from '../../primitives/index.js';
 import { Button, type ButtonProps } from '../button/button.js';
 import type { IconSource } from '../icon/icon.js';
 import {
   Menu,
   MenuPopover,
-  MenuTrigger,
-  useMenuSelection,
   type MenuProps,
   type MenuSize,
+  MenuTrigger,
   type MenuTriggerProps,
+  useMenuSelection,
 } from '../menu/menu.js';
 
 export interface DropdownMenuProps

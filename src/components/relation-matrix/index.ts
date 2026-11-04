@@ -1,4 +1,3 @@
-export { RelationMatrix } from './relation-matrix.js';
 export type {
   RelationMatrixAxisAction,
   RelationMatrixAxisOperation,
@@ -10,5 +9,6 @@ export type {
   RelationMatrixMenuIcons,
   RelationMatrixProps,
 } from './relation-matrix.js';
-export { setRelation, toggleRelation } from './relation-matrix-model.js';
+export { RelationMatrix } from './relation-matrix.js';
 export type { RelationMatrixRelation } from './relation-matrix-model.js';
+export { setRelation, toggleRelation } from './relation-matrix-model.js';

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, type RefObject } from 'react';
+import { type RefObject, useEffect } from 'react';
 import { observeViewport } from './observe-viewport.js';
 import { useLatest } from './use-latest.js';
 

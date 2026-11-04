@@ -1,11 +1,11 @@
-import { createRef } from 'react';
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { createRef } from 'react';
 import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { DescriptionList, DescriptionRow, type DescriptionRowSpan } from './description-list.js';
-import { formatDescriptionValue, type DescriptionValue } from './format-description-value.js';
+import { type DescriptionValue, formatDescriptionValue } from './format-description-value.js';
 
 function Sample(props: { layout?: 'inline' | 'stacked'; columns?: 1 | 2 }) {
   return (

@@ -1,10 +1,10 @@
-import { FolderGlyph } from '../../core/glyphs.js';
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
-import type { Key } from '../../core/props.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { FolderGlyph } from '../../core/glyphs.js';
+import type { Key } from '../../core/props.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { ViewSwitcher, type ViewSwitcherView } from './view-switcher.js';
 

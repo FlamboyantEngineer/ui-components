@@ -1,15 +1,15 @@
 'use client';
 
-import { useContext, useLayoutEffect, useState, type RefObject } from 'react';
+import { type RefObject, useContext, useLayoutEffect, useState } from 'react';
+import { useLoadingBoundary } from '../../core/loading-boundary.js';
+import { useOverlayRegistration } from '../../core/overlay-presence.js';
 import {
   OverlayTriggerStateContext,
   PopoverContext,
   useSlottedContext,
 } from '../../primitives/index.js';
-import { useLoadingBoundary } from '../../core/loading-boundary.js';
-import { useOverlayRegistration } from '../../core/overlay-presence.js';
-import { useLatest } from '../../utils/use-latest.js';
 import { isHTMLElement } from '../../utils/is-element.js';
+import { useLatest } from '../../utils/use-latest.js';
 
 interface PopoverPresenceProps {
   /** The popover's own open state, when it has one; otherwise its trigger's state decides. */

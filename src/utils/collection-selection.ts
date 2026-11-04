@@ -1,8 +1,8 @@
-import type { Key, Selection } from '../core/props.js';
 import type { SelectionProps } from '../core/events.js';
+import type { Key, Selection } from '../core/props.js';
 import { fromCollectionKey } from './from-collection-key.js';
-import { toCollectionKey } from './to-collection-key.js';
 import { materializeIterator } from './materialize-iterator.js';
+import { toCollectionKey } from './to-collection-key.js';
 
 const primitiveSelections = new WeakMap<Set<Key>, Set<Key>>();
 

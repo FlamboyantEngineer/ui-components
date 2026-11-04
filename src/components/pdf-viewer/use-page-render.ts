@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useMemo, useState, type RefObject } from 'react';
+import { type RefObject, useEffect, useMemo, useState } from 'react';
+import { useLatest } from '../../utils/use-latest.js';
+import { drawPage, type PageBitmap } from './page-bitmap.js';
 import {
   createAnnotationLayer,
   createTextLayer,
@@ -10,9 +12,7 @@ import {
   type PdfTextLayer,
   type PdfViewport,
 } from './pdf-engine.js';
-import { drawPage, type PageBitmap } from './page-bitmap.js';
 import type { LoadedPdf } from './use-pdf-document.js';
-import { useLatest } from '../../utils/use-latest.js';
 
 interface UsePageRenderOptions<
   V extends PdfViewport = PdfViewport,

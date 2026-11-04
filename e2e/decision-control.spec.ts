@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Decision Control lab', () => {
   test('UIC-DECISION-CONTROL-1.1 UIC-DECISION-CONTROL-1.2 UIC-DECISION-CONTROL-1.3 UIC-DECISION-CONTROL-2.1 offers the decisions and the comment', async ({

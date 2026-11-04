@@ -2,14 +2,14 @@
 
 import { act, screen } from '@testing-library/react';
 import type { userEvent } from '@testing-library/user-event';
-import { Input } from '../src/primitives/index.js';
 import {
   Field,
-  useFieldState,
   type FieldProps,
   type FieldState,
   type FieldStateOptions,
+  useFieldState,
 } from '../src/components/field/field.js';
+import { Input } from '../src/primitives/index.js';
 
 export interface TextFieldProps extends Omit<FieldProps<string>, 'state' | 'label' | 'children'> {
   label?: string;

@@ -1,19 +1,18 @@
-import { ChevronDownGlyph, MoreVerticalGlyph, PlusGlyph } from '../../src/core/glyphs.js';
 import type { ReactNode } from 'react';
 import { BooleanField } from '../../src/components/boolean-field/boolean-field.js';
 import { Button } from '../../src/components/button/button.js';
 import { Checkbox } from '../../src/components/checkbox/checkbox.js';
+import { Choice, ChoiceGroup } from '../../src/components/choice-group/choice-group.js';
 import { ColorField } from '../../src/components/color-field/color-field.js';
 import { Combobox, type ComboboxItem } from '../../src/components/combobox/combobox.js';
 import { DateTimeField } from '../../src/components/date-time-field/date-time-field.js';
 import { DropdownMenu } from '../../src/components/dropdown-menu/dropdown-menu.js';
-import { Menubar, MenubarMenu } from '../../src/components/menubar/menubar.js';
-import type { MenuEntry } from '../../src/components/menu/menu.js';
 import { FormulaBar } from '../../src/components/formula-bar/formula-bar.js';
+import type { MenuEntry } from '../../src/components/menu/menu.js';
+import { Menubar, MenubarMenu } from '../../src/components/menubar/menubar.js';
 import { NumberField } from '../../src/components/number-field/number-field.js';
 import { PinInput } from '../../src/components/pin-input/pin-input.js';
 import { RelativeDateField } from '../../src/components/relative-date-field/relative-date-field.js';
-import { Choice, ChoiceGroup } from '../../src/components/choice-group/choice-group.js';
 import { SearchField } from '../../src/components/search-field/search-field.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import {
@@ -24,8 +23,9 @@ import { Switch } from '../../src/components/switch/switch.js';
 import { TagsInput } from '../../src/components/tags-input/tags-input.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { ZoomControl } from '../../src/components/zoom-control/zoom-control.js';
+import { ChevronDownGlyph, MoreVerticalGlyph, PlusGlyph } from '../../src/core/glyphs.js';
 import type { ControlSize } from '../../src/core/props.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { ChipDescenders } from './control-sizes-chips.js';
 import { PeoplePickerSizes, PinCellGeometry } from './control-sizes-more.js';
 

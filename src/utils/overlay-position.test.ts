@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { DEFAULT_OVERLAY_GAP } from './overlay-defaults.js';
 import {
   createOverlayPointRect,
+  type OverlayRect,
   resolveOverlayPlacement,
   toOverlayRect,
-  type OverlayRect,
 } from './overlay-position.js';
 
 function rect({ left, top, width, height }: Omit<OverlayRect, 'right' | 'bottom'>): OverlayRect {

@@ -1,9 +1,9 @@
 import type { CSSProperties, Ref } from 'react';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { SegmentedBarShape } from './segmented-bar.js';
-import { toSegmentProperties, type SegmentedPart } from './segmented-layout.js';
-import type { SegmentedAnimationState } from './use-segmented-animation.js';
 import { segmentedBarHooks as hooks } from './segmented-bar-hooks.js';
+import { type SegmentedPart, toSegmentProperties } from './segmented-layout.js';
+import type { SegmentedAnimationState } from './use-segmented-animation.js';
 
 /** The same shares around a full circle; a pie's thicker stroke reaches its center. */
 export function SegmentedCircle({

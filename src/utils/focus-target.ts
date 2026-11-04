@@ -3,9 +3,9 @@
 // Focus targets a caller names (`initialFocus`, `finalFocus`) and returning focus to one when a
 // focus-managing container leaves the page. Shared by Modal and FocusScope.
 
-import { useLayoutEffect, useRef, type RefObject } from 'react';
-import { isElement } from './is-element.js';
+import { type RefObject, useLayoutEffect, useRef } from 'react';
 import { containsComposed, getComposedActiveElement, isFocusLost } from './composed-focus.js';
+import { isElement } from './is-element.js';
 
 export {
   containsComposed,

@@ -1,10 +1,9 @@
 'use client';
 
-import { ChevronDownGlyph } from '../../core/glyphs.js';
 // The button every compact composer control draws: its icon and label, or its icon alone while the
 // composer is compact (specs/MESSAGE-COMPOSER.md, UIC-MESSAGE-COMPOSER-6.4).
-
 import type { ReactNode } from 'react';
+import { ChevronDownGlyph } from '../../core/glyphs.js';
 import { Button, type ButtonProps } from '../button/button.js';
 import { hasIcon, type IconSource } from '../icon/icon.js';
 import { useMessageComposerControls } from './composer-controls.js';

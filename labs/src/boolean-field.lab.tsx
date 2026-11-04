@@ -4,14 +4,14 @@ import {
   type BooleanFieldVariant,
 } from '../../src/components/boolean-field/boolean-field.js';
 import type { ControlSize } from '../../src/core/props.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-import { LabOutput } from './lab-output.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import {
   fieldLayouts,
+  type FieldStateName,
   fieldStates,
   useLabFieldState,
-  type FieldStateName,
 } from './field-states.js';
+import { LabOutput } from './lab-output.js';
 
 const variants = [
   'checkbox',

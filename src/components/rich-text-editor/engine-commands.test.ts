@@ -7,15 +7,15 @@ import {
   type Transaction,
 } from 'prosemirror-state';
 import { describe, expect, it } from 'vitest';
-import type { RichTextNode } from './rich-text-document.js';
 import {
   getLinkAt,
   isCommandActive,
   isCommandSupported,
   toEngineCommand,
 } from './engine-commands.js';
-import type { RichTextCommand } from './rich-text-command.js';
 import { getEngineSchema } from './engine-schema.js';
+import type { RichTextCommand } from './rich-text-command.js';
+import type { RichTextNode } from './rich-text-document.js';
 import { createRichTextSchema } from './rich-text-schema.js';
 
 const schema = getEngineSchema(createRichTextSchema());

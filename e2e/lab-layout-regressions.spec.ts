@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 test('UIC-ATTRIBUTION-1.4 aligns card names with the surrounding sentence', async ({
   page,

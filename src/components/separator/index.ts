@@ -1,4 +1,3 @@
-export { Separator } from './separator.js';
 export type {
   SeparatorElement,
   SeparatorLabelPlacement,
@@ -7,3 +6,4 @@ export type {
   SeparatorRenderState,
   SeparatorVariant,
 } from './separator.js';
+export { Separator } from './separator.js';

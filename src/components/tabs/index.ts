@@ -1,4 +1,3 @@
-export { Tab, TabList, TabPanel, Tabs } from './tabs.js';
 export type {
   TabListOverflow,
   TabListProps,
@@ -16,3 +15,4 @@ export type {
   TabsRenderState,
   TabsSize,
 } from './tabs.js';
+export { Tab, TabList, TabPanel, Tabs } from './tabs.js';

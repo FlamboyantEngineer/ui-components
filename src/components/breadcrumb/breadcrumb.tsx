@@ -1,40 +1,39 @@
 'use client';
 
-import { ChevronDownGlyph, ChevronLeftGlyph, ChevronRightGlyph } from '../../core/glyphs.js';
 import {
-  useMemo,
   type ComponentProps,
   type KeyboardEvent,
   type ReactElement,
   type ReactNode,
   type Ref,
   type RefCallback,
+  useMemo,
 } from 'react';
+import { ChevronDownGlyph, ChevronLeftGlyph, ChevronRightGlyph } from '../../core/glyphs.js';
+import type { BaseProps, ControlSize, Key, NativeProps, RefProps } from '../../core/props.js';
+import { useUiStrings } from '../../core/provider.js';
 import {
   Breadcrumb as AriaBreadcrumb,
   Breadcrumbs as AriaBreadcrumbs,
   Link as AriaLink,
   useLocale,
 } from '../../primitives/index.js';
-import type { BaseProps, Key, NativeProps, RefProps, ControlSize } from '../../core/props.js';
-import { useUiStrings } from '../../core/provider.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
+import { Icon, type IconSource, toIconProps } from '../icon/icon.js';
 import { renderLinkElement } from '../link/link.js';
-import { Icon, type IconSource } from '../icon/icon.js';
-import { toIconProps } from '../icon/icon.js';
 import type { MenuEntry } from '../menu/menu.js';
 import { VisibleCollection } from '../overflow-list/overflow-list.js';
 import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';
+import { breadcrumbHooks as hooks } from './breadcrumb-hooks.js';
 import {
+  type CrumbOverflow,
   OverflowCrumb,
   toCrumbKey,
   toCrumbText,
   useCrumbOverflow,
-  type CrumbOverflow,
 } from './crumb-overflow.js';
-import { breadcrumbHooks as hooks } from './breadcrumb-hooks.js';
 
 /** `truncate` lets labels ellipsize; `menu` collapses middle crumbs into a menu after the first. */
 export type BreadcrumbOverflow = 'truncate' | 'menu';

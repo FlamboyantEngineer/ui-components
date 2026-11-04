@@ -1,16 +1,16 @@
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { Input } from '../../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { Input } from '../../primitives/index.js';
 import {
   Field,
-  FieldScopeContext,
-  toAriaControlProps,
-  useFieldControl,
   type FieldControlProps,
   type FieldInputProps,
+  FieldScopeContext,
   type FieldState,
+  toAriaControlProps,
+  useFieldControl,
 } from './field.js';
 
 interface SampleProps extends FieldInputProps<string> {

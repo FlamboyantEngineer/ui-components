@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useShallowStable } from '../../utils/use-shallow-stable.js';
 import type { TableStatus } from './table-body.js';
 import type { TableSelectionBarProps } from './table-bulk-edit.js';
 import { createCellGrid } from './table-cell-range.js';
@@ -9,10 +10,9 @@ import type { TableColumn, TableRow } from './table-rows.js';
 import type { TableStructure } from './table-structure.js';
 import type { CellEditing } from './use-cell-editing.js';
 import { useCellSelection } from './use-cell-selection.js';
-import type { TableGridOptions } from './use-table-grid.js';
 import type { TablePinOffsets } from './use-pinned-offsets.js';
+import type { TableGridOptions } from './use-table-grid.js';
 import type { TableReorder } from './use-table-reorder.js';
-import { useShallowStable } from '../../utils/use-shallow-stable.js';
 import type { TableSelection } from './use-table-selection.js';
 
 /** The parts of the grid every row and cell renders from. */

@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { requireDefined } from '../../utils/require-defined.js';
 import type { FilterField } from '../filter-bar/filter-bar.js';
 import {
+  type ConditionGroup,
+  type ConditionRule,
   copyConditionNode,
   createConditionMatcher,
   findConditionNode,
@@ -9,8 +11,6 @@ import {
   moveConditionNode,
   removeConditionNode,
   replaceConditionNode,
-  type ConditionGroup,
-  type ConditionRule,
 } from './condition-tree.js';
 
 const rule = (id: string, value = 1): ConditionRule => ({

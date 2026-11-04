@@ -8,7 +8,7 @@
 // every size (UIC-LABS-3.7). Containers and container queries are named (UIC-LABS-3.1). A literal
 // z-index stays on the in-page scale.
 
-import { readFileSync, readdirSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { option, reportProblems, root } from './lib/script.mjs';
 

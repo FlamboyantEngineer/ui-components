@@ -9,7 +9,6 @@ import { Link } from '../link/link.js';
 import { ProseTable } from '../prose-table/prose-table.js';
 import { Separator } from '../separator/separator.js';
 import { TextMatch } from '../text-match/text-match.js';
-import type { MarkdownNodePlace, MarkdownRenderNode } from './markdown-place.js';
 import type {
   MarkdownBlock,
   MarkdownInline,
@@ -17,6 +16,7 @@ import type {
   MarkdownNode,
   MarkdownTable,
 } from './markdown-nodes.js';
+import type { MarkdownNodePlace, MarkdownRenderNode } from './markdown-place.js';
 
 export interface RenderContext {
   /** The caller's `renderNode`. */

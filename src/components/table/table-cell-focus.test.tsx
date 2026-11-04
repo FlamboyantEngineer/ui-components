@@ -1,7 +1,7 @@
-import { PlusGlyph } from '../../core/glyphs.js';
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import { PlusGlyph } from '../../core/glyphs.js';
 import { Button } from '../button/button.js';
 import { Table, type TableProps } from './table.js';
 import type { TableColumn } from './table-rows.js';

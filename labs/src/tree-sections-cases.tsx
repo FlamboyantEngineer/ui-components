@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import type { Key, Selection } from '../../src/core/props.js';
 import { Tree, type TreeSectionData } from '../../src/components/tree/tree.js';
+import type { Key, Selection } from '../../src/core/props.js';
 import { RowMenu } from './row-menu.js';
 
 interface Shelf {

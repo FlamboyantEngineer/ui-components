@@ -1,18 +1,18 @@
 'use client';
 
+import { type ReactNode, useRef } from 'react';
 import { DownloadGlyph, RotateGlyph } from '../../core/glyphs.js';
-import { useRef, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { FallbackImage } from '../../utils/fallback-image.js';
 import { getFileGlyph } from '../../utils/file-glyph.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import { useScrollStripOverflow } from '../../utils/use-scroll-strip-overflow.js';
 import { Button } from '../button/button.js';
 import { Icon } from '../icon/icon.js';
 import { Link } from '../link/link.js';
 import { ZoomControl } from '../zoom-control/zoom-control.js';
-import { FallbackImage } from '../../utils/fallback-image.js';
-import { useScrollStripOverflow } from '../../utils/use-scroll-strip-overflow.js';
 
 /** One file a media viewer shows: an image it draws itself, or another file the caller renders. */
 export interface MediaViewerItem {

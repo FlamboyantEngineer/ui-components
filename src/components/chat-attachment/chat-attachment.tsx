@@ -1,20 +1,21 @@
 'use client';
 
-import { useMergedRefs } from '../../utils/use-merged-refs.js';
-import { isFocusLost } from '../../utils/focus-target.js';
-import { useLayoutEffect, useRef, type RefObject } from 'react';
-import { useLocale } from '../../primitives/index.js';
+import { type RefObject, useLayoutEffect, useRef } from 'react';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useLocale } from '../../primitives/index.js';
+import { isFocusLost } from '../../utils/focus-target.js';
+import { getOwnerDocument } from '../../utils/owner-window.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import {
+  type ChatAttachmentData,
+  type ChatAttachmentStatus,
   getAttachmentGlyph,
   getAttachmentImage,
   getAttachmentKind,
   resolveAttachmentStatus,
   toAttachmentUrl,
-  type ChatAttachmentData,
-  type ChatAttachmentStatus,
 } from './attachment-model.js';
 import {
   AttachmentChip,
@@ -25,7 +26,6 @@ import {
   chatAttachmentHooks as hooks,
   useThumbnail,
 } from './attachment-parts.js';
-import { getOwnerDocument } from '../../utils/owner-window.js';
 
 export type {
   ChatAttachmentData,
@@ -144,5 +144,5 @@ export function ChatAttachment({
   );
 }
 
-export { ChatAttachmentList } from './chat-attachment-list.js';
 export type { ChatAttachmentFocusTarget, ChatAttachmentListProps } from './chat-attachment-list.js';
+export { ChatAttachmentList } from './chat-attachment-list.js';

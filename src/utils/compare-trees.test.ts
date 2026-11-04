@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  type ComparedTreeRow,
+  type CompareTreeNode,
   compareTrees,
   isSameTrees,
-  type CompareTreeNode,
-  type ComparedTreeRow,
 } from './compare-trees.js';
 import { requireDefined } from './require-defined.js';
 

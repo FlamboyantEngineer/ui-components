@@ -4,8 +4,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { createCodeBlockOverride } from '../code-block/markdown-code-block.js';
 import { Markdown } from './markdown.js';
 import type { MarkdownBlock } from './markdown-nodes.js';
-import { parseMarkdown } from './parse-markdown.js';
 import { prepareStreamingMarkdown } from './markdown-streaming.js';
+import { parseMarkdown } from './parse-markdown.js';
 import { parseStreamingMarkdown, type StreamingMarkdownParse } from './parse-streaming-markdown.js';
 
 /** The text of every code block, depth first. */

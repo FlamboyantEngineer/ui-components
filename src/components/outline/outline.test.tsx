@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useRef, useState, createRef } from 'react';
+import { createRef, useRef, useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import type { Key } from '../../core/props.js';

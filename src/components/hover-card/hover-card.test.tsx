@@ -1,12 +1,12 @@
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
-import { Dialog, Link } from '../../primitives/index.js';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { Dialog, Link } from '../../primitives/index.js';
 import { Button } from '../button/button.js';
 import { Tooltip } from '../tooltip/tooltip.js';
-import { HoverCard, HoverCardTrigger, type HoverCardProps } from './hover-card.js';
+import { HoverCard, type HoverCardProps, HoverCardTrigger } from './hover-card.js';
 
 type TriggerOptions = Omit<Parameters<typeof HoverCardTrigger>[0], 'children'>;
 type User = ReturnType<typeof userEvent.setup>;

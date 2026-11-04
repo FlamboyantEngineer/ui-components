@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, familySelector, test, matrixCell } from './fixtures.js';
+import { expect, familySelector, matrixCell, test } from './fixtures.js';
 
 function panel(page: Page): Locator {
   return matrixCell(page, 'layout=responsive width=wide');

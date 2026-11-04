@@ -1,11 +1,11 @@
 'use client';
 
-import { createContext, useContext, type ReactNode } from 'react';
+import { createContext, type ReactNode, useContext } from 'react';
 import { pickDataAttributes } from '../../core/hooks.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
-import type { BadgeCountVariant } from '../badge/badge.js';
 import { ActionRow, type ActionRowAction } from '../action-row/action-row.js';
+import type { BadgeCountVariant } from '../badge/badge.js';
 import type { IconSource } from '../icon/icon.js';
 import { TabPanel } from '../tabs/tabs.js';
 import { dockPanelHooks as hooks } from './dock-panel-hooks.js';

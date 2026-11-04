@@ -1,8 +1,8 @@
 import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { UiProvider } from '../../core/provider.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { UiProvider } from '../../core/provider.js';
 import { Sparkline } from '../sparkline/sparkline.js';
 import { StatTile } from './stat-tile.js';
 

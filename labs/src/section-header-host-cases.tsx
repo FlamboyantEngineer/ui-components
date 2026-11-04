@@ -1,11 +1,11 @@
-import { useState, type CSSProperties, type ReactNode } from 'react';
+import { type CSSProperties, type ReactNode, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
+  type HeadingLevel,
   HeadingLevelContext,
   Section,
   SectionHeader,
   useHeadingLevel,
-  type HeadingLevel,
 } from '../../src/components/section-header/section-header.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
 

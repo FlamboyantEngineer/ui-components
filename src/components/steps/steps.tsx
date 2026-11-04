@@ -1,16 +1,16 @@
 'use client';
 
-import { CheckGlyph, ErrorGlyph, MinusGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
-import { Button as AriaButton, useNumberFormatter } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
+import { CheckGlyph, ErrorGlyph, MinusGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
-import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import type { BaseProps, Density, Key, Orientation, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { Button as AriaButton, useNumberFormatter } from '../../primitives/index.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
-import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
+import { Icon, type IconSource, toIconProps } from '../icon/icon.js';
+import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 
 /** Where a step stands: done, being worked on, not reached, failed or passed over. */
 export type StepsStatus = 'complete' | 'current' | 'upcoming' | 'error' | 'skipped';

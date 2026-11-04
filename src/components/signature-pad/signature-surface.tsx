@@ -1,10 +1,11 @@
 'use client';
 
+import { type PointerEvent, type RefObject, useId, useMemo, useRef, useState } from 'react';
 import { DeleteGlyph, UndoGlyph } from '../../core/glyphs.js';
-import { useId, useMemo, useRef, useState, type PointerEvent, type RefObject } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';
+import { joinIds } from '../../utils/join-ids.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { useNativeReset } from '../../utils/use-native-reset.js';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
@@ -12,13 +13,12 @@ import { Button } from '../button/button.js';
 import type { FieldControlProps } from '../field/field.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import {
-  formatSignatureStroke,
-  signatureSpace,
   type DrawnSignature,
+  formatSignatureStroke,
   type SignaturePoint,
+  signatureSpace,
   withoutLastStroke,
 } from './signature-path.js';
-import { joinIds } from '../../utils/join-ids.js';
 
 interface SignatureSurfaceProps {
   control: FieldControlProps;

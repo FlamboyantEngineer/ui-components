@@ -3,7 +3,7 @@
 // Keeps keyboard focus inside a component when an update hides or removes the element holding it.
 // Shared by Navigation Rail, Outline, Dock Panel, Relation Columns, Diagram Canvas and Carousel.
 
-import { useEffect, useLayoutEffect, useRef, type RefObject } from 'react';
+import { type RefObject, useEffect, useLayoutEffect, useRef } from 'react';
 import { containsComposed, getComposedActiveElement, isFocusLost } from './focus-target.js';
 import { isElement, isNode } from './is-element.js';
 import { useLatest } from './use-latest.js';

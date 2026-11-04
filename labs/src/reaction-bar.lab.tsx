@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ReactionBar, type ReactionEntry } from '../../src/components/reaction-bar/reaction-bar.js';
 import { UiProvider } from '../../src/core/provider.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { ReactionBarHostCases } from './reaction-bar-host-cases.js';
 import { customEmoji, sets, toggleReaction } from './reaction-samples.js';
 

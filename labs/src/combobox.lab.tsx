@@ -1,3 +1,13 @@
+import { useCallback, useRef, useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
+import {
+  Combobox,
+  type ComboboxItem,
+  type ComboboxLoader,
+  type ComboboxOption,
+} from '../../src/components/combobox/combobox.js';
+import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
+import { TextField } from '../../src/components/text-field/text-field.js';
 import {
   CalendarGlyph,
   EditGlyph,
@@ -6,21 +16,11 @@ import {
   LinkGlyph,
   PlusGlyph,
 } from '../../src/core/glyphs.js';
-import { useCallback, useRef, useState } from 'react';
 import type { Key } from '../../src/core/props.js';
-import { Button } from '../../src/components/button/button.js';
-import {
-  Combobox,
-  type ComboboxItem,
-  type ComboboxLoader,
-  type ComboboxOption,
-} from '../../src/components/combobox/combobox.js';
-import { TextField } from '../../src/components/text-field/text-field.js';
-import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { NarrowRows } from './combobox-narrow-cases.js';
 import { LabForm, MountOnDemand } from './lab-form.js';
 import { LabOutput } from './lab-output.js';
-import { NarrowRows } from './combobox-narrow-cases.js';
 import { ShadowRootApp } from './shadow-root-host.js';
 
 const sizes = ['xs', 'sm', 'md', 'lg'] as const;

@@ -1,18 +1,18 @@
 import { useState } from 'react';
-import { QuoteGlyph } from '../../src/core/glyphs.js';
 import {
-  ChatMessageActions,
   type ChatFeedback,
   type ChatFeedbackRating,
+  ChatMessageActions,
   type ChatMessageCommandProps,
 } from '../../src/components/chat-message-actions/chat-message-actions.js';
+import { QuoteGlyph } from '../../src/core/glyphs.js';
 import {
   ConversationDemo,
   describeFeedback,
   feedbackReasons,
 } from './chat-message-actions-conversation.js';
 import { EmojiOptionsDemo } from './chat-message-actions-emoji.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const commandSets = ['copy', 'ratings', 'reasons', 'reply', 'own', 'all'] as const;
 type CommandSet = (typeof commandSets)[number];

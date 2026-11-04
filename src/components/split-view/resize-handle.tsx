@@ -1,18 +1,18 @@
 'use client';
 
-import { measureScale } from '../../utils/element-scale.js';
 import {
+  type KeyboardEvent,
+  type PointerEvent,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
-  type KeyboardEvent,
-  type PointerEvent,
 } from 'react';
-import { useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, ContainerProps, ControlSize, Orientation } from '../../core/props.js';
+import { useLocale } from '../../primitives/index.js';
 import { clamp } from '../../utils/clamp.js';
+import { measureScale } from '../../utils/element-scale.js';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import { Portal } from '../portal/portal.js';
 import { resolveResizeKeyboardValue } from './resize-keyboard.js';

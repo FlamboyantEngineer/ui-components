@@ -2,19 +2,18 @@
 
 import {
   createContext,
+  type HTMLAttributes,
+  type RefObject,
   useContext,
   useEffect,
   useMemo,
   useRef,
-  type HTMLAttributes,
-  type RefObject,
 } from 'react';
-import { useLatest } from '../../utils/use-latest.js';
-import { useDrag, useDrop } from '../../primitives/index.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
+import { useDrag, useDrop } from '../../primitives/index.js';
 import { mergeProps } from '../../utils/merge-props.js';
-import { Icon, type IconSource } from '../icon/icon.js';
-import { toIconProps } from '../icon/icon.js';
+import { useLatest } from '../../utils/use-latest.js';
+import { Icon, type IconSource, toIconProps } from '../icon/icon.js';
 import { diagramHooks as hooks } from './diagram-hooks.js';
 import { snapToGrid, toDiagramPoint } from './diagram-model.js';
 import type { DiagramPoint } from './edge-route.js';

@@ -1,11 +1,11 @@
-import { SearchGlyph, WarningGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
 import {
   EmptyState,
   type EmptyStateVariant,
 } from '../../src/components/empty-state/empty-state.js';
-import { Button } from '../../src/components/button/button.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { SearchGlyph, WarningGlyph } from '../../src/core/glyphs.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const variants: EmptyStateVariant[] = ['empty', 'loading', 'error'];
 const copy: Record<EmptyStateVariant, { title: string; description: string }> = {

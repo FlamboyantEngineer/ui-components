@@ -1,12 +1,12 @@
 'use client';
 
-import { useCallback, useRef, useState, type MouseEvent, type RefObject } from 'react';
+import { type MouseEvent, type RefObject, useCallback, useRef, useState } from 'react';
 import type { PressEvent } from '../../core/events.js';
-import type { ElementRender } from '../../utils/render-element.js';
 import { isThenable } from '../../utils/is-thenable.js';
+import type { ElementRender } from '../../utils/render-element.js';
 import { useActiveAfter } from '../../utils/use-delayed-flag.js';
 import type { ButtonProps, ButtonRenderState } from './button.js';
-import { runPendingAction, type PendingAction } from './pending-action.js';
+import { type PendingAction, runPendingAction } from './pending-action.js';
 
 /** The pending lifecycle shared by buttons and controls that run work. */
 export interface ButtonActionProps {

@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+  type DashboardGridItem,
   fitColumns,
   normalizeDashboardLayout,
   placeDashboardItem,
   reflowDashboardLayout,
-  type DashboardGridItem,
 } from './dashboard-layout.js';
 
 const at = (layout: readonly DashboardGridItem[]) =>

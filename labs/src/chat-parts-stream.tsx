@@ -6,14 +6,14 @@ import { useEffect, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { ChatStatusLine } from '../../src/components/chat-activity/index.js';
 import {
-  ChatParts,
   type ChatMessageData,
   type ChatPart,
+  ChatParts,
 } from '../../src/components/chat-parts/index.js';
 import { ChatMessage } from '../../src/components/chat-transcript/chat-transcript.js';
 import { Cluster, Stack } from '../../src/components/layout/layout.js';
-import { requireDefined } from './require-defined.js';
 import { bookingCall, tripSources } from './chat-parts-samples.js';
+import { requireDefined } from './require-defined.js';
 
 /** A reply after one event of its stream. */
 export type ReplyFrame = Pick<ChatMessageData, 'parts' | 'status' | 'statusText'>;

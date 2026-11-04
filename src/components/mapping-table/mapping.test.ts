@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+  type MappingTableColumn,
+  type MappingTableTarget,
   readMappedTarget,
   suggestMapping,
   summarizeMapping,
-  type MappingTableColumn,
-  type MappingTableTarget,
 } from './mapping.js';
 
 const columns: MappingTableColumn[] = [

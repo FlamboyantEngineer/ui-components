@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { UiProvider } from '../../src/core/provider.js';
 

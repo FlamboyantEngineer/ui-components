@@ -1,14 +1,16 @@
 'use client';
 
-import { ChevronDownGlyph, CloseGlyph, SearchGlyph } from '../../core/glyphs.js';
 import {
-  useContext,
-  useLayoutEffect,
-  useRef,
   type ChangeEvent,
   type RefCallback,
   type RefObject,
+  useContext,
+  useLayoutEffect,
+  useRef,
 } from 'react';
+import { ChevronDownGlyph, CloseGlyph, SearchGlyph } from '../../core/glyphs.js';
+import type { ControlSize } from '../../core/props.js';
+import { Glyph, useUiStrings } from '../../core/provider.js';
 import {
   Button as AriaButton,
   ComboBoxStateContext,
@@ -16,17 +18,15 @@ import {
   Input,
 } from '../../primitives/index.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
-import { Glyph, useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { FieldFormValue } from '../field/field.js';
-import type { ControlSize } from '../../core/props.js';
 import { ComboboxChips, type ComboboxChipsProps } from './combobox-chips.js';
+import { comboboxHooks as hooks } from './combobox-hooks.js';
 import {
-  findCompletion,
   type ComboboxCompletion,
   type ComboboxOption,
+  findCompletion,
 } from './combobox-options.js';
-import { comboboxHooks as hooks } from './combobox-hooks.js';
 
 interface ComboboxFieldProps {
   variant: 'default' | 'search';

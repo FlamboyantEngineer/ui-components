@@ -4,8 +4,8 @@
 import type { FieldIssues, FieldLabelLayout } from '../../src/components/field/field.js';
 import {
   FormatToolbar,
-  RichTextEditor,
   type RichTextDocument,
+  RichTextEditor,
   type RichTextNode,
 } from '../../src/components/rich-text-editor/index.js';
 import type { ControlSize } from '../../src/core/props.js';

@@ -4,8 +4,8 @@ import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { ActivityAnnouncer } from './activity-announcer.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { ActivityAnnouncer } from './activity-announcer.js';
 
 /** The assistant is `thinking` (or acting), or `writing` its answer. */
 export type ChatStatusLineActivity = 'thinking' | 'writing';

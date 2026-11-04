@@ -4,15 +4,15 @@ import type { FormEvent, ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import {
-  ViewProbe,
   getContent,
   installEditorDom,
   renderEditor,
   selectRange,
+  ViewProbe,
 } from '../../../test/rich-text-fixtures.js';
 import { Form } from '../form/form.js';
 import { FormatToolbar } from './format-toolbar.js';
-import { RichTextEditor, createRichTextSchema, type RichTextDocument } from './rich-text-editor.js';
+import { createRichTextSchema, type RichTextDocument, RichTextEditor } from './rich-text-editor.js';
 
 installEditorDom();
 

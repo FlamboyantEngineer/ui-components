@@ -1,6 +1,6 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { createRef, useRef, useState, type RefObject } from 'react';
+import { createRef, type RefObject, useRef, useState } from 'react';
 import { describe, expect, it } from 'vitest';
 import { AnchoredTooltip, type AnchoredTooltipProps } from './tooltip.js';
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, type JSX } from 'react';
+import { type JSX, useRef } from 'react';
 import { useTooltipTrigger } from '../../primitives/index.js';
 import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { ManualTooltip, useManualTooltipState } from '../tooltip/tooltip.js';

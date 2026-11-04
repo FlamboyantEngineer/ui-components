@@ -1,9 +1,9 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { expect, it, vi } from 'vitest';
-import { Button } from './button.js';
 import { HoverCard, HoverCardTrigger } from '../hover-card/hover-card.js';
 import { Tooltip } from '../tooltip/tooltip.js';
+import { Button } from './button.js';
 
 for (const kind of ['preview', 'tooltip'] as const) {
   for (const pending of [false, true]) {

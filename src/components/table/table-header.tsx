@@ -1,8 +1,9 @@
 'use client';
 
+import { type ReactNode, useContext, useLayoutEffect, useRef } from 'react';
 import { CheckGlyph, MinusGlyph } from '../../core/glyphs.js';
-import { fromCollectionKey } from '../../utils/from-collection-key.js';
-import { useContext, useLayoutEffect, useRef, type ReactNode } from 'react';
+import type { SortDescriptor } from '../../core/props.js';
+import { useUiStrings } from '../../core/provider.js';
 import {
   Checkbox as AriaCheckbox,
   Column,
@@ -10,8 +11,8 @@ import {
   TableHeader as AriaTableHeader,
   TableStateContext,
 } from '../../primitives/index.js';
-import type { SortDescriptor } from '../../core/props.js';
-import { useUiStrings } from '../../core/provider.js';
+import { fromCollectionKey } from '../../utils/from-collection-key.js';
+import { readOwn } from '../../utils/read-own.js';
 import { Icon } from '../icon/icon.js';
 import { useScrollRegionHeaderRef } from '../scroll-region/scroll-region.js';
 import { getColumnSizing, resolveColumnWidth, type TableColumnWidths } from './column-sizing.js';
@@ -30,7 +31,6 @@ import {
 } from './table-structure.js';
 import type { TableColumnDrag } from './use-column-reorder.js';
 import { computePinOffsets, type TablePinOffsets } from './use-pinned-offsets.js';
-import { readOwn } from '../../utils/read-own.js';
 
 /** What the header row shows: widths, groups, pins, the sort, drops and filters. */
 export interface TableHeaderModel<T> {

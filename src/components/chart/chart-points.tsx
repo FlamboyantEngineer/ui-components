@@ -1,23 +1,23 @@
 'use client';
 
 import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
   type FocusEvent,
   type KeyboardEvent,
   type PointerEvent,
   type ReactNode,
   type RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
 } from 'react';
-import { TooltipTriggerStateContext, type TooltipTriggerState } from '../../primitives/index.js';
 import type { Tone } from '../../core/props.js';
-import { TooltipPanel } from '../tooltip/tooltip.js';
-import { chartHooks as hooks } from './chart-hooks.js';
+import { type TooltipTriggerState, TooltipTriggerStateContext } from '../../primitives/index.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { getOwnerDocument } from '../../utils/owner-window.js';
+import { TooltipPanel } from '../tooltip/tooltip.js';
+import { chartHooks as hooks } from './chart-hooks.js';
 
 /** A drawn value a reader can focus: its series' position and its position along the series. */
 export interface ChartPoint {

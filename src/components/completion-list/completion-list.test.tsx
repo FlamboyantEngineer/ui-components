@@ -7,9 +7,9 @@ import type { Key } from '../../core/props.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import {
   CompletionList,
-  getCompletionOptionId,
   type CompletionListItem,
   type CompletionListProps,
+  getCompletionOptionId,
 } from './completion-list.js';
 
 const people: CompletionListItem[] = [

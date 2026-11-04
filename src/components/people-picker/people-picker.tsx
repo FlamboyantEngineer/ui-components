@@ -5,7 +5,13 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, ControlSize, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { Avatar, splitAvatarIdentity, type AvatarIdentity } from '../avatar/avatar.js';
+import { requireDefined } from '../../utils/require-defined.js';
+import {
+  loadRemotePage,
+  type RemoteLoader,
+  type RemotePage,
+} from '../../utils/use-remote-search.js';
+import { Avatar, type AvatarIdentity, splitAvatarIdentity } from '../avatar/avatar.js';
 import {
   Combobox,
   type ComboboxItem,
@@ -14,12 +20,6 @@ import {
   type ComboboxProps,
   type ComboboxSelectionMode,
 } from '../combobox/combobox.js';
-import {
-  loadRemotePage,
-  type RemoteLoader,
-  type RemotePage,
-} from '../../utils/use-remote-search.js';
-import { requireDefined } from '../../utils/require-defined.js';
 import { UserIdentity, type UserIdentitySize } from '../user-identity/user-identity.js';
 
 /** A person or a group the picker lists. */

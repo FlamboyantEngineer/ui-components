@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 function bar(page: Page, name = 'Editor'): Locator {
   return page.getByRole('menubar', { name });

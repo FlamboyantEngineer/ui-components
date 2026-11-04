@@ -1,7 +1,7 @@
 import { Button } from '../../src/components/button/button.js';
 import { Path } from '../../src/components/path/path.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { formatFolderPath, formatPath } from '../../src/utils/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabHelperCalls } from './lab-helper-calls.js';
 
 const paths: Record<string, string | string[]> = {

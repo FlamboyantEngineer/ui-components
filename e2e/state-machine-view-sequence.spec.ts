@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
+import { expect, test } from './fixtures.js';
 
 function sequence(page: Page, density = 'default'): Locator {
   return page.getByRole('group', { name: `Sequence ${density}`, exact: true });

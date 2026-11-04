@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useLayoutEffect, type RefObject } from 'react';
+import { type RefObject, useEffect, useLayoutEffect } from 'react';
 import { clamp } from './clamp.js';
 import { listenFontsLoaded } from './listen-fonts-loaded.js';
 import { readLineBox } from './read-line-box.js';

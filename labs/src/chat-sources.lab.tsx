@@ -1,13 +1,13 @@
 import { useMemo } from 'react';
 import {
   ChatCitation,
+  type ChatSource,
   ChatSources,
   createCitationOverride,
-  type ChatSource,
 } from '../../src/components/chat-sources/index.js';
 import { Markdown } from '../../src/components/markdown/markdown.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { requireDefined } from './require-defined.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const sources: ChatSource[] = [
   {
