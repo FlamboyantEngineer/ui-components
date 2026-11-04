@@ -12,7 +12,7 @@ afterEach(() => {
   for (const fixture of fixtures.splice(0)) rmSync(fixture, { recursive: true, force: true });
 });
 
-/** Two files in one worker: a stale native observer must only see its original document. */
+/** Two files in one worker: a stale native observer and module state must stay with their own file. */
 function createIsolationFixture() {
   const fixture = mkdtempSync(join(tmpdir(), 'ui-test-isolation-'));
   fixtures.push(fixture);
@@ -27,7 +27,9 @@ function createIsolationFixture() {
     join(fixture, 'first.test.ts'),
     `
 import { it } from 'vitest';
+import { visits } from './state.js';
 it('UIC-TESTING-4.1 leaves a native observer attached to its own document', () => {
+  visits.push('first');
   const body = document.body;
   const observer = new MutationObserver(() => body.setAttribute('aria-hidden', 'true'));
   observer.observe(document.documentElement, { childList: true, subtree: true });
@@ -40,7 +42,9 @@ it('UIC-TESTING-4.1 leaves a native observer attached to its own document', () =
     `
 import { it, expect } from 'vitest';
 import { getByRole } from '@testing-library/dom';
+import { visits } from './state.js';
 it('UIC-TESTING-4.1 keeps the next file accessible to role queries', async () => {
+  expect(visits).toEqual([]);
   const button = document.body.appendChild(document.createElement('button'));
   button.textContent = 'Save';
   await Promise.resolve();
@@ -48,6 +52,7 @@ it('UIC-TESTING-4.1 keeps the next file accessible to role queries', async () =>
 });
 `,
   );
+  writeFileSync(join(fixture, 'state.ts'), 'export const visits: string[] = [];\n');
   writeFileSync(
     join(fixture, 'order.mjs'),
     `
@@ -63,6 +68,7 @@ export default class extends BaseSequencer {
       environment: 'jsdom',
       include: ['*.test.ts'],
       setupFiles: ['./setup.ts'],
+      pool: config.test?.pool,
       isolate: config.test?.isolate,
       maxWorkers: 1,
       fileParallelism: false,
@@ -79,7 +85,7 @@ export default { ...config, test: { ...config.test, sequence: { sequencer: Order
   return fixture;
 }
 
-it('UIC-TESTING-4.1 isolates each file from native observers left by the previous file', () => {
+it('UIC-TESTING-4.1 isolates each file from native observers and module state left by the previous file', () => {
   const fixture = createIsolationFixture();
   const result = spawnSync(
     process.execPath,
