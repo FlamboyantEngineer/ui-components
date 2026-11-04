@@ -125,3 +125,17 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.ui-formula-bar__reference-control {
+  flex: none;
+  min-width: 0;
+}
+.ui-formula-bar__editor-control {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+.ui-formula-bar__editor-control > * {
+  flex: 1;
+  min-width: 0;
+}

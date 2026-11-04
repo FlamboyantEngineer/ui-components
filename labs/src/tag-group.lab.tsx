@@ -1,3 +1,4 @@
+import { UserIdentity } from '../../src/components/user-identity/user-identity.js';
 import { useState } from 'react';
 import type { Key, Selection, Tone } from '../../src/core/props.js';
 import { Tag, TagGroup, type TagGroupSize } from '../../src/components/tag-group/tag-group.js';
@@ -222,6 +223,19 @@ mountLab(
       description="Tags override the group tone; a caller attribute marks an added tag; rich content takes a text value."
     >
       <Marked />
+    </LabSection>
+    <LabSection
+      title="Identity tags"
+      description="Avatars bound the pill; service labels need no initials."
+    >
+      <TagGroup aria-label="People">
+        <Tag id="alex" textValue="Alex Morgan" variant="identity">
+          <UserIdentity name="Alex Morgan" size="xs" />
+        </Tag>
+        <Tag id="service" variant="identity">
+          Service
+        </Tag>
+      </TagGroup>
     </LabSection>
     <LabSection
       title="Controls in tags"
