@@ -14,7 +14,8 @@ describe('UserCardTrigger locking', () => {
   it.each(['press', 'hover'] as const)(
     'UIC-USER-CARD-TRIGGER-1.4 closes an open %s card for good when the trigger turns disabled',
     async (trigger) => {
-      const user = userEvent.setup();
+      // Check pressing separately from hovering during the preview's warm handoff window.
+      const user = userEvent.setup({ skipHover: true });
       const onOpenChange = vi.fn();
       const card = (isDisabled: boolean) => (
         <UserCardTrigger
