@@ -9,6 +9,53 @@ function output(page: Page, name: string): Locator {
   return page.locator(`[data-lab-output="${name}"]`);
 }
 
+test('UIC-NUMBER-FIELD-5.2 preserves fractional origins and stays inside off-grid maxima', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('number-field');
+  const scalar = field(page, 'fractional-origin').getByRole('slider', {
+    name: 'Fractional amount',
+  });
+  const range = field(page, 'fractional-range');
+  const start = range.getByRole('slider', { name: 'Minimum Fractional range' });
+  const end = range.getByRole('slider', { name: 'Maximum Fractional range' });
+  const short = field(page, 'off-grid-maximum').getByRole('slider', { name: 'Short interval' });
+  await expect(scalar).toHaveValue('0.05');
+  await expect(output(page, 'Fractional amount')).toHaveText('0.05');
+  await expect(output(page, 'Fractional change')).toHaveText('none');
+  await expect(start).toHaveValue('0.05');
+  await expect(end).toHaveValue('0.95');
+  await expect(output(page, 'Fractional range')).toHaveText('0.05 to 0.95');
+  await expect(short).toHaveValue('0');
+
+  await scalar.focus();
+  await scalar.press('End');
+  await expect(scalar).toHaveValue('0.95');
+  await expect(output(page, 'Fractional amount')).toHaveText('0.95');
+  await expect(output(page, 'Fractional change')).toHaveText('0.95');
+  await scalar.press('Home');
+  await expect(scalar).toHaveValue('0.05');
+  await start.focus();
+  await start.press('End');
+  await expect(start).toHaveValue('0.95');
+  await end.focus();
+  await end.press('Home');
+  await expect(end).toHaveValue('0.95');
+  await start.focus();
+  await start.press('Home');
+  await end.focus();
+  await end.press('Home');
+  await expect(output(page, 'Fractional range')).toHaveText('0.05 to 0.05');
+  await end.press('End');
+  await expect(output(page, 'Fractional range')).toHaveText('0.05 to 0.95');
+  await short.focus();
+  await short.press('End');
+  await expect(short).toHaveValue('0');
+  await short.press('Home');
+  await expect(short).toHaveValue('0');
+});
+
 async function boxOf(locator: Locator) {
   const box = await locator.boundingBox();
   if (!box) throw new Error('The element has no layout box.');
@@ -198,7 +245,7 @@ test.describe('Number Field lab, slider display', () => {
   });
 });
 
-test('UIC-NUMBER-FIELD-8.3 shows the exported helpers in a host-side snippet', async ({
+test('UIC-NUMBER-FIELD-8.3 UIC-NUMBER-FIELD-5.2 shows the exported helpers and large step counts in a host-side snippet', async ({
   page,
   lab,
 }) => {
@@ -207,6 +254,12 @@ test('UIC-NUMBER-FIELD-8.3 shows the exported helpers in a host-side snippet', a
   await expect(
     call('keepThumbsApart([40, 45], [30, 45], { distance: 10, minValue: 0, maxValue: 100 })'),
   ).toHaveText('[35,45]');
+  await expect(
+    call('snapToStep(2251799813685248.5, { minValue: 0, maxValue: 4503599627370496, step: 2 })'),
+  ).toHaveText('2251799813685248');
+  await expect(
+    call('snapToStep(4503599627370495.5, { minValue: 0, maxValue: 4503599627370495.5, step: 2 })'),
+  ).toHaveText('4503599627370494');
 });
 
 test('UIC-NUMBER-FIELD-5.2 keeps the held value on the grid as the bounds change', async ({
