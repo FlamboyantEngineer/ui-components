@@ -28,6 +28,7 @@ import {
 } from '../message-composer/rich/rich-message-composer.js';
 import {
   type ChatDraftOptions,
+  type ChatMessageTextHandler,
   toComposerDraftProps,
   useChatComposerHandle,
 } from './chat-composer-handle.js';
@@ -44,16 +45,6 @@ import {
 import { ChatQueue } from './chat-queue.js';
 import { sendMessageNow, submitMessage } from './chat-submit.js';
 import type { ChatState } from './use-chat-state.js';
-
-/**
- * Sends a text with its mentions and commands about a message: an edit or a reply. A returned
- * promise holds the composer's message until it settles, as `onSend` does.
- */
-export type ChatMessageTextHandler = (
-  messageId: string,
-  text: string,
-  tokens: readonly ChatTextToken[],
-) => void | Promise<unknown>;
 
 /** The chat props the composer reads. */
 export interface ChatComposerOptions

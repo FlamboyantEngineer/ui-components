@@ -19,6 +19,16 @@ import { toComposerTokens, toDisplayTokens } from './chat-model.js';
 export type ChatComposerInsertResult =
   'inserted' | 'other-conversation' | 'disabled' | 'editing' | 'submitting' | 'unavailable';
 
+/**
+ * Sends a text with its mentions and commands about a message: an edit or a reply. A returned
+ * promise holds the composer's message until it settles, as `onSend` does.
+ */
+export type ChatMessageTextHandler = (
+  messageId: string,
+  text: string,
+  tokens: readonly ChatTextToken[],
+) => void | Promise<unknown>;
+
 /** A conversation's draft: its text and tokens, as `onSend` would receive them. */
 export interface ChatDraft {
   conversationId: string | undefined;

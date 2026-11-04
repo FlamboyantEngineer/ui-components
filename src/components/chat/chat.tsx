@@ -35,7 +35,6 @@ import { ChatSearchBar, ChatSearchToggle, useChatSearch } from './chat-search.js
 import { type ChatState, useChatState } from './use-chat-state.js';
 import { type ChatMessageOptions, useMessageContext } from './use-message-context.js';
 
-export type { ChatMessageTextHandler } from './chat-composer.js';
 export type {
   ChatComposerContent,
   ChatComposerEditResult,
@@ -43,6 +42,7 @@ export type {
   ChatComposerInsertOptions,
   ChatComposerInsertResult,
   ChatDraft,
+  ChatMessageTextHandler,
 } from './chat-composer-handle.js';
 export type { ChatHeaderProps } from './chat-header.js';
 export { ChatHeader } from './chat-header.js';
