@@ -12,11 +12,11 @@ import {
 } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
-import { getTreeRoot } from '../../utils/owner-window.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { useNativeReset } from '../../utils/use-native-reset.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import { fileUploadHooks as hooks, type FileUploadItem } from './file-upload-files.js';
+import { registerFileInput } from './file-upload-form-data.js';
 
 interface FileFormInputProps {
   /** The form field name the files are submitted under. */
@@ -81,39 +81,21 @@ function fillInput(
 function useResetFiles(
   ref: RefObject<HTMLInputElement | null>,
   {
-    name,
-    isDisabled,
     files,
     held,
   }: {
-    name: string | undefined;
-    isDisabled: boolean;
     files: readonly File[];
     held: { current: readonly File[] };
   },
 ) {
-  const latest = useLatest({ name, isDisabled, files });
+  const latest = useLatest(files);
   useNativeReset(ref, () => {
-    if (ref.current) fillInput(ref.current, latest.current.files, held);
+    if (ref.current) fillInput(ref.current, latest.current, held);
   });
-  // The tree root's capture phase sees the form data of every form in it, so the input's current owner
-  // is the one that counts, after a change of its `form` attribute or of the form around it too.
   useEffect(() => {
     const input = ref.current;
     if (!input) return undefined;
-    // Form data does not leave a shadow root, so the listener sits on the root of the input's tree.
-    const root = getTreeRoot(input);
-    const onFormData = (event: Event) => {
-      const { name: key, isDisabled: isLeftOut, files: listed } = latest.current;
-      const current = ref.current;
-      if (!current || event.target !== current.form || !('formData' in event)) return;
-      if (key === undefined || isLeftOut || (current.files?.length ?? 0) === listed.length) return;
-      const { formData } = event as FormDataEvent;
-      formData.delete(key);
-      for (const file of listed) formData.append(key, file);
-    };
-    root.addEventListener('formdata', onFormData, true);
-    return () => root.removeEventListener('formdata', onFormData, true);
+    return registerFileInput(input, () => latest.current);
   }, [ref, latest]);
 }
 
@@ -129,7 +111,7 @@ function FileFormInput({ name, isRequired, isDisabled, files, onInvalid }: FileF
   useLayoutEffect(() => {
     if (ref.current) fillInput(ref.current, files, held);
   }, [files]);
-  useResetFiles(ref, { name, isDisabled, files, held });
+  useResetFiles(ref, { files, held });
   return (
     <input
       ref={ref}

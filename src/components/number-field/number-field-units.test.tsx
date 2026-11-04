@@ -8,6 +8,107 @@ import type { NumberFieldUnits } from './unit-number.js';
 const lengths: NumberFieldUnits = { unit: 'mm', conversions: { cm: 10, m: 1000 } };
 
 describe('NumberField units', () => {
+  it('UIC-NUMBER-FIELD-3.4 commits a decimal comma with grouping disabled', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const onCommit = vi.fn();
+    render(
+      <UiProvider locale="de-DE">
+        <form aria-label="Measurement">
+          <NumberField
+            label="Length"
+            name="length"
+            units={{ unit: 'm', conversions: { m: 1 } }}
+            step={0.1}
+            formatOptions={{ useGrouping: false }}
+            onChange={onChange}
+            onCommit={onCommit}
+          />
+        </form>
+      </UiProvider>,
+    );
+    const input = screen.getByRole('spinbutton', { name: 'Length' });
+    await user.type(input, '1,5{Enter}');
+    expect(input).toHaveValue('1,5');
+    expect(input).toHaveAttribute('aria-valuenow', '1.5');
+    expect(new FormData(screen.getByRole('form')).get('length')).toBe('1.5');
+    expect(onChange).toHaveBeenLastCalledWith(1.5);
+    expect(onCommit).toHaveBeenLastCalledWith(1.5);
+  });
+
+  it.each(['Enter', 'Tab', 'pointer blur'])(
+    'UIC-NUMBER-FIELD-3.4 keeps an untouched negative accounting value on %s',
+    async (action) => {
+      const user = userEvent.setup();
+      const onChange = vi.fn();
+      const onCommit = vi.fn();
+      render(
+        <UiProvider locale="en-US">
+          <form aria-label="Measurement">
+            <NumberField
+              label="Amount"
+              name="amount"
+              defaultValue={-1}
+              units={lengths}
+              formatOptions={{ style: 'currency', currency: 'USD', currencySign: 'accounting' }}
+              onChange={onChange}
+              onCommit={onCommit}
+            />
+            <button type="button">Continue</button>
+          </form>
+        </UiProvider>,
+      );
+      const input = screen.getByRole('spinbutton', { name: 'Amount' });
+      expect(input).toHaveValue('($1.00)');
+      await user.click(input);
+      if (action === 'Enter') await user.keyboard('{Enter}');
+      if (action === 'Tab') {
+        await user.tab();
+        // Leave the entire field if its chrome took focus.
+        for (
+          let i = 0;
+          i < 4 && !screen.getByRole('button', { name: 'Continue' }).matches(':focus');
+          i++
+        )
+          await user.tab();
+        expect(screen.getByRole('button', { name: 'Continue' })).toHaveFocus();
+      }
+      if (action === 'pointer blur')
+        await user.click(screen.getByRole('button', { name: 'Continue' }));
+      expect(input).toHaveValue('($1.00)');
+      expect(input).toHaveAttribute('aria-valuenow', '-1');
+      expect(input).not.toHaveAttribute('aria-invalid');
+      expect(new FormData(screen.getByRole('form')).get('amount')).toBe('-1');
+      // An untouched value is already committed (UIC-FIELD-2.3).
+      expect(onCommit).not.toHaveBeenCalled();
+      for (const [value] of onChange.mock.calls) expect(value).toBe(-1);
+    },
+  );
+
+  it('UIC-NUMBER-FIELD-3.4 keeps malformed accounting text and its previous numeric value', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    render(
+      <UiProvider locale="en-US">
+        <NumberField
+          label="Amount"
+          defaultValue={-1}
+          units={lengths}
+          formatOptions={{ style: 'currency', currency: 'USD', currencySign: 'accounting' }}
+          onCommit={onCommit}
+        />
+      </UiProvider>,
+    );
+    const input = screen.getByRole('spinbutton', { name: 'Amount' });
+    await user.clear(input);
+    await user.type(input, '($-1.00){Enter}');
+    expect(input).toHaveValue('($-1.00)');
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(input).toHaveAccessibleDescription('Enter a number in mm, cm, or m.');
+    expect(input).toHaveAttribute('aria-valuenow', '-1');
+    expect(onCommit).not.toHaveBeenCalled();
+  });
+
   it('UIC-NUMBER-FIELD-3.4 converts a typed quantity to the field unit on commit', async () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();

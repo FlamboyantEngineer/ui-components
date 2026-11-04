@@ -96,14 +96,51 @@ function TypedLength() {
   );
 }
 
+function FormattedQuantities() {
+  const [length, setLength] = useState<number | null>(1.5);
+  const [amount, setAmount] = useState<number | null>(-1);
+  return (
+    <>
+      <UiProvider locale="de-DE">
+        <NumberField
+          label="Decimal length"
+          defaultValue={1.5}
+          units={{ unit: 'm', conversions: { m: 1 } }}
+          step={0.1}
+          formatOptions={{ useGrouping: false }}
+          onCommit={setLength}
+          description="Type 1,5: the decimal comma reads as one and a half metres without grouping."
+          data-lab-field="units-decimal"
+        />
+      </UiProvider>
+      <LabOutput name="Decimal length committed">{length === null ? 'empty' : length}</LabOutput>
+      <UiProvider locale="en-US">
+        <NumberField
+          label="Accounting amount"
+          defaultValue={-1}
+          units={{ unit: 'm', conversions: { m: 1 } }}
+          step={0.01}
+          formatOptions={{ style: 'currency', currency: 'USD', currencySign: 'accounting' }}
+          onCommit={setAmount}
+          description="Parentheses keep the amount negative when you press Enter, Tab or leave the field. The currency symbol is optional when typing."
+          data-lab-field="units-accounting"
+        />
+      </UiProvider>
+      <Button>Leave accounting amount</Button>
+      <LabOutput name="Accounting amount committed">{amount === null ? 'empty' : amount}</LabOutput>
+    </>
+  );
+}
+
 /** Quantities typed in other units, converted to the field's own. */
 export function NumberFieldUnitsSection() {
   return (
     <LabSection
       title="Typed units"
-      description="A field in millimetres that also reads centimetres, metres and inches as they are typed or pasted, in the locale's digits and in a percent format too."
+      description="Quantities in other units, localized digits and decimal separators, percentages and negative accounting amounts read back as typed."
     >
       <TypedLength />
+      <FormattedQuantities />
       <UiProvider locale="ar-EG">
         <NumberField
           label="Arabic length"

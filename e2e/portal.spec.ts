@@ -211,6 +211,53 @@ test.describe('Portal lab', () => {
     await expect(page.getByRole('button', { name: 'Document order next' })).toBeFocused();
   });
 
+  // Chromium simulations of older API surfaces; these do not replace native historical Safari runs.
+  for (const visibility of ['native', 'missing', 'legacy'] as const) {
+    for (const edge of ['CSS hidden', 'all CSS hidden', 'slotted CSS hidden']) {
+      for (const mode of ['kept', 'in place']) {
+        test(`UIC-PORTAL-3.4 skips ${edge} in ${mode} order with ${visibility} visibility API`, async ({
+          page,
+          lab,
+        }) => {
+          await page.addInitScript((api) => {
+            if (api === 'native') return;
+            if (api === 'missing') {
+              Reflect.deleteProperty(Element.prototype, 'checkVisibility');
+              return;
+            }
+            const native = Element.prototype.checkVisibility;
+            Object.defineProperty(Element.prototype, 'checkVisibility', {
+              configurable: true,
+              value(this: Element, options?: CheckVisibilityOptions) {
+                return native.call(this, { checkVisibilityCSS: options?.checkVisibilityCSS });
+              },
+            });
+          }, visibility);
+          await lab.open('portal');
+          const id = `${edge} ${mode}`;
+          await isolate(page, id);
+          const demo = page.locator(`[data-lab-demo="${id}"]`);
+          const tools = page.locator(`[data-lab-portal="${id}"]`);
+          const before = demo.getByRole('button', { name: 'Before', exact: true });
+          const after = demo.getByRole('button', { name: 'After', exact: true });
+          const restored = tools.getByRole('button', { name: 'Restored tool', exact: true });
+          const last = tools.getByRole('button', { name: 'Last tool', exact: true });
+          const forward = edge === 'all CSS hidden' ? [after] : [restored, last, after];
+          const backward = edge === 'all CSS hidden' ? [before] : [last, restored, before];
+          await before.focus();
+          for (const target of forward) {
+            await page.keyboard.press('Tab');
+            await expect(target).toBeFocused();
+          }
+          for (const target of backward) {
+            await page.keyboard.press('Shift+Tab');
+            await expect(target).toBeFocused();
+          }
+        });
+      }
+    }
+  }
+
   for (const edge of [
     'checked radios',
     'unchecked radios',

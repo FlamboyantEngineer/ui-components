@@ -326,6 +326,60 @@ describe('reduceChatStream', () => {
     ]);
   });
 
+  it.each(['finish', 'error'] as const)(
+    'UIC-CHAT-CONTROLLER-1.7 settles unfinished calls on %s while keeping terminal states and part identity',
+    (type) => {
+      const approvals = [
+        { decision: 'approved' },
+        { decision: 'always' },
+        { isAutoApproved: true },
+      ] as const;
+      const approved = approvals.map((approval, index): ChatPart => ({
+        type: 'tool-call',
+        id: `approved-${index}`,
+        name: 'rename_recipe',
+        status: 'running',
+        approval,
+      }));
+      const start = reply([
+        ...approved,
+        { type: 'tool-call', id: 'ordinary', name: 'search_recipes', status: 'running' },
+        {
+          type: 'tool-call',
+          id: 'pending',
+          name: 'rename_recipe',
+          status: 'pending',
+          approval: approvals[0],
+        },
+        ...(['succeeded', 'failed', 'denied', 'cancelled'] as const).map((status): ChatPart => ({
+          type: 'tool-call',
+          id: status,
+          name: 'rename_recipe',
+          status,
+          approval: approvals[0],
+        })),
+      ]);
+      const snapshot = structuredClone(start);
+      const next = reduceChatStream(
+        start,
+        type === 'finish' ? { type } : { type, message: 'Unavailable' },
+      );
+      expect(start).toEqual(snapshot);
+      expect(next.parts.map((part) => 'status' in part && part.status)).toEqual([
+        ...approved.map(() => (type === 'finish' ? 'running' : 'cancelled')),
+        'cancelled',
+        'cancelled',
+        'succeeded',
+        'failed',
+        'denied',
+        'cancelled',
+      ]);
+      next.parts.forEach((part, index) => {
+        if (index >= 5 || (type === 'finish' && index < 3)) expect(part).toBe(start.parts[index]);
+      });
+    },
+  );
+
   it('UIC-CHAT-CONTROLLER-1.8 ignores events about parts the reply does not hold', () => {
     const start = reply([{ type: 'text', text: 'Hi', status: 'streaming' }]);
     for (const event of [

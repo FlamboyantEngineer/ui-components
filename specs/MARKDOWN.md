@@ -90,10 +90,10 @@ Verification: `src/components/markdown/parse-markdown.test.ts`
 
 ### UIC-MARKDOWN-1.13 - Linear parsing
 
-`parseMarkdown`, `parseStreamingMarkdown` and the streaming preparation shall take time about proportional to the source's length, whatever it holds, so authored content cannot stall a page or a server. Emphasis pairing follows CommonMark's delimiter algorithm, each closer searching back only as far as an earlier closer of the same kind found no opener; a link closing deactivates the brackets before it at once; a line's text is gathered without rereading earlier lines. Two CommonMark limits apply: a bare link destination nests parentheses at most 32 deep, and a link label (the text of a shortcut or collapsed reference) is at most 999 characters, beyond which the brackets are text. Within them no input is refused or cut short for its size.
+`parseMarkdown`, `parseStreamingMarkdown` and the streaming preparation shall take time about proportional to the source's length, whatever it holds, so authored content cannot stall a page or a server. Emphasis pairing follows CommonMark's delimiter algorithm, each closer searching back only as far as an earlier closer of the same kind found no opener; a link closing deactivates the brackets before it at once; a line's text is gathered without rereading earlier lines. Two CommonMark limits apply: a bare link destination nests parentheses at most 32 deep, and a link label (the text of a shortcut or collapsed reference) is at most 999 characters, beyond which the brackets are text. Within them no input is refused or cut short for its size. Table cell construction shall split each header and body row once and reuse its cells across columns. Including the constant scans for table recognition, table work is proportional to scanned row text plus produced cells; padding ragged rows can produce more cells than the source contains.
 
-Implementation: `src/components/markdown/markdown-inlines.ts`, `src/components/markdown/markdown-emphasis.ts`, `src/components/markdown/markdown-inline-syntax.ts`, `src/components/markdown/markdown-streaming-inlines.ts`
-Verification: `src/components/markdown/markdown-scaling.test.tsx`, `e2e/markdown.spec.ts`
+Implementation: `src/components/markdown/markdown-inlines.ts`, `src/components/markdown/markdown-emphasis.ts`, `src/components/markdown/markdown-inline-syntax.ts`, `src/components/markdown/markdown-streaming-inlines.ts`, `src/components/markdown/markdown-blocks.ts`
+Verification: `src/components/markdown/markdown-scaling.test.tsx`, `src/components/markdown/markdown-table-scaling.test.ts`, `src/components/markdown/markdown-tables.test.tsx`, `e2e/markdown.spec.ts`
 
 ## UIC-MARKDOWN-2 - Rendering
 
@@ -130,7 +130,7 @@ Verification: `src/components/markdown/markdown.test.tsx`, `e2e/markdown.spec.ts
 A table shall render through [Prose Table](PROSE-TABLE.md), its columns aligned as the divider row says.
 
 Implementation: `src/components/markdown/markdown.tsx`, `src/components/markdown/markdown-render.tsx`
-Verification: `src/components/markdown/markdown.test.tsx`, `e2e/markdown.spec.ts`
+Verification: `src/components/markdown/markdown.test.tsx`, `src/components/markdown/markdown-tables.test.tsx`, `e2e/markdown.spec.ts`
 
 ### UIC-MARKDOWN-2.6 - Task items
 
