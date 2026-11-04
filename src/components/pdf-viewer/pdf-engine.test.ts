@@ -59,6 +59,24 @@ describe('PDF engine contract', () => {
     expect(fromBuffer.data.byteLength).toBe(9);
   });
 
+  it('UIC-PDF-VIEWER-1.1 reads URLs and bytes made in a same-origin frame', () => {
+    const frame = document.body.appendChild(document.createElement('iframe'));
+    const view = frame.contentWindow as Window & typeof globalThis;
+    expect(toDocumentParams(new view.URL('https://example.com/report.pdf'))).toEqual({
+      url: 'https://example.com/report.pdf',
+    });
+    const bytes = new view.Uint8Array([37, 80, 68, 70]);
+    for (const source of [bytes, bytes.buffer]) {
+      const params = toDocumentParams(source);
+      if (!('data' in params)) throw new Error('bytes must open as data');
+      expect(params.data).toBeInstanceOf(Uint8Array);
+      expect([...params.data]).toEqual([37, 80, 68, 70]);
+      expect(params.data.buffer).not.toBe(bytes.buffer);
+    }
+    expect(bytes.byteLength).toBe(4);
+    frame.remove();
+  });
+
   it('UIC-PDF-VIEWER-1.1 tells text runs from marked-content boundaries', () => {
     expect(isTextItem({ str: 'Pear', hasEOL: false })).toBe(true);
     expect(isTextItem({ type: 'beginMarkedContent' })).toBe(false);

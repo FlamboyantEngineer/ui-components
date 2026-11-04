@@ -985,4 +985,18 @@ test.describe('PDF Viewer lab', () => {
     expect(firstPageMs).toBeLessThan(15_000);
     expect(await drawnPages()).toBeLessThan(10);
   });
+
+  test('UIC-PDF-VIEWER-1.1 opens a URL made by a same-origin frame', async ({ page, lab }) => {
+    test.slow();
+    await lab.open('pdf-viewer');
+    const root = page.locator('[data-lab-case="frame-url"]');
+    const open = root.getByRole('button', { name: 'Open a URL from a frame' });
+    await open.click();
+    const text = root.locator('.ui-pdf-viewer__text-layer [role="presentation"]').first();
+    await expect(text).toBeVisible({ timeout: 30_000 });
+    await expect(root.locator('.ui-pdf-viewer')).not.toHaveAttribute('data-error');
+    await open.click();
+    await expect(text).toBeVisible();
+    await expect(root.locator('.ui-pdf-viewer')).not.toHaveAttribute('aria-busy');
+  });
 });

@@ -40,6 +40,25 @@ describe('PdfViewer document', () => {
     await waitFor(() => expect(engine.getDocument).toHaveBeenCalledTimes(2));
   });
 
+  it('UIC-PDF-VIEWER-1.1 opens URLs made in a same-origin frame as the same document', async () => {
+    const frame = document.body.appendChild(document.createElement('iframe'));
+    const view = frame.contentWindow as Window & typeof globalThis;
+    const address = () => new view.URL('/files/Report.pdf', 'https://example.test/');
+    const { engine, update } = renderViewer({ source: address() });
+    await screen.findAllByRole('presentation');
+    expect(engine.getDocument).toHaveBeenCalledExactlyOnceWith({
+      url: 'https://example.test/files/Report.pdf',
+    });
+    update({ source: address() });
+    update({ source: new URL('/files/Report.pdf', 'https://example.test/') });
+    update({ source: 'https://example.test/files/Report.pdf' });
+    await screen.findAllByRole('presentation');
+    expect(engine.getDocument).toHaveBeenCalledOnce();
+    update({ source: new view.URL('/files/Other.pdf', 'https://example.test/') });
+    await waitFor(() => expect(engine.getDocument).toHaveBeenCalledTimes(2));
+    frame.remove();
+  });
+
   it('UIC-PDF-VIEWER-1.6 asks for the password, marks a wrong one and opens with the right one', async () => {
     const engine = createEngine({ password: 'orchard' });
     const { root, container } = renderViewer({}, engine);

@@ -1,6 +1,7 @@
 // The document commands that leave the viewer: printing the pages and saving the file.
 
 import { downloadBlob } from '../../utils/download.js';
+import { isUrl } from '../../utils/is-url.js';
 import { type PageBitmap, renderPageBitmap } from './page-bitmap.js';
 import type { PdfSource, PdfTextContent, PdfViewport } from './pdf-engine.js';
 import type { LoadedPdf } from './use-pdf-document.js';
@@ -129,9 +130,12 @@ export async function printPdf<V extends PdfViewport, C extends PdfTextContent>(
 
 /** The name a document saves under: the file name in its URL, else its label. */
 export function toPdfFileName(source: PdfSource | null, label: string): string {
-  if (typeof source === 'string' || source instanceof URL) {
+  if (typeof source === 'string' || isUrl(source)) {
     try {
-      const { pathname } = new URL(source, 'https://localhost/');
+      const { pathname } = new URL(
+        typeof source === 'string' ? source : source.href,
+        'https://localhost/',
+      );
       const name = decodeURIComponent(pathname.slice(pathname.lastIndexOf('/') + 1));
       if (/\.pdf$/i.test(name)) return name;
     } catch {

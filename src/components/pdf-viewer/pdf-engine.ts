@@ -1,6 +1,8 @@
 // The part of the PDF engine (pdf.js) the viewer drives, described structurally so the library never
 // imports the engine: the host injects it, and the `pdfjs-dist` module satisfies these types.
 
+import { isUrl } from '../../utils/is-url.js';
+
 /** A document to open: its URL, or its bytes when the caller already holds the file. */
 export type PdfSource = string | URL | ArrayBuffer | Uint8Array;
 
@@ -209,13 +211,14 @@ export interface PdfEngine<
 }
 
 /**
- * The engine parameters for a source. Bytes are copied, because the engine transfers the buffer it
- * is given to its worker, which would leave the caller's array empty.
+ * The engine parameters for a source. Bytes are copied into a new array of this window, because the
+ * engine transfers the buffer it is given to its worker, which would leave the caller's array
+ * empty. A URL or bytes made in another window are read the same.
  */
 export function toDocumentParams(source: PdfSource): PdfDocumentParams {
   if (typeof source === 'string') return { url: source };
-  if (source instanceof URL) return { url: source.href };
-  return { data: source instanceof Uint8Array ? source.slice() : new Uint8Array(source.slice(0)) };
+  if (isUrl(source)) return { url: source.href };
+  return { data: new Uint8Array(ArrayBuffer.isView(source) ? source : new Uint8Array(source)) };
 }
 
 export function isTextItem(item: PdfTextItem | { type: string }): item is PdfTextItem {

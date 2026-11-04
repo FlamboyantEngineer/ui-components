@@ -166,6 +166,35 @@ function AnnotationsSwitch() {
   );
 }
 
+/** A URL made by a same-origin frame's own `URL`, as a host rendering into a popup would pass. */
+function frameUrl(): URL {
+  const frame = document.body.appendChild(document.createElement('iframe'));
+  try {
+    const view = frame.contentWindow as Window & typeof globalThis;
+    return new view.URL(sampleUrl, document.baseURI);
+  } finally {
+    frame.remove();
+  }
+}
+
+function FrameUrlSource() {
+  const [source, setSource] = useState<URL | null>(null);
+  return (
+    <div data-lab-case="frame-url">
+      <Button onPress={() => setSource(frameUrl())}>Open a URL from a frame</Button>
+      <div style={{ height: 360, maxWidth: 1000 }}>
+        <PdfViewer
+          aria-label="Report from a frame's URL"
+          source={source}
+          loadEngine={loadEngine}
+          workerSrc={workerSrc}
+          defaultZoom={50}
+        />
+      </div>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -226,6 +255,12 @@ mountLab(
       description={`A 250-page report built in the lab. The viewer asks for at most 8 pages or page texts at a time, renders only the pages near the view, and finds the word quinceberry on page ${longSampleMarkedPage}.`}
     >
       <LongDocument />
+    </LabSection>
+    <LabSection
+      title="URL from another window"
+      description="The button makes the sample's URL with a same-origin frame's own URL constructor, as a host rendering into another window would, and the viewer opens it like any URL. Pressing it again makes a new URL object for the same address, which keeps the open document."
+    >
+      <FrameUrlSource />
     </LabSection>
     <LabSection
       title="Annotations switched off"
