@@ -1,9 +1,9 @@
-import { useMemo, type RefObject } from 'react';
+import { type RefObject, useMemo } from 'react';
 import type { Placement } from '../../core/props.js';
+import { DEFAULT_POINT_OFFSET } from '../../utils/overlay-defaults.js';
 import { createOverlayPointRect } from '../../utils/overlay-position.js';
 import type { MenuOverlayProps } from '../menu/menu.js';
 import type { MenuAnchor } from './menu-controller.js';
-import { DEFAULT_POINT_OFFSET } from '../../utils/overlay-defaults.js';
 
 /** Whether an anchor is an element rather than a point. */
 export function isElementAnchor(anchor: MenuAnchor): anchor is Element {

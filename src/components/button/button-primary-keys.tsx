@@ -1,7 +1,7 @@
 'use client';
 
 import { useContext } from 'react';
-import { PrimaryActionKeysContext, passPrimaryActionKey } from '../../utils/primary-action-keys.js';
+import { passPrimaryActionKey, PrimaryActionKeysContext } from '../../utils/primary-action-keys.js';
 import type { ButtonStateProps } from './button-state.js';
 
 /** Leaves a dialog's modified Enter to its shortcut, keeping the caller's handler and render. */

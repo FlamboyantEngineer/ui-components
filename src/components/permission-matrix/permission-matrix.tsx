@@ -4,9 +4,9 @@
 // groups get a header row with a checkbox per role.
 
 import { useMemo, useState } from 'react';
+import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
-import { useControllableState } from '../../core/controllable-state.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Table, type TableProps } from '../table/table.js';
 import {
@@ -16,11 +16,11 @@ import {
   type PermissionMatrixGrant,
 } from './permission-grants.js';
 import {
+  type PermissionCellContext,
   PermissionCellsContext,
   PermissionGrantCheckbox,
   PermissionGroupCheckbox,
   PermissionRoleHeader,
-  type PermissionCellContext,
 } from './permission-matrix-cells.js';
 import { permissionMatrixHooks as hooks } from './permission-matrix-hooks.js';
 

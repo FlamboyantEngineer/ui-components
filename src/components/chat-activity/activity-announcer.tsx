@@ -3,8 +3,8 @@
 // A polite, throttled live region that the activity parts announce their changes through.
 
 import { useEffect, useRef, useState } from 'react';
-import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { useLatest } from '../../utils/use-latest.js';
+import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 
 export interface ActivityAnnouncerProps {
   /** The latest message to announce; an empty one announces nothing. */

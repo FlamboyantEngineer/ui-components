@@ -1,22 +1,22 @@
-import { InlineActionTabs } from './tabs-inline-actions.js';
-import { HelpGlyph, InfoGlyph, SearchGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
+import { Tab, TabList, type TabListProps, TabPanel, Tabs } from '../../src/components/tabs/tabs.js';
+import { HelpGlyph, InfoGlyph, SearchGlyph } from '../../src/core/glyphs.js';
 import type { Key } from '../../src/core/props.js';
-import { Tab, TabList, TabPanel, Tabs, type TabListProps } from '../../src/components/tabs/tabs.js';
 import { UiProvider } from '../../src/core/provider.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-import { TabsCompositionCases } from './tabs-composition-cases.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import {
   DisabledRemovalTabs,
   IconMenuTabs,
   LiveRenameTabs,
   LockingTabs,
-  SwitchingTabs,
   MealTabs,
   RememberedTabs,
+  SwitchingTabs,
   TypedKeyTabs,
   VerticalReorderTabs,
 } from './tabs-cases.js';
+import { TabsCompositionCases } from './tabs-composition-cases.js';
+import { InlineActionTabs } from './tabs-inline-actions.js';
 
 const sizes = ['sm', 'md', 'lg'] as const;
 

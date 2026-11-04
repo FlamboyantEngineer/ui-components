@@ -1,36 +1,36 @@
 'use client';
 
 import { useState } from 'react';
-import { Input } from '../../primitives/index.js';
-import { useUiStrings } from '../../core/provider.js';
-import {
-  Field,
-  FieldFormValue,
-  useFieldControl,
-  type FieldControlProps,
-  type FieldInputProps,
-  type FieldState,
-} from '../field/field.js';
 import { EditGlyph, ImageGlyph, ItalicGlyph } from '../../core/glyphs.js';
-import { SegmentedChoice } from '../segmented-choice/segmented-choice.js';
-import type { SignatureValue } from './signature-path.js';
+import { useUiStrings } from '../../core/provider.js';
+import { Input } from '../../primitives/index.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import {
+  Field,
+  type FieldControlProps,
+  FieldFormValue,
+  type FieldInputProps,
+  type FieldState,
+  useFieldControl,
+} from '../field/field.js';
+import { SegmentedChoice } from '../segmented-choice/segmented-choice.js';
+import {
+  type ImageIntake,
   SignatureImageArea,
   SignatureImageChooser,
   useImageIntake,
-  type ImageIntake,
 } from './signature-image.js';
-import { useSignatureMenu, type SignaturePadMenuIcons } from './signature-pad-menu.js';
-import { SignatureSurface, signaturePadHooks as hooks } from './signature-surface.js';
+import { type SignaturePadMenuIcons, useSignatureMenu } from './signature-pad-menu.js';
+import type { SignatureValue } from './signature-path.js';
+import { signaturePadHooks as hooks, SignatureSurface } from './signature-surface.js';
 
+export type { SignaturePadAction, SignaturePadMenuIcons } from './signature-pad-menu.js';
 export type {
   DrawnSignature,
   ImageSignature,
   SignatureValue,
   TypedSignature,
 } from './signature-path.js';
-export type { SignaturePadAction, SignaturePadMenuIcons } from './signature-pad-menu.js';
 
 /**
  * How the signature is given: drawn with a pointer, typed as the signer's name, or as an existing

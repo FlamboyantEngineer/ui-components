@@ -2,6 +2,7 @@
 
 // Headings, text, labels, hidden text and value indicators.
 
+export { useProgressBar } from 'react-aria';
 export {
   Header,
   Heading,
@@ -11,4 +12,3 @@ export {
   Text,
   VisuallyHidden,
 } from 'react-aria-components';
-export { useProgressBar } from 'react-aria';

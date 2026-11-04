@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Button } from '../button/button.js';
-import { Modal, ModalTrigger, type ModalProps } from './modal.js';
+import { Modal, type ModalProps, ModalTrigger } from './modal.js';
 
 /** A page with a field, a button that opens a floating dialog, and the dialog. */
 function FloatingPage(props: Partial<ModalProps>) {

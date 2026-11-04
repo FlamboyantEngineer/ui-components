@@ -2,8 +2,8 @@ import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { requireDefined } from '../../utils/require-defined.js';
-import { CommentThreadReply } from './comment-thread-reply.js';
 import { CommentThread, type CommentThreadProps } from './comment-thread.js';
+import { CommentThreadReply } from './comment-thread-reply.js';
 
 const people = [
   { name: 'Ana Lima', colorKey: 'ana' },

@@ -1,19 +1,19 @@
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useState, type RefObject } from 'react';
+import { type RefObject, useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import { getOwnerWindow } from '../../utils/owner-window.js';
+import { useLatest } from '../../utils/use-latest.js';
 import { useResizeObserver } from '../../utils/use-resize-observer.js';
 import { findNextZoomLevel } from '../zoom-control/zoom-control.js';
 import {
   findLargestPage,
+  type PdfSize,
+  type PdfZoom,
   pdfZoomLevels,
   resolveZoomPercent,
   toCssScale,
-  type PdfSize,
-  type PdfZoom,
 } from './pdf-zoom.js';
 import type { PdfPagesController } from './use-pdf-pages.js';
-import { useLatest } from '../../utils/use-latest.js';
-import { getOwnerWindow } from '../../utils/owner-window.js';
 
 interface UsePdfZoomOptions {
   defaultZoom: PdfZoom;

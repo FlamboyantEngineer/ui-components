@@ -1,9 +1,9 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import { useState } from 'react';
 import { userEvent } from '@testing-library/user-event';
+import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { Form } from '../form/form.js';
-import { DateTimeField, type DateRangeValue } from './date-time-field.js';
+import { type DateRangeValue, DateTimeField } from './date-time-field.js';
 
 function entries(form: HTMLFormElement) {
   return [...new FormData(form).entries()].map(([name, value]) => `${name}=${String(value)}`);

@@ -1,14 +1,14 @@
-import { useState, type ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { Badge } from '../../src/components/badge/badge.js';
 import { Button } from '../../src/components/button/button.js';
 import { DropdownMenu } from '../../src/components/dropdown-menu/dropdown-menu.js';
 import { ToolbarRow } from '../../src/components/layout/index.js';
 import { OverflowList } from '../../src/components/overflow-list/overflow-list.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { resolveOverflowCount } from '../../src/utils/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabHelperCalls } from './lab-helper-calls.js';
-import { NoteRow } from './overflow-list-notes.js';
 import { OverflowItemsHost } from './overflow-items-host.js';
+import { NoteRow } from './overflow-list-notes.js';
 
 const fruit = ['Apple', 'Banana', 'Cherry', 'Dragon fruit', 'Elderberry', 'Fig', 'Grape'];
 const tools = ['Cut', 'Copy', 'Paste', 'Bold', 'Italic', 'Underline', 'Link'];

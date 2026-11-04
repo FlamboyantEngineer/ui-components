@@ -1,5 +1,5 @@
-import { expect, test, type LabFixture, matrixCell } from './fixtures.js';
 import type { Page } from '@playwright/test';
+import { expect, type LabFixture, matrixCell, test } from './fixtures.js';
 
 async function openPopover(page: Page, lab: LabFixture, theme?: string) {
   await lab.open('emoji-picker', theme ? { theme } : {});

@@ -1,11 +1,11 @@
-import { FolderGlyph, PlusGlyph } from '../../core/glyphs.js';
 import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
-import type { Key } from '../../core/props.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { ShadowHost, inShadow } from '../../../test/shadow-fixtures.js';
+import { inShadow, ShadowHost } from '../../../test/shadow-fixtures.js';
+import { FolderGlyph, PlusGlyph } from '../../core/glyphs.js';
+import type { Key } from '../../core/props.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { Combobox, type ComboboxItem, type ComboboxOption } from './combobox.js';
 

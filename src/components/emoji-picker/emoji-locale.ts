@@ -1,5 +1,5 @@
-import { parseEmojiData, type NativeEmoji } from './emoji-catalog.js';
-import { importEmojiLocale, isEmojiLocale, type EmojiLocale } from './emoji-locales.js';
+import { type NativeEmoji, parseEmojiData } from './emoji-catalog.js';
+import { type EmojiLocale, importEmojiLocale, isEmojiLocale } from './emoji-locales.js';
 
 const loaded = new Map<EmojiLocale, Promise<readonly NativeEmoji[]>>();
 

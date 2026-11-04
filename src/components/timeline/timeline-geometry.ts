@@ -1,9 +1,8 @@
 // Pure timeline layout: the range and axis, scale header cells, item spans, item changes from keys
 // and drags, and dependency connector paths (specs/TIMELINE.md).
 
-import { clamp } from '../../utils/clamp.js';
 import type { Key, Tone } from '../../core/props.js';
-import type { AvatarIdentity } from '../avatar/avatar.js';
+import { clamp } from '../../utils/clamp.js';
 import { isPlanningDate, planningDateRange } from '../../utils/planning-dates.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import {
@@ -13,6 +12,7 @@ import {
   type TimeScale,
   type TimeScaleUnit,
 } from '../../utils/time-scale.js';
+import type { AvatarIdentity } from '../avatar/avatar.js';
 
 /** The zoom level: the calendar unit of the scale's lower header row and of a keyboard step. */
 export type TimelineScale = 'day' | 'week' | 'month' | 'quarter';

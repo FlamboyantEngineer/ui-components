@@ -1,15 +1,15 @@
-import { ErrorGlyph } from '../../core/glyphs.js';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
-import { DialogTrigger } from '../../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { ErrorGlyph } from '../../core/glyphs.js';
 import { UiProvider } from '../../core/provider.js';
+import { DialogTrigger } from '../../primitives/index.js';
 import { Button } from '../button/button.js';
-import { ModalHost, createModalController } from '../modal-controller/modal-controller.js';
 import { ModalTrigger } from '../modal/modal.js';
-import { ModalConfirmation, confirm, type ModalConfirmationProps } from './modal-confirm.js';
+import { createModalController, ModalHost } from '../modal-controller/modal-controller.js';
+import { confirm, ModalConfirmation, type ModalConfirmationProps } from './modal-confirm.js';
 
 function deferred() {
   let resolve!: () => void;

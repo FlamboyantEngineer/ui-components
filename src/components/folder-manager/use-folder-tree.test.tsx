@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { toFolderRowKey, type FolderItem, type FolderNode } from './folder-model.js';
+import { type FolderItem, type FolderNode, toFolderRowKey } from './folder-model.js';
 import { useFolderExpansion } from './use-folder-tree.js';
 
 describe('folder expansion', () => {

@@ -1,15 +1,15 @@
-import { CloseGlyph, InfoGlyph, MoreGlyph } from '../../src/core/glyphs.js';
 import { useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
   List,
+  type ListHandle,
   ListRow,
   ListRowContent,
-  type ListHandle,
   type ListRowProps,
 } from '../../src/components/list-row/list-row.js';
 import { MetaLine } from '../../src/components/meta-line/meta-line.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { CloseGlyph, InfoGlyph, MoreGlyph } from '../../src/core/glyphs.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import {
   FieldRowsCase,
   LinksCase,

@@ -1,10 +1,10 @@
 import type { FocusEvent, KeyboardEvent } from 'react';
-import { listTabbables } from '../../utils/tabbable.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
+import { isNode } from '../../utils/is-element.js';
+import { listTabbables } from '../../utils/tabbable.js';
 import type { RevealAlignment } from './transcript-geometry.js';
 import type { TranscriptRegistry } from './transcript-registry.js';
 import { findOwner, type TabbablesManager, type TranscriptOwner } from './transcript-tabbables.js';
-import { isNode } from '../../utils/is-element.js';
 
 /** What the keyboard model needs from the transcript. */
 export interface TranscriptNavigation {

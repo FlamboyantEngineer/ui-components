@@ -1,8 +1,7 @@
-import { CheckGlyph, ClockGlyph } from '../../src/core/glyphs.js';
 // Sample data and stand-ins shared by the Chat Activity lab's cases and its simulation.
-
 import type { ChatPlanStep } from '../../src/components/chat-activity/chat-activity.js';
 import { IconLabel } from '../../src/components/icon-label/icon-label.js';
+import { CheckGlyph, ClockGlyph } from '../../src/core/glyphs.js';
 
 export const reasoningText =
   'The reader wants to reach **Porto** on Saturday morning. I should compare the early trains, check the timetable for changes and pick the cheapest fare that arrives before ten.';

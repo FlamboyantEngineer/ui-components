@@ -1,6 +1,6 @@
-import { MoreGlyph } from '../../src/core/glyphs.js';
 import { Button } from '../../src/components/button/button.js';
 import { ChatHeader } from '../../src/components/chat/index.js';
+import { MoreGlyph } from '../../src/core/glyphs.js';
 import { ChatAssistantCases, ChatTypingWhileStreamingCases } from './chat-assistant-cases.js';
 import { ChatCaretCases } from './chat-caret-cases.js';
 import { ChatChromeCases } from './chat-chrome-cases.js';
@@ -19,7 +19,7 @@ import { ChatStateCases } from './chat-state-cases.js';
 import { ChatSurfaceCases } from './chat-surface-cases.js';
 import { ChatThinkingCases } from './chat-thinking-cases.js';
 import { ChatThinkingStyles } from './chat-thinking-styles.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const people = {
   'one with presence': [ana],

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createCellGrid } from './table-cell-range.js';
 import {
+  type CellWrite,
   copyBounds,
   extendSeries,
   formatCellText,
@@ -11,7 +12,6 @@ import {
   readCellText,
   resolveCellWrites,
   resolveFillTarget,
-  type CellWrite,
 } from './table-cell-writes.js';
 import type { TableColumn } from './table-rows.js';
 

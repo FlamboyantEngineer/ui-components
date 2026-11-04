@@ -1,13 +1,13 @@
 import { useMemo, useState } from 'react';
 import {
   ConditionBuilder,
+  type ConditionGroup,
   createConditionMatcher,
   matchesConditionGroup,
-  type ConditionGroup,
 } from '../../src/components/condition-builder/condition-builder.js';
 import { LabSection } from './chrome/index.js';
-import { LabOutput } from './lab-output.js';
 import { bookFields, getBookValue, sampleBooks } from './filter-samples.js';
+import { LabOutput } from './lab-output.js';
 
 /** All of: available, and any of a title rule still being written or a recent publication. */
 const startingTree: ConditionGroup = {

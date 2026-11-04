@@ -8,12 +8,12 @@ import {
   textMessage,
 } from '../../../test/chat-controller-fixtures.js';
 import { requireDefined } from '../../utils/require-defined.js';
-import { ChatMessage, ChatTranscript } from '../chat-transcript/chat-transcript.js';
 import { ChatToolCall } from '../chat-tool-call/chat-tool-call.js';
+import { ChatMessage, ChatTranscript } from '../chat-transcript/chat-transcript.js';
 import {
-  useChatController,
   type ChatSendContext,
   type ChatSendFunction,
+  useChatController,
 } from './chat-controller.js';
 
 afterEach(() => vi.useRealTimers());

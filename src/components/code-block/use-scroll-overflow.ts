@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useState, type RefObject } from 'react';
+import { type RefObject, useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import { isOverflowing } from '../../utils/is-overflowing.js';
 import { listenFontsLoaded } from '../../utils/listen-fonts-loaded.js';
 import { useResizeObserver } from '../../utils/use-resize-observer.js';

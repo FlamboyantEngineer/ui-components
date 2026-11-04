@@ -5,9 +5,9 @@ import {
   ProjectionProvider,
   useProjectedContent,
 } from '../../src/components/projection/projection.js';
-import { ProjectionHostCases } from './projection-host-cases.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { DraftTakeover } from './projection-drafts.js';
+import { ProjectionHostCases } from './projection-host-cases.js';
 
 const declarations = ['none', 'one', 'two'] as const;
 

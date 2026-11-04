@@ -1,10 +1,11 @@
 'use client';
 
-import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useLocale } from '../../primitives/index.js';
 import { formatCount } from '../../utils/count.js';
+import { joinIds } from '../../utils/join-ids.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { ExpandToggle } from '../expand-toggle/expand-toggle.js';
 import { hasIcon, Icon, toIconProps } from '../icon/icon.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
@@ -12,7 +13,6 @@ import type { BoardLane } from './board.js';
 import { BoardCell, type BoardCellOptions } from './board-cell.js';
 import { boardHooks as hooks } from './board-hooks.js';
 import type { BoardModel } from './use-board-model.js';
-import { joinIds } from '../../utils/join-ids.js';
 
 interface BoardCellsProps<T> {
   model: BoardModel<T>;

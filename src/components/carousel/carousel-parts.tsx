@@ -1,12 +1,12 @@
 'use client';
 
-import { ChevronLeftGlyph, ChevronRightGlyph, PauseGlyph, PlayGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
-import { Button as AriaButton, useLocale } from '../../primitives/index.js';
+import { ChevronLeftGlyph, ChevronRightGlyph, PauseGlyph, PlayGlyph } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
+import { Button as AriaButton, useLocale } from '../../primitives/index.js';
 import { Button } from '../button/button.js';
-import type { CarouselAutoplay } from './use-carousel-autoplay.js';
 import { carouselHooks as hooks } from './carousel-hooks.js';
+import type { CarouselAutoplay } from './use-carousel-autoplay.js';
 
 /** How a carousel lets the reader pick a slide directly. */
 export type CarouselPagination = 'dots' | 'thumbnails' | 'none';

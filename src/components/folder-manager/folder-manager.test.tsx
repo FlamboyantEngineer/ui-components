@@ -1,15 +1,15 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState, createRef } from 'react';
-import type { Key } from '../../core/props.js';
+import { createRef, useState } from 'react';
 import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { pressComposingKeys } from '../../../test/composition.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { readMenuIcons } from '../../../test/menu-fixtures.js';
 import { FolderGlyph } from '../../core/glyphs.js';
+import type { Key } from '../../core/props.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { applyTreeMove } from '../../utils/tree-reorder.js';
-import { FolderManager, type FolderItem, type FolderManagerProps } from './folder-manager.js';
+import { type FolderItem, FolderManager, type FolderManagerProps } from './folder-manager.js';
 import type { FolderSelectionMode } from './use-folder-tree.js';
 
 interface Folder extends FolderItem {

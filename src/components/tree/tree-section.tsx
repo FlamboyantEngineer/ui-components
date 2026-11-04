@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, type ReactElement } from 'react';
+import { type ReactElement, useCallback } from 'react';
 import { Collection, TreeHeader, TreeSection } from '../../primitives/index.js';
 import { treeHooks as hooks } from './tree-hooks.js';
 import type { TreeItemData } from './tree-props.js';

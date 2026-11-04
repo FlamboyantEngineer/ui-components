@@ -4,22 +4,23 @@
 // server-safe, so it also re-exports the date functions that server-safe utilities call.
 
 import {
+  type CalendarDate,
+  type CalendarDateTime,
   getLocalTimeZone,
   parseAbsolute,
   parseDate,
   parseDateTime,
   parseTime,
   parseZonedDateTime,
+  type Time,
   toCalendarDate,
   toCalendarDateTime,
   toTimeZone,
   toZoned,
-  type CalendarDate,
-  type CalendarDateTime,
-  type Time,
   type ZonedDateTime,
 } from '@internationalized/date';
 
+export type { CalendarDate, DateValue } from '@internationalized/date';
 export {
   DateFormatter,
   fromDate,
@@ -32,7 +33,6 @@ export {
   toCalendarDateTime,
   toZoned,
 } from '@internationalized/date';
-export type { CalendarDate, DateValue } from '@internationalized/date';
 
 const isoDatePattern = /^\d{4}-\d{2}-\d{2}$/;
 const zonePattern = /\[[^\]]+\]$/;

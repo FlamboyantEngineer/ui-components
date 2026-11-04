@@ -1,11 +1,11 @@
 'use client';
 
-import { useMergedRefs } from '../../utils/use-merged-refs.js';
-import { useCallback, useRef, type ReactNode, type Ref, type RefCallback } from 'react';
+import { type ReactNode, type Ref, type RefCallback, useCallback, useRef } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, ContainerProps, Key } from '../../core/props.js';
-import { renderElement, type ElementRender } from '../../utils/render-element.js';
-import { useOverflowItems, type OverflowCollapseFrom } from '../../utils/use-overflow-items.js';
+import { type ElementRender, renderElement } from '../../utils/render-element.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
+import { type OverflowCollapseFrom, useOverflowItems } from '../../utils/use-overflow-items.js';
 
 /** The state an `OverflowList`'s `render` receives. */
 export interface OverflowListRenderState {
@@ -110,5 +110,5 @@ export function OverflowList<T>({
   );
 }
 
-export { VisibleCollection } from './visible-collection.js';
 export type { VisibleCollectionProps } from './visible-collection.js';
+export { VisibleCollection } from './visible-collection.js';

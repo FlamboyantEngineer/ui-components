@@ -2,6 +2,17 @@
 // host's own controls read and replace ranges of the draft, pasted links resolve to references
 // later, and `$` tools and `#` files open their own vocabularies, `#` from a slow source.
 
+import { useRef, useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
+import {
+  type MessageComposerHandle,
+  type MessageComposerMessage,
+  type MessageComposerPaste,
+  type MessageComposerRange,
+  type MessageComposerSuggestion,
+  type MessageComposerTrigger,
+  RichMessageComposer,
+} from '../../src/components/message-composer/rich/index.js';
 import {
   AdjustmentsGlyph,
   FileGlyph,
@@ -9,17 +20,6 @@ import {
   FolderGlyph,
   SearchGlyph,
 } from '../../src/core/glyphs.js';
-import { useRef, useState } from 'react';
-import { Button } from '../../src/components/button/button.js';
-import {
-  RichMessageComposer,
-  type MessageComposerHandle,
-  type MessageComposerMessage,
-  type MessageComposerPaste,
-  type MessageComposerRange,
-  type MessageComposerSuggestion,
-  type MessageComposerTrigger,
-} from '../../src/components/message-composer/rich/index.js';
 import { LabSection } from './chrome/index.js';
 import { SentMessage } from './message-composer-rich-cases.js';
 

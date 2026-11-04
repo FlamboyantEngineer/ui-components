@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 const plain = (text: string) => text.replace(/[\u00a0\u2009\u202f]/g, ' ');
 const interactive = (page: Page) => page.locator('[data-lab-demo="interactive"]');

@@ -1,8 +1,8 @@
 'use client';
 
-import { createContext, useState, type ReactNode } from 'react';
+import { createContext, type ReactNode, useState } from 'react';
 import type { ControlSize, Orientation } from '../../core/props.js';
-import { Field, useFieldControl, type FieldInputProps } from '../field/field.js';
+import { Field, type FieldInputProps, useFieldControl } from '../field/field.js';
 import { ChoiceBox } from './choice-box.js';
 import { choiceGroupHooks as hooks } from './choice-group-hooks.js';
 
@@ -104,5 +104,5 @@ export function ChoiceGroup<M extends ChoiceGroupSelectionMode = 'single'>({
   );
 }
 
-export { Choice } from './choice.js';
 export type { ChoiceProps, ChoiceRenderState } from './choice.js';
+export { Choice } from './choice.js';

@@ -1,7 +1,7 @@
 // Cases of the timeline lab for expansion owned by the host, and for a row height and selection
 // mode other than the defaults.
 
-import { useState, type CSSProperties } from 'react';
+import { type CSSProperties, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import {

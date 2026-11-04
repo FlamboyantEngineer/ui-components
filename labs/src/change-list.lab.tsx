@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { Badge } from '../../src/components/badge/badge.js';
 import { Button } from '../../src/components/button/button.js';
 import { ChangeList, type ChangeListChange } from '../../src/components/change-list/change-list.js';
-import { requireDefined } from './require-defined.js';
 import { ChangeListHostCases } from './change-list-host-cases.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { samplePicture } from './people-samples.js';
+import { requireDefined } from './require-defined.js';
 
 /** A fixed clock, so every time in the matrices reads the same on every day. */
 const getNow = () => new Date(2026, 3, 20, 10, 30);

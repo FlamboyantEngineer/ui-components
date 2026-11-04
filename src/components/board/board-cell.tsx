@@ -1,22 +1,18 @@
 'use client';
 
-import { PlusGlyph } from '../../core/glyphs.js';
-import { createDropIndicator } from '../../utils/create-drop-indicator.js';
-import { requireDefined } from '../../utils/require-defined.js';
-import { toKeyIdentity } from '../../utils/to-key-identity.js';
-import { toCollectionKey } from '../../utils/to-collection-key.js';
-import { createKeyIndex } from '../../utils/create-key-index.js';
-import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import {
+  type ComponentProps,
+  type KeyboardEvent,
+  type ReactNode,
   useCallback,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
-  type ComponentProps,
-  type KeyboardEvent,
-  type ReactNode,
 } from 'react';
+import { PlusGlyph } from '../../core/glyphs.js';
+import type { Key } from '../../core/props.js';
+import { useUiStrings } from '../../core/provider.js';
 import {
   GridList,
   GridListItem,
@@ -25,21 +21,25 @@ import {
   useDragAndDrop,
   Virtualizer,
 } from '../../primitives/index.js';
-import type { Key } from '../../core/props.js';
-import { useUiStrings } from '../../core/provider.js';
+import { createDropIndicator } from '../../utils/create-drop-indicator.js';
+import { createKeyIndex } from '../../utils/create-key-index.js';
+import { isElement } from '../../utils/is-element.js';
+import { keepControlFocusReturn } from '../../utils/keep-control-focus-return.js';
+import { requireDefined } from '../../utils/require-defined.js';
+import { measureInScroller } from '../../utils/scroll-geometry.js';
+import { isTextControlKey } from '../../utils/text-control-keys.js';
+import { toCollectionKey } from '../../utils/to-collection-key.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
+import { type CollectionDropTarget, isMoveChord } from '../../utils/use-reorder-drag-and-drop.js';
 import { Button } from '../button/button.js';
 import { armHandleDrag, DragHandle } from '../drag-handle/drag-handle.js';
 import { EmptyState } from '../empty-state/empty-state.js';
-import { boardHooks as hooks } from './board-hooks.js';
-import { BoardListFrame } from './board-scrollbars.js';
-import type { BoardCellAddress } from './board-moves.js';
-import type { BoardCardDrag } from './use-board-drag.js';
 import type { BoardCardState } from './board.js';
-import { isTextControlKey } from '../../utils/text-control-keys.js';
-import { isElement } from '../../utils/is-element.js';
-import { isMoveChord, type CollectionDropTarget } from '../../utils/use-reorder-drag-and-drop.js';
-import { keepControlFocusReturn } from '../../utils/keep-control-focus-return.js';
-import { measureInScroller } from '../../utils/scroll-geometry.js';
+import { boardHooks as hooks } from './board-hooks.js';
+import type { BoardCellAddress } from './board-moves.js';
+import { BoardListFrame } from './board-scrollbars.js';
+import type { BoardCardDrag } from './use-board-drag.js';
 
 /** Scrolls the virtualized cell holding the card `key` toward it; other cells ignore the call. */
 export type BoardCardReveal = (key: Key) => void;

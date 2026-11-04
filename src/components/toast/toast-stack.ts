@@ -5,14 +5,14 @@
 
 import {
   createContext,
+  type HTMLAttributes,
+  type RefObject,
   useCallback,
   useContext,
   useEffect,
   useMemo,
   useRef,
   useState,
-  type HTMLAttributes,
-  type RefObject,
 } from 'react';
 import {
   UNSTABLE_ToastStateContext as ToastStateContext,

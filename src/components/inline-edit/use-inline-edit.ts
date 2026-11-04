@@ -1,25 +1,24 @@
 'use client';
 
-import { isFocused } from '../../utils/focus-target.js';
-import { toErrorMessage } from '../../utils/to-error-message.js';
 // The editing state of an inline edit: opening and closing the editor, the value being edited, the
 // save and its outcome, focus, and the keys and focus moves that save or cancel.
-
 import {
+  type FocusEvent,
+  type KeyboardEvent,
+  type RefObject,
   useEffect,
   useLayoutEffect,
   useRef,
   useState,
-  type FocusEvent,
-  type KeyboardEvent,
-  type RefObject,
 } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
+import { isFocused } from '../../utils/focus-target.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
-import { useLatest } from '../../utils/use-latest.js';
-import { useLifetimeSignal } from '../../utils/use-lifetime-signal.js';
 import { isHTMLElement } from '../../utils/is-element.js';
 import { listTabbables } from '../../utils/tabbable.js';
+import { toErrorMessage } from '../../utils/to-error-message.js';
+import { useLatest } from '../../utils/use-latest.js';
+import { useLifetimeSignal } from '../../utils/use-lifetime-signal.js';
 import { isFieldValueEqual } from '../field/field.js';
 
 interface InlineEditStateOptions<T> {

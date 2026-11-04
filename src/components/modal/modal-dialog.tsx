@@ -1,37 +1,37 @@
 'use client';
 
 import {
+  type KeyboardEvent,
+  type RefObject,
   useContext,
   useId,
   useLayoutEffect,
   useRef,
   useState,
-  type KeyboardEvent,
-  type RefObject,
 } from 'react';
+import { dialogTitleLevel, HeadingLevelContext } from '../../core/heading-level.js';
+import { AvailableLoadingBoundary, useHoldFocusOnLeave } from '../../core/loading-boundary.js';
 import { Dialog, OverlayTriggerStateContext } from '../../primitives/index.js';
 import { stopConsumedEscape } from '../../utils/consumed-escape.js';
+import { getDeepActiveElement, resolveFocusTarget } from '../../utils/focus-target.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
+import { isHTMLElement } from '../../utils/is-element.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { getOwnerDocument } from '../../utils/owner-window.js';
+import {
+  preventPrimaryActionButtonDefault,
+  PrimaryActionKeysContext,
+} from '../../utils/primary-action-keys.js';
+import { useLatest } from '../../utils/use-latest.js';
+import { usePortalContainer } from '../portal/portal.js';
 import type { ModalProps, ModalRenderProps } from './modal.js';
 import { InitialFocus, useFocusReturn } from './modal-focus.js';
-import { getDeepActiveElement, resolveFocusTarget } from '../../utils/focus-target.js';
-import { isHTMLElement } from '../../utils/is-element.js';
-import { AvailableLoadingBoundary, useHoldFocusOnLeave } from '../../core/loading-boundary.js';
-import { getOwnerDocument } from '../../utils/owner-window.js';
-import { usePortalContainer } from '../portal/portal.js';
-import { ModalShownContext } from './modal-retained.js';
 import { ModalFooter } from './modal-footer.js';
 import { ModalHeader } from './modal-header.js';
-import { claimPrimaryShortcut } from './modal-shortcut.js';
-import { useModalActions, type ModalActions } from './use-modal-actions.js';
-import { useLatest } from '../../utils/use-latest.js';
 import { modalHooks as hooks } from './modal-hooks.js';
-import { isComposingKey } from '../../utils/is-composing-key.js';
-import {
-  PrimaryActionKeysContext,
-  preventPrimaryActionButtonDefault,
-} from '../../utils/primary-action-keys.js';
-import { HeadingLevelContext, dialogTitleLevel } from '../../core/heading-level.js';
+import { ModalShownContext } from './modal-retained.js';
+import { claimPrimaryShortcut } from './modal-shortcut.js';
+import { type ModalActions, useModalActions } from './use-modal-actions.js';
 
 type ModalDialogProps = Omit<
   ModalProps,

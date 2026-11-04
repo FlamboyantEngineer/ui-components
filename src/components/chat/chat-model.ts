@@ -1,4 +1,3 @@
-import { splitMatchTerms, textMatchesTerms } from '../text-match/match-ranges.js';
 import type { ChatStatusLineActivity } from '../chat-activity/chat-activity.js';
 import { isAwaitingReader } from '../chat-controller/chat-reply.js';
 import type { ChatMessageData, ChatParticipant, ChatTextToken } from '../chat-parts/chat-parts.js';
@@ -8,6 +7,7 @@ import type {
   ChatMessageStatus,
   ChatReader,
 } from '../chat-transcript/chat-transcript.js';
+import { splitMatchTerms, textMatchesTerms } from '../text-match/match-ranges.js';
 
 /** Participants by id. */
 export type ChatParticipantIndex = ReadonlyMap<string, ChatParticipant>;

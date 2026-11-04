@@ -13,17 +13,17 @@ import {
 import { closeHistory, history, redo, undo } from 'prosemirror-history';
 import { inputRules, textblockTypeInputRule, undoInputRule } from 'prosemirror-inputrules';
 import { keymap } from 'prosemirror-keymap';
-import { Fragment, Slice, type Node, type Schema } from 'prosemirror-model';
+import { Fragment, type Node, type Schema, Slice } from 'prosemirror-model';
 import {
+  type Command,
   EditorState,
+  type Plugin,
   Selection,
   TextSelection,
-  type Command,
-  type Plugin,
   type Transaction,
 } from 'prosemirror-state';
 import type { EditorView } from 'prosemirror-view';
-import { toPillText, type PillAttributes } from './composer-schema.js';
+import { type PillAttributes, toPillText } from './composer-schema.js';
 
 /** Whether the caret or selection is in a code block. */
 export function isInCode(state: EditorState): boolean {

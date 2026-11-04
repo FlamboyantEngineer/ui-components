@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, type HTMLAttributes, type RefObject } from 'react';
-import { useDrag, useDrop } from '../primitives/index.js';
+import { type HTMLAttributes, type RefObject, useState } from 'react';
 import type { PressEvent } from '../core/events.js';
 import type { Key } from '../core/props.js';
+import { useDrag, useDrop } from '../primitives/index.js';
 import { mergeProps } from './merge-props.js';
 
 interface ItemMove {

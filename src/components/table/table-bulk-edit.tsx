@@ -1,12 +1,12 @@
 'use client';
 
-import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
+import { type RefObject, useLayoutEffect, useRef, useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { ActionRow, type ActionRowAction } from '../action-row/action-row.js';
 import { BooleanField } from '../boolean-field/boolean-field.js';
 import { DateTimeField } from '../date-time-field/date-time-field.js';
-import { Form, useFormValidity, type FormValidity } from '../form/form.js';
+import { Form, type FormValidity, useFormValidity } from '../form/form.js';
 import { Modal } from '../modal/modal.js';
 import { NumberField } from '../number-field/number-field.js';
 import { SelectField } from '../select-field/select-field.js';

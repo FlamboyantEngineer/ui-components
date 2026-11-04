@@ -28,7 +28,7 @@ Every file in `src/`, `labs/src/`, `test/` and `e2e/` follows these rules; tests
 
 **S3. `index.ts` only re-exports** the public API with named `export … from` statements. No default exports anywhere (TS7). **(enforced)**
 
-**S4. Import other components through their main module** (`../icon/icon.js`), never through another component's helper modules, except a server-safe helper module of a component whose main module is a client module: a server-safe caller imports such a helper from the module that defines it (`../filter-bar/filter-matching.js`), since through the client main module the server would receive a client reference (UIC-SERVER-COMPONENTS-1.4). Labs import a component through its entry point (`index.js`) or its main module. Relative imports end in `.js`; types use `import type`. **(enforced: lint)**
+**S4. Import other components through their main module** (`../icon/icon.js`), never through another component's helper modules, except a server-safe helper module of a component whose main module is a client module: a server-safe caller imports such a helper from the module that defines it (`../filter-bar/filter-matching.js`), since through the client main module the server would receive a client reference (UIC-SERVER-COMPONENTS-1.4). Labs import a component through its entry point (`index.js`) or its main module. Relative imports end in `.js`; types use `import type`. A module is imported in one statement, with type-only names marked inline (`import { Icon, type IconSource }`) or the whole statement `import type` when every name is a type, and a file's imports and `export … from` statements are sorted: packages first, then relative paths (`npx eslint --fix` sorts them). **(enforced: lint)**
 
 **S5. Every public component is complete:** a spec with its hook table, unit tests that name the spec's requirement IDs, a lab with its full state matrix, a browser test, and a reference partial when the spec declares class hooks. **(enforced)**
 
@@ -89,7 +89,7 @@ Adapted from the agent-rules TypeScript set ([coding-rules/README.md](coding-rul
 
 **TS4. No `@ts-ignore` or `@ts-nocheck`.** A `@ts-expect-error` carries a description of what removes it. **(enforced: `@typescript-eslint/ban-ts-comment`)**
 
-**TS5. Import a type-only binding with `import type`** (S4). **(enforced: `@typescript-eslint/consistent-type-imports`)**
+**TS5. Import a type-only binding with `import type`** (S4). An import whose names are all types is a whole `import type` statement, so the compiled module drops it instead of keeping an empty side-effect import. **(enforced: `@typescript-eslint/consistent-type-imports`, `@typescript-eslint/no-import-type-side-effects`)**
 
 **TS6. No `enum`.** Use a string-literal union, or an `as const` object with a derived type. **(enforced)**
 

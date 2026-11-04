@@ -1,18 +1,18 @@
 'use client';
 
-import { useLayoutEffect, useRef, useState, type DragEvent } from 'react';
-import { useLatest } from '../../utils/use-latest.js';
+import { type DragEvent, useLayoutEffect, useRef, useState } from 'react';
 import { isThenable } from '../../utils/is-thenable.js';
+import { useLatest } from '../../utils/use-latest.js';
 import {
   canAcceptDrag,
-  partitionFiles,
   type FilePartition,
   type FileRejection,
   type FileRules,
+  partitionFiles,
 } from './file-rules.js';
+import type { FileUploadProps } from './file-upload.js';
 import { readDraggedItems } from './file-upload-drop.js';
 import type { FileUploadItem } from './file-upload-files.js';
-import type { FileUploadProps } from './file-upload.js';
 
 type IntakeOffer = { files: readonly File[] } | { error: unknown };
 

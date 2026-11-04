@@ -2,17 +2,17 @@ import {
   CloseGlyph,
   DeleteGlyph,
   EditGlyph,
+  type GlyphComponent,
   MoreGlyph,
   PlusGlyph,
   RefreshGlyph,
   SaveGlyph,
-  type GlyphComponent,
 } from '../../core/glyphs.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import type { UiStrings } from '../../core/strings.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
-import type { IconSource } from '../icon/icon.js';
 import type { ButtonProps } from '../button/button.js';
+import type { IconSource } from '../icon/icon.js';
 import type { MenuEntry, MenuProps } from '../menu/menu.js';
 
 type StringKey = {

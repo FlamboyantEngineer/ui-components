@@ -1,12 +1,12 @@
 'use client';
 
-import { toErrorMessage } from '../../utils/to-error-message.js';
-import { useEffect, useRef, useState, type FormEvent, type RefObject } from 'react';
-import { useStableArray } from '../../utils/use-stable-array.js';
-import { useRetainedKey } from '../../utils/use-retained-key.js';
+import { type FormEvent, type RefObject, useEffect, useRef, useState } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { toErrorMessage } from '../../utils/to-error-message.js';
+import { useRetainedKey } from '../../utils/use-retained-key.js';
+import { useStableArray } from '../../utils/use-stable-array.js';
 import { runPendingAction } from '../button/button.js';
 import type { StepsStatus } from '../steps/steps.js';
 import type { WizardProps, WizardStep } from './wizard.js';

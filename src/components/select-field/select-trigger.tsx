@@ -1,21 +1,20 @@
 'use client';
 
-import { ChevronDownGlyph, CloseGlyph } from '../../core/glyphs.js';
 import type { KeyboardEvent, Ref } from 'react';
+import { ChevronDownGlyph, CloseGlyph } from '../../core/glyphs.js';
+import { Glyph } from '../../core/provider.js';
 import {
   Button as AriaButton,
   ButtonContext,
   SelectValueContext,
   useSlottedContext,
 } from '../../primitives/index.js';
-import { Glyph } from '../../core/provider.js';
-import { FieldPreviousValue } from '../field/field.js';
 import { Button } from '../button/button.js';
-import { Icon } from '../icon/icon.js';
-import { toIconProps } from '../icon/icon.js';
-import type { ChosenSelectOption } from './select-options.js';
-import { selectFieldHooks as hooks } from './select-field-hooks.js';
+import { FieldPreviousValue } from '../field/field.js';
+import { Icon, toIconProps } from '../icon/icon.js';
 import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';
+import { selectFieldHooks as hooks } from './select-field-hooks.js';
+import type { ChosenSelectOption } from './select-options.js';
 
 interface SelectTriggerProps {
   ref: Ref<HTMLButtonElement>;

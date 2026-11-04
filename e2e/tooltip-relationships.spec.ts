@@ -1,4 +1,4 @@
-import { test, expect } from './fixtures.js';
+import { expect, test } from './fixtures.js';
 
 for (const relationship of ['description', 'label'] as const) {
   test(`UIC-TOOLTIP-2.3 UIC-TOOLTIP-2.4 maintains the anchored ${relationship} through host updates`, async ({

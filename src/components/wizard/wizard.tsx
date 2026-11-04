@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, type ReactNode } from 'react';
+import { type ReactNode, useId } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, Orientation, RefProps } from '../../core/props.js';
@@ -9,7 +9,7 @@ import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { Button } from '../button/button.js';
 import { Form } from '../form/form.js';
 import { InlineError } from '../inline-error/inline-error.js';
-import { useHeadingLevel, type HeadingLevel } from '../section-header/section-header.js';
+import { type HeadingLevel, useHeadingLevel } from '../section-header/section-header.js';
 import { Steps } from '../steps/steps.js';
 import { useWizardNavigation, type WizardNavigation } from './wizard-navigation.js';
 

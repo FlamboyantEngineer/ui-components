@@ -4,23 +4,23 @@
 // the row, and Escape keeps the old name. The rename acts on the row as the owner draws it now: a
 // row that becomes disabled, leaves the tree or stops taking renames closes its field unrenamed.
 
-import { isFocused } from '../../utils/focus-target.js';
 import {
+  type KeyboardEvent,
+  type ReactNode,
+  type RefObject,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
-  type KeyboardEvent,
-  type ReactNode,
-  type RefObject,
 } from 'react';
-import { Input } from '../../primitives/index.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { Input } from '../../primitives/index.js';
+import { isFocused } from '../../utils/focus-target.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { walkTree } from '../../utils/walk-tree.js';
-import type { TreeItemData, TreeProps } from './tree-props.js';
 import { treeHooks as hooks } from './tree-hooks.js';
+import type { TreeItemData, TreeProps } from './tree-props.js';
 
 type TreeRenameOptions<T extends TreeItemData> = Pick<TreeProps<T>, 'onRename' | 'canRename'> & {
   getTextValue: (item: T) => string;

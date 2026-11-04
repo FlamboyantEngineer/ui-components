@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ChatMessageData, ChatPart } from '../chat-parts/chat-parts.js';
-import { reduceChatStream, type ChatStreamContext, type ChatStreamEvent } from './chat-stream.js';
+import { type ChatStreamContext, type ChatStreamEvent, reduceChatStream } from './chat-stream.js';
 
 const reply = (parts: readonly ChatPart[] = []): ChatMessageData => ({
   id: 'reply',

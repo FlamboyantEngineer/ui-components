@@ -1,5 +1,7 @@
-import { isEditableTarget } from '../../utils/is-editable-target.js';
 import { containsFocus, getDeepActiveElement } from '../../utils/composed-focus.js';
+import { isEditableTarget } from '../../utils/is-editable-target.js';
+import { isHTMLElement } from '../../utils/is-element.js';
+import { getOwnerDocument } from '../../utils/owner-window.js';
 import { readOffset } from './transcript-geometry.js';
 import {
   isTranscriptMessage,
@@ -10,8 +12,6 @@ import {
   type TranscriptSettings,
 } from './transcript-runtime.js';
 import { syncWithScroll } from './transcript-sync.js';
-import { isHTMLElement } from '../../utils/is-element.js';
-import { getOwnerDocument } from '../../utils/owner-window.js';
 
 /** Announces a message that arrived, or that finished streaming. */
 export function announceMessage(

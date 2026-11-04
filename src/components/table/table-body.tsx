@@ -1,20 +1,20 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { useUiStrings } from '../../core/provider.js';
 import {
   Collection,
   TableBody as AriaTableBody,
   TableLoadMoreItem,
 } from '../../primitives/index.js';
-import { useUiStrings } from '../../core/provider.js';
 import { EmptyState } from '../empty-state/empty-state.js';
 import { InlineError } from '../inline-error/inline-error.js';
-import { tableHooks as hooks } from './table-hooks.js';
 import { renderBodyNode } from './table-group-row.js';
 import type { TableBodyNode } from './table-groups.js';
+import { tableHooks as hooks } from './table-hooks.js';
 import type { TableRowModel } from './table-row-model.js';
-import { TableSpanningRow } from './table-spanning-row.js';
 import type { TableRow } from './table-rows.js';
+import { TableSpanningRow } from './table-spanning-row.js';
 import { countTableColumns } from './table-structure.js';
 
 /** The notice a table shows in place of its rows. */

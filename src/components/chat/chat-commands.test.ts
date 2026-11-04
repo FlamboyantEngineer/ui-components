@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { helper, message, people } from '../../../test/chat-fixtures.js';
-import { toMessageCommands, type ChatCommandContext } from './chat-commands.js';
+import { type ChatCommandContext, toMessageCommands } from './chat-commands.js';
 import { indexParticipants } from './chat-model.js';
 
 /** A context with every handler, recording their calls. */

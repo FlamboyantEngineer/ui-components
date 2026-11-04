@@ -1,6 +1,6 @@
+import { isElement, isHTMLElement } from '../../utils/is-element.js';
 import { tabbableSelector } from '../../utils/tabbable.js';
 import type { TranscriptRegistry } from './transcript-registry.js';
-import { isElement, isHTMLElement } from '../../utils/is-element.js';
 
 /** A message's element and key. */
 export interface TranscriptOwner {

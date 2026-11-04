@@ -1,19 +1,19 @@
 'use client';
 
-import { useCallback, useEffect, useRef, type MouseEvent, type RefObject } from 'react';
+import { type MouseEvent, type RefObject, useCallback, useEffect, useRef } from 'react';
+import { isNode } from '../../utils/is-element.js';
+import { isInteractiveTarget } from '../../utils/is-interactive-target.js';
+import { useLatest } from '../../utils/use-latest.js';
 import {
   findPageIndex,
   locateRange,
   measurePageFrame,
-  toPagePoint,
   type PdfPagePoint,
   type PdfSelection,
+  toPagePoint,
 } from './page-geometry.js';
 import type { PdfTextContent, PdfViewport } from './pdf-engine.js';
 import type { LoadedPdf } from './use-pdf-document.js';
-import { useLatest } from '../../utils/use-latest.js';
-import { isNode } from '../../utils/is-element.js';
-import { isInteractiveTarget } from '../../utils/is-interactive-target.js';
 
 interface UsePdfGesturesOptions<V extends PdfViewport, C extends PdfTextContent> {
   /** The open document as the reader turned it. */

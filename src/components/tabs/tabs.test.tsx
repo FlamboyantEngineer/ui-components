@@ -1,13 +1,13 @@
-import { InfoGlyph } from '../../core/glyphs.js';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
-import { I18nProvider } from '../../primitives/index.js';
-import type { Key } from '../../core/props.js';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { InfoGlyph } from '../../core/glyphs.js';
+import type { Key } from '../../core/props.js';
 import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage } from '../../core/storage.js';
-import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { I18nProvider } from '../../primitives/index.js';
 import { Tab, TabList, TabPanel, Tabs, type TabsProps } from './tabs.js';
 
 /** Gives the document a font set whose `loadingdone` the test fires; returns the firing. */

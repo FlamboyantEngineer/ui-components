@@ -1,15 +1,15 @@
 import { useState } from 'react';
-import type { Key } from '../../src/core/props.js';
-import { FolderGlyph } from '../../src/core/glyphs.js';
 import { Button } from '../../src/components/button/button.js';
 import {
-  FolderManager,
   type FolderItem,
+  FolderManager,
   type FolderManagerProps,
 } from '../../src/components/folder-manager/folder-manager.js';
 import { Modal } from '../../src/components/modal/modal.js';
+import { FolderGlyph } from '../../src/core/glyphs.js';
+import type { Key } from '../../src/core/props.js';
 import { applyTreeMove } from '../../src/utils/tree-reorder.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 
 interface Folder extends FolderItem {

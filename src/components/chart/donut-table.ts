@@ -1,6 +1,6 @@
+import { resolveAmountShares } from '../../utils/resolve-amount-shares.js';
 import type { ChartTable } from './chart.js';
 import type { DonutChartSegment } from './donut-chart.js';
-import { resolveAmountShares } from '../../utils/resolve-amount-shares.js';
 
 export interface DonutFormats {
   value: Intl.NumberFormat;

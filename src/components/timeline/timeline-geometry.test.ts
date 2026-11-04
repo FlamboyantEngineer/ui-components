@@ -3,6 +3,7 @@ import { requireDefined } from '../../utils/require-defined.js';
 import {
   createTimelineAxis,
   isDependencyConflict,
+  type ReadItem,
   readTimelineItem,
   resolveConnectorPath,
   resolveDragChange,
@@ -10,7 +11,6 @@ import {
   resolveKeyboardChange,
   resolveScaleCells,
   resolveTimelineRange,
-  type ReadItem,
   type TimelineItem,
 } from './timeline-geometry.js';
 

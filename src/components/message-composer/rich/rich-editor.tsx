@@ -3,7 +3,7 @@
 import { ProseMirror } from '@handlewithcare/react-prosemirror';
 import type { EditorState } from 'prosemirror-state';
 import type { EditorView } from 'prosemirror-view';
-import { useCallback, useMemo, type RefObject } from 'react';
+import { type RefObject, useCallback, useMemo } from 'react';
 import { useLatest } from '../../../utils/use-latest.js';
 import {
   decoratePlaceholder,
@@ -12,16 +12,16 @@ import {
   useSyncedEditorState,
 } from '../../rich-text-editor/rich-text-editor.js';
 import { composerHooks as hooks } from '../composer-hooks.js';
-import { isSameMessage, type MessageComposerMessage } from '../composer-message.js';
 import type { ComposerKeys } from '../composer-keys.js';
+import { isSameMessage, type MessageComposerMessage } from '../composer-message.js';
 import type { ComposerState } from '../use-composer-state.js';
 import { attachPastedFiles } from '../use-file-drop.js';
 import { createComposerPlugins, createComposerState, pastePlainText } from './composer-commands.js';
-import { parseComposerMessage, serializeComposerDocument } from './composer-markdown.js';
-import { ComposerPillContext, composerNodeViews } from './composer-pill.js';
-import { composerSchema, type PillAttributes } from './composer-schema.js';
 import { replaceShownMessage } from './composer-edits.js';
+import { parseComposerMessage, serializeComposerDocument } from './composer-markdown.js';
 import { createPendingPastePlugin, pasteThroughHost } from './composer-paste.js';
+import { composerNodeViews, ComposerPillContext } from './composer-pill.js';
+import { composerSchema, type PillAttributes } from './composer-schema.js';
 import { RichComposerContent } from './rich-content.js';
 import type { RichMessageComposerProps } from './rich-message-composer.js';
 

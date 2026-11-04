@@ -1,4 +1,8 @@
-export { RichMessageComposer } from './rich-message-composer.js';
+export type {
+  MessageComposerMessage,
+  MessageComposerToken,
+  MessageComposerTokenKind,
+} from '../composer-message.js';
 export type {
   MessageComposerCommand,
   MessageComposerContent,
@@ -15,8 +19,4 @@ export type {
   MessageComposerTriggerContext,
   RichMessageComposerProps,
 } from './rich-message-composer.js';
-export type {
-  MessageComposerMessage,
-  MessageComposerToken,
-  MessageComposerTokenKind,
-} from '../composer-message.js';
+export { RichMessageComposer } from './rich-message-composer.js';

@@ -1,31 +1,30 @@
 'use client';
 
-import { renderCaretKeyToolbar } from '../../utils/toolbar-caret-keys.js';
-import { useMemo, type KeyboardEvent, type ReactNode } from 'react';
-import { Toolbar } from '../../primitives/index.js';
+import { type KeyboardEvent, type ReactNode, useMemo } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { pickDataAttributes } from '../../core/hooks.js';
+import type { ControlSize } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
+import { Toolbar } from '../../primitives/index.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { mergeRefs } from '../../utils/merge-props.js';
+import { renderCaretKeyToolbar } from '../../utils/toolbar-caret-keys.js';
 import { useOverflowFocus } from '../../utils/use-overflow-focus.js';
 import { useOverflowItems } from '../../utils/use-overflow-items.js';
-
-import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import { Button, type ButtonProps } from '../button/button.js';
+import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import {
   Menu,
-  MenuPopover,
-  MenuTrigger,
   type MenuEntry,
   type MenuItemEntry,
+  MenuPopover,
   type MenuSize,
+  MenuTrigger,
 } from '../menu/menu.js';
-import { useActionPending, type ActionPress } from './use-action-pending.js';
-import { toActionContent, toActionKey, type ActionRowAction } from './action-verbs.js';
 import { actionRowHooks as hooks } from './action-row-hooks.js';
-import type { ControlSize } from '../../core/props.js';
+import { type ActionRowAction, toActionContent, toActionKey } from './action-verbs.js';
+import { type ActionPress, useActionPending } from './use-action-pending.js';
 
 interface ActionRowActionsProps extends Pick<AriaLabellingProps, 'aria-label' | 'aria-labelledby'> {
   actions: readonly ActionRowAction[];

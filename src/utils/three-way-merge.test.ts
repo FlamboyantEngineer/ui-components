@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mergeThreeWay, type MergeChunk } from './three-way-merge.js';
+import { type MergeChunk, mergeThreeWay } from './three-way-merge.js';
 
 const text = (...lines: string[]) => lines.join('\n');
 

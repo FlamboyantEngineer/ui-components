@@ -1,6 +1,6 @@
-import { MoreGlyph } from '../../src/core/glyphs.js';
 import { Button } from '../../src/components/button/button.js';
 import { Menu, MenuItem, MenuPopover, MenuTrigger } from '../../src/components/menu/menu.js';
+import { MoreGlyph } from '../../src/core/glyphs.js';
 
 /**
  * A row's menu button, as hosts put in a collection row: Pin and Archive. Closing the menu returns

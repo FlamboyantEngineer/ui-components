@@ -1,15 +1,15 @@
 'use client';
 
+import { type ReactNode, useId } from 'react';
 import { HelpGlyph } from '../../core/glyphs.js';
-import { useId, type ReactNode } from 'react';
-import { createHooks, type ComponentHooks } from '../../core/hooks.js';
+import { type ComponentHooks, createHooks } from '../../core/hooks.js';
 import type { ControlSize, Density } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { joinIds } from '../../utils/join-ids.js';
 import type { SlotRef } from '../../utils/slot-registry.js';
 import { Button } from '../button/button.js';
 import { TextMatch } from '../text-match/text-match.js';
 import type { FieldSeverity, FieldState, FieldValidation } from './field-state.js';
-import { joinIds } from '../../utils/join-ids.js';
 
 /**
  * How much room a field keeps for what its states add: `default` keeps a line for the message and a

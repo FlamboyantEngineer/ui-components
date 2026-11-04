@@ -1,9 +1,9 @@
 'use client';
 
+import { type RefObject, useCallback, useLayoutEffect, useRef } from 'react';
 import { getComposedActiveElement, isFocused } from '../../utils/focus-target.js';
-import { useCallback, useLayoutEffect, useRef, type RefObject } from 'react';
-import type { CodeEdit, CodeSelection } from './code-editing.js';
 import { isHTMLElement } from '../../utils/is-element.js';
+import type { CodeEdit, CodeSelection } from './code-editing.js';
 
 interface CodeEditsOptions {
   inputRef: RefObject<HTMLTextAreaElement | null>;

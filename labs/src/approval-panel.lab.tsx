@@ -5,7 +5,7 @@ import {
 } from '../../src/components/approval-panel/approval-panel.js';
 import { DecisionControl } from '../../src/components/decision-control/decision-control.js';
 import { ApprovalPanelZoneCases } from './approval-panel-zone-cases.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { samplePicture } from './people-samples.js';
 
 /** A fixed clock, so the decision times read the same on every day. */

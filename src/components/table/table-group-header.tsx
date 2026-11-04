@@ -1,11 +1,11 @@
 'use client';
 
-import { useContext, type CSSProperties, type JSX } from 'react';
+import { type CSSProperties, type JSX, useContext } from 'react';
 import { measuredProperty } from '../../core/hooks.js';
 import { TableColumnResizeStateContext, TableStateContext } from '../../primitives/index.js';
 import { groupColumnCells } from './table-columns.js';
-import { tableHooks as hooks } from './table-hooks.js';
 import type { TableHeaderModel } from './table-header.js';
+import { tableHooks as hooks } from './table-hooks.js';
 import type { TableStructure } from './table-structure.js';
 
 // The group header row above the column headers, in a static or a virtualized table.

@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { Switch } from '../../src/components/switch/switch.js';
 import { MergeView, type MergeViewResult } from '../../src/components/merge-view/merge-view.js';
+import { Switch } from '../../src/components/switch/switch.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { ShadowRootApp } from './shadow-root-host.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const base = [
   'Lemon tart',

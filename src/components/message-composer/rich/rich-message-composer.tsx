@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, type FocusEvent, type Ref } from 'react';
+import { type FocusEvent, type Ref, useCallback, useRef } from 'react';
 import type { AvatarIdentity } from '../../avatar/avatar.js';
 import type { RecordLabelResolver } from '../../record-label/record-label.js';
 import { ComposerFrame } from '../composer-frame.js';
@@ -11,14 +11,21 @@ import {
   type MessageComposerMessage,
 } from '../composer-message.js';
 import type { MessageComposerSharedProps } from '../message-composer.js';
-import { useComposerState, type ComposerFormat } from '../use-composer-state.js';
-import type { PillAttributes } from './composer-schema.js';
-import { RichComposerEditor, type RichEditorHandle } from './rich-editor.js';
+import { type ComposerFormat, useComposerState } from '../use-composer-state.js';
 import type { MessageComposerRange } from './composer-edits.js';
-import type { MessageComposerTrigger } from './composer-triggers.js';
 import type { MessageComposerPaste, MessageComposerPasteResult } from './composer-paste.js';
-import { useComposerHandle, type MessageComposerHandle } from './use-composer-handle.js';
+import type { PillAttributes } from './composer-schema.js';
+import type { MessageComposerTrigger } from './composer-triggers.js';
+import { RichComposerEditor, type RichEditorHandle } from './rich-editor.js';
+import { type MessageComposerHandle, useComposerHandle } from './use-composer-handle.js';
 
+export type { MessageComposerRange } from './composer-edits.js';
+export type { MessageComposerPaste, MessageComposerPasteResult } from './composer-paste.js';
+export type {
+  MessageComposerSuggestion,
+  MessageComposerTrigger,
+  MessageComposerTriggerContext,
+} from './composer-triggers.js';
 export type {
   MessageComposerContent,
   MessageComposerEditResult,
@@ -26,13 +33,6 @@ export type {
   MessageComposerInsertResult,
   MessageComposerRefusal,
 } from './use-composer-handle.js';
-export type { MessageComposerRange } from './composer-edits.js';
-export type {
-  MessageComposerSuggestion,
-  MessageComposerTrigger,
-  MessageComposerTriggerContext,
-} from './composer-triggers.js';
-export type { MessageComposerPaste, MessageComposerPasteResult } from './composer-paste.js';
 
 /** A person `@` can mention: shown with their avatar in the list, then as a pill. */
 export interface MessageComposerMention extends Pick<

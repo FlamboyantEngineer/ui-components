@@ -4,10 +4,10 @@ import { useState } from 'react';
 import { measuredProperty } from '../../core/hooks.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { SegmentedBarShape } from './segmented-bar.js';
-import { SegmentedCircle } from './segmented-circle.js';
-import { toSegmentProperties, type SegmentedPart } from './segmented-layout.js';
-import { useSegmentedAnimation } from './use-segmented-animation.js';
 import { segmentedBarHooks as hooks } from './segmented-bar-hooks.js';
+import { SegmentedCircle } from './segmented-circle.js';
+import { type SegmentedPart, toSegmentProperties } from './segmented-layout.js';
+import { useSegmentedAnimation } from './use-segmented-animation.js';
 
 /** The decorative geometry owns visibility and animation completion, apart from the live legend. */
 export function SegmentedTrack({

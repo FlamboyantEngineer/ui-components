@@ -1,25 +1,25 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent } from 'react';
+import { type PointerEvent, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { isElement } from '../../utils/is-element.js';
+import { isInteractiveTarget } from '../../utils/is-interactive-target.js';
 import { listenPointerRelease } from '../../utils/pointer-drag.js';
+import { useLatest } from '../../utils/use-latest.js';
 import {
+  type CellBounds,
+  type CellGrid,
   createBoundsRange,
   createCellRange,
   findDataCell,
   isSameCellRange,
   locateCell,
   readCellPosition,
-  type CellBounds,
-  type CellGrid,
   type TableCellPosition,
   type TableCellRange,
   type TableCellSelectionMode,
 } from './table-cell-range.js';
-import { planFill, resolveFillTarget, type CellWrite } from './table-cell-writes.js';
+import { type CellWrite, planFill, resolveFillTarget } from './table-cell-writes.js';
 import type { TableRow } from './table-rows.js';
-import { useLatest } from '../../utils/use-latest.js';
-import { isElement } from '../../utils/is-element.js';
-import { isInteractiveTarget } from '../../utils/is-interactive-target.js';
 
 interface CellPointerOptions<T> {
   mode: TableCellSelectionMode;

@@ -1,10 +1,10 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useEffect, useState, type Ref } from 'react';
+import { type Ref, useEffect, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Button } from '../button/button.js';
-import { Modal, ModalTrigger, type ModalProps } from './modal.js';
+import { Modal, type ModalProps, ModalTrigger } from './modal.js';
 
 /** A body with its own draft and an element ref, counting its mounts and unmounts. */
 function DraftBody({

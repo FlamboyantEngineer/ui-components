@@ -1,15 +1,15 @@
-import { useState, type ReactNode } from 'react';
-import type { Key } from '../../src/core/props.js';
+import { type ReactNode, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { ContextMenu, useMenuController } from '../../src/components/context-menu/context-menu.js';
 import { Menu, type MenuEntry } from '../../src/components/menu/menu.js';
 import {
-  StateMachineView,
   type StateMachineContextMenuEvent,
   type StateMachineState,
   type StateMachineTooltipPlacement,
   type StateMachineTransition,
+  StateMachineView,
 } from '../../src/components/state-machine-view/index.js';
+import type { Key } from '../../src/core/props.js';
 
 const statusStates: StateMachineState[] = [
   { id: 'intake', label: 'Intake', status: 'complete', tone: 'success', description: 'Complete.' },

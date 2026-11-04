@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, type RefObject } from 'react';
+import { type RefObject, useEffect, useRef } from 'react';
 import { findFormOwner } from './form-owner.js';
 import { getTreeRoot } from './owner-window.js';
 import { useLatest } from './use-latest.js';

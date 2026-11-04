@@ -1,10 +1,12 @@
 'use client';
 
 import type { JSX, ReactNode } from 'react';
-import { Cell, Row, TableFooter as AriaTableFooter } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
+import { Cell, Row, TableFooter as AriaTableFooter } from '../../primitives/index.js';
+import { readOwn } from '../../utils/read-own.js';
 import { tableHooks as hooks } from './table-hooks.js';
 import type { TableRow } from './table-rows.js';
+import { renderCellElement, renderNamedRow } from './table-spanning-row.js';
 import {
   actionsColumnId,
   countTableColumns,
@@ -14,9 +16,7 @@ import {
   selectionColumnId,
   type TableStructure,
 } from './table-structure.js';
-import { renderCellElement, renderNamedRow } from './table-spanning-row.js';
 import type { TablePinOffsets } from './use-pinned-offsets.js';
-import { readOwn } from '../../utils/read-own.js';
 
 interface TableFooterProps<T> {
   structure: TableStructure<T>;

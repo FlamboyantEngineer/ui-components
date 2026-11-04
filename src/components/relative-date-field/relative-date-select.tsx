@@ -1,24 +1,24 @@
 'use client';
 
-import { ChevronDownGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
+import { useControllableState } from '../../core/controllable-state.js';
+import { ChevronDownGlyph } from '../../core/glyphs.js';
+import { Glyph } from '../../core/provider.js';
 import {
   Button as AriaButton,
   ListBox,
   ListBoxItem,
+  Popover,
   Select as AriaSelect,
   SelectValueContext,
   useSlottedContext,
-  Popover,
 } from '../../primitives/index.js';
-import { PopoverPresence } from '../popover/popover.js';
-import { useControllableState } from '../../core/controllable-state.js';
+import { DEFAULT_DROPDOWN_OFFSET } from '../../utils/overlay-defaults.js';
 import { useCloseWhenLocked } from '../../utils/use-close-when-locked.js';
-import { Glyph } from '../../core/provider.js';
-import { toAriaControlProps, type FieldControlProps, type FieldState } from '../field/field.js';
+import { type FieldControlProps, type FieldState, toAriaControlProps } from '../field/field.js';
+import { PopoverPresence } from '../popover/popover.js';
 import { triggerWidthProperty, useLayerZIndex } from '../portal/portal.js';
 import type { RelativeDateText } from './relative-date.js';
-import { DEFAULT_DROPDOWN_OFFSET } from '../../utils/overlay-defaults.js';
 import { relativeDateFieldHooks as hooks } from './relative-date-field-hooks.js';
 
 /** One preset of the list, with whether the field's bounds refuse it. */

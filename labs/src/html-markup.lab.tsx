@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import { Badge } from '../../src/components/badge/badge.js';
 import {
-  HtmlMarkup,
   defaultHtmlPolicy,
+  HtmlMarkup,
   type HtmlPolicy,
 } from '../../src/components/html-markup/index.js';
 import { SearchField } from '../../src/components/search-field/search-field.js';
 import { TextMatchProvider } from '../../src/components/text-match/text-match.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { HtmlMarkupCoverageSections } from './html-markup-coverage-cases.js';
 import { LargeInputDemo } from './large-input-demo.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const samples = {
   'rich text': [

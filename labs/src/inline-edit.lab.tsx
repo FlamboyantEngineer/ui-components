@@ -5,8 +5,8 @@ import { InlineEdit } from '../../src/components/inline-edit/inline-edit.js';
 import { NumberField } from '../../src/components/number-field/number-field.js';
 import { SelectField } from '../../src/components/select-field/select-field.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { InlineEditHostCases } from './inline-edit-host-cases.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 type MatrixState = 'value' | 'empty' | 'editing' | 'disabled';
 

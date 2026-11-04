@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import type { Orientation } from '../../core/props.js';
-import { Tab, TabList, TabPanel, Tabs, type TabListProps } from './tabs.js';
+import { Tab, TabList, type TabListProps, TabPanel, Tabs } from './tabs.js';
 
 type Presentation = Pick<TabListProps, 'scrollButtons' | 'overflow' | 'onAdd'> & {
   orientation?: Orientation;

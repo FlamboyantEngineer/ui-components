@@ -1,19 +1,19 @@
 'use client';
 
+import { type ReactNode, useId } from 'react';
 import { CheckGlyph } from '../../core/glyphs.js';
-import { useId, type ReactNode } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
+import { readOwn } from '../../utils/read-own.js';
 import { Tab, TabList, TabPanel, Tabs } from '../tabs/tabs.js';
+import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import {
-  chatQuestionHooks as hooks,
-  isQuestionAnswered,
   type ChatQuestionAnsweredMark,
+  chatQuestionHooks as hooks,
   type ChatQuestionItem,
+  isQuestionAnswered,
   type QuestionDraft,
 } from './chat-question-model.js';
-import { readOwn } from '../../utils/read-own.js';
 
 interface QuestionTabsProps {
   questions: readonly ChatQuestionItem[];

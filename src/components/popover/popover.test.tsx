@@ -5,8 +5,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Button } from '../button/button.js';
 import { PortalContainerProvider } from '../portal/portal.js';
-import { Popover, PopoverTrigger, type PopoverProps } from './popover.js';
 import { Section, SectionHeader } from '../section-header/section-header.js';
+import { Popover, type PopoverProps, PopoverTrigger } from './popover.js';
 
 /** A page with a field, a trigger and the popover it opens. */
 function Page({ triggerProps = {}, ...props }: Partial<PopoverProps> & { triggerProps?: object }) {

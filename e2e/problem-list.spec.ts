@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Problem List lab', () => {
   test('UIC-PROBLEM-LIST-1.1 UIC-PROBLEM-LIST-2.1 counts problems by severity in every content', async ({

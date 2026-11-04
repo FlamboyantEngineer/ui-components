@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
-  FourSidePropertyStrip,
   type BoxAxis,
   type BoxSide,
+  FourSidePropertyStrip,
   type FourSidePropertyStripLink,
   type FourSideValues,
 } from '../../src/components/four-side-property-strip/four-side-property-strip.js';

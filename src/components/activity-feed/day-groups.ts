@@ -1,10 +1,10 @@
 // Groups timed entries by the local calendar day they happened on, with a heading per day.
 
 import {
-  createCalendarDayReader,
-  formatRelativeDay,
   type CalendarDay,
   type CalendarDayClock,
+  createCalendarDayReader,
+  formatRelativeDay,
 } from '../../utils/calendar-day.js';
 import { getDateFormatter } from '../../utils/intl-format.js';
 

@@ -1,7 +1,7 @@
 // The files the composer holds for the next message, uploaded through the host's `upload`.
 
 import type { ChatAttachmentData } from '../chat-attachment/chat-attachment.js';
-import { patchState, type ChatEngineContext } from './chat-controller-state.js';
+import { type ChatEngineContext, patchState } from './chat-controller-state.js';
 
 /** Merges `patch` into the composer's attachment `id`, when it still holds it. */
 function patchAttachment(

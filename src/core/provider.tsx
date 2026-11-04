@@ -1,7 +1,13 @@
 'use client';
 
 import {
+  type AnchorHTMLAttributes,
   createContext,
+  type Dispatch,
+  type ReactElement,
+  type ReactNode,
+  type Ref,
+  type SetStateAction,
   useCallback,
   useContext,
   useEffect,
@@ -9,24 +15,18 @@ import {
   useMemo,
   useRef,
   useState,
-  type AnchorHTMLAttributes,
-  type Dispatch,
-  type ReactElement,
-  type ReactNode,
-  type Ref,
-  type SetStateAction,
 } from 'react';
 import { I18nProvider, RouterProvider, useLocale } from '../primitives/index.js';
-import type { GlyphComponent, GlyphMap, GlyphName } from './glyph-types.js';
-import { mergeClassNames } from './hooks.js';
-import { OverlayPresenceScope } from './overlay-presence.js';
-import { DEFAULT_LOCALE, formatMessage, type MessageValues } from './message-format.js';
-import { createMemoryStorage, type UiStorage } from './storage.js';
-import { en } from './locales/index.js';
-import { compileStrings, getDefaultStrings, type UiMessages, type UiStrings } from './strings.js';
 import { omitUndefined } from '../utils/omit-undefined.js';
 import { useLatest } from '../utils/use-latest.js';
 import { useShallowStable } from '../utils/use-shallow-stable.js';
+import type { GlyphComponent, GlyphMap, GlyphName } from './glyph-types.js';
+import { mergeClassNames } from './hooks.js';
+import { en } from './locales/index.js';
+import { DEFAULT_LOCALE, formatMessage, type MessageValues } from './message-format.js';
+import { OverlayPresenceScope } from './overlay-presence.js';
+import { createMemoryStorage, type UiStorage } from './storage.js';
+import { compileStrings, getDefaultStrings, type UiMessages, type UiStrings } from './strings.js';
 
 /** Props a link renderer receives. It must render an element that navigates to `href`. */
 export interface UiLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement> {

@@ -1,12 +1,12 @@
 'use client';
 
 import { usePersistentState } from '../../core/provider.js';
+import { createJsonCodec } from '../../utils/json-codec.js';
 import type {
   ChatEffortOption,
   ChatModelOption,
   ChatModelPickerProps,
 } from './chat-model-picker.js';
-import { createJsonCodec } from '../../utils/json-codec.js';
 
 /** The choices a `persistKey` keeps: each one the caller does not control. */
 interface StoredChoice {

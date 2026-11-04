@@ -1,12 +1,12 @@
 import { act, render, screen, within } from '@testing-library/react';
-import { hydrateRoot } from 'react-dom/client';
-import { renderToString } from 'react-dom/server';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
-import { Input } from '../../primitives/index.js';
+import { hydrateRoot } from 'react-dom/client';
+import { renderToString } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { Input } from '../../primitives/index.js';
 import { Field, useFieldState } from '../field/field.js';
 import {
   PropertyCard,

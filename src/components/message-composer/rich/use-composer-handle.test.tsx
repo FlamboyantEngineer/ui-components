@@ -7,8 +7,8 @@ import { UiProvider } from '../../../core/provider.js';
 import { createMemoryStorage } from '../../../core/storage.js';
 import type { MessageComposerMessage } from '../composer-message.js';
 import {
-  RichMessageComposer,
   type MessageComposerHandle,
+  RichMessageComposer,
   type RichMessageComposerProps,
 } from './rich-message-composer.js';
 

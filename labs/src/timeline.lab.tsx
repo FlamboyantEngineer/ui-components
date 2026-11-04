@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from 'react';
+import { type CSSProperties, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import {
@@ -12,11 +12,11 @@ import {
 } from '../../src/components/timeline/timeline.js';
 import type { Key } from '../../src/core/props.js';
 import { UiProvider } from '../../src/core/provider.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { requireDefined } from './require-defined.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-import { TaskEditingDemo } from './timeline-tasks.js';
-import { RowPropertiesDemo } from './timeline-row-properties.js';
 import { ControlledExpansion, RowHeightAndSelection } from './timeline-owned-cases.js';
+import { RowPropertiesDemo } from './timeline-row-properties.js';
+import { TaskEditingDemo } from './timeline-tasks.js';
 
 const today = '2026-03-11';
 

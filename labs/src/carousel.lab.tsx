@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Carousel, type CarouselPagination } from '../../src/components/carousel/carousel.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 interface City {
   name: string;

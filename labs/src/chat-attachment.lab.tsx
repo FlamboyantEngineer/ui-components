@@ -1,12 +1,12 @@
-import { PlusGlyph } from '../../src/core/glyphs.js';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
   ChatAttachment,
-  ChatAttachmentList,
   type ChatAttachmentData,
+  ChatAttachmentList,
 } from '../../src/components/chat-attachment/chat-attachment.js';
 import { MessageComposer } from '../../src/components/message-composer/message-composer.js';
+import { PlusGlyph } from '../../src/core/glyphs.js';
 import {
   attachmentKinds,
   composerAttachments,
@@ -14,7 +14,7 @@ import {
   thumbnailAttachments,
   tripAttachments,
 } from './chat-attachment-samples.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 
 const statuses = [

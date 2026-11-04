@@ -1,8 +1,8 @@
 // The controller's state, the host's functions it calls, and the mutable context its parts share.
 
+import type { ValueStore } from '../../utils/value-store.js';
 import type { ChatAttachmentData } from '../chat-attachment/chat-attachment.js';
 import type { ChatMessageData, ChatPart, ChatTextToken } from '../chat-parts/chat-parts.js';
-import type { ValueStore } from '../../utils/value-store.js';
 import type { ChatReaderResponse } from './chat-reply.js';
 import type { ChatStreamEvent } from './chat-stream.js';
 

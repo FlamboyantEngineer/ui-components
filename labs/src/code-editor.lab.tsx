@@ -1,13 +1,10 @@
-import { CodeEditorCoverageSections } from './code-editor-coverage-cases.js';
-import { jsonExamples } from './code-json.js';
-import { languageExamples } from './code-languages.js';
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
-  CodeEditor,
   type CodeDiagnostic,
-  type CodeEditorSurfaceProps,
+  CodeEditor,
   type CodeEditorSize,
+  type CodeEditorSurfaceProps,
   type CodeEditorWrap,
   type CodeToken,
 } from '../../src/components/code-editor/code-editor.js';
@@ -15,7 +12,10 @@ import type {
   Completion,
   CompletionSource,
 } from '../../src/components/completion-list/completion-list.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { CodeEditorCoverageSections } from './code-editor-coverage-cases.js';
+import { jsonExamples } from './code-json.js';
+import { languageExamples } from './code-languages.js';
 import { CompletingCell } from './table-control-cases.js';
 
 const keywords = new Set(['let', 'if', 'else', 'return', 'pick', 'and', 'or', 'not']);

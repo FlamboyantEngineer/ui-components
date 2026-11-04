@@ -2,8 +2,8 @@
 
 import type { PointerEvent } from 'react';
 import { requireDefined } from '../../utils/require-defined.js';
-import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import { diagramHooks as hooks } from './diagram-hooks.js';
 import { findDiagramBounds, resolveNodeRect } from './diagram-model.js';
 import type { DiagramPoint, DiagramRect } from './edge-route.js';

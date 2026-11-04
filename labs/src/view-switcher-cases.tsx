@@ -2,12 +2,12 @@
 
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { FolderGlyph, ClockGlyph, UsersGlyph } from '../../src/core/glyphs.js';
-import type { Key } from '../../src/core/props.js';
 import {
   ViewSwitcher,
   type ViewSwitcherView,
 } from '../../src/components/view-switcher/view-switcher.js';
+import { ClockGlyph, FolderGlyph, UsersGlyph } from '../../src/core/glyphs.js';
+import type { Key } from '../../src/core/props.js';
 import { LabSection } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 

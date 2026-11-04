@@ -3,22 +3,22 @@
 
 import type * as Pdfjs from 'pdfjs-dist';
 import { useEffect, useRef, useState } from 'react';
-import { CopyGlyph, EditGlyph } from '../../src/core/glyphs.js';
 import { Button } from '../../src/components/button/button.js';
 import {
-  PdfViewer,
   findBoxAtPoint,
   type PdfPagePoint,
   type PdfPageRect,
   type PdfSearchControls,
   type PdfSearchOptions,
   type PdfSelection,
+  PdfViewer,
 } from '../../src/components/pdf-viewer/pdf-viewer.js';
 import {
   ProjectionOutlet,
   ProjectionProvider,
 } from '../../src/components/projection/projection.js';
 import { SearchField } from '../../src/components/search-field/search-field.js';
+import { CopyGlyph, EditGlyph } from '../../src/core/glyphs.js';
 import { LabOutput } from './lab-output.js';
 import { createAccentPdf } from './pdf-accent-sample.js';
 

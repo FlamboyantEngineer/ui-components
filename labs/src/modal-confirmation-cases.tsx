@@ -1,14 +1,14 @@
-import { ErrorGlyph, InfoGlyph, SuccessGlyph, WarningGlyph } from '../../src/core/glyphs.js';
 import { useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { Modal, confirm, alert, prompt, ModalTrigger } from '../../src/components/modal/modal.js';
 import { Icon } from '../../src/components/icon/icon.js';
+import { alert, confirm, Modal, ModalTrigger, prompt } from '../../src/components/modal/modal.js';
 import {
-  ModalHost,
   createModalController,
+  ModalHost,
 } from '../../src/components/modal-controller/modal-controller.js';
-import { LabSection, StateMatrix } from './chrome/index.js';
+import { ErrorGlyph, InfoGlyph, SuccessGlyph, WarningGlyph } from '../../src/core/glyphs.js';
 import type { Tone } from '../../src/core/props.js';
+import { LabSection, StateMatrix } from './chrome/index.js';
 
 const controller = createModalController();
 const tones = ['neutral', 'danger'] as const;

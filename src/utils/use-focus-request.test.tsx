@@ -2,7 +2,7 @@ import { act, render, renderHook, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ShadowHost, deepActive, inShadow, shadowRootOf } from '../../test/shadow-fixtures.js';
+import { deepActive, inShadow, ShadowHost, shadowRootOf } from '../../test/shadow-fixtures.js';
 import { requireDefined } from './require-defined.js';
 import { focusWithRetry, useFocusRequest } from './use-focus-request.js';
 

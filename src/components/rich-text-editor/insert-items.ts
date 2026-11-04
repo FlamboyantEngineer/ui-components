@@ -1,6 +1,5 @@
-import { MinusGlyph, type GlyphComponent } from '../../core/glyphs.js';
+import { type GlyphComponent, MinusGlyph } from '../../core/glyphs.js';
 // The blocks the insert menus offer, and how a typed query finds them.
-
 import type { Key } from '../../core/props.js';
 import type { UiStrings } from '../../core/strings.js';
 import { scoreCompletion } from '../completion-list/completion-match.js';

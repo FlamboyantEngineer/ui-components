@@ -1,3 +1,20 @@
+import { type ReactNode, useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
+import { Form } from '../../src/components/form/form.js';
+import { PropertyFilter } from '../../src/components/property-filter/property-filter.js';
+import {
+  PropertyCard,
+  PropertyGroup,
+  PropertyIconGroup,
+  PropertyPanel,
+  type PropertyPanelLabelLayout,
+  PropertyRow,
+  PropertySection,
+  PropertyStrip,
+  PropertyStripCell,
+} from '../../src/components/property-panel/property-panel.js';
+import { Switch } from '../../src/components/switch/switch.js';
+import { TextField } from '../../src/components/text-field/text-field.js';
 import {
   CheckGlyph,
   CloseGlyph,
@@ -6,26 +23,9 @@ import {
   RestoreGlyph,
   UndoGlyph,
 } from '../../src/core/glyphs.js';
-import { useState, type ReactNode } from 'react';
 import type { Key } from '../../src/core/props.js';
-import { Button } from '../../src/components/button/button.js';
-import { Switch } from '../../src/components/switch/switch.js';
-import { Form } from '../../src/components/form/form.js';
-import { TextField } from '../../src/components/text-field/text-field.js';
-import { PropertyFilter } from '../../src/components/property-filter/property-filter.js';
-import {
-  PropertyCard,
-  PropertyGroup,
-  PropertyIconGroup,
-  PropertyPanel,
-  PropertyRow,
-  PropertySection,
-  PropertyStrip,
-  PropertyStripCell,
-  type PropertyPanelLabelLayout,
-} from '../../src/components/property-panel/property-panel.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { PropertyPanelHostCases } from './property-panel-host-cases.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { TextSetting } from './property-text-setting.js';
 
 const layouts = ['responsive', 'inline'] as const;

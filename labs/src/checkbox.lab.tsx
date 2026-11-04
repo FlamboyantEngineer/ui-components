@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Checkbox, cycleCheckState } from '../../src/components/checkbox/checkbox.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabForm, MountOnDemand } from './lab-form.js';
 import { LabOutput } from './lab-output.js';
 

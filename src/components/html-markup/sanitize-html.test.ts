@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { htmlScopeCases } from '../../../test/html-scope-fixtures.js';
-import { defaultHtmlPolicy, sanitizeHtml, type HtmlNode } from './sanitize-html.js';
+import { defaultHtmlPolicy, type HtmlNode, sanitizeHtml } from './sanitize-html.js';
 
 /** The tree as compact markup, to compare structure at a glance. */
 function serialize(nodes: readonly HtmlNode[]): string {

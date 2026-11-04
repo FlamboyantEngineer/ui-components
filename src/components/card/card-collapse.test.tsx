@@ -1,9 +1,9 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState, type SVGProps } from 'react';
+import { type SVGProps, useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { ShadowHost, deepActive, inShadow, shadowRootOf } from '../../../test/shadow-fixtures.js';
+import { deepActive, inShadow, ShadowHost, shadowRootOf } from '../../../test/shadow-fixtures.js';
 import { UiProvider } from '../../core/provider.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { Board } from '../board/board.js';

@@ -1,8 +1,8 @@
-import { InfoGlyph, MoreGlyph } from '../../src/core/glyphs.js';
-import { IconLabel } from '../../src/components/icon-label/icon-label.js';
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { IconLabel } from '../../src/components/icon-label/icon-label.js';
+import { InfoGlyph, MoreGlyph } from '../../src/core/glyphs.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const sizes = ['sm', 'md', 'lg'] as const;
 const longText = 'A considerably longer label that wraps or truncates in a narrow column';

@@ -1,6 +1,6 @@
 'use client';
 
-import { useLayoutEffect, useRef, type RefObject } from 'react';
+import { type RefObject, useLayoutEffect, useRef } from 'react';
 
 /**
  * A ref holding the `value` of the latest committed render, for event handlers and effects that

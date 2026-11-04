@@ -10,8 +10,8 @@
 
 import { existsSync, readFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
-import { option, relativePosix, reportProblems, root, walk } from './lib/script.mjs';
 import { findMissingRootRefs } from './lib/root-refs.mjs';
+import { option, relativePosix, reportProblems, root, walk } from './lib/script.mjs';
 import { findUnexportedTypes } from './lib/unexported-types.mjs';
 
 const LEAK =

@@ -3,7 +3,7 @@
 // The problems a form's fields show, kept for a problem list that summarises them.
 
 import { createContext, useContext } from 'react';
-import { useWithinBoundary, type Bounded } from '../../utils/form-boundary.js';
+import { type Bounded, useWithinBoundary } from '../../utils/form-boundary.js';
 import type { FieldIssue, FieldRegistration } from '../field/field.js';
 
 /** One issue a field inside a form shows, with the field's label and a way to reach it. */

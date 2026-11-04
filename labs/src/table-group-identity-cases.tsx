@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { Table } from '../../src/components/table/table.js';
 import type { TableColumn, TableGroup } from '../../src/components/table/index.js';
+import { Table } from '../../src/components/table/table.js';
 
 interface Reading {
   id: string;

@@ -4,7 +4,16 @@
 import { decodeEntities } from '../../utils/markup.js';
 import { isSafeUrl } from '../../utils/safe-url.js';
 import {
+  type Bracket,
+  type Item,
+  itemText,
+  resolveEmphasis,
+  toNodes,
+} from './markdown-emphasis.js';
+import { toPlainText } from './markdown-headings.js';
+import {
   isEscapable,
+  type LinkTarget,
   normalizeLabel,
   readAutolink,
   readCodeSpan,
@@ -12,17 +21,8 @@ import {
   readLinkLabel,
   readLinkTarget,
   runEnd,
-  type LinkTarget,
 } from './markdown-inline-syntax.js';
-import { toPlainText } from './markdown-headings.js';
 import type { MarkdownInline } from './markdown-nodes.js';
-import {
-  itemText,
-  resolveEmphasis,
-  toNodes,
-  type Bracket,
-  type Item,
-} from './markdown-emphasis.js';
 
 /** Link reference definitions by normalized label. */
 type MarkdownDefinitions = ReadonlyMap<string, Omit<LinkTarget, 'end'>>;

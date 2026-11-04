@@ -1,7 +1,7 @@
 import { Fragment, isValidElement, type ReactNode } from 'react';
+import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
-import type { AriaLabellingProps } from '../../core/events.js';
 
 /** A value the text form of a metadata line accepts. Blank strings, booleans and nullish values are skipped. */
 export type MetaLineTextItem = string | number | boolean | null | undefined;

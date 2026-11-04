@@ -3,7 +3,6 @@
 import { ChevronDownGlyph, ChevronUpGlyph } from '../../core/glyphs.js';
 // The Previous and Next buttons that move between the changes of a compare view: the text diff,
 // the merge view and the redline compare.
-
 import type { ComponentHooks } from '../../core/hooks.js';
 import { Button } from '../button/button.js';
 

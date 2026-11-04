@@ -1,33 +1,33 @@
 'use client';
 
-import { isComposingKey } from '../../utils/is-composing-key.js';
+import { type KeyboardEvent, useLayoutEffect, useState } from 'react';
 import { MinusGlyph, PlusGlyph } from '../../core/glyphs.js';
-import { useLayoutEffect, useState, type KeyboardEvent } from 'react';
+import { Glyph, useUiStrings } from '../../core/provider.js';
 import {
   Button as AriaButton,
   Group,
   Input,
   TextField as AriaTextField,
 } from '../../primitives/index.js';
-import { Glyph, useUiStrings } from '../../core/provider.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import {
-  FieldFormValue,
-  toAriaControlProps,
   type FieldControlProps,
+  FieldFormValue,
   type FieldIssue,
   type FieldState,
+  toAriaControlProps,
 } from '../field/field.js';
 import type { NumberControlConfig } from './number-field.js';
 import {
   addStep,
   modifierStep,
   NumberAdornment,
-  NumberScrubber,
-  NumberValue,
   numberFieldHooks as hooks,
-  toModifiedPressProps,
+  NumberScrubber,
   type NumberSteps,
+  NumberValue,
+  toModifiedPressProps,
 } from './number-field-parts.js';
 import { snapNumberValue } from './snap-number-value.js';
 

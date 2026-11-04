@@ -1,12 +1,12 @@
 import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState, createRef } from 'react';
+import { createRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { requireDefined } from '../../utils/require-defined.js';
-import { CommentThreadReply } from './comment-thread-reply.js';
 import { CommentThread } from './comment-thread.js';
+import { CommentThreadReply } from './comment-thread-reply.js';
 
 const people = [
   { name: 'Ana Lima', colorKey: 'ana' },

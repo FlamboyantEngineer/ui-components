@@ -1,17 +1,19 @@
 'use client';
 
-import { useId, type CSSProperties, type ReactNode } from 'react';
+import { type CSSProperties, type ReactNode, useId } from 'react';
+import { measuredProperty } from '../../core/hooks.js';
+import { useUiStrings } from '../../core/provider.js';
 import {
   Cell,
+  type CellRenderProps,
   Collection,
   Row,
   useNumberFormatter,
-  type CellRenderProps,
 } from '../../primitives/index.js';
-import { measuredProperty } from '../../core/hooks.js';
+import { readOwn } from '../../utils/read-own.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
-import { useUiStrings } from '../../core/provider.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
+import { TableExpandButton } from './table-data-cell.js';
 import {
   aggregateCellValues,
   formatGroupValue,
@@ -21,10 +23,10 @@ import {
   type TableGroupNode,
 } from './table-groups.js';
 import { tableHooks as hooks } from './table-hooks.js';
-import { TableExpandButton } from './table-data-cell.js';
 import { TableDataRow } from './table-row.js';
 import type { TableRowModel } from './table-row-model.js';
 import { getCellValue, type TableColumn, type TableRow } from './table-rows.js';
+import { renderLabelledRow } from './table-spanning-row.js';
 import {
   actionsColumnId,
   getCellWrap,
@@ -32,8 +34,6 @@ import {
   getPinStyle,
   selectionColumnId,
 } from './table-structure.js';
-import { renderLabelledRow } from './table-spanning-row.js';
-import { readOwn } from '../../utils/read-own.js';
 
 /** A column's cell in a group header row: its aggregate of the group's rows, if it has one. */
 function renderAggregate<T extends TableRow>(

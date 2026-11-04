@@ -1,15 +1,15 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useProgressBar } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Size, Tone, RefProps } from '../../core/props.js';
+import type { BaseProps, RefProps, Size, Tone } from '../../core/props.js';
+import { useProgressBar } from '../../primitives/index.js';
 import type { ElementRender } from '../../utils/render-element.js';
+import { progressBarHooks as hooks } from './progress-bar-hooks.js';
 import { ProgressRing } from './progress-ring.js';
 import { ProgressRoot, ProgressText } from './progress-root.js';
-import { SegmentedProgressBar, type ProgressSegment } from './progress-segments.js';
-import { progressBarHooks as hooks } from './progress-bar-hooks.js';
+import { type ProgressSegment, SegmentedProgressBar } from './progress-segments.js';
 
 export type ProgressBarSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 

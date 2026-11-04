@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Display Options lab', () => {
   test('UIC-DISPLAY-OPTIONS-1.1 UIC-DISPLAY-OPTIONS-1.3 UIC-DISPLAY-OPTIONS-1.4 groups and sorts a table', async ({

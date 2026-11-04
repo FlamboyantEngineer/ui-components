@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import type { Selection } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import { Table } from '../../src/components/table/table.js';
+import type { Selection } from '../../src/core/props.js';
 import { LabOutput } from './lab-output.js';
 
 function RepeatSelectionTable({ enabled }: { enabled: boolean }) {

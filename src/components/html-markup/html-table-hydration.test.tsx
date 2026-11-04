@@ -3,7 +3,7 @@ import { hydrateRoot } from 'react-dom/client';
 import { renderToString } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { HtmlMarkup } from './html-markup.js';
-import { sanitizeHtml, type HtmlNode } from './sanitize-html.js';
+import { type HtmlNode, sanitizeHtml } from './sanitize-html.js';
 
 /** The tree as compact markup, to compare structure at a glance. */
 function serialize(nodes: readonly HtmlNode[]): string {

@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, type RenderResult } from '@testing-library/react';
+import { act, fireEvent, render, type RenderResult, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef, StrictMode, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -9,12 +9,12 @@ import {
 } from '../../../test/completion-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import {
-  matchCompletions,
   type Completion,
   type Completions,
+  matchCompletions,
 } from '../completion-list/completion-list.js';
-import { findCompletionQuery } from './completion-match.js';
 import { CodeEditor, type CodeEditorSurfaceProps, type CodeToken } from './code-editor.js';
+import { findCompletionQuery } from './completion-match.js';
 
 const words = /(\s+|[a-z]+|\d+|.)/g;
 

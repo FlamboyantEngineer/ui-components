@@ -1,8 +1,8 @@
 'use client';
 
-import { useCallback, useLayoutEffect, useRef, useState, type RefObject } from 'react';
-import { useNearPages, type NearPages } from './use-near-pages.js';
+import { type RefObject, useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { measureInScroller } from '../../utils/scroll-geometry.js';
+import { type NearPages, useNearPages } from './use-near-pages.js';
 
 interface UsePdfPagesOptions {
   scrollerRef: RefObject<HTMLElement | null>;

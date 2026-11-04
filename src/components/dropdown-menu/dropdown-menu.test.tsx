@@ -1,9 +1,9 @@
-import { MoreVerticalGlyph, PlusGlyph, SaveGlyph } from '../../core/glyphs.js';
 import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { MoreVerticalGlyph, PlusGlyph, SaveGlyph } from '../../core/glyphs.js';
 import { MenuItem, MenuSection } from '../menu/menu.js';
 import { DropdownMenu } from './dropdown-menu.js';
 

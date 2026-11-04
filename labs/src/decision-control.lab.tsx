@@ -1,10 +1,10 @@
-import { useState, type ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
 import {
   DecisionControl,
   type DecisionControlDetails,
 } from '../../src/components/decision-control/decision-control.js';
-import { Button } from '../../src/components/button/button.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const votes = [
   { value: '-2', label: '−2', requiresComment: true },

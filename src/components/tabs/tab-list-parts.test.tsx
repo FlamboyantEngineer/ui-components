@@ -1,8 +1,8 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import type { Key } from '../../core/props.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import type { Key } from '../../core/props.js';
 import { Button } from '../button/button.js';
 import { Tab, TabList, TabPanel, Tabs } from './tabs.js';
 

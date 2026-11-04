@@ -4,8 +4,8 @@ import {
   type ChatTranscriptPresentation,
 } from '../../src/components/chat-transcript/index.js';
 import { Tab, TabList, TabPanel, Tabs } from '../../src/components/tabs/tabs.js';
-import { LabSection, StateMatrix } from './chrome/index.js';
 import { at, getNow, helper, maria } from './chat-transcript-message-samples.js';
+import { LabSection, StateMatrix } from './chrome/index.js';
 
 const widths = { narrow: 320, wide: 560 } as const;
 const presentations = [

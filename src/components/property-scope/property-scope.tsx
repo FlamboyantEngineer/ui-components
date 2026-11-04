@@ -1,18 +1,18 @@
 'use client';
 
-import { useMemo, useState, type ReactNode } from 'react';
+import { type ReactNode, useMemo, useState } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import { useLatest } from '../../utils/use-latest.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useLatest } from '../../utils/use-latest.js';
 import { Button } from '../button/button.js';
 import { EmptyState } from '../empty-state/empty-state.js';
-import { TextMatchProvider, splitMatchTerms } from '../text-match/text-match.js';
+import { splitMatchTerms, TextMatchProvider } from '../text-match/text-match.js';
 import {
-  PropertyScopeContext,
   hasNoPropertyMatch,
-  usePropertyTallies,
+  PropertyScopeContext,
   type PropertyScopeFilter,
+  usePropertyTallies,
 } from './scope-tally.js';
 
 export interface PropertyScopeProps extends RefProps<HTMLDivElement>, BaseProps {
@@ -98,10 +98,10 @@ export function PropertyScope({
   );
 }
 
+export type { PropertyScopeFilter } from './scope-tally.js';
 export {
-  PropertyScopeContext,
   matchesPropertyScope,
+  PropertyScopeContext,
   usePropertyScopeLevel,
   useReportPropertyTally,
 } from './scope-tally.js';
-export type { PropertyScopeFilter } from './scope-tally.js';

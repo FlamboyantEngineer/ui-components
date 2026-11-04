@@ -1,23 +1,22 @@
 'use client';
 
-import { useId, useState, type KeyboardEvent, type Ref } from 'react';
-import type { BaseProps, Key } from '../../core/props.js';
+import { type KeyboardEvent, type Ref, useId, useState } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
+import type { BaseProps, Key } from '../../core/props.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { useCloseWhenLocked } from '../../utils/use-close-when-locked.js';
-import type { FieldState } from '../field/field.js';
+import { type FieldState, flattenPickerItems } from '../field/field.js';
 import type { SelectFieldOptionRenderer } from './select-option.js';
-import { flattenPickerItems } from '../field/field.js';
 import {
+  type ChosenSelectOption,
   diffSelectKeys,
   mergeSelectOptions,
   orderSelectKeys,
   resolveSelectOptions,
-  toSelectKeys,
-  type ChosenSelectOption,
   type SelectFieldItem,
+  toSelectKeys,
 } from './select-options.js';
-import { useSelectSearch, type SelectFieldLoader } from './select-search.js';
+import { type SelectFieldLoader, useSelectSearch } from './select-search.js';
 
 /** A select field's value with its selection mode erased. */
 export type SelectKeysValue = Key | Key[] | null;

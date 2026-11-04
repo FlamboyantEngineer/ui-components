@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { requireDefined } from './require-defined.js';
 import {
-  SCROLL_OVERVIEW_MIN_MARKER,
   buildScrollOverviewImage,
   resolveLayeredScrollOverviewSegments,
   resolveScrollOverviewSegments,
+  SCROLL_OVERVIEW_MIN_MARKER,
 } from './scroll-overview.js';
 
 describe('scroll overview', () => {

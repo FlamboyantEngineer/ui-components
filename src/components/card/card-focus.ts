@@ -2,8 +2,8 @@
 
 // Keeps focus in a card whose focused element a collapse or a smaller presentation took away.
 
-import { isFocusLost, isFocused } from '../../utils/focus-target.js';
 import { useEffect, useLayoutEffect, useRef } from 'react';
+import { isFocused, isFocusLost } from '../../utils/focus-target.js';
 import { isElement, isHTMLElement, isNode } from '../../utils/is-element.js';
 import { cardHooks as hooks } from './card-hooks.js';
 

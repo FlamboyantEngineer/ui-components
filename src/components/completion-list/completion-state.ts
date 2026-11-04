@@ -1,5 +1,5 @@
-import { matchCompletions, type Completion } from './completion-match.js';
 import { isShallowEqual } from '../../utils/is-shallow-equal.js';
+import { type Completion, matchCompletions } from './completion-match.js';
 
 /** What a completion source knows about the place it completes. */
 export interface CompletionContext {

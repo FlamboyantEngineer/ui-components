@@ -1,26 +1,26 @@
 'use client';
 
-import { useMergedRefs } from '../../utils/use-merged-refs.js';
-import { ChevronDoubleLeftGlyph, ChevronDoubleRightGlyph } from '../../core/glyphs.js';
-import { useId, useMemo, useRef, type ReactNode, type RefObject } from 'react';
-import { FocusScope, useFocusManager, useLocale } from '../../primitives/index.js';
+import { type ReactNode, type RefObject, useId, useMemo, useRef } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
+import { ChevronDoubleLeftGlyph, ChevronDoubleRightGlyph } from '../../core/glyphs.js';
 import { measuredProperty } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStorage, useUiStrings } from '../../core/provider.js';
-import { booleanCodec, numberCodec } from '../../utils/json-codec.js';
-import { useOwnedPreview } from '../../utils/use-owned-preview.js';
-import { usePersistedValue } from '../../utils/use-persisted-value.js';
-import { useShallowStable } from '../../utils/use-shallow-stable.js';
+import { FocusScope, useFocusManager, useLocale } from '../../primitives/index.js';
 import { clamp } from '../../utils/clamp.js';
-import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { isEditableTarget } from '../../utils/is-editable-target.js';
 import { isHTMLElement } from '../../utils/is-element.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { booleanCodec, numberCodec } from '../../utils/json-codec.js';
 import {
   closestHiddenSubtree,
   isHiddenOrGone,
   useFocusRecovery,
 } from '../../utils/use-focus-recovery.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
+import { useOwnedPreview } from '../../utils/use-owned-preview.js';
+import { usePersistedValue } from '../../utils/use-persisted-value.js';
+import { useShallowStable } from '../../utils/use-shallow-stable.js';
 import { Button } from '../button/button.js';
 import { ResizeHandle } from '../split-view/split-view.js';
 import { NavigationRailContext, navigationRailHooks as hooks } from './navigation-rail-state.js';

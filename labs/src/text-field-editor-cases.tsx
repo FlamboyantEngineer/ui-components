@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { type KeyboardEvent, useEffect, useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { LabOutput } from './lab-output.js';

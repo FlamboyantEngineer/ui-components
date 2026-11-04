@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { code128Values } from './code-128.js';
 import { eanCheckDigit } from './ean.js';
-import { encodeBarcode, type BarcodeFormat } from './encode-barcode.js';
+import { type BarcodeFormat, encodeBarcode } from './encode-barcode.js';
 
 /** The modules as `1` for a bar and `0` for a space. */
 function bars(value: string, format: BarcodeFormat): string {

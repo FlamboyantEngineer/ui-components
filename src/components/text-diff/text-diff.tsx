@@ -1,25 +1,28 @@
 'use client';
 
-import { getElementByIdWithin } from '../../utils/owner-window.js';
 import {
+  type KeyboardEvent,
+  type ReactNode,
   useId,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
-  type KeyboardEvent,
-  type ReactNode,
 } from 'react';
-import { isEditableTarget } from '../../utils/is-editable-target.js';
-import { useGeneration } from '../../utils/use-generation.js';
-import { useStateFor } from '../../utils/use-state-for.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { isEditableTarget } from '../../utils/is-editable-target.js';
+import { getElementByIdWithin } from '../../utils/owner-window.js';
+import { measureInScroller } from '../../utils/scroll-geometry.js';
+import type { ScrollAnchor } from '../../utils/scroll-offset-map.js';
+import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
+import { useGeneration } from '../../utils/use-generation.js';
+import { useStateFor } from '../../utils/use-state-for.js';
 import { useSyncedScroll } from '../../utils/use-synced-scroll.js';
-import { type ScrollAnchor } from '../../utils/scroll-offset-map.js';
 import { ScrollRegion } from '../scroll-region/scroll-region.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
+import { ChangeNavigation } from './change-navigation.js';
 import {
   countChanges,
   createDiffBlocks,
@@ -30,17 +33,14 @@ import {
   type FoldRow,
   type TextDiffLine,
 } from './diff-rows.js';
-import { ChangeNavigation } from './change-navigation.js';
 import { textDiffHooks as hooks } from './text-diff-hooks.js';
 import {
-  SplitTable,
-  UnifiedTable,
   getChangeRowId,
   getRowId,
+  SplitTable,
   type TableOptions,
+  UnifiedTable,
 } from './text-diff-table.js';
-import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
-import { measureInScroller } from '../../utils/scroll-geometry.js';
 
 export { ChangeNavigation } from './change-navigation.js';
 export type { TextDiffChange, TextDiffLine } from './diff-rows.js';

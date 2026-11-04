@@ -4,28 +4,28 @@
 // library's own grid that windows both axes, since React Aria's table renders every column of a
 // row. Its keyboard contract is in specs/RELATION-MATRIX.md (UIC-RELATION-MATRIX-4.2).
 
-import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useMemo, useRef } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { relationMatrixHooks as hooks } from './relation-matrix-hooks.js';
-import { RelationMatrixHeader } from './relation-matrix-header.js';
-import { indexRelations, type RelationMatrixRelation } from './relation-matrix-model.js';
-import { RelationMatrixRow, type RelationMatrixRowContext } from './relation-matrix-row.js';
-import type { MatrixPosition } from './matrix-navigation.js';
-import { useMatrixNavigation } from './use-matrix-navigation.js';
-import { useMatrixWindow } from './use-matrix-window.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
+import type { MatrixPosition } from './matrix-navigation.js';
+import { RelationMatrixHeader } from './relation-matrix-header.js';
+import { relationMatrixHooks as hooks } from './relation-matrix-hooks.js';
 import {
-  useMatrixMenu,
   type RelationMatrixAxisAction,
   type RelationMatrixAxisOperation,
   type RelationMatrixCell,
   type RelationMatrixItem,
   type RelationMatrixKind,
   type RelationMatrixMenuIcons,
+  useMatrixMenu,
 } from './relation-matrix-menu.js';
+import { indexRelations, type RelationMatrixRelation } from './relation-matrix-model.js';
+import { RelationMatrixRow, type RelationMatrixRowContext } from './relation-matrix-row.js';
+import { useMatrixNavigation } from './use-matrix-navigation.js';
+import { useMatrixWindow } from './use-matrix-window.js';
 
 export type {
   RelationMatrixAxisAction,

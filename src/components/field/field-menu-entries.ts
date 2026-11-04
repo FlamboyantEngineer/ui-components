@@ -1,7 +1,7 @@
 // The field menu's entries, server-safe so a server component can extend the default menu.
 
-import type { MenuActionIcons } from '../menu/menu-action-icons.js';
 import type { MenuEntry } from '../menu/menu.js';
+import type { MenuActionIcons } from '../menu/menu-action-icons.js';
 
 /**
  * A built-in field menu action: Clear (the empty value), Reset (the last committed value), Set to

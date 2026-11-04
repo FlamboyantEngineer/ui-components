@@ -1,7 +1,18 @@
 'use client';
 
+import { type ComponentPropsWithRef, type ReactNode, useContext } from 'react';
+import type { PressEventProps, SelectionProps } from '../../core/events.js';
 import { CheckGlyph, ChevronLeftGlyph, ChevronRightGlyph } from '../../core/glyphs.js';
-import { useContext, type ComponentPropsWithRef, type ReactNode } from 'react';
+import { createHooks, mergeClassNames } from '../../core/hooks.js';
+import type {
+  BaseProps,
+  Key,
+  RefProps,
+  SelectableState,
+  SelectionMode,
+  Tone,
+} from '../../core/props.js';
+import { Glyph } from '../../core/provider.js';
 import {
   Header,
   KeyboardContext,
@@ -9,26 +20,14 @@ import {
   MenuSection as AriaMenuSection,
   useLocale,
 } from '../../primitives/index.js';
-import type { PressEventProps, SelectionProps } from '../../core/events.js';
-import { createHooks, mergeClassNames } from '../../core/hooks.js';
-import type {
-  BaseProps,
-  Key,
-  SelectableState,
-  SelectionMode,
-  Tone,
-  RefProps,
-} from '../../core/props.js';
-import { Glyph } from '../../core/provider.js';
 import { toCollectionSelectionProps } from '../../utils/collection-selection.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { keyCollectionChildren } from '../../utils/key-collection-children.js';
 import { toCollectionItemKey } from '../../utils/to-collection-key.js';
-import { Icon, type IconSource } from '../icon/icon.js';
-import { toIconProps } from '../icon/icon.js';
+import { Icon, type IconSource, toIconProps } from '../icon/icon.js';
 import { Separator } from '../separator/separator.js';
 import { Shortcut, type ShortcutProps } from '../shortcut/shortcut.js';
 import { MenuSizeContext } from './menu-context.js';
-import { isEmptyNode } from '../../utils/is-empty-node.js';
 
 /** Emphasis of a menu item: `danger` marks a destructive action. */
 export type MenuItemTone = Extract<Tone, 'neutral' | 'danger'>;

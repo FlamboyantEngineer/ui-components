@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+  type ChatPlanStep,
   countDoneSteps,
   listChangedSteps,
   mapStepStatuses,
   toWholeSeconds,
-  type ChatPlanStep,
 } from './chat-activity.js';
 
 const steps: ChatPlanStep[] = [

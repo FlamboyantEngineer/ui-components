@@ -1,9 +1,9 @@
 'use client';
 
-import { useRef, useState, type Ref, type RefObject } from 'react';
+import { type Ref, type RefObject, useRef, useState } from 'react';
 import { useControllableState } from '../core/controllable-state.js';
 import { useMergedRefs } from './use-merged-refs.js';
-import { useNativeReset, type NativeResetOptions } from './use-native-reset.js';
+import { type NativeResetOptions, useNativeReset } from './use-native-reset.js';
 
 interface ResetHeldValueOptions<T> {
   value: T | undefined;

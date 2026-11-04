@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { toValueIdentity } from './chart-identity.js';
 import {
   createLineValueScale,
-  resolveLineGeometry,
   type LineGeometryInput,
+  resolveLineGeometry,
 } from './line-geometry.js';
 
 const base = {

@@ -6,7 +6,7 @@ import {
 } from '../../src/components/display-options/display-options.js';
 import { LabSection } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
-import { RecipeTable, recipeProperties, recipes } from './recipe-samples.js';
+import { recipeProperties, recipes, RecipeTable } from './recipe-samples.js';
 
 /** Grouped by author, sorted by title descending, author first, compact. */
 const seed: DisplayOptionsValue = {

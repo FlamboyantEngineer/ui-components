@@ -1,4 +1,3 @@
-export { ChatQuestion } from './chat-question.js';
 export type {
   ChatQuestionAnswer,
   ChatQuestionAnsweredMark,
@@ -9,3 +8,4 @@ export type {
   ChatQuestionSelectionMode,
   ChatQuestionStatus,
 } from './chat-question.js';
+export { ChatQuestion } from './chat-question.js';

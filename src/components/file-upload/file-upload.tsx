@@ -1,19 +1,19 @@
 'use client';
 
-import { useId, useMemo, useRef, type ReactNode, type Ref, type RefObject } from 'react';
-import { FileTrigger, useLocale } from '../../primitives/index.js';
+import { type ReactNode, type Ref, type RefObject, useId, useMemo, useRef } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
+import { FileTrigger, useLocale } from '../../primitives/index.js';
 import { formatBytes } from '../../utils/format-bytes.js';
 import { mergeRefs } from '../../utils/merge-props.js';
-import { useRemovalFocus } from '../../utils/use-removal-focus.js';
 import { toErrorMessage } from '../../utils/to-error-message.js';
+import { useRemovalFocus } from '../../utils/use-removal-focus.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import { formatMetaLine } from '../meta-line/meta-line.js';
 import type { FileRejection, FileRules } from './file-rules.js';
-import { ButtonCommand, DropZoneCommand, type CommandProps } from './file-upload-drop.js';
+import { ButtonCommand, type CommandProps, DropZoneCommand } from './file-upload-drop.js';
 import {
   FileUploadFiles,
   fileUploadHooks as hooks,
@@ -207,5 +207,4 @@ export function FileUpload(props: FileUploadProps) {
 }
 
 export type { FileRejection, FileRejectionReason, FileValidator } from './file-rules.js';
-
 export type { FileUploadChange, FileUploadItem } from './file-upload-files.js';

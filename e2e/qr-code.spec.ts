@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 test.describe('QR Code lab', () => {
   test('UIC-QR-CODE-2.1 UIC-QR-CODE-2.2 draws each level at its version and size', async ({

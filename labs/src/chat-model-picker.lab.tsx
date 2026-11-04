@@ -6,7 +6,7 @@ import {
 import { Stack } from '../../src/components/layout/layout.js';
 import { MessageComposer } from '../../src/components/message-composer/index.js';
 import { labEfforts, labModels } from './chat-model-samples.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const states = ['with efforts', 'without efforts', 'model without effort', 'disabled'] as const;
 

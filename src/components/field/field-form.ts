@@ -5,6 +5,8 @@
 
 import { useEffect, useState } from 'react';
 import { flushSync } from 'react-dom';
+import { hasNativeFormOwner } from '../../utils/form-owner.js';
+import { getTreeRoot } from '../../utils/owner-window.js';
 import type { SlotRegistry } from '../../utils/slot-registry.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { useStableArray } from '../../utils/use-stable-array.js';
@@ -12,8 +14,6 @@ import { isOwnFieldTarget } from './field-root.js';
 import { useFieldScope } from './field-scope.js';
 import { fieldReset, type FieldResetContract, type FieldState } from './field-state.js';
 import { isFieldValueEqual } from './field-value.js';
-import { hasNativeFormOwner } from '../../utils/form-owner.js';
-import { getTreeRoot } from '../../utils/owner-window.js';
 
 type FieldSlots = SlotRegistry<'root' | 'control'>;
 

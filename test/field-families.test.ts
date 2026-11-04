@@ -2,10 +2,10 @@ import { expectTypeOf, it } from 'vitest';
 import type * as Api from '../src/index.js';
 import type {
   ChoiceGroupProps,
-  SelectFieldProps,
-  CodeEditorProps,
   CodeEditorFieldProps,
+  CodeEditorProps,
   CodeEditorSurfaceProps,
+  SelectFieldProps,
 } from '../src/index.js';
 
 type PublicApi = typeof Api;

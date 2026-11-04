@@ -1,28 +1,28 @@
 'use client';
 
+import { isValidElement, type JSX, type ReactNode, type SyntheticEvent, useId } from 'react';
 import {
+  type GlyphComponent,
   SortAscendingGlyph,
   SortDescendingGlyph,
   SortNoneGlyph,
-  type GlyphComponent,
 } from '../../core/glyphs.js';
-import { isValidElement, useId, type JSX, type ReactNode, type SyntheticEvent } from 'react';
-import { Column, ColumnResizer } from '../../primitives/index.js';
 import type { SortDirection } from '../../core/props.js';
-import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { useUiStrings } from '../../core/provider.js';
+import { Column, ColumnResizer } from '../../primitives/index.js';
+import { FreeControls } from '../../utils/free-controls.js';
+import { isInteractiveTarget } from '../../utils/is-interactive-target.js';
+import { keepTextControlKeys } from '../../utils/text-control-keys.js';
+import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { Icon } from '../icon/icon.js';
 import { getColumnBounds, type TableColumnWidths } from './column-sizing.js';
-import { tableHooks as hooks } from './table-hooks.js';
+import { TableColumnResizer } from './table-column-resizer.js';
 import { getColumnText } from './table-columns.js';
-import { useColumnDrag } from './use-column-drag.js';
-import type { TableColumnDrag } from './use-column-reorder.js';
+import { tableHooks as hooks } from './table-hooks.js';
 import type { TableColumn, TableColumnPin } from './table-rows.js';
 import { getPinStyle } from './table-structure.js';
-import { FreeControls } from '../../utils/free-controls.js';
-import { TableColumnResizer } from './table-column-resizer.js';
-import { keepTextControlKeys } from '../../utils/text-control-keys.js';
-import { isInteractiveTarget } from '../../utils/is-interactive-target.js';
+import { useColumnDrag } from './use-column-drag.js';
+import type { TableColumnDrag } from './use-column-reorder.js';
 
 /** What a data column header shows beyond the column's own declaration. */
 export interface TableColumnHeaderState {

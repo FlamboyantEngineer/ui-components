@@ -1,11 +1,11 @@
 'use client';
 
-import { ChevronLeftGlyph, ChevronRightGlyph } from '../../core/glyphs.js';
-import { useLocale, useNumberFormatter } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
+import { ChevronLeftGlyph, ChevronRightGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useLocale, useNumberFormatter } from '../../primitives/index.js';
 import { clamp } from '../../utils/clamp.js';
 import { Button } from '../button/button.js';
 

@@ -1,3 +1,18 @@
+import { type CSSProperties, useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
+import { Checkbox } from '../../src/components/checkbox/checkbox.js';
+import {
+  Menu,
+  type MenuEntry,
+  MenuItem,
+  MenuPopover,
+  type MenuProps,
+  MenuSection,
+  MenuSeparator,
+  MenuTrigger,
+  SubmenuTrigger,
+} from '../../src/components/menu/menu.js';
+import { Portal, PortalHost } from '../../src/components/portal/portal.js';
 import {
   ChevronDownGlyph,
   CloseGlyph,
@@ -8,23 +23,8 @@ import {
   RestoreGlyph,
   UndoGlyph,
 } from '../../src/core/glyphs.js';
-import { useState, type CSSProperties } from 'react';
 import type { Key, Selection } from '../../src/core/props.js';
-import { Button } from '../../src/components/button/button.js';
-import { Checkbox } from '../../src/components/checkbox/checkbox.js';
-import {
-  Menu,
-  MenuItem,
-  MenuPopover,
-  MenuSection,
-  MenuSeparator,
-  MenuTrigger,
-  SubmenuTrigger,
-  type MenuEntry,
-  type MenuProps,
-} from '../../src/components/menu/menu.js';
-import { Portal, PortalHost } from '../../src/components/portal/portal.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 import { MenuCoverageSections } from './menu-coverage-cases.js';
 import { MenuKeyCase } from './menu-key-case.js';

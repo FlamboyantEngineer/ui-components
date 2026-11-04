@@ -1,8 +1,8 @@
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { StrictMode, type ReactNode } from 'react';
+import { type ReactNode, StrictMode } from 'react';
 import { describe, expect, it } from 'vitest';
-import { ModalHost, createModalController, type ModalController } from './modal-controller.js';
+import { createModalController, type ModalController, ModalHost } from './modal-controller.js';
 
 /** Opens a modal with a name field and a Save that waits for the returned release. */
 function openNameModal(controller: ModalController, title: string, name: string) {

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { Disclosure, DisclosureGroup, DisclosurePanel } from '../../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
+import { Disclosure, DisclosureGroup, DisclosurePanel } from '../../primitives/index.js';
 import { ExpandToggle } from '../expand-toggle/expand-toggle.js';
 import { Button } from './button.js';
 

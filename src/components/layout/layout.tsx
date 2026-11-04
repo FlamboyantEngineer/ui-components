@@ -1,4 +1,4 @@
-import { createElement, type ComponentPropsWithRef, type ReactElement } from 'react';
+import { type ComponentPropsWithRef, createElement, type ReactElement } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, ContainerProps, Size } from '../../core/props.js';
 import { interleaveDividers } from './dividers.js';

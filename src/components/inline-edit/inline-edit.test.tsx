@@ -1,11 +1,11 @@
-import { isEmptyValue } from '../../utils/is-empty-value.js';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { pressComposingKeys } from '../../../test/composition.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { ShadowHost, deepActive, inShadow } from '../../../test/shadow-fixtures.js';
+import { deepActive, inShadow, ShadowHost } from '../../../test/shadow-fixtures.js';
+import { isEmptyValue } from '../../utils/is-empty-value.js';
 import { NumberField } from '../number-field/number-field.js';
 import { InlineEdit, type InlineEditProps } from './inline-edit.js';
 

@@ -2,8 +2,8 @@
 
 import { useLayoutEffect, useState } from 'react';
 import { useResizeObserver } from '../../utils/use-resize-observer.js';
-import { hooks } from './state-machine-view-hooks.js';
 import type { SequenceMeasurements } from './sequence-layout.js';
+import { hooks } from './state-machine-view-hooks.js';
 
 type Sizes = SequenceMeasurements['labels'];
 

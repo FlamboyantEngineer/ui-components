@@ -1,14 +1,14 @@
 'use client';
 
-import { useDateFormatter, useLocale } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useDateFormatter, useLocale } from '../../primitives/index.js';
 import type { TimeScaleUnit } from '../../utils/time-scale.js';
 import {
   resolveScaleCells,
-  timelineScales,
-  toInlineStart,
   type TimelineAxis,
   type TimelineScale,
+  timelineScales,
+  toInlineStart,
 } from './timeline-geometry.js';
 import { timelineHooks as hooks } from './timeline-hooks.js';
 

@@ -1,7 +1,7 @@
 'use client';
 
-import { isFocusLost } from './focus-target.js';
 import { useLayoutEffect, useRef } from 'react';
+import { isFocusLost } from './focus-target.js';
 import { isElement, isNode } from './is-element.js';
 
 /**

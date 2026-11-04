@@ -1,13 +1,13 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { readMenuIcons } from '../../../test/menu-fixtures.js';
 import { StarGlyph } from '../../core/glyphs.js';
 import { requireDefined } from '../../utils/require-defined.js';
-import { readMenuIcons } from '../../../test/menu-fixtures.js';
 import {
-  SignaturePad,
   type DrawnSignature,
   type ImageSignature,
+  SignaturePad,
   type SignatureValue,
 } from './signature-pad.js';
 

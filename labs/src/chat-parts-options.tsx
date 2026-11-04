@@ -3,13 +3,13 @@
 
 import { useState } from 'react';
 import {
-  ChatParts,
   type ChatPart,
+  ChatParts,
   type ChatQuestionPart,
 } from '../../src/components/chat-parts/index.js';
 import { Switch } from '../../src/components/switch/switch.js';
-import { StateMatrix } from './chrome/index.js';
 import { searchCall, tripQuestion } from './chat-parts-samples.js';
+import { StateMatrix } from './chrome/index.js';
 
 const reasoning = (isStreaming: boolean): ChatPart => ({
   type: 'reasoning',

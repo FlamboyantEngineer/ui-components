@@ -8,29 +8,28 @@ import {
 } from '@handlewithcare/react-prosemirror';
 import type { EditorView } from 'prosemirror-view';
 import {
+  type FocusEvent,
+  type RefObject,
   useCallback,
   useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
-  type FocusEvent,
-  type RefObject,
 } from 'react';
-import { useLatest } from '../../../utils/use-latest.js';
-import { readTextSelection, type MessageComposerRange } from './composer-edits.js';
-import { useFocusRing, useHover } from '../../../primitives/index.js';
 import { useUiStrings } from '../../../core/provider.js';
+import { useFocusRing, useHover } from '../../../primitives/index.js';
+import { isComposingKey } from '../../../utils/is-composing-key.js';
 import { mergeProps } from '../../../utils/merge-props.js';
-import { useForwardedRef } from '../../../utils/use-forwarded-ref.js';
 import { readLineBox } from '../../../utils/read-line-box.js';
+import { useForwardedRef } from '../../../utils/use-forwarded-ref.js';
+import { useLatest } from '../../../utils/use-latest.js';
 import { useResizeObserver } from '../../../utils/use-resize-observer.js';
 import { CompletionList, type CompletionListItem } from '../../completion-list/completion-list.js';
 import { UserIdentity } from '../../user-identity/user-identity.js';
 import { VisuallyHidden } from '../../visually-hidden/visually-hidden.js';
 import { composerHooks as hooks } from '../composer-hooks.js';
-import { isComposingKey } from '../../../utils/is-composing-key.js';
-import { runComposerKey, type ComposerKeyActions } from '../composer-keys.js';
+import { type ComposerKeyActions, runComposerKey } from '../composer-keys.js';
 import { toComposerLabelling } from '../use-message-composer.js';
 import {
   findAdjacentPill,
@@ -39,10 +38,11 @@ import {
   isInCode,
   syncSelectionFromDom,
 } from './composer-commands.js';
+import { type MessageComposerRange, readTextSelection } from './composer-edits.js';
 import type { PillAttributes } from './composer-schema.js';
 import type { RichComposerEditorProps, RichEditorHandle } from './rich-editor.js';
 import type { MessageComposerMention } from './rich-message-composer.js';
-import { useRichCompletions, type RichCompletionItem } from './use-rich-completions.js';
+import { type RichCompletionItem, useRichCompletions } from './use-rich-completions.js';
 
 type RichCompletions = ReturnType<typeof useRichCompletions>;
 

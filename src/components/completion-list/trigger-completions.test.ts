@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createTriggerCompletions, type Completion } from './completion-list.js';
+import { type Completion, createTriggerCompletions } from './completion-list.js';
 
 const people: Completion[] = [{ label: 'Maria Santos', insertText: '@Maria Santos ' }];
 const references: Completion[] = [{ label: 'Requirement 12' }];

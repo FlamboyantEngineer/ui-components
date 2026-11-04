@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Button } from '../../src/components/button/button.js';
 import { AvatarGroup } from '../../src/components/avatar-group/avatar-group.js';
+import { Button } from '../../src/components/button/button.js';
 import { UserCard } from '../../src/components/user-card/user-card.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
 import { samplePeople } from './people-samples.js';

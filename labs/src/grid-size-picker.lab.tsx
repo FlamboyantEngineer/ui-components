@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { UiProvider } from '../../src/core/provider.js';
 import { Button } from '../../src/components/button/button.js';
 import {
-  GridSizePicker,
   type GridSize,
+  GridSizePicker,
 } from '../../src/components/grid-size-picker/grid-size-picker.js';
 import { Popover, PopoverTrigger } from '../../src/components/popover/popover.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { UiProvider } from '../../src/core/provider.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const states = ['enabled', 'disabled'] as const;
 const bounds = ['default', 'small', 'fixed'] as const;

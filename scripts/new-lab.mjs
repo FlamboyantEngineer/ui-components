@@ -7,9 +7,9 @@
 import { existsSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
-  LAB_TIERS,
   collectLabs,
   groupsOfTier,
+  LAB_TIERS,
   labsDir,
   labSourceDir,
   renderIndex,

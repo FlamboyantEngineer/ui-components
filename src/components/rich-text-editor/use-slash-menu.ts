@@ -1,6 +1,5 @@
 'use client';
 
-import { measureScale, toLocalPoint } from '../../utils/element-scale.js';
 import {
   useEditorEffect,
   useEditorEventCallback,
@@ -9,12 +8,13 @@ import {
 } from '@handlewithcare/react-prosemirror';
 import type { EditorState } from 'prosemirror-state';
 import type { EditorView } from 'prosemirror-view';
-import { useState, type RefObject } from 'react';
-import { matchInsertItems, type InsertMenuItem } from './insert-items.js';
-import { toEngineCommand } from './engine-commands.js';
-import { useRichTextEditorContext } from './rich-text-context.js';
-import { isShallowEqual } from '../../utils/is-shallow-equal.js';
+import { type RefObject, useState } from 'react';
+import { measureScale, toLocalPoint } from '../../utils/element-scale.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
+import { isShallowEqual } from '../../utils/is-shallow-equal.js';
+import { toEngineCommand } from './engine-commands.js';
+import { type InsertMenuItem, matchInsertItems } from './insert-items.js';
+import { useRichTextEditorContext } from './rich-text-context.js';
 
 /** The text a slash command replaces: the slash and the query typed after it. */
 interface SlashRange {

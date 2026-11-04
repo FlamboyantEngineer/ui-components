@@ -1,28 +1,28 @@
 'use client';
 
-import { getElementByIdWithin } from '../../utils/owner-window.js';
-import { useId, useMemo, type KeyboardEvent, type Ref } from 'react';
+import { type KeyboardEvent, type Ref, useId, useMemo } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { isEditableTarget } from '../../utils/is-editable-target.js';
-import { requireDefined } from '../../utils/require-defined.js';
-import { isSameDocument } from '../../utils/is-same-document.js';
-import { useEqualValue } from '../../utils/use-equal-value.js';
-import { useStateFor } from '../../utils/use-state-for.js';
 import {
-  compareBlocks,
   type BlockComparison,
+  compareBlocks,
   type ComparedBlockRow,
   type DocumentBlock,
 } from '../../utils/compare-blocks.js';
+import { isEditableTarget } from '../../utils/is-editable-target.js';
+import { isSameDocument } from '../../utils/is-same-document.js';
+import { getElementByIdWithin } from '../../utils/owner-window.js';
+import { requireDefined } from '../../utils/require-defined.js';
+import { useEqualValue } from '../../utils/use-equal-value.js';
+import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
+import { useStateFor } from '../../utils/use-state-for.js';
 import {
   RedlineCompareColumns,
   RedlineCompareHeader,
   redlineCompareHooks as hooks,
 } from './redline-compare-parts.js';
-import { RedlineRow, type RedlineDecision } from './redline-row.js';
-import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
+import { type RedlineDecision, RedlineRow } from './redline-row.js';
 
 export type { RedlineDecision } from './redline-row.js';
 

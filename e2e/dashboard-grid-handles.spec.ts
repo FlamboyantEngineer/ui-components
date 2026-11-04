@@ -1,5 +1,5 @@
-import { expect, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
+import { expect, test } from './fixtures.js';
 
 test.describe('Dashboard Grid handles', () => {
   test('UIC-DASHBOARD-GRID-2.1 lays ghost handles over the tile without moving its content', async ({

@@ -1,8 +1,8 @@
 'use client';
 
-import { useContext, type RefObject } from 'react';
-import { OverlayTriggerStateContext, useOverlayTriggerState } from '../primitives/index.js';
+import { type RefObject, useContext } from 'react';
 import type { OpenStateProps } from '../core/events.js';
+import { OverlayTriggerStateContext, useOverlayTriggerState } from '../primitives/index.js';
 import { useScrollCloseGuard } from './use-scroll-close-guard.js';
 
 interface ScrollGuardedStateOptions extends Pick<OpenStateProps, 'isOpen' | 'onOpenChange'> {

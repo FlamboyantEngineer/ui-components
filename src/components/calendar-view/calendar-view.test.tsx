@@ -1,10 +1,10 @@
-import { createRef } from 'react';
 import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { UiProvider } from '../../core/provider.js';
-import type { Key } from '../../core/props.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import type { Key } from '../../core/props.js';
+import { UiProvider } from '../../core/provider.js';
 import { CalendarView, type CalendarViewEvent, type CalendarViewProps } from './calendar-view.js';
 
 const getNow = () => new Date('2026-03-18T10:00:00Z');

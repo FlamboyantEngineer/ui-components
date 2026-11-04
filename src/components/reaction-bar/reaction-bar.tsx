@@ -1,16 +1,16 @@
 'use client';
 
-import { EmojiGlyph } from '../../core/glyphs.js';
 import type { AriaLabellingProps } from '../../core/events.js';
+import { EmojiGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { formatCount, normalizeCount } from '../../utils/count.js';
 import { useLocale } from '../../primitives/index.js';
-import { Button } from '../button/button.js';
-import { EmojiPickerTrigger, type EmojiPickerProps } from '../emoji-picker/emoji-picker.js';
-import { Tooltip } from '../tooltip/tooltip.js';
+import { formatCount, normalizeCount } from '../../utils/count.js';
 import { FallbackImage } from '../../utils/fallback-image.js';
+import { Button } from '../button/button.js';
+import { type EmojiPickerProps, EmojiPickerTrigger } from '../emoji-picker/emoji-picker.js';
+import { Tooltip } from '../tooltip/tooltip.js';
 
 /** The reactions with one emoji. */
 export interface ReactionEntry {

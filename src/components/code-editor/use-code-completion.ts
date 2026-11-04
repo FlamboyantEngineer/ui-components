@@ -1,16 +1,16 @@
 'use client';
 
-import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
+import { type RefObject, useLayoutEffect, useRef, useState } from 'react';
 import { isFocused } from '../../utils/focus-target.js';
 import { isShallowEqual } from '../../utils/is-shallow-equal.js';
 import {
-  useCompletions,
   type Completion,
   type CompletionRange,
   type Completions,
   type CompletionsModel,
+  useCompletions,
 } from '../completion-list/completion-list.js';
-import { indentationAt, type CodeEdit } from './code-editing.js';
+import { type CodeEdit, indentationAt } from './code-editing.js';
 import type { CodeRange } from './code-ranges.js';
 import { findCompletionQuery, indentInsertion, parseSnippet } from './completion-match.js';
 import type { CodeSnippetSession } from './use-code-snippet.js';

@@ -1,13 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
+import { type RefObject, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { Key, Orientation } from '../../core/props.js';
-import { useLayoutChanges } from '../../utils/use-layout-changes.js';
 import { clamp } from '../../utils/clamp.js';
 import { isOverflowing } from '../../utils/is-overflowing.js';
-import { prefersReducedMotion } from '../../utils/prefers-reduced-motion.js';
 import { getOwnerWindow } from '../../utils/owner-window.js';
+import { prefersReducedMotion } from '../../utils/prefers-reduced-motion.js';
 import { measureInScroller } from '../../utils/scroll-geometry.js';
+import { useLayoutChanges } from '../../utils/use-layout-changes.js';
 
 interface ListScrollOptions {
   orientation: Orientation;

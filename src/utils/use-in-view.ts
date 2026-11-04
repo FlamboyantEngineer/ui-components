@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, type RefObject } from 'react';
+import { type RefObject, useEffect, useState } from 'react';
 import { findOverlayScrollContainer } from './overlay-geometry.js';
 import { useTargetElement } from './use-target-element.js';
 

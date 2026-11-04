@@ -1,4 +1,4 @@
-export { Tree } from './tree.js';
+export type { TreeDropPosition, TreeMove } from '../../utils/tree-reorder.js';
 export type {
   TreeCurrentMark,
   TreeExpandGlyph,
@@ -12,5 +12,5 @@ export type {
   TreeSize,
   TreeVariant,
 } from './tree.js';
+export { Tree } from './tree.js';
 export type { TreeReorderOptions } from './use-tree-reorder.js';
-export type { TreeDropPosition, TreeMove } from '../../utils/tree-reorder.js';

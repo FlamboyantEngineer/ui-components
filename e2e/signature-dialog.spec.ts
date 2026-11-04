@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
-import { expect, matrixCell, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 async function settled(page: Page) {
   const overlay = page.locator('.ui-modal.ui-signature-dialog');

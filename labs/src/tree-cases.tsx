@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import type { Key, Selection } from '../../src/core/props.js';
 import { Tree } from '../../src/components/tree/tree.js';
+import type { Key, Selection } from '../../src/core/props.js';
 import { applyTreeMove, type TreeMove } from '../../src/utils/tree-reorder.js';
 
 interface Place {

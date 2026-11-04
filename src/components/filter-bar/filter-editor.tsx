@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback } from 'react';
-import type { FilterOperator } from '../../core/strings/query.js';
 import { useUiStrings } from '../../core/provider.js';
+import type { FilterOperator } from '../../core/strings/query.js';
 import { BooleanField } from '../boolean-field/boolean-field.js';
 import { DateTimeField } from '../date-time-field/date-time-field.js';
 import { NumberField } from '../number-field/number-field.js';
@@ -13,18 +13,18 @@ import {
 } from '../people-picker/people-picker.js';
 import { SelectField } from '../select-field/select-field.js';
 import { TextField } from '../text-field/text-field.js';
+import { normalizeMatchText } from '../text-match/match-ranges.js';
 import {
   changeFilterOperator,
+  type FilterCondition,
+  type FilterField,
+  type FilterValue,
   getFilterOperators,
   getFilterValueKind,
   isDateRange,
   isNumberRange,
   readFilterValue,
-  type FilterCondition,
-  type FilterField,
-  type FilterValue,
 } from './filter-model.js';
-import { normalizeMatchText } from '../text-match/match-ranges.js';
 
 /** Whether the editor's controls draw their labels or are only named by them. */
 export type FilterEditorLabelLayout = 'label-control' | 'control-only';

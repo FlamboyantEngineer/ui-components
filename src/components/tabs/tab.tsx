@@ -1,37 +1,36 @@
 'use client';
 
 import {
-  useContext,
-  useId,
-  useRef,
   type JSX,
   type ReactElement,
   type ReactNode,
   type RefObject,
+  useContext,
+  useId,
+  useRef,
 } from 'react';
-import { SelectionIndicator, Tab as AriaTab } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { dataAttributes, mergeClassNames } from '../../core/hooks.js';
-import type { BaseProps, Key, NativeProps, SelectableState, RefProps } from '../../core/props.js';
-import { mergeProps } from '../../utils/merge-props.js';
-import type { BadgeCountVariant } from '../badge/badge.js';
+import type { BaseProps, Key, NativeProps, RefProps, SelectableState } from '../../core/props.js';
+import { SelectionIndicator, Tab as AriaTab } from '../../primitives/index.js';
 import { normalizeCount } from '../../utils/count.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
-import { toCollectionItemKey } from '../../utils/to-collection-key.js';
+import { joinIds } from '../../utils/join-ids.js';
+import { mergeProps } from '../../utils/merge-props.js';
 import type { ElementRender } from '../../utils/render-element.js';
-import { Icon, type IconSource } from '../icon/icon.js';
-import { toIconProps } from '../icon/icon.js';
+import { toCollectionItemKey } from '../../utils/to-collection-key.js';
+import type { BadgeCountVariant } from '../badge/badge.js';
+import { Icon, type IconSource, toIconProps } from '../icon/icon.js';
 import {
   isTabDisabled,
+  type TabActions,
   TabActionsContext,
   TabsSharedContext,
-  type TabActions,
 } from './tab-actions.js';
 import { tabsHooks as hooks } from './tab-hooks.js';
 import { useTabMenuTarget } from './tab-menu.js';
 import { TabCount, TabRemoveMark } from './tab-parts.js';
-import { useTabDrag, type TabDropPosition, type TabReorder } from './tab-reorder.js';
-import { joinIds } from '../../utils/join-ids.js';
+import { type TabDropPosition, type TabReorder, useTabDrag } from './tab-reorder.js';
 
 export interface TabProps
   extends Omit<BaseProps, 'id'>, AriaLabellingProps, RefProps<HTMLDivElement> {

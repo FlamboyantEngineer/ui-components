@@ -1,13 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, type RefObject } from 'react';
-import { useResizeObserver } from '../../utils/use-resize-observer.js';
+import { type RefObject, useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { clamp } from '../../utils/clamp.js';
+import { useLatest } from '../../utils/use-latest.js';
+import { useResizeObserver } from '../../utils/use-resize-observer.js';
+import type { PdfPageRect, PdfRect } from './page-geometry.js';
 import type { PdfTarget } from './pdf-destination.js';
 import type { PdfTextContent, PdfViewport } from './pdf-engine.js';
-import type { PdfPageRect, PdfRect } from './page-geometry.js';
 import type { LoadedPdf } from './use-pdf-document.js';
-import { useLatest } from '../../utils/use-latest.js';
 import type { PagePixelRect, PdfPagesController } from './use-pdf-pages.js';
 
 interface UsePdfNavigationOptions {

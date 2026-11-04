@@ -1,13 +1,13 @@
-import { RestoreGlyph } from '../../core/glyphs.js';
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { RestoreGlyph } from '../../core/glyphs.js';
+import type { Tone } from '../../core/props.js';
 import { UiProvider } from '../../core/provider.js';
 import { useEnterExit } from '../../utils/use-enter-exit.js';
 import { Banner } from './banner.js';
-import type { Tone } from '../../core/props.js';
 
 const tones: Tone[] = ['neutral', 'info', 'success', 'warning', 'danger'];
 

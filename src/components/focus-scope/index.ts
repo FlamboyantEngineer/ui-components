@@ -1,4 +1,3 @@
-export { FocusScope, useFocusManager } from './focus-scope.js';
 export type {
   FocusableElement,
   FocusManager,
@@ -6,3 +5,4 @@ export type {
   FocusScopeProps,
   FocusScopeTarget,
 } from './focus-scope.js';
+export { FocusScope, useFocusManager } from './focus-scope.js';

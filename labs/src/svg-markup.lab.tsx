@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Icon } from '../../src/components/icon/icon.js';
 import { SvgMarkup } from '../../src/components/svg-markup/svg-markup.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { SvgParseSection } from './svg-markup-parse-cases.js';
 
 const svgNamespace = 'xmlns="http://www.w3.org/2000/svg"';

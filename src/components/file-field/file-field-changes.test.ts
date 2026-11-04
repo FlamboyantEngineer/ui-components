@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { compareFileItems, restoreFileItem, type FileFieldItem } from './file-field-changes.js';
+import { compareFileItems, type FileFieldItem, restoreFileItem } from './file-field-changes.js';
 
 const report: FileFieldItem = { id: 'report', name: 'Report.pdf' };
 const photo: FileFieldItem = { id: 'photo', name: 'Photo.png' };

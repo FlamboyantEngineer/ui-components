@@ -4,8 +4,8 @@ import { RichMessageComposer } from '../../src/components/message-composer/rich/
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { createMemoryStorage } from '../../src/core/storage.js';
-import { requireDefined } from './require-defined.js';
 import { LabSection } from './chrome/index.js';
+import { requireDefined } from './require-defined.js';
 
 const draft = JSON.stringify({ text: 'Same text in both', tokens: [] });
 

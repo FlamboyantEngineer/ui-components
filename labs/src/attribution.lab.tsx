@@ -3,13 +3,13 @@ import { Attribution } from '../../src/components/attribution/attribution.js';
 import { Button } from '../../src/components/button/button.js';
 import { Switch } from '../../src/components/switch/switch.js';
 import { UserCard } from '../../src/components/user-card/user-card.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { samplePicture } from './people-samples.js';
 import {
-  ZoneComparison,
   getNearMidnightNow,
   nearMidnightDate,
   nearMidnightInstant,
+  ZoneComparison,
 } from './time-zone-samples.js';
 
 /** A fixed clock, so every sentence in the matrices reads the same on every day. */

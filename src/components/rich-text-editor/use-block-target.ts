@@ -7,11 +7,11 @@ import {
   useEditorState,
 } from '@handlewithcare/react-prosemirror';
 import type { Node as DocNode } from 'prosemirror-model';
-import { useEffect, useState, type FocusEvent } from 'react';
+import { type FocusEvent, useEffect, useState } from 'react';
+import { isElement, isHTMLElement, isNode } from '../../utils/is-element.js';
 import { findBlockAtY } from './block-at-pointer.js';
 import { findTopBlocks } from './block-commands.js';
 import { useRichTextEditorContext } from './rich-text-context.js';
-import { isElement, isHTMLElement, isNode } from '../../utils/is-element.js';
 
 /** The block a handle serves and where it sits, with the handle's own focus state. */
 interface BlockTarget {

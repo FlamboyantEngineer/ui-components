@@ -3,8 +3,8 @@
 import { createContext, useContext } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { FilterField } from '../filter-bar/filter-bar.js';
-import type { ConditionNode, ConditionRule } from './condition-tree.js';
 import type { MenuActionIcons } from '../menu/menu-action-icons.js';
+import type { ConditionNode, ConditionRule } from './condition-tree.js';
 
 /** Checks a rule; a message makes it invalid. */
 export type ConditionRuleValidator = (rule: ConditionRule) => string | null | undefined;

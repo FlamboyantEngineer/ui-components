@@ -2,37 +2,37 @@
 
 import {
   createContext,
-  useCallback,
-  useState,
-  useContext,
   type MouseEvent,
   type ReactNode,
   type RefObject,
+  useCallback,
+  useContext,
+  useState,
 } from 'react';
+import type { OverlayPositionProps } from '../../core/events.js';
+import { createHooks } from '../../core/hooks.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import {
-  Popover as AriaPopover,
   OverlayTriggerStateContext,
+  Popover as AriaPopover,
   PopoverContext,
   RootMenuTriggerStateContext,
   useInteractOutside,
   useSlottedContext,
 } from '../../primitives/index.js';
-import type { OverlayPositionProps } from '../../core/events.js';
-import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, RefProps } from '../../core/props.js';
-import { useFollowAnchor } from '../../utils/use-follow-anchor.js';
-import { useScrollGuardedState } from '../../utils/use-scroll-guarded-state.js';
-import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
-import { PopoverPresence } from '../popover/popover.js';
-import { useLayerZIndex, type PortalProps } from '../portal/portal.js';
+import { FormBoundary } from '../../utils/form-boundary.js';
+import { isElement } from '../../utils/is-element.js';
 import {
   DEFAULT_DROPDOWN_OFFSET,
   DEFAULT_OVERLAY_GUTTER,
   SUBMENU_CROSS_OFFSET,
   SUBMENU_OFFSET,
 } from '../../utils/overlay-defaults.js';
-import { isElement } from '../../utils/is-element.js';
-import { FormBoundary } from '../../utils/form-boundary.js';
+import { useFollowAnchor } from '../../utils/use-follow-anchor.js';
+import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
+import { useScrollGuardedState } from '../../utils/use-scroll-guarded-state.js';
+import { PopoverPresence } from '../popover/popover.js';
+import { type PortalProps, useLayerZIndex } from '../portal/portal.js';
 
 export interface MenuPopoverProps extends BaseProps, OverlayPositionProps, RefProps<HTMLElement> {
   /**

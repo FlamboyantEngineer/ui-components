@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { ChatMessageData } from '../chat-parts/chat-parts.js';
 import {
+  type ChatReaderResponse,
   createOutgoingMessage,
   findAwaitingMessage,
   isAwaitingReader,
   listPrompts,
   recordResponse,
   toDismissal,
-  type ChatReaderResponse,
 } from './chat-reply.js';
 
 const reply: ChatMessageData = {

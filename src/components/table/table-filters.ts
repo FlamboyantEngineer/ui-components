@@ -1,4 +1,10 @@
+import { toLocalDay } from '../../utils/local-day.js';
 import type { DateRangeValue } from '../date-time-field/date-time-field.js';
+import {
+  normalizeMatchText,
+  splitMatchTerms,
+  textMatchesTerms,
+} from '../text-match/match-ranges.js';
 import {
   getCellValue,
   getRowText,
@@ -8,12 +14,6 @@ import {
   type TableColumn,
   type TableRow,
 } from './table-rows.js';
-import { toLocalDay } from '../../utils/local-day.js';
-import {
-  normalizeMatchText,
-  splitMatchTerms,
-  textMatchesTerms,
-} from '../text-match/match-ranges.js';
 
 /**
  * How a column filters: `text` keeps cells containing the text, `number` and `date` keep cells

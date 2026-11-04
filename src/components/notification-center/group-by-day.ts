@@ -2,10 +2,10 @@
 // the date, for lists read newest first.
 
 import {
-  createCalendarDayReader,
-  formatRelativeDay,
   type CalendarDay,
   type CalendarDayClock,
+  createCalendarDayReader,
+  formatRelativeDay,
 } from '../../utils/calendar-day.js';
 import { getDateFormatter } from '../../utils/intl-format.js';
 

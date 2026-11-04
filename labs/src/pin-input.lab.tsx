@@ -1,16 +1,16 @@
-import { useState, type FormEvent } from 'react';
+import { type FormEvent, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Form } from '../../src/components/form/form.js';
 import { PinInput, type PinInputType } from '../../src/components/pin-input/pin-input.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-import { LabOutput } from './lab-output.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import {
   fieldLayouts,
-  fieldStates,
-  useLabFieldState,
   type FieldStateName,
+  fieldStates,
   type SampleValues,
+  useLabFieldState,
 } from './field-states.js';
+import { LabOutput } from './lab-output.js';
 
 const types = ['numeric', 'alphanumeric', 'alphabetic'] as const satisfies readonly PinInputType[];
 const looks = ['plain', 'masked', 'placeholder'] as const;

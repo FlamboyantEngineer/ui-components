@@ -1,25 +1,25 @@
 'use client';
 
-import { useId, type KeyboardEvent } from 'react';
-import { useDateFormatter, useLocale, useNumberFormatter } from '../../primitives/index.js';
+import { type KeyboardEvent, useId } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useDateFormatter, useLocale, useNumberFormatter } from '../../primitives/index.js';
+import { isFreeEditKey } from '../../utils/is-free-edit-key.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import { AvatarGroup } from '../avatar-group/avatar-group.js';
 import {
   readTimelineItem,
   readTimelineProgress,
   resolveKeyboardChange,
-  toInlineStart,
   type TimelineItem,
   type TimelineItemChange,
   type TimelineScale,
+  toInlineStart,
 } from './timeline-geometry.js';
-import { toKeyIdentity } from '../../utils/to-key-identity.js';
-import { AvatarGroup } from '../avatar-group/avatar-group.js';
 import { timelineHooks as hooks } from './timeline-hooks.js';
-import { useItemMenu, type TimelineItemMenuOptions } from './timeline-item-menu.js';
+import { type TimelineItemMenuOptions, useItemMenu } from './timeline-item-menu.js';
 import type { ItemPredecessors, PlacedItem } from './timeline-layout.js';
 import { useTimelineDrag } from './use-timeline-drag.js';
-import { isFreeEditKey } from '../../utils/is-free-edit-key.js';
 
 interface TimelineItemSelection {
   isSelectable: boolean;

@@ -2,24 +2,24 @@ import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Form } from '../../src/components/form/form.js';
 import {
-  NumberField,
   keepThumbsApart,
   normalizeSliderValue,
-  snapToStep,
+  NumberField,
   type NumberFieldValueLabel,
   type NumberRange,
+  snapToStep,
 } from '../../src/components/number-field/index.js';
 import type { ControlSize } from '../../src/core/props.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
-import { LabHelperCalls } from './lab-helper-calls.js';
-import { LabOutput } from './lab-output.js';
 import {
   fieldLayouts,
+  type FieldStateName,
   fieldStates,
   useLabFieldState,
-  type FieldStateName,
 } from './field-states.js';
+import { LabHelperCalls } from './lab-helper-calls.js';
+import { LabOutput } from './lab-output.js';
 
 // A slider always holds a value, so it has no required state.
 const sliderStates = fieldStates.filter((state) => state !== 'required');

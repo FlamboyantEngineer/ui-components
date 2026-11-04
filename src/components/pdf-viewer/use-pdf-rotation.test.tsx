@@ -4,8 +4,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { createEngine, pageSize, pointsToPixels, renderReady } from '../../../test/pdf-fixtures.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { PdfViewer } from './pdf-viewer.js';
-import { rotatePdf } from './use-pdf-rotation.js';
 import type { LoadedPdf } from './use-pdf-document.js';
+import { rotatePdf } from './use-pdf-rotation.js';
 
 async function chooseCommand(name: string) {
   await userEvent.click(screen.getByRole('button', { name: 'More options' }));

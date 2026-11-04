@@ -3,10 +3,10 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   loadRemotePage,
-  useRemoteSearch,
   type RemoteLoader,
   type RemotePage,
   type RemoteSearch,
+  useRemoteSearch,
 } from '../../utils/use-remote-search.js';
 import { mergeSelectOptions, type SelectFieldOption } from './select-options.js';
 

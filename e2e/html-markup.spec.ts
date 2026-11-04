@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 test.describe('HTML Markup lab', () => {
   test('UIC-HTML-MARKUP-2.1 UIC-HTML-MARKUP-3.1 renders content with its semantics', async ({

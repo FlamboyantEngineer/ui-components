@@ -1,13 +1,13 @@
 'use client';
 
 import { useMemo } from 'react';
-import type { Key } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
+import type { Key } from '../../primitives/index.js';
 import { Tab, TabList, TabPanel, Tabs } from '../tabs/tabs.js';
 import { Tree } from '../tree/tree.js';
-import { pdfViewerHooks as hooks } from './styling-hooks.js';
 import type { PdfOutlineNode, PdfTextContent, PdfViewport } from './pdf-engine.js';
 import { PdfViewerThumbnails } from './pdf-viewer-thumbnails.js';
+import { pdfViewerHooks as hooks } from './styling-hooks.js';
 import type { LoadedPdf } from './use-pdf-document.js';
 
 interface PdfViewerSidebarProps<

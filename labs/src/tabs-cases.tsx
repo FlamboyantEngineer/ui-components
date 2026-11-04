@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
+import type { MenuEntry } from '../../src/components/menu/menu.js';
+import { Tab, TabList, type TabMove, TabPanel, Tabs } from '../../src/components/tabs/tabs.js';
+import { TextField } from '../../src/components/text-field/text-field.js';
 import { LinkGlyph, StarGlyph } from '../../src/core/glyphs.js';
 import type { Key } from '../../src/core/props.js';
-import { Button } from '../../src/components/button/button.js';
-import { TextField } from '../../src/components/text-field/text-field.js';
-import type { MenuEntry } from '../../src/components/menu/menu.js';
-import { Tab, TabList, TabPanel, Tabs, type TabMove } from '../../src/components/tabs/tabs.js';
 
 interface Meal {
   id: string;

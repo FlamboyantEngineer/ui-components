@@ -1,3 +1,18 @@
+// The message composer's "+" menu: two categories of neutral sample items, on a plain composer and
+// on a rich composer whose menu leads with a search field. The Chat lab's host controls reuse it.
+import { useState } from 'react';
+import {
+  MessageComposer,
+  MessageComposerEmojiButton,
+  type MessageComposerHelpers,
+  MessageComposerMenuButton,
+  type MessageComposerMenuButtonProps,
+  type MessageComposerMenuItem,
+} from '../../src/components/message-composer/index.js';
+import {
+  type MessageComposerMessage,
+  RichMessageComposer,
+} from '../../src/components/message-composer/rich/index.js';
 import {
   AttachGlyph,
   AudioGlyph,
@@ -12,22 +27,6 @@ import {
   ListBulletGlyph,
   ListTaskGlyph,
 } from '../../src/core/glyphs.js';
-// The message composer's "+" menu: two categories of neutral sample items, on a plain composer and
-// on a rich composer whose menu leads with a search field. The Chat lab's host controls reuse it.
-
-import { useState } from 'react';
-import {
-  MessageComposer,
-  MessageComposerEmojiButton,
-  MessageComposerMenuButton,
-  type MessageComposerHelpers,
-  type MessageComposerMenuButtonProps,
-  type MessageComposerMenuItem,
-} from '../../src/components/message-composer/index.js';
-import {
-  RichMessageComposer,
-  type MessageComposerMessage,
-} from '../../src/components/message-composer/rich/index.js';
 import { LabSection } from './chrome/index.js';
 import { AttachmentChip, SentMessage } from './message-composer-rich-cases.js';
 

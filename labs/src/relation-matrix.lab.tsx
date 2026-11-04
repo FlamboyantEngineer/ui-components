@@ -1,20 +1,20 @@
 import { useState } from 'react';
-import { CloseGlyph, DeleteGlyph, PlusGlyph } from '../../src/core/glyphs.js';
+import { Button } from '../../src/components/button/button.js';
 import {
   RelationMatrix,
-  setRelation,
-  toggleRelation,
   type RelationMatrixAxisAction,
   type RelationMatrixAxisOperation,
-  type RelationMatrixMenuIcons,
   type RelationMatrixCell,
   type RelationMatrixItem,
   type RelationMatrixKind,
+  type RelationMatrixMenuIcons,
   type RelationMatrixRelation,
+  setRelation,
+  toggleRelation,
 } from '../../src/components/relation-matrix/index.js';
-import { Button } from '../../src/components/button/button.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/index.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { CloseGlyph, DeleteGlyph, PlusGlyph } from '../../src/core/glyphs.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const requirements: RelationMatrixItem[] = [
   { id: 'req-1', label: 'Requirement 1: Sign in with a passkey' },

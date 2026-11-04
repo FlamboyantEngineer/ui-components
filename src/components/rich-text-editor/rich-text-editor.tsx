@@ -1,8 +1,9 @@
 'use client';
 
-import { useMemo, type ReactNode } from 'react';
+import { type ReactNode, useMemo } from 'react';
 import { mergeClassNames } from '../../core/hooks.js';
-import { Field, FieldFormValue, useFieldControl, type FieldInputProps } from '../field/field.js';
+import { Field, FieldFormValue, type FieldInputProps, useFieldControl } from '../field/field.js';
+import type { RichTextBlockMarker } from './block-markers.js';
 import {
   createEditorPlugins,
   createEditorState,
@@ -12,15 +13,14 @@ import {
   toRichTextJson,
 } from './editor-state.js';
 import { EditorSurface, useSyncedEditorState, withEditorHistory } from './editor-surface.js';
+import { getEngineSchema } from './engine-schema.js';
 import { richTextEditorHooks as hooks } from './rich-text-context.js';
 import { isRichTextEqual, type RichTextDocument } from './rich-text-document.js';
-import { getEngineSchema } from './engine-schema.js';
-import type { RichTextBlockMarker } from './block-markers.js';
 import { getDefaultRichTextSchema, type RichTextSchema } from './rich-text-schema.js';
 
 // The engine glue the rich composer shares (`message-composer/rich`), kept out of the entry point.
-export { decoratePlaceholder } from './editor-state.js';
 export { domSelectionEvents } from './dom-selection-sync.js';
+export { decoratePlaceholder } from './editor-state.js';
 export { useEditable, useSyncedEditorState } from './editor-surface.js';
 
 export interface RichTextEditorProps extends FieldInputProps<RichTextDocument> {
@@ -116,7 +116,19 @@ export function RichTextEditor(props: RichTextEditorProps) {
   );
 }
 
-export { createRichTextSchema } from './rich-text-schema.js';
+export type { RichTextBlockMarker } from './block-markers.js';
+export type { RichTextCommand } from './rich-text-command.js';
+export type { RichTextController } from './rich-text-controller.js';
+export { useRichTextController } from './rich-text-controller.js';
+export type {
+  RichTextAttributes,
+  RichTextAttributeValue,
+  RichTextDocument,
+  RichTextMark,
+  RichTextNode,
+} from './rich-text-document.js';
+export type { RichTextExportOptions } from './rich-text-export.js';
+export { serializeRichTextHtml, serializeRichTextText } from './rich-text-export.js';
 export type {
   RichTextAttributeSpec,
   RichTextDomAttributes,
@@ -128,16 +140,4 @@ export type {
   RichTextSchema,
   RichTextSchemaOptions,
 } from './rich-text-schema.js';
-export type {
-  RichTextAttributes,
-  RichTextAttributeValue,
-  RichTextDocument,
-  RichTextMark,
-  RichTextNode,
-} from './rich-text-document.js';
-export type { RichTextCommand } from './rich-text-command.js';
-export type { RichTextBlockMarker } from './block-markers.js';
-export { useRichTextController } from './rich-text-controller.js';
-export type { RichTextController } from './rich-text-controller.js';
-export { serializeRichTextHtml, serializeRichTextText } from './rich-text-export.js';
-export type { RichTextExportOptions } from './rich-text-export.js';
+export { createRichTextSchema } from './rich-text-schema.js';

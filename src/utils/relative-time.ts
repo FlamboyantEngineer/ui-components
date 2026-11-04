@@ -2,11 +2,11 @@
 // formatted through Intl for the reader's locale. Relative Time and Relative Date Field share it.
 
 import {
+  type CalendarDate,
   fromDate,
   parseIsoDate,
   parseIsoDateTime,
   toCalendarDate,
-  type CalendarDate,
 } from '../primitives/index.js';
 import { getDateFormatter, getRelativeTimeFormat } from './intl-format.js';
 

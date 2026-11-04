@@ -2,7 +2,7 @@
 
 // Keyboard focus around content that turns inert while its region loads.
 
-import { useCallback, useLayoutEffect, type RefObject } from 'react';
+import { type RefObject, useCallback, useLayoutEffect } from 'react';
 import {
   containsComposed,
   getComposedActiveElement,

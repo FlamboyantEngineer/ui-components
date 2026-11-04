@@ -6,10 +6,10 @@ import { installEditorDom } from '../../../../test/rich-text-fixtures.js';
 import { MoreGlyph } from '../../../core/glyphs.js';
 import type { MessageComposerMessage } from '../composer-message.js';
 import {
-  RichMessageComposer,
   type MessageComposerHandle,
   type MessageComposerSuggestion,
   type MessageComposerTrigger,
+  RichMessageComposer,
   type RichMessageComposerProps,
 } from './rich-message-composer.js';
 

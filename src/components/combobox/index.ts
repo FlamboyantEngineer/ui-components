@@ -1,4 +1,3 @@
-export { Combobox } from './combobox.js';
 export type {
   ComboboxItem,
   ComboboxLoader,
@@ -12,3 +11,4 @@ export type {
   ComboboxValue,
   ComboboxVariant,
 } from './combobox.js';
+export { Combobox } from './combobox.js';

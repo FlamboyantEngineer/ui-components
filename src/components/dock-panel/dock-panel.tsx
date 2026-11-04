@@ -1,29 +1,29 @@
 'use client';
 
-import { useMergedRefs } from '../../utils/use-merged-refs.js';
-import { useId, useMemo, useRef, useState, type ReactNode } from 'react';
+import { type ReactNode, useId, useMemo, useRef, useState } from 'react';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useIsHidden } from '../../primitives/index.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { Tabs } from '../tabs/tabs.js';
 import { dockPanelHooks as hooks } from './dock-panel-hooks.js';
 import {
   DockPanelLaunchers,
-  DockPanelToggle,
   type DockPanelOpenState,
   type DockPanelPosition,
+  DockPanelToggle,
 } from './dock-panel-launchers.js';
 import {
   DockPanelPanes,
   DockPanelSeparator,
+  type PaneEntry,
   readEnabledKeys,
   readPanes,
-  type PaneEntry,
   useDockPanelBounds,
   useDockPanelOpenState,
 } from './dock-panel-parts.js';
 import { DockPanelTabList, DockPanelTabs } from './dock-panel-tabs.js';
-import { useDockPanelFocus, type DockPanelFocus } from './use-dock-panel-focus.js';
-import { useDockPanelState, type DockPanelState } from './use-dock-panel-state.js';
+import { type DockPanelFocus, useDockPanelFocus } from './use-dock-panel-focus.js';
+import { type DockPanelState, useDockPanelState } from './use-dock-panel-state.js';
 
 export type { DockPanelPosition } from './dock-panel-launchers.js';
 
@@ -215,5 +215,5 @@ export function DockPanel({
   );
 }
 
-export { DockPanelPane } from './dock-panel-pane.js';
 export type { DockPanelPaneProps } from './dock-panel-pane.js';
+export { DockPanelPane } from './dock-panel-pane.js';

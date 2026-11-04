@@ -5,7 +5,7 @@ import { SegmentedChoice } from '../../src/components/segmented-choice/segmented
 import { TreeCompare } from '../../src/components/tree-compare/tree-compare.js';
 import type { Key } from '../../src/core/props.js';
 import type { CompareTreeNode } from '../../src/utils/compare-trees.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 interface Section extends CompareTreeNode {
   number: string;

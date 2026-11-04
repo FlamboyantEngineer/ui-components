@@ -2,11 +2,10 @@
 
 import type { RefObject } from 'react';
 import { FormulaGlyph } from '../../core/glyphs.js';
-import type { Key, ControlSize } from '../../core/props.js';
+import type { ControlSize, Key } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { getOwnerWindow } from '../../utils/owner-window.js';
 import type { Completion } from '../completion-list/completion-list.js';
-
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import { formulaBarHooks as hooks } from './formula-bar-hooks.js';
 

@@ -1,13 +1,13 @@
 'use client';
 
-import { useMemo, useRef, type FocusEvent } from 'react';
+import { type FocusEvent, useMemo, useRef } from 'react';
 import { useLocale } from '../../primitives/index.js';
+import { isHTMLElement } from '../../utils/is-element.js';
 import {
   scrollStripPage,
   scrollStripTo,
   useScrollStripOverflow,
 } from '../../utils/use-scroll-strip-overflow.js';
-import { isHTMLElement } from '../../utils/is-element.js';
 
 type Edge = 'start' | 'end';
 

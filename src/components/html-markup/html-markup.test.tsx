@@ -5,9 +5,9 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { maxMarkupDepth } from '../../utils/markup.js';
 import { TextMatchProvider } from '../text-match/text-match.js';
 import { HtmlMarkup, type HtmlMarkupProps } from './html-markup.js';
-import { maxMarkupDepth } from '../../utils/markup.js';
 
 const reply =
   '<p>Thanks <span data-person="ana" class="mention">@Ana</span>, see <a href="/docs">the docs</a>.</p>' +

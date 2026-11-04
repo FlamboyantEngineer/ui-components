@@ -2,7 +2,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { TextField } from '../../../test/field-fixtures.js';
-import { getFieldUndo, registerFieldUndo, type FieldUndo } from './field-undo.js';
+import { type FieldUndo, getFieldUndo, registerFieldUndo } from './field-undo.js';
 
 function TwoFields() {
   return (

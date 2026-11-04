@@ -1,13 +1,13 @@
 import { fireEvent, render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import {
-  ViewProbe,
   getContent,
   installEditorDom,
   selectRange,
+  ViewProbe,
 } from '../../../test/rich-text-fixtures.js';
 import { BlockHandle } from './block-handle.js';
-import { RichTextEditor, type RichTextDocument } from './rich-text-editor.js';
+import { type RichTextDocument, RichTextEditor } from './rich-text-editor.js';
 
 installEditorDom();
 

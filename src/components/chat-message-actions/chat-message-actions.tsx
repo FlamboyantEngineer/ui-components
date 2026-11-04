@@ -5,10 +5,10 @@ import type { BaseProps, RefProps } from '../../core/props.js';
 import { MessageActionsBar } from './message-actions-bar.js';
 import { MessageCommandOverlays } from './message-command-overlays.js';
 import {
+  type ChatMessageCommandProps,
   hasCommands,
   splitCommands,
   useMessageCommands,
-  type ChatMessageCommandProps,
 } from './message-commands.js';
 
 export interface ChatMessageActionsProps
@@ -31,12 +31,12 @@ export function ChatMessageActions(props: ChatMessageActionsProps) {
   );
 }
 
-export { ChatMessageActionsMenu } from './chat-message-actions-menu.js';
 export type {
   ChatMessageActionsMenuProps,
   ChatMessageMenuAction,
   ChatMessageMenuIcons,
 } from './chat-message-actions-menu.js';
+export { ChatMessageActionsMenu } from './chat-message-actions-menu.js';
 export type {
   ChatFeedback,
   ChatFeedbackRating,

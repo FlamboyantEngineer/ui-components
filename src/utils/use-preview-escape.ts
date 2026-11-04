@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, type RefObject } from 'react';
+import { type RefObject, useEffect } from 'react';
 import { useOverlayPresence } from '../core/overlay-presence.js';
-import { isElement } from './is-element.js';
 import { isComposingKey } from './is-composing-key.js';
+import { isElement } from './is-element.js';
 import { getOwnerDocument } from './owner-window.js';
 import type { PreviewState } from './use-preview-state.js';
 

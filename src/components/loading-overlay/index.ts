@@ -1,4 +1,3 @@
-export { LoadingCard, LoadingOverlay, LoadingRegion } from './loading-overlay.js';
 export type {
   LoadingCardProps,
   LoadingOverlayPresentation,
@@ -7,3 +6,4 @@ export type {
   LoadingRegionProps,
   LoadingStep,
 } from './loading-overlay.js';
+export { LoadingCard, LoadingOverlay, LoadingRegion } from './loading-overlay.js';

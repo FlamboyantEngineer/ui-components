@@ -1,9 +1,9 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { StrictMode, useState, type FormEvent } from 'react';
+import { type FormEvent, StrictMode, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import type { CellCoordinates } from '../../utils/cell-reference.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import type { CellCoordinates } from '../../utils/cell-reference.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import type { CodeTokenizer } from '../code-editor/code-editor.js';
 import { Modal } from '../modal/modal.js';

@@ -1,31 +1,31 @@
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { userEvent } from '@testing-library/user-event';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { collectImports } from '../../../test/module-imports.js';
-import { requireDefined } from '../../utils/require-defined.js';
-import { getFieldUndo } from '../field/field.js';
-import { Form } from '../form/form.js';
 import {
-  ViewProbe,
   getContent,
   installEditorDom,
   renderEditor,
   sampleDocument,
   selectRange,
+  ViewProbe,
 } from '../../../test/rich-text-fixtures.js';
+import { requireDefined } from '../../utils/require-defined.js';
+import { getFieldUndo } from '../field/field.js';
+import { Form } from '../form/form.js';
+import { isRichTextEqual } from './rich-text-document.js';
 import {
-  RichTextEditor,
   createRichTextSchema,
-  useRichTextController,
   type RichTextController,
   type RichTextDocument,
+  RichTextEditor,
+  useRichTextController,
 } from './rich-text-editor.js';
 import { serializeRichTextHtml } from './rich-text-export.js';
-import { isRichTextEqual } from './rich-text-document.js';
 
 installEditorDom();
 

@@ -3,7 +3,7 @@
 // An item's context menu: the host's entries for that item, opened from the item by a secondary
 // click, a long touch, Shift+F10 or the Context Menu key (specs/TIMELINE.md, UIC-TIMELINE-2.5).
 
-import { useEffect, useRef, type KeyboardEvent, type Ref } from 'react';
+import { type KeyboardEvent, type Ref, useEffect, useRef } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import {

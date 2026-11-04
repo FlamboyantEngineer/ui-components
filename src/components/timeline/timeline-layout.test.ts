@@ -1,5 +1,5 @@
-import { requireDefined } from '../../utils/require-defined.js';
 import { describe, expect, it } from 'vitest';
+import { requireDefined } from '../../utils/require-defined.js';
 import { createTimelineAxis, type TimelineItem } from './timeline-geometry.js';
 import { layoutTimeline, resolveTimelineLayout } from './timeline-layout.js';
 import { flattenTimelineRows } from './timeline-rows.js';

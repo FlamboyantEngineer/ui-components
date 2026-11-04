@@ -1,5 +1,5 @@
-import { expect, test, matrixCell } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Filter Bar lab', () => {
   test('UIC-FILTER-BAR-2.1 UIC-FILTER-BAR-4.1 reads every field type as a chip', async ({

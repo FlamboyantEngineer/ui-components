@@ -1,19 +1,19 @@
-import { StarGlyph } from '../../core/glyphs.js';
-import { act, render, screen, waitFor, within } from '@testing-library/react';
-import { userEvent } from '@testing-library/user-event';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { installComposerRow } from '../../../test/composer-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { collectPackages } from '../../../test/module-imports.js';
+import { StarGlyph } from '../../core/glyphs.js';
 import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage, type UiStorage } from '../../core/storage.js';
 import { MessageComposer } from '../message-composer/message-composer.js';
 import {
-  ChatModelPicker,
   type ChatEffortOption,
   type ChatModelOption,
+  ChatModelPicker,
   type ChatModelPickerProps,
 } from './chat-model-picker.js';
 

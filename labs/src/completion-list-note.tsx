@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
-  createTriggerCompletions,
   type Completion,
+  createTriggerCompletions,
 } from '../../src/components/completion-list/completion-list.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { UserIdentity } from '../../src/components/user-identity/user-identity.js';

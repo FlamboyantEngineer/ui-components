@@ -1,7 +1,9 @@
 'use client';
 
-import { DisclosureContentScope } from '../disclosure/disclosure.js';
 import type { ReactNode } from 'react';
+import { createHooks } from '../../core/hooks.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
+import { Glyph } from '../../core/provider.js';
 import {
   Button as AriaButton,
   Disclosure,
@@ -9,13 +11,11 @@ import {
   DisclosurePanel,
   Heading,
 } from '../../primitives/index.js';
-import { FieldScopeContext, useRevealScope } from '../field/field.js';
-import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key, RefProps } from '../../core/props.js';
-import { Glyph } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Badge, type BadgeCountVariant } from '../badge/badge.js';
+import { DisclosureContentScope } from '../disclosure/disclosure.js';
 import { useExpandGlyph } from '../expand-toggle/expand-toggle.js';
+import { FieldScopeContext, useRevealScope } from '../field/field.js';
 import {
   PropertyScopeContext,
   usePropertyScopeLevel,
@@ -25,8 +25,8 @@ import type { HeadingLevel } from '../section-header/section-header.js';
 import { TextMatch } from '../text-match/text-match.js';
 import {
   OverrideMark,
-  useSectionExpansion,
   type PropertyExpansionProps,
+  useSectionExpansion,
 } from './property-disclosure.js';
 
 export interface PropertySectionProps

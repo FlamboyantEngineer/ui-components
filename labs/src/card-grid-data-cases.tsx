@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import type { Key, Selection } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import { Card, CardGrid, CardGridItem } from '../../src/components/card/index.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { Switch } from '../../src/components/switch/switch.js';
+import type { Key, Selection } from '../../src/core/props.js';
 import { LabSection } from './chrome/index.js';
 
 interface Dish {

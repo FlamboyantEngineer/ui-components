@@ -1,25 +1,25 @@
 'use client';
 
 import {
+  type CSSProperties,
+  type ReactNode,
+  type RefObject,
   useId,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
-  type CSSProperties,
-  type ReactNode,
-  type RefObject,
 } from 'react';
 import { createPortal } from 'react-dom';
-import { useOverlayPosition } from '../../primitives/index.js';
 import type { BaseProps } from '../../core/props.js';
+import { useOverlayPosition } from '../../primitives/index.js';
+import { isElement } from '../../utils/is-element.js';
+import { TOOLTIP_OFFSET } from '../../utils/overlay-defaults.js';
 import { useEnterExit } from '../../utils/use-enter-exit.js';
 import { useFollowAnchor } from '../../utils/use-follow-anchor.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { useLayerZIndex, usePortalTarget } from '../portal/portal.js';
 import type { TooltipPlacement, TooltipRelationship, TooltipVariant } from './tooltip.js';
-import { TOOLTIP_OFFSET } from '../../utils/overlay-defaults.js';
-import { isElement } from '../../utils/is-element.js';
 import { tooltipHooks as hooks } from './tooltip-hooks.js';
 
 /** A rectangle in viewport pixels, as `getBoundingClientRect` returns it. */

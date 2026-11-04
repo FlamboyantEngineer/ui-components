@@ -2,24 +2,23 @@
 
 // The sections, links and groups a navigation rail lists.
 
-import { useContext, useId, useLayoutEffect, type ReactNode } from 'react';
+import { type ReactNode, useContext, useId, useLayoutEffect } from 'react';
+import { useControllableState } from '../../core/controllable-state.js';
+import type { PressEvent } from '../../core/events.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
+import { Glyph, useUiStrings } from '../../core/provider.js';
 import {
   Button as AriaButton,
   Disclosure as AriaDisclosure,
   DisclosurePanel as AriaDisclosurePanel,
   useLocale,
 } from '../../primitives/index.js';
-import { useControllableState } from '../../core/controllable-state.js';
-import type { PressEvent } from '../../core/events.js';
-import type { BaseProps, RefProps } from '../../core/props.js';
-import { Glyph, useUiStrings } from '../../core/provider.js';
 import { formatCount, normalizeCount } from '../../utils/count.js';
 import { getInitials } from '../../utils/initials.js';
 import { Badge } from '../badge/badge.js';
 import { DisclosureContentScope } from '../disclosure/disclosure.js';
 import { useExpandGlyph } from '../expand-toggle/expand-toggle.js';
-import { Icon, type IconSource } from '../icon/icon.js';
-import { toIconProps } from '../icon/icon.js';
+import { Icon, type IconSource, toIconProps } from '../icon/icon.js';
 import { Link, renderLinkElement } from '../link/link.js';
 import { Tooltip } from '../tooltip/tooltip.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';

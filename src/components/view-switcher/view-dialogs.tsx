@@ -5,9 +5,9 @@
 import { useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 import { Modal } from '../modal/modal.js';
 import { TextField } from '../text-field/text-field.js';
-import { isComposingKey } from '../../utils/is-composing-key.js';
 
 /**
  * A dialog a view switcher opens, by what it does and the view it acts on, never by a callback: the

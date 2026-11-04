@@ -1,5 +1,5 @@
 import type { Locator } from '@playwright/test';
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 async function centerOffset(list: Locator, tab: Locator): Promise<number> {
   const listBox = await list.boundingBox();

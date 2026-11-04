@@ -2,8 +2,8 @@ import { fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { CloseGlyph, DeleteGlyph, PlusGlyph } from '../../core/glyphs.js';
 import { readMenuIcons } from '../../../test/menu-fixtures.js';
+import { CloseGlyph, DeleteGlyph, PlusGlyph } from '../../core/glyphs.js';
 import { UiProvider } from '../../core/provider.js';
 import {
   RelationMatrix,
@@ -11,7 +11,7 @@ import {
   type RelationMatrixItem,
   type RelationMatrixProps,
 } from './relation-matrix.js';
-import { setRelation, type RelationMatrixRelation } from './relation-matrix-model.js';
+import { type RelationMatrixRelation, setRelation } from './relation-matrix-model.js';
 
 const kinds = [
   { id: 'verifies', label: 'Verifies', tone: 'success' as const },

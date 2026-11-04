@@ -1,6 +1,6 @@
 'use client';
 
-import { useContext, useEffect, useRef, type DOMAttributes, type ReactNode } from 'react';
+import { type DOMAttributes, type ReactNode, useContext, useEffect, useRef } from 'react';
 import { FocusableContext, getInteractionModality } from '../primitives/index.js';
 
 /**

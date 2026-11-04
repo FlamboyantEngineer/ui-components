@@ -1,7 +1,7 @@
 'use client';
 
+import { type Ref, type RefCallback, useMemo, useState } from 'react';
 import { findMaximum } from '../../utils/find-maximum.js';
-import { useMemo, useState, type Ref, type RefCallback } from 'react';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { useElementSize } from '../../utils/use-element-size.js';
 import { useWidestTextWidth } from '../../utils/use-widest-text-width.js';

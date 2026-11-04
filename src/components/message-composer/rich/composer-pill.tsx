@@ -4,18 +4,18 @@
 // trigger's token as its icon and label, a record reference as a record chip (specs/MESSAGE-COMPOSER.md, UIC-MESSAGE-COMPOSER-4.3 and 4.9).
 
 import {
+  type NodeViewComponentProps,
   useEditorEventCallback,
   useStopEvent,
-  type NodeViewComponentProps,
 } from '@handlewithcare/react-prosemirror';
 import { createContext, useContext, useMemo, useRef } from 'react';
 import { mergeClassNames } from '../../../core/hooks.js';
 import { mergeRefs } from '../../../utils/merge-props.js';
-import { RecordLabel, type RecordLabelResolver } from '../../record-label/record-label.js';
 import { Icon, toIconProps } from '../../icon/icon.js';
+import { RecordLabel, type RecordLabelResolver } from '../../record-label/record-label.js';
 import { composerHooks as hooks } from '../composer-hooks.js';
-import type { MessageComposerTrigger } from './composer-triggers.js';
 import { getPillText, type PillAttributes } from './composer-schema.js';
+import type { MessageComposerTrigger } from './composer-triggers.js';
 
 /** What the editor's pills draw with. */
 interface ComposerPillOptions {

@@ -4,7 +4,7 @@ import { useRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { Button } from '../button/button.js';
 import { Popover, PopoverTrigger } from '../popover/popover.js';
-import { Modal, ModalTrigger, type ModalProps } from './modal.js';
+import { Modal, type ModalProps, ModalTrigger } from './modal.js';
 
 /** A field that cancels its draft on the first Escape, handling it, and lets later ones pass. */
 function DraftField({ label = 'Note' }: { label?: string }) {

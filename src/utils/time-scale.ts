@@ -1,13 +1,13 @@
 // Time scales: ISO 8601 dates to positions, with calendar ticks and their labels (specs/SCALES.md).
 
 import {
+  type CalendarDate,
   fromDate,
   getLocalTimeZone,
   parseIsoDate,
   startOfWeek,
   toCalendarDate,
   toZoned,
-  type CalendarDate,
 } from '../primitives/index.js';
 import { getDateTimeFormat } from './intl-format.js';
 import { createLinearScale, type ScaleInterval, type ScaleTick } from './linear-scale.js';

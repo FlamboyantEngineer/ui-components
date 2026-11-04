@@ -1,22 +1,22 @@
 'use client';
 
-import { UploadGlyph } from '../../core/glyphs.js';
 import {
-  useId,
-  useState,
   type DragEvent,
   type ReactElement,
   type ReactNode,
   type Ref,
+  useId,
+  useState,
 } from 'react';
-import { DropZone } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
+import { UploadGlyph } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
+import { DropZone } from '../../primitives/index.js';
+import { joinIds } from '../../utils/join-ids.js';
 import { Button } from '../button/button.js';
 import { Icon } from '../icon/icon.js';
 import type { DraggedItem } from './file-rules.js';
 import { fileUploadHooks as hooks } from './file-upload-files.js';
-import { joinIds } from '../../utils/join-ids.js';
 
 /** How the owner names a command: the names it gives come before the command's own text. */
 type CommandNaming = Pick<AriaLabellingProps, 'aria-label' | 'aria-labelledby'>;

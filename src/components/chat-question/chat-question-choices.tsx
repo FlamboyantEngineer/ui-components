@@ -1,22 +1,22 @@
 'use client';
 
-import { useId, useRef, useState, type FocusEvent } from 'react';
+import { type FocusEvent, useId, useRef, useState } from 'react';
+import { useUiStrings } from '../../core/provider.js';
 import {
   CheckboxGroup as AriaCheckboxGroup,
   RadioGroup as AriaRadioGroup,
 } from '../../primitives/index.js';
-import { useUiStrings } from '../../core/provider.js';
+import { isHTMLElement } from '../../utils/is-element.js';
 import { Markdown } from '../markdown/markdown.js';
 import { ChoiceOption, QuestionTextField } from './chat-question-fields.js';
 import {
   chatQuestionHooks as hooks,
+  type ChatQuestionItem,
   findPreviewOption,
   pickMultiple,
   pickSingle,
-  type ChatQuestionItem,
   type QuestionDraft,
 } from './chat-question-model.js';
-import { isHTMLElement } from '../../utils/is-element.js';
 
 interface QuestionChoicesProps {
   /** A question asked with options: `single` or `multiple`. */

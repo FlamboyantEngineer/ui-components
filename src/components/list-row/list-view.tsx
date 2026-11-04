@@ -3,15 +3,18 @@
 // Collections of rows the reader selects, reorders or scrolls through at length: React Aria's grid
 // list in its stack layout, each row drawn with the list row's text.
 
-import { createDropIndicator } from '../../utils/create-drop-indicator.js';
 import {
-  createContext,
-  use,
-  useMemo,
   type ComponentProps,
+  createContext,
   type ReactElement,
   type ReactNode,
+  use,
+  useMemo,
 } from 'react';
+import type { AriaLabellingProps, CollectionSelectionProps } from '../../core/events.js';
+import { createHooks } from '../../core/hooks.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
+import { useUiStrings } from '../../core/provider.js';
 import {
   Collection,
   GridList,
@@ -23,29 +26,26 @@ import {
   useDragAndDrop,
   Virtualizer,
 } from '../../primitives/index.js';
-import type { AriaLabellingProps, CollectionSelectionProps } from '../../core/events.js';
-import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key, RefProps } from '../../core/props.js';
-import { useUiStrings } from '../../core/provider.js';
-import { isEmptyNode } from '../../utils/is-empty-node.js';
-import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { toCollectionSelectionProps } from '../../utils/collection-selection.js';
+import { createDropIndicator } from '../../utils/create-drop-indicator.js';
+import { fromCollectionKey } from '../../utils/from-collection-key.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { keepControlFocusReturn } from '../../utils/keep-control-focus-return.js';
 import { keyCollectionChildren } from '../../utils/key-collection-children.js';
+import { renderTextKeyRow } from '../../utils/text-control-keys.js';
 import { toCollectionItemKey } from '../../utils/to-collection-key.js';
 import { useCarriedFocus } from '../../utils/use-carried-focus.js';
+import { useHeldSelection } from '../../utils/use-held-selection.js';
 import { useKeptCollectionAttributes } from '../../utils/use-kept-collection-attributes.js';
 import { useMergedRefs } from '../../utils/use-merged-refs.js';
-import { useHeldSelection } from '../../utils/use-held-selection.js';
 import {
-  useReorderDragAndDrop,
   type CollectionDropTarget,
+  useReorderDragAndDrop,
 } from '../../utils/use-reorder-drag-and-drop.js';
 import { Checkbox } from '../checkbox/checkbox.js';
 import { armHandleDrag, DragHandle } from '../drag-handle/drag-handle.js';
 import { EmptyState } from '../empty-state/empty-state.js';
 import { ListRowContent, type ListRowContentProps, type ListRowTone } from './list-row.js';
-import { keepControlFocusReturn } from '../../utils/keep-control-focus-return.js';
-import { renderTextKeyRow } from '../../utils/text-control-keys.js';
 
 /** A reorder request: move `keys` before or after the row `targetKey`. */
 export interface ListViewMove {

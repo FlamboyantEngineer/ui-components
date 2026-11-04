@@ -1,11 +1,11 @@
 import { act } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { renderController, settle } from '../../test/chat-controller-fixtures.js';
 import type { ChatStreamEvent } from '../../src/components/chat-controller/chat-controller.js';
+import { renderController, settle } from '../../test/chat-controller-fixtures.js';
 import {
+  type AgUiEvent,
   fromAgUi,
   fromUiMessageStream,
-  type AgUiEvent,
   type UiMessageChunk,
 } from './chat-controller-adapters.js';
 

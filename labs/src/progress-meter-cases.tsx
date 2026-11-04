@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from 'react';
+import { type CSSProperties, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { ProgressBar } from '../../src/components/progress-bar/progress-bar.js';
 import { LabSection, StateMatrix } from './chrome/index.js';

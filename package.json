@@ -182,6 +182,7 @@
     "eslint": "^10.13.0",
     "eslint-plugin-jest-dom": "^5.10.1",
     "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
     "eslint-plugin-testing-library": "^7.16.2",
     "globals": "^17.13.0",
     "jsdom": "^30.1.3",

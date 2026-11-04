@@ -1,28 +1,27 @@
 'use client';
 
-import { ChevronLeftGlyph, ChevronRightGlyph } from '../../core/glyphs.js';
 // A month or week calendar of events: a toolbar to move between periods and views, then a grid of
 // days the reader navigates by keyboard, holding all-day bars, timed events and `+n more` lists.
-
-import { useId, useMemo, type ReactNode } from 'react';
-import { useLocale } from '../../primitives/index.js';
-import { toPlanningDate } from '../../utils/planning-dates.js';
+import { type ReactNode, useId, useMemo } from 'react';
 import { useGetNow, useNow, useTimeZone } from '../../core/clock.js';
 import { useControllableState } from '../../core/controllable-state.js';
-import type { BaseProps, Key, Tone, RefProps } from '../../core/props.js';
+import { ChevronLeftGlyph, ChevronRightGlyph } from '../../core/glyphs.js';
+import type { BaseProps, Key, RefProps, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useLocale } from '../../primitives/index.js';
+import { toPlanningDate } from '../../utils/planning-dates.js';
 import { Button } from '../button/button.js';
 import { SegmentedChoice } from '../segmented-choice/segmented-choice.js';
-import { CalendarMonth } from './calendar-month.js';
-import { CalendarWeek } from './calendar-week.js';
 import { getDayOf, getWeekDays, isSameMonth, shiftDay } from './calendar-days.js';
+import type { CalendarEventChange, CalendarEventDragMode } from './calendar-event-handles.js';
+import type { CalendarEventMenuEntry, CalendarEventMenuIcons } from './calendar-event-menu.js';
 import { readEvents } from './calendar-layout.js';
+import { CalendarMonth } from './calendar-month.js';
 import { calendarViewHooks as hooks } from './calendar-view-hooks.js';
+import { CalendarWeek } from './calendar-week.js';
 import { useCalendarFormat } from './use-calendar-format.js';
 import { useCalendarGrid } from './use-calendar-grid.js';
-import type { CalendarEventChange, CalendarEventDragMode } from './calendar-event-handles.js';
 import { useEventChanges } from './use-event-changes.js';
-import type { CalendarEventMenuEntry, CalendarEventMenuIcons } from './calendar-event-menu.js';
 
 /** The period a calendar view shows. */
 export type CalendarViewMode = 'month' | 'week';

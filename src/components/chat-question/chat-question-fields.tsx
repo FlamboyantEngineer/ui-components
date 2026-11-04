@@ -1,7 +1,8 @@
 'use client';
 
-import { useId, type KeyboardEvent } from 'react';
+import { type KeyboardEvent, useId } from 'react';
 import { useUiStrings } from '../../core/provider.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 import { Badge } from '../badge/badge.js';
 import { Checkbox } from '../checkbox/checkbox.js';
 import { Choice } from '../choice-group/choice-group.js';
@@ -11,7 +12,6 @@ import {
   type ChatQuestionOption,
   type QuestionDraft,
 } from './chat-question-model.js';
-import { isComposingKey } from '../../utils/is-composing-key.js';
 
 interface QuestionTextFieldProps {
   /** The slot the field fills: the free-text answer or the words for Other. */

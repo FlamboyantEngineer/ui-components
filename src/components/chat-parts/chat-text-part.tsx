@@ -1,5 +1,5 @@
 'use client';
-import { Fragment, useMemo, type ReactNode } from 'react';
+import { Fragment, type ReactNode, useMemo } from 'react';
 import { requireDefined } from '../../utils/require-defined.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { useStableArray } from '../../utils/use-stable-array.js';
@@ -25,8 +25,8 @@ import {
   listTextTokens,
   splitTextTokens,
   splitTokenMarkers,
-  writeTokenSource,
   type TokenMarker,
+  writeTokenSource,
 } from './chat-text-tokens.js';
 
 interface ChatTextPartViewProps {

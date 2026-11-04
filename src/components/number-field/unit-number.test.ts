@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseLocaleNumber, parseQuantity, type NumberFieldUnits } from './unit-number.js';
+import { type NumberFieldUnits, parseLocaleNumber, parseQuantity } from './unit-number.js';
 
 const lengths: NumberFieldUnits = { unit: 'mm', conversions: { cm: 10, m: 1000, in: 25.4 } };
 const accounting: Intl.NumberFormatOptions = {

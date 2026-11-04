@@ -1,11 +1,11 @@
-import { PlusGlyph } from '../../core/glyphs.js';
 import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
-import type { Key } from '../../core/props.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { chooseFieldMenuItem } from '../../../test/field-fixtures.js';
+import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { PlusGlyph } from '../../core/glyphs.js';
+import type { Key } from '../../core/props.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { SelectField, type SelectFieldOption } from './select-field.js';
 

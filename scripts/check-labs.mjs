@@ -2,12 +2,12 @@
 // Verifies that labs/ is complete: one static page per lab source, canonical page markup,
 // an up-to-date index, and a lab covering every component directory.
 
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
-  LAB_TIERS,
   collectLabs,
   groupsOfTier,
+  LAB_TIERS,
   labsDir,
   labSourceDir,
   listLabPages,

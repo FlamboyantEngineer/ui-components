@@ -1,33 +1,34 @@
 'use client';
 
-import { useMergedRefs } from '../../utils/use-merged-refs.js';
-import { useRef, type CSSProperties } from 'react';
-import { Select as AriaSelect } from '../../primitives/index.js';
+import { type CSSProperties, useRef } from 'react';
 import { measuredProperty } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
+import { Select as AriaSelect } from '../../primitives/index.js';
+import { isFilterableLength } from '../../utils/filterable-list.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { useWidestTextWidth } from '../../utils/use-widest-text-width.js';
-import type { FieldControlProps, FieldState } from '../field/field.js';
-import { SelectChips, SelectRemovedValues } from './select-chips.js';
-import { SelectList, type SelectListProps } from './select-list.js';
 import {
-  useSelectActions,
-  useSelectModel,
-  type SelectConfig,
-  type SelectKeysValue,
-  type SelectModel,
-} from './select-model.js';
-import {
+  type FieldControlProps,
   FieldFormValue,
+  type FieldState,
   flattenPickerItems,
   toAriaControlProps,
   usePickerEmptyContent,
 } from '../field/field.js';
-import { toSelectKeys, type SelectFieldOption } from './select-options.js';
-import { SelectTrigger } from './select-trigger.js';
+import { SelectChips, SelectRemovedValues } from './select-chips.js';
 import { selectFieldHooks as hooks } from './select-field-hooks.js';
-import { isFilterableLength } from '../../utils/filterable-list.js';
+import { SelectList, type SelectListProps } from './select-list.js';
+import {
+  type SelectConfig,
+  type SelectKeysValue,
+  type SelectModel,
+  useSelectActions,
+  useSelectModel,
+} from './select-model.js';
+import { type SelectFieldOption, toSelectKeys } from './select-options.js';
+import { SelectTrigger } from './select-trigger.js';
 
 export type { SelectConfig, SelectKeysValue } from './select-model.js';
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useLayoutEffect, useRef, type RefObject } from 'react';
+import { type RefObject, useLayoutEffect, useRef } from 'react';
 import { isHTMLElement } from '../../utils/is-element.js';
 import { isHiddenOrGone, useFocusRecovery } from '../../utils/use-focus-recovery.js';
 import type { OutlineEntry } from './outline-tree.js';

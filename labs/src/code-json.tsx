@@ -1,16 +1,16 @@
 import { useState } from 'react';
-import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
-import type { CodeEditorSize } from '../../src/components/code-editor/code-editor.js';
-import type { FieldIssue, FieldLabelLayout } from '../../src/components/field/field.js';
 import {
   CodeEditor,
   type CodeEditorFieldProps,
+  type CodeEditorSize,
   type JsonSchema,
 } from '../../src/components/code-editor/code-editor.js';
+import type { FieldIssue, FieldLabelLayout } from '../../src/components/field/field.js';
+import type { Key } from '../../src/core/props.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
+import { fieldLayouts, type FieldStateName, fieldStates } from './field-states.js';
 import { LabOutput } from './lab-output.js';
-import { fieldLayouts, fieldStates, type FieldStateName } from './field-states.js';
 
 const sizes = ['sm', 'md', 'lg'] as const;
 

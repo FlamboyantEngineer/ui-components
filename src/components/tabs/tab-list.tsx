@@ -1,21 +1,25 @@
 'use client';
 
-import { useContext, useMemo, type JSX, type KeyboardEvent, type ReactNode } from 'react';
+import { type JSX, type KeyboardEvent, type ReactNode, useContext, useMemo } from 'react';
+import type { AriaLabellingProps } from '../../core/events.js';
+import type { BaseProps, Key, Orientation, RefProps } from '../../core/props.js';
 import {
   TabList as AriaTabList,
+  type TabListState,
   TabListStateContext,
   TabsContext,
   useLocale,
   useSlottedContext,
-  type TabListState,
 } from '../../primitives/index.js';
-import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps, Key, Orientation, RefProps } from '../../core/props.js';
+import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { mergeProps } from '../../utils/merge-props.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { useLatest } from '../../utils/use-latest.js';
-import { fromCollectionKey } from '../../utils/from-collection-key.js';
+import { type TabActions, TabActionsContext, TabsSharedContext } from './tab-actions.js';
+import { TabBar } from './tab-bar.js';
+import { tabsHooks as hooks } from './tab-hooks.js';
+import { useTabListLayout } from './tab-list-layout.js';
 import {
   TabListCollection,
   TabListParts,
@@ -23,18 +27,14 @@ import {
   useTabListParts,
   withTabActionEvents,
 } from './tab-list-parts.js';
-import { TabActionsContext, TabsSharedContext, type TabActions } from './tab-actions.js';
-import { TabBar } from './tab-bar.js';
-import { useTabListLayout } from './tab-list-layout.js';
-import { tabsHooks as hooks } from './tab-hooks.js';
-import { TabMenuOverlay, useTabMenu, type TabMenuIcons, type TabMenuItems } from './tab-menu.js';
+import { type TabMenuIcons, type TabMenuItems, TabMenuOverlay, useTabMenu } from './tab-menu.js';
 import {
   createTabRename,
-  TabRenameOverlay,
   type TabNameValidate,
   type TabRename,
+  TabRenameOverlay,
 } from './tab-rename.js';
-import { createTabReorder, useTabReorderKeys, type TabMove } from './tab-reorder.js';
+import { createTabReorder, type TabMove, useTabReorderKeys } from './tab-reorder.js';
 
 export type { TabMenuAction, TabMenuIcons, TabMenuItems } from './tab-menu.js';
 export type { TabNameValidate } from './tab-rename.js';

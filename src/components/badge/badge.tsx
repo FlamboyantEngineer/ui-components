@@ -1,15 +1,14 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useLocale } from '../../primitives/index.js';
-import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, NativeProps, Size, Tone, RefProps } from '../../core/props.js';
+import type { BaseProps, NativeProps, RefProps, Size, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
+import { useLocale } from '../../primitives/index.js';
 import { formatCount, normalizeCount } from '../../utils/count.js';
-import { Icon, type IconSource } from '../icon/icon.js';
-import { toIconProps } from '../icon/icon.js';
+import { Icon, type IconSource, toIconProps } from '../icon/icon.js';
+import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 
 export type BadgeSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 

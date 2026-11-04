@@ -1,7 +1,7 @@
 'use client';
 
 import type { Key } from '../../core/props.js';
-import { usePendingChange, type PendingChangeHandler } from './pending-change.js';
+import { type PendingChangeHandler, usePendingChange } from './pending-change.js';
 
 export type SegmentedChoiceSelectionMode = 'single' | 'multiple';
 

@@ -1,6 +1,6 @@
+import { Icon, type IconSource, toIconProps } from '../../src/components/icon/icon.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { glyphCatalog, glyphNames } from './glyph-catalog.js';
-import { Icon, toIconProps, type IconSource } from '../../src/components/icon/icon.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const sizes = ['sm', 'md', 'lg'] as const;
 

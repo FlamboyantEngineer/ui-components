@@ -3,16 +3,16 @@ import { userEvent } from '@testing-library/user-event';
 import { StrictMode, useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { ShadowHost, deepActive, inShadow, shadowRootOf } from '../../../test/shadow-fixtures.js';
+import { deepActive, inShadow, ShadowHost, shadowRootOf } from '../../../test/shadow-fixtures.js';
 import { UiProvider } from '../../core/provider.js';
 import { requireDefined } from '../../utils/require-defined.js';
+import { FileUpload, type FileUploadItem, type FileUploadProps } from './file-upload.js';
 import {
-  readDroppedFiles,
   type DroppedDirectory,
   type DroppedFile,
   type DroppedItem,
+  readDroppedFiles,
 } from './file-upload-drop.js';
-import { FileUpload, type FileUploadItem, type FileUploadProps } from './file-upload.js';
 
 function file(name: string, type: string, size = 10): File {
   return new File(['x'.repeat(size)], name, { type });

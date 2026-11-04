@@ -1,28 +1,26 @@
-import { PlusGlyph, RedoGlyph, UndoGlyph } from '../../src/core/glyphs.js';
 import { Suspense, use, useState, useTransition } from 'react';
 import { Badge } from '../../src/components/badge/badge.js';
 import { Button } from '../../src/components/button/button.js';
 import {
   Field,
-  FieldRestoreButton,
-  getFieldUndo,
-  useFieldState,
-  validateString,
   type FieldIssue,
   type FieldIssues,
   type FieldLabelLayout,
   type FieldMenuEntry,
   type FieldProps,
+  FieldRestoreButton,
   type FieldStateOptions,
   type FieldValidation,
   type FieldValidationMode,
+  getFieldUndo,
+  useFieldState,
+  validateString,
 } from '../../src/components/field/field.js';
 import { TextMatchProvider } from '../../src/components/text-match/text-match.js';
+import { PlusGlyph, RedoGlyph, UndoGlyph } from '../../src/core/glyphs.js';
 import type { Key } from '../../src/core/props.js';
 import { UiProvider, useUiStrings } from '../../src/core/provider.js';
-import { HelpFromMenu, MenuEverywhere, MenuIcons } from './field-menu-cases.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-import { LabOutput } from './lab-output.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { CompactFieldsSection } from './field-compact-cases.js';
 import {
   CustomControl,
@@ -30,8 +28,10 @@ import {
   OwnHistory,
   PreviousValues,
 } from './field-custom-control-cases.js';
+import { HelpFromMenu, MenuEverywhere, MenuIcons } from './field-menu-cases.js';
+import { fieldLayouts, type FieldStateName, fieldStates } from './field-states.js';
 import { TooltipMessagesSection } from './field-tooltip-cases.js';
-import { fieldLayouts, fieldStates, type FieldStateName } from './field-states.js';
+import { LabOutput } from './lab-output.js';
 
 const modes = [
   'immediate',

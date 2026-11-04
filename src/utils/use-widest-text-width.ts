@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, type RefObject } from 'react';
+import { type RefObject, useEffect, useState } from 'react';
 import { useStableArray } from './use-stable-array.js';
 
 function widestText(element: Element, texts: readonly string[]): number | null {

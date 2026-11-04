@@ -1,10 +1,10 @@
 'use client';
 
-import { useMemo, type ReactNode } from 'react';
+import { type ReactNode, useMemo } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps } from '../../core/props.js';
-import { FieldScopeContext, useFieldScope } from './field-scope.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { FieldScopeContext, useFieldScope } from './field-scope.js';
 
 export interface FieldsetProps extends Omit<NativeProps<'fieldset'>, 'disabled'>, BaseProps {
   /** The group's caption, drawn in a `<legend>`, which names the group. */

@@ -4,20 +4,20 @@
 // host's own entries, and the empty space's, for host actions at a cell such as adding a tile
 // (specs/DASHBOARD-GRID.md, UIC-DASHBOARD-GRID-5).
 
-import { useCallback, useEffect, useMemo, useRef, type Ref, type RefObject } from 'react';
+import { type Ref, type RefObject, useCallback, useEffect, useMemo, useRef } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useLocale } from '../../primitives/index.js';
+import { isFocusLost } from '../../utils/focus-target.js';
+import { getOwnerWindow } from '../../utils/owner-window.js';
 import {
   ContextMenu,
   useContextMenuTarget,
   useMenuController,
   useMenuControllerState,
 } from '../context-menu/context-menu.js';
-import { getOwnerWindow } from '../../utils/owner-window.js';
-import { isFocusLost } from '../../utils/focus-target.js';
 import { Menu, type MenuEntry } from '../menu/menu.js';
-import { resolveActionIcon, type MenuActionIcons } from '../menu/menu-action-icons.js';
+import { type MenuActionIcons, resolveActionIcon } from '../menu/menu-action-icons.js';
 import type { DashboardGridItem } from './dashboard-layout.js';
 import type { CellStep, TileMoveKind } from './use-tile-move.js';
 

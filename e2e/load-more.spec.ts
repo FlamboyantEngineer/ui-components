@@ -1,4 +1,4 @@
-import { expect, test, matrixCell, controlHeight } from './fixtures.js';
+import { controlHeight, expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Load More lab', () => {
   test('UIC-LOAD-MORE-1.1 UIC-LOAD-MORE-1.2 UIC-LOAD-MORE-1.3 draws small buttons with counts and names', async ({

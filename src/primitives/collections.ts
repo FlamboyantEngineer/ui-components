@@ -2,6 +2,16 @@
 
 // Collections, selection, lists, grids, trees, tables, tags and virtualization.
 
+export type {
+  CellRenderProps,
+  CollectionRenderer,
+  Key,
+  Selection,
+  SortDescriptor,
+  TreeItemContentRenderProps,
+  TreeItemRenderProps,
+  TreeLoadMoreItemRenderProps,
+} from 'react-aria-components';
 export {
   Cell,
   Collection,
@@ -43,14 +53,4 @@ export {
   TreeSection,
   Virtualizer,
   WaterfallLayout,
-} from 'react-aria-components';
-export type {
-  CellRenderProps,
-  CollectionRenderer,
-  Key,
-  Selection,
-  SortDescriptor,
-  TreeItemContentRenderProps,
-  TreeItemRenderProps,
-  TreeLoadMoreItemRenderProps,
 } from 'react-aria-components';

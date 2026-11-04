@@ -1,16 +1,16 @@
 // Builds the element tree of an HTML fragment from markup tokens, closing elements the way an HTML
 // parser implies (specs/HTML-MARKUP.md). Policy filtering happens afterwards in sanitize-html.ts.
 
-import { skipDroppedElements, tokenizeMarkup, type MarkupOpenToken } from '../../utils/markup.js';
-import { requireDefined } from '../../utils/require-defined.js';
+import { type MarkupOpenToken, skipDroppedElements, tokenizeMarkup } from '../../utils/markup.js';
 import {
   closeOpen,
   createOpenElements,
   currentOpen,
   findOpen,
-  pushOpen,
   type OpenElements,
+  pushOpen,
 } from '../../utils/open-elements.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import {
   fosterElement,
   prepareTablePart,

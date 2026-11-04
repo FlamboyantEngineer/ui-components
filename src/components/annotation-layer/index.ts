@@ -1,4 +1,3 @@
-export { AnnotationLayer, AnnotationMargin } from './annotation-layer.js';
 export type {
   Annotation,
   AnnotationCardState,
@@ -7,3 +6,4 @@ export type {
   AnnotationMarginProps,
   AnnotationRect,
 } from './annotation-layer.js';
+export { AnnotationLayer, AnnotationMargin } from './annotation-layer.js';

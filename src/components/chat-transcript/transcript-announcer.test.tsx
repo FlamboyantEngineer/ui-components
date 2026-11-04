@@ -9,7 +9,7 @@ import {
   scrollViewport,
   uninstallTranscriptLayout,
 } from '../../../test/transcript-layout-fixtures.js';
-import { ChatMessage, ChatTranscript, type ChatMessageProps } from './chat-transcript.js';
+import { ChatMessage, type ChatMessageProps, ChatTranscript } from './chat-transcript.js';
 
 beforeEach(() => {
   vi.useFakeTimers();

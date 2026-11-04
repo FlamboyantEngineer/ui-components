@@ -1,8 +1,8 @@
 import { act } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { renderController, settle } from '../../../test/chat-controller-fixtures.js';
-import type { ChatUploadContext } from './chat-controller.js';
 import type { ChatAttachmentData } from '../chat-attachment/chat-attachment.js';
+import type { ChatUploadContext } from './chat-controller.js';
 
 /** An `upload` whose calls the test settles one by one. */
 function createTestUpload() {

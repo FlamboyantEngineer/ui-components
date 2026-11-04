@@ -1,14 +1,14 @@
 'use client';
 
-import { toErrorMessage } from '../../utils/to-error-message.js';
 import { useLayoutEffect, useRef, useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
-import { findFolderPath, type FolderItem } from './folder-model.js';
 import { isKey } from '../../utils/is-key.js';
+import { toErrorMessage } from '../../utils/to-error-message.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { useLifetimeSignal } from '../../utils/use-lifetime-signal.js';
+import { findFolderPath, type FolderItem } from './folder-model.js';
 
 /** A folder being named: a new one under `key`, or the folder `key` being renamed. */
 export interface FolderEdit {

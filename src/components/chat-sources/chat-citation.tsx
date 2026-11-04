@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type Ref } from 'react';
+import { type Ref, useState } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -8,7 +8,7 @@ import { Button } from '../button/button.js';
 import { HoverCard, HoverCardTrigger } from '../hover-card/hover-card.js';
 import { Link } from '../link/link.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
-import { ChatSourceSummary, isExternalUrl, type ChatSource } from './chat-source-summary.js';
+import { type ChatSource, ChatSourceSummary, isExternalUrl } from './chat-source-summary.js';
 
 /** The data of a citation, as a message part carries it. */
 export interface ChatCitationData {

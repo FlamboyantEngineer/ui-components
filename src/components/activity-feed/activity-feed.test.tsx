@@ -1,10 +1,10 @@
-import { RefreshGlyph } from '../../core/glyphs.js';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef, useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { UiProvider } from '../../core/provider.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { RefreshGlyph } from '../../core/glyphs.js';
+import { UiProvider } from '../../core/provider.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { ActivityFeed, type ActivityFeedItem } from './activity-feed.js';
 import { groupByDay } from './day-groups.js';

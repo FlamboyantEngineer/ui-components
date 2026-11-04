@@ -5,7 +5,7 @@ import { EmptyState } from '../../src/components/empty-state/empty-state.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { LabSection } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
-import { ZoneComparison, getNearMidnightNow, nearMidnightInstant } from './time-zone-samples.js';
+import { getNearMidnightNow, nearMidnightInstant, ZoneComparison } from './time-zone-samples.js';
 
 const maria = { name: 'Maria Santos', colorKey: 'maria' };
 

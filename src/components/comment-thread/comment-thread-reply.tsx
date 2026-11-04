@@ -1,23 +1,23 @@
 'use client';
 
+import { type ReactNode, type Ref, useContext, useLayoutEffect, useRef, useState } from 'react';
 import { DeleteGlyph, EditGlyph } from '../../core/glyphs.js';
-import { useContext, useLayoutEffect, useRef, useState, type ReactNode, type Ref } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { Attribution, type AttributionProps } from '../attribution/attribution.js';
-import { getDisplayName, type AvatarIdentity } from '../avatar/avatar.js';
-import { CommentComposer } from '../comment-composer/comment-composer.js';
-import { Modal } from '../modal/modal.js';
-import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
-import type { MenuEntry } from '../menu/menu.js';
-import { UserIdentity } from '../user-identity/user-identity.js';
-import { CommentThreadContext } from './comment-thread-context.js';
-import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { isFocusLost } from '../../utils/focus-target.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { isThenable } from '../../utils/is-thenable.js';
 import { toErrorMessage } from '../../utils/to-error-message.js';
+import { Attribution, type AttributionProps } from '../attribution/attribution.js';
+import { type AvatarIdentity, getDisplayName } from '../avatar/avatar.js';
+import { CommentComposer } from '../comment-composer/comment-composer.js';
+import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import { InlineError } from '../inline-error/inline-error.js';
+import type { MenuEntry } from '../menu/menu.js';
+import { Modal } from '../modal/modal.js';
+import { UserIdentity } from '../user-identity/user-identity.js';
+import { CommentThreadContext } from './comment-thread-context.js';
 
 /** What a comment hands the editor that replaces its body while the reader edits it. */
 export interface CommentEditorOptions {

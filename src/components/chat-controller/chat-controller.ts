@@ -13,7 +13,7 @@ import type {
   ChatSendFunction,
   ChatUploadFunction,
 } from './chat-controller-state.js';
-import { createChatEngine, type ChatEngine, type ChatMessagesUpdate } from './chat-engine.js';
+import { type ChatEngine, type ChatMessagesUpdate, createChatEngine } from './chat-engine.js';
 import { listPrompts } from './chat-reply.js';
 
 export type {
@@ -24,14 +24,14 @@ export type {
   ChatUploadFunction,
 } from './chat-controller-state.js';
 export type { ChatMessagesUpdate } from './chat-engine.js';
-export { isAwaitingReader } from './chat-reply.js';
 export type {
   ChatApprovalResponse,
   ChatQuestionResponse,
   ChatReaderResponse,
 } from './chat-reply.js';
-export { reduceChatStream } from './chat-stream.js';
+export { isAwaitingReader } from './chat-reply.js';
 export type { ChatStreamContext, ChatStreamEvent, ChatStreamEventType } from './chat-stream.js';
+export { reduceChatStream } from './chat-stream.js';
 
 export interface ChatControllerOptions {
   /** Streams the assistant's reply to the conversation, which ends with the reader's message. */

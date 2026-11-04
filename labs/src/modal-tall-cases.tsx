@@ -1,7 +1,7 @@
-import { Modal, ModalTrigger, type ModalSize } from '../../src/components/modal/modal.js';
 import { Button } from '../../src/components/button/button.js';
 import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import { Disclosure } from '../../src/components/disclosure/disclosure.js';
+import { Modal, type ModalSize, ModalTrigger } from '../../src/components/modal/modal.js';
 import { NumberField } from '../../src/components/number-field/number-field.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { StateMatrix } from './chrome/index.js';

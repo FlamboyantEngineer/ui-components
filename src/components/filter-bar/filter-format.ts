@@ -1,16 +1,16 @@
 'use client';
 
-import { useLocale, useNumberFormatter } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
+import { useLocale, useNumberFormatter } from '../../primitives/index.js';
 import { formatDateValue } from '../date-time-field/date-time-field.js';
 import {
+  type FilterCondition,
+  type FilterField,
   getFilterValueKind,
   isDateRange,
   isFilterConditionComplete,
   isNumberRange,
-  type FilterCondition,
-  type FilterField,
 } from './filter-model.js';
 
 /** A condition read as text, in its three parts. */

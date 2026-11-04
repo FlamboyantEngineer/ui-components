@@ -8,12 +8,12 @@ import {
   type RelativeTimeUnitStyle,
 } from '../../src/components/relative-time/relative-time.js';
 import { UiProvider } from '../../src/core/provider.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import {
-  ZoneComparison,
   getNearMidnightNow,
   nearMidnightDate,
   nearMidnightInstant,
+  ZoneComparison,
 } from './time-zone-samples.js';
 
 /** The text the server renders for a timestamp, read back from its markup. */

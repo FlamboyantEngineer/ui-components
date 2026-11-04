@@ -2,12 +2,12 @@ import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { chooseFieldMenuItem } from '../../../test/field-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Fieldset } from '../field/field.js';
 import { Form } from '../form/form.js';
 import { NumberField, type NumberRange } from './number-field.js';
 import { keepThumbsApart } from './thumb-spacing.js';
-import { chooseFieldMenuItem } from '../../../test/field-fixtures.js';
 
 function root(container: HTMLElement) {
   return container.querySelector<HTMLElement>('.ui-field');

@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { UiProvider } from '../../src/core/provider.js';
-import { useToday } from '../../src/core/clock.js';
 import { ActivityFeed } from '../../src/components/activity-feed/activity-feed.js';
 import { RelativeDateField } from '../../src/components/relative-date-field/relative-date-field.js';
 import { RelativeTime } from '../../src/components/relative-time/relative-time.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
+import { useToday } from '../../src/core/clock.js';
+import { UiProvider } from '../../src/core/provider.js';
 
 // Half past eleven at night in UTC: already tomorrow in Tokyo, still this evening in New York.
 const fixedNow = new Date('2026-10-31T23:30:00Z');

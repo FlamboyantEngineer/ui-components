@@ -1,10 +1,7 @@
 'use client';
 
-import { EyeGlyph, EyeSlashGlyph } from '../../core/glyphs.js';
 import {
-  useMemo,
   type AriaAttributes,
-  useRef,
   type CompositionEvent,
   type FormEvent,
   type KeyboardEvent,
@@ -12,15 +9,18 @@ import {
   type Ref,
   type RefObject,
   type SyntheticEvent,
+  useMemo,
+  useRef,
 } from 'react';
-import { Group, Input, TextArea } from '../../primitives/index.js';
+import { EyeGlyph, EyeSlashGlyph } from '../../core/glyphs.js';
 import { createHooks, type HookProps } from '../../core/hooks.js';
-import type { CompletionInputAttributes } from '../completion-list/completion-list.js';
 import { useUiStrings } from '../../core/provider.js';
-import { mergeProps, mergeRefs } from '../../utils/merge-props.js';
-import { useAutoGrow, type AutoGrowOptions } from '../../utils/use-auto-grow.js';
-import { Button } from '../button/button.js';
+import { Group, Input, TextArea } from '../../primitives/index.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { mergeProps, mergeRefs } from '../../utils/merge-props.js';
+import { type AutoGrowOptions, useAutoGrow } from '../../utils/use-auto-grow.js';
+import { Button } from '../button/button.js';
+import type { CompletionInputAttributes } from '../completion-list/completion-list.js';
 
 /** The element a text field edits in: an input on one line, a text area on several. */
 export type TextFieldElement = HTMLInputElement | HTMLTextAreaElement;

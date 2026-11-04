@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { defaultHtmlPolicy } from './sanitize-html.js';
 import { HtmlMarkup } from './html-markup.js';
+import { defaultHtmlPolicy } from './sanitize-html.js';
 
 describe('HtmlMarkup images', () => {
   it('UIC-HTML-MARKUP-2.1 loads an image lazily without sending the page as referrer', () => {

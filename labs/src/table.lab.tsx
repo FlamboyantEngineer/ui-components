@@ -1,12 +1,16 @@
-import { DeleteGlyph, EditGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
-import type { Key, Selection, SortDescriptor } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import { Checkbox } from '../../src/components/checkbox/checkbox.js';
+import {
+  applyTableMove,
+  sortTableRows,
+  type TableColumn,
+} from '../../src/components/table/index.js';
 import { Table, type TableProps } from '../../src/components/table/table.js';
-import { applyTableMove, type TableColumn } from '../../src/components/table/index.js';
-import { sortTableRows } from '../../src/components/table/index.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { DeleteGlyph, EditGlyph } from '../../src/core/glyphs.js';
+import type { Key, Selection, SortDescriptor } from '../../src/core/props.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { GroupKeyTable, ObjectKeyTable, TypedTable } from './collection-identity-cases.js';
 import { LabOutput } from './lab-output.js';
 import {
   CallerFilter,
@@ -18,21 +22,18 @@ import {
   LoadingMore,
   LocaleSort,
   MultipleSort,
-  NestedRows,
   NestedRowActions,
+  NestedRows,
   Pages,
   Summary,
 } from './table-cases.js';
-import { BulkEdit, Grouping, SmallSteps, Spreadsheet } from './table-sheet-cases.js';
-import { GroupKeyTable, ObjectKeyTable, TypedTable } from './collection-identity-cases.js';
-import { HeaderFilter, PickerCell } from './table-control-cases.js';
 import {
   ContentWidths,
   FluidColumns,
   GroupedReordering,
   ShareWeights,
 } from './table-content-contracts.js';
-import { RepeatedSelection } from './table-selection-cases.js';
+import { HeaderFilter, PickerCell } from './table-control-cases.js';
 import {
   ControlledLayout,
   ControlledMultipleSort,
@@ -40,6 +41,8 @@ import {
   SeededTable,
   SelectionModes,
 } from './table-owned-cases.js';
+import { RepeatedSelection } from './table-selection-cases.js';
+import { BulkEdit, Grouping, SmallSteps, Spreadsheet } from './table-sheet-cases.js';
 
 function TrailingActions() {
   const [count, setCount] = useState(0);

@@ -1,8 +1,10 @@
 'use client';
 
-import { useContext, useMemo, useRef, type ReactNode } from 'react';
-import { useLatest } from '../../utils/use-latest.js';
-import { useMergedRefs } from '../../utils/use-merged-refs.js';
+import { type ReactNode, useContext, useMemo, useRef } from 'react';
+import { useControllableState } from '../../core/controllable-state.js';
+import type { OpenStateProps, OverlayDismissProps } from '../../core/events.js';
+import { dataAttributes, type HookProps } from '../../core/hooks.js';
+import type { Placement, RefProps } from '../../core/props.js';
 import {
   FocusScope,
   Modal as AriaModal,
@@ -10,17 +12,15 @@ import {
   OverlayTriggerStateContext,
   useModalOverlay,
 } from '../../primitives/index.js';
-import { useControllableState } from '../../core/controllable-state.js';
-import type { OpenStateProps, OverlayDismissProps } from '../../core/events.js';
-import { dataAttributes, type HookProps } from '../../core/hooks.js';
-import type { Placement, RefProps } from '../../core/props.js';
+import { FormBoundary } from '../../utils/form-boundary.js';
+import { DEFAULT_OVERLAY_GUTTER, POPOVER_OFFSET } from '../../utils/overlay-defaults.js';
 import { useEnterExit } from '../../utils/use-enter-exit.js';
+import { useLatest } from '../../utils/use-latest.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { PopoverPanel } from '../popover/popover.js';
 import { OverlayLayerScope, Portal, useLayerZIndex } from '../portal/portal.js';
-import { FormBoundary } from '../../utils/form-boundary.js';
-import { ModalShownContext, retainedStyle } from './modal-retained.js';
-import { DEFAULT_OVERLAY_GUTTER, POPOVER_OFFSET } from '../../utils/overlay-defaults.js';
 import { modalHooks as hooks } from './modal-hooks.js';
+import { ModalShownContext, retainedStyle } from './modal-retained.js';
 import { useModalStackIndex } from './modal-stack.js';
 
 /** The open state a dialog shares with the overlays and trigger around it. */

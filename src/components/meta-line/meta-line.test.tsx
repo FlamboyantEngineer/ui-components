@@ -1,9 +1,9 @@
-import { createElement, Fragment, useState } from 'react';
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { createElement, Fragment, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { MetaLine, formatMetaLine, type MetaLineTextItem } from './meta-line.js';
+import { formatMetaLine, MetaLine, type MetaLineTextItem } from './meta-line.js';
 
 function Counter() {
   const [count, setCount] = useState(0);

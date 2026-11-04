@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import type { Key } from '../../src/core/props.js';
 import { SelectField } from '../../src/components/select-field/select-field.js';
+import type { Key } from '../../src/core/props.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
 import {
   fieldLayouts,
+  type FieldStateName,
   fieldStates,
   useLabFieldState,
-  type FieldStateName,
 } from './field-states.js';
 
 interface Place {

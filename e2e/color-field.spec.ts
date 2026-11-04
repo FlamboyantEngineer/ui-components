@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test, matrixCell, controlHeight } from './fixtures.js';
+import { controlHeight, expect, matrixCell, test } from './fixtures.js';
 import { swatchInkCount } from './swatch-ink.js';
 
 function cell(page: Page, state: string, layout = 'label-control'): Locator {

@@ -1,9 +1,8 @@
-import { useState } from 'react';
-import type { JSX } from 'react';
+import { type JSX, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Link, type LinkProps, type LinkRenderState } from '../../src/components/link/link.js';
 import { UiProvider } from '../../src/core/provider.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const categories = ['Breakfast', 'Lunch', 'Dinner', 'Desserts'];
 const extraFruit = ['Quinces', 'Medlars', 'Persimmons'];

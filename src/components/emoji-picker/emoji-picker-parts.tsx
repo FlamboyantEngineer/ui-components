@@ -1,19 +1,19 @@
 'use client';
 
 import { CloseGlyph } from '../../core/glyphs.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
+import { Glyph, useUiStrings } from '../../core/provider.js';
 import {
   Button as AriaButton,
   Input,
-  SearchField,
   type KeyboardEvent as AriaKeyboardEvent,
+  SearchField,
 } from '../../primitives/index.js';
-import type { BaseProps, RefProps } from '../../core/props.js';
-import { Glyph, useUiStrings } from '../../core/provider.js';
-import { useStoreValue } from '../../utils/use-store-value.js';
 import { isComposingKey, leaveComposingEnter } from '../../utils/is-composing-key.js';
+import { useStoreValue } from '../../utils/use-store-value.js';
 import { getEmojiLabel } from './emoji-catalog.js';
-import { useEmojiPickerContext } from './emoji-picker-context.js';
 import { EmojiContent } from './emoji-grid.js';
+import { useEmojiPickerContext } from './emoji-picker-context.js';
 import { emojiPickerHooks as hooks } from './emoji-picker-hooks.js';
 
 /** The search field part: caller attributes and class go on the field. */

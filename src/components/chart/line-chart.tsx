@@ -1,32 +1,32 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useLocale, useNumberFormatter } from '../../primitives/index.js';
 import { useTimeZone } from '../../core/clock.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useLocale, useNumberFormatter } from '../../primitives/index.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { Chart, type ChartSeries, type ChartViewProps } from './chart.js';
 import { ChartAxis } from './chart-axis.js';
 import { chartHooks, lineChartHooks } from './chart-hooks.js';
+import { resolvePlotBox } from './chart-layout.js';
 import {
+  type ChartHiddenKeysProps,
   ChartLegend,
   hasLegendByDefault,
   useHiddenKeys,
-  type ChartHiddenKeysProps,
 } from './chart-legend.js';
 import { ChartPlot, useChartPoints } from './chart-points.js';
 import { useValueSummary } from './chart-summary.js';
 import {
   createLineValueScale,
-  resolveLineGeometry,
   type LineChartPoint,
   type LineGeometry,
   type LineGeometryInput,
+  resolveLineGeometry,
 } from './line-geometry.js';
-import { resolvePlotBox } from './chart-layout.js';
 import { toLineTable } from './line-table.js';
 import { createLineXAxis } from './line-x-axis.js';
 import { useChartFrame, useLabelMargin } from './use-chart-box.js';

@@ -1,16 +1,16 @@
 import { useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
 import {
   RedlineCompare,
   type RedlineCompareLayout,
   type RedlineDecision,
 } from '../../src/components/redline-compare/redline-compare.js';
-import { Button } from '../../src/components/button/button.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import type { DocumentBlock } from '../../src/utils/compare-blocks.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { LargeInputDemo } from './large-input-demo.js';
 import { requireDefined } from './require-defined.js';
 import { ShadowRootApp } from './shadow-root-host.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-import { LargeInputDemo } from './large-input-demo.js';
 
 const orchardWords = [
   'apple pear plum quince cherry orchard ladder basket crate press cider frost',

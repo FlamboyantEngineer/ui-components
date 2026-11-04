@@ -1,12 +1,12 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useLocale } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useLocale } from '../../primitives/index.js';
 import { getDateFormatter, normalizeIntlSpaces } from '../../utils/intl-format.js';
-import type { CalendarViewMode } from './calendar-view.js';
 import { getDayStart, isRepeatedTime } from './calendar-days.js';
 import type { PlacedEvent } from './calendar-layout.js';
+import type { CalendarViewMode } from './calendar-view.js';
 
 /** The texts a calendar view shows and reads out, in the provider's locale and the view's time zone. */
 export interface CalendarFormat {

@@ -7,9 +7,9 @@ import { ReactionBar } from '../../src/components/reaction-bar/reaction-bar.js';
 import { RelativeTime } from '../../src/components/relative-time/relative-time.js';
 import { SaveStatus } from '../../src/components/save-status/save-status.js';
 import { SelectField } from '../../src/components/select-field/select-field.js';
-import { UiProvider, useFormatMessage, useUiStrings } from '../../src/core/provider.js';
 import * as languages from '../../src/core/locales/index.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { UiProvider, useFormatMessage, useUiStrings } from '../../src/core/provider.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { samplePeople } from './people-samples.js';
 
 type Language = keyof typeof languages;

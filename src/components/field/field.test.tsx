@@ -2,11 +2,11 @@ import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { TextField } from '../../../test/field-fixtures.js';
-import { fr, ja } from '../../core/locales/index.js';
-import { UiProvider } from '../../core/provider.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { TextMatchProvider } from '../text-match/text-match.js';
+import { fr, ja } from '../../core/locales/index.js';
 import type { ControlSize } from '../../core/props.js';
+import { UiProvider } from '../../core/provider.js';
+import { TextMatchProvider } from '../text-match/text-match.js';
 import type { FieldLabelLayout } from './field.js';
 
 function root(container: HTMLElement) {

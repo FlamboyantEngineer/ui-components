@@ -1,6 +1,3 @@
-export { Timeline } from './timeline.js';
-export { TimelineItemEditor } from './timeline-item-editor.js';
-export type { TimelineItemEdit, TimelineItemEditorProps } from './timeline-item-editor.js';
 export type {
   TimelineDependency,
   TimelineItem,
@@ -18,3 +15,6 @@ export type {
   TimelineScale,
   TimelineView,
 } from './timeline.js';
+export { Timeline } from './timeline.js';
+export type { TimelineItemEdit, TimelineItemEditorProps } from './timeline-item-editor.js';
+export { TimelineItemEditor } from './timeline-item-editor.js';

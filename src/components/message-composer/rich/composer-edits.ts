@@ -7,7 +7,7 @@ import type { Node } from 'prosemirror-model';
 import { EditorState, Selection, TextSelection, type Transaction } from 'prosemirror-state';
 import type { MessageComposerMessage, MessageComposerToken } from '../composer-message.js';
 import { parseComposerMessage, serializeComposerDocument } from './composer-markdown.js';
-import { toDocumentPosition, toTextOffset, type OffsetBias } from './composer-offsets.js';
+import { type OffsetBias, toDocumentPosition, toTextOffset } from './composer-offsets.js';
 
 /** A range of the message's text, by UTF-16 offsets; `end` is exclusive. */
 export interface MessageComposerRange {

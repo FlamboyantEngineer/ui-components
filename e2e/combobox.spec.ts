@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
-import { controlHeight, expect, matrixCell, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
+import { controlHeight, expect, matrixCell, test } from './fixtures.js';
 
 function section(page: Page, title: string): Locator {
   return page.locator(`[data-lab-section="${title}"]`);

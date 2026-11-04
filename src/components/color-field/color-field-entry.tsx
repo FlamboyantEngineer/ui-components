@@ -1,23 +1,23 @@
 'use client';
 
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { mergeRefs } from '../../utils/merge-props.js';
-import { useNativeReset } from '../../utils/use-native-reset.js';
-import { Button as AriaButton, Input, TextField } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
+import { Button as AriaButton, Input, TextField } from '../../primitives/index.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
+import { mergeRefs } from '../../utils/merge-props.js';
+import { useNativeReset } from '../../utils/use-native-reset.js';
 import { ColorSwatch } from '../color-swatch/color-swatch.js';
 import {
-  toAriaControlProps,
-  toSpellCheckAttribute,
   type FieldControlProps,
   type FieldIssue,
   type FieldState,
+  toAriaControlProps,
+  toSpellCheckAttribute,
 } from '../field/field.js';
 import type { ColorFieldTextInputProps } from './color-field.js';
 import { colorFieldHooks as hooks } from './color-field-hooks.js';
-import { formatColor, storeColorText, type ColorFieldFormat } from './color-values.js';
-import { isComposingKey } from '../../utils/is-composing-key.js';
+import { type ColorFieldFormat, formatColor, storeColorText } from './color-values.js';
 
 interface ColorEntryProps {
   control: FieldControlProps;

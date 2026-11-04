@@ -1,6 +1,6 @@
 'use client';
 
-import { useLayoutEffect, useState, type RefObject } from 'react';
+import { type RefObject, useLayoutEffect, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { listAnimations } from './list-animations.js';
 

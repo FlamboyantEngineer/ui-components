@@ -1,7 +1,5 @@
-import { FolderGlyph, UsersGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import { Avatar } from '../../src/components/avatar/avatar.js';
-import { NavigationRail } from '../../src/components/navigation-rail/navigation-rail.js';
 import { Disclosure } from '../../src/components/disclosure/disclosure.js';
 import { ExpandToggle } from '../../src/components/expand-toggle/expand-toggle.js';
 import {
@@ -9,14 +7,16 @@ import {
   NavigationRailItem,
   NavigationRailSection,
 } from '../../src/components/navigation-rail/index.js';
+import { NavigationRail } from '../../src/components/navigation-rail/navigation-rail.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { Switch } from '../../src/components/switch/switch.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { FolderGlyph, UsersGlyph } from '../../src/core/glyphs.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import {
+  type KitchenPage,
+  kitchenPages,
   KitchenRail,
   NavigatingKitchenRail,
-  kitchenPages,
-  type KitchenPage,
 } from './navigation-rail-cases.js';
 
 /** A group whose panel holds a toggle and a disclosure of its own, beside a nested group. */

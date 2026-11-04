@@ -1,5 +1,5 @@
-import { findMaximum } from '../../utils/find-maximum.js';
 import { clamp } from '../../utils/clamp.js';
+import { findMaximum } from '../../utils/find-maximum.js';
 
 /** A zoom in percent, or a fit mode resolved against the space the pages have. */
 export type PdfZoom = number | 'page-width' | 'page-fit';

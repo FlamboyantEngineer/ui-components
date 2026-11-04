@@ -1,25 +1,25 @@
 'use client';
 
-import { useMemo, type ReactNode } from 'react';
+import { type ReactNode, useMemo } from 'react';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import {
-  FocusScope,
   Disclosure as AriaDisclosure,
   DisclosureGroup as AriaDisclosureGroup,
+  FocusScope,
 } from '../../primitives/index.js';
-import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { materializeIterator } from '../../utils/materialize-iterator.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
-import { useHeadingLevel, type HeadingLevel } from '../section-header/section-header.js';
+import { type HeadingLevel, useHeadingLevel } from '../section-header/section-header.js';
 import {
-  DisclosurePartsContext,
   disclosureGroupHooks as groupHooks,
   disclosureHooks as hooks,
   type DisclosureIndicatorPosition,
+  DisclosurePartsContext,
 } from './disclosure-hooks.js';
 import { DisclosurePanel, DisclosureTitle } from './disclosure-parts.js';
-import { isEmptyNode } from '../../utils/is-empty-node.js';
 
 export type { DisclosureIndicatorPosition } from './disclosure-hooks.js';
 
@@ -157,16 +157,16 @@ export function DisclosureGroup({
   );
 }
 
-export {
-  DisclosureContentScope,
-  DisclosureHeader,
-  DisclosurePanel,
-  DisclosureTitle,
-} from './disclosure-parts.js';
 export type {
   DisclosureHeaderProps,
   DisclosurePanelProps,
   DisclosurePanelRenderState,
   DisclosurePanelRole,
   DisclosureTitleProps,
+} from './disclosure-parts.js';
+export {
+  DisclosureContentScope,
+  DisclosureHeader,
+  DisclosurePanel,
+  DisclosureTitle,
 } from './disclosure-parts.js';

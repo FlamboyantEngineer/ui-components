@@ -1,4 +1,3 @@
-export { Choice, ChoiceGroup } from './choice-group.js';
 export type {
   ChoiceGroupProps,
   ChoiceGroupSelectionMode,
@@ -6,3 +5,4 @@ export type {
   ChoiceProps,
   ChoiceRenderState,
 } from './choice-group.js';
+export { Choice, ChoiceGroup } from './choice-group.js';

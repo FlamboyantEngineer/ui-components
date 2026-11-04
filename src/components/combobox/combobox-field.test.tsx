@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { Combobox, type ComboboxItem } from './combobox.js';
 import { flattenPickerItems } from '../field/field.js';
+import { Combobox, type ComboboxItem } from './combobox.js';
 import { findCompletion, findFirstOptionKey, hasOptionLabelled } from './combobox-options.js';
 
 const fruit: ComboboxItem[] = [

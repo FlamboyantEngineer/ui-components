@@ -7,18 +7,18 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
-import { Badge } from '../badge/badge.js';
 import { readOwn } from '../../utils/read-own.js';
+import { Badge } from '../badge/badge.js';
 import { SelectField, type SelectFieldOption } from '../select-field/select-field.js';
 import {
-  readMappedTarget,
-  suggestMapping,
-  summarizeMapping,
   type MappingSummary,
   type MappingTableColumn,
   type MappingTableSuggest,
   type MappingTableTarget,
   type MappingTableValue,
+  readMappedTarget,
+  suggestMapping,
+  summarizeMapping,
 } from './mapping.js';
 
 export interface MappingTableProps extends RefProps<HTMLDivElement>, BaseProps, AriaLabellingProps {
@@ -243,7 +243,6 @@ export function MappingTable({
   );
 }
 
-export { suggestMapping, summarizeMapping } from './mapping.js';
 export type {
   MappingSummary,
   MappingTableColumn,
@@ -251,3 +250,4 @@ export type {
   MappingTableTarget,
   MappingTableValue,
 } from './mapping.js';
+export { suggestMapping, summarizeMapping } from './mapping.js';

@@ -1,15 +1,15 @@
 'use client';
 
-import { toLocalPoint } from '../../utils/element-scale.js';
-import { useLatest } from '../../utils/use-latest.js';
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import { clamp } from '../../utils/clamp.js';
+import { toLocalPoint } from '../../utils/element-scale.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { useElementSize } from '../../utils/use-element-size.js';
+import { useLatest } from '../../utils/use-latest.js';
 import { findWheelScroller, toWheelPixels } from '../../utils/wheel-scroll.js';
 import { defaultZoomLevels, findNextZoomLevel } from '../zoom-control/zoom-control.js';
-import { fitDiagramViewport, zoomDiagramViewport, type DiagramViewport } from './diagram-model.js';
+import { type DiagramViewport, fitDiagramViewport, zoomDiagramViewport } from './diagram-model.js';
 import type { DiagramPoint, DiagramRect } from './edge-route.js';
 
 interface DiagramViewportOptions {

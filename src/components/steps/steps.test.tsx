@@ -2,11 +2,11 @@ import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { I18nProvider } from '../../primitives/index.js';
-import { UiProvider } from '../../core/provider.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { requireDefined } from '../../utils/require-defined.js';
 import { InfoGlyph, PlusGlyph, SaveGlyph, SearchGlyph } from '../../core/glyphs.js';
+import { UiProvider } from '../../core/provider.js';
+import { I18nProvider } from '../../primitives/index.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { Steps, type StepsItem } from './steps.js';
 
 const items: StepsItem[] = [

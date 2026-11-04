@@ -3,8 +3,8 @@
 
 import { useState } from 'react';
 import {
-  ChatParts,
   type ChatPart,
+  ChatParts,
   type ChatToolCallPart,
 } from '../../src/components/chat-parts/index.js';
 

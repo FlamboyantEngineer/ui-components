@@ -5,8 +5,8 @@
 // value; each level sums the reports of the parts inside it.
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { textMatchesTerms } from '../text-match/text-match.js';
 import { isShallowEqual } from '../../utils/is-shallow-equal.js';
+import { textMatchesTerms } from '../text-match/text-match.js';
 
 /** What a part of a property panel reports to the level that holds it. */
 interface PropertyTally {

@@ -6,11 +6,11 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { Modal } from '../modal/modal.js';
-import { parseEmojiData, type CustomEmoji, type NativeEmoji } from './emoji-catalog.js';
+import { type CustomEmoji, type NativeEmoji, parseEmojiData } from './emoji-catalog.js';
+import { EmojiPicker, EmojiPickerTrigger } from './emoji-picker.js';
 import { EmojiPickerBody } from './emoji-picker-body.js';
 import { useActiveEmoji } from './emoji-picker-context.js';
 import { EmojiPickerPreview, EmojiPickerSearch } from './emoji-picker-parts.js';
-import { EmojiPicker, EmojiPickerTrigger } from './emoji-picker.js';
 import { EmojiPickerSkinTones } from './skin-tone-picker.js';
 
 const fixture = parseEmojiData(

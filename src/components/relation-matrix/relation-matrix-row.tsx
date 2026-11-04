@@ -1,18 +1,18 @@
 'use client';
 
-import { CheckGlyph } from '../../core/glyphs.js';
-import type { GlyphComponent } from '../../core/glyph-types.js';
-import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { CSSProperties } from 'react';
-import { Glyph, useUiStrings } from '../../core/provider.js';
+import type { GlyphComponent } from '../../core/glyph-types.js';
+import { CheckGlyph } from '../../core/glyphs.js';
 import type { Tone } from '../../core/props.js';
+import { Glyph, useUiStrings } from '../../core/provider.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
+import type { MatrixPosition } from './matrix-navigation.js';
+import type { MatrixColumnTracks } from './matrix-window.js';
 import type { RelationMatrixItem, RelationMatrixKind } from './relation-matrix.js';
 import { RelationCount } from './relation-matrix-header.js';
 import { relationMatrixHooks as hooks } from './relation-matrix-hooks.js';
 import type { RelationMatrixIndex, RelationMatrixRelation } from './relation-matrix-model.js';
-import type { MatrixColumnTracks } from './matrix-window.js';
-import type { MatrixPosition } from './matrix-navigation.js';
 
 /** What every row of a matrix shares. */
 export interface RelationMatrixRowContext {

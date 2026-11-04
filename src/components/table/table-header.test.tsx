@@ -2,8 +2,8 @@ import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { requireDefined } from '../../utils/require-defined.js';
-import { Table, type TableProps } from './table.js';
 import type { TableColumn, TableColumnGroup } from './index.js';
+import { Table, type TableProps } from './table.js';
 
 interface Fruit {
   id: string;

@@ -3,35 +3,35 @@
 // Renaming a tab in place: a text field laid over the tab; Enter or leaving the field renames the
 // tab when the name is valid, and Escape keeps the old name.
 
-import { isFocused } from '../../utils/focus-target.js';
 import {
+  type CSSProperties,
+  type FocusEvent,
+  type KeyboardEvent,
+  type RefObject,
   useContext,
   useEffect,
   useId,
   useLayoutEffect,
   useRef,
   useState,
-  type CSSProperties,
-  type FocusEvent,
-  type KeyboardEvent,
-  type RefObject,
 } from 'react';
-import { Input } from '../../primitives/index.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { isShallowEqual } from '../../utils/is-shallow-equal.js';
-import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import { Input } from '../../primitives/index.js';
+import { isFocused } from '../../utils/focus-target.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
+import { isHTMLElement } from '../../utils/is-element.js';
+import { isShallowEqual } from '../../utils/is-shallow-equal.js';
+import { getOwnerWindow } from '../../utils/owner-window.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import {
   findTabElement,
   isTabAvailable,
-  TabsSharedContext,
-  type TabsShared,
   type TabListModel,
+  type TabsShared,
+  TabsSharedContext,
 } from './tab-actions.js';
 import { tabsHooks as hooks } from './tab-hooks.js';
-import { isHTMLElement } from '../../utils/is-element.js';
-import { getOwnerWindow } from '../../utils/owner-window.js';
 
 /** Checks a new tab name: a message says why it is refused; nothing accepts it. */
 export type TabNameValidate = (key: Key, name: string) => string | null | undefined;

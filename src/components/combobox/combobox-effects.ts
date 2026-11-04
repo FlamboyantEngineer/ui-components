@@ -1,8 +1,8 @@
 'use client';
 
-import { useContext, useEffect, useLayoutEffect, type RefObject } from 'react';
+import { type RefObject, useContext, useEffect, useLayoutEffect } from 'react';
 import { ComboBoxStateContext } from '../../primitives/index.js';
-import { findFirstOptionKey, type ComboboxCompletion } from './combobox-options.js';
+import { type ComboboxCompletion, findFirstOptionKey } from './combobox-options.js';
 
 interface AutoHighlightOptions {
   /** Highlight the first enabled option whenever the list is open and nothing is highlighted. */

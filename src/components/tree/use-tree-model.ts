@@ -2,10 +2,10 @@
 
 import { useCallback, useMemo } from 'react';
 import type { Key } from '../../core/props.js';
+import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { readTreeChildren } from '../../utils/tree-reorder.js';
 import { walkTree } from '../../utils/walk-tree.js';
 import { useTreeItemRenderer } from './tree-item.js';
-import { toCollectionKey } from '../../utils/to-collection-key.js';
 import type {
   TreeItemData,
   TreeMarks,

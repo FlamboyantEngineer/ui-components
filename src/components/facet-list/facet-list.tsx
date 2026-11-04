@@ -1,17 +1,17 @@
 'use client';
 
-import { useId, useState, type FocusEvent } from 'react';
-import { CheckboxGroup as AriaCheckboxGroup, useNumberFormatter } from '../../primitives/index.js';
+import { type FocusEvent, useId, useState } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { CheckboxGroup as AriaCheckboxGroup, useNumberFormatter } from '../../primitives/index.js';
+import { isFilterableLength } from '../../utils/filterable-list.js';
 import { Button } from '../button/button.js';
 import { Checkbox } from '../checkbox/checkbox.js';
 import { SearchField } from '../search-field/search-field.js';
 import { useHeadingLevel } from '../section-header/section-header.js';
-import { listFacetOptions, type FacetListOption } from './facet-options.js';
-import { isFilterableLength } from '../../utils/filterable-list.js';
+import { type FacetListOption, listFacetOptions } from './facet-options.js';
 
 export interface FacetListProps extends RefProps<HTMLDivElement>, BaseProps {
   /** The facet's name: the visible heading, which names the group of values. */

@@ -14,8 +14,8 @@ import type { MarkType, NodeType, Schema } from 'prosemirror-model';
 import { liftListItem, sinkListItem, splitListItem } from 'prosemirror-schema-list';
 import type { Command, EditorState, Plugin } from 'prosemirror-state';
 import { findWrapping } from 'prosemirror-transform';
-import { placeAfterLeaf } from './insert-commands.js';
 import { toEngineCommand } from './engine-commands.js';
+import { placeAfterLeaf } from './insert-commands.js';
 import type { RichTextCommand } from './rich-text-command.js';
 
 /** Where an input rule's match starts and where the caret is. */

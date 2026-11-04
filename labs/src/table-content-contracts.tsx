@@ -1,8 +1,8 @@
-import { useState, type CSSProperties } from 'react';
+import { type CSSProperties, useState } from 'react';
 import { Button } from '../../src/components/button/index.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { SplitView } from '../../src/components/split-view/index.js';
-import { Table, applyTableMove, type TableColumn } from '../../src/components/table/index.js';
+import { applyTableMove, Table, type TableColumn } from '../../src/components/table/index.js';
 
 /** The ancestor scales the content widths demo offers: content widths stay the same in each. */
 const scales: Record<string, CSSProperties> = {

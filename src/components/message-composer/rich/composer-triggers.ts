@@ -6,9 +6,9 @@ import type { EditorState } from 'prosemirror-state';
 import { scoreCompletion } from '../../completion-list/completion-match.js';
 import type { IconSource } from '../../icon/icon.js';
 import {
-  tokenTriggers,
   type MessageComposerToken,
   type MessageComposerTokenKind,
+  tokenTriggers,
 } from '../composer-message.js';
 import type { PillAttributes } from './composer-schema.js';
 

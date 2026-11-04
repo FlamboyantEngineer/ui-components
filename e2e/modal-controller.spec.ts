@@ -1,5 +1,5 @@
 import type { Locator } from '@playwright/test';
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 /** Whether the element sits in content a modal has made inert or hidden from assistive technology. */
 const isBlocked = (locator: Locator) =>

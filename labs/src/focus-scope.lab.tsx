@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { type KeyboardEvent, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Button } from '../../src/components/button/button.js';
 import { FocusScope, useFocusManager } from '../../src/components/focus-scope/focus-scope.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { Switch } from '../../src/components/switch/switch.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { ShadowRootHost } from './shadow-root-host.js';
 
 const fruit = ['Apples', 'Pears', 'Plums', 'Cherries'];

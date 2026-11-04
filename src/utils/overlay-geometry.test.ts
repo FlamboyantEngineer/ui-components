@@ -2,8 +2,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   findOverlayScrollContainer,
   getOverlayBoundary,
-  resolveOverlayGeometry,
   type OverlayGeometry,
+  resolveOverlayGeometry,
 } from './overlay-geometry.js';
 import { createOverlayPointRect, type OverlayRect } from './overlay-position.js';
 

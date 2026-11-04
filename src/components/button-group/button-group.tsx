@@ -1,10 +1,10 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { Group } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Density, Orientation, RefProps } from '../../core/props.js';
+import { Group } from '../../primitives/index.js';
 import type { ElementRender } from '../../utils/render-element.js';
 
 /** The states a button group passes to `render` with its root's props. */

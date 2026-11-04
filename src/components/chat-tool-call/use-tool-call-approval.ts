@@ -1,8 +1,8 @@
 'use client';
 
-import { useCallback, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
-import { useFocusRequest } from '../../utils/use-focus-request.js';
+import { type KeyboardEvent, type RefObject, useCallback, useRef, useState } from 'react';
 import { isComposingKey } from '../../utils/is-composing-key.js';
+import { useFocusRequest } from '../../utils/use-focus-request.js';
 
 interface ToolCallApprovalOptions {
   /** The call's identity: a new one starts with no denial draft. */

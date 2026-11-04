@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 const cell = (page: Page, id: string) => matrixCell(page, id).locator(`.ui-outline`);
 

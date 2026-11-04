@@ -1,26 +1,26 @@
 'use client';
 
-import { useMemo, type ReactNode } from 'react';
+import { type ReactNode, useMemo } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import {
   Field,
-  FieldFormValue,
-  toAriaControlProps,
-  useFieldControl,
   type FieldControlProps,
+  FieldFormValue,
   type FieldInputProps,
   type FieldState,
+  toAriaControlProps,
+  useFieldControl,
 } from '../field/field.js';
 import {
   FileUpload,
   type FileUploadItem,
   type FileUploadVariant,
 } from '../file-upload/file-upload.js';
-import { compareFileItems, restoreFileItem, type FileFieldItem } from './file-field-changes.js';
+import { compareFileItems, type FileFieldItem, restoreFileItem } from './file-field-changes.js';
 import {
-  RemovedFiles,
   fileFieldHooks as hooks,
+  RemovedFiles,
   renderFileFieldActions,
 } from './file-field-parts.js';
 

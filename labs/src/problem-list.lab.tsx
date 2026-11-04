@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { type FormEvent, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Form } from '../../src/components/form/form.js';
 import { NumberField } from '../../src/components/number-field/number-field.js';
@@ -8,7 +8,7 @@ import {
 } from '../../src/components/problem-list/problem-list.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import type { Key } from '../../src/core/props.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 
 const contents = ['empty', 'errors', 'warnings', 'mixed'] as const;

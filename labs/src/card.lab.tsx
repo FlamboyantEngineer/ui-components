@@ -1,13 +1,11 @@
 import { useState } from 'react';
-import type { Selection } from '../../src/core/props.js';
 import { Badge } from '../../src/components/badge/badge.js';
-import { Card, type CardVariant } from '../../src/components/card/card.js';
-import type { Density } from '../../src/core/props.js';
-import { CardAction, CardGrid, CardGridItem, CardTitle } from '../../src/components/card/index.js';
 import { Button } from '../../src/components/button/button.js';
+import { Card, type CardVariant } from '../../src/components/card/card.js';
+import { CardAction, CardGrid, CardGridItem, CardTitle } from '../../src/components/card/index.js';
 import { NumberField } from '../../src/components/number-field/index.js';
 import { Section } from '../../src/components/section-header/section-header.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import type { Density, Selection } from '../../src/core/props.js';
 import {
   CollapsibleGrid,
   CollapsibleRecords,
@@ -17,6 +15,7 @@ import {
   TopRowGrid,
 } from './card-collapse-cases.js';
 import { CardGridDataCases } from './card-grid-data-cases.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { RowMenu } from './row-menu.js';
 import { ShadowRootApp } from './shadow-root-host.js';
 

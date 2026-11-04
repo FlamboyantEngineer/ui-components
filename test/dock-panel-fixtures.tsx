@@ -3,12 +3,12 @@
 import { act, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { vi } from 'vitest';
-import { FolderGlyph, LockGlyph, UsersGlyph } from '../src/core/glyphs.js';
 import {
   DockPanel,
   DockPanelPane,
   type DockPanelProps,
 } from '../src/components/dock-panel/dock-panel.js';
+import { FolderGlyph, LockGlyph, UsersGlyph } from '../src/core/glyphs.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 export const addFile = vi.fn();

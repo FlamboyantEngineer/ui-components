@@ -1,23 +1,23 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { Dialog } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, PresenceStatus, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { Dialog } from '../../primitives/index.js';
 import {
+  type AvatarBadgeProps,
+  type AvatarIdentity,
   getDisplayName,
   resolveStatusLabel,
   splitAvatarIdentity,
-  type AvatarBadgeProps,
-  type AvatarIdentity,
 } from '../avatar/avatar.js';
 import { Button } from '../button/button.js';
 import { DescriptionList, DescriptionRow } from '../description-list/description-list.js';
 import type { IconSource } from '../icon/icon.js';
 import { Skeleton } from '../skeleton/skeleton.js';
-import { UserIdentity, type UserIdentityProps } from '../user-identity/user-identity.js';
 import { useUserCardOwner } from '../user-card-trigger/user-card-trigger.js';
+import { UserIdentity, type UserIdentityProps } from '../user-identity/user-identity.js';
 
 /** One labelled fact about the person, such as a team or a local time. */
 export interface UserCardDetail {

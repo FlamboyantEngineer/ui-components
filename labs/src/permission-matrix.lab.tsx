@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/index.js';
 import {
-  PermissionMatrix,
   applyPermissionChange,
+  PermissionMatrix,
   type PermissionMatrixChange,
   type PermissionMatrixGrant,
   type PermissionMatrixGroup,
   type PermissionMatrixPermission,
   type PermissionMatrixRole,
 } from '../../src/components/permission-matrix/index.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const roles: PermissionMatrixRole[] = [
   { id: 'admin', label: 'Administrator', isReadOnly: true },

@@ -1,8 +1,8 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { expect, it, vi } from 'vitest';
-import { SelectField } from './select-field.js';
 import { Modal } from '../modal/modal.js';
+import { SelectField } from './select-field.js';
 
 const choices = [
   { id: 'apple', label: 'Apple' },

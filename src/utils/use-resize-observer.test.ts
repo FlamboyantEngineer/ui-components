@@ -2,7 +2,7 @@ import { act, createElement, createRef, type ReactElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { requireDefined } from './require-defined.js';
-import { useResizeObserver, type ResizeObserverTargets } from './use-resize-observer.js';
+import { type ResizeObserverTargets, useResizeObserver } from './use-resize-observer.js';
 
 class FakeObserver {
   static instances: FakeObserver[] = [];

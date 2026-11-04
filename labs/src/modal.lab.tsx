@@ -1,15 +1,15 @@
-import { ModalConfirmationCases } from './modal-confirmation-cases.js';
 import { useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { Modal, ModalTrigger, type ModalProps } from '../../src/components/modal/modal.js';
+import { Modal, type ModalProps, ModalTrigger } from '../../src/components/modal/modal.js';
 import { Portal, PortalHost } from '../../src/components/portal/portal.js';
 import { Section, SectionHeader } from '../../src/components/section-header/section-header.js';
 import { Shortcut } from '../../src/components/shortcut/shortcut.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { ModalConfirmationCases } from './modal-confirmation-cases.js';
 import { ModalCoverageSections } from './modal-coverage-cases.js';
 import { ModalFocusCases } from './modal-focus-cases.js';
-import { ModalTallCases, ModalTallFormCase } from './modal-tall-cases.js';
 import { RetainedLetter } from './modal-retained-cases.js';
+import { ModalTallCases, ModalTallFormCase } from './modal-tall-cases.js';
 
 /** A save the lab holds until the reader finishes or fails it. */
 interface PendingRequest {

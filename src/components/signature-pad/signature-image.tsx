@@ -1,9 +1,9 @@
 'use client';
 
-import { ClipboardGlyph, DeleteGlyph, UploadGlyph } from '../../core/glyphs.js';
 import { useEffect, useId, useRef, useState } from 'react';
-import { FileTrigger, useLocale } from '../../primitives/index.js';
+import { ClipboardGlyph, DeleteGlyph, UploadGlyph } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
+import { FileTrigger, useLocale } from '../../primitives/index.js';
 import { formatBytes } from '../../utils/format-bytes.js';
 import { joinIds } from '../../utils/join-ids.js';
 import { Button } from '../button/button.js';
@@ -12,8 +12,8 @@ import {
   findImageFile,
   readClipboardImage,
   readSignatureImage,
-  signatureImageTypes,
   type SignatureImageProblem,
+  signatureImageTypes,
 } from './signature-image-file.js';
 import type { ImageSignature } from './signature-path.js';
 import { signaturePadHooks as hooks } from './signature-surface.js';

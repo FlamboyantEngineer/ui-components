@@ -2,13 +2,13 @@ import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import type { FormEvent, ReactElement } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { chooseFieldMenuItem } from '../../../test/field-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { requireDefined } from '../../utils/require-defined.js';
 import { UiProvider } from '../../core/provider.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { Fieldset } from '../field/field.js';
 import { Form } from '../form/form.js';
 import { DateTimeField } from './date-time-field.js';
-import { chooseFieldMenuItem } from '../../../test/field-fixtures.js';
 
 function renderInLocale(element: ReactElement) {
   return render(<UiProvider locale="en-US">{element}</UiProvider>);

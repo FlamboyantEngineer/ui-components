@@ -3,6 +3,7 @@
 
 import { getDefaultStrings } from '../../core/strings.js';
 import {
+  type CalendarDate,
   formatIsoDate,
   fromDate,
   getLocalTimeZone,
@@ -10,21 +11,20 @@ import {
   parseIsoDateTime,
   toCalendarDate,
   toCalendarDateTime,
-  type CalendarDate,
 } from '../../primitives/index.js';
-import {
-  capitalizeText,
-  describeRelativeTime,
-  untilMidnight,
-  type RelativeTimeRelation,
-} from '../../utils/relative-time.js';
+import { type BoundIssue, findOrderedBoundIssue } from '../../utils/date-bounds.js';
 import {
   getDateFormatter,
   getNumberFormat,
   getRelativeTimeFormat,
 } from '../../utils/intl-format.js';
+import {
+  capitalizeText,
+  describeRelativeTime,
+  type RelativeTimeRelation,
+  untilMidnight,
+} from '../../utils/relative-time.js';
 import type { DateRangeValue, DateTimeFieldMode } from '../date-time-field/date-time-field.js';
-import { findOrderedBoundIssue, type BoundIssue } from '../../utils/date-bounds.js';
 
 /**
  * The modes a relative date field shares with `DateTimeField`: `date` values are `YYYY-MM-DD` texts,

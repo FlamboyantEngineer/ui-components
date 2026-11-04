@@ -1,10 +1,10 @@
-import { useId, useState, type FormEvent } from 'react';
+import { type FormEvent, useId, useState } from 'react';
 import {
   DEFAULT_THEME_ATTRIBUTE,
-  SYSTEM_THEME,
   isValidThemeAttribute,
   type LabSettings,
   type StylesheetChoice,
+  SYSTEM_THEME,
 } from './settings.js';
 
 interface LabChromeProps {

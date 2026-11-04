@@ -2,9 +2,9 @@
 // matcher, selection that may not become empty, and a virtualized tree with a row height of its own.
 
 import { useState } from 'react';
-import type { Key, Selection } from '../../src/core/props.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { Tree, type TreeProps } from '../../src/components/tree/index.js';
+import type { Key, Selection } from '../../src/core/props.js';
 
 interface Shelf {
   id: string;

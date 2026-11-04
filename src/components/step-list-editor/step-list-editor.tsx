@@ -1,16 +1,18 @@
 'use client';
 
-import { useMergedRefs } from '../../utils/use-merged-refs.js';
-import { getComposedActiveElement } from '../../utils/focus-target.js';
-import { PlusGlyph } from '../../core/glyphs.js';
-import { useMemo, useRef, type RefObject } from 'react';
+import { type RefObject, useMemo, useRef } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
+import { PlusGlyph } from '../../core/glyphs.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { getComposedActiveElement } from '../../utils/focus-target.js';
+import { isHTMLElement } from '../../utils/is-element.js';
 import { formatOutlineNumber } from '../../utils/outline-number.js';
+import { getOwnerDocument } from '../../utils/owner-window.js';
 import { useFocusRequest } from '../../utils/use-focus-request.js';
 import { useIdFactory } from '../../utils/use-id-factory.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { Button } from '../button/button.js';
 import { EmptyState } from '../empty-state/empty-state.js';
 import {
@@ -19,19 +21,17 @@ import {
   moveStep,
   removeStep,
   resolveStepMove,
-  updateStep,
   type StepListEditorStep,
   type StepMove,
+  updateStep,
 } from './step-list.js';
 import {
-  StepRow,
-  stepListEditorHooks as hooks,
   type StepAction,
   type StepListEditorColumn,
+  stepListEditorHooks as hooks,
+  StepRow,
 } from './step-row.js';
 import { useStepDrag } from './use-step-drag.js';
-import { isHTMLElement } from '../../utils/is-element.js';
-import { getOwnerDocument } from '../../utils/owner-window.js';
 
 export interface StepListEditorProps
   extends RefProps<HTMLDivElement>, BaseProps, AriaLabellingProps {

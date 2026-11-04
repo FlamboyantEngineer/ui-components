@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import type { Key, Size } from '../../src/core/props.js';
 import {
-  StateMachineView,
   type StateMachineState,
   type StateMachineTransition,
+  StateMachineView,
   type StateMachineViewDensity,
 } from '../../src/components/state-machine-view/index.js';
+import type { Key, Size } from '../../src/core/props.js';
 import { StateMatrix } from './chrome/index.js';
 
 const sizes: readonly Size[] = ['xs', 'sm', 'md', 'lg', 'xl'];

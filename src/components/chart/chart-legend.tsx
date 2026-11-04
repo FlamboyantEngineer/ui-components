@@ -1,10 +1,10 @@
 'use client';
 
-import { ToggleButton, ToggleButtonGroup } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { ToggleButton, ToggleButtonGroup } from '../../primitives/index.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { ChartSeries } from './chart.js';
 import { chartLegendHooks as hooks } from './chart-hooks.js';

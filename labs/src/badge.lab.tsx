@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import { Badge } from '../../src/components/badge/badge.js';
+import { Button } from '../../src/components/button/button.js';
 import {
   CheckGlyph,
   ChevronDownGlyph,
@@ -5,14 +8,11 @@ import {
   MoreGlyph,
   UsersGlyph,
 } from '../../src/core/glyphs.js';
-import { useState } from 'react';
-import { Badge } from '../../src/components/badge/badge.js';
-import { Button } from '../../src/components/button/button.js';
-import { UiProvider } from '../../src/core/provider.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-import { formatCount, normalizeCount } from '../../src/utils/index.js';
-import { LabHelperCalls } from './lab-helper-calls.js';
 import type { Tone } from '../../src/core/props.js';
+import { UiProvider } from '../../src/core/provider.js';
+import { formatCount, normalizeCount } from '../../src/utils/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { LabHelperCalls } from './lab-helper-calls.js';
 
 const tones: Tone[] = ['neutral', 'info', 'success', 'warning', 'danger'];
 const sizes = ['sm', 'md', 'lg'] as const;

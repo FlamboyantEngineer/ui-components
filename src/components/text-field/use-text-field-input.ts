@@ -1,16 +1,16 @@
 'use client';
 
+import { type KeyboardEvent, type RefObject, useRef, useState } from 'react';
 import { isComposingKey } from '../../utils/is-composing-key.js';
-import { useRef, useState, type KeyboardEvent, type RefObject } from 'react';
 import {
-  useTextCompletions,
   type Completion,
   type CompletionSource,
   type TextCompletions,
+  useTextCompletions,
 } from '../completion-list/completion-list.js';
 import type { FieldState } from '../field/field.js';
 import { textFieldHooks as hooks, type TextFieldInputProps } from './text-field-parts.js';
-import { useInputTransform, type InputTransform } from './use-input-transform.js';
+import { type InputTransform, useInputTransform } from './use-input-transform.js';
 
 interface TextFieldInputOptions {
   state: FieldState<string>;

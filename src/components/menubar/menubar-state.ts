@@ -3,22 +3,22 @@
 // The menubar's shared state: which menu is open, which top-level item is the tab stop, and the
 // keys and pointer moves that pass from one menu to another.
 
-import { isFocusLost } from '../../utils/focus-target.js';
 import {
   createContext,
+  type KeyboardEvent,
+  type RefObject,
   useCallback,
   useContext,
   useEffect,
   useLayoutEffect,
   useRef,
   useState,
-  type KeyboardEvent,
-  type RefObject,
 } from 'react';
 import type { Orientation } from '../../core/props.js';
-import type { MenuSize } from '../menu/menu.js';
-import { resolveMenubarKey, type MenubarKeyAction, type MenubarKeyPlace } from './menubar-keys.js';
+import { isFocusLost } from '../../utils/focus-target.js';
 import { getOwnerDocument, getOwnerWindow } from '../../utils/owner-window.js';
+import type { MenuSize } from '../menu/menu.js';
+import { type MenubarKeyAction, type MenubarKeyPlace, resolveMenubarKey } from './menubar-keys.js';
 
 /** Where focus goes in a menu the bar opens: its first or last item, or (`null`) the menu itself. */
 type MenuFocus = 'first' | 'last' | null;

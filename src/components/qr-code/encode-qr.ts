@@ -4,15 +4,15 @@
 import {
   encodeDataCodewords,
   interleaveCodewords,
-  selectQrVersion,
   type QrErrorCorrection,
+  selectQrVersion,
 } from './qr-codewords.js';
 import {
-  QR_MASK_COUNT,
   applyMask,
   createQrGrid,
   drawFormatBits,
   placeCodewords,
+  QR_MASK_COUNT,
 } from './qr-matrix.js';
 import { scoreQrPenalty } from './qr-penalty.js';
 

@@ -1,7 +1,7 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { ModalHost, createModalController, type ModalController } from './modal-controller.js';
+import { createModalController, type ModalController, ModalHost } from './modal-controller.js';
 
 type Close = (controller: ModalController, user: ReturnType<typeof userEvent.setup>) => unknown;
 

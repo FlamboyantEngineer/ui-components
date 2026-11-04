@@ -1,4 +1,4 @@
-import { expect, test, matrixCell, controlHeight } from './fixtures.js';
+import { controlHeight, expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Pin Input lab sizes', () => {
   test('UIC-PIN-INPUT-1.1 UIC-PIN-INPUT-1.4 draws each size in each state', async ({

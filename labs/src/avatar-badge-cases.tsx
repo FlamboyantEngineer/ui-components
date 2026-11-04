@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { Avatar } from '../../src/components/avatar/avatar.js';
 import { UserCard } from '../../src/components/user-card/user-card.js';
 import { UserIdentity } from '../../src/components/user-identity/user-identity.js';
-import { Glyph } from '../../src/core/provider.js';
 import { StarGlyph } from '../../src/core/glyphs.js';
+import { Glyph } from '../../src/core/provider.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
 import { samplePicture } from './people-samples.js';
 

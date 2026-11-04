@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { InlineError } from '../../src/components/inline-error/inline-error.js';
 import { Button } from '../../src/components/button/button.js';
+import { InlineError } from '../../src/components/inline-error/inline-error.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 

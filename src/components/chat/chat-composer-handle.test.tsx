@@ -1,10 +1,10 @@
-import { PlusGlyph } from '../../core/glyphs.js';
 import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef, type RefObject } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { TestChat, article, assistantPeople, message } from '../../../test/chat-fixtures.js';
+import { article, assistantPeople, message, TestChat } from '../../../test/chat-fixtures.js';
 import { installEditorDom } from '../../../test/rich-text-fixtures.js';
+import { PlusGlyph } from '../../core/glyphs.js';
 import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage } from '../../core/storage.js';
 import { Button } from '../button/button.js';

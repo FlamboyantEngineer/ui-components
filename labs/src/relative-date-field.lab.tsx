@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import type { FieldLabelLayout } from '../../src/components/field/field.js';
 import type { DateRangeValue } from '../../src/components/date-time-field/index.js';
+import type { FieldLabelLayout } from '../../src/components/field/field.js';
 import {
   RelativeDateField,
   type RelativeDateFieldProps,
 } from '../../src/components/relative-date-field/relative-date-field.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-import { fieldLayouts, fieldStates, type FieldStateName } from './field-states.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { fieldLayouts, type FieldStateName, fieldStates } from './field-states.js';
 import { Cutoffs, HostOpen, InitiallyOpen, ZonedNow } from './relative-date-cases.js';
 
 /** A fixed clock, so every label in the lab reads the same on every day. */

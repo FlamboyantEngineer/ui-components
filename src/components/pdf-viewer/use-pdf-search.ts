@@ -1,6 +1,9 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useControllableState } from '../../core/controllable-state.js';
+import { useLatest } from '../../utils/use-latest.js';
+import { mapBounded } from './map-bounded.js';
 import {
   createPageText,
   findMatchFrom,
@@ -11,10 +14,7 @@ import {
   type PdfPageText,
   type PdfSearchOptions,
 } from './pdf-search.js';
-import { pdfRequestLimit, type LoadedPdf } from './use-pdf-document.js';
-import { useControllableState } from '../../core/controllable-state.js';
-import { mapBounded } from './map-bounded.js';
-import { useLatest } from '../../utils/use-latest.js';
+import { type LoadedPdf, pdfRequestLimit } from './use-pdf-document.js';
 import type { PdfPagesController } from './use-pdf-pages.js';
 
 interface UsePdfSearchOptions {

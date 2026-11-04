@@ -3,17 +3,17 @@
 // Interceptable paste in the rich composer: a host may take pasted text, answer with a message
 // fragment at once or later, or refuse it (specs/MESSAGE-COMPOSER.md, UIC-MESSAGE-COMPOSER-4.12).
 
-import { Plugin, PluginKey, type EditorState, type Transaction } from 'prosemirror-state';
+import { type EditorState, Plugin, PluginKey, type Transaction } from 'prosemirror-state';
 import type { EditorView } from 'prosemirror-view';
 import { isThenable } from '../../../utils/is-thenable.js';
 import type { MessageComposerMessage } from '../composer-message.js';
+import { createPlainPaste } from './composer-commands.js';
 import {
+  type MessageComposerRange,
   readTextSelection,
   replaceMessageRange,
-  type MessageComposerRange,
 } from './composer-edits.js';
 import { toTextOffset } from './composer-offsets.js';
-import { createPlainPaste } from './composer-commands.js';
 
 /** What a host's `onPaste` hears: the pasted text and the range of the message it replaces. */
 export interface MessageComposerPaste {

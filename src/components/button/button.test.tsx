@@ -1,13 +1,13 @@
-import { ChevronDownGlyph, PlusGlyph, SaveGlyph } from '../../core/glyphs.js';
 import { act, render, screen } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
 import { hydrateRoot } from 'react-dom/client';
 import { renderToString } from 'react-dom/server';
-import { userEvent } from '@testing-library/user-event';
-import { Dialog, DialogTrigger, Popover } from '../../primitives/index.js';
-import * as primitives from '../../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { ChevronDownGlyph, PlusGlyph, SaveGlyph } from '../../core/glyphs.js';
 import { UiProvider } from '../../core/provider.js';
+import { Dialog, DialogTrigger, Popover } from '../../primitives/index.js';
+import * as primitives from '../../primitives/index.js';
 import { mergeProps } from '../../utils/merge-props.js';
 import { HoverCard, HoverCardTrigger } from '../hover-card/hover-card.js';
 import { Tooltip } from '../tooltip/tooltip.js';

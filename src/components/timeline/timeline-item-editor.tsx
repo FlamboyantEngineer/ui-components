@@ -3,7 +3,7 @@
 // The item editor: a modal form over one timeline item's name, days and progress
 // (specs/TIMELINE.md, UIC-TIMELINE-2.6).
 
-import { useCallback, useRef, useState, type FormEvent, type RefObject } from 'react';
+import { type FormEvent, type RefObject, useCallback, useRef, useState } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
