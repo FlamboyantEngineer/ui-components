@@ -94,23 +94,33 @@ Verification: `src/components/formula-bar/formula-bar.test.tsx`, `e2e/formula-ba
 Implementation: `src/components/formula-bar/formula-bar.tsx`
 Verification: `src/components/formula-bar/formula-bar.test.tsx`
 
+### UIC-FORMULA-BAR-4.3 - Composed controls
+
+With `controls={{ reference, editor }}`, the bar shall render caller-owned controls in `ui-formula-bar__reference-control` and `ui-formula-bar__editor-control`, separated by its decorative formula glyph. It shall retain its accessible group and layout, omit its built-in editing controls and actions, and publish `data-composed`. The caller owns these controls' labels, values, read-only state, focus, completion and commands; the bar shall not intercept or duplicate them.
+
+Implementation: `src/components/formula-bar/formula-bar.tsx`, `src/components/formula-bar/formula-bar-controls.tsx`, `src/components/formula-bar/formula-bar-hooks.ts`
+Verification: `src/components/formula-bar/formula-bar.test.tsx`
+
 ## Hooks
 
-| Hook                        | Kind  | Values                 | Description                                                       |
-| --------------------------- | ----- | ---------------------- | ----------------------------------------------------------------- |
-| `ui-formula-bar`            | root  |                        | The `<div>` around the reference box, the buttons and the editor. |
-| `ui-formula-bar__reference` | slot  |                        | The reference box `<input>`.                                      |
-| `ui-formula-bar__status`    | slot  |                        | The visually hidden status that reads a refused reference.        |
-| `ui-formula-bar__cancel`    | slot  |                        | The button that restores the content (also `ui-button`).          |
-| `ui-formula-bar__confirm`   | slot  |                        | The button that commits the content (also `ui-button`).           |
-| `ui-formula-bar__glyph`     | slot  |                        | The decorative fₓ glyph, without `functions`.                     |
-| `ui-formula-bar__functions` | slot  |                        | The fₓ button listing `functions` (also `ui-dropdown-menu`).      |
-| `ui-formula-bar__editor`    | slot  |                        | The single-line code editor (also `ui-code-editor`).              |
-| `ui-formula-bar__result`    | slot  |                        | The caller's evaluation of the content.                           |
-| `data-size`                 | state | `xs`, `sm`, `md`, `lg` | On the root: the bar's control size.                              |
-| `data-dirty`                | state | `true`                 | On the root while the content differs from the cell's.            |
-| `data-disabled`             | state | `true`                 | On the root while disabled or no cell is active.                  |
-| `data-invalid`              | state | `true`                 | On the reference box while it holds a refused reference.          |
-| `data-focused`              | state | `true`                 | On the reference box while it has focus (React Aria).             |
-| `data-focus-visible`        | state | `true`                 | On the reference box while it has keyboard focus (React Aria).    |
-| `data-hovered`              | state | `true`                 | On the reference box while the pointer is over it (React Aria).   |
+| Hook                                | Kind  | Values                 | Description                                                       |
+| ----------------------------------- | ----- | ---------------------- | ----------------------------------------------------------------- |
+| `ui-formula-bar`                    | root  |                        | The `<div>` around the reference box, the buttons and the editor. |
+| `ui-formula-bar__reference-control` | slot  |                        | Caller-owned reference surface.                                   |
+| `ui-formula-bar__editor-control`    | slot  |                        | Caller-owned editing surface.                                     |
+| `data-composed`                     | state | `true`                 | Custom controls replace built-in editing.                         |
+| `ui-formula-bar__reference`         | slot  |                        | The reference box `<input>`.                                      |
+| `ui-formula-bar__status`            | slot  |                        | The visually hidden status that reads a refused reference.        |
+| `ui-formula-bar__cancel`            | slot  |                        | The button that restores the content (also `ui-button`).          |
+| `ui-formula-bar__confirm`           | slot  |                        | The button that commits the content (also `ui-button`).           |
+| `ui-formula-bar__glyph`             | slot  |                        | The decorative fₓ glyph, without `functions`.                     |
+| `ui-formula-bar__functions`         | slot  |                        | The fₓ button listing `functions` (also `ui-dropdown-menu`).      |
+| `ui-formula-bar__editor`            | slot  |                        | The single-line code editor (also `ui-code-editor`).              |
+| `ui-formula-bar__result`            | slot  |                        | The caller's evaluation of the content.                           |
+| `data-size`                         | state | `xs`, `sm`, `md`, `lg` | On the root: the bar's control size.                              |
+| `data-dirty`                        | state | `true`                 | On the root while the content differs from the cell's.            |
+| `data-disabled`                     | state | `true`                 | On the root while disabled or no cell is active.                  |
+| `data-invalid`                      | state | `true`                 | On the reference box while it holds a refused reference.          |
+| `data-focused`                      | state | `true`                 | On the reference box while it has focus (React Aria).             |
+| `data-focus-visible`                | state | `true`                 | On the reference box while it has keyboard focus (React Aria).    |
+| `data-hovered`                      | state | `true`                 | On the reference box while the pointer is over it (React Aria).   |

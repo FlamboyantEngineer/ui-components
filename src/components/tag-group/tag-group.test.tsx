@@ -7,6 +7,7 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { UiProvider } from '../../core/provider.js';
+import { UserIdentity } from '../user-identity/user-identity.js';
 import { Button } from '../button/button.js';
 import { Tag, TagGroup, type TagProps } from './tag-group.js';
 
@@ -517,4 +518,25 @@ describe('TagGroup root ref', () => {
     expect(ref.current).toBe(container.querySelector('.ui-tag-group'));
     expect(tag.current).toBe(container.querySelector('.ui-tag-group__tag'));
   });
+});
+
+it('UIC-TAG-GROUP-1.7 identity tags retain names, optional avatars and removal', async () => {
+  const user = userEvent.setup();
+  const remove = vi.fn();
+  render(
+    <TagGroup aria-label="People" onRemove={remove}>
+      <Tag id="alex" textValue="Alex" variant="identity">
+        <UserIdentity name="Alex" size="xs" />
+      </Tag>
+      <Tag id="service" variant="identity">
+        Service
+      </Tag>
+    </TagGroup>,
+  );
+  expect(screen.getByRole('row', { name: 'Alex' })).toHaveAttribute('data-variant', 'identity');
+  expect(screen.getByRole('row', { name: 'Service' })).toHaveTextContent('Service');
+  await user.click(
+    within(screen.getByRole('row', { name: 'Alex' })).getByRole('button', { name: 'Remove Alex' }),
+  );
+  expect(remove).toHaveBeenCalledWith(new Set(['alex']));
 });

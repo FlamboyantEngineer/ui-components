@@ -384,3 +384,16 @@ test.describe('Formula Bar lab', () => {
     await expect(keysOnly).not.toHaveAttribute('data-dirty');
   });
 });
+
+test('UIC-FORMULA-BAR-4.3 composed controls retain native editing without built-in actions', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('formula-bar');
+  const content = page.getByRole('textbox', { name: 'Custom content' });
+  await content.fill('=SUM(C2:C3)');
+  await content.press('Enter');
+  await content.press('Escape');
+  await expect(content).toHaveValue('=SUM(C2:C3)');
+  await expect(page.locator('.ui-formula-bar[data-composed] .ui-button')).toHaveCount(0);
+});

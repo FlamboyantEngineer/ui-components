@@ -19,17 +19,20 @@ import { hooks } from './state-machine-view-hooks.js';
 import { useSequenceMeasurements } from './use-sequence-measurements.js';
 import type { StateMachineViewProps } from './state-machine-view.js';
 
-type SequenceProps = Omit<StateMachineViewProps, 'presentation'>;
+export type StateMachineSequenceViewProps = Omit<StateMachineViewProps, 'presentation'>;
 
 interface SequencePartsProps {
-  props: SequenceProps;
+  props: StateMachineSequenceViewProps;
   layout: SequenceLayout;
 }
 
 /** A state button or transition label, whose own context menu requests never reach the background. */
 const targetSelector = `.${hooks.slotClass('state')}, .${hooks.slotClass('transition-label')}`;
 
-function getRouteFlags(route: SequenceLayout['routes'][number], props: SequenceProps) {
+function getRouteFlags(
+  route: SequenceLayout['routes'][number],
+  props: StateMachineSequenceViewProps,
+) {
   return {
     direction: route.direction,
     lane: route.lane,
@@ -126,7 +129,7 @@ function StateMachineSequenceLabels({ props, layout }: SequencePartsProps) {
 }
 
 /** The focusable note shown while there are no states, the keyboard's way to the background menu. */
-function StateMachineSequenceEmpty({ props }: { props: SequenceProps }) {
+function StateMachineSequenceEmpty({ props }: { props: StateMachineSequenceViewProps }) {
   const strings = useUiStrings();
   const contentId = useId();
   const menu = getContextMenuRequestHandlers(props.onBackgroundContextMenu);
@@ -150,7 +153,7 @@ function StateMachineSequenceEmpty({ props }: { props: SequenceProps }) {
 }
 
 /** Whether every state and transition the host selected is still shown, and so selectable. */
-function useSelectionReconciliation(props: SequenceProps, layout: SequenceLayout) {
+function useSelectionReconciliation(props: StateMachineSequenceViewProps, layout: SequenceLayout) {
   const selectedState = props.states.find((state) => state.id === props.selectedKey);
   useReleaseMissingSelection(
     props.selectedKey,
@@ -174,7 +177,7 @@ export function StateMachineSequence({
   'aria-describedby': ariaDescribedby,
   'aria-details': ariaDetails,
   ...props
-}: SequenceProps) {
+}: StateMachineSequenceViewProps) {
   const strings = useUiStrings();
   const rootRef = useRef<HTMLDivElement>(null);
   const rootRefs = useMemo(() => mergeRefs(rootRef, ref), [ref]);

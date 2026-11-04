@@ -36,6 +36,8 @@ export interface TagGroupProps<T extends object>
 
 // A tag's `id` is its collection key, which may also be a number.
 export interface TagProps extends Omit<BaseProps, 'id'>, RefProps<HTMLDivElement> {
+  /** Identity content uses its leading avatar as the pill's outer edge. Plain labels need none. */
+  variant?: 'default' | 'identity' | undefined;
   /** The tag's key in the group. */
   id?: Key | undefined;
   /** The tag's content. Give `textValue` when it is not plain text. */
@@ -104,14 +106,22 @@ export function TagGroup<T extends object>({
  * One tag of a `TagGroup`. In a group with `onRemove` an enabled tag ends with a remove button,
  * named by the provider's `remove` string read with the tag's name.
  */
-export function Tag({ id, children, tone, textValue, className, ...rest }: TagProps) {
+export function Tag({
+  id,
+  children,
+  tone,
+  textValue,
+  variant = 'default',
+  className,
+  ...rest
+}: TagProps) {
   const strings = useUiStrings();
   const groupTone = useContext(ToneContext);
   return (
     <AriaTag
       {...rest}
       id={toCollectionItemKey(id)}
-      {...hooks.slot('tag', { tone: tone ?? groupTone }, className)}
+      {...hooks.slot('tag', { tone: tone ?? groupTone, variant }, className)}
       textValue={textValue ?? (typeof children === 'string' ? children : undefined)}
     >
       {({ allowsRemoving, isDisabled }) => (
