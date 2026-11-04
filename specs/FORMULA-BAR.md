@@ -101,6 +101,13 @@ With `controls={{ reference, editor }}`, the bar shall render caller-owned contr
 Implementation: `src/components/formula-bar/formula-bar.tsx`, `src/components/formula-bar/formula-bar-controls.tsx`, `src/components/formula-bar/formula-bar-hooks.ts`
 Verification: `src/components/formula-bar/formula-bar.test.tsx`
 
+### UIC-FORMULA-BAR-4.4 - Controls-only entry
+
+`FormulaBarControls` and `FormulaBarControlsProps` shall be exported from the component entry and the package root. The component shall provide the composed bar of UIC-FORMULA-BAR-4.3, requiring only `controls` alongside size, naming, ref and caller hooks. Its tree-shaken bundle shall omit the built-in formula editor and CodeEditor. `FormulaBar` shall continue to support both its built-in editor and its optional composed controls.
+
+Implementation: `src/components/formula-bar/index.ts`, `src/components/formula-bar/formula-bar-controls.tsx`
+Verification: `test/formula-bar-controls-entry.test.ts`, `src/components/formula-bar/formula-bar.test.tsx`, `e2e/formula-bar.spec.ts`
+
 ## Hooks
 
 | Hook                                | Kind  | Values                 | Description                                                       |
