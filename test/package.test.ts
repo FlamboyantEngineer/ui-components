@@ -10,7 +10,7 @@ const manifest = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'u
   browserslist: string[];
   scripts: Record<string, string>;
   exports: Record<string, unknown>;
-  sideEffects: boolean;
+  sideEffects: boolean | string[];
   dependencies: Record<string, string>;
   devDependencies: Record<string, string>;
   peerDependencies: Record<string, string>;
@@ -116,8 +116,8 @@ describe('package manifest', () => {
     expect(manifest.scripts['pack:labs']).toBe('node scripts/pack-labs.mjs');
   });
 
-  it('UIC-HOOKS-3.1 ships tree-shakeable ESM entry points and no styling dependency', () => {
-    expect(manifest.sideEffects).toBe(false);
+  it('UIC-HOOKS-3.1 UIC-LABS-1.6 ships tree-shakeable ESM with effectful CSS and no styling dependency', () => {
+    expect(manifest.sideEffects).toEqual(['**/*.css']);
     expect(manifest.exports['./*']).toEqual({
       types: './dist/components/*/index.d.ts',
       import: './dist/components/*/index.js',

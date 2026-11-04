@@ -206,7 +206,7 @@ describe('UserCardTrigger opening', () => {
 
   it('UIC-USER-CARD-TRIGGER-1.3 closes a hovered card on Escape while focus remains on the page', async () => {
     useFakeClock();
-    renderHoverTrigger({ delay: 0 });
+    const { unmount } = renderHoverTrigger({ delay: 0 });
     const trigger = screen.getByRole('button', { name: 'Maria Santos' });
     await hover(trigger);
     await advance(1);
@@ -216,12 +216,13 @@ describe('UserCardTrigger opening', () => {
     await advance(1000);
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(document.body).toHaveFocus();
+    unmount();
   });
 
   it('UIC-USER-CARD-TRIGGER-1.3 opens on hover after the delay without taking focus, then closes', async () => {
     useFakeClock();
     const onPress = vi.fn();
-    renderHoverTrigger({ delay: 300, closeDelay: 100, onPress });
+    const { unmount } = renderHoverTrigger({ delay: 300, closeDelay: 100, onPress });
     const trigger = screen.getByRole('button', { name: 'Maria Santos' });
     expect(trigger).toHaveAttribute('aria-haspopup', 'dialog');
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
@@ -246,11 +247,12 @@ describe('UserCardTrigger opening', () => {
     await user.keyboard('{Escape}');
     await advance(100);
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    unmount();
   });
 
   it('UIC-USER-CARD-TRIGGER-1.3 opens on keyboard focus after the delay and Tab moves into the card', async () => {
     useFakeClock();
-    renderHoverTrigger({ delay: 300 });
+    const { unmount } = renderHoverTrigger({ delay: 300 });
     const trigger = screen.getByRole('button', { name: 'Maria Santos' });
     await tabTo(trigger);
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -268,13 +270,14 @@ describe('UserCardTrigger opening', () => {
     await user.tab();
     expect(dialog.contains(document.activeElement)).toBe(true);
     expect(document.activeElement).toHaveClass('ui-user-card__action');
+    unmount();
   });
 
   it('UIC-USER-CARD-1.4 UIC-USER-CARD-TRIGGER-1.3 closes a hover card before reporting its action', async () => {
     useFakeClock();
     const onAction = vi.fn();
     const onOpenChange = vi.fn();
-    render(
+    const { unmount } = render(
       <UserCardTrigger
         trigger="hover"
         delay={0}
@@ -303,11 +306,12 @@ describe('UserCardTrigger opening', () => {
     await advance(1000);
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(trigger).toHaveFocus();
+    unmount();
   });
 
   it('UIC-USER-CARD-1.4 UIC-USER-CARD-TRIGGER-1.3 returns focus from a hover card action inside a shadow root', async () => {
     const onAction = vi.fn();
-    render(
+    const { unmount } = render(
       <ShadowHost name="people">
         <PortalHost>
           <UserCardTrigger
@@ -330,14 +334,16 @@ describe('UserCardTrigger opening', () => {
     expect(onAction).toHaveBeenCalledWith('message');
     await waitFor(() => expect(inShadow('people').queryByRole('dialog')).not.toBeInTheDocument());
     expect(deepActive()).toBe(inShadow('people').getByRole('button', { name: 'Maria Santos' }));
+    unmount();
   });
 
   it('UIC-USER-CARD-TRIGGER-1.3 stays closed while disabled', async () => {
     useFakeClock();
-    renderHoverTrigger({ isDisabled: true, delay: 0 });
+    const { unmount } = renderHoverTrigger({ isDisabled: true, delay: 0 });
     await hover(screen.getByRole('button', { name: 'Maria Santos' }));
     await advance(1000);
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    unmount();
   });
 
   it('UIC-USER-CARD-TRIGGER-1.4 follows a controlled open state in either mode', async () => {
@@ -373,18 +379,20 @@ describe('UserCardTrigger opening', () => {
     expect(await screen.findByRole('dialog')).toBeInTheDocument();
     unmount();
 
-    render(<Controlled trigger="hover" />);
+    const { unmount: unmountNext } = render(<Controlled trigger="hover" />);
     expect(screen.getByRole('dialog', { name: 'Maria Santos' })).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Toggle', hidden: true }));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    unmountNext();
   });
 
   it('UIC-USER-CARD-TRIGGER-1.4 opens at first with defaultOpen', () => {
-    render(
+    const { unmount } = render(
       <UserCardTrigger defaultOpen card={<UserCard name="Maria Santos" />}>
         Maria Santos
       </UserCardTrigger>,
     );
     expect(screen.getByRole('dialog', { name: 'Maria Santos' })).toBeInTheDocument();
+    unmount();
   });
 });
