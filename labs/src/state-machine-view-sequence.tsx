@@ -2,7 +2,7 @@ import { useId, useState } from 'react';
 import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import {
-  StateMachineView,
+  StateMachineSequence,
   type StateMachineState,
   type StateMachineTransition,
   type StateMachineViewDensity,
@@ -62,9 +62,8 @@ export function SequenceExamples() {
       <p>Arrow tips meet the state borders; parallel routes fan around one another.</p>
       <p id={detailsId}>Choose a state to highlight its outgoing transitions.</p>
       {(['default', 'compact'] as const).map((density: StateMachineViewDensity) => (
-        <StateMachineView
+        <StateMachineSequence
           key={density}
-          presentation="sequence"
           density={density}
           aria-label={`Sequence ${density}`}
           aria-describedby={descriptionId}
@@ -89,26 +88,19 @@ export function SequenceExamples() {
       <p>
         Last sequence action: <output data-lab-output="sequence-action">{lastAction}</output>
       </p>
-      <StateMachineView
-        presentation="sequence"
+      <StateMachineSequence
         density="compact"
         aria-label="States only"
         states={items}
         transitions={[]}
         currentKey="review"
       />
-      <StateMachineView
-        presentation="sequence"
+      <StateMachineSequence
         aria-label="Single state"
         states={[{ id: 'only', label: 'Only state' }]}
         transitions={[]}
       />
-      <StateMachineView
-        presentation="sequence"
-        aria-label="Empty sequence"
-        states={[]}
-        transitions={[]}
-      />
+      <StateMachineSequence aria-label="Empty sequence" states={[]} transitions={[]} />
     </div>
   );
 }
