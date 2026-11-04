@@ -1019,9 +1019,10 @@ describe('FileUpload', () => {
     );
     // jsdom builds form data without its event, so the browser's event is played here.
     const submitted = (name: string) => {
-      const formData = new FormData();
+      const form = screen.getByRole('form', { name }) as HTMLFormElement;
+      const formData = new FormData(form);
       const event = Object.assign(new Event('formdata'), { formData });
-      screen.getByRole('form', { name }).dispatchEvent(event);
+      form.dispatchEvent(event);
       return formData.getAll('docs');
     };
     expect(submitted('First')).toHaveLength(1);
@@ -1042,7 +1043,7 @@ describe('FileUpload', () => {
       </ShadowHost>,
     );
     const form = shadowRootOf('panel').querySelector('form') as HTMLFormElement;
-    const formData = new FormData();
+    const formData = new FormData(form);
     form.dispatchEvent(Object.assign(new Event('formdata'), { formData }));
     expect((formData.get('attachment') as File).name).toBe('sample.txt');
     vi.unstubAllGlobals();
