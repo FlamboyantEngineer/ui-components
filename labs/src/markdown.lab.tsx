@@ -12,6 +12,7 @@ import { LargeInputDemo } from './large-input-demo.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { StreamingDemo } from './markdown-streaming-demo.js';
 import { MarkdownOverrideSections } from './markdown-override-cases.js';
+import { MarkdownWideTableDemo } from './markdown-wide-table-demo.js';
 
 const samples = {
   text: [
@@ -279,6 +280,7 @@ mountLab(
         {(source) => <Markdown source={source} />}
       </LargeInputDemo>
     </LabSection>
+    <MarkdownWideTableDemo />
     <LabSection
       title="Deep nesting"
       description="2,000 nested block quotes and 2,000 nested emphasis spans draw without overflowing the stack: past 256 levels elements are unwrapped and their text kept in order."

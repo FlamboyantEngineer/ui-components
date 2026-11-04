@@ -293,6 +293,19 @@ describe('parseMarkdown', () => {
     expect(blocks('| a | b |\n| --- |')[0]).toMatchObject({ type: 'paragraph' });
   });
 
+  it('UIC-MARKDOWN-1.8 preserves mixed escaped pipes and code while discarding surplus cells', () => {
+    expect(
+      blocks('| Label | Note |\n| --- | ---: |\n| A\\|B | text `c\\|d` end | extra |'),
+    ).toEqual([
+      {
+        type: 'table',
+        align: [null, 'end'],
+        header: [[text('Label')], [text('Note')]],
+        rows: [[[text('A|B')], [text('text '), { type: 'inlineCode', text: 'c|d' }, text(' end')]]],
+      },
+    ]);
+  });
+
   it('UIC-MARKDOWN-1.9 reads thematic breaks', () => {
     expect(blocks('***\n- - -\n___\n**').map((block) => block.type)).toEqual([
       'thematicBreak',
