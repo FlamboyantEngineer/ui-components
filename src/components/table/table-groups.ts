@@ -1,4 +1,3 @@
-import { requireDefined } from '../../utils/require-defined.js';
 import { summarizeNumbers } from '../../utils/summarize-numbers.js';
 import { walkTree } from '../../utils/walk-tree.js';
 import type { ReactNode } from 'react';
@@ -188,26 +187,15 @@ function bucketNodes<T>(
 const compareKinds = (left: GroupValueKind, right: GroupValueKind) =>
   groupValueKinds.indexOf(left) - groupValueKinds.indexOf(right);
 
-/**
- * Each bucket's key, given in kind order so that of two values with the same text the string keeps
- * the plain key and the other takes a suffix, whatever order the rows come in.
- */
-function assignGroupKeys<T>(
-  buckets: readonly GroupBucket<T>[],
-  groupingId: string,
-  at: GroupLevel,
-): Map<GroupBucket<T>, { key: string; base: string }> {
-  const keys = new Map<GroupBucket<T>, { key: string; base: string }>();
-  const byKind = [...buckets].sort((left, right) => compareKinds(left.kind, right.kind));
-  for (const bucket of byKind) {
-    const base = `${at.prefix}${encodeGroupPart(groupingId)}=${encodeGroupPart(bucket.text)}`;
-    let key = base;
-    let suffix = 0;
-    while (at.reserved.has(key)) key = `${base}:${++suffix}`;
-    at.reserved.add(key);
-    keys.set(bucket, { key, base });
-  }
-  return keys;
+/** A typed path independent of peer values, suffixed only to avoid reserved row ids. */
+function assignGroupKey<T>(bucket: GroupBucket<T>, groupingId: string, at: GroupLevel): string {
+  const kind = bucket.kind === 'string' || bucket.kind === 'empty' ? '' : `:${bucket.kind}`;
+  const base = `${at.prefix}${encodeGroupPart(groupingId)}=${encodeGroupPart(bucket.text)}${kind}`;
+  let key = base;
+  let suffix = 0;
+  while (at.reserved.has(key)) key = `${base}:${++suffix}`;
+  at.reserved.add(key);
+  return key;
 }
 
 function groupLevel<T>(
@@ -223,9 +211,8 @@ function groupLevel<T>(
     (left, right) =>
       compareGroupValues(left.value, right.value, order) || compareKinds(left.kind, right.kind),
   );
-  const keys = assignGroupKeys(ordered, grouping.id, at);
   return ordered.map((bucket) => {
-    const { key, base } = requireDefined(keys.get(bucket));
+    const key = assignGroupKey(bucket, grouping.id, at);
     return {
       id: key,
       group: {
@@ -237,7 +224,7 @@ function groupLevel<T>(
         level: at.level,
       },
       children: groupLevel(bucket.nodes, rest, {
-        prefix: `${base}/`,
+        prefix: `${key}/`,
         level: at.level + 1,
         reserved: at.reserved,
         collator: at.collator,

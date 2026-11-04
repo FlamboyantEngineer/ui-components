@@ -246,6 +246,60 @@ test.describe('Chat Transcript lab: transcript behaviour', () => {
     expect(await long.getByRole('article').count()).toBeLessThan(80);
   });
 
+  for (const isAway of [false, true]) {
+    test(`UIC-CHAT-TRANSCRIPT-1.6 releases a batch while ${isAway ? 'reading older messages' : 'following'}`, async ({
+      page,
+      lab,
+    }) => {
+      await lab.open('chat-transcript');
+      const long = transcript(page, 'virtualized');
+      const viewport = viewportOf(page, 'virtualized');
+      const section = page.locator('[data-lab-section="Virtualized history"]');
+      await expect(async () => {
+        expect(await long.getByRole('article').count()).toBeLessThan(80);
+        expect(await distanceToBottom(viewport)).toBeLessThanOrEqual(1);
+      }).toPass();
+      if (isAway) {
+        await viewport.evaluate((node) => node.scrollTo({ top: node.scrollHeight / 2 }));
+        await expect(long.getByRole('button', { name: 'Jump to latest' })).toBeVisible();
+      }
+      const visibleMessage = async () =>
+        viewport.evaluate((node) => {
+          const box = node.getBoundingClientRect();
+          const middle = box.top + box.height / 2;
+          const hit = [...node.querySelectorAll('article')].find((article) => {
+            const rect = article.getBoundingClientRect();
+            return rect.top <= middle && rect.bottom >= middle;
+          });
+          return hit ? { id: hit.id, offset: hit.getBoundingClientRect().top - box.top } : null;
+        });
+      await expect(async () => expect(await visibleMessage()).not.toBeNull()).toPass();
+      const before = await visibleMessage();
+      if (!before) throw new Error('A message must fill the middle of the viewport.');
+      await section.getByRole('button', { name: 'Receive 100 messages' }).click();
+      await expect(async () => {
+        await expect(section.locator('[data-lab-mounted="virtualized"]')).toHaveText(
+          /^\d+ of 5100 messages mounted$/,
+        );
+        expect(await long.getByRole('article').count()).toBeLessThan(80);
+        if (isAway) {
+          expect(await offsetInView(long.locator(`#${before.id}`))).toBeCloseTo(before.offset, 0);
+          await expect(long.getByRole('button', { name: '100 new messages' })).toBeVisible();
+        } else {
+          expect(await distanceToBottom(viewport)).toBeLessThanOrEqual(1);
+          await expect(long.locator('#long-batch-m5100')).toBeVisible();
+        }
+      }).toPass();
+      await viewport.evaluate((node) => node.scrollTo({ top: node.scrollHeight / 3 }));
+      await expect(async () => {
+        expect(await long.getByRole('article').count()).toBeLessThan(80);
+        expect(await visibleMessage()).not.toBeNull();
+        await expect(long.locator('#long-batch-m5001')).toHaveCount(0);
+        await expect(long.locator('#long-batch-m5100')).toHaveCount(1);
+      }).toPass();
+    });
+  }
+
   test('UIC-CHAT-TRANSCRIPT-1.1 shows an empty state until the first message', async ({
     page,
     lab,

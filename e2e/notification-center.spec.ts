@@ -168,8 +168,54 @@ test.describe('Notification Center lab', () => {
     await expect(dialog.locator('.ui-notification-list__announcement')).toHaveCount(0);
     await page.keyboard.press('Escape');
     await page.getByRole('button', { name: 'Add a notification' }).click();
-    await expect(status).toHaveText('New notification: Build 2 passed');
+    await expect(status).toHaveText(/^New notification: Build 2 passed\u200b?$/);
   });
+
+  for (const { button, words, count } of [
+    { button: 'Add repeated title', words: 'New notification: Import finished', count: 1 },
+    { button: 'Add two notifications', words: '2 new notifications', count: 2 },
+  ]) {
+    test(`UIC-NOTIFICATION-CENTER-3.1 reannounces repeated wording with ${button}`, async ({
+      page,
+      lab,
+    }) => {
+      // Keep Date.now fixed while timers run: every control must still create a newer arrival.
+      await page.clock.setFixedTime(new Date('2026-11-04T10:00:00Z'));
+      await lab.open('notification-center');
+      const inbox = page.locator('[data-lab-inbox]');
+      await inbox.locator('.ui-notification-list__load-more').scrollIntoViewIfNeeded();
+      await expect(inbox.locator('.ui-notification-list__load-more')).toHaveCount(0);
+      const demo = page.locator('[data-lab-demo="live-announcements"]');
+      const status = demo.locator('.ui-notification-center__announcement');
+      await expect(status).toBeEmpty();
+      const observed = await status.evaluateHandle((element) => {
+        const mutations: MutationRecord[] = [];
+        const observer = new MutationObserver((records) => mutations.push(...records));
+        observer.observe(element, { childList: true, characterData: true, subtree: true });
+        return { mutations, observer };
+      });
+      try {
+        for (let event = 0; event < 3; event++) {
+          const previous = await status.textContent();
+          const mutations = await observed.evaluate((state) => state.mutations.length);
+          await demo.getByRole('button', { name: button, exact: true }).click();
+          await expect
+            .poll(() => observed.evaluate((state) => state.mutations.length))
+            .toBeGreaterThan(mutations);
+          expect(await status.textContent()).not.toBe(previous);
+          expect((await status.textContent())?.replaceAll('\u200b', '')).toBe(words);
+        }
+        // Interleaving the numbered control must also advance beyond the repeated arrivals.
+        await demo.getByRole('button', { name: 'Add a notification', exact: true }).click();
+        await expect(status).toHaveText(
+          new RegExp(`^New notification: Build ${String(count * 3 + 1)} passed\u200b?$`),
+        );
+      } finally {
+        await observed.evaluate((state) => state.observer.disconnect());
+        await observed.dispose();
+      }
+    });
+  }
 
   test('UIC-NOTIFICATION-CENTER-3.1 translates an existing arrival without a new notification', async ({
     page,

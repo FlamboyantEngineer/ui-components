@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { htmlScopeCases } from '../../../test/html-scope-fixtures.js';
 import { defaultHtmlPolicy, sanitizeHtml, type HtmlNode } from './sanitize-html.js';
 
 /** The tree as compact markup, to compare structure at a glance. */
@@ -17,6 +18,51 @@ function serialize(nodes: readonly HtmlNode[]): string {
 const clean = (markup: string) => serialize(sanitizeHtml(markup));
 
 describe('sanitizeHtml', () => {
+  for (const sample of htmlScopeCases) {
+    it(`UIC-HTML-MARKUP-1.2 UIC-HTML-MARKUP-1.3 UIC-HTML-MARKUP-1.7 preserves content and allowed structure after ${sample.name}`, () => {
+      const nodes = sanitizeHtml(sample.markup, sample.policy);
+      expect(serialize(nodes)).toBe(sample.html);
+      const allowed = new Set((sample.policy ?? defaultHtmlPolicy).elements);
+      const pending = [...nodes];
+      for (let node = pending.pop(); node; node = pending.pop()) {
+        if (node.type === 'text') continue;
+        expect(allowed.has(node.tag)).toBe(true);
+        pending.push(...node.children);
+      }
+    });
+  }
+
+  it('UIC-HTML-MARKUP-1.2 UIC-HTML-MARKUP-1.3 UIC-HTML-MARKUP-1.4 UIC-HTML-MARKUP-1.5 repairs a removed scope without keeping blocked content or unsafe attributes', () => {
+    expect(
+      sanitizeHtml(
+        '<p>Before<button><div><script>hidden</script><strong onclick="unsafe()" style="color:red">Inside</strong>' +
+          '<a href="javascript:unsafe()">link</a></div></button>After</p>',
+      ),
+    ).toEqual([
+      {
+        type: 'element',
+        tag: 'p',
+        attributes: {},
+        children: [
+          { type: 'text', text: 'Before' },
+          {
+            type: 'element',
+            tag: 'strong',
+            attributes: {},
+            children: [{ type: 'text', text: 'Inside' }],
+          },
+          {
+            type: 'element',
+            tag: 'a',
+            attributes: {},
+            children: [{ type: 'text', text: 'link' }],
+          },
+          { type: 'text', text: 'After' },
+        ],
+      },
+    ]);
+  });
+
   it('UIC-HTML-MARKUP-1.1 keeps deeply nested valid elements frozen without a call stack limit', () => {
     const depth = 20_000;
     const nodes = sanitizeHtml('<span>'.repeat(depth) + 'Leaf' + '</span>'.repeat(depth));

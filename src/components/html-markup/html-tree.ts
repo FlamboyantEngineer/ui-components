@@ -2,6 +2,7 @@
 // parser implies (specs/HTML-MARKUP.md). Policy filtering happens afterwards in sanitize-html.ts.
 
 import { skipDroppedElements, tokenizeMarkup, type MarkupOpenToken } from '../../utils/markup.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import {
   closeOpen,
   createOpenElements,
@@ -10,7 +11,13 @@ import {
   pushOpen,
   type OpenElements,
 } from '../../utils/open-elements.js';
-import { fosterElement, prepareTablePart, tableContexts, tableParts } from './html-table.js';
+import {
+  fosterElement,
+  prepareTablePart,
+  reconcileTablePolicy,
+  tableContexts,
+  tableParts,
+} from './html-table.js';
 
 export interface RawElement {
   tag: string;
@@ -116,10 +123,30 @@ const impliedEnds: ReadonlyMap<string, ImpliedEnd> = new Map([
 
 type Stack = OpenElements<RawElement>;
 
+interface StructureLevel {
+  iterator: Iterator<RawNode>;
+  depth: number;
+  table: RawElement | null;
+}
+
+function hasImpliedEnd(stack: Stack, rule: ImpliedEnd): boolean {
+  const at = findOpen(stack, rule.closes);
+  return at > 0 && at >= findOpen(stack, rule.stopAt);
+}
+
 /** Closes the nearest open element the rule names, unless a boundary comes first. */
 function applyImpliedEnd(stack: Stack, rule: ImpliedEnd): void {
-  const at = findOpen(stack, rule.closes);
-  if (at > 0 && at >= findOpen(stack, rule.stopAt)) closeOpen(stack, at);
+  if (hasImpliedEnd(stack, rule)) closeOpen(stack, findOpen(stack, rule.closes));
+}
+
+function closesEmittedAncestor(stack: Stack, tag: string): boolean {
+  if (paragraphClosers.has(tag) && hasImpliedEnd(stack, paragraphEnd)) return true;
+  const rule = impliedEnds.get(tag);
+  if (!rule) return false;
+  // A heading's opening tag closes only a heading it opens directly in.
+  return headings.includes(tag)
+    ? headings.includes(currentOpen(stack).tag)
+    : hasImpliedEnd(stack, rule);
 }
 
 function appendElement(stack: Stack, element: RawElement): void {
@@ -191,4 +218,36 @@ export function buildHtmlTree(markup: string): RawNode[] {
     else openElement(stack, token);
   }
   return root.children;
+}
+
+/**
+ * Filtering can remove a boundary that protected an ancestor from an implied close. Keep only
+ * the conflicting tag's content. A table removed here must also lose its own scaffold; nested
+ * tables own their structure independently. Both passes are iterative and visit each node once.
+ */
+export function reconcileHtmlTree(nodes: readonly RawNode[], elements: ReadonlySet<string>): void {
+  reconcileTablePolicy(nodes, elements);
+  const stack = createOpenElements<RawElement>({ tag: '#fragment', attributes: {}, children: [] });
+  const levels: StructureLevel[] = [{ iterator: nodes[Symbol.iterator](), depth: 1, table: null }];
+  while (levels.length > 0) {
+    const level = requireDefined(levels.at(-1));
+    const next = level.iterator.next();
+    if (next.done) {
+      closeOpen(stack, level.depth);
+      levels.pop();
+      continue;
+    }
+    const node = next.value;
+    if (typeof node === 'string') continue;
+    const table = node.tag === 'table' ? node : level.table;
+    if (tableParts.has(node.tag) && table && (table.isUnwrapped || !elements.has('table'))) {
+      node.isUnwrapped = true;
+    }
+    const depth = stack.elements.length;
+    if (!node.isUnwrapped && elements.has(node.tag)) {
+      if (closesEmittedAncestor(stack, node.tag)) node.isUnwrapped = true;
+      else pushOpen(stack, node, node.tag);
+    }
+    levels.push({ iterator: node.children[Symbol.iterator](), depth, table });
+  }
 }
