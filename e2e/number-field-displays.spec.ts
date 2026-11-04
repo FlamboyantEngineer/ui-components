@@ -239,6 +239,24 @@ test.describe('Number Field typed units', () => {
     await expect(input).not.toHaveAttribute('aria-invalid');
   });
 
+  test('UIC-NUMBER-FIELD-3.4 keeps a precise value behind its rounded display', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('number-field');
+    const input = page.getByRole('spinbutton', { name: 'Precise length' });
+    const output = page.locator('[data-lab-output="Precise length value"]');
+    await expect(input).toHaveValue('1.235');
+    await input.focus();
+    await input.press('Enter');
+    await input.press('Tab');
+    await expect(output).toHaveText('1.23456');
+    await expect(input).toHaveAttribute('aria-valuenow', '1.23456');
+    await input.fill('2.5');
+    await input.press('Enter');
+    await expect(output).toHaveText('2.5');
+  });
+
   test('UIC-NUMBER-FIELD-3.4 converts 5cm to 50 mm, keeps a wrong unit and restores', async ({
     page,
     lab,

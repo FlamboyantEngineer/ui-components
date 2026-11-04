@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
 import { NumberField } from './number-field.js';
@@ -291,4 +292,111 @@ describe('NumberField units', () => {
       for (const [value] of onCommit.mock.calls) expect([12_000, 0.0025]).toContain(value);
     },
   );
+});
+
+describe('NumberField units precision', () => {
+  const metres: NumberFieldUnits = { unit: 'm', conversions: { m: 1 } };
+
+  it('UIC-NUMBER-FIELD-2.2 keeps a typed precise value through Enter and a later blur', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const onCommit = vi.fn();
+    render(
+      <UiProvider locale="en-US">
+        <form aria-label="Measurement">
+          <NumberField
+            label="Length"
+            name="length"
+            commitBehavior="validate"
+            units={metres}
+            onChange={onChange}
+            onCommit={onCommit}
+          />
+        </form>
+        <button type="button">Continue</button>
+      </UiProvider>,
+    );
+    const input = screen.getByRole('spinbutton', { name: 'Length' });
+    await user.type(input, '1.23456{Enter}');
+    expect(onCommit).toHaveBeenLastCalledWith(1.23456);
+    expect(input).toHaveValue('1.235');
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    await user.click(input);
+    await user.tab();
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    expect(input).toHaveAttribute('aria-valuenow', '1.23456');
+    expect(new FormData(screen.getByRole('form')).get('length')).toBe('1.23456');
+    for (const [value] of [...onChange.mock.calls, ...onCommit.mock.calls]) {
+      expect(value).toBe(1.23456);
+    }
+  });
+
+  it.each(['uncontrolled', 'controlled'])(
+    'UIC-NUMBER-FIELD-3.4 keeps an untouched %s precise value through focus and blur',
+    async (mode) => {
+      const user = userEvent.setup();
+      const onChange = vi.fn();
+      function Controlled() {
+        const [value, setValue] = useState<number | null>(1.23456);
+        return (
+          <NumberField
+            label="Length"
+            units={metres}
+            commitBehavior="validate"
+            value={value}
+            onChange={(next) => {
+              onChange(next);
+              setValue(next);
+            }}
+          />
+        );
+      }
+      render(
+        <UiProvider locale="en-US">
+          {mode === 'controlled' ? (
+            <Controlled />
+          ) : (
+            <NumberField
+              label="Length"
+              units={metres}
+              commitBehavior="validate"
+              defaultValue={1.23456}
+              onChange={onChange}
+            />
+          )}
+          <button type="button">Continue</button>
+        </UiProvider>,
+      );
+      const input = screen.getByRole('spinbutton', { name: 'Length' });
+      for (let round = 0; round < 2; round++) {
+        await user.click(input);
+        await user.keyboard('{Enter}');
+        await user.click(screen.getByRole('button', { name: 'Continue' }));
+      }
+      expect(input).toHaveValue('1.235');
+      expect(input).toHaveAttribute('aria-valuenow', '1.23456');
+      expect(onChange).not.toHaveBeenCalled();
+    },
+  );
+
+  it('UIC-NUMBER-FIELD-2.2 still snaps an untouched value off the step grid', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <UiProvider locale="en-US">
+        <NumberField
+          label="Length"
+          units={metres}
+          step={0.5}
+          defaultValue={1.23456}
+          onChange={onChange}
+        />
+      </UiProvider>,
+    );
+    const input = screen.getByRole('spinbutton', { name: 'Length' });
+    await user.click(input);
+    await user.tab();
+    expect(onChange).toHaveBeenLastCalledWith(1);
+    expect(input).toHaveAttribute('aria-valuenow', '1');
+  });
 });

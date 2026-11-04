@@ -132,6 +132,25 @@ function FormattedQuantities() {
   );
 }
 
+/** A value more precise than its display, which focus and blur leave as it is. */
+function PreciseLength() {
+  const [value, setValue] = useState<number | null>(1.23456);
+  return (
+    <>
+      <NumberField
+        label="Precise length"
+        value={value}
+        onChange={setValue}
+        units={{ unit: 'm', conversions: { m: 1 } }}
+        commitBehavior="validate"
+        description="The value is 1.23456 m, shown rounded as 1.235. Focusing and leaving the field, or pressing Enter, keeps 1.23456; typing a new number replaces it."
+        data-lab-field="units-precise"
+      />
+      <LabOutput name="Precise length value">{value === null ? 'empty' : value}</LabOutput>
+    </>
+  );
+}
+
 /** Quantities typed in other units, converted to the field's own. */
 export function NumberFieldUnitsSection() {
   return (
@@ -167,6 +186,7 @@ export function NumberFieldUnitsSection() {
         description="A percent format reads 25% and 25 alike as a quarter."
         data-lab-field="units-percent"
       />
+      <PreciseLength />
       <NumberField
         label="Compact length"
         defaultValue={12_000}
