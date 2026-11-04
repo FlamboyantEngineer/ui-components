@@ -48,6 +48,11 @@ const reply =
 
 const textOnly: HtmlPolicy = { elements: ['p', 'br'], attributes: [], schemes: [] };
 
+const withoutListBoundary: HtmlPolicy = {
+  ...defaultHtmlPolicy,
+  elements: defaultHtmlPolicy.elements.filter((tag) => tag !== 'ol'),
+};
+
 const policies = { default: undefined, 'text only': textOnly } as const;
 
 const pearDrawing =
@@ -157,7 +162,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Misnested structure"
-      description="A list item or heading written inside a table, and a description inside a paragraph, are placed so that the server HTML parses back to the same tree: a fostered element that would close its new parent keeps only its content."
+      description="Misnested elements and removed scope boundaries keep their content in order. A tag that would close its new ancestor keeps only its content, including a table and its scaffold exposed inside a paragraph."
     >
       <HtmlMarkup
         data-lab-misnested
@@ -166,6 +171,18 @@ mountLab(
           '<h3>Orchard<table><h4>Rows</h4></table></h3>' +
           '<dl><dt>Harvest</dt><dd><p>Autumn<dd>Late autumn</dl>'
         }
+      />
+      <HtmlMarkup
+        data-lab-removed-scope
+        markup={
+          '<p>Before<button><div>Inside<strong>kept</strong></div></button>After</p>' +
+          '<p>Early<button><table><tr><td>Harvest</td></tr></table></button>Late</p>'
+        }
+      />
+      <HtmlMarkup
+        data-lab-removed-list
+        policy={withoutListBoundary}
+        markup="<ul><li>Pears<ol><li><em>Plums</em></li></ol>Figs</li></ul>"
       />
     </LabSection>
     <LabSection

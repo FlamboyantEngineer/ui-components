@@ -1,8 +1,11 @@
 import { PlusGlyph } from '../../src/core/glyphs.js';
-import { useRef, useState } from 'react';
+import { useId, useRef, useState, type RefObject } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Modal } from '../../src/components/modal/modal.js';
-import { AnchoredTooltip } from '../../src/components/tooltip/tooltip.js';
+import {
+  AnchoredTooltip,
+  type AnchoredTooltipRelationship,
+} from '../../src/components/tooltip/tooltip.js';
 
 const bars = [
   { label: 'Mon', value: 12 },
@@ -174,6 +177,60 @@ function SwappedAnchorHint() {
   );
 }
 
+/** Only this host commits when its context changes; the tooltip sibling stays open. */
+function UpdatingAnchor({
+  anchor,
+  relationship,
+}: {
+  anchor: RefObject<HTMLButtonElement | null>;
+  relationship: AnchoredTooltipRelationship;
+}) {
+  const id = useId();
+  const [context, setContext] = useState(0);
+  const tokens = [`${id}-first`, `${id}-second`, `${id}-extra ${id}-second`];
+  const label = ['First context', 'Second context', 'Extra context Second context'][context];
+  const attribute = relationship === 'label' ? 'aria-labelledby' : 'aria-describedby';
+  return (
+    <>
+      <span id={`${id}-first`} hidden>
+        First context
+      </span>
+      <span id={`${id}-second`} hidden>
+        Second context
+      </span>
+      <span id={`${id}-extra`} hidden>
+        Extra context
+      </span>
+      <button ref={anchor} type="button" {...{ [attribute]: tokens[context] }}>
+        {relationship === 'label' ? label : 'Context anchor'}
+      </button>{' '}
+      <Button size="sm" onPress={() => setContext((context + 1) % tokens.length)}>
+        Update context
+      </Button>{' '}
+    </>
+  );
+}
+
+function UpdatingRelationshipHint({ relationship }: { relationship: 'description' | 'label' }) {
+  const anchor = useRef<HTMLButtonElement>(null);
+  const [isOpen, setIsOpen] = useState(true);
+  return (
+    <div data-lab-demo={`anchored-${relationship}-updates`}>
+      <UpdatingAnchor anchor={anchor} relationship={relationship} />
+      <Button size="sm" onPress={() => setIsOpen(!isOpen)}>
+        {isOpen ? 'Hide context hint' : 'Show context hint'}
+      </Button>
+      <AnchoredTooltip
+        isOpen={isOpen}
+        anchor={anchor}
+        relationship={relationship}
+        content={`${relationship} hint`}
+        placement="bottom"
+      />
+    </div>
+  );
+}
+
 export function AnchoredTooltipCases() {
   return (
     <>
@@ -183,6 +240,8 @@ export function AnchoredTooltipCases() {
       <RegionHint />
       <VisualHint />
       <SwappedAnchorHint />
+      <UpdatingRelationshipHint relationship="description" />
+      <UpdatingRelationshipHint relationship="label" />
     </>
   );
 }

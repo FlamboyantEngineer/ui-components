@@ -109,10 +109,3 @@ export function toDocumentPosition(doc: Node, offset: number, bias: OffsetBias):
   if (offset === endOf(run)) return run.pos + 1;
   return bias < 0 ? run.pos : run.pos + 1;
 }
-
-/** Whether an offset falls strictly inside a pill's text, where no caret can stand. */
-export function isInsideToken(doc: Node, offset: number): boolean {
-  return collectRuns(doc).some(
-    (run) => run.kind === 'pill' && offset > run.offset && offset < endOf(run),
-  );
-}

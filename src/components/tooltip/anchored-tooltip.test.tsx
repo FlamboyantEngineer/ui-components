@@ -140,7 +140,7 @@ describe('AnchoredTooltip', () => {
     }
   });
 
-  it('UIC-TOOLTIP-2.4 follows a stable ref to a replacement element and back from removal', () => {
+  it('UIC-TOOLTIP-2.4 follows a stable ref to a replacement element and back from removal', async () => {
     function Swapped({ shown }: { shown: 'first' | 'second' | 'none' }) {
       const ref = useRef<HTMLButtonElement>(null);
       return (
@@ -159,6 +159,8 @@ describe('AnchoredTooltip', () => {
     expect(first).toHaveAttribute('aria-describedby', 'swap-hint');
     rerender(<Swapped shown="second" />);
     expect(first).not.toHaveAttribute('aria-describedby');
+    await act(async () => first.setAttribute('aria-describedby', 'latest-host-context'));
+    expect(first).toHaveAttribute('aria-describedby', 'latest-host-context');
     expect(screen.getByRole('button', { name: 'second' })).toHaveAccessibleDescription('Swap hint');
     rerender(<Swapped shown="none" />);
     expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
@@ -175,9 +177,11 @@ describe('AnchoredTooltip', () => {
     act(() => host.remove());
     await waitFor(() => expect(screen.queryByRole('tooltip')).not.toBeInTheDocument());
     expect(host).not.toHaveAttribute('aria-describedby');
+    await act(async () => host.setAttribute('aria-describedby', 'latest-host-context'));
+    expect(host).toHaveAttribute('aria-describedby', 'latest-host-context');
     act(() => document.body.append(host));
     await waitFor(() => expect(screen.getByRole('tooltip')).toHaveTextContent('Host hint'));
-    expect(host).toHaveAttribute('aria-describedby', 'host-hint');
+    expect(host).toHaveAttribute('aria-describedby', 'latest-host-context host-hint');
     host.remove();
   });
 });

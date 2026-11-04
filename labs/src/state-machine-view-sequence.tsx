@@ -59,6 +59,7 @@ export function SequenceExamples() {
         <Button onPress={() => setLongLabel(!hasLongLabel)}>Change transition label</Button>
       </p>
       <p id={descriptionId}>States follow the supplied order.</p>
+      <p>Arrow tips meet the state borders; parallel routes fan around one another.</p>
       <p id={detailsId}>Choose a state to highlight its outgoing transitions.</p>
       {(['default', 'compact'] as const).map((density: StateMachineViewDensity) => (
         <StateMachineView
