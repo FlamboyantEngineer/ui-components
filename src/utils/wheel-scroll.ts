@@ -56,7 +56,8 @@ export function findWheelScroller(
       size: node.clientHeight,
       extent: node.scrollHeight,
     });
-    const canScrollX = hasRoom(step.x, {
+    // In RTL, negative physical input increases the distance from the inline start.
+    const canScrollX = hasRoom(style.direction === 'rtl' ? -step.x : step.x, {
       overflow: isTextArea ? 'auto' : style.overflowX,
       position: node.scrollLeft,
       size: node.clientWidth,

@@ -164,6 +164,55 @@ test.describe('Split View lab', () => {
     );
   });
 
+  test('UIC-SPLIT-VIEW-2.4 restores idle layouts in their own pane order like a reload', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('split-view');
+    const separator = page.getByRole('separator', { name: 'Resize layout panes' });
+    const panes = page.locator('[data-lab-split="layouts"] .ui-split-view__pane');
+    await separator.focus();
+    await page.keyboard.press('Home');
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('ArrowRight');
+    await expect(separator).toHaveAttribute('aria-valuenow', '25');
+    await page.getByRole('radio', { name: 'Editing' }).check();
+    await separator.focus();
+    await page.keyboard.press('End');
+    for (let step = 0; step < 5; step++) await page.keyboard.press('ArrowLeft');
+    await expect(separator).toHaveAttribute('aria-valuenow', '65');
+
+    const reading = { name: 'Reading', size: '25', order: ['layout-list', 'layout-detail'] };
+    const editing = { name: 'Editing', size: '65', order: ['layout-detail', 'layout-list'] };
+    for (const layout of [reading, editing, reading, editing]) {
+      await page.getByRole('radio', { name: layout.name, exact: true }).check();
+      await expect(separator).toHaveAttribute('aria-valuenow', layout.size);
+      await expect(separator).toHaveAttribute('aria-controls', layout.order.join(' '));
+      await expect(panes).toHaveText(layout.order.map((id) => `${layout.name} ${id.slice(7)}`));
+    }
+
+    for (const layout of [reading, editing]) {
+      await page.getByRole('radio', { name: layout.name, exact: true }).check();
+      await expect(separator).toHaveAttribute('aria-valuenow', layout.size);
+      const live = await panes.evaluateAll((nodes) =>
+        nodes.map((node) => ({ id: node.id, basis: (node as HTMLElement).style.flexBasis })),
+      );
+      const width = (await box(panes.first())).width;
+      await page.reload();
+      await page.getByRole('radio', { name: layout.name, exact: true }).check();
+      await expect(separator).toHaveAttribute('aria-valuenow', layout.size);
+      expect(
+        await panes.evaluateAll((nodes) =>
+          nodes.map((node) => ({ id: node.id, basis: (node as HTMLElement).style.flexBasis })),
+        ),
+      ).toEqual(live);
+      await expect(async () => {
+        expect((await box(panes.first())).width).toBeCloseTo(width, 0);
+      }).toPass();
+    }
+  });
+
   test('UIC-SPLIT-VIEW-2.4 abandons a drag when the layout switches to another key', async ({
     page,
     lab,
@@ -509,3 +558,35 @@ test.describe('Split View controls', () => {
     );
   });
 });
+
+for (const unit of ['pixel', 'percent'] as const) {
+  test(`UIC-SPLIT-VIEW-2.1 UIC-SPLIT-VIEW-2.6 UIC-SPLIT-VIEW-2.7 reopens a reordered ${unit} pane at its previous size`, async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('split-view');
+    const prefix = `reordering-${unit}`;
+    const demo = page.locator(`[data-lab-demo="${prefix}"]`);
+    const alpha = demo.locator(`#${prefix}-a`);
+    await expect(alpha).toHaveCSS('flex-basis', unit === 'pixel' ? '100px' : '20%');
+    await demo.getByRole('button', { name: 'Collapse Alpha', exact: true }).focus();
+    await page.keyboard.press('Enter');
+    await expect(alpha).toHaveAttribute('data-collapsed', 'true');
+    await expect(alpha).toHaveAttribute('inert', '');
+    await demo.getByRole('button', { name: 'Swap Alpha and Blue', exact: true }).focus();
+    await page.keyboard.press('Enter');
+    const separator = demo.getByRole('separator', { name: `Resize Alpha, ${unit}`, exact: true });
+    await expect(separator).toHaveAttribute('aria-controls', `${prefix}-a ${prefix}-c`);
+    await expect(separator).toHaveAttribute('aria-valuenow', '0');
+    await demo.getByRole('button', { name: 'Reopen Alpha', exact: true }).focus();
+    await page.keyboard.press('Enter');
+    await expect(alpha).not.toHaveAttribute('data-collapsed');
+    await expect(alpha).not.toHaveAttribute('inert');
+    await expect(alpha).toHaveCSS('flex-basis', unit === 'pixel' ? '100px' : '20%');
+    await expect(separator).toHaveAttribute('aria-valuenow', unit === 'pixel' ? '100' : '20');
+    await expect(
+      demo.getByRole('separator', { name: `Resize Blue, ${unit}`, exact: true }),
+    ).toHaveAttribute('aria-controls', `${prefix}-b ${prefix}-a`);
+    await lab.expectAccessible(`[data-lab-demo="${prefix}"]`);
+  });
+}
