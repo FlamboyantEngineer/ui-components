@@ -164,6 +164,55 @@ test.describe('Split View lab', () => {
     );
   });
 
+  test('UIC-SPLIT-VIEW-2.4 restores idle layouts in their own pane order like a reload', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('split-view');
+    const separator = page.getByRole('separator', { name: 'Resize layout panes' });
+    const panes = page.locator('[data-lab-split="layouts"] .ui-split-view__pane');
+    await separator.focus();
+    await page.keyboard.press('Home');
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('ArrowRight');
+    await expect(separator).toHaveAttribute('aria-valuenow', '25');
+    await page.getByRole('radio', { name: 'Editing' }).check();
+    await separator.focus();
+    await page.keyboard.press('End');
+    for (let step = 0; step < 5; step++) await page.keyboard.press('ArrowLeft');
+    await expect(separator).toHaveAttribute('aria-valuenow', '65');
+
+    const reading = { name: 'Reading', size: '25', order: ['layout-list', 'layout-detail'] };
+    const editing = { name: 'Editing', size: '65', order: ['layout-detail', 'layout-list'] };
+    for (const layout of [reading, editing, reading, editing]) {
+      await page.getByRole('radio', { name: layout.name, exact: true }).check();
+      await expect(separator).toHaveAttribute('aria-valuenow', layout.size);
+      await expect(separator).toHaveAttribute('aria-controls', layout.order.join(' '));
+      await expect(panes).toHaveText(layout.order.map((id) => `${layout.name} ${id.slice(7)}`));
+    }
+
+    for (const layout of [reading, editing]) {
+      await page.getByRole('radio', { name: layout.name, exact: true }).check();
+      await expect(separator).toHaveAttribute('aria-valuenow', layout.size);
+      const live = await panes.evaluateAll((nodes) =>
+        nodes.map((node) => ({ id: node.id, basis: (node as HTMLElement).style.flexBasis })),
+      );
+      const width = (await box(panes.first())).width;
+      await page.reload();
+      await page.getByRole('radio', { name: layout.name, exact: true }).check();
+      await expect(separator).toHaveAttribute('aria-valuenow', layout.size);
+      expect(
+        await panes.evaluateAll((nodes) =>
+          nodes.map((node) => ({ id: node.id, basis: (node as HTMLElement).style.flexBasis })),
+        ),
+      ).toEqual(live);
+      await expect(async () => {
+        expect((await box(panes.first())).width).toBeCloseTo(width, 0);
+      }).toPass();
+    }
+  });
+
   test('UIC-SPLIT-VIEW-2.4 abandons a drag when the layout switches to another key', async ({
     page,
     lab,

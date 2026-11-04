@@ -2,7 +2,15 @@
 
 import type { ReactNode } from 'react';
 import type { AriaLabellingProps, PointerType, PressEvent } from '../../core/events.js';
-import type { BaseProps, Density, Key, Orientation, RefProps, Tone } from '../../core/props.js';
+import type {
+  BaseProps,
+  Density,
+  Key,
+  Orientation,
+  RefProps,
+  Size,
+  Tone,
+} from '../../core/props.js';
 import type { MenuAnchor } from '../context-menu/context-menu.js';
 import type { DiagramView } from '../diagram-canvas/diagram-canvas.js';
 import { StateMachineGraph } from './state-machine-graph.js';
@@ -79,6 +87,8 @@ export type StateMachineTooltipPlacement = 'top' | 'bottom';
 
 /** Props that apply to the sequence presentation only. */
 export interface StateMachineSequenceProps {
+  /** Sequence state size, from `xs` through `xl`. Defaults to `md`. */
+  size?: Size | undefined;
   /** Sequence geometry density. Defaults to `default`. */
   density?: StateMachineViewDensity | undefined;
   /** Optional sequence distances in CSS pixels; omitted values use the documented defaults. */
@@ -149,6 +159,7 @@ export interface StateMachineViewProps
 export function StateMachineView({ presentation, ...props }: StateMachineViewProps) {
   if (presentation === 'sequence') return <StateMachineSequence {...props} />;
   const {
+    size: _size,
     density: _density,
     sequenceGeometry: _sequenceGeometry,
     selectedKey: _selectedKey,

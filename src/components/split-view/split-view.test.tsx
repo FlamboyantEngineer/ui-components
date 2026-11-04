@@ -257,6 +257,158 @@ describe('SplitView owners', () => {
     return <UiProvider storage={storage}>{resizable({ persistKey: 'a', ...extra })}</UiProvider>;
   }
 
+  function pixelSplit(
+    storage: ReturnType<typeof createMemoryStorage>,
+    key: string | undefined,
+    options: { ids: string[] } & Partial<Parameters<typeof SplitView>[0]>,
+  ) {
+    const { ids, ...extra } = options;
+    return (
+      <UiProvider storage={storage}>
+        <SplitView
+          panes={ids.map((id) => ({ id, unit: 'pixel' }))}
+          defaultSizes={[80, 160, 240]}
+          persistKey={key}
+          {...extra}
+        >
+          {ids.map((id) => (
+            <p key={id}>Pane {id}</p>
+          ))}
+        </SplitView>
+      </UiProvider>
+    );
+  }
+
+  function readPixelPanes(container: HTMLElement) {
+    return Array.from(container.querySelectorAll<HTMLElement>('.ui-split-view__pane'), (pane) => ({
+      id: pane.id,
+      basis: pane.style.flexBasis,
+    }));
+  }
+
+  describe.each(['key', 'storage'] as const)('%s changes', (change) => {
+    it.each([
+      { operation: 'reordered', from: ['a', 'b'], to: ['b', 'a'] },
+      { operation: 'replaced', from: ['a', 'b'], to: ['b', 'c'] },
+      { operation: 'inserted', from: ['a', 'b'], to: ['c', 'b', 'a'] },
+      { operation: 'removed', from: ['a', 'b', 'c'], to: ['b', 'a'] },
+    ])(
+      'UIC-SPLIT-VIEW-2.4 UIC-SPLIT-VIEW-2.1 loads $operation panes like a fresh mount',
+      async ({ from, to }) => {
+        const user = userEvent.setup();
+        const initial = from.map((_, index) => (index + 1) * 100);
+        const destination = to.map((_, index) => (index + 3) * 100);
+        const first = createMemoryStorage({ first: JSON.stringify(initial) });
+        const nextKey = change === 'key' ? 'second' : 'first';
+        const second = change === 'key' ? first : createMemoryStorage();
+        second.setItem(nextKey, JSON.stringify(destination));
+        const { container: freshContainer, unmount: unmountFresh } = render(
+          pixelSplit(second, nextKey, { ids: to }),
+        );
+        const expected = readPixelPanes(freshContainer);
+        expect(expected).toEqual(to.map((id, index) => ({ id, basis: `${destination[index]}px` })));
+        unmountFresh();
+
+        const setFirst = vi.spyOn(first, 'setItem');
+        const setSecond = second === first ? setFirst : vi.spyOn(second, 'setItem');
+        const onSizesChange = vi.fn();
+        const onSizesChangeEnd = vi.fn();
+        const callbacks = { onSizesChange, onSizesChangeEnd };
+        const { container, rerender } = render(
+          pixelSplit(first, 'first', { ids: from, ...callbacks }),
+        );
+        const destinationView = () => pixelSplit(second, nextKey, { ids: to, ...callbacks });
+        rerender(destinationView());
+        expect(readPixelPanes(container)).toEqual(expected);
+        expect(screen.getAllByRole('separator')[0]).toHaveAttribute('aria-valuenow', '300');
+        rerender(destinationView());
+        expect(readPixelPanes(container)).toEqual(expected);
+        rerender(pixelSplit(second, nextKey, { ids: [...to].reverse(), ...callbacks }));
+        expect(readPixelPanes(container)).toEqual([...expected].reverse());
+        rerender(pixelSplit(first, 'first', { ids: from, ...callbacks }));
+        expect(readPixelPanes(container)).toEqual(
+          from.map((id, index) => ({ id, basis: `${initial[index]}px` })),
+        );
+        rerender(destinationView());
+        expect(readPixelPanes(container)).toEqual(expected);
+        expect(setFirst).not.toHaveBeenCalled();
+        expect(setSecond).not.toHaveBeenCalled();
+        expect(onSizesChange).not.toHaveBeenCalled();
+        expect(onSizesChangeEnd).not.toHaveBeenCalled();
+
+        requireDefined(screen.getAllByRole('separator')[0]).focus();
+        await user.keyboard('{Shift>}{ArrowRight}{/Shift}');
+        expect(second.getItem(nextKey)).toBe(JSON.stringify([301, ...destination.slice(1)]));
+        expect(first.getItem('first')).toBe(JSON.stringify(initial));
+        expect(onSizesChangeEnd).toHaveBeenLastCalledWith([301, ...destination.slice(1)]);
+      },
+    );
+
+    it.each([
+      { data: '70', expected: '70' },
+      { data: undefined, expected: '30' },
+      { data: 'wide', expected: '30' },
+      { data: '[300]', expected: '30' },
+    ])(
+      'UIC-SPLIT-VIEW-2.4 interprets scalar or fallback $data in the new pane order',
+      ({ data, expected }) => {
+        const first = createMemoryStorage({ a: '40' });
+        const second = change === 'key' ? first : createMemoryStorage();
+        const nextKey = change === 'key' ? 'b' : 'a';
+        if (data !== undefined) second.setItem(nextKey, data);
+        const options = { panes: [...panes].reverse(), persistKey: nextKey };
+        const { unmount: unmountFresh } = render(persisted(second, options));
+        expect(screen.getByRole('separator')).toHaveAttribute('aria-valuenow', expected);
+        unmountFresh();
+        const { rerender } = render(persisted(first));
+        rerender(persisted(second, options));
+        expect(screen.getByRole('separator')).toHaveAttribute('aria-valuenow', expected);
+        rerender(persisted(second, options));
+        expect(screen.getByRole('separator')).toHaveAttribute('aria-valuenow', expected);
+        rerender(persisted(second, { persistKey: nextKey }));
+        expect(screen.getByRole('separator')).toHaveAttribute(
+          'aria-valuenow',
+          String(100 - Number(expected)),
+        );
+      },
+    );
+  });
+
+  it.each([
+    { operation: 'reordered', ids: ['b', 'a'], sizes: [220, 120] },
+    { operation: 'replaced', ids: ['b', 'c'], sizes: [220, 160] },
+    { operation: 'inserted', ids: ['c', 'a', 'b'], sizes: [80, 120, 220] },
+  ])(
+    'UIC-SPLIT-VIEW-2.1 preserves committed sizes with $operation panes under the same owner',
+    ({ ids, sizes }) => {
+      const storage = createMemoryStorage();
+      const handle = createRef<SplitViewHandle>();
+      const { container, rerender } = render(
+        pixelSplit(storage, 'first', { ids: ['a', 'b'], handleRef: handle }),
+      );
+      act(() => handle.current?.resize([120, 220]));
+      rerender(pixelSplit(storage, 'first', { ids, handleRef: handle }));
+      expect(readPixelPanes(container)).toEqual(
+        ids.map((id, index) => ({ id, basis: `${sizes[index]}px` })),
+      );
+    },
+  );
+
+  it('UIC-SPLIT-VIEW-2.1 UIC-SPLIT-VIEW-2.4 preserves unpersisted committed sizes across an adapter change and reorder', () => {
+    const first = createMemoryStorage();
+    const second = createMemoryStorage();
+    const handle = createRef<SplitViewHandle>();
+    const { container, rerender } = render(
+      pixelSplit(first, undefined, { ids: ['a', 'b'], handleRef: handle }),
+    );
+    act(() => handle.current?.resize([120, 220]));
+    rerender(pixelSplit(second, undefined, { ids: ['b', 'a'], handleRef: handle }));
+    expect(readPixelPanes(container)).toEqual([
+      { id: 'b', basis: '220px' },
+      { id: 'a', basis: '120px' },
+    ]);
+  });
+
   it("UIC-SPLIT-VIEW-2.4 abandons a drag when the key changes and keeps the new key's size", () => {
     const storage = createMemoryStorage({ a: '30', b: '70' });
     const onSizesChangeEnd = vi.fn();
