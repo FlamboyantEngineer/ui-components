@@ -72,6 +72,7 @@
 @import url('reference/emoji-picker.css') layer(ui-reference);
 @import url('reference/empty-state.css') layer(ui-reference);
 @import url('reference/expand-toggle.css') layer(ui-reference);
+@import url('reference/expression-field.css') layer(ui-reference);
 @import url('reference/facet-list.css') layer(ui-reference);
 @import url('reference/field.css') layer(ui-reference);
 @import url('reference/file-field.css') layer(ui-reference);

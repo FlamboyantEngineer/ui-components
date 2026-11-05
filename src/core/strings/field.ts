@@ -97,6 +97,14 @@ interface FieldStrings {
   remove: string;
   /** Names the button that clears a field's value in one press, from the field's label. */
   clearValue: (label: string) => string;
+  /** Labels an expression field's result, which the host evaluates. */
+  expressionResult: string;
+  /** Says the host is still evaluating an expression field's source. */
+  expressionPending: string;
+  /** Marks an expression result evaluated from source that has changed since. */
+  expressionStale: string;
+  /** Says an expression field has no result, when the host gives no reason. */
+  expressionUnavailable: string;
   /** The text of a select that has no value and no placeholder of its own. */
   selectPlaceholder: string;
   /** Describes a multiple select option with mixed membership across records. */
