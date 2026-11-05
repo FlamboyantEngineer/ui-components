@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { SelectField, type SelectFieldOption } from '../../src/components/select-field/index.js';
+import { Switch } from '../../src/components/switch/index.js';
 import type { Key } from '../../src/core/props.js';
 import { LabOutput } from './lab-output.js';
-import { Switch } from '../../src/components/switch/index.js';
 
 const options: SelectFieldOption[] = [
   { id: 'apple', label: 'Apple' },

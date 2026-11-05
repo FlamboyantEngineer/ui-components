@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { type KeyboardEvent, type ReactNode, useId, useState } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';
 import { useElementSize } from '../../utils/use-element-size.js';
