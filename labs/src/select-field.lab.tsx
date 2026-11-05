@@ -448,7 +448,7 @@ mountLab(
       </LabSection>
       <LabSection
         title="Bulk memberships"
-        description="Apple belongs to both records; Pear and disabled Plum belong only to the first. Pear cycles from mixed to selected for all, removed for all, then back to mixed. The host keeps each record's untouched memberships and previews the changes."
+        description="Apple belongs to both records; Pear and disabled Plum belong only to the first. useSelectMembership cycles Pear from mixed to selected for all, removed for all, then back to mixed, and reports added, removed and retained keys; the preview applies them, so each record keeps its untouched memberships. Clear removes the chosen options and leaves locked Plum alone."
       >
         <BulkMembershipEditor />
       </LabSection>
