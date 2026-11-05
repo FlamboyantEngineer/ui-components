@@ -51,7 +51,9 @@ describe('FindBar', () => {
     expect(onQueryChange.mock.calls.map(([query]) => query)).toEqual(['a', 'ap']);
     await user.keyboard('{Escape}');
     expect(box).toHaveValue('');
-    expectHooksMatchSpec(container, 'FIND-BAR', { slots: ['query', 'status', 'previous', 'next'] });
+    expectHooksMatchSpec(container, 'FIND-BAR', {
+      slots: ['query', 'navigation', 'status', 'previous', 'next'],
+    });
   });
 
   it('UIC-FIND-BAR-1.1 takes a starting query and its own label', () => {
@@ -211,6 +213,45 @@ describe('FindBar', () => {
       expect(onNext).not.toHaveBeenCalled();
     },
   );
+
+  it('UIC-FIND-BAR-1.2 keeps the count and its arrows in one navigation part', () => {
+    const { container } = render(<FindBar matchCount={3} currentIndex={0} />);
+    const navigation = container.querySelector('.ui-find-bar__navigation');
+    expect(navigation).toContainElement(status());
+    expect(navigation).toContainElement(screen.getByRole('button', { name: 'Previous match' }));
+    expect(navigation).toContainElement(screen.getByRole('button', { name: 'Next match' }));
+  });
+
+  it('UIC-FIND-BAR-1.5 disables Replace and Replace all on their own, and hands out the replacement box', async () => {
+    const user = userEvent.setup();
+    const onReplace = vi.fn();
+    const onReplaceAll = vi.fn();
+    const replacementInputRef = createRef<HTMLInputElement>();
+    const bar = (props: Partial<FindBarProps>) => (
+      <FindBar
+        matchCount={2}
+        currentIndex={0}
+        defaultReplacement="fig"
+        onReplace={onReplace}
+        onReplaceAll={onReplaceAll}
+        replacementInputRef={replacementInputRef}
+        {...props}
+      />
+    );
+    const { rerender } = render(bar({ isReplaceDisabled: true }));
+    const box = screen.getByRole('textbox', { name: 'Replace with' });
+    expect(replacementInputRef.current).toBe(box);
+    expect(screen.getByRole('button', { name: 'Replace' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Replace all' })).toBeEnabled();
+    await user.type(box, '{Enter}');
+    expect(onReplace).not.toHaveBeenCalled();
+    rerender(bar({ isReplaceAllDisabled: true }));
+    expect(screen.getByRole('button', { name: 'Replace' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Replace all' })).toBeDisabled();
+    await user.keyboard('{Enter}');
+    expect(onReplace).toHaveBeenCalledWith('fig');
+    expect(onReplaceAll).not.toHaveBeenCalled();
+  });
 
   it('UIC-FIND-BAR-1.5 shows only the replace buttons asked for, with a controlled replacement', () => {
     const { rerender } = render(<FindBar matchCount={1} />);

@@ -2,17 +2,16 @@
 
 import type { KeyboardEvent, RefObject } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
-import { ArrowDownGlyph, ArrowUpGlyph, ChevronDownGlyph, CloseGlyph } from '../../core/glyphs.js';
-import { createHooks } from '../../core/hooks.js';
+import { ArrowDownGlyph, ArrowUpGlyph, CloseGlyph } from '../../core/glyphs.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
-import { Input } from '../../primitives/index.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { isNode } from '../../utils/is-element.js';
 import { Button } from '../button/button.js';
-import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import { SearchField } from '../search-field/search-field.js';
+import { findBarHooks as hooks } from './find-bar-hooks.js';
+import { FindBarOptions, FindBarReplace } from './find-bar-parts.js';
 
 /** A way of matching the reader can turn on or off, such as matching case or whole words. */
 export interface FindBarOption {
@@ -51,6 +50,10 @@ export interface FindBarProps extends RefProps<HTMLDivElement>, BaseProps {
   onReplace?: ((replacement: string) => void) | undefined;
   /** Adds the replacement box and a Replace all button, which calls it with the replacement. */
   onReplaceAll?: ((replacement: string) => void) | undefined;
+  /** Disables Replace, and Enter in the replacement box, even while there are matches. */
+  isReplaceDisabled?: boolean | undefined;
+  /** Disables Replace all even while there are matches. */
+  isReplaceAllDisabled?: boolean | undefined;
   /** Ways of matching, offered in a menu of options the reader turns on and off. */
   options?: readonly FindBarOption[] | undefined;
   /** The options turned on, controlled. */
@@ -63,6 +66,8 @@ export interface FindBarProps extends RefProps<HTMLDivElement>, BaseProps {
   onClose?: (() => void) | undefined;
   /** Receives the find box's input, so a caller can move focus to it. */
   inputRef?: RefObject<HTMLInputElement | null> | undefined;
+  /** Receives the replacement box's input while it is shown, so a caller can move focus to it. */
+  replacementInputRef?: RefObject<HTMLInputElement | null> | undefined;
 }
 
 interface FindBarStatus {
@@ -70,18 +75,6 @@ interface FindBarStatus {
   currentIndex: number | undefined;
   isPending: boolean;
 }
-
-const hooks = createHooks('find-bar', [
-  'query',
-  'status',
-  'previous',
-  'next',
-  'options',
-  'replacement',
-  'replace',
-  'replace-all',
-  'close',
-]);
 
 const noOptions: readonly Key[] = [];
 
@@ -97,96 +90,6 @@ function describeStatus(
     return strings.stepOfTotal(currentIndex + 1, matchCount);
   }
   return strings.matchTotal(matchCount);
-}
-
-/**
- * The menu of matching options, each one checked while it is on; choosing one keeps it open. The
- * bar owns the selection, so it outlasts the menu while the options are gone.
- */
-function FindBarOptions({
-  options,
-  selected,
-  setSelected,
-}: {
-  options: readonly FindBarOption[];
-  selected: Iterable<Key>;
-  setSelected: (keys: Iterable<Key>) => void;
-}) {
-  const strings = useUiStrings();
-  return (
-    <DropdownMenu
-      className={hooks.slotClass('options')}
-      iconOnly
-      icon={ChevronDownGlyph}
-      label={strings.findOptions}
-      size="sm"
-      selectionMode="multiple"
-      shouldCloseOnSelect={false}
-      selectedKeys={selected}
-      onSelectionChange={(keys) =>
-        setSelected(keys === 'all' ? new Set(options.map(({ id }) => id)) : new Set(keys))
-      }
-      items={options.map(({ id, label }) => ({ id, label }))}
-    />
-  );
-}
-
-/**
- * The replacement box with the Replace and Replace all buttons the caller asked for. The bar owns the
- * replacement, so it outlasts the box while the replace handlers are gone.
- */
-function FindBarReplace({
-  hasMatches,
-  replacement,
-  setReplacement,
-  onReplace,
-  onReplaceAll,
-}: Pick<FindBarProps, 'onReplace' | 'onReplaceAll'> & {
-  hasMatches: boolean;
-  replacement: string;
-  setReplacement: (replacement: string) => void;
-}) {
-  const strings = useUiStrings();
-  const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    // The Enter that confirms a text composition replaces nothing.
-    if (event.key !== 'Enter' || isComposingKey(event.nativeEvent)) return;
-    event.preventDefault();
-    event.stopPropagation();
-    if (hasMatches) onReplace?.(replacement);
-  };
-  return (
-    <>
-      <Input
-        className={hooks.slotClass('replacement')}
-        aria-label={strings.replaceWith}
-        value={replacement}
-        onChange={(event) => setReplacement(event.target.value)}
-        onKeyDown={onKeyDown}
-      />
-      {onReplace ? (
-        <Button
-          className={hooks.slotClass('replace')}
-          size="sm"
-          variant="ghost"
-          isDisabled={!hasMatches}
-          onPress={() => onReplace(replacement)}
-        >
-          {strings.replace}
-        </Button>
-      ) : null}
-      {onReplaceAll ? (
-        <Button
-          className={hooks.slotClass('replace-all')}
-          size="sm"
-          variant="ghost"
-          isDisabled={!hasMatches}
-          onPress={() => onReplaceAll(replacement)}
-        >
-          {strings.replaceAll}
-        </Button>
-      ) : null}
-    </>
-  );
 }
 
 type FindBarFindProps = Pick<
@@ -239,25 +142,28 @@ function FindBarFind({
         isPending={isPending}
         inputRef={props.inputRef}
       />
-      <span {...hooks.slot('status')} role="status">
-        {describeStatus({ matchCount, currentIndex, isPending }, strings)}
-      </span>
-      <Button
-        className={hooks.slotClass('previous')}
-        icon={ArrowUpGlyph}
-        label={strings.previousMatch}
-        size="sm"
-        isDisabled={!hasMatches}
-        onPress={onPrevious}
-      />
-      <Button
-        className={hooks.slotClass('next')}
-        icon={ArrowDownGlyph}
-        label={strings.nextMatch}
-        size="sm"
-        isDisabled={!hasMatches}
-        onPress={onNext}
-      />
+      {/* One part, so the count and its arrows wrap onto a new line together. */}
+      <div {...hooks.slot('navigation')}>
+        <span {...hooks.slot('status')} role="status">
+          {describeStatus({ matchCount, currentIndex, isPending }, strings)}
+        </span>
+        <Button
+          className={hooks.slotClass('previous')}
+          icon={ArrowUpGlyph}
+          label={strings.previousMatch}
+          size="sm"
+          isDisabled={!hasMatches}
+          onPress={onPrevious}
+        />
+        <Button
+          className={hooks.slotClass('next')}
+          icon={ArrowDownGlyph}
+          label={strings.nextMatch}
+          size="sm"
+          isDisabled={!hasMatches}
+          onPress={onNext}
+        />
+      </div>
     </>
   );
 }
@@ -286,12 +192,15 @@ export function FindBar({
   onReplacementChange,
   onReplace,
   onReplaceAll,
+  isReplaceDisabled,
+  isReplaceAllDisabled,
   options,
   selectedOptions,
   defaultSelectedOptions,
   onSelectedOptionsChange,
   onClose,
   inputRef,
+  replacementInputRef,
   className,
   id,
   ...rest
@@ -319,7 +228,10 @@ export function FindBar({
     defaultSelectedOptions ?? noOptions,
     (keys) => onSelectedOptionsChange?.(new Set(keys)),
   );
-  const replace = { replacement: currentReplacement, setReplacement, onReplace, onReplaceAll };
+  const replace = {
+    ...{ replacement: currentReplacement, setReplacement, onReplace, onReplaceAll },
+    ...{ isReplaceDisabled, isReplaceAllDisabled, replacementInputRef },
+  };
   const hasMatches = (matchCount ?? 0) > 0;
   return (
     <div

@@ -15,6 +15,13 @@
   max-width: 260px;
 }
 
+.ui-find-bar__navigation {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+}
+
 .ui-find-bar__status {
   min-width: 7ch;
   color: var(--ref-muted);

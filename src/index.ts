@@ -133,6 +133,7 @@ export * from './components/relative-time/index.js';
 export * from './components/save-status/index.js';
 export * from './components/scroll-region/index.js';
 export * from './components/search-field/index.js';
+export * from './components/search-pane/index.js';
 export * from './components/section-header/index.js';
 export * from './components/segmented-bar/index.js';
 export * from './components/segmented-choice/index.js';

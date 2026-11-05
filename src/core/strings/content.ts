@@ -37,6 +37,20 @@ interface ContentStrings {
   replace: string;
   /** Replaces every match. */
   replaceAll: string;
+  /** Names a search pane's list of results. */
+  searchResults: string;
+  /** Asks for a query in a search pane that has none. */
+  searchPrompt: string;
+  /** Says a search pane's search failed. */
+  searchError: string;
+  /** Shows and hides a search pane's replace controls. */
+  toggleReplace: string;
+  /** Marks a search result that cannot be replaced. */
+  notReplaceable: string;
+  /** Shows the results before the ones a long result list shows. */
+  showEarlierResults: (count: number) => string;
+  /** Shows the results after the ones a long result list shows. */
+  showLaterResults: (count: number) => string;
   /** Rewrites a value, such as JSON text, with standard indentation. */
   /** Shows cut text whole, in place. */
   showMore: string;
@@ -201,6 +215,8 @@ export const contentStrings = defineStrings<ContentStrings>({
   controlsFor: (name) => ({ name }),
   ofTotal: (total) => ({ total }),
   matchTotal: (total) => ({ total }),
+  showEarlierResults: (count) => ({ count }),
+  showLaterResults: (count) => ({ count }),
   sectionsIn: (label) => ({ label }),
   pageNumber: (pageNumber) => ({ pageNumber }),
   pageFailed: (pageNumber) => ({ pageNumber }),
