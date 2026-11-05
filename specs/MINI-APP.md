@@ -82,7 +82,7 @@ Verification: `src/components/mini-app/mini-app.test.tsx`, `e2e/mini-app.spec.ts
 
 ### UIC-MINI-APP-4.1 - Sizing
 
-The bridge shall post the height of the frame's document whenever it changes, and the frame's `height` attribute follows it in whole pixels, adding the frame's own borders and padding when the host stylesheet sizes it `border-box`, so the frame grows and shrinks with its content and never scrolls inside unless the host stylesheet caps its height. Its width is the host's: the frame neither grows nor fills by default. Before the first measure the frame has the browser's default height.
+The bridge shall post the height of the frame's document whenever it changes, and the frame's `height` attribute follows it in whole pixels, adding the frame's own borders and padding when the host stylesheet sizes it `border-box`, so the frame grows and shrinks with its content. The document does not scroll vertically, so no empty scrollbar narrows it while the frame catches up with a new height, until the host stylesheet holds the frame shorter than its content (for example with `max-height`): the host then tells the bridge, and the document scrolls inside the frame. The host checks again whenever the content height or the frame's size changes. Its width is the host's: the frame neither grows nor fills by default. Before the first measure the frame has the browser's default height.
 
 Implementation: `src/components/mini-app/mini-app-bridge.ts`, `src/components/mini-app/use-mini-app-session.ts`, `src/components/mini-app/mini-app.tsx`
 Verification: `src/components/mini-app/mini-app.test.tsx`, `e2e/mini-app.spec.ts`

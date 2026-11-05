@@ -140,6 +140,27 @@ describe('MiniApp', () => {
     }
   });
 
+  it('UIC-MINI-APP-4.1 lets the mini-app scroll only while the host holds the frame shorter than its content', async () => {
+    renderMiniApp();
+    const frame = frameOf();
+    let inner = 100;
+    Object.defineProperty(frame, 'clientHeight', { configurable: true, get: () => inner });
+    const { send, replies } = await connect(frame);
+    send({ type: 'resize', height: 100 });
+    await waitFor(() => expect(frame).toHaveAttribute('height', '100'));
+    inner = 60;
+    send({ type: 'resize', height: 120 });
+    await waitFor(() => expect(replies).toEqual([{ type: 'scroll', enabled: true }]));
+    inner = 90;
+    send({ type: 'resize', height: 90 });
+    await waitFor(() =>
+      expect(replies).toEqual([
+        { type: 'scroll', enabled: true },
+        { type: 'scroll', enabled: false },
+      ]),
+    );
+  });
+
   it('UIC-MINI-APP-2.2 answers calls with the named capability’s result', async () => {
     const double = vi.fn((args: unknown) => Number(args) * 2);
     const later = vi.fn(async (args: unknown) => `rate for ${String(args)}`);
