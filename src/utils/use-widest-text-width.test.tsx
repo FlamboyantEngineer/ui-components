@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { createElement, useRef } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useWidestTextWidth } from './use-widest-text-width.js';
@@ -31,6 +31,13 @@ function stubCanvas() {
   return { measureText, fonts };
 }
 
+/** A document font set: ready once `ready` settles, and an event target for later loading. */
+function installFonts(ready: Promise<void>) {
+  const fonts = Object.assign(new EventTarget(), { ready });
+  Object.defineProperty(document, 'fonts', { value: fonts, configurable: true });
+  return fonts;
+}
+
 afterEach(() => {
   vi.unstubAllGlobals();
   Reflect.deleteProperty(document, 'fonts');
@@ -57,7 +64,7 @@ describe('useWidestTextWidth', () => {
     const ready = new Promise<void>((resolve) => {
       loaded = resolve;
     });
-    Object.defineProperty(document, 'fonts', { value: { ready }, configurable: true });
+    installFonts(ready);
     render(createElement(Probe, { texts: ['Pear'] }));
     await waitFor(() => expect(probe()).toHaveTextContent('26'));
     const calls = measureText.mock.calls.length;
@@ -87,7 +94,7 @@ describe('useWidestTextWidth', () => {
     const ready = new Promise<void>((resolve) => {
       loaded = resolve;
     });
-    Object.defineProperty(document, 'fonts', { value: { ready }, configurable: true });
+    installFonts(ready);
     const { unmount } = render(createElement(Probe, { texts: ['Pear'] }));
     expect(measureText).toHaveBeenCalledTimes(1);
     unmount();
@@ -100,5 +107,26 @@ describe('useWidestTextWidth', () => {
     vi.stubGlobal('OffscreenCanvas', undefined);
     render(createElement(Probe, { texts: ['Plum'] }));
     expect(probe()).toHaveTextContent('null');
+  });
+
+  it('UIC-MEASUREMENT-3.1 measures again whenever fonts finish loading later, until unmount', async () => {
+    const { measureText } = stubCanvas();
+    const fonts = installFonts(Promise.resolve());
+    const { unmount } = render(createElement(Probe, { texts: ['Pear'] }));
+    await waitFor(() => expect(probe()).toHaveTextContent('26'));
+    measureText.mockImplementation((text: string) => ({ width: text.length * 15 }));
+    act(() => {
+      fonts.dispatchEvent(new Event('loadingdone'));
+    });
+    expect(probe()).toHaveTextContent('60');
+    measureText.mockImplementation((text: string) => ({ width: text.length * 20 }));
+    act(() => {
+      fonts.dispatchEvent(new Event('loadingdone'));
+    });
+    expect(probe()).toHaveTextContent('80');
+    const calls = measureText.mock.calls.length;
+    unmount();
+    fonts.dispatchEvent(new Event('loadingdone'));
+    expect(measureText).toHaveBeenCalledTimes(calls);
   });
 });

@@ -1,6 +1,7 @@
 'use client';
 
 import { type RefObject, useEffect, useState } from 'react';
+import { listenFontsLoaded } from './listen-fonts-loaded.js';
 import { useStableArray } from './use-stable-array.js';
 
 function widestText(element: Element, texts: readonly string[]): number | null {
@@ -17,8 +18,8 @@ function widestText(element: Element, texts: readonly string[]): number | null {
 
 /**
  * The width, in pixels, of the widest of `texts` in the font of `ref`'s element, measured on a
- * canvas once per set of texts and again when the document's fonts finish loading. `null` where
- * no canvas is available.
+ * canvas once per set of texts, again when the document's fonts are ready, and again whenever
+ * fonts finish loading in the element's document later on. `null` where no canvas is available.
  */
 export function useWidestTextWidth(
   ref: RefObject<Element | null>,
@@ -35,8 +36,11 @@ export function useWidestTextWidth(
     };
     measure();
     void element.ownerDocument.fonts?.ready.then(measure);
+    // A font that loads later, through a stylesheet or a FontFace added after mount, measures again.
+    const stopListening = listenFontsLoaded(element, measure);
     return () => {
       active = false;
+      stopListening();
     };
   }, [ref, lines]);
   return width;
