@@ -397,6 +397,15 @@ test.describe('PDF Viewer lab', () => {
     await find.getByRole('button', { name: 'Back', exact: true }).click();
     await expect(matches).toHaveText('2 of 4');
 
+    const scroller = find.locator('.ui-pdf-viewer__scroller');
+    await scroller.evaluate((element) => {
+      element.scrollTop = element.scrollHeight;
+    });
+    await expect(find.getByLabel('Page', { exact: true })).toHaveValue('3');
+    await find.getByRole('button', { name: 'Reveal current match', exact: true }).click();
+    await expect(find.getByLabel('Page', { exact: true })).toHaveValue('1');
+    await expect(matches).toHaveText('2 of 4');
+
     await find.getByRole('button', { name: 'Find pears' }).click();
     await expect(field).toHaveValue('pear');
     await expect(matches).toHaveText(/of 2$/);
@@ -628,6 +637,49 @@ test.describe('PDF Viewer lab', () => {
     await find.getByRole('button', { name: 'Same case' }).click();
     await expect(find.locator('[data-lab-output="case"]')).toHaveText('same');
     await expect(find.locator('[data-lab-output="matches"]')).toHaveText('1 of 1');
+  });
+
+  test('UIC-PDF-VIEWER-10.4 resizes the sidebar by pointer and keyboard without replacing the document', async ({
+    page,
+    lab,
+  }) => {
+    const reader = await openCase(page, lab, 'bytes');
+    const sidebar = reader.locator('.ui-pdf-viewer__sidebar');
+    const separator = reader.getByRole('separator', { name: 'Sidebar' });
+    const field = reader.getByLabel('Page', { exact: true });
+    const currentPage = await field.inputValue();
+    const initial = (await box(sidebar)).width;
+    await separator.focus();
+    await separator.press('ArrowRight');
+    await expect(async () => expect((await box(sidebar)).width).toBeGreaterThan(initial)).toPass();
+    await expect(field).toHaveValue(currentPage);
+    const start = (await box(sidebar)).width;
+    const grip = await box(separator);
+    await page.mouse.move(grip.x + grip.width / 2, grip.y + grip.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(grip.x + grip.width / 2 + 40, grip.y + grip.height / 2, { steps: 8 });
+    await page.mouse.up();
+    await expect(async () =>
+      expect((await box(sidebar)).width).toBeGreaterThan(start + 30),
+    ).toPass();
+    const remembered = (await box(sidebar)).width;
+    const toggle = reader.getByRole('button', { name: 'Sidebar', exact: true });
+    await toggle.click();
+    await expect(separator).toHaveCount(0);
+    await toggle.click();
+    await expect(async () => expectNear((await box(sidebar)).width, remembered)).toPass();
+    await separator.focus();
+    await separator.press('Home');
+    await expect(separator).toHaveAttribute(
+      'aria-valuenow',
+      (await separator.getAttribute('aria-valuemin')) ?? '',
+    );
+    await separator.press('End');
+    await expect(separator).toHaveAttribute(
+      'aria-valuenow',
+      (await separator.getAttribute('aria-valuemax')) ?? '',
+    );
+    await lab.expectAccessible('[data-lab-case="bytes"]');
   });
 
   test('UIC-PDF-VIEWER-4.4 UIC-PDF-VIEWER-4.5 UIC-PDF-VIEWER-10.1 UIC-PDF-VIEWER-10.2 UIC-PDF-VIEWER-10.3 opens on the outline and goes to destinations', async ({
@@ -999,4 +1051,22 @@ test.describe('PDF Viewer lab', () => {
     await expect(text).toBeVisible();
     await expect(root.locator('.ui-pdf-viewer')).not.toHaveAttribute('aria-busy');
   });
+});
+
+test('UIC-PDF-VIEWER-3.7 UIC-PDF-VIEWER-5.9 caller results activate and zoom respects the custom ladder', async ({
+  page,
+  lab,
+}) => {
+  const reader = await openCase(page, lab, 'find');
+  const slider = reader.getByRole('slider', { name: 'Zoom level' });
+  await slider.focus();
+  await page.keyboard.press('End');
+  await expect(reader.locator('.ui-zoom-control__value')).toHaveText('400%');
+  await reader.locator('.ui-pdf-viewer__scroller').focus();
+  await page.keyboard.press('Control++');
+  await expect(reader.locator('.ui-zoom-control__value')).toHaveText('400%');
+  await page.keyboard.press('Control+0');
+  await reader.getByRole('button', { name: 'Find pears', exact: true }).click();
+  await reader.getByRole('button', { name: 'Page 2: Pear', exact: true }).click();
+  await expect(reader.locator('[data-lab-output="match"]')).toHaveText('1');
 });

@@ -88,3 +88,23 @@ describe('PdfViewer pinch zoom', () => {
     expect(nextColumn.style.transformOrigin).toBe('');
   });
 });
+
+it('UIC-PDF-VIEWER-3.7 clamps the transient and committed pinch to the caller endpoints', async () => {
+  const engine = createEngine();
+  const onZoomChange = vi.fn();
+  const { container } = await renderReady(
+    { defaultZoom: 100, zoomLevels: [25, 100, 200, 400], onZoomChange },
+    engine,
+  );
+  const options = requireDefined(engine.touch.options);
+  const column = requireDefined(container.querySelector<HTMLElement>('.ui-pdf-viewer__pages'));
+  act(() => options.onPinching([0, 0], 100, 10000));
+  expect(column.style.transform).toBe('scale(4)');
+  act(() => options.onPinchEnd());
+  expect(onZoomChange).toHaveBeenLastCalledWith(400);
+  act(() => {
+    options.onPinching([0, 0], 10000, 1);
+    options.onPinchEnd();
+  });
+  expect(onZoomChange).toHaveBeenLastCalledWith(25);
+});

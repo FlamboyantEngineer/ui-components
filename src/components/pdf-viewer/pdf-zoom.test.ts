@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { findNextZoomLevel } from '../zoom-control/zoom-control.js';
-import { findLargestPage, pdfZoomLevels, resolveZoomPercent, toCssScale } from './pdf-zoom.js';
+import {
+  findLargestPage,
+  pdfZoomLevels,
+  resolveZoomLevels,
+  resolveZoomPercent,
+  toCssScale,
+} from './pdf-zoom.js';
 
 const a5 = { width: 420, height: 595 };
 
@@ -44,4 +50,31 @@ describe('PDF zoom', () => {
     }));
     expect(findLargestPage(sizes)).toEqual({ width: 199_999, height: 200_000 });
   });
+});
+
+it('UIC-PDF-VIEWER-3.7 clamps every zoom mode to a caller ladder', () => {
+  const zoomLevels = [25, 50, 100, 200, 400];
+  expect(resolveZoomPercent({ zoom: 1000, page: a5, available: null, zoomLevels })).toBe(400);
+});
+
+it('UIC-PDF-VIEWER-3.7 rejects invalid ladders and clamps fitted zooms', () => {
+  for (const levels of [[], [25], [50, 25], [25, 25], [0, 100], [25, NaN], [25, Infinity]])
+    expect(resolveZoomLevels(levels)).toBe(pdfZoomLevels);
+  const zoomLevels = [75, 100, 150];
+  expect(
+    resolveZoomPercent({
+      zoom: 'page-fit',
+      page: a5,
+      available: { width: 10000, height: 10000 },
+      zoomLevels,
+    }),
+  ).toBe(150);
+  expect(
+    resolveZoomPercent({
+      zoom: 'page-width',
+      page: a5,
+      available: { width: 1, height: 1 },
+      zoomLevels,
+    }),
+  ).toBe(75);
 });

@@ -40,6 +40,7 @@ interface SelectControlProps extends SelectConfig {
   isMultiple: boolean;
   /** A multiple select draws its chips inside the frame, before the trigger. */
   hasChipsInside?: boolean | undefined;
+  isMixed?: boolean | undefined;
 }
 
 /** The open list's props: its items, how they are drawn, the filter and the search's state. */
@@ -96,7 +97,12 @@ function useTrigger(
   return {
     ref,
     placeholder,
-    summary: props.isMultiple && count > 0 ? strings.selectedCount(count) : null,
+    summary:
+      props.isMultiple && props.isMixed
+        ? placeholder
+        : props.isMultiple && count > 0
+          ? strings.selectedCount(count)
+          : null,
     style,
     focus: () => triggerRef.current?.focus(),
   };
@@ -106,17 +112,19 @@ function useTrigger(
 function renderMultipleValues({
   label,
   isMultiple,
+  isMixed,
   state,
   model,
   actions,
 }: {
   label: string;
   isMultiple: boolean;
+  isMixed?: boolean | undefined;
   state: FieldState<SelectKeysValue>;
   model: SelectModel;
   actions: Pick<ReturnType<typeof useSelectActions>, 'commitKeys'>;
 }) {
-  if (!isMultiple) return { chips: null, removed: null };
+  if (!isMultiple || isMixed) return { chips: null, removed: null };
   return {
     chips: (
       <SelectChips
@@ -154,7 +162,14 @@ export function SelectControl({
   const actions = useSelectActions(props, model, list.isFilterable);
   const { ref: triggerRef, style, placeholder, summary, focus } = useTrigger(control, props, model);
   const submitted = isMultiple ? model.keys : [model.keys[0] ?? ''];
-  const { chips, removed } = renderMultipleValues({ label, isMultiple, state, model, actions });
+  const { chips, removed } = renderMultipleValues({
+    label,
+    isMultiple,
+    isMixed: props.isMixed,
+    state,
+    model,
+    actions,
+  });
   const select = (
     <AriaSelect<SelectFieldOption, 'single' | 'multiple'>
       className={hooks.slotClass('select')}

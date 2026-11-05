@@ -179,3 +179,17 @@ describe('PdfViewer keyboard', () => {
     expect(await pressUnhandled(user, '{Control>}{PageUp}{/Control}')).toBe(true);
   });
 });
+
+it('UIC-PDF-VIEWER-3.7 keyboard and wheel obey the caller ladder', async () => {
+  const user = userEvent.setup();
+  const onZoomChange = vi.fn();
+  await renderReady({ defaultZoom: 200, zoomLevels: [25, 100, 200, 400], onZoomChange });
+  focus(scroller());
+  await user.keyboard('{Control>}={/Control}');
+  expect(onZoomChange).toHaveBeenLastCalledWith(400);
+  await user.keyboard('{Control>}={/Control}');
+  expect(onZoomChange).toHaveBeenLastCalledWith(400);
+
+  fireEvent.wheel(scroller(), { ctrlKey: true, deltaY: 100 });
+  expect(onZoomChange).toHaveBeenLastCalledWith(200);
+});
