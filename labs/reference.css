@@ -57,6 +57,7 @@
 @import url('reference/comment-thread.css') layer(ui-reference);
 @import url('reference/completion-list.css') layer(ui-reference);
 @import url('reference/condition-builder.css') layer(ui-reference);
+@import url('reference/constraint-editor.css') layer(ui-reference);
 @import url('reference/copy-button.css') layer(ui-reference);
 @import url('reference/dashboard-grid.css') layer(ui-reference);
 @import url('reference/date-time-field.css') layer(ui-reference);

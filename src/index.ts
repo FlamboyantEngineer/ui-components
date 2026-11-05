@@ -48,6 +48,7 @@ export * from './components/comment-composer/index.js';
 export * from './components/comment-thread/index.js';
 export * from './components/completion-list/index.js';
 export * from './components/condition-builder/index.js';
+export * from './components/constraint-editor/index.js';
 export * from './components/context-menu/index.js';
 export * from './components/copy-button/index.js';
 export * from './components/dashboard-grid/index.js';
