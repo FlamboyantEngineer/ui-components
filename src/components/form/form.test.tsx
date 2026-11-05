@@ -1,12 +1,13 @@
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { createRef, type FormEvent, useState } from 'react';
+import { createRef, type FormEvent, useEffect, useRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { TextField as PlainField } from '../../../test/field-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { BooleanField } from '../boolean-field/boolean-field.js';
 import { Button } from '../button/button.js';
 import { Fieldset } from '../field/field.js';
+import { useFieldScope } from '../field/field-scope.js';
 import { Modal, ModalTrigger } from '../modal/modal.js';
 import { NumberField } from '../number-field/number-field.js';
 import { Popover, PopoverTrigger } from '../popover/popover.js';
@@ -183,6 +184,55 @@ describe('Form', () => {
     expect(field('Quantity')).toHaveAttribute('data-validation', 'invalid');
     await user.click(screen.getByRole('button', { name: 'Send' }));
     expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('UIC-FORM-1.5 UIC-FORM-1.7 reveals each field once for one native validation pass', async () => {
+    const reveal = vi.fn();
+    function Probe({ index }: { index: number }) {
+      const { register } = useFieldScope();
+      const input = useRef<HTMLInputElement>(null);
+      useEffect(
+        () =>
+          register?.({
+            getElement: () => input.current,
+            isBlocking: () => true,
+            revealValidation: reveal,
+            focus: () => input.current?.focus(),
+            getLabel: () => `Item ${index}`,
+            getIssues: () => [],
+            getRealtimeValidation: () => ({ status: 'invalid' }),
+          }),
+        [index, register],
+      );
+      return <input ref={input} aria-label={`Item ${index}`} required />;
+    }
+    function Probes({ count }: { count: number }) {
+      return (
+        <Form aria-label="Items">
+          {Array.from({ length: count }, (_, index) => (
+            <Probe key={index} index={index} />
+          ))}
+        </Form>
+      );
+    }
+    const { rerender } = render(<Probes count={100} />);
+    const form = screen.getByRole<HTMLFormElement>('form', { name: 'Items' });
+    await act(async () => {
+      form.checkValidity();
+      await Promise.resolve();
+    });
+    expect(reveal).toHaveBeenCalledTimes(100);
+    expect(screen.getByRole('textbox', { name: 'Item 0' })).toHaveFocus();
+    reveal.mockClear();
+    rerender(<Probes count={101} />);
+    act(() => screen.getByRole('textbox', { name: 'Item 0' }).blur());
+    // A later pass, after the first one's microtasks, reveals the fields again, the new one too.
+    await act(async () => {
+      form.checkValidity();
+      await Promise.resolve();
+    });
+    expect(reveal).toHaveBeenCalledTimes(101);
+    expect(screen.getByRole('textbox', { name: 'Item 0' })).toHaveFocus();
   });
 
   it('UIC-FORM-1.6 hands its form element to a ref, which submits it with the same validation', () => {

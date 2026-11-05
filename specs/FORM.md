@@ -34,7 +34,7 @@ Verification: `src/components/form/form.test.tsx`, `e2e/form.spec.ts`
 
 ### UIC-FORM-1.5 - Native validation
 
-`validationBehavior` (`FieldValidationBehavior`) shall set how the form validates, `native` by default, and become the validation behavior of the fields inside that set none (UIC-FIELD-3.10). In the `native` behavior the browser's constraint validation blocks a submit while a field's control reports its error as custom validity; the first `invalid` event of the blocked submit shows every field's validation and focuses its control, and the fields show their own messages instead of the browser's. In the `aria` behavior the form does not validate natively (`noValidate`).
+`validationBehavior` (`FieldValidationBehavior`) shall set how the form validates, `native` by default, and become the validation behavior of the fields inside that set none (UIC-FIELD-3.10). In the `native` behavior the browser's constraint validation blocks a submit while a field's control reports its error as custom validity; only the first `invalid` event of the blocked submit (the browser fires one per invalid control) shows every field's validation, once each, and focuses its control, and the fields show their own messages instead of the browser's. In the `aria` behavior the form does not validate natively (`noValidate`).
 
 Implementation: `src/components/form/form.tsx`, `src/components/field/field-form.ts`
 Verification: `src/components/form/form.test.tsx`, `e2e/form.spec.ts`
