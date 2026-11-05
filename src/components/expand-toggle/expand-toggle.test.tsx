@@ -51,6 +51,21 @@ describe('ExpandToggle', () => {
     expect(glyph(screen.getByRole('button'))).toBe('chevron-left');
   });
 
+  it('UIC-EXPAND-TOGGLE-1.1 UIC-COMPOSITION-5.1 asks to open again once the host takes control', async () => {
+    const user = userEvent.setup();
+    const onExpandedChange = vi.fn();
+    const { rerender } = render(
+      <ExpandToggle label="Details" onExpandedChange={onExpandedChange} />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Details' }));
+    expect(onExpandedChange).toHaveBeenLastCalledWith(true);
+    rerender(
+      <ExpandToggle label="Details" isExpanded={false} onExpandedChange={onExpandedChange} />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Details' }));
+    expect(onExpandedChange.mock.calls).toEqual([[true], [true]]);
+  });
+
   it('UIC-EXPAND-TOGGLE-1.2 is named Expand or Collapse, or by a constant label', async () => {
     const { rerender } = render(<ExpandToggle />);
     const toggle = screen.getByRole('button', { name: 'Expand' });
