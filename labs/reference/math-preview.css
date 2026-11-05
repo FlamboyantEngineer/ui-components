@@ -6,7 +6,6 @@
 
 .ui-math-preview[data-display='display'] {
   display: block;
-  overflow-x: auto;
 }
 
 .ui-math-preview__math math {
