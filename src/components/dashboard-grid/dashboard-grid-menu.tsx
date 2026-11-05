@@ -4,20 +4,20 @@
 // host's own entries, and the empty space's, for host actions at a cell such as adding a tile
 // (specs/DASHBOARD-GRID.md, UIC-DASHBOARD-GRID-5).
 
-import { useCallback, useEffect, useMemo, useRef, type Ref, type RefObject } from 'react';
+import { type Ref, type RefObject, useCallback, useEffect, useMemo, useRef } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useLocale } from '../../primitives/index.js';
+import { isFocusLost } from '../../utils/focus-target.js';
+import { getOwnerWindow } from '../../utils/owner-window.js';
 import {
   ContextMenu,
   useContextMenuTarget,
   useMenuController,
   useMenuControllerState,
 } from '../context-menu/context-menu.js';
-import { getOwnerWindow } from '../../utils/owner-window.js';
-import { isFocusLost } from '../../utils/focus-target.js';
 import { Menu, type MenuEntry } from '../menu/menu.js';
-import { resolveActionIcon, type MenuActionIcons } from '../menu/menu-action-icons.js';
+import { type MenuActionIcons, resolveActionIcon } from '../menu/menu-action-icons.js';
 import type { DashboardGridItem } from './dashboard-layout.js';
 import type { CellStep, TileMoveKind } from './use-tile-move.js';
 
@@ -150,7 +150,7 @@ export function useTileMenu(
 }
 
 /** The empty space menu options of a grid. */
-export interface DashboardSpaceMenuOptions {
+interface DashboardSpaceMenuOptions {
   entries: readonly MenuEntry[] | undefined;
   /** Called with the chosen entry and the cell the menu opened on, counting from 0. */
   onAction: ((key: Key, cell: { x: number; y: number }) => void) | undefined;
@@ -174,7 +174,7 @@ function cellAt(
  * the host's entries, which then hear the cell it opened on. A request on a tile, or anywhere when
  * there are no entries, keeps the browser's menu.
  */
-export function useSpaceMenu(
+function useSpaceMenu(
   options: DashboardSpaceMenuOptions,
   grid: {
     element: HTMLElement | null;

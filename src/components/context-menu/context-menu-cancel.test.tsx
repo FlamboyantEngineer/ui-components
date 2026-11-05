@@ -1,5 +1,5 @@
 import { act, render, screen } from '@testing-library/react';
-import { userEvent, type UserEvent } from '@testing-library/user-event';
+import { type UserEvent, userEvent } from '@testing-library/user-event';
 import type { SyntheticEvent } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Menu, MenuItem } from '../menu/menu.js';

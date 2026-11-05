@@ -1,8 +1,9 @@
-import { requireDefined } from '../../utils/require-defined.js';
-import { summarizeNumbers } from '../../utils/summarize-numbers.js';
-import { walkTree } from '../../utils/walk-tree.js';
 import type { ReactNode } from 'react';
 import type { Key, SortDescriptor, SortDirection } from '../../core/props.js';
+import { isDate } from '../../utils/is-date.js';
+import { toLocalDay } from '../../utils/local-day.js';
+import { summarizeNumbers } from '../../utils/summarize-numbers.js';
+import { walkTree } from '../../utils/walk-tree.js';
 import { getColumnText } from './table-columns.js';
 import {
   compareCellValues,
@@ -13,7 +14,6 @@ import {
   type TableRow,
 } from './table-rows.js';
 import type { TableNode } from './table-tree.js';
-import { toLocalDay } from '../../utils/local-day.js';
 
 /** A grouping by a computed value: its id, its name in group headers and each row's value. */
 export interface TableGrouping<T> {
@@ -78,7 +78,7 @@ export function isGroupNode<T>(node: TableBodyNode<T>): node is TableGroupNode<T
 
 /** Whether a value counts as no value: absent, null, empty text or an invalid date. */
 function isEmptyCellValue(value: TableCellValue): boolean {
-  if (value instanceof Date) return Number.isNaN(value.getTime());
+  if (isDate(value)) return Number.isNaN(value.getTime());
   return value === null || value === undefined || value === '';
 }
 
@@ -88,7 +88,7 @@ function isEmptyCellValue(value: TableCellValue): boolean {
  */
 export function formatGroupValue(value: TableCellValue): string {
   if (isEmptyCellValue(value)) return '';
-  if (value instanceof Date) return toLocalDay(value) ?? value.toISOString().split('T')[0] ?? '';
+  if (isDate(value)) return toLocalDay(value) ?? value.toISOString().split('T')[0] ?? '';
   return String(value);
 }
 
@@ -155,7 +155,7 @@ type GroupValueKind = (typeof groupValueKinds)[number];
 /** A value's kind: every empty value is one kind, and dates group by their day. */
 function getGroupValueKind(value: TableCellValue): GroupValueKind {
   if (isEmptyCellValue(value)) return 'empty';
-  if (value instanceof Date) return 'date';
+  if (isDate(value)) return 'date';
   return typeof value as 'string' | 'number' | 'boolean';
 }
 
@@ -188,26 +188,15 @@ function bucketNodes<T>(
 const compareKinds = (left: GroupValueKind, right: GroupValueKind) =>
   groupValueKinds.indexOf(left) - groupValueKinds.indexOf(right);
 
-/**
- * Each bucket's key, given in kind order so that of two values with the same text the string keeps
- * the plain key and the other takes a suffix, whatever order the rows come in.
- */
-function assignGroupKeys<T>(
-  buckets: readonly GroupBucket<T>[],
-  groupingId: string,
-  at: GroupLevel,
-): Map<GroupBucket<T>, { key: string; base: string }> {
-  const keys = new Map<GroupBucket<T>, { key: string; base: string }>();
-  const byKind = [...buckets].sort((left, right) => compareKinds(left.kind, right.kind));
-  for (const bucket of byKind) {
-    const base = `${at.prefix}${encodeGroupPart(groupingId)}=${encodeGroupPart(bucket.text)}`;
-    let key = base;
-    let suffix = 0;
-    while (at.reserved.has(key)) key = `${base}:${++suffix}`;
-    at.reserved.add(key);
-    keys.set(bucket, { key, base });
-  }
-  return keys;
+/** A typed path independent of peer values, suffixed only to avoid reserved row ids. */
+function assignGroupKey<T>(bucket: GroupBucket<T>, groupingId: string, at: GroupLevel): string {
+  const kind = bucket.kind === 'string' || bucket.kind === 'empty' ? '' : `:${bucket.kind}`;
+  const base = `${at.prefix}${encodeGroupPart(groupingId)}=${encodeGroupPart(bucket.text)}${kind}`;
+  let key = base;
+  let suffix = 0;
+  while (at.reserved.has(key)) key = `${base}:${++suffix}`;
+  at.reserved.add(key);
+  return key;
 }
 
 function groupLevel<T>(
@@ -223,9 +212,8 @@ function groupLevel<T>(
     (left, right) =>
       compareGroupValues(left.value, right.value, order) || compareKinds(left.kind, right.kind),
   );
-  const keys = assignGroupKeys(ordered, grouping.id, at);
   return ordered.map((bucket) => {
-    const { key, base } = requireDefined(keys.get(bucket));
+    const key = assignGroupKey(bucket, grouping.id, at);
     return {
       id: key,
       group: {
@@ -237,7 +225,7 @@ function groupLevel<T>(
         level: at.level,
       },
       children: groupLevel(bucket.nodes, rest, {
-        prefix: `${base}/`,
+        prefix: `${key}/`,
         level: at.level + 1,
         reserved: at.reserved,
         collator: at.collator,

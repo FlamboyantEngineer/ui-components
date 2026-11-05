@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useMemo, useRef, useState, type MouseEvent } from 'react';
+import { type MouseEvent, useId, useMemo, useRef, useState } from 'react';
 import { measuredProperty } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../../primitives/index.js';
@@ -9,15 +9,15 @@ import { mergeRefs } from '../../utils/merge-props.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { Tooltip } from '../tooltip/tooltip.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
-import { layoutSequence, type SequenceLayout } from './sequence-layout.js';
 import {
   getContextMenuRequestHandlers,
   useReleaseMissingSelection,
 } from './sequence-interaction.js';
+import { layoutSequence, type SequenceLayout } from './sequence-layout.js';
 import { SequenceStates, useStateFocusRecovery } from './sequence-states.js';
+import type { StateMachineViewProps } from './state-machine-view.js';
 import { hooks } from './state-machine-view-hooks.js';
 import { useSequenceMeasurements } from './use-sequence-measurements.js';
-import type { StateMachineViewProps } from './state-machine-view.js';
 
 export type StateMachineSequenceViewProps = Omit<StateMachineViewProps, 'presentation'>;
 

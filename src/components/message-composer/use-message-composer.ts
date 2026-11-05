@@ -1,19 +1,19 @@
 'use client';
 
-import { useRef, type RefObject, type TextareaHTMLAttributes } from 'react';
+import { type RefObject, type TextareaHTMLAttributes, useRef } from 'react';
 import { useUiStrings } from '../../core/provider.js';
-import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { useAutoGrow } from '../../utils/use-auto-grow.js';
-import { useTextCompletions, type TextCompletions } from '../completion-list/completion-list.js';
+import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
+import { type TextCompletions, useTextCompletions } from '../completion-list/completion-list.js';
 import type { ComposerFrameModel } from './composer-frame.js';
 import { runComposerKey, useComposerKeys } from './composer-keys.js';
 import {
   createMessageCodec,
-  tokenTriggers,
   type MessageComposerToken,
+  tokenTriggers,
 } from './composer-message.js';
 import type { MessageComposerProps, MessageComposerSharedProps } from './message-composer.js';
-import { useComposerState, type ComposerFormat } from './use-composer-state.js';
+import { type ComposerFormat, useComposerState } from './use-composer-state.js';
 import { attachPastedFiles } from './use-file-drop.js';
 
 interface MessageComposerModel {

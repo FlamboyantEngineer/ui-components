@@ -1,32 +1,32 @@
 'use client';
 
-import { CheckGlyph, CloseGlyph } from '../../core/glyphs.js';
 import {
+  type FocusEvent,
+  type KeyboardEvent,
+  type ReactNode,
   useId,
   useLayoutEffect,
   useRef,
   useState,
-  type FocusEvent,
-  type KeyboardEvent,
-  type ReactNode,
 } from 'react';
-import { Input } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
+import { CheckGlyph, CloseGlyph } from '../../core/glyphs.js';
 import type { BaseProps, ControlSize, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { Input } from '../../primitives/index.js';
 import {
+  type CellCoordinates,
   formatCellReference,
   parseCellReference,
-  type CellCoordinates,
 } from '../../utils/cell-reference.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
+import { Button } from '../button/button.js';
 import { CodeEditor, type CodeTokenizer } from '../code-editor/code-editor.js';
 import type { Completion, Completions } from '../completion-list/completion-list.js';
+import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { FormulaBarControls } from './formula-bar-controls.js';
 import { FormulaBarFunctions } from './formula-bar-functions.js';
 import { formulaBarHooks as hooks } from './formula-bar-hooks.js';
-import { Button } from '../button/button.js';
-import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 
 export interface FormulaBarProps extends RefProps<HTMLDivElement>, BaseProps, AriaLabellingProps {
   /** Caller-owned reference and editor controls; the bar supplies only the group, glyph and layout. */

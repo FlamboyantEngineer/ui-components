@@ -6,7 +6,7 @@ import { NumberField } from '../../src/components/number-field/number-field.js';
 import { Switch } from '../../src/components/switch/switch.js';
 import type { OverlayPositionProps } from '../../src/core/events.js';
 
-export type OverlayGeometry = Required<
+type OverlayGeometry = Required<
   Pick<OverlayPositionProps, 'offset' | 'crossOffset' | 'shouldFlip' | 'containerPadding'>
 >;
 

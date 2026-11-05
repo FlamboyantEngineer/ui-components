@@ -1,8 +1,8 @@
 'use client';
 
-import { useLayoutEffect, useMemo, useRef, useState, type RefObject } from 'react';
+import { type RefObject, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { CodeEdit } from './code-editing.js';
-import { findMatches, type CodeRange } from './code-ranges.js';
+import { type CodeRange, findMatches } from './code-ranges.js';
 
 interface CodeSearchOptions {
   value: string;

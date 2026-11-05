@@ -1,4 +1,3 @@
-import { ListTaskGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
@@ -6,8 +5,8 @@ import {
   ChatTranscript,
 } from '../../src/components/chat-transcript/chat-transcript.js';
 import {
-  createTriggerCompletions,
   type Completion,
+  createTriggerCompletions,
 } from '../../src/components/completion-list/completion-list.js';
 import {
   MessageComposer,
@@ -18,17 +17,18 @@ import {
   MessageComposerToggle,
 } from '../../src/components/message-composer/index.js';
 import { UserIdentity } from '../../src/components/user-identity/user-identity.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { ListTaskGlyph } from '../../src/core/glyphs.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { ComposerControlsSection, labApprovalModes } from './message-composer-controls-cases.js';
+import { ComposerHandleSections } from './message-composer-handle-cases.js';
+import { ComposerMenuSection, createLabComposerMenu } from './message-composer-menu-cases.js';
+import { RangeComposerSections } from './message-composer-range-cases.js';
+import { ReferenceComposerSection } from './message-composer-reference-cases.js';
 import {
   AttachmentChip,
   ComposerBanner,
   RichComposerSections,
 } from './message-composer-rich-cases.js';
-import { ComposerControlsSection, labApprovalModes } from './message-composer-controls-cases.js';
-import { createLabComposerMenu, ComposerMenuSection } from './message-composer-menu-cases.js';
-import { ComposerHandleSections } from './message-composer-handle-cases.js';
-import { RangeComposerSections } from './message-composer-range-cases.js';
-import { ReferenceComposerSection } from './message-composer-reference-cases.js';
 import { ComposerShortcutSection } from './message-composer-shortcut-cases.js';
 import { TeamChatSection } from './message-composer-team-cases.js';
 import { WorkspaceComposerSection } from './message-composer-workspace-cases.js';

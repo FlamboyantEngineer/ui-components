@@ -1,5 +1,5 @@
-import { toCollectionKey } from '../src/utils/to-collection-key.js';
 import type { Locator, Page } from '@playwright/test';
+import { toCollectionKey } from '../src/utils/to-collection-key.js';
 import { expect, test } from './fixtures.js';
 
 const section = (page: Page, name: string) => page.locator(`[data-lab="${name}"]`);
@@ -921,6 +921,56 @@ test.describe('Table lab', () => {
       grid.locator('.ui-table__group-row .ui-table__aggregate-cell:last-child'),
     ).toHaveText(['20', '10', '30', '40']);
     await lab.expectAccessible('[data-lab="grouping-typed"]');
+  });
+
+  test('UIC-TABLE-13.1 UIC-TABLE-13.4 retains numeric collapse across peer changes, filtering and paging', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('table');
+    const root = section(page, 'grouping-peer-identity');
+    const number = root.getByRole('row', { name: /^Number group/ });
+    await number.focus();
+    await page.keyboard.press('ArrowLeft');
+    await expect(number.getByRole('button')).toHaveAccessibleName(/^Expand/);
+    await root.getByRole('button', { name: 'Add text peer' }).press('Enter');
+    await expect(number.getByRole('button')).toHaveAccessibleName(/^Expand/);
+    await root.getByRole('button', { name: 'Next page' }).press('Enter');
+    await expect(root.getByRole('row', { name: 'Text reading' })).toBeVisible();
+    const search = root.getByRole('searchbox');
+    await search.fill('Text');
+    await expect(root.getByRole('row', { name: 'Text reading' })).toBeVisible();
+    await search.clear();
+    await expect(number.getByRole('button')).toHaveAccessibleName(/^Expand/);
+    await expect(root.getByRole('row', { name: 'Number reading' })).toHaveCount(0);
+    await root.getByRole('button', { name: 'Remove text peer' }).press('Enter');
+    await expect(number.getByRole('button')).toHaveAccessibleName(/^Expand/);
+    await root.getByRole('button', { name: 'Add text peer' }).press('Enter');
+    await root.getByRole('button', { name: 'Next page' }).press('Enter');
+    await expect(root.getByRole('row', { name: 'Text reading' })).toBeVisible();
+    await lab.expectAccessible('[data-lab="grouping-peer-identity"]');
+  });
+
+  test('UIC-TABLE-13.1 UIC-TABLE-13.4 retains nested date collapse when group sorting reverses', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('table');
+    const root = section(page, 'grouping-parent-identity');
+    const dateChild = root.getByRole('row', { name: /^Date secondary/ });
+    const textChild = root.getByRole('row', { name: /^Text secondary/ });
+    const parents = root.locator('.ui-table__group-row[aria-level="1"]');
+    await expect(parents).toHaveText([/Text group/, /Date group/]);
+    await dateChild.focus();
+    await page.keyboard.press('ArrowLeft');
+    await expect(dateChild.getByRole('button')).toHaveAccessibleName(/^Expand/);
+    await root.getByRole('button', { name: 'Reverse group order' }).press('Enter');
+    await expect(parents).toHaveText([/Date group/, /Text group/]);
+    await expect(dateChild.getByRole('button')).toHaveAccessibleName(/^Expand/);
+    await expect(textChild.getByRole('button')).toHaveAccessibleName(/^Collapse/);
+    await expect(root.getByRole('row', { name: 'Date reading' })).toHaveCount(0);
+    await expect(root.getByRole('row', { name: 'Text reading' })).toBeVisible();
+    await lab.expectAccessible('[data-lab="grouping-parent-identity"]');
   });
 
   test('UIC-TABLE-13.1 groups dates by local day with unreadable dates among the empty values', async ({

@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { createFrameRealm } from '../../../test/frame-realm.js';
 import { isFieldValueEqual, toFieldValueKey } from './field-value.js';
 
 describe('field values', () => {
@@ -23,5 +24,17 @@ describe('field values', () => {
     const walks = (target: object) => entries.mock.calls.filter(([arg]) => arg === target).length;
     expect(walks(value)).toBe(1);
     expect(walks(nested)).toBe(1);
+  });
+});
+
+describe('field values from another window', () => {
+  it('UIC-FIELD-2.3 compares dates of a frame like local ones', () => {
+    const realm = createFrameRealm();
+    const first = new realm.Date(2026, 10, 4, 12);
+    const second = new realm.Date(2026, 10, 5, 12);
+    expect(isFieldValueEqual(first, second)).toBe(false);
+    expect(isFieldValueEqual(first, new Date(2026, 10, 4, 12))).toBe(true);
+    expect(toFieldValueKey(first)).toBe(toFieldValueKey(new Date(2026, 10, 4, 12)));
+    expect(isFieldValueEqual({ due: first }, { due: second })).toBe(false);
   });
 });

@@ -1,9 +1,9 @@
 'use client';
 
+import { type RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { findMaximum } from '../../utils/find-maximum.js';
-import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
-import type { SharedViewportObserver } from './use-shared-viewport-observer.js';
 import { isShallowEqual } from '../../utils/is-shallow-equal.js';
+import type { SharedViewportObserver } from './use-shared-viewport-observer.js';
 
 /** Registers a sticky header to keep the vertical thumb below; returns its unregistration. */
 export type HeaderRegistration = (element: HTMLElement | null) => (() => void) | undefined;

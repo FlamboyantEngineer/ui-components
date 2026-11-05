@@ -1,13 +1,13 @@
-import { readFileSync, readdirSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type * as Pdfjs from 'pdfjs-dist';
 import { describe, expect, it } from 'vitest';
 import {
   isTextItem,
-  toDocumentParams,
   type PdfEngine,
   type PdfTextContent,
   type PdfViewport,
+  toDocumentParams,
 } from './pdf-engine.js';
 
 function acceptEngine<V extends PdfViewport, C extends PdfTextContent>(engine: PdfEngine<V, C>) {
@@ -57,6 +57,24 @@ describe('PDF engine contract', () => {
     if (!('data' in fromBuffer)) throw new Error('an ArrayBuffer must open as data');
     expect(fromBuffer.data.buffer).not.toBe(buffer);
     expect(fromBuffer.data.byteLength).toBe(9);
+  });
+
+  it('UIC-PDF-VIEWER-1.1 reads URLs and bytes made in a same-origin frame', () => {
+    const frame = document.body.appendChild(document.createElement('iframe'));
+    const view = frame.contentWindow as Window & typeof globalThis;
+    expect(toDocumentParams(new view.URL('https://example.com/report.pdf'))).toEqual({
+      url: 'https://example.com/report.pdf',
+    });
+    const bytes = new view.Uint8Array([37, 80, 68, 70]);
+    for (const source of [bytes, bytes.buffer]) {
+      const params = toDocumentParams(source);
+      if (!('data' in params)) throw new Error('bytes must open as data');
+      expect(params.data).toBeInstanceOf(Uint8Array);
+      expect([...params.data]).toEqual([37, 80, 68, 70]);
+      expect(params.data.buffer).not.toBe(bytes.buffer);
+    }
+    expect(bytes.byteLength).toBe(4);
+    frame.remove();
   });
 
   it('UIC-PDF-VIEWER-1.1 tells text runs from marked-content boundaries', () => {

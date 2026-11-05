@@ -1,7 +1,6 @@
-import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { Size } from '../../core/props.js';
-import { layoutSequenceRoutes, drawSequenceRoute } from './sequence-routes.js';
-import type { SequenceRoute } from './sequence-routes.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import { drawSequenceRoute, layoutSequenceRoutes, type SequenceRoute } from './sequence-routes.js';
 import type {
   StateMachineState,
   StateMachineTransition,
@@ -15,7 +14,7 @@ export interface SequenceMeasurements {
   labels: ReadonlyMap<string, { width: number; height: number }>;
 }
 
-export interface SequenceStatePosition {
+interface SequenceStatePosition {
   state: StateMachineState;
   x: number;
   width: number;

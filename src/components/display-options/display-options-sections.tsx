@@ -1,9 +1,8 @@
 'use client';
 
-import { SortAscendingGlyph, SortDescendingGlyph } from '../../core/glyphs.js';
 // The sections of the display options popover: grouping, sorting, shown properties and density.
-
 import { useId } from 'react';
+import { SortAscendingGlyph, SortDescendingGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import type { Key, SortDirection } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -13,12 +12,12 @@ import { ListView, ListViewItem } from '../list-row/list-row.js';
 import { SegmentedChoice } from '../segmented-choice/segmented-choice.js';
 import { SelectField } from '../select-field/select-field.js';
 import {
-  moveProperties,
-  orderProperties,
-  toggleProperty,
   type DisplayOptionsDensity,
   type DisplayOptionsProperty,
   type DisplayOptionsValue,
+  moveProperties,
+  orderProperties,
+  toggleProperty,
 } from './display-options-model.js';
 
 interface DisplayOptionsSectionProps {

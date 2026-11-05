@@ -1,17 +1,17 @@
 'use client';
 
-import { createContext, Fragment, use, useSyncExternalStore, type ReactNode } from 'react';
-import { Keyboard } from '../../primitives/index.js';
-import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
+import { createContext, Fragment, type ReactNode, use, useSyncExternalStore } from 'react';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { Keyboard } from '../../primitives/index.js';
 import { MetaLine, type MetaLineProps } from '../meta-line/meta-line.js';
+import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import {
   formatShortcutAccessibleText,
   formatShortcutSteps,
-  getShortcutPlatform,
   getShortcutKeySeparator,
+  getShortcutPlatform,
   type ShortcutChord,
   type ShortcutPlatform,
   type ShortcutSequence,
@@ -159,6 +159,6 @@ export function KeyHints({ hints, platform, appearance, className, ...rest }: Ke
   );
 }
 
-export { formatAriaKeyShortcuts } from './shortcut-format.js';
 export type { ShortcutChord, ShortcutPlatform } from './shortcut-format.js';
+export { formatAriaKeyShortcuts } from './shortcut-format.js';
 export { isChordPress, matchesChord, readCommandKey } from './shortcut-match.js';

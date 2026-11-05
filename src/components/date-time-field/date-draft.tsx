@@ -4,20 +4,20 @@
 // or a range with one end left empty, which the building block does not report as a change.
 
 import {
+  type ContextType,
   createContext,
+  type ReactNode,
+  type RefObject,
   useCallback,
   useContext,
   useLayoutEffect,
   useRef,
   useState,
-  type ContextType,
-  type ReactNode,
-  type RefObject,
 } from 'react';
-import { DateFieldStateContext, TimeFieldStateContext } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
-import type { FieldState } from '../field/field.js';
+import { DateFieldStateContext, TimeFieldStateContext } from '../../primitives/index.js';
 import { useNativeReset } from '../../utils/use-native-reset.js';
+import type { FieldState } from '../field/field.js';
 
 /** How much of one segment group the reader has filled. */
 type DraftFill = 'empty' | 'partial' | 'complete';

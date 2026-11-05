@@ -1,12 +1,12 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { userEvent, type UserEvent } from '@testing-library/user-event';
+import { type UserEvent, userEvent } from '@testing-library/user-event';
 import { createRef, StrictMode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
-import { Menu, MenuItem, MenuPopover, SubmenuTrigger } from '../menu/menu.js';
 import { Button } from '../button/button.js';
 import { ListView, ListViewItem } from '../list-row/list-view.js';
+import { Menu, MenuItem, MenuPopover, SubmenuTrigger } from '../menu/menu.js';
 import { ContextMenuTrigger } from './context-menu.js';
 
 afterEach(() => {

@@ -8,9 +8,9 @@ import {
   textMatchesTerms,
 } from '../../src/components/text-match/index.js';
 import { TextMatch, TextMatchProvider } from '../../src/components/text-match/text-match.js';
-import { TextMatchNestedCases } from './text-match-nested-cases.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabHelperCalls } from './lab-helper-calls.js';
+import { TextMatchNestedCases } from './text-match-nested-cases.js';
 
 const sample = 'Go to the top of the Line-height list to add Favorites';
 const queries = ['(none)', 'to', 'fav', 'line height', 'pear'] as const;

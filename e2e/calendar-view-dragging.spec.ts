@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
+import { expect, test } from './fixtures.js';
 
 const demo = (page: Page) => page.locator('[data-lab-demo="dragging"]');
 const output = (page: Page) => demo(page).locator('[data-lab-output]');

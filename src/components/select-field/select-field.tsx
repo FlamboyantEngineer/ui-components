@@ -1,27 +1,27 @@
 'use client';
 
 import type { Ref } from 'react';
-import type { TreeItemData } from '../tree/tree.js';
-import { SelectTreeField, type SelectTreeFieldProps } from './select-tree-field.js';
 import type { OpenStateProps } from '../../core/events.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import {
   Field,
-  useFieldControl,
   type FieldInputProps,
   type FieldTextInputProps,
+  flattenPickerItems,
+  useFieldControl,
 } from '../field/field.js';
+import type { TreeItemData } from '../tree/tree.js';
 import { SelectControl } from './select-control.js';
+import { selectFieldHooks as hooks } from './select-field-hooks.js';
 import type { SelectFieldOptionRenderer } from './select-option.js';
-import { flattenPickerItems } from '../field/field.js';
 import { isNoSelection, type SelectFieldItem } from './select-options.js';
 import type { SelectFieldLoader } from './select-search.js';
-import { selectFieldHooks as hooks } from './select-field-hooks.js';
+import { SelectTreeField, type SelectTreeFieldProps } from './select-tree-field.js';
 
 export type SelectFieldSelectionMode = 'single' | 'multiple';
 
 /** Where a multiple select draws its chips: on a row `below` its trigger, or `inside` its frame. */
-export type SelectFieldChipPlacement = 'below' | 'inside';
+type SelectFieldChipPlacement = 'below' | 'inside';
 
 /** One key or none for a single select, a list of keys for a multiple select. */
 export type SelectFieldValue<M extends SelectFieldSelectionMode = 'single'> = M extends 'multiple'
@@ -142,10 +142,9 @@ export function SelectField<
   return props.mode === 'tree' ? <SelectTreeField {...props} /> : <SelectListField {...props} />;
 }
 
-export type { SelectFieldValueDisplay } from './select-tree-field.js';
-
-export { SelectControl } from './select-control.js';
 export type { SelectKeysValue } from './select-control.js';
+export { SelectControl } from './select-control.js';
 export type { SelectFieldOptionRenderer } from './select-option.js';
 export type { SelectFieldGroup, SelectFieldItem, SelectFieldOption } from './select-options.js';
 export type { SelectFieldLoader, SelectFieldPage } from './select-search.js';
+export type { SelectFieldValueDisplay } from './select-tree-field.js';

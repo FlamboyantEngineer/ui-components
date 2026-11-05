@@ -1,11 +1,12 @@
 'use client';
 
-import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { useId, useState, useSyncExternalStore } from 'react';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { getElementByIdFrom } from '../../utils/owner-window.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import type { FieldSeverity } from '../field/field.js';
-import { useFormProblems, type FormProblem, type FormProblemSource } from '../form/form.js';
+import { type FormProblem, type FormProblemSource, useFormProblems } from '../form/form.js';
 import { useHeadingLevel } from '../section-header/section-header.js';
 import {
   ProblemItems,
@@ -13,7 +14,6 @@ import {
   type ProblemListItem,
   type ShownProblem,
 } from './problem-list-items.js';
-import { getElementByIdFrom } from '../../utils/owner-window.js';
 
 export type { ProblemListItem } from './problem-list-items.js';
 

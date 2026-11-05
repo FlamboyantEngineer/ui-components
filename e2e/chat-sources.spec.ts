@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Chat Sources lab', () => {
   test('UIC-CHAT-SOURCES-1.1 UIC-CHAT-SOURCES-1.2 lists sources with their details', async ({

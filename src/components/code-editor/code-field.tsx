@@ -2,22 +2,22 @@
 
 import { useDeferredValue, useMemo } from 'react';
 import { useUiStrings } from '../../core/provider.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Button } from '../button/button.js';
-import { CodeSurface, type CodeSurfaceProps } from './code-surface.js';
-import type { CodeEditorFieldProps } from './code-editor.js';
-import { resolveCodeTokenizer } from './code-languages.js';
 import {
   Field,
-  toAriaControlProps,
-  useFieldControl,
   type FieldControlProps,
   type FieldIssue,
+  toAriaControlProps,
+  useFieldControl,
 } from '../field/field.js';
+import type { CodeEditorFieldProps } from './code-editor.js';
+import { codeEditorHooks as hooks } from './code-editor-hooks.js';
+import { resolveCodeTokenizer } from './code-languages.js';
+import { CodeSurface, type CodeSurfaceProps } from './code-surface.js';
 import { createJsonChecker } from './json-check.js';
 import { createJsonCompletion, describeJsonAt } from './json-complete.js';
 import { formatJson } from './json-text.js';
-import { codeEditorHooks as hooks } from './code-editor-hooks.js';
-import { isEmptyNode } from '../../utils/is-empty-node.js';
 
 /** The field's control props the surface takes: all of them but the validation behaviour. */
 function toSurfaceControlProps(control: FieldControlProps) {

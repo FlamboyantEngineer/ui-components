@@ -4,15 +4,22 @@ import { useLayoutEffect, useMemo } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { readTreeChildren } from '../../utils/tree-reorder.js';
 import { formatPath } from '../../utils/path.js';
-import { FieldFormValue } from '../field/field.js';
-import type { FieldControlProps, FieldInputProps, FieldState } from '../field/field.js';
+import { readTreeChildren } from '../../utils/tree-reorder.js';
+import { useCloseWhenLocked } from '../../utils/use-close-when-locked.js';
+import {
+  type FieldControlProps,
+  FieldFormValue,
+  type FieldInputProps,
+  type FieldState,
+} from '../field/field.js';
 import { Tag, TagGroup } from '../tag-group/tag-group.js';
 import type { TreeItemData } from '../tree/tree.js';
+import { selectFieldHooks as hooks } from './select-field-hooks.js';
+import type { SelectFieldValueDisplay, SelectTreeFieldProps } from './select-tree-field.js';
 import {
-  getAncestorKeys,
   closeChosenBranches,
+  getAncestorKeys,
   getTopChosenKeys,
   indexTreeItems,
   orderChosenKeys,
@@ -20,11 +27,8 @@ import {
   settleCascadeKeys,
   type TreeIndex,
 } from './tree-index.js';
-import { useCloseWhenLocked } from '../../utils/use-close-when-locked.js';
 import { TreeSelectPopover } from './tree-select-popover.js';
 import { TreeSelectTrigger } from './tree-select-trigger.js';
-import type { SelectTreeFieldProps, SelectFieldValueDisplay } from './select-tree-field.js';
-import { selectFieldHooks as hooks } from './select-field-hooks.js';
 
 type TreeSelectConfig<T extends TreeItemData> = Omit<
   SelectTreeFieldProps<T, 'single' | 'multiple'>,

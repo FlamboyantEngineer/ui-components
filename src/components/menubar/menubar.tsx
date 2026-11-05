@@ -1,19 +1,19 @@
 'use client';
 
-import { useContext, useId, useLayoutEffect, useRef, type ReactNode } from 'react';
-import {
-  useInteractOutside,
-  Button as AriaButton,
-  RootMenuTriggerStateContext,
-  useLocale,
-} from '../../primitives/index.js';
+import { type ReactNode, useContext, useId, useLayoutEffect, useRef } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, ControlSize, NativeProps, Orientation } from '../../core/props.js';
+import {
+  Button as AriaButton,
+  RootMenuTriggerStateContext,
+  useInteractOutside,
+  useLocale,
+} from '../../primitives/index.js';
 import { mergeProps } from '../../utils/merge-props.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
-import { Menu, MenuOverlay, MenuTrigger, type MenuProps } from '../menu/menu.js';
-import { MenubarContext, useMenubarContext, useMenubarState } from './menubar-state.js';
 import { useLatest } from '../../utils/use-latest.js';
+import { Menu, MenuOverlay, type MenuProps, MenuTrigger } from '../menu/menu.js';
+import { MenubarContext, useMenubarContext, useMenubarState } from './menubar-state.js';
 
 export interface MenubarProps
   extends Omit<NativeProps<'div'>, 'role' | 'children' | 'aria-orientation'>, BaseProps {

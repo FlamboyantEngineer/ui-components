@@ -1,15 +1,15 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
-import type { Key } from '../../src/core/props.js';
+import { type FormEvent, useEffect, useRef, useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
 import {
-  FileUpload,
   type FileRejection,
+  FileUpload,
   type FileUploadItem,
   type FileUploadProps,
   type FileUploadVariant,
 } from '../../src/components/file-upload/file-upload.js';
-import { Button } from '../../src/components/button/button.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import type { Key } from '../../src/core/props.js';
 import { formatBytes } from '../../src/utils/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabHelperCalls } from './lab-helper-calls.js';
 
 const variants = ['button', 'dropzone'] as const;
@@ -191,6 +191,68 @@ function UploadForm() {
         </p>
       </form>
     </>
+  );
+}
+
+function SharedNameForm() {
+  const first = useSimulatedUpload();
+  const second = useSimulatedUpload();
+  const [sent, setSent] = useState('nothing');
+  return (
+    <form
+      aria-label="Shared documents"
+      data-lab-form="shared-uploads"
+      onSubmit={(event) => {
+        event.preventDefault();
+        setSent(
+          Array.from(
+            new FormData(event.currentTarget),
+            ([name, value]) =>
+              `${name}: ${typeof value === 'string' ? value : value.name || '(empty file)'}`,
+          ).join(', '),
+        );
+      }}
+    >
+      <input type="hidden" name="docs" value="existing" />
+      <label>
+        Native document <input type="file" name="docs" />
+      </label>
+      <FileUpload
+        label="First documents"
+        name="docs"
+        allowsMultiple
+        files={first.files}
+        onSelect={first.add}
+        onRemove={first.remove}
+        data-lab-upload="shared-first"
+      />
+      <label>
+        Note <input id="elements" name="note" defaultValue="For review" />
+      </label>
+      <label>
+        Document reference <input name="docs" defaultValue="reference" />
+      </label>
+      <FileUpload
+        label="Second documents"
+        name="docs"
+        allowsMultiple
+        files={second.files}
+        onSelect={second.add}
+        onRemove={second.remove}
+        data-lab-upload="shared-second"
+      />
+      <label>
+        Optional document <input type="file" name="docs" />
+      </label>
+      <input type="hidden" name="docs" value="last" />
+      <button type="submit" name="action" value="send">
+        Send documents
+      </button>{' '}
+      <button type="reset">Reset documents</button>
+      <p>
+        Sent: <output data-lab-output="shared-sent">{sent}</output>
+      </p>
+    </form>
   );
 }
 
@@ -475,6 +537,12 @@ mountLab(
       description="The upload is required: Send refuses an empty upload and moves focus to it; the form data carries the chosen files. Reset leaves the listed files, which the page holds, and the next Send still carries them. Moving the files to the other form makes that form send and reset them, and this one neither."
     >
       <UploadForm />
+    </LabSection>
+    <LabSection
+      title="Uploads sharing a field name"
+      description="Two independent uploads and native controls share docs. Sending keeps their strings and files in form order. Reset keeps the listed files ready to send."
+    >
+      <SharedNameForm />
     </LabSection>
     <LabSection
       title="Sizes for hosts"

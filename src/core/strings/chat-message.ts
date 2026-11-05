@@ -3,7 +3,7 @@ import { defineStrings } from '../message-format.js';
  * Strings of chat messages and the parts around them: message names, delivery, markers, quotes,
  * typing, read receipts and the unread divider.
  */
-export interface ChatMessageStrings {
+interface ChatMessageStrings {
   /**
    * Names a message by its author and its absolute date and time (`Maria Santos, Apr 20, 2026,
    * 10:12 AM`); either part may be missing.

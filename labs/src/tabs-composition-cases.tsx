@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Tab, TabList, TabPanel, Tabs } from '../../src/components/tabs/tabs.js';
+import { Icon } from '../../src/components/icon/icon.js';
 import { Switch } from '../../src/components/switch/switch.js';
+import { Tab, TabList, TabPanel, Tabs } from '../../src/components/tabs/tabs.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { StarGlyph } from '../../src/core/glyphs.js';
-import { Icon } from '../../src/components/icon/icon.js';
 import { LabSection } from './chrome/index.js';
 
 const notes = [

@@ -3,8 +3,8 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import type { InlineTextDiffSegment } from './text-diff.js';
 
-export { createInlineWordDiff } from './text-diff.js';
 export type { InlineTextDiffSegment } from './text-diff.js';
+export { createInlineWordDiff } from './text-diff.js';
 
 /** `changes` marks the removed and added runs; `final` shows the resulting text alone. */
 export type InlineTextDiffView = 'changes' | 'final';

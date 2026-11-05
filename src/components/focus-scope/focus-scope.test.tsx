@@ -1,13 +1,13 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { createRef, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { createRef, type KeyboardEvent, type ReactNode, useRef, useState } from 'react';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import {
-  FocusScope,
-  useFocusManager,
   type FocusManager,
+  FocusScope,
   type FocusScopeProps,
+  useFocusManager,
 } from './focus-scope.js';
 
 /** A page with buttons around a scope holding two fields and a button. */

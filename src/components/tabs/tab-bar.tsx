@@ -1,18 +1,17 @@
 'use client';
 
-import { PlusGlyph } from '../../core/glyphs.js';
 // The parts around a list of tabs: scroll buttons, the "more" menu of hidden tabs and the add button.
-
-import { useContext, type ReactNode } from 'react';
+import { type ReactNode, useContext } from 'react';
+import { PlusGlyph } from '../../core/glyphs.js';
 import type { Key, Orientation } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useOverflowItems } from '../../utils/use-overflow-items.js';
-import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import { Button } from '../button/button.js';
+import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import { ScrollStrip, type useToolbarScroll } from '../toolbar-scroller/toolbar-scroller.js';
-import { TabsSharedContext, type TabListModel } from './tab-actions.js';
-import type { TabListPartsModel } from './tab-list-parts.js';
+import { type TabListModel, TabsSharedContext } from './tab-actions.js';
 import { tabsHooks as hooks } from './tab-hooks.js';
+import type { TabListPartsModel } from './tab-list-parts.js';
 
 /** Which tabs a menu list keeps, and the elements that measure them. */
 type TabOverflow = ReturnType<typeof useTabOverflow>;

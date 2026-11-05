@@ -1,18 +1,21 @@
 'use client';
 
-import { readCommandKey } from '../shortcut/shortcut.js';
 import {
-  useLayoutEffect,
-  useMemo,
-  useRef,
   type ClipboardEvent,
   type FocusEvent,
   type KeyboardEvent,
+  useLayoutEffect,
+  useMemo,
+  useRef,
 } from 'react';
-import { useLocale } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
+import { useLocale } from '../../primitives/index.js';
+import { isHTMLElement } from '../../utils/is-element.js';
 import { parseTsv } from '../../utils/tsv.js';
+import { readCommandKey } from '../shortcut/shortcut.js';
 import {
+  type CellBounds,
+  type CellGrid,
   createBoundsRange,
   createCellRange,
   findDataCell,
@@ -20,24 +23,21 @@ import {
   isSameCellRange,
   readCellPosition,
   stepCell,
-  type CellBounds,
-  type CellGrid,
   type TableCellPosition,
   type TableCellRange,
   type TableCellSelectionMode,
 } from './table-cell-range.js';
 import {
+  type CellWrite,
   copyBounds,
   planClear,
   planFill,
   planPaste,
   resolveCellWrites,
-  type CellWrite,
 } from './table-cell-writes.js';
 import type { TableRow } from './table-rows.js';
-import { useCellPointer } from './use-cell-pointer.js';
 import type { TableCellEdit } from './use-cell-editing.js';
-import { isHTMLElement } from '../../utils/is-element.js';
+import { useCellPointer } from './use-cell-pointer.js';
 
 /** A table's spreadsheet mode: cell and range selection, the clipboard and filling. */
 export interface TableSpreadsheetProps<T> {

@@ -1,7 +1,7 @@
 import { act, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { installEditorDom } from '../../../test/rich-text-fixtures.js';
-import { useComposerControlsValue, type ComposerControlsValue } from './composer-controls.js';
+import { type ComposerControlsValue, useComposerControlsValue } from './composer-controls.js';
 import { MessageComposer } from './message-composer.js';
 import { RichMessageComposer } from './rich/rich-message-composer.js';
 

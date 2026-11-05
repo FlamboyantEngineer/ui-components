@@ -1,14 +1,14 @@
 'use client';
 
-import { useLayoutEffect, useRef, type Ref, type RefObject } from 'react';
+import { type Ref, type RefObject, useLayoutEffect, useRef } from 'react';
 import { clamp } from '../../utils/clamp.js';
 import { getOwnerWindow } from '../../utils/owner-window.js';
 import { measureInScroller } from '../../utils/scroll-geometry.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useResizeObserver } from '../../utils/use-resize-observer.js';
 import { Tab, TabList } from '../tabs/tabs.js';
-import { dockPanelHooks as hooks } from './dock-panel-hooks.js';
 import { DockPanelFades, useDockPanelFades } from './dock-panel-fades.js';
+import { dockPanelHooks as hooks } from './dock-panel-hooks.js';
 import { dockPanelCountMax, type DockPanelLauncherPane } from './dock-panel-launchers.js';
 import type { DockPanelFocus } from './use-dock-panel-focus.js';
 

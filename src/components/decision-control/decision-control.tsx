@@ -1,8 +1,8 @@
 'use client';
 
-import { CheckGlyph, CloseGlyph } from '../../core/glyphs.js';
-import { useId, useState, type ReactNode } from 'react';
+import { type ReactNode, useId, useState } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
+import { CheckGlyph, CloseGlyph } from '../../core/glyphs.js';
 import type { BaseProps, ControlSize, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
@@ -10,15 +10,15 @@ import { Form } from '../form/form.js';
 import { SegmentedChoice } from '../segmented-choice/segmented-choice.js';
 import {
   DecisionComment,
-  DecisionSignature,
-  DecisionSubmit,
-  decisionControlHooks as hooks,
-  useDecisionSubmission,
   type DecisionControlComment,
   type DecisionControlDetails,
+  decisionControlHooks as hooks,
   type DecisionControlOption,
   type DecisionControlSignature,
+  DecisionSignature,
+  DecisionSubmit,
   describeSigning,
+  useDecisionSubmission,
 } from './decision-parts.js';
 
 export type {

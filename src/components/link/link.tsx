@@ -1,20 +1,20 @@
 'use client';
 
-import { ExternalLinkGlyph } from '../../core/glyphs.js';
 import type { JSX, ReactElement, ReactNode } from 'react';
-import { Link as AriaLink } from '../../primitives/index.js';
 import type {
   AriaLabellingProps,
   FocusEventProps,
   HoverEventProps,
   PressEventProps,
 } from '../../core/events.js';
+import { ExternalLinkGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, InteractionState, NativeProps, RefProps } from '../../core/props.js';
 import { Glyph, UiLink, useUiStrings } from '../../core/provider.js';
+import { Link as AriaLink } from '../../primitives/index.js';
+import { mergeSafeRel } from '../../utils/merge-safe-rel.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
-import { mergeSafeRel } from '../../utils/merge-safe-rel.js';
 
 /** Emphasis: `primary` takes the accent colour, `secondary` the surrounding text colour. */
 export type LinkVariant = 'primary' | 'secondary';

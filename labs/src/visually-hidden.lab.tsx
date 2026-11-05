@@ -1,11 +1,11 @@
-import { CopyGlyph, DeleteGlyph, EditGlyph } from '../../src/core/glyphs.js';
 import { Badge } from '../../src/components/badge/badge.js';
 import { Button } from '../../src/components/button/button.js';
 import { CopyButton } from '../../src/components/copy-button/copy-button.js';
 import { Link } from '../../src/components/link/link.js';
 import { Shortcut } from '../../src/components/shortcut/shortcut.js';
 import { VisuallyHidden } from '../../src/components/visually-hidden/visually-hidden.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { CopyGlyph, DeleteGlyph, EditGlyph } from '../../src/core/glyphs.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const recipes = ['Lemon tart', 'Plum crumble', 'Pear galette'];
 const categories = ['Breakfast', 'Lunch', 'Dinner', 'Desserts', 'Drinks'];

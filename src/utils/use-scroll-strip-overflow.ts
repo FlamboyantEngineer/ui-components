@@ -1,17 +1,17 @@
 'use client';
 
 import {
+  type RefObject,
   useCallback,
   useEffect,
   useLayoutEffect,
   useReducer,
   useRef,
   useState,
-  type RefObject,
 } from 'react';
 import type { Orientation } from '../core/props.js';
-import { useResizeObserver } from './use-resize-observer.js';
 import { isElement } from './is-element.js';
+import { useResizeObserver } from './use-resize-observer.js';
 
 /** Whether content is hidden past each edge of a scrolling strip, including a partly visible item. */
 export interface ScrollStripOverflow {

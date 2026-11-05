@@ -1,11 +1,12 @@
 'use client';
 
+import { type ReactNode, type RefObject, useState } from 'react';
 import { ChevronLeftGlyph, ChevronRightGlyph } from '../../core/glyphs.js';
-import { useState, type ReactNode, type RefObject } from 'react';
-import { useLocale } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useLocale } from '../../primitives/index.js';
 import { getFileGlyph } from '../../utils/file-glyph.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useElementSize } from '../../utils/use-element-size.js';
 import { Button } from '../button/button.js';
 import { Icon } from '../icon/icon.js';
@@ -15,7 +16,6 @@ import {
   mediaViewerHooks as hooks,
   type MediaViewerItem,
 } from './media-viewer-parts.js';
-import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { MediaImageRequest } from './use-image-request.js';
 
 interface MediaStageProps {

@@ -1,17 +1,17 @@
 'use client';
 
-import { LockGlyph, WarningGlyph } from '../../core/glyphs.js';
 import type { ReactNode, Ref } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
-import { mergeClassNames, type HookProps } from '../../core/hooks.js';
+import { LockGlyph, WarningGlyph } from '../../core/glyphs.js';
+import { type HookProps, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { Icon, toIconProps } from '../icon/icon.js';
 import { Link } from '../link/link.js';
 import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';
-import { recordLabelHooks as hooks } from './record-label-hooks.js';
+import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import type { RecordLabelProps } from './record-label.js';
+import { recordLabelHooks as hooks } from './record-label-hooks.js';
 
 // The label part of a record label, shared by the plain label and the chip, so the chip's parts
 // need nothing from the main module at run time.

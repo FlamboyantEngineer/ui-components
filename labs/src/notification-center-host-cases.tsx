@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { NotificationCenter } from '../../src/components/notification-center/notification-center.js';
 import {
-  NotificationList,
   type NotificationFilter,
   type NotificationItem,
+  NotificationList,
 } from '../../src/components/notification-center/index.js';
+import { NotificationCenter } from '../../src/components/notification-center/notification-center.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { LabSection } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
-import { ZoneComparison, getNearMidnightNow, nearMidnightInstant } from './time-zone-samples.js';
+import { getNearMidnightNow, nearMidnightInstant, ZoneComparison } from './time-zone-samples.js';
 
 const getNow = () => new Date('2026-04-20T10:30:00Z');
 

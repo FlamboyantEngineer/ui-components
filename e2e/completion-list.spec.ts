@@ -47,6 +47,35 @@ test.describe('Completion List lab', () => {
     await expect(field).toHaveValue('Reloaded from the alpha');
   });
 
+  test('UIC-COMPLETION-LIST-2.2 closes the kept options when the next lookup fails', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('completion-list');
+    const demo = page.locator('[data-lab-demo="failed-lookup"]');
+    const field = demo.getByRole('textbox', { name: 'Nut' });
+    // The list is portalled out of the demo: find it through the field.
+    const options = async () =>
+      page
+        .locator(`[id="${(await field.getAttribute('aria-controls')) ?? 'none'}"]`)
+        .getByRole('option');
+    await field.focus();
+    await field.press('a');
+    await page.clock.runFor(600);
+    await expect(field).toHaveAttribute('aria-controls');
+    await expect(await options()).toHaveText(['almond', 'alpha nut']);
+    await field.press('l');
+    await expect(await options()).toHaveText(['almond', 'alpha nut']);
+    await page.clock.runFor(600);
+    await expect(field).not.toHaveAttribute('aria-controls');
+    await field.fill('');
+    await field.press('a');
+    await page.clock.runFor(600);
+    await expect(field).toHaveAttribute('aria-controls');
+    await expect(await options()).toHaveText(['almond', 'alpha nut']);
+  });
+
   test('UIC-COMPLETION-LIST-2.7 drops a late answer from completions the host switched', async ({
     page,
     lab,

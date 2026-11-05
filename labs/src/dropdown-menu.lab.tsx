@@ -1,11 +1,11 @@
-import { ExpandGlyph, MoreVerticalGlyph, PlusGlyph, SaveGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
-import type { Key, Selection } from '../../src/core/props.js';
 import { Button, type ButtonVariant } from '../../src/components/button/button.js';
 import { DropdownMenu } from '../../src/components/dropdown-menu/dropdown-menu.js';
-import { MenuItem, MenuSection, type MenuEntry } from '../../src/components/menu/menu.js';
+import { type MenuEntry, MenuItem, MenuSection } from '../../src/components/menu/menu.js';
+import { ExpandGlyph, MoreVerticalGlyph, PlusGlyph, SaveGlyph } from '../../src/core/glyphs.js';
+import type { Key, Selection } from '../../src/core/props.js';
 import { UiProvider } from '../../src/core/provider.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { DropdownMenuCoverageSections } from './dropdown-menu-coverage-cases.js';
 
 const variants: ButtonVariant[] = [

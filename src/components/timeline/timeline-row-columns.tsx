@@ -36,12 +36,12 @@ export type TimelineRowColumnEntry = TimelineRowColumnKind | TimelineRowColumn;
 const dayLength = 86_400_000;
 
 /** A column's identity for the stylesheet: the built-in's name or the host id as text. */
-export function readColumnId(column: TimelineRowColumnEntry): string {
+function readColumnId(column: TimelineRowColumnEntry): string {
   return typeof column === 'string' ? column : String(column.id);
 }
 
 /** The heading of a column. */
-export function useColumnHeader() {
+function useColumnHeader() {
   const strings = useUiStrings();
   return (column: TimelineRowColumnEntry) => {
     if (column === 'duration') return strings.timelineDurationColumn;

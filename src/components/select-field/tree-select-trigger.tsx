@@ -1,12 +1,12 @@
 'use client';
 
+import { type ReactNode, type Ref, useId, useMemo, useRef } from 'react';
 import { ChevronDownGlyph, CloseGlyph } from '../../core/glyphs.js';
-import { useId, useMemo, useRef, type ReactNode, type Ref } from 'react';
-import { Button as AriaButton, DialogTrigger } from '../../primitives/index.js';
 import { Glyph } from '../../core/provider.js';
+import { Button as AriaButton, DialogTrigger } from '../../primitives/index.js';
 import { mergeRefs } from '../../utils/merge-props.js';
-import { toAriaControlProps, type FieldControlProps } from '../field/field.js';
 import { Button } from '../button/button.js';
+import { type FieldControlProps, toAriaControlProps } from '../field/field.js';
 import { selectFieldHooks as hooks } from './select-field-hooks.js';
 
 interface TreeSelectTriggerProps {

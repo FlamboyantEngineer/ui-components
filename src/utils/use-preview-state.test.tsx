@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { StrictMode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { usePreviewState, type PreviewStateOptions } from './use-preview-state.js';
+import { type PreviewStateOptions, usePreviewState } from './use-preview-state.js';
 
 const unmounts: (() => void)[] = [];
 

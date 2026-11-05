@@ -21,6 +21,7 @@ export const scenarios = {
   everything: 'Every part',
   'ag-ui': 'AG-UI-style stream',
   'ai-sdk': 'AI SDK-style stream',
+  'slow-cleanup': 'Slow, failing cleanup',
 } as const;
 
 export type LabScenario = keyof typeof scenarios;
@@ -106,6 +107,8 @@ const approvalTurn: ChatSendFunction = async function* (messages, { signal }) {
       label: 'Rename the recipe to Weeknight chili',
     };
     yield { type: 'approval-request', id, scopeLabel: 'this conversation' };
+    yield { type: 'status', text: 'Finishing the approval request…' };
+    await sleep(1000, signal);
     yield { type: 'finish' };
     return;
   }
@@ -213,6 +216,22 @@ const everything: ChatSendFunction = async function* (_messages, { signal }) {
   yield { type: 'finish' };
 };
 
+/**
+ * Finishes at once, then spends three seconds closing its connection and fails doing so: the reply
+ * is complete at finish, and the failure afterwards changes nothing.
+ */
+const slowCleanup: ChatSendFunction = async function* (_messages, { signal }) {
+  try {
+    yield* streamWords('The beans are ready to serve.', signal);
+    yield { type: 'finish' };
+  } finally {
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+    // The lab's own transport failing as it closes, after the reply finished.
+    // eslint-disable-next-line no-unsafe-finally
+    throw new Error('The connection closed badly.');
+  }
+};
+
 export const agents: Record<LabScenario, ChatSendFunction> = {
   answer,
   'approval-awaited': approvalAwaited,
@@ -222,4 +241,5 @@ export const agents: Record<LabScenario, ChatSendFunction> = {
   everything,
   'ag-ui': agUiSend,
   'ai-sdk': aiSdkSend,
+  'slow-cleanup': slowCleanup,
 };

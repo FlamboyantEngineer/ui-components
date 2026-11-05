@@ -1,12 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
+import { createFrameRealm } from '../../../test/frame-realm.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { filterTableRows } from './table-filters.js';
 import {
   applyTableMove,
   compareCellValues,
-  getTextCollator,
   getCellValue,
   getRowText,
+  getTextCollator,
   isEffectiveTableMove,
   type TableColumn,
 } from './table-rows.js';
@@ -178,5 +179,36 @@ describe('table row helpers', () => {
     expect(
       isEffectiveTableMove(fruit, { keys: ['apple'], targetKey: 'apple', position: 'after' }),
     ).toBe(false);
+  });
+});
+
+describe('table values from another window', () => {
+  interface Visit {
+    id: string;
+    seen: Date;
+  }
+
+  it('UIC-TABLE-2.1 UIC-TABLE-2.9 reads, sorts and filters dates of a frame like local ones', () => {
+    const realm = createFrameRealm();
+    const first = new realm.Date(2026, 10, 4, 12);
+    const second = new realm.Date(2026, 10, 5, 12);
+    const local = new Date(2026, 10, 6, 12);
+    const rows: Visit[] = [
+      { id: 'b', seen: second },
+      { id: 'c', seen: local },
+      { id: 'a', seen: first },
+    ];
+    const byDefault: TableColumn<Visit> = { id: 'seen', header: 'Seen', filter: { type: 'date' } };
+    const byGetter: TableColumn<Visit> = { ...byDefault, getValue: (row) => row.seen };
+    expect(getCellValue(requireDefined(rows[2]), byDefault)).toBe(first);
+    const collator = getTextCollator('en-US');
+    expect(compareCellValues(first, second, collator)).toBeLessThan(0);
+    expect(compareCellValues(local, first, collator)).toBeGreaterThan(0);
+    for (const column of [byDefault, byGetter]) {
+      const kept = filterTableRows(rows, [column], {
+        columns: { seen: { start: '2026-11-04', end: '2026-11-05' } },
+      });
+      expect(kept.map((row) => row.id)).toEqual(['b', 'a']);
+    }
   });
 });

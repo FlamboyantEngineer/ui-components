@@ -1,14 +1,14 @@
 'use client';
 
-import { useLayoutEffect, useState, type RefObject, type UIEvent } from 'react';
+import { type RefObject, type UIEvent, useLayoutEffect, useState } from 'react';
 import { useElementSize } from '../../utils/use-element-size.js';
+import type { MatrixPosition } from './matrix-navigation.js';
 import {
   listMatrixIndices,
+  type MatrixColumnTracks,
   resolveMatrixColumnTracks,
   resolveMatrixSpan,
-  type MatrixColumnTracks,
 } from './matrix-window.js';
-import type { MatrixPosition } from './matrix-navigation.js';
 
 interface MatrixWindowOptions {
   /** The scroll container. */

@@ -5,9 +5,9 @@ import type {
   ChatUploadFunction,
 } from '../../src/components/chat-controller/index.js';
 import type { ChatMessageData } from '../../src/components/chat-parts/index.js';
-import { nextLabId, readerId } from './chat-samples.js';
-import { askTrip, planTrip } from './chat-agent-tasks.js';
 import { agentTiming, sleep, streamText } from './chat-agent-stream.js';
+import { askTrip, planTrip } from './chat-agent-tasks.js';
+import { nextLabId, readerId } from './chat-samples.js';
 
 /** What the lab's agent does with the next message. */
 export const agentBehaviours = {

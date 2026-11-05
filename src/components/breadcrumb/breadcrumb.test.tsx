@@ -1,9 +1,9 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
-import { userEvent, type UserEvent } from '@testing-library/user-event';
-import { I18nProvider } from '../../primitives/index.js';
+import { type UserEvent, userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { UiProvider } from '../../core/provider.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { UiProvider } from '../../core/provider.js';
+import { I18nProvider } from '../../primitives/index.js';
 import { Breadcrumb, type BreadcrumbItem } from './breadcrumb.js';
 
 const trail: BreadcrumbItem[] = [

@@ -9,10 +9,10 @@ import type {
   ChatToolRenderer,
 } from '../../src/components/chat-parts/index.js';
 import type { ChatSource } from '../../src/components/chat-sources/index.js';
-import { requireDefined } from './require-defined.js';
 import { kindSamples, tripAttachments } from './chat-attachment-samples.js';
 import { ForecastCard, recipeArgs, recipeResult } from './chat-tool-call-samples.js';
 import { labRecords } from './reference-samples.js';
+import { requireDefined } from './require-defined.js';
 
 export const tripSources: ChatSource[] = [
   {

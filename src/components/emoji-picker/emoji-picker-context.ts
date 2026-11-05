@@ -2,7 +2,7 @@
 
 import { createContext, useContext } from 'react';
 import { useStoreValue } from '../../utils/use-store-value.js';
-import { toEmojiSelection, type EmojiSelection } from './emoji-catalog.js';
+import { type EmojiSelection, toEmojiSelection } from './emoji-catalog.js';
 import type { EmojiPickerState } from './emoji-picker-state.js';
 
 /** The state an `EmojiPicker` shares with its parts. */

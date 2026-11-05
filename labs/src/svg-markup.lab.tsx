@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Icon } from '../../src/components/icon/icon.js';
 import { SvgMarkup } from '../../src/components/svg-markup/svg-markup.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { SvgParseSection } from './svg-markup-parse-cases.js';
 
 const svgNamespace = 'xmlns="http://www.w3.org/2000/svg"';
@@ -32,8 +32,8 @@ const labelMarkup = `<svg ${svgNamespace} viewBox="0 0 48 24">
 const tokenMarkup = `<svg ${svgNamespace} viewBox="0 0 24 24"><g style="--Leaf: #16a34a; --leaf: #dc2626; --leafShade: var(--Leaf)"><circle cx="8" cy="12" r="6" style="fill: var(--leafShade, #dc2626)"/><circle cx="17" cy="12" r="5" style="fill: var(--leaf)"/></g></svg>`;
 
 /** Two drawings that both name their gradient `tone`, with different colours. */
-const toneMarkup = (color: string) =>
-  `<svg ${svgNamespace} viewBox="0 0 24 24"><defs><linearGradient id="tone"><stop offset="0" stop-color="${color}"/><stop offset="1" stop-color="${color}"/></linearGradient></defs><rect width="24" height="24" fill="url(#tone)"/></svg>`;
+const toneMarkup = (color: string, reference = 'url(#tone)') =>
+  `<svg ${svgNamespace} viewBox="0 0 24 24"><defs><linearGradient id="tone"><stop offset="0" stop-color="${color}"/><stop offset="1" stop-color="${color}"/></linearGradient></defs><rect width="24" height="24" fill="${reference}"/></svg>`;
 
 /** Adversarial drawings: each would run script or load a remote resource if rendered unfiltered. */
 const adversarialMarkups: Record<string, string> = {
@@ -126,7 +126,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Isolated references"
-      description="Each drawing's IDs are its own: a reference to the page or another drawing is dropped, and drawings that reuse an ID keep their own gradients. Animation timing reaches the drawing's own numeric and accented IDs, never the page's buttons."
+      description="Each drawing's IDs are its own: a reference to the page or another drawing is dropped, and drawings that reuse an ID keep their own gradients, including the green one written url( #tone ) with spaces. Animation timing reaches the drawing's own numeric and accented IDs, never the page's buttons."
     >
       <p data-lab-host="">
         Page status:{' '}
@@ -146,7 +146,8 @@ mountLab(
       </p>
       <p data-lab-colliding="">
         <SvgMarkup markup={toneMarkup('#2563eb')} label="Blue tone" />{' '}
-        <SvgMarkup markup={toneMarkup('#db2777')} label="Pink tone" />
+        <SvgMarkup markup={toneMarkup('#db2777')} label="Pink tone" />{' '}
+        <SvgMarkup markup={toneMarkup('#059669', 'url( #tone )')} label="Green tone, spaced" />
       </p>
     </LabSection>
     <LabSection

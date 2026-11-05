@@ -6,8 +6,8 @@ import { Button } from '../../src/components/button/button.js';
 import { ChatMessageActionsMenu } from '../../src/components/chat-message-actions/chat-message-actions.js';
 import { ChatMessage, ChatTranscript } from '../../src/components/chat-transcript/index.js';
 import {
-  loadEmojiData,
   type CustomEmoji,
+  loadEmojiData,
   type NativeEmoji,
 } from '../../src/components/emoji-picker/index.js';
 import { LabOutput } from './lab-output.js';

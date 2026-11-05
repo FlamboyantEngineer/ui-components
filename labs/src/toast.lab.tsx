@@ -1,18 +1,18 @@
-import { HelpGlyph } from '../../src/core/glyphs.js';
 import { useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Drawer, DrawerTrigger } from '../../src/components/drawer/drawer.js';
 import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
 import { PortalContainerProvider } from '../../src/components/portal/portal.js';
 import {
-  ToastList,
-  ToastRegion,
   createToastQueue,
   type ToastContent,
+  ToastList,
   type ToastQueue,
+  ToastRegion,
   type ToastTone,
 } from '../../src/components/toast/toast.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { HelpGlyph } from '../../src/core/glyphs.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { ToastCoverageSections } from './toast-coverage-cases.js';
 
 const tones: ToastTone[] = ['info', 'success', 'warning', 'danger'];

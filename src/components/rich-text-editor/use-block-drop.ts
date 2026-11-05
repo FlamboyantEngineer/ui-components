@@ -5,7 +5,7 @@ import { closeHistory } from 'prosemirror-history';
 import type { Node as DocNode } from 'prosemirror-model';
 import { NodeSelection, TextSelection } from 'prosemirror-state';
 import type { EditorView } from 'prosemirror-view';
-import { useState, type RefObject } from 'react';
+import { type RefObject, useState } from 'react';
 import { isHTMLElement, isNode } from '../../utils/is-element.js';
 
 /** A dragged block: its position in the document it was dragged from. */

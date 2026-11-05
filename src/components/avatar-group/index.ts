@@ -1,4 +1,3 @@
-export { AvatarGroup } from './avatar-group.js';
 export type {
   AvatarGroupAction,
   AvatarGroupLayout,
@@ -7,3 +6,4 @@ export type {
   AvatarGroupProps,
   AvatarGroupSize,
 } from './avatar-group.js';
+export { AvatarGroup } from './avatar-group.js';

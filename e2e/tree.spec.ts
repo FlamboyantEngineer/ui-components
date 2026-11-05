@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 import { expectRowMenuReturnsFocus } from './row-menu.js';
 
 test.describe('Tree lab', () => {
@@ -345,6 +345,28 @@ test.describe('Tree lab', () => {
     await expect(tree.getByRole('row', { name: 'South town 1' })).toBeVisible();
     await expect(error).toHaveCount(0);
     await lab.expectAccessible('[data-lab-loading]');
+  });
+
+  test('UIC-TREE-2.4 asks again for a branch restored while its old load waits', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tree');
+    const area = page.locator('[data-lab-loading]');
+    const tree = area.getByRole('treegrid', { name: 'Regions' });
+    const requests = area.locator('[data-lab-output="east-requests"]');
+    await tree.getByRole('row', { name: 'East' }).focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(requests).toHaveText('1');
+    await expect(tree.getByRole('status')).toBeVisible();
+    await area.getByRole('button', { name: 'Remove East' }).click();
+    await area.getByRole('button', { name: 'Restore East' }).click();
+    await tree.getByRole('row', { name: 'East' }).focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(requests).toHaveText('2');
+    await area.getByRole('button', { name: "Finish East's loads" }).click();
+    await expect(tree.getByRole('row', { name: 'East town 3' })).toBeVisible();
+    await expect(tree.getByRole('status')).toHaveCount(0);
   });
 
   test('UIC-TREE-5.2 UIC-TREE-6.1 filters and selects through nested branches', async ({

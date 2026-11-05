@@ -1,5 +1,5 @@
-import { expect, test, matrixCell } from './fixtures.js';
 import type { Locator } from '@playwright/test';
+import { expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Query Field lab', () => {
   test('UIC-QUERY-FIELD-1.1 UIC-QUERY-FIELD-1.3 UIC-QUERY-FIELD-1.5 UIC-CODE-EDITOR-1.7 draws one-line queries in every state', async ({

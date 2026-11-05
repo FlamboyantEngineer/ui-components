@@ -1,7 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import type { BarChartSeries } from './bar-chart.js';
-import { BarChart } from './bar-chart.js';
+import { BarChart, type BarChartSeries } from './bar-chart.js';
 import { DonutChart, type DonutChartSegment } from './donut-chart.js';
 import { LineChart, type LineChartSeries } from './line-chart.js';
 

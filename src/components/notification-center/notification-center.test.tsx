@@ -218,21 +218,73 @@ describe('NotificationCenter', () => {
     expect(onLoadMore).toHaveBeenCalled();
   });
 
+  it.each([false, true])(
+    'UIC-NOTIFICATION-CENTER-3.1 reannounces repeated arrivals with panel open=%s',
+    (isOpen) => {
+      let entries = items;
+      const { container, rerender } = render(
+        <NotificationCenter items={entries} getNow={getNow} isOpen={isOpen} />,
+      );
+      const status = requireDefined(
+        container.querySelector('.ui-notification-center__announcement'),
+      );
+      const observer = new MutationObserver(() => {});
+      observer.observe(status, { childList: true, characterData: true, subtree: true });
+      try {
+        for (let event = 1; event <= 3; event++) {
+          const previous = status.textContent;
+          entries = [
+            {
+              id: `arrival-${event}`,
+              title: 'Import finished',
+              time: new Date(now.getTime() + event * 1000).toISOString(),
+            },
+            ...entries,
+          ];
+          rerender(<NotificationCenter items={entries} getNow={getNow} isOpen={isOpen} />);
+          expect(observer.takeRecords().length).toBeGreaterThan(0);
+          const current = status.textContent;
+          expect(current).not.toBe(previous);
+          expect(status.textContent?.replaceAll('\u200b', '')).toBe(
+            'New notification: Import finished',
+          );
+          expect(document.querySelectorAll('.ui-notification-list__announcement')).toHaveLength(0);
+          expect(container.querySelector('.ui-notification-center__announcement')).toBe(status);
+        }
+      } finally {
+        observer.disconnect();
+      }
+    },
+  );
+
   it('UIC-NOTIFICATION-CENTER-3.1 translates the latest arrival when provider messages change', () => {
     const arrival = { id: 'new', title: 'Build passed', time: now.toISOString() };
     const draw = (entries: NotificationItem[], isFrench: boolean) => (
-      <UiProvider messages={isFrench ? { newNotifications: 'Notification : {title}' } : {}}>
+      <UiProvider
+        locale={isFrench ? 'fr-FR' : 'en-US'}
+        messages={isFrench ? { newNotifications: 'Notification : {title}' } : {}}
+      >
         <NotificationCenter items={entries} getNow={getNow} />
       </UiProvider>
     );
-    const { container, rerender } = render(draw(items, false));
+    const { rerender } = render(draw(items, false));
+    const status = screen.getByRole('status');
     rerender(draw([arrival, ...items], false));
-    const status = container.querySelector('.ui-notification-center__announcement');
-    expect(status).toHaveTextContent('New notification: Build passed');
-    rerender(draw([arrival, ...items], true));
-    expect(status).toHaveTextContent('Notification : Build passed');
-    rerender(draw([arrival, ...items], false));
-    expect(status).toHaveTextContent('New notification: Build passed');
+    const repeated = {
+      ...arrival,
+      id: 'repeat',
+      time: new Date(now.getTime() + 1000).toISOString(),
+    };
+    const entries = [repeated, arrival, ...items];
+    rerender(draw(entries, false));
+    expect(status).toHaveTextContent(/^New notification: Build passed\u200b$/);
+    rerender(draw(entries, true));
+    expect(status).toHaveTextContent(/^Notification : Build passed\u200b$/);
+    rerender(draw(entries, false));
+    expect(status).toHaveTextContent(/^New notification: Build passed\u200b$/);
+    const later = { ...arrival, id: 'later', time: new Date(now.getTime() + 2000).toISOString() };
+    rerender(draw([later, ...entries], false));
+    expect(status).toHaveTextContent(/^New notification: Build passed$/);
   });
 
   it('UIC-NOTIFICATION-CENTER-3.1 announces arrivals once, open or closed', async () => {

@@ -1,5 +1,5 @@
-import type { PersistCodec } from '../core/provider.js';
 import type { Key } from '../core/props.js';
+import type { PersistCodec } from '../core/provider.js';
 import { isKey } from './is-key.js';
 
 /**

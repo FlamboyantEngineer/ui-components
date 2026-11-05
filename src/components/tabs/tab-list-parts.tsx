@@ -1,36 +1,36 @@
 'use client';
 
 import {
+  type ComponentProps,
   createContext,
   Fragment,
+  type JSX,
+  type ReactNode,
+  type RefObject,
   useContext,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
-  type JSX,
-  type ComponentProps,
-  type ReactNode,
-  type RefObject,
 } from 'react';
-import {
-  TabList as AriaTabList,
-  CollectionRendererContext,
-  type CollectionRenderer,
-} from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, Key } from '../../core/props.js';
+import {
+  type CollectionRenderer,
+  CollectionRendererContext,
+  TabList as AriaTabList,
+} from '../../primitives/index.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { isElement } from '../../utils/is-element.js';
 import { keyCollectionChildren } from '../../utils/key-collection-children.js';
 import {
-  TabActionsContext,
-  TabsSharedContext,
   type TabActions,
+  TabActionsContext,
   type TabListModel,
+  TabsSharedContext,
 } from './tab-actions.js';
-import type { TabListProps } from './tab-list.js';
 import { tabsHooks as hooks } from './tab-hooks.js';
+import type { TabListProps } from './tab-list.js';
 
 type Part = { id: string; key: Key; kind: 'tab' | 'action'; content?: ReactNode };
 
@@ -150,7 +150,7 @@ function useOwnedTabIds(listRef: RefObject<HTMLElement | null>, enabled: boolean
   return ids;
 }
 
-export interface TabListPartsProps extends BaseProps {
+interface TabListPartsProps extends BaseProps {
   model: TabListPartsModel | null;
   visible: ReadonlySet<string> | null;
   tabKeys: ReadonlySet<Key> | null;

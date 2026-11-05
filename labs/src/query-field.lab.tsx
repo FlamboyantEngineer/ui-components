@@ -1,4 +1,5 @@
-import { useState, type CSSProperties } from 'react';
+import { type CSSProperties, useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
 import type { CodeDiagnostic, CodeToken } from '../../src/components/code-editor/code-editor.js';
 import type {
   Completion,
@@ -7,8 +8,7 @@ import type {
 } from '../../src/components/completion-list/completion-list.js';
 import { QueryField, type QueryGrammar } from '../../src/components/query-field/query-field.js';
 import { UiProvider } from '../../src/core/provider.js';
-import { Button } from '../../src/components/button/button.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 
 const column: CSSProperties = { width: 460 };

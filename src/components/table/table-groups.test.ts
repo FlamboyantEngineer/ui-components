@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { createFrameRealm } from '../../../test/frame-realm.js';
+import { walkTree } from '../../utils/walk-tree.js';
 import {
   aggregateCellValues,
+  formatGroupValue,
   groupTableNodes,
   isGroupNode,
   listGroupKeys,
@@ -10,7 +13,6 @@ import {
 } from './table-groups.js';
 import type { TableColumn } from './table-rows.js';
 import { buildTableNodes } from './table-tree.js';
-import { walkTree } from '../../utils/walk-tree.js';
 
 interface Item {
   id: string;
@@ -97,7 +99,7 @@ describe('table grouping helpers', () => {
       { locale: 'en-US' },
     );
     expect(describe2(grouped as never)).toEqual([
-      { 'ui-table-group:on=2024-05-01': ['late', 'morning'], count: 2 },
+      { 'ui-table-group:on=2024-05-01:date': ['late', 'morning'], count: 2 },
       { 'ui-table-group:on=': ['broken', 'none'], count: 2 },
     ]);
   });
@@ -247,7 +249,7 @@ describe('table grouping helpers', () => {
       [{ id: 'at', label: 'At', getValue: (row) => row.at, direction: 'ascending' }],
       { locale: 'en-US' },
     );
-    expect(tree.map((node) => node.id)).toEqual(['ui-table-group:at=2026-10-02']);
+    expect(tree.map((node) => node.id)).toEqual(['ui-table-group:at=2026-10-02:date']);
     expect(groupTableNodes(nodes, [], { locale: 'en-US' })).toBe(nodes);
   });
 
@@ -316,11 +318,81 @@ describe('table grouping by typed values', () => {
       ),
     }));
 
+  it.each([
+    { value: 1, peer: '1' },
+    { value: true, peer: 'true' },
+    { value: new Date(2024, 4, 1, 8), peer: '2024-05-01' },
+  ])(
+    'UIC-TABLE-13.1 keeps $peer identities when typed peers appear and disappear',
+    ({ value, peer }) => {
+      const typed: Entry = { id: 'typed', code: value, amount: 1 };
+      const text: Entry = { id: 'text', code: peer, amount: 2 };
+      const markers: Entry[] = ['1:number', 'true:boolean', '2024-05-01:date', 'x/y=z%:1'].map(
+        (code) => ({ id: code, code, amount: 3 }),
+      );
+      const identify = (rows: Entry[]) =>
+        new Map(
+          groupsOf(rows).flatMap(({ group }) => group.rows.map((row) => [row.id, group.key])),
+        );
+      const both = identify([typed, text, ...markers]);
+      expect(identify([typed]).get('typed')).toBe(both.get('typed'));
+      expect(identify([text]).get('text')).toBe(both.get('text'));
+      expect(identify([...markers, text, typed])).toEqual(both);
+      expect(new Set(both.values()).size).toBe(6);
+    },
+  );
+
+  it.each([false, true])(
+    'UIC-TABLE-13.1 UIC-TABLE-13.5 keeps nested typed paths through sorting with reserved parent: %s',
+    (reserveParent) => {
+      const parentId = reserveParent ? 'ui-table-group:code=2024-05-01:date' : 'date';
+      const source = buildTableNodes(
+        [
+          { id: parentId, code: new Date(2024, 4, 1, 8), child: 'same' },
+          { id: 'text', code: '2024-05-01', child: 'same' },
+        ],
+        undefined,
+      );
+      const reserved = reserveParent ? ['ui-table-group:code=2024-05-01:date'] : [];
+      const identify = (direction: 'ascending' | 'descending', reversed = false) => {
+        const grouped = groupTableNodes(
+          reversed ? [...source].reverse() : source,
+          [
+            { id: 'code', label: 'Code', getValue: (row) => row.code, direction },
+            { id: 'child', label: 'Child', getValue: (row) => row.child, direction },
+          ],
+          { locale: 'en-US', reservedKeys: reserved },
+        );
+        const found = new Map<string, string>();
+        expect(
+          grouped
+            .filter(isGroupNode)
+            .map((node) => (node.group.value instanceof Date ? 'date' : 'text')),
+        ).toEqual(direction === 'ascending' ? ['text', 'date'] : ['date', 'text']);
+        for (const parent of grouped.filter(isGroupNode)) {
+          const rowId = parent.group.rows[0]?.id;
+          found.set(`${rowId}-parent`, parent.id);
+          const child = parent.children.find(isGroupNode);
+          expect(child?.id).toBe(`${parent.id}/child=same`);
+          found.set(`${rowId}-child`, child?.id ?? '');
+        }
+        expect(new Set(found.values()).size).toBe(4);
+        for (const key of found.values()) {
+          expect([...reserved, ...source.map((node) => node.id)]).not.toContain(key);
+        }
+        return found;
+      };
+      const initial = identify('ascending');
+      expect(identify('descending')).toEqual(initial);
+      expect(identify('ascending', true)).toEqual(initial);
+    },
+  );
+
   it('UIC-TABLE-13.1 UIC-TABLE-13.5 keeps numbers, booleans and strings with the same text apart', () => {
     expect(summary(entries)).toEqual([
       { key: 'ui-table-group:code=1', value: '1', rows: ['s1'], sum: 20 },
-      { key: 'ui-table-group:code=1:1', value: 1, rows: ['n1', 'n1b'], sum: 15 },
-      { key: 'ui-table-group:code=true:1', value: true, rows: ['bt'], sum: 30 },
+      { key: 'ui-table-group:code=1:number', value: 1, rows: ['n1', 'n1b'], sum: 15 },
+      { key: 'ui-table-group:code=true:boolean', value: true, rows: ['bt'], sum: 30 },
       { key: 'ui-table-group:code=true', value: 'true', rows: ['st'], sum: 40 },
     ]);
   });
@@ -344,8 +416,16 @@ describe('table grouping by typed values', () => {
     ];
     expect(summary(mixed).map(({ key, rows }) => ({ key, rows }))).toEqual([
       { key: 'ui-table-group:code=2026-10-02', rows: ['text'] },
-      { key: 'ui-table-group:code=2026-10-02:1', rows: ['morning', 'evening'] },
+      { key: 'ui-table-group:code=2026-10-02:date', rows: ['morning', 'evening'] },
       { key: 'ui-table-group:code=', rows: ['null', 'blank'] },
     ]);
+  });
+});
+
+describe('table groups of values from another window', () => {
+  it('UIC-TABLE-2.1 groups a date of a frame by its day, as a local one', () => {
+    const realm = createFrameRealm();
+    expect(formatGroupValue(new realm.Date(2026, 10, 4, 12))).toBe('2026-11-04');
+    expect(formatGroupValue(new realm.Date(Number.NaN))).toBe('');
   });
 });

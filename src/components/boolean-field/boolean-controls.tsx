@@ -1,22 +1,21 @@
 'use client';
 
-import { useId, useRef, type CSSProperties } from 'react';
-import { ToggleButton, type Key } from '../../primitives/index.js';
+import { type CSSProperties, useId, useRef } from 'react';
 import { measuredProperty } from '../../core/hooks.js';
 import type { ControlSize } from '../../core/props.js';
+import { type Key, ToggleButton } from '../../primitives/index.js';
 import { useWidestTextWidth } from '../../utils/use-widest-text-width.js';
-import { Checkbox } from '../checkbox/checkbox.js';
-import { Switch } from '../switch/switch.js';
-import { cycleCheckState } from '../checkbox/checkbox.js';
+import { Checkbox, cycleCheckState } from '../checkbox/checkbox.js';
 import {
+  type FieldControlProps,
   FieldFormValue,
   FieldPreviousValue,
-  toAriaControlProps,
-  type FieldControlProps,
   type FieldState,
+  toAriaControlProps,
 } from '../field/field.js';
 import { SegmentedChoice } from '../segmented-choice/segmented-choice.js';
 import { SelectControl, type SelectKeysValue } from '../select-field/select-field.js';
+import { Switch } from '../switch/switch.js';
 import { booleanFieldHooks as hooks } from './boolean-field-hooks.js';
 
 /**

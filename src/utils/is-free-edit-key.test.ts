@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isFreeEditKey, type EditKey } from './is-free-edit-key.js';
+import { type EditKey, isFreeEditKey } from './is-free-edit-key.js';
 
 const plain: EditKey = {
   isComposing: false,

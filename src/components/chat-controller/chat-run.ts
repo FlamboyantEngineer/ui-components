@@ -1,18 +1,18 @@
 // A running reply: streaming `send`'s events into the reply, waiting for the reader, and ending.
 
-import type { ChatMessageData } from '../chat-parts/chat-parts.js';
 import { toErrorMessage } from '../../utils/to-error-message.js';
+import type { ChatMessageData } from '../chat-parts/chat-parts.js';
 import {
+  type ChatEngineContext,
+  type ChatRun,
   createDeferred,
   patchState,
   readAlwaysAllowed,
   updateMessage,
-  type ChatEngineContext,
-  type ChatRun,
 } from './chat-controller-state.js';
-import { findAwaitingMessage, recordResponse, type ChatReaderResponse } from './chat-reply.js';
-import { reduceChatStream, type ChatStreamContext, type ChatStreamEvent } from './chat-stream.js';
-import { endChatReply, type ChatReplyOutcome } from './chat-stream-parts.js';
+import { type ChatReaderResponse, findAwaitingMessage, recordResponse } from './chat-reply.js';
+import { type ChatStreamContext, type ChatStreamEvent, reduceChatStream } from './chat-stream.js';
+import { type ChatReplyOutcome, endChatReply } from './chat-stream-parts.js';
 
 /** The waiter that hands the response to the part `id` over to `waitFor`. */
 function waiterFor(run: ChatRun, id: string) {
@@ -167,7 +167,12 @@ async function streamRun(
         endRun(engine, run, { status: 'error', error: event.message || failureText });
         break;
       }
-      if (event.type === 'finish') break;
+      // Finish settles the reply before leaving the loop, which waits for the iterator's own
+      // cleanup; a cleanup that fails then finds the run ended and changes nothing.
+      if (event.type === 'finish') {
+        endRun(engine, run, { status: 'complete' });
+        break;
+      }
       applyEvent(engine, run, event);
     }
     endRun(engine, run, { status: 'complete' });

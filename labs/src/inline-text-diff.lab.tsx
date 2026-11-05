@@ -1,14 +1,16 @@
 import { useId, useState } from 'react';
-import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
-import type { InlineTextDiffView } from '../../src/components/inline-text-diff/inline-text-diff.js';
-import { InlineTextDiff } from '../../src/components/inline-text-diff/inline-text-diff.js';
 import {
   createInlineTextDiffExcerpt,
   createInlineWordDiff,
   splitTextDiff,
 } from '../../src/components/inline-text-diff/index.js';
+import {
+  InlineTextDiff,
+  type InlineTextDiffView,
+} from '../../src/components/inline-text-diff/inline-text-diff.js';
+import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { InlineTextDiffCases } from './inline-text-diff-cases.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { LabHelperCalls } from './lab-helper-calls.js';
 
 const longBefore = `Shipping notes for the orchard: ${'pack the apples gently, '.repeat(3)}then label each crate.`;

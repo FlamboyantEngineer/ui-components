@@ -6,9 +6,9 @@ import { useUiStrings } from '../../core/provider.js';
 import { Markdown } from '../markdown/markdown.js';
 import { ActivityDisclosure, type ActivityExpansionProps } from './activity-disclosure.js';
 import {
-  toWholeSeconds,
   type ChatReasoningData,
   type ChatReasoningFormat,
+  toWholeSeconds,
 } from './chat-activity.js';
 
 export interface ChatReasoningProps

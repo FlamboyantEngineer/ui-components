@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { createFrameRealm } from '../../../test/frame-realm.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { createFilterMatcher, matchesFilterCondition } from './filter-matching.js';
 import type { FilterCondition, FilterField, FilterValue } from './filter-model.js';
@@ -131,5 +132,17 @@ describe('filter matching', () => {
     expect(books.filter(matches).map((book) => book.title)).toEqual(['The Salt Road']);
     const all = createFilterMatcher({ conditions: [], fields: [], getValue: () => null });
     expect(books.every(all)).toBe(true);
+  });
+});
+
+describe('filter matching of values from another window', () => {
+  it('UIC-FILTER-BAR-3.1 compares a date of a frame by its day, as a local one', () => {
+    const realm = createFrameRealm();
+    const foreign = new realm.Date(2026, 10, 4, 12);
+    expect(test('published', 'equals', '2026-11-04')(foreign)).toBe(true);
+    expect(test('published', 'before', '2026-11-04')(foreign)).toBe(false);
+    expect(test('published', 'after', '2026-11-03')(foreign)).toBe(true);
+    expect(test('published', 'not-empty', '')(foreign)).toBe(true);
+    expect(test('published', 'equals', '2026-11-04')(new realm.Date(Number.NaN))).toBe(false);
   });
 });

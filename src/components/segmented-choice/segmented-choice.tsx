@@ -1,22 +1,22 @@
 'use client';
 
-import { ToggleButtonGroup } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps, Orientation, RefProps, ControlSize } from '../../core/props.js';
+import type { BaseProps, ControlSize, Orientation, RefProps } from '../../core/props.js';
+import { ToggleButtonGroup } from '../../primitives/index.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { useNativeReset } from '../../utils/use-native-reset.js';
-import type { IconSource } from '../icon/icon.js';
 import type { BadgeCountVariant } from '../badge/badge.js';
-import { Segment } from './segment.js';
-import { segmentedChoiceHooks as hooks } from './segmented-choice-hooks.js';
+import { FieldFormValue, useScopedDisabled } from '../field/field.js';
+import type { IconSource } from '../icon/icon.js';
 import {
-  useChoiceSelection,
   type SegmentedChoiceSelectionMode,
   type SegmentedChoiceValue,
+  useChoiceSelection,
 } from './choice-selection.js';
 import type { PendingChangeHandler } from './pending-change.js';
-import { FieldFormValue, useScopedDisabled } from '../field/field.js';
+import { Segment } from './segment.js';
+import { segmentedChoiceHooks as hooks } from './segmented-choice-hooks.js';
 
 export type { SegmentedChoiceSelectionMode, SegmentedChoiceValue } from './choice-selection.js';
 

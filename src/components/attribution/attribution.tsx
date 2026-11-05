@@ -4,7 +4,7 @@ import { Fragment, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { Avatar, getDisplayName, type AvatarIdentity } from '../avatar/avatar.js';
+import { Avatar, type AvatarIdentity, getDisplayName } from '../avatar/avatar.js';
 import { RelativeTime, type RelativeTimeProps } from '../relative-time/relative-time.js';
 import {
   UserCardTrigger,

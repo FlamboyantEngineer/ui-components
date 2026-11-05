@@ -1,17 +1,21 @@
-import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { type KeyboardEvent, type ReactNode, useId, useRef, useState } from 'react';
 import { Avatar } from '../../src/components/avatar/avatar.js';
 import {
   CompletionList,
-  getCompletionOptionId,
   type CompletionListItem,
   type CompletionListProps,
+  getCompletionOptionId,
 } from '../../src/components/completion-list/completion-list.js';
+import { PortalHost } from '../../src/components/portal/index.js';
 import { Spinner } from '../../src/components/progress-bar/progress-bar.js';
 import { KeyHints } from '../../src/components/shortcut/shortcut.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { TriggeredNote } from './completion-list-note.js';
-import { ReloadedTextSection, SwitchedSourceSection } from './completion-list-reload.js';
-import { PortalHost } from '../../src/components/portal/index.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import {
+  FailedLookupSection,
+  ReloadedTextSection,
+  SwitchedSourceSection,
+} from './completion-list-reload.js';
 import { LabOutput } from './lab-output.js';
 import { ShadowRootApp } from './shadow-root-host.js';
 
@@ -291,6 +295,7 @@ mountLab(
     </LabSection>
     <ReloadedTextSection />
     <SwitchedSourceSection />
+    <FailedLookupSection />
     <LabSection
       title="Inside a shadow root"
       description="The long list inside an open shadow root with its portal host there too, as a web component keeps its styles inside. Arrow keys still scroll the active option into view within the list."

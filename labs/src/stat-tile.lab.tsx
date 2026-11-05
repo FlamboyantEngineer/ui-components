@@ -1,9 +1,9 @@
-import { useState, type CSSProperties } from 'react';
+import { type CSSProperties, useState } from 'react';
 import { ProgressBar } from '../../src/components/progress-bar/progress-bar.js';
 import { SegmentedBar } from '../../src/components/segmented-bar/segmented-bar.js';
 import { Sparkline } from '../../src/components/sparkline/sparkline.js';
 import { StatTile } from '../../src/components/stat-tile/stat-tile.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const column = (width: number): CSSProperties => ({ width });
 const grid: CSSProperties = {

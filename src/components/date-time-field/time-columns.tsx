@@ -1,24 +1,24 @@
 'use client';
 
 import { useId, useMemo, useRef } from 'react';
-import { ListBox, ListBoxItem, useLocale } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
+import { ListBox, ListBoxItem, useLocale } from '../../primitives/index.js';
 import { getDateTimeFormat, getNumberFormat } from '../../utils/intl-format.js';
 import { useWheelSteps } from '../../utils/use-wheel-steps.js';
+import { dateTimeFieldHooks as hooks } from './date-time-field-hooks.js';
+import type { DateTimeFieldGranularity } from './date-values.js';
 import {
   buildTimeColumns,
+  type DayBounds,
   pickTimePart,
   stepTimeOption,
-  wholeDay,
-  type DayBounds,
   type TimeColumn,
   type TimeColumnUnit,
   type TimeParts,
+  wholeDay,
 } from './time-columns-model.js';
-import type { DateTimeFieldGranularity } from './date-values.js';
-import { dateTimeFieldHooks as hooks } from './date-time-field-hooks.js';
 
-export interface TimeColumnsProps {
+interface TimeColumnsProps {
   /** Names the group of columns. */
   label: string;
   /** The time the columns show chosen, or `null` for none. */

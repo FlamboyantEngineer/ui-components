@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Empty State lab', () => {
   test('UIC-EMPTY-STATE-1.2 UIC-EMPTY-STATE-1.3 draws each variant centred or start-aligned', async ({

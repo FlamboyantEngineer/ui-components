@@ -1,6 +1,6 @@
 import { defineStrings } from '../message-format.js';
 /** Strings of code blocks. */
-export interface CodeStrings {
+interface CodeStrings {
   /** The heading of a code block without a title or language, by its variant (`code`, `terminal`). */
   codeBlockTitle: (variant: 'code' | 'terminal') => string;
   /** Copies a code block's code. */

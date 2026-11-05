@@ -1,4 +1,3 @@
-export { ModalHost, createModalController } from './modal-controller.js';
 export type {
   ModalContentOptions,
   ModalController,
@@ -10,3 +9,4 @@ export type {
   ModalRenderOptions,
   ModalUpdateOptions,
 } from './modal-controller.js';
+export { createModalController, ModalHost } from './modal-controller.js';

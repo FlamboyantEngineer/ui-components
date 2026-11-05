@@ -5,11 +5,11 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { Button } from '../button/button.js';
-import { PortalContainerProvider } from '../portal/portal.js';
 import { Modal, ModalTrigger } from '../modal/modal.js';
-import { TextField } from '../text-field/text-field.js';
-import { Drawer, DrawerTrigger, type DrawerProps } from './drawer.js';
+import { PortalContainerProvider } from '../portal/portal.js';
 import { Section, SectionHeader } from '../section-header/section-header.js';
+import { TextField } from '../text-field/text-field.js';
+import { Drawer, type DrawerProps, DrawerTrigger } from './drawer.js';
 
 type ObserverCallback = (entries: Array<{ intersectionRatio: number }>) => void;
 

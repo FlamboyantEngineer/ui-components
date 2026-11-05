@@ -1,18 +1,18 @@
 'use client';
 
+import { type KeyboardEvent, type RefObject, useRef } from 'react';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 import { readCommandKey } from '../shortcut/shortcut.js';
-import { useRef, type KeyboardEvent, type RefObject } from 'react';
 import {
   breakLine,
+  type CodeEdit,
+  type CodeSelection,
   deletePair,
   indentSelection,
   insertPair,
   outdentSelection,
   skipCloser,
-  type CodeEdit,
-  type CodeSelection,
 } from './code-editing.js';
-import { isComposingKey } from '../../utils/is-composing-key.js';
 
 interface CodeKeysOptions {
   inputRef: RefObject<HTMLTextAreaElement | null>;

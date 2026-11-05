@@ -1,14 +1,14 @@
 'use client';
 
-import { useCallback, useRef, type KeyboardEvent } from 'react';
+import { type KeyboardEvent, useCallback, useRef } from 'react';
 import { useLocale } from '../../primitives/index.js';
+import { isEditableTarget } from '../../utils/is-editable-target.js';
+import { isElement } from '../../utils/is-element.js';
 import type { TreeMoveDirection } from '../../utils/tree-reorder.js';
 import { isMoveChord } from '../../utils/use-reorder-drag-and-drop.js';
 import type { TreeItemData, TreeProps } from './tree-props.js';
 import type { TreeRename } from './use-tree-rename.js';
 import type { TreeReorder } from './use-tree-reorder.js';
-import { isEditableTarget } from '../../utils/is-editable-target.js';
-import { isElement } from '../../utils/is-element.js';
 
 interface TreeKeyDownOptions<T extends TreeItemData> extends Pick<TreeProps<T>, 'onItemKeyDown'> {
   /** Reordering, while the tree is reorderable. */

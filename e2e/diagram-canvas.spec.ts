@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test, matrixCell } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 function plant(page: Page): Locator {
   return page.locator('[data-lab-field="plant"]');

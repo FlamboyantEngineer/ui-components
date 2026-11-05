@@ -126,6 +126,41 @@ describe('diffLines', () => {
     );
     expect(unrelated.map((hunk) => hunk.kind)).toEqual(['delete', 'insert']);
   });
+
+  it('UIC-DIFF-1.3 replaces texts with no line in common at once, at any length', () => {
+    // The search would take tens of seconds here; texts with nothing in common skip it.
+    const lines = 20_000;
+    const before = Array.from({ length: lines }, (_, index) => `old ${index}`);
+    const after = Array.from({ length: lines }, (_, index) => `new ${index}`);
+    const started = performance.now();
+    const hunks = diffLines(before.join('\n'), after.join('\n'));
+    expect(performance.now() - started).toBeLessThan(1000);
+    expect(hunks).toEqual([
+      { kind: 'delete', lines: before, oldStart: 1, newStart: 1 },
+      { kind: 'insert', lines: after, oldStart: lines + 1, newStart: 1 },
+    ]);
+  });
+
+  it('UIC-DIFF-1.3 replaces a disjoint middle between a shared start and end', () => {
+    const before = ['head', 'old 1', 'old 2', 'old 2', 'tail'];
+    const after = ['head', 'new 1', 'new 1', 'tail'];
+    expect(
+      diffLines(before.join('\n'), after.join('\n')).map(({ kind, lines }) => [kind, lines]),
+    ).toEqual([
+      ['equal', ['head']],
+      ['delete', ['old 1', 'old 2', 'old 2']],
+      ['insert', ['new 1', 'new 1']],
+      ['equal', ['tail']],
+    ]);
+    // One shared line in the middle is still found and kept.
+    const overlapping = diffLines(
+      ['head', 'old 1', 'shared', 'old 2', 'tail'].join('\n'),
+      ['head', 'new 1', 'shared', 'new 2', 'tail'].join('\n'),
+    );
+    expect(
+      overlapping.filter((hunk) => hunk.kind === 'equal').flatMap((hunk) => hunk.lines),
+    ).toEqual(['head', 'shared', 'tail']);
+  });
 });
 
 describe('diffWords', () => {

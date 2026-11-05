@@ -7,7 +7,7 @@ import type { Node } from 'prosemirror-model';
 import { EditorState, Selection, TextSelection, type Transaction } from 'prosemirror-state';
 import type { MessageComposerMessage, MessageComposerToken } from '../composer-message.js';
 import { parseComposerMessage, serializeComposerDocument } from './composer-markdown.js';
-import { toDocumentPosition, toTextOffset, type OffsetBias } from './composer-offsets.js';
+import { type OffsetBias, toDocumentPosition, toTextOffset } from './composer-offsets.js';
 
 /** A range of the message's text, by UTF-16 offsets; `end` is exclusive. */
 export interface MessageComposerRange {
@@ -80,7 +80,7 @@ export function toFragment(content: string | MessageComposerMessage): MessageCom
  * Replaces the document's content with `doc`'s, changing only what differs, so positions outside
  * the change (the selection, a pending paste) map through it.
  */
-export function replaceDocument(tr: Transaction, doc: Node): Transaction {
+function replaceDocument(tr: Transaction, doc: Node): Transaction {
   const current = tr.doc;
   const start = current.content.findDiffStart(doc.content);
   if (start === null) return tr;

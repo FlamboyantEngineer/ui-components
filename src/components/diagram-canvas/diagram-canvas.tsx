@@ -1,46 +1,44 @@
 'use client';
 
-import { useMemo, useRef, type KeyboardEvent, type ReactNode } from 'react';
+import { type KeyboardEvent, type ReactNode, useMemo, useRef } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps, SelectionProps } from '../../core/events.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEditableTarget } from '../../utils/is-editable-target.js';
 import { mergeProps, mergeRefs } from '../../utils/merge-props.js';
-import { useLatest } from '../../utils/use-latest.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import { useLatest } from '../../utils/use-latest.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { DiagramEdges } from './diagram-edges.js';
 import { diagramHooks as hooks } from './diagram-hooks.js';
+import { type DiagramLinks, formatDiagramLink } from './diagram-links.js';
 import { DiagramMinimap } from './diagram-minimap.js';
 import type { DiagramEdge, DiagramNode, DiagramViewport } from './diagram-model.js';
-import { DiagramNodeView, type DiagramNodeRenderState } from './diagram-node.js';
-import { formatDiagramLink, type DiagramLinks } from './diagram-links.js';
+import { type DiagramNodeRenderState, DiagramNodeView } from './diagram-node.js';
 import { DiagramOutline } from './diagram-outline.js';
 import {
+  type DiagramPalette,
   DiagramPaletteContext,
   useCanvasPalette,
   usePaletteDrop,
-  type DiagramPalette,
 } from './diagram-palette.js';
 import { DiagramToolbar, type DiagramView } from './diagram-toolbar.js';
 import type { DiagramEdgeRouting } from './edge-route.js';
 import { useBackgroundPointer } from './use-background-pointer.js';
-import { useNodeFocusRecovery } from './use-node-focus-recovery.js';
 import type { DiagramConnection } from './use-diagram-connect.js';
 import {
-  useDiagramController,
   type DiagramController,
   type DiagramMessage,
+  useDiagramController,
 } from './use-diagram-controller.js';
+import { useNodeFocusRecovery } from './use-node-focus-recovery.js';
 
 export type { DiagramEdge, DiagramNode, DiagramPort, DiagramViewport } from './diagram-model.js';
 export type { DiagramNodeRenderState } from './diagram-node.js';
 export { DiagramPaletteItem, type DiagramPaletteItemProps } from './diagram-palette.js';
 export type { DiagramView } from './diagram-toolbar.js';
-export type { DiagramConnection } from './use-diagram-connect.js';
 export {
-  routeDiagramEdge,
   type DiagramEdgeEnd,
   type DiagramEdgeRouting,
   type DiagramPoint,
@@ -48,7 +46,9 @@ export {
   type DiagramRect,
   type DiagramRoute,
   type DiagramRouteOptions,
+  routeDiagramEdge,
 } from './edge-route.js';
+export type { DiagramConnection } from './use-diagram-connect.js';
 
 /** A request for a new node from the palette: its type and where, in diagram pixels. */
 export interface DiagramNodeAddRequest {

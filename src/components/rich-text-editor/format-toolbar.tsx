@@ -1,11 +1,11 @@
 'use client';
 
-import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import type { ReactNode } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { ToolbarRow, ToolbarRowSeparator } from '../layout/layout.js';
 import { BlockTypeSelect, FormatButtons, LinkButton } from './format-controls.js';
 import { getHistoryItems, getMarkItems, getWrapItems } from './format-items.js';

@@ -1,10 +1,10 @@
 'use client';
 
-import { ColorSwatch as AriaColorSwatch, parseColor } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks, measuredProperty } from '../../core/hooks.js';
-import type { BaseProps, Size, RefProps } from '../../core/props.js';
+import type { BaseProps, RefProps, Size } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { ColorSwatch as AriaColorSwatch, parseColor } from '../../primitives/index.js';
 
 export interface ColorSwatchProps extends BaseProps, RefProps<HTMLDivElement>, AriaLabellingProps {
   /**
@@ -58,9 +58,9 @@ export function ColorSwatch({
   );
 }
 
-export { ColorSwatchPicker, ColorSwatchPickerItem } from './color-swatch-picker.js';
 export type {
   ColorSwatchPickerItemProps,
   ColorSwatchPickerLayout,
   ColorSwatchPickerProps,
 } from './color-swatch-picker.js';
+export { ColorSwatchPicker, ColorSwatchPickerItem } from './color-swatch-picker.js';

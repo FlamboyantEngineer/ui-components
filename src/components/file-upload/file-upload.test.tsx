@@ -3,16 +3,16 @@ import { userEvent } from '@testing-library/user-event';
 import { StrictMode, useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { ShadowHost, deepActive, inShadow, shadowRootOf } from '../../../test/shadow-fixtures.js';
+import { deepActive, inShadow, ShadowHost, shadowRootOf } from '../../../test/shadow-fixtures.js';
 import { UiProvider } from '../../core/provider.js';
 import { requireDefined } from '../../utils/require-defined.js';
+import { FileUpload, type FileUploadItem, type FileUploadProps } from './file-upload.js';
 import {
-  readDroppedFiles,
   type DroppedDirectory,
   type DroppedFile,
   type DroppedItem,
+  readDroppedFiles,
 } from './file-upload-drop.js';
-import { FileUpload, type FileUploadItem, type FileUploadProps } from './file-upload.js';
 
 function file(name: string, type: string, size = 10): File {
   return new File(['x'.repeat(size)], name, { type });
@@ -1019,9 +1019,10 @@ describe('FileUpload', () => {
     );
     // jsdom builds form data without its event, so the browser's event is played here.
     const submitted = (name: string) => {
-      const formData = new FormData();
+      const form = screen.getByRole('form', { name }) as HTMLFormElement;
+      const formData = new FormData(form);
       const event = Object.assign(new Event('formdata'), { formData });
-      screen.getByRole('form', { name }).dispatchEvent(event);
+      form.dispatchEvent(event);
       return formData.getAll('docs');
     };
     expect(submitted('First')).toHaveLength(1);
@@ -1042,7 +1043,7 @@ describe('FileUpload', () => {
       </ShadowHost>,
     );
     const form = shadowRootOf('panel').querySelector('form') as HTMLFormElement;
-    const formData = new FormData();
+    const formData = new FormData(form);
     form.dispatchEvent(Object.assign(new Event('formdata'), { formData }));
     expect((formData.get('attachment') as File).name).toBe('sample.txt');
     vi.unstubAllGlobals();

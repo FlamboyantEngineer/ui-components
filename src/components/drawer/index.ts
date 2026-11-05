@@ -1,4 +1,3 @@
-export { Drawer, DrawerTrigger } from './drawer.js';
 export type {
   DrawerPosition,
   DrawerProps,
@@ -7,3 +6,4 @@ export type {
   DrawerSwipeDirection,
   DrawerTriggerProps,
 } from './drawer.js';
+export { Drawer, DrawerTrigger } from './drawer.js';

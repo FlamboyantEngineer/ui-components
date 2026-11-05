@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { readFileSync, readdirSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { ESLint } from 'eslint';
 import tseslint from 'typescript-eslint';

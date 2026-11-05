@@ -1,3 +1,14 @@
+import { type ReactNode, useState } from 'react';
+import { AppFrame, AppFrameContent } from '../../src/components/app-frame/app-frame.js';
+import { AppFrameBand, AppFrameBandContent } from '../../src/components/app-frame/index.js';
+import { Button } from '../../src/components/button/button.js';
+import { ToolbarRowGroup } from '../../src/components/layout/index.js';
+import {
+  NavigationRailItem,
+  NavigationRailSection,
+} from '../../src/components/navigation-rail/index.js';
+import { NavigationRail } from '../../src/components/navigation-rail/navigation-rail.js';
+import { SaveStatus } from '../../src/components/save-status/save-status.js';
 import {
   CopyGlyph,
   DeleteGlyph,
@@ -9,20 +20,9 @@ import {
   UndoGlyph,
   UsersGlyph,
 } from '../../src/core/glyphs.js';
-import { useState, type ReactNode } from 'react';
-import { AppFrame, AppFrameContent } from '../../src/components/app-frame/app-frame.js';
-import { AppFrameBand, AppFrameBandContent } from '../../src/components/app-frame/index.js';
-import { Button } from '../../src/components/button/button.js';
-import { ToolbarRowGroup } from '../../src/components/layout/index.js';
-import { NavigationRail } from '../../src/components/navigation-rail/navigation-rail.js';
-import {
-  NavigationRailItem,
-  NavigationRailSection,
-} from '../../src/components/navigation-rail/index.js';
-import { SaveStatus } from '../../src/components/save-status/save-status.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { AppFramePageCases } from './app-frame-page-cases.js';
-import { KitchenRail, kitchenPages, type KitchenPage } from './navigation-rail-cases.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { type KitchenPage, kitchenPages, KitchenRail } from './navigation-rail-cases.js';
 
 const panelSets = ['none', 'start', 'end', 'bottom', 'all'] as const;
 

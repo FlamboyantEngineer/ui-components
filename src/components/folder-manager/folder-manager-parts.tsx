@@ -1,10 +1,10 @@
 'use client';
 
-import { DeleteGlyph, EditGlyph, PlusGlyph, type GlyphComponent } from '../../core/glyphs.js';
 import type { Ref } from 'react';
-import { Input } from '../../primitives/index.js';
+import { DeleteGlyph, EditGlyph, type GlyphComponent, PlusGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
+import { Input } from '../../primitives/index.js';
 import { Button } from '../button/button.js';
 import type { FolderEdit } from './use-folder-actions.js';
 

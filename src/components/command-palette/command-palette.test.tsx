@@ -1,12 +1,12 @@
-import { PlusGlyph } from '../../core/glyphs.js';
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { actionKeys } from '../../../test/menu-fixtures.js';
+import { PlusGlyph } from '../../core/glyphs.js';
 import { Button } from '../button/button.js';
-import { MenuItem, MenuSection, type MenuEntry } from '../menu/menu.js';
+import { type MenuEntry, MenuItem, MenuSection } from '../menu/menu.js';
 import { TextMatch } from '../text-match/text-match.js';
 import { CommandPalette, type CommandPaletteProps } from './command-palette.js';
 

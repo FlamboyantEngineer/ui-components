@@ -1,21 +1,20 @@
-import { PlusGlyph } from '../../core/glyphs.js';
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { PlusGlyph } from '../../core/glyphs.js';
 import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage } from '../../core/storage.js';
 import { Button } from '../button/button.js';
-import { PropertyCard } from './property-card.js';
-import { PropertyRow } from './property-row.js';
-import { PropertySection } from './property-section.js';
-import { PropertyGroup, PropertyPanel } from './property-panel.js';
 import { Form, useFormValidity } from '../form/form.js';
-import { TextField } from '../text-field/text-field.js';
 import { PropertyFilter } from '../property-filter/property-filter.js';
 import { PropertyScope } from '../property-scope/property-scope.js';
-import type { ReactNode } from 'react';
+import { TextField } from '../text-field/text-field.js';
+import { PropertyCard } from './property-card.js';
+import { PropertyGroup, PropertyPanel } from './property-panel.js';
+import { PropertyRow } from './property-row.js';
+import { PropertySection } from './property-section.js';
 
 function glyph(trigger: HTMLElement) {
   return trigger.querySelector('[data-glyph]')?.getAttribute('data-glyph');

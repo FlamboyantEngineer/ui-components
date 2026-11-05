@@ -1,29 +1,29 @@
 import type { CSSProperties, ReactNode } from 'react';
 import {
-  Cluster,
-  FlexRow,
-  Grid,
-  InlineField,
-  Page,
-  Stack,
-  StatusBar,
-  View,
-  type GridColumns,
-  type LayoutGrow,
-} from '../../src/components/layout/layout.js';
-import { AspectRatio } from '../../src/components/layout/index.js';
-import {
+  AspectRatio,
+  Contents,
+  EmbeddedFrame,
   GridItem,
   type GridItemOffset,
   type GridItemSpan,
-} from '../../src/components/layout/index.js';
-import {
+  InlineContents,
   ToolbarRow,
   ToolbarRowGroup,
   ToolbarRowSeparator,
 } from '../../src/components/layout/index.js';
-import { Contents, EmbeddedFrame, InlineContents } from '../../src/components/layout/index.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import {
+  Cluster,
+  FlexRow,
+  Grid,
+  type GridColumns,
+  InlineField,
+  type LayoutGrow,
+  Page,
+  Stack,
+  StatusBar,
+  View,
+} from '../../src/components/layout/layout.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import {
   AttachedGroups,
   PendingToolbar,

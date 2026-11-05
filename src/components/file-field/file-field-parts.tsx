@@ -1,14 +1,14 @@
 'use client';
 
+import { type ReactNode, useId } from 'react';
 import { DownloadGlyph } from '../../core/glyphs.js';
-import { useId, type ReactNode } from 'react';
-import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
-import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { useLocale } from '../../primitives/index.js';
-import { formatBytes } from '../../utils/format-bytes.js';
 import { getFileGlyph } from '../../utils/file-glyph.js';
+import { formatBytes } from '../../utils/format-bytes.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { FieldPreviousValue } from '../field/field.js';
 import { Icon } from '../icon/icon.js';
 import { Link } from '../link/link.js';

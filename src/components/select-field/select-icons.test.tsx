@@ -1,8 +1,8 @@
-import { CheckGlyph, InfoGlyph, PlusGlyph } from '../../core/glyphs.js';
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { CheckGlyph, InfoGlyph, PlusGlyph } from '../../core/glyphs.js';
 import { SelectField, type SelectFieldOption } from './select-field.js';
 
 const symbols: SelectFieldOption[] = [

@@ -1,21 +1,21 @@
 'use client';
 
-import { containsFocus, isFocusLost } from '../../utils/focus-target.js';
 import {
+  type KeyboardEvent,
+  type MouseEvent,
+  type RefObject,
   useCallback,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
-  type KeyboardEvent,
-  type MouseEvent,
-  type RefObject,
 } from 'react';
 import type { Key } from '../../core/props.js';
-import type { TableCellValue, TableColumn, TableRow } from './table-rows.js';
+import { containsFocus, isFocusLost } from '../../utils/focus-target.js';
+import { isElement, isHTMLElement } from '../../utils/is-element.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { useLatest } from '../../utils/use-latest.js';
-import { isElement, isHTMLElement } from '../../utils/is-element.js';
+import type { TableCellValue, TableColumn, TableRow } from './table-rows.js';
 
 /** A finished cell edit: the row, the column and the cell's new value. */
 export interface TableCellEdit<T> {

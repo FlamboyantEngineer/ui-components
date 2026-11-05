@@ -1,12 +1,12 @@
-import { DeleteGlyph, StarGlyph } from '../../core/glyphs.js';
-import { readMenuIcons } from '../../../test/menu-fixtures.js';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { readMenuIcons } from '../../../test/menu-fixtures.js';
+import { DeleteGlyph, StarGlyph } from '../../core/glyphs.js';
 import type { Key, Orientation } from '../../core/props.js';
 import { UiProvider } from '../../core/provider.js';
 import type { MenuEntry } from '../menu/menu.js';
-import { Tab, TabList, Tabs, type TabListProps } from './tabs.js';
+import { Tab, TabList, type TabListProps, Tabs } from './tabs.js';
 
 const fruit = ['Apple', 'Banana', 'Cherry'];
 

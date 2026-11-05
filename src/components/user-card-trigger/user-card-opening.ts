@@ -4,7 +4,7 @@
 // PreviewTrigger do, but through hooks: the trigger then renders the same providers and button with
 // or without a card, so a card that comes or goes never remounts the button.
 
-import { useMemo, useRef, type RefObject } from 'react';
+import { type RefObject, useMemo, useRef } from 'react';
 import {
   DialogContext,
   OverlayTriggerStateContext,
@@ -13,11 +13,11 @@ import {
   useOverlayTriggerState,
   usePreviewTrigger,
 } from '../../primitives/index.js';
-import { usePreviewState } from '../../utils/use-preview-state.js';
-import { HOVER_CARD_CLOSE_DELAY, HOVER_CARD_DELAY } from '../../utils/overlay-defaults.js';
 import { focusRestoreEvent } from '../../utils/keep-control-focus-return.js';
+import { HOVER_CARD_CLOSE_DELAY, HOVER_CARD_DELAY } from '../../utils/overlay-defaults.js';
 import { usePointerEntry } from '../../utils/use-pointer-entry.js';
 import { usePreviewEscape } from '../../utils/use-preview-escape.js';
+import { usePreviewState } from '../../utils/use-preview-state.js';
 
 /** `press` opens the card on a click, Enter or Space; `hover` on hover, keyboard focus or long press. */
 export type UserCardTriggerType = 'press' | 'hover';
@@ -43,7 +43,7 @@ interface OpeningOptions {
   buttonRef: RefObject<HTMLButtonElement | null>;
 }
 
-export interface CardOpeningOptions extends Omit<OpeningOptions, 'isActive'> {
+interface CardOpeningOptions extends Omit<OpeningOptions, 'isActive'> {
   /** How the card opens; `undefined` without a card. */
   mode: UserCardTriggerType | undefined;
   /** The trigger button's id, which names the press card's dialog. */
@@ -56,7 +56,7 @@ export interface CardOpeningOptions extends Omit<OpeningOptions, 'isActive'> {
 }
 
 /** What the trigger renders: props for its button and the contexts around button and popover. */
-export interface CardOpening {
+interface CardOpening {
   triggerProps: Record<string, unknown> | undefined;
   onPress: (() => void) | undefined;
   /** Provider values, the same three contexts with or without a card. */

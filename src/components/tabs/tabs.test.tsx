@@ -1,13 +1,15 @@
-import { InfoGlyph } from '../../core/glyphs.js';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
-import { I18nProvider } from '../../primitives/index.js';
-import type { Key } from '../../core/props.js';
+import { hydrateRoot } from 'react-dom/client';
+import { renderToString } from 'react-dom/server';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { InfoGlyph } from '../../core/glyphs.js';
+import type { Key } from '../../core/props.js';
 import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage } from '../../core/storage.js';
-import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { I18nProvider } from '../../primitives/index.js';
 import { Tab, TabList, TabPanel, Tabs, type TabsProps } from './tabs.js';
 
 /** Gives the document a font set whose `loadingdone` the test fires; returns the firing. */
@@ -497,6 +499,31 @@ describe('Tabs', () => {
 });
 
 describe('Tabs remembered selection', () => {
+  it('UIC-TABS-3.7 hydrates the default tab, then restores the stored one', async () => {
+    const element = (storage: ReturnType<typeof createMemoryStorage>) => (
+      <UiProvider locale="en-US" storage={storage}>
+        <Fruit persistKey="fruit-tab" defaultSelectedKey="banana" />
+      </UiProvider>
+    );
+    const client = createMemoryStorage({ 'fruit-tab': '"cherry"' });
+    const host = document.body.appendChild(document.createElement('div'));
+    host.innerHTML = renderToString(element(createMemoryStorage()));
+    expect(host).toHaveTextContent('Bananas are soft.');
+    const recoverable: unknown[] = [];
+    let app: ReturnType<typeof hydrateRoot> | undefined;
+    await act(async () => {
+      app = hydrateRoot(host, element(client), {
+        onRecoverableError: (error) => recoverable.push(error),
+      });
+    });
+    expect(recoverable).toEqual([]);
+    expect(selected()).toHaveTextContent('Cherry');
+    expect(screen.getByRole('tabpanel')).toHaveTextContent('Cherries are small.');
+    expect(client.getItem('fruit-tab')).toBe('"cherry"');
+    act(() => app?.unmount());
+    host.remove();
+  });
+
   it('UIC-TABS-3.7 stores the selection and restores it when the tabs mount again', async () => {
     const storage = createMemoryStorage();
     const onSelectionChange = vi.fn();

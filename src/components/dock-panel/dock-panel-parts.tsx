@@ -1,20 +1,20 @@
 'use client';
 
-import { containsComposed, getComposedActiveElement, isFocused } from '../../utils/focus-target.js';
 import {
   Children,
   isValidElement,
-  useState,
-  useSyncExternalStore,
   type ReactElement,
   type ReactNode,
   type RefObject,
+  useState,
+  useSyncExternalStore,
 } from 'react';
 import { createPortal } from 'react-dom';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { useElementSize } from '../../utils/use-element-size.js';
+import { containsComposed, getComposedActiveElement, isFocused } from '../../utils/focus-target.js';
 import { isHTMLElement } from '../../utils/is-element.js';
+import { useElementSize } from '../../utils/use-element-size.js';
 import { Drawer } from '../drawer/drawer.js';
 import { ResizeHandle } from '../split-view/split-view.js';
 import { dockPanelHooks as hooks } from './dock-panel-hooks.js';

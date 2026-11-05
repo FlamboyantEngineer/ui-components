@@ -2,8 +2,11 @@ import { describe, expect, it } from 'vitest';
 import {
   addRecentEmoji,
   applySkinTone,
+  type CustomEmoji,
+  type EmojiEntry,
   getEmojiKey,
   getEmojiLabel,
+  type NativeEmoji,
   parseEmojiData,
   resolveEmojiKeys,
   searchEmoji,
@@ -11,9 +14,6 @@ import {
   toEmojiSelection,
   toHexcode,
   withSkinTone,
-  type CustomEmoji,
-  type EmojiEntry,
-  type NativeEmoji,
 } from './emoji-catalog.js';
 import { loadEmojiData } from './emoji-locale.js';
 

@@ -1,8 +1,4 @@
-import { MinusGlyph, PlusGlyph } from '../../src/core/glyphs.js';
-import { treeChoices } from './select-tree.js';
-import { iconsChoices } from './select-icons.js';
 import { useCallback, useState } from 'react';
-import type { Key } from '../../src/core/props.js';
 import type { FieldLabelLayout, FieldMenuEntry } from '../../src/components/field/field.js';
 import {
   SelectField,
@@ -11,15 +7,18 @@ import {
   type SelectFieldProps,
   type SelectFieldSelectionMode,
 } from '../../src/components/select-field/select-field.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { MinusGlyph, PlusGlyph } from '../../src/core/glyphs.js';
+import type { Key } from '../../src/core/props.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { fieldLayouts, type FieldStateName, fieldStates } from './field-states.js';
 import { LabOutput } from './lab-output.js';
-import { Paged } from './select-field-paged.js';
-import { MixedChoice } from './select-field-mixed.js';
-import { TriggerRefField } from './select-field-trigger-cases.js';
-import { OpenStates } from './select-field-open-cases.js';
 import { BulkMembershipEditor } from './select-field-bulk.js';
 import { ChangeFit, ChangeMatrix } from './select-field-changes.js';
-import { fieldLayouts, fieldStates, type FieldStateName } from './field-states.js';
+import { OpenStates } from './select-field-open-cases.js';
+import { Paged } from './select-field-paged.js';
+import { TriggerRefField } from './select-field-trigger-cases.js';
+import { iconsChoices } from './select-icons.js';
+import { treeChoices } from './select-tree.js';
 
 const fruit: SelectFieldOption[] = [
   { id: 'apple', label: 'Apple', description: 'Crisp and sweet', icon: PlusGlyph },
@@ -498,12 +497,6 @@ mountLab(
       </LabSection>
       <LabSection title="Custom options" description="renderOption draws each option's content.">
         <Custom />
-      </LabSection>
-      <LabSection
-        title="Mixed choices"
-        description="Bulk choices cycle from retaining mixed values, to adding for all, to removing for all."
-      >
-        <MixedChoice />
       </LabSection>
       <LabSection title="Clearing and limits" description="A clear button and a maximum of values.">
         <Limits />

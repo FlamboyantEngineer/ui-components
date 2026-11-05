@@ -1,17 +1,17 @@
 // The lines, areas and points of a line chart and its scales (specs/CHART.md).
 
-import { requireDefined } from '../../utils/require-defined.js';
 import type { Key } from '../../core/props.js';
-import { createPlaceIdentities, toValueIdentity } from './chart-identity.js';
-import { summarizeNumbers } from '../../utils/summarize-numbers.js';
 import { clamp } from '../../utils/clamp.js';
 import { createLinearScale, type LinearScale, type ScaleTick } from '../../utils/linear-scale.js';
+import { requireDefined } from '../../utils/require-defined.js';
+import { summarizeNumbers } from '../../utils/summarize-numbers.js';
+import { createPlaceIdentities, toValueIdentity } from './chart-identity.js';
 import {
+  type ChartBox,
+  type ChartMargin,
   countTicks,
   resolvePlotBox,
   roundCoordinate,
-  type ChartBox,
-  type ChartMargin,
 } from './chart-layout.js';
 import {
   createLineXAxis,

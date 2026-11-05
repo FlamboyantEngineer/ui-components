@@ -1,15 +1,16 @@
 'use client';
 
-import { useId, useRef, useState, type ReactNode, type RefObject } from 'react';
-import { useFocusWithin, useHover } from '../../primitives/index.js';
+import { type ReactNode, type RefObject, useId, useRef, useState } from 'react';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useFocusWithin, useHover } from '../../primitives/index.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { mergeProps } from '../../utils/merge-props.js';
-import { getDisplayName, type AvatarIdentity, type AvatarProps } from '../avatar/avatar.js';
-import { RelativeTime, type RelativeTimeProps } from '../relative-time/relative-time.js';
-import { AnchoredTooltip } from '../tooltip/tooltip.js';
 import { TOOLTIP_DELAY } from '../../utils/overlay-defaults.js';
 import { useActiveAfter } from '../../utils/use-delayed-flag.js';
+import { type AvatarIdentity, type AvatarProps, getDisplayName } from '../avatar/avatar.js';
+import { RelativeTime, type RelativeTimeProps } from '../relative-time/relative-time.js';
+import { AnchoredTooltip } from '../tooltip/tooltip.js';
 import {
   ChatMessageAvatar,
   ChatMessageBody,
@@ -20,7 +21,6 @@ import {
 } from './chat-message-parts.js';
 import type { ChatQuoteData } from './chat-quote.js';
 import { useTranscriptContentRef, useTranscriptMessage } from './transcript-context.js';
-import { isEmptyNode } from '../../utils/is-empty-node.js';
 
 /** `sent` by the reader, `received` from someone else (a person or an assistant), or a `system` notice. */
 export type ChatMessageOrigin = 'sent' | 'received' | 'system';

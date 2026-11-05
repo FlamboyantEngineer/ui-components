@@ -1,55 +1,54 @@
 'use client';
 
-import { useMergedRefs } from '../../utils/use-merged-refs.js';
-import { useUiStrings } from '../../core/provider.js';
+import { type FocusEvent, type ReactNode, useMemo, useRef, useState } from 'react';
+import { useToday } from '../../core/clock.js';
+import { useControllableState } from '../../core/controllable-state.js';
 import { CalendarGlyph } from '../../core/glyphs.js';
+import { Glyph, useUiStrings } from '../../core/provider.js';
 import {
-  formatIsoDate,
-  parseIsoDate,
-  parseIsoDateTime,
-  parseIsoTime,
-  toCalendarDate,
-  toZoned,
   Button as AriaButton,
   Calendar,
   DatePicker,
   DateRangePicker,
+  type DateValue,
+  formatIsoDate,
   Group,
+  parseIsoDate,
+  parseIsoDateTime,
+  parseIsoTime,
   RangeCalendar,
   TimeField,
-  type DateValue,
+  toCalendarDate,
+  toZoned,
 } from '../../primitives/index.js';
-import type { DateTimeFieldDateState } from './date-time-field.js';
-import { useMemo, useRef, useState, type FocusEvent, type ReactNode } from 'react';
 import type { SlotRef } from '../../utils/slot-registry.js';
-import { useToday } from '../../core/clock.js';
-import { useControllableState } from '../../core/controllable-state.js';
-import { Glyph } from '../../core/provider.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import {
-  FieldPreviousValue,
-  toAriaControlProps,
   type FieldControlProps,
+  FieldPreviousValue,
   type FieldState,
+  toAriaControlProps,
 } from '../field/field.js';
 import { DateDraftScope } from './date-draft.js';
+import { Segments } from './date-segments.js';
 import {
   CalendarBody,
   CalendarPopover,
   type DateTimeFieldCalendarHeading,
   type DateTimeFieldPreset,
 } from './date-time-calendar.js';
+import type { DateTimeFieldDateState } from './date-time-field.js';
+import { dateTimeFieldHooks as hooks } from './date-time-field-hooks.js';
+import { DatePickerTime, DateRangePickerTime } from './date-time-time-picker.js';
 import {
-  toSingleMode,
   type DateBounds,
   type DateFieldValue,
   type DateRangeValue,
   type DateTimeFieldMode,
   type DateValueOptions,
+  toSingleMode,
 } from './date-values.js';
-import { DatePickerTime, DateRangePickerTime } from './date-time-time-picker.js';
 import { isTimeUnit, TimeStepButtons, type TimeUnit } from './time-segment-steps.js';
-import { Segments } from './date-segments.js';
-import { dateTimeFieldHooks as hooks } from './date-time-field-hooks.js';
 
 /** How the pickers edit and offer values, beyond the value itself. */
 export interface DateControlSettings extends DateValueOptions {

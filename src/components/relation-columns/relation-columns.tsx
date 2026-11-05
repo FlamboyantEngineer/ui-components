@@ -3,24 +3,24 @@
 // Walks relations upstream and downstream of an item in Miller columns: choosing an item in a
 // column opens the column of its related items beyond it.
 
-import { useId, useRef, useState, type KeyboardEvent, type ReactNode, type RefObject } from 'react';
-import { useLocale } from '../../primitives/index.js';
+import { type KeyboardEvent, type ReactNode, type RefObject, useId, useRef, useState } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useLocale } from '../../primitives/index.js';
+import { isElement } from '../../utils/is-element.js';
+import { useFocusRecovery } from '../../utils/use-focus-recovery.js';
 import { Breadcrumb } from '../breadcrumb/breadcrumb.js';
-import { RelationColumnView, type RelationColumnContext } from './relation-column.js';
+import { type RelationColumnContext, RelationColumnView } from './relation-column.js';
 import { relationColumnsHooks as hooks } from './relation-columns-hooks.js';
 import {
   chooseRelation,
   emptyRelationPath,
   listRelationTrail,
-  resolveRelationColumns,
   type RelationColumnsPath,
   type RelationDirection,
+  resolveRelationColumns,
 } from './relation-columns-model.js';
-import { isElement } from '../../utils/is-element.js';
-import { useFocusRecovery } from '../../utils/use-focus-recovery.js';
 
 export interface RelationColumnsProps<T extends { id: Key }>
   extends BaseProps, AriaLabellingProps, RefProps<HTMLDivElement> {

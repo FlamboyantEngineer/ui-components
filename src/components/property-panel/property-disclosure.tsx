@@ -3,9 +3,9 @@
 // What the collapsible parts of a property panel (sections and cards) share.
 
 import { useContext, useId } from 'react';
-import { DisclosureGroupStateContext } from '../../primitives/index.js';
 import type { Key } from '../../core/props.js';
 import { usePersistentState, useUiStrings } from '../../core/provider.js';
+import { DisclosureGroupStateContext } from '../../primitives/index.js';
 import { booleanCodec } from '../../utils/json-codec.js';
 
 /** Whether a section or card is open, which the caller may control. */

@@ -1,5 +1,5 @@
-import { expect, test, matrixCell } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Sparkline lab', () => {
   test('UIC-SCALES-1.1 UIC-SCALES-1.3 UIC-SCALES-1.5 UIC-SCALES-2.3 UIC-SCALES-2.4 handles extreme scale domains', async ({

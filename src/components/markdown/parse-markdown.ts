@@ -3,14 +3,14 @@
 
 import { requireDefined } from '../../utils/require-defined.js';
 import {
+  type BlockContext,
+  type BlockReader,
   readAtx,
   readFencedCode,
   readIndentedCode,
   readParagraph,
   readTable,
   readThematicBreak,
-  type BlockContext,
-  type BlockReader,
 } from './markdown-blocks.js';
 import { readBlockquote, readList } from './markdown-containers.js';
 import { createHeadingIdAllocator, toPlainText } from './markdown-headings.js';

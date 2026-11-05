@@ -4,12 +4,12 @@
 // collection from a hidden render of the list, where the `Tab` components run, while the drawn list
 // holds the collection state; state both renders need lives in `Tabs`, above them.
 
-import { createContext, useMemo, useRef, useState, type Dispatch, type RefObject } from 'react';
+import { createContext, type Dispatch, type RefObject, useMemo, useRef, useState } from 'react';
 import type { Key, Orientation } from '../../core/props.js';
 import {
   createMenuController,
-  useMenuController,
   type MenuController,
+  useMenuController,
 } from '../context-menu/context-menu.js';
 import type { TabMenu } from './tab-menu.js';
 import type { TabRename } from './tab-rename.js';

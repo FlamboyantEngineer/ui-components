@@ -1,4 +1,4 @@
-import { isComposingKey, type CompositionKey } from './is-composing-key.js';
+import { type CompositionKey, isComposingKey } from './is-composing-key.js';
 
 /** The parts of a key event that tell whether a control may edit on it. */
 export type EditKey = CompositionKey &

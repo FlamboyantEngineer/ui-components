@@ -1,9 +1,9 @@
-import { CopyGlyph } from '../../core/glyphs.js';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { createRef, useImperativeHandle, useState, type Ref } from 'react';
+import { createRef, type Ref, useImperativeHandle, useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { CopyGlyph } from '../../core/glyphs.js';
 import { UiProvider } from '../../core/provider.js';
 import { ToolbarScroller } from './toolbar-scroller.js';
 

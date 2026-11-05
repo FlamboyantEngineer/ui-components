@@ -4,10 +4,9 @@
 // and a row or column header's, which moves, inserts beside or removes its item
 // (specs/RELATION-MATRIX.md, UIC-RELATION-MATRIX-2.4 and 2.5).
 
-import { useEffect, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
-import { CheckGlyph } from '../../core/glyphs.js';
+import { type KeyboardEvent, type RefObject, useEffect, useRef, useState } from 'react';
 import type { GlyphComponent } from '../../core/glyph-types.js';
-import { resolveActionIcon, type MenuActionIcons } from '../menu/menu-action-icons.js';
+import { CheckGlyph } from '../../core/glyphs.js';
 import type { Key, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
@@ -21,6 +20,7 @@ import {
   useMenuController,
 } from '../context-menu/context-menu.js';
 import { Menu, type MenuEntry } from '../menu/menu.js';
+import { type MenuActionIcons, resolveActionIcon } from '../menu/menu-action-icons.js';
 import type { RelationMatrixIndex, RelationMatrixRelation } from './relation-matrix-model.js';
 import { readPosition } from './use-matrix-navigation.js';
 

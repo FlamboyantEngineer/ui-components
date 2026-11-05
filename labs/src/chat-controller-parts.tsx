@@ -2,8 +2,8 @@
 // cards so the reader can answer them, and a one-line summary of every other part.
 
 import {
-  isAwaitingReader,
   type ChatControllerProps,
+  isAwaitingReader,
 } from '../../src/components/chat-controller/chat-controller.js';
 import type { ChatMessageData, ChatPart } from '../../src/components/chat-parts/chat-parts.js';
 import { ChatQuestion } from '../../src/components/chat-question/chat-question.js';

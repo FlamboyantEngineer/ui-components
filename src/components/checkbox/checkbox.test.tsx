@@ -5,8 +5,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { pressReset, readPantry, ResetForm } from '../../../test/reset-fixtures.js';
 import { GridList, GridListItem } from '../../primitives/index.js';
-import { Checkbox } from './checkbox.js';
 import { cycleCheckState } from './check-state.js';
+import { Checkbox } from './checkbox.js';
 
 function ThreeState() {
   const [value, setValue] = useState<boolean | null>(null);

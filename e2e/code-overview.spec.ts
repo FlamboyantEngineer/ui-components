@@ -1,5 +1,5 @@
-import { expect, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
+import { expect, test } from './fixtures.js';
 
 test('UIC-CODE-EDITOR-12.3 paints diagnostic marks inside a usable custom scrollbar track', async ({
   page,

@@ -1,13 +1,13 @@
-import { MoreGlyph, SaveGlyph } from '../../src/core/glyphs.js';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
   ToolbarScroller,
   type ToolbarScrollerItem,
 } from '../../src/components/toolbar-scroller/toolbar-scroller.js';
+import { MoreGlyph, SaveGlyph } from '../../src/core/glyphs.js';
 import { UiProvider } from '../../src/core/provider.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { ToolbarScrollerCases } from './toolbar-scroller-cases.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const fewTools = ['Bold', 'Italic'];
 const manyTools = ['Bold', 'Italic', 'Underline', 'Strike', 'Highlight', 'Link', 'Quote', 'Code'];

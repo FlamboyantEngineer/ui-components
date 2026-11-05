@@ -1,6 +1,6 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { StrictMode, type ReactNode } from 'react';
+import { type ReactNode, StrictMode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { Button } from '../components/button/button.js';
 import { Combobox } from '../components/combobox/combobox.js';
@@ -18,9 +18,9 @@ import { SelectField } from '../components/select-field/select-field.js';
 import { Tooltip } from '../components/tooltip/tooltip.js';
 import {
   createOverlayPresenceStore,
+  type OverlayPresence,
   useIsOverlayActive,
   useOverlayPresence,
-  type OverlayPresence,
 } from './overlay-presence.js';
 import { UiProvider } from './provider.js';
 

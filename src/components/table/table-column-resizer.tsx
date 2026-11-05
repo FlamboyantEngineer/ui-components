@@ -4,14 +4,14 @@
 // resize sets the column's track in pixels, by pointer or by keyboard (specs/TABLE.md, UIC-TABLE-4.2).
 
 import {
+  type KeyboardEvent,
+  type RefObject,
   useContext,
   useEffect,
   useId,
   useLayoutEffect,
   useRef,
   useState,
-  type KeyboardEvent,
-  type RefObject,
 } from 'react';
 import { TableStateContext, useFocusRing, useHover, useLocale } from '../../primitives/index.js';
 import { clamp } from '../../utils/clamp.js';

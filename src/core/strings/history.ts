@@ -1,6 +1,6 @@
 import { defineStrings } from '../message-format.js';
 /** Strings of activity feeds, change lists and version histories. */
-export interface HistoryStrings {
+interface HistoryStrings {
   /** Default accessible name of an activity feed. */
   activity: string;
   /** What an activity feed with no entries shows. */

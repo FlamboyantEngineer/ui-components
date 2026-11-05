@@ -2,8 +2,8 @@
 // a week, and timed events placed within a day. Days are `YYYY-MM-DD` texts (calendar-days.ts).
 
 import { parseIsoDate, parseIsoDateTime } from '../../primitives/index.js';
-import type { CalendarViewEvent } from './calendar-view.js';
 import { compareDays, getDayOf, getDayStart, getWallHours, shiftDay } from './calendar-days.js';
+import type { CalendarViewEvent } from './calendar-view.js';
 
 /** An event read in the view's time zone. */
 export interface PlacedEvent {

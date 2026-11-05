@@ -1,6 +1,14 @@
 'use client';
 
 import {
+  cloneElement,
+  isValidElement,
+  type ReactElement,
+  type ReactNode,
+  type Ref,
+  type RefObject,
+} from 'react';
+import {
   CopyGlyph,
   DeleteGlyph,
   EditGlyph,
@@ -9,30 +17,22 @@ import {
   ThumbsDownGlyph,
   ThumbsUpGlyph,
 } from '../../core/glyphs.js';
-import {
-  cloneElement,
-  isValidElement,
-  type ReactElement,
-  type ReactNode,
-  type Ref,
-  type RefObject,
-} from 'react';
 import type { BaseProps, Key, Selection } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { ContextMenuTrigger } from '../context-menu/context-menu.js';
 import type { IconSource } from '../icon/icon.js';
 import { Menu, MenuItem, MenuSection } from '../menu/menu.js';
-import { resolveActionIcon, type MenuActionIcons } from '../menu/menu-action-icons.js';
+import { type MenuActionIcons, resolveActionIcon } from '../menu/menu-action-icons.js';
 import { MessageActionsBar } from './message-actions-bar.js';
 import { MessageCommandOverlays } from './message-command-overlays.js';
 import {
-  hasCommands,
-  splitCommands,
-  useMessageCommands,
   type ChatFeedbackRating,
   type ChatMessageCommandProps,
+  hasCommands,
   type MessageCommands,
+  splitCommands,
+  useMessageCommands,
 } from './message-commands.js';
 
 export interface ChatMessageActionsMenuProps extends BaseProps, ChatMessageCommandProps {

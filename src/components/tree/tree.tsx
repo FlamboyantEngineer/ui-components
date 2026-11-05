@@ -1,25 +1,25 @@
 'use client';
 
-import { armHandleDrag } from '../drag-handle/drag-handle.js';
+import { useContext, useMemo } from 'react';
 import {
-  Tree as AriaTree,
   ListLayout,
+  Tree as AriaTree,
   useDragAndDrop,
   Virtualizer,
 } from '../../primitives/index.js';
-import { useContext, useMemo } from 'react';
-import { PrimaryActionKeysContext } from '../../utils/primary-action-keys.js';
-import { keepTreePrimaryKeys } from './tree-primary-keys.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { mergeRefs } from '../../utils/merge-props.js';
+import { PrimaryActionKeysContext } from '../../utils/primary-action-keys.js';
 import { useCarriedFocus } from '../../utils/use-carried-focus.js';
 import { useKeptCollectionAttributes } from '../../utils/use-kept-collection-attributes.js';
+import { armHandleDrag } from '../drag-handle/drag-handle.js';
 import { TextMatchProvider } from '../text-match/text-match.js';
-import { TreeEmptyState } from './tree-item.js';
-import { useTreeChildren } from './tree-section.js';
 import { createTreeAriaKeys } from './tree-aria-keys.js';
 import { treeHooks as hooks } from './tree-hooks.js';
+import { TreeEmptyState } from './tree-item.js';
+import { keepTreePrimaryKeys } from './tree-primary-keys.js';
 import type { TreeItemData, TreeProps } from './tree-props.js';
+import { useTreeChildren } from './tree-section.js';
 import { useTreeModel } from './use-tree-model.js';
 
 export type {
@@ -35,8 +35,8 @@ export type {
   TreeSize,
   TreeVariant,
 } from './tree-props.js';
-export { useTreeLoads } from './use-tree-loads.js';
 export type { TreeLoads } from './use-tree-loads.js';
+export { useTreeLoads } from './use-tree-loads.js';
 
 /** A virtualized tree's row height, which its section heading rows take too. */
 const toLayoutOptions = (rowHeight: number) => ({ rowHeight, headingHeight: rowHeight });

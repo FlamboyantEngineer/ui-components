@@ -2,11 +2,11 @@
 
 import {
   createContext,
+  type RefCallback,
   useCallback,
   useContext,
   useLayoutEffect,
   useSyncExternalStore,
-  type RefCallback,
 } from 'react';
 import { createValueStore } from '../../utils/value-store.js';
 import type { ChatMessageOrigin, ChatMessageStatus } from './chat-message.js';

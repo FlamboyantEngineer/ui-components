@@ -3,17 +3,17 @@
 // A tile gesture's lifetime in a dashboard grid: its session, its preview against the layout as it
 // now is, and its commit, which only the session the grid still accepts can make.
 
-import { measureScale } from '../../utils/element-scale.js';
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { Key } from '../../core/props.js';
-import { useLatest } from '../../utils/use-latest.js';
+import { measureScale } from '../../utils/element-scale.js';
 import { getOwnerWindow } from '../../utils/owner-window.js';
-import { placeDashboardItem, type DashboardGridItem } from './dashboard-layout.js';
+import { useLatest } from '../../utils/use-latest.js';
 import type { TileGesture } from './dashboard-grid.js';
+import { type DashboardGridItem, placeDashboardItem } from './dashboard-layout.js';
 import type { CellStep, TileMoveKind } from './use-tile-move.js';
 
 /** The committed layout a gesture previews against, how to keep a new one, and who owns it. */
-export interface CommittedLayout {
+interface CommittedLayout {
   layout: DashboardGridItem[];
   commit: (next: DashboardGridItem[]) => void;
   /** Who the layout belongs to: a gesture started under one owner never writes to another. */

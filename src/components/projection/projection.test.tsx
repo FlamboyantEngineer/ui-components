@@ -1,6 +1,6 @@
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { createContext, useContext, useState, type Dispatch, type SetStateAction } from 'react';
+import { createContext, type Dispatch, type SetStateAction, useContext, useState } from 'react';
 import { describe, expect, it } from 'vitest';
 import {
   ProjectionContent,

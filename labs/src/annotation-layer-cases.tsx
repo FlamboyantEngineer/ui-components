@@ -4,8 +4,8 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import {
   AnnotationLayer,
-  AnnotationMargin,
   type AnnotationLayerHandle,
+  AnnotationMargin,
 } from '../../src/components/annotation-layer/annotation-layer.js';
 import { Button } from '../../src/components/button/button.js';
 import type { Key } from '../../src/core/props.js';

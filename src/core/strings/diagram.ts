@@ -1,6 +1,6 @@
 import { defineStrings } from '../message-format.js';
 /** Strings of diagram canvases and the views drawn on them. */
-export interface DiagramStrings {
+interface DiagramStrings {
   /** Default accessible name of a diagram canvas. */
   diagram: string;
   /** Names the switch between the canvas and the outline. */

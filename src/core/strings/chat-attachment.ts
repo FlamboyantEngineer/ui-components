@@ -1,6 +1,6 @@
 import { defineStrings } from '../message-format.js';
 /** Strings of chat attachments and attachment lists. */
-export interface ChatAttachmentStrings {
+interface ChatAttachmentStrings {
   /** Names a list of attachments. */
   attachmentList: string;
   /** Names the button that opens an image attachment in the media viewer, from the file name. */

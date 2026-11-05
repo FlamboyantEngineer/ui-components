@@ -2,11 +2,11 @@
 // closes the menu, opening on mount, and an icon-only trigger in every button variant.
 
 import { useState } from 'react';
-import type { Selection } from '../../src/core/props.js';
 import { Button, type ButtonVariant } from '../../src/components/button/button.js';
 import { DropdownMenu } from '../../src/components/dropdown-menu/dropdown-menu.js';
-import { MenuItem, MenuSection, type MenuEntry } from '../../src/components/menu/menu.js';
+import { type MenuEntry, MenuItem, MenuSection } from '../../src/components/menu/menu.js';
 import { Switch } from '../../src/components/switch/switch.js';
+import type { Selection } from '../../src/core/props.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
 
 const describeSelection = (keys: Selection) =>

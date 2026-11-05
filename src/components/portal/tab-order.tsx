@@ -3,9 +3,9 @@
 // Keeps portalled content in the tab order of the place it is declared: Tab moves into and out of
 // it as if it sat there, through focus guards in place and at both ends of the portal wrapper.
 
-import { useMemo, useRef, type FocusEvent, type ReactNode, type RefObject } from 'react';
-import { isSameRadioGroup, listTabStops, type TabDirection } from '../../utils/tabbable.js';
+import { type FocusEvent, type ReactNode, type RefObject, useMemo, useRef } from 'react';
 import { getOwnerDocument } from '../../utils/owner-window.js';
+import { isSameRadioGroup, listTabStops, type TabDirection } from '../../utils/tabbable.js';
 
 type GuardKind = 'before' | 'after' | 'start' | 'end';
 

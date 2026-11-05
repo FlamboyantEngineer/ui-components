@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Modal } from '../modal/modal.js';
-import { ModalHost, createModalController, type ModalController } from './modal-controller.js';
+import { createModalController, type ModalController, ModalHost } from './modal-controller.js';
 
 function renderHost(controller: ModalController = createModalController()) {
   const view = render(<ModalHost controller={controller} />);

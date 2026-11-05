@@ -1,15 +1,15 @@
 'use client';
 
+import { type PointerEvent, useLayoutEffect, useRef, useState } from 'react';
 import { measureScale } from '../../utils/element-scale.js';
-import { useLayoutEffect, useRef, useState, type PointerEvent } from 'react';
+import { isElement } from '../../utils/is-element.js';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import {
-  resolveDragChange,
   type ReadItem,
+  resolveDragChange,
   type TimelineDragEdge,
   type TimelineItemChange,
 } from './timeline-geometry.js';
-import { isElement } from '../../utils/is-element.js';
 
 interface TimelineDragOptions {
   read: ReadItem;

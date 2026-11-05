@@ -1,14 +1,14 @@
 // Context Menu cases for text controls inside a target, element anchoring at another placement,
 // a point menu whose trigger scrolls, and a controller made outside React and observed from it.
 
-import { useRef, useState, type CSSProperties } from 'react';
+import { type CSSProperties, useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { ContextMenu, ContextMenuTrigger } from '../../src/components/context-menu/context-menu.js';
 import {
   createMenuController,
+  type MenuAnchor,
   useMenuController,
   useMenuControllerState,
-  type MenuAnchor,
 } from '../../src/components/context-menu/index.js';
 import { Menu, MenuItem } from '../../src/components/menu/menu.js';
 import { Switch } from '../../src/components/switch/switch.js';

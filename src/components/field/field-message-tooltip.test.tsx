@@ -1,8 +1,8 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
-import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { TextField } from '../../../test/field-fixtures.js';
+import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import type { FieldValidation } from './field.js';
 
 const tooltip = () => document.querySelector<HTMLElement>('.ui-field__message-tooltip');

@@ -1,13 +1,13 @@
 'use client';
 
-import { SelectionIndicator, ToggleButton, useLocale } from '../../primitives/index.js';
 import type { ControlSize } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { SelectionIndicator, ToggleButton, useLocale } from '../../primitives/index.js';
 import { formatCount, normalizeCount } from '../../utils/count.js';
 import { Badge, type BadgeCountVariant } from '../badge/badge.js';
-import { Icon, hasIcon, toIconProps } from '../icon/icon.js';
-import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
+import { hasIcon, Icon, toIconProps } from '../icon/icon.js';
 import { Tooltip } from '../tooltip/tooltip.js';
+import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import type { SegmentedChoiceOption } from './segmented-choice.js';
 import { segmentedChoiceHooks as hooks } from './segmented-choice-hooks.js';
 

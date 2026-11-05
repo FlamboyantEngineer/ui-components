@@ -1,37 +1,37 @@
 'use client';
 
-import { useState, type ReactNode, type Ref } from 'react';
-import { TextField as AriaTextField } from '../../primitives/index.js';
+import { type ReactNode, type Ref, useState } from 'react';
 import type { FocusEventProps, KeyboardEventProps } from '../../core/events.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
+import { TextField as AriaTextField } from '../../primitives/index.js';
 import { isAutoGrowing } from '../../utils/use-auto-grow.js';
 import {
-  ControlCompletionList,
   type Completion,
   type CompletionListItemState,
   type CompletionSource,
+  ControlCompletionList,
 } from '../completion-list/completion-list.js';
 import {
+  countCodePoints,
   Field,
   FieldFormValue,
-  countCodePoints,
+  type FieldInputProps,
+  type FieldTextInputProps,
+  type StringRules,
   toAriaControlProps,
   toSpellCheckAttribute,
   useFieldControl,
   validateString,
-  type FieldInputProps,
-  type FieldTextInputProps,
-  type StringRules,
 } from '../field/field.js';
 import {
   TextFieldControl,
+  type TextFieldControlProps,
   TextFieldFrame,
   textFieldHooks as hooks,
   withCharacterCount,
-  type TextFieldControlProps,
 } from './text-field-parts.js';
-import { useTextFieldInput, type TextFieldInput } from './use-text-field-input.js';
+import { type TextFieldInput, useTextFieldInput } from './use-text-field-input.js';
 
 /** The kind of text a single-line field takes: the input's `type`. */
 export type TextFieldType = 'text' | 'email' | 'password' | 'search' | 'tel' | 'url';
@@ -86,6 +86,15 @@ function countCharacters(value: string, { trim, getLength }: StringRules): numbe
 const emailPattern =
   /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
+function isAbsoluteUrl(text: string): boolean {
+  try {
+    new URL(text);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * The browser's type check of an email or URL field, made on the value itself, so the field, its
  * form and a native submit agree: an email field takes one email address, a URL field an absolute
@@ -101,7 +110,7 @@ function checkTextType(value: string, type: TextFieldType | undefined, strings: 
       validity: 'typeMismatch' as const,
     };
   }
-  if (type === 'url' && !URL.canParse(text)) {
+  if (type === 'url' && !isAbsoluteUrl(text)) {
     return {
       severity: 'error' as const,
       message: strings.urlMismatch,

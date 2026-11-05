@@ -1,12 +1,13 @@
 'use client';
 
-import { stopConsumedEscape } from '../../utils/consumed-escape.js';
-import { useContext, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { type KeyboardEvent, useContext, useLayoutEffect, useRef, useState } from 'react';
 import { Input, TableStateContext } from '../../primitives/index.js';
+import { stopConsumedEscape } from '../../utils/consumed-escape.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
+import { isDate } from '../../utils/is-date.js';
+import { type CellReading, formatCellText, readCellText } from './table-cell-writes.js';
 import { getColumnText } from './table-columns.js';
 import { tableHooks as hooks } from './table-hooks.js';
-import { formatCellText, readCellText, type CellReading } from './table-cell-writes.js';
 import {
   getCellValue,
   isTextValue,
@@ -23,7 +24,7 @@ import type { CellEditing, CellMove } from './use-cell-editing.js';
  */
 function formatEditorText(value: TableCellValue): string {
   if (isTextValue(value) || typeof value === 'boolean') return String(value);
-  if (value instanceof Date) return formatCellText(value);
+  if (isDate(value)) return formatCellText(value);
   return '';
 }
 

@@ -1,8 +1,8 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
-import { userEvent, type UserEvent } from '@testing-library/user-event';
+import { type UserEvent, userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { EditableDiagram, pipeEdges, pipeNodes } from '../../../test/diagram-fixtures.js';
+import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { DiagramCanvas } from './diagram-canvas.js';
 

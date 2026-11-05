@@ -1,7 +1,7 @@
-import { BellGlyph, PlusGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import { Badge } from '../../src/components/badge/badge.js';
 import { Menu, type MenuEntry } from '../../src/components/menu/menu.js';
+import { BellGlyph, PlusGlyph } from '../../src/core/glyphs.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';

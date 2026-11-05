@@ -1,11 +1,11 @@
 // Select field cases for host-owned and initially open lists, in list and tree modes.
 
 import { useState } from 'react';
-import type { Key } from '../../src/core/props.js';
 import {
   SelectField,
   type SelectFieldOption,
 } from '../../src/components/select-field/select-field.js';
+import type { Key } from '../../src/core/props.js';
 import { MountOnDemand } from './lab-form.js';
 import { useHostOpen } from './lab-open-state.js';
 import { LabOutput } from './lab-output.js';

@@ -1,11 +1,11 @@
 // The folder tree a folder manager shows: the caller's folders, an optional root row standing for
 // "no folder", the draft row of a folder being created, and the folders a filter keeps.
 
-import { requireDefined } from '../../utils/require-defined.js';
-import { walkTree } from '../../utils/walk-tree.js';
-import { mapTree } from '../../utils/map-tree.js';
-import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { Key } from '../../core/props.js';
+import { mapTree } from '../../utils/map-tree.js';
+import { requireDefined } from '../../utils/require-defined.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import { walkTree } from '../../utils/walk-tree.js';
 import { textMatchesTerms } from '../text-match/match-ranges.js';
 
 /** A folder: a key unique among all folders, its name and its subfolders in order. */

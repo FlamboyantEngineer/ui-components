@@ -1,8 +1,8 @@
 // The paths and marked points of a sparkline, from its values and box (specs/SPARKLINE.md).
 
+import { createLinearScale, type LinearScale } from '../../utils/linear-scale.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { summarizeNumbers } from '../../utils/summarize-numbers.js';
-import { createLinearScale, type LinearScale } from '../../utils/linear-scale.js';
 
 /** A value the sparkline can mark. */
 export type SparklineMarker = 'min' | 'max' | 'last';

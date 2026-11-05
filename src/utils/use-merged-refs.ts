@@ -1,4 +1,4 @@
-import { useCallback, type Ref, type RefCallback } from 'react';
+import { type Ref, type RefCallback, useCallback } from 'react';
 import { mergeRefs } from './merge-props.js';
 
 /**

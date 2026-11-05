@@ -1,23 +1,23 @@
-import { useRef, useState, type CSSProperties } from 'react';
+import { type CSSProperties, useRef, useState } from 'react';
 import { Badge } from '../../src/components/badge/badge.js';
-import { CopyGlyph, DeleteGlyph, EditGlyph } from '../../src/core/glyphs.js';
+import { Button } from '../../src/components/button/button.js';
 import {
   CalendarView,
   type CalendarViewDay,
   type CalendarViewEvent,
   type CalendarViewMode,
 } from '../../src/components/calendar-view/calendar-view.js';
-import { Button } from '../../src/components/button/button.js';
-import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import type {
   CalendarEventDragMode,
   CalendarEventMenuEntry,
 } from '../../src/components/calendar-view/index.js';
+import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
+import { CopyGlyph, DeleteGlyph, EditGlyph } from '../../src/core/glyphs.js';
+import { fr } from '../../src/core/locales/index.js';
 import type { Key } from '../../src/core/props.js';
 import { UiProvider } from '../../src/core/provider.js';
-import { fr } from '../../src/core/locales/index.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 /** A fixed clock, so today reads the same on every day: 18 March 2026, 10:30. */
 const getNow = () => new Date(Date.UTC(2026, 2, 18, 10, 30));
@@ -42,6 +42,8 @@ const events: CalendarViewEvent[] = [
   { id: 'night', title: 'Maintenance window', start: '2026-03-19T22:00', end: '2026-03-20T02:00' },
   { id: 'demo', title: 'Demo', start: '2026-03-05T15:00', end: '2026-03-05T16:00' },
   { id: 'dentist', title: 'Dentist', start: '2026-03-27T08:30', end: '2026-03-27T09:15' },
+  // Ends exactly at midnight: it occupies the 23rd only, also once made all-day.
+  { id: 'backup', title: 'Evening backup', start: '2026-03-23T22:00', end: '2026-03-24T00:00' },
 ];
 
 const crowded: CalendarViewEvent[] = [

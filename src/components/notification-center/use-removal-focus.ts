@@ -1,9 +1,9 @@
 'use client';
 
-import { useCallback, useLayoutEffect, useRef, type FocusEvent, type RefObject } from 'react';
-import { notificationListHooks as hooks } from './notification-row.js';
+import { type FocusEvent, type RefObject, useCallback, useLayoutEffect, useRef } from 'react';
 import { getComposedActiveElement, isFocusLost } from '../../utils/focus-target.js';
 import { isNode } from '../../utils/is-element.js';
+import { notificationListHooks as hooks } from './notification-row.js';
 
 /** The row holding focus: which of its controls, and the rows that can take focus if it leaves. */
 interface FocusedRow {

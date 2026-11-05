@@ -1,22 +1,22 @@
 // The controller without React: the conversation's store and what the reader and the host do to it.
 
+import { createValueStore } from '../../utils/value-store.js';
 import type { ChatMessageData, ChatTextToken } from '../chat-parts/chat-parts.js';
 import type { ChatQuestionAnswer } from '../chat-question/chat-question.js';
-import { createValueStore } from '../../utils/value-store.js';
 import {
-  createIdFactory,
-  patchState,
-  readAlwaysAllowed,
   type ChatEngineConfig,
   type ChatEngineContext,
   type ChatQueuedMessage,
   type ChatSettled,
+  createIdFactory,
+  patchState,
+  readAlwaysAllowed,
 } from './chat-controller-state.js';
 import {
+  type ChatReaderResponse,
   createOutgoingMessage,
   isAwaitingReader,
   toDismissal,
-  type ChatReaderResponse,
 } from './chat-reply.js';
 import { abandonRun, endRun, flushRun, respond, startRun } from './chat-run.js';
 import {

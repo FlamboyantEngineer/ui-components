@@ -2,7 +2,7 @@
 // with a composed accent, a decomposed accent and none, beside longer words that contain it.
 
 /** The page's lines; `́` is a combining acute accent after a plain letter. */
-export const accentSampleLines = [
+const accentSampleLines = [
   'Café menu',
   'Café au lait, café crème and a cafe filtre.',
   'Café noir, written with a separate accent.',

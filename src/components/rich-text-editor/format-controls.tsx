@@ -1,7 +1,7 @@
 'use client';
 
+import { type FormEvent, type ReactNode, useState } from 'react';
 import { LinkGlyph, UnlinkGlyph } from '../../core/glyphs.js';
-import { useState, type FormEvent, type ReactNode } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isSafeUrl } from '../../utils/safe-url.js';
@@ -9,7 +9,7 @@ import { Button } from '../button/button.js';
 import { Popover, PopoverTrigger } from '../popover/popover.js';
 import { SelectField } from '../select-field/select-field.js';
 import { TextField } from '../text-field/text-field.js';
-import { getBlockItems, type FormatItem } from './format-items.js';
+import { type FormatItem, getBlockItems } from './format-items.js';
 import type { RichTextController } from './rich-text-controller.js';
 
 interface FormatControlProps {

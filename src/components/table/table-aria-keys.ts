@@ -1,15 +1,15 @@
-import type { Key, Selection } from '../../core/props.js';
 import { useMemo } from 'react';
-import { createKeyIndex } from '../../utils/create-key-index.js';
-import { toCollectionKey } from '../../utils/to-collection-key.js';
-import { walkTree } from '../../utils/walk-tree.js';
-import { fromCollectionKey } from '../../utils/from-collection-key.js';
+import type { Key, Selection } from '../../core/props.js';
 import {
   fromCollectionSelection,
   toCollectionSelection,
 } from '../../utils/collection-selection.js';
-import type { TableChildRows } from './table-tree.js';
+import { createKeyIndex } from '../../utils/create-key-index.js';
+import { fromCollectionKey } from '../../utils/from-collection-key.js';
+import { toCollectionKey } from '../../utils/to-collection-key.js';
+import { walkTree } from '../../utils/walk-tree.js';
 import type { TableRow } from './table-rows.js';
+import type { TableChildRows } from './table-tree.js';
 import type { TableExpansion } from './use-table-expansion.js';
 import type { TableSelection } from './use-table-selection.js';
 

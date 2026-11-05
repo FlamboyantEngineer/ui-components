@@ -4,8 +4,8 @@ import type { RefObject } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { FindBar } from '../find-bar/find-bar.js';
-import { pdfViewerHooks as hooks } from './styling-hooks.js';
 import type { PdfSearchOptions } from './pdf-search.js';
+import { pdfViewerHooks as hooks } from './styling-hooks.js';
 import type { PdfSearchState } from './use-pdf-search.js';
 
 interface PdfViewerSearchProps {

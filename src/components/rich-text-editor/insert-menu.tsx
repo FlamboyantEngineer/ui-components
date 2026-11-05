@@ -1,12 +1,12 @@
 'use client';
 
-import { useMergedRefs } from '../../utils/use-merged-refs.js';
-import { PlusGlyph } from '../../core/glyphs.js';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
+import { PlusGlyph } from '../../core/glyphs.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { CompletionList, getCompletionOptionId } from '../completion-list/completion-list.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import { getInsertItems, type InsertMenuItem } from './insert-items.js';

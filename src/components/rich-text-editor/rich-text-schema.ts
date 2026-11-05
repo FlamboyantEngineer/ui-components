@@ -1,6 +1,6 @@
-import { Schema, type MarkSpec, type NodeSpec, type ParseRule } from 'prosemirror-model';
-import { registerEngineSchema } from './engine-schema.js';
+import { type MarkSpec, type NodeSpec, type ParseRule, Schema } from 'prosemirror-model';
 import { defaultMarks, defaultNodes } from './default-schema.js';
+import { registerEngineSchema } from './engine-schema.js';
 import type { RichTextAttributes, RichTextAttributeValue } from './rich-text-document.js';
 
 /** The element attributes of a rendered node or mark; `null` and `undefined` leave one out. */

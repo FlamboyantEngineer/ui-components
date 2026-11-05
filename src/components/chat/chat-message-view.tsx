@@ -1,40 +1,40 @@
 'use client';
 
 import { memo, type ReactNode } from 'react';
-import { isShallowEqual } from '../../utils/is-shallow-equal.js';
 import { useUiStrings } from '../../core/provider.js';
+import { isShallowEqual } from '../../utils/is-shallow-equal.js';
+import { readOwn } from '../../utils/read-own.js';
 import { ChatStatusLine } from '../chat-activity/chat-activity.js';
 import {
   ChatMessageActionsMenu,
   type ChatMessageMenuIcons,
 } from '../chat-message-actions/chat-message-actions.js';
-import { ChatParts, type ChatMessageData, type ChatPartsProps } from '../chat-parts/chat-parts.js';
+import { type ChatMessageData, ChatParts, type ChatPartsProps } from '../chat-parts/chat-parts.js';
 import {
   ChatMessage,
-  ChatReadReceipts,
   type ChatMessageGroupPosition,
   type ChatQuoteData,
   type ChatReader,
+  ChatReadReceipts,
 } from '../chat-transcript/chat-transcript.js';
 import { ReactionBar } from '../reaction-bar/reaction-bar.js';
-import { toMessageCommands, type ChatCommandContext } from './chat-commands.js';
+import { type ChatCommandContext, toMessageCommands } from './chat-commands.js';
 import { chatHooks as hooks } from './chat-hooks.js';
 import {
+  type ChatMessageDisplayOptions,
   showsStreamingCaret,
   toMessageVariant,
   toTimePlacement,
-  type ChatMessageDisplayOptions,
 } from './chat-message-display.js';
 import {
+  type ChatThinkingUntil,
   readMessageText,
   toDisplayStatus,
   toExcerpt,
   toMessageAuthor,
   toMessageOrigin,
   toThinkingActivity,
-  type ChatThinkingUntil,
 } from './chat-model.js';
-import { readOwn } from '../../utils/read-own.js';
 
 /** The `ChatParts` options a chat passes to every message unchanged. */
 export type ChatPartOptions = Pick<
@@ -55,7 +55,7 @@ export type ChatPartOptions = Pick<
  * The options a message calls while it renders. A message draws with the ones of the render it
  * renders in, but a new function alone does not render a message again.
  */
-export interface ChatRenderOptions extends Pick<
+interface ChatRenderOptions extends Pick<
   ChatPartsProps,
   'toolRenderers' | 'renderPart' | 'getReference'
 > {

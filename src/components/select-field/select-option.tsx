@@ -1,15 +1,15 @@
 'use client';
 
-import { CheckGlyph, MinusGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
+import { CheckGlyph, MinusGlyph } from '../../core/glyphs.js';
+import type { Key, SelectableState } from '../../core/props.js';
+import { Glyph, useUiStrings } from '../../core/provider.js';
 import { Collection, Header, ListBoxSection, Text } from '../../primitives/index.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
-import type { Key, SelectableState } from '../../core/props.js';
-import { Glyph, useUiStrings } from '../../core/provider.js';
-import { PickerOptionRow, isPickerSection } from '../field/field.js';
-import { type SelectFieldItem, type SelectFieldOption } from './select-options.js';
+import { isPickerSection, PickerOptionRow } from '../field/field.js';
 import { selectFieldHooks as hooks } from './select-field-hooks.js';
+import type { SelectFieldItem, SelectFieldOption } from './select-options.js';
 
 /** Draws an option's content in the list instead of its icon, label and description. */
 export type SelectFieldOptionRenderer = (

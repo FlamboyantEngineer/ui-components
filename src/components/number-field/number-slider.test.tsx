@@ -2,12 +2,12 @@ import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { chooseFieldMenuItem } from '../../../test/field-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Fieldset } from '../field/field.js';
 import { Form } from '../form/form.js';
 import { NumberField, type NumberRange } from './number-field.js';
 import { keepThumbsApart } from './thumb-spacing.js';
-import { chooseFieldMenuItem } from '../../../test/field-fixtures.js';
 
 function root(container: HTMLElement) {
   return container.querySelector<HTMLElement>('.ui-field');
@@ -22,6 +22,194 @@ function thumbOf(input: HTMLElement) {
 }
 
 describe('NumberField slider display', () => {
+  it.each([false, true])(
+    'UIC-NUMBER-FIELD-5.2 keeps valid fractional scalar values stable (controlled: %s)',
+    (controlled) => {
+      const onChange = vi.fn();
+      const onCommit = vi.fn();
+      const onChangeEnd = vi.fn();
+      const validate = vi.fn(() => null);
+      const props = {
+        minValue: 0.05,
+        maxValue: 1,
+        step: 0.1,
+        onChange,
+        onCommit,
+        onChangeEnd,
+        validate,
+      };
+      const { container, rerender } = render(
+        <form aria-label="Values">
+          <NumberField
+            {...props}
+            display="slider"
+            label="Amount"
+            name="amount"
+            {...(controlled ? { value: 0.05 } : { defaultValue: 0.05 })}
+            committedValue={0.05}
+          />
+        </form>,
+      );
+      expect(screen.getByRole('slider', { name: 'Amount' })).toHaveValue('0.05');
+      expect(root(container)).not.toHaveAttribute('data-dirty');
+      rerender(
+        <form aria-label="Values">
+          <NumberField
+            {...props}
+            display="slider"
+            label="Amount"
+            name="amount"
+            {...(controlled ? { value: 0.85 } : { defaultValue: 0.85 })}
+            committedValue={0.05}
+          />
+        </form>,
+      );
+      const expected = controlled ? 0.85 : 0.05;
+      const thumb = screen.getByRole('slider', { name: 'Amount' });
+      expect(thumb).toHaveValue(String(expected));
+      expect(thumb).toHaveAttribute('aria-valuetext', String(expected));
+      expect(container.querySelector('output')).toHaveTextContent(String(expected));
+      expect(validate).toHaveBeenLastCalledWith(expected);
+      expect(new FormData(screen.getByRole<HTMLFormElement>('form')).get('amount')).toBe(
+        String(expected),
+      );
+      expect(root(container)?.hasAttribute('data-dirty')).toBe(controlled);
+      expect(onChange).not.toHaveBeenCalled();
+      expect(onCommit).not.toHaveBeenCalled();
+      expect(onChangeEnd).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([false, true])(
+    'UIC-NUMBER-FIELD-5.2 keeps both valid fractional endpoints stable (controlled: %s)',
+    (controlled) => {
+      const onChange = vi.fn();
+      const onCommit = vi.fn();
+      const onChangeEnd = vi.fn();
+      const validate = vi.fn(() => null);
+      const initial: NumberRange = [0.05, 0.85];
+      const external: NumberRange = [0.15, 0.95];
+      const props = {
+        minValue: 0.05,
+        maxValue: 1,
+        step: 0.1,
+        onChange,
+        onCommit,
+        onChangeEnd,
+        validate,
+      };
+      const { container, rerender } = render(
+        <form aria-label="Values">
+          <NumberField
+            {...props}
+            range
+            display="slider"
+            label="Amount"
+            startName="from"
+            endName="to"
+            {...(controlled ? { value: initial } : { defaultValue: initial })}
+            committedValue={initial}
+          />
+        </form>,
+      );
+      expect(thumbs().map((thumb) => thumb.value)).toEqual(['0.05', '0.85']);
+      expect(root(container)).not.toHaveAttribute('data-dirty');
+      rerender(
+        <form aria-label="Values">
+          <NumberField
+            {...props}
+            range
+            display="slider"
+            label="Amount"
+            startName="from"
+            endName="to"
+            {...(controlled ? { value: external } : { defaultValue: external })}
+            committedValue={initial}
+          />
+        </form>,
+      );
+      const expected = controlled ? external : initial;
+      expect(thumbs().map((thumb) => thumb.value)).toEqual(expected.map(String));
+      expect(thumbs().map((thumb) => thumb.getAttribute('aria-valuetext'))).toEqual(
+        expected.map(String),
+      );
+      expect(container.querySelector('output')).toHaveTextContent(expected.join('–'));
+      expect(validate).toHaveBeenLastCalledWith(expected);
+      const data = new FormData(screen.getByRole<HTMLFormElement>('form'));
+      expect([data.get('from'), data.get('to')]).toEqual(expected.map(String));
+      expect(root(container)?.hasAttribute('data-dirty')).toBe(controlled);
+      expect(onChange).not.toHaveBeenCalled();
+      expect(onCommit).not.toHaveBeenCalled();
+      expect(onChangeEnd).not.toHaveBeenCalled();
+    },
+  );
+
+  it('UIC-NUMBER-FIELD-5.2 settles a controlled feedback owner once at off-grid upper bounds', () => {
+    const onChange = vi.fn();
+    const onCommit = vi.fn();
+    const onChangeEnd = vi.fn();
+    function Sample({ maxValue }: { maxValue: number }) {
+      const [value, setValue] = useState<NumberRange>([0.05, 1]);
+      return (
+        <NumberField
+          range
+          display="slider"
+          label="Amount"
+          minValue={0.05}
+          maxValue={maxValue}
+          step={0.1}
+          value={value}
+          onChange={(next) => {
+            onChange(next);
+            setValue(next);
+          }}
+          onCommit={onCommit}
+          onChangeEnd={onChangeEnd}
+        />
+      );
+    }
+    const { rerender } = render(<Sample maxValue={1} />);
+    expect(thumbs().map((thumb) => thumb.value)).toEqual(['0.05', '0.95']);
+    expect(onChange).toHaveBeenCalledExactlyOnceWith([0.05, 0.95]);
+    onChange.mockClear();
+    rerender(<Sample maxValue={0.099} />);
+    expect(thumbs().map((thumb) => thumb.value)).toEqual(['0.05', '0.05']);
+    expect(onChange).toHaveBeenCalledExactlyOnceWith([0.05, 0.05]);
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(onChangeEnd).not.toHaveBeenCalled();
+  });
+
+  it('UIC-NUMBER-FIELD-5.2 reports fractional grid changes without committing an uncontrolled value', () => {
+    const onChange = vi.fn();
+    const onCommit = vi.fn();
+    const onChangeEnd = vi.fn();
+    const props = { defaultValue: 0.85, onChange, onCommit, onChangeEnd };
+    const { rerender } = render(
+      <NumberField
+        {...props}
+        display="slider"
+        label="Amount"
+        minValue={0.05}
+        maxValue={1}
+        step={0.1}
+      />,
+    );
+    rerender(
+      <NumberField
+        {...props}
+        display="slider"
+        label="Amount"
+        minValue={0.15}
+        maxValue={0.8}
+        step={0.2}
+      />,
+    );
+    expect(screen.getByRole('slider', { name: 'Amount' })).toHaveValue('0.75');
+    expect(onChange).toHaveBeenCalledExactlyOnceWith(0.75);
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(onChangeEnd).not.toHaveBeenCalled();
+  });
+
   it('UIC-NUMBER-FIELD-5.1 is a field around a slider that starts at the minimum and commits each move', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();

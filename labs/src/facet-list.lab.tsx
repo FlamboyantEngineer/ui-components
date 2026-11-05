@@ -1,6 +1,6 @@
-import { useState, type CSSProperties } from 'react';
+import { type CSSProperties, useState } from 'react';
 import { FacetList, type FacetListOption } from '../../src/components/facet-list/facet-list.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const column: CSSProperties = { width: 240 };
 

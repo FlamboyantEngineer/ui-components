@@ -1,6 +1,8 @@
 'use client';
 
-import { useContext, useId, type ReactNode, type RefObject } from 'react';
+import { type ReactNode, type RefObject, useContext, useId } from 'react';
+import type { ControlSize, SelectableState } from '../../core/props.js';
+import { useUiStrings } from '../../core/provider.js';
 import {
   Collection,
   ComboBoxStateContext,
@@ -10,34 +12,32 @@ import {
   ListBoxLoadMoreItem,
   ListBoxSection,
   ListLayout,
-  Virtualizer,
   Popover,
+  Virtualizer,
 } from '../../primitives/index.js';
-import { PopoverPresence } from '../popover/popover.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { DEFAULT_DROPDOWN_OFFSET, DEFAULT_OVERLAY_GUTTER } from '../../utils/overlay-defaults.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useFrameFlag } from '../../utils/use-frame-flag.js';
-import type { ControlSize, SelectableState } from '../../core/props.js';
-import { useUiStrings } from '../../core/provider.js';
 import {
-  PickerOptionRow,
   flattenPickerItems,
   isPickerSection,
   pickerListLayout,
+  PickerOptionRow,
   usePickerPopoverStyle,
 } from '../field/field.js';
+import { PopoverPresence } from '../popover/popover.js';
 import { TextMatchProvider } from '../text-match/text-match.js';
-import { ComboboxListHeader } from './combobox-list-header.js';
 import { useAutoHighlight, useCreatedSelection, useOpenState } from './combobox-effects.js';
+import { comboboxHooks as hooks } from './combobox-hooks.js';
+import { ComboboxListHeader } from './combobox-list-header.js';
 import {
-  hasOptionLabelled,
   type ComboboxCompletion,
   type ComboboxItem,
   type ComboboxOption,
+  hasOptionLabelled,
 } from './combobox-options.js';
-import { DEFAULT_DROPDOWN_OFFSET, DEFAULT_OVERLAY_GUTTER } from '../../utils/overlay-defaults.js';
-import { comboboxHooks as hooks } from './combobox-hooks.js';
 
 /** Draws an option's content in the list, from the option and its row's state. */
 export type ComboboxOptionRenderer = (option: ComboboxOption, state: SelectableState) => ReactNode;

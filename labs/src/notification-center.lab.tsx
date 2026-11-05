@@ -1,17 +1,17 @@
-import { BellGlyph, ErrorGlyph, InfoGlyph, SuccessGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
-import { UiProvider } from '../../src/core/provider.js';
-import { fr } from '../../src/core/locales/index.js';
-import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { Button } from '../../src/components/button/button.js';
 import { Link } from '../../src/components/link/link.js';
-import { NotificationCenter } from '../../src/components/notification-center/notification-center.js';
 import {
-  NotificationList,
   type NotificationItem,
+  NotificationList,
 } from '../../src/components/notification-center/index.js';
+import { NotificationCenter } from '../../src/components/notification-center/notification-center.js';
+import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
+import { BellGlyph, ErrorGlyph, InfoGlyph, SuccessGlyph } from '../../src/core/glyphs.js';
+import { fr } from '../../src/core/locales/index.js';
+import { UiProvider } from '../../src/core/provider.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { NotificationCenterHostCases } from './notification-center-host-cases.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { samplePicture } from './people-samples.js';
 
 /** A fixed clock, so the matrices read the same days and times on every day. */
@@ -145,16 +145,20 @@ function LiveDemo() {
       isRead: true,
     },
   ]);
-  const add = () =>
-    setItems((list) => [
-      {
-        id: `live-${list.length}`,
-        title: `Build ${list.length} passed`,
-        icon: SuccessGlyph,
-        time: new Date().toISOString(),
-      },
-      ...list,
-    ]);
+  const add = (count = 1, title?: string) =>
+    setItems((list) => {
+      const latest = Math.max(...list.map((item) => Date.parse(item.time)));
+      const time = new Date(Math.max(Date.now(), latest + 1)).toISOString();
+      return [
+        ...Array.from({ length: count }, (_, index) => ({
+          id: `live-${list.length + index}`,
+          title: title ?? `Build ${list.length + index} passed`,
+          icon: SuccessGlyph,
+          time,
+        })),
+        ...list,
+      ];
+    });
   return (
     <div data-lab-demo="live-announcements">
       <SegmentedChoice
@@ -176,8 +180,14 @@ function LiveDemo() {
           }
           onMarkAllRead={() => setItems((list) => list.map((item) => ({ ...item, isRead: true })))}
         />{' '}
-        <Button size="sm" onPress={add}>
+        <Button size="sm" onPress={() => add()}>
           Add a notification
+        </Button>
+        <Button size="sm" onPress={() => add(1, 'Import finished')}>
+          Add repeated title
+        </Button>
+        <Button size="sm" onPress={() => add(2, 'Import finished')}>
+          Add two notifications
         </Button>
       </UiProvider>
     </div>
@@ -238,7 +248,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Live"
-      description="Notifications stamped on the real clock. Each arrival is announced politely, whether the panel is open or not. Switch languages after an arrival to translate the announcement immediately. The filter chosen in the panel stays when it closes and opens again."
+      description="Add numbered notifications, repeated titles or batches of two. Each arrival is announced politely, even when its wording repeats, whether the panel is open or not. Switch languages after an arrival to translate the announcement immediately. The filter chosen in the panel stays when it closes and opens again."
     >
       <LiveDemo />
     </LabSection>

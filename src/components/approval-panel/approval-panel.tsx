@@ -1,24 +1,24 @@
 'use client';
 
+import { type ReactNode, useId } from 'react';
 import {
   BellGlyph,
   CheckGlyph,
   ClockGlyph,
   CloseGlyph,
+  type GlyphComponent,
   MinusGlyph,
   RefreshGlyph,
-  type GlyphComponent,
 } from '../../core/glyphs.js';
-import { useId, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key, Tone, RefProps } from '../../core/props.js';
+import type { BaseProps, Key, RefProps, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
-import { getDisplayName, type AvatarIdentity } from '../avatar/avatar.js';
+import { Attribution, type AttributionProps } from '../attribution/attribution.js';
+import { type AvatarIdentity, getDisplayName } from '../avatar/avatar.js';
 import { Badge } from '../badge/badge.js';
 import { Button } from '../button/button.js';
-import { Attribution, type AttributionProps } from '../attribution/attribution.js';
 import { useHeadingLevel } from '../section-header/section-header.js';
 import { SegmentedBar } from '../segmented-bar/segmented-bar.js';
 import { UserIdentity } from '../user-identity/user-identity.js';

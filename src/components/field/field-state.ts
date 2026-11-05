@@ -1,26 +1,26 @@
 'use client';
 
 import { useCallback, useLayoutEffect, useReducer, useRef, useState } from 'react';
-import { useFieldValidation } from './field-state-validation.js';
 import { useLatest } from '../../utils/use-latest.js';
 import type { FieldAsyncValidate } from './field-async.js';
 import {
   canStepFieldHistory,
   createFieldHistory,
+  type FieldHistory,
   recordFieldHistory,
   stepFieldHistory,
-  type FieldHistory,
 } from './field-history.js';
 import {
-  useFieldScope,
   type FieldValidationBehavior,
   type FieldValidationMode,
+  useFieldScope,
 } from './field-scope.js';
-import {
-  type FieldErrorSource,
-  type FieldIssue,
-  type FieldIssues,
-  type FieldValidation,
+import { useFieldValidation } from './field-state-validation.js';
+import type {
+  FieldErrorSource,
+  FieldIssue,
+  FieldIssues,
+  FieldValidation,
 } from './field-validation.js';
 import { isFieldValueEqual } from './field-value.js';
 
@@ -170,7 +170,7 @@ export interface FieldState<T> {
 export const fieldReset = Symbol('fieldReset');
 
 /** Whether the field's changes are held; `setValue` ignores changes while they are. */
-export interface FieldChangeHold {
+interface FieldChangeHold {
   isHeld: boolean;
 }
 

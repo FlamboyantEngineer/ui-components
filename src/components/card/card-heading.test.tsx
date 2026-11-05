@@ -1,10 +1,10 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useEffect, type ReactNode } from 'react';
+import { type ReactNode, useEffect } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { Section } from '../section-header/section-header.js';
-import { CardTitle } from './card-parts.js';
 import { Card } from './card.js';
+import { CardTitle } from './card-parts.js';
 
 // The body keeps its identity and the outline whatever the title does (UIC-CARD-1.2, UIC-CARD-1.4).
 

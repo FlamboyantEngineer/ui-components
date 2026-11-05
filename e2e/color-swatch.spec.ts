@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 import { swatchInkCount } from './swatch-ink.js';
 
 test.describe('Color Swatch lab', () => {

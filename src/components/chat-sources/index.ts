@@ -1,4 +1,3 @@
-export { ChatCitation, ChatSources } from './chat-sources.js';
 export type {
   ChatCitationData,
   ChatCitationProps,
@@ -6,4 +5,5 @@ export type {
   ChatSourcesData,
   ChatSourcesProps,
 } from './chat-sources.js';
+export { ChatCitation, ChatSources } from './chat-sources.js';
 export { createCitationOverride } from './markdown-citations.js';

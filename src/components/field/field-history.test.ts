@@ -1,5 +1,5 @@
-import { isEmptyValue } from '../../utils/is-empty-value.js';
 import { describe, expect, it } from 'vitest';
+import { isEmptyValue } from '../../utils/is-empty-value.js';
 import {
   canStepFieldHistory,
   createFieldHistory,

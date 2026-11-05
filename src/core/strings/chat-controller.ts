@@ -1,7 +1,7 @@
 import { defineStrings } from '../message-format.js';
 
 /** Strings of the chat controller. */
-export interface ChatControllerStrings {
+interface ChatControllerStrings {
   /** The error a failed reply shows when the failure gives no reason. */
   chatReplyFailed: string;
 }

@@ -2,7 +2,6 @@
 
 import { UsersGlyph } from '../../core/glyphs.js';
 // The controls above a version history: the filters and the compare action.
-
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';

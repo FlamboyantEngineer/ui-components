@@ -1,17 +1,17 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { type CSSProperties, useEffect, useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
-import { Table } from '../../src/components/table/table.js';
-import { Menu, MenuPopover, MenuTrigger } from '../../src/components/menu/menu.js';
 import {
   LoadingCard,
-  LoadingOverlay,
-  LoadingRegion,
   type LoadingCardProps,
+  LoadingOverlay,
   type LoadingProgress,
+  LoadingRegion,
 } from '../../src/components/loading-overlay/loading-overlay.js';
+import { Menu, MenuPopover, MenuTrigger } from '../../src/components/menu/menu.js';
+import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
+import { Table } from '../../src/components/table/table.js';
 import { useEnterExit } from '../../src/utils/use-enter-exit.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { ShadowRootHost } from './shadow-root-host.js';
 
 const progressStates = ['indeterminate', 'determinate'] as const;

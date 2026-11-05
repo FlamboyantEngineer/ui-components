@@ -1,5 +1,5 @@
 import { within } from '@testing-library/react';
-import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { type ReactNode, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 /** Renders `children` into an open shadow root of a host element named `name`. */

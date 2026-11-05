@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
-import { VisuallyHidden as AriaVisuallyHidden, useFocusWithin } from '../../primitives/index.js';
+import { type ReactNode, useState } from 'react';
 import type { FocusEventProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, RefProps } from '../../core/props.js';
+import { useFocusWithin, VisuallyHidden as AriaVisuallyHidden } from '../../primitives/index.js';
 import { mergeProps } from '../../utils/merge-props.js';
 
 /** The element that hides the content: a `<span>` keeps phrasing content valid. */

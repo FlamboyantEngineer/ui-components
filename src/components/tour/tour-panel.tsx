@@ -1,11 +1,11 @@
 'use client';
 
-import { useLatest } from '../../utils/use-latest.js';
-import { useEffect, useRef, type ReactNode } from 'react';
-import { Dialog, Heading } from '../../primitives/index.js';
+import { type ReactNode, useEffect, useRef } from 'react';
 import { useUiStrings } from '../../core/provider.js';
-import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { Dialog, Heading } from '../../primitives/index.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { useLatest } from '../../utils/use-latest.js';
 import { Button } from '../button/button.js';
 import { tourHooks as hooks } from './tour-hooks.js';
 

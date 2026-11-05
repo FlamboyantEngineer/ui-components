@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Status Light lab', () => {
   test('UIC-STATUS-LIGHT-1.1 UIC-STATUS-LIGHT-1.3 draws 6, 8 and 10 pixel dots before their labels', async ({

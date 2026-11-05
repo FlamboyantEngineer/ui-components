@@ -1,7 +1,7 @@
-import { CheckGlyph, EditGlyph, FolderGlyph } from '../../src/core/glyphs.js';
-import { RecordChipCases } from './record-chip-cases.js';
 import { RecordLabel } from '../../src/components/record-label/record-label.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { CheckGlyph, EditGlyph, FolderGlyph } from '../../src/core/glyphs.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { RecordChipCases } from './record-chip-cases.js';
 
 const sizes = ['sm', 'md', 'lg'] as const;
 

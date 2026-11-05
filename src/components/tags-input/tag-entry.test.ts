@@ -3,8 +3,8 @@ import { getDefaultStrings } from '../../core/strings.js';
 
 const defaultStrings = getDefaultStrings();
 import {
-  checkTag,
   checkGivenTags,
+  checkTag,
   hasTagDelimiter,
   resolveTagEntry,
   splitTagText,

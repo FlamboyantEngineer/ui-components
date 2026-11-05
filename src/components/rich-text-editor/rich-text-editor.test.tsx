@@ -1,30 +1,31 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { userEvent } from '@testing-library/user-event';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { collectImports } from '../../../test/module-imports.js';
-import { requireDefined } from '../../utils/require-defined.js';
-import { getFieldUndo } from '../field/field.js';
-import { Form } from '../form/form.js';
 import {
-  ViewProbe,
   getContent,
   installEditorDom,
   renderEditor,
   sampleDocument,
   selectRange,
+  ViewProbe,
 } from '../../../test/rich-text-fixtures.js';
+import { requireDefined } from '../../utils/require-defined.js';
+import { getFieldUndo } from '../field/field.js';
+import { Form } from '../form/form.js';
+import { isRichTextEqual } from './rich-text-document.js';
 import {
-  RichTextEditor,
   createRichTextSchema,
-  useRichTextController,
   type RichTextController,
   type RichTextDocument,
+  RichTextEditor,
+  useRichTextController,
 } from './rich-text-editor.js';
-import { isRichTextEqual } from './rich-text-document.js';
+import { serializeRichTextHtml } from './rich-text-export.js';
 
 installEditorDom();
 
@@ -32,6 +33,36 @@ const note: RichTextDocument = {
   type: 'doc',
   content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Pick pears' }] }],
 };
+
+const customTaskSchema = createRichTextSchema({
+  nodes: {
+    taskItem: {
+      content: 'paragraph block*',
+      defining: true,
+      attrs: { checked: { default: false } },
+      parseDOM: [{ tag: 'li[data-task-custom]', priority: 60 }],
+      toDOM: () => ['li', { 'data-task-custom': 'true' }, 0],
+    },
+  },
+});
+
+function createTaskDocument(text = 'Wash'): RichTextDocument {
+  return {
+    type: 'doc',
+    content: [
+      {
+        type: 'taskList',
+        content: [
+          {
+            type: 'taskItem',
+            attrs: { checked: false },
+            content: [{ type: 'paragraph', content: [{ type: 'text', text }] }],
+          },
+        ],
+      },
+    ],
+  };
+}
 
 /** Exposes the editor's controller to the test. */
 function controllerProbe() {
@@ -218,39 +249,99 @@ describe('RichTextEditor', () => {
     expect(() => render(<Probe />)).toThrow(/inside a RichTextEditor/);
   });
 
-  it('UIC-RICH-TEXT-EDITOR-2.3 draws task items with a checkbox that ticks them', async () => {
-    const tasks: RichTextDocument = {
-      type: 'doc',
-      content: [
-        {
-          type: 'taskList',
-          content: [
-            { type: 'taskItem', attrs: { checked: false }, content: [{ type: 'paragraph' }] },
-          ],
-        },
-      ],
-    };
-    const { user, value, container } = renderEditor({ defaultValue: tasks });
-    const item = container.querySelector('.ui-rich-text-editor__task-item');
-    const box = screen.getByRole('checkbox', { name: 'Done' });
-    expect(box).not.toBeChecked();
-    await user.click(box);
-    expect(value()?.content?.[0]?.content?.[0]?.attrs).toEqual({ checked: true });
-    expect(item).toHaveAttribute('data-checked', 'true');
-    expectHooksMatchSpec(container, 'RICH-TEXT-EDITOR', {
-      slots: ['task-item', 'task-checkbox', 'task-content'],
+  it.each([
+    ['default', undefined],
+    ['extended', createRichTextSchema({ marks: { highlight: { toDOM: () => ['mark', 0] } } })],
+  ] as const)(
+    'UIC-RICH-TEXT-EDITOR-2.3 draws task items with a checkbox that ticks them in the %s schema',
+    async (_name, schema) => {
+      const tasks: RichTextDocument = {
+        type: 'doc',
+        content: [
+          {
+            type: 'taskList',
+            content: [
+              { type: 'taskItem', attrs: { checked: false }, content: [{ type: 'paragraph' }] },
+            ],
+          },
+        ],
+      };
+      const { user, value, container } = renderEditor({ defaultValue: tasks, schema });
+      const item = container.querySelector('.ui-rich-text-editor__task-item');
+      const box = screen.getByRole('checkbox', { name: 'Done' });
+      expect(box).not.toBeChecked();
+      await user.click(box);
+      expect(value()?.content?.[0]?.content?.[0]?.attrs).toEqual({ checked: true });
+      expect(item).toHaveAttribute('data-checked', 'true');
+      expectHooksMatchSpec(container, 'RICH-TEXT-EDITOR', {
+        slots: ['task-item', 'task-checkbox', 'task-content'],
+      });
+    },
+  );
+
+  it('UIC-RICH-TEXT-EDITOR-2.2 UIC-RICH-TEXT-EDITOR-2.3 UIC-RICH-TEXT-EDITOR-10.1 uses a replacement task renderer while editing and serializing', async () => {
+    const { user, value } = renderEditor({
+      schema: customTaskSchema,
+      defaultValue: createTaskDocument(),
+      children: <ViewProbe />,
     });
+    const item = within(getContent()).getByRole('listitem');
+    expect(item).toHaveAttribute('data-task-custom', 'true');
+    expect(item).toHaveTextContent('Wash');
+    expect(within(item).queryByRole('checkbox')).not.toBeInTheDocument();
+    expect(item).not.toHaveClass('ui-rich-text-editor__task-item');
+    expect(item.querySelector('.ui-rich-text-editor__task-checkbox')).toBeNull();
+    expect(item.querySelector('.ui-rich-text-editor__task-content')).toBeNull();
+    selectRange(7);
+    await user.keyboard(' now');
+    const edited = createTaskDocument('Wash now');
+    expect(value()).toEqual(edited);
+    expect(item).toHaveTextContent('Wash now');
+    expect(serializeRichTextHtml(edited, { schema: customTaskSchema })).toBe(
+      '<ul data-type="taskList"><li data-task-custom="true"><p>Wash now</p></li></ul>',
+    );
   });
 
-  it('UIC-RICH-TEXT-EDITOR-2.3 keeps task checkboxes read-only in a read-only editor', () => {
-    const tasks: RichTextDocument = {
-      type: 'doc',
-      content: [
-        { type: 'taskList', content: [{ type: 'taskItem', content: [{ type: 'paragraph' }] }] },
-      ],
-    };
-    render(<RichTextEditor label="Notes" defaultValue={tasks} isReadOnly />);
-    expect(screen.getByRole('checkbox', { name: 'Done' })).toHaveAttribute('aria-readonly', 'true');
+  it('UIC-RICH-TEXT-EDITOR-2.2 UIC-RICH-TEXT-EDITOR-2.3 follows the current task renderer when the schema changes', () => {
+    const value = createTaskDocument();
+    const { rerender } = render(<RichTextEditor label="Notes" value={value} />);
+    expect(screen.getByRole('checkbox', { name: 'Done' })).not.toBeChecked();
+    rerender(<RichTextEditor label="Notes" value={value} schema={customTaskSchema} />);
+    expect(within(getContent()).getByRole('listitem')).toHaveAttribute('data-task-custom', 'true');
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+    rerender(<RichTextEditor label="Notes" value={value} />);
+    const item = within(getContent()).getByRole('listitem');
+    expect(item).not.toHaveAttribute('data-task-custom');
+    expect(item).toHaveClass('ui-rich-text-editor__task-item');
+    expect(within(item).getByRole('checkbox', { name: 'Done' })).not.toBeChecked();
+    expect(item).toHaveTextContent('Wash');
+  });
+
+  it('UIC-RICH-TEXT-EDITOR-2.3 keeps task checkboxes read-only in a read-only editor', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const tasks = createTaskDocument();
+    render(
+      <form aria-label="Plan">
+        <RichTextEditor
+          label="Notes"
+          name="notes"
+          defaultValue={tasks}
+          isReadOnly
+          onChange={onChange}
+        />
+      </form>,
+    );
+    const box = screen.getByRole('checkbox', { name: 'Done' });
+    expect(box).toHaveAttribute('aria-readonly', 'true');
+    await user.tab();
+    await user.tab();
+    expect(box).toHaveFocus();
+    await user.keyboard(' ');
+    expect(box).not.toBeChecked();
+    expect(onChange).not.toHaveBeenCalled();
+    const form = screen.getByRole<HTMLFormElement>('form', { name: 'Plan' });
+    expect(JSON.parse(String(new FormData(form).get('notes')))).toEqual(tasks);
   });
 
   it("UIC-RICH-TEXT-EDITOR-2.3 UIC-RICH-TEXT-EDITOR-4.1 takes a disabled editor's task checkboxes out of the tab sequence", async () => {

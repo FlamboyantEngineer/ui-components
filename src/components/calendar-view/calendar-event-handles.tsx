@@ -5,14 +5,14 @@
 // UIC-CALENDAR-VIEW-6).
 
 import {
+  type KeyboardEvent,
+  type PointerEvent,
+  type RefObject,
   useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
-  type KeyboardEvent,
-  type PointerEvent,
-  type RefObject,
 } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { parseIsoDate, useLocale } from '../../primitives/index.js';
@@ -22,13 +22,13 @@ import { capturePointer } from '../../utils/pointer-drag.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import {
+  type CalendarEventGesture,
   changeEvent,
+  type EventShift,
   readKeyShift,
   snapMinutes,
-  type CalendarEventGesture,
-  type EventShift,
 } from './calendar-event-change.js';
-import { readEvents, type PlacedEvent } from './calendar-layout.js';
+import { type PlacedEvent, readEvents } from './calendar-layout.js';
 import type { CalendarViewEvent, CalendarViewMode } from './calendar-view.js';
 import { calendarViewHooks as hooks } from './calendar-view-hooks.js';
 import { dayCellSelector } from './use-calendar-grid.js';
@@ -46,7 +46,7 @@ export type CalendarEventDragMode = 'move' | 'resize';
 export type CalendarEventChange = 'edit' | 'move' | 'resize';
 
 /** A drag in progress: the event as it is, and the event where it would land, if it changed. */
-export interface EventDrag {
+interface EventDrag {
   event: CalendarViewEvent;
   next: CalendarViewEvent | null;
 }

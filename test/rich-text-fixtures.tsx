@@ -3,16 +3,16 @@
 
 import { useEditorEffect } from '@handlewithcare/react-prosemirror';
 import { act, render, screen } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
 import { TextSelection } from 'prosemirror-state';
 import type { EditorView } from 'prosemirror-view';
-import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { beforeAll } from 'vitest';
-import type {
-  RichTextDocument,
-  RichTextEditorProps,
+import {
+  type RichTextDocument,
+  RichTextEditor,
+  type RichTextEditorProps,
 } from '../src/components/rich-text-editor/rich-text-editor.js';
-import { RichTextEditor } from '../src/components/rich-text-editor/rich-text-editor.js';
 
 function emptyRect(): DOMRect {
   return new DOMRect(0, 0, 0, 0);

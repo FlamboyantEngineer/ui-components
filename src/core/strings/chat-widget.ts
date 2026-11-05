@@ -1,6 +1,6 @@
 import { defineStrings } from '../message-format.js';
 /** Strings of the `Chat` widget: its search, the reply and edit banners and the queue. */
-export interface ChatWidgetStrings {
+interface ChatWidgetStrings {
   /** Names the button that opens the search within a conversation, and its find box. */
   chatSearch: string;
   /** Leads the banner above the composer while the reader writes a reply. */

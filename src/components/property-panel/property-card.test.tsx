@@ -1,8 +1,8 @@
-import { UndoGlyph } from '../../core/glyphs.js';
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { UndoGlyph } from '../../core/glyphs.js';
 import { Button } from '../button/button.js';
 import { PropertyCard } from './property-card.js';
 import { PropertyRow } from './property-row.js';

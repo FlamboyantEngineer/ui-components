@@ -3,19 +3,19 @@
 // Reordering a list's tabs: Alt+Arrow keys on the focused tab, and pointer drags through the
 // building blocks' drag and drop, each reported as one move for the owner to apply.
 
-import { isFocused } from '../../utils/focus-target.js';
 import {
-  useLayoutEffect,
-  useRef,
   type HTMLAttributes,
   type KeyboardEvent,
   type RefObject,
+  useLayoutEffect,
+  useRef,
 } from 'react';
 import type { Key, Orientation } from '../../core/props.js';
-import { useItemDrag } from '../../utils/use-item-drag.js';
+import { isFocused } from '../../utils/focus-target.js';
 import { resolveDropPosition } from '../../utils/pointer-drag.js';
+import { useItemDrag } from '../../utils/use-item-drag.js';
 import { isMoveChord } from '../../utils/use-reorder-drag-and-drop.js';
-import { findTabElement, listTabKeys, type TabsShared, type TabListModel } from './tab-actions.js';
+import { findTabElement, listTabKeys, type TabListModel, type TabsShared } from './tab-actions.js';
 
 /** A reorder request: move the tab `key` to the slot before or after the tab `targetKey`. */
 export interface TabMove {

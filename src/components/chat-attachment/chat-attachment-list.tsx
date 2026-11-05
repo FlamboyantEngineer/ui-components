@@ -1,22 +1,22 @@
 'use client';
 
-import { useMergedRefs } from '../../utils/use-merged-refs.js';
-import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
+import { type RefObject, useLayoutEffect, useRef, useState } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { isFocusLost, resolveFocusTarget, type FocusTarget } from '../../utils/focus-target.js';
+import { type FocusTarget, isFocusLost, resolveFocusTarget } from '../../utils/focus-target.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { focusWithRetry } from '../../utils/use-focus-request.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { useRemovalFocus } from '../../utils/use-removal-focus.js';
 import { MediaViewer, type MediaViewerItem } from '../media-viewer/media-viewer.js';
 import { AttachmentRemovalContext } from './attachment-context.js';
 import {
+  type ChatAttachmentData,
   getAttachmentImage,
   resolveAttachmentStatus,
   toAttachmentUrl,
-  type ChatAttachmentData,
 } from './attachment-model.js';
 import { ChatAttachment } from './chat-attachment.js';
 

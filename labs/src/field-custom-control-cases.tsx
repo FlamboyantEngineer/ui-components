@@ -1,17 +1,17 @@
 // Field cases for custom controls: the public control bridge, a value contract, own history,
 // blur commits, previous values in each change layout, and errors for several form names.
 
-import { useState, type FormEvent } from 'react';
+import { type FormEvent, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
   Field,
+  type FieldChangeLayout,
+  type FieldErrorSource,
+  type FieldInputProps,
   FieldPreviousValue,
   toAriaControlProps,
   useFieldControl,
   useFieldState,
-  type FieldChangeLayout,
-  type FieldErrorSource,
-  type FieldInputProps,
 } from '../../src/components/field/field.js';
 import { Form, type FormBlocker } from '../../src/components/form/form.js';
 import { Switch } from '../../src/components/switch/switch.js';

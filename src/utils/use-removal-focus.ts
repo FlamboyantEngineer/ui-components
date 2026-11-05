@@ -6,11 +6,11 @@
 import { useLayoutEffect, useRef } from 'react';
 import type { Key } from '../core/props.js';
 import {
+  type FocusTarget,
   getComposedActiveElement,
   isFocusableElement,
   isFocusLost,
   resolveFocusTarget,
-  type FocusTarget,
 } from './focus-target.js';
 import { toKeyIdentity } from './to-key-identity.js';
 

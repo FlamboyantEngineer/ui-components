@@ -1,26 +1,27 @@
 import type { FieldIssue } from '../../src/components/field/field.js';
 import {
   FormatToolbar,
-  RichTextEditor,
   type RichTextDocument,
+  RichTextEditor,
   type RichTextEditorProps,
 } from '../../src/components/rich-text-editor/index.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-import { RichTextFieldSections } from './rich-text-editor-field-cases.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import {
   BlockHandleChoices,
   ControlledEditor,
   CustomSchemaEditor,
+  CustomTaskEditor,
   FormEditor,
-  RequiredEditor,
   FullEditor,
-  ShiftingEditor,
   LockedChromeEditor,
   LongDocumentEditor,
   PreviewLabelsEditor,
+  RequiredEditor,
+  ShiftingEditor,
   shortNote,
   taskNote,
 } from './rich-text-editor-cases.js';
+import { RichTextFieldSections } from './rich-text-editor-field-cases.js';
 
 const states = ['resting', 'empty', 'required', 'invalid', 'read-only', 'disabled'] as const;
 const chromes = ['plain', 'toolbar'] as const;
@@ -110,6 +111,12 @@ mountLab(
     </LabSection>
     <LabSection title="Custom schema">
       <CustomSchemaEditor />
+    </LabSection>
+    <LabSection
+      title="Custom task renderer"
+      description="This schema replaces task items with plain list items. Edit the text: the document and HTML output use the custom renderer, without a built-in checkbox."
+    >
+      <CustomTaskEditor />
     </LabSection>
     <LabSection title="Controlled value">
       <ControlledEditor />

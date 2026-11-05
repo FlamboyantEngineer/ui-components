@@ -1,21 +1,21 @@
 'use client';
 
-import { useMemo, useState, type PointerEvent } from 'react';
+import { type PointerEvent, useMemo, useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { diagramHooks as hooks } from './diagram-hooks.js';
 import {
+  type DiagramEdge,
+  type DiagramNode,
   findDiagramBounds,
   resolveNodeRect,
   spreadParallelEdges,
-  type DiagramEdge,
-  type DiagramNode,
 } from './diagram-model.js';
 import {
-  routeDiagramEdge,
   type DiagramEdgeEnd,
   type DiagramEdgeRouting,
   type DiagramRoute,
+  routeDiagramEdge,
 } from './edge-route.js';
 import type { DiagramController } from './use-diagram-controller.js';
 

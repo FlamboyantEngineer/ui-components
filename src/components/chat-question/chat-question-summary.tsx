@@ -3,11 +3,11 @@
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import {
+  type ChatQuestionAnswer,
   chatQuestionHooks as hooks,
+  type ChatQuestionItem,
   listAnswerLabels,
   readAnswerText,
-  type ChatQuestionAnswer,
-  type ChatQuestionItem,
 } from './chat-question-model.js';
 
 /** What a summary says of one question's answer. */

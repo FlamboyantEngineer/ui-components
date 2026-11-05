@@ -1,4 +1,3 @@
-import { EditGlyph } from '../../src/core/glyphs.js';
 import { useEffect, useState } from 'react';
 import { Avatar } from '../../src/components/avatar/avatar.js';
 import { AvatarGroup } from '../../src/components/avatar-group/avatar-group.js';
@@ -6,8 +5,9 @@ import { Button } from '../../src/components/button/button.js';
 import { UserCard } from '../../src/components/user-card/user-card.js';
 import { UserCardTrigger } from '../../src/components/user-card-trigger/user-card-trigger.js';
 import { UserIdentity } from '../../src/components/user-identity/user-identity.js';
+import { EditGlyph } from '../../src/core/glyphs.js';
 import { LabSection, mountLab } from './chrome/index.js';
-import { samplePicture, samplePeople } from './people-samples.js';
+import { samplePeople, samplePicture } from './people-samples.js';
 import { HoverCommand, InitiallyOpen, LateCard, TimedHover } from './user-card-trigger-cases.js';
 
 const actions = [

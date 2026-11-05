@@ -4,8 +4,8 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
-  CodeEditor,
   type CodeDiagnostic,
+  CodeEditor,
   type CodeLanguage,
   type CodeSyntax,
 } from '../../src/components/code-editor/code-editor.js';

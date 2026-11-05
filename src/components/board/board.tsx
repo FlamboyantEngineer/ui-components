@@ -3,32 +3,32 @@
 // A board of cards in columns, optionally repeated in lanes: each cell is a React Aria grid list,
 // and cards move within and between cells by drag and drop or Alt+Arrow keys.
 
-import { toKeyIdentity } from '../../utils/to-key-identity.js';
-import { useCallback, useState, type ReactNode, type RefObject } from 'react';
-import { useLocale } from '../../primitives/index.js';
+import { type ReactNode, type RefObject, useCallback, useState } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
-import { isMoveChord } from '../../utils/use-reorder-drag-and-drop.js';
+import { useLocale } from '../../primitives/index.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useFocusRequest } from '../../utils/use-focus-request.js';
+import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
+import { useLatest } from '../../utils/use-latest.js';
+import { isMoveChord } from '../../utils/use-reorder-drag-and-drop.js';
+import type { IconSource } from '../icon/icon.js';
+import { ScrollRegion } from '../scroll-region/scroll-region.js';
 import type { BoardCardKeyDown, BoardCardReveal } from './board-cell.js';
 import { BoardColumnHeader } from './board-column-header.js';
-import type { IconSource } from '../icon/icon.js';
 import { boardHooks as hooks } from './board-hooks.js';
-import { ScrollRegion } from '../scroll-region/scroll-region.js';
 import { BoardCells, BoardLaneGroup } from './board-lane.js';
 import {
-  resolveBoardKeyboardMove,
-  stepColumnMove,
   type BoardCellAddress,
   type BoardColumnMove,
   type BoardLayout,
   type BoardMove,
   type BoardMoveDirection,
+  resolveBoardKeyboardMove,
+  stepColumnMove,
 } from './board-moves.js';
-import { useBoardModel, type BoardModel } from './use-board-model.js';
 import { useBoardCardDrag, useBoardColumnDrag } from './use-board-drag.js';
-import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
-import { useLatest } from '../../utils/use-latest.js';
+import { type BoardModel, useBoardModel } from './use-board-model.js';
 
 /** A column of the board. */
 export interface BoardColumn {

@@ -1,7 +1,7 @@
-export { SegmentedBar } from './segmented-bar.js';
 export type {
   SegmentedBarProps,
-  SegmentedBarShape,
   SegmentedBarSegment,
+  SegmentedBarShape,
   SegmentedBarSize,
 } from './segmented-bar.js';
+export { SegmentedBar } from './segmented-bar.js';

@@ -2,6 +2,7 @@ import {
   BoldGlyph,
   CodeBlockGlyph,
   CodeGlyph,
+  type GlyphComponent,
   Heading1Glyph,
   Heading2Glyph,
   Heading3Glyph,
@@ -15,11 +16,8 @@ import {
   StrikethroughGlyph,
   UnderlineGlyph,
   UndoGlyph,
-  type GlyphComponent,
 } from '../../core/glyphs.js';
-
 // The formatting commands the toolbars, the insert menu and the block menu offer.
-
 import type { UiStrings } from '../../core/strings.js';
 import type { RichTextCommand } from './rich-text-command.js';
 

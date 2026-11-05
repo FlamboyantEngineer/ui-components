@@ -86,7 +86,7 @@ export function getCleanLines(chunk: MergeChunk): readonly string[] {
  * A conflict's result lines: the lines its resolution takes, as they are, so an empty line stays a
  * line; the edited text's lines, none when it is empty; or the sides framed by markers.
  */
-export function getConflictLines(
+function getConflictLines(
   chunk: MergeChunk,
   state: ConflictState,
   markers: ConflictMarkers,

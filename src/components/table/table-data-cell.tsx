@@ -1,21 +1,21 @@
 'use client';
 
 import type { CSSProperties, ReactNode } from 'react';
-import { Button as AriaButton, Cell, type CellRenderProps } from '../../primitives/index.js';
 import { measuredProperty } from '../../core/hooks.js';
+import { Button as AriaButton, Cell, type CellRenderProps } from '../../primitives/index.js';
+import { readOwn } from '../../utils/read-own.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { DragHandle } from '../drag-handle/drag-handle.js';
 import { useExpandGlyph } from '../expand-toggle/expand-toggle.js';
 import { Icon } from '../icon/icon.js';
-import { placeInBounds } from './table-cell-range.js';
 import { TableCellEditorView } from './table-cell-editor.js';
+import { placeInBounds } from './table-cell-range.js';
 import { tableHooks as hooks } from './table-hooks.js';
 import type { TableCellsView, TableRowModel } from './table-row-model.js';
 import { getCellValue, type TableColumn, type TableRow } from './table-rows.js';
 import { renderCellElement } from './table-spanning-row.js';
 import { getCellWrap, getColumnPin, getPinStyle } from './table-structure.js';
 import { isEditingCell } from './use-cell-editing.js';
-import { readOwn } from '../../utils/read-own.js';
 
 function renderCellContent<T extends TableRow>(row: T, column: TableColumn<T>): ReactNode {
   if (column.renderCell) return column.renderCell(row);

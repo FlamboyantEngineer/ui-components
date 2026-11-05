@@ -1,27 +1,27 @@
 'use client';
 
-import { renderCaretKeyToolbar } from '../../utils/toolbar-caret-keys.js';
-import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import {
   createContext,
-  useContext,
-  useMemo,
   type FocusEvent,
   type ReactNode,
   type Ref,
+  useContext,
+  useMemo,
 } from 'react';
-import { Group, Toolbar } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, ContainerProps, Orientation, RefProps } from '../../core/props.js';
+import { Group, Toolbar } from '../../primitives/index.js';
+import { renderCaretKeyToolbar } from '../../utils/toolbar-caret-keys.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { Separator } from '../separator/separator.js';
 import { ScrollStrip, useToolbarScroll } from '../toolbar-scroller/toolbar-scroller.js';
 import {
-  resolveContainment,
   type LayoutContainmentProps,
   type LayoutJustify,
   type LayoutSpace,
   type LayoutWrap,
+  resolveContainment,
 } from './layout.js';
 
 export type ToolbarRowRole = 'toolbar' | 'group' | 'none';

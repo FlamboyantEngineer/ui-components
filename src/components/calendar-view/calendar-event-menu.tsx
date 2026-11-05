@@ -3,7 +3,7 @@
 // An event's context menu: the built-in Edit, which opens the event editor, and the host's own
 // entries (specs/CALENDAR-VIEW.md, UIC-CALENDAR-VIEW-5).
 
-import { useEffect, useRef, type KeyboardEvent, type Ref } from 'react';
+import { type KeyboardEvent, type Ref, useEffect, useRef } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import {
@@ -12,7 +12,7 @@ import {
   useMenuController,
 } from '../context-menu/context-menu.js';
 import { Menu, type MenuEntry } from '../menu/menu.js';
-import { resolveActionIcon, type MenuActionIcons } from '../menu/menu-action-icons.js';
+import { type MenuActionIcons, resolveActionIcon } from '../menu/menu-action-icons.js';
 import type { CalendarViewEvent } from './calendar-view.js';
 
 /** The built-in event action: open the event editor. */

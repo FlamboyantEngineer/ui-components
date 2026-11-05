@@ -3,10 +3,10 @@ import { type UserEvent, userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { Table } from './table.js';
 import { applyTableMove, type TableMove } from './table-rows.js';
-import { toCollectionKey } from '../../utils/to-collection-key.js';
-import { useTableReorder, type TableReorderOptions } from './use-table-reorder.js';
+import { type TableReorderOptions, useTableReorder } from './use-table-reorder.js';
 
 interface Task {
   id: string;

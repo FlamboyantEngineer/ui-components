@@ -1,31 +1,31 @@
 'use client';
 
-import { measureScale, type ElementScale } from '../../utils/element-scale.js';
-import { useLatest } from '../../utils/use-latest.js';
 import {
+  type KeyboardEvent,
   memo,
+  type ReactNode,
+  type RefCallback,
+  type RefObject,
   useEffect,
   useId,
   useMemo,
   useRef,
-  type KeyboardEvent,
-  type ReactNode,
-  type RefCallback,
-  type RefObject,
 } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { mergeRefs } from '../../utils/merge-props.js';
+import { type ElementScale, measureScale } from '../../utils/element-scale.js';
 import { getComposedActiveElement } from '../../utils/focus-target.js';
 import { isInteractiveTarget } from '../../utils/is-interactive-target.js';
+import { mergeRefs } from '../../utils/merge-props.js';
 import { capturePointer } from '../../utils/pointer-drag.js';
+import { useLatest } from '../../utils/use-latest.js';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import { diagramHooks as hooks } from './diagram-hooks.js';
 import {
-  findConnectedNode,
-  resolveNodeRect,
   type DiagramDirection,
   type DiagramNode,
+  findConnectedNode,
+  resolveNodeRect,
 } from './diagram-model.js';
 import { DiagramPortView } from './diagram-port.js';
 import type { DiagramController, DiagramTarget } from './use-diagram-controller.js';

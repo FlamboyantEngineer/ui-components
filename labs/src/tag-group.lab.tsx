@@ -1,9 +1,9 @@
-import { UserIdentity } from '../../src/components/user-identity/user-identity.js';
 import { useState } from 'react';
-import type { Key, Selection, Tone } from '../../src/core/props.js';
-import { Tag, TagGroup, type TagGroupSize } from '../../src/components/tag-group/tag-group.js';
 import { Button } from '../../src/components/button/button.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { Tag, TagGroup, type TagGroupSize } from '../../src/components/tag-group/tag-group.js';
+import { UserIdentity } from '../../src/components/user-identity/user-identity.js';
+import type { Key, Selection, Tone } from '../../src/core/props.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 
 interface Fruit {

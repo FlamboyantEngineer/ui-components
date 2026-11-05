@@ -2,9 +2,9 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { readMenuIcons } from '../../../test/menu-fixtures.js';
 import { CopyGlyph, EditGlyph } from '../../core/glyphs.js';
 import { UiProvider } from '../../core/provider.js';
-import { readMenuIcons } from '../../../test/menu-fixtures.js';
 import type { CalendarEventMenuEntry } from './calendar-event-menu.js';
 import { CalendarView, type CalendarViewEvent, type CalendarViewProps } from './calendar-view.js';
 
@@ -129,13 +129,14 @@ describe('CalendarView event menus', () => {
     await waitFor(() => expect(eventButton('Design review')).toHaveFocus());
   });
 
-  it('UIC-CALENDAR-VIEW-5.2 edits the title and saves, or cancels without a change', async () => {
+  it('UIC-CALENDAR-VIEW-5.2 saves a trimmed title and returns focus to the event', async () => {
     const user = userEvent.setup();
     const onEventChange = vi.fn();
     render(<Calendar onEventChange={onEventChange} />);
-    let menu = await openMenu('Design review');
+    const event = eventButton('Design review');
+    const menu = await openMenu('Design review');
     await user.click(within(menu).getByRole('menuitem', { name: 'Edit' }));
-    let dialog = await screen.findByRole('dialog', { name: 'Edit event' });
+    const dialog = await screen.findByRole('dialog', { name: 'Edit event' });
     const title = within(dialog).getByRole('textbox', { name: /Title/ });
     expect(title).toHaveValue('Design review');
     expect(within(dialog).getByRole('checkbox', { name: 'All day' })).not.toBeChecked();
@@ -144,14 +145,25 @@ describe('CalendarView event menus', () => {
     await user.type(title, ' Design sync ');
     await user.click(within(dialog).getByRole('button', { name: 'Save' }));
     expect(onEventChange).toHaveBeenCalledWith({ ...events[0], title: 'Design sync' }, events[0]);
-    await waitFor(() => expect(eventButton('Design sync')).toHaveFocus());
-    menu = await openMenu('Design sync');
+    await waitFor(() => expect(event).toHaveFocus());
+    expect(event).toHaveAccessibleName(/^Design sync,/);
+  });
+
+  it('UIC-CALENDAR-VIEW-5.2 cancels a changed title without saving', async () => {
+    const user = userEvent.setup();
+    const onEventChange = vi.fn();
+    render(<Calendar onEventChange={onEventChange} />);
+    const event = eventButton('Design review');
+    const menu = await openMenu('Design review');
     await user.click(within(menu).getByRole('menuitem', { name: 'Edit' }));
-    dialog = await screen.findByRole('dialog', { name: 'Edit event' });
-    await user.type(within(dialog).getByRole('textbox', { name: /Title/ }), ' later');
+    const dialog = await screen.findByRole('dialog', { name: 'Edit event' });
+    const title = within(dialog).getByRole('textbox', { name: /Title/ });
+    await user.type(title, ' later');
+    expect(title).toHaveValue('Design review later');
     await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
-    expect(onEventChange).toHaveBeenCalledTimes(1);
-    expect(eventButton('Design sync')).toBeInTheDocument();
+    expect(onEventChange).not.toHaveBeenCalled();
+    await waitFor(() => expect(event).toHaveFocus());
+    expect(event).toHaveAccessibleName(/^Design review,/);
   });
 
   it('UIC-CALENDAR-VIEW-5.2 makes an event all-day over the days it covered', async () => {
@@ -167,6 +179,30 @@ describe('CalendarView event menus', () => {
     expect(onEventChange).toHaveBeenCalledWith(
       { ...events[0], start: '2026-03-18', end: '2026-03-18' },
       events[0],
+    );
+  });
+
+  it('UIC-CALENDAR-VIEW-5.2 makes an event ending at midnight all-day over the day it occupied', async () => {
+    const user = userEvent.setup();
+    const onEventChange = vi.fn();
+    const late: CalendarViewEvent = {
+      id: 'late',
+      title: 'Late review',
+      start: '2026-03-18T22:00',
+      end: '2026-03-19T00:00',
+    };
+    render(<Calendar onEventChange={onEventChange} initial={[late]} />);
+    await user.click(within(await openMenu('Late review')).getByRole('menuitem', { name: 'Edit' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Edit event' });
+    const allDay = within(dialog).getByRole('checkbox', { name: 'All day' });
+    await user.click(allDay);
+    // Back to timed and to all-day again: the draft keeps the one day.
+    await user.click(allDay);
+    await user.click(allDay);
+    await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+    expect(onEventChange).toHaveBeenCalledWith(
+      { ...late, start: '2026-03-18', end: '2026-03-18' },
+      late,
     );
   });
 

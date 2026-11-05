@@ -4,9 +4,9 @@ import { createRef } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { Button } from '../button/button.js';
 import { Tooltip } from '../tooltip/tooltip.js';
-import { requireDefined } from '../../utils/require-defined.js';
 import { TruncationTooltip } from './truncation-tooltip.js';
 
 const FULL_TEXT = 'Quarterly report for the northern region.pdf';

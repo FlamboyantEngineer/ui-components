@@ -1,4 +1,3 @@
-export { AnchoredTooltip, Tooltip } from './tooltip.js';
 export type {
   AnchoredTooltipProps,
   AnchoredTooltipRelationship,
@@ -11,3 +10,4 @@ export type {
   TooltipVariant,
   TooltipVirtualAnchor,
 } from './tooltip.js';
+export { AnchoredTooltip, Tooltip } from './tooltip.js';

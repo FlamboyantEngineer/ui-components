@@ -2,7 +2,7 @@ import type { Key } from '../../core/props.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { StateMachineTransition } from './state-machine-view.js';
 
-export interface SequenceBox {
+interface SequenceBox {
   x: number;
   width: number;
 }

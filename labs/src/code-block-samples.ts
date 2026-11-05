@@ -1,8 +1,8 @@
 // Sample code for the Code Block lab: highlighted examples in several languages, and a large file.
 
 import {
-  resolveCodeTokenizer,
   type CodeTokenizer,
+  resolveCodeTokenizer,
 } from '../../src/components/code-editor/index.js';
 
 /** A lab-only shell syntax, through the same ordered rules as the editor's language presets. */
@@ -16,7 +16,7 @@ const tokenizeShell = resolveCodeTokenizer({
   ],
 });
 
-export interface LanguageSample {
+interface LanguageSample {
   title: string;
   language: string;
   code: string;

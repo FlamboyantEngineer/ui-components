@@ -6,9 +6,9 @@ import type { EditorState } from 'prosemirror-state';
 import { scoreCompletion } from '../../completion-list/completion-match.js';
 import type { IconSource } from '../../icon/icon.js';
 import {
-  tokenTriggers,
   type MessageComposerToken,
   type MessageComposerTokenKind,
+  tokenTriggers,
 } from '../composer-message.js';
 import type { PillAttributes } from './composer-schema.js';
 
@@ -91,7 +91,7 @@ export interface TriggerRange {
 }
 
 /** The entries whose label matches the query, best first, all of them for no query. */
-export function matchByLabel(items: readonly RichCompletionItem[], query: string) {
+function matchByLabel(items: readonly RichCompletionItem[], query: string) {
   return items
     .map((item) => ({ item, score: query ? scoreCompletion(item.label, query) : 0 }))
     .filter(({ score }) => score !== null)

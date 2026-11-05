@@ -1,7 +1,4 @@
-import { AvatarBadgeCases } from './avatar-badge-cases.js';
-import { AvatarPresenceCases } from './avatar-presence-cases.js';
-import { AvatarColorCases } from './avatar-color-cases.js';
-import { useState, type ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import {
   Avatar,
   type AvatarLoadingStatus,
@@ -9,7 +6,10 @@ import {
 } from '../../src/components/avatar/avatar.js';
 import { Button } from '../../src/components/button/button.js';
 import { UserCard } from '../../src/components/user-card/user-card.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { AvatarBadgeCases } from './avatar-badge-cases.js';
+import { AvatarColorCases } from './avatar-color-cases.js';
+import { AvatarPresenceCases } from './avatar-presence-cases.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { brokenPicture, otherPicture, samplePicture } from './people-samples.js';
 
 const sizes = ['xs', 'sm', 'md', 'lg', 'fill'] as const;

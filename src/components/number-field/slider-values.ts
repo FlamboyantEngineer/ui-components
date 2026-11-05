@@ -1,4 +1,4 @@
-import { clamp } from '../../utils/clamp.js';
+import { snapNumberValue } from './snap-number-value.js';
 
 /** The values a slider can hold: from `minValue` to `maxValue`, `step` apart from `minValue`. */
 export interface SliderGrid {
@@ -7,27 +7,13 @@ export interface SliderGrid {
   step: number;
 }
 
-/** How many decimals a step writes, so a sum of steps drops the binary noise (`0.1 + 0.2`). */
-function countDecimals(step: number): number {
-  const [digits = '', exponent = '0'] = String(step).toLowerCase().split('e');
-  const decimals = (digits.split('.')[1] ?? '').length - Number(exponent);
-  return clamp(decimals, 0, 100);
-}
-
 /**
- * A number on the grid, as React Aria's slider draws it: the nearest step from the minimum within
- * the bounds, rounded to the step's decimals; above the last step it is the last step. NaN is the
- * minimum, and an infinity the end it points to.
+ * The nearest step from the minimum within the bounds, preserving the minimum's and step's
+ * precision; above the last step it is the last step. NaN is the minimum, and an infinity the
+ * end it points to.
  */
-export function snapToStep(given: number, { minValue, maxValue, step }: SliderGrid): number {
-  // NaN reads as the minimum; the infinities clamp to the ends.
-  const value = Number.isNaN(given) ? minValue : given;
-  const decimals = countDecimals(step);
-  const round = (number: number) => (decimals > 0 ? Number(number.toFixed(decimals)) : number);
-  if (!(step > 0)) return clamp(value, minValue, maxValue);
-  const steps = Math.round((clamp(value, minValue, maxValue) - minValue) / step);
-  const lastStep = Math.floor(round((maxValue - minValue) / step));
-  return round(minValue + Math.min(steps, lastStep) * step);
+export function snapToStep(given: number, grid: SliderGrid): number {
+  return snapNumberValue(Number.isNaN(given) ? grid.minValue : given, grid);
 }
 
 /**

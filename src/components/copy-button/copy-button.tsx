@@ -1,19 +1,19 @@
 'use client';
 
 import { CheckGlyph, CopyGlyph, ErrorGlyph } from '../../core/glyphs.js';
-import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { useClipboard, type CopyStatus } from '../../utils/use-clipboard.js';
+import { REANNOUNCE_MARK } from '../../utils/reannounce.js';
+import { type CopyStatus, useClipboard } from '../../utils/use-clipboard.js';
 import { useLatestSettledCount } from '../../utils/use-latest-settled-count.js';
 import {
   Button,
   buttonDefaults,
-  useInheritedDisabled,
   type ButtonProps,
+  useInheritedDisabled,
 } from '../button/button.js';
-import { REANNOUNCE_MARK } from '../../utils/reannounce.js';
+import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 
 export interface CopyButtonProps
   extends

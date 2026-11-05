@@ -1,17 +1,18 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { type ReactNode, useMemo, useState } from 'react';
 import {
-  Markdown,
   listMarkdownHeadings,
-  parseMarkdown,
+  Markdown,
   type MarkdownNode,
+  parseMarkdown,
 } from '../../src/components/markdown/index.js';
 import { Outline } from '../../src/components/outline/outline.js';
 import { SearchField } from '../../src/components/search-field/search-field.js';
 import { TextMatchProvider } from '../../src/components/text-match/text-match.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LargeInputDemo } from './large-input-demo.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-import { StreamingDemo } from './markdown-streaming-demo.js';
 import { MarkdownOverrideSections } from './markdown-override-cases.js';
+import { StreamingDemo } from './markdown-streaming-demo.js';
+import { MarkdownWideTableDemo } from './markdown-wide-table-demo.js';
 
 const samples = {
   text: [
@@ -279,6 +280,7 @@ mountLab(
         {(source) => <Markdown source={source} />}
       </LargeInputDemo>
     </LabSection>
+    <MarkdownWideTableDemo />
     <LabSection
       title="Deep nesting"
       description="2,000 nested block quotes and 2,000 nested emphasis spans draw without overflowing the stack: past 256 levels elements are unwrapped and their text kept in order."

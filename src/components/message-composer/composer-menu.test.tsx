@@ -1,9 +1,9 @@
-import { AudioGlyph, CalendarGlyph, UsersGlyph } from '../../core/glyphs.js';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { AudioGlyph, CalendarGlyph, UsersGlyph } from '../../core/glyphs.js';
 import { MessageComposerMenuButton, type MessageComposerMenuItem } from './composer-menu.js';
 import { MessageComposerEmojiButton } from './composer-tools.js';
 import { MessageComposer, type MessageComposerProps } from './message-composer.js';

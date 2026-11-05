@@ -1,12 +1,12 @@
 import {
+  type ChatGroupableMessage,
   ChatMessage,
   ChatReadReceipts,
   groupChatMessages,
-  type ChatGroupableMessage,
 } from '../../src/components/chat-transcript/index.js';
 import { useTimeZone } from '../../src/core/clock.js';
-import { LabSection, StateMatrix } from './chrome/index.js';
 import { at, getNow, helper, team } from './chat-transcript-message-samples.js';
+import { LabSection, StateMatrix } from './chrome/index.js';
 
 /** A received message with its time in a footer that keeps its line or collapses it until shown. */
 function FooterTimeMessage({ line }: { line: 'reserved' | 'collapsing' }) {

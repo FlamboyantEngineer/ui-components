@@ -1,16 +1,16 @@
 'use client';
 
-import { getOwnerDocument } from '../../utils/owner-window.js';
-import { isFocusLost } from '../../utils/focus-target.js';
-import { useLayoutEffect, useRef, useState, type FocusEvent, type KeyboardEvent } from 'react';
-import { useHover, useLocale, usePress } from '../../primitives/index.js';
+import { type FocusEvent, type KeyboardEvent, useLayoutEffect, useRef, useState } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useHover, useLocale, usePress } from '../../primitives/index.js';
+import { isFocusLost } from '../../utils/focus-target.js';
 import { mergeProps } from '../../utils/merge-props.js';
-import { getShownGridSize, moveGridSize, type GridSize } from './grid-size.js';
+import { getOwnerDocument } from '../../utils/owner-window.js';
 import { useScopedDisabled } from '../field/field.js';
+import { getShownGridSize, type GridSize, moveGridSize } from './grid-size.js';
 
 export type { GridSize } from './grid-size.js';
 

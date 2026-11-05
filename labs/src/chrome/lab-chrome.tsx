@@ -1,13 +1,13 @@
-import { useId, useState, type FormEvent } from 'react';
+import { type FormEvent, useId, useState } from 'react';
 import {
   DEFAULT_THEME_ATTRIBUTE,
-  SYSTEM_THEME,
   isValidThemeAttribute,
   type LabSettings,
   type StylesheetChoice,
+  SYSTEM_THEME,
 } from './settings.js';
 
-export interface LabChromeProps {
+interface LabChromeProps {
   title: string;
   initial: LabSettings;
   /** Builds the href back to the lab index for the current settings; null hides the link. */

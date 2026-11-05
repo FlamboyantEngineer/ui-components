@@ -4,10 +4,10 @@ import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import {
   Field,
-  useFieldControl,
   type FieldInputProps,
   type FieldIssue,
   type FieldTextInputProps,
+  useFieldControl,
 } from '../field/field.js';
 import { PinInputCells, pinInputHooks as hooks } from './pin-input-cells.js';
 import { filterPinCharacters, isPinCodeComplete, type PinInputType } from './pin-value.js';

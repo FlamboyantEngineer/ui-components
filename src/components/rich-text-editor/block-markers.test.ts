@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { getDefaultRichTextSchema } from './rich-text-schema.js';
-import { getEngineSchema } from './engine-schema.js';
 import { placeMarkers } from './block-markers.js';
+import { getEngineSchema } from './engine-schema.js';
+import { getDefaultRichTextSchema } from './rich-text-schema.js';
 
 const schema = getEngineSchema(getDefaultRichTextSchema());
 const paragraph = (text: string) => schema.node('paragraph', null, [schema.text(text)]);

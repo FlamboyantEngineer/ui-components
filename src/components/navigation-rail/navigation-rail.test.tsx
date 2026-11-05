@@ -1,3 +1,8 @@
+import { act, render, screen, within } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
+import { useState } from 'react';
+import { describe, expect, it, vi } from 'vitest';
+import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import {
   CalendarGlyph,
   FolderGlyph,
@@ -6,11 +11,6 @@ import {
   UsersGlyph,
   WarningGlyph,
 } from '../../core/glyphs.js';
-import { act, render, screen, within } from '@testing-library/react';
-import { userEvent } from '@testing-library/user-event';
-import { useState } from 'react';
-import { describe, expect, it, vi } from 'vitest';
-import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage } from '../../core/storage.js';
 import { Disclosure } from '../disclosure/disclosure.js';

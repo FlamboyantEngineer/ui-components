@@ -3,8 +3,8 @@ import { userEvent } from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { readMenuIcons } from '../../../test/menu-fixtures.js';
-import { CopyGlyph } from '../../core/glyphs.js';
 import { pointsToPixels, renderReady } from '../../../test/pdf-fixtures.js';
+import { CopyGlyph } from '../../core/glyphs.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { findBoxAtPoint, type PdfPagePoint } from './page-geometry.js';
 

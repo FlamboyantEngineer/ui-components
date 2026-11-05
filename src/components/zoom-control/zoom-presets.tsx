@@ -1,11 +1,10 @@
 'use client';
 
 import { ChevronDownGlyph } from '../../core/glyphs.js';
+import type { ControlSize } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import type { MenuItemEntry } from '../menu/menu.js';
-import type { ControlSize } from '../../core/props.js';
 
 /** A zoom the preset menu offers that the caller resolves, such as fitting the page width. */
 export interface ZoomPreset {

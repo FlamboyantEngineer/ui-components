@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
+import { expect, test } from './fixtures.js';
 
 const overview = (page: Page) => page.locator('[data-lab-demo="overview"]');
 const layout = (page: Page) => overview(page).locator('[data-lab-output="layout"]');

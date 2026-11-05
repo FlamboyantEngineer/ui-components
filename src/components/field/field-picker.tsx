@@ -1,10 +1,10 @@
 'use client';
 
 import type { CSSProperties, ReactNode } from 'react';
-import { ListBoxItem, PopoverContext, useSlottedContext } from '../../primitives/index.js';
 import type { ComponentHooks } from '../../core/hooks.js';
 import type { Key, SelectableState } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { ListBoxItem, PopoverContext, useSlottedContext } from '../../primitives/index.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import type { RemoteSearch } from '../../utils/use-remote-search.js';
 import { Icon, toIconProps } from '../icon/icon.js';

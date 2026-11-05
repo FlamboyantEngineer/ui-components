@@ -1,34 +1,34 @@
 'use client';
 
 import {
-  useId,
-  useLayoutEffect,
-  useMemo,
-  useRef,
   type MouseEvent,
   type PointerEvent,
   type ReactNode,
   type RefObject,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
 } from 'react';
-import { Popover, useHover, usePress } from '../../primitives/index.js';
-import { PopoverPresence } from '../popover/popover.js';
 import type { AriaLabellingProps } from '../../core/events.js';
+import { createHooks } from '../../core/hooks.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
+import { useUiStrings } from '../../core/provider.js';
+import { Popover, useHover, usePress } from '../../primitives/index.js';
 import { mergeProps } from '../../utils/merge-props.js';
+import { DEFAULT_POINT_OFFSET } from '../../utils/overlay-defaults.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useFollowAnchor } from '../../utils/use-follow-anchor.js';
 import { useFrameFlag } from '../../utils/use-frame-flag.js';
 import { useLatest } from '../../utils/use-latest.js';
-import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key, RefProps } from '../../core/props.js';
-import { useUiStrings } from '../../core/provider.js';
+import { Icon, type IconSource, toIconProps } from '../icon/icon.js';
+import { PopoverPresence } from '../popover/popover.js';
 import { triggerWidthProperty, useLayerZIndex } from '../portal/portal.js';
-import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
 import type { Completion } from './completion-match.js';
 import { getCompletionOptionId } from './completion-option-id.js';
 import { useActiveCompletion } from './use-active-completion.js';
-import { useMirrorScrollHold } from './use-mirror-scroll-hold.js';
 import type { CompletionsModel } from './use-completions.js';
-import { DEFAULT_POINT_OFFSET } from '../../utils/overlay-defaults.js';
+import { useMirrorScrollHold } from './use-mirror-scroll-hold.js';
 
 /** A completion with the key the editor moves and acts on. */
 export interface CompletionListItem extends Completion {
@@ -303,12 +303,13 @@ export function ControlCompletionList({
   );
 }
 
-export { getCompletionOptionId } from './completion-option-id.js';
-export { matchCompletions, scoreCompletion } from './completion-match.js';
 export type { Completion } from './completion-match.js';
-export { createTriggerCompletions } from './trigger-completions.js';
+export { matchCompletions, scoreCompletion } from './completion-match.js';
+export { getCompletionOptionId } from './completion-option-id.js';
+export type { CompletionInputAttributes, TextCompletions } from './text-completions.js';
+export { toCompletionInputAttributes, useTextCompletions } from './text-completions.js';
 export type { CompletionTrigger } from './trigger-completions.js';
-export { useCompletions } from './use-completions.js';
+export { createTriggerCompletions } from './trigger-completions.js';
 export type {
   CompletionAnswer,
   CompletionContext,
@@ -316,8 +317,7 @@ export type {
   CompletionReason,
   CompletionResult,
   Completions,
-  CompletionSource,
   CompletionsModel,
+  CompletionSource,
 } from './use-completions.js';
-export { toCompletionInputAttributes, useTextCompletions } from './text-completions.js';
-export type { CompletionInputAttributes, TextCompletions } from './text-completions.js';
+export { useCompletions } from './use-completions.js';

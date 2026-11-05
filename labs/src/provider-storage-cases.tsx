@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { hydrateRoot } from 'react-dom/client';
+import { renderToString } from 'react-dom/server';
 import { Button } from '../../src/components/button/button.js';
 import { Link } from '../../src/components/link/link.js';
+import { NumberField } from '../../src/components/number-field/number-field.js';
 import { Switch } from '../../src/components/switch/switch.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
-import { NumberField } from '../../src/components/number-field/number-field.js';
 import { createJsonCodec, numberCodec } from '../../src/core/index.js';
 import { UiProvider, usePersistentState } from '../../src/core/provider.js';
 import { createMemoryStorage, createSafeStorage } from '../../src/core/storage.js';
@@ -92,6 +94,50 @@ export function OptionalOptions() {
       <p>
         Last route: <output data-lab-output="route">{route}</output>
       </p>
+    </div>
+  );
+}
+
+function StoredZoom() {
+  const [zoom, setZoom] = usePersistentState('zoom', 100, { codec: numberCodec });
+  return <Button onPress={() => setZoom((value) => value + 10)}>Zoom {zoom}%</Button>;
+}
+
+/**
+ * The zoom is rendered on a server whose storage is empty, then hydrated over a store holding 150.
+ * Hydration shows the server's 100 and reports no mismatch, then the stored 150 replaces it.
+ */
+export function HydratedStorage() {
+  const hostRef = useRef<HTMLDivElement>(null);
+  const [serverText, setServerText] = useState('');
+  const [mismatches, setMismatches] = useState(0);
+  useEffect(() => {
+    const frame = hostRef.current;
+    if (!frame) return;
+    const host = frame.appendChild(document.createElement('div'));
+    const app = (storage: ReturnType<typeof createMemoryStorage>) => (
+      <UiProvider locale="en-US" storage={storage}>
+        <StoredZoom />
+      </UiProvider>
+    );
+    host.innerHTML = renderToString(app(createMemoryStorage()));
+    setServerText(host.textContent);
+    const root = hydrateRoot(host, app(createMemoryStorage({ zoom: '150' })), {
+      onRecoverableError: () => setMismatches((count) => count + 1),
+    });
+    return () =>
+      queueMicrotask(() => {
+        root.unmount();
+        host.remove();
+      });
+  }, []);
+  return (
+    <div data-lab-case="hydrated-storage">
+      <p>
+        Server rendered: <output data-lab-output="server">{serverText}</output>. Hydration
+        mismatches: <output data-lab-output="mismatches">{mismatches}</output>
+      </p>
+      <div ref={hostRef} />
     </div>
   );
 }

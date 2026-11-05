@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { UiProvider } from '../../src/core/provider.js';
 
@@ -14,13 +14,13 @@ export const nearMidnightInstant = '2026-04-19T22:00:00Z';
 /** A date with no time: the same calendar day in every zone, whatever zone reads it. */
 export const nearMidnightDate = '2026-04-19';
 
-export const zoneNames = {
+const zoneNames = {
   UTC: 'UTC',
   London: 'Europe/London',
   'Los Angeles': 'America/Los_Angeles',
 } as const;
 
-export type ZoneLabel = keyof typeof zoneNames;
+type ZoneLabel = keyof typeof zoneNames;
 
 const zoneLabels = Object.keys(zoneNames) as ZoneLabel[];
 
@@ -33,7 +33,7 @@ const overrideOptions = [
   ...zoneLabels.map((label) => ({ value: label, label })),
 ];
 
-export interface ZoneChoices {
+interface ZoneChoices {
   /** The provider's zone. */
   providerZone: string;
   /** The component's own zone, or undefined to inherit the provider's. */

@@ -2,11 +2,11 @@
 
 // Moving focus between the rows of a tree comparison: to the next difference or a moved node's twin.
 
-import { useEffect, useRef, type FocusEvent } from 'react';
+import { type FocusEvent, useEffect, useRef } from 'react';
 import type { Key } from '../../core/props.js';
+import type { CompareTreeNode } from '../../utils/compare-trees.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
-import type { CompareTreeNode } from '../../utils/compare-trees.js';
 import { findNextChange, type TreeCompareRowIndex } from './tree-compare-rows.js';
 
 interface TreeCompareNavigationOptions<T extends CompareTreeNode> {

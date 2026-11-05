@@ -1,9 +1,8 @@
 // Shared lab discovery, page templates and server address for the lab scripts and the browser tests.
 
-import { readFileSync, readdirSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { REFERENCE_LAYER } from './reference-stylesheet.mjs';
-
 import { root } from './script.mjs';
 
 export { root };

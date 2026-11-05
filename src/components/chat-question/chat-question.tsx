@@ -1,16 +1,16 @@
 'use client';
 
-import { useMergedRefs } from '../../utils/use-merged-refs.js';
-import { containsFocus, isFocusLost } from '../../utils/focus-target.js';
 import { useLayoutEffect, useRef, useState } from 'react';
-import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { containsFocus, isFocusLost } from '../../utils/focus-target.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
+import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import {
-  chatQuestionHooks as hooks,
   type ChatQuestionAnswer,
   type ChatQuestionAnsweredMark,
   type ChatQuestionData,
+  chatQuestionHooks as hooks,
 } from './chat-question-model.js';
 import { PendingQuestions } from './chat-question-pending.js';
 import { useQuestionRequest } from './chat-question-request.js';

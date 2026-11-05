@@ -1,16 +1,15 @@
 'use client';
 
+import { type ReactNode, type RefObject, useId, useRef } from 'react';
 import { CloseGlyph } from '../../core/glyphs.js';
-import { useId, useRef, type ReactNode, type RefObject } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { Button } from '../button/button.js';
 import { diagramHooks as hooks } from './diagram-hooks.js';
+import { type DiagramLink, formatDiagramLink } from './diagram-links.js';
 import type { DiagramNode } from './diagram-model.js';
-import type { DiagramLink } from './diagram-links.js';
-import { formatDiagramLink } from './diagram-links.js';
 import type { DiagramController } from './use-diagram-controller.js';
 
 interface DiagramOutlineProps {

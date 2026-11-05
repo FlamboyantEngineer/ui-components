@@ -1,15 +1,15 @@
 'use client';
 
-import { useState, type KeyboardEvent, type ReactNode } from 'react';
+import { type KeyboardEvent, type ReactNode, useState } from 'react';
 import { useUiStrings } from '../../core/provider.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 import type {
   ModalController,
   ModalEntryRenderProps,
 } from '../modal-controller/modal-controller.js';
-import { Modal, type ModalProps } from './modal.js';
 import { TextField } from '../text-field/text-field.js';
-import { ModalConfirmation, type ConfirmOptions } from './modal-confirm.js';
-import { isComposingKey } from '../../utils/is-composing-key.js';
+import { Modal, type ModalProps } from './modal.js';
+import { type ConfirmOptions, ModalConfirmation } from './modal-confirm.js';
 
 /** Options of `alert`: a confirm dialog whose one action acknowledges it. */
 export type AlertOptions = Omit<

@@ -4,10 +4,10 @@ import { useRef, useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import {
-  snapToGrid,
   type DiagramDirection,
   type DiagramEdge,
   type DiagramNode,
+  snapToGrid,
 } from './diagram-model.js';
 import type { DiagramPoint } from './edge-route.js';
 

@@ -1,15 +1,15 @@
 import { useState } from 'react';
-import type { Key, Selection } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import {
   ListView,
   ListViewItem,
-  ListViewSection,
   type ListViewItemProps,
   type ListViewMove,
+  ListViewSection,
 } from '../../src/components/list-row/index.js';
 import { NumberField } from '../../src/components/number-field/number-field.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
+import type { Key, Selection } from '../../src/core/props.js';
 import { RowMenu } from './row-menu.js';
 
 export const selections = ['none', 'single', 'multiple', 'replace'] as const;

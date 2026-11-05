@@ -4,8 +4,8 @@ import { describe, expect, it } from 'vitest';
 import { Button } from '../button/button.js';
 import { HoverCard, HoverCardTrigger } from '../hover-card/hover-card.js';
 import { Tag, TagGroup } from '../tag-group/tag-group.js';
-import { UserCard } from './user-card.js';
 import { UserCardTrigger } from '../user-card-trigger/user-card-trigger.js';
+import { UserCard } from './user-card.js';
 
 describe('UserCard preview composition', () => {
   it.each([false, true])(

@@ -1,3 +1,5 @@
+import { type CSSProperties, type ReactNode, useState } from 'react';
+import { DockPanel, DockPanelPane } from '../../src/components/dock-panel/dock-panel.js';
 import {
   CalendarGlyph,
   FolderGlyph,
@@ -10,13 +12,11 @@ import {
   UsersGlyph,
   WarningGlyph,
 } from '../../src/core/glyphs.js';
-import { useState, type CSSProperties, type ReactNode } from 'react';
-import { DockPanel, DockPanelPane } from '../../src/components/dock-panel/dock-panel.js';
 import type { Key } from '../../src/core/props.js';
 import { UiProvider } from '../../src/core/provider.js';
-import { requireDefined } from './require-defined.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { FilterDockExample } from './list-filter-examples.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { requireDefined } from './require-defined.js';
 
 type Position = 'start' | 'end' | 'bottom';
 

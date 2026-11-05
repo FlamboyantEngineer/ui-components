@@ -1,16 +1,17 @@
 'use client';
 
-import { useMemo, type ReactNode } from 'react';
-import { TabPanel as AriaTabPanel, Tabs as AriaTabs } from '../../primitives/index.js';
+import { type ReactNode, useMemo } from 'react';
 import { mergeClassNames } from '../../core/hooks.js';
-import type { BaseProps, Key, Orientation, Size, RefProps } from '../../core/props.js';
-import type { ElementRender } from '../../utils/render-element.js';
+import type { BaseProps, Key, Orientation, RefProps, Size } from '../../core/props.js';
+import { TabPanel as AriaTabPanel, Tabs as AriaTabs } from '../../primitives/index.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
+import { keyCodec } from '../../utils/json-codec.js';
+import type { ElementRender } from '../../utils/render-element.js';
 import { toCollectionItemKey, toCollectionKey } from '../../utils/to-collection-key.js';
+import { useIsClient } from '../../utils/use-is-client.js';
+import { usePersistedValue } from '../../utils/use-persisted-value.js';
 import { TabsSharedContext, useTabsShared } from './tab-actions.js';
 import { tabsHooks as hooks } from './tab-hooks.js';
-import { keyCodec } from '../../utils/json-codec.js';
-import { usePersistedValue } from '../../utils/use-persisted-value.js';
 
 export type TabsSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 
@@ -118,6 +119,7 @@ export function Tabs({
     defaultSelectedKey,
     onSelectionChange,
   });
+  const isClient = useIsClient();
   const disabledKeys = useMemo(
     () => rest.disabledKeys && Array.from(rest.disabledKeys, toCollectionKey),
     [rest.disabledKeys],
@@ -130,8 +132,9 @@ export function Tabs({
   return (
     <TabsSharedContext value={shared}>
       <AriaTabs
-        // Another storage key restores that key's selection.
-        key={persistKey}
+        // Another storage key restores that key's selection, as does the first render after
+        // hydration, which reads the store for the first time.
+        key={persistKey === undefined ? undefined : `${String(isClient)}:${persistKey}`}
         {...rest}
         selectedKey={toCollectionItemKey(selection.selectedKey)}
         defaultSelectedKey={toCollectionItemKey(selection.defaultSelectedKey)}
@@ -154,9 +157,8 @@ export function TabPanel({ className, id, ...rest }: TabPanelProps) {
   );
 }
 
-export { Tab } from './tab.js';
 export type { TabProps } from './tab.js';
-export { TabList } from './tab-list.js';
+export { Tab } from './tab.js';
 export type {
   TabListOverflow,
   TabListProps,
@@ -167,3 +169,4 @@ export type {
   TabMove,
   TabNameValidate,
 } from './tab-list.js';
+export { TabList } from './tab-list.js';

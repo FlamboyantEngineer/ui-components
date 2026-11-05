@@ -1,6 +1,6 @@
 import { defineStrings } from '../message-format.js';
 /** Strings of column mapping tables and step list editors. */
-export interface EditingStrings {
+interface EditingStrings {
   /** Names a mapping table. */
   columnMapping: string;
   /** Heads a mapping table's source column names. */

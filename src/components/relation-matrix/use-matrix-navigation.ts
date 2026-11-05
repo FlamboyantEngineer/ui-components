@@ -1,26 +1,26 @@
 'use client';
 
-import { containsFocus } from '../../utils/focus-target.js';
 import {
-  useLayoutEffect,
-  useRef,
-  useState,
   type FocusEvent,
   type KeyboardEvent,
   type RefObject,
+  useLayoutEffect,
+  useRef,
+  useState,
 } from 'react';
 import { useFocusWithin, useLocale } from '../../primitives/index.js';
-import {
-  adoptMatrixFocus,
-  moveMatrixFocus,
-  resolveMatrixFocus,
-  toMatrixFocus,
-  type MatrixFocus,
-  type MatrixPosition,
-} from './matrix-navigation.js';
+import { containsFocus } from '../../utils/focus-target.js';
 import { isElement } from '../../utils/is-element.js';
 import { getOwnerWindow } from '../../utils/owner-window.js';
 import { measureInScroller } from '../../utils/scroll-geometry.js';
+import {
+  adoptMatrixFocus,
+  type MatrixFocus,
+  type MatrixPosition,
+  moveMatrixFocus,
+  resolveMatrixFocus,
+  toMatrixFocus,
+} from './matrix-navigation.js';
 
 interface MatrixNavigationOptions {
   root: RefObject<HTMLDivElement | null>;
@@ -48,7 +48,7 @@ const actionKeys = new Set(['Enter', ' ']);
 const defaultPage = 10;
 
 /** The selector of the cell at `position`, through the grid's row and column indices. */
-export function selectMatrixCell({ row, column }: MatrixPosition): string {
+function selectMatrixCell({ row, column }: MatrixPosition): string {
   return `[role="row"][aria-rowindex="${row + 2}"] > [aria-colindex="${column + 2}"]`;
 }
 

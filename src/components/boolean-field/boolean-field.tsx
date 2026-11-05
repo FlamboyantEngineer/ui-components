@@ -1,7 +1,7 @@
 'use client';
 
 import { useUiStrings } from '../../core/provider.js';
-import { Field, useFieldControl, type FieldInputProps } from '../field/field.js';
+import { Field, type FieldInputProps, useFieldControl } from '../field/field.js';
 import { BooleanControl, type BooleanFieldVariant } from './boolean-controls.js';
 import { booleanFieldHooks as hooks } from './boolean-field-hooks.js';
 

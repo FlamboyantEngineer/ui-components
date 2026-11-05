@@ -1,5 +1,5 @@
 /** An element's line height and the vertical space around its lines, in pixels. */
-export interface LineBox {
+interface LineBox {
   /** Its line height: its own, else 1.2 times its font size, else 16. */
   lineHeight: number;
   /** Its top and bottom padding. */

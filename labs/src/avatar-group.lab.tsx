@@ -1,10 +1,10 @@
-import { AvatarGroupPresenceCases } from './avatar-group-presence-cases.js';
 import {
   AvatarGroup,
   type AvatarGroupPerson,
 } from '../../src/components/avatar-group/avatar-group.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { AvatarGroupIdentityCases } from './avatar-group-identity-cases.js';
+import { AvatarGroupPresenceCases } from './avatar-group-presence-cases.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { brokenPicture, samplePeople } from './people-samples.js';
 
 const sizes = ['xs', 'sm', 'md', 'lg'] as const;

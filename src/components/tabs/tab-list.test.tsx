@@ -1,10 +1,10 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
-import type { Key } from '../../core/props.js';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { Tab, TabList, TabPanel, Tabs, type TabListProps } from './tabs.js';
+import type { Key } from '../../core/props.js';
+import { Tab, TabList, type TabListProps, TabPanel, Tabs } from './tabs.js';
 
 const fruit = ['Apple', 'Banana', 'Cherry', 'Fig', 'Grape'];
 

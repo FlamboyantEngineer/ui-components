@@ -2,24 +2,24 @@ import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Form } from '../../src/components/form/form.js';
 import {
-  NumberField,
   keepThumbsApart,
   normalizeSliderValue,
-  snapToStep,
+  NumberField,
   type NumberFieldValueLabel,
   type NumberRange,
+  snapToStep,
 } from '../../src/components/number-field/index.js';
 import type { ControlSize } from '../../src/core/props.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
-import { LabHelperCalls } from './lab-helper-calls.js';
-import { LabOutput } from './lab-output.js';
 import {
   fieldLayouts,
+  type FieldStateName,
   fieldStates,
   useLabFieldState,
-  type FieldStateName,
 } from './field-states.js';
+import { LabHelperCalls } from './lab-helper-calls.js';
+import { LabOutput } from './lab-output.js';
 
 // A slider always holds a value, so it has no required state.
 const sliderStates = fieldStates.filter((state) => state !== 'required');
@@ -156,6 +156,54 @@ function Normalized() {
       </Button>
       <Button onPress={() => setValue([Number.NaN, Infinity])}>Give NaN and Infinity</Button>
       <LabOutput name="Share">{value.join(' to ')}</LabOutput>
+    </>
+  );
+}
+
+function FractionalNormalization() {
+  const [value, setValue] = useState(0.05);
+  const [range, setRange] = useState<NumberRange>([0.05, 0.95]);
+  const [lastChange, setLastChange] = useState('none');
+  return (
+    <>
+      <NumberField
+        display="slider"
+        label="Fractional amount"
+        minValue={0.05}
+        maxValue={1}
+        step={0.1}
+        value={value}
+        onChange={(next) => {
+          setValue(next);
+          setLastChange(String(next));
+        }}
+        description="Starts at 0.05, steps by 0.1 and stops at 0.95."
+        data-lab-field="fractional-origin"
+      />
+      <LabOutput name="Fractional amount">{value}</LabOutput>
+      <LabOutput name="Fractional change">{lastChange}</LabOutput>
+      <NumberField
+        range
+        display="slider"
+        label="Fractional range"
+        minValue={0.05}
+        maxValue={1}
+        step={0.1}
+        value={range}
+        onChange={setRange}
+        data-lab-field="fractional-range"
+      />
+      <LabOutput name="Fractional range">{range.join(' to ')}</LabOutput>
+      <NumberField
+        display="slider"
+        label="Short interval"
+        minValue={0}
+        maxValue={0.099}
+        step={0.1}
+        defaultValue={0.099}
+        description="The maximum is below one step, so the only value is 0."
+        data-lab-field="off-grid-maximum"
+      />
     </>
   );
 }
@@ -374,6 +422,7 @@ export function NumberFieldSliderSections() {
         description="Validation, callbacks and the form all hold the snapped, clamped and ordered value. NaN reads as the minimum and Infinity as the last step, reported as a change."
       >
         <Normalized />
+        <FractionalNormalization />
       </LabSection>
       <LabSection
         title="Vertical slider"
@@ -402,6 +451,26 @@ export function NumberFieldSliderSections() {
             [
               'snapToStep(0.1 + 0.2, { minValue: 0, maxValue: 1, step: 0.1 })',
               String(snapToStep(0.1 + 0.2, { minValue: 0, maxValue: 1, step: 0.1 })),
+            ],
+            [
+              'snapToStep(2251799813685248.5, { minValue: 0, maxValue: 4503599627370496, step: 2 })',
+              String(
+                snapToStep(2251799813685248.5, {
+                  minValue: 0,
+                  maxValue: 4503599627370496,
+                  step: 2,
+                }),
+              ),
+            ],
+            [
+              'snapToStep(4503599627370495.5, { minValue: 0, maxValue: 4503599627370495.5, step: 2 })',
+              String(
+                snapToStep(4503599627370495.5, {
+                  minValue: 0,
+                  maxValue: 4503599627370495.5,
+                  step: 2,
+                }),
+              ),
             ],
             [
               'normalizeSliderValue([80, 20], { minValue: 0, maxValue: 50, step: 10 })',

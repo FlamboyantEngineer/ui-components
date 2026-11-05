@@ -10,6 +10,38 @@ function root(container: HTMLElement) {
 }
 
 describe('NumberField range inputs', () => {
+  it('UIC-NUMBER-FIELD-8.5 UIC-NUMBER-FIELD-5.2 preserves fractional endpoints and stops at the last step', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const onCommit = vi.fn();
+    const { container } = render(
+      <NumberField
+        range
+        label="Amount"
+        minValue={0.05}
+        maxValue={1}
+        step={0.1}
+        defaultValue={[0.05, 0.85]}
+        committedValue={[0.05, 0.85]}
+        onChange={onChange}
+        onCommit={onCommit}
+      />,
+    );
+    const start = screen.getByRole('textbox', { name: 'Minimum Amount' });
+    const end = screen.getByRole('textbox', { name: 'Maximum Amount' });
+    expect(start).toHaveValue('0.05');
+    expect(end).toHaveValue('0.85');
+    expect(root(container)).not.toHaveAttribute('data-dirty');
+    expect(onChange).not.toHaveBeenCalled();
+    expect(onCommit).not.toHaveBeenCalled();
+    await user.clear(end);
+    await user.type(end, '1{Enter}');
+    expect(start).toHaveValue('0.05');
+    expect(end).toHaveValue('0.95');
+    expect(onChange).toHaveBeenLastCalledWith([0.05, 0.95]);
+    expect(onCommit).toHaveBeenLastCalledWith([0.05, 0.95]);
+  });
+
   it('UIC-NUMBER-FIELD-8.5 types a range into a start and an end input, kept in order and apart', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();

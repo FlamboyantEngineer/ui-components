@@ -1,9 +1,10 @@
 'use client';
 
 import type { JSX, ReactNode } from 'react';
-import { Cell, Collection, Row } from '../../primitives/index.js';
 import { pickDataAttributes } from '../../core/hooks.js';
+import { Cell, Collection, Row } from '../../primitives/index.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { readOwn } from '../../utils/read-own.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import type { TableRowAttributes } from './table.js';
 import { TableDataCell } from './table-data-cell.js';
@@ -21,7 +22,6 @@ import {
   selectionColumnId,
 } from './table-structure.js';
 import type { TableNode } from './table-tree.js';
-import { readOwn } from '../../utils/read-own.js';
 
 /** A row's caller attributes: `false` leaves an attribute out, unlike a root `data-*` prop. */
 function toRowAttributes(attributes: TableRowAttributes | undefined) {

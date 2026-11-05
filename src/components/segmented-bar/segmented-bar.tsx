@@ -1,16 +1,16 @@
 'use client';
 
-import { useId, type ReactNode } from 'react';
-import { useNumberFormatter } from '../../primitives/index.js';
+import { type ReactNode, useId } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps, Key, Tone, RefProps } from '../../core/props.js';
+import type { BaseProps, Key, RefProps, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useNumberFormatter } from '../../primitives/index.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
-import { resolveSegmentedBar, type SegmentedPart } from './segmented-layout.js';
-import { SegmentedTrack } from './segmented-track.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { segmentedBarHooks as hooks } from './segmented-bar-hooks.js';
-import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { resolveSegmentedBar, type SegmentedPart } from './segmented-layout.js';
+import { SegmentedTrack } from './segmented-track.js';
 
 /**
  * The bar's own size steps. `xl`, `2xl` and `3xl` go past the shared `Size` scale, for a bar or

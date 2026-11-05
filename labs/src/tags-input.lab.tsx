@@ -1,16 +1,16 @@
-import { useState, type FormEvent } from 'react';
+import { type FormEvent, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Form } from '../../src/components/form/form.js';
 import { TagsInput } from '../../src/components/tags-input/tags-input.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-import { LabOutput } from './lab-output.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import {
   fieldLayouts,
-  fieldStates,
-  useLabFieldState,
   type FieldStateName,
+  fieldStates,
   type SampleValues,
+  useLabFieldState,
 } from './field-states.js';
+import { LabOutput } from './lab-output.js';
 
 const samples: SampleValues<string[]> = {
   value: ['Apple', 'Pear'],

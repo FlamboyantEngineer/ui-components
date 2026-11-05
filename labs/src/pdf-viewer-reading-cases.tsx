@@ -5,10 +5,10 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
-  PdfViewer,
   type PdfDocumentAccess,
   type PdfPagePoint,
   type PdfSelection,
+  PdfViewer,
   type PdfVisiblePosition,
 } from '../../src/components/pdf-viewer/pdf-viewer.js';
 import { loadEngine, otherCopyUrl, sampleUrl, workerSrc } from './pdf-viewer-cases.js';

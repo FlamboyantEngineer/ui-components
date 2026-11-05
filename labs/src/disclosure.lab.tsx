@@ -1,6 +1,4 @@
-import { EditGlyph } from '../../src/core/glyphs.js';
-import { useState, type CSSProperties } from 'react';
-import type { Key } from '../../src/core/props.js';
+import { type CSSProperties, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
   Disclosure,
@@ -11,7 +9,9 @@ import {
 } from '../../src/components/disclosure/disclosure.js';
 import { Outline } from '../../src/components/outline/outline.js';
 import { HeadingLevelContext } from '../../src/components/section-header/section-header.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { EditGlyph } from '../../src/core/glyphs.js';
+import type { Key } from '../../src/core/props.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { DisclosureRenderCases } from './disclosure-render-cases.js';
 
 const column = (width: number): CSSProperties => ({ width });

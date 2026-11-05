@@ -1,10 +1,10 @@
-import { EditGlyph } from '../../core/glyphs.js';
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { ShadowHost, deepActive, inShadow } from '../../../test/shadow-fixtures.js';
+import { deepActive, inShadow, ShadowHost } from '../../../test/shadow-fixtures.js';
+import { EditGlyph } from '../../core/glyphs.js';
 import { Avatar } from '../avatar/avatar.js';
 import { Button } from '../button/button.js';
 import { Modal, ModalTrigger } from '../modal/modal.js';

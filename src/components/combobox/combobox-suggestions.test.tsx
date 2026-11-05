@@ -1,10 +1,10 @@
-import { PlusGlyph } from '../../core/glyphs.js';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
-import type { Key } from '../../core/props.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { PlusGlyph } from '../../core/glyphs.js';
+import type { Key } from '../../core/props.js';
 import { UiProvider } from '../../core/provider.js';
 import { PortalContainerProvider } from '../portal/portal.js';
 import { Combobox, type ComboboxItem, type ComboboxOption } from './combobox.js';

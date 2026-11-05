@@ -1,4 +1,3 @@
-import { FolderGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import { ActionRow } from '../../src/components/action-row/action-row.js';
 import { Attribution } from '../../src/components/attribution/attribution.js';
@@ -9,9 +8,10 @@ import {
   TransitionMenu,
   type TransitionMenuState,
 } from '../../src/components/transition-menu/transition-menu.js';
+import { FolderGlyph } from '../../src/core/glyphs.js';
 import type { Key } from '../../src/core/props.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { RecordHeaderEmptyCases } from './record-header-empty-cases.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 /** A fixed clock, so every time in the matrix reads the same on every day. */
 const getNow = () => new Date(2026, 3, 20, 10, 30);

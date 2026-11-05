@@ -1,5 +1,6 @@
 'use client';
 
+import { type JSX, type KeyboardEvent, type Ref, useId, useRef } from 'react';
 import {
   ChevronDoubleLeftGlyph,
   ChevronDoubleRightGlyph,
@@ -7,17 +8,16 @@ import {
   ChevronUpGlyph,
   type GlyphComponent,
 } from '../../core/glyphs.js';
-import { useId, useRef, type JSX, type KeyboardEvent, type Ref } from 'react';
-import { Button as AriaButton, Toolbar, useLocale } from '../../primitives/index.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { Button as AriaButton, Toolbar, useLocale } from '../../primitives/index.js';
 import { normalizeCount } from '../../utils/count.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { Badge } from '../badge/badge.js';
 import { Button } from '../button/button.js';
 import { Icon, toIconProps } from '../icon/icon.js';
-import { dockPanelHooks as hooks } from './dock-panel-hooks.js';
 import { DockPanelFades, useDockPanelFades } from './dock-panel-fades.js';
+import { dockPanelHooks as hooks } from './dock-panel-hooks.js';
 import type { DockPanelPaneProps } from './dock-panel-pane.js';
 import type { DockPanelFocus } from './use-dock-panel-focus.js';
 
@@ -74,7 +74,7 @@ interface DockPanelToggleProps {
 export const dockPanelCountMax = 9;
 
 /** The toggle points the way the panel moves: toward its edge to collapse, away to expand. */
-export function resolveToggleGlyph(
+function resolveToggleGlyph(
   position: DockPanelPosition,
   isExpanded: boolean,
   isRtl: boolean,

@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test, matrixCell } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 const widths = ['240', '264', '320', 'desktop'] as const;
 const counts = ['4', '6', '8'] as const;

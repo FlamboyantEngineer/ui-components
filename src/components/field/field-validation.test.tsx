@@ -1,8 +1,8 @@
 import { act, renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
-import { FieldScopeContext, type FieldScope } from './field-scope.js';
-import { useFieldState, type FieldIssue, type FieldStateOptions } from './field-state.js';
+import { type FieldScope, FieldScopeContext } from './field-scope.js';
+import { type FieldIssue, type FieldStateOptions, useFieldState } from './field-state.js';
 
 function renderField<T>(options: FieldStateOptions<T>, scope: FieldScope = {}) {
   return renderHook((props: FieldStateOptions<T>) => useFieldState(props), {

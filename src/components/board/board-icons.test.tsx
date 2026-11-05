@@ -1,8 +1,8 @@
-import { CalendarGlyph } from '../../core/glyphs.js';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { CalendarGlyph } from '../../core/glyphs.js';
 import { Board, type BoardColumn, type BoardLane } from './board.js';
 import { applyColumnMove } from './board-moves.js';
 

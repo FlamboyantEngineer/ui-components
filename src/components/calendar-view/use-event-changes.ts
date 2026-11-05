@@ -3,12 +3,12 @@
 // A calendar's event changes: whether the host allows each, the event menus and editor, and the
 // event drags (specs/CALENDAR-VIEW.md, UIC-CALENDAR-VIEW-5 and 6).
 
-import { useCallback, type RefObject } from 'react';
+import { type RefObject, useCallback } from 'react';
 import { useEventEditing } from './calendar-event-editor.js';
 import {
-  useEventHandles,
   type CalendarEventChange,
   type CalendarEventDragMode,
+  useEventHandles,
 } from './calendar-event-handles.js';
 import type { PlacedEvent } from './calendar-layout.js';
 import type { CalendarViewEvent, CalendarViewMode, CalendarViewProps } from './calendar-view.js';

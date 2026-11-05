@@ -27,8 +27,12 @@ const animationTags: ReadonlySet<string> = new Set([
 /** Attributes holding names or prose, which reference nothing. */
 const freeTextAttribute = /^(?:class|lang|role|xml:lang|xml:space|aria-.+|data-.+)$/;
 
-/** A `url(#id)` reference, quoted or not. The policy has already refused every other `url()`. */
-const urlReference = /url\(\s*(["']?)#([^"')]*)\1\s*\)/gi;
+/**
+ * A `url(#id)` reference, quoted or not. The policy has already refused every other `url()`. As in
+ * the policy's reading, whitespace around an unquoted ID is not part of it, while a quoted ID is
+ * taken whole.
+ */
+const urlReference = /url\(\s*(?:(["'])#([^"']*)\1|#([^\s"'()]*))\s*\)/gi;
 
 /** The IDs a drawing defines below its root, which its caller owns. */
 function definedIds(tree: SvgElementNode): ReadonlySet<string> {
@@ -68,8 +72,9 @@ export function createSvgReferenceScope(
   /** The value with its `url()` references scoped, or null when one leaves the drawing. */
   const scopeUrls = (value: string): string | null => {
     let isEscaping = false;
-    const rewritten = value.replace(urlReference, (_, quote: string, id: string) => {
-      const target = scoped(id);
+    const rewritten = value.replace(urlReference, (_, ...groups: Array<string | undefined>) => {
+      const [quote = '', quotedId, bareId] = groups;
+      const target = scoped(quotedId ?? bareId ?? '');
       if (target === null) isEscaping = true;
       return `url(${quote}#${target ?? ''}${quote})`;
     });

@@ -7,8 +7,8 @@ import { vi } from 'vitest';
 import { Chat, type ChatProps } from '../src/components/chat/chat.js';
 import type {
   ChatMessageData,
-  ChatParticipant,
   ChatPart,
+  ChatParticipant,
 } from '../src/components/chat-parts/chat-parts.js';
 
 export const reader: ChatParticipant = { id: 'sam', name: 'Sam Reed', kind: 'person' };

@@ -1,5 +1,5 @@
-import { expect, familySelector, test, matrixCell } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
+import { expect, familySelector, matrixCell, test } from './fixtures.js';
 
 test.describe('Zoom Control lab', () => {
   test('UIC-ZOOM-CONTROL-1.1 UIC-ZOOM-CONTROL-1.5 UIC-ZOOM-CONTROL-1.9 draws the parts in order at four sizes', async ({

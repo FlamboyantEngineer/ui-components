@@ -1,8 +1,8 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { pressComposingKeys } from '../../../test/composition.js';
+import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import {
   createEngine,
   createTextContent,

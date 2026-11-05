@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   chooseRelation,
   listRelationTrail,
-  resolveRelationColumns,
   type RelationDirection,
+  resolveRelationColumns,
 } from './relation-columns-model.js';
 
 interface Node {

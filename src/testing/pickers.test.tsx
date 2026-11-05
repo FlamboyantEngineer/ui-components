@@ -1,10 +1,10 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { UiProvider } from '../core/provider.js';
 import { Combobox } from '../components/combobox/combobox.js';
 import { DateTimeField } from '../components/date-time-field/date-time-field.js';
 import { SelectField } from '../components/select-field/select-field.js';
+import { UiProvider } from '../core/provider.js';
 import { getHookElement, pickComboboxOption, pickDate, selectOption } from './index.js';
 
 const fruit = [

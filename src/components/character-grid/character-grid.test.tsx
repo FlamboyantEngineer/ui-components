@@ -2,8 +2,8 @@ import { fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { createMemoryStorage, type UiStorage } from '../../core/storage.js';
 import { UiProvider } from '../../core/provider.js';
+import { createMemoryStorage, type UiStorage } from '../../core/storage.js';
 import { CharacterGrid, type CharacterGridCategory } from './character-grid.js';
 
 const categories: CharacterGridCategory[] = [

@@ -1,16 +1,16 @@
 'use client';
 
-import { useTimeZone } from '../../core/clock.js';
-import { useUiStrings } from '../../core/provider.js';
 import type { ReactNode } from 'react';
-import { useLocale } from '../../primitives/index.js';
+import { useTimeZone } from '../../core/clock.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, RefProps } from '../../core/props.js';
+import { useUiStrings } from '../../core/provider.js';
+import { useLocale } from '../../primitives/index.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import {
-  formatDescriptionValue,
   type DescriptionFormatOptions,
   type DescriptionValue,
+  formatDescriptionValue,
 } from './format-description-value.js';
 
 export type DescriptionListLayout = 'inline' | 'stacked';

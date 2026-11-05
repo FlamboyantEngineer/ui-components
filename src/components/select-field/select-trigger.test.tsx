@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import { createRef } from 'react';
 import { userEvent } from '@testing-library/user-event';
+import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';

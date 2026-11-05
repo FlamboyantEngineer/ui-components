@@ -1,20 +1,20 @@
 'use client';
 
-import { CloseGlyph } from '../../core/glyphs.js';
-import { createContext, useContext, type ReactElement, type ReactNode } from 'react';
-import { Tag as AriaTag, TagGroup as AriaTagGroup, TagList } from '../../primitives/index.js';
+import { createContext, type ReactElement, type ReactNode, useContext } from 'react';
 import type { AriaLabellingProps, SelectionProps } from '../../core/events.js';
+import { CloseGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key, Size, Tone, RefProps } from '../../core/props.js';
+import type { BaseProps, Key, RefProps, Size, Tone } from '../../core/props.js';
+import { useUiStrings } from '../../core/provider.js';
+import { Tag as AriaTag, TagGroup as AriaTagGroup, TagList } from '../../primitives/index.js';
 import {
   fromCollectionSelection,
   toCollectionSelectionProps,
 } from '../../utils/collection-selection.js';
+import { FreeControls } from '../../utils/free-controls.js';
 import { keyCollectionChildren } from '../../utils/key-collection-children.js';
 import { toCollectionItemKey } from '../../utils/to-collection-key.js';
-import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
-import { FreeControls } from '../../utils/free-controls.js';
 
 export type TagGroupSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 

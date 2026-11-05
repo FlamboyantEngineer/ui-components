@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useRef, type RefObject } from 'react';
+import { type RefObject, useEffect, useLayoutEffect, useRef } from 'react';
 import { containsComposed, getDeepActiveElement } from '../../utils/composed-focus.js';
 import { isHTMLElement } from '../../utils/is-element.js';
 import { getOwnerDocument } from '../../utils/owner-window.js';

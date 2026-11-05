@@ -1,6 +1,6 @@
 import { defineStrings } from '../message-format.js';
 /** Strings of the message composer's tools, edit mode and rich mode. */
-export interface ComposerStrings {
+interface ComposerStrings {
   /** Opens the file chooser that attaches files to a message. */
   attachFiles: string;
   /** Opens the emoji picker that inserts an emoji at the caret. */

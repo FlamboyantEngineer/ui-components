@@ -5,11 +5,11 @@ import { useEffect, useRef, useState } from 'react';
 import { Badge } from '../../src/components/badge/badge.js';
 import { Button } from '../../src/components/button/button.js';
 import {
-  HtmlMarkup,
   defaultHtmlPolicy,
-  sanitizeHtml,
+  HtmlMarkup,
   type HtmlNode,
   type HtmlPolicy,
+  sanitizeHtml,
 } from '../../src/components/html-markup/index.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { LabSection } from './chrome/index.js';

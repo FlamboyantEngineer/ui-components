@@ -1,12 +1,12 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { renderToString } from 'react-dom/server';
 import { hydrateRoot } from 'react-dom/client';
+import { renderToString } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import {
-  StateMachineView,
   type StateMachineState,
+  StateMachineView,
   type StateMachineViewProps,
 } from './state-machine-view.js';
 

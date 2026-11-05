@@ -5,9 +5,9 @@
 import { useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 import { Modal } from '../modal/modal.js';
 import { TextField } from '../text-field/text-field.js';
-import { isComposingKey } from '../../utils/is-composing-key.js';
 
 /** The version a dialog is open for: its key, the name it shows and its current name. */
 export interface VersionDialogTarget {

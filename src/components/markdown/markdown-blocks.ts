@@ -1,8 +1,7 @@
 // Leaf block readers of the Markdown parser: code, headings, breaks, tables and paragraphs with
 // their link reference definitions (specs/MARKDOWN.md).
 
-import type { LinkTarget } from './markdown-inline-syntax.js';
-import { normalizeLabel, unescapeMarkdown } from './markdown-inline-syntax.js';
+import { type LinkTarget, normalizeLabel, unescapeMarkdown } from './markdown-inline-syntax.js';
 import {
   decodeBlockText,
   indentOf,
@@ -108,8 +107,10 @@ export const readTable: BlockReader = (lines, at, context) => {
   const head = lines[at] ?? '';
   const align = isTableStart(head, lines[at + 1]) ? readTableDivider(lines[at + 1] ?? '') : null;
   if (!align) return null;
-  const toCells = (line: string) =>
-    align.map((_, column) => deferInlines(context, splitTableCells(line)[column] ?? ''));
+  const toCells = (line: string) => {
+    const cells = splitTableCells(line);
+    return align.map((_, column) => deferInlines(context, cells[column] ?? ''));
+  };
   const header = toCells(head);
   const rows: MarkdownInline[][][] = [];
   let index = at + 2;

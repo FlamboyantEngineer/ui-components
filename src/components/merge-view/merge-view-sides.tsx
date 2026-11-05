@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useId, type ReactNode } from 'react';
+import { memo, type ReactNode, useId } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { ScrollRegion } from '../scroll-region/scroll-region.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';

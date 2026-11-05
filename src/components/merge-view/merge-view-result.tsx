@@ -6,10 +6,10 @@ import { requireDefined } from '../../utils/require-defined.js';
 import { Button } from '../button/button.js';
 import { TextField } from '../text-field/text-field.js';
 import {
-  getCleanLines,
-  getConflictText,
   type ConflictMarkers,
   type ConflictState,
+  getCleanLines,
+  getConflictText,
   type MergeBlock,
 } from './merge-blocks.js';
 import { mergeViewHooks as hooks } from './merge-view-hooks.js';

@@ -2,8 +2,8 @@ import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { CommentThreadReply, type CommentThreadReplyProps } from './comment-thread-reply.js';
 import { CommentThread } from './comment-thread.js';
+import { CommentThreadReply, type CommentThreadReplyProps } from './comment-thread-reply.js';
 
 const ana = { name: 'Ana Lima', colorKey: 'ana' };
 

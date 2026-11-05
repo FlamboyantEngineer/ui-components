@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react';
 import { Sparkline } from '../../src/components/sparkline/sparkline.js';
 import { createLinearScale } from '../../src/utils/linear-scale.js';
 import { createTimeScale } from '../../src/utils/time-scale.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { FrameRateTrace } from './frame-rate-trace.js';
 
 const series = {

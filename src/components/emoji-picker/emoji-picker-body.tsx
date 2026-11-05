@@ -4,8 +4,8 @@ import type { ReactNode } from 'react';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Tab, TabList, TabPanel, Tabs } from '../tabs/tabs.js';
-import { useEmojiPickerContext } from './emoji-picker-context.js';
 import { EmojiGrid } from './emoji-grid.js';
+import { useEmojiPickerContext } from './emoji-picker-context.js';
 import { emojiPickerHooks as hooks } from './emoji-picker-hooks.js';
 
 /** The body part: caller attributes and class go on the element it shows. */

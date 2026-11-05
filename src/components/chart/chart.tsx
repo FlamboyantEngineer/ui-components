@@ -1,16 +1,16 @@
 'use client';
 
-import { TableGlyph } from '../../core/glyphs.js';
-import { useId, type ReactNode } from 'react';
-import { ToggleButton } from '../../primitives/index.js';
+import { type ReactNode, useId } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps, Key, Tone, RefProps } from '../../core/props.js';
+import { TableGlyph } from '../../core/glyphs.js';
+import type { BaseProps, Key, RefProps, Tone } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
+import { ToggleButton } from '../../primitives/index.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { ProseTable } from '../prose-table/prose-table.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { chartHooks as hooks } from './chart-hooks.js';
-import { isEmptyNode } from '../../utils/is-empty-node.js';
 
 /** `chart` shows the drawing; `table` shows the values as a table instead. */
 export type ChartView = 'chart' | 'table';

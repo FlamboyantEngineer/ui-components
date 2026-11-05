@@ -1,17 +1,17 @@
-import { useState, type CSSProperties } from 'react';
+import { type CSSProperties, useState } from 'react';
 import {
   createFilterCondition,
   createFilterMatcher,
   FilterBar,
-  matchesFilterCondition,
   type FilterCondition,
   type FilterField,
+  matchesFilterCondition,
 } from '../../src/components/filter-bar/filter-bar.js';
 import { SearchField } from '../../src/components/search-field/search-field.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { FilterBarCompletenessCases } from './filter-bar-completeness-cases.js';
-import { LabHelperCalls } from './lab-helper-calls.js';
 import { bookFields, getBookValue, sampleBooks } from './filter-samples.js';
+import { LabHelperCalls } from './lab-helper-calls.js';
 
 const column: CSSProperties = { width: 420 };
 

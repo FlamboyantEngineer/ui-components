@@ -1,14 +1,14 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { render, screen } from '@testing-library/react';
+import { act } from 'react';
 import { hydrateRoot } from 'react-dom/client';
 import { renderToStaticMarkup, renderToString } from 'react-dom/server';
-import { act } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Icon } from '../icon/icon.js';
 import { parseSvgMarkup } from './parse-svg-markup.js';
-import { SvgMarkup, renderSvgDrawing } from './svg-markup.js';
+import { renderSvgDrawing, SvgMarkup } from './svg-markup.js';
 
 const outlineMarkup =
   '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="source" width="24" height="24" style="color: red" id="source" role="presentation" focusable="true" tabindex="0">' +
@@ -172,6 +172,39 @@ describe('SvgMarkup', () => {
     }
     expect(parseSvgMarkup(markup)).toBe(tree);
     expect(JSON.stringify(tree)).not.toMatch(/"id":"[^"]+_paint"/);
+  });
+
+  it('UIC-SVG-MARKUP-1.4 reads whitespace around an unquoted url() ID as CSS does', () => {
+    const { container } = render(
+      <SvgMarkup
+        markup={
+          '<svg><defs><linearGradient id="paint"><stop offset="0" stop-color="red"/></linearGradient><mask id="hole"><rect width="4" height="4"/></mask><filter id="soft"><feGaussianBlur stdDeviation="1"/></filter></defs>' +
+          '<rect id="spaced" width="10" height="10" fill="url(#paint )" stroke="url(\t#paint\n)" mask="url( #hole )"/>' +
+          '<rect id="styled" width="10" height="10" style="fill: url(#paint\t); filter: url(#soft ) url( #paint); stroke-width: 2px"/>' +
+          '<rect id="quoted" width="10" height="10" fill="url( \'#paint\' )" stroke="url(\'#paint \')"/>' +
+          '<rect id="outside" width="10" height="10" fill="url(#elsewhere )" mask="url(#hole )"/></svg>'
+        }
+      />,
+    );
+    const drawing = container.querySelector('.ui-svg-markup') as SVGSVGElement;
+    const paint = drawing.querySelector('linearGradient')?.id ?? '';
+    const hole = drawing.querySelector('mask')?.id ?? '';
+    const soft = drawing.querySelector('filter')?.id ?? '';
+    const [spaced, styled, quoted, outside] = [...drawing.querySelectorAll(':scope > rect')];
+    expect(spaced).toHaveAttribute('fill', `url(#${paint})`);
+    expect(spaced).toHaveAttribute('stroke', `url(#${paint})`);
+    expect(spaced).toHaveAttribute('mask', `url(#${hole})`);
+    const style = (styled as SVGRectElement).style;
+    expect(style.getPropertyValue('fill')).toBe(`url("#${paint}")`);
+    expect(style.getPropertyValue('filter').replaceAll('"', '')).toBe(
+      `url(#${soft}) url(#${paint})`,
+    );
+    expect(style.getPropertyValue('stroke-width')).toBe('2px');
+    expect(quoted).toHaveAttribute('fill', `url('#${paint}')`);
+    // A quoted ID is taken whole, so "paint " names nothing the drawing defines.
+    expect(quoted).not.toHaveAttribute('stroke');
+    expect(outside).not.toHaveAttribute('fill');
+    expect(outside).toHaveAttribute('mask', `url(#${hole})`);
   });
 
   it('UIC-SVG-MARKUP-1.4 hydrates server-rendered drawings with the same IDs', async () => {

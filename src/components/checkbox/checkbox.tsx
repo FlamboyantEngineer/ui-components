@@ -1,16 +1,15 @@
 'use client';
 
-import { CheckGlyph, MinusGlyph } from '../../core/glyphs.js';
 import type { ReactNode, Ref } from 'react';
-import { Checkbox as AriaCheckbox } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
+import { CheckGlyph, MinusGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, ControlSize, RefProps } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
+import { Checkbox as AriaCheckbox } from '../../primitives/index.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { useInputRef, useResetHeldValue } from '../../utils/use-reset-held-value.js';
-import type { FieldValidationBehavior } from '../field/field.js';
-import { useScopedDisabled } from '../field/field.js';
+import { type FieldValidationBehavior, useScopedDisabled } from '../field/field.js';
 
 export interface CheckboxProps extends BaseProps, RefProps<HTMLLabelElement>, AriaLabellingProps {
   /** Whether the box is ticked, controlled. */

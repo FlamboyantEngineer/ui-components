@@ -9,7 +9,6 @@ import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import { Stack } from '../../src/components/layout/layout.js';
 import { MessageComposerMenuButton } from '../../src/components/message-composer/index.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
-import { requireDefined } from './require-defined.js';
 import {
   assistantPeople,
   nextLabId,
@@ -20,6 +19,7 @@ import {
 } from './chat-samples.js';
 import { LabSection } from './chrome/index.js';
 import { getLabReference, labRecords, referenceMenuItems } from './reference-samples.js';
+import { requireDefined } from './require-defined.js';
 
 const conversations = [
   { value: 'lisbon', label: 'Lisbon trip' },

@@ -3,13 +3,13 @@ import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { expectRowMenuReturnsFocus, RowMenuButton } from '../../../test/menu-fixtures.js';
-import { UiProvider, type UiLinkProps } from '../../core/provider.js';
+import { type UiLinkProps, UiProvider } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { Popover, PopoverTrigger } from '../popover/popover.js';
 import { Portal } from '../portal/portal.js';
+import { Card } from './card.js';
 import { CardGrid, CardGridItem } from './card-grid.js';
 import { CardAction, CardTitle } from './card-parts.js';
-import { Card } from './card.js';
 
 const cities = [
   { id: 'lisbon', name: 'Lisbon' },

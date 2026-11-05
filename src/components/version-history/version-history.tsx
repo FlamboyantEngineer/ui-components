@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState, type ReactNode } from 'react';
-import { useLocale } from '../../primitives/index.js';
+import { type ReactNode, useEffect, useState } from 'react';
 import { useTimeZone } from '../../core/clock.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps, Key, Selection, RefProps } from '../../core/props.js';
+import type { BaseProps, Key, RefProps, Selection } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useLocale } from '../../primitives/index.js';
 import type { AttributionProps } from '../attribution/attribution.js';
 import type { AvatarIdentity } from '../avatar/avatar.js';
 import { Button } from '../button/button.js';
@@ -26,9 +26,9 @@ import {
   type VersionHistoryFilter,
 } from './version-model.js';
 import {
-  versionHistoryHooks as hooks,
   renderVersionRow,
   type VersionAction,
+  versionHistoryHooks as hooks,
 } from './version-row.js';
 import { VersionToolbar } from './version-toolbar.js';
 

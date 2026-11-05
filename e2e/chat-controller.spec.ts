@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 const demo = (page: Page) => page.locator('[data-lab-demo="controller"]');
 const transcript = (page: Page) => page.getByRole('feed', { name: 'Conversation with the helper' });
@@ -66,6 +66,24 @@ test.describe('Chat Controller lab', () => {
     await expect(lastMessage(page)).toContainText('you have rice, lentils and two onions.');
     await expect(lastMessage(page)).toHaveAttribute('data-status', 'complete');
     await expect(transcript(page).getByRole('article')).toHaveCount(4);
+  });
+
+  test('UIC-CHAT-CONTROLLER-2.1 completes a reply at finish while its stream closes slowly and fails', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('chat-controller');
+    await choose(page, 'Slow, failing cleanup');
+    await sendMessage(page, 'Are the beans ready?');
+    await page.clock.runFor(1000);
+    const reply = lastMessage(page);
+    await expect(reply).toContainText('The beans are ready to serve.');
+    await expect(reply).toHaveAttribute('data-status', 'complete');
+    await expect(reply).not.toHaveAttribute('aria-busy', 'true');
+    await page.clock.runFor(4000);
+    await expect(reply).toHaveAttribute('data-status', 'complete');
+    await expect(reply.getByRole('alert')).toHaveCount(0);
   });
 
   test('UIC-CHAT-CONTROLLER-3.1 UIC-CHAT-CONTROLLER-3.5 hands an awaited approval to the running reply', async ({
@@ -161,6 +179,70 @@ test.describe('Chat Controller lab', () => {
     await expect(transcript(page).getByRole('article')).toHaveCount(2);
     await expect(transcript(page).getByText('Queued question')).toHaveCount(0);
   });
+});
+
+test.describe('Chat Controller lab: approval continuations', () => {
+  for (const decision of ['Approve', 'Always allow in this conversation']) {
+    test(`UIC-CHAT-CONTROLLER-3.2 UIC-CHAT-CONTROLLER-3.3 keeps ${decision} running across stream finish`, async ({
+      page,
+      lab,
+    }) => {
+      await page.clock.install();
+      await lab.open('chat-controller');
+      await page.clock.pauseAt(Date.now() + 1000);
+      await choose(page, 'Approval, next turn');
+      await sendMessage(page, 'Rename the recipe');
+      await page.clock.runFor(300);
+      const reply = lastMessage(page);
+      const replyId = await reply.getAttribute('id');
+      const tool = reply.locator('.ui-chat-tool-call');
+      const callId = await tool.getAttribute('id');
+      const approval = page.getByRole('group', {
+        name: 'Allow “Rename the recipe to Weeknight chili”?',
+      });
+      const button = approval.getByRole('button', { name: decision, exact: true });
+      await button.focus();
+      await page.keyboard.press('Enter');
+      await expect(tool).toHaveAttribute('data-status', 'running');
+      // Cross the first stream's finish while holding the continuation's 400 ms result delay.
+      await page.clock.runFor(1000);
+      await expect(page.getByRole('region', { name: 'Event log' })).toContainText('finish');
+      await expect(page.getByRole('region', { name: 'Event log' })).toContainText(
+        'send(4 messages)',
+      );
+      await expect(reply).toHaveAttribute('data-status', 'streaming');
+      await expect(reply).toHaveAttribute('id', replyId ?? '');
+      await expect(tool).toHaveAttribute('id', callId ?? '');
+      await expect(tool).toHaveAttribute('data-status', 'running');
+      await expect(reply.locator('.ui-chat-tool-call[data-status="cancelled"]')).toHaveCount(0);
+      await page.clock.runFor(450);
+      await expect(tool).toHaveAttribute('data-status', 'succeeded');
+      await page.clock.runFor(1000);
+      await expect(reply).toHaveAttribute('data-status', 'complete');
+      await expect(transcript(page).getByRole('article')).toHaveCount(4);
+      if (decision !== 'Always allow in this conversation') return;
+      await sendMessage(page, 'Rename another recipe');
+      await page.clock.runFor(300);
+      const automaticReply = lastMessage(page);
+      const automaticTool = automaticReply.locator('.ui-chat-tool-call');
+      const automaticId = await automaticTool.getAttribute('id');
+      await expect(automaticTool).toHaveAttribute('data-auto-approved', 'true');
+      await expect(automaticTool).toHaveAttribute('data-status', 'running');
+      await page.clock.runFor(1000);
+      await expect(page.getByRole('region', { name: 'Event log' })).toContainText(
+        'send(6 messages)',
+      );
+      await expect(automaticReply).toHaveAttribute('data-status', 'streaming');
+      await expect(automaticTool).toHaveAttribute('id', automaticId ?? '');
+      await expect(automaticTool).toHaveAttribute('data-status', 'running');
+      await expect(
+        automaticReply.locator('.ui-chat-tool-call[data-status="cancelled"]'),
+      ).toHaveCount(0);
+      await page.clock.runFor(450);
+      await expect(automaticTool).toHaveAttribute('data-status', 'succeeded');
+      await expect(transcript(page).getByRole('article')).toHaveCount(6);
+    });
+  }
 });
 
 test.describe('Chat Controller lab: conversation commands', () => {

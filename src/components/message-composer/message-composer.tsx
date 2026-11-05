@@ -1,16 +1,16 @@
 'use client';
 
 import type { FocusEvent, ReactNode, Ref } from 'react';
-import { TextArea } from '../../primitives/index.js';
 import type { AriaLabellingProps, KeyboardEventProps } from '../../core/events.js';
 import type { BaseProps } from '../../core/props.js';
-import type { ShortcutChord } from '../shortcut/shortcut.js';
+import { TextArea } from '../../primitives/index.js';
 import {
-  ControlCompletionList,
   type Completion,
   type CompletionListItemState,
   type CompletionSource,
+  ControlCompletionList,
 } from '../completion-list/completion-list.js';
+import type { ShortcutChord } from '../shortcut/shortcut.js';
 import { ComposerFrame } from './composer-frame.js';
 import { composerHooks as hooks } from './composer-hooks.js';
 import { useMessageComposer } from './use-message-composer.js';

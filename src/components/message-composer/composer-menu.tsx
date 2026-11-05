@@ -1,15 +1,14 @@
 'use client';
 
-import { useMergedRefs } from '../../utils/use-merged-refs.js';
-import { PlusGlyph } from '../../core/glyphs.js';
 // The composer's "+" menu: the host's categories of items, whose actions get the composer's helpers
 // (specs/MESSAGE-COMPOSER.md, UIC-MESSAGE-COMPOSER-5).
-
-import { useRef, type ReactElement } from 'react';
+import { type ReactElement, useRef } from 'react';
+import { PlusGlyph } from '../../core/glyphs.js';
 import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useFocusHandback } from '../../utils/use-focus-handback.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { Button } from '../button/button.js';
 import type { IconSource } from '../icon/icon.js';
 import {
@@ -22,7 +21,7 @@ import {
   SubmenuTrigger,
 } from '../menu/menu.js';
 import type { ShortcutProps } from '../shortcut/shortcut.js';
-import { useComposerControlsValue, type ComposerControlsValue } from './composer-controls.js';
+import { type ComposerControlsValue, useComposerControlsValue } from './composer-controls.js';
 import { composerHooks as hooks } from './composer-hooks.js';
 import type { MessageComposerToken } from './composer-message.js';
 import { attachChosenFiles } from './use-file-drop.js';

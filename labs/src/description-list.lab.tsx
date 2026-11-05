@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import {
   DescriptionList,
-  DescriptionRow,
   type DescriptionListColumns,
+  DescriptionRow,
 } from '../../src/components/description-list/description-list.js';
-import { UiProvider } from '../../src/core/provider.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { formatDescriptionValue } from '../../src/components/description-list/index.js';
+import { UiProvider } from '../../src/core/provider.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabHelperCalls } from './lab-helper-calls.js';
 
 const picked = '2024-09-14';

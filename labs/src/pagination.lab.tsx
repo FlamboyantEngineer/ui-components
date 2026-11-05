@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Pagination } from '../../src/components/pagination/pagination.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { UiProvider } from '../../src/core/provider.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const states = [
   'first page',

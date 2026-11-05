@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { type BarGeometryInput, resolveBarGeometry } from './bar-geometry.js';
 import { toValueIdentity } from './chart-identity.js';
-import { resolveBarGeometry, type BarGeometryInput } from './bar-geometry.js';
 
 const margin = { top: 10, right: 10, bottom: 10, left: 10 };
 const box = (bar: { x: number; y: number; width: number; height: number }) => [

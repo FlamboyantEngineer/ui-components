@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps, Size, RefProps } from '../../core/props.js';
+import type { BaseProps, RefProps, Size } from '../../core/props.js';
 import type { IconSource } from '../icon/icon.js';
 import { RecordChipParts } from './record-chip-parts.js';
 import { RecordLabelText } from './record-label-text.js';

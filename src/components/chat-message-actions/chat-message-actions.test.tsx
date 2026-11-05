@@ -5,8 +5,8 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { Modal } from '../modal/modal.js';
 import {
-  ChatMessageActions,
   type ChatFeedback,
+  ChatMessageActions,
   type ChatMessageActionsProps,
 } from './chat-message-actions.js';
 

@@ -1,19 +1,20 @@
 'use client';
 
 import {
+  type ReactNode,
+  type RefObject,
   useCallback,
   useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
-  type ReactNode,
-  type RefObject,
 } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { isShallowEqual } from '../../utils/is-shallow-equal.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { useShallowStable } from '../../utils/use-shallow-stable.js';
+import { useTranscriptAnnouncer } from './transcript-announcer.js';
 import {
   announceMessage,
   applyArrivals,
@@ -22,7 +23,6 @@ import {
   focusMessage,
   noteOlder,
 } from './transcript-commit.js';
-import { useTranscriptAnnouncer } from './transcript-announcer.js';
 import {
   collectTranscriptItems,
   diffTranscriptKeys,
@@ -89,6 +89,7 @@ function collectForced(
     runtime.registry.view.get().tabStopKey,
     highlight,
     ...keys.slice(-2),
+    ...runtime.streaming,
     ...arrivals,
   ];
 }
@@ -181,6 +182,8 @@ function useCommit(
     applyHighlight(runtime, settings);
     flushPendingFocus(runtime, settings);
     syncWithScroll(runtime, settings);
+    // Arrivals must register and be measured in the DOM before their temporary mounts release.
+    if (settings.virtualized && change.arrivals.length > 0) settings.requestRender();
   });
 }
 
@@ -211,8 +214,12 @@ function useObservers(
     () =>
       runtime.registry.listen((key, entry) => {
         if (!runtime.streaming.has(key) || entry.status === 'streaming') return;
+        // A terminal presentation can grow before ResizeObserver gets a chance to measure it.
+        measureWindow(runtime, latest.current);
         runtime.streaming.delete(key);
         if (entry.status === 'complete') announceMessage(runtime, latest.current, key);
+        // The terminal status must commit before an offscreen streaming message can unmount.
+        if (latest.current.virtualized) latest.current.requestRender();
       }),
     [runtime, latest],
   );
@@ -273,7 +280,7 @@ export function useTranscript({ children, ...options }: TranscriptOptions): Tran
     requestRender,
   });
   const forced = collectForced(runtime, keys, {
-    arrivals: runtime.keys === null ? [] : change.arrivals,
+    arrivals: runtime.keys !== keys ? change.arrivals : [],
     highlight: resolveMessageKey(runtime, options.highlightedMessageId),
   });
   const mounted = options.virtualized

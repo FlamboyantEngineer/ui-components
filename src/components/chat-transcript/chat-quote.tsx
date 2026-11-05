@@ -1,11 +1,11 @@
 'use client';
 
 import type { Ref } from 'react';
-import { Button as AriaButton } from '../../primitives/index.js';
 import type { PressEvent } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { Button as AriaButton } from '../../primitives/index.js';
 import { getDisplayName } from '../avatar/avatar.js';
 
 /** The message a reply quotes. */

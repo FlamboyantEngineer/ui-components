@@ -1,6 +1,6 @@
 import { defineStrings } from '../message-format.js';
 /** Strings of carousels, guided tours, avatar groups, QR codes and barcodes. */
-export interface PresentationStrings {
+interface PresentationStrings {
   /** Describes the role of a carousel (`carousel`), read before its name. */
   carousel: string;
   /** Describes the role of a carousel's slide (`slide`), read before its position. */

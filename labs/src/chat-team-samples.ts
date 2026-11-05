@@ -1,7 +1,7 @@
 // A small team's conversation for the Chat lab, over three days, plus a very long history.
 
 import type { ChatMessageData, ChatTextToken } from '../../src/components/chat-parts/index.js';
-import { readerId, textMessage, type LabTextMessage } from './chat-samples.js';
+import { type LabTextMessage, readerId, textMessage } from './chat-samples.js';
 
 /** A mention of `label` where it first occurs in `text`. */
 function mention(text: string, id: string, label: string): ChatTextToken {

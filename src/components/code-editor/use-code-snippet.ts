@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, type KeyboardEvent, type RefObject } from 'react';
+import { type KeyboardEvent, type RefObject, useRef } from 'react';
 import type { CodeRange } from './code-ranges.js';
 
 /** The fields of an inserted snippet the reader steps through with Tab and Shift+Tab. */

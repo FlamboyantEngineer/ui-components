@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 interface DragPlan {
   from: number;
@@ -618,6 +618,31 @@ test.describe('Rich Text Editor lab', () => {
     await expect(output(page, 'html')).toContainText(
       'data-checked="true"><label><input type="checkbox" disabled="" checked=""></label><div><p>Bake',
     );
+    const checkbox = tasks.nth(1).getByRole('checkbox', { name: 'Done' });
+    await checkbox.focus();
+    await page.keyboard.press('Space');
+    await expect(checkbox).not.toBeChecked();
+    await expect(tasks.nth(1)).not.toHaveAttribute('data-checked');
+  });
+
+  test('UIC-RICH-TEXT-EDITOR-2.2 UIC-RICH-TEXT-EDITOR-2.3 UIC-RICH-TEXT-EDITOR-10.1 edits tasks with a replacement renderer', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('rich-text-editor');
+    const box = content(page, 'custom-tasks');
+    const item = box.getByRole('listitem');
+    await expect(item).toHaveAttribute('data-task-custom', 'true');
+    await expect(item).toHaveText('Wash the fruit');
+    await expect(box.getByRole('checkbox')).toHaveCount(0);
+    await expect(item).not.toHaveClass(/ui-rich-text-editor__task-item/);
+    await item.click();
+    await pressEnd(page);
+    await page.keyboard.type(' now');
+    await expect(item).toHaveText('Wash the fruit now');
+    await expect(output(page, 'custom-task-html')).toHaveText(
+      '<ul data-type="taskList"><li data-task-custom="true"><p>Wash the fruit now</p></li></ul>',
+    );
   });
 
   test('UIC-RICH-TEXT-EDITOR-2.2 UIC-RICH-TEXT-EDITOR-5.3 extends the schema with a block and a mark', async ({
@@ -780,6 +805,12 @@ test.describe('Rich Text Editor lab', () => {
       'aria-readonly',
       'true',
     );
+    const checkbox = readOnly.getByRole('checkbox', { name: 'Done' }).nth(1);
+    await checkbox.focus();
+    await expect(checkbox).toBeFocused();
+    await page.keyboard.press('Space');
+    await expect(checkbox).not.toBeChecked();
+    await expect(box).toHaveText('Pick the pears on Friday.WashPeel');
     // A read-only editor's link stays a tab stop; a disabled editor's is not one.
     await expect(readOnly.getByRole('link', { name: 'Wash' })).not.toHaveAttribute('tabindex');
     const disabled = matrixCell(page, 'state=disabled chrome=plain');

@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { isUrl } from '../../utils/is-url.js';
+import { useLatest } from '../../utils/use-latest.js';
 import { mapBounded } from './map-bounded.js';
+import { toPageRotation } from './page-geometry.js';
 import {
-  toDocumentParams,
   type PdfDocument,
   type PdfDocumentOptions,
   type PdfEngine,
@@ -13,10 +15,9 @@ import {
   type PdfSource,
   type PdfTextContent,
   type PdfViewport,
+  toDocumentParams,
 } from './pdf-engine.js';
-import { toPageRotation } from './page-geometry.js';
 import type { PdfSize } from './pdf-zoom.js';
-import { useLatest } from '../../utils/use-latest.js';
 
 type PdfDocumentStatus = 'loading' | 'password' | 'ready' | 'error';
 
@@ -149,7 +150,7 @@ function toError(cause: unknown): Error {
 
 /** A URL object as its text, so a new `URL` for the same address is the same document. */
 function toLoadSource(source: PdfSource | null): PdfSource | null {
-  return source instanceof URL ? source.href : source;
+  return isUrl(source) ? source.href : source;
 }
 
 function isCurrent(key: LoadKey | null, source: PdfSource | null, attempt: number): boolean {

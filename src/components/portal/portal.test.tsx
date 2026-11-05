@@ -1,17 +1,17 @@
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, type ReactNode, useContext, useState } from 'react';
 import { hydrateRoot } from 'react-dom/client';
 import { renderToString } from 'react-dom/server';
-import { Dialog, Modal, ModalOverlay } from '../../primitives/index.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { defaultLayerZIndex, isLayerAbove, overlayLayers, type OverlayLayer } from './layers.js';
-import { Portal, PortalContainerProvider, PortalHost, useLayerZIndex } from './portal.js';
+import { Dialog, Modal, ModalOverlay } from '../../primitives/index.js';
 import { Button } from '../button/button.js';
 import { Menu, MenuPopover, MenuTrigger } from '../menu/menu.js';
 import { Modal as LibraryModal } from '../modal/modal.js';
 import { AnchoredTooltip, Tooltip } from '../tooltip/tooltip.js';
+import { defaultLayerZIndex, isLayerAbove, type OverlayLayer, overlayLayers } from './layers.js';
+import { Portal, PortalContainerProvider, PortalHost, useLayerZIndex } from './portal.js';
 
 function wrappers(root: ParentNode = document.body): HTMLElement[] {
   return Array.from(root.querySelectorAll<HTMLElement>('.ui-portal'));
@@ -478,6 +478,66 @@ describe('Portal', () => {
     screen.getByRole('button', { name: 'After' }).focus();
     await user.tab({ shift: true });
     expect(screen.getByRole('radio', { name: 'Large' })).toHaveFocus();
+  });
+
+  it('UIC-PORTAL-3.4 skips CSS-hidden leading and trailing controls in both directions', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <button type="button">Before</button>
+        <Portal preserveTabOrder>
+          <button type="button" style={{ display: 'none' }}>
+            Hidden first
+          </button>
+          <div style={{ display: 'none' }}>
+            <button type="button">Hidden ancestor</button>
+          </div>
+          <div style={{ visibility: 'hidden' }}>
+            <button type="button">Invisible</button>
+          </div>
+          <button type="button">Visible first</button>
+          <button type="button">Visible last</button>
+          <button type="button" style={{ visibility: 'hidden' }}>
+            Hidden last
+          </button>
+        </Portal>
+        <button type="button">After</button>
+      </>,
+    );
+    screen.getByRole('button', { name: 'Before' }).focus();
+    // Native traversal of a visibility:visible override is covered in e2e/portal.spec.ts;
+    // user-event treats any visibility:hidden ancestor as hiding the descendant too.
+    for (const name of ['Visible first', 'Visible last', 'After']) {
+      await user.tab();
+      expect(screen.getByRole('button', { name })).toHaveFocus();
+    }
+    for (const name of ['Visible last', 'Visible first', 'Before']) {
+      await user.tab({ shift: true });
+      expect(screen.getByRole('button', { name })).toHaveFocus();
+    }
+  });
+
+  it('UIC-PORTAL-3.4 skips an entirely CSS-hidden portal in both directions', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <button type="button">Before</button>
+        <Portal preserveTabOrder>
+          <button type="button" style={{ display: 'none' }}>
+            Hidden
+          </button>
+          <div style={{ visibility: 'hidden' }}>
+            <button type="button">Invisible</button>
+          </div>
+        </Portal>
+        <button type="button">After</button>
+      </>,
+    );
+    screen.getByRole('button', { name: 'Before' }).focus();
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
+    await user.tab({ shift: true });
+    expect(screen.getByRole('button', { name: 'Before' })).toHaveFocus();
   });
 
   it('UIC-PORTAL-3.4 skips content without tab stops', async () => {

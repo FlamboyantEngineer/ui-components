@@ -1,12 +1,12 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
-import { I18nProvider, type Selection } from '../../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { actionKeys } from '../../../test/menu-fixtures.js';
+import { I18nProvider, type Selection } from '../../primitives/index.js';
 import { requireDefined } from '../../utils/require-defined.js';
-import { MenuItem, MenuSection, type MenuEntry } from '../menu/menu.js';
+import { type MenuEntry, MenuItem, MenuSection } from '../menu/menu.js';
 import { Menubar, MenubarMenu, type MenubarProps } from './menubar.js';
 
 const fileEntries: MenuEntry[] = [

@@ -19,7 +19,7 @@ export type FilterOperator =
   | 'not-empty';
 
 /** Strings of filter bars, condition builders, query fields and facet lists. */
-export interface QueryStrings {
+interface QueryStrings {
   /** Default accessible name of a filter bar. */
   filters: string;
   /** Opens the menu of fields to filter by. */

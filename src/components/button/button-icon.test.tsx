@@ -1,3 +1,7 @@
+import { render, screen } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
+import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import {
   CloseGlyph,
   CopyGlyph,
@@ -9,10 +13,6 @@ import {
   RedoGlyph,
   UndoGlyph,
 } from '../../core/glyphs.js';
-import { render, screen } from '@testing-library/react';
-import { userEvent } from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
-import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Button } from './button.js';
 
 describe('Button', () => {

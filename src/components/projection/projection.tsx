@@ -3,13 +3,13 @@
 import {
   createContext,
   Fragment,
+  type ReactNode,
   useCallback,
   useContext,
   useId,
   useLayoutEffect,
   useMemo,
   useState,
-  type ReactNode,
 } from 'react';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { useStableArray } from '../../utils/use-stable-array.js';

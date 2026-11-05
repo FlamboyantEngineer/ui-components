@@ -5,11 +5,11 @@ const defaultStrings = getDefaultStrings();
 import {
   changeFilterOperator,
   createFilterCondition,
+  type FilterField,
   getFilterOperators,
   getFilterValueKind,
   isFilterConditionComplete,
   readFilterValue,
-  type FilterField,
 } from './filter-model.js';
 
 const text: FilterField = { id: 'title', label: 'Title', type: 'text' };

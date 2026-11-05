@@ -1,20 +1,20 @@
 'use client';
 
+import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import type { PressEvent } from '../../core/events.js';
 import { UsersGlyph } from '../../core/glyphs.js';
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, NativeProps, PresenceStatus, Size, RefProps } from '../../core/props.js';
+import type { BaseProps, NativeProps, PresenceStatus, RefProps, Size } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { getInitials } from '../../utils/initials.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { useStableArray } from '../../utils/use-stable-array.js';
-import type { PressEvent } from '../../core/events.js';
 import { toImageProps } from '../icon/icon.js';
-import { AvatarRoot } from './avatar-root.js';
-import { resolveAvatarColor } from './avatar-color.js';
 import { Tooltip } from '../tooltip/tooltip.js';
 import type { UserCardTriggerType } from '../user-card-trigger/user-card-trigger.js';
+import { resolveAvatarColor } from './avatar-color.js';
+import { AvatarRoot } from './avatar-root.js';
 
 /** Circle size. `fill` takes the whole box its container gives it. */
 export type AvatarSize = Extract<Size, 'xs' | 'sm' | 'md' | 'lg'> | 'fill';
@@ -382,4 +382,4 @@ export function Avatar(props: AvatarProps) {
   );
 }
 
-export { resolveAvatarColor, DEFAULT_AVATAR_COLOR_COUNT } from './avatar-color.js';
+export { DEFAULT_AVATAR_COLOR_COUNT, resolveAvatarColor } from './avatar-color.js';

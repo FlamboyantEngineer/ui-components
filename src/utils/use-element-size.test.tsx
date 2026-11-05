@@ -1,8 +1,8 @@
-import { act, createElement, useRef, useState, type ReactElement } from 'react';
+import { act, createElement, type ReactElement, useRef, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { requireDefined } from './require-defined.js';
-import { useElementSize, type ElementSize, type ElementSizeOptions } from './use-element-size.js';
+import { type ElementSize, type ElementSizeOptions, useElementSize } from './use-element-size.js';
 
 interface Size {
   width: number;

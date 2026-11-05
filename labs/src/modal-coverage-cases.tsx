@@ -3,11 +3,11 @@
 
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
+import { confirm, Modal, ModalTrigger, prompt } from '../../src/components/modal/modal.js';
 import {
-  ModalHost,
   createModalController,
+  ModalHost,
 } from '../../src/components/modal-controller/modal-controller.js';
-import { Modal, ModalTrigger, confirm, prompt } from '../../src/components/modal/modal.js';
 import { Switch } from '../../src/components/switch/switch.js';
 import { LabSection } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';

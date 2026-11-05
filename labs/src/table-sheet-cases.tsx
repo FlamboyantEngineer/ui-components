@@ -1,15 +1,18 @@
 // Cases of the table lab for row groups, spreadsheet mode and bulk edit.
 
 import { useState } from 'react';
-import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import { NumberField } from '../../src/components/number-field/index.js';
 import { Switch } from '../../src/components/switch/switch.js';
+import type {
+  TableCellEdit,
+  TableCellRange,
+  TableColumn,
+  TableGroupBy,
+} from '../../src/components/table/index.js';
 import { Table } from '../../src/components/table/table.js';
-import type { TableCellRange } from '../../src/components/table/index.js';
-import type { TableGroupBy } from '../../src/components/table/index.js';
-import type { TableColumn } from '../../src/components/table/index.js';
-import type { TableCellEdit } from '../../src/components/table/index.js';
+import type { Key } from '../../src/core/props.js';
+import { GroupParentIdentity, GroupPeerIdentity } from './table-group-identity-cases.js';
 
 interface Stock {
   id: string;
@@ -273,6 +276,8 @@ export function Grouping() {
           size="sm"
         />
       </div>
+      <GroupPeerIdentity />
+      <GroupParentIdentity />
       <h3>Virtualized groups</h3>
       <div data-lab="grouping-virtualized" style={{ height: 280 }}>
         <Table

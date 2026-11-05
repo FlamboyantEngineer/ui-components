@@ -1,4 +1,3 @@
-import { SortNoneGlyph } from '../../core/glyphs.js';
 import {
   act,
   createEvent,
@@ -9,13 +8,14 @@ import {
   within,
 } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState, type ReactNode, createRef } from 'react';
+import { createRef, type ReactNode, useState } from 'react';
 import { describe, expect, expectTypeOf, it, vi } from 'vitest';
-import { createMemoryStorage } from '../../core/storage.js';
-import { UiProvider } from '../../core/provider.js';
-import type { Key } from '../../core/props.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { expectRowMenuReturnsFocus, RowMenuButton } from '../../../test/menu-fixtures.js';
+import { SortNoneGlyph } from '../../core/glyphs.js';
+import type { Key } from '../../core/props.js';
+import { UiProvider } from '../../core/provider.js';
+import { createMemoryStorage } from '../../core/storage.js';
 import { Button } from '../button/button.js';
 import { Board, type BoardColumn, type BoardProps } from './board.js';
 import {

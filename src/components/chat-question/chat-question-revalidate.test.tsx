@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { ChatQuestion, type ChatQuestionItem } from './chat-question.js';
-import { normalizeDraft, toAnswer, isQuestionAnswered } from './chat-question-model.js';
+import { isQuestionAnswered, normalizeDraft, toAnswer } from './chat-question-model.js';
 
 const red = { id: 'red', label: 'Red' };
 const blue = { id: 'blue', label: 'Blue' };

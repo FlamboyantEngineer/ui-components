@@ -8,11 +8,11 @@ import {
   FlexRow,
   Grid,
   InlineField,
+  type LayoutSpace,
   Page,
   Stack,
   StatusBar,
   View,
-  type LayoutSpace,
 } from './layout.js';
 import { ToolbarRow } from './toolbar-row.js';
 import { Contents, EmbeddedFrame, InlineContents } from './wrappers.js';

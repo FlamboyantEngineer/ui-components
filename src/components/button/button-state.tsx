@@ -11,15 +11,15 @@ import type {
   PressEventProps,
 } from '../../core/events.js';
 import type { InteractionState, NativeProps, RefProps } from '../../core/props.js';
+import { ButtonContext, useSlottedContext } from '../../primitives/index.js';
+import { mergeSafeRel } from '../../utils/merge-safe-rel.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { renderLinkElement } from '../link/link.js';
-import { ButtonContext, useSlottedContext } from '../../primitives/index.js';
 import {
   formatAriaKeyShortcuts,
   type ShortcutChord,
   type ShortcutPlatform,
 } from '../shortcut/shortcut.js';
-import { mergeSafeRel } from '../../utils/merge-safe-rel.js';
 import { toDisabledPressProps } from './disabled-press.js';
 
 /** The states a button passes to `render` with the `<button>`'s props. */

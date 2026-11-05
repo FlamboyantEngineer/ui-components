@@ -2,17 +2,17 @@
 
 import type { BlockReader } from './markdown-blocks.js';
 import {
+  type Fence,
   indentOf,
   interruptsParagraph,
   isBlank,
   isFenceClose,
+  type ListMarker,
   readFence,
   readListMarker,
   stripBlockquoteMarker,
   stripColumns,
   stripIndent,
-  type Fence,
-  type ListMarker,
 } from './markdown-lines.js';
 import type { MarkdownListItem } from './markdown-nodes.js';
 import { createParagraphState, type ParagraphState } from './markdown-paragraph-state.js';

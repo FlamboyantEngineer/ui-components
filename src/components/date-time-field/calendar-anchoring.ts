@@ -1,6 +1,6 @@
 'use client';
 
-import { useContext, useRef, type RefObject } from 'react';
+import { type RefObject, useContext, useRef } from 'react';
 import {
   OverlayTriggerStateContext,
   PopoverContext,

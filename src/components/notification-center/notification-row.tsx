@@ -1,15 +1,15 @@
 'use client';
 
-import { CloseGlyph, EnvelopeGlyph, EnvelopeOpenGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
+import { CloseGlyph, EnvelopeGlyph, EnvelopeOpenGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Attribution, type AttributionProps } from '../attribution/attribution.js';
 import { Avatar, type AvatarIdentity } from '../avatar/avatar.js';
 import { Badge } from '../badge/badge.js';
-import type { IconSource } from '../icon/icon.js';
 import { Button } from '../button/button.js';
+import type { IconSource } from '../icon/icon.js';
 import { ListRow } from '../list-row/list-row.js';
 import { MetaLine } from '../meta-line/meta-line.js';
 

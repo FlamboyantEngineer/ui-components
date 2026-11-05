@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 const bar = (page: Page, commands: string) =>
   matrixCell(page, `commands=${commands}`).locator(`.ui-chat-message-actions`);

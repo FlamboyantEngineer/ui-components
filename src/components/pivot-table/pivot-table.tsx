@@ -1,11 +1,11 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useLocale } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps, ExpansionProps } from '../../core/events.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useLocale } from '../../primitives/index.js';
 import { pivot, type PivotLayout, type PivotRecord, type PivotRow } from '../../utils/pivot.js';
 import { Table } from '../table/table.js';
 import { createPivotColumns, type PivotTableField, type PivotTableRow } from './pivot-columns.js';

@@ -1,27 +1,27 @@
 'use client';
 
-import { BellSlashGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
-import { GridListItem, Text, useLocale } from '../../primitives/index.js';
 import { useNow, useTimeZone } from '../../core/clock.js';
 import { useClockTick } from '../../core/clock-tick.js';
+import { BellSlashGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import type { PresenceStatus } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { GridListItem, Text, useLocale } from '../../primitives/index.js';
 import { normalizeCount } from '../../utils/count.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { keepControlFocusReturn } from '../../utils/keep-control-focus-return.js';
 import {
   capitalizeText,
   describeRelativeTime,
   formatStableTime,
 } from '../../utils/relative-time.js';
 import { Attribution, type AttributionProps } from '../attribution/attribution.js';
-import { Avatar, resolveStatusLabel, type AvatarIdentity } from '../avatar/avatar.js';
+import { Avatar, type AvatarIdentity, resolveStatusLabel } from '../avatar/avatar.js';
 import { AvatarGroup } from '../avatar-group/avatar-group.js';
 import { Badge } from '../badge/badge.js';
 import { Icon } from '../icon/icon.js';
 import { TextMatch } from '../text-match/text-match.js';
-import { isEmptyNode } from '../../utils/is-empty-node.js';
-import { keepControlFocusReturn } from '../../utils/keep-control-focus-return.js';
 
 /** One person in a conversation. */
 export interface ChatListParticipant extends AvatarIdentity {

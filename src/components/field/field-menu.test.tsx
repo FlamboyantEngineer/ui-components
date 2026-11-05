@@ -1,11 +1,11 @@
-import { PlusGlyph, StarGlyph } from '../../core/glyphs.js';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { TextField } from '../../../test/field-fixtures.js';
 import { readMenuIcons } from '../../../test/menu-fixtures.js';
-import type { FieldState } from './field-state.js';
+import { PlusGlyph, StarGlyph } from '../../core/glyphs.js';
 import type { FieldMenuEntry } from './field.js';
+import type { FieldState } from './field-state.js';
 
 const menu: FieldMenuEntry[] = [
   { id: 'copy', label: 'Copy name', icon: PlusGlyph },

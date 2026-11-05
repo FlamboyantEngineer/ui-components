@@ -1,3 +1,13 @@
+// Cases of the layout lab for toolbar rows: overflow, pending rows and attached groups.
+import { type CSSProperties, useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
+import {
+  ToolbarRow,
+  ToolbarRowGroup,
+  type ToolbarRowOverflow,
+  ToolbarRowSeparator,
+} from '../../src/components/layout/index.js';
+import { Stack } from '../../src/components/layout/layout.js';
 import {
   CopyGlyph,
   DeleteGlyph,
@@ -9,17 +19,6 @@ import {
   SaveGlyph,
   UndoGlyph,
 } from '../../src/core/glyphs.js';
-// Cases of the layout lab for toolbar rows: overflow, pending rows and attached groups.
-
-import { useState, type CSSProperties } from 'react';
-import { Button } from '../../src/components/button/button.js';
-import {
-  ToolbarRow,
-  ToolbarRowGroup,
-  ToolbarRowSeparator,
-  type ToolbarRowOverflow,
-} from '../../src/components/layout/index.js';
-import { Stack } from '../../src/components/layout/layout.js';
 import { StateMatrix } from './chrome/index.js';
 
 const frameStyle = (width: number): CSSProperties => ({

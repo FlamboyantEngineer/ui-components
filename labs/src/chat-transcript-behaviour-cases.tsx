@@ -1,22 +1,23 @@
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { Fragment, useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
   ChatMessage,
   ChatTranscript,
-  ChatUnreadDivider,
   type ChatTranscriptScrollMode,
+  ChatUnreadDivider,
 } from '../../src/components/chat-transcript/index.js';
 import { CopyButton } from '../../src/components/copy-button/copy-button.js';
 import { MessageComposer } from '../../src/components/message-composer/message-composer.js';
-import { LabSection, StateMatrix } from './chrome/index.js';
 import {
   AnnouncementEcho,
-  SampleMessageView,
   planner,
   reader,
   sampleMessages,
+  SampleMessageView,
   useSimulatedChat,
 } from './chat-transcript-behaviour-samples.js';
+import { ChatTranscriptVirtualizedCase } from './chat-transcript-virtualized-case.js';
+import { LabSection, StateMatrix } from './chrome/index.js';
 
 const modes = ['follow', 'anchor'] as const satisfies readonly ChatTranscriptScrollMode[];
 
@@ -226,45 +227,6 @@ function UnreadCase() {
   );
 }
 
-/** Five thousand messages, of which only those near the view are mounted. */
-function VirtualizedCase() {
-  const chat = useSimulatedChat('long', () => sampleMessages('long', 0, 5000));
-  const frame = useRef<HTMLDivElement>(null);
-  const [mounted, setMounted] = useState(0);
-  useEffect(() => {
-    const element = frame.current;
-    if (!element) return undefined;
-    const count = () => setMounted(element.querySelectorAll('article').length);
-    const observer = new MutationObserver(count);
-    observer.observe(element, { childList: true, subtree: true });
-    count();
-    return () => observer.disconnect();
-  }, []);
-  return (
-    <>
-      <div ref={frame} style={{ height: 300 }}>
-        <ChatTranscript virtualized aria-label="Long history" data-lab-transcript="virtualized">
-          {chat.messages.map((message) => (
-            <SampleMessageView key={message.id} message={message} />
-          ))}
-        </ChatTranscript>
-      </div>
-      <MessageComposer
-        aria-label="Ask in the long history"
-        isPending={chat.isStreaming}
-        onStop={chat.stop}
-        onSubmit={chat.send}
-      />
-      <Button size="sm" onPress={() => chat.receive('The harbour café is open late tonight.')}>
-        Receive a message
-      </Button>
-      <p data-lab-mounted="virtualized">
-        {mounted} of {chat.messages.length} messages mounted
-      </p>
-    </>
-  );
-}
-
 /** The transcript's behaviour cases of the Chat Transcript lab. */
 export function ChatTranscriptBehaviourCases() {
   return (
@@ -310,9 +272,9 @@ export function ChatTranscriptBehaviourCases() {
       </LabSection>
       <LabSection
         title="Virtualized history"
-        description="Five thousand messages, with only those near the view mounted. Following, sending, the keyboard model and jumps work as in a short conversation."
+        description="Five thousand messages, with only those near the view mounted. Receive a batch of 100 messages, then scroll away: the mounted count stays small. Scroll away before receiving to see all 100 counted on the jump button. Following, sending, the keyboard model and jumps work as in a short conversation."
       >
-        <VirtualizedCase />
+        <ChatTranscriptVirtualizedCase />
       </LabSection>
     </>
   );

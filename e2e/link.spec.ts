@@ -1,6 +1,6 @@
 import type { Locator } from '@playwright/test';
-import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 
 const style = (locator: Locator, property: string) =>
   locator.evaluate((node, name) => getComputedStyle(node).getPropertyValue(name), property);

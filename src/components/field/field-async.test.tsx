@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { useFieldState, type FieldIssues, type FieldStateOptions } from './field-state.js';
+import { type FieldIssues, type FieldStateOptions, useFieldState } from './field-state.js';
 
 function renderField(options: FieldStateOptions<string>) {
   return renderHook((props: FieldStateOptions<string>) => useFieldState(props), {

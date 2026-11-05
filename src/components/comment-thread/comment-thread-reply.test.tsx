@@ -1,12 +1,12 @@
-import { createRef } from 'react';
-import { LinkGlyph } from '../../core/glyphs.js';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { createRef } from 'react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { LinkGlyph } from '../../core/glyphs.js';
 import { ReactionBar } from '../reaction-bar/reaction-bar.js';
-import { CommentThreadReply } from './comment-thread-reply.js';
 import { CommentThread } from './comment-thread.js';
+import { CommentThreadReply } from './comment-thread-reply.js';
 
 const ana = { name: 'Ana Lima', colorKey: 'ana' };
 const minutesAgo = (minutes: number) => new Date(Date.now() - minutes * 60_000).toISOString();

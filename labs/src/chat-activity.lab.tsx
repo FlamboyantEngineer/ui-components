@@ -1,17 +1,17 @@
-import { SearchGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import {
   ChatPlan,
   ChatReasoning,
+  type ChatReasoningFormat,
   ChatStatusLine,
   ChatSteps,
-  type ChatReasoningFormat,
 } from '../../src/components/chat-activity/index.js';
 import { Icon } from '../../src/components/icon/icon.js';
 import { Switch } from '../../src/components/switch/switch.js';
+import { SearchGlyph } from '../../src/core/glyphs.js';
 import { LabToolCall, planSteps, reasoningText } from './chat-activity-samples.js';
 import { ActivitySimulation } from './chat-activity-simulation.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 
 const formats = ['markdown', 'plain'] as const satisfies readonly ChatReasoningFormat[];

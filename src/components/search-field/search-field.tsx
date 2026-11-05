@@ -1,7 +1,11 @@
 'use client';
 
+import { type ReactNode, type RefObject, useEffect, useId, useRef, useState } from 'react';
+import type { FocusEventProps, KeyboardEventProps } from '../../core/events.js';
 import { CloseGlyph, SearchGlyph } from '../../core/glyphs.js';
-import { useEffect, useId, useState, useRef, type ReactNode, type RefObject } from 'react';
+import { createHooks } from '../../core/hooks.js';
+import type { BaseProps, ControlSize, RefProps } from '../../core/props.js';
+import { Glyph, useUiStrings } from '../../core/provider.js';
 import {
   ButtonContext,
   Group,
@@ -10,26 +14,22 @@ import {
   SearchField as AriaSearchField,
   Text,
 } from '../../primitives/index.js';
-import type { FocusEventProps, KeyboardEventProps } from '../../core/events.js';
-import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, ControlSize, RefProps } from '../../core/props.js';
-import { Glyph, useUiStrings } from '../../core/provider.js';
+import { leaveComposingEnter } from '../../utils/is-composing-key.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { useNativeReset } from '../../utils/use-native-reset.js';
 import { Button, ButtonSpinner } from '../button/button.js';
 import {
-  FieldMessage,
-  resolveFieldValidation,
-  toIssueList,
-  toSpellCheckAttribute,
   type FieldIssues,
   type FieldLabelLayout,
+  FieldMessage,
   type FieldTextInputProps,
   type FieldValidation,
   type FieldValidationBehavior,
+  resolveFieldValidation,
+  toIssueList,
+  toSpellCheckAttribute,
+  useScopedDisabled,
 } from '../field/field.js';
-import { useScopedDisabled } from '../field/field.js';
-import { leaveComposingEnter } from '../../utils/is-composing-key.js';
 
 /** Where a search box's label sits: on the input only, or drawn above the box. */
 export type SearchFieldLabelLayout = Extract<FieldLabelLayout, 'label-control' | 'control-only'>;

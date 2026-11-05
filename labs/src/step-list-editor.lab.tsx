@@ -1,12 +1,12 @@
-import { useState, type CSSProperties } from 'react';
+import { type CSSProperties, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
   StepListEditor,
   type StepListEditorColumn,
   type StepListEditorStep,
 } from '../../src/components/step-list-editor/step-list-editor.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { requireDefined } from './require-defined.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const column: CSSProperties = { width: 760 };
 

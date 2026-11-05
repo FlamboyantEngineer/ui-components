@@ -11,10 +11,10 @@ import {
   addPart,
   appendFile,
   appendSource,
+  type ChatStreamContext,
   closeOpenParts,
   endChatReply,
   updatePart,
-  type ChatStreamContext,
 } from './chat-stream-parts.js';
 
 export type { ChatStreamContext } from './chat-stream-parts.js';

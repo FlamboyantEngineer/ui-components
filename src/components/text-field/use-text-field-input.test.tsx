@@ -1,18 +1,18 @@
-import { render, screen, type RenderResult } from '@testing-library/react';
+import { render, type RenderResult, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import {
-  createTriggerCompletions,
-  type Completion,
-  type Completions,
-} from '../completion-list/completion-list.js';
-import { TextField } from './text-field.js';
 import {
   createDeferredCompletions,
   expectReplacedSourceDropsCompletions,
   expectReplacedValueDropsCompletions,
 } from '../../../test/completion-fixtures.js';
+import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import {
+  type Completion,
+  type Completions,
+  createTriggerCompletions,
+} from '../completion-list/completion-list.js';
+import { TextField } from './text-field.js';
 
 const cities: Completion[] = [
   { label: 'Lisbon', description: 'Portugal' },

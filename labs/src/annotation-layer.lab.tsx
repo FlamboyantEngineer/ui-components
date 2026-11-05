@@ -1,18 +1,18 @@
 import { useState } from 'react';
 import {
-  AnnotationLayer,
-  AnnotationMargin,
   type Annotation,
   type AnnotationCardState,
+  AnnotationLayer,
+  AnnotationMargin,
 } from '../../src/components/annotation-layer/annotation-layer.js';
 import { Button } from '../../src/components/button/button.js';
 import { CommentThread } from '../../src/components/comment-thread/comment-thread.js';
 import { CommentThreadReply } from '../../src/components/comment-thread/index.js';
 import type { Key } from '../../src/core/props.js';
+import { ZoomedReview } from './annotation-layer-cases.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { requireDefined } from './require-defined.js';
 import { ShadowRootApp } from './shadow-root-host.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-import { ZoomedReview } from './annotation-layer-cases.js';
 
 const maria = { name: 'Maria Santos', colorKey: 'maria' };
 const jon = { name: 'Jon Berg', colorKey: 'jon' };

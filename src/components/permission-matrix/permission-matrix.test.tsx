@@ -1,6 +1,6 @@
-import { createRef } from 'react';
 import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import type { PermissionMatrixChange, PermissionMatrixGrant } from './permission-grants.js';

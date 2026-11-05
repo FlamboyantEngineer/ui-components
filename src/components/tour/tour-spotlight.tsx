@@ -1,11 +1,11 @@
 'use client';
 
 import { useLayoutEffect, useRef, useState } from 'react';
-import { autoUpdateOverlay } from '../../utils/overlay-auto-update.js';
-import { Portal } from '../portal/portal.js';
-import { getOwnerWindow } from '../../utils/owner-window.js';
-import { tourHooks as hooks } from './tour-hooks.js';
 import { listAnimations } from '../../utils/list-animations.js';
+import { autoUpdateOverlay } from '../../utils/overlay-auto-update.js';
+import { getOwnerWindow } from '../../utils/owner-window.js';
+import { Portal } from '../portal/portal.js';
+import { tourHooks as hooks } from './tour-hooks.js';
 
 interface TourSpotlightProps {
   /** The element the step points at; without one the spotlight is an empty point at the centre. */

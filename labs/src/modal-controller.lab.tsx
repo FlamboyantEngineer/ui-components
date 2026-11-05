@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
-  ModalHost,
   createModalController,
   type ModalHandle,
+  ModalHost,
 } from '../../src/components/modal-controller/modal-controller.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { ModalControllerCoverageSections } from './modal-controller-coverage-cases.js';
 
 const controller = createModalController();

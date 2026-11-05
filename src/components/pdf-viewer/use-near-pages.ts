@@ -1,13 +1,13 @@
 'use client';
 
 import {
+  type Dispatch,
+  type RefObject,
+  type SetStateAction,
   useCallback,
   useEffect,
   useRef,
   useState,
-  type Dispatch,
-  type SetStateAction,
-  type RefObject,
 } from 'react';
 
 export interface NearPages {

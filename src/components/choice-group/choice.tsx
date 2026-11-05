@@ -1,21 +1,21 @@
 'use client';
 
-import { useContext, useId, type ReactNode, type Ref } from 'react';
+import { type ReactNode, type Ref, useContext, useId } from 'react';
+import type { AriaLabellingProps } from '../../core/events.js';
+import { createHooks } from '../../core/hooks.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import {
   CheckboxGroupStateContext,
   RadioButton,
   RadioField,
   Text,
 } from '../../primitives/index.js';
-import type { AriaLabellingProps } from '../../core/events.js';
-import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, RefProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { joinIds } from '../../utils/join-ids.js';
+import { type ElementRender, renderElement } from '../../utils/render-element.js';
 import { useMergedRefs } from '../../utils/use-merged-refs.js';
-import { renderElement, type ElementRender } from '../../utils/render-element.js';
 import { Checkbox } from '../checkbox/checkbox.js';
 import { ChoiceContext } from './choice-group.js';
-import { joinIds } from '../../utils/join-ids.js';
 
 export interface ChoiceRenderState {
   isSelected: boolean;

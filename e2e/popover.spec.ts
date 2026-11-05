@@ -1,5 +1,5 @@
 import type { Locator } from '@playwright/test';
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 type Box = { x: number; y: number; width: number; height: number };
 

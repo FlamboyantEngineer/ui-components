@@ -1,14 +1,15 @@
-import { CheckGlyph, CloseGlyph, type GlyphComponentProps } from './glyphs.js';
-import { checkPath, xMarkPath } from './glyph-paths.js';
 import { render, renderHook, screen } from '@testing-library/react';
-import type { ReactNode } from 'react';
 import { userEvent } from '@testing-library/user-event';
+import type { ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { Link, useLocale } from '../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../test/hooks.js';
+import { Link, useLocale } from '../primitives/index.js';
 import { numberCodec } from '../utils/json-codec.js';
 import { requireDefined } from '../utils/require-defined.js';
+import { checkPath, xMarkPath } from './glyph-paths.js';
+import { CheckGlyph, CloseGlyph, type GlyphComponentProps } from './glyphs.js';
+import { en } from './locales/index.js';
 import {
   Glyph,
   UiLink,
@@ -20,7 +21,6 @@ import {
   useUiStrings,
 } from './provider.js';
 import { createMemoryStorage, createSafeStorage, type UiStorage } from './storage.js';
-import { en } from './locales/index.js';
 import { getDefaultStrings } from './strings.js';
 
 const defaultStrings = getDefaultStrings();

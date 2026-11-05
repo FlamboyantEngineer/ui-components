@@ -3,31 +3,31 @@
 // The field root's behaviour: focus, leaving, undo, form binding, autofocus, its context menu and
 // its message tooltip.
 
-import { getComposedActiveElement, isFocusLost } from '../../utils/focus-target.js';
 import {
+  type FocusEvent,
+  type Ref,
   useCallback,
   useContext,
   useEffect,
   useRef,
   useState,
-  type FocusEvent,
-  type Ref,
 } from 'react';
-import { useMergedRefs } from '../../utils/use-merged-refs.js';
-import { DialogEnteringContext } from '../../utils/dialog-entering.js';
 import type { Key } from '../../core/props.js';
+import { DialogEnteringContext } from '../../utils/dialog-entering.js';
+import { getComposedActiveElement, isFocusLost } from '../../utils/focus-target.js';
+import { findOwnerDocument } from '../../utils/owner-window.js';
 import type { SlotRegistry } from '../../utils/slot-registry.js';
-import type { FieldMenuEntry, FieldMenuIcons } from './field-menu-entries.js';
-import { useFieldContextMenu, useFieldMenu } from './field-menu.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
+import { usePortalContainer } from '../portal/portal.js';
 import { useFieldFocus } from './field-focus.js';
 import { focusControl, useFieldFormBinding } from './field-form.js';
-import type { FieldState } from './field-state.js';
-import { useFieldRoot } from './field-root.js';
-import { useFieldUndo } from './field-undo.js';
-import { useFieldMessageTooltip, type FieldMessageDisplay } from './field-message-tooltip.js';
 import { useFieldHelpTooltip } from './field-help.js';
-import { findOwnerDocument } from '../../utils/owner-window.js';
-import { usePortalContainer } from '../portal/portal.js';
+import { useFieldContextMenu, useFieldMenu } from './field-menu.js';
+import type { FieldMenuEntry, FieldMenuIcons } from './field-menu-entries.js';
+import { type FieldMessageDisplay, useFieldMessageTooltip } from './field-message-tooltip.js';
+import { useFieldRoot } from './field-root.js';
+import type { FieldState } from './field-state.js';
+import { useFieldUndo } from './field-undo.js';
 
 export type FieldSlots = SlotRegistry<'root' | 'control'>;
 

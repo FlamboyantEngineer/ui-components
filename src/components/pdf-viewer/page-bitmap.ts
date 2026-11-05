@@ -1,8 +1,8 @@
 // Draws page bitmaps: on the viewer's canvases and on the canvases a print lays out.
 
+import { getOwnerWindow } from '../../utils/owner-window.js';
 import type { PdfPage, PdfRenderTask, PdfTextContent, PdfViewport } from './pdf-engine.js';
 import type { LoadedPdf } from './use-pdf-document.js';
-import { getOwnerWindow } from '../../utils/owner-window.js';
 
 interface CanvasPixels {
   width: number;

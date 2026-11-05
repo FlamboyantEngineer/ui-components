@@ -3,10 +3,10 @@
 import { act, renderHook } from '@testing-library/react';
 import { vi } from 'vitest';
 import {
-  useChatController,
   type ChatControllerOptions,
   type ChatSendContext,
   type ChatStreamEvent,
+  useChatController,
 } from '../src/components/chat-controller/chat-controller.js';
 import type { ChatMessageData } from '../src/components/chat-parts/chat-parts.js';
 

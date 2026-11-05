@@ -2,17 +2,17 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
-import type { BaseProps, RefProps, ControlSize } from '../../core/props.js';
+import type { BaseProps, ControlSize, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { normalizeCount } from '../../utils/count.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { useInView } from '../../utils/use-in-view.js';
 import {
-  usePendingAction,
-  type ButtonProps,
   Button,
+  type ButtonProps,
   type ButtonVariant,
+  usePendingAction,
 } from '../button/button.js';
 
 export interface LoadMoreProps

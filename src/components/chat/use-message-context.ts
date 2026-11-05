@@ -1,8 +1,8 @@
 'use client';
 
-import { useLatest } from '../../utils/use-latest.js';
+import { isValidElement, type ReactNode, useMemo } from 'react';
 import { useEqualValue } from '../../utils/use-equal-value.js';
-import { isValidElement, useMemo, type ReactNode } from 'react';
+import { useLatest } from '../../utils/use-latest.js';
 import { useShallowStable } from '../../utils/use-shallow-stable.js';
 import type {
   ChatFeedback,
@@ -11,8 +11,8 @@ import type {
 import type { ChatPartsProps } from '../chat-parts/chat-parts.js';
 import type { ChatCommandHandlers } from './chat-commands.js';
 import type { ChatComposerOptions } from './chat-composer.js';
-import type { ChatParticipantIndex, ChatThinkingUntil } from './chat-model.js';
 import type { ChatMessageContext, ChatPartOptions } from './chat-message-view.js';
+import type { ChatParticipantIndex, ChatThinkingUntil } from './chat-model.js';
 import type { ChatState } from './use-chat-state.js';
 
 /** The chat props every message reads. */

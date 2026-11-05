@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useRef, type RefObject } from 'react';
+import { type RefObject, useEffect, useRef } from 'react';
 import {
   containsComposed,
+  type FocusTarget,
   getComposedActiveElement,
   resolveFocusTarget,
-  type FocusTarget,
 } from '../../utils/focus-target.js';
 import { listTabbables } from '../../utils/tabbable.js';
 

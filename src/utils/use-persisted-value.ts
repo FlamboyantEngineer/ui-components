@@ -4,9 +4,9 @@
 // Tabs, Dock Panel and Split View.
 
 import { useCallback } from 'react';
-import { usePersistentState, type PersistCodec } from '../core/provider.js';
+import { type PersistCodec, usePersistentState } from '../core/provider.js';
 
-export interface PersistedValueOptions<T> {
+interface PersistedValueOptions<T> {
   /** The controlled value, which storage never overrides and which is never stored. */
   value: T | undefined;
   /** The value while nothing readable is stored, or a function that computes it once. */

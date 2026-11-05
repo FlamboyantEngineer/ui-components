@@ -4,39 +4,39 @@ import {
   Children,
   cloneElement,
   isValidElement,
+  type ReactNode,
+  type RefObject,
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
-  type ReactNode,
-  type RefObject,
 } from 'react';
-import {
-  MenuContext,
-  RootMenuTriggerStateContext,
-  type RootMenuTriggerState,
-} from '../../primitives/index.js';
 import type { BaseProps, Key, Placement, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import {
+  MenuContext,
+  type RootMenuTriggerState,
+  RootMenuTriggerStateContext,
+} from '../../primitives/index.js';
 import { Menu, MenuOverlay, type MenuPopoverProps } from '../menu/menu.js';
-import { useContextMenuTarget, type ContextMenuTargetProps } from './context-menu-target.js';
+import { type ContextMenuTargetProps, useContextMenuTarget } from './context-menu-target.js';
 import { useMenuAnchor } from './menu-anchor.js';
 import {
-  useMenuControllerState,
-  useMenuController,
   type MenuController,
+  useMenuController,
+  useMenuControllerState,
 } from './menu-controller.js';
 import { useCloseOnSecondaryPress } from './menu-state.js';
 
-export { useContextMenuTarget } from './context-menu-target.js';
 export type { ContextMenuTargetProps } from './context-menu-target.js';
+export { useContextMenuTarget } from './context-menu-target.js';
+export type { MenuAnchor, MenuController, MenuPoint } from './menu-controller.js';
 export {
   createMenuController,
   useMenuController,
   useMenuControllerState,
 } from './menu-controller.js';
-export type { MenuAnchor, MenuController, MenuPoint } from './menu-controller.js';
 
 export interface ContextMenuProps extends RefProps<HTMLElement>, BaseProps {
   /** Holds the open state and anchor; open, move and close the menu through it. */

@@ -1,17 +1,17 @@
 'use client';
 
 import {
-  useEffect,
-  useRef,
-  useState,
   type KeyboardEvent,
   type PointerEvent,
   type ReactNode,
   type RefObject,
+  useEffect,
+  useRef,
+  useState,
 } from 'react';
 import { AnchoredTooltip } from '../tooltip/tooltip.js';
-import type { FieldValidation } from './field-state.js';
 import { fieldHooks, severityOf } from './field-parts.js';
+import type { FieldValidation } from './field-state.js';
 
 /**
  * Where a field shows its validation message: `inline`, in a line below the control; `tooltip`,

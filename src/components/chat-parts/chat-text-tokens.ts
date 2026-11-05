@@ -3,8 +3,8 @@
 
 import { requireDefined } from '../../utils/require-defined.js';
 import { walkTree } from '../../utils/walk-tree.js';
-import { parseMarkdown } from '../markdown/parse-markdown.js';
 import type { MarkdownNode } from '../markdown/markdown.js';
+import { parseMarkdown } from '../markdown/parse-markdown.js';
 import type { ChatTextToken } from './chat-part.js';
 
 /** A run of text, or a token by its position among the listed tokens. */
@@ -24,7 +24,7 @@ const markerEnd = '\uFFFB';
 export type TokenMarker = string;
 
 /** A Markdown source with its tokens replaced by markers, and the opening they share. */
-export interface TokenSource {
+interface TokenSource {
   source: string;
   marker: TokenMarker;
 }

@@ -1,5 +1,5 @@
-import { expect, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
+import { expect, test } from './fixtures.js';
 
 const sizes = [
   { size: 'xs', height: 28, compactHeight: 24, fontSize: 11 },

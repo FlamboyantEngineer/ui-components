@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import type { Key, Selection } from '../../src/core/props.js';
+import { useRef, useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
 import { Tree } from '../../src/components/tree/tree.js';
+import type { Key, Selection } from '../../src/core/props.js';
 import { applyTreeMove, type TreeMove } from '../../src/utils/tree-reorder.js';
 
 interface Place {
@@ -176,29 +177,62 @@ export function NestedTree() {
   );
 }
 
+const EAST: Place = { id: 'east', name: 'East', isLazy: true };
 const REGIONS: Place[] = [
   { id: 'north', name: 'North', isLazy: true },
   { id: 'south', name: 'South', isLazy: true },
+  EAST,
 ];
 
-/** Branches that load their children when opened; South fails once, then loads on retry. */
+const towns = (region: Place) =>
+  [1, 2, 3].map((index) => place(`${region.id}-${index}`, `${region.name} town ${index}`));
+
+/**
+ * Branches that load their children when opened; South fails once, then loads on retry. East's
+ * loads wait for Finish East's loads; removing East while one waits forgets it, so the restored
+ * East asks again when opened instead of waiting on the old load.
+ */
 export function LoadingTree() {
   const [regions, setRegions] = useState(REGIONS);
   const [failures, setFailures] = useState(0);
+  const [eastRequests, setEastRequests] = useState(0);
+  const waiting = useRef<Array<() => void>>([]);
   const load = async (region: Place) => {
     if (region.id === 'south' && failures === 0) {
       setFailures(1);
       throw new Error('South is unreachable right now.');
     }
-    const children = [1, 2, 3].map((index) =>
-      place(`${region.id}-${index}`, `${region.name} town ${index}`),
-    );
+    if (region.id === 'east') {
+      setEastRequests((count) => count + 1);
+      await new Promise<void>((resolve) => waiting.current.push(resolve));
+    }
+    const children = towns(region);
     setRegions((current) =>
       current.map((entry) => (entry.id === region.id ? { ...entry, children } : entry)),
     );
   };
+  const hasEast = regions.some((entry) => entry.id === 'east');
   return (
     <div data-lab-loading>
+      <Button
+        onPress={() =>
+          setRegions((current) =>
+            hasEast ? current.filter((entry) => entry.id !== 'east') : [...current, EAST],
+          )
+        }
+      >
+        {hasEast ? 'Remove East' : 'Restore East'}
+      </Button>{' '}
+      <Button
+        onPress={() => {
+          for (const resolve of waiting.current.splice(0)) resolve();
+        }}
+      >
+        Finish East&apos;s loads
+      </Button>
+      <p>
+        East asked <output data-lab-output="east-requests">{eastRequests}</output> times
+      </p>
       <Tree
         aria-label="Regions"
         items={regions}

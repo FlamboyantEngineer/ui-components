@@ -1,11 +1,11 @@
 'use client';
 
-import { useNumberFormatter } from '../../primitives/index.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useNumberFormatter } from '../../primitives/index.js';
 import type { ProgressBarProps } from './progress-bar.js';
-import { ProgressRoot, ProgressText } from './progress-root.js';
 import { progressBarHooks as hooks } from './progress-bar-hooks.js';
+import { ProgressRoot, ProgressText } from './progress-root.js';
 
 /** Where one unit of work stands: done, under way, or not started. */
 export type ProgressSegmentState = 'complete' | 'current' | 'pending';

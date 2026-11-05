@@ -1,10 +1,10 @@
-import { ListTaskGlyph } from '../../core/glyphs.js';
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { installComposerRow } from '../../../test/composer-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { ListTaskGlyph } from '../../core/glyphs.js';
 import { MessageComposerToggle } from './composer-toggle.js';
 import { MessageComposer } from './message-composer.js';
 

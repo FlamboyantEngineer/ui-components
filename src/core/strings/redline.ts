@@ -1,6 +1,6 @@
 import { defineStrings, toSelectKey } from '../message-format.js';
 /** Strings of document redline compares and spreadsheet formula bars. */
-export interface RedlineStrings {
+interface RedlineStrings {
   /** Default accessible name of a redline compare. */
   redlineComparison: string;
   /** Counts the blocks a redline compare adds, removes, changes and moves, or says none differ. */

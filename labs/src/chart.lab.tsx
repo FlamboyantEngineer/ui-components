@@ -1,17 +1,22 @@
-import { useState, type CSSProperties } from 'react';
-import { BarChart, type BarChartSeries } from '../../src/components/chart/index.js';
-import { Chart, type ChartView } from '../../src/components/chart/chart.js';
-import { ChartAxis } from '../../src/components/chart/index.js';
-import { ChartLegend } from '../../src/components/chart/index.js';
-import { Switch } from '../../src/components/switch/switch.js';
+import { type CSSProperties, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { DonutChart, type DonutChartSegment } from '../../src/components/chart/index.js';
-import { LineChart, type LineChartSeries } from '../../src/components/chart/index.js';
+import { Chart, type ChartView } from '../../src/components/chart/chart.js';
+import {
+  BarChart,
+  type BarChartSeries,
+  ChartAxis,
+  ChartLegend,
+  DonutChart,
+  type DonutChartSegment,
+  LineChart,
+  type LineChartSeries,
+} from '../../src/components/chart/index.js';
+import { Switch } from '../../src/components/switch/switch.js';
 import type { Key } from '../../src/core/props.js';
 import { createBandScale } from '../../src/utils/band-scale.js';
 import { createLinearScale } from '../../src/utils/linear-scale.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { requireDefined } from './require-defined.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const box = (width: number): CSSProperties => ({ width });
 

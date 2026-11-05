@@ -1,8 +1,8 @@
-import { FolderGlyph } from '../../core/glyphs.js';
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { FolderGlyph } from '../../core/glyphs.js';
 import { Badge } from '../badge/badge.js';
 import { RecordLabel } from './record-label.js';
 

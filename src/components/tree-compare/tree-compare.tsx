@@ -1,15 +1,15 @@
 'use client';
 
-import { useMemo, type KeyboardEvent } from 'react';
+import { type KeyboardEvent, useMemo } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps, ExpansionProps } from '../../core/events.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import {
+  type ComparedTreeRow,
+  type CompareTreeNode,
   compareTrees,
   isSameTrees,
-  type CompareTreeNode,
-  type ComparedTreeRow,
 } from '../../utils/compare-trees.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { useEqualValue } from '../../utils/use-equal-value.js';
@@ -17,11 +17,11 @@ import { useStateFor } from '../../utils/use-state-for.js';
 import { Tree } from '../tree/tree.js';
 import {
   TreeCompareHeader,
+  treeCompareHooks as hooks,
   TreeCompareJump,
+  type TreeCompareLabelRenderer,
   TreeCompareRowContent,
   TreeCompareToolbar,
-  treeCompareHooks as hooks,
-  type TreeCompareLabelRenderer,
 } from './tree-compare-parts.js';
 import {
   collectKeysAboveChanges,

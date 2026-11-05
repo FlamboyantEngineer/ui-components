@@ -1,18 +1,18 @@
 'use client';
 
+import { type ReactNode, type Ref, useId } from 'react';
 import { CheckGlyph, CloseGlyph, EditGlyph } from '../../core/glyphs.js';
-import { isEmptyValue } from '../../utils/is-empty-value.js';
-import { useId, type ReactNode, type Ref } from 'react';
-import { Button as AriaButton } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
+import { Button as AriaButton } from '../../primitives/index.js';
+import { isEmptyValue } from '../../utils/is-empty-value.js';
 import { Button } from '../button/button.js';
+import { useScopedDisabled } from '../field/field.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import { TextField } from '../text-field/text-field.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { useInlineEdit } from './use-inline-edit.js';
-import { useScopedDisabled } from '../field/field.js';
 
 /** What `renderEditor` receives to draw the editor of an inline edit. */
 export interface InlineEditEditorProps<T> {

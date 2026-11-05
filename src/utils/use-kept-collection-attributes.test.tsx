@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import {
-  useKeptCollectionAttributes,
   type KeptCollectionAttributes,
+  useKeptCollectionAttributes,
 } from './use-kept-collection-attributes.js';
 
 function Collection(props: KeptCollectionAttributes) {

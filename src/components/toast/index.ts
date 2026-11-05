@@ -1,4 +1,3 @@
-export { ToastList, ToastRegion, createToastQueue } from './toast.js';
 export type {
   ToastAction,
   ToastAddOptions,
@@ -13,3 +12,4 @@ export type {
   ToastTone,
   ToastUpdateOptions,
 } from './toast.js';
+export { createToastQueue, ToastList, ToastRegion } from './toast.js';

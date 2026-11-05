@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 function cell(page: Page, state: string, variant: string): Locator {
   return matrixCell(page, `state=${state} variant=${variant}`);
@@ -350,6 +350,186 @@ test.describe('File Upload lab', () => {
     await zone.dispatchEvent('drop', { dataTransfer });
     await expect(target.locator('.ui-file-upload__file-name')).toHaveText(['Soup.txt', 'Tart.txt']);
   });
+
+  for (const fallback of [false, true]) {
+    for (const shadow of ['upload-name', 'control-name', 'control-id'] as const) {
+      test(`UIC-FILE-UPLOAD-4.2 repairs files when ${shadow} shadows form.elements ${fallback ? 'without' : 'with'} DataTransfer`, async ({
+        page,
+        lab,
+      }) => {
+        if (fallback) {
+          await page.addInitScript(() => {
+            Object.defineProperty(window, 'DataTransfer', { value: undefined, configurable: true });
+          });
+        }
+        await lab.open('file-upload');
+        const form = page.locator('[data-lab-form="shared-uploads"]');
+        for (const [variant, name, text] of [
+          ['shared-first', 'a.txt', 'first'],
+          ['shared-second', 'b.txt', 'second'],
+        ] as const) {
+          await upload(page, variant)
+            .locator('input[type="file"]:not([hidden])')
+            .setInputFiles({
+              name,
+              mimeType: 'text/plain',
+              buffer: Buffer.from(text),
+            });
+        }
+        await expect(form.locator('.ui-file-upload__file-name')).toHaveText(['a.txt', 'b.txt']);
+        const result = await form.evaluate(async (element: HTMLFormElement, kind) => {
+          const first = element.querySelector<HTMLInputElement>(
+            '[data-lab-upload="shared-first"] input[hidden]',
+          );
+          const note = element.querySelector<HTMLInputElement>('input[name="note"]');
+          if (!first || !note) throw new Error('Missing shared form controls');
+          note.removeAttribute('id');
+          if (kind === 'upload-name') first.name = 'elements';
+          else if (kind === 'control-name') note.name = 'elements';
+          else note.id = 'elements';
+          element.id = 'shared-documents-form';
+          // An external native placeholder must precede the managed files in native order.
+          const external = document.createElement('input');
+          external.type = 'file';
+          external.name = 'docs';
+          external.setAttribute('form', element.id);
+          element.before(external);
+          // Force the repair path even when DataTransfer populated the inputs successfully.
+          for (const input of element.querySelectorAll<HTMLInputElement>('input[hidden]')) {
+            input.value = '';
+          }
+          const isShadowed = element.elements instanceof HTMLInputElement;
+          const read = () =>
+            Promise.all(
+              Array.from(new FormData(element), async ([name, value]) => [
+                name,
+                typeof value === 'string' ? value : `${value.name}:${await value.text()}`,
+              ]),
+            );
+          return { isShadowed, first: await read(), repeated: await read() };
+        }, shadow);
+        const expected = [
+          ['docs', ':'],
+          ['docs', 'existing'],
+          ['docs', ':'],
+          [shadow === 'upload-name' ? 'elements' : 'docs', 'a.txt:first'],
+          [shadow === 'control-name' ? 'elements' : 'note', 'For review'],
+          ['docs', 'reference'],
+          ['docs', 'b.txt:second'],
+          ['docs', ':'],
+          ['docs', 'last'],
+        ];
+        expect(result).toEqual({ isShadowed: true, first: expected, repeated: expected });
+      });
+    }
+
+    test(`UIC-FILE-UPLOAD-4.2 preserves shared controls and native files ${fallback ? 'without' : 'with'} DataTransfer`, async ({
+      page,
+      lab,
+    }) => {
+      if (fallback) {
+        await page.addInitScript(() => {
+          Object.defineProperty(window, 'DataTransfer', { value: undefined, configurable: true });
+        });
+      }
+      await lab.open('file-upload');
+      const form = page.locator('[data-lab-form="shared-uploads"]');
+      const sample = (name: string, content: string) => ({
+        name,
+        mimeType: 'text/plain',
+        buffer: Buffer.from(content),
+      });
+      await form
+        .getByLabel('Native document', { exact: true })
+        .setInputFiles(sample('zero.txt', ''));
+      await upload(page, 'shared-first')
+        .locator('input[type="file"]:not([hidden])')
+        .setInputFiles([sample('a.txt', 'first'), sample('b.txt', 'second')]);
+      await upload(page, 'shared-second')
+        .locator('input[type="file"]:not([hidden])')
+        .setInputFiles(sample('c.txt', 'third'));
+      await expect(form.locator('.ui-file-upload__file-name')).toHaveText([
+        'a.txt',
+        'b.txt',
+        'c.txt',
+      ]);
+      const expected = [
+        ['docs', 'existing'],
+        ['docs', { name: 'zero.txt', size: 0, type: 'text/plain', text: '' }],
+        ['docs', { name: 'a.txt', size: 5, type: 'text/plain', text: 'first' }],
+        ['docs', { name: 'b.txt', size: 6, type: 'text/plain', text: 'second' }],
+        ['note', 'For review'],
+        ['docs', 'reference'],
+        ['docs', { name: 'c.txt', size: 5, type: 'text/plain', text: 'third' }],
+        ['docs', { name: '', size: 0, type: 'application/octet-stream', text: '' }],
+        ['docs', 'last'],
+        ['action', 'send'],
+      ];
+      const read = (clearSecond = false) =>
+        form.evaluate(async (element: HTMLFormElement, needsRepair) => {
+          if (needsRepair) {
+            const input = element.querySelector<HTMLInputElement>(
+              '[data-lab-upload="shared-second"] input[hidden]',
+            );
+            if (input) input.value = '';
+          }
+          const submitter = element.querySelector<HTMLButtonElement>('button[type="submit"]');
+          const data = new FormData(element, submitter);
+          return Promise.all(
+            Array.from(data, async ([name, value]) => [
+              name,
+              typeof value === 'string'
+                ? value
+                : {
+                    name: value.name,
+                    size: value.size,
+                    type: value.type,
+                    text: await value.text(),
+                  },
+            ]),
+          );
+        }, clearSecond);
+      expect(await read()).toEqual(expected);
+      expect(await read()).toEqual(expected);
+      if (!fallback) {
+        // Leave one synchronized upload beside one that needs repair in the same native event.
+        expect(await read(true)).toEqual(expected);
+      }
+      await form.getByRole('button', { name: 'Send documents' }).click();
+      await expect(page.locator('[data-lab-output="shared-sent"]')).toHaveText(
+        'docs: existing, docs: zero.txt, docs: a.txt, docs: b.txt, note: For review, docs: reference, docs: c.txt, docs: (empty file), docs: last',
+      );
+      const immediate = await form.evaluate(async (element: HTMLFormElement) => {
+        element.reset();
+        // Construct in the reset's task, before useNativeReset can repopulate either hidden input.
+        const data = new FormData(element);
+        return Promise.all(
+          Array.from(data, async ([name, value]) => [
+            name,
+            typeof value === 'string'
+              ? value
+              : {
+                  name: value.name,
+                  size: value.size,
+                  type: value.type,
+                  text: await value.text(),
+                },
+          ]),
+        );
+      });
+      const resetExpected = expected.slice(0, -1);
+      resetExpected[1] = [
+        'docs',
+        { name: '', size: 0, type: 'application/octet-stream', text: '' },
+      ];
+      expect(immediate).toEqual(resetExpected);
+      await expect(form.locator('.ui-file-upload__file-name')).toHaveText([
+        'a.txt',
+        'b.txt',
+        'c.txt',
+      ]);
+    });
+  }
 
   test('UIC-FILE-UPLOAD-4.2 refuses an empty required upload in a form and submits the chosen files', async ({
     page,

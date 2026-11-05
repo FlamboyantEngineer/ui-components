@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Stat Tile lab', () => {
   test('UIC-STAT-TILE-1.1 UIC-STAT-TILE-1.3 UIC-STAT-TILE-1.4 UIC-STAT-TILE-2.1 judges each trend against its goal', async ({

@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import type { ExpansionProps } from '../../core/events.js';
 import { useLocale } from '../../primitives/index.js';
 import { walkTree } from '../../utils/walk-tree.js';
-import type { TableChildRows } from './table-tree.js';
 import {
   groupTableNodes,
   listGroupKeys,
@@ -12,10 +11,11 @@ import {
   type TableBodyNode,
 } from './table-groups.js';
 import type { TableColumn, TableRow } from './table-rows.js';
+import type { TableChildRows } from './table-tree.js';
 import {
-  useTableExpansion,
   type TableExpansion,
   type TableGroupingProps,
+  useTableExpansion,
 } from './use-table-expansion.js';
 import type { TableRowsView } from './use-table-rows.js';
 

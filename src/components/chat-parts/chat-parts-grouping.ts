@@ -1,5 +1,5 @@
-import type { ChatStepsAction } from '../chat-activity/chat-activity.js';
 import { requireDefined } from '../../utils/require-defined.js';
+import type { ChatStepsAction } from '../chat-activity/chat-activity.js';
 import type { ChatPart, ChatReasoningPart, ChatToolCallPart } from './chat-part.js';
 
 /** A part that can be a step of a group: reasoning or a tool call. */

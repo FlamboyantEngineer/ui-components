@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, type RefObject } from 'react';
+import { type RefObject, useEffect, useRef } from 'react';
 import { useUiStorage } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';
 import { numberCodec } from '../../utils/json-codec.js';
@@ -9,7 +9,7 @@ import { useOwnedPreview } from '../../utils/use-owned-preview.js';
 import { usePersistedValue } from '../../utils/use-persisted-value.js';
 import { useShallowStable } from '../../utils/use-shallow-stable.js';
 
-export interface DockPanelSizeOptions {
+interface DockPanelSizeOptions {
   /** The panel's element, whose window runs the preview frames. */
   rootRef: RefObject<HTMLElement | null>;
   size?: number | undefined;

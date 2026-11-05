@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState, type FormEvent, type ReactElement } from 'react';
+import { type FormEvent, type ReactElement, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
 import { Form } from '../form/form.js';

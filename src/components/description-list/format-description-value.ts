@@ -1,8 +1,8 @@
 // Locale-aware text for the values a description row formats itself.
 
-import { readTimeInstant } from '../../utils/read-time-instant.js';
-import { getDateTimeFormat, getListFormat, getNumberFormat } from '../../utils/intl-format.js';
 import { getDefaultStrings } from '../../core/strings.js';
+import { getDateTimeFormat, getListFormat, getNumberFormat } from '../../utils/intl-format.js';
+import { readTimeInstant } from '../../utils/read-time-instant.js';
 
 /** Both ends of a range of numbers or dates. */
 export interface DescriptionRange<T extends number | string> {

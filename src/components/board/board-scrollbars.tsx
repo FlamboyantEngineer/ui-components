@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, type ReactNode, type RefObject } from 'react';
+import { type ReactNode, type RefObject, useEffect } from 'react';
 import {
   OverlayScrollbars,
   useOverlayMetrics,

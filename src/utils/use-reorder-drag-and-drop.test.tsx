@@ -1,14 +1,14 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import type { KeyboardEvent } from 'react';
-import { DropIndicator, GridList, GridListItem, useDragAndDrop } from '../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
-import type { Key } from '../core/props.js';
 import { DragHandle } from '../components/drag-handle/drag-handle.js';
+import type { Key } from '../core/props.js';
+import { DropIndicator, GridList, GridListItem, useDragAndDrop } from '../primitives/index.js';
 import {
+  type CollectionDropTarget,
   isMoveChord,
   useReorderDragAndDrop,
-  type CollectionDropTarget,
 } from './use-reorder-drag-and-drop.js';
 
 interface Move {

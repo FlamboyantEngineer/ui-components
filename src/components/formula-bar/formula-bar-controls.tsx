@@ -1,11 +1,11 @@
 'use client';
 
-import { FormulaGlyph } from '../../core/glyphs.js';
-import { pickDataAttributes } from '../../core/hooks.js';
-import { Glyph, useUiStrings } from '../../core/provider.js';
 import type { ReactNode } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
+import { FormulaGlyph } from '../../core/glyphs.js';
+import { pickDataAttributes } from '../../core/hooks.js';
 import type { BaseProps, ControlSize, RefProps } from '../../core/props.js';
+import { Glyph, useUiStrings } from '../../core/provider.js';
 import { formulaBarHooks as hooks } from './formula-bar-hooks.js';
 
 export interface FormulaBarControlsProps

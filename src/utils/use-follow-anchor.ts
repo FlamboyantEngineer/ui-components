@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useState, type RefObject } from 'react';
+import { type RefObject, useEffect, useLayoutEffect, useState } from 'react';
 import { autoUpdateOverlay } from './overlay-auto-update.js';
 
-export interface FollowAnchorOptions {
+interface FollowAnchorOptions {
   /** The element the overlay is placed against. */
   anchorRef: RefObject<Element | null>;
   /** Whether the overlay is open; a closed one follows nothing. */

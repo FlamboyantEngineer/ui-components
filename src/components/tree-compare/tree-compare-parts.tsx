@@ -1,31 +1,29 @@
 'use client';
 
+// The parts of a tree comparison around its tree: hooks, toolbar, summary, column labels and rows.
+import type { ReactNode } from 'react';
 import {
   ArrowLeftGlyph,
   ArrowRightGlyph,
   ChevronDownGlyph,
   ChevronUpGlyph,
   EditGlyph,
+  type GlyphComponent,
   MinusGlyph,
   MoveGlyph,
   PlusGlyph,
-  type GlyphComponent,
 } from '../../core/glyphs.js';
-
-// The parts of a tree comparison around its tree: hooks, toolbar, summary, column labels and rows.
-
-import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
-import { useExpandGlyph } from '../expand-toggle/expand-toggle.js';
 import type {
-  CompareTreeNode,
   ComparedTreeRow,
+  CompareTreeNode,
   TreeChange,
   TreeChangeCounts,
 } from '../../utils/compare-trees.js';
-import { Icon } from '../icon/icon.js';
 import { Button } from '../button/button.js';
+import { useExpandGlyph } from '../expand-toggle/expand-toggle.js';
+import { Icon } from '../icon/icon.js';
 import { Switch } from '../switch/switch.js';
 
 /** Which tree a cell shows. */

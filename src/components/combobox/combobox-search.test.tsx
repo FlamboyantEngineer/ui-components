@@ -1,8 +1,8 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
-import { userEvent, type UserEvent } from '@testing-library/user-event';
-import type { Key } from '../../core/props.js';
+import { type UserEvent, userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import type { Key } from '../../core/props.js';
 import { Combobox, type ComboboxLoader, type ComboboxOption } from './combobox.js';
 
 const cities: ComboboxOption[] = ['Paris', 'Lima', 'Oslo', 'Lisbon', 'Cairo'].map((name) => ({

@@ -4,8 +4,8 @@
 import type * as Pdfjs from 'pdfjs-dist';
 import { useState } from 'react';
 import { PdfViewer } from '../../src/components/pdf-viewer/pdf-viewer.js';
-import { loadEngine, sampleUrl, workerSrc } from './pdf-viewer-cases.js';
 import { LabOutput } from './lab-output.js';
+import { loadEngine, sampleUrl, workerSrc } from './pdf-viewer-cases.js';
 
 type PdfjsDocument = Pdfjs.PDFDocumentProxy;
 

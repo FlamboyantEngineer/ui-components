@@ -3,8 +3,8 @@ import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { requireDefined } from '../../utils/require-defined.js';
-import { Table, type TableProps } from './table.js';
 import { Button } from '../button/button.js';
+import { Table, type TableProps } from './table.js';
 import type { TableColumn } from './table-rows.js';
 
 interface Fruit {

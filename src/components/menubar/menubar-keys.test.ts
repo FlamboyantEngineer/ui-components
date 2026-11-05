@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resolveMenubarKey, type MenubarKeyPress } from './menubar-keys.js';
+import { type MenubarKeyPress, resolveMenubarKey } from './menubar-keys.js';
 
 const row: Omit<MenubarKeyPress, 'key'> = {
   orientation: 'horizontal',

@@ -1,9 +1,9 @@
-import { useRef, useState, type CSSProperties, type ReactNode, type RefObject } from 'react';
+import { type CSSProperties, type ReactNode, type RefObject, useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Outline, type OutlineHeading } from '../../src/components/outline/outline.js';
 import { ScrollRegion } from '../../src/components/scroll-region/scroll-region.js';
 import type { Key } from '../../src/core/props.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { OutlineSeededCases } from './outline-seeded-cases.js';
 import { ShadowRootHost } from './shadow-root-host.js';
 

@@ -1,5 +1,3 @@
-export { Avatar } from './avatar.js';
-export { DEFAULT_AVATAR_COLOR_COUNT, resolveAvatarColor } from './avatar-color.js';
 export type {
   AvatarBadgePlacement,
   AvatarBadgeProps,
@@ -12,3 +10,5 @@ export type {
   AvatarSize,
   AvatarVariant,
 } from './avatar.js';
+export { Avatar } from './avatar.js';
+export { DEFAULT_AVATAR_COLOR_COUNT, resolveAvatarColor } from './avatar-color.js';

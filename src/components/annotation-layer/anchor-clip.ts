@@ -1,7 +1,7 @@
 // Cuts a target element's boxes to what the scrolling or clipping elements around it let show.
 
-import { getOwnerWindow } from '../../utils/owner-window.js';
 import { isHTMLElement } from '../../utils/is-element.js';
+import { getOwnerWindow } from '../../utils/owner-window.js';
 import { toScale } from '../../utils/scroll-geometry.js';
 
 /** A rectangle in viewport pixels. */

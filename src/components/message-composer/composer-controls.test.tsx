@@ -1,11 +1,11 @@
-import { CheckGlyph, HandRaisedGlyph, ListTaskGlyph } from '../../core/glyphs.js';
-import { act, render, screen, within } from '@testing-library/react';
-import { userEvent } from '@testing-library/user-event';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { act, render, screen, within } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { installComposerRow } from '../../../test/composer-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { CheckGlyph, HandRaisedGlyph, ListTaskGlyph } from '../../core/glyphs.js';
 import { useMessageComposerControls } from './composer-controls.js';
 import { MessageComposerMenuButton } from './composer-menu.js';
 import { MessageComposerSelect } from './composer-select.js';

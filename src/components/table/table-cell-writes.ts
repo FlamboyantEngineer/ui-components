@@ -1,7 +1,8 @@
-import { findMaximum } from '../../utils/find-maximum.js';
 import { countDecimalPlaces } from '../../utils/count-decimal-places.js';
+import { findMaximum } from '../../utils/find-maximum.js';
+import { isDate } from '../../utils/is-date.js';
 import { formatTsv } from '../../utils/tsv.js';
-import { listBoundsCells, type CellBounds, type CellGrid } from './table-cell-range.js';
+import { type CellBounds, type CellGrid, listBoundsCells } from './table-cell-range.js';
 import {
   getCellValue,
   type TableCellValue,
@@ -35,7 +36,7 @@ const htmlEscapes: Readonly<Record<string, string>> = {
  * nothing and an invalid date as empty text.
  */
 export function formatCellText(value: TableCellValue): string {
-  if (value instanceof Date) return Number.isNaN(value.getTime()) ? '' : value.toISOString();
+  if (isDate(value)) return Number.isNaN(value.getTime()) ? '' : value.toISOString();
   return value === null || value === undefined ? '' : String(value);
 }
 

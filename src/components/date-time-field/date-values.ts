@@ -12,8 +12,8 @@ import {
   toCalendarDate,
   toCalendarDateTime,
 } from '../../primitives/index.js';
+import { type BoundIssue, findOrderedBoundIssue } from '../../utils/date-bounds.js';
 import { getDateFormatter } from '../../utils/intl-format.js';
-import { findOrderedBoundIssue, type BoundIssue } from '../../utils/date-bounds.js';
 
 /**
  * `date` (`YYYY-MM-DD`), `time` (`HH:mm`), `date-time` (`YYYY-MM-DDTHH:mm`, or zoned with
@@ -93,7 +93,7 @@ export function isReadableValue(
 }
 
 /** The clock a field reads at an event: the moment, and the zone its wall clock is read in. */
-export interface DateClock {
+interface DateClock {
   now: Date;
   /** The zone of a floating value's wall clock; a zoned field reads its own `timeZone`. */
   zone: string;

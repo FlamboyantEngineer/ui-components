@@ -1,7 +1,7 @@
 'use client';
 
-import { summarizeNumbers } from '../../utils/summarize-numbers.js';
 import { useUiStrings } from '../../core/provider.js';
+import { summarizeNumbers } from '../../utils/summarize-numbers.js';
 
 interface ValueSummaryOptions {
   /** The drawn values; those that are not finite numbers are left out. */

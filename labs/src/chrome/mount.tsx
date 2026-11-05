@@ -1,16 +1,16 @@
-import { StrictMode, useEffect, type ReactNode } from 'react';
+import { type ReactNode, StrictMode, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
-import { createMemoryStorage, type UiStorage } from '../../../src/core/storage.js';
 import { UiProvider, type UiProviderProps } from '../../../src/core/provider.js';
-import { LabChrome, chromeStyles } from './lab-chrome.js';
+import { createMemoryStorage, type UiStorage } from '../../../src/core/storage.js';
+import { chromeStyles, LabChrome } from './lab-chrome.js';
 import {
   applySettings,
+  type LabSettings,
   labStorage,
   readSettings,
   rememberSettings,
   settingsSearch,
   watchColorScheme,
-  type LabSettings,
 } from './settings.js';
 
 export interface MountLabOptions {

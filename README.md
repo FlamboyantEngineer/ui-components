@@ -32,7 +32,7 @@ Each release is a `v<version>` tag in this repository, on a commit that holds th
 
 To try unreleased work, install a branch or commit the same way, for example `#dev`. The branch holds no build output, so npm installs the development dependencies in its clone and runs the `prepare` script, which builds the entry points, their declarations and the reference stylesheet. Runnable labs are a separate download: extract `ui-components-labs-<version>.tgz` and serve its `labs/` directory with a static HTTP server. The lockfile records the branch's commit, and `npm ci` prepares that commit again. `npm run check:git-install -- "<dependency>"` checks such an install from a clean consumer.
 
-The package ships the neutral reference stylesheet at `labs/build/reference.css` (also `@flamboyantengineer/ui-components/reference.css`): one self-contained file a host can copy into its assets or import, built when npm prepares the package. It sits in the `ui-reference` cascade layer, so the host's own unlayered rules override it without a specificity fight, and it supports Chrome and Edge 117, Firefox 121 and Safari 17 or later (the package's `browserslist`). It styles components only; to also take its document base (type, text colour, canvas and colour scheme on the page), set `data-reference-document` on the root element, and `data-theme="dark"` there for the dark theme.
+The package ships the neutral reference stylesheet at `labs/build/reference.css` (also `@flamboyantengineer/ui-components/reference.css`): one self-contained file a host can copy into its assets or import, built when npm prepares the package. A bare `import '@flamboyantengineer/ui-components/reference.css';` opts into these styles and survives production tree shaking without consumer overrides; unused JavaScript exports remain removable. It sits in the `ui-reference` cascade layer, so the host's own unlayered rules override it without a specificity fight, and it supports Chrome and Edge 117, Firefox 121 and Safari 17 or later (the package's `browserslist`). It styles components only; to also take its document base (type, text colour, canvas and colour scheme on the page), set `data-reference-document` on the root element, and `data-theme="dark"` there for the dark theme.
 
 `react` and `react-dom` 19.2 or later are peer dependencies. Three entry points also need the optional rich-text peers (`@handlewithcare/react-prosemirror`, `react-reconciler` and the `prosemirror-*` packages listed in `package.json`): `@flamboyantengineer/ui-components/rich-text-editor`, `/message-composer/rich` and `/chat`. A host that imports none of them installs none of the peers. `prosemirror-view` is pinned to an exact version because `@handlewithcare/react-prosemirror` requires exactly that version; install the version `package.json` names.
 
@@ -187,6 +187,16 @@ Node.js 22 is required.
 npm ci
 npm run check       # lint, format, types, references, specs, labs, structure, client boundaries, builds, unit tests, public types, package, labs archive
 npm run test:labs   # Playwright against the built labs
+npm run cleanup     # return to dev, delete working branches and remove test output
 ```
+
+Run `./cleanup` on Unix or `cleanup.cmd` on Windows for the same cleanup, including
+from another working directory. It switches to local `dev` tracking `origin/dev`
+(creating `dev` if needed), preserves local `dev` commits and deletes every other
+local branch, including branches with unmerged commits. It uses the existing
+`origin/dev` reference without fetching and stops if Git cannot safely switch.
+Cleanup then removes `coverage/`, `test-results/`,
+`playwright-report/`, `blob-report/`, `node_modules/.cache/` and `node_modules/.vite/`.
+It keeps installed dependencies and built package and lab output.
 
 [CONTRIBUTING.md](CONTRIBUTING.md) covers branches, versioning and the source rules.

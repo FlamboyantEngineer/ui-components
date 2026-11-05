@@ -1,9 +1,9 @@
 // The rich composer's document: lines of text and pills (mentions, commands and record
 // references), and code blocks. It has no marks: the text is Markdown as typed.
 
-import { Schema, type Node, type NodeSpec } from 'prosemirror-model';
+import { type Node, type NodeSpec, Schema } from 'prosemirror-model';
 import { composerHooks as hooks } from '../composer-hooks.js';
-import { tokenTriggers, type MessageComposerToken } from '../composer-message.js';
+import { type MessageComposerToken, tokenTriggers } from '../composer-message.js';
 
 /**
  * What a pill node carries: its token, and the raw `text` it stands for in the message when that is

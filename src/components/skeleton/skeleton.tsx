@@ -1,8 +1,8 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { LoadingBoundaryProvider } from '../../core/loading-boundary.js';
 import { createHooks } from '../../core/hooks.js';
+import { LoadingBoundaryProvider } from '../../core/loading-boundary.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { normalizeCount } from '../../utils/count.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';

@@ -1,27 +1,27 @@
 'use client';
 
-import { containsFocus, isFocused } from '../../utils/focus-target.js';
 import {
+  type Dispatch,
+  type ReactNode,
+  type SetStateAction,
   useContext,
   useLayoutEffect,
   useRef,
   useState,
-  type Dispatch,
-  type ReactNode,
-  type SetStateAction,
 } from 'react';
 import {
   CheckboxGroup as AriaCheckboxGroup,
   CheckboxGroupStateContext,
   RadioGroup as AriaRadioGroup,
 } from '../../primitives/index.js';
+import { containsFocus, isFocused } from '../../utils/focus-target.js';
 import type { SlotRef } from '../../utils/slot-registry.js';
 import { Checkbox } from '../checkbox/checkbox.js';
 import {
-  FieldFormValue,
-  toAriaControlProps,
   type FieldControlProps,
+  FieldFormValue,
   type FieldState,
+  toAriaControlProps,
 } from '../field/field.js';
 import { ChoiceContext, type ChoiceGroupProps } from './choice-group.js';
 import { choiceGroupHooks as hooks } from './choice-group-hooks.js';

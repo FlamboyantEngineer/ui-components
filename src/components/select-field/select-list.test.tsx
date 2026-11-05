@@ -1,9 +1,9 @@
-import { PlusGlyph } from '../../core/glyphs.js';
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { PlusGlyph } from '../../core/glyphs.js';
+import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { SelectField, type SelectFieldOption } from './select-field.js';
 
 const fruit: SelectFieldOption[] = [

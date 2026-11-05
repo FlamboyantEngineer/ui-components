@@ -7,8 +7,9 @@ const origin = `http://${String(LABS_HOST)}:${String(LABS_PORT)}`;
 export default defineConfig({
   testDir: 'e2e',
   fullyParallel: true,
-  // The suite is CPU-bound: one worker per core keeps every core busy.
-  workers: '100%',
+  // Four workers by default: the suite is CPU-bound and most of each test is rendering a whole lab,
+  // so more workers than cores only slows each page down. Pass `--workers` to change it.
+  workers: 4,
   forbidOnly: Boolean(process.env.CI),
   retries: 0,
   // Lab assertions retry; a generous timeout keeps them stable on a busy machine.

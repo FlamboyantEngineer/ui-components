@@ -1,14 +1,14 @@
 // The data an assistant's activity parts take, and the values they derive from it.
 
 // Other components import the family through this main module (docs/CODING-GUIDELINES.md, S4).
-export { ChatPlan } from './chat-plan.js';
 export type { ChatPlanProps } from './chat-plan.js';
-export { ChatReasoning } from './chat-reasoning.js';
+export { ChatPlan } from './chat-plan.js';
 export type { ChatReasoningProps } from './chat-reasoning.js';
-export { ChatStatusLine } from './chat-status-line.js';
+export { ChatReasoning } from './chat-reasoning.js';
 export type { ChatStatusLineActivity, ChatStatusLineProps } from './chat-status-line.js';
-export { ChatSteps } from './chat-steps.js';
+export { ChatStatusLine } from './chat-status-line.js';
 export type { ChatStepsAction, ChatStepsProps } from './chat-steps.js';
+export { ChatSteps } from './chat-steps.js';
 
 /** Reasoning `streaming` in, or `complete`. */
 export type ChatReasoningStatus = 'streaming' | 'complete';

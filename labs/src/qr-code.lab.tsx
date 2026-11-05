@@ -1,8 +1,8 @@
 import { useState } from 'react';
+import { encodeQr } from '../../src/components/qr-code/index.js';
 import { QrCode } from '../../src/components/qr-code/qr-code.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
-import { encodeQr } from '../../src/components/qr-code/index.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const levels = ['low', 'medium', 'quartile', 'high'] as const;
 const texts = {

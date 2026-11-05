@@ -1,29 +1,28 @@
 'use client';
 
-import { ChevronDownGlyph, ChevronUpGlyph, type GlyphComponent } from '../../core/glyphs.js';
 // The parts a disclosure is composed of: a header, the title that toggles it, and its panel.
-
-import { useContext, type ReactNode, type Ref } from 'react';
+import { type ReactNode, type Ref, useContext } from 'react';
+import { ChevronDownGlyph, ChevronUpGlyph, type GlyphComponent } from '../../core/glyphs.js';
+import { mergeClassNames } from '../../core/hooks.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
+import { Glyph } from '../../core/provider.js';
 import {
-  useFocusManager,
   Button as AriaButton,
   DisclosureGroupStateContext,
   DisclosurePanel as AriaDisclosurePanel,
   DisclosureStateContext,
   Heading,
   type KeyboardEvent,
+  useFocusManager,
 } from '../../primitives/index.js';
-import { mergeClassNames } from '../../core/hooks.js';
-import type { BaseProps, RefProps } from '../../core/props.js';
-import { Glyph } from '../../core/provider.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { useExpandGlyph } from '../expand-toggle/expand-toggle.js';
 import { HeadingLevelContext } from '../section-header/section-header.js';
 import {
-  DisclosurePartsContext,
   disclosureGroupHooks,
   disclosureHooks as hooks,
   type DisclosureIndicatorPosition,
+  DisclosurePartsContext,
 } from './disclosure-hooks.js';
 
 export interface DisclosureHeaderProps extends RefProps<HTMLDivElement>, BaseProps {

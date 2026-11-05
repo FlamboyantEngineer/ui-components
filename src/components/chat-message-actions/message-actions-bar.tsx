@@ -1,5 +1,7 @@
 'use client';
 
+import { type ReactNode, type SyntheticEvent, useRef } from 'react';
+import type { AriaLabellingProps } from '../../core/events.js';
 import {
   CheckGlyph,
   CopyGlyph,
@@ -7,22 +9,20 @@ import {
   EditGlyph,
   EmojiGlyph,
   ErrorGlyph,
+  type GlyphComponent,
   ReplyGlyph,
   ThumbsDownGlyph,
   ThumbsUpGlyph,
-  type GlyphComponent,
 } from '../../core/glyphs.js';
-import { useRef, type ReactNode, type SyntheticEvent } from 'react';
-import { Toolbar } from '../../primitives/index.js';
-import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { Toolbar } from '../../primitives/index.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { REANNOUNCE_MARK } from '../../utils/reannounce.js';
 import { Button } from '../button/button.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import type { ChatFeedbackRating, MessageCommands } from './message-commands.js';
-import { isEmptyNode } from '../../utils/is-empty-node.js';
-import { REANNOUNCE_MARK } from '../../utils/reannounce.js';
 
 interface MessageActionsBarProps extends BaseProps, RefProps<HTMLDivElement>, AriaLabellingProps {
   state: MessageCommands;

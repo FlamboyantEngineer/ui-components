@@ -4,8 +4,8 @@
 // text. Offsets count UTF-16 code units, as JavaScript strings and the editor do.
 
 import type { Node } from 'prosemirror-model';
-import { getPillText } from './composer-schema.js';
 import { toFence } from './composer-markdown.js';
+import { getPillText } from './composer-schema.js';
 
 /** Which way an offset inside a pill's text moves: to the pill's start or its end. */
 export type OffsetBias = -1 | 1;
@@ -108,11 +108,4 @@ export function toDocumentPosition(doc: Node, offset: number, bias: OffsetBias):
   if (offset === run.offset) return run.pos;
   if (offset === endOf(run)) return run.pos + 1;
   return bias < 0 ? run.pos : run.pos + 1;
-}
-
-/** Whether an offset falls strictly inside a pill's text, where no caret can stand. */
-export function isInsideToken(doc: Node, offset: number): boolean {
-  return collectRuns(doc).some(
-    (run) => run.kind === 'pill' && offset > run.offset && offset < endOf(run),
-  );
 }

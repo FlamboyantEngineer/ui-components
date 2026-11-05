@@ -1,12 +1,12 @@
 'use client';
 
-import { useContext, useLayoutEffect, useRef, useState, type RefObject } from 'react';
+import { type RefObject, useContext, useLayoutEffect, useRef, useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { ComboBoxStateContext } from '../../primitives/index.js';
 import { useNativeReset } from '../../utils/use-native-reset.js';
 
 /** The value React Aria's combobox state holds: a key, a list of keys, or none. */
-export type ComboboxStateValue = Key | Key[] | null;
+type ComboboxStateValue = Key | Key[] | null;
 
 function isSameValue(left: ComboboxStateValue, right: ComboboxStateValue): boolean {
   if (Array.isArray(left) && Array.isArray(right)) {

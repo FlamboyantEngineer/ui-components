@@ -3,9 +3,9 @@ import {
   DisplayOptions,
   type DisplayOptionsValue,
 } from '../../src/components/display-options/display-options.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { DisplayOptionsSeededCases } from './display-options-seeded-cases.js';
-import { RecipeTable, recipeProperties, recipes } from './recipe-samples.js';
+import { recipeProperties, recipes, RecipeTable } from './recipe-samples.js';
 
 const startingValue: DisplayOptionsValue = {
   groupBy: null,

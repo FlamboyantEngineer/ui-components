@@ -3,11 +3,11 @@ import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import {
-  TestChat,
   article,
   assistantPeople,
   message,
   renderChat,
+  TestChat,
 } from '../../../test/chat-fixtures.js';
 import { installEditorDom } from '../../../test/rich-text-fixtures.js';
 import { UiProvider } from '../../core/provider.js';

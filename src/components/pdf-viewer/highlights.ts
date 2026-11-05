@@ -1,5 +1,5 @@
-import { pdfViewerHooks } from './styling-hooks.js';
 import type { PdfMatchRange } from './pdf-search.js';
+import { pdfViewerHooks } from './styling-hooks.js';
 
 interface HighlightTextRunsOptions {
   /** The text layer's run elements. */

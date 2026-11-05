@@ -1,9 +1,7 @@
-import { EditGlyph, FolderGlyph } from '../../core/glyphs.js';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useEffect, useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import {
   flushFrames,
   Frame,
@@ -15,6 +13,8 @@ import {
   stubFrames,
   stubSheet,
 } from '../../../test/dock-panel-fixtures.js';
+import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { EditGlyph, FolderGlyph } from '../../core/glyphs.js';
 import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage, type UiStorage } from '../../core/storage.js';
 import { requireDefined } from '../../utils/require-defined.js';

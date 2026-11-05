@@ -1,8 +1,8 @@
 import type { Key } from '../../core/props.js';
-import { toCollectionKey } from '../../utils/to-collection-key.js';
-import type { TableColumn, TableRow } from './table-rows.js';
 import { clamp } from '../../utils/clamp.js';
 import { isElement, isHTMLElement } from '../../utils/is-element.js';
+import { toCollectionKey } from '../../utils/to-collection-key.js';
+import type { TableColumn, TableRow } from './table-rows.js';
 
 /** `cell` selects one cell at a time; `range` also selects rectangles of cells; `none` neither. */
 export type TableCellSelectionMode = 'none' | 'cell' | 'range';

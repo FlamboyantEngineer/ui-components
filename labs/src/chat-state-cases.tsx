@@ -1,15 +1,15 @@
 // The Chat lab's states: an empty conversation with a welcome and suggested starters, plain text
 // against the Markdown default, a disabled composer, and right to left.
 
-import { SparklesGlyph } from '../../src/core/glyphs.js';
 import { Button } from '../../src/components/button/button.js';
 import { Chat } from '../../src/components/chat/index.js';
 import { useChatController } from '../../src/components/chat-controller/index.js';
 import { ChatModelPicker } from '../../src/components/chat-model-picker/index.js';
-import { EmptyState } from '../../src/components/empty-state/empty-state.js';
 import type { ChatMessageData } from '../../src/components/chat-parts/index.js';
-import { UiProvider } from '../../src/core/provider.js';
+import { EmptyState } from '../../src/components/empty-state/empty-state.js';
 import { Cluster, Stack } from '../../src/components/layout/layout.js';
+import { SparklesGlyph } from '../../src/core/glyphs.js';
+import { UiProvider } from '../../src/core/provider.js';
 import { agents } from './chat-agent.js';
 import { labDisclaimer } from './chat-assistant-cases.js';
 import { labEfforts, labModels } from './chat-model-samples.js';

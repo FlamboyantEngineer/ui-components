@@ -4,8 +4,8 @@ import {
   type ChatMessageTimePlacement,
   type ChatMessageVariant,
 } from '../../src/components/chat-transcript/index.js';
-import { LabSection, StateMatrix } from './chrome/index.js';
 import { at, getNow, helper, maria } from './chat-transcript-message-samples.js';
+import { LabSection, StateMatrix } from './chrome/index.js';
 
 const variants = ['bubble', 'plain'] as const satisfies readonly ChatMessageVariant[];
 const authors = ['avatar and name', 'avatar only', 'name only', 'neither'] as const;

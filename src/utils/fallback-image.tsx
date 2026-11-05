@@ -2,11 +2,11 @@
 
 // A decorative image that gives way to a fallback once it fails to load.
 
-import { useCallback, useState, type ImgHTMLAttributes, type ReactNode } from 'react';
+import { type ImgHTMLAttributes, type ReactNode, useCallback, useState } from 'react';
 
 type ImageProps = Omit<ImgHTMLAttributes<HTMLImageElement>, 'src' | 'onError' | 'children'>;
 
-export interface FallbackImageProps extends ImageProps {
+interface FallbackImageProps extends ImageProps {
   src: string;
   /** Drawn instead of the image once `src` has failed. */
   fallback: ReactNode;

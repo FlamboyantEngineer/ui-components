@@ -1,18 +1,18 @@
-import { InfoGlyph } from '../../core/glyphs.js';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Selection } from '../../core/props.js';
-import { UiProvider } from '../../core/provider.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { expectRowMenuReturnsFocus, RowMenuButton } from '../../../test/menu-fixtures.js';
+import { InfoGlyph } from '../../core/glyphs.js';
+import type { Selection } from '../../core/props.js';
+import { UiProvider } from '../../core/provider.js';
 import {
   ListView,
   ListViewItem,
-  ListViewSection,
   type ListViewItemProps,
   type ListViewMove,
+  ListViewSection,
   type ListViewSectionProps,
 } from './list-view.js';
 

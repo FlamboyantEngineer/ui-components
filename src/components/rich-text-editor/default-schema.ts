@@ -2,8 +2,8 @@
 // documents load as they are.
 
 import type { MarkSpec, NodeSpec } from 'prosemirror-model';
-import { isSafeUrl } from '../../utils/safe-url.js';
 import { clamp } from '../../utils/clamp.js';
+import { isSafeUrl } from '../../utils/safe-url.js';
 
 const headingLevels = [1, 2, 3] as const;
 

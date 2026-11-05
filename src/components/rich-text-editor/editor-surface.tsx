@@ -1,32 +1,32 @@
 'use client';
 
 import { ProseMirror, ProseMirrorDoc } from '@handlewithcare/react-prosemirror';
-import type { Node, Schema } from 'prosemirror-model';
 import { redo, redoDepth, undo, undoDepth } from 'prosemirror-history';
+import type { Node, Schema } from 'prosemirror-model';
 import type { EditorState, Transaction } from 'prosemirror-state';
-import { useCallback, useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import { DecorationSet } from 'prosemirror-view';
+import { type ReactNode, useCallback, useId, useMemo, useRef, useState } from 'react';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { useLatest } from '../../utils/use-latest.js';
 import type { FieldControlProps, FieldState } from '../field/field.js';
-import { decoratePlaceholder } from './editor-state.js';
+import { decorateMarkers, placeMarkers, type RichTextBlockMarker } from './block-markers.js';
+import { defaultMarks, defaultNodes } from './default-schema.js';
 import { domSelectionEvents } from './dom-selection-sync.js';
-import type { RichTextDocument } from './rich-text-document.js';
+import { decoratePlaceholder } from './editor-state.js';
+import { LinkMarkView } from './link-mark-view.js';
 import {
-  RichTextEditorContext,
-  richTextEditorHooks as hooks,
   getGutter,
   type GutterControls,
+  RichTextEditorContext,
   type RichTextEditorContextValue,
+  richTextEditorHooks as hooks,
 } from './rich-text-context.js';
-import { defaultMarks } from './default-schema.js';
-import { LinkMarkView } from './link-mark-view.js';
-import { TaskItemView } from './task-item-view.js';
-import { isEmptyNode } from '../../utils/is-empty-node.js';
-import { decorateMarkers, placeMarkers, type RichTextBlockMarker } from './block-markers.js';
+import type { RichTextDocument } from './rich-text-document.js';
 import { SurfaceScrollbars } from './surface-scrollbars.js';
+import { TaskItemView } from './task-item-view.js';
 
 /** The engine state behind an editor and the function that applies its transactions. */
-export interface SyncedEditor {
+interface SyncedEditor {
   state: EditorState;
   dispatchTransaction: (tr: Transaction) => void;
 }
@@ -45,15 +45,19 @@ const noMarkers: readonly RichTextBlockMarker[] = [];
 
 type ContentAttributes = Readonly<Record<string, string | undefined>>;
 
-const nodeViewComponents = { taskItem: TaskItemView };
+const defaultTaskViews = { taskItem: TaskItemView };
 const defaultLinkViews = { link: LinkMarkView };
+
+function getNodeViewComponents(schema: Schema) {
+  return schema.nodes.taskItem?.spec === defaultNodes.taskItem ? defaultTaskViews : undefined;
+}
 
 /** The mark views of a schema: the default link's anchor, which leaves the tab sequence when disabled. */
 function getMarkViewComponents(schema: Schema) {
   return schema.marks.link?.spec === defaultMarks.link ? defaultLinkViews : undefined;
 }
 
-export interface SyncedEditorOptions<T> {
+interface SyncedEditorOptions<T> {
   /** The engine schema: a new one starts a fresh state. */
   schema: Schema;
   /** The value the document shows. */
@@ -187,7 +191,7 @@ export function EditorSurface(props: EditorSurfaceProps) {
       dispatchTransaction={dispatchTransaction}
       editable={editable}
       decorations={decorations}
-      nodeViewComponents={nodeViewComponents}
+      nodeViewComponents={getNodeViewComponents(state.schema)}
       markViewComponents={getMarkViewComponents(state.schema)}
       handleDOMEvents={domSelectionEvents}
     >

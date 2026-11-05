@@ -3,11 +3,15 @@
 import {
   cloneElement,
   createContext,
-  useContext,
-  useState,
   type ReactElement,
   type ReactNode,
+  useContext,
+  useState,
 } from 'react';
+import type { AriaLabellingProps, SelectionProps } from '../../core/events.js';
+import { createHooks } from '../../core/hooks.js';
+import type { BaseProps, Key, RefProps, Selection } from '../../core/props.js';
+import { useUiStrings } from '../../core/provider.js';
 import {
   Autocomplete,
   AutocompleteStateContext,
@@ -22,16 +26,12 @@ import {
   useSlottedContext,
   Virtualizer,
 } from '../../primitives/index.js';
-import type { AriaLabellingProps, SelectionProps } from '../../core/events.js';
-import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key, Selection, RefProps } from '../../core/props.js';
-import { useUiStrings } from '../../core/provider.js';
-import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { toCollectionSelectionProps } from '../../utils/collection-selection.js';
+import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { TextMatchProvider } from '../text-match/text-match.js';
-import { MenuSizeContext, type MenuSize } from './menu-context.js';
-import type { MenuItemProps, MenuItemRenderState, MenuSectionProps } from './menu-item.js';
+import { type MenuSize, MenuSizeContext } from './menu-context.js';
 import { renderMenuChildren } from './menu-entries.js';
+import type { MenuItemProps, MenuItemRenderState, MenuSectionProps } from './menu-item.js';
 
 export { MenuTrigger, type MenuTriggerProps } from './menu-trigger.js';
 
@@ -287,7 +287,8 @@ export function SubmenuTrigger({ children }: SubmenuTriggerProps) {
   );
 }
 
-export { MenuItem, MenuSection, MenuSeparator } from './menu-item.js';
+export type { MenuSize } from './menu-context.js';
+export { joinMenuGroups } from './menu-groups.js';
 export type {
   MenuItemProps,
   MenuItemRenderState,
@@ -295,8 +296,6 @@ export type {
   MenuSectionProps,
   MenuSeparatorProps,
 } from './menu-item.js';
-export { MenuOverlay, MenuPopover } from './menu-popover.js';
+export { MenuItem, MenuSection, MenuSeparator } from './menu-item.js';
 export type { MenuOverlayProps, MenuPopoverProps } from './menu-popover.js';
-export type { MenuSize } from './menu-context.js';
-
-export { joinMenuGroups } from './menu-groups.js';
+export { MenuOverlay, MenuPopover } from './menu-popover.js';

@@ -1,16 +1,16 @@
 'use client';
 
-import { useLatest } from '../../utils/use-latest.js';
 import {
-  useEffect,
-  useRef,
-  useState,
   type FocusEvent,
   type PointerEvent,
   type RefObject,
+  useEffect,
+  useRef,
+  useState,
 } from 'react';
-import { usePrefersReducedMotion } from '../../utils/prefers-reduced-motion.js';
 import { isNode } from '../../utils/is-element.js';
+import { usePrefersReducedMotion } from '../../utils/prefers-reduced-motion.js';
+import { useLatest } from '../../utils/use-latest.js';
 
 interface CarouselAutoplayOptions {
   /** Whether the carousel rotates on its own at all. */

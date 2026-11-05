@@ -1,11 +1,11 @@
 import { useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
 import {
   ColorSwatch,
   ColorSwatchPicker,
   ColorSwatchPickerItem,
 } from '../../src/components/color-swatch/color-swatch.js';
-import { Button } from '../../src/components/button/button.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const sizes = ['xs', 'sm', 'md', 'lg', 'xl'] as const;
 // Opaque, half and a quarter opaque, fully transparent, and no colour at all.

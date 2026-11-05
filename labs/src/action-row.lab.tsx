@@ -1,3 +1,8 @@
+import { useState } from 'react';
+import { ActionRow, type ActionRowAction } from '../../src/components/action-row/action-row.js';
+import { actionVerbs, orderActions } from '../../src/components/action-row/index.js';
+import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
+import { Switch } from '../../src/components/switch/switch.js';
 import {
   CopyGlyph,
   DeleteGlyph,
@@ -8,13 +13,8 @@ import {
   SortAscendingGlyph,
   UploadGlyph,
 } from '../../src/core/glyphs.js';
-import { useState } from 'react';
-import { ActionRow, type ActionRowAction } from '../../src/components/action-row/action-row.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-import { actionVerbs, orderActions } from '../../src/components/action-row/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabHelperCalls } from './lab-helper-calls.js';
-import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
-import { Switch } from '../../src/components/switch/switch.js';
 
 const sizes = ['xs', 'sm', 'md', 'lg'] as const;
 const states = ['default', 'selected', 'disabled', 'pending', 'with lead'] as const;

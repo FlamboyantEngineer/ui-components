@@ -1,6 +1,6 @@
 import { defineStrings } from '../message-format.js';
 /** Strings of chat sources and citations. */
-export interface ChatSourcesStrings {
+interface ChatSourcesStrings {
   /** Names a list of sources, by their count. */
   chatSourcesLabel: (count: number) => string;
   /** Names an inline citation: its number and its source's title. */

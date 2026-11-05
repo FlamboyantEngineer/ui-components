@@ -1,11 +1,11 @@
 'use client';
 
-import { TrendDownGlyph, TrendFlatGlyph, TrendUpGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
-import { useNumberFormatter } from '../../primitives/index.js';
+import { TrendDownGlyph, TrendFlatGlyph, TrendUpGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Tone, RefProps } from '../../core/props.js';
+import type { BaseProps, RefProps, Tone } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
+import { useNumberFormatter } from '../../primitives/index.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Card, type CardProps } from '../card/card.js';
 

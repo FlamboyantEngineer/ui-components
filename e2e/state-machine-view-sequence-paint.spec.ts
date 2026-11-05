@@ -1,5 +1,5 @@
-import { expect, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
+import { expect, test } from './fixtures.js';
 
 for (const density of ['default', 'compact']) {
   test(`UIC-STATE-MACHINE-VIEW-4.3 UIC-STATE-MACHINE-VIEW-4.4 ${density} paints arrowheads outside states and labels above routes`, async ({

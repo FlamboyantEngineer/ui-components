@@ -1,19 +1,19 @@
 'use client';
 
 import type { Ref } from 'react';
-import type { BaseProps } from '../../core/props.js';
 import type { OpenStateProps } from '../../core/events.js';
+import type { BaseProps } from '../../core/props.js';
 import {
   Field,
-  useFieldControl,
   type FieldInputProps,
   type FieldTextInputProps,
+  useFieldControl,
 } from '../field/field.js';
-import type { SelectFieldSelectionMode, SelectFieldValue } from './select-field.js';
 import type { TreeItemData } from '../tree/tree.js';
-import { TreeSelectControl } from './tree-select-control.js';
-import { isNoSelection } from './select-options.js';
+import type { SelectFieldSelectionMode, SelectFieldValue } from './select-field.js';
 import { selectFieldHooks as hooks } from './select-field-hooks.js';
+import { isNoSelection } from './select-options.js';
+import { TreeSelectControl } from './tree-select-control.js';
 
 /** How a chosen node reads: its own label, or its path from the top level. */
 export type SelectFieldValueDisplay = 'label' | 'path';

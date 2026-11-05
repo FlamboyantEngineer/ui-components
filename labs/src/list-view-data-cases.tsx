@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import type { Key, Selection } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import {
   List,
@@ -9,6 +8,7 @@ import {
   ListViewSection,
 } from '../../src/components/list-row/index.js';
 import { Switch } from '../../src/components/switch/switch.js';
+import type { Key, Selection } from '../../src/core/props.js';
 import { LabSection } from './chrome/index.js';
 
 const notes = Array.from({ length: 15 }, (_, at) => ({

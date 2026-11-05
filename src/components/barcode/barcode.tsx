@@ -5,7 +5,7 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { encodeBarcode, type BarcodeFormat } from './encode-barcode.js';
+import { type BarcodeFormat, encodeBarcode } from './encode-barcode.js';
 
 export interface BarcodeProps extends BaseProps, AriaLabellingProps, RefProps<HTMLDivElement> {
   /** The value to encode: text for `code128`, digits for the EAN and UPC formats. */

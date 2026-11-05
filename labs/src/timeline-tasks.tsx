@@ -1,14 +1,14 @@
 import { useState } from 'react';
+import type { MenuEntry } from '../../src/components/menu/menu.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import {
   Timeline,
-  TimelineItemEditor,
   type TimelineItem,
+  TimelineItemEditor,
   type TimelinePerson,
   type TimelineRow,
   type TimelineView,
 } from '../../src/components/timeline/index.js';
-import type { MenuEntry } from '../../src/components/menu/menu.js';
 import type { Key } from '../../src/core/props.js';
 
 const gardenRows: TimelineRow[] = [

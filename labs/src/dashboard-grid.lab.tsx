@@ -1,22 +1,23 @@
-import { useState, type CSSProperties } from 'react';
-import type { DashboardTileMenuIcons } from '../../src/components/dashboard-grid/index.js';
-import type { Key } from '../../src/core/props.js';
-import { DeleteGlyph, MoveGlyph } from '../../src/core/glyphs.js';
+import { type CSSProperties, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Card } from '../../src/components/card/card.js';
-import { BarChart } from '../../src/components/chart/index.js';
-import { DonutChart } from '../../src/components/chart/index.js';
+import { BarChart, DonutChart } from '../../src/components/chart/index.js';
 import {
   DashboardGrid,
   type DashboardGridItem,
   type DashboardTileMenuEntry,
 } from '../../src/components/dashboard-grid/dashboard-grid.js';
-import { TextField } from '../../src/components/text-field/text-field.js';
-import { DashboardTile } from '../../src/components/dashboard-grid/index.js';
+import {
+  DashboardTile,
+  type DashboardTileMenuIcons,
+} from '../../src/components/dashboard-grid/index.js';
 import { StatTile } from '../../src/components/stat-tile/stat-tile.js';
+import { TextField } from '../../src/components/text-field/text-field.js';
+import { DeleteGlyph, MoveGlyph } from '../../src/core/glyphs.js';
+import type { Key } from '../../src/core/props.js';
 import { useUiStorage } from '../../src/core/provider.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { requireDefined } from './require-defined.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const titles: Record<string, string> = {
   visitors: 'Visitors',

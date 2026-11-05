@@ -1,22 +1,22 @@
-import { PlusGlyph } from '../../core/glyphs.js';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState, createRef } from 'react';
+import { createRef, useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import {
   EditableDiagram,
   pipeEdges,
   pipeNodes,
   stubViewportSize,
 } from '../../../test/diagram-fixtures.js';
+import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { inShadow, ShadowHost } from '../../../test/shadow-fixtures.js';
+import { PlusGlyph } from '../../core/glyphs.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import {
   DiagramCanvas,
+  type DiagramEdge,
   DiagramPaletteItem,
   routeDiagramEdge,
-  type DiagramEdge,
 } from './diagram-canvas.js';
 
 afterEach(() => {

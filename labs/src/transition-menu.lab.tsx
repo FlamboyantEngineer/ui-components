@@ -6,8 +6,8 @@ import {
   type TransitionMenuTransition,
 } from '../../src/components/transition-menu/transition-menu.js';
 import type { Key } from '../../src/core/props.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { requireDefined } from './require-defined.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { TransitionMenuFailureSections } from './transition-menu-failure-cases.js';
 
 const states: TransitionMenuState[] = [

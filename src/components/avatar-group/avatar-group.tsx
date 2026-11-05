@@ -1,13 +1,13 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import type { BaseProps, Size, RefProps } from '../../core/props.js';
+import type { BaseProps, RefProps, Size } from '../../core/props.js';
 import { assignOccurrenceKeys } from '../../utils/stable-keys.js';
 import type { AvatarIdentity, AvatarProps } from '../avatar/avatar.js';
-import { AvatarGroupPeople } from './avatar-group-people.js';
-import { AvatarGroupListTrigger } from './avatar-group-list.js';
-import { usePresenceLabels, windowPeople } from './avatar-group-window.js';
 import { avatarGroupHooks as hooks } from './avatar-group-hooks.js';
+import { AvatarGroupListTrigger } from './avatar-group-list.js';
+import { AvatarGroupPeople } from './avatar-group-people.js';
+import { usePresenceLabels, windowPeople } from './avatar-group-window.js';
 
 export interface AvatarGroupPerson
   extends AvatarIdentity, Pick<AvatarProps, 'status' | 'statusLabel'> {

@@ -1,8 +1,8 @@
-import { PlusGlyph } from '../../core/glyphs.js';
 import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { PlusGlyph } from '../../core/glyphs.js';
 import { SelectField, type SelectFieldItem, type SelectFieldOption } from './select-field.js';
 
 const produce: SelectFieldItem[] = [

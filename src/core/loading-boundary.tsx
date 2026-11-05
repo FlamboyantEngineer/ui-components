@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useLayoutEffect, useMemo, useRef, type ReactNode } from 'react';
+import { createContext, type ReactNode, useContext, useLayoutEffect, useMemo, useRef } from 'react';
 import { containsComposed, getComposedActiveElement } from '../utils/composed-focus.js';
 import { useLatest } from '../utils/use-latest.js';
 
@@ -9,7 +9,7 @@ import { useLatest } from '../utils/use-latest.js';
  * so the library's overlays opened from that content, which render outside it in a portal, become
  * unavailable with it.
  */
-export interface LoadingBoundary {
+interface LoadingBoundary {
   /** Whether the content is unavailable: busy, inert and, for a skeleton, hidden. */
   isSuspended: boolean;
   /**

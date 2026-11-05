@@ -2,15 +2,15 @@ import { useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
   Popover,
-  PopoverTrigger,
   type PopoverProps,
+  PopoverTrigger,
 } from '../../src/components/popover/popover.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import {
   getOverlayBoundary,
-  resolveOverlayGeometry,
   type OverlayGeometry,
+  resolveOverlayGeometry,
 } from '../../src/utils/index.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 import { PopoverCoverageSections } from './popover-coverage-cases.js';
 

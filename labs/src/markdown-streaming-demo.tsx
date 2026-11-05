@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
+  type ChatSource,
   ChatSources,
   createCitationOverride,
-  type ChatSource,
 } from '../../src/components/chat-sources/index.js';
 import { createCodeBlockOverride } from '../../src/components/code-block/index.js';
 import { Markdown, type MarkdownNode } from '../../src/components/markdown/index.js';

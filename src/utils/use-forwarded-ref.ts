@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, type Ref, type RefCallback, type RefObject } from 'react';
+import { type Ref, type RefCallback, type RefObject, useRef } from 'react';
 import { useMergedRefs } from './use-merged-refs.js';
 
 /**

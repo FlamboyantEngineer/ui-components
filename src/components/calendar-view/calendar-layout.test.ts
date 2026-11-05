@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { getWeekDays } from './calendar-days.js';
 import {
   countVisibleLanes,
   findColumnSegments,
@@ -6,7 +7,6 @@ import {
   layoutWeek,
   readEvents,
 } from './calendar-layout.js';
-import { getWeekDays } from './calendar-days.js';
 import type { CalendarViewEvent } from './calendar-view.js';
 
 const day = (text: string) => text;

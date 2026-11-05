@@ -1,4 +1,3 @@
-export { ChatParts } from './chat-parts.js';
 export type {
   ChatCodePart,
   ChatCustomPart,
@@ -6,10 +5,10 @@ export type {
   ChatFilesPart,
   ChatMessageData,
   ChatPart,
-  ChatPartType,
   ChatParticipant,
   ChatParticipantKind,
   ChatPartsProps,
+  ChatPartType,
   ChatPlanPart,
   ChatQuestionPart,
   ChatReasoningPart,
@@ -21,3 +20,4 @@ export type {
   ChatToolCallPart,
   ChatToolRenderer,
 } from './chat-parts.js';
+export { ChatParts } from './chat-parts.js';

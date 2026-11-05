@@ -1,5 +1,15 @@
 'use client';
 
+// The menu of a tab's actions, opened from the tab like a context menu.
+import {
+  type KeyboardEvent,
+  type MouseEvent,
+  type PointerEvent,
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+} from 'react';
 import {
   ArrowDownGlyph,
   ArrowLeftGlyph,
@@ -9,31 +19,19 @@ import {
   DeleteGlyph,
   EditGlyph,
 } from '../../core/glyphs.js';
-import { joinMenuGroups } from '../menu/menu.js';
-// The menu of a tab's actions, opened from the tab like a context menu.
-
-import {
-  useCallback,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  type KeyboardEvent,
-  type MouseEvent,
-  type PointerEvent,
-} from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useLatest } from '../../utils/use-latest.js';
 import {
   ContextMenu,
-  useContextMenuTarget,
   type MenuController,
+  useContextMenuTarget,
 } from '../context-menu/context-menu.js';
-import type { MenuEntry, MenuItemEntry } from '../menu/menu.js';
-import { resolveActionIcon, type MenuActionIcons } from '../menu/menu-action-icons.js';
-import { isTabAvailable, type TabsShared, type TabListModel } from './tab-actions.js';
-import { useLatest } from '../../utils/use-latest.js';
-import type { TabRename } from './tab-rename.js';
 import type { IconSource } from '../icon/icon.js';
+import { joinMenuGroups, type MenuEntry, type MenuItemEntry } from '../menu/menu.js';
+import { type MenuActionIcons, resolveActionIcon } from '../menu/menu-action-icons.js';
+import { isTabAvailable, type TabListModel, type TabsShared } from './tab-actions.js';
+import type { TabRename } from './tab-rename.js';
 import { stepTabMove, type TabReorder } from './tab-reorder.js';
 
 /** Lists the entries of a tab's menu, given the tab's `id` and the standard entries. */

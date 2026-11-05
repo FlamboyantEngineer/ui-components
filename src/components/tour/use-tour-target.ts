@@ -1,6 +1,6 @@
 'use client';
 
-import { useLayoutEffect, useState, type RefObject } from 'react';
+import { type RefObject, useLayoutEffect, useState } from 'react';
 import { getOwnerDocument } from '../../utils/owner-window.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { usePortalContainer } from '../portal/portal.js';

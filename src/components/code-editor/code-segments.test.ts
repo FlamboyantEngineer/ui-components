@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { splitSegments, type CodeDecorations } from './code-segments.js';
+import { type CodeDecorations, splitSegments } from './code-segments.js';
 
 const empty = { matches: [], brackets: [], caret: null };
 

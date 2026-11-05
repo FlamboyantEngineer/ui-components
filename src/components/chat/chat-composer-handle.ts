@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useImperativeHandle, type Ref, type RefObject } from 'react';
+import { type Ref, type RefObject, useEffect, useImperativeHandle } from 'react';
 import { useLatest } from '../../utils/use-latest.js';
 import type { ChatTextToken } from '../chat-parts/chat-parts.js';
 import type {
@@ -18,6 +18,16 @@ import { toComposerTokens, toDisplayTokens } from './chat-model.js';
  */
 export type ChatComposerInsertResult =
   'inserted' | 'other-conversation' | 'disabled' | 'editing' | 'submitting' | 'unavailable';
+
+/**
+ * Sends a text with its mentions and commands about a message: an edit or a reply. A returned
+ * promise holds the composer's message until it settles, as `onSend` does.
+ */
+export type ChatMessageTextHandler = (
+  messageId: string,
+  text: string,
+  tokens: readonly ChatTextToken[],
+) => void | Promise<unknown>;
 
 /** A conversation's draft: its text and tokens, as `onSend` would receive them. */
 export interface ChatDraft {
@@ -131,7 +141,7 @@ function readChatDraft(
 }
 
 /** Content as the composer takes it: tokens by their bare labels. */
-export function toComposerContent(content: ChatComposerContent): MessageComposerContent {
+function toComposerContent(content: ChatComposerContent): MessageComposerContent {
   if (typeof content === 'string') return content;
   return { text: content.text, tokens: toComposerTokens(content.tokens) };
 }

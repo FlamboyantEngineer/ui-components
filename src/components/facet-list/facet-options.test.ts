@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { listFacetOptions, type FacetListOption } from './facet-options.js';
+import { type FacetListOption, listFacetOptions } from './facet-options.js';
 
 const options: FacetListOption[] = ['Lisbon', 'Oslo', 'Lima', 'Hanoi', 'Cork', 'Perth'].map(
   (label) => ({ value: label.toLowerCase(), label }),

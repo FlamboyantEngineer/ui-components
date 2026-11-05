@@ -8,13 +8,13 @@ import {
   offsetInViewport,
   resizeContent,
   scrollViewport,
-  uninstallTranscriptLayout,
   type TranscriptLayout,
+  uninstallTranscriptLayout,
 } from '../../../test/transcript-layout-fixtures.js';
 import {
   ChatMessage,
-  ChatTranscript,
   type ChatMessageOrigin,
+  ChatTranscript,
   type ChatTranscriptScrollMode,
 } from './chat-transcript.js';
 

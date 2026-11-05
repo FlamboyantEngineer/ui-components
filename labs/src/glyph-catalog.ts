@@ -1,5 +1,5 @@
+import type { GlyphComponent, GlyphName } from '../../src/core/index.js';
 import * as core from '../../src/core/index.js';
-import { type GlyphComponent, type GlyphName } from '../../src/core/index.js';
 
 const isGlyph = (value: unknown): value is Required<GlyphComponent> =>
   typeof value === 'function' && 'glyphName' in value;

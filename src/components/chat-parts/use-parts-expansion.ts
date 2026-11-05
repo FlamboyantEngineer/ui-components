@@ -1,8 +1,8 @@
 'use client';
 import { useEffect, useRef } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
-import { useLatest } from '../../utils/use-latest.js';
 import { readOwn } from '../../utils/read-own.js';
+import { useLatest } from '../../utils/use-latest.js';
 
 /** The reader's open (`true`) and closed (`false`) choices, by part id or group key. */
 type ExpandedParts = Readonly<Record<string, boolean>>;

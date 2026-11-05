@@ -1,3 +1,4 @@
+import { isShallowEqual } from '../../utils/is-shallow-equal.js';
 import { findLastVisible, readDistanceToBottom, readOffset } from './transcript-geometry.js';
 import {
   resolveMessageKey,
@@ -5,7 +6,6 @@ import {
   type TranscriptSettings,
   type TranscriptUi,
 } from './transcript-runtime.js';
-import { isShallowEqual } from '../../utils/is-shallow-equal.js';
 
 /** How long the newest message in view must stay the newest before `onRead` hears of it. */
 const readDelay = 500;

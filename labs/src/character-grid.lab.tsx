@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import { UiProvider } from '../../src/core/provider.js';
-import { createMemoryStorage } from '../../src/core/storage.js';
 import { Button } from '../../src/components/button/button.js';
 import {
   CharacterGrid,
@@ -8,7 +6,9 @@ import {
   type CharacterGridCharacter,
 } from '../../src/components/character-grid/character-grid.js';
 import { Popover, PopoverTrigger } from '../../src/components/popover/popover.js';
-import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { UiProvider } from '../../src/core/provider.js';
+import { createMemoryStorage } from '../../src/core/storage.js';
+import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const symbols: CharacterGridCategory[] = [
   {

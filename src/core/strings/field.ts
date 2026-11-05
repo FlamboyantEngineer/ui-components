@@ -1,6 +1,6 @@
 import { defineStrings } from '../message-format.js';
 /** Strings of the field base and the field controls. */
-export interface FieldStrings {
+interface FieldStrings {
   /** Opens a file chooser. */
   browse: string;
   /** States a size limit, from the formatted size. */

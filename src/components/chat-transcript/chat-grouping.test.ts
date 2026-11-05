@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
-  groupChatMessages,
   type ChatGroupableMessage,
   type ChatSequenceItem,
+  groupChatMessages,
 } from './chat-grouping.js';
 
 /** Each item as a short word: the day of a separator, `unread`, or `<id>:<position>`. */

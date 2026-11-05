@@ -7,7 +7,7 @@ import { useCallback, useLayoutEffect, useRef } from 'react';
 import { getComposedActiveElement, isFocusLost } from './focus-target.js';
 import { isNode } from './is-element.js';
 
-export interface OverflowFocusSelectors {
+interface OverflowFocusSelectors {
   /** Matches each item of the row that can hold focus or contain it. */
   item: string;
   /** Matches the overflow menu's button, where focus goes when the focused item collapses. */

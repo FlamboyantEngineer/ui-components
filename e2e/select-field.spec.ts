@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
-import { cellSelector, controlHeight, expect, familySelector, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
+import { cellSelector, controlHeight, expect, familySelector, test } from './fixtures.js';
 
 function cell(page: Page, state: string, layout: string): Locator {
   return page.locator(
