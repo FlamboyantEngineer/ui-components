@@ -75,6 +75,7 @@ export * from './components/find-bar/index.js';
 export * from './components/focus-scope/index.js';
 export * from './components/folder-manager/index.js';
 export * from './components/form/index.js';
+export * from './components/form-layout/index.js';
 export * from './components/formula-bar/index.js';
 export * from './components/four-side-property-strip/index.js';
 export * from './components/grid-size-picker/index.js';

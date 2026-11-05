@@ -36,6 +36,10 @@ export const acceptedIncomplete: Readonly<Record<string, Readonly<Record<string,
     'form-field-multiple-labels':
       "The checkbox has the field's label and React Aria's wrapping label; aria-labelledby names it by the field's.",
   },
+  'form-layout': {
+    'form-field-multiple-labels':
+      "The sample toggles' checkboxes have the field's label and React Aria's wrapping label; aria-labelledby names them by the field's.",
+  },
   form: {
     'form-field-multiple-labels':
       "The checkbox has the field's label and React Aria's wrapping label; aria-labelledby names it by the field's.",
