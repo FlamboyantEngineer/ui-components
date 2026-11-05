@@ -254,10 +254,10 @@ A late answer changes nothing when any of these holds:
 - The composer is disabled or submitting.
 - The composer unmounted.
 
-So a late answer never writes into another draft or conversation.
+So a late answer never writes into another draft or conversation. However the promise settles, the composer stops keeping that paste's range, without an undo step of its own, so a long-lived draft holds no record of pastes that have settled.
 
 Implementation: `src/components/message-composer/rich/composer-paste.ts`, `src/components/message-composer/rich/rich-editor.tsx`, `src/components/message-composer/rich/composer-commands.ts`
-Verification: `src/components/message-composer/rich/composer-selection.test.tsx`, `e2e/message-composer-ranges.spec.ts`
+Verification: `src/components/message-composer/rich/composer-selection.test.tsx`, `src/components/message-composer/rich/composer-paste.test.ts`, `e2e/message-composer-ranges.spec.ts`
 
 ### UIC-MESSAGE-COMPOSER-4.13 - Host triggers
 

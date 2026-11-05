@@ -78,11 +78,14 @@ export function createPendingPastePlugin(): Plugin<PendingPastes> {
 
 let nextPasteId = 1;
 
-/** The pasted text's range now, if it still reads as it did when pasted. */
+/** The pasted text waiting for answer `id`, where it lies now, if it is still held. */
 function findPending(state: EditorState, id: number): PendingPaste | null {
-  const paste = pendingKey.getState(state)?.get(id);
-  if (!paste) return null;
-  return state.doc.textBetween(paste.from, paste.to, '\n', '\n') === paste.text ? paste : null;
+  return pendingKey.getState(state)?.get(id) ?? null;
+}
+
+/** Whether the pasted text still reads as it did when pasted, so an answer may replace it. */
+function isUnedited(state: EditorState, paste: PendingPaste): boolean {
+  return state.doc.textBetween(paste.from, paste.to, '\n', '\n') === paste.text;
 }
 
 /** Pastes the plain text at once and keeps its range for the host's answer; returns its id. */
@@ -97,7 +100,11 @@ function pasteWhilePending(view: EditorView, text: string): number {
   return id;
 }
 
-/** Puts the host's later answer in place of the pasted text, as an undo step of its own. */
+/**
+ * Puts the host's later answer in place of the pasted text, as an undo step of its own, and lets go
+ * of the paste however it settles. A refused or empty answer, or one for text the reader has edited
+ * since, only drops the record, outside the undo history, and keeps the reader's text.
+ */
 function settlePending(
   view: EditorView,
   id: number,
@@ -107,8 +114,9 @@ function settlePending(
   const paste = findPending(view.state, id);
   if (!paste) return;
   const { state } = view;
-  if (!fragment) {
-    view.dispatch(state.tr.setMeta(pendingKey, { remove: id } satisfies PendingMeta));
+  if (!fragment || !isUnedited(state, paste)) {
+    const release = state.tr.setMeta(pendingKey, { remove: id } satisfies PendingMeta);
+    view.dispatch(release.setMeta('addToHistory', false));
     return;
   }
   const range = {
