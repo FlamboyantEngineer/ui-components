@@ -82,13 +82,13 @@ test.describe('Mini App lab', () => {
 
     const frame = demo.locator('iframe');
     await expect(async () => {
-      const height = Number(await frame.getAttribute('height'));
+      const inner = await frame.evaluate((element) => element.clientHeight);
       const content = await frame
         .contentFrame()
         .locator('html')
         .evaluate((html) => html.getBoundingClientRect().height);
-      expect(height).toBe(Math.ceil(content));
-      expect(height).toBeGreaterThan(200);
+      expect(inner).toBe(Math.ceil(content));
+      expect(inner).toBeGreaterThan(200);
     }).toPass();
 
     await demo.getByRole('button', { name: 'Restart chart' }).click();
@@ -146,5 +146,77 @@ test.describe('Mini App lab', () => {
       'Sample: timeout could not run.',
     );
     await lab.expectAccessible('[data-lab-matrix]');
+  });
+
+  test('UIC-MINI-APP-2.3 UIC-MINI-APP-4.2 probes the engineering chart from its sliders', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('mini-app');
+    const demo = page.locator('[data-lab-demo="bode"]');
+    await expect(demo.locator('.ui-mini-app')).toHaveAttribute('data-status', 'ready');
+    const app = page.frameLocator('iframe[title="Low-pass filter Bode plot"]');
+    await expect(app.locator('#readout')).toHaveText('At 1.00 kHz: -3.0 dB, -90.0°.');
+    await expect(app.locator('#peak')).toHaveText(
+      'No resonance peak: the filter is damped enough not to ring.',
+    );
+    await app.getByLabel('Damping ratio ζ').fill('0.2');
+    await expect(app.locator('#peak')).toHaveText('Resonance peak: +8.1 dB at 959 Hz.');
+    await app.getByLabel('Probe frequency').focus();
+    await page.keyboard.press('End');
+    await expect(app.locator('#readout')).toContainText('At 100 kHz:');
+    await expect(demo.locator('[data-lab-output="state"]')).toHaveText(
+      '{"cutoff":3,"damping":0.2,"probe":5}',
+    );
+    await lab.expectAccessible('[data-lab-demo="bode"]');
+  });
+
+  test('UIC-MINI-APP-2.3 plots and tabulates the physics calculator as its inputs change', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('mini-app');
+    const demo = page.locator('[data-lab-demo="projectile"]');
+    await expect(demo.locator('.ui-mini-app')).toHaveAttribute('data-status', 'ready');
+    const app = page.frameLocator('iframe[title="Projectile calculator"]');
+    const range = app.getByRole('row', { name: /^Range/ });
+    await expect(range.getByRole('cell').first()).toHaveText('93.2 m');
+    const withDrag = Number.parseFloat((await range.getByRole('cell').nth(1).textContent()) ?? '');
+    expect(withDrag).toBeLessThan(93.2);
+    await expect(
+      app
+        .getByRole('row', { name: /^Peak height/ })
+        .getByRole('cell')
+        .first(),
+    ).toHaveText('24.4 m');
+    await expect(app.locator('#plot path')).toHaveCount(2);
+    await app.getByLabel('World').selectOption('moon');
+    await expect(range.getByRole('cell').first()).toHaveText('557.1 m');
+    await expect(range.getByRole('cell').nth(1)).toHaveText('557.1 m');
+    await expect(demo.locator('[data-lab-output="state"]')).toHaveText(
+      '{"speed":30,"angle":45,"height":1.5,"mass":0.43,"diameter":22,"world":"moon"}',
+    );
+    await lab.expectAccessible('[data-lab-demo="projectile"]');
+  });
+
+  test('UIC-MINI-APP-4.1 sizes every ready frame to its content without a scrollbar', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('mini-app');
+    const frames = page.locator('.ui-mini-app[data-status="ready"] iframe');
+    await expect(page.locator('.ui-mini-app[data-status="loading"]')).toHaveCount(0);
+    const count = await frames.count();
+    expect(count).toBe(5);
+    for (let index = 0; index < count; index += 1) {
+      const frame = frames.nth(index);
+      await expect(async () => {
+        const overflow = await frame
+          .contentFrame()
+          .locator('html')
+          .evaluate((html) => html.scrollHeight - html.clientHeight);
+        expect(overflow).toBe(0);
+      }).toPass();
+    }
   });
 });

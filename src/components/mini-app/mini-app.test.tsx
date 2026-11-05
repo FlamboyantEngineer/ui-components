@@ -121,6 +121,25 @@ describe('MiniApp', () => {
     await waitFor(() => expect(frame).toHaveAttribute('height', '120'));
   });
 
+  it('UIC-MINI-APP-4.1 adds the borders and padding of a border-box frame, so its content never scrolls', async () => {
+    renderMiniApp();
+    const frame = frameOf();
+    const sheet = document.createElement('style');
+    sheet.textContent =
+      '.ui-mini-app__frame { box-sizing: border-box; border: 1px solid; padding: 2px 0 3.5px; }';
+    document.head.append(sheet);
+    try {
+      const { send } = await connect(frame);
+      send({ type: 'resize', height: 100 });
+      await waitFor(() => expect(frame).toHaveAttribute('height', '108'));
+      sheet.textContent = '.ui-mini-app__frame { box-sizing: content-box; border: 1px solid; }';
+      send({ type: 'resize', height: 90 });
+      await waitFor(() => expect(frame).toHaveAttribute('height', '90'));
+    } finally {
+      sheet.remove();
+    }
+  });
+
   it('UIC-MINI-APP-2.2 answers calls with the named capability’s result', async () => {
     const double = vi.fn((args: unknown) => Number(args) * 2);
     const later = vi.fn(async (args: unknown) => `rate for ${String(args)}`);

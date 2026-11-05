@@ -7,7 +7,6 @@
 }
 
 .ui-mini-app__frame {
-  max-height: 640px;
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius);
 }

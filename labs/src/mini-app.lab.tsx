@@ -3,9 +3,11 @@ import { Button } from '../../src/components/button/button.js';
 import {
   MiniApp,
   type MiniAppError,
+  type MiniAppSource,
   type MiniAppState,
 } from '../../src/components/mini-app/index.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { bodeSource, projectileSource } from './mini-app-plot-samples.js';
 import { calculatorSource, chartSource, outcomeSources } from './mini-app-samples.js';
 
 const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
@@ -56,6 +58,27 @@ function ChartDemo() {
   );
 }
 
+/** A mini-app that reports the state it saves, for the engineering and physics samples. */
+function SavedStateDemo({
+  name,
+  title,
+  source,
+}: {
+  name: string;
+  title: string;
+  source: MiniAppSource;
+}) {
+  const [saved, setSaved] = useState<MiniAppState>(null);
+  return (
+    <div data-lab-demo={name} style={{ display: 'grid', gap: 8, maxWidth: 640 }}>
+      <MiniApp title={title} source={source} onStateChange={setSaved} />
+      <p>
+        Saved state: <output data-lab-output="state">{JSON.stringify(saved)}</output>
+      </p>
+    </div>
+  );
+}
+
 function OutcomeCell({ outcome }: { outcome: keyof typeof outcomeSources }) {
   const [error, setError] = useState<MiniAppError>();
   return (
@@ -86,6 +109,18 @@ mountLab(
       description="An SVG bar chart with a year switch and a threshold slider. Each change is saved to the host; Restart chart remounts it, and it starts from the saved state. The frame follows its content's height."
     >
       <ChartDemo />
+    </LabSection>
+    <LabSection
+      title="Engineering chart"
+      description="A Bode plot of a second-order low-pass filter on a logarithmic frequency axis. Sliders set the cutoff frequency and damping ratio; the probe slider, or the pointer over the plot, reads gain and phase at any frequency."
+    >
+      <SavedStateDemo name="bode" title="Low-pass filter Bode plot" source={bodeSource} />
+    </LabSection>
+    <LabSection
+      title="Physics calculator"
+      description="A projectile flown in a vacuum and through air with quadratic drag, integrated step by step. Speed, angle, height, ball size and world update the trajectory plot and the results table as they change."
+    >
+      <SavedStateDemo name="projectile" title="Projectile calculator" source={projectileSource} />
     </LabSection>
     <LabSection
       title="Outcomes"
