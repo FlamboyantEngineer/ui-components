@@ -538,6 +538,8 @@
   "imageLoadFailed": "Impossible de charger « {name} ».",
   "thumbnails": "Miniatures",
   "mediaStage": "{name}, visionneuse",
+  "miniAppLoading": "Chargement de {title}…",
+  "miniAppFailed": "Impossible d’exécuter {title}.",
   "gridSizePicker": "Taille du tableau",
   "gridSize": "{rows} × {columns}",
   "gridSizeCell": "{rows, plural, one {# ligne} other {# lignes}} sur {columns, plural, one {# colonne} other {# colonnes}}",

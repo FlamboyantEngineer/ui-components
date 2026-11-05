@@ -538,6 +538,8 @@
   "imageLoadFailed": "“{name}” could not be loaded.",
   "thumbnails": "Thumbnails",
   "mediaStage": "{name}, viewer",
+  "miniAppLoading": "Loading {title}…",
+  "miniAppFailed": "{title} could not run.",
   "gridSizePicker": "Table size",
   "gridSize": "{rows} × {columns}",
   "gridSizeCell": "{rows, plural, one {# row} other {# rows}} by {columns, plural, one {# column} other {# columns}}",

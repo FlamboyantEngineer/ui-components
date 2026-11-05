@@ -105,6 +105,7 @@
 @import url('reference/merge-view.css') layer(ui-reference);
 @import url('reference/message-composer.css') layer(ui-reference);
 @import url('reference/meta-line.css') layer(ui-reference);
+@import url('reference/mini-app.css') layer(ui-reference);
 @import url('reference/modal.css') layer(ui-reference);
 @import url('reference/navigation-rail.css') layer(ui-reference);
 @import url('reference/notification-center.css') layer(ui-reference);

@@ -538,6 +538,8 @@
   "imageLoadFailed": "No se pudo cargar «{name}».",
   "thumbnails": "Miniaturas",
   "mediaStage": "{name}, visor",
+  "miniAppLoading": "Cargando {title}…",
+  "miniAppFailed": "No se pudo ejecutar {title}.",
   "gridSizePicker": "Tamaño de la tabla",
   "gridSize": "{rows} × {columns}",
   "gridSizeCell": "{rows, plural, one {# fila} other {# filas}} por {columns, plural, one {# columna} other {# columnas}}",
