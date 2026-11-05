@@ -62,6 +62,23 @@
   --ref-code-editor-line: 20px;
 }
 
+/*
+ * Editors inside a field take the field's type, which its size sets. An expression's one-line source
+ * box also takes the field's control height, like a text field: the padding centres one line inside
+ * its 1px border.
+ */
+.ui-math-field .ui-code-editor[data-variant='surface'][data-size] {
+  --ref-code-editor-font: 1em;
+  --ref-code-editor-line: 1.45em;
+  --ref-code-editor-pad: 0.45em;
+}
+
+.ui-expression-field .ui-code-editor[data-variant='surface'][data-single-line] {
+  --ref-code-editor-font: 1em;
+  --ref-code-editor-line: 1.4em;
+  --ref-code-editor-pad: calc((var(--ref-control-height) - 2px - 1.4em) / 2);
+}
+
 /* The surface, not the text area, resizes, so both layers keep the same size. */
 .ui-code-editor__surface {
   display: flex;

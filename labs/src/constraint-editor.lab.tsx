@@ -7,6 +7,7 @@ import {
   type ConstraintSet,
 } from '../../src/components/constraint-editor/index.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { ConstraintEditorCorners, ConstraintEditorSizes } from './constraint-editor-cases.js';
 import { LabOutput } from './lab-output.js';
 
 const column: CSSProperties = { width: 380 };
@@ -97,6 +98,8 @@ mountLab(
         )}
       />
     </LabSection>
+    <ConstraintEditorSizes />
+    <ConstraintEditorCorners />
     <LabSection
       title="Schema fields"
       description="Unset differs from false, 0 and an empty default. Bounds keep every digit. Try a maximum below the minimum: the problem shows and nothing is repaired."

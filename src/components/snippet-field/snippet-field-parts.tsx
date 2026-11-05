@@ -1,5 +1,6 @@
 'use client';
 
+import type { ControlSize } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { CodeBlock } from '../code-block/code-block.js';
@@ -61,6 +62,8 @@ export function SnippetPreviewPanel(props: {
   isUnchanged: boolean;
   isStale: boolean;
   isDisabled: boolean;
+  /** The field's control size, which its buttons take. */
+  size: ControlSize;
   tokenize: CodeTokenizer | undefined;
   onApply: () => void;
   onCancel: () => void;
@@ -86,13 +89,13 @@ export function SnippetPreviewPanel(props: {
       <Button
         className={hooks.slotClass('apply')}
         variant="primary"
-        size="sm"
+        size={props.size}
         isDisabled={props.isDisabled || preview.status !== 'ready' || props.isUnchanged}
         onPress={props.onApply}
       >
         {props.isStale ? strings.snippetUpdate : strings.snippetApply}
       </Button>
-      <Button className={hooks.slotClass('cancel')} size="sm" onPress={props.onCancel}>
+      <Button className={hooks.slotClass('cancel')} size={props.size} onPress={props.onCancel}>
         {strings.cancel}
       </Button>
     </div>

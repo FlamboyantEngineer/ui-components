@@ -324,7 +324,7 @@ export type {
   FieldDensity,
   FieldLabelLayout,
 } from './field-parts.js';
-export { FieldMessage } from './field-parts.js';
+export { FieldMessage, toInnerControlSize } from './field-parts.js';
 export { PickerOptionRow, usePickerEmptyContent, usePickerPopoverStyle } from './field-picker.js';
 export type { PickerItem, PickerOption, PickerSection } from './field-picker-items.js';
 export { flattenPickerItems, isPickerSection, pickerListLayout } from './field-picker-items.js';

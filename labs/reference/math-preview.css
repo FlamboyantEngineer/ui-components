@@ -42,6 +42,13 @@
   min-width: 0;
 }
 
+/* The preview stands below the editor, both as wide as the field. */
+.ui-math-field .ui-field__control:has(> .ui-math-field__editor) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+}
+
 .ui-math-field__editor {
   min-width: 0;
 }

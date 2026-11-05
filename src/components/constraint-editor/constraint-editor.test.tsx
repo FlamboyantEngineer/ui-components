@@ -38,6 +38,25 @@ describe('ConstraintEditor', () => {
     });
   });
 
+  it('UIC-CONSTRAINT-EDITOR-2.1 sizes every control, and Unset the size below', () => {
+    const { container, rerender } = render(
+      <ConstraintEditor kind="text" aria-label="Rules" defaultValue={{ maxLength: 4 }} />,
+    );
+    const panel = screen.getByRole('region', { name: 'Rules' });
+    expect(panel).toHaveAttribute('data-size', 'md');
+    rerender(
+      <ConstraintEditor kind="text" aria-label="Rules" size="lg" defaultValue={{ maxLength: 4 }} />,
+    );
+    expect(panel).toHaveAttribute('data-size', 'lg');
+    for (const field of container.querySelectorAll('.ui-field')) {
+      expect(field).toHaveAttribute('data-size', 'lg');
+    }
+    expect(screen.getByRole('button', { name: 'Unset Longest length' })).toHaveAttribute(
+      'data-size',
+      'md',
+    );
+  });
+
   it('UIC-CONSTRAINT-EDITOR-1.1 UIC-CONSTRAINT-EDITOR-2.1 narrows to the declared constraints and kinds', () => {
     const { container, rerender } = render(
       <ConstraintEditor kind="number" aria-label="Rules" constraints={['maximum', 'required']} />,

@@ -167,7 +167,7 @@ function SnippetRequestInputs({
         {state.isReadOnly ? null : (
           <Button
             className={hooks.slotClass('preview-button')}
-            size="sm"
+            size={model.field.size ?? 'md'}
             isDisabled={state.isDisabled || !request || request.source === ''}
             onPress={() => {
               if (request) model.load(request);
@@ -213,6 +213,7 @@ export function SnippetField(props: SnippetFieldProps) {
               preview={shown}
               isUnchanged={model.isUnchanged}
               isStale={model.isStale}
+              size={field.size ?? 'md'}
               isDisabled={state.isDisabled || state.isReadOnly}
               tokenize={model.rest.tokenize}
               onApply={model.apply}

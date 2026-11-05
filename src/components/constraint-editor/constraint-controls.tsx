@@ -1,10 +1,11 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import type { ControlSize } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { DateTimeField } from '../date-time-field/date-time-field.js';
-import type { FieldIssue } from '../field/field.js';
+import { type FieldIssue, toInnerControlSize } from '../field/field.js';
 import { NumberField } from '../number-field/number-field.js';
 import { SelectField, type SelectFieldItem } from '../select-field/select-field.js';
 import { TextField } from '../text-field/text-field.js';
@@ -25,6 +26,8 @@ export interface ConstraintControl {
   isReadOnly: boolean;
   /** The problems shown on the control: the editor's own, then the host's error for it. */
   issues: readonly FieldIssue[];
+  /** The editor's control size, for the control to take. */
+  size: ControlSize;
 }
 
 interface BuiltInControlOptions {
@@ -43,6 +46,7 @@ function RequiredControl({ control }: { control: ConstraintControl }) {
   return (
     <SelectField
       label={control.label}
+      size={control.size}
       options={(['required', 'optional'] as const).map((choice) => ({
         id: choice,
         label: strings.constraintRequiredChoice(choice),
@@ -66,6 +70,7 @@ function ValueControl({ kind, control, options }: BuiltInControlOptions) {
   const { name, label, value, onChange, isReadOnly, issues } = control;
   const common = {
     label,
+    size: control.size,
     isReadOnly,
     validate: () => issues,
     validationMode: 'immediate' as const,
@@ -110,6 +115,7 @@ function CountControl({ control }: { control: ConstraintControl }) {
   return (
     <NumberField
       label={control.label}
+      size={control.size}
       placeholder={strings.constraintNotSet}
       minValue={0}
       step={1}
@@ -147,7 +153,7 @@ export function ConstraintUnsetButton({ control }: { control: ConstraintControl 
   return (
     <Button
       className={hooks.slotClass('unset')}
-      size="sm"
+      size={toInnerControlSize(control.size)}
       variant="ghost"
       onPress={() => control.onChange(undefined)}
     >

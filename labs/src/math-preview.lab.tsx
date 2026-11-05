@@ -7,6 +7,7 @@ import {
 } from '../../src/components/math-preview/index.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
+import { MathFieldCorners, MathFieldSizes, MathPreviewCorners } from './math-preview-cases.js';
 
 const column: CSSProperties = { width: 460 };
 
@@ -83,6 +84,7 @@ mountLab(
         )}
       />
     </LabSection>
+    <MathPreviewCorners />
     <LabSection title="Inline in text" description="Inline math sits in its line of text.">
       <p data-lab-demo="inline" style={column}>
         The area of a circle is <MathPreview source="\pi r^2" />, and its circumference is{' '}
@@ -95,6 +97,8 @@ mountLab(
     >
       <FieldDemo />
     </LabSection>
+    <MathFieldSizes />
+    <MathFieldCorners />
     <LabSection title="Latest source wins" description="A slow renderer shows the stale state.">
       <SlowDemo />
     </LabSection>

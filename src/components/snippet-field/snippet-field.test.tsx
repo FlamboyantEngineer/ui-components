@@ -60,6 +60,24 @@ describe('SnippetField', () => {
     });
   });
 
+  it('UIC-SNIPPET-FIELD-1.1 sizes its buttons with the field', async () => {
+    const user = userEvent.setup();
+    const { loadSnippet, calls } = createLoader();
+    const { container } = render(
+      <SnippetField label="Example" size="lg" loadSnippet={loadSnippet} />,
+    );
+    expect(container.querySelector('.ui-snippet-field')).toHaveAttribute('data-size', 'lg');
+    expect(previewButton()).toHaveAttribute('data-size', 'lg');
+    await user.type(field(), 'notes/a.ts');
+    await user.click(previewButton());
+    calls[0]?.resolve({ ok: true, code: 'a();' });
+    expect(await screen.findByRole('button', { name: 'Use snippet' })).toHaveAttribute(
+      'data-size',
+      'lg',
+    );
+    expect(screen.getByRole('button', { name: 'Cancel' })).toHaveAttribute('data-size', 'lg');
+  });
+
   it('UIC-SNIPPET-FIELD-1.1 says when no snippet is saved', () => {
     const { container } = render(<SnippetField label="Example" loadSnippet={vi.fn()} />);
     expect(container.querySelector('.ui-snippet-field__empty')).toHaveTextContent(

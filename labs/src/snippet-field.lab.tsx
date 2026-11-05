@@ -7,6 +7,7 @@ import {
 } from '../../src/components/snippet-field/index.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
+import { SnippetFieldCorners, SnippetFieldSizes } from './snippet-field-cases.js';
 
 const column: CSSProperties = { width: 460 };
 
@@ -104,6 +105,8 @@ mountLab(
         )}
       />
     </LabSection>
+    <SnippetFieldSizes />
+    <SnippetFieldCorners />
     <LabSection
       title="Preview, apply and update"
       description="An in-memory provider answers after 500 ms. Preview the saved range to check it; after editing the source, the preview is marked stale and Update saves it."
