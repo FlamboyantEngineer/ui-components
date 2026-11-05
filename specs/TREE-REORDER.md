@@ -50,7 +50,7 @@ Verification: `src/utils/tree-reorder.test.ts`, `e2e/tree-reorder.spec.ts`
 
 ### UIC-TREE-REORDER-2.3 - Drops
 
-`resolveTreeDrop(rows, move, rules)` shall apply the same rules and also refuse a drop just after a row whose children are listed below it, where a line would read as inside that row.
+`resolveTreeDrop(rows, move, rules)` shall apply the same rules and also refuse a drop just after a row whose children are listed below it, where a line would read as inside that row. The move helpers index a rows array (a snapshot: `getVisibleTreeRows` returns a new one for each change) once, by key and by place among siblings, and reuse that index for every move checked against the same array, so a drag that checks each mounted row as a target does work proportional to the rows, not to their square.
 
 Implementation: `src/utils/tree-reorder.ts`
 Verification: `src/utils/tree-reorder.test.ts`

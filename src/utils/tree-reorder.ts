@@ -86,12 +86,62 @@ interface Placement<T> {
   position: TreeDropPosition;
 }
 
-function indexRows<T>(rows: readonly TreeMoveRow<T>[]): RowIndex<T> {
-  return new Map(rows.map((row) => [row.key, row]));
+/**
+ * The rows by key, each parent's rows in order, each row's place among its siblings, and its place
+ * among all the rows.
+ */
+interface RowModel<T> {
+  index: RowIndex<T>;
+  siblings: ReadonlyMap<Key | null, readonly TreeMoveRow<T>[]>;
+  places: ReadonlyMap<Key, number>;
+  order: ReadonlyMap<Key, number>;
 }
 
-function findSiblings<T>(rows: readonly TreeMoveRow<T>[], row: TreeMoveRow<T>): TreeMoveRow<T>[] {
-  return rows.filter((entry) => entry.parentKey === row.parentKey);
+/** The model of each rows snapshot, built once however many moves check against it. */
+const rowModels = new WeakMap<readonly TreeMoveRow<unknown>[], RowModel<unknown>>();
+
+function buildRowModel<T>(rows: readonly TreeMoveRow<T>[]): RowModel<T> {
+  const index = new Map<Key, TreeMoveRow<T>>();
+  const siblings = new Map<Key | null, TreeMoveRow<T>[]>();
+  const places = new Map<Key, number>();
+  const order = new Map<Key, number>();
+  for (const row of rows) {
+    index.set(row.key, row);
+    order.set(row.key, order.size);
+    const level = siblings.get(row.parentKey) ?? [];
+    if (level.length === 0) siblings.set(row.parentKey, level);
+    places.set(row.key, level.length);
+    level.push(row);
+  }
+  return { index, siblings, places, order };
+}
+
+/**
+ * The model of `rows`. Rows are a snapshot (`getVisibleTreeRows` makes a new array for each change),
+ * so a drag that checks every row as a target builds the model once.
+ */
+function getRowModel<T>(rows: readonly TreeMoveRow<T>[]): RowModel<T> {
+  const known = rowModels.get(rows) as RowModel<T> | undefined;
+  if (known) return known;
+  const model = buildRowModel(rows);
+  rowModels.set(rows, model as RowModel<unknown>);
+  return model;
+}
+
+function indexRows<T>(rows: readonly TreeMoveRow<T>[]): RowIndex<T> {
+  return getRowModel(rows).index;
+}
+
+function findSiblings<T>(
+  rows: readonly TreeMoveRow<T>[],
+  row: TreeMoveRow<T>,
+): readonly TreeMoveRow<T>[] {
+  return getRowModel(rows).siblings.get(row.parentKey) ?? [];
+}
+
+/** The row's place among its siblings. */
+function findPlace<T>(rows: readonly TreeMoveRow<T>[], row: TreeMoveRow<T>): number {
+  return getRowModel(rows).places.get(row.key) ?? -1;
 }
 
 /** Whether the row `key`, or one of its ancestors, is one of `ancestors`. */
@@ -111,8 +161,7 @@ function isWithin<T>(index: RowIndex<T>, key: Key | null, ancestor: Key): boolea
 function isSameSlot<T>(rows: readonly TreeMoveRow<T>[], placement: Placement<T>): boolean {
   const { source, target, position } = placement;
   if (position === 'inside') return true;
-  const siblings = findSiblings(rows, source);
-  const offset = siblings.indexOf(target) - siblings.indexOf(source);
+  const offset = findPlace(rows, target) - findPlace(rows, source);
   return offset === (position === 'before' ? 1 : -1);
 }
 
@@ -128,12 +177,11 @@ function canEnter<T>(
 }
 
 function findSiblingAbove<T>(rows: readonly TreeMoveRow<T>[], row: TreeMoveRow<T>) {
-  const siblings = findSiblings(rows, row);
-  return siblings[siblings.indexOf(row) - 1];
+  return findSiblings(rows, row)[findPlace(rows, row) - 1];
 }
 
 function findParent<T>(rows: readonly TreeMoveRow<T>[], row: TreeMoveRow<T>) {
-  return row.parentKey === null ? undefined : rows.find((entry) => entry.key === row.parentKey);
+  return row.parentKey === null ? undefined : indexRows(rows).get(row.parentKey);
 }
 
 /** The move past the neighbouring movable sibling, or `null` at either end. */
@@ -242,15 +290,20 @@ export function resolveTreeDrop<T>(
   move: TreeMove,
   rules: TreeMoveRules<T> = {},
 ): TreeMove | null {
-  const target = rows.find((row) => row.key === move.targetKey);
+  const target = indexRows(rows).get(move.targetKey);
   if (move.position === 'after' && target?.isExpanded) return null;
   return resolveTreeMove(rows, move, rules);
 }
 
 /** The dragged rows in the order shown, leaving out rows inside another dragged row. */
 function findOutermostRows<T>(rows: readonly TreeMoveRow<T>[], keys: ReadonlySet<Key>) {
-  const index = indexRows(rows);
-  return rows.filter((row) => keys.has(row.key) && !isWithinAny(index, row.parentKey, keys));
+  const { index, order } = getRowModel(rows);
+  const found: TreeMoveRow<T>[] = [];
+  for (const key of keys) {
+    const row = index.get(key);
+    if (row && !isWithinAny(index, row.parentKey, keys)) found.push(row);
+  }
+  return found.sort((a, b) => (order.get(a.key) ?? 0) - (order.get(b.key) ?? 0));
 }
 
 /** Whether the rows already sit together in this order at the spot a drop of them names. */
@@ -261,7 +314,7 @@ function isSameArrangement<T>(
   if (first.position === 'inside' || first.target.parentKey !== first.source.parentKey)
     return false;
   const siblings = findSiblings(rows, first.source);
-  const start = siblings.indexOf(first.source);
+  const start = findPlace(rows, first.source);
   const isRun = moved.every((row, offset) => siblings[start + offset] === row);
   const after = siblings[start + moved.length];
   const before = siblings[start - 1];
@@ -313,7 +366,7 @@ export function resolveTreeKeyboardMove<T>(
   { key, direction }: TreeKeyboardMove,
   rules: TreeMoveRules<T> = {},
 ): TreeMove | null | undefined {
-  const row = rows.find((entry) => entry.key === key);
+  const row = indexRows(rows).get(key);
   if (!row?.isMovable) return undefined;
   if (direction === 'up' || direction === 'down') return resolveSiblingStep(rows, row, direction);
   if (!rules.canMoveInto) return undefined;
