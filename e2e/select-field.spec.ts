@@ -27,13 +27,13 @@ async function width(locator: Locator): Promise<number> {
 }
 
 test.describe('Select Field lab', () => {
-  test('UIC-SELECT-FIELD-3.1 UIC-SELECT-FIELD-3.4 opens without edits and cycles controlled bulk memberships', async ({
+  test('UIC-SELECT-FIELD-3.1 UIC-SELECT-FIELD-3.4 UIC-SELECT-FIELD-13.1 opens without edits and cycles bulk memberships', async ({
     page,
     lab,
   }) => {
     await lab.open('select-field');
     const demo = page.locator('[data-lab-demo="bulk-memberships"]');
-    const trigger = demo.getByRole('button', { name: /Shared fruit$/ });
+    const trigger = demo.getByRole('button', { name: /selected Shared fruit$/ });
     const changes = demo.locator('[data-lab-output="Membership changes"]');
     const preview = demo.locator('[data-lab-output="Preview memberships"]');
     const original =
@@ -50,7 +50,7 @@ test.describe('Select Field lab', () => {
     await expect(demo.locator('[data-lab-output="Membership value"]')).toHaveText('["apple"]');
     await expect(demo.locator('[data-lab-output="Membership change events"]')).toHaveText('[]');
     await expect(demo.locator('[data-lab-output="Membership commits"]')).toHaveText('[]');
-    await expect(changes).toHaveText('{}');
+    await expect(changes).toHaveText('{"added":[],"removed":[],"retained":["pear","plum"]}');
     await expect(preview).toHaveText(original);
     await expect(demo.locator('input[name="shared-fruit"]')).toHaveCount(1);
     await expect(demo.locator('input[name="shared-fruit"]')).toHaveValue('apple');
@@ -73,7 +73,7 @@ test.describe('Select Field lab', () => {
     await expect(demo.locator('[data-lab-output="Membership commits"]')).toHaveText(
       '[["apple","pear"]]',
     );
-    await expect(changes).toHaveText('{"pear":"add"}');
+    await expect(changes).toHaveText('{"added":["pear"],"removed":[],"retained":["plum"]}');
     await expect(pear).toHaveAttribute('aria-selected', 'true');
     await expect(indicator).not.toHaveAttribute('data-indeterminate');
     await expect(indicator.locator('[data-glyph="check"]')).toBeVisible();
@@ -85,20 +85,27 @@ test.describe('Select Field lab', () => {
       '[{"name":"First","memberships":["apple","pear","plum"]},{"name":"Second","memberships":["apple","pear"]}]',
     );
     await page.keyboard.press('Enter');
-    await expect(changes).toHaveText('{"pear":"remove"}');
+    await expect(changes).toHaveText('{"added":[],"removed":["pear"],"retained":["plum"]}');
     await expect(pear).toHaveAttribute('aria-selected', 'false');
     await expect(indicator.locator('[data-glyph="minus"]')).toHaveCount(0);
     await expect(preview).toHaveText(
       '[{"name":"First","memberships":["apple","plum"]},{"name":"Second","memberships":["apple"]}]',
     );
     await page.keyboard.press('Enter');
-    await expect(changes).toHaveText('{}');
+    await expect(changes).toHaveText('{"added":[],"removed":[],"retained":["pear","plum"]}');
     await expect(pear).toHaveAccessibleDescription('Selected for some records');
     await expect(indicator).toHaveAttribute('data-indeterminate', 'true');
     await expect(preview).toHaveText(original);
     await page.keyboard.press('Escape');
     await expect(trigger).toBeFocused();
     await expect(trigger).toHaveAccessibleName('1 selected Shared fruit');
+    await demo.getByRole('button', { name: 'Clear Shared fruit' }).click();
+    await expect(changes).toHaveText('{"added":[],"removed":["apple"],"retained":["pear","plum"]}');
+    await expect(preview).toHaveText(
+      '[{"name":"First","memberships":["pear","plum"]},{"name":"Second","memberships":[]}]',
+    );
+    await demo.getByRole('button', { name: 'Retain original memberships' }).click();
+    await expect(preview).toHaveText(original);
   });
 
   test('UIC-SELECT-FIELD-2.3 UIC-FIELD-1.13 places the saved value inline or stacked without overlap', async ({

@@ -96,7 +96,7 @@ Verification: `src/components/select-field/select-list.test.tsx`, `e2e/select-fi
 
 In a multiple select, picking an option shall toggle it in the value and keep the list open. Every option draws a check slot (`ui-select-field__option-check`, hidden from assistive technology) holding the `check` glyph while it is chosen; the option's `aria-selected` carries the state.
 
-`SelectFieldOption.isIndeterminate` shall mark an unchosen option in a multiple list as selected for some records: its check slot publishes `data-indeterminate="true"` and draws the `minus` glyph. React Aria's option description announces the provider string `selectOptionIndeterminate` (by default `Selected for some records`), including with custom option content, while the existing label and description remain its accessible name. Mixed membership alone never adds a value, chip, selected count or form input; `value` remains authoritative and a chosen option always draws a check, with no mixed hook or explanation. Single-select indicators ignore `isIndeterminate`. Flat options, grouped options and search results accept the property. Filtering, pointer and keyboard selection, limits and disabled behavior continue to use ordinary selection: picking a mixed option requests its id through `onChange` and `onCommit`. The host owns per-record memberships and any mixed → selected for all → removed for all → retain mixed cycle by updating `value` and option metadata; the component adds no membership state or custom selection callback.
+`SelectFieldOption.isIndeterminate` shall mark an unchosen option in a multiple list as selected for some records: its check slot publishes `data-indeterminate="true"` and draws the `minus` glyph. React Aria's option description announces the provider string `selectOptionIndeterminate` (by default `Selected for some records`), including with custom option content, while the existing label and description remain its accessible name. Mixed membership alone never adds a value, chip, selected count or form input; `value` remains authoritative and a chosen option always draws a check, with no mixed hook or explanation. Single-select indicators ignore `isIndeterminate`. Flat options, grouped options and search results accept the property. Filtering, pointer and keyboard selection, limits and disabled behavior continue to use ordinary selection: picking a mixed option requests its id through `onChange` and `onCommit`. The field itself adds no membership state or custom selection callback: `useSelectMembership` ([UIC-SELECT-FIELD-13](#uic-select-field-13---bulk-membership)) supplies the membership cycle by updating `value` and option metadata.
 
 Implementation: `src/components/select-field/select-control.tsx`, `src/components/select-field/select-list.tsx`, `src/components/select-field/select-option.tsx`, `src/components/select-field/select-options.ts`
 Verification: `src/components/select-field/select-list.test.tsx`, `src/components/select-field/select-option.test.tsx`, `src/components/select-field/select-indeterminate.test.tsx`, `e2e/select-field.spec.ts`
@@ -362,6 +362,37 @@ Verification: `src/components/select-field/select-icons.test.tsx`
 
 Implementation: `src/components/select-field/select-list.tsx`, `src/components/select-field/tree-select-popover.tsx`
 Verification: `src/components/select-field/select-popup.test.tsx`, `e2e/select-field.spec.ts`
+
+## UIC-SELECT-FIELD-13 - Bulk membership
+
+### UIC-SELECT-FIELD-13.1 - Membership cycle and intent
+
+`useSelectMembership({ options, baseline })` shall drive a multiple list select that edits several records at once. `baseline` lists the options every record has (`selectedKeys`) and those some records have (`partialKeys`); every other option belongs to none. The hook returns `fieldProps` (`options`, `value`, `onChange`) to spread on the field, `changes`, `isDirty` and `reset()`. `value` holds the options chosen for every record; a mixed option without an edit is unchosen and marked `isIndeterminate` (UIC-SELECT-FIELD-3.4), so opening the list or leaving a mixed option alone changes nothing. Picking or unpicking an option, by pointer or keyboard, steps it through this cycle:
+
+| Baseline     | Pick                                                           | Unpick                    |
+| ------------ | -------------------------------------------------------------- | ------------------------- |
+| none         | added for every record                                         | back to none (no edit)    |
+| all          | back to all (no edit)                                          | removed from every record |
+| some (mixed) | added for every record; after a removal, mixed again (no edit) | removed from every record |
+
+So a mixed option cycles mixed → selected for all → removed for all → mixed. `changes` reports the intent as `added` and `removed` keys and `retained`, the mixed options without an edit whose per-record memberships stay as they are; an option back at its baseline carries no edit. Applying the intent to records, loading them and checking permissions stays with the caller.
+
+Implementation: `src/components/select-field/use-select-membership.ts`, `src/components/select-field/select-membership.ts`
+Verification: `src/components/select-field/use-select-membership.test.tsx`, `e2e/select-field.spec.ts`
+
+### UIC-SELECT-FIELD-13.2 - Clear, reset and locked options
+
+The field's Clear button (`isClearable`) shall remove every chosen option from every record and leave mixed options retained. `reset()` drops every edit, so each option shows its baseline membership again. A disabled option, or a key no listed option names, never gains or loses an edit, even when Clear or a host value drops it from the field's value. A read-only or disabled field emits no change, so the hook emits no intent.
+
+Implementation: `src/components/select-field/select-membership.ts`, `src/components/select-field/use-select-membership.ts`
+Verification: `src/components/select-field/use-select-membership.test.tsx`
+
+### UIC-SELECT-FIELD-13.3 - Controlled edits and new records
+
+The edits (`{ added, removed }`) shall be controllable through `edits` with `onEditsChange(edits, changes)`, or held by the hook from `defaultEdits` (none by default). A new `resetKey`, naming a different set of records, drops held edits so none leaks onto the new records; controlled edits stay with the caller. Each hook holds its own edits, so several fields edit independently.
+
+Implementation: `src/components/select-field/use-select-membership.ts`
+Verification: `src/components/select-field/use-select-membership.test.tsx`
 
 ## Hooks
 

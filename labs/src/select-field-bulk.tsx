@@ -1,5 +1,10 @@
 import { useState } from 'react';
-import { SelectField, type SelectFieldOption } from '../../src/components/select-field/index.js';
+import {
+  SelectField,
+  type SelectFieldOption,
+  type SelectMembershipChanges,
+  useSelectMembership,
+} from '../../src/components/select-field/index.js';
 import type { Key } from '../../src/core/props.js';
 import { LabOutput } from './lab-output.js';
 
@@ -13,53 +18,39 @@ const records = [
   { name: 'First', memberships: ['apple', 'pear', 'plum'] },
   { name: 'Second', memberships: ['apple'] },
 ];
-const all = new Set(
-  options
+const baseline = {
+  selectedKeys: options
     .filter((option) => records.every((record) => record.memberships.includes(String(option.id))))
     .map((option) => option.id),
-);
-const some = new Set(
-  options
+  partialKeys: options
     .filter(
       (option) =>
-        !all.has(option.id) &&
-        records.some((record) => record.memberships.includes(String(option.id))),
+        records.some((record) => record.memberships.includes(String(option.id))) &&
+        !records.every((record) => record.memberships.includes(String(option.id))),
     )
     .map((option) => option.id),
-);
+};
 
-/** The host retains untouched memberships and cycles originally mixed options through overrides. */
+/** Applies the intent the way a host would: added and removed keys change, retained ones stay. */
+function applyChanges(memberships: readonly string[], changes: SelectMembershipChanges) {
+  return options
+    .filter(
+      (option) =>
+        changes.added.includes(option.id) ||
+        (!changes.removed.includes(option.id) && memberships.includes(String(option.id))),
+    )
+    .map((option) => option.id);
+}
+
+/** `useSelectMembership` turns picks into add, remove and retain intent for two records. */
 export function BulkMembershipEditor() {
   const [changeEvents, setChangeEvents] = useState<Key[][]>([]);
   const [commits, setCommits] = useState<Key[][]>([]);
-  const [changes, setChanges] = useState<Partial<Record<Key, 'add' | 'remove'>>>({});
-  const value = options
-    .filter(
-      (option) =>
-        changes[option.id] === 'add' || (all.has(option.id) && changes[option.id] !== 'remove'),
-    )
-    .map((option) => option.id);
-  const update = (next: Key[]) => {
-    const added = next.find((key) => !value.includes(key));
-    const removed = value.find((key) => !next.includes(key));
-    const key = added ?? removed;
-    if (key === undefined) return;
-    setChanges((previous) => {
-      const updated = { ...previous };
-      if (some.has(key) && previous[key] === 'remove') delete updated[key];
-      else updated[key] = added === undefined ? 'remove' : 'add';
-      return updated;
-    });
-  };
+  const membership = useSelectMembership({ options, baseline });
+  const { fieldProps, changes } = membership;
   const preview = records.map((record) => ({
     name: record.name,
-    memberships: options
-      .filter(
-        (option) =>
-          changes[option.id] === 'add' ||
-          (changes[option.id] !== 'remove' && record.memberships.includes(String(option.id))),
-      )
-      .map((option) => option.id),
+    memberships: applyChanges(record.memberships, changes),
   }));
   return (
     <div data-lab-demo="bulk-memberships">
@@ -67,22 +58,19 @@ export function BulkMembershipEditor() {
         label="Shared fruit"
         name="shared-fruit"
         selectionMode="multiple"
-        options={options.map((option) => ({
-          ...option,
-          isIndeterminate: some.has(option.id) && changes[option.id] === undefined,
-        }))}
-        value={value}
+        {...fieldProps}
         onChange={(next) => {
           setChangeEvents((previous) => [...previous, next]);
-          update(next);
+          fieldProps.onChange(next);
         }}
         onCommit={(next) => setCommits((previous) => [...previous, next])}
         filterable
+        isClearable
       />
-      <button type="button" onClick={() => setChanges({})}>
+      <button type="button" onClick={membership.reset} disabled={!membership.isDirty}>
         Retain original memberships
       </button>
-      <LabOutput name="Membership value">{JSON.stringify(value)}</LabOutput>
+      <LabOutput name="Membership value">{JSON.stringify(fieldProps.value)}</LabOutput>
       <LabOutput name="Membership change events">{JSON.stringify(changeEvents)}</LabOutput>
       <LabOutput name="Membership commits">{JSON.stringify(commits)}</LabOutput>
       <LabOutput name="Membership changes">{JSON.stringify(changes)}</LabOutput>
