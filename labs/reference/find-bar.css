@@ -15,6 +15,12 @@
   max-width: 260px;
 }
 
+.ui-find-bar__navigation {
+  display: flex;
+  flex: none;
+  align-items: center;
+}
+
 .ui-find-bar__status {
   min-width: 7ch;
   color: var(--ref-muted);
@@ -22,8 +28,30 @@
   white-space: nowrap;
 }
 
+/* With nothing to read, the count takes no room, so the arrows sit snug against the find box. */
+.ui-find-bar__status:empty {
+  min-width: 0;
+}
+
+.ui-find-bar__status:not(:empty) {
+  margin-inline-end: 4px;
+}
+
+.ui-find-bar__next {
+  margin-inline-start: 4px;
+}
+
 .ui-find-bar[data-pending] .ui-find-bar__status {
   font-style: italic;
+}
+
+.ui-find-bar__replace-group {
+  display: flex;
+  flex: 1 1 260px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
 }
 
 .ui-find-bar__replacement {

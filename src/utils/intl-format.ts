@@ -86,6 +86,13 @@ export const getCollator = createFormatCache<
   Intl.Collator
 >((locale, options) => new Intl.Collator(locale, options));
 
+/** A shared `Intl.Segmenter`. */
+export const getSegmenter = createFormatCache<
+  string | undefined,
+  Intl.SegmenterOptions,
+  Intl.Segmenter
+>((locale, options) => new Intl.Segmenter(locale, options));
+
 const intlSpaces = /[ \u00a0\u2009\u202f]/g;
 
 /**

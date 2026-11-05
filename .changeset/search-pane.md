@@ -1,0 +1,5 @@
+---
+'@flamboyantengineer/ui-components': minor
+---
+
+Adds `SearchPane`, a search panel over a host's document: a `FindBar` with the query, matching options, the count and stepping that wraps through every result, an optional replace disclosure with Replace and Replace all, and the results as an ordered list box of one-line snippets whose selected row is the current result. It shows empty, not searched, searching, results, no results, failed and unavailable states apart, keeps the last results browsable while a search runs, mounts a page of rows at a time without limiting the count or stepping, and takes Ctrl+F or Cmd+F and Ctrl+H or Cmd+H through `handleRef`. Without `onReplace` and `onReplaceAll` it only searches. `buildSearchSnippet` cuts a one-line snippet of whole words around a match, with its source offsets, and `SearchSnippet` draws it so a narrow row keeps the match in view. `FindBar` adds `isReplaceDisabled`, `isReplaceAllDisabled` and `replacementInputRef`, and holds its count and arrows in a `ui-find-bar__navigation` part so they wrap together.

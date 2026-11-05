@@ -3,8 +3,9 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, ContainerProps, Size } from '../../core/props.js';
 import { interleaveDividers } from './dividers.js';
 
-// Other components reach the toolbar row through this main module.
+// Other components reach the toolbar row and the embedded frame through this main module.
 export { ToolbarRow, ToolbarRowSeparator } from './toolbar-row.js';
+export { EmbeddedFrame } from './wrappers.js';
 
 /** A closed scale of spacing steps, smallest to largest. The stylesheet maps each step to a length. */
 export type LayoutSpace = 'none' | '3xs' | '2xs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';

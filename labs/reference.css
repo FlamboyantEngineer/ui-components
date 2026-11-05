@@ -105,6 +105,7 @@
 @import url('reference/merge-view.css') layer(ui-reference);
 @import url('reference/message-composer.css') layer(ui-reference);
 @import url('reference/meta-line.css') layer(ui-reference);
+@import url('reference/mini-app.css') layer(ui-reference);
 @import url('reference/modal.css') layer(ui-reference);
 @import url('reference/navigation-rail.css') layer(ui-reference);
 @import url('reference/notification-center.css') layer(ui-reference);
@@ -141,6 +142,7 @@
 @import url('reference/save-status.css') layer(ui-reference);
 @import url('reference/scroll-region.css') layer(ui-reference);
 @import url('reference/search-field.css') layer(ui-reference);
+@import url('reference/search-pane.css') layer(ui-reference);
 @import url('reference/section-header.css') layer(ui-reference);
 @import url('reference/segmented-bar.css') layer(ui-reference);
 @import url('reference/segmented-choice.css') layer(ui-reference);

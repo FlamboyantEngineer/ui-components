@@ -1,0 +1,37 @@
+/* Mini App: a framed tool with a quiet loading line and a dashed box once it fails. */
+
+.ui-mini-app {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ui-mini-app__frame {
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+}
+
+.ui-mini-app__frame:focus-visible {
+  outline: var(--ref-focus-ring);
+  outline-offset: 2px;
+}
+
+.ui-mini-app__status {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-mini-app__status:empty {
+  display: none;
+}
+
+.ui-mini-app[data-status='error'] .ui-mini-app__status {
+  padding: 12px;
+  color: var(--ref-danger);
+  border: 1px dashed var(--ref-border-strong);
+  border-radius: var(--ref-radius);
+}
+
+.ui-mini-app__frame[hidden] {
+  display: none;
+}

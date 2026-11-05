@@ -1,0 +1,201 @@
+/* Search Pane: the find row with its replace toggle, a message, and the results as one-line snippets. */
+
+.ui-search-pane {
+  container: ui-search-pane / inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  max-height: 100%;
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-search-pane__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.ui-search-pane__replace-toggle {
+  flex: none;
+}
+
+.ui-search-pane__find {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* The query and the replacement grow and shrink with the pane. */
+.ui-search-pane .ui-find-bar__query.ui-search-field {
+  flex: 1 1 8rem;
+  min-width: 6rem;
+  max-width: none;
+}
+
+/* The replacement and its buttons take one line under the query; Close stays on the first line. */
+.ui-search-pane .ui-find-bar__replace-group {
+  flex: 1 1 100%;
+  order: 1;
+}
+
+.ui-search-pane .ui-find-bar__replacement {
+  flex: 1 1 4rem;
+  min-width: 4rem;
+  max-width: none;
+}
+
+@container ui-search-pane (width <= 18.75rem) {
+  .ui-search-pane .ui-find-bar__query.ui-search-field {
+    flex-basis: 100%;
+  }
+}
+
+.ui-search-pane__message {
+  margin: 0;
+  padding: 4px 8px;
+  color: var(--ref-muted);
+}
+
+.ui-search-pane[data-state='error'] .ui-search-pane__message {
+  color: var(--ref-danger);
+}
+
+.ui-search-pane__results {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 0;
+  overflow: auto;
+  border-radius: var(--ref-radius-sm);
+  outline: none;
+}
+
+.ui-search-pane__results[data-focus-visible] {
+  outline: var(--ref-focus-ring);
+}
+
+.ui-search-pane__result {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+  padding: 6px 8px;
+  border-radius: var(--ref-radius-sm);
+  cursor: default;
+  outline: none;
+}
+
+.ui-search-pane__result[data-hovered] {
+  background: var(--ref-hover);
+}
+
+.ui-search-pane__result[data-pressed] {
+  background: var(--ref-pressed);
+}
+
+.ui-search-pane__result[data-selected] {
+  background: var(--ref-selected);
+}
+
+.ui-search-pane__result[data-focus-visible] {
+  outline: var(--ref-focus-ring);
+  outline-offset: -2px;
+}
+
+.ui-search-pane__result-label {
+  overflow: hidden;
+  min-width: 0;
+  font-weight: var(--ref-font-weight-medium);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-search-pane__result-description {
+  color: var(--ref-muted);
+  white-space: nowrap;
+}
+
+.ui-search-pane__result-read-only {
+  margin-inline-start: auto;
+  padding: 0 6px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius-full);
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-xs);
+  white-space: nowrap;
+}
+
+.ui-search-pane__result .ui-search-snippet {
+  flex: 1 1 100%;
+}
+
+.ui-search-pane__show-earlier,
+.ui-search-pane__show-later {
+  flex: none;
+  align-self: flex-start;
+}
+
+/*
+ * Search Snippet: one line that keeps the source's spaces. A narrow row gives up the leading context
+ * from its start first, then the context after, and keeps the words next to the match and the match.
+ */
+.ui-search-snippet {
+  display: flex;
+  min-width: 0;
+  overflow: hidden;
+  white-space: pre;
+}
+
+.ui-search-snippet__lead,
+.ui-search-snippet__near {
+  overflow: hidden;
+  min-width: 0;
+  /* Right to left, so the cut and its ellipsis fall at the start; the <bdi> keeps the text in order. */
+  direction: rtl;
+  text-overflow: ellipsis;
+}
+
+.ui-search-snippet__lead {
+  /* Gives up its width long before the context after does. */
+  flex: 0 1000 auto;
+  /* Room for the ellipsis that stands for the context given up. */
+  min-width: 1.5em;
+}
+
+/*
+ * A left-to-right mark after each run, so the space that ends it is not the end of the line, which
+ * the bidirectional algorithm would move to the right-to-left side and so to the other end.
+ */
+.ui-search-snippet__lead::after,
+.ui-search-snippet__near::after {
+  content: '\200e';
+}
+
+/* The near words keep their width, unless one is so long it would push the match out of view. */
+.ui-search-snippet__near {
+  flex: none;
+  max-width: 60%;
+}
+
+.ui-search-snippet__match {
+  flex: none;
+  max-width: 100%;
+  overflow: hidden;
+  border-radius: var(--ref-radius-xs);
+  background: var(--ref-highlight);
+  color: inherit;
+  text-overflow: ellipsis;
+}
+
+.ui-search-snippet__after {
+  flex: 0 1 auto;
+  overflow: hidden;
+  min-width: 0;
+  text-overflow: ellipsis;
+}
+
+.ui-search-snippet__ellipsis {
+  color: var(--ref-muted);
+}
