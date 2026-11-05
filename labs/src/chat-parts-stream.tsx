@@ -38,7 +38,7 @@ const reasoningWords =
   );
 
 const answerWords =
-  'Take the **8:05** from Lisbon: it arrives at 10:50 [2]. Porto is *mild* in spring [1], so pack a light jacket and walking shoes.'.split(
+  '@Ana, take the **8:05** from Lisbon: it arrives at 10:50 [2]. Porto is *mild* in spring [1], so pack a light jacket and walking shoes.'.split(
     ' ',
   );
 
@@ -62,10 +62,12 @@ const searchAt = (isDone: boolean): ChatPart => ({
   durationMs: isDone ? 1600 : undefined,
 });
 
+/** The answer so far; it opens with a mention, which streams as a pill (UIC-CHAT-PARTS-2.4). */
 const answerAt = (count: number, isDone = false): ChatPart => ({
   type: 'text',
   id: 'answer',
   text: answerWords.slice(0, count).join(' '),
+  tokens: [{ kind: 'mention', id: 'ana', label: '@Ana Lopez', start: 0, end: 4 }],
   status: isDone ? 'complete' : 'streaming',
 });
 

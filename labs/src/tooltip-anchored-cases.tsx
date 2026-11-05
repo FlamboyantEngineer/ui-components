@@ -139,7 +139,7 @@ function RegionHint() {
 
 /** An icon button already named by its label, whose hint only repeats it visually. */
 function VisualHint() {
-  const [button, setButton] = useState<HTMLAnchorElement | HTMLButtonElement | null>(null);
+  const [button, setButton] = useState<HTMLElement | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   return (
     <div data-lab-demo="anchored-visual">

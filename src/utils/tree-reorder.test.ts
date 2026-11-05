@@ -252,6 +252,46 @@ describe('resolveTreeDrop', () => {
   });
 });
 
+/** `rows` behind a proxy that counts how many of its rows the helpers read. */
+function countReads<T>(rows: readonly T[]) {
+  const reads = { count: 0 };
+  const proxy = new Proxy(rows, {
+    get(target, property, receiver) {
+      if (typeof property === 'string' && /^\d+$/.test(property)) reads.count += 1;
+      return Reflect.get(target, property, receiver) as unknown;
+    },
+  });
+  return { rows: proxy, reads };
+}
+
+describe('drop checks over many targets', () => {
+  it('UIC-TREE-REORDER-2.3 UIC-TREE-REORDER-2.6 checks a sweep of targets in time proportional to the rows', () => {
+    const count = 2000;
+    const flat = Array.from({ length: count }, (_, id) => ({ id }));
+    const { rows, reads } = countReads(getVisibleTreeRows(flat, { expandedKeys: [] }));
+    let allowed = 0;
+    for (let targetKey = 0; targetKey < count; targetKey += 1) {
+      if (resolveTreeDrop(rows, { key: 0, targetKey, position: 'before' })) allowed += 1;
+      if (resolveTreeDropMany(rows, { keys: [0, 1], targetKey, position: 'after' })) allowed += 1;
+    }
+    // Every target but the dragged rows themselves and, for one row, the slot it already holds.
+    expect(allowed).toBe(2 * count - 4);
+    expect(reads.count).toBeLessThanOrEqual(2 * count);
+  });
+
+  it('UIC-TREE-REORDER-2.3 checks against the rows of the latest snapshot', () => {
+    const before = cellarRows();
+    const move = { key: 'bottle', targetKey: 'box-b', position: 'before' } as const;
+    expect(resolveTreeDrop(before, move, cellarRules)).toEqual(move);
+    const after = getVisibleTreeRows(CELLAR, {
+      expandedKeys: ['cellar'],
+      isMovable: (item) => item.id !== 'cellar' && item.id !== 'box-b',
+    });
+    expect(resolveTreeDrop(after, move, cellarRules)).toBeNull();
+    expect(resolveTreeDrop(before, move, cellarRules)).toEqual(move);
+  });
+});
+
 describe('resolveTreeDropMany', () => {
   it('UIC-TREE-REORDER-2.6 lands the rows together in order, the first where the drop says', () => {
     const rows = pantryRows();
@@ -441,5 +481,51 @@ describe('applyTreeMove', () => {
     expect(applyTreeMove(PANTRY, { key: 'apple', targetKey: 'apple', position: 'inside' })).toBe(
       PANTRY,
     );
+  });
+});
+
+describe('deep trees', () => {
+  interface Node {
+    id: number | string;
+    children?: Node[];
+  }
+  const depth = 20000;
+  /** A chain `depth` items deep, every item expanded. */
+  function chain(): Node {
+    let branch: Node = { id: depth, children: [] };
+    for (let id = depth - 1; id >= 0; id -= 1) branch = { id, children: [branch] };
+    return branch;
+  }
+
+  it('UIC-TREE-REORDER-2.1 lists the visible rows of a very deep tree in preorder', () => {
+    const rows = getVisibleTreeRows([chain()], {
+      expandedKeys: Array.from({ length: depth + 1 }, (_, id) => id),
+    });
+    expect(rows).toHaveLength(depth + 1);
+    expect(rows.at(-1)).toMatchObject({ key: depth, parentKey: depth - 1, isExpanded: false });
+    const custom = getVisibleTreeRows([{ id: 'a', kids: [{ id: 'b', kids: [] }] }], {
+      expandedKeys: ['a'],
+      getChildren: (item: { id: string; kids: { id: string; kids: [] }[] }) => item.kids,
+    });
+    expect(custom.map((row) => [row.key, row.parentKey])).toEqual([
+      ['a', null],
+      ['b', 'a'],
+    ]);
+  });
+
+  it('UIC-TREE-REORDER-2.5 moves, ignores and refuses moves in a very deep tree', () => {
+    const root = chain();
+    const items: readonly Node[] = [root, { id: 'target' }];
+    const moved = applyTreeMove(items, { key: depth, targetKey: 'target', position: 'after' });
+    expect(moved.map((item) => item.id)).toEqual([0, 'target', depth]);
+    expect(moved[1]).toBe(items[1]);
+    let leaf = moved[0];
+    while (leaf?.children?.length) leaf = leaf.children[0];
+    expect(leaf?.id).toBe(depth - 1);
+    expect(root.children?.length).toBe(1);
+    expect(applyTreeMove(items, { key: 'missing', targetKey: 'target', position: 'after' })).toBe(
+      items,
+    );
+    expect(applyTreeMove(items, { key: 1, targetKey: depth, position: 'inside' })).toBe(items);
   });
 });

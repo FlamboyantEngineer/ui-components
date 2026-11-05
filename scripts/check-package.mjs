@@ -2,8 +2,9 @@
 // Checks the installed library independently from the standalone labs archive.
 // It packs the tree as built (`npm run build:package`, or `build` and `build:labs` in `npm run
 // check`) without running the package scripts, so it never rebuilds files that checks running
-// beside it read. Every source map in the tarball must resolve each of its sources to a file the
-// tarball ships, or embed it (UIC-LABS-1.5).
+// beside it read. `--dir <path>` checks another package directory instead of the checkout, such as
+// the release tree `npm run release` is about to tag. Every source map in the tarball must resolve
+// each of its sources to a file the tarball ships, or embed it (UIC-LABS-1.5).
 
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
@@ -21,8 +22,12 @@ const IMPORT_ATTRIBUTES =
   /\b(?:from\s*['"][^'"]+['"]|import\s*\(\s*['"][^'"]+['"]\s*,)\s*with\s*\{/;
 const CSS_IMPORT = /(?:from\s*|import\s*\(?\s*)['"][^'"]+\.(?:css|scss|sass|less)['"]/;
 
+const dirFlag = process.argv.indexOf('--dir');
+/** The package directory to check: the checkout by default. */
+const packageRoot = dirFlag === -1 ? root : resolve(process.argv[dirFlag + 1] ?? '');
+
 for (const built of ['dist/index.js', REFERENCE_STYLESHEET]) {
-  if (!existsSync(join(root, built))) {
+  if (!existsSync(join(packageRoot, built))) {
     console.error(
       `${built} is missing: run \`npm run build:package\` before checking the package.`,
     );
@@ -34,7 +39,7 @@ const problems = [];
 const workDir = mkdtempSync(join(tmpdir(), 'ui-package-'));
 
 try {
-  const pack = packTarball(root, workDir);
+  const pack = packTarball(packageRoot, workDir);
   const files = new Set(pack.files.map((file) => file.path));
 
   for (const required of [
@@ -60,13 +65,13 @@ try {
     }
     if (/^dist\/.*\.test\./.test(file)) problems.push(`tarball must not contain ${file}`);
     if (file.endsWith('.js') && file.startsWith('dist/')) {
-      const text = readFileSync(join(root, file), 'utf8');
+      const text = readFileSync(join(packageRoot, file), 'utf8');
       if (CSS_IMPORT.test(text)) problems.push(`${file} imports a stylesheet`);
       if (IMPORT_ATTRIBUTES.test(text)) problems.push(`${file} uses import attributes`);
     }
   }
 
-  const manifest = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
+  const manifest = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf8'));
   for (const field of ['dependencies', 'peerDependencies', 'optionalDependencies']) {
     for (const name of Object.keys(manifest[field] ?? {})) {
       if (STYLING_DEPENDENCY.test(name)) problems.push(`${field} includes styling package ${name}`);

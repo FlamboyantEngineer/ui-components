@@ -144,13 +144,32 @@ function ValidationBehaviours() {
   );
 }
 
-/** A caller focuses the input through `inputRef`; a box mounted with `autoFocus` takes focus. */
+/**
+ * A caller focuses the input through `inputRef`, as a ref object or a callback ref that keeps the
+ * input in state; a box mounted with `autoFocus` takes focus.
+ */
 function FocusedSearch() {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [shelves, setShelves] = useState<HTMLInputElement | null>(null);
   return (
     <>
       <SearchField label="Search the archive" inputRef={inputRef} data-lab-field="input-ref" />
       <Button onPress={() => inputRef.current?.focus()}>Focus the search</Button>
+      <SearchField
+        label="Search the shelves"
+        defaultValue="green tea"
+        inputRef={setShelves}
+        data-lab-field="callback-ref"
+      />
+      <Button
+        isDisabled={!shelves}
+        onPress={() => {
+          shelves?.focus();
+          shelves?.select();
+        }}
+      >
+        Select the shelf query
+      </Button>
       <MountOnDemand label="an autofocused search">
         <SearchField label="Quick find" autoFocus data-lab-field="autofocus" />
       </MountOnDemand>
@@ -246,7 +265,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Focusing the input"
-      description="A caller focuses the input through inputRef; a search mounted with autoFocus takes focus as it appears."
+      description="A caller focuses the input through inputRef, a ref object or a callback ref; a search mounted with autoFocus takes focus as it appears."
     >
       <FocusedSearch />
     </LabSection>

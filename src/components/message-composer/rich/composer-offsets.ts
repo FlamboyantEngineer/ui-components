@@ -75,11 +75,19 @@ function coversPosition(run: Run, pos: number): boolean {
   return pos >= run.pos && pos <= run.pos + size;
 }
 
-/** The text offset of a document position inside a line or a code block. */
+/**
+ * The text offset of a document position. One inside a line or a code block maps to its character
+ * edge; one outside every block (the document's own edges, as Select All's selection has, or a gap
+ * between blocks) maps to the start of the next block's text, or to the text's end after the last.
+ */
 export function toTextOffset(doc: Node, pos: number): number {
   const runs = collectRuns(doc);
   const run = runs.find((candidate) => coversPosition(candidate, pos));
-  if (!run) return runs.at(-1) ? endOf(runs.at(-1) as Run) : 0;
+  if (!run) {
+    const next = runs.find((candidate) => candidate.pos >= pos);
+    if (next) return next.offset;
+    return runs.at(-1) ? endOf(runs.at(-1) as Run) : 0;
+  }
   if (run.kind === 'pill') return pos === run.pos ? run.offset : run.offset + run.length;
   return run.offset + (pos - run.pos);
 }

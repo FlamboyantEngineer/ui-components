@@ -98,7 +98,7 @@ Verification: `src/utils/to-collection-key.test.ts`, `src/components/tabs/tab-ke
 
 ### UIC-COMPOSITION-5.1 - Controllable values
 
-A value a component lets the caller control (`value`/`defaultValue` with `onChange`, or `<thing>`/`default<Thing>` with `on<Thing>Change`) shall follow the caller's value while it is defined and otherwise keep the component's own copy, starting at the default. Setting it updates the own copy only when uncontrolled, and calls the change handler only when the new value differs from the current one (`Object.is`), as React Aria's controlled state does, so setting the current value again reports nothing.
+A value a component lets the caller control (`value`/`defaultValue` with `onChange`, or `<thing>`/`default<Thing>` with `on<Thing>Change`) shall follow the caller's value while it is defined and otherwise keep the component's own copy, starting at the default. Setting it updates the own copy only when uncontrolled, and calls the change handler only when the new value differs from the current one (`Object.is`), as React Aria's controlled state does, so setting the current value again reports nothing. Two uncontrolled sets in one event compare the second with the first; a set while controlled compares with the controlled value, whatever the own copy did before the caller took control.
 
 Implementation: `src/core/controllable-state.ts`
 Verification: `src/core/controllable-state.test.ts`

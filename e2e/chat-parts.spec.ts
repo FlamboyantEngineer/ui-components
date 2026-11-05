@@ -57,7 +57,7 @@ test.describe('Chat Parts lab', () => {
     await lab.expectAccessible('[data-lab-section="Text and tokens"]');
   });
 
-  test('UIC-CHAT-PARTS-2.2 UIC-CHAT-PARTS-5.2 streams an answer: the steps run, collapse, and the citations preview', async ({
+  test('UIC-CHAT-PARTS-2.2 UIC-CHAT-PARTS-2.4 UIC-CHAT-PARTS-5.2 streams an answer: the steps run, collapse, and the citations preview', async ({
     page,
     lab,
   }) => {
@@ -81,8 +81,12 @@ test.describe('Chat Parts lab', () => {
     await expect(worked).toHaveAttribute('aria-expanded', 'false');
     await expect(stream.locator('.ui-chat-steps__panel')).toBeHidden();
     await next.click();
+    // The answer's mention streams as a pill while the text after it grows.
+    const mention = stream.locator('.ui-chat-parts__text .ui-chat-parts__token');
+    await expect(mention).toHaveText('@Ana Lopez');
     await next.click();
     await expect(next).toBeDisabled();
+    await expect(mention).toHaveText('@Ana Lopez');
     const citation = stream.getByRole('link', { name: /^Source 2: Lisbon to Porto timetable/ });
     await expect(citation.locator('.ui-chat-citation__marker')).toHaveText('[2]');
     // From the steps' trigger, Tab reaches the first citation by keyboard, which opens its preview.

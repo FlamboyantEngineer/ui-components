@@ -2,6 +2,7 @@
 // that result from one. Components report moves; owners apply and persist them.
 
 import type { Key } from '../core/props.js';
+import { requireDefined } from './require-defined.js';
 
 /** Where a moved row lands: beside the target row, or inside it as its last child. */
 export type TreeDropPosition = 'before' | 'after' | 'inside';
@@ -86,12 +87,62 @@ interface Placement<T> {
   position: TreeDropPosition;
 }
 
-function indexRows<T>(rows: readonly TreeMoveRow<T>[]): RowIndex<T> {
-  return new Map(rows.map((row) => [row.key, row]));
+/**
+ * The rows by key, each parent's rows in order, each row's place among its siblings, and its place
+ * among all the rows.
+ */
+interface RowModel<T> {
+  index: RowIndex<T>;
+  siblings: ReadonlyMap<Key | null, readonly TreeMoveRow<T>[]>;
+  places: ReadonlyMap<Key, number>;
+  order: ReadonlyMap<Key, number>;
 }
 
-function findSiblings<T>(rows: readonly TreeMoveRow<T>[], row: TreeMoveRow<T>): TreeMoveRow<T>[] {
-  return rows.filter((entry) => entry.parentKey === row.parentKey);
+/** The model of each rows snapshot, built once however many moves check against it. */
+const rowModels = new WeakMap<readonly TreeMoveRow<unknown>[], RowModel<unknown>>();
+
+function buildRowModel<T>(rows: readonly TreeMoveRow<T>[]): RowModel<T> {
+  const index = new Map<Key, TreeMoveRow<T>>();
+  const siblings = new Map<Key | null, TreeMoveRow<T>[]>();
+  const places = new Map<Key, number>();
+  const order = new Map<Key, number>();
+  for (const row of rows) {
+    index.set(row.key, row);
+    order.set(row.key, order.size);
+    const level = siblings.get(row.parentKey) ?? [];
+    if (level.length === 0) siblings.set(row.parentKey, level);
+    places.set(row.key, level.length);
+    level.push(row);
+  }
+  return { index, siblings, places, order };
+}
+
+/**
+ * The model of `rows`. Rows are a snapshot (`getVisibleTreeRows` makes a new array for each change),
+ * so a drag that checks every row as a target builds the model once.
+ */
+function getRowModel<T>(rows: readonly TreeMoveRow<T>[]): RowModel<T> {
+  const known = rowModels.get(rows) as RowModel<T> | undefined;
+  if (known) return known;
+  const model = buildRowModel(rows);
+  rowModels.set(rows, model as RowModel<unknown>);
+  return model;
+}
+
+function indexRows<T>(rows: readonly TreeMoveRow<T>[]): RowIndex<T> {
+  return getRowModel(rows).index;
+}
+
+function findSiblings<T>(
+  rows: readonly TreeMoveRow<T>[],
+  row: TreeMoveRow<T>,
+): readonly TreeMoveRow<T>[] {
+  return getRowModel(rows).siblings.get(row.parentKey) ?? [];
+}
+
+/** The row's place among its siblings. */
+function findPlace<T>(rows: readonly TreeMoveRow<T>[], row: TreeMoveRow<T>): number {
+  return getRowModel(rows).places.get(row.key) ?? -1;
 }
 
 /** Whether the row `key`, or one of its ancestors, is one of `ancestors`. */
@@ -111,8 +162,7 @@ function isWithin<T>(index: RowIndex<T>, key: Key | null, ancestor: Key): boolea
 function isSameSlot<T>(rows: readonly TreeMoveRow<T>[], placement: Placement<T>): boolean {
   const { source, target, position } = placement;
   if (position === 'inside') return true;
-  const siblings = findSiblings(rows, source);
-  const offset = siblings.indexOf(target) - siblings.indexOf(source);
+  const offset = findPlace(rows, target) - findPlace(rows, source);
   return offset === (position === 'before' ? 1 : -1);
 }
 
@@ -128,12 +178,11 @@ function canEnter<T>(
 }
 
 function findSiblingAbove<T>(rows: readonly TreeMoveRow<T>[], row: TreeMoveRow<T>) {
-  const siblings = findSiblings(rows, row);
-  return siblings[siblings.indexOf(row) - 1];
+  return findSiblings(rows, row)[findPlace(rows, row) - 1];
 }
 
 function findParent<T>(rows: readonly TreeMoveRow<T>[], row: TreeMoveRow<T>) {
-  return row.parentKey === null ? undefined : rows.find((entry) => entry.key === row.parentKey);
+  return row.parentKey === null ? undefined : indexRows(rows).get(row.parentKey);
 }
 
 /** The move past the neighbouring movable sibling, or `null` at either end. */
@@ -148,32 +197,50 @@ function resolveSiblingStep<T>(
   return { key: row.key, targetKey: target.key, position: direction === 'up' ? 'before' : 'after' };
 }
 
-function findItem<T extends TreeMoveItem<T>>(items: readonly T[], key: Key): T | undefined {
-  for (const item of items) {
-    if (item.id === key) return item;
-    const found = item.children ? findItem(item.children, key) : undefined;
-    if (found) return found;
+/** Where an item sits: the list holding it and its place there, from the top level down. */
+type ItemPath<T> = readonly { list: readonly T[]; at: number }[];
+
+/**
+ * The path to the item `key` among `items` and their descendants, searched in preorder without
+ * recursion, so a deep tree cannot overflow the call stack.
+ */
+function findPath<T extends TreeMoveItem<T>>(items: readonly T[], key: Key): ItemPath<T> | null {
+  const frames = [{ list: items, at: -1 }];
+  while (frames.length > 0) {
+    const frame = requireDefined(frames.at(-1));
+    frame.at += 1;
+    if (frame.at >= frame.list.length) {
+      frames.pop();
+      continue;
+    }
+    const item = requireDefined(frame.list[frame.at]);
+    if (item.id === key) return frames.map(({ list, at }) => ({ list, at }));
+    if (item.children?.length) frames.push({ list: item.children, at: -1 });
   }
-  return undefined;
+  return null;
+}
+
+function itemAt<T>(path: ItemPath<T>, depth = path.length - 1): T {
+  const { list, at } = requireDefined(path[depth]);
+  return requireDefined(list[at]);
 }
 
 /**
- * `items` with each item that `place` answers replaced by the items it returns, searching the
- * children of the others. Subtrees with no replacement keep their identity.
+ * The items with the one at `path` replaced by `replacement`, rebuilding only its ancestors from the
+ * bottom up, so subtrees off the path keep their identity.
  */
-function replaceItems<T extends TreeMoveItem<T>>(
-  items: readonly T[],
-  place: (item: T) => readonly T[] | null,
+function replaceAtPath<T extends TreeMoveItem<T>>(
+  path: ItemPath<T>,
+  replacement: readonly T[],
 ): readonly T[] {
-  let changed = false;
-  const next = items.flatMap((item) => {
-    const placed = place(item);
-    const children = placed || !item.children ? item.children : replaceItems(item.children, place);
-    if (!placed && children === item.children) return [item];
-    changed = true;
-    return placed ?? [{ ...item, children }];
-  });
-  return changed ? next : items;
+  let placed = replacement;
+  for (let depth = path.length - 1; depth > 0; depth -= 1) {
+    const { list, at } = requireDefined(path[depth]);
+    const children = [...list.slice(0, at), ...placed, ...list.slice(at + 1)];
+    placed = [{ ...itemAt(path, depth - 1), children }];
+  }
+  const { list, at } = requireDefined(path[0]);
+  return [...list.slice(0, at), ...placed, ...list.slice(at + 1)];
 }
 
 function placeAround<T extends TreeMoveItem<T>>(target: T, moved: T, position: TreeDropPosition) {
@@ -187,7 +254,10 @@ export function readTreeChildren<T>(item: T): readonly T[] | undefined {
   return (item as TreeMoveItem<T>).children;
 }
 
-/** The rows a tree shows, in order: top-level items and the children of expanded items. */
+/**
+ * The rows a tree shows, in order: top-level items and the children of expanded items. It walks
+ * without recursion, so a deep tree cannot overflow the call stack.
+ */
 export function getVisibleTreeRows<T extends { id: Key }>(
   items: readonly T[],
   {
@@ -198,15 +268,27 @@ export function getVisibleTreeRows<T extends { id: Key }>(
 ): TreeMoveRow<T>[] {
   const expanded = new Set(expandedKeys);
   const rows: TreeMoveRow<T>[] = [];
-  const visit = (level: readonly T[], parentKey: Key | null) => {
-    for (const item of level) {
-      const children = getChildren(item);
-      const isExpanded = expanded.has(item.id) && Boolean(children?.length);
-      rows.push({ key: item.id, parentKey, item, isMovable: isMovable(item), isExpanded });
-      if (isExpanded && children) visit(children, item.id);
+  const levels = [{ items: items[Symbol.iterator](), parentKey: null as Key | null }];
+  while (levels.length > 0) {
+    const level = requireDefined(levels.at(-1));
+    const next = level.items.next();
+    if (next.done) {
+      levels.pop();
+      continue;
     }
-  };
-  visit(items, null);
+    const item = next.value;
+    const children = getChildren(item);
+    const isExpanded = expanded.has(item.id) && Boolean(children?.length);
+    rows.push({
+      key: item.id,
+      parentKey: level.parentKey,
+      item,
+      isMovable: isMovable(item),
+      isExpanded,
+    });
+    if (isExpanded && children)
+      levels.push({ items: children[Symbol.iterator](), parentKey: item.id });
+  }
   return rows;
 }
 
@@ -242,15 +324,20 @@ export function resolveTreeDrop<T>(
   move: TreeMove,
   rules: TreeMoveRules<T> = {},
 ): TreeMove | null {
-  const target = rows.find((row) => row.key === move.targetKey);
+  const target = indexRows(rows).get(move.targetKey);
   if (move.position === 'after' && target?.isExpanded) return null;
   return resolveTreeMove(rows, move, rules);
 }
 
 /** The dragged rows in the order shown, leaving out rows inside another dragged row. */
 function findOutermostRows<T>(rows: readonly TreeMoveRow<T>[], keys: ReadonlySet<Key>) {
-  const index = indexRows(rows);
-  return rows.filter((row) => keys.has(row.key) && !isWithinAny(index, row.parentKey, keys));
+  const { index, order } = getRowModel(rows);
+  const found: TreeMoveRow<T>[] = [];
+  for (const key of keys) {
+    const row = index.get(key);
+    if (row && !isWithinAny(index, row.parentKey, keys)) found.push(row);
+  }
+  return found.sort((a, b) => (order.get(a.key) ?? 0) - (order.get(b.key) ?? 0));
 }
 
 /** Whether the rows already sit together in this order at the spot a drop of them names. */
@@ -261,7 +348,7 @@ function isSameArrangement<T>(
   if (first.position === 'inside' || first.target.parentKey !== first.source.parentKey)
     return false;
   const siblings = findSiblings(rows, first.source);
-  const start = siblings.indexOf(first.source);
+  const start = findPlace(rows, first.source);
   const isRun = moved.every((row, offset) => siblings[start + offset] === row);
   const after = siblings[start + moved.length];
   const before = siblings[start - 1];
@@ -313,7 +400,7 @@ export function resolveTreeKeyboardMove<T>(
   { key, direction }: TreeKeyboardMove,
   rules: TreeMoveRules<T> = {},
 ): TreeMove | null | undefined {
-  const row = rows.find((entry) => entry.key === key);
+  const row = indexRows(rows).get(key);
   if (!row?.isMovable) return undefined;
   if (direction === 'up' || direction === 'down') return resolveSiblingStep(rows, row, direction);
   if (!rules.canMoveInto) return undefined;
@@ -325,18 +412,18 @@ export function resolveTreeKeyboardMove<T>(
 
 /**
  * Nested items after `move`, leaving the input unchanged. Subtrees the move does not touch keep
- * their identity. A move whose row or target is missing, or whose target lies inside the moved row,
+ * their identity. It searches and rebuilds without recursion, so any depth of loaded items works. A move whose row or target is missing, or whose target lies inside the moved row,
  * returns the items as they were.
  */
 export function applyTreeMove<T extends TreeMoveItem<T>>(
   items: readonly T[],
   move: TreeMove,
 ): readonly T[] {
-  const moved = findItem(items, move.key);
-  if (!moved || move.key === move.targetKey || !findItem(items, move.targetKey)) return items;
-  if (moved.children && findItem(moved.children, move.targetKey)) return items;
-  const remaining = replaceItems(items, (item) => (item.id === move.key ? [] : null));
-  return replaceItems(remaining, (item) =>
-    item.id === move.targetKey ? placeAround(item, moved, move.position) : null,
-  );
+  const source = findPath(items, move.key);
+  if (!source || move.key === move.targetKey || !findPath(items, move.targetKey)) return items;
+  const moved = itemAt(source);
+  if (moved.children && findPath(moved.children, move.targetKey)) return items;
+  const remaining = replaceAtPath(source, []);
+  const target = requireDefined(findPath(remaining, move.targetKey));
+  return replaceAtPath(target, placeAround(itemAt(target), moved, move.position));
 }

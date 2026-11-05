@@ -299,6 +299,25 @@ describe('SearchPane', () => {
     expectHooksMatchSpec(container, 'SEARCH-PANE', { slots: ['show-later'] });
   });
 
+  it('UIC-SEARCH-PANE-2.2 UIC-SEARCH-PANE-2.3 follows the current result back after a turned page', async () => {
+    const user = userEvent.setup();
+    render(pane({ results: makeResults(6), maxMountedResults: 2 }));
+    await user.click(queryBox());
+    await user.keyboard('{Enter}');
+    expect(status()).toHaveTextContent('1 of 6');
+    await user.click(screen.getByRole('button', { name: 'Show 4 more results' }));
+    expect(within(list()).getAllByRole('option')[0]).toHaveTextContent('Section 3');
+    await user.click(queryBox());
+    await user.keyboard('{Enter}');
+    expect(status()).toHaveTextContent('2 of 6');
+    expect(within(list()).getAllByRole('option')[0]).toHaveTextContent('Section 1');
+    await user.keyboard('{Shift>}{Enter}{/Shift}');
+    expect(status()).toHaveTextContent('1 of 6');
+    const rows = within(list()).getAllByRole('option');
+    expect(rows[0]).toHaveTextContent('Section 1');
+    expect(rows[0]).toHaveAttribute('aria-selected', 'true');
+  });
+
   it('UIC-SEARCH-PANE-3.1 draws no replace controls in a search-only pane', () => {
     const handleRef = createRef<SearchPaneHandle>();
     const { container } = render(

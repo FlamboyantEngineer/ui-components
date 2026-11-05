@@ -6,8 +6,8 @@ import { isComposingKey } from '../../utils/is-composing-key.js';
 import { type FieldControlProps, type FieldState, toAriaControlProps } from '../field/field.js';
 import type {
   NumberControlConfig,
+  NumberEntryFieldProps,
   NumberFieldCommitBehavior,
-  NumberFieldProps,
 } from './number-field.js';
 import {
   addStep,
@@ -35,7 +35,7 @@ interface NumberInputState {
 
 interface NumberEntryOptions {
   commitBehavior: NumberFieldCommitBehavior;
-  bounds: Pick<NumberFieldProps, 'minValue' | 'maxValue' | 'step'>;
+  bounds: Pick<NumberEntryFieldProps, 'minValue' | 'maxValue' | 'step'>;
   steps: NumberSteps;
 }
 
