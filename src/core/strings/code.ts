@@ -35,6 +35,12 @@ interface CodeStrings {
   snippetRangeIncomplete: string;
   /** Names the lines a snippet was taken from. */
   snippetLines: (start: number, end: number) => string;
+  /** Says a math preview is typesetting its source. */
+  mathPending: string;
+  /** Says a math source is too long to preview, from the longest length previewed. */
+  mathTooLong: (maxLength: number) => string;
+  /** Names a math field's preview of its source. */
+  mathPreview: string;
 }
 
 /** The module's text, with the message values each text function reads its arguments as. */
@@ -42,4 +48,5 @@ export const codeStrings = defineStrings<CodeStrings>({
   codeBlockTitle: (variant) => ({ variant }),
   codeBlockCopyCommands: (count) => ({ count }),
   snippetLines: (start, end) => ({ start, end }),
+  mathTooLong: (maxLength) => ({ maxLength }),
 });
