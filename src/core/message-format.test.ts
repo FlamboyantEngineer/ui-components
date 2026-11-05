@@ -51,6 +51,14 @@ describe('formatMessage', () => {
     expect(() => formatMessage('Hello {name}', { nmae: 'Ana' })).toThrow(/"name"/);
   });
 
+  it('UIC-PROVIDER-3.6 reads only the own entries of values, whatever their names', () => {
+    for (const name of ['toString', 'constructor', '__proto__']) {
+      expect(() => formatMessage(`{${name}}`)).toThrow(/was not provided/);
+      expect(formatMessage(`{${name}}`, Object.fromEntries([[name, 'hello']]))).toBe('hello');
+      expect(formatMessage(`<{${name}}>`, Object.fromEntries([[name, null]]))).toBe('<>');
+    }
+  });
+
   it('UIC-PROVIDER-3.1 turns kebab-case values into select branch names', () => {
     expect(toSelectKey('in-progress')).toBe('inProgress');
     expect(toSelectKey('done')).toBe('done');
