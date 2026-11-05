@@ -1,6 +1,6 @@
 'use client';
 
-import type { KeyboardEvent, RefObject } from 'react';
+import type { KeyboardEvent, Ref } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import { ArrowDownGlyph, ArrowUpGlyph, CloseGlyph } from '../../core/glyphs.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
@@ -70,9 +70,9 @@ export interface FindBarProps extends RefProps<HTMLDivElement>, BaseProps {
   /** Adds a Close button, which Escape anywhere in the bar also presses. */
   onClose?: (() => void) | undefined;
   /** Receives the find box's input, so a caller can move focus to it. */
-  inputRef?: RefObject<HTMLInputElement | null> | undefined;
+  inputRef?: Ref<HTMLInputElement> | undefined;
   /** Receives the replacement box's input while it is shown, so a caller can move focus to it. */
-  replacementInputRef?: RefObject<HTMLInputElement | null> | undefined;
+  replacementInputRef?: Ref<HTMLInputElement> | undefined;
 }
 
 interface FindBarStatus {

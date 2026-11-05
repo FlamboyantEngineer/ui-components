@@ -1,6 +1,14 @@
 'use client';
 
-import { type ReactNode, type RefObject, useEffect, useId, useRef, useState } from 'react';
+import {
+  type ReactNode,
+  type Ref,
+  type RefCallback,
+  type RefObject,
+  useEffect,
+  useId,
+  useState,
+} from 'react';
 import type { FocusEventProps, KeyboardEventProps } from '../../core/events.js';
 import { CloseGlyph, SearchGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
@@ -16,6 +24,7 @@ import {
 } from '../../primitives/index.js';
 import { leaveComposingEnter } from '../../utils/is-composing-key.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { useNativeReset } from '../../utils/use-native-reset.js';
 import { Button, ButtonSpinner } from '../button/button.js';
 import {
@@ -79,12 +88,13 @@ export interface SearchFieldProps
   description?: ReactNode;
   /** Results are loading: a spinner shows after the input. */
   isPending?: boolean | undefined;
-  /** Receives the input, so a caller can move focus to it. */
-  inputRef?: RefObject<HTMLInputElement | null> | undefined;
+  /** Receives the input, so a caller can move focus to it: a ref object or a callback ref. */
+  inputRef?: Ref<HTMLInputElement> | undefined;
 }
 
 interface SearchBoxProps {
-  input: RefObject<HTMLInputElement | null>;
+  /** Puts the input in the field's own ref and the caller's. */
+  inputRef: RefCallback<HTMLInputElement>;
   placeholder: string | undefined;
   isPending: boolean;
   /** Clears the query, or `null` while the box shows no clear button. */
@@ -125,7 +135,7 @@ function ClearButton({ label, text, onPress }: { label: string; text?: string; o
 
 /** The parts inside the box's frame: the glyph, the input, the spinner and the clear button. */
 function SearchBox({
-  input,
+  inputRef,
   placeholder,
   isPending,
   onClear,
@@ -137,7 +147,7 @@ function SearchBox({
       <Glyph icon={SearchGlyph} className={hooks.slotClass('glyph')} />
       <Input
         {...hooks.slot('input')}
-        ref={input}
+        ref={inputRef}
         placeholder={placeholder}
         onKeyDownCapture={leaveComposingEnter}
       />
@@ -280,8 +290,7 @@ export function SearchField({
   ...rest
 }: SearchFieldProps) {
   const strings = useUiStrings();
-  const ownInput = useRef<HTMLInputElement>(null);
-  const input = inputRef ?? ownInput;
+  const [input, setInput] = useForwardedRef(inputRef);
   const messageId = useId();
   const { query, change } = useQuery({ value, defaultValue, onChange }, input);
   const validation = useQueryValidation(query, { validate, validationBehavior, input });
@@ -313,7 +322,7 @@ export function SearchField({
         };
         const box = (
           <SearchBox
-            input={input}
+            inputRef={setInput}
             placeholder={placeholder}
             isPending={isPending}
             onClear={isEmpty || isDisabled || isReadOnly ? null : clear}

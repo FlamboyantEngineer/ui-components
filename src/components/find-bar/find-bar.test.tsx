@@ -243,6 +243,28 @@ describe('FindBar', () => {
     expect(navigation).toContainElement(screen.getByRole('button', { name: 'Next match' }));
   });
 
+  it('UIC-FIND-BAR-1.1 UIC-FIND-BAR-1.5 hands its boxes to callback refs, with React 19 cleanup', () => {
+    const found: (HTMLInputElement | null)[] = [];
+    const replacements: (HTMLInputElement | null)[] = [];
+    const cleanup = vi.fn();
+    const { rerender } = render(
+      <FindBar
+        onReplace={() => undefined}
+        inputRef={(node) => {
+          found.push(node);
+        }}
+        replacementInputRef={(node) => {
+          replacements.push(node);
+          return cleanup;
+        }}
+      />,
+    );
+    expect(found).toEqual([screen.getByRole('searchbox', { name: 'Find' })]);
+    expect(replacements).toEqual([screen.getByRole('textbox', { name: 'Replace with' })]);
+    rerender(<FindBar />);
+    expect(cleanup).toHaveBeenCalledTimes(1);
+  });
+
   it('UIC-FIND-BAR-1.5 disables Replace and Replace all on their own, and hands out the replacement box', async () => {
     const user = userEvent.setup();
     const onReplace = vi.fn();

@@ -6,7 +6,7 @@
 
 ### UIC-SEARCH-FIELD-1.1 - Search box
 
-`SearchField` shall render a search box (`ui-search-field`) holding a decorative `search` glyph (`ui-search-field__glyph`) and an `<input type="search">` (`ui-search-field__input`) named by `label`. `inputRef` receives the input, so a caller can move focus to it. The query is `value` (controlled) or `defaultValue` (uncontrolled), reported through `onChange`; `name` submits it with a form; `isDisabled` and `isReadOnly` lock it. The text input props (UIC-FIELD-8.3: `placeholder`, `autoComplete`, `inputMode`, `spellCheck`, `autoFocus`) and the focus and keyboard handlers (`onFocus`, `onBlur`, `onFocusChange`, `onKeyDown`, `onKeyUp`) reach the input.
+`SearchField` shall render a search box (`ui-search-field`) holding a decorative `search` glyph (`ui-search-field__glyph`) and an `<input type="search">` (`ui-search-field__input`) named by `label`. `inputRef` (a ref object or a callback ref, whose React 19 cleanup runs when the input detaches) receives the input, so a caller can move focus to it; the field keeps its own ref to the input as well, for the clear button's focus, native reset and validation. The query is `value` (controlled) or `defaultValue` (uncontrolled), reported through `onChange`; `name` submits it with a form; `isDisabled` and `isReadOnly` lock it. The text input props (UIC-FIELD-8.3: `placeholder`, `autoComplete`, `inputMode`, `spellCheck`, `autoFocus`) and the focus and keyboard handlers (`onFocus`, `onBlur`, `onFocusChange`, `onKeyDown`, `onKeyUp`) reach the input.
 
 Implementation: `src/components/search-field/search-field.tsx`, `labs/reference/search-field.css`
 Verification: `src/components/search-field/search-field.test.tsx`, `e2e/search-field.spec.ts`, `e2e/character-grid.spec.ts`
