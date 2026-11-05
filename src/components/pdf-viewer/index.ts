@@ -35,6 +35,7 @@ export type {
   PdfRect,
   PdfSearchControls,
   PdfSearchOptions,
+  PdfSearchResult,
   PdfSelection,
   PdfViewerProps,
   PdfVisiblePosition,

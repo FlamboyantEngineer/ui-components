@@ -173,6 +173,14 @@ function CallerFindControls({ search }: { search: PdfSearchControls }) {
         value={search.query}
         onChange={search.setQuery}
       />
+      <output aria-label="Text state">{search.status}</output>
+      {search.results.map((result, index) => (
+        <Button
+          key={index}
+          size="sm"
+          onPress={() => search.selectResult(index)}
+        >{`Page ${result.pageIndex + 1}: ${result.text.slice(result.start, result.end)}`}</Button>
+      ))}
       <output aria-label="Matches" data-lab-output="matches">
         {describeMatches(search)}
       </output>
@@ -227,12 +235,16 @@ function CallerFindControls({ search }: { search: PdfSearchControls }) {
 export function CallerOwnedFind() {
   const [query, setQuery] = useState('');
   const [matchIndex, setMatchIndex] = useState(0);
+  const [matchRevealRequest, setMatchRevealRequest] = useState(0);
   const [searchOptions, setSearchOptions] = useState<PdfSearchOptions>({});
   return (
     <div data-lab-case="find">
       <p>
         <Button size="sm" onPress={() => setQuery('pear')}>
           Find pears
+        </Button>{' '}
+        <Button size="sm" onPress={() => setMatchRevealRequest((request) => request + 1)}>
+          Reveal current match
         </Button>{' '}
         Query: <output data-lab-output="query">{query}</output>; match:{' '}
         <output data-lab-output="match">{matchIndex}</output>; case:{' '}
@@ -241,12 +253,14 @@ export function CallerOwnedFind() {
       <div style={{ height: 420, maxWidth: 1000 }}>
         <PdfViewer
           aria-label="Report with its own find"
+          zoomLevels={[25, 50, 75, 100, 125, 150, 175, 200, 225, 250, 275, 300, 325, 350, 375, 400]}
           source={sampleUrl}
           loadEngine={loadEngine}
           workerSrc={workerSrc}
           searchQuery={query}
           onSearchQueryChange={setQuery}
           matchIndex={matchIndex}
+          matchRevealRequest={matchRevealRequest}
           onMatchIndexChange={setMatchIndex}
           searchOptions={searchOptions}
           onSearchOptionsChange={setSearchOptions}
@@ -407,6 +421,10 @@ export function SidebarReader() {
   }, []);
   return (
     <div data-lab-case="bytes">
+      <p>
+        Drag the sidebar separator or focus it and use arrow keys, Home or End to resize it. Closing
+        and reopening remembers its width.
+      </p>
       <p>
         <Button size="sm" onPress={() => setDestination('markets')}>
           Go to markets

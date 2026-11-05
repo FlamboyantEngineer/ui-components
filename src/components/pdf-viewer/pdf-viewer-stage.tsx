@@ -8,9 +8,9 @@ import { LoadingOverlay } from '../loading-overlay/loading-overlay.js';
 import type { PdfPageGeometry } from './page-geometry.js';
 import type { PdfTextContent, PdfViewport } from './pdf-engine.js';
 import type { PdfMatchRange } from './pdf-search.js';
+import { PdfViewerFrame } from './pdf-viewer-frame.js';
 import { PdfViewerPage } from './pdf-viewer-page.js';
 import { PdfViewerPassword } from './pdf-viewer-password.js';
-import { PdfViewerSidebar } from './pdf-viewer-sidebar.js';
 import { pdfViewerHooks as hooks } from './styling-hooks.js';
 import type { LoadedPdf, PdfDocumentResult } from './use-pdf-document.js';
 import type { PdfLinks } from './use-pdf-links.js';
@@ -79,15 +79,19 @@ export function PdfViewerStage<V extends PdfViewport, C extends PdfTextContent>(
   onPageError,
 }: PdfViewerStageProps<V, C>) {
   return (
-    <div {...hooks.slot('stage')} style={{ position: 'relative' }} onKeyDown={onKeyDown}>
-      {isSidebarOpen && view ? (
-        <PdfViewerSidebar
-          view={view}
-          currentPage={pages.currentPage}
-          onPageChange={links.goToPage}
-          followDestination={links.followDestination}
-        />
-      ) : null}
+    <PdfViewerFrame
+      onKeyDown={onKeyDown}
+      sidebar={
+        isSidebarOpen && view
+          ? {
+              view,
+              currentPage: pages.currentPage,
+              onPageChange: links.goToPage,
+              followDestination: links.followDestination,
+            }
+          : undefined
+      }
+    >
       <div
         {...hooks.slot('scroller')}
         ref={scrollerRef}
@@ -122,6 +126,6 @@ export function PdfViewerStage<V extends PdfViewport, C extends PdfTextContent>(
         <ContextMenu controller={menu.controller} />
       </div>
       <PdfViewerStageCover pdf={pdf} />
-    </div>
+    </PdfViewerFrame>
   );
 }

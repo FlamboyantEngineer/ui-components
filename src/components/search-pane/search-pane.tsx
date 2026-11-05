@@ -44,7 +44,7 @@ export interface SearchPaneProps extends RefProps<HTMLDivElement>, BaseProps {
   currentKey?: Key | null | undefined;
   /** The current result at first, uncontrolled. */
   defaultCurrentKey?: Key | null | undefined;
-  /** Called with the result that becomes current, by stepping or by choosing a row. */
+  /** Called when stepping or choosing a row, including reactivating the current result. */
   onCurrentKeyChange?: ((key: Key) => void) | undefined;
   /** The replacement text, controlled. */
   replacement?: string | undefined;

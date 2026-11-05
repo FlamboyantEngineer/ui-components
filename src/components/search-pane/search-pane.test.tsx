@@ -257,6 +257,33 @@ describe('SearchPane', () => {
     });
   });
 
+  it('UIC-SEARCH-PANE-2.1 reactivates the current row by pointer, Enter and Space', async () => {
+    const user = userEvent.setup();
+    const onCurrentKeyChange = vi.fn();
+    render(pane({ currentKey: 'r1', onCurrentKeyChange }));
+    const row = within(list()).getAllByRole('option')[0] as HTMLElement;
+    await user.click(row);
+    expect(onCurrentKeyChange).toHaveBeenCalledExactlyOnceWith('r1');
+    onCurrentKeyChange.mockClear();
+    await user.keyboard('{Enter}');
+    expect(onCurrentKeyChange).toHaveBeenCalledExactlyOnceWith('r1');
+    onCurrentKeyChange.mockClear();
+    await user.keyboard('{ }');
+    expect(onCurrentKeyChange).toHaveBeenCalledExactlyOnceWith('r1');
+  });
+
+  it('UIC-SEARCH-PANE-1.3 reports each step when there is only one result', async () => {
+    const user = userEvent.setup();
+    const onCurrentKeyChange = vi.fn();
+    render(pane({ results: three.slice(0, 1), currentKey: 'r1', onCurrentKeyChange }));
+    await user.click(queryBox());
+    await user.keyboard('{Enter}');
+    expect(onCurrentKeyChange).toHaveBeenCalledExactlyOnceWith('r1');
+    onCurrentKeyChange.mockClear();
+    await user.keyboard('{Shift>}{Enter}{/Shift}');
+    expect(onCurrentKeyChange).toHaveBeenCalledExactlyOnceWith('r1');
+  });
+
   it('UIC-SEARCH-PANE-2.2 scrolls the current row into view as the current result changes', async () => {
     const user = userEvent.setup();
     const original = Element.prototype.scrollIntoView;

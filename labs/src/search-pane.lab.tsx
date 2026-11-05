@@ -56,6 +56,7 @@ const manyResults = makeManyResults(820);
 /** A pane over 820 matches: the list mounts a page of rows, while counting and stepping cover all. */
 function ManyResults() {
   const [currentKey, setCurrentKey] = useState<Key | null>(null);
+  const [activations, setActivations] = useState(0);
   return (
     <div data-lab-demo="many-results">
       <div style={{ display: 'flex', flexDirection: 'column', width: 380, height: 360 }}>
@@ -64,10 +65,14 @@ function ManyResults() {
           defaultQuery="pear"
           results={manyResults}
           currentKey={currentKey}
-          onCurrentKeyChange={setCurrentKey}
+          onCurrentKeyChange={(key) => {
+            setCurrentKey(key);
+            setActivations((count) => count + 1);
+          }}
         />
       </div>
       <LabOutput name="current">{currentKey === null ? 'none' : String(currentKey)}</LabOutput>
+      <LabOutput name="activations">{activations}</LabOutput>
     </div>
   );
 }

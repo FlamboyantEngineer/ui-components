@@ -80,7 +80,8 @@ describe('PdfViewer sidebar', () => {
     expect(toggle).toHaveAttribute('aria-pressed', 'true');
     const sidebar = view.container.querySelector('.ui-pdf-viewer__sidebar');
     expect(sidebar?.parentElement).toHaveClass('ui-pdf-viewer__stage');
-    expect(sidebar?.nextElementSibling).toHaveClass('ui-pdf-viewer__scroller');
+    expect(sidebar?.nextElementSibling).toHaveClass('ui-pdf-viewer__sidebar-resizer');
+    expect(sidebar?.nextElementSibling?.nextElementSibling).toHaveClass('ui-pdf-viewer__scroller');
     const tabs = within(screen.getByRole('tablist', { name: 'Sidebar' })).getAllByRole('tab');
     expect(tabs.map((tab) => tab.textContent)).toEqual(['Pages', 'Outline']);
     expect(tabs[0]).toHaveAttribute('aria-selected', 'true');
@@ -88,6 +89,37 @@ describe('PdfViewer sidebar', () => {
 
     await userEvent.click(toggle);
     expect(view.container.querySelector('.ui-pdf-viewer__sidebar')).toBeNull();
+  });
+
+  it('UIC-PDF-VIEWER-10.4 resizes the sidebar by keyboard and retains its width when reopened', async () => {
+    const user = userEvent.setup();
+    await renderReady({ defaultSidebarOpen: true }, createEngine());
+    const document = screen.getByRole('document');
+    const separator = screen.getByRole('separator', { name: 'Sidebar' });
+    const initial = Number(separator.getAttribute('aria-valuenow'));
+    const sidebar = document.parentElement?.querySelector('.ui-pdf-viewer__sidebar');
+    expect(sidebar).toHaveAttribute('id', separator.getAttribute('aria-controls'));
+    expect(separator).toHaveAttribute('aria-orientation', 'vertical');
+    for (let step = 0; step < 20 && document.ownerDocument.activeElement !== separator; step += 1) {
+      await user.tab();
+    }
+    expect(separator).toHaveFocus();
+    await user.keyboard('{ArrowRight}');
+    expect(Number(separator.getAttribute('aria-valuenow'))).toBeGreaterThan(initial);
+    expect(screen.getByLabelText('Page')).toHaveValue('1');
+    await user.keyboard('{Home}');
+    expect(separator).toHaveAttribute('aria-valuenow', separator.getAttribute('aria-valuemin'));
+    await user.keyboard('{End}');
+    const remembered = separator.getAttribute('aria-valuenow');
+    expect(remembered).toBe(separator.getAttribute('aria-valuemax'));
+    await user.click(screen.getByRole('button', { name: 'Sidebar' }));
+    expect(screen.queryByRole('separator', { name: 'Sidebar' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Sidebar' }));
+    expect(screen.getByRole('separator', { name: 'Sidebar' })).toHaveAttribute(
+      'aria-valuenow',
+      remembered,
+    );
+    expect(screen.getByRole('document')).toBe(document);
   });
 
   it('UIC-PDF-VIEWER-10.2 lists the pages as thumbnails and goes to the one chosen', async () => {

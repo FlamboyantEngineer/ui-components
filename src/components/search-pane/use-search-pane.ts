@@ -90,6 +90,13 @@ export function useSearchPane(options: SearchPaneModelOptions) {
     },
   };
   useImperativeHandle(options.handleRef, () => handle);
+  const activate = (index: number) => {
+    const result = results[index];
+    if (!result) return;
+    // Activating the current match still asks the host to reveal it again.
+    if (result.id === currentKey) onCurrentKeyChange?.(result.id);
+    else setCurrentKey(result.id);
+  };
   const onKeyDownCapture = (event: KeyboardEvent<HTMLDivElement>) => {
     if (isComposingKey(event.nativeEvent)) return;
     if (!isNode(event.target) || !event.currentTarget.contains(event.target)) return;
@@ -114,14 +121,8 @@ export function useSearchPane(options: SearchPaneModelOptions) {
     state: resolveSearchPaneState(status, query, results.length),
     currentIndex,
     current: results[currentIndex],
-    setCurrentIndex: (index: number) => {
-      const result = results[index];
-      if (result) setCurrentKey(result.id);
-    },
-    step: (by: 1 | -1) => {
-      const result = results[stepSearchResult(currentIndex, results.length, by)];
-      if (result) setCurrentKey(result.id);
-    },
+    setCurrentIndex: activate,
+    step: (by: 1 | -1) => activate(stepSearchResult(currentIndex, results.length, by)),
     isExpanded: replaceMode === 'shown' || (replaceMode === 'hidable' && isExpanded),
     setExpanded,
     onKeyDownCapture,

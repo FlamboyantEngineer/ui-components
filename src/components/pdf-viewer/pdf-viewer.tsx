@@ -38,7 +38,7 @@ export type { PdfSearchOptions } from './pdf-search.js';
 export type { PdfDocumentAccess, PdfPageContent } from './use-pdf-access.js';
 export type { PdfCommandName } from './use-pdf-commands.js';
 export type { PdfMenuAction, PdfMenuIcons } from './use-pdf-context-menu.js';
-export type { PdfSearchControls } from './use-pdf-search.js';
+export type { PdfSearchControls, PdfSearchResult } from './use-pdf-search.js';
 export type { PdfVisiblePosition } from './use-pdf-visible-position.js';
 
 export interface PdfViewerProps<
@@ -61,6 +61,8 @@ export interface PdfViewerProps<
   'aria-label'?: string | undefined;
   /** The zoom the viewer opens at. Defaults to `page-width`. */
   defaultZoom?: PdfZoom | undefined;
+  /** Positive, strictly increasing zoom percentages; invalid ladders use 25–1000% in 25% steps. */
+  zoomLevels?: readonly number[] | undefined;
   /** Called with the applied zoom in percent whenever it changes. */
   onZoomChange?: ((percent: number) => void) | undefined;
   /** Controls placed at the end of the toolbar, after the viewer's own. */
@@ -109,6 +111,8 @@ export interface PdfViewerProps<
   onSearchOptionsChange?: ((options: PdfSearchOptions) => void) | undefined;
   /** The current match, zero-based and taken modulo the number of matches; the caller owns it when set. */
   matchIndex?: number | undefined;
+  /** Change this request number to bring the current match back into view without changing it. */
+  matchRevealRequest?: number | undefined;
   /** Called with the match a step or a new query moves to. */
   onMatchIndexChange?: ((index: number) => void) | undefined;
   /** Draws the find controls in place of the viewer's own; returning `null` draws none. */

@@ -41,6 +41,8 @@ interface SearchResultsProps {
 interface SearchResultRowProps {
   result: SearchPaneResult;
   isReadOnly: boolean;
+  isCurrent: boolean;
+  onActivate: () => void;
 }
 
 function readSelectedKey(keys: Selection): Key | null {
@@ -50,7 +52,7 @@ function readSelectedKey(keys: Selection): Key | null {
 }
 
 /** One result: its label and description, a mark when it cannot be replaced, and its snippet. */
-function SearchResultRow({ result, isReadOnly }: SearchResultRowProps) {
+function SearchResultRow({ result, isReadOnly, isCurrent, onActivate }: SearchResultRowProps) {
   const strings = useUiStrings();
   const { locale } = useLocale();
   const { source, start, end } = result;
@@ -70,6 +72,9 @@ function SearchResultRow({ result, isReadOnly }: SearchResultRowProps) {
     <ListBoxItem
       id={toCollectionKey(result.id)}
       textValue={name}
+      onPressStart={() => {
+        if (isCurrent) onActivate();
+      }}
       {...hooks.slot('result', { readOnly: isReadOnly })}
     >
       {/* The spaces between the parts keep the row's name, read from its text, in words. */}
@@ -153,11 +158,13 @@ export function SearchResults({
         selectedKeys={current ? [toCollectionKey(current.id)] : []}
         onSelectionChange={onSelectionChange}
       >
-        {results.slice(first, last).map((result) => (
+        {results.slice(first, last).map((result, index) => (
           <SearchResultRow
             key={toCollectionKey(result.id)}
             result={result}
             isReadOnly={isReplaceMode && result.isReplaceable === false}
+            isCurrent={first + index === currentIndex}
+            onActivate={() => onCurrentIndexChange(first + index)}
           />
         ))}
       </ListBox>

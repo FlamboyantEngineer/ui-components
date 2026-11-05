@@ -19,7 +19,6 @@ import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import { ToolbarScroller } from '../toolbar-scroller/toolbar-scroller.js';
 import { ZoomControl } from '../zoom-control/zoom-control.js';
 import { PdfViewerSearch } from './pdf-viewer-search.js';
-import { pdfZoomLevels } from './pdf-zoom.js';
 import { pdfViewerHooks as hooks } from './styling-hooks.js';
 import type { PdfSearchControls, PdfSearchState } from './use-pdf-search.js';
 import type { PdfZoomState } from './use-pdf-zoom.js';
@@ -72,7 +71,7 @@ const fitModes: readonly PdfFitMode[] = [
 /** The find state a caller's controls receive, without the viewer's highlight bookkeeping. */
 function pickSearchControls(search: PdfSearchControls): PdfSearchControls {
   const { query, setQuery, options, setOptions, isPending, total, current } = search;
-  const { findNext, findPrevious } = search;
+  const { findNext, findPrevious, results, status, selectResult } = search;
   return {
     query,
     setQuery,
@@ -83,6 +82,9 @@ function pickSearchControls(search: PdfSearchControls): PdfSearchControls {
     current,
     findNext,
     findPrevious,
+    results,
+    status,
+    selectResult,
   };
 }
 
@@ -210,7 +212,7 @@ export function PdfViewerToolbar({
           onPress={() => sidebar.setOpen(!sidebar.isOpen)}
         />
         <ZoomControl
-          levels={pdfZoomLevels}
+          levels={zoom.levels}
           value={zoom.percent}
           onChange={zoom.setZoom}
           formatOptions={wholePercent}
