@@ -141,6 +141,7 @@
 @import url('reference/save-status.css') layer(ui-reference);
 @import url('reference/scroll-region.css') layer(ui-reference);
 @import url('reference/search-field.css') layer(ui-reference);
+@import url('reference/search-pane.css') layer(ui-reference);
 @import url('reference/section-header.css') layer(ui-reference);
 @import url('reference/segmented-bar.css') layer(ui-reference);
 @import url('reference/segmented-choice.css') layer(ui-reference);

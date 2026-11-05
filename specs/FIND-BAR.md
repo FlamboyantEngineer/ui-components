@@ -13,7 +13,7 @@ Verification: `src/components/find-bar/find-bar.test.tsx`, `e2e/find-bar.spec.ts
 
 ### UIC-FIND-BAR-1.2 - Match count
 
-After the find box, a polite status (`ui-find-bar__status`, `role="status"`) shall read the provider's `searching` string while `isPending`; otherwise nothing while `matchCount` is `undefined` (nothing is searched), its `noResults` string for no match, its `stepOfTotal` string for the current match of the total (`currentIndex`, zero-based) and its `matchTotal` string when no match is current. While `isPending` the root publishes `data-pending` and the find box shows its spinner.
+After the find box, a navigation part (`ui-find-bar__navigation`) shall hold the status and the Previous match and Next match buttons, so a narrow bar that wraps keeps the count and its arrows together on one line. In it, a polite status (`ui-find-bar__status`, `role="status"`) shall read the provider's `searching` string while `isPending`; otherwise nothing while `matchCount` is `undefined` (nothing is searched), its `noResults` string for no match, its `stepOfTotal` string for the current match of the total (`currentIndex`, zero-based) and its `matchTotal` string when no match is current. While `isPending` the root publishes `data-pending` and the find box shows its spinner.
 
 Implementation: `src/components/find-bar/find-bar.tsx`, `src/core/strings/content.ts`
 Verification: `src/components/find-bar/find-bar.test.tsx`, `e2e/find-bar.spec.ts`
@@ -36,7 +36,7 @@ Verification: `src/components/find-bar/find-bar.test.tsx`, `e2e/find-bar.spec.ts
 
 ### UIC-FIND-BAR-1.5 - Replacing
 
-With `onReplace` or `onReplaceAll`, the bar shall add a replacement box (`ui-find-bar__replacement`, named by the provider's `replaceWith` string) and, for each handler given, a Replace (`ui-find-bar__replace`, the `replace` string) or Replace all (`ui-find-bar__replace-all`, the `replaceAll` string) button that calls it with the replacement text; Enter in the replacement box replaces, except the Enter that confirms a text composition (`isComposing`, or key code 229). The buttons are disabled and Enter does nothing while there is no match. The replacement is `replacement` (controlled) or `defaultReplacement` (uncontrolled), reported through `onReplacementChange`.
+With `onReplace` or `onReplaceAll`, the bar shall add a replacement box (`ui-find-bar__replacement`, named by the provider's `replaceWith` string) and, for each handler given, a Replace (`ui-find-bar__replace`, the `replace` string) or Replace all (`ui-find-bar__replace-all`, the `replaceAll` string) button that calls it with the replacement text; Enter in the replacement box replaces, except the Enter that confirms a text composition (`isComposing`, or key code 229). The buttons are disabled and Enter does nothing while there is no match. `isReplaceDisabled` disables Replace and Enter in the replacement box, and `isReplaceAllDisabled` disables Replace all, each on its own while there are matches, as when the current match cannot be changed. `replacementInputRef` receives the replacement box's input while it is shown, so a caller can move focus to it (Ctrl+H or Cmd+H). The replacement is `replacement` (controlled) or `defaultReplacement` (uncontrolled), reported through `onReplacementChange`.
 
 Implementation: `src/components/find-bar/find-bar.tsx`
 Verification: `src/components/find-bar/find-bar.test.tsx`, `e2e/find-bar.spec.ts`
@@ -77,6 +77,7 @@ Verification: `src/components/find-bar/find-bar.test.tsx`
 | -------------------------- | ----- | ------ | ----------------------------------------------------------------- |
 | `ui-find-bar`              | root  |        | The find row.                                                     |
 | `ui-find-bar__query`       | slot  |        | The find box, a Search Field.                                     |
+| `ui-find-bar__navigation`  | slot  |        | Holds the status and the Previous and Next match buttons.         |
 | `ui-find-bar__status`      | slot  |        | The `role="status"` match count.                                  |
 | `ui-find-bar__previous`    | slot  |        | The Previous match button.                                        |
 | `ui-find-bar__next`        | slot  |        | The Next match button.                                            |
