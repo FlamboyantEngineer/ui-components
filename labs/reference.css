@@ -153,6 +153,7 @@
 @import url('reference/signature-dialog.css') layer(ui-reference);
 @import url('reference/signature-pad.css') layer(ui-reference);
 @import url('reference/skeleton.css') layer(ui-reference);
+@import url('reference/snippet-field.css') layer(ui-reference);
 @import url('reference/sparkline.css') layer(ui-reference);
 @import url('reference/split-view.css') layer(ui-reference);
 @import url('reference/stat-tile.css') layer(ui-reference);

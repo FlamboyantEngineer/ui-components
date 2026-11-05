@@ -25,6 +25,7 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   shortcutKeyName: ['↑'],
   shortcutThen: ['G', 'I'],
   stepOfTotal: [3, 5],
+  snippetLines: [3, 8],
   segmentCount: [{ completed: '2', total: '5', percent: '40%' }],
   segmentProgress: [{ completed: '2', total: '5', percent: '40%', current: 'Review' }],
   heading: [2],

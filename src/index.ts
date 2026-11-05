@@ -145,6 +145,7 @@ export * from './components/shortcut/index.js';
 export * from './components/signature-dialog/index.js';
 export * from './components/signature-pad/index.js';
 export * from './components/skeleton/index.js';
+export * from './components/snippet-field/index.js';
 export * from './components/sparkline/index.js';
 export * from './components/split-view/index.js';
 export * from './components/stat-tile/index.js';
