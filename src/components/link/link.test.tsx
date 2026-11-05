@@ -1,11 +1,11 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { createRef } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { createRef, type Ref } from 'react';
+import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { HoverCard, HoverCardTrigger } from '../hover-card/hover-card.js';
-import { Link } from './link.js';
+import { Link, type LinkProps } from './link.js';
 
 describe('Link', () => {
   it('UIC-LINK-1.1 UIC-LINK-3.1 renders an anchor named by its content', () => {
@@ -201,6 +201,40 @@ describe('Link', () => {
     expect(onPress).not.toHaveBeenCalled();
     expect(navigate).not.toHaveBeenCalled();
     expectHooksMatchSpec(container, 'LINK');
+  });
+
+  it('UIC-LINK-1.1 UIC-LINK-2.3 UIC-LINK-2.4 hands its ref the anchor or the span it renders, typed as either', () => {
+    expectTypeOf<LinkProps['ref']>().toEqualTypeOf<
+      Ref<HTMLAnchorElement | HTMLSpanElement> | undefined
+    >();
+    const nodes: (HTMLAnchorElement | HTMLSpanElement | null)[] = [];
+    const ref = (node: HTMLAnchorElement | HTMLSpanElement | null) => {
+      nodes.push(node);
+      // A span has no href, so the type makes the caller check which element it got.
+      if (node instanceof HTMLAnchorElement) node.href.toLowerCase();
+    };
+    const { rerender } = render(
+      <Link href="/recipes" ref={ref}>
+        All recipes
+      </Link>,
+    );
+    rerender(
+      <Link href="/recipes" isDisabled ref={ref}>
+        All recipes
+      </Link>,
+    );
+    rerender(<Link ref={ref}>All recipes</Link>);
+    const elements = nodes.filter((node) => node !== null).map((node) => node.tagName);
+    expect(elements).toEqual(['A', 'SPAN']);
+    expect(nodes.at(-1)).toBe(screen.getByRole('link'));
+    expect(screen.getByRole('link').tagName).toBe('SPAN');
+    const anchorOnly = (
+      // @ts-expect-error A disabled link hands its ref a span, which has no href.
+      <Link href="/recipes" isDisabled ref={(node) => node?.href.toLowerCase()}>
+        All recipes
+      </Link>
+    );
+    expect(anchorOnly).toBeDefined();
   });
 
   it('UIC-LINK-2.2 UIC-LINK-2.4 says nothing about a new tab for a link that opens nothing', () => {

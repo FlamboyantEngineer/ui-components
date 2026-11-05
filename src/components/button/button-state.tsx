@@ -50,7 +50,7 @@ export interface ButtonStateProps
     KeyboardEventProps,
     AriaLabellingProps,
     ButtonAriaAttributes,
-    RefProps<HTMLButtonElement | HTMLAnchorElement> {
+    RefProps<HTMLButtonElement | HTMLAnchorElement | HTMLSpanElement> {
   /** Runs the command; a returned promise keeps the button pending until it settles. */
   onPress?: ((event: PressEvent) => unknown) | undefined;
   /** The native button type. Defaults to `button`. */
@@ -146,6 +146,10 @@ interface ButtonLinkElementProps
       'href' | 'target' | 'rel' | 'isDisabled' | 'autoFocus' | 'hidden' | 'aria-current'
     > {
   id?: string | undefined;
+  /**
+   * The `<a>`, or the `<span>` of a disabled link. The building block types its ref as the anchor
+   * only, so the caller's wider ref is cast to it here.
+   */
   ref?: Ref<HTMLAnchorElement> | undefined;
   /** Draws the `<a>`, or the `<span>` of a disabled link. */
   render: (props: AnchorDomProps | SpanDomProps) => ReactElement;

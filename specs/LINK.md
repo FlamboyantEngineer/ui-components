@@ -6,7 +6,7 @@
 
 ### UIC-LINK-1.1 - Element
 
-`Link` shall render an `<a>` with its `href` and children, drawn through the provider's link renderer ([UIC-PROVIDER-5.1](PROVIDER.md#uic-provider-51---link-renderer)) so a host router's link component renders it. The `ref` reaches the element.
+`Link` shall render an `<a>` with its `href` and children, drawn through the provider's link renderer ([UIC-PROVIDER-5.1](PROVIDER.md#uic-provider-51---link-renderer)) so a host router's link component renders it. The `ref` reaches the element: the `<a>`, or the `<span>` of a link without `href` or a disabled link (UIC-LINK-2.3, UIC-LINK-2.4), so it is typed `Ref<HTMLAnchorElement | HTMLSpanElement>`.
 
 Implementation: `src/components/link/link.tsx`
 Verification: `src/components/link/link.test.tsx`, `e2e/link.spec.ts`
