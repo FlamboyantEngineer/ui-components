@@ -15,6 +15,7 @@ import {
 import { PropertyPanel, PropertyRow } from '../../src/components/property-panel/index.js';
 import { TextField } from '../../src/components/text-field/index.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { FormLayoutCorners, FormLayoutSizes } from './form-layout-cases.js';
 import { LabOutput } from './lab-output.js';
 
 const wide: CSSProperties = { width: 640, maxWidth: '100%' };
@@ -245,5 +246,7 @@ mountLab(
         )}
       />
     </LabSection>
+    <FormLayoutSizes />
+    <FormLayoutCorners />
   </>,
 );

@@ -5,6 +5,7 @@ import {
   type ExpressionFieldResult,
 } from '../../src/components/expression-field/index.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { ExpressionFieldCorners, ExpressionFieldSizes } from './expression-field-cases.js';
 import { constants, evaluateExpression, tokenizeExpression } from './expression-field-evaluator.js';
 import { LabOutput } from './lab-output.js';
 
@@ -131,6 +132,8 @@ mountLab(
         }}
       />
     </LabSection>
+    <ExpressionFieldSizes />
+    <ExpressionFieldCorners />
     <LabSection
       title="Mock host evaluator"
       description="Each edit asks the mock host to evaluate after 600 ms. Until it answers, the previous result is marked out of date; the answer never changes the source."

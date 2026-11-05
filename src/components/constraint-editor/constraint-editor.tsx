@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps, RefProps } from '../../core/props.js';
+import type { BaseProps, ControlSize, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { FieldIssue } from '../field/field.js';
 import { PropertyPanel } from '../property-panel/property-panel.js';
@@ -46,6 +46,8 @@ export interface ConstraintEditorProps
   lockedConstraints?: readonly ConstraintName[] | undefined;
   isReadOnly?: boolean | undefined;
   isDisabled?: boolean | undefined;
+  /** The controls' height on the shared control scale. Defaults to `md`. */
+  size?: ControlSize | undefined;
   /** Draws a constraint's control in place of the library's; return `undefined` to keep it. */
   renderConstraint?: ((control: ConstraintControl) => ReactNode) | undefined;
 }
@@ -85,6 +87,7 @@ export function ConstraintEditor({
   lockedConstraints = [],
   isReadOnly = false,
   isDisabled,
+  size = 'md',
   renderConstraint,
   className,
   ...rest
@@ -117,13 +120,18 @@ export function ConstraintEditor({
       },
       isReadOnly: isReadOnly || lockedConstraints.includes(name),
       issues: shown,
+      size,
     };
   };
   return (
     <PropertyPanel
       ref={ref}
       {...rest}
-      {...hooks.root({ className, props: rest, data: { kind, invalid: issues.length > 0 } })}
+      {...hooks.root({
+        className,
+        props: rest,
+        data: { kind, size, invalid: issues.length > 0 },
+      })}
       isDisabled={isDisabled}
     >
       {offered.map((name) => {

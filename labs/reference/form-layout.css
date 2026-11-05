@@ -101,7 +101,9 @@
 }
 
 .ui-form-layout-designer__header {
+  /* A node narrower than its handle and Remove button wraps them rather than spilling out. */
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 4px;
   min-height: 28px;
@@ -112,7 +114,7 @@
 }
 
 .ui-form-layout-designer__title {
-  flex: 1 1 auto;
+  flex: 1 1 0;
   min-width: 0;
   overflow: hidden;
   color: var(--ref-muted);
@@ -127,6 +129,7 @@
 
 .ui-form-layout-designer__body {
   min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .ui-form-layout-designer__slot {
