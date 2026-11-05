@@ -12,7 +12,7 @@ interface UsePinchZoomOptions {
   scrollerRef: RefObject<HTMLElement | null>;
   /** The page column, scaled as a whole while the fingers move. */
   pagesRef: RefObject<HTMLElement | null>;
-  zoom: Pick<PdfZoomState, 'percent' | 'setZoom'>;
+  zoom: Pick<PdfZoomState, 'percent' | 'setZoom'> & Partial<Pick<PdfZoomState, 'levels'>>;
 }
 
 /**
@@ -52,7 +52,12 @@ export function usePinchZoom({ engine, scrollerRef, pagesRef, zoom }: UsePinchZo
           column.style.transformOrigin = `${(origin[0] ?? 0) - box.left}px ${(origin[1] ?? 0) - box.top}px`;
         }
         const reached = (target ?? percent) * (distance / previousDistance);
-        target = resolveZoomPercent({ zoom: reached, page: null, available: null });
+        target = resolveZoomPercent({
+          zoom: reached,
+          page: null,
+          available: null,
+          zoomLevels: latest.current.levels,
+        });
         column.style.transform = `scale(${target / percent})`;
       },
       onPinchEnd() {

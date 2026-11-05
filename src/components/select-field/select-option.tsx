@@ -59,11 +59,11 @@ function OptionRow({
                     <Glyph icon={MinusGlyph} />
                   ) : null}
                 </span>
-                {!state.isSelected && option.isIndeterminate ? (
-                  <Text slot="description" hidden>
-                    {strings.selectOptionIndeterminate}
-                  </Text>
-                ) : null}
+                <Text slot="description" hidden>
+                  {!state.isSelected && option.isIndeterminate
+                    ? strings.selectOptionIndeterminate
+                    : null}
+                </Text>
               </>
             )
           : undefined

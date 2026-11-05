@@ -5,6 +5,7 @@ import {
   type SelectMembershipChanges,
   useSelectMembership,
 } from '../../src/components/select-field/index.js';
+import { Switch } from '../../src/components/switch/index.js';
 import type { Key } from '../../src/core/props.js';
 import { LabOutput } from './lab-output.js';
 
@@ -44,6 +45,7 @@ function applyChanges(memberships: readonly string[], changes: SelectMembershipC
 
 /** `useSelectMembership` turns picks into add, remove and retain intent for two records. */
 export function BulkMembershipEditor() {
+  const [summarizeMixed, setSummarizeMixed] = useState(false);
   const [changeEvents, setChangeEvents] = useState<Key[][]>([]);
   const [commits, setCommits] = useState<Key[][]>([]);
   const membership = useSelectMembership({ options, baseline });
@@ -54,11 +56,16 @@ export function BulkMembershipEditor() {
   }));
   return (
     <div data-lab-demo="bulk-memberships">
+      <Switch isSelected={summarizeMixed} onChange={setSummarizeMixed}>
+        Summarize mixed memberships
+      </Switch>
       <SelectField
         label="Shared fruit"
         name="shared-fruit"
         selectionMode="multiple"
         {...fieldProps}
+        isMixed={summarizeMixed && changes.retained.length > 0}
+        placeholder="Mixed values"
         onChange={(next) => {
           setChangeEvents((previous) => [...previous, next]);
           fieldProps.onChange(next);

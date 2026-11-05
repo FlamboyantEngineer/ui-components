@@ -57,6 +57,7 @@ export function usePdfViewer<V extends PdfViewport, C extends PdfTextContent>(
   const defaultZoom = props.defaultZoom ?? 'page-width';
   const zoom = usePdfZoom({
     defaultZoom,
+    zoomLevels: props.zoomLevels,
     sizes: view?.sizes ?? noSizes,
     scrollerRef,
     pagesRef,
@@ -64,7 +65,7 @@ export function usePdfViewer<V extends PdfViewport, C extends PdfTextContent>(
     onZoomChange: props.onZoomChange,
   });
   const { scale } = zoom;
-  const search = usePdfSearch({ ...props, loaded, pages });
+  const search = usePdfSearch({ ...props, loaded, pages, isDocumentError: status === 'error' });
   const position = { ...props, document: loaded, isReady, scale, pageCount, scrollerRef, pages };
   const navigation = usePdfNavigation({ ...position, search });
   usePageViewports({ ...props, loaded: view, nearPages: pages.nearPages, scale });
