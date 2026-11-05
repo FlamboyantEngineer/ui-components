@@ -52,7 +52,8 @@
 }
 
 .ui-select-field__trigger[data-focus-visible],
-.ui-select-field__select[data-open] .ui-select-field__trigger {
+.ui-select-field__select[data-open] .ui-select-field__trigger,
+:where(.ui-select-field[data-mode='tree']) .ui-select-field__trigger[aria-expanded='true'] {
   border-color: var(--ref-focus);
   outline: var(--ref-focus-ring-thin);
 }
@@ -433,96 +434,19 @@
   gap: 4px;
 }
 
-.ui-select-field[data-mode='tree'] .ui-select-field__frame {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  min-width: 0;
-  max-width: 100%;
-}
-
 .ui-select-field[data-mode='tree'] .ui-select-field__trigger {
-  display: flex;
-  flex: 0 1 auto;
-  align-items: center;
-  gap: 6px;
   width: 220px;
-  min-width: 0;
-  max-width: 100%;
-  box-sizing: border-box;
-  height: var(--ref-control-height);
-  padding: 0 8px;
-  border: 1px solid var(--ref-field-border);
-  border-radius: var(--ref-radius);
-  background: var(--ref-field-fill);
-  color: inherit;
-  font: inherit;
-  text-align: start;
-  cursor: pointer;
-  outline: none;
 }
 
-.ui-select-field[data-mode='tree'] .ui-select-field__trigger[data-hovered] {
-  border-color: var(--ref-border-strong);
-}
-
-.ui-select-field[data-mode='tree'] .ui-select-field__trigger[data-focus-visible],
-.ui-select-field[data-mode='tree'] .ui-select-field__trigger[aria-expanded='true'] {
-  border-color: var(--ref-focus);
-  outline: var(--ref-focus-ring-thin);
-}
-
-.ui-select-field[data-mode='tree'][data-dirty] .ui-select-field__trigger {
-  border-color: var(--ref-dirty);
-}
-
+/* The tree's trigger marks errors from the field, as it has no select element to carry them. */
 .ui-select-field[data-mode='tree'][data-validation='invalid'] .ui-select-field__trigger {
   border-color: var(--ref-danger);
 }
 
-.ui-select-field[data-mode='tree'][data-validation='warning'] .ui-select-field__trigger {
-  border-color: var(--ref-warning);
-}
-
-.ui-select-field[data-mode='tree'][data-readonly] .ui-select-field__trigger {
-  border-style: dashed;
-  background: var(--ref-field-fill-inactive);
-  cursor: default;
-}
-
-.ui-select-field[data-mode='tree'] .ui-select-field__trigger[data-disabled] {
-  cursor: not-allowed;
-}
-
 .ui-select-field[data-mode='tree'] .ui-select-field__value {
-  flex: 1 1 auto;
-  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.ui-select-field[data-mode='tree'] .ui-select-field__value[data-placeholder] {
-  color: var(--ref-muted);
-}
-
-.ui-select-field[data-mode='tree'] .ui-select-field__value[data-missing],
-.ui-select-field[data-mode='tree'] .ui-select-field__chip[data-missing] {
-  font-style: italic;
-}
-
-.ui-select-field[data-mode='tree'] .ui-select-field__chevron {
-  flex: none;
-  width: 16px;
-  height: 16px;
-  color: var(--ref-muted);
-}
-
-.ui-select-field[data-mode='tree'] .ui-select-field__clear.ui-button[data-content='icon'] {
-  flex: none;
-  width: calc(var(--ref-control-height) - 8px);
-  height: calc(var(--ref-control-height) - 8px);
-  border-radius: 50%;
 }
 
 .ui-select-field[data-mode='tree'] .ui-select-field__chips {
