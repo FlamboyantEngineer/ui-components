@@ -1,6 +1,6 @@
 'use client';
 
-import { type SyntheticEvent, useEffect, useRef, useState } from 'react';
+import { type RefObject, type SyntheticEvent, useEffect, useRef, useState } from 'react';
 import { useLatest } from '../../utils/use-latest.js';
 import type { MiniAppState } from './mini-app-document.js';
 
@@ -81,6 +81,18 @@ function measureFrameEdges(frame: HTMLIFrameElement | null): number {
   return frameEdges.reduce((sum, edge) => sum + (parseFloat(style.getPropertyValue(edge)) || 0), 0);
 }
 
+/**
+ * Whether the host stylesheet holds `frame` shorter than the `content` it reports, for example with
+ * `max-height`, so the mini-app must scroll inside it.
+ */
+function isFrameCapped(frame: HTMLIFrameElement, content: number): boolean {
+  const style = frame.ownerDocument.defaultView?.getComputedStyle(frame);
+  const padding = style
+    ? (parseFloat(style.paddingTop) || 0) + (parseFloat(style.paddingBottom) || 0)
+    : 0;
+  return frame.clientHeight - padding + 0.5 < content;
+}
+
 function describeError(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
@@ -102,6 +114,40 @@ async function answerCall(
   }
 }
 
+interface FrameScrollCapOptions {
+  frameRef: RefObject<HTMLIFrameElement | null>;
+  portRef: RefObject<MessagePort | null>;
+  contentHeightRef: RefObject<number>;
+  height: number | undefined;
+}
+
+/**
+ * Tells the bridge whether its document may scroll. The frame follows its content, so the mini-app
+ * scrolls only while the host stylesheet caps the frame; a scrollbar it never needs would narrow its
+ * content and so change the height it reports.
+ */
+function useFrameScrollCap({ frameRef, portRef, contentHeightRef, height }: FrameScrollCapOptions) {
+  const scrollsRef = useRef(false);
+  useEffect(() => {
+    const frame = frameRef.current;
+    const port = portRef.current;
+    if (!frame || !port || height === undefined) return;
+    const check = () => {
+      const scrolls = isFrameCapped(frame, contentHeightRef.current);
+      if (scrolls === scrollsRef.current) return;
+      scrollsRef.current = scrolls;
+      port.postMessage({ type: 'scroll', enabled: scrolls });
+    };
+    check();
+    // A stylesheet that changes the frame's limits, such as `max-height`, resizes the frame.
+    const Observer = frame.ownerDocument.defaultView?.ResizeObserver;
+    if (!Observer) return;
+    const observer = new Observer(check);
+    observer.observe(frame);
+    return () => observer.disconnect();
+  }, [frameRef, portRef, contentHeightRef, height]);
+}
+
 /**
  * The lifecycle of one mini-app frame: it connects to the frame on its first `load`, settles
  * `loading` into `ready` or `error`, follows the height the frame reports, answers capability calls
@@ -116,6 +162,7 @@ export function useMiniAppSession(options: MiniAppSessionOptions) {
   const portRef = useRef<MessagePort>(null);
   const hasLoadedRef = useRef(false);
   const frameRef = useRef<HTMLIFrameElement>(null);
+  const contentHeightRef = useRef(0);
 
   const fail = (next: MiniAppError) => {
     if (statusRef.current === 'error') return;
@@ -136,6 +183,7 @@ export function useMiniAppSession(options: MiniAppSessionOptions) {
         latest.current.onReady?.();
         return;
       case 'resize':
+        contentHeightRef.current = message.height;
         setHeight(Math.ceil(message.height + measureFrameEdges(frameRef.current)));
         return;
       case 'state':
@@ -181,6 +229,8 @@ export function useMiniAppSession(options: MiniAppSessionOptions) {
     // `fail` reads only refs and setters, so the timer restarts only when the timeout changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [readyTimeout]);
+
+  useFrameScrollCap({ frameRef, portRef, contentHeightRef, height });
 
   useEffect(
     () => () => {

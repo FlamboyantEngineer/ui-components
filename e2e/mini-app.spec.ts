@@ -210,6 +210,8 @@ test.describe('Mini App lab', () => {
     expect(count).toBe(5);
     for (let index = 0; index < count; index += 1) {
       const frame = frames.nth(index);
+      // Browsers pause rendering in frames of another origin while they are off screen.
+      await frame.scrollIntoViewIfNeeded();
       await expect(async () => {
         const overflow = await frame
           .contentFrame()
@@ -218,5 +220,26 @@ test.describe('Mini App lab', () => {
         expect(overflow).toBe(0);
       }).toPass();
     }
+  });
+
+  test('UIC-MINI-APP-4.1 scrolls a mini-app only once the host caps its frame', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('mini-app');
+    const root = page.locator('[data-lab-demo="bode"] .ui-mini-app');
+    await expect(root).toHaveAttribute('data-status', 'ready');
+    await root.scrollIntoViewIfNeeded();
+    const document = root.locator('iframe').contentFrame().locator('html');
+    const overflow = () => document.evaluate((html) => getComputedStyle(html).overflowY);
+    await expect.poll(overflow).toBe('hidden');
+    await root.evaluate((element) => {
+      const frame = element.querySelector('iframe');
+      if (frame) frame.style.maxHeight = '200px';
+    });
+    await expect.poll(overflow).toBe('auto');
+    await expect
+      .poll(() => document.evaluate((html) => html.scrollHeight > html.clientHeight))
+      .toBe(true);
   });
 });

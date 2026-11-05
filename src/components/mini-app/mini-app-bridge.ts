@@ -3,12 +3,14 @@
  * host only through the `MessagePort` the host transfers once the frame has loaded; messages sent
  * before then wait in a queue. It reports uncaught errors and rejections to the host instead of the
  * console, posts the document's height whenever it changes, and posts `ready` on the `load` event.
+ * The document does not scroll vertically until the host says its frame is capped (`scroll`).
  * `__STATE__` is replaced with the initial state's JSON.
  */
 export const miniAppBridge = `(() => {
   let port = null;
   let nextId = 1;
   const queue = [];
+  document.documentElement.style.overflowY = 'hidden';
   const pending = new Map();
   const send = (message) => (port ? port.postMessage(message) : queue.push(message));
   const describe = (value) =>
@@ -27,6 +29,10 @@ export const miniAppBridge = `(() => {
     if (!event.ports[0]) return;
     port = event.ports[0];
     port.onmessage = ({ data: reply }) => {
+      if (reply && reply.type === 'scroll') {
+        document.documentElement.style.overflowY = reply.enabled ? 'auto' : 'hidden';
+        return;
+      }
       const call = reply && pending.get(reply.id);
       if (!call) return;
       pending.delete(reply.id);
