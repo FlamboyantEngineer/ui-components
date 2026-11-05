@@ -1,0 +1,26 @@
+/* Constraint Editor: a property panel of constraint fields, each with its Unset button. */
+
+.ui-constraint-editor .ui-property-panel__body {
+  display: grid;
+  gap: 10px;
+}
+
+.ui-constraint-editor__row {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  min-width: 0;
+}
+
+.ui-constraint-editor__row > .ui-field {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ui-constraint-editor__unset {
+  flex: none;
+}
+
+.ui-constraint-editor__row[data-locked] > .ui-field {
+  opacity: 0.85;
+}

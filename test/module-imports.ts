@@ -16,10 +16,12 @@ export function collectImports(file: string, seen = new Set<string>()): Set<stri
   return seen;
 }
 
-/** The packages the modules an entry point loads import, the entry given from the repository root. */
+/** The packages the modules an entry point loads import, statically or on demand, the entry given from the repository root. */
 export function collectPackages(entry: string): string[] {
   const files = [...collectImports(join(process.cwd(), entry))];
   return files.flatMap((file) =>
-    [...readFileSync(file, 'utf8').matchAll(/from '([^.'][^']*)'/g)].map(([, name = '']) => name),
+    [...readFileSync(file, 'utf8').matchAll(/(?:from |import\()'([^.'][^']*)'/g)].map(
+      ([, name = '']) => name,
+    ),
   );
 }

@@ -97,6 +97,47 @@ interface FieldStrings {
   remove: string;
   /** Names the button that clears a field's value in one press, from the field's label. */
   clearValue: (label: string) => string;
+  /** Labels an expression field's result, which the host evaluates. */
+  expressionResult: string;
+  /** Says the host is still evaluating an expression field's source. */
+  expressionPending: string;
+  /** Marks an expression result evaluated from source that has changed since. */
+  expressionStale: string;
+  /** Says an expression field has no result, when the host gives no reason. */
+  expressionUnavailable: string;
+  /** Names a constraint editor's control for one constraint. */
+  constraintLabel: (
+    name:
+      | 'required'
+      | 'default'
+      | 'minimum'
+      | 'maximum'
+      | 'minLength'
+      | 'maxLength'
+      | 'pattern'
+      | 'minCount'
+      | 'maxCount',
+  ) => string;
+  /** A choice of a constraint editor's Required control. */
+  constraintRequiredChoice: (choice: 'required' | 'optional') => string;
+  /** Shown in a constraint's control while the constraint is not set. */
+  constraintNotSet: string;
+  /** Names the button that unsets a constraint, from the constraint's label. */
+  constraintUnset: (label: string) => string;
+  /** Says why a constraint does not hold together with the others. */
+  constraintIssue: (
+    reason:
+      | 'notNumber'
+      | 'boundsReversed'
+      | 'lengthsReversed'
+      | 'countsReversed'
+      | 'defaultBelowMinimum'
+      | 'defaultAboveMaximum'
+      | 'defaultTooShort'
+      | 'defaultTooLong'
+      | 'patternInvalid'
+      | 'defaultPatternMismatch',
+  ) => string;
   /** The text of a select that has no value and no placeholder of its own. */
   selectPlaceholder: string;
   /** Describes a multiple select option with mixed membership across records. */
@@ -216,6 +257,10 @@ export const fieldStrings = defineStrings<FieldStrings>({
   characterCount: (count, maxLength) => ({ count, maxLength, hasLimit: maxLength !== undefined }),
   colorPicker: (label) => ({ label }),
   clearValue: (label) => ({ label }),
+  constraintLabel: (name) => ({ name }),
+  constraintRequiredChoice: (choice) => ({ choice }),
+  constraintUnset: (label) => ({ label }),
+  constraintIssue: (reason) => ({ reason }),
   selectedValues: (label) => ({ label }),
   createOption: (text) => ({ text }),
   typeToSearch: (minLength) => ({ minLength }),
