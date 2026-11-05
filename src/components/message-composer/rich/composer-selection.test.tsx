@@ -101,6 +101,22 @@ describe('RichMessageComposer selection and ranges', () => {
     expect(handle.current?.getDraft().text).toBe('Ask @Ana Lopez about\na **plan**');
   });
 
+  it('UIC-MESSAGE-COMPOSER-4.11 UIC-MESSAGE-COMPOSER-4.12 reads Select All as the whole draft for the handle and a paste', async () => {
+    const onPaste = vi.fn<(paste: MessageComposerPaste) => MessageComposerPasteResult>();
+    const { user, call, handle } = renderComposer({ onPaste });
+    call((current) => current.focus());
+    await user.keyboard('{Control>}a{/Control}');
+    const all = { start: 0, end: DRAFT.text.length };
+    expect(call((current) => current.getSelection())).toEqual(all);
+    onPaste.mockReturnValueOnce({ text: 'pasted', tokens: [] });
+    await user.paste(pasteText('https://example.test/r1'));
+    expect(onPaste).toHaveBeenCalledWith({ text: 'https://example.test/r1', range: all });
+    expect(handle.current?.getDraft()).toEqual({ text: 'pasted', tokens: [] });
+    await user.keyboard('{Control>}a{/Control}');
+    expect(call((current) => current.replaceSelection('fresh'))).toBe('applied');
+    expect(handle.current?.getDraft()).toEqual({ text: 'fresh', tokens: [] });
+  });
+
   it('UIC-MESSAGE-COMPOSER-4.11 refuses range edits while disabled, editing or without an editor', () => {
     const { call, rerender, handle } = renderComposer({ isDisabled: true });
     expect(call((current) => current.replaceRange({ start: 0, end: 0 }, 'x'))).toBe('disabled');
