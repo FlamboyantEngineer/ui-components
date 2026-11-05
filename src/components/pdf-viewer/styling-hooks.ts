@@ -12,6 +12,7 @@ export const pdfViewerHooks = createHooks('pdf-viewer', [
   'actions',
   'stage',
   'sidebar',
+  'sidebar-resizer',
   'thumbnails',
   'thumbnail',
   'thumbnail-canvas',

@@ -10,10 +10,12 @@ import type { PdfOutlineNode, PdfTextContent, PdfViewport } from './pdf-engine.j
 import { PdfViewerThumbnails } from './pdf-viewer-thumbnails.js';
 import type { LoadedPdf } from './use-pdf-document.js';
 
-interface PdfViewerSidebarProps<
+export interface PdfViewerSidebarProps<
   V extends PdfViewport = PdfViewport,
   C extends PdfTextContent = PdfTextContent,
 > {
+  id?: string | undefined;
+  width?: number | undefined;
   /** The open document as the reader turned it. */
   view: LoadedPdf<V, C>;
   currentPage: number;
@@ -83,6 +85,8 @@ function PdfViewerOutline({
  * which it then opens on.
  */
 export function PdfViewerSidebar<V extends PdfViewport, C extends PdfTextContent>({
+  id,
+  width,
   view,
   currentPage,
   onPageChange,
@@ -91,7 +95,7 @@ export function PdfViewerSidebar<V extends PdfViewport, C extends PdfTextContent
   const strings = useUiStrings();
   const hasOutline = view.outline.length > 0;
   return (
-    <div {...hooks.slot('sidebar')}>
+    <div {...hooks.slot('sidebar')} id={id} style={{ width }}>
       <Tabs
         size="sm"
         defaultSelectedKey={hasOutline ? 'outline' : 'pages'}

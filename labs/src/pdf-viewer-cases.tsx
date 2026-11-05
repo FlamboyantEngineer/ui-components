@@ -422,6 +422,10 @@ export function SidebarReader() {
   return (
     <div data-lab-case="bytes">
       <p>
+        Drag the sidebar separator or focus it and use arrow keys, Home or End to resize it. Closing
+        and reopening remembers its width.
+      </p>
+      <p>
         <Button size="sm" onPress={() => setDestination('markets')}>
           Go to markets
         </Button>{' '}

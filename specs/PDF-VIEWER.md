@@ -404,6 +404,15 @@ The outline shall be a [Tree](TREE.md) (`ui-pdf-viewer__outline`) named with the
 Implementation: `src/components/pdf-viewer/pdf-viewer-sidebar.tsx`, `src/components/pdf-viewer/use-pdf-document.ts`
 Verification: `src/components/pdf-viewer/pdf-viewer-sidebar.test.tsx`, `e2e/pdf-viewer.spec.ts`
 
+### UIC-PDF-VIEWER-10.4 - Resizing
+
+The open sidebar shall have a vertical [Resize Handle](SPLIT-VIEW.md) (`ui-pdf-viewer__sidebar-resizer`), named with the provider's `sidebar` string and controlling the sidebar's unique id. Pointer dragging and the handle's arrow, Shift+arrow, Home and End keys shall resize it between 120 and 480 pixels, limited to half the stage when that leaves at least 120 pixels. The initial width is 200 pixels. A cancelled drag shall restore the committed width; closing and reopening shall retain it. Opening, closing and resizing shall keep the document scroller mounted and keyboard resizing shall not navigate pages. The sidebar's inline width is functional layout geometry.
+
+The host shall keep the sidebar tabs outside the selected content's scroll region and reserve its scrollbar gutter so fitting thumbnail widths cannot toggle overflow continuously.
+
+Implementation: `src/components/pdf-viewer/pdf-viewer-frame.tsx`, `src/components/pdf-viewer/pdf-viewer-stage.tsx`, `src/components/pdf-viewer/pdf-viewer-sidebar.tsx`
+Verification: `src/components/pdf-viewer/pdf-viewer-sidebar.test.tsx`, `e2e/pdf-viewer.spec.ts`
+
 ## UIC-PDF-VIEWER-11 - Document access and reading gestures
 
 ### UIC-PDF-VIEWER-11.1 - Document access
@@ -449,6 +458,7 @@ Verification: `src/components/pdf-viewer/use-pdf-visible-position.test.tsx`, `e2
 | `ui-pdf-viewer__actions`          | slot     |                         | The caller's actions at the end of the toolbar.                                                    |
 | `ui-pdf-viewer__stage`            | slot     |                         | The positioned area under the toolbar.                                                             |
 | `ui-pdf-viewer__sidebar`          | slot     |                         | The panel of thumbnails and outline before the page scroller.                                      |
+| `ui-pdf-viewer__sidebar-resizer`  | slot     |                         | The Resize Handle that sizes the sidebar; also `ui-resize-handle`.                                 |
 | `ui-pdf-viewer__thumbnails`       | slot     |                         | The thumbnails' React Aria `ListBox`.                                                              |
 | `ui-pdf-viewer__thumbnail`        | slot     |                         | One page's option in the thumbnails; its content width sizes the canvas.                           |
 | `ui-pdf-viewer__thumbnail-canvas` | slot     |                         | A thumbnail's bitmap, sized inline.                                                                |

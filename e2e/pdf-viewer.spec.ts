@@ -639,6 +639,49 @@ test.describe('PDF Viewer lab', () => {
     await expect(find.locator('[data-lab-output="matches"]')).toHaveText('1 of 1');
   });
 
+  test('UIC-PDF-VIEWER-10.4 resizes the sidebar by pointer and keyboard without replacing the document', async ({
+    page,
+    lab,
+  }) => {
+    const reader = await openCase(page, lab, 'bytes');
+    const sidebar = reader.locator('.ui-pdf-viewer__sidebar');
+    const separator = reader.getByRole('separator', { name: 'Sidebar' });
+    const field = reader.getByLabel('Page', { exact: true });
+    const currentPage = await field.inputValue();
+    const initial = (await box(sidebar)).width;
+    await separator.focus();
+    await separator.press('ArrowRight');
+    await expect(async () => expect((await box(sidebar)).width).toBeGreaterThan(initial)).toPass();
+    await expect(field).toHaveValue(currentPage);
+    const start = (await box(sidebar)).width;
+    const grip = await box(separator);
+    await page.mouse.move(grip.x + grip.width / 2, grip.y + grip.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(grip.x + grip.width / 2 + 40, grip.y + grip.height / 2, { steps: 8 });
+    await page.mouse.up();
+    await expect(async () =>
+      expect((await box(sidebar)).width).toBeGreaterThan(start + 30),
+    ).toPass();
+    const remembered = (await box(sidebar)).width;
+    const toggle = reader.getByRole('button', { name: 'Sidebar', exact: true });
+    await toggle.click();
+    await expect(separator).toHaveCount(0);
+    await toggle.click();
+    await expect(async () => expectNear((await box(sidebar)).width, remembered)).toPass();
+    await separator.focus();
+    await separator.press('Home');
+    await expect(separator).toHaveAttribute(
+      'aria-valuenow',
+      (await separator.getAttribute('aria-valuemin')) ?? '',
+    );
+    await separator.press('End');
+    await expect(separator).toHaveAttribute(
+      'aria-valuenow',
+      (await separator.getAttribute('aria-valuemax')) ?? '',
+    );
+    await lab.expectAccessible('[data-lab-case="bytes"]');
+  });
+
   test('UIC-PDF-VIEWER-4.4 UIC-PDF-VIEWER-4.5 UIC-PDF-VIEWER-10.1 UIC-PDF-VIEWER-10.2 UIC-PDF-VIEWER-10.3 opens on the outline and goes to destinations', async ({
     page,
     lab,
