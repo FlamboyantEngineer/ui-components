@@ -346,6 +346,10 @@
   border-color: var(--ref-danger);
 }
 
+.ui-select-field[data-validation='warning'] .ui-select-field__chip-frame {
+  border-color: var(--ref-warning);
+}
+
 .ui-select-field[data-readonly] .ui-select-field__chip-frame {
   border-style: dashed;
   background: var(--ref-field-fill-inactive);
