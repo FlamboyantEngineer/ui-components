@@ -8,6 +8,7 @@ import { isNode } from '../../utils/is-element.js';
 import { useFocusRequest } from '../../utils/use-focus-request.js';
 import {
   resolveSearchPaneState,
+  type SearchPaneReplaceMode,
   type SearchPaneStatus,
   stepSearchResult,
 } from './search-pane-state.js';
@@ -17,7 +18,7 @@ import type { SearchPaneResult } from './search-results.js';
 export interface SearchPaneHandle {
   /** Focuses the query and selects its text. */
   focusQuery: () => void;
-  /** Opens the replace controls and focuses the replacement; does nothing in a search-only pane. */
+  /** Shows the replace controls and focuses the replacement; does nothing when the pane cannot replace. */
   focusReplacement: () => void;
 }
 
@@ -34,7 +35,7 @@ export interface SearchPaneModelOptions {
   onReplaceExpandedChange?: ((isExpanded: boolean) => void) | undefined;
   results: readonly SearchPaneResult[];
   status: SearchPaneStatus;
-  isReplaceMode: boolean;
+  replaceMode: SearchPaneReplaceMode;
   onClose?: (() => void) | undefined;
   handleRef?: Ref<SearchPaneHandle> | undefined;
 }
@@ -48,12 +49,13 @@ function selectInput(input: HTMLInputElement | null) {
 /**
  * The pane's state: the query, the current result and stepping with wrapping, the replace
  * disclosure, the inputs focus moves to, and the keys the pane handles anywhere inside it: Ctrl+F or
- * Cmd+F focuses the query, Ctrl+H or Cmd+H the replacement (only while the pane can replace), and
+ * Cmd+F focuses the query, Ctrl+H or Cmd+H the replacement (unless the replace mode is `none`), and
  * Escape closes the pane, or else only keeps the query box from emptying, so the results stay. A
  * menu's keys are the menu's own, and a composing key the input method's.
  */
 export function useSearchPane(options: SearchPaneModelOptions) {
-  const { results, status, isReplaceMode, onClose, onCurrentKeyChange } = options;
+  const { results, status, replaceMode, onClose, onCurrentKeyChange } = options;
+  const isReplaceMode = replaceMode !== 'none';
   const [query, setQuery] = useControllableState(
     options.query,
     options.defaultQuery ?? '',
@@ -77,14 +79,14 @@ export function useSearchPane(options: SearchPaneModelOptions) {
     focusQuery: () => selectInput(queryRef.current),
     focusReplacement: () => {
       if (!isReplaceMode) return;
-      // A collapsed pane draws the replacement box first, so focus moves once it has rendered.
+      // A hidden replacement box is drawn first, so focus moves once it has rendered.
       if (replacementRef.current) selectInput(replacementRef.current);
       else
         requestFocus(() => {
           replacementRef.current?.select();
           return replacementRef.current;
         });
-      setExpanded(true);
+      if (replaceMode === 'hidable') setExpanded(true);
     },
   };
   useImperativeHandle(options.handleRef, () => handle);
@@ -120,7 +122,7 @@ export function useSearchPane(options: SearchPaneModelOptions) {
       const result = results[stepSearchResult(currentIndex, results.length, by)];
       if (result) setCurrentKey(result.id);
     },
-    isExpanded: isReplaceMode && isExpanded,
+    isExpanded: replaceMode === 'shown' || (replaceMode === 'hidable' && isExpanded),
     setExpanded,
     onKeyDownCapture,
   };

@@ -20,7 +20,7 @@ const states = [
   'error',
   'unavailable',
 ] as const;
-const modes = ['search', 'replace'] as const;
+const modes = ['none', 'hidable', 'shown'] as const;
 
 const sampleResults = findLabResults(labSections, 'pear', new Set());
 
@@ -37,8 +37,9 @@ const stateProps: Record<(typeof states)[number], Partial<SearchPaneProps>> = {
 const ignore = () => undefined;
 
 const modeProps: Record<(typeof modes)[number], Partial<SearchPaneProps>> = {
-  search: {},
-  replace: { onReplace: ignore, onReplaceAll: ignore, defaultReplaceExpanded: true },
+  none: {},
+  hidable: { replaceMode: 'hidable', onReplace: ignore, onReplaceAll: ignore },
+  shown: { replaceMode: 'shown', onReplace: ignore, onReplaceAll: ignore },
 };
 
 /** `count` matches, one per line of a long generated log. */
@@ -120,7 +121,7 @@ mountLab(
   <>
     <LabSection
       title="States and modes"
-      description="Each state in a search-only pane and in a pane that searches and replaces: empty, not searched yet, searching (the last results stay browsable), results, no results, failed and unavailable."
+      description="Each state in each replace mode (none, hidable behind the chevron, always shown): empty, not searched yet, searching (the last results stay browsable), results, no results, failed and unavailable."
     >
       <StateMatrix
         axes={{ state: states, mode: modes }}
@@ -137,7 +138,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Search and replace in a document"
-      description="Type to search; Enter and Shift+Enter step through every match and wrap, a row chosen by pointer, Enter or Space becomes current, and the document marks it. The chevron shows Replace and Replace all; matches in the locked section cannot be replaced. Turn on Read-only document for a pane that only searches, and Narrow panel to see the find row wrap with the count and its arrows together. Escape closes the pane and focus returns to the document, where Ctrl+F or Cmd+F (and Ctrl+H or Cmd+H while editable) opens it again."
+      description="Type to search; Enter and Shift+Enter step through every match and wrap, a row chosen by pointer, Enter or Space becomes current, and the document marks it. Pick the replace mode: read-only (no replace controls), hidable (the chevron shows the replacement with Replace and Replace all on its line) or always shown; matches in the locked section cannot be replaced. Hide arrows without results leaves out Previous and Next while nothing matches, and Narrow panel shows the find row wrap with the count and its arrows together; with no count the arrows sit snug against the query. Escape closes the pane and focus returns to the document, where Ctrl+F or Cmd+F (and Ctrl+H or Cmd+H while editable) opens it again."
     >
       <SearchDocument name="document" />
     </LabSection>
@@ -145,7 +146,7 @@ mountLab(
       title="A read-only document in a narrow panel"
       description="The same document read-only: no replace toggle, box or shortcut."
     >
-      <SearchDocument name="read-only" isReadOnly isNarrow />
+      <SearchDocument name="read-only" replaceMode="none" isNarrow />
     </LabSection>
     <LabSection
       title="Many results"

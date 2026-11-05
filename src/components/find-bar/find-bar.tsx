@@ -19,6 +19,9 @@ export interface FindBarOption {
   label: string;
 }
 
+/** The Previous and Next match buttons while there is no match: disabled, or left out. */
+export type FindBarEmptyNavigation = 'disabled' | 'hidden';
+
 export interface FindBarProps extends RefProps<HTMLDivElement>, BaseProps {
   /** Names the find box. Defaults to the provider's `find` string. */
   label?: string | undefined;
@@ -40,6 +43,8 @@ export interface FindBarProps extends RefProps<HTMLDivElement>, BaseProps {
   onNext?: (() => void) | undefined;
   /** Moves to the previous match: the Previous match button, or Shift+Enter in the find box. */
   onPrevious?: (() => void) | undefined;
+  /** What the Previous and Next match buttons do while there is no match. Defaults to `disabled`. */
+  emptyNavigation?: FindBarEmptyNavigation | undefined;
   /** The replacement text, controlled. */
   replacement?: string | undefined;
   /** The replacement text the box starts with, uncontrolled. */
@@ -103,6 +108,7 @@ type FindBarFindProps = Pick<
   | 'currentIndex'
   | 'onNext'
   | 'onPrevious'
+  | 'emptyNavigation'
   | 'inputRef'
 > & { isPending: boolean };
 
@@ -113,6 +119,7 @@ function FindBarFind({
   isPending,
   onNext,
   onPrevious,
+  emptyNavigation = 'disabled',
   ...props
 }: FindBarFindProps) {
   const strings = useUiStrings();
@@ -122,6 +129,7 @@ function FindBarFind({
     props.onQueryChange,
   );
   const hasMatches = (matchCount ?? 0) > 0;
+  const showsSteps = hasMatches || emptyNavigation === 'disabled';
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.key !== 'Enter' || isComposingKey(event.nativeEvent)) return;
     event.preventDefault();
@@ -147,22 +155,26 @@ function FindBarFind({
         <span {...hooks.slot('status')} role="status">
           {describeStatus({ matchCount, currentIndex, isPending }, strings)}
         </span>
-        <Button
-          className={hooks.slotClass('previous')}
-          icon={ArrowUpGlyph}
-          label={strings.previousMatch}
-          size="sm"
-          isDisabled={!hasMatches}
-          onPress={onPrevious}
-        />
-        <Button
-          className={hooks.slotClass('next')}
-          icon={ArrowDownGlyph}
-          label={strings.nextMatch}
-          size="sm"
-          isDisabled={!hasMatches}
-          onPress={onNext}
-        />
+        {showsSteps ? (
+          <>
+            <Button
+              className={hooks.slotClass('previous')}
+              icon={ArrowUpGlyph}
+              label={strings.previousMatch}
+              size="sm"
+              isDisabled={!hasMatches}
+              onPress={onPrevious}
+            />
+            <Button
+              className={hooks.slotClass('next')}
+              icon={ArrowDownGlyph}
+              label={strings.nextMatch}
+              size="sm"
+              isDisabled={!hasMatches}
+              onPress={onNext}
+            />
+          </>
+        ) : null}
       </div>
     </>
   );
@@ -187,6 +199,7 @@ export function FindBar({
   isPending = false,
   onNext,
   onPrevious,
+  emptyNavigation,
   replacement,
   defaultReplacement,
   onReplacementChange,
@@ -216,7 +229,7 @@ export function FindBar({
     onClose();
   };
   const find = { label, placeholder, query, defaultQuery, onQueryChange, inputRef };
-  const steps = { matchCount, currentIndex, isPending, onNext, onPrevious };
+  const steps = { matchCount, currentIndex, isPending, onNext, onPrevious, emptyNavigation };
   // The bar, not its optional controls, owns their values, so they outlast the controls.
   const [currentReplacement, setReplacement] = useControllableState(
     replacement,

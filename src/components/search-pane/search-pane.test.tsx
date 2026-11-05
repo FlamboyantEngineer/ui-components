@@ -58,7 +58,7 @@ describe('SearchPane', () => {
     expect(root).toHaveClass('host');
     expect(root).toHaveAttribute('id', 'search');
     expect(root).toHaveAttribute('data-panel', 'left');
-    expect(root).toHaveAttribute('data-mode', 'search');
+    expect(root).toHaveAttribute('data-replace-mode', 'none');
     expect(container.querySelector('.ui-search-pane__header .ui-search-pane__find')).toHaveClass(
       'ui-find-bar',
     );
@@ -190,6 +190,7 @@ describe('SearchPane', () => {
       pane({
         handleRef,
         defaultReplacement: 'plum',
+        replaceMode: 'hidable',
         onReplace: () => undefined,
         onReplaceExpandedChange,
       }),
@@ -216,7 +217,7 @@ describe('SearchPane', () => {
     expect(outside).toHaveLastReturnedWith(false);
     await user.keyboard('{Control>}f{/Control}');
     await waitFor(() => expect(queryBox()).toHaveFocus());
-    rerender(pane({ onReplaceAll: () => undefined }));
+    rerender(pane({ replaceMode: 'hidable', onReplaceAll: () => undefined }));
     await user.keyboard('{Meta>}h{/Meta}');
     expect(outside).toHaveLastReturnedWith(true);
     const replacement = await screen.findByRole('textbox', { name: 'Replace with' });
@@ -301,8 +302,14 @@ describe('SearchPane', () => {
   it('UIC-SEARCH-PANE-3.1 draws no replace controls in a search-only pane', () => {
     const handleRef = createRef<SearchPaneHandle>();
     const { container } = render(
-      pane({ handleRef, results: makeResults(2, { isReplaceable: false }) }),
+      pane({
+        handleRef,
+        results: makeResults(2, { isReplaceable: false }),
+        onReplace: () => undefined,
+        onReplaceAll: () => undefined,
+      }),
     );
+    expect(container.querySelector('.ui-search-pane')).toHaveAttribute('data-replace-mode', 'none');
     expect(screen.queryByRole('button', { name: 'Toggle replace' })).not.toBeInTheDocument();
     handleRef.current?.focusReplacement();
     expect(screen.queryByRole('textbox', { name: 'Replace with' })).not.toBeInTheDocument();
@@ -315,10 +322,15 @@ describe('SearchPane', () => {
     const onReplaceExpandedChange = vi.fn();
     const onReplacementChange = vi.fn();
     const { container } = render(
-      pane({ onReplace: () => undefined, onReplaceExpandedChange, onReplacementChange }),
+      pane({
+        replaceMode: 'hidable',
+        onReplace: () => undefined,
+        onReplaceExpandedChange,
+        onReplacementChange,
+      }),
     );
     const root = container.querySelector('.ui-search-pane');
-    expect(root).toHaveAttribute('data-mode', 'replace');
+    expect(root).toHaveAttribute('data-replace-mode', 'hidable');
     const toggle = screen.getByRole('button', { name: 'Toggle replace' });
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
     expect(toggle.querySelector('[data-glyph="chevron-right"]')).not.toBeNull();
@@ -336,10 +348,45 @@ describe('SearchPane', () => {
     expectHooksMatchSpec(container, 'SEARCH-PANE', { slots: ['replace-toggle'] });
   });
 
+  it('UIC-SEARCH-PANE-3.1 always shows the replace controls, with no toggle, when shown', async () => {
+    const handleRef = createRef<SearchPaneHandle>();
+    const onReplaceExpandedChange = vi.fn();
+    const { container } = render(
+      pane({
+        handleRef,
+        replaceMode: 'shown',
+        defaultReplacement: 'plum',
+        onReplace: () => undefined,
+        onReplaceExpandedChange,
+      }),
+    );
+    const root = container.querySelector('.ui-search-pane');
+    expect(root).toHaveAttribute('data-replace-mode', 'shown');
+    expect(root).toHaveAttribute('data-replace-expanded', 'true');
+    expect(screen.queryByRole('button', { name: 'Toggle replace' })).not.toBeInTheDocument();
+    const replacement = screen.getByRole('textbox', { name: 'Replace with' });
+    handleRef.current?.focusReplacement();
+    await waitFor(() => expect(replacement).toHaveFocus());
+    expect(onReplaceExpandedChange).not.toHaveBeenCalled();
+  });
+
+  it('UIC-SEARCH-PANE-1.3 hides the arrows without results when asked', () => {
+    const { rerender } = render(pane({ results: [], emptyNavigation: 'hidden' }));
+    expect(screen.queryByRole('button', { name: 'Next match' })).not.toBeInTheDocument();
+    rerender(pane({ emptyNavigation: 'hidden' }));
+    expect(screen.getByRole('button', { name: 'Next match' })).toBeEnabled();
+    rerender(pane({ results: [] }));
+    expect(screen.getByRole('button', { name: 'Next match' })).toBeDisabled();
+  });
+
   it('UIC-SEARCH-PANE-3.2 follows a controlled disclosure', () => {
-    const { rerender } = render(pane({ onReplace: () => undefined, isReplaceExpanded: true }));
+    const { rerender } = render(
+      pane({ replaceMode: 'hidable', onReplace: () => undefined, isReplaceExpanded: true }),
+    );
     expect(screen.getByRole('textbox', { name: 'Replace with' })).toBeInTheDocument();
-    rerender(pane({ onReplace: () => undefined, isReplaceExpanded: false }));
+    rerender(
+      pane({ replaceMode: 'hidable', onReplace: () => undefined, isReplaceExpanded: false }),
+    );
     expect(screen.queryByRole('textbox', { name: 'Replace with' })).not.toBeInTheDocument();
   });
 
@@ -349,9 +396,9 @@ describe('SearchPane', () => {
     const onReplaceAll = vi.fn();
     render(
       pane({
+        replaceMode: 'shown',
         onReplace,
         onReplaceAll,
-        defaultReplaceExpanded: true,
         defaultReplacement: 'plum',
       }),
     );
@@ -375,9 +422,9 @@ describe('SearchPane', () => {
     const results = [...makeResults(1), ...makeResults(2, { isReplaceable: false }).slice(1)];
     const props = {
       results,
+      replaceMode: 'shown' as const,
       onReplace,
       onReplaceAll: () => undefined,
-      defaultReplaceExpanded: true,
     };
     const { container, rerender } = render(pane({ ...props, defaultCurrentKey: 'r2' }));
     const rows = within(list()).getAllByRole('option');
@@ -413,6 +460,7 @@ describe('SearchPane', () => {
         results: makeResults(5),
         maxMountedResults: 2,
         defaultCurrentKey: 'r3',
+        replaceMode: 'hidable',
         onReplace: () => undefined,
       }),
     );

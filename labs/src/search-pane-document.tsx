@@ -4,8 +4,10 @@ import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import {
   SearchPane,
   type SearchPaneHandle,
+  type SearchPaneReplaceMode,
   type SearchPaneResult,
 } from '../../src/components/search-pane/index.js';
+import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import type { Key } from '../../src/core/props.js';
 import { LabOutput } from './lab-output.js';
 
@@ -104,8 +106,8 @@ function markCurrent(section: GuideSection, current: SearchPaneResult | undefine
 interface SearchDocumentProps {
   /** The demo's name, for its `data-lab-demo`. */
   name: string;
-  /** Starts read-only: the pane only searches. */
-  isReadOnly?: boolean;
+  /** The replace mode it starts with; `none` makes the document read-only. */
+  replaceMode?: SearchPaneReplaceMode;
   /** Starts with a narrow panel. */
   isNarrow?: boolean;
 }
@@ -116,7 +118,7 @@ interface SearchDocumentProps {
  */
 export function SearchDocument({
   name,
-  isReadOnly = false,
+  replaceMode = 'hidable',
   isNarrow = false,
 }: SearchDocumentProps) {
   const [sections, setSections] = useState(labSections);
@@ -124,7 +126,9 @@ export function SearchDocument({
   const [query, setQuery] = useState('pear');
   const [selected, setSelected] = useState<Set<Key>>(new Set());
   const [currentKey, setCurrentKey] = useState<Key | null>(null);
-  const [readOnly, setReadOnly] = useState(isReadOnly);
+  const [mode, setMode] = useState(replaceMode);
+  const [hidesArrows, setHidesArrows] = useState(false);
+  const readOnly = mode === 'none';
   const [narrow, setNarrow] = useState(isNarrow);
   const [log, setLog] = useState('nothing yet');
   const handleRef = useRef<SearchPaneHandle>(null);
@@ -160,8 +164,20 @@ export function SearchDocument({
   return (
     <div data-lab-demo={name} style={{ display: 'grid', gap: 12 }}>
       <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-        <Checkbox isSelected={readOnly} onChange={setReadOnly}>
-          Read-only document
+        <SegmentedChoice
+          aria-label="Replace mode"
+          size="sm"
+          sizing="content"
+          options={[
+            { value: 'none', label: 'Read-only' },
+            { value: 'hidable', label: 'Hidable replace' },
+            { value: 'shown', label: 'Replace shown' },
+          ]}
+          value={mode}
+          onChange={(value) => setMode((value as SearchPaneReplaceMode | null) ?? mode)}
+        />
+        <Checkbox isSelected={hidesArrows} onChange={setHidesArrows}>
+          Hide arrows without results
         </Checkbox>
         <Checkbox isSelected={narrow} onChange={setNarrow}>
           Narrow panel
@@ -200,6 +216,8 @@ export function SearchDocument({
               currentKey={currentKey}
               onCurrentKeyChange={setCurrentKey}
               defaultReplacement="quince"
+              replaceMode={mode}
+              emptyNavigation={hidesArrows ? 'hidden' : 'disabled'}
               onReplace={
                 readOnly
                   ? undefined

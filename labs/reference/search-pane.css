@@ -25,27 +25,27 @@
   min-width: 0;
 }
 
+/* The query and the replacement grow and shrink with the pane. */
 .ui-search-pane .ui-find-bar__query.ui-search-field {
-  flex: 1 1 160px;
+  flex: 1 1 8rem;
+  min-width: 6rem;
   max-width: none;
 }
 
-/* The replacement and its buttons take the line under the query; Close stays on the first line. */
+/* The replacement and its buttons take one line under the query; Close stays on the first line. */
+.ui-search-pane .ui-find-bar__replace-group {
+  flex: 1 1 100%;
+  order: 1;
+}
+
 .ui-search-pane .ui-find-bar__replacement {
-  flex: 1 1 60%;
+  flex: 1 1 4rem;
+  min-width: 4rem;
   max-width: none;
-  order: 1;
 }
 
-.ui-search-pane .ui-find-bar__replace,
-.ui-search-pane .ui-find-bar__replace-all {
-  order: 1;
-}
-
-/* A narrow pane gives the query its own line; the count and its arrows wrap together, at the start. */
 @container ui-search-pane (width <= 18.75rem) {
-  .ui-search-pane .ui-find-bar__query.ui-search-field,
-  .ui-search-pane .ui-find-bar__replacement {
+  .ui-search-pane .ui-find-bar__query.ui-search-field {
     flex-basis: 100%;
   }
 }

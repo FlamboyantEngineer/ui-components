@@ -1,3 +1,9 @@
+/**
+ * Whether the pane offers replacing: not at all (`none`), behind a toggle the reader opens and closes
+ * (`hidable`), or always (`shown`).
+ */
+export type SearchPaneReplaceMode = 'none' | 'hidable' | 'shown';
+
 /** Where the search stands, as the host reports it. */
 export type SearchPaneStatus = 'idle' | 'pending' | 'ready' | 'error' | 'unavailable';
 

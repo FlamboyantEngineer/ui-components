@@ -189,7 +189,7 @@ describe('FindBar', () => {
     await user.click(screen.getByRole('button', { name: 'Replace all' }));
     expect(onReplaceAll).toHaveBeenCalledWith('figs');
     expectHooksMatchSpec(container, 'FIND-BAR', {
-      slots: ['replacement', 'replace', 'replace-all'],
+      slots: ['replace-group', 'replacement', 'replace', 'replace-all'],
     });
   });
 
@@ -213,6 +213,27 @@ describe('FindBar', () => {
       expect(onNext).not.toHaveBeenCalled();
     },
   );
+
+  it('UIC-FIND-BAR-1.3 leaves out the arrows without a match when its empty navigation is hidden', () => {
+    const { rerender } = render(<FindBar matchCount={0} emptyNavigation="hidden" />);
+    expect(screen.queryByRole('button', { name: 'Previous match' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Next match' })).not.toBeInTheDocument();
+    expect(status()).toHaveTextContent('No results');
+    rerender(<FindBar emptyNavigation="hidden" />);
+    expect(screen.queryByRole('button', { name: 'Next match' })).not.toBeInTheDocument();
+    rerender(<FindBar matchCount={2} emptyNavigation="hidden" />);
+    expect(screen.getByRole('button', { name: 'Next match' })).toBeEnabled();
+  });
+
+  it('UIC-FIND-BAR-1.5 holds the replacement and its buttons in one part', () => {
+    const { container } = render(
+      <FindBar matchCount={1} onReplace={() => undefined} onReplaceAll={() => undefined} />,
+    );
+    const group = container.querySelector('.ui-find-bar__replace-group');
+    expect(group).toContainElement(screen.getByRole('textbox', { name: 'Replace with' }));
+    expect(group).toContainElement(screen.getByRole('button', { name: 'Replace' }));
+    expect(group).toContainElement(screen.getByRole('button', { name: 'Replace all' }));
+  });
 
   it('UIC-FIND-BAR-1.2 keeps the count and its arrows in one navigation part', () => {
     const { container } = render(<FindBar matchCount={3} currentIndex={0} />);

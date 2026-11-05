@@ -20,7 +20,7 @@ Verification: `src/components/find-bar/find-bar.test.tsx`, `e2e/find-bar.spec.ts
 
 ### UIC-FIND-BAR-1.3 - Stepping through matches
 
-Previous match and Next match icon buttons (`ui-find-bar__previous` and `ui-find-bar__next`, the `arrow-up` and `arrow-down` glyphs, the provider's `previousMatch` and `nextMatch` strings) shall call `onPrevious` and `onNext`, as Shift+Enter and Enter in the find box do; the buttons are disabled and the keys do nothing while there is no match, or when the Enter confirms a text composition (`isComposing`, or key code 229). Enter never submits an enclosing form.
+Previous match and Next match icon buttons (`ui-find-bar__previous` and `ui-find-bar__next`, the `arrow-up` and `arrow-down` glyphs, the provider's `previousMatch` and `nextMatch` strings) shall call `onPrevious` and `onNext`, as Shift+Enter and Enter in the find box do; the buttons are disabled and the keys do nothing while there is no match (with `emptyNavigation="hidden"` the buttons are left out instead, and come back with the first match), or when the Enter confirms a text composition (`isComposing`, or key code 229). Enter never submits an enclosing form.
 
 The bar does not draw the searched content: the host highlights its matches and the current one. The lab's passage marks every match and gives the current match (`aria-current`) a colour of its own, the accent tint, with no border; a checkbox swaps in a host's own outlined and underlined style, since the look is the host's; the mark follows Next, Previous and wrapping, resets with a new query or option, and no mark is current while there is no match.
 
@@ -36,7 +36,7 @@ Verification: `src/components/find-bar/find-bar.test.tsx`, `e2e/find-bar.spec.ts
 
 ### UIC-FIND-BAR-1.5 - Replacing
 
-With `onReplace` or `onReplaceAll`, the bar shall add a replacement box (`ui-find-bar__replacement`, named by the provider's `replaceWith` string) and, for each handler given, a Replace (`ui-find-bar__replace`, the `replace` string) or Replace all (`ui-find-bar__replace-all`, the `replaceAll` string) button that calls it with the replacement text; Enter in the replacement box replaces, except the Enter that confirms a text composition (`isComposing`, or key code 229). The buttons are disabled and Enter does nothing while there is no match. `isReplaceDisabled` disables Replace and Enter in the replacement box, and `isReplaceAllDisabled` disables Replace all, each on its own while there are matches, as when the current match cannot be changed. `replacementInputRef` receives the replacement box's input while it is shown, so a caller can move focus to it (Ctrl+H or Cmd+H). The replacement is `replacement` (controlled) or `defaultReplacement` (uncontrolled), reported through `onReplacementChange`.
+With `onReplace` or `onReplaceAll`, the bar shall add a replace group (`ui-find-bar__replace-group`), which keeps the box and its buttons together when the bar wraps, holding a replacement box (`ui-find-bar__replacement`, named by the provider's `replaceWith` string) and, for each handler given, a Replace (`ui-find-bar__replace`, the `replace` string) or Replace all (`ui-find-bar__replace-all`, the `replaceAll` string) button that calls it with the replacement text; Enter in the replacement box replaces, except the Enter that confirms a text composition (`isComposing`, or key code 229). The buttons are disabled and Enter does nothing while there is no match. `isReplaceDisabled` disables Replace and Enter in the replacement box, and `isReplaceAllDisabled` disables Replace all, each on its own while there are matches, as when the current match cannot be changed. `replacementInputRef` receives the replacement box's input while it is shown, so a caller can move focus to it (Ctrl+H or Cmd+H). The replacement is `replacement` (controlled) or `defaultReplacement` (uncontrolled), reported through `onReplacementChange`.
 
 Implementation: `src/components/find-bar/find-bar.tsx`
 Verification: `src/components/find-bar/find-bar.test.tsx`, `e2e/find-bar.spec.ts`
@@ -73,20 +73,21 @@ Verification: `src/components/find-bar/find-bar.test.tsx`
 
 ## Hooks
 
-| Hook                       | Kind  | Values | Description                                                       |
-| -------------------------- | ----- | ------ | ----------------------------------------------------------------- |
-| `ui-find-bar`              | root  |        | The find row.                                                     |
-| `ui-find-bar__query`       | slot  |        | The find box, a Search Field.                                     |
-| `ui-find-bar__navigation`  | slot  |        | Holds the status and the Previous and Next match buttons.         |
-| `ui-find-bar__status`      | slot  |        | The `role="status"` match count.                                  |
-| `ui-find-bar__previous`    | slot  |        | The Previous match button.                                        |
-| `ui-find-bar__next`        | slot  |        | The Next match button.                                            |
-| `ui-find-bar__options`     | slot  |        | The matching options menu's trigger.                              |
-| `ui-find-bar__replacement` | slot  |        | The replacement `<input>`.                                        |
-| `ui-find-bar__replace`     | slot  |        | The Replace button.                                               |
-| `ui-find-bar__replace-all` | slot  |        | The Replace all button.                                           |
-| `ui-find-bar__close`       | slot  |        | The Close button.                                                 |
-| `data-pending`             | state | `true` | On the root while the matches are being looked for.               |
-| `data-focused`             | state | `true` | On the replacement box while it has focus (React Aria).           |
-| `data-focus-visible`       | state | `true` | On the replacement box while it has keyboard focus (React Aria).  |
-| `data-hovered`             | state | `true` | On the replacement box while the pointer is over it (React Aria). |
+| Hook                         | Kind  | Values | Description                                                        |
+| ---------------------------- | ----- | ------ | ------------------------------------------------------------------ |
+| `ui-find-bar`                | root  |        | The find row.                                                      |
+| `ui-find-bar__query`         | slot  |        | The find box, a Search Field.                                      |
+| `ui-find-bar__navigation`    | slot  |        | Holds the status and the Previous and Next match buttons.          |
+| `ui-find-bar__status`        | slot  |        | The `role="status"` match count.                                   |
+| `ui-find-bar__previous`      | slot  |        | The Previous match button.                                         |
+| `ui-find-bar__next`          | slot  |        | The Next match button.                                             |
+| `ui-find-bar__options`       | slot  |        | The matching options menu's trigger.                               |
+| `ui-find-bar__replace-group` | slot  |        | Holds the replacement box and the Replace and Replace all buttons. |
+| `ui-find-bar__replacement`   | slot  |        | The replacement `<input>`.                                         |
+| `ui-find-bar__replace`       | slot  |        | The Replace button.                                                |
+| `ui-find-bar__replace-all`   | slot  |        | The Replace all button.                                            |
+| `ui-find-bar__close`         | slot  |        | The Close button.                                                  |
+| `data-pending`               | state | `true` | On the root while the matches are being looked for.                |
+| `data-focused`               | state | `true` | On the replacement box while it has focus (React Aria).            |
+| `data-focus-visible`         | state | `true` | On the replacement box while it has keyboard focus (React Aria).   |
+| `data-hovered`               | state | `true` | On the replacement box while the pointer is over it (React Aria).  |

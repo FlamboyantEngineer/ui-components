@@ -5,9 +5,13 @@ import { ChevronDownGlyph, ChevronRightGlyph } from '../../core/glyphs.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
-import { FindBar, type FindBarOption } from '../find-bar/find-bar.js';
+import { FindBar, type FindBarEmptyNavigation, type FindBarOption } from '../find-bar/find-bar.js';
 import { searchPaneHooks as hooks } from './search-pane-hooks.js';
-import type { SearchPaneState, SearchPaneStatus } from './search-pane-state.js';
+import type {
+  SearchPaneReplaceMode,
+  SearchPaneState,
+  SearchPaneStatus,
+} from './search-pane-state.js';
 import { type SearchPaneResult, SearchResults } from './search-results.js';
 import { type SearchPaneHandle, useSearchPane } from './use-search-pane.js';
 
@@ -48,16 +52,20 @@ export interface SearchPaneProps extends RefProps<HTMLDivElement>, BaseProps {
   defaultReplacement?: string | undefined;
   /** Called with the replacement text on each change. */
   onReplacementChange?: ((replacement: string) => void) | undefined;
-  /** Replaces the current result. With it or `onReplaceAll`, the pane searches and replaces. */
+  /** Whether the pane replaces: `none` (the default), `hidable` behind a toggle, or `shown`. */
+  replaceMode?: SearchPaneReplaceMode | undefined;
+  /** Replaces the current result: adds the Replace button. */
   onReplace?: ((replacement: string, key: Key) => void) | undefined;
-  /** Replaces every result. With it or `onReplace`, the pane searches and replaces. */
+  /** Replaces every result: adds the Replace all button. */
   onReplaceAll?: ((replacement: string) => void) | undefined;
-  /** The replace controls are shown, controlled. */
+  /** A `hidable` pane shows its replace controls, controlled. */
   isReplaceExpanded?: boolean | undefined;
-  /** The replace controls are shown at first, uncontrolled. */
+  /** A `hidable` pane shows its replace controls at first, uncontrolled. */
   defaultReplaceExpanded?: boolean | undefined;
-  /** Called when the replace controls are shown or hidden. */
+  /** Called when a `hidable` pane's replace controls are shown or hidden. */
   onReplaceExpandedChange?: ((isExpanded: boolean) => void) | undefined;
+  /** What the Previous and Next match buttons do while there is no result. Defaults to `disabled`. */
+  emptyNavigation?: FindBarEmptyNavigation | undefined;
   /** Disables Replace, as when the reader may not change the current result. */
   isReplaceDisabled?: boolean | undefined;
   /** Disables Replace all. */
@@ -136,14 +144,15 @@ function ReplaceToggle({ isExpanded, onToggle }: { isExpanded: boolean; onToggle
 
 /**
  * A search pane over a host's document: a find row with the query, matching options, the count and
- * stepping, an optional replace disclosure with Replace and Replace all, and the results as a list
- * of one-line snippets. The host matches, navigates, replaces and decides what may be replaced; the
- * pane draws the search and its results, steps through them with wrapping and keeps the current
- * one in view. Without `onReplace` and `onReplaceAll` the pane only searches.
+ * stepping, replace controls with Replace and Replace all that `replaceMode` leaves out, hides
+ * behind a toggle or always shows, and the results as a list of one-line snippets. The host
+ * matches, navigates, replaces and decides what may be replaced; the pane draws the search and its
+ * results, steps through them with wrapping and keeps the current one in view.
  */
 export function SearchPane(props: SearchPaneProps) {
   const { ref, className, id, results = noResults, status = 'ready', onClose } = props;
-  const isReplaceMode = Boolean(props.onReplace || props.onReplaceAll);
+  const replaceMode = props.replaceMode ?? 'none';
+  const isReplaceMode = replaceMode !== 'none';
   const {
     queryRef,
     replacementRef,
@@ -157,19 +166,22 @@ export function SearchPane(props: SearchPaneProps) {
     isExpanded,
     setExpanded,
     onKeyDownCapture,
-  } = useSearchPane({ ...props, results, status, isReplaceMode });
+  } = useSearchPane({ ...props, results, status, replaceMode });
   const hasList = results.length > 0 && (state === 'results' || state === 'pending');
   const replace = isExpanded ? toFindBarReplace({ ...props, results, current }) : {};
-  const mode = isReplaceMode ? 'replace' : 'search';
   return (
     <div
       ref={ref}
-      {...hooks.root({ className, props, data: { state, mode, replaceExpanded: isExpanded } })}
+      {...hooks.root({
+        className,
+        props,
+        data: { state, replaceMode, replaceExpanded: isExpanded },
+      })}
       id={id}
       onKeyDownCapture={onKeyDownCapture}
     >
       <div {...hooks.slot('header')}>
-        {isReplaceMode ? (
+        {replaceMode === 'hidable' ? (
           <ReplaceToggle isExpanded={isExpanded} onToggle={() => setExpanded(!isExpanded)} />
         ) : null}
         <FindBar
@@ -185,6 +197,7 @@ export function SearchPane(props: SearchPaneProps) {
           isPending={state === 'pending'}
           onNext={() => step(1)}
           onPrevious={() => step(-1)}
+          emptyNavigation={props.emptyNavigation}
           options={props.options}
           selectedOptions={props.selectedOptions}
           defaultSelectedOptions={props.defaultSelectedOptions}
