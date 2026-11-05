@@ -306,6 +306,57 @@ test.describe('Four Side Property Strip lab', () => {
     expect(await left.evaluate((node) => (node as HTMLInputElement).selectionStart)).toBe(3);
     await lab.expectAccessible();
   });
+
+  test('UIC-FOUR-SIDE-PROPERTY-STRIP-1.8 shows a message across all four controls and clears it', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('four-side-property-strip');
+    for (const shape of ['one side', 'two sides', 'linked all', 'narrow', 'right to left']) {
+      const strip = matrixCell(page, `shape=${shape}`).locator('.ui-four-side-property-strip');
+      const geometry = await strip.evaluate((row) => {
+        const box = (selector: string) =>
+          [...row.querySelectorAll(selector)].map((element) => element.getBoundingClientRect());
+        const inputs = box('.ui-four-side-property-strip__side > input');
+        const [error] = box('.ui-four-side-property-strip__error');
+        const brackets = box('.ui-four-side-property-strip__bracket');
+        const lefts = inputs.map((input) => input.left);
+        const rights = inputs.map((input) => input.right);
+        return {
+          error,
+          start: Math.min(...lefts),
+          end: Math.max(...rights),
+          below: Math.max(...[...inputs, ...brackets].map((each) => each.bottom)),
+        };
+      });
+      // The message starts at or before the first control and runs to the last one, below all.
+      expect(geometry.error?.height, shape).toBeGreaterThan(0);
+      expect(geometry.error?.left ?? Infinity, shape).toBeLessThanOrEqual(geometry.start + 0.5);
+      expect(geometry.error?.right ?? 0, shape).toBeGreaterThanOrEqual(geometry.end - 0.5);
+      expect(geometry.error?.top ?? 0, shape).toBeGreaterThanOrEqual(geometry.below - 0.5);
+    }
+    const two = matrixCell(page, 'shape=two sides');
+    await expect(two.locator('.ui-four-side-property-strip__message')).toHaveText([
+      'Enter a whole number from 0 to 999.',
+      'Enter a value of 0 or more.',
+    ]);
+    const top = two.getByRole('textbox', { name: 'Spacing two sides top' });
+    await expect(top).toHaveAttribute('aria-invalid', 'true');
+    await top.fill('6');
+    await expect(top).not.toHaveAttribute('aria-invalid');
+    await expect(two.locator('.ui-four-side-property-strip__message')).toHaveText([
+      'Enter a value of 0 or more.',
+    ]);
+    // Linked sides that share a message show it once; a fix clears them all and the row's height.
+    const linked = matrixCell(page, 'shape=linked all');
+    await expect(linked.locator('.ui-four-side-property-strip__message')).toHaveCount(1);
+    const before = await linked.locator('.ui-four-side-property-strip').boundingBox();
+    await linked.getByRole('textbox', { name: 'Spacing linked all left' }).fill('3');
+    await expect(linked.locator('.ui-four-side-property-strip__message')).toHaveCount(0);
+    const after = await linked.locator('.ui-four-side-property-strip').boundingBox();
+    expect(after?.height ?? 0).toBeLessThan(before?.height ?? 0);
+    await lab.expectAccessible();
+  });
 });
 
 test('UIC-FOUR-SIDE-PROPERTY-STRIP-1.5 reports linked edits to the page that owns the values', async ({

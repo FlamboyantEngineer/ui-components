@@ -164,3 +164,32 @@
 .ui-four-side-property-strip[data-value-align='end'] .ui-four-side-property-strip__side input {
   text-align: end;
 }
+
+/* A wrong side's control takes the danger colour, linked or not. */
+.ui-four-side-property-strip .ui-four-side-property-strip__side[data-invalid] > input {
+  border-color: var(--ref-danger);
+}
+
+/*
+ * The messages take a row of their own below the controls and their brackets, across all four
+ * sides, wrapping within the strip's width instead of widening it. While empty the live region
+ * leaves the grid, so it adds no row and no gap.
+ */
+.ui-four-side-property-strip__error {
+  display: flex;
+  flex-direction: column;
+  grid-column: 1 / -1;
+  contain: inline-size;
+  color: var(--ref-danger);
+  font-size: var(--ref-font-size-sm);
+  overflow-wrap: anywhere;
+}
+
+.ui-four-side-property-strip__error:empty {
+  position: absolute;
+}
+
+/* Each message takes its direction from its own text, so its punctuation stays put either way. */
+.ui-four-side-property-strip__message {
+  unicode-bidi: plaintext;
+}
