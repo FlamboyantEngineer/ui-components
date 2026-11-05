@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
+  type NumberEntryFieldProps,
   NumberField,
-  type NumberFieldProps,
   type NumberFieldUnits,
 } from '../../src/components/number-field/index.js';
 import type { ControlSize } from '../../src/core/props.js';
@@ -18,7 +18,7 @@ const displays = {
   'double arrow': { showScrubber: true, hideStepper: true },
   'unit at edge': { showScrubber: true, endAdornment: 'kg', endAdornmentPlacement: 'edge' },
   'unit after value': { showScrubber: true, endAdornment: 'kg', endAdornmentPlacement: 'value' },
-} as const satisfies Record<string, Partial<NumberFieldProps>>;
+} as const satisfies Record<string, Partial<NumberEntryFieldProps>>;
 
 const displayNames = Object.keys(displays) as (keyof typeof displays)[];
 
@@ -221,7 +221,7 @@ const quantities = {
   long: { defaultValue: 1234567.89, endAdornment: 'kg' },
   'read-only': { defaultValue: 42, endAdornment: 'kg', isReadOnly: true },
   disabled: { defaultValue: 42, endAdornment: 'kg', isDisabled: true },
-} as const satisfies Record<string, Partial<NumberFieldProps>>;
+} as const satisfies Record<string, Partial<NumberEntryFieldProps>>;
 
 const quantityNames = Object.keys(quantities) as (keyof typeof quantities)[];
 const placements = ['value', 'edge'] as const;

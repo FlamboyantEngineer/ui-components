@@ -6,7 +6,7 @@ import { chooseFieldMenuItem } from '../../../test/field-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { Button } from '../button/button.js';
-import { NumberField, type NumberFieldProps } from './number-field.js';
+import { type NumberEntryFieldProps, NumberField } from './number-field.js';
 
 function root(container: HTMLElement) {
   return container.querySelector<HTMLElement>('.ui-field');
@@ -29,7 +29,7 @@ function pointer(
   fireEvent[type](target, { clientX, pointerId, button: 0, isPrimary: true });
 }
 
-function SavedField(props: Omit<NumberFieldProps, 'label'>) {
+function SavedField(props: Omit<NumberEntryFieldProps, 'label'>) {
   const [saved, setSaved] = useState<number | null>(4);
   return <NumberField label="Weight" committedValue={saved} onCommit={setSaved} {...props} />;
 }
@@ -365,7 +365,7 @@ describe('NumberField', () => {
     expect(container.querySelector('.ui-number-field__end')).toBeNull();
   });
 
-  it.each<Partial<NumberFieldProps>>([{}, { radix: 16 }])(
+  it.each<Partial<NumberEntryFieldProps>>([{}, { radix: 16 }])(
     'UIC-NUMBER-FIELD-3.1 takes a free button in an affix (%j)',
     async (props) => {
       const user = userEvent.setup();
