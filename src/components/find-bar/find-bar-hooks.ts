@@ -8,6 +8,7 @@ export const findBarHooks = createHooks('find-bar', [
   'previous',
   'next',
   'options',
+  'replace-group',
   'replacement',
   'replace',
   'replace-all',

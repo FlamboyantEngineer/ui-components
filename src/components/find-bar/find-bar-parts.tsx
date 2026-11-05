@@ -78,7 +78,8 @@ export function FindBarReplace({
     if (canReplace) onReplace?.(replacement);
   };
   return (
-    <>
+    // One part, so the replacement box and its buttons stay on a line of their own when the bar wraps.
+    <div {...hooks.slot('replace-group')}>
       <Input
         ref={replacementInputRef}
         className={hooks.slotClass('replacement')}
@@ -109,6 +110,6 @@ export function FindBarReplace({
           {strings.replaceAll}
         </Button>
       ) : null}
-    </>
+    </div>
   );
 }

@@ -1,6 +1,6 @@
 # Search Pane
 
-`SearchPane` is a panel that searches a host's document and lists what it found: a [Find Bar](FIND-BAR.md) with the query, matching options, the count and stepping, an optional replace disclosure with Replace and Replace all, and the results as an ordered list of one-line snippets. The host keeps the matching, the permissions, the document navigation and the edits: it reads the query and the options, reports where the search stands and every result, and follows the current result. Without `onReplace` and `onReplaceAll` the pane only searches, for a read-only document. `buildSearchSnippet` and `SearchSnippet` cut and draw the snippets, and a host can use them on their own.
+`SearchPane` is a panel that searches a host's document and lists what it found: a [Find Bar](FIND-BAR.md) with the query, matching options, the count and stepping, replace controls with Replace and Replace all that are left out, hidden behind a toggle or always shown, and the results as an ordered list of one-line snippets. The host keeps the matching, the permissions, the document navigation and the edits: it reads the query and the options, reports where the search stands and every result, and follows the current result. With `replaceMode` left at `none` the pane only searches, for a read-only document. `buildSearchSnippet` and `SearchSnippet` cut and draw the snippets, and a host can use them on their own.
 
 ## UIC-SEARCH-PANE-1 - Searching
 
@@ -20,14 +20,14 @@ Verification: `src/components/search-pane/search-pane.test.tsx`, `e2e/search-pan
 
 ### UIC-SEARCH-PANE-1.3 - Stepping through results
 
-The current result is `currentKey` (controlled, `null` for none) or `defaultCurrentKey` (uncontrolled), reported through `onCurrentKeyChange`. The Find Bar's count reads the current result of the total, the total while none is current, or no results. Enter and Next match step to the next result and Shift+Enter and Previous match to the previous one, through every result, wrapping from the last to the first and back; from no current result they step to the first or the last. The Enter that confirms a text composition steps nowhere.
+The current result is `currentKey` (controlled, `null` for none) or `defaultCurrentKey` (uncontrolled), reported through `onCurrentKeyChange`. The Find Bar's count reads the current result of the total, the total while none is current, or no results. Enter and Next match step to the next result and Shift+Enter and Previous match to the previous one, through every result, wrapping from the last to the first and back; from no current result they step to the first or the last. The Enter that confirms a text composition steps nowhere. `emptyNavigation` passes to the Find Bar: `disabled` (the default) keeps the Previous and Next match buttons, disabled, while there is no result, and `hidden` leaves them out.
 
 Implementation: `src/components/search-pane/use-search-pane.ts`, `src/components/search-pane/search-pane-state.ts`
 Verification: `src/components/search-pane/search-pane.test.tsx`, `e2e/search-pane.spec.ts`
 
 ### UIC-SEARCH-PANE-1.4 - Escape, shortcuts and focus
 
-Escape anywhere in the pane shall call `onClose` and leave the query and the results as they are; returning focus is the host's. Without `onClose`, Escape in the query box does nothing, so it never empties the query and its results. Escape inside the options menu only closes the menu, and a composing Escape belongs to the input method. `handleRef` receives a handle whose `focusQuery()` focuses the query and selects it, and whose `focusReplacement()` shows the replace controls, reporting the change, and focuses and selects the replacement; a host calls them for Ctrl+F or Cmd+F and Ctrl+H or Cmd+H. Inside the pane those keys do the same. In a search-only pane `focusReplacement()` does nothing and Ctrl+H or Cmd+H is left to the host.
+Escape anywhere in the pane shall call `onClose` and leave the query and the results as they are; returning focus is the host's. Without `onClose`, Escape in the query box does nothing, so it never empties the query and its results. Escape inside the options menu only closes the menu, and a composing Escape belongs to the input method. `handleRef` receives a handle whose `focusQuery()` focuses the query and selects it, and whose `focusReplacement()` shows the replace controls of a `hidable` pane, reporting the change, and focuses and selects the replacement; a host calls them for Ctrl+F or Cmd+F and Ctrl+H or Cmd+H. Inside the pane those keys do the same. With `replaceMode` `none`, `focusReplacement()` does nothing and Ctrl+H or Cmd+H is left to the host.
 
 Implementation: `src/components/search-pane/use-search-pane.ts`
 Verification: `src/components/search-pane/search-pane.test.tsx`, `e2e/search-pane.spec.ts`
@@ -57,23 +57,23 @@ Verification: `src/components/search-pane/search-pane.test.tsx`, `e2e/search-pan
 
 ## UIC-SEARCH-PANE-3 - Replacing
 
-### UIC-SEARCH-PANE-3.1 - Search-only and search-and-replace
+### UIC-SEARCH-PANE-3.1 - Replace modes
 
-Without `onReplace` and `onReplaceAll` the pane shall only search (`data-mode="search"`): it draws no replace toggle, replacement box or replace button, and handles no replace shortcut. With either it searches and replaces (`data-mode="replace"`).
+`replaceMode` shall choose whether the pane replaces, published as `data-replace-mode`: `none` (the default) only searches, drawing no replace toggle, replacement box or replace button and handling no replace shortcut, whatever handlers it is given; `hidable` hides the replace controls behind a toggle (UIC-SEARCH-PANE-3.2); `shown` always shows them, with no toggle, and publishes `data-replace-expanded`. The Find Bar draws the Replace button only with `onReplace` and the Replace all button only with `onReplaceAll`.
 
 Implementation: `src/components/search-pane/search-pane.tsx`, `src/components/search-pane/use-search-pane.ts`
 Verification: `src/components/search-pane/search-pane.test.tsx`, `e2e/search-pane.spec.ts`
 
 ### UIC-SEARCH-PANE-3.2 - Replace disclosure
 
-A search-and-replace pane shall start its header with a toggle button (`ui-search-pane__replace-toggle`, the provider's `toggleReplace` string, `aria-expanded`, the `chevron-right` glyph while collapsed and `chevron-down` while expanded) that shows and hides the Find Bar's replacement box with Replace and Replace all. Whether they show is `isReplaceExpanded` (controlled) or `defaultReplaceExpanded` (uncontrolled, collapsed by default), reported through `onReplaceExpandedChange`; the root publishes `data-replace-expanded` while they show. The replacement (`replacement` controlled or `defaultReplacement` uncontrolled, reported through `onReplacementChange`) outlasts a collapse.
+A `hidable` pane shall start its header with a toggle button (`ui-search-pane__replace-toggle`, the provider's `toggleReplace` string, `aria-expanded`, the `chevron-right` glyph while collapsed and `chevron-down` while expanded) that shows and hides the Find Bar's replacement box with Replace and Replace all. Whether they show is `isReplaceExpanded` (controlled) or `defaultReplaceExpanded` (uncontrolled, collapsed by default), reported through `onReplaceExpandedChange`; the root publishes `data-replace-expanded` while they show. The replacement (`replacement` controlled or `defaultReplacement` uncontrolled, reported through `onReplacementChange`) outlasts a collapse.
 
 Implementation: `src/components/search-pane/search-pane.tsx`
 Verification: `src/components/search-pane/search-pane.test.tsx`, `e2e/search-pane.spec.ts`
 
 ### UIC-SEARCH-PANE-3.3 - Replace and Replace all
 
-Replace and Enter in the replacement box shall call `onReplace` with the replacement and the current result's key, and Replace all calls `onReplaceAll` with the replacement; the host edits the document and reports the new results. Each action is disabled on its own: Replace by `isReplaceDisabled`, while no result is current and while the current result has `isReplaceable: false`; Replace all by `isReplaceAllDisabled` and while no result can be replaced. In a search-and-replace pane a row whose result cannot be replaced publishes `data-read-only` and reads the provider's `notReplaceable` string (`ui-search-pane__result-read-only`).
+Replace and Enter in the replacement box shall call `onReplace` with the replacement and the current result's key, and Replace all calls `onReplaceAll` with the replacement; the host edits the document and reports the new results. Each action is disabled on its own: Replace by `isReplaceDisabled`, while no result is current and while the current result has `isReplaceable: false`; Replace all by `isReplaceAllDisabled` and while no result can be replaced. While the pane can replace, a row whose result cannot be replaced publishes `data-read-only` and reads the provider's `notReplaceable` string (`ui-search-pane__result-read-only`).
 
 Implementation: `src/components/search-pane/search-pane.tsx`, `src/components/search-pane/search-results.tsx`
 Verification: `src/components/search-pane/search-pane.test.tsx`, `e2e/search-pane.spec.ts`
@@ -105,46 +105,46 @@ Verification: `src/components/search-pane/search-pane.test.tsx`, `e2e/search-pan
 
 ### UIC-SEARCH-PANE-5.2 - Hooks, caller attributes and narrow panes
 
-`SearchPane` and `SearchSnippet` shall carry the hooks below, append the caller's `className` to their roots and forward caller `data-*` attributes and `id` to them. In the reference stylesheet the pane is a size container: in a narrow pane the Find Bar wraps with the count and its arrows together at the start of a line, and each snippet keeps its match in view.
+`SearchPane` and `SearchSnippet` shall carry the hooks below, append the caller's `className` to their roots and forward caller `data-*` attributes and `id` to them. In the reference stylesheet the pane is a size container. The query grows and shrinks with the pane; without a count the arrows sit snug against it; a narrow pane wraps the count and its arrows together at the start of a line. The replacement takes the line below, growing and shrinking, with Replace and Replace all beside it while they fit. Each snippet keeps its match in view.
 
 Implementation: `src/components/search-pane/search-pane.tsx`, `src/components/search-pane/search-snippet.tsx`, `labs/reference/search-pane.css`
 Verification: `src/components/search-pane/search-pane.test.tsx`, `src/components/search-pane/search-snippet.test.tsx`, `e2e/search-pane.spec.ts`
 
 ## Hooks
 
-| Hook                                 | Kind      | Values                                                                      | Description                                                        |
-| ------------------------------------ | --------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| `ui-search-pane`                     | root      |                                                                             | The pane.                                                          |
-| `ui-search-pane__header`             | slot      |                                                                             | Holds the replace toggle and the Find Bar.                         |
-| `ui-search-pane__replace-toggle`     | slot      |                                                                             | The button that shows and hides the replace controls.              |
-| `ui-search-pane__find`               | slot      |                                                                             | The Find Bar.                                                      |
-| `ui-search-pane__message`            | slot      |                                                                             | The empty, no results, error or unavailable message.               |
-| `ui-search-pane__results`            | slot      |                                                                             | The result list box.                                               |
-| `ui-search-pane__result`             | slot      |                                                                             | One result's option.                                               |
-| `ui-search-pane__result-label`       | slot      |                                                                             | A result's label, such as its section or page.                     |
-| `ui-search-pane__result-description` | slot      |                                                                             | A result's description.                                            |
-| `ui-search-pane__result-read-only`   | slot      |                                                                             | The mark on a result that cannot be replaced.                      |
-| `ui-search-pane__show-earlier`       | slot      |                                                                             | The button that shows the earlier page of results.                 |
-| `ui-search-pane__show-later`         | slot      |                                                                             | The button that shows the next page of results.                    |
-| `data-state`                         | attribute | `empty`, `idle`, `pending`, `results`, `no-results`, `error`, `unavailable` | What the pane shows.                                               |
-| `data-mode`                          | attribute | `search`, `replace`                                                         | Whether the pane only searches or also replaces.                   |
-| `data-replace-expanded`              | state     | `true`                                                                      | On the root while the replace controls show.                       |
-| `data-read-only`                     | state     | `true`                                                                      | On a result that cannot be replaced, in a search-and-replace pane. |
-| `data-selected`                      | state     | `true`                                                                      | On the current result (React Aria).                                |
-| `data-selection-mode`                | state     | `single`                                                                    | On a result: the list's selection mode (React Aria).               |
-| `data-layout`                        | state     | `stack`                                                                     | On the list: its layout (React Aria).                              |
-| `data-orientation`                   | state     | `vertical`                                                                  | On the list: its orientation (React Aria).                         |
-| `data-focused`                       | state     | `true`                                                                      | On the result or list that has focus (React Aria).                 |
-| `data-focus-visible`                 | state     | `true`                                                                      | On the result or list that has keyboard focus (React Aria).        |
-| `data-hovered`                       | state     | `true`                                                                      | On the result under the pointer (React Aria).                      |
-| `data-pressed`                       | state     | `true`                                                                      | On the result being pressed (React Aria).                          |
-| `data-collection`                    | state     |                                                                             | React Aria's collection marker, on the list and its results.       |
-| `data-key`                           | state     |                                                                             | On a result: opaque collection key (React Aria); not for styling.  |
-| `ui-search-snippet`                  | root      |                                                                             | A snippet: one line of context around a match.                     |
-| `ui-search-snippet__lead`            | slot      |                                                                             | The leading context, given up first in a narrow row.               |
-| `ui-search-snippet__near`            | slot      |                                                                             | The words immediately before the match.                            |
-| `ui-search-snippet__match`           | slot      |                                                                             | The match, a `<mark>`.                                             |
-| `ui-search-snippet__after`           | slot      |                                                                             | The context after the match.                                       |
-| `ui-search-snippet__ellipsis`        | slot      |                                                                             | An ellipsis where text was left out.                               |
-| `data-start-omitted`                 | state     | `true`                                                                      | On a snippet that leaves out text before it.                       |
-| `data-end-omitted`                   | state     | `true`                                                                      | On a snippet that leaves out text after it.                        |
+| Hook                                 | Kind      | Values                                                                      | Description                                                         |
+| ------------------------------------ | --------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `ui-search-pane`                     | root      |                                                                             | The pane.                                                           |
+| `ui-search-pane__header`             | slot      |                                                                             | Holds the replace toggle and the Find Bar.                          |
+| `ui-search-pane__replace-toggle`     | slot      |                                                                             | The button that shows and hides the replace controls.               |
+| `ui-search-pane__find`               | slot      |                                                                             | The Find Bar.                                                       |
+| `ui-search-pane__message`            | slot      |                                                                             | The empty, no results, error or unavailable message.                |
+| `ui-search-pane__results`            | slot      |                                                                             | The result list box.                                                |
+| `ui-search-pane__result`             | slot      |                                                                             | One result's option.                                                |
+| `ui-search-pane__result-label`       | slot      |                                                                             | A result's label, such as its section or page.                      |
+| `ui-search-pane__result-description` | slot      |                                                                             | A result's description.                                             |
+| `ui-search-pane__result-read-only`   | slot      |                                                                             | The mark on a result that cannot be replaced.                       |
+| `ui-search-pane__show-earlier`       | slot      |                                                                             | The button that shows the earlier page of results.                  |
+| `ui-search-pane__show-later`         | slot      |                                                                             | The button that shows the next page of results.                     |
+| `data-state`                         | attribute | `empty`, `idle`, `pending`, `results`, `no-results`, `error`, `unavailable` | What the pane shows.                                                |
+| `data-replace-mode`                  | attribute | `none`, `hidable`, `shown`                                                  | Whether the pane replaces, and whether a toggle hides the controls. |
+| `data-replace-expanded`              | state     | `true`                                                                      | On the root while the replace controls show.                        |
+| `data-read-only`                     | state     | `true`                                                                      | On a result that cannot be replaced, while the pane can replace.    |
+| `data-selected`                      | state     | `true`                                                                      | On the current result (React Aria).                                 |
+| `data-selection-mode`                | state     | `single`                                                                    | On a result: the list's selection mode (React Aria).                |
+| `data-layout`                        | state     | `stack`                                                                     | On the list: its layout (React Aria).                               |
+| `data-orientation`                   | state     | `vertical`                                                                  | On the list: its orientation (React Aria).                          |
+| `data-focused`                       | state     | `true`                                                                      | On the result or list that has focus (React Aria).                  |
+| `data-focus-visible`                 | state     | `true`                                                                      | On the result or list that has keyboard focus (React Aria).         |
+| `data-hovered`                       | state     | `true`                                                                      | On the result under the pointer (React Aria).                       |
+| `data-pressed`                       | state     | `true`                                                                      | On the result being pressed (React Aria).                           |
+| `data-collection`                    | state     |                                                                             | React Aria's collection marker, on the list and its results.        |
+| `data-key`                           | state     |                                                                             | On a result: opaque collection key (React Aria); not for styling.   |
+| `ui-search-snippet`                  | root      |                                                                             | A snippet: one line of context around a match.                      |
+| `ui-search-snippet__lead`            | slot      |                                                                             | The leading context, given up first in a narrow row.                |
+| `ui-search-snippet__near`            | slot      |                                                                             | The words immediately before the match.                             |
+| `ui-search-snippet__match`           | slot      |                                                                             | The match, a `<mark>`.                                              |
+| `ui-search-snippet__after`           | slot      |                                                                             | The context after the match.                                        |
+| `ui-search-snippet__ellipsis`        | slot      |                                                                             | An ellipsis where text was left out.                                |
+| `data-start-omitted`                 | state     | `true`                                                                      | On a snippet that leaves out text before it.                        |
+| `data-end-omitted`                   | state     | `true`                                                                      | On a snippet that leaves out text after it.                         |

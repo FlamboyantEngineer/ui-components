@@ -12,37 +12,40 @@ async function box(locator: Locator) {
 }
 
 test.describe('Search Pane lab', () => {
-  test('UIC-SEARCH-PANE-1.2 UIC-SEARCH-PANE-3.1 UIC-SEARCH-PANE-5.1 draws each state in both modes', async ({
+  test('UIC-SEARCH-PANE-1.2 UIC-SEARCH-PANE-3.1 UIC-SEARCH-PANE-5.1 draws each state in each replace mode', async ({
     page,
     lab,
   }) => {
     await lab.open('search-pane');
     for (const state of ['empty', 'idle', 'pending', 'results', 'no-results', 'error']) {
-      for (const mode of ['search', 'replace']) {
+      for (const mode of ['none', 'hidable', 'shown']) {
         const pane = matrixCell(page, `state=${state} mode=${mode}`).locator('.ui-search-pane');
         await expect(pane).toHaveAttribute('data-state', state);
-        await expect(pane).toHaveAttribute('data-mode', mode);
+        await expect(pane).toHaveAttribute('data-replace-mode', mode);
       }
     }
-    const search = matrixCell(page, 'state=results mode=search');
+    const search = matrixCell(page, 'state=results mode=none');
     await expect(search.getByRole('button', { name: 'Toggle replace' })).toHaveCount(0);
     await expect(search.getByRole('textbox', { name: 'Replace with' })).toHaveCount(0);
     await expect(search.locator('.ui-search-pane__result-read-only')).toHaveCount(0);
-    const replace = matrixCell(page, 'state=results mode=replace');
-    await expect(replace.getByRole('button', { name: 'Toggle replace' })).toHaveAttribute(
-      'aria-expanded',
-      'true',
-    );
+    await expect(
+      matrixCell(page, 'state=results mode=hidable').getByRole('button', {
+        name: 'Toggle replace',
+      }),
+    ).toHaveAttribute('aria-expanded', 'false');
+    const replace = matrixCell(page, 'state=results mode=shown');
+    await expect(replace.getByRole('button', { name: 'Toggle replace' })).toHaveCount(0);
+    await expect(replace.getByRole('textbox', { name: 'Replace with' })).toBeVisible();
     await expect(replace.getByRole('button', { name: 'Replace', exact: true })).toBeDisabled();
     await expect(replace.locator('.ui-find-bar__status')).toHaveText('7 of 11');
-    const pending = matrixCell(page, 'state=pending mode=search');
+    const pending = matrixCell(page, 'state=pending mode=none');
     await expect(pending.getByRole('option')).toHaveCount(2);
     await expect(pending.locator('.ui-find-bar__status')).toHaveText('Searching…');
-    await expect(matrixCell(page, 'state=error mode=search').getByRole('alert')).toHaveText(
+    await expect(matrixCell(page, 'state=error mode=none').getByRole('alert')).toHaveText(
       'The search failed.',
     );
     await expect(
-      matrixCell(page, 'state=unavailable mode=search').locator('.ui-search-pane__message'),
+      matrixCell(page, 'state=unavailable mode=none').locator('.ui-search-pane__message'),
     ).toHaveText('Open a document to search it.');
     await lab.expectAccessible();
   });
@@ -142,7 +145,7 @@ test.describe('Search Pane lab', () => {
   test('UIC-SEARCH-PANE-3.1 searches only in a read-only document', async ({ page, lab }) => {
     await lab.open('search-pane');
     const area = demo(page, 'read-only');
-    await expect(area.locator('.ui-search-pane')).toHaveAttribute('data-mode', 'search');
+    await expect(area.locator('.ui-search-pane')).toHaveAttribute('data-replace-mode', 'none');
     await expect(area.getByRole('button', { name: 'Toggle replace' })).toHaveCount(0);
     const query = area.getByRole('searchbox', { name: 'Find in the guide' });
     await query.press('ControlOrMeta+h');
@@ -241,5 +244,56 @@ test.describe('Search Pane lab', () => {
       expect(nearBox.width).toBeGreaterThan(10);
     }).toPass({ timeout: 10_000 });
     await lab.expectAccessible('[data-lab-demo="snippets"]');
+  });
+
+  test('UIC-SEARCH-PANE-5.2 UIC-SEARCH-PANE-1.3 keeps the arrows snug without a count, or leaves them out', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('search-pane');
+    const idle = matrixCell(page, 'state=idle mode=none');
+    await expect(async () => {
+      const [query, previous] = await Promise.all([
+        box(idle.locator('.ui-find-bar__query')),
+        box(idle.getByRole('button', { name: 'Previous match' })),
+      ]);
+      expect(previous.x - (query.x + query.width)).toBeLessThanOrEqual(6);
+    }).toPass({ timeout: 10_000 });
+    const area = demo(page, 'document');
+    await area.getByText('Hide arrows without results').click();
+    const query = area.getByRole('searchbox', { name: 'Find in the guide' });
+    await query.fill('quince jam');
+    await expect(area.getByRole('button', { name: 'Next match' })).toHaveCount(0);
+    await query.fill('pear');
+    await expect(area.getByRole('button', { name: 'Next match' })).toBeEnabled();
+  });
+
+  test('UIC-SEARCH-PANE-3.1 UIC-SEARCH-PANE-5.2 keeps Replace and Replace all on the replacement line', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('search-pane');
+    const area = demo(page, 'document');
+    await area.getByRole('radio', { name: 'Replace shown' }).click();
+    await expect(area.getByRole('button', { name: 'Toggle replace' })).toHaveCount(0);
+    const replacement = area.getByRole('textbox', { name: 'Replace with' });
+    const replaceAll = area.getByRole('button', { name: 'Replace all' });
+    const query = area.locator('.ui-find-bar__query');
+    for (const narrow of [false, true]) {
+      if (narrow) await area.getByText('Narrow panel').click();
+      await expect(async () => {
+        const [field, all, search, pane] = await Promise.all([
+          box(replacement),
+          box(replaceAll),
+          box(query),
+          box(area.locator('.ui-search-pane__find')),
+        ]);
+        expect(Math.abs(field.y + field.height / 2 - (all.y + all.height / 2))).toBeLessThanOrEqual(
+          2,
+        );
+        expect(all.x + all.width).toBeGreaterThan(pane.x + pane.width - 8);
+        expect(field.y).toBeGreaterThan(search.y);
+      }).toPass({ timeout: 10_000 });
+    }
   });
 });
