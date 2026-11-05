@@ -3,6 +3,7 @@
 .ui-code-editor[data-variant='surface'] {
   --ref-code-editor-font: var(--ref-font-size-md);
   --ref-code-editor-pad: 8px;
+  --ref-code-editor-pad-inline: var(--ref-code-editor-pad);
   --ref-code-editor-line: 18px;
 
   display: flex;
@@ -63,7 +64,7 @@
 }
 
 /*
- * Editors inside a field take the field's type, which its size sets. An expression's one-line source
+ * Editors inside a field take the field's type, which its size sets, in place of the editor's own. An expression's one-line source
  * box also takes the field's control height, like a text field: the padding centres one line inside
  * its 1px border.
  */
@@ -71,12 +72,18 @@
   --ref-code-editor-font: 1em;
   --ref-code-editor-line: 1.45em;
   --ref-code-editor-pad: 0.45em;
+
+  font-size: inherit;
 }
 
 .ui-expression-field .ui-code-editor[data-variant='surface'][data-single-line] {
   --ref-code-editor-font: 1em;
   --ref-code-editor-line: 1.4em;
   --ref-code-editor-pad: calc((var(--ref-control-height) - 2px - 1.4em) / 2);
+  /* The text keeps a text field's inset at every size; only the block padding centres the line. */
+  --ref-code-editor-pad-inline: 8px;
+
+  font-size: inherit;
 }
 
 /* The surface, not the text area, resizes, so both layers keep the same size. */
@@ -192,7 +199,7 @@
 }
 
 .ui-code-editor__line-text {
-  width: calc(var(--ui-code-editor-text-width, 0px) - 2 * var(--ref-code-editor-pad));
+  width: calc(var(--ui-code-editor-text-width, 0px) - 2 * var(--ref-code-editor-pad-inline));
   visibility: hidden;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -216,7 +223,7 @@
   width: 100%;
   height: 100%;
   margin: 0;
-  padding: var(--ref-code-editor-pad);
+  padding: var(--ref-code-editor-pad) var(--ref-code-editor-pad-inline);
   border: 0;
   font: var(--ref-code-editor-font) / var(--ref-code-editor-line) var(--ref-mono);
   letter-spacing: normal;
