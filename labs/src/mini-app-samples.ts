@@ -1,7 +1,7 @@
 import type { MiniAppSource } from '../../src/components/mini-app/index.js';
 
 /** Plain, legible defaults every sample shares, since the host stylesheet stops at the frame. */
-const baseCss = `
+export const baseCss = `
   :root { color: #1f2328; background: #ffffff; font: 15px/1.4 system-ui, sans-serif; }
   body { margin: 0; padding: 16px; }
   h1 { margin: 0 0 12px; font-size: 17px; }

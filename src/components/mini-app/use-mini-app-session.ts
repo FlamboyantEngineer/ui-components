@@ -52,7 +52,7 @@ function readFrameMessage(data: unknown): FrameMessage | undefined {
       return { type: 'ready' };
     case 'resize':
       return typeof data.height === 'number' && Number.isFinite(data.height) && data.height >= 0
-        ? { type: 'resize', height: Math.ceil(data.height) }
+        ? { type: 'resize', height: data.height }
         : undefined;
     case 'state':
       return { type: 'state', value: data.value as MiniAppState };
@@ -67,6 +67,18 @@ function readFrameMessage(data: unknown): FrameMessage | undefined {
     default:
       return undefined;
   }
+}
+
+const frameEdges = ['border-top-width', 'border-bottom-width', 'padding-top', 'padding-bottom'];
+
+/**
+ * What a border-box frame adds around its document: the borders and padding a host stylesheet
+ * gives it, which the `height` attribute then includes. A content-box frame adds nothing.
+ */
+function measureFrameEdges(frame: HTMLIFrameElement | null): number {
+  const style = frame?.ownerDocument.defaultView?.getComputedStyle(frame);
+  if (style?.boxSizing !== 'border-box') return 0;
+  return frameEdges.reduce((sum, edge) => sum + (parseFloat(style.getPropertyValue(edge)) || 0), 0);
 }
 
 function describeError(error: unknown): string {
@@ -103,6 +115,7 @@ export function useMiniAppSession(options: MiniAppSessionOptions) {
   const statusRef = useRef<MiniAppStatus>('loading');
   const portRef = useRef<MessagePort>(null);
   const hasLoadedRef = useRef(false);
+  const frameRef = useRef<HTMLIFrameElement>(null);
 
   const fail = (next: MiniAppError) => {
     if (statusRef.current === 'error') return;
@@ -123,7 +136,7 @@ export function useMiniAppSession(options: MiniAppSessionOptions) {
         latest.current.onReady?.();
         return;
       case 'resize':
-        setHeight(message.height);
+        setHeight(Math.ceil(message.height + measureFrameEdges(frameRef.current)));
         return;
       case 'state':
         latest.current.onStateChange?.(message.value);
@@ -144,6 +157,7 @@ export function useMiniAppSession(options: MiniAppSessionOptions) {
       return;
     }
     hasLoadedRef.current = true;
+    frameRef.current = event.currentTarget;
     const target = event.currentTarget.contentWindow;
     if (statusRef.current === 'error' || !target) return;
     const channel = new MessageChannel();
