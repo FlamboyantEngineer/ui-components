@@ -97,6 +97,7 @@ export * from './components/menubar/index.js';
 export * from './components/merge-view/index.js';
 export * from './components/message-composer/index.js';
 export * from './components/meta-line/index.js';
+export * from './components/mini-app/index.js';
 export * from './components/modal/index.js';
 export * from './components/modal-controller/index.js';
 export * from './components/navigation-rail/index.js';
