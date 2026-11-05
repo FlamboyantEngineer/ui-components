@@ -483,3 +483,49 @@ describe('applyTreeMove', () => {
     );
   });
 });
+
+describe('deep trees', () => {
+  interface Node {
+    id: number | string;
+    children?: Node[];
+  }
+  const depth = 20000;
+  /** A chain `depth` items deep, every item expanded. */
+  function chain(): Node {
+    let branch: Node = { id: depth, children: [] };
+    for (let id = depth - 1; id >= 0; id -= 1) branch = { id, children: [branch] };
+    return branch;
+  }
+
+  it('UIC-TREE-REORDER-2.1 lists the visible rows of a very deep tree in preorder', () => {
+    const rows = getVisibleTreeRows([chain()], {
+      expandedKeys: Array.from({ length: depth + 1 }, (_, id) => id),
+    });
+    expect(rows).toHaveLength(depth + 1);
+    expect(rows.at(-1)).toMatchObject({ key: depth, parentKey: depth - 1, isExpanded: false });
+    const custom = getVisibleTreeRows([{ id: 'a', kids: [{ id: 'b', kids: [] }] }], {
+      expandedKeys: ['a'],
+      getChildren: (item: { id: string; kids: { id: string; kids: [] }[] }) => item.kids,
+    });
+    expect(custom.map((row) => [row.key, row.parentKey])).toEqual([
+      ['a', null],
+      ['b', 'a'],
+    ]);
+  });
+
+  it('UIC-TREE-REORDER-2.5 moves, ignores and refuses moves in a very deep tree', () => {
+    const root = chain();
+    const items: readonly Node[] = [root, { id: 'target' }];
+    const moved = applyTreeMove(items, { key: depth, targetKey: 'target', position: 'after' });
+    expect(moved.map((item) => item.id)).toEqual([0, 'target', depth]);
+    expect(moved[1]).toBe(items[1]);
+    let leaf = moved[0];
+    while (leaf?.children?.length) leaf = leaf.children[0];
+    expect(leaf?.id).toBe(depth - 1);
+    expect(root.children?.length).toBe(1);
+    expect(applyTreeMove(items, { key: 'missing', targetKey: 'target', position: 'after' })).toBe(
+      items,
+    );
+    expect(applyTreeMove(items, { key: 1, targetKey: depth, position: 'inside' })).toBe(items);
+  });
+});

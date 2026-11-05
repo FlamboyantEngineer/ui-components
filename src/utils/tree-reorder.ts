@@ -2,6 +2,7 @@
 // that result from one. Components report moves; owners apply and persist them.
 
 import type { Key } from '../core/props.js';
+import { requireDefined } from './require-defined.js';
 
 /** Where a moved row lands: beside the target row, or inside it as its last child. */
 export type TreeDropPosition = 'before' | 'after' | 'inside';
@@ -196,32 +197,50 @@ function resolveSiblingStep<T>(
   return { key: row.key, targetKey: target.key, position: direction === 'up' ? 'before' : 'after' };
 }
 
-function findItem<T extends TreeMoveItem<T>>(items: readonly T[], key: Key): T | undefined {
-  for (const item of items) {
-    if (item.id === key) return item;
-    const found = item.children ? findItem(item.children, key) : undefined;
-    if (found) return found;
+/** Where an item sits: the list holding it and its place there, from the top level down. */
+type ItemPath<T> = readonly { list: readonly T[]; at: number }[];
+
+/**
+ * The path to the item `key` among `items` and their descendants, searched in preorder without
+ * recursion, so a deep tree cannot overflow the call stack.
+ */
+function findPath<T extends TreeMoveItem<T>>(items: readonly T[], key: Key): ItemPath<T> | null {
+  const frames = [{ list: items, at: -1 }];
+  while (frames.length > 0) {
+    const frame = requireDefined(frames.at(-1));
+    frame.at += 1;
+    if (frame.at >= frame.list.length) {
+      frames.pop();
+      continue;
+    }
+    const item = requireDefined(frame.list[frame.at]);
+    if (item.id === key) return frames.map(({ list, at }) => ({ list, at }));
+    if (item.children?.length) frames.push({ list: item.children, at: -1 });
   }
-  return undefined;
+  return null;
+}
+
+function itemAt<T>(path: ItemPath<T>, depth = path.length - 1): T {
+  const { list, at } = requireDefined(path[depth]);
+  return requireDefined(list[at]);
 }
 
 /**
- * `items` with each item that `place` answers replaced by the items it returns, searching the
- * children of the others. Subtrees with no replacement keep their identity.
+ * The items with the one at `path` replaced by `replacement`, rebuilding only its ancestors from the
+ * bottom up, so subtrees off the path keep their identity.
  */
-function replaceItems<T extends TreeMoveItem<T>>(
-  items: readonly T[],
-  place: (item: T) => readonly T[] | null,
+function replaceAtPath<T extends TreeMoveItem<T>>(
+  path: ItemPath<T>,
+  replacement: readonly T[],
 ): readonly T[] {
-  let changed = false;
-  const next = items.flatMap((item) => {
-    const placed = place(item);
-    const children = placed || !item.children ? item.children : replaceItems(item.children, place);
-    if (!placed && children === item.children) return [item];
-    changed = true;
-    return placed ?? [{ ...item, children }];
-  });
-  return changed ? next : items;
+  let placed = replacement;
+  for (let depth = path.length - 1; depth > 0; depth -= 1) {
+    const { list, at } = requireDefined(path[depth]);
+    const children = [...list.slice(0, at), ...placed, ...list.slice(at + 1)];
+    placed = [{ ...itemAt(path, depth - 1), children }];
+  }
+  const { list, at } = requireDefined(path[0]);
+  return [...list.slice(0, at), ...placed, ...list.slice(at + 1)];
 }
 
 function placeAround<T extends TreeMoveItem<T>>(target: T, moved: T, position: TreeDropPosition) {
@@ -235,7 +254,10 @@ export function readTreeChildren<T>(item: T): readonly T[] | undefined {
   return (item as TreeMoveItem<T>).children;
 }
 
-/** The rows a tree shows, in order: top-level items and the children of expanded items. */
+/**
+ * The rows a tree shows, in order: top-level items and the children of expanded items. It walks
+ * without recursion, so a deep tree cannot overflow the call stack.
+ */
 export function getVisibleTreeRows<T extends { id: Key }>(
   items: readonly T[],
   {
@@ -246,15 +268,27 @@ export function getVisibleTreeRows<T extends { id: Key }>(
 ): TreeMoveRow<T>[] {
   const expanded = new Set(expandedKeys);
   const rows: TreeMoveRow<T>[] = [];
-  const visit = (level: readonly T[], parentKey: Key | null) => {
-    for (const item of level) {
-      const children = getChildren(item);
-      const isExpanded = expanded.has(item.id) && Boolean(children?.length);
-      rows.push({ key: item.id, parentKey, item, isMovable: isMovable(item), isExpanded });
-      if (isExpanded && children) visit(children, item.id);
+  const levels = [{ items: items[Symbol.iterator](), parentKey: null as Key | null }];
+  while (levels.length > 0) {
+    const level = requireDefined(levels.at(-1));
+    const next = level.items.next();
+    if (next.done) {
+      levels.pop();
+      continue;
     }
-  };
-  visit(items, null);
+    const item = next.value;
+    const children = getChildren(item);
+    const isExpanded = expanded.has(item.id) && Boolean(children?.length);
+    rows.push({
+      key: item.id,
+      parentKey: level.parentKey,
+      item,
+      isMovable: isMovable(item),
+      isExpanded,
+    });
+    if (isExpanded && children)
+      levels.push({ items: children[Symbol.iterator](), parentKey: item.id });
+  }
   return rows;
 }
 
@@ -378,18 +412,18 @@ export function resolveTreeKeyboardMove<T>(
 
 /**
  * Nested items after `move`, leaving the input unchanged. Subtrees the move does not touch keep
- * their identity. A move whose row or target is missing, or whose target lies inside the moved row,
+ * their identity. It searches and rebuilds without recursion, so any depth of loaded items works. A move whose row or target is missing, or whose target lies inside the moved row,
  * returns the items as they were.
  */
 export function applyTreeMove<T extends TreeMoveItem<T>>(
   items: readonly T[],
   move: TreeMove,
 ): readonly T[] {
-  const moved = findItem(items, move.key);
-  if (!moved || move.key === move.targetKey || !findItem(items, move.targetKey)) return items;
-  if (moved.children && findItem(moved.children, move.targetKey)) return items;
-  const remaining = replaceItems(items, (item) => (item.id === move.key ? [] : null));
-  return replaceItems(remaining, (item) =>
-    item.id === move.targetKey ? placeAround(item, moved, move.position) : null,
-  );
+  const source = findPath(items, move.key);
+  if (!source || move.key === move.targetKey || !findPath(items, move.targetKey)) return items;
+  const moved = itemAt(source);
+  if (moved.children && findPath(moved.children, move.targetKey)) return items;
+  const remaining = replaceAtPath(source, []);
+  const target = requireDefined(findPath(remaining, move.targetKey));
+  return replaceAtPath(target, placeAround(itemAt(target), moved, move.position));
 }

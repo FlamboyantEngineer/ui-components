@@ -36,7 +36,7 @@ Verification: `src/components/tree/use-tree-reorder.test.tsx`, `e2e/tree-reorder
 
 ### UIC-TREE-REORDER-2.1 - Visible rows
 
-`getVisibleTreeRows(items, options)` shall list the rows a tree shows, in order: each with its key, its parent's key (`null` at the top level), the item, whether it can move (`isMovable`, every row by default) and whether its children are listed below it (expanded with children). Children come from `getChildren`, the item's `children` by default.
+`getVisibleTreeRows(items, options)` shall list the rows a tree shows, in order: each with its key, its parent's key (`null` at the top level), the item, whether it can move (`isMovable`, every row by default) and whether its children are listed below it (expanded with children). Children come from `getChildren`, the item's `children` by default. It walks the tree without recursion, so a tree of any depth lists its rows without overflowing the call stack.
 
 Implementation: `src/utils/tree-reorder.ts`
 Verification: `src/utils/tree-reorder.test.ts`
@@ -64,7 +64,7 @@ Verification: `src/utils/tree-reorder.test.ts`
 
 ### UIC-TREE-REORDER-2.5 - Applying a move
 
-`applyTreeMove(items, move)` shall return new nested items with the row placed before, after or inside (last child of) its target, leaving the input unchanged and keeping the identity of subtrees the move does not touch. A move whose row or target is missing, or whose target lies inside the moved row, returns the items as they were.
+`applyTreeMove(items, move)` shall return new nested items with the row placed before, after or inside (last child of) its target, leaving the input unchanged and keeping the identity of subtrees the move does not touch. A move whose row or target is missing, or whose target lies inside the moved row, returns the items as they were. It searches the loaded items, collapsed branches included, and rebuilds the path to each changed item without recursion, so loaded items of any depth can move.
 
 Implementation: `src/utils/tree-reorder.ts`
 Verification: `src/utils/tree-reorder.test.ts`
