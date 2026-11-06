@@ -18,6 +18,8 @@ export const colorFieldHooks = createHooks('color-field', [
   'dialog',
   'area',
   'slider',
+  'wheel',
+  'wheel-track',
   'track',
   'thumb',
   'swatches',

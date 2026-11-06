@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { ColorField, type ColorFieldFormat } from '../../src/components/color-field/color-field.js';
+import {
+  ColorField,
+  type ColorFieldFormat,
+  type ColorFieldHueControl,
+} from '../../src/components/color-field/color-field.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import {
   fieldLayouts,
@@ -57,6 +61,34 @@ function Picking() {
       <ColorField label="Border" placeholder="Same as the text" data-lab-field="placeholder" />
       <LabOutput name="Changed">{changed}</LabOutput>
       <LabOutput name="Committed">{committed}</LabOutput>
+    </>
+  );
+}
+
+/** The picker edits the hue on a wheel or a slider; switching keeps the colour and the picker. */
+function HueWheel() {
+  const [hueControl, setHueControl] = useState<ColorFieldHueControl>('wheel');
+  const [colour, setColour] = useState<string | null>('hsba(200, 60%, 70%, 0.8)');
+  return (
+    <>
+      <ColorField
+        label="Tint"
+        value={colour}
+        onChange={setColour}
+        valueFormat="hsb"
+        hueControl={hueControl}
+        description="Drag around the ring or use the arrow keys on it: only the hue changes."
+        data-lab-field="hue-wheel"
+      />
+      <Button
+        variant="secondary"
+        size="sm"
+        onPress={() => setHueControl(hueControl === 'wheel' ? 'slider' : 'wheel')}
+      >
+        {hueControl === 'wheel' ? 'Use a hue slider' : 'Use a hue wheel'}
+      </Button>
+      <LabOutput name="Hue control">{hueControl}</LabOutput>
+      <LabOutput name="Tint">{colour ?? 'empty'}</LabOutput>
     </>
   );
 }
@@ -299,6 +331,12 @@ mountLab(
       description="With allowsTransparency the picker always offers opacity: an alpha slider over a checkerboard and an Alpha input, with # above the hex input. Without it an opaque colour is edited alone, with no # label, and a translucent one still gets the opacity controls."
     >
       <Transparency />
+    </LabSection>
+    <LabSection
+      title="Hue wheel"
+      description="A wheel hue control edits the hue on a ring in place of the slider, keeping saturation, brightness and alpha; the button switches back to the slider."
+    >
+      <HueWheel />
     </LabSection>
     <LabSection
       title="Format choice and stored format"

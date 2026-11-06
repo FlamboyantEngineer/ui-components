@@ -13,4 +13,6 @@ export {
   ColorSwatch,
   ColorSwatchPickerContext,
   ColorThumb,
+  ColorWheel,
+  ColorWheelTrack,
 } from 'react-aria-components';

@@ -1,7 +1,16 @@
 'use client';
 
 import { useUiStrings } from '../../core/provider.js';
-import { ColorArea, ColorSlider, ColorThumb, Dialog, SliderTrack } from '../../primitives/index.js';
+import {
+  ColorArea,
+  ColorSlider,
+  ColorThumb,
+  ColorWheel,
+  ColorWheelTrack,
+  Dialog,
+  SliderTrack,
+} from '../../primitives/index.js';
+import { isFocusLost } from '../../utils/composed-focus.js';
 import { DEFAULT_DROPDOWN_OFFSET } from '../../utils/overlay-defaults.js';
 import { Button } from '../button/button.js';
 import { ColorSwatchPicker, ColorSwatchPickerItem } from '../color-swatch/color-swatch.js';
@@ -24,13 +33,27 @@ interface ColorFieldPanelProps {
   swatches: readonly string[];
   /** Draws the eye dropper where the browser has one. */
   allowsEyeDropper: boolean;
+  /** How the picker edits the hue: a slider or a wheel. */
+  hueControl: ColorFieldHueControl;
 }
+
+/** How a colour field's picker edits the hue: a straight slider or a ring around a centre. */
+export type ColorFieldHueControl = 'slider' | 'wheel';
+
+/** The hue wheel's outer radius and ring width in pixels: geometry the wheel's thumb follows. */
+const wheelRadius = 80;
+const wheelRingWidth = 20;
 
 const hooks = colorFieldHooks;
 
 function ChannelSlider({ channel }: { channel: 'hue' | 'alpha' }) {
   return (
-    <ColorSlider {...hooks.slot('slider', { channel })} colorSpace="hsb" channel={channel}>
+    <ColorSlider
+      {...hooks.slot('slider', { channel })}
+      ref={channel === 'hue' ? focusReplacedHue : undefined}
+      colorSpace="hsb"
+      channel={channel}
+    >
       <SliderTrack {...hooks.slot('track')}>
         <ColorThumb {...hooks.slot('thumb')} />
       </SliderTrack>
@@ -39,7 +62,29 @@ function ChannelSlider({ channel }: { channel: 'hue' | 'alpha' }) {
 }
 
 /**
- * The picker popover: the format choice, a saturation and brightness area, the hue slider (and the
+ * Moves focus to a hue control that replaced the one that held it, when the presentation switches
+ * while the picker is open; on first mount focus is elsewhere and stays there.
+ */
+function focusReplacedHue(element: HTMLElement | null) {
+  if (element && isFocusLost(element)) element.querySelector('input')?.focus();
+}
+
+function HueWheel() {
+  return (
+    <ColorWheel
+      {...hooks.slot('wheel')}
+      ref={focusReplacedHue}
+      outerRadius={wheelRadius}
+      innerRadius={wheelRadius - wheelRingWidth}
+    >
+      <ColorWheelTrack {...hooks.slot('wheel-track')} />
+      <ColorThumb {...hooks.slot('thumb')} />
+    </ColorWheel>
+  );
+}
+
+/**
+ * The picker popover: the format choice, a saturation and brightness area, the hue slider or wheel (and the
  * alpha slider while it offers opacity), the format's inputs, the eye dropper, the preset
  * swatches and Clear, which closes the picker once the colour is gone.
  */
@@ -52,6 +97,7 @@ export function ColorFieldPanel({
   showsAlpha,
   swatches,
   allowsEyeDropper,
+  hueControl,
 }: ColorFieldPanelProps) {
   const strings = useUiStrings();
   return (
@@ -61,7 +107,7 @@ export function ColorFieldPanel({
         placement="bottom start"
         offset={DEFAULT_DROPDOWN_OFFSET}
       >
-        <Dialog {...hooks.slot('dialog')} aria-label={label}>
+        <Dialog {...hooks.slot('dialog', { hueControl })} aria-label={label}>
           {({ close }) => (
             <>
               <ColorFormatChoice
@@ -77,7 +123,7 @@ export function ColorFieldPanel({
               >
                 <ColorThumb {...hooks.slot('thumb')} />
               </ColorArea>
-              <ChannelSlider channel="hue" />
+              {hueControl === 'wheel' ? <HueWheel /> : <ChannelSlider channel="hue" />}
               {showsAlpha ? <ChannelSlider channel="alpha" /> : null}
               <ColorChannelInputs format={format} showsAlpha={showsAlpha} />
               {swatches.length > 0 ? (

@@ -120,4 +120,54 @@ describe('ColorField picker', () => {
       ],
     });
   });
+
+  it('UIC-COLOR-FIELD-1.5 edits the hue on a wheel, keeping saturation, brightness and alpha', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <ColorField
+        label="Accent"
+        defaultValue="hsba(1, 50%, 40%, 0.5)"
+        valueFormat="hsb"
+        hueControl="wheel"
+        onChange={onChange}
+      />,
+    );
+    await user.click(trigger('Accent'));
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog).toHaveAttribute('data-hue-control', 'wheel');
+    expect(dialog.querySelector('.ui-color-field__slider[data-channel="hue"]')).toBeNull();
+    const wheel = within(dialog).getByRole('slider', { name: 'Hue' });
+    expect(wheel.closest('.ui-color-field__wheel')).not.toBeNull();
+    expectHooksMatchSpec(document.body, 'COLOR-FIELD', { slots: ['wheel', 'wheel-track'] });
+    await user.click(
+      dialog.querySelector('.ui-color-field__wheel .ui-color-field__thumb') as Element,
+    );
+    expect(wheel).toHaveFocus();
+    await user.keyboard('{ArrowLeft}');
+    expect(onChange).toHaveBeenLastCalledWith('hsba(0, 50%, 40%, 0.5)');
+    await user.keyboard('{ArrowLeft}');
+    expect(onChange).toHaveBeenLastCalledWith('hsba(359, 50%, 40%, 0.5)');
+    await user.keyboard('{ArrowRight}{ArrowRight}');
+    expect(onChange).toHaveBeenLastCalledWith('hsba(1, 50%, 40%, 0.5)');
+  });
+
+  it('UIC-COLOR-FIELD-1.5 keeps the colour, the open picker and focus when the hue control switches', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<ColorField label="Accent" defaultValue="#336699" />);
+    await user.click(trigger('Accent'));
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog).toHaveAttribute('data-hue-control', 'slider');
+    await user.click(
+      dialog.querySelector('.ui-color-field__slider .ui-color-field__thumb') as Element,
+    );
+    const slider = within(dialog).getByRole('slider', { name: 'Hue' });
+    expect(slider).toHaveFocus();
+    const hue = slider.getAttribute('aria-valuetext');
+    rerender(<ColorField label="Accent" defaultValue="#336699" hueControl="wheel" />);
+    const wheel = within(screen.getByRole('dialog')).getByRole('slider', { name: 'Hue' });
+    expect(wheel.closest('.ui-color-field__wheel')).not.toBeNull();
+    expect(wheel).toHaveFocus();
+    expect(wheel).toHaveAttribute('aria-valuetext', hue);
+  });
 });
