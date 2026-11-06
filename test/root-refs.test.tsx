@@ -91,6 +91,7 @@ import { ListView, ListViewItem, ListViewSection } from '../src/components/list-
 import { LoadingCard, LoadingRegion } from '../src/components/loading-overlay/index.js';
 import { MappingTable } from '../src/components/mapping-table/mapping-table.js';
 import { Markdown } from '../src/components/markdown/markdown.js';
+import { MaskedTextField } from '../src/components/masked-text-field/masked-text-field.js';
 import { MediaViewer } from '../src/components/media-viewer/media-viewer.js';
 import { Menu, MenuItem, MenuSection, MenuSeparator } from '../src/components/menu/index.js';
 import {
@@ -507,6 +508,10 @@ const fieldCases: Record<string, RootRefCase> = {
   DecimalField: { element: (ref) => <DecimalField ref={ref} label="Weight" />, root: 'ui-field' },
   FileField: {
     element: (ref) => <FileField ref={ref} label="Attachments" onSelect={() => {}} />,
+    root: 'ui-field',
+  },
+  MaskedTextField: {
+    element: (ref) => <MaskedTextField ref={ref} label="Code" mask="999-999" />,
     root: 'ui-field',
   },
   MultiDateField: {

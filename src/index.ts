@@ -96,6 +96,7 @@ export * from './components/load-more/index.js';
 export * from './components/loading-overlay/index.js';
 export * from './components/mapping-table/index.js';
 export * from './components/markdown/index.js';
+export * from './components/masked-text-field/index.js';
 export * from './components/media-viewer/index.js';
 export * from './components/menu/index.js';
 export * from './components/menubar/index.js';

@@ -475,6 +475,7 @@
   "rangeUnderflow": "Introduce {minimum} o más.",
   "quantityUnreadable": "Introduce un número en {units}.",
   "decimalUnreadable": "Introduce un número decimal.",
+  "maskIncomplete": "Introduce el valor completo.",
   "numberIncrease": "Aumentar",
   "numberDecrease": "Disminuir",
   "rangeOverflow": "Introduce {maximum} o menos.",

@@ -1,0 +1,5 @@
+/* Masked Text Field: a text field whose digits keep even widths, so separators stay in place. */
+
+.ui-masked-text-field .ui-text-field__input {
+  font-variant-numeric: tabular-nums;
+}

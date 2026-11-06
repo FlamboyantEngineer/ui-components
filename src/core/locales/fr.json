@@ -475,6 +475,7 @@
   "rangeUnderflow": "Saisissez {minimum} ou plus.",
   "quantityUnreadable": "Saisissez un nombre en {units}.",
   "decimalUnreadable": "Saisissez un nombre décimal.",
+  "maskIncomplete": "Saisissez la valeur complète.",
   "numberIncrease": "Augmenter",
   "numberDecrease": "Diminuer",
   "rangeOverflow": "Saisissez {maximum} ou moins.",

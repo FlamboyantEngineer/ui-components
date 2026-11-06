@@ -65,6 +65,8 @@ interface FieldStrings {
   quantityUnreadable: (units: string) => string;
   /** The message of typed text that is no decimal number. */
   decimalUnreadable: string;
+  /** The message of a masked value that leaves slots of its mask empty. */
+  maskIncomplete: string;
   /** Names the numeric increment button. */
   numberIncrease: string;
   /** Names the numeric decrement button. */
