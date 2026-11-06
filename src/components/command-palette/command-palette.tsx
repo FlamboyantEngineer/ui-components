@@ -1,12 +1,12 @@
 'use client';
 
-import { type KeyboardEvent, useMemo, useRef, useState } from 'react';
+import { type KeyboardEvent, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { OpenStateProps } from '../../core/events.js';
 import { SearchGlyph } from '../../core/glyphs.js';
-import { createHooks, splitDataAttributes } from '../../core/hooks.js';
+import { splitDataAttributes } from '../../core/hooks.js';
 import { AvailableLoadingBoundary, useHoldFocusOnLeave } from '../../core/loading-boundary.js';
-import type { BaseProps, RefProps } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import {
   Autocomplete,
@@ -26,18 +26,36 @@ import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { Menu, type MenuProps, type MenuSize } from '../menu/menu.js';
 import { useLayerZIndex, usePortalContainer } from '../portal/portal.js';
 import { isChordPress, type ShortcutChord } from '../shortcut/shortcut.js';
+import type { CommandPaletteEntry, CommandPaletteFilter } from './command-palette-entries.js';
 import { useReturnFocusOnClose } from './command-palette-focus.js';
+import { commandPaletteHooks as hooks } from './command-palette-hooks.js';
+import { CommandPageHeader, useCommandPages } from './command-palette-pages.js';
 import { useDocumentShortcut } from './command-palette-shortcut.js';
 
-/** Whether a command whose text is `textValue` matches the typed `inputValue`. */
-export type CommandPaletteFilter = (textValue: string, inputValue: string) => boolean;
+export type {
+  CommandPaletteEntry,
+  CommandPaletteFilter,
+  CommandPaletteItem,
+  CommandPaletteSection,
+} from './command-palette-entries.js';
 
 export interface CommandPaletteProps
   extends
     RefProps<HTMLDivElement>,
     OpenStateProps,
-    Pick<MenuProps, 'items' | 'children' | 'onAction' | 'isLoading' | 'renderEmptyState'>,
+    Pick<MenuProps, 'children' | 'onAction' | 'isLoading' | 'renderEmptyState'>,
     BaseProps {
+  /**
+   * The commands as data, used when there are no `children`: menu entries whose commands may carry
+   * search `keywords` and open a page of further `commands`.
+   */
+  items?: readonly CommandPaletteEntry[] | undefined;
+  /** The ids of the branch commands opened from the first page, controlled. */
+  path?: readonly Key[] | undefined;
+  /** The page path each opening starts from, uncontrolled. Defaults to the first page. */
+  defaultPath?: readonly Key[] | undefined;
+  /** Called with the new page path when the reader opens a page or goes back. */
+  onPathChange?: ((path: Key[]) => void) | undefined;
   /** Names the dialog. Defaults to the provider's `commandPalette` string. */
   'aria-label'?: string | undefined;
   /** The search field's text, controlled. */
@@ -47,8 +65,9 @@ export interface CommandPaletteProps
   /** Called with the search field's text as the reader types. */
   onInputChange?: ((value: string) => void) | undefined;
   /**
-   * Keeps the commands whose text matches what was typed. Defaults to a match anywhere in the
-   * label, ignoring case and accents; `null` shows the commands as given, already filtered.
+   * Keeps the commands whose label or a keyword matches what was typed, in their order. Defaults to
+   * ranking the matches, ignoring case and accents; `null` shows the commands as given, already
+   * filtered.
    */
   filter?: CommandPaletteFilter | null | undefined;
   /**
@@ -71,15 +90,6 @@ type CommandPaletteDialogProps = Omit<
   close: () => void;
 };
 
-const hooks = createHooks('command-palette', [
-  'panel',
-  'dialog',
-  'search',
-  'search-icon',
-  'search-input',
-  'empty',
-]);
-
 /**
  * The dialog: a search field over a menu of commands (React Aria `Autocomplete`). Focus stays in
  * the field while the arrow keys move through the commands; each opening starts from
@@ -97,6 +107,11 @@ function CommandPaletteDialog({
   renderEmptyState,
   isOpen,
   close,
+  items,
+  path,
+  defaultPath,
+  onPathChange,
+  onAction,
   ...menu
 }: CommandPaletteDialogProps) {
   const strings = useUiStrings();
@@ -106,8 +121,12 @@ function CommandPaletteDialog({
     defaultInputValue ?? '',
     onInputChange,
   );
+  const pages = useCommandPages({
+    ...{ items, path, defaultPath, onPathChange, query, setQuery, filter, onAction },
+  });
   const hint = placeholder ?? strings.searchCommands;
   const dialogRef = useRef<HTMLElement>(null);
+  const inputRef = usePageFocus(pages.pages.length);
   const container = usePortalContainer();
   const [opener] = useState(() => getDeepActiveElement(getOwnerDocument(container)));
   // Closing while the content it was opened from loads, focus waits on that content's boundary.
@@ -116,18 +135,8 @@ function CommandPaletteDialog({
     () => (isHTMLElement(opener) ? opener : null),
   );
   const menuContext = useMemo(() => ({ onClose: close }), [close]);
-  // Seen before the field, which would otherwise keep the key press for itself.
-  const onKeyDownCapture = (event: KeyboardEvent<HTMLElement>) => {
-    // The Enter that confirms an input method candidate runs no command; the input method keeps it.
-    if (event.key === 'Enter' && isComposingKey(event.nativeEvent)) {
-      event.stopPropagation();
-      return;
-    }
-    if (!isOpen || !shortcut || !isChordPress(event.nativeEvent, shortcut)) return;
-    event.preventDefault();
-    event.stopPropagation();
-    close();
-  };
+  const onKeyDownCapture = createDialogKeys({ isOpen, shortcut, close, pages });
+  const pageLabel = pages.pages.at(-1)?.label;
   return (
     <Dialog
       ref={dialogRef}
@@ -138,18 +147,22 @@ function CommandPaletteDialog({
     >
       {/* Its own place to work while the page beneath loads. */}
       <AvailableLoadingBoundary>
+        <CommandPageHeader pages={pages.pages} onBack={pages.back} />
         <Autocomplete
           inputValue={query}
           onInputChange={setQuery}
-          filter={filter === null ? undefined : (filter ?? contains)}
+          filter={pages.usesOwnFilter && filter !== null ? (filter ?? contains) : undefined}
         >
           <SearchField className={hooks.slotClass('search')} aria-label={hint} autoFocus>
             <Glyph icon={SearchGlyph} className={hooks.slotClass('search-icon')} />
-            <Input className={hooks.slotClass('search-input')} placeholder={hint} />
+            <Input ref={inputRef} className={hooks.slotClass('search-input')} placeholder={hint} />
           </SearchField>
           <MenuContext value={menuContext}>
             <Menu
               {...menu}
+              aria-label={pageLabel}
+              items={pages.menuItems}
+              onAction={pages.onAction}
               highlightMatches
               renderEmptyState={() => (
                 <span {...hooks.slot('empty')}>{renderEmptyState?.() ?? strings.noResults}</span>
@@ -160,6 +173,44 @@ function CommandPaletteDialog({
       </AvailableLoadingBoundary>
     </Dialog>
   );
+}
+
+/**
+ * The dialog's keys, seen before the field, which would otherwise keep them: the Enter that
+ * confirms an input method candidate runs no command, Escape and Backspace on an empty field of an
+ * inner page go back, and the palette's chord closes it.
+ */
+function createDialogKeys(options: {
+  isOpen: boolean;
+  shortcut: ShortcutChord | null | undefined;
+  close: () => void;
+  pages: { onKeyDownCapture: (event: KeyboardEvent<HTMLElement>) => void };
+}) {
+  const { isOpen, shortcut, close, pages } = options;
+  return (event: KeyboardEvent<HTMLElement>) => {
+    if (event.key === 'Enter' && isComposingKey(event.nativeEvent)) {
+      event.stopPropagation();
+      return;
+    }
+    pages.onKeyDownCapture(event);
+    if (event.isPropagationStopped()) return;
+    if (!isOpen || !shortcut || !isChordPress(event.nativeEvent, shortcut)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    close();
+  };
+}
+
+/** Returns focus to the search field after the reader opens a page or goes back. */
+function usePageFocus(depth: number) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const depthRef = useRef(depth);
+  useLayoutEffect(() => {
+    if (depthRef.current === depth) return;
+    depthRef.current = depth;
+    inputRef.current?.focus();
+  }, [depth]);
+  return inputRef;
 }
 
 /**

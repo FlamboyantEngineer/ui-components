@@ -8,7 +8,11 @@ import { PlusGlyph } from '../../core/glyphs.js';
 import { Button } from '../button/button.js';
 import { type MenuEntry, MenuItem, MenuSection } from '../menu/menu.js';
 import { TextMatch } from '../text-match/text-match.js';
-import { CommandPalette, type CommandPaletteProps } from './command-palette.js';
+import {
+  CommandPalette,
+  type CommandPaletteEntry,
+  type CommandPaletteProps,
+} from './command-palette.js';
 
 const commands: MenuEntry[] = [
   { id: 'new', label: 'New file', icon: PlusGlyph, shortcut: 'Ctrl+N' },
@@ -515,6 +519,128 @@ describe('CommandPalette', () => {
     expect(screen.getByRole('dialog')).toHaveAttribute('id', 'palette');
     expectHooksMatchSpec(document.body, 'COMMAND-PALETTE', {
       slots: ['panel', 'dialog', 'search', 'search-icon', 'search-input'],
+    });
+  });
+
+  describe('aliases and pages', () => {
+    const settings: CommandPaletteEntry[] = [
+      { id: 'theme', label: 'Change theme', keywords: ['appearance'] },
+      { id: 'save', label: 'Save all' },
+      {
+        id: 'display',
+        label: 'Display',
+        commands: [
+          { id: 'density', label: 'Row density', commands: [{ id: 'compact', label: 'Compact' }] },
+          { id: 'zoom', label: 'Zoom in' },
+        ],
+      },
+    ];
+
+    function items() {
+      return screen.getAllByRole('menuitem').map((item) => item.textContent);
+    }
+
+    it('UIC-COMMAND-PALETTE-2.7 finds a command by its keyword without changing its name', async () => {
+      const user = userEvent.setup();
+      render(<CommandPalette items={settings} defaultOpen />);
+      await user.keyboard('appear');
+      const theme = screen.getByRole('menuitem', { name: 'Change theme' });
+      expect(items()).toEqual(['Change theme']);
+      expect(theme.querySelector('mark')).toBeNull();
+      const search = screen.getByRole('searchbox');
+      await waitFor(() => expect(search).toHaveAttribute('aria-activedescendant', theme.id));
+      await user.clear(search);
+      await user.keyboard('sa');
+      expect(items()).toEqual(['Save all']);
+      expect(
+        screen.getByRole('menuitem', { name: 'Save all' }).querySelector('mark'),
+      ).toHaveTextContent('Sa');
+    });
+
+    it('UIC-COMMAND-PALETTE-2.8 opens a page in place, names it and goes back with its query', async () => {
+      const user = userEvent.setup();
+      const onAction = vi.fn();
+      const onPathChange = vi.fn();
+      const onOpenChange = vi.fn();
+      render(
+        <CommandPalette
+          items={settings}
+          defaultOpen
+          onAction={onAction}
+          onPathChange={onPathChange}
+          onOpenChange={onOpenChange}
+        />,
+      );
+      const search = screen.getByRole('searchbox');
+      await user.keyboard('disp');
+      await user.keyboard('{Enter}');
+      expect(onPathChange).toHaveBeenLastCalledWith(['display']);
+      expect(onAction).not.toHaveBeenCalled();
+      expect(onOpenChange).not.toHaveBeenCalled();
+      expect(screen.getByRole('menu', { name: 'Display' })).toBeInTheDocument();
+      expect(document.querySelector('.ui-command-palette__page-title')).toHaveTextContent(
+        'Display',
+      );
+      expectHooksMatchSpec(document.body, 'COMMAND-PALETTE', {
+        slots: ['page', 'back', 'page-title'],
+      });
+      expect(search).toHaveValue('');
+      expect(search).toHaveFocus();
+      expect(items()).toEqual(['Row density', 'Zoom in']);
+      await user.keyboard('zoom{Enter}');
+      expect(onAction).toHaveBeenCalledWith('zoom');
+      expect(onOpenChange).toHaveBeenLastCalledWith(false);
+    });
+
+    it('UIC-COMMAND-PALETTE-2.8 goes back with Escape, Backspace and the Back button on an empty field', async () => {
+      const user = userEvent.setup();
+      const onOpenChange = vi.fn();
+      render(
+        <CommandPalette
+          items={settings}
+          defaultOpen
+          defaultPath={['display', 'density']}
+          onOpenChange={onOpenChange}
+        />,
+      );
+      expect(items()).toEqual(['Compact']);
+      const search = screen.getByRole('searchbox');
+      await user.keyboard('co{Escape}');
+      expect(search).toHaveValue('');
+      expect(items()).toEqual(['Compact']);
+      await user.keyboard('{Escape}');
+      expect(screen.getByRole('menu', { name: 'Display' })).toBeInTheDocument();
+      await user.keyboard('{Backspace}');
+      expect(screen.queryByRole('button', { name: 'Back' })).not.toBeInTheDocument();
+      expect(items()).toEqual(['Change theme', 'Save all', 'Display']);
+      await user.keyboard('di{Enter}');
+      await user.click(screen.getByRole('button', { name: 'Back' }));
+      expect(search).toHaveValue('di');
+      await waitFor(() => expect(search).toHaveFocus());
+      expect(onOpenChange).not.toHaveBeenCalled();
+      await user.clear(search);
+      await user.keyboard('{Escape}');
+      expect(onOpenChange).toHaveBeenLastCalledWith(false);
+    });
+
+    it('UIC-COMMAND-PALETTE-2.8 leaves composing keys alone, follows a removed page and starts each opening afresh', async () => {
+      const user = userEvent.setup();
+      function Palette({ entries, isOpen }: { entries: CommandPaletteEntry[]; isOpen: boolean }) {
+        return <CommandPalette items={entries} isOpen={isOpen} defaultPath={[]} />;
+      }
+      const { rerender } = render(<Palette entries={settings} isOpen />);
+      await user.keyboard('disp{Enter}');
+      const search = screen.getByRole('searchbox');
+      // eslint-disable-next-line testing-library/prefer-user-event -- a Backspace an input method sends while it composes
+      fireEvent.keyDown(search, { key: 'Backspace', isComposing: true });
+      expect(screen.getByRole('menu', { name: 'Display' })).toBeInTheDocument();
+      rerender(<Palette entries={settings.slice(0, 2)} isOpen />);
+      expect(screen.queryByRole('button', { name: 'Back' })).not.toBeInTheDocument();
+      expect(items()).toEqual(['Change theme', 'Save all']);
+      rerender(<Palette entries={settings} isOpen={false} />);
+      rerender(<Palette entries={settings} isOpen />);
+      expect(await screen.findByRole('searchbox')).toHaveValue('');
+      expect(screen.queryByRole('button', { name: 'Back' })).not.toBeInTheDocument();
     });
   });
 });
