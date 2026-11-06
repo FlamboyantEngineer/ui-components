@@ -44,7 +44,7 @@ describe('testing pickers', () => {
       <Combobox label="Fruit" defaultItems={fruit} onChange={onChange} />,
     );
     await selectOption(user, getHookElement(container, 'combobox'), 'Plum');
-    expect(onChange).toHaveBeenLastCalledWith('plum');
+    expect(onChange).toHaveBeenLastCalledWith('plum', { reason: 'select' });
     expect(screen.getByRole('combobox', { name: 'Fruit' })).toHaveValue('Plum');
   });
 
@@ -56,9 +56,9 @@ describe('testing pickers', () => {
     );
     const input = screen.getByRole('combobox', { name: 'Fruit' });
     await pickComboboxOption(user, input, { text: 'Pl', option: 'Plum' });
-    expect(onChange).toHaveBeenLastCalledWith('plum');
+    expect(onChange).toHaveBeenLastCalledWith('plum', { reason: 'select' });
     await pickComboboxOption(user, input, { text: 'Pear' });
-    expect(onChange).toHaveBeenLastCalledWith('pear');
+    expect(onChange).toHaveBeenLastCalledWith('pear', { reason: 'select' });
     expect(input).toHaveValue('Pear');
   });
 

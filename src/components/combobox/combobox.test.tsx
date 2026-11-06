@@ -50,7 +50,7 @@ describe('Combobox', () => {
     expect(input()).toHaveValue('Numeric');
     await user.click(screen.getByRole('button', { name: 'Show suggestions Types' }));
     await user.click(await screen.findByRole('option', { name: 'Textual' }));
-    expect(onChange).toHaveBeenLastCalledWith('1');
+    expect(onChange).toHaveBeenLastCalledWith('1', { reason: 'select' });
     expect(input()).toHaveValue('Textual');
     expect(new FormData(requireDefined(container.querySelector('form'))).get('types')).toBe('1');
   });
@@ -199,7 +199,7 @@ describe('Combobox', () => {
     expectHooksMatchSpec(container, 'COMBOBOX', { slots: ['clear'] });
     await user.click(clear);
     expect(input()).toHaveValue('');
-    expect(onChange).toHaveBeenLastCalledWith(null);
+    expect(onChange).toHaveBeenLastCalledWith(null, { reason: 'clear' });
     expect(input()).toHaveFocus();
     expect(container.querySelector('.ui-combobox__clear')).toBeNull();
   });
@@ -308,7 +308,7 @@ describe('Combobox', () => {
     expect(input()).toHaveValue('Kumquat');
     await user.click(input());
     await user.click(document.body);
-    expect(onChange).toHaveBeenLastCalledWith(null);
+    expect(onChange).toHaveBeenLastCalledWith(null, { reason: 'clear' });
     expect(input()).toHaveValue('Kumquat');
     expect(submitted()).toBe('Kumquat');
   });
@@ -335,7 +335,7 @@ describe('Combobox', () => {
     expect(input()).toHaveValue('Quince');
     await user.click(screen.getByRole('button', { name: 'Show suggestions Kind' }));
     await user.click(await screen.findByRole('option', { name: 'Textual' }));
-    expect(onChange).toHaveBeenLastCalledWith('1');
+    expect(onChange).toHaveBeenLastCalledWith('1', { reason: 'select' });
     expect(input()).toHaveValue('Textual');
     expect(new FormData(requireDefined(container.querySelector('form'))).get('kind')).toBe(
       'Textual',
@@ -530,7 +530,7 @@ describe('Combobox', () => {
     expect(await screen.findByRole('listbox')).toBeInTheDocument();
     // React Aria hides the button from assistive technology while the list is open.
     await user.click(container.querySelector('.ui-combobox__button') as HTMLElement);
-    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+    expect(onOpenChange).toHaveBeenLastCalledWith(false, { reason: 'dismiss' });
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   });
 
@@ -547,7 +547,7 @@ describe('Combobox', () => {
     );
     await user.click(input());
     await user.keyboard('{ArrowDown}');
-    expect(onOpenChange).toHaveBeenCalledWith(true);
+    expect(onOpenChange).toHaveBeenCalledWith(true, { reason: 'manual' });
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     rerender(
       <Combobox aria-label="Fruit" defaultItems={fruit} isOpen onOpenChange={onOpenChange} />,
@@ -555,7 +555,7 @@ describe('Combobox', () => {
     expect(await screen.findByRole('listbox')).toBeInTheDocument();
     onOpenChange.mockClear();
     await user.keyboard('{Escape}');
-    expect(onOpenChange).toHaveBeenCalledWith(false);
+    expect(onOpenChange).toHaveBeenCalledWith(false, { reason: 'dismiss' });
     expect(await screen.findByRole('listbox')).toBeInTheDocument();
     rerender(
       <Combobox
@@ -603,7 +603,7 @@ describe('Combobox', () => {
     rerender(field(false));
     await pressReset(user);
     await waitFor(() => expect(input).toHaveValue('Apple'));
-    expect(onChange.mock.calls).toEqual([['apple']]);
+    expect(onChange.mock.calls).toEqual([['apple', { reason: 'reset' }]]);
     expect(readPantry()).toEqual([['fruit', 'apple']]);
   });
 });

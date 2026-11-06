@@ -1,8 +1,7 @@
 'use client';
 
-import { type ReactNode, useCallback, useMemo, useState } from 'react';
+import { type ReactNode, useCallback, useMemo, useRef, useState } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
-import type { OpenStateProps } from '../../core/events.js';
 import { useFilter } from '../../primitives/index.js';
 import { useCloseWhenLocked } from '../../utils/use-close-when-locked.js';
 import { flattenPickerItems, usePickerEmptyContent } from '../field/field.js';
@@ -12,17 +11,32 @@ import {
   type ComboboxOption,
   withKnownOptions,
 } from './combobox-options.js';
+import type {
+  ComboboxInputChangeDetails,
+  ComboboxInputChangeReason,
+  ComboboxOpenChangeDetails,
+  ComboboxOpenChangeReason,
+} from './combobox-reasons.js';
 import { type ComboboxLoader, useComboboxSearch } from './combobox-search.js';
 import { encodeComboboxItems } from './combobox-values.js';
 
 interface InputTextOptions {
   inputValue?: string | undefined;
   defaultInputValue?: string | undefined;
-  onInputChange?: ((text: string) => void) | undefined;
+  onInputChange?: ((text: string, details: ComboboxInputChangeDetails) => void) | undefined;
+}
+
+/** Why the combobox's text and open state change, as its reasons read them. */
+export interface ComboboxModelReasons {
+  readInput: (text: string) => ComboboxInputChangeReason;
+  readClose: () => ComboboxOpenChangeReason;
 }
 
 /** Where a combobox's suggestions come from and what its list shows. */
-export interface ComboboxModelOptions extends OpenStateProps, InputTextOptions {
+export interface ComboboxModelOptions extends InputTextOptions {
+  isOpen?: boolean | undefined;
+  defaultOpen?: boolean | undefined;
+  onOpenChange?: ((isOpen: boolean, details: ComboboxOpenChangeDetails) => void) | undefined;
   items?: Iterable<ComboboxItem> | undefined;
   defaultItems?: Iterable<ComboboxItem> | undefined;
   knownOptions?: Iterable<ComboboxOption> | undefined;
@@ -69,11 +83,14 @@ export function useInlineCompletionState({
  * The input's text as the caller controls it or as the reader typed it. The suggestion list is a
  * collection React Aria builds before its state exists, so the add row reads the text from here.
  */
-function useInputText({ inputValue, defaultInputValue, onInputChange }: InputTextOptions) {
+function useInputText(
+  { inputValue, defaultInputValue, onInputChange }: InputTextOptions,
+  readInput: ComboboxModelReasons['readInput'],
+) {
   const [typed, setTyped] = useState(defaultInputValue ?? '');
   const onChange = (text: string) => {
     setTyped(text);
-    onInputChange?.(text);
+    onInputChange?.(text, { reason: readInput(text) });
   };
   return { text: inputValue ?? typed, onInputChange: onChange };
 }
@@ -83,16 +100,21 @@ function useInputText({ inputValue, defaultInputValue, onInputChange }: InputTex
  * with `loadItems` the latest search's once the text is long enough to search, with the loading row,
  * busy state and empty content that go with them.
  */
-export function useComboboxModel(options: ComboboxModelOptions) {
+export function useComboboxModel(options: ComboboxModelOptions, reasons: ComboboxModelReasons) {
+  const openReasonRef = useRef<ComboboxOpenChangeReason>('dismiss');
   const [open, setOpen] = useControllableState(
     options.isOpen,
     Boolean(options.defaultOpen),
-    options.onOpenChange,
+    (next) => options.onOpenChange?.(next, { reason: openReasonRef.current }),
   );
   const isLocked = Boolean(options.isDisabled || options.isReadOnly);
   const isOpen = open && !isLocked;
-  useCloseWhenLocked(open, isLocked, () => setOpen(false));
-  const input = useInputText(options);
+  const setOpenFor = (next: boolean, reason: ComboboxOpenChangeReason) => {
+    openReasonRef.current = reason;
+    setOpen(next);
+  };
+  useCloseWhenLocked(open, isLocked, () => setOpenFor(false, 'lock'));
+  const input = useInputText(options, reasons.readInput);
   const search = useComboboxSearch({ ...options, isOpen, text: input.text });
   const renderEmpty = usePickerEmptyContent(search, options.renderEmptyState);
   const source = options.items ?? options.defaultItems;
@@ -106,9 +128,10 @@ export function useComboboxModel(options: ComboboxModelOptions) {
   return {
     isOpen,
     // React Aria reports the open state it holds; reporting only changes keeps a controlled list quiet.
-    onOpenChange: (next: boolean) => {
+    // React Aria names what opened the list; a close is a pick or a dismissal.
+    onOpenChange: (next: boolean, trigger?: 'focus' | 'input' | 'manual') => {
       if (next && isLocked) return;
-      if (next !== isOpen) setOpen(next);
+      if (next !== isOpen) setOpenFor(next, next ? (trigger ?? 'manual') : reasons.readClose());
     },
     input,
     suggestions,

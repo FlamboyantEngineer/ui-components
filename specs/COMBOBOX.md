@@ -50,7 +50,7 @@ Verification: `src/components/combobox/combobox-suggestions.test.tsx`, `e2e/comb
 
 ### UIC-COMBOBOX-2.2 - Filtering
 
-With `defaultItems`, the combobox shall show the options whose label contains the typed text, ignoring case, and drop sections left empty. With `items`, it shows exactly the given suggestions, so the caller filters them, for example after fetching them from `onInputChange` while `isPending`. The typed text is held by `inputValue` (controlled) or `defaultInputValue`, and every change of it calls `onInputChange` with the text.
+With `defaultItems`, the combobox shall show the options whose label contains the typed text, ignoring case, and drop sections left empty. With `items`, it shows exactly the given suggestions, so the caller filters them, for example after fetching them from `onInputChange` while `isPending`. The typed text is held by `inputValue` (controlled) or `defaultInputValue`, and every change of it calls `onInputChange` with the text and its reason ([UIC-COMBOBOX-6.1](#uic-combobox-61---change-reasons)).
 
 Implementation: `src/components/combobox/combobox-suggestions.tsx`
 Verification: `src/components/combobox/combobox-suggestions.test.tsx`, `e2e/combobox.spec.ts`
@@ -224,7 +224,7 @@ Verification: `src/components/combobox/combobox.test.tsx`, `e2e/combobox.spec.ts
 
 ### UIC-COMBOBOX-5.6 - Open state
 
-The list's open state shall be controllable: `isOpen` (controlled) or `defaultOpen` sets it, and `onOpenChange` reports each change the reader asks for (typing, the button, the arrow keys, Escape, a pick, leaving the input). A controlled list the caller does not change stays as `isOpen` says; closing it commits the text as Escape does. A list open when the field turns disabled or read-only, by its own props or a disabled fieldset or form, shall close through `onOpenChange(false)`, once, with focus left on the input, pick nothing and stay closed when the field unlocks, until the reader opens it; a controlled `isOpen` is drawn closed while locked.
+The list's open state shall be controllable: `isOpen` (controlled) or `defaultOpen` sets it, and `onOpenChange` reports each change the reader asks for (typing, the button, the arrow keys, Escape, a pick, leaving the input). A controlled list the caller does not change stays as `isOpen` says; closing it commits the text as Escape does. A list open when the field turns disabled or read-only, by its own props or a disabled fieldset or form, shall close through `onOpenChange(false)`, once and with the reason `lock`, with focus left on the input, pick nothing and stay closed when the field unlocks, until the reader opens it; a controlled `isOpen` is drawn closed while locked.
 
 Implementation: `src/components/combobox/combobox-state.ts`, `src/components/combobox/combobox-effects.ts`, `src/utils/use-close-when-locked.ts`
 Verification: `src/components/combobox/combobox.test.tsx`, `src/components/combobox/combobox-locking.test.tsx`
@@ -235,6 +235,42 @@ Verification: `src/components/combobox/combobox.test.tsx`, `src/components/combo
 
 Implementation: `src/components/combobox/combobox.tsx`, `src/components/combobox/combobox-field.tsx`
 Verification: `src/components/combobox/combobox.test.tsx`
+
+## UIC-COMBOBOX-6 - Change reasons
+
+### UIC-COMBOBOX-6.1 - Change reasons
+
+`onChange`, `onInputChange` and `onOpenChange` shall keep the value as their first argument and pass a details object second, `{ reason }`, so a handler that reads only the value still fits:
+
+- `onChange` (`ComboboxChangeReason`): `select` for a picked option, by keyboard, pointer, touch or an assistive technology's click; `remove` for a chip removed by its button, Delete or Backspace; `clear` for the clear button, or the text of a single combobox emptied, which empties its value; `reset` for a native form reset ([UIC-COMBOBOX-3.6](#uic-combobox-36---native-form-reset)).
+- `onInputChange` (`ComboboxInputChangeReason`): `input` for text the reader typed, inline completion included; `clear` for the clear button; `sync` for text the combobox wrote itself, the chosen option's label after a pick, on mount or after a controlled `value`, or the text reverted by Escape or leaving the field; `reset` for a native form reset.
+- `onOpenChange` (`ComboboxOpenChangeReason`): on opening, `input`, `focus` or `manual` (the arrow keys and the button); on closing, `select` after a pick or an added option, `dismiss` for Escape, the button or leaving the field, and `lock` when the field turns disabled or read-only ([UIC-COMBOBOX-5.6](#uic-combobox-56---open-state)).
+
+The reason describes what the reader did; it never exposes a building block's event.
+
+Implementation: `src/components/combobox/combobox-reasons.ts`, `src/components/combobox/combobox-state.ts`, `src/components/combobox/combobox.tsx`
+Verification: `src/components/combobox/combobox-reasons.test.tsx`, `src/components/combobox/combobox-locking.test.tsx`
+
+### UIC-COMBOBOX-6.2 - Callback order
+
+The callbacks shall come in this order:
+
+- Picking an option of a single combobox: `onChange` (`select`), `onOpenChange(false)` (`select`), then `onInputChange` with its label (`sync`). A multiple combobox reports `onChange` and keeps the list open.
+- The clear button: `onChange(null)` (`clear`) for a single combobox, then `onInputChange('')` (`clear`); the focused input then opens the list (`input`).
+- Removing a chip: `onChange` (`remove`) alone.
+- Typing: `onInputChange` (`input`), then `onOpenChange(true)` (`input`) when typing opens the list. Emptying the text of a single combobox follows with `onChange(null)` (`clear`).
+- Escape or leaving the field: `onInputChange` with the chosen label or the kept custom text (`sync`), when it differs, then `onOpenChange(false)` (`dismiss`).
+- Adding an option: `onCreateOption` with the text, then `onOpenChange(false)` (`select`); the caller chooses the new option through `value`, which writes its label (`sync`) without an `onChange`.
+
+Implementation: `src/components/combobox/combobox-reasons.ts`, `src/components/combobox/combobox-suggestions.tsx`
+Verification: `src/components/combobox/combobox-reasons.test.tsx`
+
+### UIC-COMBOBOX-6.3 - Synchronized text
+
+A controlled `value` the caller changes shall call no `onChange`; the label the combobox then writes reaches `onInputChange` as `sync`. A remote search that runs only for `input` and `clear` therefore searches as the reader types and clears, never because a label was synchronized.
+
+Implementation: `src/components/combobox/combobox-reasons.ts`
+Verification: `src/components/combobox/combobox-reasons.test.tsx`
 
 ## Hooks
 
