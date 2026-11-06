@@ -126,6 +126,7 @@
 @import url('reference/path.css') layer(ui-reference);
 @import url('reference/pdf-viewer.css') layer(ui-reference);
 @import url('reference/people-picker.css') layer(ui-reference);
+@import url('reference/period-field.css') layer(ui-reference);
 @import url('reference/permission-matrix.css') layer(ui-reference);
 @import url('reference/pin-input.css') layer(ui-reference);
 @import url('reference/pivot-table.css') layer(ui-reference);

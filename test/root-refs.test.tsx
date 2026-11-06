@@ -123,6 +123,7 @@ import { NotificationList } from '../src/components/notification-center/notifica
 import { NumberField } from '../src/components/number-field/number-field.js';
 import { Pagination } from '../src/components/pagination/pagination.js';
 import { PeoplePicker } from '../src/components/people-picker/people-picker.js';
+import { PeriodField } from '../src/components/period-field/period-field.js';
 import { PinInput } from '../src/components/pin-input/pin-input.js';
 import { Popover, PopoverTrigger } from '../src/components/popover/popover.js';
 import { PortalHost } from '../src/components/portal/portal.js';
@@ -496,6 +497,7 @@ const cases: Record<string, RootRefCase> = {
 const fieldCases: Record<string, RootRefCase> = {
   BooleanField: { element: (ref) => <BooleanField ref={ref} label="Ripe" />, root: 'ui-field' },
   RatingField: { element: (ref) => <RatingField ref={ref} label="Quality" />, root: 'ui-field' },
+  PeriodField: { element: (ref) => <PeriodField ref={ref} label="Period" />, root: 'ui-field' },
   TimeZoneField: { element: (ref) => <TimeZoneField ref={ref} label="Zone" />, root: 'ui-field' },
   CascaderField: {
     element: (ref) => <CascaderField ref={ref} label="Place" options={[]} />,

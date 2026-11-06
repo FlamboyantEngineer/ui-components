@@ -118,6 +118,7 @@ export * from './components/pagination/index.js';
 export * from './components/path/index.js';
 export * from './components/pdf-viewer/index.js';
 export * from './components/people-picker/index.js';
+export * from './components/period-field/index.js';
 export * from './components/permission-matrix/index.js';
 export * from './components/pin-input/index.js';
 export * from './components/pivot-table/index.js';

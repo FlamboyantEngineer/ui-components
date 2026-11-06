@@ -1,0 +1,135 @@
+/* Period Field: a framed trigger that opens a page of twelve months or years in a grid. */
+
+.ui-period-field__trigger {
+  display: flex;
+  align-items: center;
+  width: 12em;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  height: var(--ref-control-height);
+  padding: 0 8px;
+  border: 1px solid var(--ref-field-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-field-fill);
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  outline: none;
+}
+
+.ui-period-field__trigger[data-hovered] {
+  border-color: var(--ref-border-strong);
+}
+
+.ui-period-field__trigger:is([data-focus-visible], [aria-expanded='true']) {
+  border-color: var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
+}
+
+.ui-period-field[data-dirty] .ui-period-field__trigger {
+  border-color: var(--ref-dirty);
+}
+
+.ui-period-field[data-validation='invalid'] .ui-period-field__trigger {
+  border-color: var(--ref-danger);
+}
+
+.ui-period-field[data-validation='warning'] .ui-period-field__trigger {
+  border-color: var(--ref-warning);
+}
+
+.ui-period-field[data-readonly] .ui-period-field__trigger {
+  border-style: dashed;
+  background: var(--ref-field-fill-inactive);
+  cursor: default;
+}
+
+.ui-period-field__trigger[data-disabled] {
+  cursor: not-allowed;
+  opacity: var(--ref-disabled-opacity);
+}
+
+.ui-period-field__value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-period-field__value[data-placeholder] {
+  color: var(--ref-muted);
+}
+
+.ui-period-field__popover {
+  box-sizing: border-box;
+  max-inline-size: calc(100vw - 16px);
+  overflow: auto;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-raised);
+  color: var(--ref-text);
+  box-shadow: var(--ref-shadow);
+  font: var(--ref-font-size-md)/1.3 var(--ref-font);
+}
+
+.ui-period-field__dialog {
+  padding: 8px;
+  outline: none;
+}
+
+.ui-period-field__picker {
+  display: grid;
+  gap: 8px;
+}
+
+.ui-period-field__picker-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ui-period-field__picker-nav.ui-button[data-content='icon'] {
+  flex: none;
+}
+
+.ui-period-field__picker-heading {
+  flex: 1 1 auto;
+  font-weight: var(--ref-font-weight-strong);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-period-field__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 64px);
+  gap: 4px;
+  outline: none;
+}
+
+.ui-period-field__period {
+  display: grid;
+  place-items: center;
+  height: 32px;
+  border-radius: var(--ref-radius-sm);
+  cursor: default;
+  outline: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-period-field__period[data-hovered] {
+  background: var(--ref-hover);
+}
+
+.ui-period-field__period[data-selected] {
+  background: var(--ref-accent);
+  color: var(--ref-on-fill);
+}
+
+.ui-period-field__period[data-focus-visible] {
+  box-shadow: var(--ref-focus-halo);
+}
+
+.ui-period-field__period[data-disabled] {
+  color: var(--ref-muted);
+}
