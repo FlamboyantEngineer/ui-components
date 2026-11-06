@@ -13,6 +13,7 @@ import {
   StorageSwitch,
   WrappedStorage,
 } from './provider-storage-cases.js';
+import { IndependentServices } from './provider-subscription-cases.js';
 
 const replacedGlyphs = Object.fromEntries(glyphNames.map((name) => [name, SquareGlyph]));
 
@@ -271,6 +272,12 @@ mountLab(
       description="A provider with a fixed clock at 23:30 UTC on October 31. Switch its time zone: today, the relative words, the field and the day headings all follow it."
     >
       <ProviderClock />
+    </LabSection>
+    <LabSection
+      title="Independent services"
+      description="Each row is a memoized component reading one provider service, with the number of times it has rendered. Switch one service: only the row reading it renders again."
+    >
+      <IndependentServices />
     </LabSection>
   </>,
 );
