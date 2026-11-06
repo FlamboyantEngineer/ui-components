@@ -129,7 +129,6 @@ test.describe('Table lab, pinned rows', () => {
     lab,
   }) => {
     await lab.open('table');
-    await page.getByRole('button', { name: 'Mount the pinned rows table' }).click();
     const root = page.locator('[data-lab="pinned-rows"]');
     const grid = root.getByRole('grid');
     const scroll = root.locator('.ui-table__scroll');
@@ -160,7 +159,6 @@ test.describe('Table lab, pinned rows', () => {
     lab,
   }) => {
     await lab.open('table');
-    await page.getByRole('button', { name: 'Mount the pinned rows table' }).click();
     const root = page.locator('[data-lab="pinned-rows"]');
     const grid = root.getByRole('grid');
     await root.getByRole('searchbox', { name: 'Filter rows' }).fill('Bed 1');

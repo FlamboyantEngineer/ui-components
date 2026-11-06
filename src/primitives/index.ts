@@ -139,8 +139,10 @@ export {
   TimeFieldStateContext,
 } from './dates.js';
 export {
+  type DragAndDropHooks,
   DropIndicator,
   DropZone,
+  ListKeyboardDelegate,
   useDrag,
   useDragAndDrop,
   useDrop,
