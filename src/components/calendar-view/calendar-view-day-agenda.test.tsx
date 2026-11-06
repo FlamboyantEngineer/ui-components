@@ -219,6 +219,50 @@ describe('CalendarView agenda view', () => {
   });
 });
 
+describe('CalendarView month agenda', () => {
+  it('UIC-CALENDAR-VIEW-1.8 UIC-CALENDAR-VIEW-1.3 lists the focused month and moves by a month', async () => {
+    const user = userEvent.setup();
+    const onDateChange = vi.fn();
+    render(
+      <Calendar
+        defaultView="agenda"
+        agendaRange="month"
+        agendaEmptyDays="show"
+        onDateChange={onDateChange}
+      />,
+    );
+    const month = screen.getByRole('group', { name: 'March 2026' });
+    const headings = within(month).getAllByRole('heading');
+    expect(headings).toHaveLength(31);
+    expect(headings[0]).toHaveTextContent('Sunday, March 1, 2026');
+    expect(headings.at(-1)).toHaveTextContent('Tuesday, March 31, 2026');
+    await user.click(screen.getByRole('button', { name: 'Next month' }));
+    expect(onDateChange).toHaveBeenLastCalledWith('2026-04-18');
+    const april = screen.getByRole('group', { name: 'April 2026' });
+    expect(within(april).getAllByRole('heading')).toHaveLength(30);
+    expect(april.querySelector('.ui-calendar-view__agenda-empty')).toHaveTextContent('No events');
+  });
+
+  it('UIC-CALENDAR-VIEW-1.8 leaves out the month days without events by default', () => {
+    render(<Calendar defaultView="agenda" agendaRange="month" />);
+    expect(
+      within(screen.getByRole('group', { name: 'March 2026' }))
+        .getAllByRole('heading')
+        .map((heading) => heading.textContent),
+    ).toEqual([
+      'Thursday, March 12, 2026',
+      'Friday, March 13, 2026',
+      'Saturday, March 14, 2026',
+      'Sunday, March 15, 2026',
+      'Monday, March 16, 2026',
+      'Tuesday, March 17, 2026',
+      'Wednesday, March 18, 2026',
+      'Thursday, March 19, 2026',
+      'Friday, March 20, 2026',
+    ]);
+  });
+});
+
 describe('CalendarView changing views', () => {
   it('UIC-CALENDAR-VIEW-1.3 offers every view and keeps the focused day across them', async () => {
     const user = userEvent.setup();

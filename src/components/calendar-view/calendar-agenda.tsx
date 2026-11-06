@@ -75,8 +75,8 @@ function AgendaDaySection({
 }
 
 /**
- * The agenda view: the events of the focused day's week listed by day, each day under a heading,
- * all-day events first and then by start time; with no event in the week, the empty state.
+ * The agenda view: the events of the focused day's week or month listed by day, each day under a
+ * heading, all-day events first and then by start time; with no event in the period, the empty state.
  */
 export function CalendarAgenda({
   days,
@@ -94,7 +94,7 @@ export function CalendarAgenda({
   return (
     <div role="group" aria-labelledby={titleId} {...hooks.slot('agenda')}>
       {hasEvents ? null : (
-        // An empty week says so, whether or not its empty days are listed.
+        // An empty period says so, whether or not its empty days are listed.
         <div {...hooks.slot('agenda-empty')}>{isEmptyNode(empty) ? strings.noEvents : empty}</div>
       )}
       {listed.map((entry) => (

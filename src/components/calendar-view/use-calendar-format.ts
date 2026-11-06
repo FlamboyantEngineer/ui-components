@@ -4,18 +4,14 @@ import { useMemo } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { useLocale } from '../../primitives/index.js';
 import { getDateFormatter, normalizeIntlSpaces } from '../../utils/intl-format.js';
-import { getDayStart, isRepeatedTime } from './calendar-days.js';
+import { type CalendarPeriod, getDayStart, isRepeatedTime } from './calendar-days.js';
 import type { PlacedEvent } from './calendar-layout.js';
-import type { CalendarViewMode } from './calendar-view.js';
 
 /** The texts a calendar view shows and reads out, in the provider's locale and the view's time zone. */
 export interface CalendarFormat {
   locale: string;
-  /**
-   * The period on show: the month (`March 2026`), the week of the week or agenda view
-   * (`Mar 1 – 7, 2026`), or the day in full.
-   */
-  formatTitle: (mode: CalendarViewMode, days: readonly string[], focused: string) => string;
+  /** The period on show: the month (`March 2026`), the week (`Mar 1 – 7, 2026`), or the day in full. */
+  formatTitle: (period: CalendarPeriod, days: readonly string[], focused: string) => string;
   /** A day in full, such as `Monday, March 2, 2026`. */
   formatDay: (day: string) => string;
   /** A weekday's short and long names. */
@@ -79,10 +75,10 @@ export function useCalendarFormat(timeZone: string): CalendarFormat {
     const n = normalizeIntlSpaces;
     return {
       locale,
-      formatTitle: (mode, days, focused) => {
+      formatTitle: (period, days, focused) => {
         const [first, last] = [days[0] ?? focused, days.at(-1) ?? focused];
-        if (mode === 'month') return n(month.format(toDate(focused)));
-        if (mode === 'day') return n(day.format(toDate(focused)));
+        if (period === 'month') return n(month.format(toDate(focused)));
+        if (period === 'day') return n(day.format(toDate(focused)));
         return n(weekRange.formatRange(toDate(first), toDate(last)));
       },
       formatDay: (date) => n(day.format(toDate(date))),

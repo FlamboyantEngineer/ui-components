@@ -113,7 +113,7 @@ test.describe('Calendar View day and agenda lab', () => {
     await calendar.getByRole('button', { name: 'Next week' }).click();
     await calendar.getByRole('button', { name: 'Next week' }).click();
     await expect(calendar.locator('.ui-calendar-view__agenda-empty')).toHaveText(
-      'Nothing planned this week. Pick another week or add an event.',
+      'Nothing planned this week. Pick another or add an event.',
     );
   });
 
@@ -157,5 +157,26 @@ test.describe('Calendar View day and agenda lab', () => {
     await expect(day.getByRole('grid', { name: 'Wednesday, March 18, 2026' })).toBeVisible();
     const empty = matrixCell(page, 'state=empty view=agenda');
     await expect(empty.locator('.ui-calendar-view__agenda-empty')).toHaveText('No events');
+  });
+
+  test('UIC-CALENDAR-VIEW-1.8 UIC-CALENDAR-VIEW-1.3 lists the month and moves by a month with the month range', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('calendar-view');
+    const calendar = demo(page);
+    await calendar.getByRole('radio', { name: 'Agenda' }).click();
+    await calendar.getByRole('radio', { name: 'One month' }).click();
+    const agenda = calendar.getByRole('group', { name: 'March 2026' });
+    await expect(agenda.getByRole('heading').first()).toHaveText('Thursday, March 5, 2026');
+    await expect(agenda.getByRole('heading').last()).toHaveText('Friday, March 27, 2026');
+    await calendar.getByText('List empty days in the agenda').click();
+    await expect(agenda.locator('.ui-calendar-view__agenda-day')).toHaveCount(31);
+    await calendar.getByRole('button', { name: 'Next month' }).click();
+    await expect(calendar.getByRole('group', { name: 'April 2026' })).toBeVisible();
+    await expect(calendar.locator('.ui-calendar-view__agenda-empty')).toHaveText(
+      'Nothing planned this month. Pick another or add an event.',
+    );
+    await lab.expectAccessible();
   });
 });

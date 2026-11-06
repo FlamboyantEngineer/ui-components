@@ -14,7 +14,14 @@ import { toPlanningDate } from '../../utils/planning-dates.js';
 import { Button } from '../button/button.js';
 import { SegmentedChoice } from '../segmented-choice/segmented-choice.js';
 import { CalendarAgenda } from './calendar-agenda.js';
-import { getDayOf, getWeekDays, isSameMonth, shiftPeriod } from './calendar-days.js';
+import {
+  type CalendarPeriod,
+  getDayOf,
+  getMonthDays,
+  getWeekDays,
+  isSameMonth,
+  shiftPeriod,
+} from './calendar-days.js';
 import type { CalendarEventChange, CalendarEventDragMode } from './calendar-event-handles.js';
 import type { CalendarEventMenuEntry, CalendarEventMenuIcons } from './calendar-event-menu.js';
 import { readEvents } from './calendar-layout.js';
@@ -25,7 +32,7 @@ import { useCalendarFormat } from './use-calendar-format.js';
 import { useCalendarGrid } from './use-calendar-grid.js';
 import { useEventChanges } from './use-event-changes.js';
 
-/** The period a calendar view shows, and how: a month, week or day grid, or a week's agenda. */
+/** The period a calendar view shows, and how: a month, week or day grid, or an agenda. */
 export type CalendarViewMode = 'month' | 'week' | 'day' | 'agenda';
 
 /** An event on the calendar. */
@@ -134,11 +141,16 @@ export interface CalendarViewProps extends BaseProps, RefProps<HTMLDivElement> {
   /** Draws extra content in each day cell, and under each agenda day's heading, such as a marker or a count. */
   renderDay?: ((day: CalendarViewDay) => ReactNode) | undefined;
   /**
-   * Whether the agenda lists the days of its week that hold no event, each under its heading:
+   * The period the agenda lists and its toolbar moves by: the focused day's `week` (the default)
+   * or its `month`.
+   */
+  agendaRange?: 'week' | 'month' | undefined;
+  /**
+   * Whether the agenda lists the days of its period that hold no event, each under its heading:
    * `hide` (the default) leaves them out, `show` lists every day.
    */
   agendaEmptyDays?: 'hide' | 'show' | undefined;
-  /** Draws the agenda while its week holds no event. Defaults to the provider's `noEvents` string. */
+  /** Draws the agenda while its period holds no event. Defaults to the provider's `noEvents` string. */
   renderEmptyState?: (() => ReactNode) | undefined;
   /** The clock that decides today. Defaults to the provider's, else the current time. */
   getNow?: (() => Date) | undefined;
@@ -151,9 +163,9 @@ function isViewMode(value: string): value is CalendarViewMode {
   return (allViews as readonly string[]).includes(value);
 }
 
-/** The unit the toolbar's previous and next buttons move by in a view, which names them. */
-function toRangeUnit(mode: CalendarViewMode): 'month' | 'week' | 'day' {
-  return mode === 'agenda' ? 'week' : mode;
+/** The period a view shows and moves by: the agenda's range, else the view's own. */
+function toPeriod(mode: CalendarViewMode, agendaRange: 'week' | 'month'): CalendarPeriod {
+  return mode === 'agenda' ? agendaRange : mode;
 }
 
 const defaultEventMenu: readonly CalendarEventMenuEntry[] = ['edit'];
@@ -186,13 +198,14 @@ function useCalendarMode({
 /** The toolbar: Today, previous and next, the period on show (a polite live region) and the views. */
 function CalendarToolbar(props: {
   mode: CalendarViewMode;
+  period: CalendarPeriod;
   views: readonly CalendarViewMode[];
   title: string;
   titleId: string;
   onMove: (step: -1 | 0 | 1) => void;
   onModeChange: (mode: CalendarViewMode) => void;
 }) {
-  const { mode, views, title, titleId, onMove, onModeChange } = props;
+  const { mode, period, views, title, titleId, onMove, onModeChange } = props;
   const strings = useUiStrings();
   const { direction } = useLocale();
   const isRightToLeft = direction === 'rtl';
@@ -204,14 +217,14 @@ function CalendarToolbar(props: {
       <Button
         icon={isRightToLeft ? ChevronRightGlyph : ChevronLeftGlyph}
         size="sm"
-        label={strings.previousRange(toRangeUnit(mode))}
+        label={strings.previousRange(period)}
         className={hooks.slotClass('previous')}
         onPress={() => onMove(-1)}
       />
       <Button
         icon={isRightToLeft ? ChevronLeftGlyph : ChevronRightGlyph}
         size="sm"
-        label={strings.nextRange(toRangeUnit(mode))}
+        label={strings.nextRange(period)}
         className={hooks.slotClass('next')}
         onPress={() => onMove(1)}
       />
@@ -240,7 +253,7 @@ function CalendarToolbar(props: {
  * on dates and timed events on ISO 8601 date-times, placed in `timeZone`. The month view packs each
  * week's events into lanes, multi-day events as bars across days, and lists a crowded day's hidden
  * events behind `+n more`; the week and day views show all-day bars above a time grid of timed
- * events; the agenda lists the week's events by day. The toolbar moves by month, week or day, back
+ * events; the agenda lists the week's or month's events by day. The toolbar moves by month, week or day, back
  * to today and between views; in the grids the arrow keys, Home, End, PageUp and PageDown move
  * between days. Pressing an event calls `onEventAction`.
  */
@@ -264,6 +277,7 @@ export function CalendarView({
   eventMenuIcons,
   onEventMenuAction,
   renderDay,
+  agendaRange = 'week',
   agendaEmptyDays = 'hide',
   renderEmptyState,
   getNow,
@@ -295,6 +309,7 @@ export function CalendarView({
         {...{ events, mode, views: allowed, focused, today, maxEvents, onEventAction, renderDay }}
         {...{ onEventChange, canChangeEvent, eventMenu, eventMenuIcons }}
         {...{ onEventMenuAction, eventDragMode, agendaEmptyDays, renderEmptyState }}
+        period={toPeriod(mode, agendaRange)}
         minEventMinutes={minEventMinutes}
         timeZone={zone}
         onFocusedChange={(next) => {
@@ -308,13 +323,10 @@ export function CalendarView({
   );
 }
 
-/**
- * The days of the period a view shows: the focused day's week (in the week and agenda views), the
- * focused day alone, or none for the month view, which lays out its own weeks.
- */
-function getPeriodDays(mode: CalendarViewMode, focused: string, locale: string): string[] {
-  if (mode === 'day') return [focused];
-  return mode === 'month' ? [] : getWeekDays(focused, locale);
+/** The days of the period on show: the focused day's month or week, or the focused day alone. */
+function getPeriodDays(period: CalendarPeriod, focused: string, locale: string): string[] {
+  if (period === 'day') return [focused];
+  return period === 'month' ? getMonthDays(focused) : getWeekDays(focused, locale);
 }
 
 /** The calendar's props its content passes on to the events, unchanged. */
@@ -337,6 +349,8 @@ function CalendarContent(
       eventDragMode: CalendarEventDragMode;
       agendaEmptyDays: NonNullable<CalendarViewProps['agendaEmptyDays']>;
       mode: CalendarViewMode;
+      /** The period on show, which the toolbar moves by. */
+      period: CalendarPeriod;
       focused: string;
       /** Today in the calendar's zone; `null` until the clock may be read. */
       today: string | null;
@@ -347,7 +361,7 @@ function CalendarContent(
       getToday: () => string;
     },
 ) {
-  const { events, mode, views, focused, today, timeZone, maxEvents, onEventAction } = props;
+  const { events, mode, period, views, focused, today, timeZone, maxEvents, onEventAction } = props;
   const { minEventMinutes, renderDay, onFocusedChange, onModeChange, getToday } = props;
   const titleId = useId();
   const format = useCalendarFormat(timeZone);
@@ -355,12 +369,12 @@ function CalendarContent(
   const grid = useCalendarGrid({
     focused,
     setFocused: onFocusedChange,
-    mode,
+    period,
     isInPeriod: (day) => mode !== 'month' || isSameMonth(day, focused),
   });
-  const days = getPeriodDays(mode, focused, format.locale);
+  const days = getPeriodDays(period, focused, format.locale);
   const onMove = (direction: -1 | 0 | 1) =>
-    onFocusedChange(direction === 0 ? getToday() : shiftPeriod(focused, mode, direction));
+    onFocusedChange(direction === 0 ? getToday() : shiftPeriod(focused, period, direction));
   const changes = useEventChanges(props, { placed, gridRef: grid.ref });
   const day = { focused, today, format, renderDay };
   const event = {
@@ -375,8 +389,9 @@ function CalendarContent(
     <>
       <CalendarToolbar
         mode={mode}
+        period={period}
         views={views}
-        title={format.formatTitle(mode, days, focused)}
+        title={format.formatTitle(period, days, focused)}
         titleId={titleId}
         onMove={onMove}
         onModeChange={onModeChange}
