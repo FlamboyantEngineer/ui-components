@@ -68,6 +68,29 @@
   outline: none;
 }
 
+/* An inner page: Back and the page's title above the search field. */
+.ui-command-palette__page {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px 0;
+}
+
+.ui-command-palette__back {
+  flex: none;
+}
+
+.ui-command-palette__page-title {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-strong);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .ui-command-palette__search {
   position: sticky;
   top: 0;

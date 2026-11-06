@@ -1,6 +1,6 @@
-import { act, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { createRef } from 'react';
+import { createRef, useEffect, useState } from 'react';
 import { hydrateRoot } from 'react-dom/client';
 import { renderToString } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -514,5 +514,212 @@ describe('Carousel', () => {
     expect(root(container)).toHaveAttribute('id', 'cities');
     expect(root(container)).toHaveAttribute('data-row', '2');
     expectHooksMatchSpec(container, 'CAROUSEL', { callerAttributes: ['data-row'] });
+  });
+
+  describe('pages, mounting and swiping', () => {
+    const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+    function letterSlides() {
+      return letters.map((letter) => <p key={letter}>Card {letter}</p>);
+    }
+    function shownCards(container: HTMLElement) {
+      return [...container.querySelectorAll('.ui-carousel__slide:not([hidden])')].map(
+        (slide) => slide.textContent,
+      );
+    }
+
+    it('UIC-CAROUSEL-1.5 shows three slides a page and moves two, ending on a full page', async () => {
+      const user = userEvent.setup();
+      const onIndexChange = vi.fn();
+      const { container } = render(
+        <Carousel
+          aria-label="Cards"
+          slidesPerPage={3}
+          slidesPerMove={2}
+          onIndexChange={onIndexChange}
+        >
+          {letterSlides()}
+        </Carousel>,
+      );
+      expect(root(container).style.getPropertyValue('--ui-carousel-per-page')).toBe('3');
+      expect(shownCards(container)).toEqual(['Card A', 'Card B', 'Card C']);
+      const slotsShown = [
+        ...container.querySelectorAll<HTMLElement>('.ui-carousel__slide[data-current]'),
+      ].map((slide) => slide.style.getPropertyValue('--ui-carousel-slot'));
+      expect(slotsShown).toEqual(['1', '2', '3']);
+      expectHooksMatchSpec(container, 'CAROUSEL', { slots: ['viewport', 'slide', 'dot'] });
+      const dots = within(screen.getByRole('group', { name: 'Choose a slide' })).getAllByRole(
+        'button',
+      );
+      expect(dots.map((dot) => dot.getAttribute('aria-label'))).toEqual([
+        'Slide 1',
+        'Slide 3',
+        'Slide 5',
+      ]);
+      const next = screen.getByRole('button', { name: 'Next slide' });
+      await user.click(next);
+      expect(onIndexChange).toHaveBeenLastCalledWith(2);
+      expect(shownCards(container)).toEqual(['Card C', 'Card D', 'Card E']);
+      await user.click(next);
+      expect(shownCards(container)).toEqual(['Card E', 'Card F', 'Card G']);
+      expect(next).toHaveAttribute('aria-disabled', 'true');
+      expect(dots[2]).toHaveAttribute('aria-current', 'true');
+      await user.click(dots[0] as HTMLElement);
+      expect(shownCards(container)).toEqual(['Card A', 'Card B', 'Card C']);
+      expect(screen.getByRole('button', { name: 'Previous slide' })).toHaveAttribute(
+        'aria-disabled',
+        'true',
+      );
+    });
+
+    it('UIC-CAROUSEL-1.5 loops between the first and the last page and clamps a late index', async () => {
+      const user = userEvent.setup();
+      const { container } = render(
+        <Carousel aria-label="Cards" slidesPerPage={3} slidesPerMove={2} loop index={6}>
+          {letterSlides()}
+        </Carousel>,
+      );
+      expect(shownCards(container)).toEqual(['Card E', 'Card F', 'Card G']);
+      const { container: looping } = render(
+        <Carousel aria-label="Looping" slidesPerPage={3} slidesPerMove={2} loop defaultIndex={4}>
+          {letterSlides()}
+        </Carousel>,
+      );
+      const region = within(screen.getByRole('region', { name: 'Looping' }));
+      await user.click(region.getByRole('button', { name: 'Next slide' }));
+      expect(shownCards(looping)).toEqual(['Card A', 'Card B', 'Card C']);
+      await user.click(region.getByRole('button', { name: 'Previous slide' }));
+      expect(shownCards(looping)).toEqual(['Card E', 'Card F', 'Card G']);
+    });
+
+    it('UIC-CAROUSEL-1.4 UIC-CAROUSEL-1.5 draws no navigation when one page shows every slide', () => {
+      render(
+        <Carousel aria-label="Few" slidesPerPage={3}>
+          {letterSlides().slice(0, 3)}
+        </Carousel>,
+      );
+      expect(screen.queryByRole('button', { name: 'Next slide' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('group', { name: 'Choose a slide' })).not.toBeInTheDocument();
+    });
+
+    it('UIC-CAROUSEL-1.6 mounts slides once shown and keeps them, following slide keys', async () => {
+      const user = userEvent.setup();
+      const mounts: string[] = [];
+      function Counted({ name }: { name: string }) {
+        const [count, setCount] = useState(0);
+        useEffect(() => {
+          mounts.push(name);
+        }, [name]);
+        return (
+          <button type="button" onClick={() => setCount(count + 1)}>
+            {name} pressed {count}
+          </button>
+        );
+      }
+      const deck = (names: string[]) => (
+        <Carousel aria-label="Deck" mountSlides="visited">
+          {names.map((name) => (
+            <Counted key={name} name={name} />
+          ))}
+        </Carousel>
+      );
+      const { container, rerender } = render(deck(['One', 'Two', 'Three']));
+      expect(mounts).toEqual(['One']);
+      const groups = container.querySelectorAll('.ui-carousel__slide');
+      expect(groups[0]).toHaveAttribute('data-mounted', 'true');
+      expect(groups[1]).not.toHaveAttribute('data-mounted');
+      expect(groups[1]).toBeEmptyDOMElement();
+      expectHooksMatchSpec(container, 'CAROUSEL', { slots: ['slide'] });
+      await user.click(screen.getByRole('button', { name: 'One pressed 0' }));
+      const next = screen.getByRole('button', { name: 'Next slide' });
+      await user.click(next);
+      expect(mounts).toEqual(['One', 'Two']);
+      await user.click(screen.getByRole('button', { name: 'Previous slide' }));
+      expect(screen.getByRole('button', { name: 'One pressed 1' })).toBeInTheDocument();
+      expect(mounts).toEqual(['One', 'Two']);
+      rerender(deck(['One', 'Three']));
+      rerender(deck(['One', 'Two', 'Three']));
+      await user.click(next);
+      expect(mounts).toEqual(['One', 'Two', 'Two']);
+      expect(container.querySelectorAll('.ui-carousel__slide')[2]).toBeEmptyDOMElement();
+    });
+
+    it('UIC-CAROUSEL-2.3 moves one page for a deliberate swipe in reading direction only', async () => {
+      const user = userEvent.setup();
+      const onIndexChange = vi.fn();
+      const { container } = render(
+        <Carousel aria-label="Cities" allowsSwiping onIndexChange={onIndexChange}>
+          {slides()}
+        </Carousel>,
+      );
+      expect(root(container)).toHaveAttribute('data-swipeable', 'true');
+      const viewport = container.querySelector('.ui-carousel__viewport') as HTMLElement;
+      expect(viewport.style.touchAction).toBe('pan-y pinch-zoom');
+      const swipe = (from: number, to: number, dy = 0) =>
+        user.pointer([
+          { keys: '[TouchA>]', target: viewport, coords: { clientX: from, clientY: 100 } },
+          {
+            pointerName: 'TouchA',
+            target: viewport,
+            coords: { clientX: (from + to) / 2, clientY: 100 + dy / 2 },
+          },
+          { pointerName: 'TouchA', target: viewport, coords: { clientX: to, clientY: 100 + dy } },
+          { keys: '[/TouchA]', target: viewport },
+        ]);
+      await swipe(200, 180);
+      expect(onIndexChange).not.toHaveBeenCalled();
+      await swipe(200, 120);
+      expect(onIndexChange).toHaveBeenLastCalledWith(1);
+      await swipe(200, 190, 120);
+      expect(onIndexChange).toHaveBeenCalledTimes(1);
+      await swipe(100, 180);
+      expect(onIndexChange).toHaveBeenLastCalledWith(0);
+    });
+
+    it('UIC-CAROUSEL-2.3 mirrors swipes right to left and leaves links and cancelled drags alone', async () => {
+      const user = userEvent.setup();
+      const onIndexChange = vi.fn();
+      const { container } = render(
+        <UiProvider locale="ar-EG">
+          <Carousel aria-label="Cities" allowsSwiping onIndexChange={onIndexChange}>
+            {slides()}
+          </Carousel>
+        </UiProvider>,
+      );
+      const viewport = container.querySelector('.ui-carousel__viewport') as HTMLElement;
+      await user.pointer([
+        { keys: '[MouseLeft>]', target: viewport, coords: { clientX: 100, clientY: 50 } },
+        { target: viewport, coords: { clientX: 140, clientY: 50 } },
+        { target: viewport, coords: { clientX: 180, clientY: 50 } },
+      ]);
+      expect(viewport).toHaveAttribute('data-swiping', 'true');
+      expect(viewport.style.getPropertyValue('--ui-carousel-swipe-offset')).toBe('80px');
+      expectHooksMatchSpec(container, 'CAROUSEL', { slots: ['viewport'] });
+      await user.pointer({ keys: '[/MouseLeft]', target: viewport });
+      expect(onIndexChange).toHaveBeenLastCalledWith(1);
+      expect(viewport).not.toHaveAttribute('data-swiping');
+      const link = screen.getByRole('link', { name: 'Read about Oslo' });
+      await user.pointer([
+        { keys: '[MouseLeft>]', target: link, coords: { clientX: 100, clientY: 50 } },
+        { target: link, coords: { clientX: 200, clientY: 50 } },
+        { keys: '[/MouseLeft]', target: link },
+      ]);
+      expect(onIndexChange).toHaveBeenCalledTimes(1);
+      await user.pointer([
+        { keys: '[TouchA>]', target: viewport, coords: { clientX: 200, clientY: 50 } },
+        { pointerName: 'TouchA', target: viewport, coords: { clientX: 100, clientY: 50 } },
+      ]);
+
+      fireEvent.pointerCancel(viewport, { pointerId: 2 });
+      await user.pointer({ keys: '[/TouchA]', target: viewport });
+      expect(onIndexChange).toHaveBeenCalledTimes(1);
+      await user.pointer([
+        { keys: '[MouseLeft>]', target: viewport, coords: { clientX: 100, clientY: 50 } },
+        { target: viewport, coords: { clientX: 200, clientY: 50 } },
+      ]);
+      fireEvent.lostPointerCapture(viewport);
+      expect(viewport).not.toHaveAttribute('data-swiping');
+      await user.pointer({ keys: '[/MouseLeft]', target: viewport });
+      expect(onIndexChange).toHaveBeenCalledTimes(1);
+    });
   });
 });

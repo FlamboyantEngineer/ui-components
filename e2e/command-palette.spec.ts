@@ -295,6 +295,69 @@ test.describe('Command Palette lab', () => {
     }).toPass();
   });
 
+  test('UIC-COMMAND-PALETTE-2.7 UIC-COMMAND-PALETTE-2.8 ranks by keywords and opens pages in place', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('command-palette');
+    await section(page, 'Keywords and pages')
+      .getByRole('button', { name: 'Open the paged palette' })
+      .click();
+    const search = palette(page).getByRole('searchbox', { name: 'Search commands' });
+    await expect(search).toBeFocused();
+    await page.keyboard.type('note');
+    await expect(palette(page).getByRole('menuitem')).toHaveText([
+      /^New note/,
+      /^Pin note/,
+      /^Export notes/,
+    ]);
+    await search.fill('dark mode');
+    await expect(palette(page).getByRole('menuitem')).toHaveText([/^Change theme/]);
+    await page.keyboard.press('Enter');
+    await expect(search).toBeFocused();
+    await expect(search).toHaveValue('');
+    await expect(palette(page).locator('.ui-command-palette__page-title')).toHaveText(
+      'Change theme',
+    );
+    await expect(palette(page).getByRole('menu', { name: 'Change theme' })).toBeVisible();
+    await expect(output(page, 'page-path')).toHaveText('theme');
+    await expect(output(page, 'page-ran')).toHaveText('none');
+    await page.keyboard.press('Backspace');
+    await expect(search).toHaveValue('dark mode');
+    await expect(output(page, 'page-path')).toHaveText('first page');
+    await page.keyboard.press('ArrowDown');
+    await expect(command(page, /^Change theme/)).toHaveAttribute('data-focused', 'true');
+    await page.keyboard.press('Enter');
+    await expect(output(page, 'page-path')).toHaveText('theme');
+    await page.keyboard.type('se');
+    await expect(command(page, /^Sepia/)).toHaveAttribute('data-focused', 'true');
+    await page.keyboard.press('Enter');
+    await expect(output(page, 'page-ran')).toHaveText('theme-sepia');
+    await expect(palette(page)).toBeHidden();
+  });
+
+  test('UIC-COMMAND-PALETTE-2.8 goes back by the Back button and by Escape', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('command-palette');
+    await section(page, 'Keywords and pages')
+      .getByRole('button', { name: 'Open the paged palette' })
+      .click();
+    await command(page, /^Change language/).click();
+    const search = palette(page).getByRole('searchbox', { name: 'Search commands' });
+    await expect(search).toBeFocused();
+    await palette(page).getByRole('button', { name: 'Back' }).click();
+    await expect(search).toBeFocused();
+    await expect(palette(page).locator('.ui-command-palette__page')).toHaveCount(0);
+    await command(page, /^Change language/).click();
+    await page.keyboard.press('Escape');
+    await expect(output(page, 'page-path')).toHaveText('first page');
+    await expect(palette(page)).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(palette(page)).toBeHidden();
+  });
+
   test('UIC-COMMAND-PALETTE-1.3 opens one palette per press and leaves the chord to another modal', async ({
     page,
     lab,

@@ -21,6 +21,7 @@ import {
 import { MoreGlyph, UndoGlyph } from '../../src/core/glyphs.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabHelperCalls } from './lab-helper-calls.js';
+import { ShortcutScopeCases } from './shortcut-scope-cases.js';
 
 const platforms = ['mac', 'windows', 'linux'] as const;
 const chords = [
@@ -288,5 +289,6 @@ mountLab(
         </tbody>
       </table>
     </LabSection>
+    <ShortcutScopeCases />
   </>,
 );

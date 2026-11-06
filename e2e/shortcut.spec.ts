@@ -189,3 +189,39 @@ test("UIC-SHORTCUT-1.4 UIC-SHORTCUT-1.6 names keys and joins steps in the host's
   );
   await lab.expectAccessible();
 });
+
+test('UIC-SHORTCUT-4.1 UIC-SHORTCUT-4.3 UIC-SHORTCUT-4.4 answers in the focused scope, runs sequences and leaves fields alone', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('shortcut');
+  const demo = page.locator('[data-lab-demo="shortcut-scopes"]');
+  const ran = demo.locator('[data-lab-output="shortcut-ran"]');
+  const notes = demo.locator('[data-lab-scope="notes"]');
+  const tasks = demo.locator('[data-lab-scope="tasks"]');
+  await notes.getByRole('button', { name: 'Archive note' }).focus();
+  await page.keyboard.press('n');
+  await expect(ran).toHaveText('New note');
+  await tasks.getByRole('button', { name: 'New task' }).focus();
+  await page.keyboard.press('n');
+  await expect(ran).toHaveText('New task');
+  await page.keyboard.press('g');
+  await page.keyboard.press('i');
+  await expect(ran).toHaveText('Go to inbox');
+  await page.keyboard.press('Shift+?');
+  await expect(ran).toHaveText('Show help');
+  await expect(demo.getByRole('button', { name: 'Show help' })).toHaveAttribute(
+    'aria-keyshortcuts',
+    'Shift+?',
+  );
+  const title = notes.getByRole('textbox', { name: 'Title' });
+  await title.fill('');
+  await title.press('n');
+  await expect(title).toHaveValue('n');
+  await expect(ran).toHaveText('Show help');
+  await tasks.getByRole('checkbox', { name: 'Pause task shortcuts' }).check();
+  await expect(tasks).toHaveAttribute('data-disabled', 'true');
+  await tasks.getByRole('button', { name: 'New task' }).focus();
+  await page.keyboard.press('n');
+  await expect(ran).toHaveText('Show help');
+});

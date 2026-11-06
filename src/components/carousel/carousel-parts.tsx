@@ -24,8 +24,10 @@ interface CarouselControlsProps {
 
 interface CarouselPaginationProps {
   pagination: Exclude<CarouselPagination, 'none'>;
-  count: number;
-  index: number;
+  /** The index each page starts at. */
+  starts: readonly number[];
+  /** The shown page. */
+  page: number;
   viewportId: string;
   onSelect: (index: number) => void;
   renderThumbnail?: ((index: number) => ReactNode) | undefined;
@@ -89,11 +91,14 @@ export function CarouselControls({
   );
 }
 
-/** One button per slide, as a dot or as the caller's thumbnail, marking the shown slide current. */
+/**
+ * One button per page, as a dot or as the caller's thumbnail of the page's first slide, marking the
+ * shown page current. With one slide a page, a page is a slide.
+ */
 export function CarouselPaginationButtons({
   pagination,
-  count,
-  index,
+  starts,
+  page,
   viewportId,
   onSelect,
   renderThumbnail,
@@ -102,16 +107,16 @@ export function CarouselPaginationButtons({
   const slot = pagination === 'dots' ? 'dot' : 'thumbnail';
   return (
     <div {...hooks.slot('pagination')} role="group" aria-label={strings.chooseSlide}>
-      {Array.from({ length: count }, (_, position) => (
+      {starts.map((start, position) => (
         <AriaButton
-          key={position}
-          {...hooks.slot(slot, { current: position === index })}
-          aria-label={strings.goToSlide(position + 1)}
-          aria-current={position === index ? 'true' : undefined}
+          key={start}
+          {...hooks.slot(slot, { current: position === page })}
+          aria-label={strings.goToSlide(start + 1)}
+          aria-current={position === page ? 'true' : undefined}
           aria-controls={viewportId}
-          onPress={() => onSelect(position)}
+          onPress={() => onSelect(start)}
         >
-          {slot === 'thumbnail' ? renderThumbnail?.(position) : null}
+          {slot === 'thumbnail' ? renderThumbnail?.(start) : null}
         </AriaButton>
       ))}
     </div>

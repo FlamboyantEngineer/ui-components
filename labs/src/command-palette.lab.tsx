@@ -25,6 +25,7 @@ import {
 import type { Key } from '../../src/core/props.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { CommandPaletteMountCases } from './command-palette-mount-cases.js';
+import { CommandPalettePagesCases } from './command-palette-pages-cases.js';
 
 const sizes = ['sm', 'md', 'lg'] as const;
 const states = ['default', 'typed', 'no match', 'custom empty', 'loading'] as const;
@@ -344,6 +345,7 @@ mountLab(
     >
       <JsxPalette />
     </LabSection>
+    <CommandPalettePagesCases />
     <CommandPaletteMountCases />
   </>,
 );

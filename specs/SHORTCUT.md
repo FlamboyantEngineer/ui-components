@@ -120,6 +120,43 @@ Verification: `src/components/shortcut/shortcut.test.tsx`
 Implementation: `src/components/shortcut/shortcut.tsx`, `src/components/meta-line/meta-line.tsx`
 Verification: `src/components/shortcut/shortcut.test.tsx`, `e2e/chat.spec.ts`
 
+## UIC-SHORTCUT-4 - Shortcut scopes
+
+### UIC-SHORTCUT-4.1 - Scopes and precedence
+
+`useShortcut(shortcut, onPress, options)` shall call `onPress` with the key event when its chord is pressed where it answers, and prevent the browser's own use of the press. Inside a `ShortcutScope`, it answers only while the press comes from within the scope's `ui-shortcut-scope` element; outside any scope, or with `isGlobal`, anywhere in its document. One press answers one shortcut: the one of the innermost scope holding the press, then the scopes around it, then the document-wide ones, and among those of one place the one registered last. `isDisabled` on a scope silences the shortcuts inside it and inside its nested scopes (`data-disabled` on the scope), and `isDisabled` on a shortcut silences that one, in both cases letting the next one answer. Scopes go by the document tree: content portalled out of a scope is outside it unless it holds a scope of its own. `null` registers nothing.
+
+Implementation: `src/components/shortcut/shortcut-scope.tsx`, `src/components/shortcut/shortcut-registry.ts`
+Verification: `src/components/shortcut/shortcut-scope.test.tsx`, `e2e/shortcut.spec.ts`
+
+### UIC-SHORTCUT-4.2 - Modals and handled presses
+
+A press from inside a modal overlay (a library overlay on the `modal` layer that is not leaving, or an `aria-modal` element) shall answer only the shortcuts of scopes within that overlay; document-wide shortcuts and scopes outside it stay silent. A press whose default something already prevented answers no shortcut.
+
+Implementation: `src/components/shortcut/shortcut-registry.ts`
+Verification: `src/components/shortcut/shortcut-scope.test.tsx`
+
+### UIC-SHORTCUT-4.3 - Sequences
+
+A sequence (`['G', 'I']`) shall run once its chords are pressed in turn, each within `sequenceTimeout` milliseconds (1000 by default) of the one before; each chord of it is claimed (its default prevented). A press of another key cancels it and is then read as a fresh press; pressing a modifier alone neither starts nor cancels one, and the timeout passing cancels it. When a press matches the first chord of several shortcuts, the first of them in precedence decides: a single chord runs at once, while a sequence waits for its next chord with the other sequences that matched.
+
+Implementation: `src/components/shortcut/shortcut-registry.ts`
+Verification: `src/components/shortcut/shortcut-scope.test.tsx`, `e2e/shortcut.spec.ts`
+
+### UIC-SHORTCUT-4.4 - Exclusions
+
+Chords shall match as [UIC-SHORTCUT-1.8](#uic-shortcut-18---matching-key-presses) says, so AltGr typing a character never matches, and no shortcut answers a key of a text composition (including key code 229). Unless allowed, a shortcut does not answer a press from a field or editable content (`allowsEditable`), a repeated key (`allowsRepeat`), or a chord the browser keeps (`allowsReserved`): `Ctrl+L`, `Ctrl+N`, `Ctrl+Q`, `Ctrl+R`, `Ctrl+T`, `Ctrl+W`, `Ctrl+Shift+N`, `Ctrl+Shift+T`, `Ctrl+Shift+W`, `Ctrl+Tab`, `Ctrl+Shift+Tab`, `F5`, `F11` and `F12`.
+
+Implementation: `src/components/shortcut/shortcut-registry.ts`
+Verification: `src/components/shortcut/shortcut-scope.test.tsx`
+
+### UIC-SHORTCUT-4.5 - Registration
+
+A shortcut shall be registered while its caller is mounted and its chord is unchanged, always call the latest `onPress` and options, and live in its own document: its scope's, or for a document-wide shortcut the document of the provider's portal container, so a press in another document never answers it. `useShortcut` returns `ariaKeyShortcuts`, the [UIC-SHORTCUT-1.6](#uic-shortcut-16---key-shortcuts-attribute) value for a single chord and `undefined` for a sequence, for the control it runs. [Command Palette](COMMAND-PALETTE.md#uic-command-palette-13---document-shortcut) registers its chord as a document-wide shortcut.
+
+Implementation: `src/components/shortcut/shortcut-scope.tsx`
+Verification: `src/components/shortcut/shortcut-scope.test.tsx`
+
 ## Hooks
 
 | Hook                   | Kind      | Values                    | Description                                                   |
@@ -134,3 +171,5 @@ Verification: `src/components/shortcut/shortcut.test.tsx`, `e2e/chat.spec.ts`
 | `ui-key-hints`         | root      |                           | The legend's `<span>`, also `ui-meta-line`.                   |
 | `ui-key-hints__hint`   | slot      |                           | One hint: its shortcuts, then its action.                     |
 | `ui-key-hints__action` | slot      |                           | The hint's action text.                                       |
+| `ui-shortcut-scope`    | root      |                           | The `ShortcutScope` region holding its shortcuts.             |
+| `data-disabled`        | attribute | `true`                    | On the scope while its shortcuts are silenced.                |

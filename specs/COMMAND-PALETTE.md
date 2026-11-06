@@ -1,6 +1,6 @@
 # Command Palette
 
-`CommandPalette` lets a reader find and run a command by typing: a modal dialog holding a search field over a menu of commands that narrows as they type. A document-wide chord opens it from anywhere. It is built on React Aria's `ModalOverlay`, `Modal`, `Dialog`, `SearchField` and `Autocomplete`, which provide the focus trap, Escape, outside presses, focus restoration and the virtual focus that keeps typing in the field while the arrow keys move through the commands. The commands are the library [Menu](MENU.md) and its parts, so they keep the menu hooks: sections with headings, items with an icon, a description and a [Shortcut](SHORTCUT.md) hint, separators and disabled items. A palette with several pages of commands is out of scope.
+`CommandPalette` lets a reader find and run a command by typing: a modal dialog holding a search field over a menu of commands that narrows as they type. A document-wide chord opens it from anywhere. It is built on React Aria's `ModalOverlay`, `Modal`, `Dialog`, `SearchField` and `Autocomplete`, which provide the focus trap, Escape, outside presses, focus restoration and the virtual focus that keeps typing in the field while the arrow keys move through the commands. The commands are the library [Menu](MENU.md) and its parts, so they keep the menu hooks: sections with headings, items with an icon, a description and a [Shortcut](SHORTCUT.md) hint, separators and disabled items.
 
 ## UIC-COMMAND-PALETTE-1 - Dialog
 
@@ -22,7 +22,7 @@ Verification: `src/components/command-palette/command-palette.test.tsx`, `e2e/co
 
 While the palette is mounted, its `shortcut` chord (`Ctrl+K` by default, which is Command+K on macOS; written as for [Shortcut](SHORTCUT.md#uic-shortcut-11---canonical-chords)) pressed anywhere in the document shall open it and prevent the browser's own use of the key. The chord matches only with exactly its modifiers held, never on a repeated key or during text composition, and not when something else already handled the key press (its default was prevented). Key presses match as [UIC-SHORTCUT-1.8](SHORTCUT.md#uic-shortcut-18---matching-key-presses) says: a letter or digit in the chord matches the letter or digit the key types or, when the press types another character (`!` for Shift+1, `π` for Option+P on macOS, a letter of a non-Latin layout), the key in that letter's or digit's place on a US layout (its `code`); a non-Latin letter also matches a chord naming it; AltGr typing a character never matches. Pressed inside the open palette, the same chord closes it; pressed while a closed palette is still leaving (its exit animation runs), it opens the palette again. `shortcut={null}` registers no chord; unmounting the palette removes it. One press opens at most one palette: of the palettes mounted in a document whose chord the press matches, the one that registered its chord last (the last mounted, unless another changed its chord since) claims it, and when it unmounts the one before it answers again. A chord pressed from inside another modal overlay (a library overlay on the `modal` layer that is not leaving, or an `aria-modal` dialog) is left to that overlay and opens no palette on top of it.
 
-Implementation: `src/components/command-palette/command-palette.tsx`, `src/components/command-palette/command-palette-shortcut.ts`, `src/components/shortcut/shortcut-match.ts`
+Implementation: `src/components/command-palette/command-palette.tsx`, `src/components/shortcut/shortcut-scope.tsx`, `src/components/shortcut/shortcut-registry.ts`, `src/components/shortcut/shortcut-match.ts`
 Verification: `src/components/command-palette/command-palette.test.tsx`, `src/components/command-palette/command-palette-chord-owner.test.tsx`, `e2e/command-palette.spec.ts`
 
 ### UIC-COMMAND-PALETTE-1.4 - Focus
@@ -50,7 +50,7 @@ Verification: `src/components/command-palette/command-palette.test.tsx`, `e2e/co
 
 ### UIC-COMMAND-PALETTE-2.2 - Filtering
 
-As the reader types, the palette shall keep the commands whose label contains the typed text, ignoring case and accents, and hide the sections and separators left without a command. `filter` replaces the test with a `(textValue, inputValue) => boolean` function; `filter={null}` keeps every command, for results the caller has already filtered.
+As the reader types, the palette shall keep the commands whose label contains the typed text, ignoring case and accents, and hide the sections and separators left without a command. `filter` replaces the test with a `(textValue, inputValue) => boolean` function; `filter={null}` keeps every command, for results the caller has already filtered. Commands given as `items` are ranked as [UIC-COMMAND-PALETTE-2.7](#uic-command-palette-27---keywords-and-ranking) describes.
 
 Implementation: `src/components/command-palette/command-palette.tsx`
 Verification: `src/components/command-palette/command-palette.test.tsx`, `e2e/command-palette.spec.ts`
@@ -83,6 +83,20 @@ Verification: `src/components/command-palette/command-palette.test.tsx`, `e2e/co
 Implementation: `src/components/command-palette/command-palette.tsx`
 Verification: `src/components/command-palette/command-palette.test.tsx`, `e2e/command-palette.spec.ts`
 
+### UIC-COMMAND-PALETTE-2.7 - Keywords and ranking
+
+A command given in `items` may carry search `keywords`, words that find it without showing in it. While the typed text, trimmed, is not blank, the palette shall keep the commands whose label or a keyword matches it, ignoring case and accents, and order them, best first: the whole label, the start of the label, the start of a word of the label, anywhere in the label, then the same four for each keyword in turn. Ties keep their given order; commands sort only among the commands beside them, so sections keep their order and drop out without a match, and separators drop out while the text narrows. Disabled commands match like the others. Only the label's own text is marked ([UIC-COMMAND-PALETTE-2.4](#uic-command-palette-24---highlighted-matches)). A `filter` replaces the ranking: it keeps a command when it accepts the label or a keyword, in the given order. `filter={null}`, and commands given as `children`, keep [UIC-COMMAND-PALETTE-2.2](#uic-command-palette-22---filtering).
+
+Implementation: `src/components/command-palette/command-palette-entries.ts`, `src/components/command-palette/command-palette-pages.tsx`
+Verification: `src/components/command-palette/command-palette-entries.test.ts`, `src/components/command-palette/command-palette.test.tsx`, `e2e/command-palette.spec.ts`
+
+### UIC-COMMAND-PALETTE-2.8 - Pages
+
+A command given in `items` with `commands` shall open a page of those commands instead of running: choosing it calls no `onAction`, keeps the palette open, empties the search field and moves focus back to it. Above the field an inner page shows `ui-command-palette__page`, holding a `ui-command-palette__back` button named by the provider's `back` string and the page's `ui-command-palette__page-title`, the opening command's label, which also names the menu. Back, or Escape or Backspace on the empty field of an inner page (not during a text composition), returns to the page before and restores the text typed there; Escape on the empty field of the first page closes the palette. `path` with `onPathChange` controls the ids of the opened branch commands and `defaultPath` sets them uncontrolled, each opening starting from it; a path is followed as far as its commands still exist and still open pages.
+
+Implementation: `src/components/command-palette/command-palette-entries.ts`, `src/components/command-palette/command-palette-pages.tsx`, `src/components/command-palette/command-palette.tsx`
+Verification: `src/components/command-palette/command-palette-entries.test.ts`, `src/components/command-palette/command-palette.test.tsx`, `e2e/command-palette.spec.ts`
+
 ## UIC-COMMAND-PALETTE-3 - Accessibility and hooks
 
 ### UIC-COMMAND-PALETTE-3.1 - Names and roles
@@ -106,6 +120,9 @@ Verification: `src/components/command-palette/command-palette.test.tsx`
 | `ui-command-palette`               | root      |                  | The overlay covering the viewport.                                   |
 | `ui-command-palette__panel`        | slot      |                  | The box holding the dialog.                                          |
 | `ui-command-palette__dialog`       | slot      |                  | The `role="dialog"` element.                                         |
+| `ui-command-palette__page`         | slot      |                  | Above the search field on an inner page: Back and the page title.    |
+| `ui-command-palette__back`         | slot      |                  | The Back button (also `ui-button`).                                  |
+| `ui-command-palette__page-title`   | slot      |                  | The open page's title.                                               |
 | `ui-command-palette__search`       | slot      |                  | The search field.                                                    |
 | `ui-command-palette__search-icon`  | slot      |                  | The decorative `search` glyph before the input (also `ui-glyph`).    |
 | `ui-command-palette__search-input` | slot      |                  | The `role="searchbox"` input.                                        |
