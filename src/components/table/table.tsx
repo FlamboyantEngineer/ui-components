@@ -18,12 +18,10 @@ import type { ActionRowAction } from '../action-row/action-row.js';
 import { Pagination } from '../pagination/pagination.js';
 import type { TableColumnWidths } from './column-sizing.js';
 import { TableBody } from './table-body.js';
-import { TableSelectionBar } from './table-bulk-edit.js';
 import { TableColumnFilter } from './table-column-filter.js';
 import { getColumnText, type TableColumnGroup, type TableColumnLayout } from './table-columns.js';
 import type { TableEditHistory } from './table-edit-history.js';
 import type { TableCsvExport } from './table-export.js';
-import { TableExportMenu } from './table-export-menu.js';
 import { isEmptyFilterValue, setColumnFilter, type TableFilter } from './table-filters.js';
 import { hasTableFooter, TableFooter } from './table-footer.js';
 import { readGridTracks } from './table-grid-tracks.js';
@@ -33,8 +31,7 @@ import { tableHooks as hooks } from './table-hooks.js';
 import { type TableHandle, useTableHandle } from './table-reveal.js';
 import type { TableCellWrap, TableColumn, TableRow } from './table-rows.js';
 import { TableScroll } from './table-scroll.js';
-import { TableSearch } from './table-search.js';
-import { TableToolbar } from './table-toolbar.js';
+import { TableControls } from './table-toolbar.js';
 import type { TableChildRows } from './table-tree.js';
 import type { TableCellEdit } from './use-cell-editing.js';
 import type { TableSpreadsheetProps } from './use-cell-selection.js';
@@ -311,7 +308,7 @@ export function Table<T extends TableRow>({
   const strings = useUiStrings();
   const [dataAttributes, gridProps] = splitDataAttributes(rest);
   const grid = useTableGrid({ ...gridProps, filterable, stickyHeader });
-  const { view, layout } = grid;
+  const { view } = grid;
   const isVirtualized = rest.virtualized === true;
   const { height, measuresRows } = readRowHeight({ rowHeight, estimatedRowHeight, size });
   const reveal = useTableHandle(handleRef, { ...rest, grid, ref });
@@ -342,21 +339,11 @@ export function Table<T extends TableRow>({
       ref={rootRef}
       aria-busy={grid.body.status === 'loading' || undefined}
     >
-      <TableToolbar
-        filter={
-          filterable ? (
-            <TableSearch
-              label={filterLabel ?? strings.filterRows}
-              value={view.filter.query ?? ''}
-              onChange={(query) => view.onFilterChange({ ...view.filter, query })}
-            />
-          ) : null
-        }
+      <TableControls
+        grid={grid}
         columns={rest.columns}
-        layout={layout}
-        exportMenu={grid.exportMenu ? <TableExportMenu {...grid.exportMenu} /> : null}
+        search={filterable ? (filterLabel ?? strings.filterRows) : null}
       />
-      {grid.selectionBar ? <TableSelectionBar {...grid.selectionBar} /> : null}
       <TableScroll
         isVirtualized={isVirtualized}
         layoutRef={reveal.layoutRef}
