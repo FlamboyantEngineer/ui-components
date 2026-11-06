@@ -1,6 +1,6 @@
 # Table
 
-`Table` shows records a reader scans, sorts, filters, selects, edits and acts on. It is built on React Aria's `Table`: columns and rows are plain data with render callbacks, and the table adds sorting by one or several columns, a search box and typed column filters, selection with a selection bar and bulk edit, resizable, reorderable, hideable, pinned and grouped columns with a persisted layout, row groups with aggregates, nested rows and detail rows, cell editing and a spreadsheet mode with cell ranges, the clipboard and filling, a summary row, row reordering by drag and drop or keyboard, pagination through [Pagination](PAGINATION.md), loading more rows, full-width loading, empty and error notices, and virtualization for long lists. `sortTableRows`, `filterTableRows` and `applyTableMove` are exported for callers that keep the order, the filtering or the pages of their rows themselves, and `formatTsv` and `parseTsv` for tab-separated text.
+`Table` shows records a reader scans, sorts, filters, selects, edits and acts on. It is built on React Aria's `Table`: columns and rows are plain data with render callbacks, and the table adds sorting by one or several columns, a search box and typed column filters, selection with a selection bar and bulk edit, resizable, reorderable, hideable, pinned and grouped columns with a persisted layout, row groups with aggregates, nested rows and detail rows, cell editing and a spreadsheet mode with cell ranges, the clipboard and filling, a summary row, CSV export, row reordering by drag and drop or keyboard, pagination through [Pagination](PAGINATION.md), loading more rows, full-width loading, empty and error notices, and virtualization for long lists. `sortTableRows`, `filterTableRows` and `applyTableMove` are exported for callers that keep the order, the filtering or the pages of their rows themselves, `formatTsv` and `parseTsv` for tab-separated text, and `formatCsv` and `formatTableCsv` for CSV export.
 
 Pointer ownership and drag lifecycle cleanup follow the shared [drag interaction contract](DRAG-INTERACTIONS.md).
 
@@ -611,17 +611,54 @@ When a drawn column has `bulkEdit`, the selection bar shall end with an `edit` a
 Implementation: `src/components/table/table-bulk-edit.tsx`, `src/core/strings/table.ts`
 Verification: `src/components/table/table-bulk-edit.test.tsx`, `e2e/table.spec.ts`
 
+## UIC-TABLE-16 - CSV export
+
+### UIC-TABLE-16.1 - Comma-separated values
+
+`formatCsv(rows, options)` shall join cells with a delimiter (`,` by default, any one character other than a quote or a line break, else it throws) and rows with Windows line breaks, as RFC 4180 does, with no final line break and no byte order mark. A cell holding the delimiter, a quote or a line break is wrapped in quotes with its quotes doubled. Unless `escapeFormulas` is false, text a spreadsheet would read as a formula, starting with `=`, `+`, `-`, `@`, a tab or a carriage return, is prefixed with an apostrophe, except a plain decimal number such as `-12.5`. `CSV_BYTE_ORDER_MARK` is the UTF-8 byte order mark a file may start with.
+
+Implementation: `src/utils/csv.ts`
+Verification: `src/utils/csv.test.ts`
+
+### UIC-TABLE-16.2 - Table CSV
+
+`formatTableCsv({ rows, columns, delimiter, escapeFormulas })` shall write the rows in order under a header row of the columns' accessible names (`textValue`, else a text header, else the id). Each cell is the column's `getExportText(row)`, else its value (`getValue`, else the row's property) as copied text (UIC-TABLE-14.2): numbers and booleans as `String` writes them whatever the locale, dates in ISO 8601, nothing as empty text. Rendered cell content is never read. Locale formatting is the column's own, through `getExportText`. The rows and columns are read, never changed.
+
+Implementation: `src/components/table/table-export.ts`, `src/utils/csv.ts`
+Verification: `src/components/table/table-export.test.ts`
+
+### UIC-TABLE-16.3 - Export menu
+
+`csvExport` shall draw an export menu (`ui-table__export-menu`, a [Dropdown Menu](DROPDOWN-MENU.md) named by the provider's `exportCsv`) at the end of the toolbar, with one item per scope in `scopes`, by default `page` when the table is paginated, `rows`, and `selected` in multiple selection:
+
+- `page` (the provider's `exportPage`) writes the current page's rows;
+- `rows` (`exportAllRows`) writes every row the table presents across pages: filtered and ordered as the table shows them;
+- `selected` (`exportSelectedRows`) writes the selected rows the selection bar counts (UIC-TABLE-15.1), in order, and is disabled while none is selected.
+
+Nested rows follow their parent depth first whether or not it is expanded; group header, detail, notice and summary rows are never written. The columns are the drawn ones in their layout order, or those `csvExport.columns` names by id, in its order, hidden ones included; an unknown id is skipped.
+
+Implementation: `src/components/table/table-export-menu.tsx`, `src/components/table/table-export.ts`, `src/components/table/table-toolbar.tsx`, `src/components/table/use-table-grid.ts`, `src/core/strings/table.ts`
+Verification: `src/components/table/table-export-menu.test.tsx`, `src/components/table/table-export.test.ts`, `e2e/table-data.spec.ts`
+
+### UIC-TABLE-16.4 - Partial rows and the file
+
+When the caller pages the rows (`pagination.rowCount`) or loads them in parts (`onLoadMore`), the table holds only the loaded rows: the `rows` item shall then read `exportLoadedRows` and write those, unless `csvExport.allRows` gives the whole dataset, which the `rows` scope then writes as given, with its child rows, under `exportAllRows`. The menu writes `fileName` as a `text/csv;charset=utf-8` download through `downloadBlob` (UIC-DOWNLOAD-1.1), starting with the UTF-8 byte order mark unless `byteOrderMark` is false, or hands `{ fileName, scope, text }` to `onExport` instead of downloading.
+
+Implementation: `src/components/table/table-export-menu.tsx`, `src/utils/download.ts`
+Verification: `src/components/table/table-export-menu.test.tsx`, `e2e/table-data.spec.ts`
+
 ## Hooks
 
 | Hook                             | Kind      | Values                         | Description                                                                    |
 | -------------------------------- | --------- | ------------------------------ | ------------------------------------------------------------------------------ |
 | `ui-table`                       | root      |                                | The element holding the toolbar, the scroll area and the page navigation.      |
-| `ui-table__toolbar`              | slot      |                                | The controls above the grid: the search field and the columns menu.            |
+| `ui-table__toolbar`              | slot      |                                | The controls above the grid: the search field, columns and export menus.       |
 | `ui-table__filter`               | slot      |                                | The search field of a filterable table.                                        |
 | `ui-table__filter-icon`          | slot      |                                | The search field's leading glyph (also `ui-icon`).                             |
 | `ui-table__filter-input`         | slot      |                                | The search field's input.                                                      |
 | `ui-table__filter-clear`         | slot      |                                | The search field's clear button.                                               |
 | `ui-table__columns-menu`         | slot      |                                | The columns menu's trigger (also `ui-dropdown-menu`).                          |
+| `ui-table__export-menu`          | slot      |                                | The CSV export menu's trigger (also `ui-dropdown-menu`).                       |
 | `ui-table__scroll`               | slot      |                                | React Aria's resizable container; the scroll area.                             |
 | `ui-table__grid`                 | slot      |                                | The grid (`<table>`, or a `div` when virtualized).                             |
 | `ui-table__header`               | slot      |                                | The header row group.                                                          |

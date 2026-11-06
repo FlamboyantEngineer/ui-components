@@ -9,6 +9,13 @@ export type {
 } from './table-cell-range.js';
 export type { TableColumnGroup, TableColumnLayout } from './table-columns.js';
 export type {
+  TableCsvExport,
+  TableCsvSource,
+  TableExportFile,
+  TableExportScope,
+} from './table-export.js';
+export { formatTableCsv } from './table-export.js';
+export type {
   TableColumnFilter,
   TableColumnFilterValue,
   TableFilter,

@@ -8,6 +8,7 @@ export const tableHooks = createHooks('table', [
   'filter-input',
   'filter-clear',
   'columns-menu',
+  'export-menu',
   'scroll',
   'grid',
   'header',

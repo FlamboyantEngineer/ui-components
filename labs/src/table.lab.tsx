@@ -34,6 +34,7 @@ import {
   ShareWeights,
 } from './table-content-contracts.js';
 import { HeaderFilter, PickerCell } from './table-control-cases.js';
+import { CsvExport } from './table-data-cases.js';
 import {
   ControlledLayout,
   ControlledMultipleSort,
@@ -593,6 +594,12 @@ mountLab(
       description="Select rows, then set one column across them from the selection bar."
     >
       <BulkEdit />
+    </LabSection>
+    <LabSection
+      title="CSV export"
+      description="Export CSV writes the current page, every filtered row in the shown order, or the selected rows, as the drawn columns. The caller-paged table writes Note then Name, reads Loaded rows until it is given every row, and shows the text instead of downloading it. Formula-like notes start with an apostrophe."
+    >
+      <CsvExport />
     </LabSection>
     <LabSection title="Virtualized" description="10,000 rows; only those in view are rendered.">
       <div data-lab="virtualized" style={{ height: 320 }}>

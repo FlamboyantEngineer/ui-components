@@ -21,6 +21,8 @@ import { TableBody } from './table-body.js';
 import { TableSelectionBar } from './table-bulk-edit.js';
 import { TableColumnFilter } from './table-column-filter.js';
 import { getColumnText, type TableColumnGroup, type TableColumnLayout } from './table-columns.js';
+import type { TableCsvExport } from './table-export.js';
+import { TableExportMenu } from './table-export-menu.js';
 import { isEmptyFilterValue, setColumnFilter, type TableFilter } from './table-filters.js';
 import { hasTableFooter, TableFooter } from './table-footer.js';
 import { readGridTracks } from './table-grid-tracks.js';
@@ -92,6 +94,8 @@ export interface TableProps<T extends TableRow>
   columnLayout?: TableColumnLayout | undefined;
   /** Initial column order and hidden columns while the table owns them and none are stored. */
   defaultColumnLayout?: TableColumnLayout | undefined;
+  /** Draws an export menu above the grid that writes rows as CSV. */
+  csvExport?: TableCsvExport<T> | undefined;
   /** Called with the layout after a column moves, hides or shows. */
   onColumnLayoutChange?: ((layout: TableColumnLayout) => void) | undefined;
   /** A row's child rows, drawn under it once it is expanded. */
@@ -308,6 +312,7 @@ export function Table<T extends TableRow>({
         }
         columns={rest.columns}
         layout={layout}
+        exportMenu={grid.exportMenu ? <TableExportMenu {...grid.exportMenu} /> : null}
       />
       {grid.selectionBar ? <TableSelectionBar {...grid.selectionBar} /> : null}
       <TableScroll

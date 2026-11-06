@@ -28,8 +28,12 @@
 .ui-table__toolbar > .ui-table__filter {
   flex: 1 1 200px;
 }
-.ui-table__columns-menu {
+.ui-table__columns-menu,
+.ui-table__export-menu {
   margin-inline-start: auto;
+}
+.ui-table__columns-menu + .ui-table__export-menu {
+  margin-inline-start: 0;
 }
 
 .ui-table__filter {

@@ -9,6 +9,7 @@ import type { TableProps } from './table.js';
 import { createTableAriaKeys, createTableRowAction, useTableKeyIndex } from './table-aria-keys.js';
 import type { TableBodyProps, TableStatus } from './table-body.js';
 import type { TableSelectionBarProps } from './table-bulk-edit.js';
+import { resolveExportMenu, type TableExportMenuProps } from './table-export-menu.js';
 import { listVisibleRows } from './table-groups.js';
 import { pickAriaProps, type TableAriaProps } from './table-props.js';
 import { resolveGroupReorder } from './table-reorder-groups.js';
@@ -53,6 +54,8 @@ export interface TableGrid<T> {
   onPinOffsets: (offsets: TablePinOffsets) => void;
   onRowAction: ((key: Key) => void) | undefined;
   body: TableBodyProps<T>;
+  /** The export menu above the grid, when the table exports. */
+  exportMenu: TableExportMenuProps<T> | null;
   /** The selection bar above the grid, when the table draws one. */
   selectionBar: TableSelectionBarProps<T> | null;
   /** Handlers for the table root from every feature in use. */
@@ -246,6 +249,7 @@ export function useTableGrid<T extends TableRow>(options: TableGridOptions<T>): 
     onPinOffsets: pinned.report,
     onRowAction: createTableRowAction(keyIndex, onRowAction),
     body: createBody(options, { nodes: grouped.nodes, model, status, message }),
+    exportMenu: resolveExportMenu(options, { view, selection, drawn: structure.columns }),
     selectionBar: resolveSelectionBar(options, { selection, columns: structure.columns }),
     rootProps: mergeRootProps(columns, {
       reordering: activeReordering,
