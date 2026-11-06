@@ -125,3 +125,133 @@ test.describe('Virtualized table layout', () => {
     ).toHaveText('2000 readings');
   });
 });
+
+/** The rendered body rows' tops and heights, in order, relative to the scroll area. */
+async function rowBoxes(root: Locator) {
+  return root.locator('.ui-table__scroll').evaluate((scroll) => {
+    const top = scroll.getBoundingClientRect().top;
+    return [...scroll.querySelectorAll('.ui-table__body [role="row"]')]
+      .map((row) => {
+        const box = row.parentElement?.getBoundingClientRect() ?? row.getBoundingClientRect();
+        return { name: row.textContent, top: box.top - top, height: box.height };
+      })
+      .sort((a, b) => a.top - b.top);
+  });
+}
+
+function expectStacked(rows: { top: number; height: number }[]) {
+  expect(rows.length).toBeGreaterThan(3);
+  for (const [index, row] of rows.entries()) {
+    const next = rows[index + 1];
+    if (next) expect(next.top).toBeCloseTo(row.top + row.height, 0);
+  }
+}
+
+const notesRow = (root: Locator, name: string) =>
+  root.getByRole('row', { name: `Expand ${name}`, exact: true });
+
+test.describe('Virtualized measured rows', () => {
+  test('UIC-TABLE-7.5 gives wrapped rows their height and stacks rows without gaps', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('table');
+    const root = section(page, 'virtualized-measured');
+    await expect(root.locator('.ui-table')).toHaveAttribute('data-measured-rows', 'true');
+    const one = await box(notesRow(root, 'Note 1'));
+    const three = await box(notesRow(root, 'Note 3'));
+    expect(three.height).toBeGreaterThan(one.height);
+    expectStacked(await rowBoxes(root));
+    for (const top of [4000, 15_000, 'end'] as const) {
+      await scrollTo(root, top);
+      await expect.poll(async () => (await rowBoxes(root)).length).toBeGreaterThan(3);
+      expectStacked(await rowBoxes(root));
+    }
+    await expect(notesRow(root, 'Note 1000')).toBeVisible();
+    const last = await box(notesRow(root, 'Note 1000'));
+    const summary = await box(root.getByRole('row', { name: 'Summary' }));
+    expect(summary.y).toBeCloseTo(last.y + last.height, 0);
+  });
+
+  test('UIC-TABLE-7.5 UIC-TABLE-9.2 measures an opened detail row', async ({ page, lab }) => {
+    await lab.open('table');
+    const root = section(page, 'virtualized-measured');
+    await root.getByRole('button', { name: 'Expand Note 2' }).click();
+    const detail = root.getByText(/^Note 2 details/);
+    await expect(detail).toBeVisible();
+    const rows = await rowBoxes(root);
+    expectStacked(rows);
+    const opened = rows.find((row) => row.name?.startsWith('Note 2 details'));
+    expect(opened?.height).toBeGreaterThan(40);
+  });
+
+  test('UIC-TABLE-7.5 measures rows again after a resize and new content', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('table');
+    const root = section(page, 'virtualized-measured');
+    const before = (await box(notesRow(root, 'Note 2'))).height;
+    const header = root.getByRole('columnheader', { name: /^Note/ });
+    await header.focus();
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('Enter');
+    for (let step = 0; step < 60; step += 1) await page.keyboard.press('ArrowLeft');
+    await page.keyboard.press('Enter');
+    await expect
+      .poll(async () => (await box(notesRow(root, 'Note 2'))).height)
+      .toBeGreaterThan(before);
+    expectStacked(await rowBoxes(root));
+    const resized = (await box(notesRow(root, 'Note 2'))).height;
+    await page.getByRole('button', { name: 'Lengthen the notes' }).click();
+    await expect
+      .poll(async () => (await box(notesRow(root, 'Note 2'))).height)
+      .toBeGreaterThan(resized);
+    expectStacked(await rowBoxes(root));
+  });
+
+  test('UIC-TABLE-7.5 keeps measured heights when the reader scrolls back', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('table');
+    const root = section(page, 'virtualized-measured');
+    const three = (await box(notesRow(root, 'Note 3'))).height;
+    for (const top of [2000, 12_000, 0] as const) {
+      await scrollTo(root, top);
+      await expect.poll(async () => (await rowBoxes(root)).length).toBeGreaterThan(3);
+    }
+    await expect(notesRow(root, 'Note 3')).toBeVisible();
+    expect((await box(notesRow(root, 'Note 3'))).height).toBe(three);
+    expectStacked(await rowBoxes(root));
+  });
+
+  test('UIC-TABLE-7.5 switches between fixed and measured rows', async ({ page, lab }) => {
+    await lab.open('table');
+    const root = section(page, 'virtualized-measured');
+    await page.getByRole('button', { name: 'Use fixed rows' }).click();
+    await expect(root.locator('.ui-table')).not.toHaveAttribute('data-measured-rows');
+    await expect.poll(async () => (await box(notesRow(root, 'Note 3'))).height).toBe(40);
+    await page.getByRole('button', { name: 'Use measured rows' }).click();
+    await expect.poll(async () => (await box(notesRow(root, 'Note 3'))).height).toBeGreaterThan(40);
+    expectStacked(await rowBoxes(root));
+  });
+
+  test('UIC-TABLE-7.5 UIC-TABLE-12.1 moves through measured rows from the keyboard', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('table');
+    const root = section(page, 'virtualized-measured');
+    await root.scrollIntoViewIfNeeded();
+    await root.getByRole('gridcell', { name: 'One line' }).first().click();
+    for (let step = 0; step < 12; step += 1) await page.keyboard.press('ArrowDown');
+    await expect(notesRow(root, 'Note 13')).toBeInViewport();
+    await page.keyboard.press('Control+End');
+    const summary = root.getByRole('row', { name: 'Summary' });
+    await expect(summary.locator(':focus')).toHaveCount(1);
+    await expect(summary).toBeInViewport();
+    await page.keyboard.press('ArrowUp');
+    await expect(notesRow(root, 'Note 1000')).toBeInViewport();
+  });
+});

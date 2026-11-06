@@ -46,7 +46,7 @@ import {
 import { RevealRows } from './table-reveal-cases.js';
 import { RepeatedSelection } from './table-selection-cases.js';
 import { BulkEdit, Grouping, SmallSteps, Spreadsheet } from './table-sheet-cases.js';
-import { VirtualGroupsAndSummary } from './table-virtual-cases.js';
+import { VirtualGroupsAndSummary, VirtualMeasuredRows } from './table-virtual-cases.js';
 
 function TrailingActions() {
   const [count, setCount] = useState(0);
@@ -645,6 +645,12 @@ mountLab(
       description="2,000 rows under a Range group header, with a summary row that stays in the document wherever the table scrolls. Resize a column or sort, then scroll to the end."
     >
       <VirtualGroupsAndSummary />
+    </LabSection>
+    <LabSection
+      title="Virtualized measured rows"
+      description="1,000 notes with rowHeight auto: one-line and wrapped notes and opened details take their own heights. Resize the Note column or lengthen the notes and the rows are measured again; the row at the top of the view stays where it is."
+    >
+      <VirtualMeasuredRows />
     </LabSection>
   </>,
 );

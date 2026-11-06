@@ -394,6 +394,13 @@
   align-items: center;
   height: 100%;
 }
+/* Measured rows take their content's height, at least a fixed row's (UIC-TABLE-7.5). */
+.ui-table[data-measured-rows] .ui-table__cell {
+  min-height: 40px;
+}
+.ui-table[data-measured-rows][data-size='sm'] .ui-table__cell {
+  min-height: 32px;
+}
 /*
  * Virtualized cells are flex boxes, not table cells: they centre their content in the row
  * themselves, and place it by the column's alignment, since text-align leaves a control (a

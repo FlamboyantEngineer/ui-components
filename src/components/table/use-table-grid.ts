@@ -30,7 +30,7 @@ import { useTableSelection } from './use-table-selection.js';
 /** The props that shape the grid; the root's presentation is the table's own. */
 export type TableGridOptions<T extends TableRow> = Omit<
   TableProps<T>,
-  'size' | 'rowHeight' | 'filterLabel' | 'className' | 'id'
+  'size' | 'rowHeight' | 'estimatedRowHeight' | 'filterLabel' | 'className' | 'id'
 >;
 
 /** What the table renders from. */

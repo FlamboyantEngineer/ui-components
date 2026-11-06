@@ -1,19 +1,18 @@
 'use client';
 
 import {
-  type ITableCollection,
   type Key,
   type Layout,
-  LayoutInfo,
+  type LayoutInfo,
   Rect,
   Size,
   TableLayout,
 } from '../../primitives/index.js';
+import { summaryInfos, type TableCollection } from './table-summary-layout.js';
 
 type VisibleRect = Parameters<TableLayout<unknown>['getVisibleLayoutInfos']>[0];
 type InvalidationContext = Parameters<TableLayout<unknown>['update']>[0];
 type DropTargetInfoQuery = Parameters<TableLayout<unknown>['getDropTargetLayoutInfo']>[0];
-type TableCollection = ITableCollection<unknown>;
 
 /**
  * The options a virtualized table lays out with: React Aria's table layout options, and the height
@@ -38,72 +37,36 @@ export type TableVirtualLayout = Pick<
 function readOptions(options: object | undefined) {
   const { groupRowHeight, rowHeight, estimatedRowHeight }: Partial<TableLayoutOptions> =
     options ?? {};
-  return { shift: groupRowHeight ?? 0, rowSize: rowHeight ?? estimatedRowHeight ?? 0 };
-}
-
-/** A layout info of the summary row, kept while its place and size stay the same. */
-function placeInfo(
-  previous: ReadonlyMap<Key, LayoutInfo>,
-  info: { type: string; key: Key; parentKey: Key; rect: Rect },
-) {
-  const kept = previous.get(info.key);
-  if (kept && kept.parentKey === info.parentKey && kept.rect.equals(info.rect)) return kept;
-  const placed = new LayoutInfo(info.type, info.key, info.rect);
-  placed.parentKey = info.parentKey;
-  placed.allowOverflow = true;
-  placed.zIndex = info.type === 'cell' ? 1 : 0;
-  return placed;
-}
-
-interface SummaryQuery {
-  layout: TableLayout<unknown>;
-  collection: TableCollection;
-  /** What React Aria's layout returned for the visible rectangle. */
-  infos: readonly LayoutInfo[];
-  rowSize: number;
-  previous: ReadonlyMap<Key, LayoutInfo>;
-}
-
-/** The cells of one summary row, placed under their columns from the column headers' layout. */
-function summaryCells(query: SummaryQuery, row: { key: Key; rect: Rect }) {
-  const { layout, collection, previous } = query;
-  const cells: LayoutInfo[] = [];
-  for (const cell of collection.getChildren?.(row.key) ?? []) {
-    if (cell.type !== 'cell') continue;
-    const first = cell.colIndex ?? cell.index;
-    const spanned = collection.columns.slice(first, first + (cell.colSpan ?? 1));
-    const columns = spanned.flatMap((column) => layout.getLayoutInfo(column.key) ?? []);
-    const start = columns[0]?.rect.x ?? row.rect.x;
-    const width = columns.reduce((sum, column) => sum + column.rect.width, 0);
-    const rect = new Rect(start, row.rect.y, width, row.rect.height);
-    cells.push(placeInfo(previous, { type: 'cell', key: cell.key, parentKey: row.key, rect }));
-  }
-  return cells;
+  return {
+    shift: groupRowHeight ?? 0,
+    rowSize: rowHeight ?? estimatedRowHeight ?? 0,
+  };
 }
 
 /**
- * The summary rows React Aria's layout left out of the visible rectangle, placed where its footer
- * row group reserves them. React Aria lays out only the rows in view, so without them the summary
- * row would leave the document, and assistive technology, while the reader scrolls (UIC-TABLE-12.1).
+ * A layout info moved below the group header row: the table header grows by the row's height to
+ * hold it above the column rows, and everything else moves down by it. Copies are kept per info.
  */
-function summaryInfos(query: SummaryQuery) {
-  const { collection, infos, rowSize, previous } = query;
-  const footer = [...collection].find((node) => node.type === 'tablefooter');
-  const group = footer && infos.find((info) => info.key === footer.key);
-  const header = infos.find((info) => info.type === 'header');
-  if (!footer || !group || !header) return [];
-  const shown = new Set(infos.map((info) => info.key));
-  const placed: LayoutInfo[] = [];
-  let y = group.rect.y;
-  for (const row of collection.getChildren?.(footer.key) ?? []) {
-    if (!shown.has(row.key)) {
-      const rect = new Rect(group.rect.x, y, header.rect.width, rowSize);
-      const info = placeInfo(previous, { type: 'row', key: row.key, parentKey: footer.key, rect });
-      placed.push(info, ...summaryCells(query, info));
-    }
-    y += rowSize;
+function moveBelowHeader({
+  info,
+  shift,
+  moved,
+}: {
+  info: LayoutInfo;
+  shift: number;
+  moved: WeakMap<LayoutInfo, LayoutInfo>;
+}) {
+  if (shift === 0) return info;
+  const kept = moved.get(info);
+  if (kept) {
+    kept.estimatedSize = info.estimatedSize;
+    return kept;
   }
-  return placed;
+  const copy = info.copy();
+  if (info.type === 'header') copy.rect.height += shift;
+  else copy.rect.y += shift;
+  moved.set(info, copy);
+  return copy;
 }
 
 /**
@@ -118,20 +81,7 @@ export function createTableLayout(): TableVirtualLayout {
   let { shift, rowSize } = readOptions(undefined);
   let moved = new WeakMap<LayoutInfo, LayoutInfo>();
   let summaries = new Map<Key, LayoutInfo>();
-  const move = (info: LayoutInfo) => {
-    if (shift === 0) return info;
-    const kept = moved.get(info);
-    if (kept) {
-      kept.estimatedSize = info.estimatedSize;
-      return kept;
-    }
-    const copy = info.copy();
-    // The table header holds the group row above its column rows; everything else moves down.
-    if (info.type === 'header') copy.rect.height += shift;
-    else copy.rect.y += shift;
-    moved.set(info, copy);
-    return copy;
-  };
+  const move = (info: LayoutInfo) => moveBelowHeader({ info, shift, moved });
   const collection = () => layout.virtualizer?.collection as TableCollection | undefined;
   const table: TableVirtualLayout = {
     get virtualizer() {
@@ -172,8 +122,12 @@ export function createTableLayout(): TableVirtualLayout {
       const size = layout.getContentSize();
       return shift === 0 ? size : new Size(size.width, size.height + shift);
     },
-    // The summary rows this layout places keep their row height; React Aria measures the rest.
-    updateItemSize: (key, size) => !summaries.has(key) && layout.updateItemSize(key, size),
+    // Only cells take measured heights: column headers keep the heading height, and the summary
+    // rows this layout places keep their row height until React Aria lays them out itself.
+    updateItemSize: (key, size) =>
+      !summaries.has(key) &&
+      layout.getLayoutInfo(key)?.type === 'cell' &&
+      layout.updateItemSize(key, size),
     getItemRect: (key) => table.getLayoutInfo(key)?.rect ?? null,
     getVisibleRect: () => layout.getVisibleRect(),
     getDropTargetFromPoint: (x, y, isValidDropTarget) =>
