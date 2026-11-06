@@ -36,6 +36,13 @@ Query terms are split as [Text Match](TEXT-MATCH.md) does, including `/`, `_` an
 Implementation: `src/components/transfer-list/use-transfer-list.ts`, `src/components/transfer-list/transfer-pane.tsx`
 Verification: `src/components/transfer-list/transfer-list.test.tsx`, `e2e/transfer-list.spec.ts`
 
+### UIC-TRANSFER-LIST-1.5 - Virtualization
+
+With `virtualized`, the root shall publish `data-virtualized` and each side's list view shall render only the rows in view ([UIC-LIST-ROW-3.6](LIST-ROW.md#uic-list-row-36---long-and-incrementally-loaded-lists)), each `rowHeight` pixels tall (default 48); the stylesheet bounds each list's height, and the sides scroll independently. Scrolling and the arrow keys reach a side's last row. Counts, filtering, selection, Ctrl+A, the move buttons, moving by double click or Enter, reordering and disabled items work on every row a side shows, mounted or not: moving all moves every shown movable row, and moved items keep their keys and become the selection of the side they land on. Switching between virtualized and static sides keeps the value and each side's selection.
+
+Implementation: `src/components/transfer-list/transfer-list.tsx`, `src/components/transfer-list/transfer-pane.tsx`
+Verification: `src/components/transfer-list/transfer-list.test.tsx`, `e2e/transfer-list.spec.ts`
+
 ## UIC-TRANSFER-LIST-2 - Moving
 
 ### UIC-TRANSFER-LIST-2.1 - Selection
@@ -111,3 +118,4 @@ Verification: `e2e/transfer-list.spec.ts`
 | `data-target`               | attribute | `available`, `chosen` | On a move button: the side the items move to.    |
 | `data-reorderable`          | state     | `true`                | On the root: the chosen side reorders.           |
 | `data-disabled`             | state     | `true`                | On the root: the list is disabled.               |
+| `data-virtualized`          | state     | `true`                | On the root: the sides render only rows in view. |

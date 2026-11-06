@@ -86,6 +86,8 @@ export {
   ColorSwatch,
   ColorSwatchPickerContext,
   ColorThumb,
+  ColorWheel,
+  ColorWheelTrack,
 } from './colors.js';
 export {
   Header,

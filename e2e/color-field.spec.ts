@@ -98,6 +98,47 @@ test.describe('Color Field lab', () => {
     await page.keyboard.press('Escape');
   });
 
+  test('UIC-COLOR-FIELD-1.5 edits the hue on a wheel by keyboard and pointer, keeping the rest', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('color-field');
+    const trigger = field(page, 'hue-wheel').locator('.ui-color-field__trigger');
+    await trigger.click();
+    const dialog = page.getByRole('dialog', { name: 'Tint' });
+    await expect(dialog).toHaveAttribute('data-hue-control', 'wheel');
+    const wheel = dialog.locator('.ui-color-field__wheel');
+    const box = await wheel.boundingBox();
+    if (!box) throw new Error('wheel not rendered');
+    expect(box.width).toBe(160);
+    expect(box.height).toBe(160);
+    await expect(dialog).not.toHaveAttribute('data-entering');
+    await lab.expectAccessible('.ui-color-field__popover');
+    await dialog.getByRole('slider', { name: 'Hue' }).focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(output(page, 'Tint')).toHaveText('hsba(201, 60%, 70%, 0.8)');
+    // Drag the thumb to the ring's top: in React Aria's wheel, 0 degrees sits at 3 o'clock and the
+    // hue grows clockwise, so the top of the ring is 270.
+    const thumb = wheel.locator('.ui-color-field__thumb');
+    const start = await thumb.boundingBox();
+    if (!start) throw new Error('thumb not rendered');
+    await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2, box.y + 10, { steps: 6 });
+    await page.mouse.up();
+    // The pointer lands within a few degrees of the top; saturation, brightness and alpha stay.
+    await expect(output(page, 'Tint')).toHaveText(/^hsba\(2(6[5-9]|7[0-5]), 60%, 70%, 0\.8\)$/);
+    await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: 'Use a hue slider' }).click();
+    await trigger.click();
+    await expect(page.getByRole('dialog', { name: 'Tint' })).toHaveAttribute(
+      'data-hue-control',
+      'slider',
+    );
+    await expect(page.locator('.ui-color-field__wheel')).toHaveCount(0);
+    await page.keyboard.press('Escape');
+  });
+
   test('UIC-COLOR-FIELD-2.2 clears an optional colour and keeps a required one', async ({
     page,
     lab,

@@ -245,6 +245,37 @@ test.describe('Tags Input lab', () => {
     await expect(output(page, 'Submitted')).toHaveText('Lyon, Turin');
   });
 
+  test('UIC-TAGS-INPUT-4.5 edits a tag in place by keyboard and pointer', async ({ page, lab }) => {
+    await lab.open('tags-input');
+    const stops = field(page, 'editing');
+    const lima = stops.getByRole('row', { name: 'Lima' });
+    await lima.nth(1).click();
+    await page.keyboard.press('F2');
+    const editor = stops.getByRole('textbox', { name: 'Edit Lima' });
+    await expect(editor).toBeFocused();
+    await expect(stops.locator('.ui-tags-input__group')).toHaveAttribute('data-editing', 'true');
+    await page.keyboard.type('cusco');
+    await page.keyboard.press('Enter');
+    await expect(editor).toHaveAttribute('aria-invalid', 'true');
+    await expect(editor).toHaveAccessibleDescription(/Start with a capital letter\./);
+    await expect(output(page, 'Stops')).toHaveText('Oslo | Lima | Lima | Quito');
+    await lab.expectAccessible('[data-lab-field="editing"]');
+    await editor.fill('Cusco');
+    await page.keyboard.press('Enter');
+    await expect(output(page, 'Stops')).toHaveText('Oslo | Lima | Cusco | Quito');
+    await expect(stops.getByRole('row', { name: 'Cusco' })).toBeFocused();
+    await stops.getByText('Oslo').dblclick();
+    await expect(stops.getByRole('textbox', { name: 'Edit Oslo' })).toBeFocused();
+    await page.keyboard.type('Bergen');
+    await page.keyboard.press('Escape');
+    await expect(output(page, 'Stops')).toHaveText('Oslo | Lima | Cusco | Quito');
+    await expect(stops.getByRole('row', { name: 'Oslo' })).toBeFocused();
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('Backspace');
+    await page.keyboard.press('Enter');
+    await expect(output(page, 'Stops')).toHaveText('Lima | Cusco | Quito');
+  });
+
   test('UIC-TAGS-INPUT-1.3 passes axe in the dark theme', async ({ page, lab }) => {
     await lab.open('tags-input', { theme: 'dark' });
     await expect(cell(page, 'invalid').locator('.ui-tags-input__group')).toHaveCSS(

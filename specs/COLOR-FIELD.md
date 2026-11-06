@@ -32,6 +32,13 @@ Verification: `src/components/color-field/color-field.test.tsx`, `e2e/color-fiel
 Implementation: `src/components/color-field/color-field.tsx`
 Verification: `src/components/color-field/color-field.test.tsx`
 
+### UIC-COLOR-FIELD-1.5 - Hue wheel
+
+`hueControl` shall choose how the picker edits the hue: `slider` (the default) draws the hue slider of UIC-COLOR-FIELD-1.3, and `wheel` draws in its place a React Aria colour wheel (`ui-color-field__wheel`) with its ring (`ui-color-field__wheel-track`) and thumb (`ui-color-field__thumb`), whose input is the slider named `Hue`. The dialog publishes the choice as `data-hue-control`. Dragging the thumb around the ring, or the arrow keys, Page Up and Page Down on it, change the hue alone, wrapping from 359 to 0 and back, and keep the saturation, brightness and alpha. The wheel is 160 pixels across with a 20-pixel ring, geometry its thumb follows; its inline gradient, size and thumb position are values the picker draws, and the stylesheet owns its look. The area, alpha slider, inputs, swatches, eye dropper and Clear stay as they are. Switching `hueControl` while the picker is open keeps the colour, the draft and the open picker, and moves focus from the hue control it replaces to the new one.
+
+Implementation: `src/components/color-field/color-field-panel.tsx`, `src/components/color-field/color-field.tsx`, `src/primitives/colors.ts`, `labs/reference/color-field.css`
+Verification: `src/components/color-field/color-field-panel.test.tsx`, `e2e/color-field.spec.ts`
+
 ## UIC-COLOR-FIELD-2 - Value
 
 ### UIC-COLOR-FIELD-2.1 - Picking and committing
@@ -137,6 +144,8 @@ Verification: `src/components/form/form-validity.test.tsx`, `e2e/form.spec.ts`
 | `ui-color-field__area`          | slot      |                                                                                        | The saturation and brightness area.                                               |
 | `ui-color-field__format`        | slot      |                                                                                        | The format choice (also `ui-segmented-choice`).                                   |
 | `ui-color-field__slider`        | slot      |                                                                                        | The hue or alpha slider.                                                          |
+| `ui-color-field__wheel`         | slot      |                                                                                        | With `hueControl="wheel"`: the hue wheel.                                         |
+| `ui-color-field__wheel-track`   | slot      |                                                                                        | The hue wheel's ring.                                                             |
 | `ui-color-field__track`         | slot      |                                                                                        | A slider's track.                                                                 |
 | `ui-color-field__thumb`         | slot      |                                                                                        | A thumb of the area or the slider.                                                |
 | `ui-color-field__channels`      | slot      |                                                                                        | Holds the format's inputs.                                                        |
@@ -147,6 +156,7 @@ Verification: `src/components/form/form-validity.test.tsx`, `e2e/form.spec.ts`
 | `ui-color-field__eye-dropper`   | slot      |                                                                                        | The eye dropper button (also `ui-button`).                                        |
 | `ui-color-field__swatches`      | slot      |                                                                                        | The preset swatches (also `ui-color-swatch-picker`).                              |
 | `ui-color-field__clear`         | slot      |                                                                                        | The Clear button (also `ui-button`).                                              |
+| `data-hue-control`              | attribute | `slider`, `wheel`                                                                      | On the dialog: how the picker edits the hue.                                      |
 | `data-placeholder`              | state     | `true`                                                                                 | On the text: no colour is set, so it shows the placeholder.                       |
 | `data-layer`                    | attribute | `dropdown`                                                                             | On the popover: its overlay layer; the z-index is set inline from it.             |
 | `data-placement`                | state     | `top`, `bottom`, `left`, `right`, `center`                                             | On the popover: the side it opened on (React Aria).                               |

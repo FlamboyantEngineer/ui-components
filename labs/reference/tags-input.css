@@ -82,3 +82,22 @@
 .ui-tags-input__input[data-disabled] {
   cursor: not-allowed;
 }
+
+/* A tag's editor takes the tag's place at the tag's height, framed like the field's input. */
+.ui-tags-input__editor {
+  box-sizing: border-box;
+  width: 12ch;
+  min-width: 4ch;
+  height: calc(var(--ref-control-height) - 10px);
+  padding: 0 4px;
+  border: 1px solid var(--ref-focus);
+  border-radius: var(--ref-radius-sm);
+  background: var(--ref-field-fill);
+  color: inherit;
+  font: inherit;
+  outline: none;
+}
+
+.ui-tags-input__editor[aria-invalid='true'] {
+  border-color: var(--ref-danger);
+}

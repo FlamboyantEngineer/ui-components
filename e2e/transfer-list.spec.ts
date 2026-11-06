@@ -111,6 +111,31 @@ test.describe('Transfer List lab', () => {
     await field(page, 'columns').getByRole('row', { name: 'Owner' }).click();
     await lab.expectAccessible();
   });
+  test('UIC-TRANSFER-LIST-1.5 virtualized sides render bounded rows and reach the last record', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('transfer-list');
+    const records = field(page, 'records');
+    await expect(records).toHaveAttribute('data-virtualized', 'true');
+    const available = records.getByRole('grid', { name: 'Available' });
+    await expect(available.getByRole('row').first()).toBeVisible();
+    expect(await available.getByRole('row').count()).toBeLessThan(40);
+    await available.getByRole('row').first().click();
+    await page.keyboard.press('End');
+    await expect(available.getByRole('row', { name: 'Record 5000' })).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(output(page, 'records')).toHaveText('1 chosen');
+    await records.getByRole('button', { name: 'Move all to chosen' }).click();
+    await expect(output(page, 'records')).toHaveText('5000 chosen');
+    const chosen = records.getByRole('grid', { name: 'Chosen' });
+    await expect(chosen.locator('.ui-transfer-list__count')).toHaveCount(0);
+    await expect(records.locator('[data-side="chosen"] .ui-transfer-list__count')).toHaveText(
+      '5,000 items, 4,999 selected',
+    );
+    expect(await chosen.getByRole('row').count()).toBeLessThan(40);
+    await lab.expectAccessible('[data-lab-field="records"]');
+  });
 });
 
 test('UIC-TRANSFER-LIST-3.1 keeps row handles and checkboxes left of vertically centered content', async ({

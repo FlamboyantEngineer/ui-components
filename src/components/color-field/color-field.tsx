@@ -18,7 +18,7 @@ import {
 } from '../field/field.js';
 import { ColorEntry } from './color-field-entry.js';
 import { colorFieldHooks as hooks } from './color-field-hooks.js';
-import { ColorFieldPanel } from './color-field-panel.js';
+import { type ColorFieldHueControl, ColorFieldPanel } from './color-field-panel.js';
 import {
   type ColorFieldFormat,
   formatColor,
@@ -61,6 +61,8 @@ export interface ColorFieldProps extends FieldInputProps<string | null>, ColorFi
   allowsEyeDropper?: boolean | undefined;
   /** Draws a text input to type a colour into beside a swatch button, instead of a text trigger. */
   allowsTyping?: boolean | undefined;
+  /** How the picker edits the hue: a slider (the default) or a wheel. */
+  hueControl?: ColorFieldHueControl | undefined;
 }
 
 interface ColorTriggerProps {
@@ -160,6 +162,7 @@ export function ColorField({
   allowsEyeDropper = false,
   allowsTyping = false,
   allowsTransparency = false,
+  hueControl = 'slider',
   placeholder,
   autoComplete,
   inputMode,
@@ -175,6 +178,9 @@ export function ColorField({
   const shownPlaceholder = placeholder ?? strings.noColor;
   const picker = usePickerOpen(state);
   const showsAlpha = useShowsAlpha(allowsTransparency, color, picker.isOpen);
+  const triggerText = color
+    ? formatColor(color, shownFormat, allowsTransparency)
+    : shownPlaceholder;
   return (
     <Field
       {...field}
@@ -204,14 +210,7 @@ export function ColorField({
                 textInput={{ autoComplete, inputMode, spellCheck, enterKeyHint }}
               />
             ) : (
-              <ColorTrigger
-                control={control}
-                state={state}
-                color={color}
-                text={
-                  color ? formatColor(color, shownFormat, allowsTransparency) : shownPlaceholder
-                }
-              />
+              <ColorTrigger control={control} state={state} color={color} text={triggerText} />
             )}
             <ColorFieldPanel
               label={field.label}
@@ -222,6 +221,7 @@ export function ColorField({
               showsAlpha={showsAlpha}
               swatches={swatches}
               allowsEyeDropper={allowsEyeDropper}
+              hueControl={hueControl}
             />
           </DialogTrigger>
           <FieldFormValue name={props.name} value={state.value} isDisabled={state.isDisabled} />
@@ -231,4 +231,5 @@ export function ColorField({
   );
 }
 
+export type { ColorFieldHueControl } from './color-field-panel.js';
 export type { ColorFieldFormat } from './color-values.js';

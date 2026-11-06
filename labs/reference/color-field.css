@@ -278,3 +278,12 @@
 .ui-color-field[data-validation='warning'] .ui-color-field__group {
   border-color: var(--ref-warning);
 }
+
+/* The hue wheel sits centred in the picker; React Aria sizes it from its radii. */
+.ui-color-field__wheel {
+  justify-self: center;
+}
+
+.ui-color-field__wheel-track {
+  border-radius: 50%;
+}

@@ -6,6 +6,7 @@ import {
   checkGivenTags,
   checkTag,
   hasTagDelimiter,
+  replaceTag,
   resolveTagEntry,
   splitTagText,
   type TagRules,
@@ -175,5 +176,27 @@ describe('tag entry', () => {
     });
     expect(checkTag('ada@example.com', [], checked)).toBeNull();
     expect(checkTag('ada', [], { ...rules, validateTag: () => '' })).toBeNull();
+  });
+
+  it('UIC-TAGS-INPUT-4.5 replaces a tag checked against the other tags only', () => {
+    const value = ['Apple', 'Fig'];
+    expect(replaceTag({ value, index: 1, text: ' Fig ', rules })).toEqual({ ok: true, value });
+    expect(replaceTag({ value, index: 1, text: 'Pear', rules })).toEqual({
+      ok: true,
+      value: ['Apple', 'Pear'],
+    });
+    expect(replaceTag({ value, index: 0, text: '  ', rules })).toEqual({
+      ok: true,
+      value: ['Fig'],
+    });
+    expect(replaceTag({ value, index: 0, text: 'Fig', rules })).toMatchObject({
+      ok: false,
+      issue: { message: '“Fig” is already added.' },
+    });
+    const capped = { ...rules, maxValues: 2 };
+    expect(replaceTag({ value, index: 0, text: 'Kiwi', rules: capped })).toMatchObject({
+      ok: true,
+    });
+    expect(value).toEqual(['Apple', 'Fig']);
   });
 });

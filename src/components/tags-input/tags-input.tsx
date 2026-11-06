@@ -6,18 +6,23 @@ import { useUiStrings } from '../../core/provider.js';
 import {
   Field,
   type FieldInputProps,
+  type FieldIssue,
+  type FieldState,
   type FieldTextInputProps,
   useFieldControl,
 } from '../field/field.js';
+import { useTagEditing } from './tag-editor.js';
 import {
   checkGivenTags,
   checkTag,
   hasNoTagText,
   hasTagDelimiter,
+  replaceTag,
   resolveTagEntry,
   type TagRules,
 } from './tag-entry.js';
-import { TagsInputControl, tagsInputHooks as hooks } from './tags-input-parts.js';
+import { tagsInputHooks as hooks } from './tags-input-hooks.js';
+import { TagsInputControl } from './tags-input-parts.js';
 
 export interface TagsInputProps extends FieldInputProps<string[]>, FieldTextInputProps {
   /** The text typed in the input and not yet added, controlled. */
@@ -34,6 +39,8 @@ export interface TagsInputProps extends FieldInputProps<string[]>, FieldTextInpu
   validateTag?: ((tag: string) => string | null | undefined) | undefined;
   /** Adds the typed text as a tag when focus leaves the input. */
   addOnBlur?: boolean | undefined;
+  /** Lets the reader edit a tag in place: Enter or F2 on a focused tag, or a double click. */
+  allowsEditing?: boolean | undefined;
 }
 
 /** The tag a field refused and the input text that still holds it. */
@@ -43,6 +50,24 @@ interface TagAttempt {
 }
 
 const defaultDelimiters: readonly string[] = [','];
+
+/** Applies an edit of the tag at `index` as one committed change, or returns why it is refused. */
+function acceptTagEdit(
+  state: FieldState<string[]>,
+  edit: { index: number; text: string; rules: TagRules },
+): FieldIssue | null {
+  const result = replaceTag({ value: state.value, ...edit });
+  if (!result.ok) {
+    // A refused edit is the reader's, so the field shows why whatever its mode.
+    state.revealValidation();
+    return result.issue;
+  }
+  if (result.value !== state.value) {
+    state.setValue([...result.value]);
+    state.commit();
+  }
+  return null;
+}
 
 /**
  * A field for a list of free-text values: typed text becomes a tag on Enter, on a delimiter or when
@@ -63,6 +88,7 @@ export function TagsInput({
   allowsDuplicates = false,
   validateTag,
   addOnBlur = false,
+  allowsEditing = false,
   ...props
 }: TagsInputProps) {
   const strings = useUiStrings();
@@ -72,13 +98,21 @@ export function TagsInput({
   // A refusal shows while the input still holds its text, checked against the current tags.
   const findRejection = (value: readonly string[]) =>
     attempt?.text === text ? checkTag(attempt.tag, value, rules) : null;
+  const [editIssue, setEditIssue] = useState<FieldIssue | null>(null);
   const { state, field, rest } = useFieldControl(props, {
     initialValue: [],
     emptyValue: [],
     isEmpty: hasNoTagText,
-    check: (value) => findRejection(value) ?? checkGivenTags(value, rules),
+    check: (value) => findRejection(value) ?? editIssue ?? checkGivenTags(value, rules),
   });
-  const rejection = findRejection(state.value);
+  const editing = useTagEditing({
+    value: state.value,
+    isEnabled: allowsEditing && !state.isReadOnly && !state.isDisabled,
+    accept: (index, text) => acceptTagEdit(state, { index, text, rules }),
+  });
+  // The open edit's refusal is the field's until the edit changes or ends.
+  if (editIssue !== editing.issue) setEditIssue(editing.issue);
+  const rejection = findRejection(state.value) ?? editing.issue;
   const enter = (entered: string, keepLast: boolean) => {
     if (state.isReadOnly || state.isDisabled) return;
     const result = resolveTagEntry(entered, { keepLast, value: state.value, rules });
@@ -116,6 +150,7 @@ export function TagsInput({
           entry={entry}
           textInput={{ placeholder, autoComplete, inputMode, spellCheck, enterKeyHint }}
           name={rest.name}
+          editing={allowsEditing ? editing : null}
         />
       )}
     </Field>

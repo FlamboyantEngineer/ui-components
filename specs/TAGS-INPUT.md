@@ -122,18 +122,32 @@ Verification: `src/components/tags-input/tags-input.test.tsx`, `e2e/tags-input.s
 Implementation: `src/components/tags-input/tags-input.tsx`, `src/components/field/field.tsx`
 Verification: `src/components/tags-input/tags-input.test.tsx`, `e2e/tags-input.spec.ts`
 
+### UIC-TAGS-INPUT-4.5 - Editing a tag
+
+With `allowsEditing`, on an editable field Enter or F2 on a focused tag, or a double click on a tag, shall open an editor in the tag's place: a text input (`ui-tags-input__editor`) named by the provider string `editValue` with the tag ("Edit Fig"), holding the tag's text, focused and selected, while the frame publishes `data-editing` and no tag offers removal. The editor's keys stay with it (the tags do not move, select or remove), and keys an input method composes stay with the input method. The draft is kept apart from the value until it is accepted:
+
+- Enter accepts the draft, trimmed, in the tag's place, as one committed change (one undo step), and returns focus to the tag. An unchanged draft changes nothing; an empty draft removes the tag, focus moving to the tag that takes its place.
+- The draft is checked as a new tag against the other tags (UIC-TAGS-INPUT-3.1), so the tag's own text never counts as its duplicate and `allowsDuplicates` keeps equal tags as separate occurrences. A refused draft keeps the editor open, invalid (`aria-invalid`) and described by the field's message, which shows the refusal until the draft changes, and the value keeps the tag's accepted text.
+- Escape restores the tag and returns focus to it; leaving the editor accepts the draft, or restores the tag when the field refuses it.
+- An edit ends, keeping the value as it is, when its tag leaves its place in the value (a controlled replacement, reset, restore or removal) or the field becomes read-only or disabled. Without `allowsEditing`, or on a read-only or disabled field, no editor opens.
+
+Implementation: `src/components/tags-input/tag-editor.tsx`, `src/components/tags-input/tags-input.tsx`, `src/components/tags-input/tag-entry.ts`
+Verification: `src/components/tags-input/tags-input.test.tsx`, `src/components/tags-input/tag-entry.test.ts`, `e2e/tags-input.spec.ts`
+
 ## Hooks
 
-| Hook                   | Kind  | Values | Description                                                         |
-| ---------------------- | ----- | ------ | ------------------------------------------------------------------- |
-| `ui-tags-input`        | root  |        | The field's root (also `ui-field`).                                 |
-| `ui-tags-input__group` | slot  |        | The frame around the tags and the input (role `presentation`).      |
-| `ui-tags-input__tags`  | slot  |        | The tags (also `ui-tag-group`); absent while there is none.         |
-| `ui-tags-input__input` | slot  |        | The text `<input>`.                                                 |
-| `data-invalid`         | state | `true` | On the group and the input: invalid (React Aria).                   |
-| `data-disabled`        | state | `true` | On the group and the input: disabled (React Aria).                  |
-| `data-readonly`        | state | `true` | On the group: read-only (React Aria).                               |
-| `data-hovered`         | state | `true` | On the group and the input: under the pointer (React Aria).         |
-| `data-focus-within`    | state | `true` | On the group: focus is inside it (React Aria).                      |
-| `data-focused`         | state | `true` | On the input: focused (React Aria).                                 |
-| `data-focus-visible`   | state | `true` | On the group and the input: focused from the keyboard (React Aria). |
+| Hook                    | Kind  | Values | Description                                                         |
+| ----------------------- | ----- | ------ | ------------------------------------------------------------------- |
+| `ui-tags-input`         | root  |        | The field's root (also `ui-field`).                                 |
+| `ui-tags-input__group`  | slot  |        | The frame around the tags and the input (role `presentation`).      |
+| `ui-tags-input__tags`   | slot  |        | The tags (also `ui-tag-group`); absent while there is none.         |
+| `ui-tags-input__input`  | slot  |        | The text `<input>`.                                                 |
+| `ui-tags-input__editor` | slot  |        | The text `<input>` that edits a tag, in its place.                  |
+| `data-editing`          | state | `true` | On the group: a tag's editor is open.                               |
+| `data-invalid`          | state | `true` | On the group and the input: invalid (React Aria).                   |
+| `data-disabled`         | state | `true` | On the group and the input: disabled (React Aria).                  |
+| `data-readonly`         | state | `true` | On the group: read-only (React Aria).                               |
+| `data-hovered`          | state | `true` | On the group and the input: under the pointer (React Aria).         |
+| `data-focus-within`     | state | `true` | On the group: focus is inside it (React Aria).                      |
+| `data-focused`          | state | `true` | On the input: focused (React Aria).                                 |
+| `data-focus-visible`    | state | `true` | On the group and the input: focused from the keyboard (React Aria). |
