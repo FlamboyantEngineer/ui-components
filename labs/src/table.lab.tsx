@@ -11,7 +11,6 @@ import { DeleteGlyph, EditGlyph } from '../../src/core/glyphs.js';
 import type { Key, Selection, SortDescriptor } from '../../src/core/props.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { GroupKeyTable, ObjectKeyTable, TypedTable } from './collection-identity-cases.js';
-import { MountOnDemand } from './lab-form.js';
 import { LabOutput } from './lab-output.js';
 import {
   CallerFilter,
@@ -620,9 +619,7 @@ mountLab(
       title="Pinned rows"
       description="Bed 3 stays under the sticky header and Bed 14 above the summary while the body scrolls, outside the filter and the sort. Each row's menu pins it to the top or the bottom, or unpins it; pinned rows still select and edit (double-click a name)."
     >
-      <MountOnDemand label="the pinned rows table">
-        <PinnedRows />
-      </MountOnDemand>
+      <PinnedRows />
     </LabSection>
     <LabSection
       title="Virtualized"

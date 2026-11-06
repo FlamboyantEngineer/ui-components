@@ -36,6 +36,7 @@ import type { TableChildRows } from './table-tree.js';
 import type { TableCellEdit } from './use-cell-editing.js';
 import type { TableSpreadsheetProps } from './use-cell-selection.js';
 import { useContentWidths } from './use-content-widths.js';
+import { useOrderedDropKeys } from './use-ordered-drop-keys.js';
 import type { TableGroupingProps } from './use-table-expansion.js';
 import { type TableGrid, useTableGrid } from './use-table-grid.js';
 import type { TableReorderOptions } from './use-table-reorder.js';
@@ -231,10 +232,9 @@ function TableGridElement<T extends TableRow>({
   const header = createHeaderModel(grid, options, contentWidths);
   // React Aria keeps the hooks a table mounts with, so they stay and are disabled while it does
   // not reorder: turning reordering or grouping on and off keeps the rows mounted.
-  const { dragAndDropHooks } = useDragAndDrop<T>({
-    ...grid.dragAndDrop,
-    isDisabled: reordering === null,
-  });
+  const dragAndDropHooks = useOrderedDropKeys(
+    useDragAndDrop<T>({ ...grid.dragAndDrop, isDisabled: reordering === null }).dragAndDropHooks,
+  );
   const gridRef = useKeptCollectionAttributes<HTMLTableElement>(ariaProps);
   return (
     <AriaTable
