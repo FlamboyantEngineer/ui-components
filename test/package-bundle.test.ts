@@ -1,63 +1,21 @@
 // @vitest-environment node
-import {
-  existsSync,
-  mkdirSync,
-  mkdtempSync,
-  readFileSync,
-  renameSync,
-  rmSync,
-  writeFileSync,
-} from 'node:fs';
-import { createRequire } from 'node:module';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import TerserPlugin from 'terser-webpack-plugin';
 import { expect, it } from 'vitest';
-import { webpack } from 'webpack';
-// @ts-expect-error The scripts are plain JavaScript modules without declarations.
-import { packTarball } from '../scripts/lib/npm.mjs';
-// @ts-expect-error The scripts are plain JavaScript modules without declarations.
-import { extractTarGz } from '../scripts/lib/tar.mjs';
+import {
+  bundleConsumer as bundle,
+  installPackedConsumer,
+  // @ts-expect-error The scripts are plain JavaScript modules without declarations.
+} from '../scripts/lib/consumer-bundle.mjs';
 import * as glyphPaths from '../src/core/glyph-paths.js';
 
 const root = process.cwd();
-const require = createRequire(import.meta.url);
 const cssImport = "import '@flamboyantengineer/ui-components/reference.css';";
 
 async function bundleConsumer(consumer: string, contents: string): Promise<string> {
-  writeFileSync(join(consumer, 'entry.js'), contents);
-  const compiler = webpack({
-    mode: 'production',
-    context: consumer,
-    entry: './entry.js',
-    output: { path: join(consumer, 'output'), filename: 'bundle.js' },
-    cache: false,
-    devtool: false,
-    resolve: { modules: [join(consumer, 'node_modules'), join(root, 'node_modules')] },
-    module: {
-      rules: [
-        { test: /\.css$/, use: [require.resolve('style-loader'), require.resolve('css-loader')] },
-      ],
-    },
-    // Run the production minifier in this worker rather than spawning unbounded workers.
-    optimization: { minimizer: [new TerserPlugin({ parallel: false })] },
-  });
-  if (!compiler) throw new Error('Webpack did not create a compiler');
-  try {
-    await new Promise<void>((resolve, reject) => {
-      compiler.run((error, stats) => {
-        if (error) reject(error);
-        else if (!stats || stats.hasErrors()) {
-          reject(new Error(stats?.toString({ all: false, errors: true }) ?? 'No webpack result'));
-        } else resolve();
-      });
-    });
-    return readFileSync(join(consumer, 'output/bundle.js'), 'utf8');
-  } finally {
-    await new Promise<void>((resolve, reject) => {
-      compiler.close((error) => (error ? reject(error) : resolve()));
-    });
-  }
+  const { code } = (await bundle(consumer, contents)) as { code: string };
+  return code;
 }
 
 it('UIC-LABS-1.6 UIC-HOOKS-3.1 retains the exported CSS in production while removing unused JavaScript', async () => {
@@ -69,16 +27,7 @@ it('UIC-LABS-1.6 UIC-HOOKS-3.1 retains the exported CSS in production while remo
   }
   const consumer = mkdtempSync(join(tmpdir(), 'ui-package-bundle-'));
   try {
-    const { filename } = packTarball(root, consumer) as { filename: string };
-    extractTarGz(join(consumer, filename), consumer);
-    const scope = join(consumer, 'node_modules/@flamboyantengineer');
-    mkdirSync(scope, { recursive: true });
-    const installed = join(scope, 'ui-components');
-    renameSync(join(consumer, 'package'), installed);
-    writeFileSync(
-      join(consumer, 'package.json'),
-      JSON.stringify({ private: true, type: 'module' }),
-    );
+    const installed = installPackedConsumer(consumer) as string;
 
     const cssOnly = await bundleConsumer(consumer, cssImport);
     expect(cssOnly).toContain('.ui-button');

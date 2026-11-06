@@ -55,6 +55,13 @@ Hosted CI shall build the labs once, in one job, and hand the build to the brows
 Implementation: `.github/workflows/ci.yml`, `playwright.config.ts`
 Verification: `test/package.test.ts`
 
+### UIC-LABS-1.8 - Consumer bundle budgets
+
+`npm run check:bundle-size` shall install the packed package into a scratch consumer and bundle a representative matrix under production webpack, keeping React and its runtime external in every consumer: `Button` as a root named import and from its component entry, the same with the explicit `reference.css` import, `TextField`, `Table`, `Markdown`, `RichTextEditor`, `PdfViewer` with `pdfjs-dist` loaded as a lazy chunk, and `MathPreview`. It shall measure each consumer's initial code raw and gzipped, compare it with the reviewed baseline in `scripts/bundle-budgets.json`, and fail any consumer that grew by more than the file's allowance (the larger of 5% and 2 KB), printing the consumer's largest modules grouped by library area or dependency package. The `Button`, `TextField`, `Table` and `Markdown` consumers shall bundle no rich-text, PDF or math code and no language file other than English, eagerly or as a chunk, while the styled consumer keeps the reference rules; the feature consumers shall hold their feature's dependency, so a broken measurement fails. `--update` rewrites the baselines and `--report <file>` writes the sizes and attribution as JSON. `npm run check` runs it after the build, so hosted CI checks every pull request.
+
+Implementation: `scripts/check-bundle-size.mjs`, `scripts/bundle-budgets.json`, `scripts/lib/bundle-budgets.mjs`, `scripts/lib/consumer-bundle.mjs`, `scripts/check.mjs`
+Verification: `test/bundle-budgets.test.ts`, `test/package-bundle.test.ts`
+
 ## UIC-LABS-2 - Chrome
 
 ### UIC-LABS-2.1 - Stylesheet picker

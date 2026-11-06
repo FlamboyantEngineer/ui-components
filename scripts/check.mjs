@@ -18,7 +18,7 @@ const STAGES = [
     'build',
     'build:labs',
   ],
-  ['test', 'check:public-types', 'check:package', 'pack:labs'],
+  ['test', 'check:public-types', 'check:package', 'check:bundle-size', 'pack:labs'],
 ];
 
 function run(script) {

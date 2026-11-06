@@ -161,15 +161,11 @@ interface UiRouter {
   useHref?: UiHref | undefined;
 }
 
-interface UiContextValue {
-  glyphs: Partial<GlyphMap>;
+/** Built-in text in one language: changing the messages or the locale changes all three together. */
+interface UiText {
   messages: UiMessages;
   locale: string;
   strings: UiStrings;
-  renderLink: UiLinkRenderer;
-  router: UiRouter;
-  storage: UiStorage;
-  clock: UiClock;
 }
 
 /** The clock and time zone a provider supplies; unset values fall back to the device's. */
@@ -186,20 +182,22 @@ const renderAnchor: UiLinkRenderer = (props) => <a {...props} />;
  */
 const navigateNatively: UiNavigate = (href) => window.location.assign(href);
 
-const defaultContext: UiContextValue = {
-  glyphs: {},
+const defaultText: UiText = {
   messages: en,
   locale: DEFAULT_LOCALE,
   get strings() {
     return getDefaultStrings();
   },
-  renderLink: renderAnchor,
-  router: { navigate: navigateNatively },
-  storage: createMemoryStorage(),
-  clock: { getNow: () => new Date(), timeZone: undefined },
 };
 
-const UiContext = createContext<UiContextValue>(defaultContext);
+// One context per service that changes on its own, so a change to one (a new storage adapter, a
+// clock) re-renders only the components reading it (UIC-PROVIDER-1.3).
+const GlyphContext = createContext<Partial<GlyphMap>>({});
+const TextContext = createContext<UiText>(defaultText);
+const LinkContext = createContext<UiLinkRenderer>(renderAnchor);
+const RouterContext = createContext<UiRouter>({ navigate: navigateNatively });
+const StorageContext = createContext<UiStorage>(createMemoryStorage());
+const ClockContext = createContext<UiClock>({ getNow: () => new Date(), timeZone: undefined });
 
 const noOption = {};
 
@@ -213,8 +211,8 @@ function useShallowStableOption<T extends object>(option: T | undefined): T | un
  * Supplies glyphs, text, locale, link rendering and storage to every component below it.
  * Components work without a provider, using Heroicons, English text and in-memory storage.
  * Nested providers merge over their parent. Changing any option re-renders the components below
- * without remounting them: the locale and router wrappers are always present, and inherit the
- * outer ones while their option is absent.
+ * that read it, without remounting them: the locale, router and service wrappers are always
+ * present, and inherit the outer ones while their option is absent.
  */
 export function UiProvider({
   icons: iconsProp,
@@ -228,60 +226,47 @@ export function UiProvider({
   timeZone,
   children,
 }: UiProviderProps) {
-  const parent = useContext(UiContext);
+  const parentGlyphs = useContext(GlyphContext);
+  const parentText = useContext(TextContext);
+  const parentRouter = useContext(RouterContext);
+  const parentClock = useContext(ClockContext);
+  const parentRenderLink = useContext(LinkContext);
+  const parentStorage = useContext(StorageContext);
   const icons = useShallowStableOption(iconsProp);
   const messages = useShallowStableOption(messagesProp);
   // The locale React Aria uses below: this provider's, else the outer one's (a parent provider's,
   // a host's I18nProvider or the browser's), so the text formats as the components do.
   const outerLocale = useLocale().locale;
   const resolvedLocale = locale ?? outerLocale;
-  const text = useMemo(() => {
-    const merged = messages ? { ...parent.messages, ...omitUndefined(messages) } : parent.messages;
-    const isSameText = merged === parent.messages && resolvedLocale === parent.locale;
+  const text = useMemo<UiText>(() => {
+    const merged = messages
+      ? { ...parentText.messages, ...omitUndefined(messages) }
+      : parentText.messages;
+    if (merged === parentText.messages && resolvedLocale === parentText.locale) return parentText;
     return {
       messages: merged,
       locale: resolvedLocale,
-      strings: isSameText ? parent.strings : compileStrings(merged, resolvedLocale),
+      strings: compileStrings(merged, resolvedLocale),
     };
-  }, [parent.messages, parent.locale, parent.strings, messages, resolvedLocale]);
+  }, [parentText, messages, resolvedLocale]);
+  const glyphs = useMemo(
+    () => (icons ? { ...parentGlyphs, ...omitUndefined(icons) } : parentGlyphs),
+    [icons, parentGlyphs],
+  );
   // Each field merges over the outer provider's, as every other option does.
   const router = useMemo(
     () =>
       navigate || useHref
-        ? {
-            navigate: navigate ?? parent.router.navigate,
-            useHref: useHref ?? parent.router.useHref,
-          }
-        : parent.router,
-    [navigate, useHref, parent.router],
+        ? { navigate: navigate ?? parentRouter.navigate, useHref: useHref ?? parentRouter.useHref }
+        : parentRouter,
+    [navigate, useHref, parentRouter],
   );
   const clock = useMemo(
     () =>
       getNow || timeZone
-        ? { getNow: getNow ?? parent.clock.getNow, timeZone: timeZone ?? parent.clock.timeZone }
-        : parent.clock,
-    [getNow, timeZone, parent.clock],
-  );
-  const value = useMemo<UiContextValue>(
-    () => ({
-      ...text,
-      glyphs: icons ? { ...parent.glyphs, ...omitUndefined(icons) } : parent.glyphs,
-      renderLink: renderLink ?? parent.renderLink,
-      router,
-      storage: storage ?? parent.storage,
-      clock,
-    }),
-    [
-      text,
-      parent.glyphs,
-      parent.renderLink,
-      parent.storage,
-      icons,
-      renderLink,
-      router,
-      storage,
-      clock,
-    ],
+        ? { getNow: getNow ?? parentClock.getNow, timeZone: timeZone ?? parentClock.timeZone }
+        : parentClock,
+    [getNow, timeZone, parentClock],
   );
   // The same wrappers whatever the options, so adding or removing one never remounts the children.
   return (
@@ -291,7 +276,17 @@ export function UiProvider({
         {...(router.useHref ? { useHref: router.useHref } : {})}
       >
         <OverlayPresenceScope>
-          <UiContext value={value}>{children}</UiContext>
+          <TextContext value={text}>
+            <GlyphContext value={glyphs}>
+              <LinkContext value={renderLink ?? parentRenderLink}>
+                <RouterContext value={router}>
+                  <StorageContext value={storage ?? parentStorage}>
+                    <ClockContext value={clock}>{children}</ClockContext>
+                  </StorageContext>
+                </RouterContext>
+              </LinkContext>
+            </GlyphContext>
+          </TextContext>
         </OverlayPresenceScope>
       </RouterProvider>
     </I18nProvider>
@@ -300,12 +295,12 @@ export function UiProvider({
 
 /** Resolves a provider override, using the supplied default when the key is unlisted. */
 export function useGlyph(name: GlyphName, fallback: GlyphComponent): GlyphComponent {
-  return useContext(UiContext).glyphs[name] ?? fallback;
+  return useContext(GlyphContext)[name] ?? fallback;
 }
 
 /** The built-in text in the provider's language. */
 export function useUiStrings(): UiStrings {
-  return useContext(UiContext).strings;
+  return useContext(TextContext).strings;
 }
 
 /**
@@ -313,23 +308,23 @@ export function useUiStrings(): UiStrings {
  * follow the same plural rules, numbers and lists as the built-in text.
  */
 export function useFormatMessage(): UiFormatMessage {
-  const { locale } = useContext(UiContext);
+  const { locale } = useContext(TextContext);
   return useCallback((message, values) => formatMessage(message, values, locale), [locale]);
 }
 
 /** The provider's clock and time zone, inherited from outer providers. */
 export function useUiClock(): UiClock {
-  return useContext(UiContext).clock;
+  return useContext(ClockContext);
 }
 
 /** The storage adapter for persisted layout state. */
 export function useUiStorage(): UiStorage {
-  return useContext(UiContext).storage;
+  return useContext(StorageContext);
 }
 
 /** Renders a link through the provider's link renderer. */
 export function UiLink(props: UiLinkProps) {
-  return useContext(UiContext).renderLink(props);
+  return useContext(LinkContext)(props);
 }
 
 /** Draws an imported icon as decoration (hidden from assistive technology). */
