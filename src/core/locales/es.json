@@ -596,6 +596,8 @@
   "noItems": "Sin elementos",
   "moveSelectedTo": "Mover la selección a {label}",
   "moveAllTo": "Mover todo a {label}",
+  "cascaderLoadFailed": "No se pudieron cargar estas opciones",
+  "cascaderPathSeparator": "/",
   "addCard": "Añadir tarjeta",
   "noCards": "Sin tarjetas",
   "cardCount": "{count, plural, one {# tarjeta} other {# tarjetas}}{state, select, over {, por encima del límite de {limit}} within {, límite {limit}} other {}}",

@@ -9,6 +9,7 @@ import { Avatar } from '../src/components/avatar/avatar.js';
 import { BooleanField } from '../src/components/boolean-field/boolean-field.js';
 import { Button } from '../src/components/button/button.js';
 import { Card, CardGrid, CardGridItem, CardTitle } from '../src/components/card/index.js';
+import { CascaderField } from '../src/components/cascader-field/cascader-field.js';
 import { CharacterGrid } from '../src/components/character-grid/character-grid.js';
 import { Chat } from '../src/components/chat/chat.js';
 import { ChatHeader } from '../src/components/chat/chat-header.js';
@@ -494,6 +495,10 @@ const cases: Record<string, RootRefCase> = {
 const fieldCases: Record<string, RootRefCase> = {
   BooleanField: { element: (ref) => <BooleanField ref={ref} label="Ripe" />, root: 'ui-field' },
   RatingField: { element: (ref) => <RatingField ref={ref} label="Quality" />, root: 'ui-field' },
+  CascaderField: {
+    element: (ref) => <CascaderField ref={ref} label="Place" options={[]} />,
+    root: 'ui-field',
+  },
   ChoiceGroup: {
     element: (ref) => (
       <ChoiceGroup ref={ref} label="Size">

@@ -596,6 +596,8 @@
   "noItems": "項目はありません",
   "moveSelectedTo": "選択した項目を{label}へ移動",
   "moveAllTo": "すべてを{label}へ移動",
+  "cascaderLoadFailed": "これらのオプションを読み込めませんでした",
+  "cascaderPathSeparator": "/",
   "addCard": "カードを追加",
   "noCards": "カードはありません",
   "cardCount": "カード {count} 枚{state, select, over {、上限 {limit} を超過} within {、上限 {limit}} other {}}",

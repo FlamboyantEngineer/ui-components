@@ -22,6 +22,7 @@ export * from './components/button-group/index.js';
 export * from './components/calendar-view/index.js';
 export * from './components/card/index.js';
 export * from './components/carousel/index.js';
+export * from './components/cascader-field/index.js';
 export * from './components/change-list/index.js';
 export * from './components/character-grid/index.js';
 export * from './components/chart/index.js';

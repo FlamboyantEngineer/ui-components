@@ -1,0 +1,187 @@
+/* Cascader Field: a path trigger and a popover of adjacent level panels. */
+
+.ui-cascader-field .ui-field__control {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.ui-cascader-field__trigger {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  max-width: 100%;
+  min-width: 12rem;
+  height: var(--ref-control-height);
+  padding: 0 8px;
+  border: 1px solid var(--ref-field-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-field-fill);
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.ui-cascader-field__trigger[data-hovered] {
+  border-color: var(--ref-border-strong);
+}
+
+.ui-cascader-field__trigger[data-focus-visible] {
+  border-color: var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
+}
+
+.ui-cascader-field[data-disabled] .ui-cascader-field__trigger {
+  background: var(--ref-field-fill-inactive);
+  color: var(--ref-muted);
+  cursor: not-allowed;
+}
+
+.ui-cascader-field[data-readonly] .ui-cascader-field__trigger {
+  border-style: dashed;
+  background: var(--ref-field-fill-inactive);
+}
+
+.ui-cascader-field[data-dirty] .ui-cascader-field__trigger {
+  border-color: var(--ref-dirty);
+}
+
+.ui-cascader-field[data-validation='invalid'] .ui-cascader-field__trigger {
+  border-color: var(--ref-danger);
+}
+
+.ui-cascader-field[data-validation='warning'] .ui-cascader-field__trigger {
+  border-color: var(--ref-warning);
+}
+
+/* A long path ends in an ellipsis rather than growing the field. */
+.ui-cascader-field__value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-cascader-field__value[data-placeholder] {
+  color: var(--ref-muted);
+}
+
+.ui-cascader-field__separator {
+  color: var(--ref-muted);
+}
+
+.ui-cascader-field__popover {
+  box-sizing: border-box;
+  max-width: calc(100vw - 16px);
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-raised);
+  color: var(--ref-text);
+  box-shadow: var(--ref-shadow);
+  font: var(--ref-font-size-md)/1.3 var(--ref-font);
+}
+
+.ui-cascader-field__dialog {
+  outline: none;
+}
+
+/* The levels sit in one row, which scrolls inline once it is wider than the screen. */
+.ui-cascader-field__panels {
+  display: flex;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+}
+
+.ui-cascader-field__panel {
+  flex: none;
+  box-sizing: border-box;
+  width: 12rem;
+  max-height: 18rem;
+  overflow-y: auto;
+}
+
+.ui-cascader-field__panel + .ui-cascader-field__panel {
+  border-inline-start: 1px solid var(--ref-border);
+}
+
+.ui-cascader-field__listbox {
+  display: grid;
+  gap: 1px;
+  padding: 4px;
+  outline: none;
+}
+
+.ui-cascader-field__option {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 8px;
+  min-height: var(--ref-control-height-md);
+  padding: 2px 8px;
+  border-radius: var(--ref-radius-sm);
+  cursor: default;
+  outline: none;
+}
+
+.ui-cascader-field__option[data-focused] {
+  background: var(--ref-hover);
+}
+
+.ui-cascader-field__option[data-selected] {
+  background: var(--ref-selected);
+}
+
+.ui-cascader-field__option[data-focus-visible] {
+  outline: var(--ref-focus-ring-thin);
+  outline-offset: -2px;
+}
+
+.ui-cascader-field__option[data-disabled] {
+  opacity: var(--ref-disabled-opacity);
+}
+
+.ui-cascader-field__option-icon {
+  flex: none;
+}
+
+.ui-cascader-field__option-label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ui-cascader-field__option-description {
+  order: 1;
+  flex-basis: 100%;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-cascader-field__branch-icon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--ref-muted);
+}
+
+/* The forward glyph points the way the next level opens. */
+[dir='rtl'] .ui-cascader-field__branch-icon {
+  transform: scaleX(-1);
+}
+
+.ui-cascader-field__status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 8px;
+  color: var(--ref-muted);
+}
+
+.ui-cascader-field__retry {
+  color: var(--ref-text);
+}
+
+/* The leaf, the part of the path that was chosen, reads strongest. */
+.ui-cascader-field__segment:last-child {
+  font-weight: var(--ref-font-weight-strong);
+}
