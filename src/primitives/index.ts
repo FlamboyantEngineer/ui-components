@@ -169,11 +169,17 @@ export {
   Slider,
   SliderFill,
   SliderOutput,
+  SliderOutputContext,
+  type SliderState,
+  SliderStateContext,
   SliderThumb,
   SliderTrack,
+  SliderTrackContext,
   Switch,
   TextArea,
   TextField,
+  useSlider,
+  useSliderState,
 } from './fields.js';
 export { enableShadowDOM } from './flags.js';
 export {

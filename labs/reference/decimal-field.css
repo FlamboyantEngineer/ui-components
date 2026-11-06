@@ -1,0 +1,118 @@
+/* Decimal Field: an exact decimal input between two step buttons, framed as one box. */
+
+.ui-decimal-field {
+  --ref-decimal-field-icon: var(--ref-icon-size-md);
+}
+
+.ui-decimal-field:is([data-size='xs'], [data-size='sm']) {
+  --ref-decimal-field-icon: var(--ref-icon-size-sm);
+}
+
+.ui-decimal-field[data-size='lg'] {
+  --ref-decimal-field-icon: var(--ref-icon-size-lg);
+}
+
+.ui-decimal-field__box {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ui-decimal-field__group {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: stretch;
+  min-width: 0;
+  box-sizing: border-box;
+  height: var(--ref-control-height);
+  overflow: hidden;
+  border: 1px solid var(--ref-field-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-field-fill);
+}
+
+.ui-decimal-field__group[data-focus-within] {
+  border-color: var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
+}
+
+.ui-decimal-field__input {
+  flex: 1 1 auto;
+  width: 8em;
+  min-width: 0;
+  padding: 0 8px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+  outline: none;
+}
+
+.ui-decimal-field__input::placeholder {
+  color: var(--ref-muted);
+}
+
+.ui-decimal-field__decrement,
+.ui-decimal-field__increment {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  /* Square inside the frame. */
+  width: calc(var(--ref-control-height) - 2px);
+  padding: 0;
+  border: 0;
+  background: var(--ref-surface);
+  color: var(--ref-text);
+  cursor: pointer;
+}
+
+.ui-decimal-field__decrement {
+  border-inline-end: 1px solid var(--ref-border);
+}
+
+.ui-decimal-field__increment {
+  border-inline-start: 1px solid var(--ref-border);
+}
+
+:is(.ui-decimal-field__decrement, .ui-decimal-field__increment)[data-hovered] {
+  background: var(--ref-hover);
+}
+
+:is(.ui-decimal-field__decrement, .ui-decimal-field__increment)[data-pressed] {
+  background: var(--ref-pressed);
+}
+
+:is(.ui-decimal-field__decrement, .ui-decimal-field__increment)[data-disabled] {
+  color: var(--ref-muted);
+  cursor: default;
+}
+
+:is(.ui-decimal-field__decrement, .ui-decimal-field__increment) .ui-glyph {
+  width: var(--ref-decimal-field-icon);
+  height: var(--ref-decimal-field-icon);
+}
+
+.ui-decimal-field[data-dirty] .ui-decimal-field__group {
+  border-color: var(--ref-dirty);
+}
+
+.ui-decimal-field[data-validation='invalid'] .ui-decimal-field__group {
+  border-color: var(--ref-danger);
+}
+
+.ui-decimal-field[data-validation='warning'] .ui-decimal-field__group {
+  border-color: var(--ref-warning);
+}
+
+.ui-decimal-field[data-disabled] .ui-decimal-field__group {
+  background: var(--ref-field-fill-inactive);
+  color: var(--ref-muted);
+}
+
+.ui-decimal-field[data-readonly] .ui-decimal-field__group {
+  border-style: dashed;
+  background: var(--ref-field-fill-inactive);
+}

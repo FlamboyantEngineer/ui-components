@@ -1,6 +1,7 @@
 'use client';
 
-import { type ReactNode, type Ref, useState } from 'react';
+import type { ReactNode, Ref } from 'react';
+import { useControllableState } from '../../core/controllable-state.js';
 import type { FocusEventProps, KeyboardEventProps } from '../../core/events.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
@@ -53,6 +54,12 @@ export interface TextFieldProps
   endAdornment?: ReactNode;
   /** With `type="password"`, draws a toggle button after the text that shows it while pressed. */
   allowsReveal?: boolean | undefined;
+  /** With `type="password"`, whether the text shows (controlled); the host may toggle it from its own control. */
+  isRevealed?: boolean | undefined;
+  /** With `type="password"`, whether the text shows at first while `isRevealed` is not given. Defaults to `false`. */
+  defaultRevealed?: boolean | undefined;
+  /** Called when the built-in reveal button asks to show or hide the text. */
+  onRevealChange?: ((isRevealed: boolean) => void) | undefined;
   /** With `multiline`, the rows the text area shows at least; it grows with its text from there. */
   minRows?: number | undefined;
   /** With `multiline`, the rows the text area grows to at most before it scrolls. */
@@ -165,6 +172,28 @@ function toInputType(
   return type;
 }
 
+type RevealProps = Pick<
+  TextFieldProps,
+  'allowsReveal' | 'isRevealed' | 'defaultRevealed' | 'onRevealChange'
+>;
+
+/**
+ * The reveal state of a password field (UIC-TEXT-FIELD-3.5): whether its text shows, and the
+ * built-in button's props while `allowsReveal` draws it. Another type keeps the state unused.
+ */
+function usePasswordReveal(
+  { allowsReveal, isRevealed, defaultRevealed = false, onRevealChange }: RevealProps,
+  field: { type: TextFieldType | undefined; label: string; isDisabled: boolean },
+) {
+  const [shown, setShown] = useControllableState(isRevealed, defaultRevealed, onRevealChange);
+  const isPassword = field.type === 'password';
+  const button =
+    allowsReveal && isPassword
+      ? { label: field.label, isRevealed: shown, isDisabled: field.isDisabled, onChange: setShown }
+      : null;
+  return { isShown: isPassword && shown, button };
+}
+
 /**
  * A field for a plain string, on one line or several. It validates its length and format, commits
  * when focus leaves the field and on Enter, and reverts an edit on Escape. Adornments and a reveal button sit inside the
@@ -181,6 +210,9 @@ export function TextField({
   startAdornment,
   endAdornment,
   allowsReveal = false,
+  isRevealed,
+  defaultRevealed,
+  onRevealChange,
   minRows,
   maxRows,
   showCount = false,
@@ -197,16 +229,15 @@ export function TextField({
 }: TextFieldProps) {
   const rules = { minLength, maxLength, pattern, trim, getLength };
   const { state, field, rest } = useTextFieldControl(props, rules);
-  const [isRevealed, setIsRevealed] = useState(false);
   const input = { placeholder, transformInput, displayValue, onKeyDown, completions };
   const edit = useTextFieldInput({ state, multiline, ...input });
-  const isMasked = allowsReveal && rest.type === 'password';
+  const reveal = usePasswordReveal(
+    { allowsReveal, isRevealed, defaultRevealed, onRevealChange },
+    { type: rest.type, label: field.label, isDisabled: state.isDisabled },
+  );
   const count = showCount ? countCharacters(state.value, rules) : null;
   const autosize = multiline && isAutoGrowing({ minRows, maxRows });
   const data = { multiline, autosize, displayValue: edit.showsDisplayValue };
-  const reveal = isMasked
-    ? { label: field.label, isRevealed, isDisabled: state.isDisabled, onChange: setIsRevealed }
-    : null;
   return (
     <Field
       {...field}
@@ -224,15 +255,11 @@ export function TextField({
             ref={edit.boxRef}
             name={displayValue === undefined ? rest.name : undefined}
             spellCheck={toSpellCheckAttribute(spellCheck)}
-            type={toInputType(rest.type, { isRevealed: isMasked && isRevealed, edit })}
+            type={toInputType(rest.type, { isRevealed: reveal.isShown, edit })}
             value={edit.text}
             onChange={edit.onChange}
           >
-            <TextFieldFrame
-              startAdornment={startAdornment}
-              endAdornment={endAdornment}
-              reveal={reveal}
-            >
+            <TextFieldFrame {...{ startAdornment, endAdornment }} reveal={reveal.button}>
               <TextFieldControl
                 {...{ multiline, minRows, maxRows, edit, controlProps }}
                 refs={{ field: control.ref, input: inputRef, textArea: textAreaRef }}

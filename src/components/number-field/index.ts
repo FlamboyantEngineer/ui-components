@@ -14,6 +14,8 @@ export type {
 } from './number-field.js';
 export { NumberField } from './number-field.js';
 export type { NumberTrackProps } from './number-slider.js';
+export type { NumberSliderScale, NumberSliderScaleOption, SliderBounds } from './slider-scale.js';
+export { logarithmicScale } from './slider-scale.js';
 export type { SliderGrid } from './slider-values.js';
 export { normalizeSliderValue, snapToStep } from './slider-values.js';
 export { keepThumbsApart } from './thumb-spacing.js';

@@ -47,6 +47,7 @@ import { ConditionBuilder } from '../src/components/condition-builder/condition-
 import { ContextMenu } from '../src/components/context-menu/context-menu.js';
 import { createMenuController } from '../src/components/context-menu/menu-controller.js';
 import { DateTimeField } from '../src/components/date-time-field/date-time-field.js';
+import { DecimalField } from '../src/components/decimal-field/decimal-field.js';
 import { DecisionControl } from '../src/components/decision-control/decision-control.js';
 import { DescriptionList, DescriptionRow } from '../src/components/description-list/index.js';
 import { DiagramPaletteItem } from '../src/components/diagram-canvas/index.js';
@@ -90,6 +91,7 @@ import { ListView, ListViewItem, ListViewSection } from '../src/components/list-
 import { LoadingCard, LoadingRegion } from '../src/components/loading-overlay/index.js';
 import { MappingTable } from '../src/components/mapping-table/mapping-table.js';
 import { Markdown } from '../src/components/markdown/markdown.js';
+import { MaskedTextField } from '../src/components/masked-text-field/masked-text-field.js';
 import { MediaViewer } from '../src/components/media-viewer/media-viewer.js';
 import { Menu, MenuItem, MenuSection, MenuSeparator } from '../src/components/menu/index.js';
 import {
@@ -503,8 +505,13 @@ const fieldCases: Record<string, RootRefCase> = {
   CodeEditor: { element: (ref) => <CodeEditor ref={ref} label="Query" />, root: 'ui-field' },
   ColorField: { element: (ref) => <ColorField ref={ref} label="Colour" />, root: 'ui-field' },
   DateTimeField: { element: (ref) => <DateTimeField ref={ref} label="Due" />, root: 'ui-field' },
+  DecimalField: { element: (ref) => <DecimalField ref={ref} label="Weight" />, root: 'ui-field' },
   FileField: {
     element: (ref) => <FileField ref={ref} label="Attachments" onSelect={() => {}} />,
+    root: 'ui-field',
+  },
+  MaskedTextField: {
+    element: (ref) => <MaskedTextField ref={ref} label="Code" mask="999-999" />,
     root: 'ui-field',
   },
   MultiDateField: {

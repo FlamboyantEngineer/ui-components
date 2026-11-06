@@ -302,6 +302,77 @@ function RightToLeft() {
   );
 }
 
+const decades = [1, 10, 100, 1000].map((value) => ({ value, label: String(value) }));
+
+/**
+ * Logarithmic tracks: equal distances are equal ratios, so 10 and 100 sit at a third and two
+ * thirds of a 1 to 1000 track. The value, its text and the form data stay in values.
+ */
+function LogarithmicScale() {
+  const [value, setValue] = useState(10);
+  const [band, setBand] = useState<NumberRange>([20, 200]);
+  return (
+    <>
+      <NumberField
+        display="slider"
+        label="Sample size"
+        scale="logarithmic"
+        minValue={1}
+        maxValue={1000}
+        value={value}
+        onChange={setValue}
+        marks={decades}
+        description="Each third of the track is ten times the one before."
+        data-lab-field="log"
+      />
+      <LabOutput name="Sample size">{value}</LabOutput>
+      <NumberField
+        range
+        display="slider"
+        label="Band"
+        scale="logarithmic"
+        minValue={1}
+        maxValue={1000}
+        minStepsBetweenThumbs={10}
+        value={band}
+        onChange={setBand}
+        marks={decades}
+        valueLabel="input"
+        data-lab-field="log-range"
+      />
+      <LabOutput name="Band">{band.join(' to ')}</LabOutput>
+      <div style={{ display: 'flex', gap: 24 }}>
+        <NumberField
+          display="slider"
+          label="Level"
+          scale="logarithmic"
+          orientation="vertical"
+          minValue={1}
+          maxValue={1000}
+          defaultValue={100}
+          marks={decades}
+          valueLabel="thumb"
+          data-lab-field="log-vertical"
+        />
+        <UiProvider locale="he-IL">
+          <div dir="rtl">
+            <NumberField
+              display="slider"
+              label="Depth"
+              scale="logarithmic"
+              minValue={1}
+              maxValue={1000}
+              defaultValue={10}
+              marks={decades}
+              data-lab-field="log-rtl"
+            />
+          </div>
+        </UiProvider>
+      </div>
+    </>
+  );
+}
+
 /** The committed value is the caller's: the fields stay dirty until Save. */
 function SavedForm() {
   const [saved, setSaved] = useState(40);
@@ -429,6 +500,12 @@ export function NumberFieldSliderSections() {
         description="Vertical sliders, one with the value on its thumb."
       >
         <Vertical />
+      </LabSection>
+      <LabSection
+        title="Logarithmic slider"
+        description="scale logarithmic puts equal ratios at equal distances; arrows move one step, Page a tenth of the track. A range on the same scale edits its ends in inputs, a vertical one shows its value on the thumb, and a right-to-left one starts at the right."
+      >
+        <LogarithmicScale />
       </LabSection>
       <LabSection
         title="Slider right to left"
