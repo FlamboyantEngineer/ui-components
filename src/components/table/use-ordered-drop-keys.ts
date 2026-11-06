@@ -24,14 +24,16 @@ function createOrderedDelegate<T>(
 /**
  * Drag and drop hooks whose keyboard drop target steps through the rows in their order. Every
  * keyboard drag visits each droppable collection on the page, disabled ones included, and loops
- * there while no target accepts it, so a delegate that cycles would freeze the page.
+ * there while no target accepts it, so a delegate that cycles would freeze the page. It is typed
+ * over the hooks object, so its declaration names no building block (UIC-PRIMITIVES-2.1).
  */
-export function useOrderedDropKeys<T>(hooks: DragAndDropHooks<T>): DragAndDropHooks<T> {
+export function useOrderedDropKeys<H extends object>(hooks: H): H {
   return useMemo(() => {
-    const { useDroppableCollection } = hooks;
+    const given = hooks as DragAndDropHooks<unknown>;
+    const { useDroppableCollection } = given;
     if (!useDroppableCollection) return hooks;
-    return {
-      ...hooks,
+    const ordered: DragAndDropHooks<unknown> = {
+      ...given,
       useDroppableCollection: function useOrderedDroppableCollection(props, state, ref) {
         const { layoutDelegate } = useContext(CollectionRendererContext);
         const keyboardDelegate = createOrderedDelegate({
@@ -44,5 +46,6 @@ export function useOrderedDropKeys<T>(hooks: DragAndDropHooks<T>): DragAndDropHo
         return useDroppableCollection({ ...props, keyboardDelegate }, state, ref);
       },
     };
+    return ordered as H;
   }, [hooks]);
 }
