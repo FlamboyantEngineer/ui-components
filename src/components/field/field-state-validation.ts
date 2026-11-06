@@ -19,9 +19,9 @@ import {
 } from './field-validation.js';
 
 /**
- * The validation of the value: the control's draft issue, external errors for the field's name,
- * the required check, `validate` and the debounced `validateAsync`, shown as the validation mode
- * allows.
+ * The validation of the value: the control's draft issue, the owner's error, external errors for
+ * the field's name, the required check, `validate` and the debounced `validateAsync`, shown as the
+ * validation mode allows.
  */
 export function useFieldValidation<T>(
   value: T,
@@ -46,7 +46,9 @@ export function useFieldValidation<T>(
     isEqual,
   });
   const draft = draftIssue ? [draftIssue] : [];
-  const own = [...draft, ...external, ...checkFieldValue(value, { ...options, isEmpty }, strings)];
+  // The owner's error shows whatever the mode, as external errors do.
+  const reported = [...toOwnerIssues(options.errorMessage), ...external];
+  const own = [...draft, ...reported, ...checkFieldValue(value, { ...options, isEmpty }, strings)];
   const check = useAsyncCheck(value, {
     validateAsync: options.validateAsync,
     debounce: options.validationDebounce ?? 0,
@@ -57,10 +59,15 @@ export function useFieldValidation<T>(
   const realtime = resolveFieldValidation([...own, ...check.issues], isPending, strings);
   const shown = selectShownValidation(
     realtime,
-    { external, isRevealed: reveal.isRevealed },
+    { external: reported, isRevealed: reveal.isRevealed },
     strings,
   );
   return { reveal, realtime, shown, isEmpty: isEmpty(value), setDraftIssue };
+}
+
+/** The owner's error as the field's first issue, or none while it gives none. */
+function toOwnerIssues(message: string | undefined): FieldIssue[] {
+  return message ? [{ severity: 'error', message, validity: 'customError' }] : [];
 }
 
 /** The control's report on its draft, kept while it reports the same issue again. */

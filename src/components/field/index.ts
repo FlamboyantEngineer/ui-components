@@ -49,5 +49,6 @@ export {
   useFieldControl,
   useFieldState,
 } from './field.js';
+export type { FieldControlHandle } from './field-form.js';
 export { defaultFieldMenu } from './field-menu-entries.js';
 export { validateString } from './string-rules.js';

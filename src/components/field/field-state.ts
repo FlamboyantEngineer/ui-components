@@ -86,6 +86,11 @@ export interface FieldStateOptions<T> {
   isDisabled?: boolean | undefined;
   /** A check of the value is in progress: `pending` status unless the value has an error. */
   isPending?: boolean | undefined;
+  /**
+   * An error the field's owner reports, such as an external form controller's: shown first among
+   * the issues, as `customError`, whatever the validation mode, until the owner clears it.
+   */
+  errorMessage?: string | undefined;
 }
 
 /**

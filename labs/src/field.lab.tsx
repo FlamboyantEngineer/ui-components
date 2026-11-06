@@ -22,6 +22,7 @@ import type { Key } from '../../src/core/props.js';
 import { UiProvider, useUiStrings } from '../../src/core/provider.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { CompactFieldsSection } from './field-compact-cases.js';
+import { ControllerForm } from './field-controller-cases.js';
 import {
   CustomControl,
   ErrorSources,
@@ -540,6 +541,12 @@ mountLab(
       description="One price range submits low and high. Load server errors: an error for each name belongs to the field, which shows the first and blocks the form until that part changes, so changing the lowest price clears only its error and the highest price's shows next. Type letters in either price: the draft issue blocks the form while the accepted range keeps the last numbers."
     >
       <ErrorSources />
+    </LabSection>
+    <LabSection
+      title="Owned by an external form controller"
+      description="React Hook Form owns a text, number, select and date range field: the saved booking loads after a moment, Save validates and moves focus to the first invalid field, Reset puts the loaded booking back and Clear the form empties it. Leaving a field marks it touched; moving between the range's dates does not. Each error shows once, and the fields mark no changes of their own."
+    >
+      <ControllerForm />
     </LabSection>
     <LabSection
       title="Plain input"

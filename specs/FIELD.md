@@ -1,6 +1,6 @@
 # Field
 
-The field base every field control is built on. `useFieldState` is the controller: it holds or relays a field's value, knows its committed value, validates it, tracks dirty state and keeps a per-field undo history. `Field` lays a field out around its control: the label, the control, the restore and help buttons, a decoration slot for the host's badges, the description and the validation message, inside a context menu of field actions (Clear and Reset by default). It hands the control the ids and ARIA attributes it needs through a render function, so any control (a text input, a select trigger, a custom widget) becomes a field. `getFieldUndo` lets a host's shortcut handler undo or redo the focused field, and `FieldRestoreButton` restores a value wherever a control offers one. `validateString` checks text against length and format rules. Field controls (a text field, a number field) share their props through `FieldInputProps`, text controls also through `FieldTextInputProps`, and build on `useFieldControl` and `toAriaControlProps`. `FieldPreviousValue` shows a value an edit replaced or removed, beside the current one. A field shows its validation when its validation mode allows, can check its value asynchronously, shows external errors by name, and can report its error to the browser's constraint validation; the nearest [Form](FORM.md) or `Fieldset` hands it defaults through the field scope. `Fieldset` groups fields under a legend and disables them together.
+The field base every field control is built on. `useFieldState` is the controller: it holds or relays a field's value, knows its committed value, validates it, tracks dirty state and keeps a per-field undo history. `Field` lays a field out around its control: the label, the control, the restore and help buttons, a decoration slot for the host's badges, the description and the validation message, inside a context menu of field actions (Clear and Reset by default). It hands the control the ids and ARIA attributes it needs through a render function, so any control (a text input, a select trigger, a custom widget) becomes a field. `getFieldUndo` lets a host's shortcut handler undo or redo the focused field, and `FieldRestoreButton` restores a value wherever a control offers one. `validateString` checks text against length and format rules. Field controls (a text field, a number field) share their props through `FieldInputProps`, text controls also through `FieldTextInputProps`, and build on `useFieldControl` and `toAriaControlProps`. `FieldPreviousValue` shows a value an edit replaced or removed, beside the current one. A field shows its validation when its validation mode allows, can check its value asynchronously, shows external errors by name, and can report its error to the browser's constraint validation; the nearest [Form](FORM.md) or `Fieldset` hands it defaults through the field scope. An external form controller, such as React Hook Form, can own its fields instead through `onLeave`, `controlRef` and `errorMessage`. `Fieldset` groups fields under a legend and disables them together.
 
 ## UIC-FIELD-1 - Layout
 
@@ -446,6 +446,36 @@ The pickers built on fields (`Combobox`, `SelectField` and `PeoplePicker` on the
 
 Implementation: `src/components/field/field-picker.tsx`, `src/components/field/field-picker-items.ts`, `src/utils/use-remote-search.ts`
 Verification: `src/components/field/field-picker.test.tsx`
+
+## UIC-FIELD-12 - External form controllers
+
+### UIC-FIELD-12.1 - Leaving the field
+
+`onLeave` shall be called once focus leaves the field (UIC-FIELD-1.11): its control, its buttons and the popovers they open, after the field has committed (with `commitOnBlur`) and marked itself touched. Focus moving between a compound control's parts (a date range's segments, its calendar button) or to the field's restore and help buttons never calls it, so an external form controller marks the field touched once, as for a native blur. Every field control built on `Field` takes `onLeave` with the field's props.
+
+Implementation: `src/components/field/field-behaviour.tsx`, `src/components/field/field.tsx`, `src/components/field/field-control.ts`
+Verification: `src/components/field/field-owner.test.tsx`, `test/field-controller.test.tsx`
+
+### UIC-FIELD-12.2 - Control handle
+
+`controlRef` shall receive a `FieldControlHandle` whose `focus()` opens what hides the field first, as a form's focus does (UIC-FIELD-3.12), then focuses its control: the control element, or for a group its chosen option or first focusable element, such as a date range's first segment. An external form controller that focuses its first invalid field through a ref (React Hook Form's `field.ref`) can pass that ref, whatever element the control renders. Every field control built on `Field` takes `controlRef` with the field's props.
+
+Implementation: `src/components/field/field-form.ts`, `src/components/field/field-behaviour.tsx`, `src/components/field/field.tsx`, `src/components/field/field-control.ts`
+Verification: `src/components/field/field-owner.test.tsx`, `test/field-controller.test.tsx`
+
+### UIC-FIELD-12.3 - Owner errors
+
+`errorMessage` shall show an error the field's owner reports, such as an external form controller's: the first issue after a draft issue, with the validity `customError`, shown whatever the validation mode, with the invalid state and ARIA of UIC-FIELD-3.1 to UIC-FIELD-3.4, until the owner passes none or an empty string.
+
+Implementation: `src/components/field/field-state-validation.ts`, `src/components/field/field-state.ts`, `src/components/field/field-control.ts`
+Verification: `src/components/field/field-owner.test.tsx`, `test/field-controller.test.tsx`
+
+### UIC-FIELD-12.4 - React Hook Form recipe
+
+The library shall document and test an integration with an external form controller, React Hook Form's `useController`, without a dependency on it, casts or synthetic DOM events ([docs/FORM-CONTROLLERS.md](../docs/FORM-CONTROLLERS.md)). One layer owns each concern: the controller owns the values, their defaults (including asynchronous ones) and reset, dirty and touched state, validation and the submit; a field it owns takes `value` and `onChange` (which receive values, not events), `onLeave` as its blur, `controlRef` as its ref, `errorMessage` from the field's error, `tracksChanges: false` (UIC-FIELD-2.7), so the field marks no changes of its own, and `validationMode: 'submit'`, so its own checks, such as `isRequired`, which still marks it required, wait for a library `Form`'s submit, which a controller's form never makes and must not be wrapped in. Each error therefore shows once and only the controller blocks the submit. The recipe covers `TextField`, `NumberField`, `SelectField` and `DateTimeField` in a date range mode: typed values, defaults that load later, reset, validation errors, touched once focus leaves the whole range, and focus moved to the first invalid field on a refused submit.
+
+Implementation: `labs/src/field-controller-cases.tsx`, `docs/FORM-CONTROLLERS.md`
+Verification: `test/field-controller.test.tsx`, `e2e/field-controller.spec.ts`
 
 ## Hooks
 
