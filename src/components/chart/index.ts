@@ -4,6 +4,7 @@ export type { ChartProps, ChartSeries, ChartTable, ChartView, ChartViewProps } f
 export { Chart } from './chart.js';
 export type { ChartAxisPosition, ChartAxisProps } from './chart-axis.js';
 export { ChartAxis } from './chart-axis.js';
+export type { ChartDatum, ChartFormatProps, ChartTooltipContext } from './chart-format.js';
 export type { ChartHiddenKeysProps, ChartLegendProps } from './chart-legend.js';
 export { ChartLegend } from './chart-legend.js';
 export type { ChartReference, ChartReferenceBand, ChartReferenceLine } from './chart-references.js';

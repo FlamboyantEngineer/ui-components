@@ -221,6 +221,8 @@ interface ChartTooltipProps {
   tone: Tone | undefined;
   /** The formatted value. */
   value: ReactNode;
+  /** The caller's content, in place of the title, swatch, label and value; `null` keeps them. */
+  content?: ReactNode;
 }
 
 interface ChartPlotProps {
@@ -234,8 +236,25 @@ interface ChartPlotProps {
   children: ReactNode;
 }
 
+/** The tooltip's own content: the value's place, its series beside a swatch, and the value. */
+function TooltipBody({ title, label, series, tone, value }: ChartTooltipProps) {
+  return (
+    <>
+      {title ? (
+        <>
+          <span {...hooks.slot('tooltip-title')}>{title}</span>{' '}
+        </>
+      ) : null}
+      <span {...hooks.slot('tooltip-swatch', { series, tone })} aria-hidden="true" />
+      <span {...hooks.slot('tooltip-label')}>{label}</span>{' '}
+      <span {...hooks.slot('tooltip-value')}>{value}</span>
+    </>
+  );
+}
+
 /** The tooltip of the hovered or focused value, pointing at its element. */
-function ChartTooltip({ activeKey, anchor, title, label, series, tone, value }: ChartTooltipProps) {
+function ChartTooltip(props: ChartTooltipProps) {
+  const { activeKey, anchor, content } = props;
   const isOpen = activeKey !== null;
   const state = useMemo<TooltipTriggerState>(
     () => ({ isOpen, shouldSkipAnimation: false, open: () => {}, close: () => {} }),
@@ -250,14 +269,7 @@ function ChartTooltip({ activeKey, anchor, title, label, series, tone, value }: 
           className={hooks.slotClass('tooltip')}
           triggerRef={anchor}
         >
-          {title ? (
-            <>
-              <span {...hooks.slot('tooltip-title')}>{title}</span>{' '}
-            </>
-          ) : null}
-          <span {...hooks.slot('tooltip-swatch', { series, tone })} aria-hidden="true" />
-          <span {...hooks.slot('tooltip-label')}>{label}</span>{' '}
-          <span {...hooks.slot('tooltip-value')}>{value}</span>
+          {content ?? <TooltipBody {...props} />}
         </TooltipPanel>
       ) : null}
     </TooltipTriggerStateContext>

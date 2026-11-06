@@ -1,7 +1,8 @@
 import type { ChartTable } from './chart.js';
+import { type ChartDatum, toDatum } from './chart-format.js';
 import type { LineChartSeries } from './line-chart.js';
 import type { LineChartPoint } from './line-geometry.js';
-import type { LineXAxis } from './line-x-axis.js';
+import type { LineChartX, LineXAxis } from './line-x-axis.js';
 
 /**
  * Every series' values by coordinate, keeping the first point at a repeated coordinate. Each source
@@ -11,11 +12,12 @@ export function toLineTable(
   series: readonly LineChartSeries[],
   {
     xAxis,
-    format,
+    writeValue,
     categoryLabel,
   }: {
     xAxis: LineXAxis;
-    format: Intl.NumberFormat;
+    /** Writes a cell's value, given its datum. */
+    writeValue: (datum: ChartDatum<LineChartX>) => string;
     categoryLabel: string;
   },
 ): ChartTable {
@@ -34,11 +36,10 @@ export function toLineTable(
     .sort(([a], [b]) => a - b)
     .map(([at, x]) => [
       xAxis.format(x),
-      ...indexed.map((points) => {
+      ...indexed.map((points, index) => {
         const point = points.get(at);
-        return typeof point?.y === 'number' && Number.isFinite(point.y)
-          ? format.format(point.y)
-          : '';
+        if (typeof point?.y !== 'number' || !Number.isFinite(point.y)) return '';
+        return writeValue(toDatum(series, { series: index, at: point.x, value: point.y }));
       }),
     ]);
   return { columns: [categoryLabel, ...series.map((entry) => entry.label)], rows };

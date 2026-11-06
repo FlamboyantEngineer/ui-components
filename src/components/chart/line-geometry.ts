@@ -5,6 +5,7 @@ import { clamp } from '../../utils/clamp.js';
 import { createLinearScale, type LinearScale, type ScaleTick } from '../../utils/linear-scale.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { summarizeNumbers } from '../../utils/summarize-numbers.js';
+import { withAxisFormat } from './chart-format.js';
 import { createPlaceIdentities, toValueIdentity } from './chart-identity.js';
 import {
   type ChartBox,
@@ -49,6 +50,8 @@ export interface LineGeometryInput {
   timeZone: string;
   locale: string;
   formatOptions?: Intl.NumberFormatOptions | undefined;
+  /** Writes the value axis labels instead of `formatOptions`. */
+  formatAxisValue?: ((value: number) => string) | undefined;
   /** Draws the line and area straight across missing values instead of breaking them there. */
   connectsMissing?: boolean | undefined;
 }
@@ -161,7 +164,7 @@ function layOutSeries(
 /** The value axis, also used to measure tick labels before laying out paths. */
 export function createLineValueScale(input: LineGeometryInput, plot: ChartBox): LinearScale {
   const isFixed = input.minValue !== undefined || input.maxValue !== undefined;
-  return createLinearScale({
+  const scale = createLinearScale({
     domain: findValueDomain(input),
     range: [plot.bottom, plot.top],
     nice: !isFixed,
@@ -170,6 +173,7 @@ export function createLineValueScale(input: LineGeometryInput, plot: ChartBox): 
     locale: input.locale,
     formatOptions: input.formatOptions,
   });
+  return withAxisFormat(scale, input.formatAxisValue);
 }
 
 /**

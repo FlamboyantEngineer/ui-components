@@ -119,6 +119,13 @@ A bar or line chart shall draw `height` pixels tall (240 by default) and as wide
 Implementation: `src/components/chart/use-chart-box.ts`, `src/components/chart/chart-layout.ts`, `src/components/chart/bar-chart.tsx`, `src/components/chart/line-chart.tsx`, `src/components/chart/donut-chart.tsx`
 Verification: `src/components/chart/bar-chart.test.tsx`, `src/components/chart/donut-chart.test.tsx`, `e2e/chart.spec.ts`
 
+### UIC-CHART-4.7 - Value formatters and custom tooltips
+
+`BarChart` and `LineChart` shall write each drawn value with `formatValue` when given, called with the value's datum: its series' `seriesId`, `seriesLabel` and position (`series`), where it sits (`at`: a bar's category, a line point's `x` as given) and its finite `value`; the text names the value, shows in its tooltip and fills its table cell, so per-series units and precision stay together. A missing or unreadable value never reaches it. `formatAxisValue` writes the value axis's tick labels instead, such as compact numbers, without changing those values' text. `renderTooltip` replaces the tooltip's content for the hovered or focused value, called with the same datum, the value's text (`value`) and its place's text (`at`) whether the pointer or the keyboard made it active; content of `null` or `undefined` keeps the default title, swatch, label and value. The tooltip stays a plain, non-interactive tooltip that closes as [UIC-CHART-4.4](#uic-chart-44---tooltip) says, and assistive technology reads the value's name, not the custom content. Formatters run at each render, so a change of locale, time zone or callback updates the text.
+
+Implementation: `src/components/chart/chart-format.ts`, `src/components/chart/chart-points.tsx`, `src/components/chart/bar-chart.tsx`, `src/components/chart/bar-chart-model.ts`, `src/components/chart/line-chart.tsx`, `src/components/chart/line-chart-model.ts`, `src/components/chart/line-table.ts`
+Verification: `src/components/chart/chart-format.test.tsx`, `e2e/chart.spec.ts`
+
 ## UIC-CHART-5 - Bar chart
 
 ### UIC-CHART-5.1 - Bars

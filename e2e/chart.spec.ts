@@ -310,3 +310,22 @@ test('UIC-CHART-9.1 UIC-CHART-9.2 draws references under the values, which keep 
     }
   }
 });
+
+test('UIC-CHART-4.7 writes units per series, compact axis labels and a custom tooltip', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('chart');
+  const demo = page.locator('[data-lab-demo="chart-format"]');
+  const point = demo.getByRole('img', { name: /^Energy, .*: 6\.1 kWh$/ });
+  await expect(point).toBeVisible();
+  await expect(demo.getByRole('img', { name: /^Seats taken, .*: 100% of seats$/ })).toBeVisible();
+  await expect(demo.locator('.ui-chart-axis[data-position="left"] text').last()).toHaveText(/K$/);
+  await point.hover();
+  await expect(page.locator('[data-lab-tooltip="room"]')).toHaveText(/^Energy at .*: 6\.1 kWh$/);
+  await page.mouse.move(0, 0);
+  await point.focus();
+  await expect(page.locator('[data-lab-tooltip="room"]')).toHaveText(/^Energy at .*: 6\.1 kWh$/);
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('tooltip')).toHaveCount(0);
+});

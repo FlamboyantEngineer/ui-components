@@ -4,6 +4,7 @@
 
 import type { Key } from '../../core/props.js';
 import { useLocale } from '../../primitives/index.js';
+import { toDatumFormatter } from './chart-format.js';
 import { resolvePlotBox } from './chart-layout.js';
 import { toReferenceGroup, toValueReferenceAxis, useChartReferences } from './chart-references.js';
 import { useValueSummary } from './chart-summary.js';
@@ -14,6 +15,7 @@ import {
   type LineGeometryInput,
   resolveLineGeometry,
 } from './line-geometry.js';
+import { toLineTable } from './line-table.js';
 import { createLineXAxis } from './line-x-axis.js';
 import { useLabelMargin } from './use-chart-box.js';
 
@@ -55,15 +57,42 @@ interface LineChartModelInput {
   box: { width: number; height: number };
   timeZone: string;
   format: Intl.NumberFormat;
-  options: Pick<
-    LineChartProps,
-    'minValue' | 'maxValue' | 'formatOptions' | 'connectsMissing' | 'references' | 'xReferences'
-  >;
+  options: LineChartOptions;
+  categoryLabel: string;
+}
+
+/** The props that shape what a line chart draws and writes, apart from its frame. */
+type LineChartOptions = Pick<LineChartProps, (typeof optionKeys)[number]>;
+
+const optionKeys = [
+  'minValue',
+  'maxValue',
+  'formatOptions',
+  'connectsMissing',
+  'references',
+  'xReferences',
+  'formatValue',
+  'formatAxisValue',
+  'renderTooltip',
+] as const;
+
+/** A line chart's props split into its drawing options and the rest. */
+export function splitLineChartOptions(
+  props: LineChartProps,
+): [LineChartOptions, Omit<LineChartProps, (typeof optionKeys)[number]>] {
+  const rest: Record<string, unknown> = { ...props };
+  const options: Record<string, unknown> = {};
+  for (const key of optionKeys) {
+    options[key] = props[key];
+    delete rest[key];
+  }
+  return [options as LineChartOptions, rest as Omit<LineChartProps, (typeof optionKeys)[number]>];
 }
 
 /** The shown series laid out, their values, the references placed and described, and the summary. */
 export function useLineChartModel(input: LineChartModelInput) {
   const { element, series, hidden, box, timeZone, format, options } = input;
+  const writeValue = toDatumFormatter(options.formatValue, format);
   const drawn = series
     .map((entry, index) => ({ series: index, points: entry.points, id: entry.id }))
     .filter((entry) => !hidden.has(entry.id));
@@ -74,6 +103,7 @@ export function useLineChartModel(input: LineChartModelInput) {
     maxValue: options.maxValue,
     timeZone,
     formatOptions: options.formatOptions,
+    formatAxisValue: options.formatAxisValue,
     connectsMissing: options.connectsMissing,
   });
   const values = geometry.lines.flatMap((line) => line.points.map((point) => point.value));
@@ -91,5 +121,10 @@ export function useLineChartModel(input: LineChartModelInput) {
     format,
     references: marks.described,
   });
-  return { geometry, values, tableAxis, marks, generated };
+  const table = toLineTable(series, {
+    xAxis: tableAxis,
+    writeValue,
+    categoryLabel: input.categoryLabel,
+  });
+  return { geometry, values, table, marks, generated, writeValue };
 }
