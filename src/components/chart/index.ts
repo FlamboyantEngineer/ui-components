@@ -1,5 +1,11 @@
 export type { BarChartLayout, BarChartProps, BarChartSeries } from './bar-chart.js';
 export { BarChart } from './bar-chart.js';
+export type {
+  CalendarHeatmapDay,
+  CalendarHeatmapProps,
+  HeatmapWeekday,
+} from './calendar-heatmap.js';
+export { CalendarHeatmap } from './calendar-heatmap.js';
 export type { ChartProps, ChartSeries, ChartTable, ChartView, ChartViewProps } from './chart.js';
 export { Chart } from './chart.js';
 export type { ChartAxisPosition, ChartAxisProps } from './chart-axis.js';
