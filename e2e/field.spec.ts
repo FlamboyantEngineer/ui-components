@@ -591,3 +591,26 @@ test.describe('Field lab', () => {
     await lab.expectAccessible();
   });
 });
+
+test('UIC-FIELD-8.5 submits, resets and validates fields outside the form they name', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('field');
+  const demo = page.locator('[data-lab-demo="form-association"]');
+  const output = demo.locator('[data-lab-output="form-association"]');
+  await demo.getByRole('button', { name: 'Submit order' }).click();
+  await expect(output).toHaveText('reference=A-12, item=Pen, item=Pen, from=9, to=17');
+  const reference = demo.getByRole('textbox', { name: 'Reference' });
+  await reference.fill('');
+  await demo.getByRole('button', { name: 'Submit order' }).click();
+  await expect(output).toHaveText('reference=A-12, item=Pen, item=Pen, from=9, to=17');
+  expect(await demo.locator('form').evaluate((form: HTMLFormElement) => form.checkValidity())).toBe(
+    false,
+  );
+  await demo.getByRole('button', { name: 'Reset order' }).click();
+  await expect(reference).toHaveValue('A-12');
+  await reference.fill('B-7');
+  await demo.getByRole('button', { name: 'Submit order' }).click();
+  await expect(output).toHaveText('reference=B-7, item=Pen, item=Pen, from=9, to=17');
+});

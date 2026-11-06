@@ -64,6 +64,8 @@ export interface FileUploadProps
   onMove?: ((move: FileUploadMove) => void) | undefined;
   /** Submits the listed files' `file`s with a form under this name. */
   name?: string | undefined;
+  /** The id of the native form the files belong to, wherever the upload sits. */
+  form?: string | undefined;
   /** A form submit is refused while no file is listed. */
   isRequired?: boolean | undefined;
   /** Shows `errorMessage` and marks the upload invalid. */

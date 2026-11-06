@@ -21,6 +21,8 @@ import { registerFileInput } from './file-upload-form-data.js';
 interface FileFormInputProps {
   /** The form field name the files are submitted under. */
   name: string | undefined;
+  /** The id of the native form the input belongs to. */
+  form: string | undefined;
   /** The upload is required and lists no file, so a form submit is refused. */
   isRequired: boolean;
   /** The upload is disabled: the input is left out of the form's data and its validation. */
@@ -33,6 +35,7 @@ interface FileFormInputProps {
 
 interface FileFormOptions {
   name?: string | undefined;
+  form?: string | undefined;
   isRequired?: boolean | undefined;
   isInvalid?: boolean | undefined;
   isDisabled?: boolean | undefined;
@@ -105,7 +108,14 @@ function useResetFiles(
  * cannot set an input's files (no `DataTransfer`) still has form data carry them. The files are set
  * again only when they change, or when a form reset emptied the input, not on every render.
  */
-function FileFormInput({ name, isRequired, isDisabled, files, onInvalid }: FileFormInputProps) {
+function FileFormInput({
+  name,
+  form,
+  isRequired,
+  isDisabled,
+  files,
+  onInvalid,
+}: FileFormInputProps) {
   const ref = useRef<HTMLInputElement>(null);
   const held = useRef<readonly File[]>([]);
   useLayoutEffect(() => {
@@ -117,6 +127,7 @@ function FileFormInput({ name, isRequired, isDisabled, files, onInvalid }: FileF
       ref={ref}
       type="file"
       name={name}
+      form={form}
       multiple
       hidden
       disabled={isDisabled}
@@ -151,6 +162,7 @@ export function useFileForm(options: FileFormOptions): FileForm {
       name !== undefined || isRequired ? (
         <FileFormInput
           name={name}
+          form={options.form}
           isRequired={isRequired && !isReadOnly && !isDisabled && files.length === 0}
           isDisabled={isDisabled}
           files={files.flatMap(({ file }) => (file ? [file] : []))}

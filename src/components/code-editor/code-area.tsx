@@ -5,7 +5,7 @@ import type { AriaLabellingProps, KeyboardEventProps } from '../../core/events.j
 import { TextArea } from '../../primitives/index.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { toCompletionInputAttributes } from '../completion-list/completion-list.js';
-import type { FieldTextInputProps } from '../field/field.js';
+import { type FieldTextInputProps, useFieldFormOwner } from '../field/field.js';
 import { codeEditorHooks as hooks } from './code-editor-hooks.js';
 import { CodeHighlight } from './code-layers.js';
 import { alignLayers, type CodeEditorModel } from './use-code-editor.js';
@@ -133,6 +133,7 @@ function useInputProps(
 export function CodeArea({ model, props, locks, onChange, ...area }: CodeAreaProps) {
   const { listId, caretRef, inputRef, id, value, wrap, multiline, isInvalid, describedBy } = area;
   const inputProps = useInputProps(model, { props, onChange, multiline });
+  const form = useFieldFormOwner();
   return (
     <div {...hooks.slot('code')}>
       <CodeHighlight
@@ -143,6 +144,7 @@ export function CodeArea({ model, props, locks, onChange, ...area }: CodeAreaPro
       <TextArea
         {...inputProps}
         {...hooks.slot('input')}
+        form={form}
         readOnly={locks.isReadOnly}
         disabled={locks.isDisabled}
         aria-required={locks.isRequired || undefined}

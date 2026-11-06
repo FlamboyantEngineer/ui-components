@@ -254,6 +254,7 @@ export function TextField({
             {...hooks.slot('box')}
             ref={edit.boxRef}
             name={displayValue === undefined ? rest.name : undefined}
+            form={field.form}
             spellCheck={toSpellCheckAttribute(spellCheck)}
             type={toInputType(rest.type, { isRevealed: reveal.isShown, edit })}
             value={edit.text}

@@ -406,6 +406,15 @@ A field control whose own input does not submit its value shall submit it throug
 Implementation: `src/components/field/field-form-value.tsx`
 Verification: `src/components/field/field-form-value.test.tsx`, `src/components/boolean-field/boolean-field.test.tsx`
 
+### UIC-FIELD-8.5 - Explicit form association
+
+Every field control shall take `form`, the id of a native `<form>`, and give it as the `form` attribute to every native input it submits or validates with: its own input, each hidden `FieldFormValue` input (one per repeated value, as for TagsInput, MultiDateField and multiple SelectField), both endpoints of a range (NumberField's inputs and slider thumbs, DateTimeField's `startName` and `endName`), radio and checkbox groups (RatingField, ChoiceGroup), CodeEditor's text area and MaskedTextField's raw value. The field then takes part in that form wherever it sits: its form data, its native reset (which puts the field's initial value back) and its native validity. The id is resolved as the browser resolves the attribute, in the field's document or shadow root: a changed id moves the field to the new form, and an id that names no form leaves it in none, never in the form around it. A disabled field submits nothing. `Combobox`, `SegmentedChoice`, `Switch` and `FileUpload` take `form` for their inputs too.
+
+Explicit association changes native ownership only: the field still takes its library form's validation behavior, submit validation, disabled state and server errors (by `name`) from the React tree it renders in, and a `FormBoundary` (an overlay's) still ends those for it. Association across shadow roots or documents is not supported, as natively.
+
+Implementation: `src/components/field/field-form-owner.ts`, `src/components/field/field.tsx`, `src/components/field/field-form.ts`, `src/components/field/field-form-value.tsx`, `src/components/field/field-control.ts`
+Verification: `src/components/field/field-form-association.test.tsx`, `e2e/field.spec.ts`
+
 ## UIC-FIELD-9 - Previous values
 
 ### UIC-FIELD-9.1 - Marker

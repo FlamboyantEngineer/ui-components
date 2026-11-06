@@ -214,7 +214,12 @@ export function MaskedTextField({
         }}
       />
       {formValue === 'raw' ? (
-        <FieldFormValue name={name} value={raw} isDisabled={props.isDisabled ?? false} />
+        <FieldFormValue
+          name={name}
+          value={raw}
+          isDisabled={props.isDisabled ?? false}
+          form={props.form}
+        />
       ) : null}
     </>
   );

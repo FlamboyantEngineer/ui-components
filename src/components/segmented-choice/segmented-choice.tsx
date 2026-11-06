@@ -85,6 +85,8 @@ export interface SegmentedChoiceProps<M extends SegmentedChoiceSelectionMode = '
   countVariant?: BadgeCountVariant | undefined;
   /** Submits the value with a form under this name, one hidden input per selected value. */
   name?: string | undefined;
+  /** The id of the native form the hidden inputs belong to, wherever the control sits. */
+  form?: string | undefined;
   /** Replaces the root `<div>` with the caller's own, given its props and the group's state. */
   render?: ElementRender<'div', SegmentedChoiceRenderState> | undefined;
 }
@@ -143,6 +145,7 @@ export function SegmentedChoice<M extends SegmentedChoiceSelectionMode = 'single
   showZero = false,
   countVariant,
   name,
+  form,
   render,
   className,
   ref,
@@ -201,7 +204,7 @@ export function SegmentedChoice<M extends SegmentedChoiceSelectionMode = 'single
           {...{ size, iconOnly, countMax, showZero, countVariant }}
         />
       ))}
-      <FieldFormValue name={name} value={selection.selectedKeys} isDisabled={isDisabled} />
+      <FieldFormValue {...{ name, form, isDisabled }} value={selection.selectedKeys} />
     </ToggleButtonGroup>
   );
 }

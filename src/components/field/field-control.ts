@@ -110,6 +110,7 @@ const layoutKeys = new Set<string>([
   'autoFocus',
   'controlRef',
   'onLeave',
+  'form',
   'className',
   'id',
   'ref',

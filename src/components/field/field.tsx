@@ -6,6 +6,7 @@ import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { createSlotRegistry } from '../../utils/slot-registry.js';
 import { type FieldSlots, useFieldBehaviour } from './field-behaviour.js';
 import { type FieldControlHandle, focusControl } from './field-form.js';
+import { FieldFormOwnerContext } from './field-form-owner.js';
 import { FieldHelpParts } from './field-help.js';
 import {
   defaultFieldMenu,
@@ -22,6 +23,7 @@ import {
   type FieldLabelLayout,
   FieldMessage,
   toFieldControlProps,
+  toFieldData,
   toInnerControlSize,
   useFieldIds,
 } from './field-parts.js';
@@ -92,6 +94,8 @@ export interface FieldProps<T> extends BaseProps, RefProps<HTMLDivElement> {
    */
   renderMessage?:
     ((validation: FieldValidation, issues: readonly FieldIssue[]) => ReactNode) | undefined;
+  /** The id of the native form every input the field submits belongs to, wherever it sits. */
+  form?: string | undefined;
   /** Focuses the control when the field mounts (its first focusable element for a group). */
   autoFocus?: boolean | undefined;
   /** A handle whose `focus()` reveals the field and focuses its control, for an external owner. */
@@ -114,34 +118,6 @@ export interface FieldProps<T> extends BaseProps, RefProps<HTMLDivElement> {
 function restoreField(state: FieldState<unknown>, slots: FieldSlots) {
   focusControl(slots.read('control'));
   state.restore();
-}
-
-/** What the root publishes: its layout, and its states from the field state and its focus. */
-function toFieldData(
-  layout: {
-    labelLayout: FieldLabelLayout;
-    size: ControlSize;
-    density: FieldDensity | undefined;
-    changeLayout: FieldChangeLayout | undefined;
-    messageDisplay: FieldMessageDisplay | undefined;
-  },
-  state: FieldState<unknown>,
-  focused: boolean,
-) {
-  return {
-    ...layout,
-    density: layout.density ?? 'default',
-    changeLayout: layout.changeLayout ?? 'inline',
-    messageDisplay: layout.messageDisplay ?? 'inline',
-    focused,
-    validation: state.validation.status,
-    dirty: state.isDirty,
-    required: state.isRequired,
-    readonly: state.isReadOnly,
-    disabled: state.isDisabled,
-    touched: state.isTouched,
-    filled: !state.isEmpty,
-  };
 }
 
 /** The parts after the control, one size below the field: restore while dirty, and the help. */
@@ -253,6 +229,7 @@ export function Field<T>({
   controlRef,
   onLeave,
   commitOnBlur = false,
+  form,
   children,
   className,
   id,
@@ -263,7 +240,7 @@ export function Field<T>({
   const [slots] = useState<FieldSlots>(() => createSlotRegistry());
   const behaviour = useFieldBehaviour(state, slots, {
     ...{ label, menu, menuIcons, onMenuAction },
-    ...{ commitOnBlur, autoFocus, messageDisplay, ref, controlRef, onLeave },
+    ...{ commitOnBlur, autoFocus, messageDisplay, ref, controlRef, onLeave, form },
     hasHelp: !isEmptyNode(help),
   });
   const controlSlot = useRef<HTMLDivElement>(null);
@@ -288,7 +265,7 @@ export function Field<T>({
       {labelLayout === 'control-label' ? null : labelElement}
       <div {...hooks.slot('control')} ref={controlSlot}>
         <FieldChangeLayoutContext value={changeLayout ?? 'inline'}>
-          {children(control)}
+          <FieldFormOwnerContext value={form}>{children(control)}</FieldFormOwnerContext>
         </FieldChangeLayoutContext>
       </div>
       {labelLayout === 'control-label' ? labelElement : null}
@@ -324,6 +301,7 @@ export type {
   FieldTextInputProps,
 } from './field-control.js';
 export { toSpellCheckAttribute, useFieldControl } from './field-control.js';
+export { useFieldFormOwner } from './field-form-owner.js';
 export { FieldFormValue } from './field-form-value.js';
 export type { FieldMenuAction, FieldMenuEntry, FieldMenuIcons } from './field-menu-entries.js';
 export type { FieldMessageDisplay } from './field-message-tooltip.js';

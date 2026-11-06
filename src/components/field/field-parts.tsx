@@ -9,6 +9,7 @@ import { joinIds } from '../../utils/join-ids.js';
 import type { SlotRef } from '../../utils/slot-registry.js';
 import { Button } from '../button/button.js';
 import { TextMatch } from '../text-match/text-match.js';
+import type { FieldMessageDisplay } from './field-message-tooltip.js';
 import type { FieldSeverity, FieldState, FieldValidation } from './field-state.js';
 
 /**
@@ -214,4 +215,32 @@ export function FieldHelp({
       </span>
     </>
   );
+}
+
+/** What the root publishes: its layout, and its states from the field state and its focus. */
+export function toFieldData(
+  layout: {
+    labelLayout: FieldLabelLayout;
+    size: ControlSize;
+    density: FieldDensity | undefined;
+    changeLayout: FieldChangeLayout | undefined;
+    messageDisplay: FieldMessageDisplay | undefined;
+  },
+  state: FieldState<unknown>,
+  focused: boolean,
+) {
+  return {
+    ...layout,
+    density: layout.density ?? 'default',
+    changeLayout: layout.changeLayout ?? 'inline',
+    messageDisplay: layout.messageDisplay ?? 'inline',
+    focused,
+    validation: state.validation.status,
+    dirty: state.isDirty,
+    required: state.isRequired,
+    readonly: state.isReadOnly,
+    disabled: state.isDisabled,
+    touched: state.isTouched,
+    filled: !state.isEmpty,
+  };
 }
