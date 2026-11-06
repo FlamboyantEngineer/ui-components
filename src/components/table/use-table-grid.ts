@@ -20,6 +20,7 @@ import { type ColumnLayout, useColumnLayout } from './use-column-layout.js';
 import { type ColumnReorder, useColumnReorder } from './use-column-reorder.js';
 import { useColumnWidths } from './use-column-widths.js';
 import { type TablePinOffsets, usePinnedOffsets } from './use-pinned-offsets.js';
+import { useRecordedEdits } from './use-recorded-edits.js';
 import { useTableGrouping } from './use-table-grouping.js';
 import { resolveSelectionBar, useCellsView, useRowModel } from './use-table-model.js';
 import { type TableReorder, useTableReorder } from './use-table-reorder.js';
@@ -154,6 +155,7 @@ function mergeRootProps<T extends TableRow>(
     columnReorder: ColumnReorder;
     editingProps: object;
     cellsProps: object;
+    historyProps: object;
   },
 ): object {
   const hasColumnMoves = columns.some((column) => column.allowsReordering);
@@ -164,6 +166,7 @@ function mergeRootProps<T extends TableRow>(
     hasColumnMoves ? parts.columnReorder.rootProps : {},
     hasEditing ? parts.editingProps : {},
     parts.cellsProps,
+    parts.historyProps,
   );
 }
 
@@ -179,6 +182,30 @@ function createBody<T extends TableRow>(
     isLoading: options.isLoading,
     loadingMessage: options.loadingMessage,
   };
+}
+
+/**
+ * Editing and spreadsheet mode over the visible rows and drawn columns, reporting through the
+ * callbacks the edit history records.
+ */
+function useEditingParts<T extends TableRow>(
+  options: TableGridOptions<T>,
+  parts: { rows: readonly T[]; structure: TableStructure<T>; isRowDisabled: (row: T) => boolean },
+) {
+  const recorded = useRecordedEdits({ ...options, isRowDisabled: parts.isRowDisabled });
+  const edited = {
+    ...options,
+    onCellEdit: recorded.onCellEdit,
+    onCellsChange: recorded.onCellsChange,
+  };
+  const cells = useCellsView(edited, parts);
+  const editing = useCellEditing({
+    ...edited,
+    columns: parts.structure.columns,
+    rows: parts.rows,
+    typeToEdit: cells.view !== null,
+  });
+  return { edited, cells, editing, historyProps: recorded.rootProps };
 }
 
 /**
@@ -199,16 +226,10 @@ export function useTableGrid<T extends TableRow>(options: TableGridOptions<T>): 
   const reordering = useTableReorder({ ...reorderView, isRowDisabled });
   const structure = useStructure(options, layout.visibleColumns, grouped.isGrouped);
   const visibleRows = useVisibleRows<T>(grouped);
-  const cells = useCellsView(options, {
+  const { edited, cells, editing, historyProps } = useEditingParts(options, {
     rows: visibleRows,
     structure,
-    isRowDisabled: selection.isRowDisabled,
-  });
-  const editing = useCellEditing({
-    ...options,
-    columns: layout.visibleColumns,
-    rows: visibleRows,
-    typeToEdit: cells.view !== null,
+    isRowDisabled,
   });
   const columnReorder = useColumnReorder({
     columns: layout.visibleColumns,
@@ -250,13 +271,14 @@ export function useTableGrid<T extends TableRow>(options: TableGridOptions<T>): 
     onRowAction: createTableRowAction(keyIndex, onRowAction),
     body: createBody(options, { nodes: grouped.nodes, model, status, message }),
     exportMenu: resolveExportMenu(options, { view, selection, drawn: structure.columns }),
-    selectionBar: resolveSelectionBar(options, { selection, columns: structure.columns }),
+    selectionBar: resolveSelectionBar(edited, { selection, columns: structure.columns }),
     rootProps: mergeRootProps(columns, {
       reordering: activeReordering,
       sort: view.sort,
       columnReorder,
       editingProps: editing.rootProps,
       cellsProps: cells.rootProps,
+      historyProps,
     }),
   };
 }

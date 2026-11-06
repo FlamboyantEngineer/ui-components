@@ -1,6 +1,6 @@
 # Table
 
-`Table` shows records a reader scans, sorts, filters, selects, edits and acts on. It is built on React Aria's `Table`: columns and rows are plain data with render callbacks, and the table adds sorting by one or several columns, a search box and typed column filters, selection with a selection bar and bulk edit, resizable, reorderable, hideable, pinned and grouped columns with a persisted layout, row groups with aggregates, nested rows and detail rows, cell editing and a spreadsheet mode with cell ranges, the clipboard and filling, a summary row, CSV export, row reordering by drag and drop or keyboard, pagination through [Pagination](PAGINATION.md), loading more rows, full-width loading, empty and error notices, and virtualization for long lists. `sortTableRows`, `filterTableRows` and `applyTableMove` are exported for callers that keep the order, the filtering or the pages of their rows themselves, `formatTsv` and `parseTsv` for tab-separated text, and `formatCsv` and `formatTableCsv` for CSV export.
+`Table` shows records a reader scans, sorts, filters, selects, edits and acts on. It is built on React Aria's `Table`: columns and rows are plain data with render callbacks, and the table adds sorting by one or several columns, a search box and typed column filters, selection with a selection bar and bulk edit, resizable, reorderable, hideable, pinned and grouped columns with a persisted layout, row groups with aggregates, nested rows and detail rows, cell editing and a spreadsheet mode with cell ranges, the clipboard and filling, a summary row, CSV export, an edit history with undo and redo, row reordering by drag and drop or keyboard, pagination through [Pagination](PAGINATION.md), loading more rows, full-width loading, empty and error notices, and virtualization for long lists. `sortTableRows`, `filterTableRows` and `applyTableMove` are exported for callers that keep the order, the filtering or the pages of their rows themselves, `formatTsv` and `parseTsv` for tab-separated text, and `formatCsv` and `formatTableCsv` for CSV export.
 
 Pointer ownership and drag lifecycle cleanup follow the shared [drag interaction contract](DRAG-INTERACTIONS.md).
 
@@ -646,6 +646,29 @@ When the caller pages the rows (`pagination.rowCount`) or loads them in parts (`
 
 Implementation: `src/components/table/table-export-menu.tsx`, `src/utils/download.ts`
 Verification: `src/components/table/table-export-menu.test.tsx`, `e2e/table-data.spec.ts`
+
+## UIC-TABLE-17 - Edit history
+
+### UIC-TABLE-17.1 - Entries
+
+`useTableEditHistory({ limit, resetKey })` shall return a bounded edit history (`TableEditHistory`) for a table's `editHistory`. Each report the table makes of changed cells becomes one entry of `TableCellChange`s (`rowId`, `columnId`, `before`, `after`): a committed edit, and a whole paste, fill, clear or bulk edit. Edits the column refuses never reach a report, and a cell whose value stays the same is left out, so they record nothing. `undo` reports the latest entry's `before` values through `onCellsChange` in one batch (else `onCellEdit` for each cell) and moves it to the redo entries; `redo` reports its `after` values the same way and moves it back. The table never changes its rows itself. `canUndo` and `canRedo` say whether an entry waits, for the host's toolbar buttons. Recording an entry forgets the undone ones.
+
+Implementation: `src/components/table/table-edit-history.ts`, `src/components/table/use-recorded-edits.ts`, `src/components/table/use-table-grid.ts`
+Verification: `src/components/table/table-edit-history.test.tsx`, `e2e/table-data.spec.ts`
+
+### UIC-TABLE-17.2 - Keys
+
+On a table with `editHistory`, Control or Command with Z shall undo, and with Shift+Z, or Control or Command with Y, redo, except a key whose default a handler already prevented, a key in a field, an open cell editor or editable content, which keeps its own history, and a key an input method composition owns. On a non-Latin layout, the keys in the Z and Y keys' places do ([UIC-SHORTCUT-1.8](SHORTCUT.md)).
+
+Implementation: `src/components/table/use-recorded-edits.ts`, `src/utils/is-editable-target.ts`, `src/utils/is-composing-key.ts`
+Verification: `src/components/table/table-edit-history.test.tsx`, `e2e/table-data.spec.ts`
+
+### UIC-TABLE-17.3 - Rebasing on the host's rows
+
+An entry shall find its cells by row id and column id among the table's current rows, nested ones included, whatever their order, page or filter, and apply only the cells whose row is still there and enabled, whose column still allows editing, and that still hold the value the entry left (`after` to undo, `before` to redo), so a change made elsewhere since is never overwritten. The applied part moves to the other side; an entry none of whose cells apply is dropped, and the step moves on to the next one. `limit` (100 by default) keeps the latest entries, the oldest going first, and a change of `resetKey`, such as replacing the dataset, or `clear()` forgets every entry. `canUndo` counts entries, not whether they still apply.
+
+Implementation: `src/components/table/table-edit-history.ts`, `src/components/table/use-recorded-edits.ts`
+Verification: `src/components/table/table-edit-history.test.tsx`
 
 ## Hooks
 

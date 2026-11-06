@@ -34,7 +34,7 @@ import {
   ShareWeights,
 } from './table-content-contracts.js';
 import { HeaderFilter, PickerCell } from './table-control-cases.js';
-import { CsvExport } from './table-data-cases.js';
+import { CsvExport, EditHistory } from './table-data-cases.js';
 import {
   ControlledLayout,
   ControlledMultipleSort,
@@ -600,6 +600,12 @@ mountLab(
       description="Export CSV writes the current page, every filtered row in the shown order, or the selected rows, as the drawn columns. The caller-paged table writes Note then Name, reads Loaded rows until it is given every row, and shows the text instead of downloading it. Formula-like notes start with an apostrophe."
     >
       <CsvExport />
+    </LabSection>
+    <LabSection
+      title="Undo and redo"
+      description="Edit, paste, fill, clear or bulk edit, then Undo or Control+Z on the grid; Shift+Control+Z or Control+Y redoes. A paste undoes as one step. Grow Basil elsewhere, then undo a Basil height edit: the newer height stays. Reload the plants forgets the history. Control+Z inside an open editor stays the editor's."
+    >
+      <EditHistory />
     </LabSection>
     <LabSection title="Virtualized" description="10,000 rows; only those in view are rendered.">
       <div data-lab="virtualized" style={{ height: 320 }}>

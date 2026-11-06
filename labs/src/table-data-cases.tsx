@@ -1,6 +1,12 @@
 import { useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
 import { Checkbox } from '../../src/components/checkbox/checkbox.js';
-import type { TableColumn, TableExportFile } from '../../src/components/table/index.js';
+import {
+  type TableCellEdit,
+  type TableColumn,
+  type TableExportFile,
+  useTableEditHistory,
+} from '../../src/components/table/index.js';
 import { Table } from '../../src/components/table/table.js';
 import { LabOutput } from './lab-output.js';
 
@@ -74,6 +80,81 @@ export function CsvExport() {
         <LabOutput name="csv-scope">{file?.scope ?? 'none'}</LabOutput>
         <pre data-lab-output="csv-text">{file?.text ?? ''}</pre>
       </section>
+    </div>
+  );
+}
+
+const editableColumns: TableColumn<Plant>[] = [
+  { id: 'name', header: 'Name', allowsEditing: true, allowsSorting: true },
+  { id: 'family', header: 'Family', allowsEditing: true, bulkEdit: { type: 'text' } },
+  {
+    id: 'height',
+    header: 'Height (cm)',
+    align: 'end',
+    allowsEditing: true,
+    allowsSorting: true,
+    validateValue: (value) => (typeof value === 'number' && value > 0 ? null : 'Above zero'),
+    bulkEdit: { type: 'number' },
+  },
+];
+
+function applyEdits(rows: readonly Plant[], edits: readonly TableCellEdit<Plant>[]): Plant[] {
+  return rows.map((row) =>
+    edits
+      .filter((edit) => edit.row.id === row.id)
+      .reduce((next, edit) => ({ ...next, [edit.columnId]: edit.value }), row),
+  );
+}
+
+/**
+ * Undo and redo: edits, pastes, fills, clears and bulk edits each undo as one step, from the
+ * buttons or Control+Z on the grid. A height changed elsewhere is never overwritten.
+ */
+export function EditHistory() {
+  const [rows, setRows] = useState(plants.slice(0, 4));
+  const [generation, setGeneration] = useState(0);
+  const history = useTableEditHistory({ limit: 20, resetKey: generation });
+  const [last, setLast] = useState('none');
+  const apply = (edits: readonly TableCellEdit<Plant>[]) => {
+    setLast(edits.map((edit) => `${String(edit.row.id)}.${edit.columnId}`).join(' '));
+    setRows((current) => applyEdits(current, edits));
+  };
+  return (
+    <div data-lab="edit-history">
+      <Button isDisabled={!history.canUndo} onPress={history.undo}>
+        Undo
+      </Button>
+      <Button isDisabled={!history.canRedo} onPress={history.redo}>
+        Redo
+      </Button>
+      <Button
+        onPress={() =>
+          setRows((current) =>
+            current.map((row) => (row.id === 'basil' ? { ...row, height: row.height + 1 } : row)),
+          )
+        }
+      >
+        Grow Basil elsewhere
+      </Button>
+      <Button
+        onPress={() => {
+          setRows(plants.slice(0, 4));
+          setGeneration((value) => value + 1);
+        }}
+      >
+        Reload the plants
+      </Button>
+      <Table
+        aria-label="Plants with undo"
+        rows={rows}
+        columns={editableColumns}
+        cellSelection="range"
+        selectionMode="multiple"
+        editHistory={history}
+        onCellEdit={(edit) => apply([edit])}
+        onCellsChange={apply}
+      />
+      <LabOutput name="history-last">{last}</LabOutput>
     </div>
   );
 }

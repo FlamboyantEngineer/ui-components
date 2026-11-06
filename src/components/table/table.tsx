@@ -21,6 +21,7 @@ import { TableBody } from './table-body.js';
 import { TableSelectionBar } from './table-bulk-edit.js';
 import { TableColumnFilter } from './table-column-filter.js';
 import { getColumnText, type TableColumnGroup, type TableColumnLayout } from './table-columns.js';
+import type { TableEditHistory } from './table-edit-history.js';
 import type { TableCsvExport } from './table-export.js';
 import { TableExportMenu } from './table-export-menu.js';
 import { isEmptyFilterValue, setColumnFilter, type TableFilter } from './table-filters.js';
@@ -102,6 +103,11 @@ export interface TableProps<T extends TableRow>
   getChildRows?: TableChildRows<T>;
   /** Content of a full-width detail row under a row, drawn once the row is expanded. */
   renderRowDetail?: ((row: T) => ReactNode) | undefined;
+  /**
+   * Records the cell edits the table reports, and applies its undo and redo through
+   * `onCellsChange`; Control or Command with Z undoes on the table.
+   */
+  editHistory?: TableEditHistory | undefined;
   /** Reports a finished cell edit. The table never changes its rows itself. */
   onCellEdit?: ((edit: TableCellEdit<T>) => void) | undefined;
   /** Shows the rows one page at a time under a page navigation. */

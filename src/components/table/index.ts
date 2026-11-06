@@ -9,6 +9,12 @@ export type {
 } from './table-cell-range.js';
 export type { TableColumnGroup, TableColumnLayout } from './table-columns.js';
 export type {
+  TableCellChange,
+  TableEditHistory,
+  TableEditHistoryOptions,
+} from './table-edit-history.js';
+export { useTableEditHistory } from './table-edit-history.js';
+export type {
   TableCsvExport,
   TableCsvSource,
   TableExportFile,

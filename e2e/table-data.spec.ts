@@ -68,3 +68,55 @@ test.describe('Table lab, data', () => {
     await expect(output(root, 'csv-text')).toContainText("'-Grey leaves,Sage");
   });
 });
+
+test.describe('Table lab, edit history', () => {
+  const heights = (grid: Locator) => grid.locator('.ui-table__cell[data-column="height"]');
+
+  test('UIC-TABLE-17.1 UIC-TABLE-17.2 undoes a paste as one step from the keyboard and the buttons', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('table');
+    const root = page.locator('[data-lab="edit-history"]');
+    const grid = root.getByRole('grid');
+    await expect(heights(grid)).toHaveText(['45', '30', '90', '150']);
+    await heights(grid).first().click();
+    await page.keyboard.press('Shift+ArrowDown');
+    await page.evaluate(() => {
+      const data = new DataTransfer();
+      data.setData('text/plain', '12');
+      document.activeElement?.dispatchEvent(
+        new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }),
+      );
+    });
+    await expect(heights(grid)).toHaveText(['12', '12', '90', '150']);
+    await page.keyboard.press('Control+z');
+    await expect(heights(grid)).toHaveText(['45', '30', '90', '150']);
+    await page.keyboard.press('Control+Shift+z');
+    await expect(heights(grid)).toHaveText(['12', '12', '90', '150']);
+    await root.getByRole('button', { name: 'Undo' }).click();
+    await expect(heights(grid)).toHaveText(['45', '30', '90', '150']);
+    await expect(root.getByRole('button', { name: 'Undo' })).toBeDisabled();
+    await root.getByRole('button', { name: 'Redo' }).click();
+    await expect(output(root, 'history-last')).toHaveText('basil.height chive.height');
+    await lab.expectAccessible('[data-lab="edit-history"]');
+  });
+
+  test('UIC-TABLE-17.2 leaves Control+Z to an open editor', async ({ page, lab }) => {
+    await lab.open('table');
+    const root = page.locator('[data-lab="edit-history"]');
+    const grid = root.getByRole('grid');
+    const name = grid.locator('.ui-table__cell[data-column="name"]').first();
+    await name.dblclick();
+    const input = grid.getByRole('textbox');
+    await input.fill('Thyme');
+    await input.press('Enter');
+    await expect(name).toHaveText('Thyme');
+    await name.dblclick();
+    await input.pressSequentially('x');
+    await input.press('Control+z');
+    await expect(input).toBeVisible();
+    await input.press('Escape');
+    await expect(name).toHaveText('Thyme');
+  });
+});
