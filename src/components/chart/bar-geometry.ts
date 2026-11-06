@@ -5,6 +5,7 @@ import { type BandScale, createBandScale } from '../../utils/band-scale.js';
 import { getNumberFormat } from '../../utils/intl-format.js';
 import { createLinearScale, type LinearScale } from '../../utils/linear-scale.js';
 import { requireDefined } from '../../utils/require-defined.js';
+import { withAxisFormat } from './chart-format.js';
 import { createPlaceIdentities, toValueIdentity } from './chart-identity.js';
 import {
   type ChartBox,
@@ -39,6 +40,8 @@ export interface BarGeometryInput {
   locale: string;
   /** How the value axis labels are formatted; by default with the tick step's decimals. */
   formatOptions?: Intl.NumberFormatOptions | undefined;
+  /** Writes the value axis labels instead of `formatOptions`. */
+  formatAxisValue?: ((value: number) => string) | undefined;
 }
 
 /** One drawn bar. */
@@ -163,7 +166,11 @@ export function createBarValueScale(input: BarGeometryInput, plot: ChartBox): Li
       valueTickSpacing[input.orientation],
     ),
   });
-  return unit === 1 ? scale : toUnitScale(scale, unit, input);
+  const values = unit === 1 ? scale : toUnitScale(scale, unit, input);
+  const labelled = withAxisFormat(values, input.formatAxisValue);
+  const units = unitScales.get(values);
+  if (units) unitScales.set(labelled, units);
+  return labelled;
 }
 
 /**

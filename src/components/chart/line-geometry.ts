@@ -5,6 +5,7 @@ import { clamp } from '../../utils/clamp.js';
 import { createLinearScale, type LinearScale, type ScaleTick } from '../../utils/linear-scale.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { summarizeNumbers } from '../../utils/summarize-numbers.js';
+import { withAxisFormat } from './chart-format.js';
 import { createPlaceIdentities, toValueIdentity } from './chart-identity.js';
 import {
   type ChartBox,
@@ -13,6 +14,7 @@ import {
   resolvePlotBox,
   roundCoordinate,
 } from './chart-layout.js';
+import { sampleRun } from './line-sampling.js';
 import {
   createLineXAxis,
   createLineXReader,
@@ -24,8 +26,8 @@ import {
 export interface LineChartPoint {
   /** Where the value sits along the x axis: an ISO 8601 date or date-time, or a number. */
   x: LineChartX;
-  /** The value; one that is not a finite number breaks the line. */
-  y: number;
+  /** The value, or `null` when it is missing; a missing value or one that is not a finite number breaks the line. */
+  y: number | null;
 }
 
 /** A drawn series: its position among the chart's series and its points. */
@@ -49,6 +51,12 @@ export interface LineGeometryInput {
   timeZone: string;
   locale: string;
   formatOptions?: Intl.NumberFormatOptions | undefined;
+  /** Writes the value axis labels instead of `formatOptions`. */
+  formatAxisValue?: ((value: number) => string) | undefined;
+  /** Draws the line and area straight across missing values instead of breaking them there. */
+  connectsMissing?: boolean | undefined;
+  /** Draws, per pixel column, only each run's first, lowest, highest and last value. */
+  downsample?: boolean | undefined;
 }
 
 /** A drawn value. */
@@ -72,12 +80,17 @@ interface LinePath {
   series: number;
   line: string;
   area: string;
+  /** The values drawn as points: every drawn value, or the ones downsampling keeps. */
   points: LinePoint[];
+  /** Every drawn value, kept or not, for the summary. */
+  values: number[];
 }
 
 export interface LineGeometry {
   lines: LinePath[];
   xAxis: LineXAxis;
+  /** Values to positions along the value axis. */
+  values: LinearScale;
   yTicks: Array<ScaleTick<number>>;
   plot: ChartBox;
 }
@@ -118,8 +131,13 @@ function toPaths(runs: readonly LinePoint[][], baseline: number) {
 /** One series laid out: its readable points in x order, split into runs at missing values. */
 function layOutSeries(
   { series, id, points }: LineGeometrySeries,
-  scales: { xAxis: LineXAxis; y: (value: number) => number },
-): { runs: LinePoint[][]; points: LinePoint[] } {
+  scales: {
+    xAxis: LineXAxis;
+    y: (value: number) => number;
+    connectsMissing: boolean;
+    downsample: boolean;
+  },
+): { runs: LinePoint[][]; points: LinePoint[]; values: number[] } {
   // Each x is read once before the sort, not again in the comparator.
   const ordered = points
     .map((point) => {
@@ -133,8 +151,9 @@ function layOutSeries(
   const placeOf = createPlaceIdentities();
   for (const { point, x, at } of ordered) {
     const place = placeOf(at);
-    if (!Number.isFinite(point.y)) {
-      runs.push([]);
+    const value = point.y;
+    if (value === null || !Number.isFinite(value)) {
+      if (!scales.connectsMissing) runs.push([]);
       continue;
     }
     const laid = {
@@ -143,20 +162,27 @@ function layOutSeries(
       index: drawn.length,
       position: at,
       at: x,
-      value: point.y,
+      value,
       x: roundCoordinate(scales.xAxis.map(x)),
-      y: roundCoordinate(scales.y(point.y)),
+      y: roundCoordinate(scales.y(value)),
     };
     drawn.push(laid);
     requireDefined(runs.at(-1)).push(laid);
   }
-  return { runs: runs.filter((run) => run.length > 0), points: drawn };
+  const filled = runs.filter((run) => run.length > 0);
+  const values = drawn.map((point) => point.value);
+  if (!scales.downsample) return { runs: filled, points: drawn, values };
+  // Kept points are renumbered along the series, so the arrow keys step through them.
+  const sampled = filled.map((run) => sampleRun(run));
+  let index = 0;
+  const renumbered = sampled.map((run) => run.map((point) => ({ ...point, index: index++ })));
+  return { runs: renumbered, points: renumbered.flat(), values };
 }
 
 /** The value axis, also used to measure tick labels before laying out paths. */
 export function createLineValueScale(input: LineGeometryInput, plot: ChartBox): LinearScale {
   const isFixed = input.minValue !== undefined || input.maxValue !== undefined;
-  return createLinearScale({
+  const scale = createLinearScale({
     domain: findValueDomain(input),
     range: [plot.bottom, plot.top],
     nice: !isFixed,
@@ -165,13 +191,14 @@ export function createLineValueScale(input: LineGeometryInput, plot: ChartBox): 
     locale: input.locale,
     formatOptions: input.formatOptions,
   });
+  return withAxisFormat(scale, input.formatAxisValue);
 }
 
 /**
  * Lays series out in a box: x along a time or linear axis across the readable x values, and
  * values along a value axis (higher values higher up). Points whose x cannot be read are left out;
- * a value that is not a finite number breaks the line and the area, which fills toward zero or
- * the edge nearest it. Coordinates are rounded to two decimals.
+ * a missing value (`null`) or one that is not a finite number breaks the line and the area, unless
+ * `connectsMissing` draws across it. The area fills toward zero or the edge nearest it. Coordinates are rounded to two decimals.
  */
 export function resolveLineGeometry(
   input: LineGeometryInput,
@@ -189,13 +216,23 @@ export function resolveLineGeometry(
   const [low, high] = [Math.min(...values.domain), Math.max(...values.domain)];
   const baseline = roundCoordinate(values.map(clamp(0, low, high)));
   const lines = input.series.map((entry) => {
-    const { runs, points } = layOutSeries(entry, { xAxis, y: values.map });
+    const {
+      runs,
+      points,
+      values: drawnValues,
+    } = layOutSeries(entry, {
+      xAxis,
+      y: values.map,
+      connectsMissing: input.connectsMissing ?? false,
+      downsample: input.downsample ?? false,
+    });
     return {
       key: toValueIdentity(entry.id),
       series: entry.series,
       ...toPaths(runs, baseline),
       points,
+      values: drawnValues,
     };
   });
-  return { lines, xAxis, yTicks: values.ticks(), plot };
+  return { lines, xAxis, values, yTicks: values.ticks(), plot };
 }

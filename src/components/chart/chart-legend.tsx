@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
@@ -42,8 +43,13 @@ export function useHiddenKeys({
   defaultHiddenKeys,
   onHiddenKeysChange,
 }: ChartHiddenKeysProps): [ReadonlySet<Key>, (keys: Set<Key>) => void] {
+  // One set per controlled value, so a render that keeps it keeps what the chart derived from it.
+  const controlled = useMemo(
+    () => (hiddenKeys === undefined ? undefined : new Set(hiddenKeys)),
+    [hiddenKeys],
+  );
   return useControllableState<ReadonlySet<Key>>(
-    hiddenKeys === undefined ? undefined : new Set(hiddenKeys),
+    controlled,
     new Set(defaultHiddenKeys ?? []),
     onHiddenKeysChange as ((keys: ReadonlySet<Key>) => void) | undefined,
   );

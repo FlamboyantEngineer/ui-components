@@ -9,7 +9,12 @@ const xAxis = createLineXAxis({
   locale: 'en-US',
   timeZone: 'UTC',
 });
-const options = { xAxis, format: new Intl.NumberFormat('en-US'), categoryLabel: 'Day' };
+const numbers = new Intl.NumberFormat('en-US');
+const options = {
+  xAxis,
+  writeValue: (datum: { value: number }) => numbers.format(datum.value),
+  categoryLabel: 'Day',
+};
 
 describe('toLineTable', () => {
   it('UIC-CHART-6.4 keeps the first duplicate, blanks missing values and orders all series by x', () => {

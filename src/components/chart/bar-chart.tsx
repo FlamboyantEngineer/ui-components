@@ -1,23 +1,19 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { memo, type ReactNode } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, Orientation, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { useLocale, useNumberFormatter } from '../../primitives/index.js';
+import { useLocale } from '../../primitives/index.js';
+import { getNumberFormat } from '../../utils/intl-format.js';
 import { requireDefined } from '../../utils/require-defined.js';
-import {
-  type BarChartLayout,
-  type BarGeometry,
-  type BarGeometryInput,
-  createBarValueScale,
-  resolveBarGeometry,
-} from './bar-geometry.js';
-import { Chart, type ChartSeries, type ChartTable, type ChartViewProps } from './chart.js';
+import { useBarChartModel } from './bar-chart-model.js';
+import type { BarChartLayout, BarGeometry } from './bar-geometry.js';
+import { Chart, type ChartSeries, type ChartViewProps } from './chart.js';
 import { ChartAxis } from './chart-axis.js';
+import { type ChartDatum, type ChartFormatProps, toDatum, toTooltipText } from './chart-format.js';
 import { barChartHooks, chartHooks } from './chart-hooks.js';
-import { resolvePlotBox } from './chart-layout.js';
 import {
   type ChartHiddenKeysProps,
   ChartLegend,
@@ -25,8 +21,8 @@ import {
   useHiddenKeys,
 } from './chart-legend.js';
 import { ChartPlot, useChartPoints } from './chart-points.js';
-import { useValueSummary } from './chart-summary.js';
-import { useChartFrame, useLabelMargin } from './use-chart-box.js';
+import { type ChartReference, ChartReferences, type PlacedReference } from './chart-references.js';
+import { useChartFrame } from './use-chart-box.js';
 
 export type { BarChartLayout } from './bar-geometry.js';
 
@@ -42,6 +38,7 @@ export interface BarChartProps
     AriaLabellingProps,
     ChartViewProps,
     ChartHiddenKeysProps,
+    ChartFormatProps<string>,
     RefProps<HTMLDivElement> {
   /** Visible title that names the chart. Without one, name it with `aria-label` or `aria-labelledby`. */
   label?: ReactNode;
@@ -57,6 +54,11 @@ export interface BarChartProps
   height?: number | undefined;
   /** How values are formatted on the axis, in names, the tooltip and the table. */
   formatOptions?: Intl.NumberFormatOptions | undefined;
+  /**
+   * Lines and bands at values of the value axis, across the bars whichever way they run; they do
+   * not stretch the axis, and the plot cuts them.
+   */
+  references?: readonly ChartReference[] | undefined;
   /** Heads the table's column of categories. Defaults to the provider's `chartCategory` string. */
   categoryLabel?: string | undefined;
   /** Replaces the generated summary of the values. */
@@ -74,20 +76,21 @@ interface BarPlotProps {
   categories: readonly string[];
   series: readonly BarChartSeries[];
   orientation: Orientation;
-  format: Intl.NumberFormat;
+  /** Writes each value, given its datum. */
+  writeValue: (datum: ChartDatum) => string;
+  renderTooltip: ChartFormatProps<string>['renderTooltip'];
+  references: readonly PlacedReference[];
 }
 
-/** The axes and the bars, each bar a focusable value with a tooltip. */
-function BarPlot({
-  geometry,
-  width,
-  height,
-  categories,
-  series,
-  orientation,
-  format,
-}: BarPlotProps) {
+/**
+ * The axes and the bars, each bar a focusable value with a tooltip. It skips a render while its
+ * inputs are unchanged, as when the chart around it renders for its summary.
+ */
+const BarPlot = memo(function BarPlot(props: BarPlotProps) {
+  const { geometry, width, height, categories, series, orientation, references } = props;
   const strings = useUiStrings();
+  const write = (bar: { series: number; index: number; value: number }) =>
+    props.writeValue(toDatum(series, { ...bar, at: requireDefined(categories[bar.index]) }));
   const isVertical = orientation === 'vertical';
   const points = useChartPoints(geometry.bars, !isVertical);
   const { plot, bars, values, bands } = geometry;
@@ -103,13 +106,13 @@ function BarPlot({
       width={width}
       height={height}
       points={points}
-      tooltip={{
-        title: active ? requireDefined(categories[active.index]) : '',
-        label: active ? requireDefined(series[active.series]).label : '',
-        series: active?.series ?? 0,
-        tone: active ? requireDefined(series[active.series]).tone : undefined,
-        value: active ? format.format(active.value) : '',
-      }}
+      tooltip={toTooltipText({
+        active: active ? { ...active, at: requireDefined(categories[active.index]) } : undefined,
+        series,
+        writeAt: (at) => at,
+        writeValue: props.writeValue,
+        renderTooltip: props.renderTooltip,
+      })}
     >
       <ChartAxis
         {...valueAxis}
@@ -117,6 +120,7 @@ function BarPlot({
         gridLength={isVertical ? plot.right - plot.left : plot.bottom - plot.top}
       />
       <ChartAxis {...categoryAxis} ticks={bands.ticks()} />
+      <ChartReferences placed={references} />
       {bars.map((bar) => {
         const entry = requireDefined(series[bar.series]);
         return (
@@ -132,7 +136,7 @@ function BarPlot({
             aria-label={strings.chartValue(
               entry.label,
               requireDefined(categories[bar.index]),
-              format.format(bar.value),
+              write(bar),
             )}
             x={bar.x}
             y={bar.y}
@@ -143,48 +147,7 @@ function BarPlot({
       })}
     </ChartPlot>
   );
-}
-
-/** The bars laid out with room on the left for the widest left-axis label. */
-function useBarGeometry(
-  element: Element | null,
-  input: Omit<BarGeometryInput, 'margin' | 'locale'>,
-): BarGeometry {
-  const { locale } = useLocale();
-  const margin = { top: 8, right: 16, bottom: 24 };
-  const plot = resolvePlotBox(input.width, input.height, { ...margin, left: 0 });
-  const values =
-    input.orientation === 'vertical'
-      ? createBarValueScale({ ...input, locale, margin: { ...margin, left: 0 } }, plot)
-      : undefined;
-  const left = useLabelMargin(
-    element,
-    values ? values.ticks().map((tick) => tick.label) : input.categories,
-  );
-  return resolveBarGeometry({ ...input, locale, margin: { ...margin, left } }, values);
-}
-
-function toBarTable(
-  {
-    categories,
-    series,
-    categoryLabel,
-  }: Pick<BarChartProps, 'categories' | 'series'> & {
-    categoryLabel: string;
-  },
-  format: Intl.NumberFormat,
-): ChartTable {
-  return {
-    columns: [categoryLabel, ...series.map((entry) => entry.label)],
-    rows: categories.map((category, index) => [
-      category,
-      ...series.map((entry) => {
-        const value = entry.values[index];
-        return value !== undefined && Number.isFinite(value) ? format.format(value) : '';
-      }),
-    ]),
-  };
-}
+});
 
 /**
  * A bar chart of one or more series over categories, grouped or stacked, vertical or horizontal,
@@ -197,8 +160,12 @@ export function BarChart({
   series,
   layout = 'grouped',
   orientation = 'vertical',
+  references,
   height = 240,
   formatOptions,
+  formatValue,
+  formatAxisValue,
+  renderTooltip,
   categoryLabel,
   summary,
   showSummary,
@@ -212,26 +179,20 @@ export function BarChart({
 }: BarChartProps) {
   const strings = useUiStrings();
   const { width, element, frameRef } = useChartFrame(ref);
-  const format = useNumberFormatter(formatOptions);
+  const format = getNumberFormat(useLocale().locale, formatOptions);
   const [hidden, setHidden] = useHiddenKeys({ hiddenKeys, defaultHiddenKeys, onHiddenKeysChange });
   const showLegend = showLegendProp ?? hasLegendByDefault(series, hidden);
-  const drawn = series
-    .map((entry, index) => ({ series: index, values: entry.values, id: entry.id }))
-    .filter((entry) => !hidden.has(entry.id));
-  const geometry = useBarGeometry(element, {
-    categories,
-    series: drawn,
-    layout,
-    orientation,
-    width,
-    height,
-    formatOptions,
-  });
-  const generated = useValueSummary({
-    values: geometry.bars.map((bar) => bar.value),
-    series: drawn.length,
+  const model = useBarChartModel({
+    element,
+    series,
+    hidden,
     format,
+    layout: { categories, layout, orientation, width, height, formatOptions, formatAxisValue },
+    references,
+    formatValue,
+    categoryLabel: categoryLabel ?? strings.chartCategory,
   });
+  const { geometry, marks } = model;
   const isEmpty = geometry.bars.length === 0;
   return (
     <Chart
@@ -242,12 +203,9 @@ export function BarChart({
       isEmpty={isEmpty}
       className={mergeClassNames(barChartHooks.className, className)}
       label={label}
-      summary={summary ?? generated}
+      summary={summary ?? model.generated}
       showSummary={showSummary}
-      table={toBarTable(
-        { categories, series, categoryLabel: categoryLabel ?? strings.chartCategory },
-        format,
-      )}
+      table={model.table}
       legend={
         showLegend ? (
           <ChartLegend items={series} hiddenKeys={hidden} onHiddenKeysChange={setHidden} />
@@ -264,7 +222,9 @@ export function BarChart({
           categories={categories}
           series={series}
           orientation={orientation}
-          format={format}
+          writeValue={model.writeValue}
+          renderTooltip={renderTooltip}
+          references={marks.placed}
         />
       )}
     </Chart>

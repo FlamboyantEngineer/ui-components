@@ -15,6 +15,11 @@ export const chartHooks = createHooks('chart', [
   'tooltip-swatch',
   'tooltip-label',
   'tooltip-value',
+  'references',
+  'reference',
+  'reference-line',
+  'reference-band',
+  'reference-label',
 ]);
 
 export const barChartHooks = createHooks('bar-chart', ['bar']);
@@ -22,6 +27,8 @@ export const barChartHooks = createHooks('bar-chart', ['bar']);
 export const lineChartHooks = createHooks('line-chart', ['line', 'area', 'point']);
 
 export const donutChartHooks = createHooks('donut-chart', ['slice', 'total']);
+
+export const scatterChartHooks = createHooks('scatter-chart', ['point']);
 
 export const chartAxisHooks = createHooks('chart-axis', ['line', 'tick', 'label', 'grid']);
 

@@ -153,6 +153,7 @@
 /* Drawn values: filled marks with a canvas edge and a focus ring for keyboard focus. */
 .ui-bar-chart,
 .ui-line-chart,
+.ui-scatter-chart,
 .ui-donut-chart {
   color: var(--ref-text);
 }
@@ -187,7 +188,18 @@
   stroke-width: 2px;
 }
 
-:is(.ui-bar-chart__bar, .ui-line-chart__point, .ui-donut-chart__slice) {
+.ui-scatter-chart__point {
+  fill: var(--ref-chart-series);
+  fill-opacity: 0.6;
+  stroke: var(--ref-chart-series);
+  stroke-width: 1px;
+}
+
+.ui-scatter-chart__point[data-active] {
+  fill-opacity: 1;
+}
+
+:is(.ui-bar-chart__bar, .ui-line-chart__point, .ui-scatter-chart__point, .ui-donut-chart__slice) {
   cursor: default;
   outline: none;
 }
@@ -200,7 +212,12 @@
   fill: var(--ref-chart-series);
 }
 
-:is(.ui-bar-chart__bar, .ui-line-chart__point, .ui-donut-chart__slice):focus-visible {
+:is(
+  .ui-bar-chart__bar,
+  .ui-line-chart__point,
+  .ui-scatter-chart__point,
+  .ui-donut-chart__slice
+):focus-visible {
   stroke: var(--ref-focus);
   stroke-width: 3px;
 }
@@ -233,6 +250,36 @@
 .ui-chart-axis__label {
   fill: currentColor;
   font-variant-numeric: tabular-nums;
+}
+
+/* References: a dashed line or a faint band across the plot in its tone, labelled in small text. */
+.ui-chart__references {
+  pointer-events: none;
+}
+
+.ui-chart__reference {
+  --ref-chart-reference: var(--ref-text);
+}
+
+.ui-chart__reference[data-tone] {
+  --ref-chart-reference: var(--ref-tone);
+}
+
+.ui-chart__reference-line {
+  stroke: var(--ref-chart-reference);
+  stroke-width: 1.5px;
+  stroke-dasharray: 6 4;
+}
+
+.ui-chart__reference-band {
+  fill: var(--ref-chart-reference);
+  fill-opacity: 0.12;
+}
+
+.ui-chart__reference-label {
+  fill: var(--ref-chart-reference);
+  font-size: var(--ref-font-size-xs);
+  font-weight: var(--ref-font-weight-medium);
 }
 
 /* Legend: one compact toggle per series; a hidden series keeps an outlined swatch. */

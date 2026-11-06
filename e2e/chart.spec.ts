@@ -254,3 +254,126 @@ test('UIC-CHART-1.4 a custom chart owns its empty state through isEmpty', async 
   await expect(chart).not.toHaveAttribute('data-empty');
   await expect(chart.getByRole('img', { name: 'Lab B, 16:00: 9 people' })).toBeVisible();
 });
+
+test('UIC-CHART-6.5 breaks lines at null values, skips them by keyboard and connects on request', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('chart');
+  const demo = page.locator('[data-lab-demo="missing-values"]');
+  const north = demo.locator('.ui-line-chart__line[data-series="0"]');
+  await expect(north).toHaveAttribute('d', /^M[^M]+M[^M]+$/);
+  await expect(demo.getByRole('img', { name: /^North sensor/ })).toHaveCount(4);
+  await demo
+    .getByRole('img', { name: /^North sensor/ })
+    .nth(1)
+    .focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(demo.getByRole('img', { name: /^North sensor/ }).nth(2)).toBeFocused();
+  await expect(demo.getByRole('img', { name: /^North sensor/ }).nth(2)).toHaveAccessibleName(
+    /: 9$/,
+  );
+  await demo.getByText('Connect missing values').click();
+  await expect(north).toHaveAttribute('d', /^M[^M]+$/);
+  for (const path of await demo.locator('.ui-line-chart__line, .ui-line-chart__area').all()) {
+    await expect(path).not.toHaveAttribute('d', /NaN|Infinity/);
+  }
+});
+
+test('UIC-CHART-9.1 UIC-CHART-9.2 draws references under the values, which keep their tooltips', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('chart');
+  const bars = page.locator('[data-lab-demo="bar-references"]');
+  await expect(bars.locator('.ui-chart__reference')).toHaveCount(2);
+  await expect(bars.locator('.ui-chart__reference-label')).toHaveText(['Goal', 'Usual range']);
+  const goal = bars.locator('.ui-chart__reference-line');
+  await expect(goal).toHaveAttribute('y1', (await goal.getAttribute('y2')) ?? '');
+  const bar = bars.getByRole('img', { name: 'Crates, Q2: 28' });
+  await bar.hover();
+  await expect(page.getByRole('tooltip')).toContainText('28');
+  await bars.getByText('Horizontal bars').click();
+  await expect(bars.locator('.ui-chart__reference').first()).toHaveAttribute('data-axis', 'x');
+  await expect(goal).toHaveAttribute('x1', (await goal.getAttribute('x2')) ?? '');
+  await expect(bars.getByRole('figure')).toHaveAccessibleDescription(
+    /Marked: Goal: 50, Usual range: 20 to 35, Stretch goal: 500$/,
+  );
+  const lines = page.locator('[data-lab-demo="line-references"]');
+  await expect(lines.locator('.ui-chart__reference[data-axis="x"]')).toHaveCount(2);
+  for (const shape of await page
+    .locator('.ui-chart__reference-line, .ui-chart__reference-band')
+    .all()) {
+    for (const attribute of ['x1', 'y1', 'x', 'y', 'width', 'height']) {
+      const value = await shape.getAttribute(attribute);
+      if (value !== null) expect(Number.isFinite(Number(value))).toBe(true);
+    }
+  }
+});
+
+test('UIC-CHART-4.7 writes units per series, compact axis labels and a custom tooltip', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('chart');
+  const demo = page.locator('[data-lab-demo="chart-format"]');
+  const point = demo.getByRole('img', { name: /^Energy, .*: 6\.1 kWh$/ });
+  await expect(point).toBeVisible();
+  await expect(demo.getByRole('img', { name: /^Seats taken, .*: 100% of seats$/ })).toBeVisible();
+  await expect(demo.locator('.ui-chart-axis[data-position="left"] text').last()).toHaveText(/K$/);
+  await point.hover();
+  await expect(page.locator('[data-lab-tooltip="room"]')).toHaveText(/^Energy at .*: 6\.1 kWh$/);
+  await page.mouse.move(0, 0);
+  await point.focus();
+  await expect(page.locator('[data-lab-tooltip="room"]')).toHaveText(/^Energy at .*: 6\.1 kWh$/);
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('tooltip')).toHaveCount(0);
+});
+
+test('UIC-CHART-6.6 UIC-CHART-1.5 downsamples a dense series and keeps the drawing across frame renders', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('chart');
+  const demo = page.locator('[data-lab-demo="dense-series"]');
+  const points = demo.locator('.ui-line-chart__point');
+  await expect(demo.getByRole('img', { name: 'Load, 12,345: 250' })).toHaveCount(1);
+  const sampled = await points.count();
+  expect(sampled).toBeLessThan(5000);
+  await expect(demo.locator('.ui-line-chart__line')).toHaveAttribute('d', /^M[^M]+M[^M]+$/);
+  await points.first().evaluate((element) => element.setAttribute('data-lab-mark', 'kept'));
+  await demo.getByText('Show summary').click();
+  await expect(demo.locator('.ui-chart__summary')).toContainText('19,600 values');
+  await expect(points.first()).toHaveAttribute('data-lab-mark', 'kept');
+  await demo.getByText('Downsample').click();
+  await expect(points).toHaveCount(19_600);
+  await demo.getByRole('button', { name: 'Show as table' }).click();
+  await expect(demo.getByRole('row')).toHaveCount(20_001);
+});
+
+test('UIC-CHART-10.1 UIC-CHART-10.2 draws observations that keep their identity and focus as they move', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('chart');
+  const demo = page.locator('[data-lab-demo="scatter"]');
+  const points = demo.locator('.ui-scatter-chart__point');
+  await expect(points).toHaveCount(8);
+  const plot1 = demo.getByRole('img', { name: 'East field, Plot 1: Rain (mm) 12, Yield (t) 3.1' });
+  const plot6 = demo.getByRole('img', { name: 'West field, Plot 6: Rain (mm) 12, Yield (t) 3.1' });
+  await expect(plot1).toHaveAttribute('cx', (await plot6.getAttribute('cx')) ?? '');
+  await plot1.focus();
+  await page.keyboard.press('ArrowRight');
+  const plot2 = demo.getByRole('img', { name: /^East field, Plot 2:/ });
+  await expect(plot2).toBeFocused();
+  await expect(page.getByRole('tooltip')).toContainText('Rain (mm) 18, Yield (t) 4.2');
+  await plot2.evaluate((element) => element.setAttribute('data-lab-mark', 'kept'));
+  await demo.getByRole('button', { name: 'Raise yields' }).click();
+  const moved = demo.getByRole('img', { name: 'East field, Plot 2: Rain (mm) 18, Yield (t) 4.7' });
+  await expect(moved).toHaveAttribute('data-lab-mark', 'kept');
+  for (const point of await points.all()) {
+    await expect(point).not.toHaveAttribute('cy', /NaN|Infinity/);
+  }
+  await demo.getByRole('button', { name: 'Show as table' }).click();
+  await expect(demo.getByRole('row')).toHaveCount(10);
+});
