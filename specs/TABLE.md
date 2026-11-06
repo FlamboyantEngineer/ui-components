@@ -324,6 +324,18 @@ Verification: `src/components/table/table.test.tsx`, `src/components/scroll-regi
 Implementation: `src/components/table/table.tsx`, `src/components/table/table-virtualizer.tsx`, `src/components/table/use-table-grid.ts`
 Verification: `src/components/table/table.test.tsx`, `e2e/table.spec.ts`
 
+### UIC-TABLE-7.4 - A layout on React Aria's public API
+
+A virtualized table shall compose React Aria's table layout through its public `Layout` API alone: it creates the layout, forwards the virtualizer, the options, size updates and drop targets to it, and reads only the layout infos, layout info by key and content size it returns. It shall not read, replace or wrap a protected or private member of the layout, and no React Aria layout type appears in a public declaration (UIC-PRIMITIVES-2.1). The two behaviours the public layout lacks are added around what it returns:
+
+- **Group header row** ([UIC-TABLE-8.7](#uic-table-87---column-groups)): the visible rectangle is asked for one group row height higher, and every layout info it returns below the table header's top moves down by that height, while the table header grows by it. The content is that much taller, and a drop target is looked up that much higher.
+- **Summary row** ([UIC-TABLE-12.1](#uic-table-121---summary-row)): React Aria lays out only the rows in view, so the summary rows it leaves out are placed where its footer row group reserves them, one row height each, with each cell under its columns' header cells, and kept while their place and size stay the same. When the summary scrolls into view, React Aria's own layout infos for it are used.
+
+Before this composition the table read the layout's `rootNodes` and `requestedRect` and replaced its `buildRowGroup` and `buildHeaderRow`, protected members that may change within the declared `react-aria-components` range. The browser tests cover scrolling to the end, the group row, a column resize, the summary and keyboard navigation, so a dependency update that changes what the layout returns fails them.
+
+Implementation: `src/components/table/table-layout.ts`, `src/components/table/table-virtualizer.tsx`, `src/primitives/collections.ts`
+Verification: `src/components/table/table-layout.test.ts`, `src/components/table/table-footer.test.tsx`, `src/components/table/table-header.test.tsx`, `e2e/table-virtualized.spec.ts`
+
 ## UIC-TABLE-8 - Column layout
 
 ### UIC-TABLE-8.1 - Hiding columns
@@ -372,8 +384,8 @@ Verification: `src/components/table/use-pinned-offsets.test.tsx`, `e2e/table.spe
 
 `columnGroups` (an id, a header and the ids of its columns each) shall draw a row of group headers above the column headers: one `ui-table__column-group` header cell (`scope="colgroup"`) spanning each run of neighbouring drawn columns of one group, and a cell hidden from assistive technology over ungrouped columns and the selection and actions columns, which publishes `data-ungrouped`. A group whose columns are moved apart draws over each run. The grid then lists React Aria's column widths as column tracks first, so the fixed table layout takes them rather than the group row's. A virtualized table draws the same row with the same hooks, one row height tall: its layout lowers the column headers and the rows below them by that height, and each group cell, a `columnheader` with `aria-colindex` and `aria-colspan`, sits over its columns' widths.
 
-Implementation: `src/components/table/table-header.tsx`, `src/components/table/table-group-header.tsx`, `src/components/table/table-virtualizer.tsx`, `src/components/table/table.tsx`, `src/components/table/table-columns.ts`
-Verification: `src/components/table/table-header.test.tsx`, `e2e/table.spec.ts`, `e2e/pivot-table.spec.ts`
+Implementation: `src/components/table/table-header.tsx`, `src/components/table/table-group-header.tsx`, `src/components/table/table-layout.ts`, `src/components/table/table.tsx`, `src/components/table/table-columns.ts`
+Verification: `src/components/table/table-header.test.tsx`, `e2e/table.spec.ts`, `e2e/pivot-table.spec.ts`, `e2e/table-virtualized.spec.ts`
 
 ### UIC-TABLE-8.8 - Layout helpers
 
@@ -471,8 +483,8 @@ Verification: `src/components/table/use-cell-editing.test.tsx`
 
 When a drawn column has `renderFooter`, a summary row shall follow the rows in React Aria's table footer (`ui-table__footer`, `ui-table__footer-row`): one `ui-table__footer-cell` per column with the column's kind, alignment, id and pin hooks, holding `renderFooter(rows)` from every row the table presents across pages, and empty under the other columns. The row can take focus but is never selected, dragged or passed to `onRowAction`, takes no position among nested rows (`aria-posinset`, `aria-setsize`), and a notice hides it. A virtualized table keeps the summary row in the document wherever it is scrolled, so its row group always holds the row. The row is named by the provider string `summary`, whichever column has a footer or is a row header.
 
-Implementation: `src/components/table/table-footer.tsx`, `src/components/table/table.tsx`, `src/components/table/table-virtualizer.tsx`, `src/core/strings/content.ts`
-Verification: `src/components/table/table-footer.test.tsx`, `e2e/table.spec.ts`
+Implementation: `src/components/table/table-footer.tsx`, `src/components/table/table.tsx`, `src/components/table/table-layout.ts`, `src/core/strings/content.ts`
+Verification: `src/components/table/table-footer.test.tsx`, `e2e/table.spec.ts`, `e2e/table-virtualized.spec.ts`
 
 ### UIC-TABLE-12.2 - Loading more
 

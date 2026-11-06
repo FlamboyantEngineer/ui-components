@@ -46,6 +46,7 @@ import {
 import { RevealRows } from './table-reveal-cases.js';
 import { RepeatedSelection } from './table-selection-cases.js';
 import { BulkEdit, Grouping, SmallSteps, Spreadsheet } from './table-sheet-cases.js';
+import { VirtualGroupsAndSummary } from './table-virtual-cases.js';
 
 function TrailingActions() {
   const [count, setCount] = useState(0);
@@ -638,6 +639,12 @@ mountLab(
           rowHeight={36}
         />
       </div>
+    </LabSection>
+    <LabSection
+      title="Virtualized groups and summary"
+      description="2,000 rows under a Range group header, with a summary row that stays in the document wherever the table scrolls. Resize a column or sort, then scroll to the end."
+    >
+      <VirtualGroupsAndSummary />
     </LabSection>
   </>,
 );

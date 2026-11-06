@@ -6,6 +6,7 @@ export type {
   CellRenderProps,
   CollectionRenderer,
   Key,
+  Layout,
   Selection,
   SortDescriptor,
   TreeItemContentRenderProps,
@@ -24,6 +25,7 @@ export {
   GridListItem,
   GridListLoadMoreItem,
   GridListSection,
+  LayoutInfo,
   ListBox,
   ListBoxItem,
   ListBoxLoadMoreItem,
@@ -54,3 +56,4 @@ export {
   Virtualizer,
   WaterfallLayout,
 } from 'react-aria-components';
+export type { ITableCollection } from 'react-stately';
