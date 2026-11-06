@@ -221,4 +221,97 @@ test.describe('Carousel lab', () => {
     await page.emulateMedia({ reducedMotion: 'no-preference' });
     await expect(carousel).toHaveAttribute('data-rotating', 'true');
   });
+
+  test('UIC-CAROUSEL-1.5 lays three cards side by side and moves two, ending on a full page', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('carousel');
+    const carousel = page.locator('[data-lab-carousel="cards"]');
+    const shown = carousel.locator('.ui-carousel__slide[data-current]');
+    await expect(shown).toHaveCount(3);
+    const boxes = await shown.evaluateAll((slides) =>
+      slides.map((slide) => slide.getBoundingClientRect().toJSON() as DOMRect),
+    );
+    const [first, second, third] = boxes;
+    if (!first || !second || !third) throw new Error('cards not laid out');
+    expect(second.left).toBeGreaterThan(first.right - 2);
+    expect(third.left).toBeGreaterThan(second.right - 2);
+    expect(Math.round(first.height)).toBe(Math.round(third.height));
+    await carousel.getByRole('button', { name: 'Next slide' }).click();
+    await carousel.getByRole('button', { name: 'Next slide' }).click();
+    await expect(page.locator('[data-lab-output="first-card"]')).toHaveText('Fir');
+    await expect(shown).toHaveText([/Fir/, /Hazel/, /Larch/]);
+    await expect(carousel.getByRole('button', { name: 'Next slide' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+    await expect(carousel.getByRole('button', { name: 'Slide 5' })).toHaveAttribute(
+      'aria-current',
+      'true',
+    );
+    await shown.nth(1).getByRole('link', { name: 'Open' }).focus();
+    await page.getByRole('radio', { name: 'One a page' }).click();
+    await expect(shown).toHaveCount(1);
+    await expect(shown).toContainText('Fir');
+    await lab.expectAccessible('[data-lab-carousel="cards"]');
+  });
+
+  test('UIC-CAROUSEL-2.3 swipes with a mouse and a finger, leaving vertical drags to the page', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('carousel');
+    const carousel = page.locator('[data-lab-carousel="cards"]');
+    const viewport = carousel.locator('.ui-carousel__viewport');
+    await viewport.scrollIntoViewIfNeeded();
+    await expect(viewport).toHaveCSS('touch-action', 'pan-y pinch-zoom');
+    const box = await viewport.boundingBox();
+    if (!box) throw new Error('viewport not rendered');
+    const y = box.y + box.height / 2;
+    const output = page.locator('[data-lab-output="first-card"]');
+    await page.mouse.move(box.x + box.width - 20, y);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width - 60, y, { steps: 4 });
+    await expect(viewport).toHaveAttribute('data-swiping', 'true');
+    await page.mouse.move(box.x + 40, y, { steps: 6 });
+    await page.mouse.up();
+    await expect(output).toHaveText('Cedar');
+    await expect(viewport).not.toHaveAttribute('data-swiping');
+    await page.mouse.move(box.x + 40, y);
+    await page.mouse.down();
+    await page.mouse.move(box.x + 50, y + 80, { steps: 6 });
+    await page.mouse.up();
+    await expect(output).toHaveText('Cedar');
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 });
+    const touch = (type: 'touchStart' | 'touchMove' | 'touchEnd', x: number) =>
+      cdp.send('Input.dispatchTouchEvent', {
+        type,
+        touchPoints: type === 'touchEnd' ? [] : [{ x, y }],
+      });
+    await touch('touchStart', box.x + 60);
+    await touch('touchMove', box.x + 90);
+    await touch('touchMove', box.x + 160);
+    await touch('touchEnd', box.x + 160);
+    await expect(output).toHaveText('Alder');
+  });
+
+  test('UIC-CAROUSEL-1.6 mounts a slide once shown and keeps what it holds', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('carousel');
+    const carousel = page.locator('[data-lab-carousel="deferred"]');
+    const mounted = page.locator('[data-lab-output="mounted"]');
+    await expect(mounted).toHaveText('Lisbon');
+    await expect(carousel.locator('.ui-carousel__slide').nth(1)).toBeEmpty();
+    await carousel.getByRole('textbox', { name: 'Note about Lisbon' }).fill('Trams');
+    await carousel.getByRole('button', { name: 'Next slide' }).click();
+    await expect(mounted).toHaveText('Lisbon, Oslo');
+    await carousel.getByRole('button', { name: 'Previous slide' }).click();
+    await expect(carousel.getByRole('textbox', { name: 'Note about Lisbon' })).toHaveValue('Trams');
+    await expect(mounted).toHaveText('Lisbon, Oslo');
+    await lab.expectAccessible('[data-lab-carousel="deferred"]');
+  });
 });

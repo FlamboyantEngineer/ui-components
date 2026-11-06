@@ -1,6 +1,6 @@
 'use client';
 
-import { Children, isValidElement, type KeyboardEvent, type ReactNode, useId, useRef } from 'react';
+import { Children, type CSSProperties, type KeyboardEvent, type ReactNode, useId } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
@@ -8,17 +8,26 @@ import { useUiStrings } from '../../core/provider.js';
 import { useLocale } from '../../primitives/index.js';
 import { clamp } from '../../utils/clamp.js';
 import { isEditableTarget } from '../../utils/is-editable-target.js';
-import { isHTMLElement } from '../../utils/is-element.js';
-import { useFocusRecovery } from '../../utils/use-focus-recovery.js';
 import { carouselHooks as hooks } from './carousel-hooks.js';
+import {
+  type CarouselPaging,
+  findLastStart,
+  findPage,
+  listPageStarts,
+  resolveMove,
+  toSlideCount,
+} from './carousel-pages.js';
 import {
   CarouselControls,
   type CarouselPagination,
   CarouselPaginationButtons,
 } from './carousel-parts.js';
+import { type CarouselMountSlides, CarouselViewport } from './carousel-viewport.js';
 import { useCarouselAutoplay } from './use-carousel-autoplay.js';
+import { useCarouselSwipe } from './use-carousel-swipe.js';
 
 export type { CarouselPagination } from './carousel-parts.js';
+export type { CarouselMountSlides } from './carousel-viewport.js';
 
 export interface CarouselProps extends BaseProps, AriaLabellingProps, RefProps<HTMLElement> {
   /** The slides, one child each. */
@@ -39,6 +48,14 @@ export interface CarouselProps extends BaseProps, AriaLabellingProps, RefProps<H
   autoplay?: boolean | undefined;
   /** The time each slide shows with `autoplay`, in milliseconds. Defaults to 5000. */
   interval?: number | undefined;
+  /** How many slides show together. Defaults to 1. */
+  slidesPerPage?: number | undefined;
+  /** How many slides one move advances. Defaults to `slidesPerPage`. */
+  slidesPerMove?: number | undefined;
+  /** Lets a touch, pen or mouse swipe across the slides move to the next or previous page. */
+  allowsSwiping?: boolean | undefined;
+  /** `all` (the default) mounts every slide; `visited` mounts a slide once shown, then keeps it. */
+  mountSlides?: CarouselMountSlides | undefined;
 }
 
 const defaultInterval = 5000;
@@ -55,108 +72,90 @@ function resolveSlideKey(event: KeyboardEvent, direction: 'ltr' | 'rtl'): -1 | 1
   return event.key === forward ? 1 : event.key === backward ? -1 : 0;
 }
 
-/** A slide's key: the child's own key, else its position. */
-function toSlideKey(slide: unknown, position: number) {
-  return isValidElement(slide) && slide.key !== null ? slide.key : position;
-}
-
-/**
- * Keeps focus in the carousel when the slide holding it stops being shown, however that happens:
- * a move, a new controlled index, or the slide's removal. Focus lost with the old slide (deep
- * focus, through shadow roots too) moves to the newly shown one; focus that left the slides (for a
- * control, or elsewhere on the page) is never taken back.
- */
-function useSlideFocus() {
-  const viewportRef = useRef<HTMLDivElement>(null);
-  useFocusRecovery(viewportRef, () => {
-    const viewport = viewportRef.current;
-    const shown = [...(viewport?.children ?? [])].find((slide) =>
-      slide.hasAttribute('data-current'),
-    );
-    return isHTMLElement(shown) ? shown : null;
-  });
-  return viewportRef;
-}
-
-/** The shown slide, kept within the slides, and the moves between slides. */
+/** The shown slides, kept within the pages, and the moves between pages. */
 function useCarouselIndex({
   index,
   defaultIndex = 0,
   onIndexChange,
-  loop = false,
-  count,
-}: Pick<CarouselProps, 'index' | 'defaultIndex' | 'onIndexChange' | 'loop'> & { count: number }) {
+  paging,
+}: Pick<CarouselProps, 'index' | 'defaultIndex' | 'onIndexChange'> & { paging: CarouselPaging }) {
   const [requested, setIndex] = useControllableState(index, defaultIndex, onIndexChange);
-  const current = clamp(Math.trunc(requested) || 0, 0, Math.max(0, count - 1));
+  const current = clamp(Math.trunc(requested) || 0, 0, findLastStart(paging));
   const goTo = (next: number) => {
-    if (next === current || next < 0 || next >= count) return;
+    if (next === current || next < 0 || next > findLastStart(paging)) return;
     setIndex(next);
   };
+  const previous = resolveMove(paging, current, -1);
+  const next = resolveMove(paging, current, 1);
   return {
     index: current,
     goTo,
-    step: (delta: -1 | 1) => goTo(loop ? (current + delta + count) % count : current + delta),
-    canGoPrevious: loop || current > 0,
-    canGoNext: loop || current < count - 1,
+    step: (delta: -1 | 1) => {
+      const target = delta === 1 ? next : previous;
+      if (target !== null) goTo(target);
+    },
+    canGoPrevious: previous !== null,
+    canGoNext: next !== null,
   };
 }
 
-/** The live region holding every slide, only the shown one visible. */
-function CarouselViewport({
-  id,
-  slides,
-  index,
-  isRotating,
-}: {
-  id: string;
-  slides: ReturnType<typeof Children.toArray>;
-  index: number;
-  isRotating: boolean;
-}) {
-  const strings = useUiStrings();
-  const viewportRef = useSlideFocus();
-  return (
-    <div
-      {...hooks.slot('viewport')}
-      ref={viewportRef}
-      id={id}
-      aria-live={isRotating ? 'off' : 'polite'}
-    >
-      {slides.map((slide, position) => {
-        const isCurrent = position === index;
-        return (
-          <div
-            key={toSlideKey(slide, position)}
-            {...hooks.slot('slide', { current: isCurrent })}
-            role="group"
-            aria-roledescription={strings.slide}
-            aria-label={strings.stepOfTotal(position + 1, slides.length)}
-            tabIndex={-1}
-            hidden={!isCurrent}
-            inert={!isCurrent}
-          >
-            {slide}
-          </div>
-        );
-      })}
-    </div>
-  );
+/**
+ * The carousel's state: its pages, the shown slides and the moves, automatic rotation (paused while
+ * a swipe is under way) and swiping.
+ */
+type CarouselOptions = Omit<
+  CarouselProps,
+  'children' | 'pagination' | 'renderThumbnail' | 'mountSlides' | keyof BaseProps | 'ref'
+> & { count: number; direction: 'ltr' | 'rtl' };
+
+function useCarousel(props: CarouselOptions) {
+  const { count, direction, autoplay = false, interval = defaultInterval } = props;
+  const perPage = toSlideCount(props.slidesPerPage);
+  const paging: CarouselPaging = {
+    count,
+    perPage,
+    perMove: props.slidesPerMove === undefined ? perPage : toSlideCount(props.slidesPerMove),
+    loop: props.loop ?? false,
+  };
+  const isNavigable = findLastStart(paging) > 0;
+  const nav = useCarouselIndex({ ...props, paging });
+  const swipe = useCarouselSwipe({
+    isEnabled: (props.allowsSwiping ?? false) && isNavigable,
+    direction,
+    onStep: nav.step,
+  });
+  const rotation = useCarouselAutoplay({
+    isEnabled: autoplay && isNavigable && !swipe.isSwiping,
+    interval: Number.isFinite(interval) && interval > 0 ? interval : defaultInterval,
+    index: nav.index,
+    onAdvance: () => {
+      const next = resolveMove({ ...paging, loop: true }, nav.index, 1);
+      if (next !== null) nav.goTo(next);
+    },
+  });
+  const starts = listPageStarts(paging);
+  return { paging, isNavigable, nav, swipe, rotation, starts, page: findPage(starts, nav.index) };
 }
 
 /**
- * Slides shown one at a time, following the ARIA carousel pattern: previous and next buttons,
- * dots or thumbnails, the arrow keys, and optional automatic rotation with a button that stops it.
+ * Slides shown a page at a time, following the ARIA carousel pattern: previous and next buttons,
+ * dots or thumbnails, the arrow keys, optional swiping, and optional automatic rotation with a
+ * button that stops it. A page shows `slidesPerPage` slides and a move advances `slidesPerMove`.
  */
 export function Carousel({
   children,
-  index: indexProp,
+  index,
   defaultIndex,
   onIndexChange,
   pagination = 'dots',
   renderThumbnail,
   loop,
-  autoplay = false,
-  interval = defaultInterval,
+  autoplay,
+  interval,
+  slidesPerPage,
+  slidesPerMove,
+  allowsSwiping,
+  mountSlides = 'all',
   className,
   ...rest
 }: CarouselProps) {
@@ -164,19 +163,18 @@ export function Carousel({
   const { direction } = useLocale();
   const viewportId = useId();
   const slides = Children.toArray(children);
-  const count = slides.length;
-  const isNavigable = count > 1;
-  const nav = useCarouselIndex({ index: indexProp, defaultIndex, onIndexChange, loop, count });
-  const rotation = useCarouselAutoplay({
-    isEnabled: autoplay && isNavigable,
-    interval: Number.isFinite(interval) && interval > 0 ? interval : defaultInterval,
-    index: nav.index,
-    onAdvance: () => nav.goTo((nav.index + 1) % count),
+  const { paging, isNavigable, nav, swipe, rotation, starts, page } = useCarousel({
+    ...{ index, defaultIndex, onIndexChange, loop, autoplay, interval },
+    ...{ slidesPerPage, slidesPerMove, allowsSwiping, count: slides.length, direction },
   });
   return (
     <section
       {...rest}
-      {...hooks.root({ className, data: { pagination, rotating: rotation.isRotating } })}
+      {...hooks.root({
+        className,
+        data: { pagination, rotating: rotation.isRotating, swipeable: swipe.isEnabled },
+      })}
+      style={{ '--ui-carousel-per-page': paging.perPage } as CSSProperties}
       aria-roledescription={strings.carousel}
       {...rotation.pauseHandlers}
       onKeyDown={(event) => {
@@ -200,13 +198,16 @@ export function Carousel({
         id={viewportId}
         slides={slides}
         index={nav.index}
+        perPage={paging.perPage}
         isRotating={rotation.isRotating}
+        mountSlides={mountSlides}
+        swipe={swipe}
       />
       {isNavigable && pagination !== 'none' ? (
         <CarouselPaginationButtons
           pagination={pagination}
-          count={count}
-          index={nav.index}
+          starts={starts}
+          page={page}
           viewportId={viewportId}
           onSelect={nav.goTo}
           renderThumbnail={renderThumbnail}

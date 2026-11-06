@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Carousel, type CarouselPagination } from '../../src/components/carousel/carousel.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
@@ -157,6 +157,81 @@ function StartingSlide() {
   );
 }
 
+const cards = ['Alder', 'Birch', 'Cedar', 'Elm', 'Fir', 'Hazel', 'Larch'];
+
+/** A row of cards, three a page and two a move; the output follows the first shown card. */
+function CardRow() {
+  const [index, setIndex] = useState(0);
+  const [perPage, setPerPage] = useState('3');
+  return (
+    <div>
+      <SegmentedChoice
+        aria-label="Cards a page"
+        size="sm"
+        sizing="content"
+        options={[
+          { value: '1', label: 'One a page' },
+          { value: '3', label: 'Three a page' },
+        ]}
+        value={perPage}
+        onChange={(value) => setPerPage(value ?? '3')}
+      />
+      <Carousel
+        aria-label="Trees"
+        slidesPerPage={Number(perPage)}
+        slidesPerMove={perPage === '3' ? 2 : 1}
+        index={index}
+        onIndexChange={setIndex}
+        allowsSwiping
+        data-lab-carousel="cards"
+      >
+        {cards.map((card) => (
+          <article key={card}>
+            <h3>{card}</h3>
+            <p>
+              A card about the {card.toLowerCase()} tree.{' '}
+              <a href={`#${card.toLowerCase()}`}>Open</a>
+            </p>
+          </article>
+        ))}
+      </Carousel>
+      <p>
+        First shown card: <output data-lab-output="first-card">{cards[index]}</output>
+      </p>
+    </div>
+  );
+}
+
+/** Each slide counts how often it mounted, and keeps a typed note while visited. */
+function MountedNote({ name, onMount }: { name: string; onMount: (name: string) => void }) {
+  const [note, setNote] = useState('');
+  useEffect(() => onMount(name), [name, onMount]);
+  return (
+    <p>
+      <label>
+        Note about {name} <input value={note} onChange={(event) => setNote(event.target.value)} />
+      </label>
+    </p>
+  );
+}
+
+function DeferredSlides() {
+  const [mounted, setMounted] = useState<string[]>([]);
+  const onMount = useCallback((name: string) => setMounted((list) => [...list, name]), []);
+  return (
+    <div>
+      <Carousel aria-label="Notes" mountSlides="visited" data-lab-carousel="deferred">
+        {cities.map((city) => (
+          <MountedNote key={city.name} name={city.name} onMount={onMount} />
+        ))}
+      </Carousel>
+      <p>
+        Mounted: <output data-lab-output="mounted">{mounted.join(', ') || 'none'}</output>
+      </p>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -205,6 +280,18 @@ mountLab(
       <Carousel aria-label="Rotating cities" autoplay interval={3000} data-lab-carousel="autoplay">
         {citySlides()}
       </Carousel>
+    </LabSection>
+    <LabSection
+      title="Several cards a page"
+      description="Three cards a page, two a move: the last page ends on the last card, so it overlaps the one before. Dots pick a page, and a swipe across the cards (touch, pen or mouse) moves one page; switch to one a page and the shown cards keep their place."
+    >
+      <CardRow />
+    </LabSection>
+    <LabSection
+      title="Mounting slides when shown"
+      description="With mountSlides=visited a slide renders once it is first shown, then keeps its state: type a note, move on and back, and the note is still there. The output lists each mount."
+    >
+      <DeferredSlides />
     </LabSection>
     <LabSection title="A single slide" description="No controls, pagination or rotation.">
       <Carousel aria-label="One city" autoplay data-lab-carousel="single">

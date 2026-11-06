@@ -4,7 +4,8 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 8px;
-  max-width: 360px;
+  /* One slide a page keeps the 360px frame; each further slide a page adds 240px. */
+  max-width: calc(120px + 240px * var(--ui-carousel-per-page, 1));
   color: var(--ref-text);
 }
 
@@ -30,7 +31,8 @@
  */
 .ui-carousel__viewport {
   display: grid;
-  grid-template: auto / minmax(0, 1fr);
+  grid-template: auto / repeat(var(--ui-carousel-per-page, 1), minmax(0, 1fr));
+  column-gap: 1px;
   overflow: hidden;
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius);
@@ -38,7 +40,7 @@
 }
 
 .ui-carousel__slide {
-  grid-area: 1 / 1;
+  grid-area: 1 / var(--ui-carousel-slot, 1);
   min-width: 0;
   outline: none;
 }
@@ -127,4 +129,32 @@
 .ui-carousel__dot[data-focus-visible],
 .ui-carousel__thumbnail[data-focus-visible] {
   box-shadow: var(--ref-focus-halo);
+}
+
+/* Several slides a page: a hairline between the shown cards. */
+.ui-carousel__slide[data-current] + .ui-carousel__slide[data-current] {
+  box-shadow: -1px 0 0 var(--ref-border);
+}
+
+.ui-carousel__slide > article {
+  padding: 8px 12px;
+}
+
+.ui-carousel__slide > article > h3 {
+  margin: 0 0 4px;
+  font-size: var(--ref-font-size-md);
+}
+
+/* A swipeable viewport follows the drag with the shown slides. */
+.ui-carousel[data-swipeable] .ui-carousel__viewport {
+  cursor: grab;
+}
+
+.ui-carousel__viewport[data-swiping] {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.ui-carousel__viewport[data-swiping] .ui-carousel__slide[data-current] {
+  translate: var(--ui-carousel-swipe-offset) 0;
 }
