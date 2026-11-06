@@ -700,6 +700,29 @@ In a static table each pinned row shall publish the measured `--ui-table-row-off
 Implementation: `src/components/table/use-pinned-row-offsets.ts`, `src/components/table/table-row.tsx`, `labs/reference/table.css`
 Verification: `src/components/table/table-pinned-rows.test.tsx`, `e2e/table-data.spec.ts`
 
+## UIC-TABLE-19 - Revealing rows by id
+
+### UIC-TABLE-19.1 - Table handle
+
+`handleRef` shall receive a `TableHandle` ([UIC-COLLECTIONS-1.6](COLLECTIONS.md#uic-collections-16---revealing-items-by-key)) whose `revealKey(id, options)` scrolls the row with that id into view with the nearest scroll, leaving focus where it is, and whose `focusKey(id, options)` also focuses it. With `columnId`, they reveal or focus that data column's cell (the cell whose `data-column` is the id) instead; a hidden column falls back to the row. Both resolve `{ found: true }` once the row is in view. Ids keep their type, so `1` and `"1"` reveal different rows, and the browser's nearest scroll follows the writing direction, so right-to-left tables scroll as the reader expects. The handle is separate from `ref`, which keeps the root element.
+
+Implementation: `src/components/table/table-reveal.ts`, `src/utils/use-collection-handle.ts`
+Verification: `src/components/table/table-reveal.test.tsx`, `e2e/table-reveal.spec.ts`
+
+### UIC-TABLE-19.2 - Rows the table does not show
+
+A row the table does not show shall resolve `{ found: false, reason }`: `missing` when no row or nested row has the id, `filtered` when the table's filter hides it, `paged` when it is on another page, and `collapsed` when a collapsed parent row or row group holds it. The handle never expands, filters, pages or asks for more rows; the caller does that and reveals again.
+
+Implementation: `src/components/table/table-reveal.ts`
+Verification: `src/components/table/table-reveal.test.tsx`
+
+### UIC-TABLE-19.3 - Virtualized rows
+
+A virtualized table shall reveal a row it has not drawn: it scrolls its scroll area (`ui-table__scroll`) to the row's place in React Aria's layout, waits up to eight frames for the row to be drawn, then reveals it as above. Rows replaced while it waits are read again, so a row that is gone resolves with its new reason, and a table that unmounts resolves `unmounted`.
+
+Implementation: `src/utils/use-collection-handle.ts`, `src/components/table/table-virtualizer.tsx`
+Verification: `src/components/table/table-reveal.test.tsx`, `e2e/table-reveal.spec.ts`
+
 ## Hooks
 
 | Hook                             | Kind      | Values                          | Description                                                                                               |

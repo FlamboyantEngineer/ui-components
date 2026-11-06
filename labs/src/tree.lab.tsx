@@ -29,6 +29,7 @@ import {
 import { ModalTree } from './tree-modal-case.js';
 import { CallerFilterTree, RequiredSelectionTree, TallRowsTree } from './tree-option-cases.js';
 import { LockedRenameTree } from './tree-rename-lock.js';
+import { RevealTreeRows } from './tree-reveal-cases.js';
 import { SectionsTree, VirtualSectionsTree } from './tree-sections-cases.js';
 
 interface Entry {
@@ -529,6 +530,12 @@ mountLab(
         virtualized
         data-lab-tree="virtualized"
       />
+    </LabSection>
+    <LabSection
+      title="Revealing rows by id"
+      description="The tree's handle reveals a row by id, drawn or not, without moving focus, or focuses it; a row under a closed folder, or one the filter hides, reports why."
+    >
+      <RevealTreeRows />
     </LabSection>
     <LabSection
       title="Virtualized with taller rows"

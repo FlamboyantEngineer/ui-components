@@ -1,7 +1,8 @@
 'use client';
 
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, type Ref, useImperativeHandle, useState } from 'react';
 import { TableLayout, Virtualizer } from '../../primitives/index.js';
+import type { RevealLayout } from '../../utils/use-collection-handle.js';
 
 type VisibleRect = Parameters<TableLayout<unknown>['getVisibleLayoutInfos']>[0];
 type VisibleInfo = ReturnType<TableLayout<unknown>['getVisibleLayoutInfos']>[number];
@@ -103,15 +104,19 @@ function createTableLayout(): TableLayout<unknown> {
  * the column headers.
  */
 export function TableVirtualizer({
+  layoutRef,
   rowHeight,
   hasGroupRow,
   children,
 }: {
+  /** Receives the table's layout, which its handle reads. */
+  layoutRef: Ref<RevealLayout>;
   rowHeight: number;
   hasGroupRow: boolean;
   children: ReactNode;
 }) {
   const [layout] = useState(createTableLayout);
+  useImperativeHandle(layoutRef, () => layout, [layout]);
   const layoutOptions: TableLayoutOptions = {
     rowHeight,
     headingHeight: rowHeight,

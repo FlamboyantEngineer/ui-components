@@ -128,3 +128,24 @@ export interface ExpansionProps {
   /** Called with the expanded items after each change. */
   onExpandedChange?: ((keys: Set<Key>) => void) | undefined;
 }
+
+/**
+ * Why a collection could not reveal a key: no item has it (`missing`, including children not
+ * loaded yet), the filter hides it, an ancestor or group holding it is collapsed, it is on another
+ * page, or the collection unmounted while the row was being drawn.
+ */
+export type CollectionRevealMiss = 'missing' | 'filtered' | 'collapsed' | 'paged' | 'unmounted';
+
+/** Whether a collection revealed a key, or why not. */
+export type CollectionRevealResult =
+  { found: true } | { found: false; reason: CollectionRevealMiss };
+
+/**
+ * Reveals a collection's items by their own keys, drawn or not: `revealKey` scrolls the item into
+ * view and leaves focus where it is; `focusKey` also focuses it. Neither expands, filters, pages
+ * or loads anything; the result says why an item could not be shown.
+ */
+export interface CollectionHandle<O extends object = object> {
+  revealKey: (key: Key, options?: O) => Promise<CollectionRevealResult>;
+  focusKey: (key: Key, options?: O) => Promise<CollectionRevealResult>;
+}

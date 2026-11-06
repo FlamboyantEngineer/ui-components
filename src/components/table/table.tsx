@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 import type {
   AriaLabellingProps,
   CollectionSelectionProps,
@@ -30,6 +30,7 @@ import { readGridTracks } from './table-grid-tracks.js';
 import { hasGroupRow } from './table-group-header.js';
 import { selectionColumnWidth, TableHeader, type TableHeaderModel } from './table-header.js';
 import { tableHooks as hooks } from './table-hooks.js';
+import { type TableHandle, useTableHandle } from './table-reveal.js';
 import type { TableCellWrap, TableColumn, TableRow } from './table-rows.js';
 import { TableScroll } from './table-scroll.js';
 import { TableSearch } from './table-search.js';
@@ -153,6 +154,8 @@ export interface TableProps<T extends TableRow>
   virtualized?: boolean | undefined;
   /** Row height in pixels for a virtualized table. Defaults to 40, or 32 at size `sm`. */
   rowHeight?: number | undefined;
+  /** Receives the handle that reveals and focuses rows and cells by row id, drawn or not. */
+  handleRef?: Ref<TableHandle> | undefined;
 }
 
 const virtualRowHeights: Readonly<Record<TableSize, number>> = { md: 40, sm: 32 };
@@ -282,6 +285,7 @@ export function Table<T extends TableRow>({
   className,
   id,
   ref,
+  handleRef,
   ...rest
 }: TableProps<T>) {
   const strings = useUiStrings();
@@ -290,7 +294,8 @@ export function Table<T extends TableRow>({
   const { view, layout } = grid;
   const { virtualized } = rest;
   const height = rowHeight ?? virtualRowHeights[size];
-  const { ref: rootRef, widths: contentWidths } = useContentWidths(rest.columns, ref);
+  const reveal = useTableHandle(handleRef, { ...rest, grid, ref });
+  const { ref: rootRef, widths: contentWidths } = useContentWidths(rest.columns, reveal.ref);
   const element = (
     <TableGridElement
       grid={grid}
@@ -328,6 +333,7 @@ export function Table<T extends TableRow>({
       {grid.selectionBar ? <TableSelectionBar {...grid.selectionBar} /> : null}
       <TableScroll
         isVirtualized={virtualized === true}
+        layoutRef={reveal.layoutRef}
         rowHeight={height}
         hasGroupRow={hasGroupRow(rest.columnGroups ?? [])}
         widths={grid.widths}
