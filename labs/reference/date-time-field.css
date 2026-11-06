@@ -362,6 +362,15 @@
   font-weight: var(--ref-font-weight-medium);
 }
 
+.ui-date-time-field__calendar-week-label,
+.ui-date-time-field__calendar-week {
+  font-weight: inherit;
+  padding-inline-end: 4px;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-xs);
+  font-variant-numeric: tabular-nums;
+}
+
 .ui-date-time-field__calendar-body {
   font-variant-numeric: tabular-nums;
 }

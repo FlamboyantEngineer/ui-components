@@ -1,6 +1,6 @@
 'use client';
 
-import { useContext, useId } from 'react';
+import { useId } from 'react';
 import { ChevronLeftGlyph, ChevronRightGlyph } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
 import {
@@ -10,16 +10,15 @@ import {
   CalendarGridBody,
   CalendarGridHeader,
   CalendarHeaderCell,
-  CalendarStateContext,
   Heading,
-  RangeCalendarStateContext,
   useLocale,
 } from '../../primitives/index.js';
-import { getDateFormatter } from '../../utils/intl-format.js';
 import { Button } from '../button/button.js';
+import { MonthCaption, WeekHead, WeekRows } from './calendar-weeks.js';
 import { CalendarHeadingSelects } from './date-time-calendar-heading.js';
 import type { DateTimeFieldDateState } from './date-time-field.js';
 import { dateTimeFieldHooks as hooks } from './date-time-field-hooks.js';
+import type { DateTimeFieldWeekday, DateTimeFieldWeekNumbers } from './week-numbers.js';
 
 /** How the calendar heading shows its month: as text, or as month and year selects. */
 export type DateTimeFieldCalendarHeading = 'text' | 'select';
@@ -38,6 +37,10 @@ export interface CalendarOptions {
   months?: DateTimeFieldVisibleMonths | undefined;
   /** Defaults to `page`. */
   paging?: DateTimeFieldCalendarPaging | undefined;
+  /** Defaults to the locale's, and to Monday for ISO week numbers. */
+  firstDayOfWeek?: DateTimeFieldWeekday | undefined;
+  /** Shows a week number before each week, by this rule. */
+  weekNumbers?: DateTimeFieldWeekNumbers | undefined;
 }
 
 interface CalendarBodyProps {
@@ -45,11 +48,20 @@ interface CalendarBodyProps {
   getDateState?: ((date: string) => DateTimeFieldDateState | undefined) | undefined;
 }
 
-/** The props a calendar or range calendar takes for the options: its visible months and paging. */
-export function toCalendarProps({ months = 1, paging = 'page' }: CalendarOptions) {
+/**
+ * The props a calendar or range calendar takes for the options: its visible months, paging and
+ * first day of the week.
+ */
+export function toCalendarProps({
+  months = 1,
+  paging = 'page',
+  firstDayOfWeek,
+  weekNumbers,
+}: CalendarOptions) {
   return {
     visibleDuration: { months },
     pageBehavior: paging === 'month' ? ('single' as const) : ('visible' as const),
+    firstDayOfWeek: firstDayOfWeek ?? (weekNumbers === 'iso' ? ('mon' as const) : undefined),
   };
 }
 
@@ -90,37 +102,6 @@ function DateCell({
   );
 }
 
-/** The calendar state of the nearest calendar or range calendar. */
-function useCalendarState() {
-  const single = useContext(CalendarStateContext);
-  const range = useContext(RangeCalendarStateContext);
-  const state = single ?? range;
-  if (!state) throw new Error('A calendar body renders inside a calendar or a range calendar.');
-  return state;
-}
-
-/**
- * The month and year a grid shows, written above it when several months show together. The grid's
- * own accessible name already says it, so assistive technology skips the caption.
- */
-function MonthCaption({ offset, months }: { offset: number; months: number }) {
-  const { locale } = useLocale();
-  const state = useCalendarState();
-  if (months === 1) return null;
-  const month = state.visibleRange.start.add({ months: offset });
-  const text = getDateFormatter(locale, {
-    month: 'long',
-    year: 'numeric',
-    calendar: month.calendar.identifier,
-    timeZone: state.timeZone,
-  }).format(month.toDate(state.timeZone));
-  return (
-    <caption {...hooks.slot('calendar-month')} aria-hidden="true">
-      {text}
-    </caption>
-  );
-}
-
 function CalendarHeader({ heading }: { heading: DateTimeFieldCalendarHeading }) {
   const strings = useUiStrings();
   // Previous sits at the inline start and points there; right to left that is the right edge.
@@ -153,10 +134,10 @@ function CalendarHeader({ heading }: { heading: DateTimeFieldCalendarHeading }) 
 
 /**
  * The heading (text or selects) with month navigation, and one grid per visible month, each
- * captioned with its month when several show.
+ * captioned with its month when several show and with a week number before each week on request.
  */
 export function CalendarBody({ options = {}, getDateState }: CalendarBodyProps) {
-  const { heading = 'text', months = 1 } = options;
+  const { heading = 'text', months = 1, weekNumbers } = options;
   return (
     <>
       <CalendarHeader heading={heading} />
@@ -168,14 +149,24 @@ export function CalendarBody({ options = {}, getDateState }: CalendarBodyProps) 
             offset={offset > 0 ? { months: offset } : undefined}
           >
             <MonthCaption offset={offset} months={months} />
-            <CalendarGridHeader className={hooks.slotClass('calendar-head')}>
+            <CalendarGridHeader
+              className={hooks.slotClass('calendar-head')}
+              render={weekNumbers ? (props) => <WeekHead {...props} /> : undefined}
+            >
               {(day) => (
                 <CalendarHeaderCell className={hooks.slotClass('calendar-weekday')}>
                   {day}
                 </CalendarHeaderCell>
               )}
             </CalendarGridHeader>
-            <CalendarGridBody className={hooks.slotClass('calendar-body')}>
+            <CalendarGridBody
+              className={hooks.slotClass('calendar-body')}
+              render={
+                weekNumbers
+                  ? (props) => <WeekRows {...props} offset={offset} rule={weekNumbers} />
+                  : undefined
+              }
+            >
               {(date) => <DateCell date={date} state={getDateState?.(date.toString())} />}
             </CalendarGridBody>
           </CalendarGrid>

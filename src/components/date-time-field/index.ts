@@ -9,5 +9,7 @@ export type {
   DateTimeFieldProps,
   DateTimeFieldValue,
   DateTimeFieldVisibleMonths,
+  DateTimeFieldWeekday,
+  DateTimeFieldWeekNumbers,
 } from './date-time-field.js';
 export { DateTimeField } from './date-time-field.js';

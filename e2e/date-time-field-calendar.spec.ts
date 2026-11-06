@@ -72,3 +72,44 @@ test.describe('Date Time Field calendar options', () => {
     });
   }
 });
+
+test.describe('Date Time Field weeks', () => {
+  test('UIC-DATE-TIME-FIELD-3.6 numbers ISO weeks across the turn of the year as row headers', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('date-time-field');
+    const dialog = await openCalendar(page, 'iso-weeks');
+    const december = dialog.getByRole('grid', { name: /December 2026/ });
+    await expect(december.getByRole('rowheader').last()).toHaveAccessibleName('Week 53');
+    const january = dialog.getByRole('grid', { name: /January 2027/ });
+    await expect(january.getByRole('rowheader').first()).toHaveAccessibleName('Week 53');
+    await expect(january.getByRole('rowheader').nth(1)).toHaveAccessibleName('Week 1');
+    await expect(dialog.locator('.ui-date-time-field__calendar-weekday').first()).toHaveText('M');
+    await expect(dialog.getByRole('button', { name: /December 30, 2026/ })).toBeFocused();
+    await page.keyboard.press('ArrowLeft');
+    await page.keyboard.press('ArrowLeft');
+    await page.keyboard.press('ArrowLeft');
+    await expect(dialog.getByRole('button', { name: /December 27, 2026/ })).toBeFocused();
+    await lab.expectAccessible('.ui-date-time-field__dialog');
+  });
+
+  test('UIC-DATE-TIME-FIELD-3.6 reorders headers and days by the week start', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('date-time-field');
+    const dialog = await openCalendar(page, 'week-start');
+    const grids = dialog.getByRole('grid');
+    await expect(grids).toHaveCount(2);
+    for (const grid of await grids.all()) {
+      await expect(grid.locator('.ui-date-time-field__calendar-weekday').first()).toHaveText('S');
+      await expect(grid.locator('.ui-date-time-field__calendar-weekday').nth(1)).toHaveText('S');
+    }
+    // The week number sits before the first day.
+    const week = await dialog.getByRole('rowheader').first().boundingBox();
+    const day = await dialog.locator('.ui-date-time-field__calendar-cell').first().boundingBox();
+    if (!week || !day) throw new Error('calendar not drawn');
+    expect(week.x).toBeLessThan(day.x);
+  });
+});

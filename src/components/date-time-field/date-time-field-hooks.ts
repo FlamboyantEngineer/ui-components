@@ -25,6 +25,8 @@ export const dateTimeFieldHooks = createHooks('date-time-field', [
   'calendar-grid',
   'calendar-head',
   'calendar-weekday',
+  'calendar-week-label',
+  'calendar-week',
   'calendar-body',
   'calendar-cell',
   'presets',

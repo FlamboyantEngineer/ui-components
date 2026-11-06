@@ -40,6 +40,7 @@ import {
   normalizeDateValue,
   toSingleMode,
 } from './date-values.js';
+import type { DateTimeFieldWeekday, DateTimeFieldWeekNumbers } from './week-numbers.js';
 
 /**
  * An ISO 8601 text for a single mode (`YYYY-MM-DD`, `HH:mm`, `YYYY-MM-DDTHH:mm` or a zoned date and
@@ -89,6 +90,10 @@ export interface DateTimeFieldProps<M extends DateTimeFieldMode = 'date'>
   visibleMonths?: DateTimeFieldVisibleMonths | undefined;
   /** What the calendar's previous and next buttons move by. Defaults to `page`, every visible month. */
   calendarPaging?: DateTimeFieldCalendarPaging | undefined;
+  /** The day the calendar's weeks start on. Defaults to the locale's, and to Monday for ISO weeks. */
+  firstDayOfWeek?: DateTimeFieldWeekday | undefined;
+  /** Shows each calendar week's number, counted by ISO 8601 (`iso`) or the locale's rule. */
+  weekNumbers?: DateTimeFieldWeekNumbers | undefined;
   /** The form name of a single value, submitted as its canonical text. */
   name?: string | undefined;
   /** The form name of a range's start. */
@@ -160,6 +165,8 @@ function toSettings(
       heading: props.calendarHeading,
       months: props.visibleMonths ?? (toSingleMode(mode) === mode ? 1 : 2),
       paging: props.calendarPaging,
+      firstDayOfWeek: props.firstDayOfWeek,
+      weekNumbers: props.weekNumbers,
     },
   };
 }
@@ -249,3 +256,4 @@ export type { DateTimeFieldPreset } from './date-time-calendar.js';
 export { DateFormInputs, toEndpointErrorSources } from './date-time-form.js';
 export type { DateRangeValue, DateTimeFieldGranularity, DateTimeFieldMode } from './date-values.js';
 export { formatDateValue } from './date-values.js';
+export type { DateTimeFieldWeekday, DateTimeFieldWeekNumbers } from './week-numbers.js';

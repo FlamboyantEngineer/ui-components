@@ -523,6 +523,8 @@
   "minutesColumn": "Minutes",
   "secondsColumn": "Secondes",
   "dayPeriodColumn": "AM/PM",
+  "weekColumn": "Sem.",
+  "weekNumber": "Semaine {week}",
   "dateTooEarly": "Choisissez une valeur à partir du {minValue}.",
   "dateTooLate": "Choisissez une valeur jusqu’au {maxValue}.",
   "dateUnavailable": "Choisissez une date disponible.",
