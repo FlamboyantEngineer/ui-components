@@ -28,6 +28,8 @@ export const lineChartHooks = createHooks('line-chart', ['line', 'area', 'point'
 
 export const donutChartHooks = createHooks('donut-chart', ['slice', 'total']);
 
+export const scatterChartHooks = createHooks('scatter-chart', ['point']);
+
 export const chartAxisHooks = createHooks('chart-axis', ['line', 'tick', 'label', 'grid']);
 
 export const chartLegendHooks = createHooks('chart-legend', ['item', 'swatch', 'label']);

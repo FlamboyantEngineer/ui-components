@@ -27,7 +27,7 @@ Verification: `src/components/chart/chart.test.tsx`, `e2e/chart.spec.ts`
 
 ### UIC-CHART-1.4 - Hooks and caller attributes
 
-`Chart` and every chart built on it shall carry the hooks below, append the caller's `className`, and forward `id`, `ref` and caller `data-*` attributes to the root; caller attributes never replace a hook attribute. `isEmpty` publishes `data-empty` on the root. `BarChart`, `LineChart` and `DonutChart` render `Chart` with their own root class (`ui-bar-chart`, `ui-line-chart`, `ui-donut-chart`) alongside `ui-chart`.
+`Chart` and every chart built on it shall carry the hooks below, append the caller's `className`, and forward `id`, `ref` and caller `data-*` attributes to the root; caller attributes never replace a hook attribute. `isEmpty` publishes `data-empty` on the root. `BarChart`, `LineChart`, `DonutChart` and `ScatterChart` render `Chart` with their own root class (`ui-bar-chart`, `ui-line-chart`, `ui-donut-chart`, `ui-scatter-chart`) alongside `ui-chart`.
 
 Implementation: `src/components/chart/chart.tsx`, `src/components/chart/bar-chart.tsx`, `src/components/chart/line-chart.tsx`, `src/components/chart/donut-chart.tsx`
 Verification: `src/components/chart/chart.test.tsx`, `src/components/chart/bar-chart.test.tsx`, `e2e/chart.spec.ts`
@@ -254,6 +254,22 @@ References shall be decorative in the drawing: their group is hidden from assist
 Implementation: `src/components/chart/chart-references.tsx`, `src/components/chart/chart-summary.ts`, `src/core/strings/dashboard.ts`
 Verification: `src/components/chart/chart-references.test.tsx`
 
+## UIC-CHART-10 - Scatter chart
+
+### UIC-CHART-10.1 - Observations
+
+`ScatterChart` shall draw each shown series' observations as `ui-scatter-chart__point` circles on two linear axes, `x` across and `y` up, each axis spanning `minX`/`maxX` and `minY`/`maxY` when given, else a nice extent of the drawn values (one value widens to a tenth of it either side, or 1 for zero). Values beyond a fixed bound sit at its edge. An observation whose `x` or `y` is `null` or not a finite number draws nothing, takes no focus and never stretches an axis; a chart with no drawn observation shows its no-data state. Each observation is keyed by its series' `id` and its own `id`, so observations at the same coordinates stay distinct and keep their identity when others move or the data reorders; a repeated `id` within a series keeps its first observation.
+
+Implementation: `src/components/chart/scatter-geometry.ts`, `src/components/chart/scatter-chart.tsx`
+Verification: `src/components/chart/scatter-geometry.test.ts`, `src/components/chart/scatter-chart.test.tsx`, `e2e/chart.spec.ts`
+
+### UIC-CHART-10.2 - Names, keyboard, tooltip and table
+
+Each observation shall be a point named, through the provider's `chartValue` (with its `label`) or `chartPointValue` strings, by its series, its label and its coordinates written with `chartCoordinates` and the axis names `xLabel` and `yLabel` (`chartXAxis` and `chartYAxis` by default). The arrow keys move within a series in x order, then y order, then given order, and between series to the nearest x, as for other charts ([UIC-CHART-4.3](#uic-chart-43---keyboard)); the tooltip shows the label, the series and the coordinates. The legend shows and hides series; the summary describes the shown y values; the table lists every observation, hidden series included, under `chartPoint`, `chartSeries` and the axis names, with blank cells for missing values.
+
+Implementation: `src/components/chart/scatter-chart.tsx`, `src/components/chart/scatter-chart-model.ts`, `src/core/strings/dashboard.ts`
+Verification: `src/components/chart/scatter-chart.test.tsx`, `e2e/chart.spec.ts`
+
 ## Hooks
 
 | Hook                        | Kind      | Values                                            | Description                                                                         |
@@ -283,6 +299,8 @@ Verification: `src/components/chart/chart-references.test.tsx`
 | `ui-line-chart__line`       | slot      |                                                   | A series' line.                                                                     |
 | `ui-line-chart__area`       | slot      |                                                   | The area under a series' line, for `variant="area"`.                                |
 | `ui-line-chart__point`      | slot      |                                                   | A point on a finite value.                                                          |
+| `ui-scatter-chart`          | root      |                                                   | `ScatterChart`'s figure, alongside `ui-chart`.                                      |
+| `ui-scatter-chart__point`   | slot      |                                                   | One drawn observation.                                                              |
 | `ui-donut-chart`            | root      |                                                   | `DonutChart`'s figure, alongside `ui-chart`.                                        |
 | `ui-donut-chart__slice`     | slot      |                                                   | One segment's ring slice.                                                           |
 | `ui-donut-chart__total`     | slot      |                                                   | The total in the middle.                                                            |

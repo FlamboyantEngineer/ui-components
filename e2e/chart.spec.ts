@@ -350,3 +350,30 @@ test('UIC-CHART-6.6 UIC-CHART-1.5 downsamples a dense series and keeps the drawi
   await demo.getByRole('button', { name: 'Show as table' }).click();
   await expect(demo.getByRole('row')).toHaveCount(20_001);
 });
+
+test('UIC-CHART-10.1 UIC-CHART-10.2 draws observations that keep their identity and focus as they move', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('chart');
+  const demo = page.locator('[data-lab-demo="scatter"]');
+  const points = demo.locator('.ui-scatter-chart__point');
+  await expect(points).toHaveCount(8);
+  const plot1 = demo.getByRole('img', { name: 'East field, Plot 1: Rain (mm) 12, Yield (t) 3.1' });
+  const plot6 = demo.getByRole('img', { name: 'West field, Plot 6: Rain (mm) 12, Yield (t) 3.1' });
+  await expect(plot1).toHaveAttribute('cx', (await plot6.getAttribute('cx')) ?? '');
+  await plot1.focus();
+  await page.keyboard.press('ArrowRight');
+  const plot2 = demo.getByRole('img', { name: /^East field, Plot 2:/ });
+  await expect(plot2).toBeFocused();
+  await expect(page.getByRole('tooltip')).toContainText('Rain (mm) 18, Yield (t) 4.2');
+  await plot2.evaluate((element) => element.setAttribute('data-lab-mark', 'kept'));
+  await demo.getByRole('button', { name: 'Raise yields' }).click();
+  const moved = demo.getByRole('img', { name: 'East field, Plot 2: Rain (mm) 18, Yield (t) 4.7' });
+  await expect(moved).toHaveAttribute('data-lab-mark', 'kept');
+  for (const point of await points.all()) {
+    await expect(point).not.toHaveAttribute('cy', /NaN|Infinity/);
+  }
+  await demo.getByRole('button', { name: 'Show as table' }).click();
+  await expect(demo.getByRole('row')).toHaveCount(10);
+});

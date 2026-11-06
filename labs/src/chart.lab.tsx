@@ -19,6 +19,7 @@ import { ChartDenseCases } from './chart-dense-cases.js';
 import { ChartFormatCases } from './chart-format-cases.js';
 import { ChartMissingCases } from './chart-missing-cases.js';
 import { ChartReferencesCases } from './chart-references-cases.js';
+import { ChartScatterCases } from './chart-scatter-cases.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { requireDefined } from './require-defined.js';
 
@@ -473,5 +474,6 @@ mountLab(
     <ChartDenseCases />
     <ChartMissingCases />
     <ChartReferencesCases />
+    <ChartScatterCases />
   </>,
 );

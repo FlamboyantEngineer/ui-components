@@ -18,3 +18,5 @@ export type {
   LineChartX,
 } from './line-chart.js';
 export { LineChart } from './line-chart.js';
+export type { ScatterChartPoint, ScatterChartProps, ScatterChartSeries } from './scatter-chart.js';
+export { ScatterChart } from './scatter-chart.js';
