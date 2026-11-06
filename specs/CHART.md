@@ -20,7 +20,7 @@ Verification: `src/components/chart/chart.test.tsx`, `e2e/chart.spec.ts`
 
 ### UIC-CHART-1.3 - Table view
 
-The view toggle shall be a toggle button named by the provider's `showAsTable` string beside the decorative built-in `table` glyph. Pressing it switches between the chart view and the table view and publishes `data-view` (`chart` or `table`) on the root. The view is controlled with `view` and `onViewChange` or uncontrolled from `defaultView` (`chart` by default). The table view replaces the legend and the drawing with a [Prose Table](PROSE-TABLE.md) carrying `ui-chart__table`, named by the chart's name, whose `table.columns` head its columns and whose `table.rows` fill its rows, the first cell of each row heading it.
+The view toggle shall be a toggle button named by the provider's `showAsTable` string beside the decorative built-in `table` glyph. Pressing it switches between the chart view and the table view and publishes `data-view` (`chart` or `table`) on the root. The view is controlled with `view` and `onViewChange` or uncontrolled from `defaultView` (`chart` by default). The table view replaces the legend and the drawing with a [Prose Table](PROSE-TABLE.md) carrying `ui-chart__table`, named by the chart's name, whose `table.columns` head its columns and whose `table.rows` fill its rows, the first cell of each row heading it. `table` may be a function returning them, which the chart calls only while the table view shows.
 
 Implementation: `src/components/chart/chart.tsx`
 Verification: `src/components/chart/chart.test.tsx`, `e2e/chart.spec.ts`
@@ -31,6 +31,13 @@ Verification: `src/components/chart/chart.test.tsx`, `e2e/chart.spec.ts`
 
 Implementation: `src/components/chart/chart.tsx`, `src/components/chart/bar-chart.tsx`, `src/components/chart/line-chart.tsx`, `src/components/chart/donut-chart.tsx`
 Verification: `src/components/chart/chart.test.tsx`, `src/components/chart/bar-chart.test.tsx`, `e2e/chart.spec.ts`
+
+### UIC-CHART-1.5 - Derivations
+
+`BarChart` and `LineChart` shall build their table only while the table view shows, from every series (hidden ones included) as they are at that render, so a chart that is drawn never orders or writes table cells. Their value scale, layout and placed references are kept while their own inputs are unchanged (the shown series, the box size, the value bounds, the format options and formatters, the time zone and the locale), and the drawing skips its render when none of its inputs changed, as when only the summary, the label or the legend's presentation does. A changed input, including a new locale, time zone, format option or formatter, derives them again; nothing is cached beyond the inputs of the latest render.
+
+Implementation: `src/components/chart/chart.tsx`, `src/components/chart/bar-chart-model.ts`, `src/components/chart/line-chart-model.ts`, `src/components/chart/chart-references.tsx`, `src/components/chart/chart-legend.tsx`
+Verification: `src/components/chart/chart-derivation.test.tsx`
 
 ## UIC-CHART-2 - Legend
 
@@ -191,6 +198,13 @@ A point's `y` may be `null`, a missing value, as JSON writes one; a `y` that is 
 
 Implementation: `src/components/chart/line-geometry.ts`, `src/components/chart/line-table.ts`, `src/components/chart/line-chart.tsx`
 Verification: `src/components/chart/line-geometry.test.ts`, `src/components/chart/line-chart.test.tsx`, `e2e/chart.spec.ts`
+
+### UIC-CHART-6.6 - Downsampling
+
+With `downsample`, each series shall draw, of each run of values between breaks, only the first, lowest, highest and last value in each pixel column of the plot, in x order: values sharing an x share a column, and the line keeps every column's extremes, each run's ends and every break. Kept values are real points, never averaged or moved, so each is a named, focusable point with its own tooltip, and the arrow keys step through them; the summary counts every drawn value and the table lists every value. Downsampling is deterministic, recomputes when the series or the box size changes, never changes the caller's arrays, and is off by default, when every value draws as a point. Measured in jsdom on a 480-pixel chart, 100 000 values draw about 1 600 points instead of 100 000, in about a sixteenth of the time and an eighth of the memory.
+
+Implementation: `src/components/chart/line-sampling.ts`, `src/components/chart/line-geometry.ts`, `src/components/chart/line-chart.tsx`
+Verification: `src/components/chart/line-sampling.test.tsx`, `e2e/chart.spec.ts`
 
 ## UIC-CHART-7 - Donut chart
 

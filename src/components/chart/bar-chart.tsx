@@ -1,11 +1,12 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { memo, type ReactNode } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, Orientation, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { useNumberFormatter } from '../../primitives/index.js';
+import { useLocale } from '../../primitives/index.js';
+import { getNumberFormat } from '../../utils/intl-format.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { useBarChartModel } from './bar-chart-model.js';
 import type { BarChartLayout, BarGeometry } from './bar-geometry.js';
@@ -81,8 +82,11 @@ interface BarPlotProps {
   references: readonly PlacedReference[];
 }
 
-/** The axes and the bars, each bar a focusable value with a tooltip. */
-function BarPlot(props: BarPlotProps) {
+/**
+ * The axes and the bars, each bar a focusable value with a tooltip. It skips a render while its
+ * inputs are unchanged, as when the chart around it renders for its summary.
+ */
+const BarPlot = memo(function BarPlot(props: BarPlotProps) {
   const { geometry, width, height, categories, series, orientation, references } = props;
   const strings = useUiStrings();
   const write = (bar: { series: number; index: number; value: number }) =>
@@ -143,7 +147,7 @@ function BarPlot(props: BarPlotProps) {
       })}
     </ChartPlot>
   );
-}
+});
 
 /**
  * A bar chart of one or more series over categories, grouped or stacked, vertical or horizontal,
@@ -175,7 +179,7 @@ export function BarChart({
 }: BarChartProps) {
   const strings = useUiStrings();
   const { width, element, frameRef } = useChartFrame(ref);
-  const format = useNumberFormatter(formatOptions);
+  const format = getNumberFormat(useLocale().locale, formatOptions);
   const [hidden, setHidden] = useHiddenKeys({ hiddenKeys, defaultHiddenKeys, onHiddenKeysChange });
   const showLegend = showLegendProp ?? hasLegendByDefault(series, hidden);
   const model = useBarChartModel({

@@ -49,8 +49,11 @@ export interface ChartProps
   summary: string;
   /** Show the summary under the title. Defaults to `false`: only assistive technology reads it. */
   showSummary?: boolean | undefined;
-  /** The values the table view lists. */
-  table: ChartTable;
+  /**
+   * The values the table view lists, or a function that builds them, called only while the table
+   * view shows, so a chart that is drawn never pays for its table.
+   */
+  table: ChartTable | (() => ChartTable);
   /** A legend shown above the drawing, such as a `ChartLegend`. */
   legend?: ReactNode;
   /** The chart draws no value; publishes `data-empty`. Defaults to `false`. */
@@ -142,7 +145,7 @@ export function Chart({
       {showSummary ? summaryText : <VisuallyHidden>{summaryText}</VisuallyHidden>}
       {shown === 'table' ? (
         <ChartValueTable
-          table={table}
+          table={typeof table === 'function' ? table() : table}
           name={labelId ? { 'aria-labelledby': labelId } : { 'aria-label': rest['aria-label'] }}
         />
       ) : (

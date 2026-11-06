@@ -2,6 +2,7 @@
 
 // A chart's reference lines and value bands: targets, thresholds and highlighted intervals.
 
+import { useMemo } from 'react';
 import type { Key, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useLocale } from '../../primitives/index.js';
@@ -236,8 +237,10 @@ export function useChartReferences(
 ): { placed: PlacedReference[]; described: string[] } {
   const strings = useUiStrings();
   const isRtl = useLocale().direction === 'rtl';
-  return {
-    placed: groups.flatMap((group) => group.place({ plot, isRtl })),
-    described: groups.flatMap((group) => group.describe(strings)),
-  };
+  // Kept while the groups and the plot are, so a drawing that skips its render can.
+  const placed = useMemo(
+    () => groups.flatMap((group) => group.place({ plot, isRtl })),
+    [groups, plot, isRtl],
+  );
+  return { placed, described: groups.flatMap((group) => group.describe(strings)) };
 }

@@ -14,6 +14,7 @@ import {
   resolvePlotBox,
   roundCoordinate,
 } from './chart-layout.js';
+import { sampleRun } from './line-sampling.js';
 import {
   createLineXAxis,
   createLineXReader,
@@ -54,6 +55,8 @@ export interface LineGeometryInput {
   formatAxisValue?: ((value: number) => string) | undefined;
   /** Draws the line and area straight across missing values instead of breaking them there. */
   connectsMissing?: boolean | undefined;
+  /** Draws, per pixel column, only each run's first, lowest, highest and last value. */
+  downsample?: boolean | undefined;
 }
 
 /** A drawn value. */
@@ -77,7 +80,10 @@ interface LinePath {
   series: number;
   line: string;
   area: string;
+  /** The values drawn as points: every drawn value, or the ones downsampling keeps. */
   points: LinePoint[];
+  /** Every drawn value, kept or not, for the summary. */
+  values: number[];
 }
 
 export interface LineGeometry {
@@ -125,8 +131,13 @@ function toPaths(runs: readonly LinePoint[][], baseline: number) {
 /** One series laid out: its readable points in x order, split into runs at missing values. */
 function layOutSeries(
   { series, id, points }: LineGeometrySeries,
-  scales: { xAxis: LineXAxis; y: (value: number) => number; connectsMissing: boolean },
-): { runs: LinePoint[][]; points: LinePoint[] } {
+  scales: {
+    xAxis: LineXAxis;
+    y: (value: number) => number;
+    connectsMissing: boolean;
+    downsample: boolean;
+  },
+): { runs: LinePoint[][]; points: LinePoint[]; values: number[] } {
   // Each x is read once before the sort, not again in the comparator.
   const ordered = points
     .map((point) => {
@@ -158,7 +169,14 @@ function layOutSeries(
     drawn.push(laid);
     requireDefined(runs.at(-1)).push(laid);
   }
-  return { runs: runs.filter((run) => run.length > 0), points: drawn };
+  const filled = runs.filter((run) => run.length > 0);
+  const values = drawn.map((point) => point.value);
+  if (!scales.downsample) return { runs: filled, points: drawn, values };
+  // Kept points are renumbered along the series, so the arrow keys step through them.
+  const sampled = filled.map((run) => sampleRun(run));
+  let index = 0;
+  const renumbered = sampled.map((run) => run.map((point) => ({ ...point, index: index++ })));
+  return { runs: renumbered, points: renumbered.flat(), values };
 }
 
 /** The value axis, also used to measure tick labels before laying out paths. */
@@ -198,16 +216,22 @@ export function resolveLineGeometry(
   const [low, high] = [Math.min(...values.domain), Math.max(...values.domain)];
   const baseline = roundCoordinate(values.map(clamp(0, low, high)));
   const lines = input.series.map((entry) => {
-    const { runs, points } = layOutSeries(entry, {
+    const {
+      runs,
+      points,
+      values: drawnValues,
+    } = layOutSeries(entry, {
       xAxis,
       y: values.map,
       connectsMissing: input.connectsMissing ?? false,
+      downsample: input.downsample ?? false,
     });
     return {
       key: toValueIdentity(entry.id),
       series: entry.series,
       ...toPaths(runs, baseline),
       points,
+      values: drawnValues,
     };
   });
   return { lines, xAxis, values, yTicks: values.ticks(), plot };

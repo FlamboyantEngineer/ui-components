@@ -1,12 +1,13 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { memo, type ReactNode } from 'react';
 import { useTimeZone } from '../../core/clock.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { useNumberFormatter } from '../../primitives/index.js';
+import { useLocale } from '../../primitives/index.js';
+import { getNumberFormat } from '../../utils/intl-format.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { Chart, type ChartSeries, type ChartViewProps } from './chart.js';
 import { ChartAxis } from './chart-axis.js';
@@ -55,6 +56,12 @@ export interface LineChartProps
    * of breaking them there. Missing values still draw no point and count as no value.
    */
   connectsMissing?: boolean | undefined;
+  /**
+   * Draws a dense series with at most its first, lowest, highest and last value in each pixel
+   * column: the line keeps its shape and the kept values stay real, focusable points, while the
+   * summary and the table keep every value. Off by default.
+   */
+  downsample?: boolean | undefined;
   /** Lines and bands at values of the value axis; they do not stretch it, and the plot cuts them. */
   references?: readonly ChartReference[] | undefined;
   /** Lines and bands at x values, read as the x axis reads its points. */
@@ -99,8 +106,11 @@ function toSeriesData(series: readonly LineChartSeries[], index: number) {
   return { series: index, tone: requireDefined(series[index]).tone };
 }
 
-/** The axes, areas, lines and points, each point a focusable value with a tooltip. */
-function LinePlot(props: LinePlotProps) {
+/**
+ * The axes, areas, lines and points, each point a focusable value with a tooltip. It skips a
+ * render while its inputs are unchanged, as when the chart around it renders for its summary.
+ */
+const LinePlot = memo(function LinePlot(props: LinePlotProps) {
   const { geometry, width, height, series, variant, writeValue, references } = props;
   const strings = useUiStrings();
   const { plot, lines, xAxis, yTicks } = geometry;
@@ -173,7 +183,7 @@ function LinePlot(props: LinePlotProps) {
       ))}
     </ChartPlot>
   );
-}
+});
 
 /**
  * A line chart of one or more series over dates (a time axis) or numbers (a linear axis), drawn as
@@ -202,7 +212,7 @@ export function LineChart(props: LineChartProps) {
   const strings = useUiStrings();
   const timeZone = useTimeZone(timeZoneProp);
   const { width, element, frameRef } = useChartFrame(ref);
-  const format = useNumberFormatter(options.formatOptions);
+  const format = getNumberFormat(useLocale().locale, options.formatOptions);
   const [hidden, setHidden] = useHiddenKeys({ hiddenKeys, defaultHiddenKeys, onHiddenKeysChange });
   const showLegend = showLegendProp ?? hasLegendByDefault(series, hidden);
   const model = useLineChartModel({

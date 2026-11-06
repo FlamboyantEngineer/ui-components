@@ -2,6 +2,7 @@
 
 // What a bar chart draws and says: its geometry, references and summary.
 
+import { useMemo } from 'react';
 import type { Key } from '../../core/props.js';
 import { useLocale } from '../../primitives/index.js';
 import type { BarChartProps, BarChartSeries } from './bar-chart.js';
@@ -18,23 +19,60 @@ import { toReferenceGroup, toValueReferenceAxis, useChartReferences } from './ch
 import { useValueSummary } from './chart-summary.js';
 import { useLabelMargin } from './use-chart-box.js';
 
-/** The bars laid out with room on the left for the widest left-axis label. */
+const barMargin = { top: 8, right: 16, bottom: 24 };
+
+/**
+ * The bars laid out with room on the left for the widest left-axis label. The value scale and the
+ * layout are kept while their inputs are unchanged, so a render for anything else reuses them.
+ */
 function useBarGeometry(
   element: Element | null,
   input: Omit<BarGeometryInput, 'margin' | 'locale'>,
 ): BarGeometry {
   const { locale } = useLocale();
-  const margin = { top: 8, right: 16, bottom: 24 };
-  const plot = resolvePlotBox(input.width, input.height, { ...margin, left: 0 });
-  const values =
-    input.orientation === 'vertical'
-      ? createBarValueScale({ ...input, locale, margin: { ...margin, left: 0 } }, plot)
-      : undefined;
-  const left = useLabelMargin(
-    element,
-    values ? values.ticks().map((tick) => tick.label) : input.categories,
+  const { categories, series, layout, orientation, width, height } = input;
+  const { formatOptions, formatAxisValue } = input;
+  const values = useMemo(() => {
+    if (orientation !== 'vertical') return undefined;
+    const margin = { ...barMargin, left: 0 };
+    const unmeasured = { categories, series, layout, orientation, width, height, margin, locale };
+    return createBarValueScale(
+      { ...unmeasured, formatOptions, formatAxisValue },
+      resolvePlotBox(width, height, margin),
+    );
+  }, [
+    categories,
+    series,
+    layout,
+    orientation,
+    width,
+    height,
+    locale,
+    formatOptions,
+    formatAxisValue,
+  ]);
+  const labels = useMemo(
+    () => (values ? values.ticks().map((tick) => tick.label) : categories),
+    [values, categories],
   );
-  return resolveBarGeometry({ ...input, locale, margin: { ...margin, left } }, values);
+  const left = useLabelMargin(element, labels);
+  return useMemo(() => {
+    const margin = { ...barMargin, left };
+    const measured = { categories, series, layout, orientation, width, height, margin, locale };
+    return resolveBarGeometry({ ...measured, formatOptions, formatAxisValue }, values);
+  }, [
+    values,
+    left,
+    categories,
+    series,
+    layout,
+    orientation,
+    width,
+    height,
+    locale,
+    formatOptions,
+    formatAxisValue,
+  ]);
 }
 
 interface BarChartModelInput {
@@ -75,23 +113,35 @@ function toBarTable(
 /** The shown series laid out, the references placed and described, and the summary. */
 export function useBarChartModel(input: BarChartModelInput) {
   const { element, series, hidden, format, layout, references } = input;
-  const writeValue = toDatumFormatter(input.formatValue, format);
-  const drawn = series
-    .map((entry, index) => ({ series: index, values: entry.values, id: entry.id }))
-    .filter((entry) => !hidden.has(entry.id));
+  const writeValue = useMemo(
+    () => toDatumFormatter(input.formatValue, format),
+    [input.formatValue, format],
+  );
+  const drawn = useMemo(
+    () =>
+      series
+        .map((entry, index) => ({ series: index, values: entry.values, id: entry.id }))
+        .filter((entry) => !hidden.has(entry.id)),
+    [series, hidden],
+  );
   const geometry = useBarGeometry(element, { ...layout, series: drawn });
   const direction = layout.orientation === 'vertical' ? 'y' : 'x';
-  const axis = toValueReferenceAxis(geometry.values, format, direction);
-  const marks = useChartReferences([toReferenceGroup(references, axis)], geometry.plot);
+  const groups = useMemo(
+    () => [toReferenceGroup(references, toValueReferenceAxis(geometry.values, format, direction))],
+    [references, geometry, format, direction],
+  );
+  const marks = useChartReferences(groups, geometry.plot);
   const generated = useValueSummary({
     values: geometry.bars.map((bar) => bar.value),
     series: drawn.length,
     format,
     references: marks.described,
   });
-  const table = toBarTable(
-    { categories: layout.categories, series, categoryLabel: input.categoryLabel },
-    writeValue,
-  );
+  // Built only when the table view shows.
+  const table = () =>
+    toBarTable(
+      { categories: layout.categories, series, categoryLabel: input.categoryLabel },
+      writeValue,
+    );
   return { geometry, marks, generated, table, writeValue };
 }

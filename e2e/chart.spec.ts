@@ -329,3 +329,24 @@ test('UIC-CHART-4.7 writes units per series, compact axis labels and a custom to
   await page.keyboard.press('Escape');
   await expect(page.getByRole('tooltip')).toHaveCount(0);
 });
+
+test('UIC-CHART-6.6 UIC-CHART-1.5 downsamples a dense series and keeps the drawing across frame renders', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('chart');
+  const demo = page.locator('[data-lab-demo="dense-series"]');
+  const points = demo.locator('.ui-line-chart__point');
+  await expect(demo.getByRole('img', { name: 'Load, 12,345: 250' })).toHaveCount(1);
+  const sampled = await points.count();
+  expect(sampled).toBeLessThan(5000);
+  await expect(demo.locator('.ui-line-chart__line')).toHaveAttribute('d', /^M[^M]+M[^M]+$/);
+  await points.first().evaluate((element) => element.setAttribute('data-lab-mark', 'kept'));
+  await demo.getByText('Show summary').click();
+  await expect(demo.locator('.ui-chart__summary')).toContainText('19,600 values');
+  await expect(points.first()).toHaveAttribute('data-lab-mark', 'kept');
+  await demo.getByText('Downsample').click();
+  await expect(points).toHaveCount(19_600);
+  await demo.getByRole('button', { name: 'Show as table' }).click();
+  await expect(demo.getByRole('row')).toHaveCount(20_001);
+});

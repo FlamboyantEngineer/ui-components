@@ -15,6 +15,7 @@ import { Switch } from '../../src/components/switch/switch.js';
 import type { Key } from '../../src/core/props.js';
 import { createBandScale } from '../../src/utils/band-scale.js';
 import { createLinearScale } from '../../src/utils/linear-scale.js';
+import { ChartDenseCases } from './chart-dense-cases.js';
 import { ChartFormatCases } from './chart-format-cases.js';
 import { ChartMissingCases } from './chart-missing-cases.js';
 import { ChartReferencesCases } from './chart-references-cases.js';
@@ -469,6 +470,7 @@ mountLab(
       <CustomDrawing />
     </LabSection>
     <ChartFormatCases />
+    <ChartDenseCases />
     <ChartMissingCases />
     <ChartReferencesCases />
   </>,
