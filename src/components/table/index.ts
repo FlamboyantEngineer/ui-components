@@ -29,6 +29,7 @@ export type {
 } from './table-filters.js';
 export { filterTableRows } from './table-filters.js';
 export type { TableAggregate, TableGroup, TableGroupBy, TableGrouping } from './table-groups.js';
+export type { TableHandle, TableRevealOptions } from './table-reveal.js';
 export type {
   TableCellEditor,
   TableCellValue,

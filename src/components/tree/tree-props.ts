@@ -1,6 +1,7 @@
-import type { KeyboardEvent, ReactNode } from 'react';
+import type { KeyboardEvent, ReactNode, Ref } from 'react';
 import type {
   AriaLabellingProps,
+  CollectionHandle,
   CollectionSelectionProps,
   ExpansionProps,
 } from '../../core/events.js';
@@ -8,6 +9,9 @@ import type { BaseProps, Key, RefProps, Size } from '../../core/props.js';
 import type { TreeMoveItem } from '../../utils/tree-reorder.js';
 import type { IconSource } from '../icon/icon.js';
 import type { TreeReorderOptions } from './use-tree-reorder.js';
+
+/** Reveals and focuses a tree's rows by item id (UIC-TREE-9.1). */
+export type TreeHandle = CollectionHandle;
 
 /** The minimal shape of a tree item: a key unique in the tree, and optional children. */
 export type TreeItemData = TreeMoveItem<unknown>;
@@ -131,6 +135,8 @@ export interface TreeProps<T extends TreeItemData>
   virtualized?: boolean | undefined;
   /** Row height in pixels for a virtualized tree. Defaults to 28, 32 or 40 by size. */
   rowHeight?: number | undefined;
+  /** Receives the handle that reveals and focuses rows by item id, drawn or not. */
+  handleRef?: Ref<TreeHandle> | undefined;
   /** Draws a selection checkbox in each row while the tree selects. */
   checkboxSelection?: boolean | undefined;
   /**

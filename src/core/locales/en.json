@@ -596,6 +596,8 @@
   "noItems": "No items",
   "moveSelectedTo": "Move selected to {label}",
   "moveAllTo": "Move all to {label}",
+  "cascaderLoadFailed": "Could not load these options",
+  "cascaderPathSeparator": "/",
   "addCard": "Add card",
   "noCards": "No cards",
   "cardCount": "{count, plural, one {# card} other {# cards}}{state, select, over {, over the limit of {limit}} within {, limit {limit}} other {}}",

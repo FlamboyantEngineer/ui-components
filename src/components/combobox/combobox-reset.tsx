@@ -4,6 +4,7 @@ import { type RefObject, useContext, useLayoutEffect, useRef, useState } from 'r
 import type { Key } from '../../core/props.js';
 import { ComboBoxStateContext } from '../../primitives/index.js';
 import { useNativeReset } from '../../utils/use-native-reset.js';
+import { useMarkedAction } from './combobox-reasons.js';
 
 /** The value React Aria's combobox state holds: a key, a list of keys, or none. */
 type ComboboxStateValue = Key | Key[] | null;
@@ -22,8 +23,7 @@ type ResetProbe = RefObject<() => boolean>;
  * The combobox's value change for React Aria, held while a native reset is under way, and what
  * `ComboboxReset` needs to apply the reset or undo it.
  */
-export function useHeldChange(report: (value: ComboboxStateValue) => void) {
-  const probeRef: ResetProbe = useRef(() => false);
+export function useHeldChange(probeRef: ResetProbe, report: (value: ComboboxStateValue) => void) {
   return {
     probeRef,
     report,
@@ -49,6 +49,7 @@ interface ComboboxResetProps {
  */
 export function ComboboxReset({ input, probeRef, isControlled, report }: ComboboxResetProps) {
   const state = useContext(ComboBoxStateContext);
+  const runMarked = useMarkedAction();
   const read = () => (state?.value ?? null) as ComboboxStateValue;
   const [initial] = useState(read);
   const snapshot = useRef<{ value: ComboboxStateValue; text: string } | null>(null);
@@ -58,8 +59,10 @@ export function ComboboxReset({ input, probeRef, isControlled, report }: Combobo
       const before = snapshot.current;
       snapshot.current = null;
       if (!state || !before || isSameValue(before.value, initial)) return;
-      if (isControlled) state.setValue(initial);
-      else report(initial);
+      runMarked({ change: 'reset' }, () => {
+        if (isControlled) state.setValue(initial);
+        else report(initial);
+      });
     },
     {
       onStart: () => {
@@ -69,8 +72,10 @@ export function ComboboxReset({ input, probeRef, isControlled, report }: Combobo
         const before = snapshot.current;
         snapshot.current = null;
         if (!state || !before) return;
-        state.setValue(before.value);
-        state.setInputValue(before.text);
+        runMarked({ change: 'reset', input: 'reset' }, () => {
+          state.setValue(before.value);
+          state.setInputValue(before.text);
+        });
       },
     },
   );

@@ -19,6 +19,7 @@ import { Icon, toIconProps } from '../icon/icon.js';
 import { Tag, TagGroup, type TagGroupSize } from '../tag-group/tag-group.js';
 import { comboboxHooks as hooks } from './combobox-hooks.js';
 import type { ComboboxOption } from './combobox-options.js';
+import { useMarkedAction } from './combobox-reasons.js';
 
 export interface ComboboxChipsProps {
   /** The combobox's label text, which names the group of chips. */
@@ -107,13 +108,16 @@ export function ComboboxChips({ label, options, known, size, isEditable }: Combo
   const state = useContext(ComboBoxStateContext);
   const strings = useUiStrings();
   const chosen = useChosenOptions(options, known);
+  const runMarked = useMarkedAction();
   if (!state || chosen.length === 0) return null;
   const onRemove = (removed: Set<Key>) =>
-    state.setValue(
-      chosen
-        .map((option) => option.id)
-        .filter((key) => !removed.has(key))
-        .map(toCollectionKey),
+    runMarked({ change: 'remove' }, () =>
+      state.setValue(
+        chosen
+          .map((option) => option.id)
+          .filter((key) => !removed.has(key))
+          .map(toCollectionKey),
+      ),
     );
   return (
     <TagGroup

@@ -1,6 +1,6 @@
 'use client';
 
-import { useContext, useMemo } from 'react';
+import { type Ref, useContext, useImperativeHandle, useMemo, useState } from 'react';
 import {
   ListLayout,
   Tree as AriaTree,
@@ -11,6 +11,7 @@ import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { PrimaryActionKeysContext } from '../../utils/primary-action-keys.js';
 import { useCarriedFocus } from '../../utils/use-carried-focus.js';
+import type { RevealLayout } from '../../utils/use-collection-handle.js';
 import { useKeptCollectionAttributes } from '../../utils/use-kept-collection-attributes.js';
 import { armHandleDrag } from '../drag-handle/drag-handle.js';
 import { TextMatchProvider } from '../text-match/text-match.js';
@@ -25,6 +26,7 @@ import { useTreeModel } from './use-tree-model.js';
 export type {
   TreeCurrentMark,
   TreeExpandGlyph,
+  TreeHandle,
   TreeItemData,
   TreeItemState,
   TreeMarks,
@@ -40,6 +42,13 @@ export { useTreeLoads } from './use-tree-loads.js';
 
 /** A virtualized tree's row height, which its section heading rows take too. */
 const toLayoutOptions = (rowHeight: number) => ({ rowHeight, headingHeight: rowHeight });
+
+/** The layout a virtualized tree draws with, handed to the tree's handle, which places rows by it. */
+function useRevealLayout(layoutRef: Ref<RevealLayout>) {
+  const [layout] = useState(() => new ListLayout());
+  useImperativeHandle(layoutRef, () => layout, [layout]);
+  return layout;
+}
 
 /**
  * A hierarchy of rows built on React Aria's `Tree`: expand and collapse, selection with optional
@@ -63,6 +72,7 @@ export function Tree<T extends TreeItemData>(props: TreeProps<T>) {
     ...model
   } = useTreeModel(props);
   const children = useTreeChildren(shown, model.renderItem, model.dependencies);
+  const layout = useRevealLayout(root.layoutRef);
   const { isPending, emptyMessage, disabledKeys } = state;
   const ariaKeys = createTreeAriaKeys({
     selection: selection.props,
@@ -126,7 +136,7 @@ export function Tree<T extends TreeItemData>(props: TreeProps<T>) {
   );
   if (root.rowHeight === null) return matched;
   return (
-    <Virtualizer layout={ListLayout} layoutOptions={toLayoutOptions(root.rowHeight)}>
+    <Virtualizer layout={layout} layoutOptions={toLayoutOptions(root.rowHeight)}>
       {matched}
     </Virtualizer>
   );

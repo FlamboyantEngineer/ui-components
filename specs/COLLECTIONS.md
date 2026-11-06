@@ -38,3 +38,10 @@ A collection component shall render through the building block's collection (lis
 
 Implementation: `src/components/relation-matrix/relation-matrix.tsx`
 Verification: `src/components/relation-matrix/relation-matrix.test.tsx`
+
+### UIC-COLLECTIONS-1.6 - Revealing items by key
+
+A collection that reveals items by key shall do so through a `CollectionHandle` on its `handleRef`, apart from its element `ref`: `revealKey(key, options)` and `focusKey(key, options)` take the item's own key, never a row index or a building block's object, and resolve a `CollectionRevealResult`, `{ found: true }` or `{ found: false, reason }` with a `CollectionRevealMiss` (`missing`, `filtered`, `collapsed`, `paged` or `unmounted`). Revealing scrolls the item into view and leaves focus alone; only `focusKey` moves focus. The handle reveals only what the collection shows: it never expands, filters, pages or starts a load of the host's data. [Table](TABLE.md#uic-table-19---revealing-rows-by-id) and [Tree](TREE.md#uic-tree-9---revealing-rows-by-id) provide one.
+
+Implementation: `src/core/events.ts`, `src/utils/use-collection-handle.ts`
+Verification: `src/components/table/table-reveal.test.tsx`, `src/components/tree/tree-reveal.test.tsx`

@@ -19,6 +19,7 @@ import {
 import type { Key } from '../../src/core/props.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { NarrowRows } from './combobox-narrow-cases.js';
+import { ChangeReasons } from './combobox-reason-cases.js';
 import { LabForm, MountOnDemand } from './lab-form.js';
 import { LabOutput } from './lab-output.js';
 import { ShadowRootApp } from './shadow-root-host.js';
@@ -700,6 +701,12 @@ mountLab(
       description="Change the selected option’s icon, then hide its suggestions: the chip retains its latest label and icon until removed."
     >
       <RememberedChips />
+    </LabSection>
+    <LabSection
+      title="Change reasons"
+      description="Each callback reports why it ran: typing apart from the label a pick writes, a pick apart from a chip removal or the clear button, and a dismissal apart from a pick."
+    >
+      <ChangeReasons />
     </LabSection>
     <LabSection
       title="Numeric labels"

@@ -13,7 +13,7 @@ Verification: `src/components/people-picker/people-picker.test.tsx`, `src/compon
 
 ### UIC-PEOPLE-PICKER-1.2 - Single and multiple selection
 
-With `selectionMode="single"` (the default) picking a person shall write their name to the input and call `onChange` with their `id`; with `multiple`, `value`, `defaultValue` and `onChange` hold the list of ids and each chosen person shows as a chip (UIC-COMBOBOX-3.1) that leads with their decorative avatar (`ui-people-picker__avatar`, also `ui-avatar`) in the chip's icon slot (UIC-COMBOBOX-3.5).
+With `selectionMode="single"` (the default) picking a person shall write their name to the input and call `onChange` with their `id` and the combobox's change details (UIC-COMBOBOX-6.1); with `multiple`, `value`, `defaultValue` and `onChange` hold the list of ids and each chosen person shows as a chip (UIC-COMBOBOX-3.1) that leads with their decorative avatar (`ui-people-picker__avatar`, also `ui-avatar`) in the chip's icon slot (UIC-COMBOBOX-3.5).
 
 Implementation: `src/components/people-picker/people-picker.tsx`
 Verification: `src/components/people-picker/people-picker.test.tsx`, `e2e/people-picker.spec.ts`

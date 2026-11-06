@@ -57,7 +57,7 @@ describe('Combobox suggestion sources', () => {
     const listbox = await screen.findByRole('listbox');
     expect(within(listbox).getByRole('group', { name: 'Citrus' })).toBeInTheDocument();
     await user.click(within(listbox).getByRole('option', { name: 'Banana' }));
-    expect(onChange).toHaveBeenLastCalledWith(['a', 'lemon', 2]);
+    expect(onChange).toHaveBeenLastCalledWith(['a', 'lemon', 2], { reason: 'select' });
     await user.keyboard('{Escape}');
     expect(chipLabels()).toEqual(['Apple', 'Lemon', 'Banana']);
   });
@@ -100,13 +100,13 @@ describe('Combobox chips', () => {
       const combobox = screen.getByRole('combobox', { name: 'Cities' });
       await user.type(combobox, 'li');
       await user.click(await screen.findByRole('option', { name: 'Lima' }));
-      expect(onChange).toHaveBeenLastCalledWith(['lima']);
+      expect(onChange).toHaveBeenLastCalledWith(['lima'], { reason: 'select' });
       // The list stays open for more choices and the typed text clears.
       expect(screen.getByRole('listbox')).toHaveAttribute('aria-multiselectable', 'true');
       expect(combobox).toHaveValue('');
       expect(screen.getByRole('option', { name: 'Lima' })).toHaveAttribute('aria-selected', 'true');
       await user.click(screen.getByRole('option', { name: 'Oslo' }));
-      expect(onChange).toHaveBeenLastCalledWith(['lima', 'oslo']);
+      expect(onChange).toHaveBeenLastCalledWith(['lima', 'oslo'], { reason: 'select' });
       // React Aria hides everything but the input and the list while the list is open.
       await user.keyboard('{Escape}');
       expect(screen.queryByRole('listbox')).not.toBeInTheDocument();

@@ -38,6 +38,7 @@ import {
   type ComboboxOption,
   hasOptionLabelled,
 } from './combobox-options.js';
+import { useMarkedAction } from './combobox-reasons.js';
 
 /** Draws an option's content in the list, from the option and its row's state. */
 export type ComboboxOptionRenderer = (option: ComboboxOption, state: SelectableState) => ReactNode;
@@ -128,6 +129,7 @@ function CreateRow({
 }) {
   const strings = useUiStrings();
   const id = useId();
+  const runMarked = useMarkedAction();
   return (
     <ListBoxItem
       id={id}
@@ -135,10 +137,13 @@ function CreateRow({
       className={hooks.slotClass('create')}
       // React Aria commits the field as the row closes the list, which reports the old selection;
       // adding after that commit keeps the selection and text the caller sets for the new option.
-      onAction={() => {
-        createdRef.current = text;
-        queueMicrotask(() => onCreate(text));
-      }}
+      // The list closes as a pick does.
+      onAction={() =>
+        runMarked({ isPicked: true }, () => {
+          createdRef.current = text;
+          queueMicrotask(() => onCreate(text));
+        })
+      }
     >
       {strings.createOption(text)}
     </ListBoxItem>

@@ -3,6 +3,7 @@
 import { type RefObject, useContext, useEffect, useLayoutEffect } from 'react';
 import { ComboBoxStateContext } from '../../primitives/index.js';
 import { type ComboboxCompletion, findFirstOptionKey } from './combobox-options.js';
+import { useMarkedAction } from './combobox-reasons.js';
 
 interface AutoHighlightOptions {
   /** Highlight the first enabled option whenever the list is open and nothing is highlighted. */
@@ -38,13 +39,14 @@ export function useAutoHighlight({ autoHighlight, completion }: AutoHighlightOpt
  */
 export function useCreatedSelection(createdRef: RefObject<string | null>) {
   const state = useContext(ComboBoxStateContext);
+  const runMarked = useMarkedAction();
   useEffect(() => {
     if (!state || createdRef.current === null) return;
     if (state.isOpen) return;
     const text = state.selectedItem?.textValue;
     if (text === undefined) return;
     createdRef.current = null;
-    if (state.inputValue !== text) state.revert();
+    if (state.inputValue !== text) runMarked({ isPicked: true }, () => state.revert());
   });
 }
 

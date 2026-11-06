@@ -43,6 +43,7 @@ import {
   SeededTable,
   SelectionModes,
 } from './table-owned-cases.js';
+import { RevealRows } from './table-reveal-cases.js';
 import { RepeatedSelection } from './table-selection-cases.js';
 import { BulkEdit, Grouping, SmallSteps, Spreadsheet } from './table-sheet-cases.js';
 
@@ -381,6 +382,12 @@ mountLab(
       description="Move eligible rows inside their current group; fixed rows and group headers never drag."
     >
       <GroupedReordering />
+    </LabSection>
+    <LabSection
+      title="Revealing rows by id"
+      description="The table's handle reveals a row by id, drawn or not, without moving focus, or focuses one of its cells; a row the table does not show reports why."
+    >
+      <RevealRows />
     </LabSection>
     <LabSection title="States" description="Each state at both row sizes.">
       <StateMatrix
