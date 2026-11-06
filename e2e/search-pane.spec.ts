@@ -12,6 +12,20 @@ async function box(locator: Locator) {
 }
 
 test.describe('Search Pane lab', () => {
+  test('UIC-SEARCH-PANE-2.1 repeats activation of the current result', async ({ page, lab }) => {
+    await lab.open('search-pane');
+    const area = demo(page, 'many-results');
+    const row = area.getByRole('option').first();
+    await row.click();
+    await expect(area.locator('[data-lab-output="activations"]')).toHaveText('1');
+    await row.click();
+    await expect(area.locator('[data-lab-output="activations"]')).toHaveText('2');
+    await row.press('Enter');
+    await expect(area.locator('[data-lab-output="activations"]')).toHaveText('3');
+    await row.press('Space');
+    await expect(area.locator('[data-lab-output="activations"]')).toHaveText('4');
+  });
+
   test('UIC-SEARCH-PANE-1.2 UIC-SEARCH-PANE-3.1 UIC-SEARCH-PANE-5.1 draws each state in each replace mode', async ({
     page,
     lab,
