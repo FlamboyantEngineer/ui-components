@@ -91,7 +91,7 @@ Verification: `src/components/date-time-field/date-time-field.test.tsx`, `e2e/da
 
 ### UIC-DATE-TIME-FIELD-3.1 - Unavailable dates
 
-`isDateUnavailable(date)`, called with the `YYYY-MM-DD` date a day or value falls on (in the field's time zone for a zoned value), shall refuse dates such as weekends or booked days: the calendar marks them `data-unavailable` and does not pick them, and a value typed on such a date stays on screen, uncommitted, while the field is invalid with the provider string `dateUnavailable`. A range is refused when any day it spans is unavailable, its ends and every day between them included, whether it is typed, picked in the calendar or chosen as a preset. A value outside the bounds reports the bound instead.
+`isDateUnavailable(date)`, called with the `YYYY-MM-DD` date a day or value falls on (in the field's time zone for a zoned value), shall refuse dates such as weekends or booked days: the calendar marks them `data-unavailable` and does not pick them, and a value typed on such a date stays on screen, uncommitted, while the field is invalid with the provider string `dateUnavailable`. By default a range is refused when any day it spans is unavailable, its ends and every day between them included, whether it is typed, picked in the calendar or chosen as a preset; `rangeAvailability` relaxes that to its ends ([UIC-DATE-TIME-FIELD-3.7](#uic-date-time-field-37---ranges-across-unavailable-days)). A value outside the bounds reports the bound instead.
 
 Implementation: `src/components/date-time-field/date-time-field.tsx`, `src/components/date-time-field/date-values.ts`, `src/components/date-time-field/date-time-pickers.tsx`, `src/core/strings.ts`
 Verification: `src/components/date-time-field/date-time-presets.test.tsx`, `src/components/date-time-field/date-values.test.ts`, `e2e/date-time-field.spec.ts`
@@ -134,6 +134,13 @@ Each number is its row's header (`ui-date-time-field__calendar-week`, a `th` wit
 
 Implementation: `src/components/date-time-field/calendar-weeks.tsx`, `src/components/date-time-field/week-numbers.ts`, `src/components/date-time-field/calendar-grid.tsx`, `src/components/date-time-field/date-time-field.tsx`, `src/core/strings.ts`, `labs/reference/date-time-field.css`
 Verification: `src/components/date-time-field/week-numbers.test.ts`, `src/components/date-time-field/calendar-weeks.test.tsx`, `e2e/date-time-field-calendar.spec.ts`
+
+### UIC-DATE-TIME-FIELD-3.7 - Ranges across unavailable days
+
+`rangeAvailability` shall decide which days of a range must be available, in the range modes, by one rule for typed ranges, calendar picks, presets and the field's own check: `contiguous` (the default) requires every day from the start to the end (UIC-DATE-TIME-FIELD-3.1), and `endpoints` requires only the start's and the end's days, so a work week can span a holiday (React Aria's non-contiguous ranges). With `endpoints`, the calendar lets a pick continue past unavailable days, which stay `data-unavailable` (with their tone, taken mark and description) and do not publish `data-selected` inside the picked range; an unavailable start or end is still refused, by the calendar and with the provider string `dateUnavailable` when typed or preset, and the bounds hold as before. The value stays the canonical `{ start, end }` interval: it does not list the available days it holds, and the form submits the same `startName` and `endName` entries. The caller's `validate` and `validateAsync` run on such a range like any other, after the field's own check accepts it. The single modes ignore it.
+
+Implementation: `src/components/date-time-field/date-values.ts`, `src/components/date-time-field/date-time-field.tsx`, `src/components/date-time-field/date-time-pickers.tsx`
+Verification: `src/components/date-time-field/date-states.test.tsx`, `src/components/date-time-field/date-values.test.ts`, `e2e/date-time-field-calendar.spec.ts`
 
 ## UIC-DATE-TIME-FIELD-4 - Time, zones, ranges and forms
 

@@ -1,5 +1,5 @@
 // Date time field cases for the calendar's layout: several months side by side, their paging, the
-// week start and week numbers.
+// week start, week numbers and ranges across unavailable days.
 
 import { useState } from 'react';
 import {
@@ -101,6 +101,41 @@ export function CalendarWeeks() {
         description="Weeks start on the chosen day in both months, and the numbers count weeks from that day."
         data-lab-field="week-start"
       />
+    </>
+  );
+}
+
+// A Wednesday holiday and the weekends; noon UTC keeps the date in every zone.
+const isClosed = (date: string) =>
+  date === '2026-04-15' || new Date(`${date}T12:00:00Z`).getUTCDay() % 6 === 0;
+
+/** The same work week under each range rule: only the endpoints rule takes it across the holiday. */
+export function RangeAvailability() {
+  const [committed, setCommitted] = useState<DateRangeValue | null>(null);
+  return (
+    <>
+      <DateTimeField
+        label="Work week"
+        mode="date-range"
+        rangeAvailability="endpoints"
+        isDateUnavailable={isClosed}
+        defaultValue={{ start: '2026-04-06', end: '2026-04-10' }}
+        presets={[{ label: 'Holiday week', value: { start: '2026-04-13', end: '2026-04-17' } }]}
+        description="Only the first and last days must be open: a range may span the 15 April holiday and weekends. The value is still one start and end."
+        onCommit={setCommitted}
+        data-lab-field="range-endpoints"
+      />
+      <DateTimeField
+        label="Unbroken stay"
+        mode="date-range"
+        isDateUnavailable={isClosed}
+        defaultValue={{ start: '2026-04-06', end: '2026-04-10' }}
+        presets={[{ label: 'Holiday week', value: { start: '2026-04-13', end: '2026-04-17' } }]}
+        description="The default: every day of the range must be open, so the holiday week is refused."
+        onCommit={setCommitted}
+        data-lab-field="range-contiguous"
+      />
+      <LabOutput name="Work week">{JSON.stringify(committed)}</LabOutput>
     </>
   );
 }

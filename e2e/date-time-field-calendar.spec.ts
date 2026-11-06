@@ -113,3 +113,47 @@ test.describe('Date Time Field weeks', () => {
     expect(week.x).toBeLessThan(day.x);
   });
 });
+
+test.describe('Date Time Field ranges across unavailable days', () => {
+  test('UIC-DATE-TIME-FIELD-3.7 picks a work week across a holiday by its open ends', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('date-time-field');
+    const dialog = await openCalendar(page, 'range-endpoints');
+    await dialog.getByRole('button', { name: /Monday, April 13, 2026/ }).click();
+    await dialog.getByRole('button', { name: /Friday, April 17, 2026/ }).click();
+    await expect(page.locator('[data-lab-output="Work week"]')).toHaveText(
+      '{"start":"2026-04-13","end":"2026-04-17"}',
+    );
+    const reopened = await openCalendar(page, 'range-endpoints');
+    const holiday = reopened.getByRole('button', { name: /Wednesday, April 15, 2026/ });
+    await expect(holiday).toHaveAttribute('data-unavailable', 'true');
+    await expect(holiday).not.toHaveAttribute('data-selected', /.*/);
+    await expect(
+      reopened.getByRole('button', { name: /Thursday, April 16, 2026/ }),
+    ).toHaveAttribute('data-selected', 'true');
+    await expect(reopened.locator('xpath=..')).not.toHaveAttribute('data-entering', /.*/);
+    await lab.expectAccessible('.ui-date-time-field__dialog');
+  });
+
+  test('UIC-DATE-TIME-FIELD-3.7 refuses the holiday week by default and from the keyboard', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('date-time-field');
+    const dialog = await openCalendar(page, 'range-contiguous');
+    await expect(dialog.getByRole('button', { name: 'Holiday week' })).toBeDisabled();
+    await page.keyboard.press('Escape');
+    const endpoints = await openCalendar(page, 'range-endpoints');
+    await expect(endpoints.getByRole('button', { name: 'Holiday week' })).toBeEnabled();
+    // A typed end on the holiday is refused.
+    await page.keyboard.press('Escape');
+    const end = field(page, 'range-endpoints').getByRole('spinbutton', { name: /^day/ }).nth(1);
+    await end.focus();
+    await page.keyboard.type('15');
+    await expect(
+      field(page, 'range-endpoints').getByText('Choose an available date.'),
+    ).toBeVisible();
+  });
+});

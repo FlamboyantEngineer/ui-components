@@ -7,6 +7,7 @@ export type {
   DateTimeFieldMode,
   DateTimeFieldPreset,
   DateTimeFieldProps,
+  DateTimeFieldRangeAvailability,
   DateTimeFieldValue,
   DateTimeFieldVisibleMonths,
   DateTimeFieldWeekday,

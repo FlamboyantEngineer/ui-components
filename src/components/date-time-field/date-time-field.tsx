@@ -32,6 +32,7 @@ import {
   type DateRangeValue,
   type DateTimeFieldGranularity,
   type DateTimeFieldMode,
+  type DateTimeFieldRangeAvailability,
   type DateValueOptions,
   findBoundIssue,
   formatDateValue,
@@ -80,6 +81,11 @@ export interface DateTimeFieldProps<M extends DateTimeFieldMode = 'date'>
   hideTimeZone?: boolean | undefined;
   /** Refuses a `YYYY-MM-DD` date, such as a weekend: the calendar skips it and a typed one is invalid. */
   isDateUnavailable?: ((date: string) => boolean) | undefined;
+  /**
+   * Which days of a range must be available: every day (`contiguous`, the default) or only its
+   * start and end (`endpoints`), so a range may span a holiday. The value stays `{ start, end }`.
+   */
+  rangeAvailability?: DateTimeFieldRangeAvailability | undefined;
   /** Highlights or restricts each ISO calendar date. Disabled and taken dates cannot be selected. */
   getDateState?: ((date: string) => DateTimeFieldDateState | undefined) | undefined;
   /** Named values offered beside the calendar, such as `Last 7 days`. */
@@ -139,7 +145,8 @@ function useDateCheck(
       return { severity: 'error', message };
     }
     const isDateUnavailable = createDateUnavailableCheck(props);
-    if (isUnavailableValue(value, mode, { ...options, isDateUnavailable })) {
+    const { rangeAvailability } = props;
+    if (isUnavailableValue(value, mode, { ...options, isDateUnavailable, rangeAvailability })) {
       return { severity: 'error', message: strings.dateUnavailable };
     }
     return null;
@@ -160,6 +167,7 @@ function toSettings(
     hideTimeZone: props.hideTimeZone,
     getDateState: props.getDateState,
     isDateUnavailable: createDateUnavailableCheck(props),
+    rangeAvailability: props.rangeAvailability ?? 'contiguous',
     presets: props.presets ?? [],
     calendar: {
       heading: props.calendarHeading,
@@ -254,6 +262,11 @@ export type {
 export { CalendarBody, toCalendarProps } from './calendar-grid.js';
 export type { DateTimeFieldPreset } from './date-time-calendar.js';
 export { DateFormInputs, toEndpointErrorSources } from './date-time-form.js';
-export type { DateRangeValue, DateTimeFieldGranularity, DateTimeFieldMode } from './date-values.js';
+export type {
+  DateRangeValue,
+  DateTimeFieldGranularity,
+  DateTimeFieldMode,
+  DateTimeFieldRangeAvailability,
+} from './date-values.js';
 export { formatDateValue } from './date-values.js';
 export type { DateTimeFieldWeekday, DateTimeFieldWeekNumbers } from './week-numbers.js';

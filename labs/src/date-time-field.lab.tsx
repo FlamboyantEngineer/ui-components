@@ -8,7 +8,7 @@ import {
 import type { FieldLabelLayout } from '../../src/components/field/field.js';
 import { Form as UiForm } from '../../src/components/form/form.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
-import { CalendarMonths, CalendarWeeks } from './date-calendar-cases.js';
+import { CalendarMonths, CalendarWeeks, RangeAvailability } from './date-calendar-cases.js';
 import { DateStates } from './date-states.js';
 import { HourGranularity, OpenPopups } from './date-time-open-cases.js';
 import { fieldLayouts, type FieldStateName, fieldStates } from './field-states.js';
@@ -413,6 +413,12 @@ mountLab(
       description="ISO planning weeks, the locale's numbering, and an organizational week start. Week numbers are row headers, never dates."
     >
       <CalendarWeeks />
+    </LabSection>
+    <LabSection
+      title="Ranges across unavailable days"
+      description="With rangeAvailability endpoints, a range needs only open first and last days; the default needs every day open."
+    >
+      <RangeAvailability />
     </LabSection>
     <LabSection
       title="Corrected range"

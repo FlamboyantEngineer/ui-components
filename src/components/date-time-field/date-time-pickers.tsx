@@ -41,6 +41,7 @@ import {
   type DateFieldValue,
   type DateRangeValue,
   type DateTimeFieldMode,
+  type DateTimeFieldRangeAvailability,
   type DateValueOptions,
   toSingleMode,
 } from './date-values.js';
@@ -55,6 +56,8 @@ export interface DateControlSettings extends DateValueOptions {
   /** Refuses `YYYY-MM-DD` dates in the calendar and marks typed ones invalid. */
   isDateUnavailable?: ((date: string) => boolean) | undefined;
   getDateState?: ((date: string) => DateTimeFieldDateState | undefined) | undefined;
+  /** Which days of a range the calendar requires to be available. */
+  rangeAvailability: DateTimeFieldRangeAvailability;
   presets: readonly DateTimeFieldPreset<DateFieldValue>[];
   /** The calendar's heading, visible months and paging. */
   calendar: CalendarOptions;
@@ -245,6 +248,7 @@ export function DateRangeControl(props: DatePickerControlProps) {
       {...useDatePickerProps(props)}
       {...useBoundValues(props)}
       shouldCloseOnSelect={single === 'date'}
+      allowsNonContiguousRanges={settings.rangeAvailability === 'endpoints'}
       placeholderValue={usePlaceholderValue(props)}
       value={value}
       onChange={(next) => {

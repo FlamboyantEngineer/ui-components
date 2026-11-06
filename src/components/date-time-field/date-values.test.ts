@@ -187,6 +187,29 @@ describe('date values', () => {
     expect(isUnavailableValue(null, 'date', options)).toBe(false);
   });
 
+  it('UIC-DATE-TIME-FIELD-3.7 checks only the ends of a range by the endpoints rule', () => {
+    const isDateUnavailable = (date: string) => date === '2026-04-15' || date === '2026-04-20';
+    const contiguous = { isDateUnavailable };
+    const endpoints = { isDateUnavailable, rangeAvailability: 'endpoints' as const };
+    const week = { start: '2026-04-13', end: '2026-04-17' };
+    expect(isUnavailableValue(week, 'date-range', contiguous)).toBe(true);
+    expect(isUnavailableValue(week, 'date-range', endpoints)).toBe(false);
+    expect(
+      isUnavailableValue({ start: '2026-04-16', end: '2026-04-20' }, 'date-range', endpoints),
+    ).toBe(true);
+    expect(
+      isUnavailableValue({ start: '2026-04-15', end: '2026-04-17' }, 'date-range', endpoints),
+    ).toBe(true);
+    expect(
+      isUnavailableValue(
+        { start: '2026-04-14T09:00', end: '2026-04-16T17:00' },
+        'date-time-range',
+        endpoints,
+      ),
+    ).toBe(false);
+    expect(isUnavailableValue('2026-04-15', 'date', endpoints)).toBe(true);
+  });
+
   it('UIC-DATE-TIME-FIELD-4.1 writes seconds at the second granularity and drops finer parts', () => {
     expect(formatIsoDate(requireDefined(parseIsoTime('07:05:09')), 'second')).toBe('07:05:09');
     expect(formatIsoDate(requireDefined(parseIsoTime('07:05:09')))).toBe('07:05');
