@@ -569,6 +569,7 @@
   "signatureImageNoPaste": "El portapapeles no contiene ninguna imagen.",
   "rangeMaximum": "Máximo",
   "ratingValue": "{value, number} de {max, number}",
+  "timeZoneUnknown": "Zona horaria desconocida",
   "ratingNone": "Sin valoración",
   "activity": "Actividad",
   "noActivity": "Aún no hay actividad.",

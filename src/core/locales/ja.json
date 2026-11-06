@@ -569,6 +569,7 @@
   "signatureImageNoPaste": "クリップボードに画像がありません。",
   "rangeMaximum": "最大",
   "ratingValue": "{max, number} 段階中 {value, number}",
+  "timeZoneUnknown": "不明なタイムゾーンです",
   "ratingNone": "評価なし",
   "activity": "アクティビティ",
   "noActivity": "まだアクティビティはありません。",

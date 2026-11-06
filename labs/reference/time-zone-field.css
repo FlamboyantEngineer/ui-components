@@ -1,0 +1,5 @@
+/* Time zone field: a select field whose option descriptions carry offsets in even digits. */
+
+.ui-time-zone-field .ui-select-field__option-description {
+  font-variant-numeric: tabular-nums;
+}

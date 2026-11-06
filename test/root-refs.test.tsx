@@ -161,6 +161,7 @@ import { StepListEditor } from '../src/components/step-list-editor/step-list-edi
 import { SvgMarkup } from '../src/components/svg-markup/svg-markup.js';
 import { TagsInput } from '../src/components/tags-input/tags-input.js';
 import { TextField } from '../src/components/text-field/text-field.js';
+import { TimeZoneField } from '../src/components/time-zone-field/time-zone-field.js';
 import { TimelineItemEditor } from '../src/components/timeline/timeline-item-editor.js';
 import { createToastQueue, ToastList, ToastRegion } from '../src/components/toast/toast.js';
 import { ToolbarScroller } from '../src/components/toolbar-scroller/toolbar-scroller.js';
@@ -495,6 +496,7 @@ const cases: Record<string, RootRefCase> = {
 const fieldCases: Record<string, RootRefCase> = {
   BooleanField: { element: (ref) => <BooleanField ref={ref} label="Ripe" />, root: 'ui-field' },
   RatingField: { element: (ref) => <RatingField ref={ref} label="Quality" />, root: 'ui-field' },
+  TimeZoneField: { element: (ref) => <TimeZoneField ref={ref} label="Zone" />, root: 'ui-field' },
   CascaderField: {
     element: (ref) => <CascaderField ref={ref} label="Place" options={[]} />,
     root: 'ui-field',

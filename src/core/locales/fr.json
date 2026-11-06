@@ -569,6 +569,7 @@
   "signatureImageNoPaste": "Le presse-papiers ne contient aucune image.",
   "rangeMaximum": "Maximum",
   "ratingValue": "{value, number} sur {max, number}",
+  "timeZoneUnknown": "Fuseau horaire inconnu",
   "ratingNone": "Aucune note",
   "activity": "Activité",
   "noActivity": "Aucune activité pour l’instant.",

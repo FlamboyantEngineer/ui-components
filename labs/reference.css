@@ -181,6 +181,7 @@
 @import url('reference/text-diff.css') layer(ui-reference);
 @import url('reference/text-field.css') layer(ui-reference);
 @import url('reference/text-match.css') layer(ui-reference);
+@import url('reference/time-zone-field.css') layer(ui-reference);
 @import url('reference/timeline.css') layer(ui-reference);
 @import url('reference/toast.css') layer(ui-reference);
 @import url('reference/toolbar-scroller.css') layer(ui-reference);

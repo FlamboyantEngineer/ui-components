@@ -172,6 +172,7 @@ export * from './components/tags-input/index.js';
 export * from './components/text-diff/index.js';
 export * from './components/text-field/index.js';
 export * from './components/text-match/index.js';
+export * from './components/time-zone-field/index.js';
 export * from './components/timeline/index.js';
 export * from './components/toast/index.js';
 export * from './components/toolbar-scroller/index.js';

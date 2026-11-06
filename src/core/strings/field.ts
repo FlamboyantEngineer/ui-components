@@ -246,6 +246,8 @@ interface FieldStrings {
   rangeMaximum: string;
   /** Names a rating, or one choice of a rating field, from the value and the highest value. */
   ratingValue: (value: number, max: number) => string;
+  /** The message of a time zone field whose value the platform does not read as a time zone. */
+  timeZoneUnknown: string;
   /** Names a rating that has no value. */
   ratingNone: string;
 }
