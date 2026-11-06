@@ -206,7 +206,7 @@ Verification: `src/components/select-field/select-option.test.tsx`, `e2e/select-
 
 ### UIC-SELECT-FIELD-7.3 - Virtualized list
 
-With `virtualized`, the list shall render through React Aria's `Virtualizer` with a list layout: only the options in and near view are in the document, placed by the virtualizer's inline offsets, and scrolling or moving focus with the arrow keys, Home and End brings the others in. Every list keeps each option's row while the option and the way rows are drawn stay the same, so typing in the filter of a long list draws no unchanged row again. The reference sheet caps the listbox's height so it scrolls.
+With `virtualized`, the list shall render through React Aria's `Virtualizer` with a list layout: only the options in and near view are in the document, placed by the virtualizer's inline offsets, and scrolling or moving focus with the arrow keys, Home and End brings the others in. Every list keeps each option's row while the option and the way rows are drawn stay the same, so typing in the filter of a long list draws no unchanged row again. The reference sheet caps the listbox's height so it scrolls. The listbox publishes `data-virtualized`, and the reference sheet keeps such a list from sizing the popover's width (`contain: inline-size`): rows laid out to the list's width would otherwise widen the popover they sit in, frame after frame.
 
 Implementation: `src/components/select-field/select-list.tsx`, `labs/reference/select-field.css`
 Verification: `src/components/select-field/select-list.test.tsx`, `e2e/select-field.spec.ts`
@@ -400,71 +400,72 @@ Verification: `src/components/select-field/use-select-membership.test.tsx`
 
 ## Hooks
 
-| Hook                                  | Kind      | Values                                     | Description                                                              |
-| ------------------------------------- | --------- | ------------------------------------------ | ------------------------------------------------------------------------ |
-| `ui-select-field`                     | root      |                                            | The field root (also `ui-field`).                                        |
-| `ui-select-field__select`             | slot      |                                            | React Aria's select wrapper; carries the measured label width.           |
-| `ui-select-field__frame`              | slot      |                                            | Holds the previous value and the trigger.                                |
-| `ui-select-field__chip-frame`         | slot      |                                            | With `chipPlacement="inside"`: holds the chips, then the select.         |
-| `ui-select-field__trigger`            | slot      |                                            | The trigger button.                                                      |
-| `ui-select-field__clear`              | slot      |                                            | The clear button after the trigger (also `ui-button`).                   |
-| `ui-select-field__previous`           | slot      |                                            | A single select's previous value (also `ui-field-previous-value`).       |
-| `ui-select-field__value`              | slot      |                                            | The chosen option or the placeholder; names the trigger.                 |
-| `ui-select-field__value-icon`         | slot      |                                            | The chosen (or previous) option's icon (also `ui-icon`).                 |
-| `ui-select-field__value-label`        | slot      |                                            | The chosen option's label or the placeholder.                            |
-| `ui-select-field__chevron`            | slot      |                                            | The trigger's chevron glyph.                                             |
-| `ui-select-field__popover`            | slot      |                                            | The list's floating surface.                                             |
-| `--ui-trigger-width`                  | property  |                                            | Width of the element the popover opens from, in pixels.                  |
-| `ui-select-field__loading`            | slot      |                                            | The status line of a running search.                                     |
-| `ui-select-field__search`             | slot      |                                            | The filter's search field.                                               |
-| `ui-select-field__search-input`       | slot      |                                            | The filter input.                                                        |
-| `ui-select-field__listbox`            | slot      |                                            | The `role="listbox"` list.                                               |
-| `ui-select-field__section`            | slot      |                                            | A group of options (`role="group"`).                                     |
-| `ui-select-field__section-header`     | slot      |                                            | A group's heading.                                                       |
-| `ui-select-field__option`             | slot      |                                            | One `role="option"` row.                                                 |
-| `ui-select-field__option-check`       | slot      |                                            | A multiple select's selection indicator.                                 |
-| `ui-select-field__option-icon`        | slot      |                                            | An option's icon (also `ui-icon`).                                       |
-| `ui-select-field__option-label`       | slot      |                                            | An option's label.                                                       |
-| `ui-select-field__option-description` | slot      |                                            | An option's description.                                                 |
-| `ui-select-field__empty`              | slot      |                                            | The empty-list message.                                                  |
-| `ui-select-field__load-more`          | slot      |                                            | The row that loads the next page of results, showing the loading text.   |
-| `ui-select-field__chips`              | slot      |                                            | The tag group of a multiple select's chips.                              |
-| `ui-select-field__chip-list`          | slot      |                                            | The list of chips.                                                       |
-| `ui-select-field__chip`               | slot      |                                            | One chosen value.                                                        |
-| `ui-select-field__chip-icon`          | slot      |                                            | A chip's or removed value's icon (also `ui-icon`).                       |
-| `ui-select-field__chip-label`         | slot      |                                            | A chip's label.                                                          |
-| `ui-select-field__chip-remove`        | slot      |                                            | A chip's remove button (also `ui-button`).                               |
-| `ui-select-field__removed`            | slot      |                                            | A removed committed value (also `ui-field-previous-value`).              |
-| `data-selection-mode`                 | attribute | `single`, `multiple`                       | On the root (and React Aria's options): how many values the field takes. |
-| `data-chip-placement`                 | attribute | `below`, `inside`                          | On a multiple select's root: where its chips are drawn.                  |
-| `data-layer`                          | attribute | `dropdown`                                 | The popover's overlay layer.                                             |
-| `--ui-select-field-label-width`       | property  |                                            | The widest option label or placeholder, in pixels.                       |
-| `data-icons`                          | state     | `true`                                     | On the root: some option has an icon.                                    |
-| `data-placeholder`                    | state     | `true`                                     | On the value: nothing is chosen.                                         |
-| `data-missing`                        | state     | `true`                                     | On the value or a chip: no option names the chosen id.                   |
-| `data-change`                         | state     | `added`                                    | On a chip: the edit added this value.                                    |
-| `data-open`                           | state     | `true`                                     | The list is open (React Aria, on the select).                            |
-| `data-focused`                        | state     | `true`                                     | Focused (React Aria).                                                    |
-| `data-focus-visible`                  | state     | `true`                                     | Keyboard focus (React Aria).                                             |
-| `data-focus-within`                   | state     | `true`                                     | Focus inside (React Aria).                                               |
-| `data-hovered`                        | state     | `true`                                     | Pointer over the element (React Aria).                                   |
-| `data-pressed`                        | state     | `true`                                     | Pressed (React Aria).                                                    |
-| `data-disabled`                       | state     | `true`                                     | Disabled (React Aria).                                                   |
-| `data-invalid`                        | state     | `true`                                     | Invalid (React Aria, on the select and search field).                    |
-| `data-required`                       | state     | `true`                                     | Required (React Aria, on the select).                                    |
-| `data-indeterminate`                  | state     | `true`                                     | On a multiple list option's check slot: mixed membership.                |
-| `data-selected`                       | state     | `true`                                     | A chosen option (React Aria).                                            |
-| `data-empty`                          | state     | `true`                                     | An empty list or filter (React Aria).                                    |
-| `data-allows-removing`                | state     | `true`                                     | A removable chip (React Aria).                                           |
-| `data-placement`                      | state     | `top`, `bottom`, `left`, `right`, `center` | Side of the trigger the popover opened on (React Aria).                  |
-| `data-trigger`                        | state     | `Select`, `DialogTrigger`                  | What opened the popover (React Aria).                                    |
-| `data-entering`                       | state     | `true`                                     | Popover entry animation (React Aria).                                    |
-| `data-exiting`                        | state     | `true`                                     | Popover exit animation (React Aria).                                     |
-| `data-collection`                     | state     |                                            | React Aria's collection marker.                                          |
-| `data-key`                            | state     |                                            | Opaque collection key (React Aria): not the `id`, not for styling.       |
-| `data-layout`                         | state     | `stack`                                    | Listbox layout (React Aria).                                             |
-| `data-orientation`                    | state     | `vertical`                                 | Listbox orientation (React Aria).                                        |
-| `ui-select-field__dialog`             | slot      |                                            | The dialog inside the popover.                                           |
-| `ui-select-field__tree`               | slot      |                                            | The tree (also `ui-tree`).                                               |
-| `data-value-display`                  | attribute | `label`, `path`                            | On the root: how chosen nodes read.                                      |
-| `data-mode`                           | attribute | `list`, `tree`                             | Choice presentation.                                                     |
+| Hook                                  | Kind      | Values                                     | Description                                                                                                                |
+| ------------------------------------- | --------- | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| `ui-select-field`                     | root      |                                            | The field root (also `ui-field`).                                                                                          |
+| `ui-select-field__select`             | slot      |                                            | React Aria's select wrapper; carries the measured label width.                                                             |
+| `ui-select-field__frame`              | slot      |                                            | Holds the previous value and the trigger.                                                                                  |
+| `ui-select-field__chip-frame`         | slot      |                                            | With `chipPlacement="inside"`: holds the chips, then the select.                                                           |
+| `ui-select-field__trigger`            | slot      |                                            | The trigger button.                                                                                                        |
+| `ui-select-field__clear`              | slot      |                                            | The clear button after the trigger (also `ui-button`).                                                                     |
+| `ui-select-field__previous`           | slot      |                                            | A single select's previous value (also `ui-field-previous-value`).                                                         |
+| `ui-select-field__value`              | slot      |                                            | The chosen option or the placeholder; names the trigger.                                                                   |
+| `ui-select-field__value-icon`         | slot      |                                            | The chosen (or previous) option's icon (also `ui-icon`).                                                                   |
+| `ui-select-field__value-label`        | slot      |                                            | The chosen option's label or the placeholder.                                                                              |
+| `ui-select-field__chevron`            | slot      |                                            | The trigger's chevron glyph.                                                                                               |
+| `ui-select-field__popover`            | slot      |                                            | The list's floating surface.                                                                                               |
+| `--ui-trigger-width`                  | property  |                                            | Width of the element the popover opens from, in pixels.                                                                    |
+| `ui-select-field__loading`            | slot      |                                            | The status line of a running search.                                                                                       |
+| `ui-select-field__search`             | slot      |                                            | The filter's search field.                                                                                                 |
+| `ui-select-field__search-input`       | slot      |                                            | The filter input.                                                                                                          |
+| `ui-select-field__listbox`            | slot      |                                            | The `role="listbox"` list.                                                                                                 |
+| `ui-select-field__section`            | slot      |                                            | A group of options (`role="group"`).                                                                                       |
+| `ui-select-field__section-header`     | slot      |                                            | A group's heading.                                                                                                         |
+| `ui-select-field__option`             | slot      |                                            | One `role="option"` row.                                                                                                   |
+| `ui-select-field__option-check`       | slot      |                                            | A multiple select's selection indicator.                                                                                   |
+| `ui-select-field__option-icon`        | slot      |                                            | An option's icon (also `ui-icon`).                                                                                         |
+| `ui-select-field__option-label`       | slot      |                                            | An option's label.                                                                                                         |
+| `ui-select-field__option-description` | slot      |                                            | An option's description.                                                                                                   |
+| `ui-select-field__empty`              | slot      |                                            | The empty-list message.                                                                                                    |
+| `ui-select-field__load-more`          | slot      |                                            | The row that loads the next page of results, showing the loading text.                                                     |
+| `ui-select-field__chips`              | slot      |                                            | The tag group of a multiple select's chips.                                                                                |
+| `ui-select-field__chip-list`          | slot      |                                            | The list of chips.                                                                                                         |
+| `ui-select-field__chip`               | slot      |                                            | One chosen value.                                                                                                          |
+| `ui-select-field__chip-icon`          | slot      |                                            | A chip's or removed value's icon (also `ui-icon`).                                                                         |
+| `ui-select-field__chip-label`         | slot      |                                            | A chip's label.                                                                                                            |
+| `ui-select-field__chip-remove`        | slot      |                                            | A chip's remove button (also `ui-button`).                                                                                 |
+| `ui-select-field__removed`            | slot      |                                            | A removed committed value (also `ui-field-previous-value`).                                                                |
+| `data-selection-mode`                 | attribute | `single`, `multiple`                       | On the root (and React Aria's options): how many values the field takes.                                                   |
+| `data-chip-placement`                 | attribute | `below`, `inside`                          | On a multiple select's root: where its chips are drawn.                                                                    |
+| `data-layer`                          | attribute | `dropdown`                                 | The popover's overlay layer.                                                                                               |
+| `--ui-select-field-label-width`       | property  |                                            | The widest option label or placeholder, in pixels.                                                                         |
+| `data-virtualized`                    | state     | `true`                                     | On the listbox: `virtualized` lays out only the options in view; the list takes the popover's width rather than sizing it. |
+| `data-icons`                          | state     | `true`                                     | On the root: some option has an icon.                                                                                      |
+| `data-placeholder`                    | state     | `true`                                     | On the value: nothing is chosen.                                                                                           |
+| `data-missing`                        | state     | `true`                                     | On the value or a chip: no option names the chosen id.                                                                     |
+| `data-change`                         | state     | `added`                                    | On a chip: the edit added this value.                                                                                      |
+| `data-open`                           | state     | `true`                                     | The list is open (React Aria, on the select).                                                                              |
+| `data-focused`                        | state     | `true`                                     | Focused (React Aria).                                                                                                      |
+| `data-focus-visible`                  | state     | `true`                                     | Keyboard focus (React Aria).                                                                                               |
+| `data-focus-within`                   | state     | `true`                                     | Focus inside (React Aria).                                                                                                 |
+| `data-hovered`                        | state     | `true`                                     | Pointer over the element (React Aria).                                                                                     |
+| `data-pressed`                        | state     | `true`                                     | Pressed (React Aria).                                                                                                      |
+| `data-disabled`                       | state     | `true`                                     | Disabled (React Aria).                                                                                                     |
+| `data-invalid`                        | state     | `true`                                     | Invalid (React Aria, on the select and search field).                                                                      |
+| `data-required`                       | state     | `true`                                     | Required (React Aria, on the select).                                                                                      |
+| `data-indeterminate`                  | state     | `true`                                     | On a multiple list option's check slot: mixed membership.                                                                  |
+| `data-selected`                       | state     | `true`                                     | A chosen option (React Aria).                                                                                              |
+| `data-empty`                          | state     | `true`                                     | An empty list or filter (React Aria).                                                                                      |
+| `data-allows-removing`                | state     | `true`                                     | A removable chip (React Aria).                                                                                             |
+| `data-placement`                      | state     | `top`, `bottom`, `left`, `right`, `center` | Side of the trigger the popover opened on (React Aria).                                                                    |
+| `data-trigger`                        | state     | `Select`, `DialogTrigger`                  | What opened the popover (React Aria).                                                                                      |
+| `data-entering`                       | state     | `true`                                     | Popover entry animation (React Aria).                                                                                      |
+| `data-exiting`                        | state     | `true`                                     | Popover exit animation (React Aria).                                                                                       |
+| `data-collection`                     | state     |                                            | React Aria's collection marker.                                                                                            |
+| `data-key`                            | state     |                                            | Opaque collection key (React Aria): not the `id`, not for styling.                                                         |
+| `data-layout`                         | state     | `stack`                                    | Listbox layout (React Aria).                                                                                               |
+| `data-orientation`                    | state     | `vertical`                                 | Listbox orientation (React Aria).                                                                                          |
+| `ui-select-field__dialog`             | slot      |                                            | The dialog inside the popover.                                                                                             |
+| `ui-select-field__tree`               | slot      |                                            | The tree (also `ui-tree`).                                                                                                 |
+| `data-value-display`                  | attribute | `label`, `path`                            | On the root: how chosen nodes read.                                                                                        |
+| `data-mode`                           | attribute | `list`, `tree`                             | Choice presentation.                                                                                                       |

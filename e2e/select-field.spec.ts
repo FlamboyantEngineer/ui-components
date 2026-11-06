@@ -491,6 +491,17 @@ test.describe('Select Field lab', () => {
     await expect(listbox.getByRole('option', { name: 'Item 1', exact: true })).toBeVisible();
     expect(await listbox.getByRole('option').count()).toBeLessThan(60);
     await expect(listbox.getByRole('option', { name: 'Item 1', exact: true })).toBeFocused();
+    // Rows laid out to the list's width never widen the popover they sit in.
+    const popover = page.locator('.ui-select-field__popover');
+    const width = (await popover.boundingBox())?.width;
+    // Ten frames: each pass of the loop this guards against widened the popover again.
+    await page.evaluate(async () => {
+      for (let frame = 0; frame < 10; frame += 1) {
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+      }
+    });
+    expect((await popover.boundingBox())?.width).toBe(width);
+    await expect(listbox).toHaveAttribute('data-virtualized', 'true');
     await page.keyboard.press('End');
     const last = listbox.getByRole('option', { name: 'Item 5000' });
     await expect(last).toBeFocused();
