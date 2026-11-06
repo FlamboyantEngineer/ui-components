@@ -1,6 +1,6 @@
 # Progress Bar
 
-`ProgressBar` shows work toward completion or a measured quantity, as a linear track or circular ring. `mode="meter"` keeps measured quantities distinct from completion and supports thresholds. The output has no interactive state and announces nothing on its own; a host can place changing progress in a status region. `Spinner` is a decorative or named busy glyph. A [Loading Overlay](LOADING-OVERLAY.md) blocks a surface while work finishes.
+`ProgressBar` shows work toward completion, as a linear track or circular ring. `Meter`, in the same family, shows a measured quantity inside a known range, such as storage used or a battery's charge: it has the meter role, judges its tone by thresholds and never claims progress or completion. The output has no interactive state and announces nothing on its own; a host can place changing progress in a status region. `Spinner` is a decorative or named busy glyph. A [Loading Overlay](LOADING-OVERLAY.md) blocks a surface while work finishes.
 
 ## UIC-PROGRESS-BAR-1 - Progress bar
 
@@ -78,12 +78,12 @@ Verification: `src/components/progress-bar/progress-bar.test.tsx`, `e2e/progress
 
 ## UIC-PROGRESS-BAR-3 - Unified options
 
-### UIC-PROGRESS-BAR-3.1 - Shape and meaning
+### UIC-PROGRESS-BAR-3.1 - Shape
 
-shape shall select linear (default) or circular independently of mode, progress (default) or meter. Meter mode retains bounded values, thresholds and its meter role; it is never indeterminate or complete.
+`shape` shall select a linear track (the default) or a circular ring, on `ProgressBar` and `Meter` alike, and publish it as `data-shape`. A circular meter keeps its bounded value, thresholds and meter role, and is never indeterminate or complete.
 
-Implementation: `src/components/progress-bar/progress-bar.tsx`
-Verification: `src/components/progress-bar/progress-bar.test.tsx`, `e2e/unified-options.spec.ts`
+Implementation: `src/components/progress-bar/progress-bar.tsx`, `src/components/progress-bar/meter.tsx`, `src/components/progress-bar/progress-ring.tsx`
+Verification: `src/components/progress-bar/progress-bar.test.tsx`, `src/components/progress-bar/meter.test.tsx`, `e2e/unified-options.spec.ts`
 
 ## UIC-PROGRESS-BAR-4 - Segmented progress
 
@@ -124,7 +124,7 @@ Verification: `src/components/progress-bar/progress-segments.test.tsx`, `e2e/pro
 
 ### UIC-PROGRESS-BAR-4.6 - Invalid input
 
-With `segments`, the bar shall ignore `value`, `minValue`, `maxValue`, `formatOptions`, `isIndeterminate`, `shape` and `mode`: it is always a determinate linear progress bar whose value comes from the units. Only the first `current` unit is current; later `current` units and units with an unknown state draw as `pending` and do not count.
+With `segments`, the bar shall ignore `value`, `minValue`, `maxValue`, `formatOptions`, `isIndeterminate` and `shape`: it is always a determinate linear progress bar whose value comes from the units. Only the first `current` unit is current; later `current` units and units with an unknown state draw as `pending` and do not count.
 
 Implementation: `src/components/progress-bar/progress-segments.tsx`
 Verification: `src/components/progress-bar/progress-segments.test.tsx`
@@ -201,79 +201,93 @@ The ring shall publish `data-complete` when its bounded value reaches the maximu
 Implementation: `src/components/progress-bar/progress-bar.tsx`, `src/components/progress-bar/progress-bar.tsx`, `labs/reference/progress-bar.css`
 Verification: `src/components/progress-bar/progress-ring.test.tsx`, `e2e/progress-ring.spec.ts`
 
-## UIC-PROGRESS-BAR-21 - ProgressBar
+## UIC-PROGRESS-BAR-21 - Meter
 
 ### UIC-PROGRESS-BAR-21.1 - Parts
 
-`ProgressBar` shall render a `ui-progress-bar` element holding its visible `label` in a `ui-progress-bar__label` slot when one is given, its value text in a `ui-progress-bar__value` slot, and a `ui-progress-bar__track` holding a `ui-progress-bar__fill`.
+`Meter` shall render a `ui-meter` element holding its visible `label` in a `ui-meter__label` slot when one is given, its value text in a `ui-meter__value` slot, and a `ui-meter__track` holding a `ui-meter__fill`; a circular meter draws a `ui-meter__ring` holding the track and fill circles instead ([UIC-PROGRESS-BAR-11.2](#uic-progress-bar-112---ring-geometry)). It is built on the meter building block, separate from the progress bar, and takes none of the progress bar's progress-only props (`isIndeterminate`, `segments`).
 
-Implementation: `src/components/progress-bar/progress-bar.tsx`
-Verification: `src/components/progress-bar/progress-meter.test.tsx`, `e2e/progress-meter.spec.ts`
+Implementation: `src/components/progress-bar/meter.tsx`, `src/components/progress-bar/progress-root.tsx`
+Verification: `src/components/progress-bar/meter.test.tsx`, `e2e/progress-meter.spec.ts`
 
 ### UIC-PROGRESS-BAR-21.2 - Fill and value text
 
-The fill's inline `width` shall be the value's percentage of the range. `showValueLabel={false}` hides the visible value text while the meter keeps its accessible value.
+The fill's inline `width` shall be the value's percentage of the range. `showValueLabel={false}` hides the visible value text while the meter keeps its accessible value; a ring shows none unless `showValueLabel` is set.
 
-Implementation: `src/components/progress-bar/progress-bar.tsx`
-Verification: `src/components/progress-bar/progress-meter.test.tsx`, `e2e/progress-meter.spec.ts`
+Implementation: `src/components/progress-bar/meter.tsx`
+Verification: `src/components/progress-bar/meter.test.tsx`, `e2e/progress-meter.spec.ts`
 
 ### UIC-PROGRESS-BAR-21.3 - Value text
 
-The value text shall default to a locale-formatted percentage; `formatOptions` changes the format (a unit such as gigabytes formats the value itself), and `valueLabel` replaces the text, both visibly and as `aria-valuetext`.
+The value text shall default to a locale-formatted percentage; `formatOptions` changes the format (a unit such as gigabytes formats the value itself), and `valueLabel`, plain text, replaces the text, both visibly and as `aria-valuetext`. Blank text keeps the formatted value.
 
-Implementation: `src/components/progress-bar/progress-bar.tsx`
-Verification: `src/components/progress-bar/progress-meter.test.tsx`, `e2e/progress-meter.spec.ts`
+Implementation: `src/components/progress-bar/meter.tsx`
+Verification: `src/components/progress-bar/meter.test.tsx`, `src/components/progress-bar/progress-value-label.test.tsx`, `e2e/progress-meter.spec.ts`
 
 ### UIC-PROGRESS-BAR-21.4 - Truthful values
 
-The meter shall bound its range as a progress bar does ([UIC-PROGRESS-BAR-1.5](PROGRESS-BAR.md#uic-progress-bar-15---truthful-values)): `minValue` defaults to 0 and `maxValue` to 100, non-finite numbers fall back to the minimum, the maximum is never below the minimum, and the value stays inside the range. An empty range shows an empty fill.
+The meter shall bound its range as a progress bar does ([UIC-PROGRESS-BAR-1.5](#uic-progress-bar-15---truthful-values)): `minValue` defaults to 0 and `maxValue` to 100, non-finite numbers fall back to the minimum, the maximum is never below the minimum, and the value stays inside the range, below zero as above it. An empty range shows an empty fill. A meter is never indeterminate and never publishes `data-complete`, even at its maximum.
 
-Implementation: `src/components/progress-bar/progress-bar.tsx`, `src/components/progress-bar/progress-bar.tsx`
-Verification: `src/components/progress-bar/progress-meter.test.tsx`
+Implementation: `src/components/progress-bar/meter.tsx`, `src/components/progress-bar/progress-root.tsx`
+Verification: `src/components/progress-bar/meter.test.tsx`
 
 ### UIC-PROGRESS-BAR-21.5 - Sizes
 
-`size` shall publish `data-size`: `sm`, `md` (the default) or `lg`. The reference sheet draws 4, 6 and 8 pixel tracks, as for a progress bar.
+`size` shall publish `data-size`: `sm`, `md` (the default) or `lg`. The reference sheet draws 4, 6 and 8 pixel tracks and 16, 24 and 32 pixel rings, as for a progress bar.
 
-Implementation: `src/components/progress-bar/progress-bar.tsx`, `labs/reference/progress-bar.css`
-Verification: `src/components/progress-bar/progress-meter.test.tsx`, `e2e/progress-meter.spec.ts`
+Implementation: `src/components/progress-bar/meter.tsx`, `labs/reference/progress-bar.css`
+Verification: `src/components/progress-bar/meter.test.tsx`, `e2e/progress-meter.spec.ts`
 
 ### UIC-PROGRESS-BAR-21.6 - Tone
 
-`tone` shall publish `data-tone`: `neutral` (no judgement), `success`, `warning` or `danger`. Without `tone` the meter publishes the tone of its thresholds ([UIC-PROGRESS-BAR-21.7](#uic-progress-bar-37---thresholds)), or `neutral` when it has none. The tone is never the only signal: the label or value text states what the value means.
+`tone` shall publish `data-tone`: `neutral` (no judgement), `success`, `warning` or `danger`. Without `tone` the meter publishes the tone of its thresholds ([UIC-PROGRESS-BAR-21.7](#uic-progress-bar-217---thresholds)), or `neutral` when it has none. The tone is never the only signal: the label, value text or description states what the value means.
 
-Implementation: `src/components/progress-bar/progress-bar.tsx`, `labs/reference/progress-bar.css`
-Verification: `src/components/progress-bar/progress-meter.test.tsx`, `e2e/progress-meter.spec.ts`
+Implementation: `src/components/progress-bar/meter.tsx`, `labs/reference/progress-bar.css`
+Verification: `src/components/progress-bar/meter.test.tsx`, `e2e/progress-meter.spec.ts`
 
 ### UIC-PROGRESS-BAR-21.7 - Thresholds
 
-`low`, `high` and `optimum` shall split the range into regions as the HTML `meter` element does: `low` (the minimum by default, bounded to the range) ends the low region, `high` (the maximum by default, bounded between `low` and the maximum) starts the high region, and `optimum` (the middle by default, bounded to the range) marks the best region. A value in the optimum's region is `success`. With the optimum between the boundaries, a value below `low` or above `high` is `warning`; with the optimum below `low` or above `high`, a value between the boundaries is `warning` and one in the opposite region `danger`. A value on a boundary counts as between them.
+`low`, `high` and `optimum` shall split the range into regions as the HTML `meter` element does: `low` (the minimum by default, bounded to the range) ends the low region, `high` (the maximum by default, bounded between `low` and the maximum) starts the high region, and `optimum` (the middle by default, bounded to the range) marks the best region. A value in the optimum's region is `success`. With the optimum between the boundaries, a value below `low` or above `high` is `warning`; with the optimum below `low` or above `high`, a value between the boundaries is `warning` and one in the opposite region `danger`. A value on a boundary counts as between them. `resolveMeterTone` exposes the same judgement.
 
-Implementation: `src/components/progress-bar/progress-bar.tsx`
-Verification: `src/components/progress-bar/progress-meter.test.tsx`, `e2e/progress-meter.spec.ts`
+Implementation: `src/components/progress-bar/progress-meter.ts`
+Verification: `src/components/progress-bar/meter.test.tsx`, `e2e/progress-meter.spec.ts`
 
 ### UIC-PROGRESS-BAR-21.8 - Hooks and caller attributes
 
-`ProgressBar` shall carry the hooks below, append the caller's `className`, forward `id`, `ref` and caller `data-*` attributes to its root, and take `render`, typed `ElementRender<'div', MeterRenderState>` (`percentage` and `valueText`); caller attributes never replace a hook attribute.
+`Meter` shall carry the hooks below, append the caller's `className`, forward `id`, `ref` and caller `data-*` attributes to its root, and take `render`, typed `ElementRender<'div', MeterValues>` (`percentage` and `valueText`); caller attributes never replace a hook attribute.
 
-Implementation: `src/components/progress-bar/progress-bar.tsx`
-Verification: `src/components/progress-bar/progress-meter.test.tsx`
+Implementation: `src/components/progress-bar/meter.tsx`
+Verification: `src/components/progress-bar/meter.test.tsx`
 
-## UIC-PROGRESS-BAR-22 - Accessibility
+### UIC-PROGRESS-BAR-21.9 - Description
+
+A `description` shall render in a `ui-meter__description` slot after the track and describe the meter (`aria-describedby`, after any the caller gives). Content that renders nothing draws no slot and no description.
+
+Implementation: `src/components/progress-bar/meter.tsx`
+Verification: `src/components/progress-bar/meter.test.tsx`, `e2e/progress-meter.spec.ts`
+
+### UIC-PROGRESS-BAR-21.10 - Server rendering
+
+A meter shall render the same markup on the server as in the browser, so hydrating it keeps the server's elements and reports no mismatch.
+
+Implementation: `src/components/progress-bar/meter.tsx`
+Verification: `src/components/progress-bar/meter.test.tsx`
+
+## UIC-PROGRESS-BAR-22 - Meter accessibility
 
 ### UIC-PROGRESS-BAR-22.1 - Role and name
 
-The root shall have `role="meter"`, be named by its visible `label` or by `aria-label` or `aria-labelledby`, and expose `aria-valuemin`, `aria-valuemax`, `aria-valuenow` and its value text as `aria-valuetext`.
+The meter's root shall have `role="meter"`, be named by its visible `label` or by `aria-label` or `aria-labelledby`, and expose `aria-valuemin`, `aria-valuemax`, `aria-valuenow` and its value text as `aria-valuetext`.
 
-Implementation: `src/components/progress-bar/progress-bar.tsx`
-Verification: `src/components/progress-bar/progress-meter.test.tsx`, `e2e/progress-meter.spec.ts`
+Implementation: `src/components/progress-bar/meter.tsx`
+Verification: `src/components/progress-bar/meter.test.tsx`, `e2e/progress-meter.spec.ts`
 
 ### UIC-PROGRESS-BAR-22.2 - Read-only output
 
 A meter shall take no tab stop and handle no keys or pointer input; it announces nothing on its own, so a host whose value should be heard places it in its own status region.
 
-Implementation: `src/components/progress-bar/progress-bar.tsx`
-Verification: `src/components/progress-bar/progress-meter.test.tsx`, `e2e/progress-meter.spec.ts`
+Implementation: `src/components/progress-bar/meter.tsx`
+Verification: `src/components/progress-bar/meter.test.tsx`, `e2e/progress-meter.spec.ts`
 
 ## Hooks
 
@@ -284,16 +298,20 @@ Verification: `src/components/progress-bar/progress-meter.test.tsx`, `e2e/progre
 | `ui-progress-bar__value`   | slot      |                                           | The visible value text, when determinate and shown.          |
 | `ui-progress-bar__track`   | slot      |                                           | The track.                                                   |
 | `ui-progress-bar__fill`    | slot      |                                           | The fill; inline `width` is the percentage when determinate. |
+| `ui-progress-bar__ring`    | slot      |                                           | The decorative `<svg>` ring.                                 |
 | `ui-progress-bar__segment` | slot      |                                           | One unit of a segmented bar.                                 |
 | `data-state`               | attribute | `complete`, `current`, `pending`          | A segment's drawn state.                                     |
 | `data-segmented`           | state     | `true`                                    | The bar draws `segments` instead of a fill.                  |
+| `ui-meter`                 | root      |                                           | The meter (`role="meter"`).                                  |
+| `ui-meter__label`          | slot      |                                           | The meter's visible label, when `label` is set.              |
+| `ui-meter__value`          | slot      |                                           | The meter's visible value text, when shown.                  |
+| `ui-meter__track`          | slot      |                                           | The meter's track, or the ring's track circle.               |
+| `ui-meter__fill`           | slot      |                                           | The meter's fill; inline `width` is the percentage.          |
+| `ui-meter__ring`           | slot      |                                           | The circular meter's decorative `<svg>` ring.                |
+| `ui-meter__description`    | slot      |                                           | The meter's description, when `description` is set.          |
 | `ui-spinner`               | root      |                                           | The decorative busy glyph (`<span>`).                        |
-| `data-size`                | attribute | `sm`, `md`, `lg`                          | Track thickness, or the spinner's box size.                  |
-| `data-tone`                | attribute | `neutral`, `success`, `warning`, `danger` | The work's status.                                           |
+| `data-size`                | attribute | `sm`, `md`, `lg`                          | Track thickness, ring size, or the spinner's box size.       |
+| `data-shape`               | attribute | `linear`, `circular`                      | Track appearance.                                            |
+| `data-tone`                | attribute | `neutral`, `success`, `warning`, `danger` | The work's status, or what a measured value means.           |
 | `data-indeterminate`       | state     | `true`                                    | Unmeasured progress.                                         |
 | `data-complete`            | state     | `true`                                    | Measured progress reached the maximum.                       |
-
-| `ui-progress-bar__ring` | slot | | The decorative `<svg>` ring. |
-| `data-shape` | attribute | `linear`, `circular` | Track appearance. |
-
-| `data-mode` | attribute | `progress`, `meter` | Work toward completion or a measured quantity. |

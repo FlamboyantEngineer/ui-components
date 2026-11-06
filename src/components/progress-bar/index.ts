@@ -1,5 +1,9 @@
 export type {
-  ProgressBarMode,
+  MeterProps,
+  MeterShape,
+  MeterSize,
+  MeterTone,
+  MeterValues,
   ProgressBarProps,
   ProgressBarShape,
   ProgressBarSize,
@@ -9,6 +13,7 @@ export type {
   SpinnerProps,
   SpinnerSize,
 } from './progress-bar.js';
-export { ProgressBar, Spinner } from './progress-bar.js';
+export { Meter, ProgressBar, Spinner } from './progress-bar.js';
+export type { MeterThresholds } from './progress-meter.js';
 export { resolveMeterTone } from './progress-meter.js';
 export type { ProgressSegment, ProgressSegmentState } from './progress-segments.js';

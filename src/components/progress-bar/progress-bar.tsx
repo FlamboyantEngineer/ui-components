@@ -16,7 +16,7 @@ export type ProgressBarSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 /** The work's status: `neutral` while it runs normally, else how it went or is going. */
 export type ProgressBarTone = Extract<Tone, 'neutral' | 'success' | 'warning' | 'danger'>;
 
-/** The range and value text a bounded indicator shares with the progress bar and the meter. */
+/** The range and value text the progress bar and the meter share. */
 export interface ProgressRangeProps {
   /** The current value. Defaults to the minimum. */
   value?: number | undefined;
@@ -34,20 +34,11 @@ export interface ProgressRangeProps {
 }
 
 export type ProgressBarShape = 'linear' | 'circular';
-export type ProgressBarMode = 'progress' | 'meter';
 
 export interface ProgressBarProps
   extends BaseProps, AriaLabellingProps, ProgressRangeProps, RefProps<HTMLDivElement> {
   /** Draws a linear track or a circular ring. Defaults to `linear`. */
   shape?: ProgressBarShape | undefined;
-  /** Work toward completion or a measured quantity. Defaults to `progress`. */
-  mode?: ProgressBarMode | undefined;
-  /** ProgressBar thresholds judge the value's tone unless `tone` is explicit. */
-  low?: number | undefined;
-  /** The lower end of the high meter region. Defaults to the maximum. */
-  high?: number | undefined;
-  /** The best meter value, used to judge its tone. Defaults to the range midpoint. */
-  optimum?: number | undefined;
   /** Replaces the root with the caller's element and receives its measured values. */
   render?: ElementRender<'div', ProgressValues> | undefined;
   /** Work is under way but unmeasured: no value or value text. */
@@ -62,8 +53,7 @@ export interface ProgressBarProps
   tone?: ProgressBarTone | undefined;
   /**
    * One equal segment per unit of work, in order. The bar then counts completed units of all units,
-   * so `value`, `minValue`, `maxValue`, `formatOptions`, `isIndeterminate`, `shape` and `mode` do not
-   * apply.
+   * so `value`, `minValue`, `maxValue`, `formatOptions`, `isIndeterminate` and `shape` do not apply.
    */
   segments?: readonly ProgressSegment[] | undefined;
 }
@@ -83,7 +73,7 @@ export interface ProgressValues {
   percentage: number | undefined;
   /** The formatted value, or `valueLabel`. */
   valueText: string | undefined;
-  /** The indicator represents unmeasured work. Always false for a meter. */
+  /** The indicator represents unmeasured work. */
   isIndeterminate: boolean;
 }
 
@@ -109,7 +99,7 @@ function RangeProgressBar({
   ...rest
 }: ProgressBarProps) {
   return (
-    <ProgressRoot {...rest} shape={shape} hooks={hooks} size={size}>
+    <ProgressRoot {...rest} mode="progress" shape={shape} hooks={hooks} size={size}>
       {(values) => (
         <>
           <ProgressText
@@ -119,7 +109,10 @@ function RangeProgressBar({
             values={values}
           />
           {shape === 'circular' ? (
-            <ProgressRing gap={values.isIndeterminate ? 75 : 100 - (values.percentage ?? 0)} />
+            <ProgressRing
+              hooks={hooks}
+              gap={values.isIndeterminate ? 75 : 100 - (values.percentage ?? 0)}
+            />
           ) : (
             <div {...hooks.slot('track')}>
               <div
@@ -151,5 +144,8 @@ function NamedSpinner({ id, label, ...rest }: SpinnerProps & { label: string }) 
   return <span {...rest} {...progressBarProps} />;
 }
 
+export type { MeterProps, MeterShape, MeterSize, MeterTone, MeterValues } from './meter.js';
+export { Meter } from './meter.js';
+export type { MeterThresholds } from './progress-meter.js';
 export { resolveMeterTone } from './progress-meter.js';
 export { resolveProgressRange, toProgressRatio } from './progress-root.js';

@@ -99,7 +99,6 @@ describe('ProgressBar segments', () => {
         minValue={-5}
         maxValue={10}
         shape="circular"
-        mode="meter"
         isIndeterminate
         formatOptions={{ style: 'decimal' }}
       />,

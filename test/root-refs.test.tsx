@@ -117,6 +117,7 @@ import { PinInput } from '../src/components/pin-input/pin-input.js';
 import { Popover, PopoverTrigger } from '../src/components/popover/popover.js';
 import { PortalHost } from '../src/components/portal/portal.js';
 import { ProblemList } from '../src/components/problem-list/problem-list.js';
+import { Meter } from '../src/components/progress-bar/progress-bar.js';
 import { PropertyFilter } from '../src/components/property-filter/property-filter.js';
 import {
   PropertyCard,
@@ -952,6 +953,10 @@ const restCases: Record<string, RootRefCase> = {
       </NavigationRail>
     ),
     root: 'ui-navigation-rail__section',
+  },
+  Meter: {
+    element: (ref) => <Meter ref={ref} aria-label="Storage" value={40} />,
+    root: 'ui-meter',
   },
   Pagination: { element: (ref) => <Pagination ref={ref} pageCount={3} />, root: 'ui-pagination' },
   PortalHost: { element: (ref) => <PortalHost ref={ref}>Body</PortalHost>, root: 'ui-portal-host' },

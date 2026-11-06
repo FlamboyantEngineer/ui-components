@@ -1,5 +1,5 @@
 import { type CSSProperties, useState } from 'react';
-import { ProgressBar } from '../../src/components/progress-bar/progress-bar.js';
+import { Meter } from '../../src/components/progress-bar/progress-bar.js';
 import { SegmentedBar } from '../../src/components/segmented-bar/segmented-bar.js';
 import { Sparkline } from '../../src/components/sparkline/sparkline.js';
 import { StatTile } from '../../src/components/stat-tile/stat-tile.js';
@@ -155,15 +155,7 @@ mountLab(
           delta={0.05}
           deltaFormatOptions={{ style: 'percent' }}
           goal="none"
-          chart={
-            <ProgressBar
-              mode="meter"
-              aria-label="Storage used"
-              value={72}
-              showValueLabel={false}
-              size="sm"
-            />
-          }
+          chart={<Meter aria-label="Storage used" value={72} showValueLabel={false} size="sm" />}
         />
       </div>
     </LabSection>
