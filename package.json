@@ -81,6 +81,7 @@
     "check:specs": "node scripts/check-specs.mjs",
     "check:labs": "node scripts/check-labs.mjs && node scripts/check-reference-tokens.mjs",
     "check:package": "node scripts/check-package.mjs",
+    "check:bundle-size": "node scripts/check-bundle-size.mjs",
     "check:public-types": "node scripts/check-public-types.mjs",
     "check:git-install": "node scripts/check-git-install.mjs",
     "check:client-boundaries": "node scripts/check-client-boundaries.mjs",
