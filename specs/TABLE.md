@@ -47,7 +47,7 @@ Verification: `src/components/table/table-row.test.tsx`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-1.6 - Cell wrapping
 
-`cellWrap` shall set how the table's cells wrap their text: `nowrap` (the default) keeps one line, `wrap` breaks between words and `anywhere` also breaks inside long unspaced values such as identifiers. A column's own `cellWrap` overrides it. Every data cell, summary cell and group aggregate cell of a data column publishes its resolved mode as `data-wrap` in every row, nested rows included, whatever its content, so the stylesheet draws the mode, for example with `white-space` and `overflow-wrap`. The mode changes no value, content, selection, action, focus or editing behaviour of the cell, and columns keep their widths and resizing. A virtualized table keeps its fixed row height, so its stylesheet clips wrapped text.
+`cellWrap` shall set how the table's cells wrap their text: `nowrap` (the default) keeps one line, `wrap` breaks between words and `anywhere` also breaks inside long unspaced values such as identifiers. A column's own `cellWrap` overrides it. Every data cell, summary cell and group aggregate cell of a data column publishes its resolved mode as `data-wrap` in every row, nested rows included, whatever its content, so the stylesheet draws the mode, for example with `white-space` and `overflow-wrap`. The mode changes no value, content, selection, action, focus or editing behaviour of the cell, and columns keep their widths and resizing. A virtualized table keeps its fixed row height, so its stylesheet clips wrapped text, unless it measures its rows ([UIC-TABLE-7.5](#uic-table-75---measured-rows)).
 
 Implementation: `src/components/table/table-row.tsx`, `src/components/table/table-data-cell.tsx`, `src/components/table/table-structure.ts`, `src/components/table/table-footer.tsx`, `src/components/table/table-group-row.tsx`, `src/components/table/use-table-grid.ts`
 Verification: `src/components/table/table.test.tsx`, `e2e/table.spec.ts`
@@ -130,6 +130,15 @@ The table shall collate text in the provider locale (React Aria's locale from [P
 
 Implementation: `src/components/table/table-rows.ts`, `src/components/table/table-sort.ts`, `src/components/table/table-groups.ts`, `src/components/table/table-filters.ts`, `src/components/table/use-table-rows.ts`, `src/components/table/use-table-grouping.ts`, `src/components/table/table-column-filter.tsx`, `src/utils/intl-format.ts`
 Verification: `src/components/table/table-locale.test.tsx`, `src/components/table/table-rows.test.ts`, `e2e/table.spec.ts`
+
+### UIC-TABLE-2.11 - Reused derivations
+
+The table shall derive the rows it presents in three steps, each kept for one table and redone only when its own inputs change: building the nested rows (from `rows` and `getChildRows`), filtering them while the table owns the filter (from the built rows, `columns`, the filter and whether the search box is drawn), and sorting them while the table owns the sort (from the filtered rows, `columns`, the sort and the locale). A new sort therefore calls no `getChildRows` and reads no value for the filter again, and a new filter calls no `getChildRows`; new `rows`, a new `getChildRows` or new `columns` redo the steps that depend on them. The steps hold only the latest result, never modify the caller's rows, and keep the order, stable ties, page reset and caller-owned sorting and filtering of [UIC-TABLE-2.2](#uic-table-22---table-owned-order) to [UIC-TABLE-2.7](#uic-table-27---caller-owned-filtering) and [UIC-TABLE-10.3](#uic-table-103---back-to-the-first-page); the table offers no cache setting.
+
+Measured with React rendering the table's row hook in the unit test environment, with a search query and a sorted column: for 20,000 flat rows a sort change went from 250 to 300 ms, 20,000 `getChildRows` calls and 20,000 reads of each searched column to 4 to 76 ms with none of them; for 5,000 rows of four nested rows each, from 270 to 340 ms and 25,000 `getChildRows` calls to 1 to 6 ms with none. Sorting still reads each sorted value once per row.
+
+Implementation: `src/components/table/use-table-rows.ts`
+Verification: `src/components/table/table-derivations.test.tsx`, `src/components/table/use-table-rows.test.tsx`
 
 ## UIC-TABLE-3 - Selection and row actions
 
@@ -319,10 +328,35 @@ Verification: `src/components/table/table.test.tsx`, `src/components/scroll-regi
 
 ### UIC-TABLE-7.3 - Virtualization
 
-`virtualized` shall render the grid through React Aria's `Virtualizer` with its table layout and publish `data-virtualized` on the root: only the rows in view of the scroll area, plus a small buffer and the summary row ([UIC-TABLE-12.1](#uic-table-121---summary-row)), are in the document, at `rowHeight` pixels each (40 by default, 32 at size `sm`), and scrolling reaches the last row. The stylesheet bounds the scroll area's height. Its cells are not table cells, so the reference stylesheet centres their content in the row and places it by the column's `align`, controls included.
+`virtualized` shall render the grid through React Aria's `Virtualizer` with its table layout and publish `data-virtualized` on the root: only the rows in view of the scroll area, plus a small buffer and the summary row ([UIC-TABLE-12.1](#uic-table-121---summary-row)), are in the document, at `rowHeight` pixels each (40 by default, 32 at size `sm`) or at their measured heights ([UIC-TABLE-7.5](#uic-table-75---measured-rows)), and scrolling reaches the last row. The stylesheet bounds the scroll area's height. Its cells are not table cells, so the reference stylesheet centres their content in the row and places it by the column's `align`, controls included.
 
 Implementation: `src/components/table/table.tsx`, `src/components/table/table-virtualizer.tsx`, `src/components/table/use-table-grid.ts`
 Verification: `src/components/table/table.test.tsx`, `e2e/table.spec.ts`
+
+### UIC-TABLE-7.4 - A layout on React Aria's public API
+
+A virtualized table shall compose React Aria's table layout through its public `Layout` API alone: it creates the layout, forwards the virtualizer, the options, size updates and drop targets to it, and reads only the layout infos, layout info by key and content size it returns. It shall not read, replace or wrap a protected or private member of the layout, and no React Aria layout type appears in a public declaration (UIC-PRIMITIVES-2.1). The two behaviours the public layout lacks are added around what it returns:
+
+- **Group header row** ([UIC-TABLE-8.7](#uic-table-87---column-groups)): the visible rectangle is asked for one group row height higher, and every layout info it returns below the table header's top moves down by that height, while the table header grows by it. The content is that much taller, and a drop target is looked up that much higher.
+- **Summary row** ([UIC-TABLE-12.1](#uic-table-121---summary-row)): React Aria lays out only the rows in view, so the summary rows it leaves out are placed where its footer row group reserves them, one row height each, with each cell under its columns' header cells, and kept while their place and size stay the same. When the summary scrolls into view, React Aria's own layout infos for it are used.
+
+Before this composition the table read the layout's `rootNodes` and `requestedRect` and replaced its `buildRowGroup` and `buildHeaderRow`, protected members that may change within the declared `react-aria-components` range. The browser tests cover scrolling to the end, the group row, a column resize, the summary and keyboard navigation, so a dependency update that changes what the layout returns fails them.
+
+Implementation: `src/components/table/table-virtualizer.tsx`, `src/primitives/collections.ts`
+Verification: `src/components/table/table-virtualizer.test.tsx`, `src/components/table/table-footer.test.tsx`, `src/components/table/table-header.test.tsx`, `e2e/table-virtualized.spec.ts`
+
+### UIC-TABLE-7.5 - Measured rows
+
+`rowHeight="auto"` shall make a virtualized table measure each row's natural height, so wrapped cells and opened detail rows take the height their content needs, and publish `data-measured-rows` on the root. A row takes `estimatedRowHeight` pixels (40 by default, 32 at size `sm`) until it is drawn and measured; its height is then the tallest of its drawn cells, and the rows after it move by the difference, so the rows stack without overlaps or gaps and scrolling reaches the last row and the summary row. A row is measured again when its content changes, when a column is resized and when its cells change size for another reason, such as fonts finishing loading, and keeps its measured height while it scrolls out of view and back. The header rows, the group header row and a summary row out of view keep `estimatedRowHeight`; a summary row in view is measured like any row. The reference stylesheet gives measured cells a fixed row's minimum height. A fixed `rowHeight` remains the default, and turning measuring on or off keeps the rows, focus and selection.
+
+Measuring has costs that a fixed height does not, and they are kept visible rather than hidden:
+
+- A row is measured only once it is drawn, so rows scrolled into view above the view can be taller or shorter than their estimate and move the rows below them by the difference. An `estimatedRowHeight` close to the typical row keeps this small. React Aria's virtualizer offers a scroll anchor for this only through a hook it marks unstable, and that anchor restores a scroll position it saw before a focus scroll (Ctrl+Home, for example) finished, so the table does not use it.
+- React Aria draws only the columns in view, so a row's height comes from its drawn cells; a taller cell in a column scrolled into view sideways makes the row taller when it is drawn.
+- Each measurement writes the cell's size: scrolling 120 steps through the measured-rows lab wrote styles about 16 times as often as with fixed rows (7437 against 449), at the same median frame time (34 against 33 ms for two frames) and a slightly higher 95th percentile (47 to 51 against 43 to 46 ms), with the same number of rows in the document.
+
+Implementation: `src/components/table/table.tsx`, `src/components/table/table-virtualizer.tsx`, `labs/reference/table.css`
+Verification: `src/components/table/table-virtualizer.test.tsx`, `e2e/table-virtualized.spec.ts`
 
 ## UIC-TABLE-8 - Column layout
 
@@ -373,7 +407,7 @@ Verification: `src/components/table/use-pinned-offsets.test.tsx`, `e2e/table.spe
 `columnGroups` (an id, a header and the ids of its columns each) shall draw a row of group headers above the column headers: one `ui-table__column-group` header cell (`scope="colgroup"`) spanning each run of neighbouring drawn columns of one group, and a cell hidden from assistive technology over ungrouped columns and the selection and actions columns, which publishes `data-ungrouped`. A group whose columns are moved apart draws over each run. The grid then lists React Aria's column widths as column tracks first, so the fixed table layout takes them rather than the group row's. A virtualized table draws the same row with the same hooks, one row height tall: its layout lowers the column headers and the rows below them by that height, and each group cell, a `columnheader` with `aria-colindex` and `aria-colspan`, sits over its columns' widths.
 
 Implementation: `src/components/table/table-header.tsx`, `src/components/table/table-group-header.tsx`, `src/components/table/table-virtualizer.tsx`, `src/components/table/table.tsx`, `src/components/table/table-columns.ts`
-Verification: `src/components/table/table-header.test.tsx`, `e2e/table.spec.ts`, `e2e/pivot-table.spec.ts`
+Verification: `src/components/table/table-header.test.tsx`, `e2e/table.spec.ts`, `e2e/pivot-table.spec.ts`, `e2e/table-virtualized.spec.ts`
 
 ### UIC-TABLE-8.8 - Layout helpers
 
@@ -472,7 +506,7 @@ Verification: `src/components/table/use-cell-editing.test.tsx`
 When a drawn column has `renderFooter`, a summary row shall follow the rows in React Aria's table footer (`ui-table__footer`, `ui-table__footer-row`): one `ui-table__footer-cell` per column with the column's kind, alignment, id and pin hooks, holding `renderFooter(rows)` from every row the table presents across pages, and empty under the other columns. The row can take focus but is never selected, dragged or passed to `onRowAction`, takes no position among nested rows (`aria-posinset`, `aria-setsize`), and a notice hides it. A virtualized table keeps the summary row in the document wherever it is scrolled, so its row group always holds the row. The row is named by the provider string `summary`, whichever column has a footer or is a row header.
 
 Implementation: `src/components/table/table-footer.tsx`, `src/components/table/table.tsx`, `src/components/table/table-virtualizer.tsx`, `src/core/strings/content.ts`
-Verification: `src/components/table/table-footer.test.tsx`, `e2e/table.spec.ts`
+Verification: `src/components/table/table-footer.test.tsx`, `e2e/table.spec.ts`, `e2e/table-virtualized.spec.ts`
 
 ### UIC-TABLE-12.2 - Loading more
 
@@ -796,6 +830,7 @@ Verification: `src/components/table/table-reveal.test.tsx`, `e2e/table-reveal.sp
 | `data-level`                     | attribute |                                 | A row's or cell's nesting level, from 1 (React Aria).                                                     |
 | `data-sticky-header`             | state     | `true`                          | The header stays in view, on the root.                                                                    |
 | `data-virtualized`               | state     | `true`                          | Only the rows in view render, on the root.                                                                |
+| `data-measured-rows`             | state     | `true`                          | A virtualized table measures each row's height, on the root.                                              |
 | `data-reordering`                | state     | `true`                          | The table reorders its rows now, on the root.                                                             |
 | `data-empty`                     | state     | `true`                          | The search field has no query (React Aria).                                                               |
 | `data-allows-sorting`            | state     | `true`                          | A sortable column header (React Aria).                                                                    |

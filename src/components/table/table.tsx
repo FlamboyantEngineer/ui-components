@@ -18,12 +18,10 @@ import type { ActionRowAction } from '../action-row/action-row.js';
 import { Pagination } from '../pagination/pagination.js';
 import type { TableColumnWidths } from './column-sizing.js';
 import { TableBody } from './table-body.js';
-import { TableSelectionBar } from './table-bulk-edit.js';
 import { TableColumnFilter } from './table-column-filter.js';
 import { getColumnText, type TableColumnGroup, type TableColumnLayout } from './table-columns.js';
 import type { TableEditHistory } from './table-edit-history.js';
 import type { TableCsvExport } from './table-export.js';
-import { TableExportMenu } from './table-export-menu.js';
 import { isEmptyFilterValue, setColumnFilter, type TableFilter } from './table-filters.js';
 import { hasTableFooter, TableFooter } from './table-footer.js';
 import { readGridTracks } from './table-grid-tracks.js';
@@ -33,8 +31,7 @@ import { tableHooks as hooks } from './table-hooks.js';
 import { type TableHandle, useTableHandle } from './table-reveal.js';
 import type { TableCellWrap, TableColumn, TableRow } from './table-rows.js';
 import { TableScroll } from './table-scroll.js';
-import { TableSearch } from './table-search.js';
-import { TableToolbar } from './table-toolbar.js';
+import { TableControls } from './table-toolbar.js';
 import type { TableChildRows } from './table-tree.js';
 import type { TableCellEdit } from './use-cell-editing.js';
 import type { TableSpreadsheetProps } from './use-cell-selection.js';
@@ -152,13 +149,32 @@ export interface TableProps<T extends TableRow>
   stickyHeader?: boolean | undefined;
   /** Renders only the rows in view; the stylesheet must bound the scroll area's height. */
   virtualized?: boolean | undefined;
-  /** Row height in pixels for a virtualized table. Defaults to 40, or 32 at size `sm`. */
-  rowHeight?: number | undefined;
+  /**
+   * Row height in pixels for a virtualized table, or `auto` to measure each row's natural height.
+   * Defaults to 40, or 32 at size `sm`.
+   */
+  rowHeight?: number | 'auto' | undefined;
+  /**
+   * The height a virtualized table with `rowHeight="auto"` gives a row until it is measured, and
+   * the height of its header rows. Defaults to 40, or 32 at size `sm`.
+   */
+  estimatedRowHeight?: number | undefined;
   /** Receives the handle that reveals and focuses rows and cells by row id, drawn or not. */
   handleRef?: Ref<TableHandle> | undefined;
 }
 
 const virtualRowHeights: Readonly<Record<TableSize, number>> = { md: 40, sm: 32 };
+
+/** A virtualized table's row height, or its estimate when it measures rows (UIC-TABLE-7.5). */
+function readRowHeight({
+  rowHeight,
+  estimatedRowHeight,
+  size,
+}: Pick<TableProps<TableRow>, 'rowHeight' | 'estimatedRowHeight'> & { size: TableSize }) {
+  const measuresRows = rowHeight === 'auto';
+  const height = (measuresRows ? estimatedRowHeight : rowHeight) ?? virtualRowHeights[size];
+  return { height, measuresRows };
+}
 
 type TableGridElementOptions<T extends TableRow> = Pick<
   TableProps<T>,
@@ -280,6 +296,7 @@ export function Table<T extends TableRow>({
   size = 'md',
   stickyHeader,
   rowHeight,
+  estimatedRowHeight,
   filterable,
   filterLabel,
   className,
@@ -291,9 +308,9 @@ export function Table<T extends TableRow>({
   const strings = useUiStrings();
   const [dataAttributes, gridProps] = splitDataAttributes(rest);
   const grid = useTableGrid({ ...gridProps, filterable, stickyHeader });
-  const { view, layout } = grid;
-  const { virtualized } = rest;
-  const height = rowHeight ?? virtualRowHeights[size];
+  const { view } = grid;
+  const isVirtualized = rest.virtualized === true;
+  const { height, measuresRows } = readRowHeight({ rowHeight, estimatedRowHeight, size });
   const reveal = useTableHandle(handleRef, { ...rest, grid, ref });
   const { ref: rootRef, widths: contentWidths } = useContentWidths(rest.columns, reveal.ref);
   const element = (
@@ -310,31 +327,28 @@ export function Table<T extends TableRow>({
       {...hooks.root({
         className,
         props: dataAttributes,
-        data: { size, stickyHeader, virtualized, reordering: grid.reordering !== null },
+        data: {
+          size,
+          stickyHeader,
+          virtualized: isVirtualized,
+          measuredRows: isVirtualized && measuresRows,
+          reordering: grid.reordering !== null,
+        },
       })}
       id={id}
       ref={rootRef}
       aria-busy={grid.body.status === 'loading' || undefined}
     >
-      <TableToolbar
-        filter={
-          filterable ? (
-            <TableSearch
-              label={filterLabel ?? strings.filterRows}
-              value={view.filter.query ?? ''}
-              onChange={(query) => view.onFilterChange({ ...view.filter, query })}
-            />
-          ) : null
-        }
+      <TableControls
+        grid={grid}
         columns={rest.columns}
-        layout={layout}
-        exportMenu={grid.exportMenu ? <TableExportMenu {...grid.exportMenu} /> : null}
+        search={filterable ? (filterLabel ?? strings.filterRows) : null}
       />
-      {grid.selectionBar ? <TableSelectionBar {...grid.selectionBar} /> : null}
       <TableScroll
-        isVirtualized={virtualized === true}
+        isVirtualized={isVirtualized}
         layoutRef={reveal.layoutRef}
         rowHeight={height}
+        measuresRows={measuresRows}
         hasGroupRow={hasGroupRow(rest.columnGroups ?? [])}
         widths={grid.widths}
       >

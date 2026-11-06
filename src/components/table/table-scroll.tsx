@@ -16,6 +16,8 @@ interface TableScrollProps {
   /** Receives a virtualized table's layout, which the table's handle reads. */
   layoutRef: Ref<RevealLayout>;
   rowHeight: number;
+  /** Measures each row's height from `rowHeight` as its estimate (UIC-TABLE-7.5). */
+  measuresRows: boolean;
   hasGroupRow: boolean;
   /** Takes the widths React Aria reports while a column is resized, and when it ends. */
   widths: {
@@ -30,7 +32,8 @@ interface TableScrollProps {
  * which measures its width for the column widths, around the virtualizer.
  */
 export function TableScroll(props: TableScrollProps) {
-  const { isVirtualized, layoutRef, rowHeight, hasGroupRow, widths, children } = props;
+  const { isVirtualized, layoutRef, rowHeight, measuresRows, hasGroupRow, widths, children } =
+    props;
   if (!isVirtualized) return <div className={hooks.slotClass('scroll')}>{children}</div>;
   return (
     <ResizableTableContainer
@@ -38,7 +41,12 @@ export function TableScroll(props: TableScrollProps) {
       onResize={widths.onResize}
       onResizeEnd={widths.onResizeEnd}
     >
-      <TableVirtualizer layoutRef={layoutRef} rowHeight={rowHeight} hasGroupRow={hasGroupRow}>
+      <TableVirtualizer
+        layoutRef={layoutRef}
+        rowHeight={rowHeight}
+        measuresRows={measuresRows}
+        hasGroupRow={hasGroupRow}
+      >
         {children}
       </TableVirtualizer>
     </ResizableTableContainer>
