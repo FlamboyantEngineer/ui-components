@@ -104,6 +104,7 @@ export * from './components/meta-line/index.js';
 export * from './components/mini-app/index.js';
 export * from './components/modal/index.js';
 export * from './components/modal-controller/index.js';
+export * from './components/multi-date-field/index.js';
 export * from './components/navigation-menu/index.js';
 export * from './components/navigation-rail/index.js';
 export * from './components/notification-center/index.js';

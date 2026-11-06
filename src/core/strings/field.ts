@@ -190,6 +190,8 @@ interface FieldStrings {
   weekColumn: string;
   /** Names a calendar row by its week number. */
   weekNumber: (week: number) => string;
+  /** The message of a set of dates holding more dates than the field takes. */
+  tooManyDates: (maxValues: number) => string;
   /** The message of a date or time earlier than the field allows. */
   dateTooEarly: (minValue: string) => string;
   /** The message of a date or time later than the field allows. */
@@ -282,6 +284,7 @@ export const fieldStrings = defineStrings<FieldStrings>({
   tooManyValues: (maxValues) => ({ maxValues }),
   characterPosition: (position, length) => ({ position, length }),
   weekNumber: (week) => ({ week }),
+  tooManyDates: (maxValues) => ({ maxValues }),
   dateTooEarly: (minValue) => ({ minValue }),
   dateTooLate: (maxValue) => ({ maxValue }),
   lastPeriod: (period) => ({ period }),

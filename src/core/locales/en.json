@@ -525,6 +525,7 @@
   "dayPeriodColumn": "AM/PM",
   "weekColumn": "Wk",
   "weekNumber": "Week {week}",
+  "tooManyDates": "{maxValues, plural, one {Choose up to # date.} other {Choose up to # dates.}}",
   "dateTooEarly": "Choose a value on or after {minValue}.",
   "dateTooLate": "Choose a value on or before {maxValue}.",
   "dateUnavailable": "Choose an available date.",

@@ -260,6 +260,7 @@ export type {
   DateTimeFieldVisibleMonths,
 } from './calendar-grid.js';
 export { CalendarBody, toCalendarProps } from './calendar-grid.js';
+export { createDateUnavailableCheck } from './date-states.js';
 export type { DateTimeFieldPreset } from './date-time-calendar.js';
 export { DateFormInputs, toEndpointErrorSources } from './date-time-form.js';
 export type {
