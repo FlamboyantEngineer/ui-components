@@ -78,6 +78,7 @@ import { FourSidePropertyStrip } from '../src/components/four-side-property-stri
 import { GridSizePicker } from '../src/components/grid-size-picker/grid-size-picker.js';
 import { HoverCard, HoverCardTrigger } from '../src/components/hover-card/hover-card.js';
 import { HtmlMarkup } from '../src/components/html-markup/html-markup.js';
+import { Image } from '../src/components/image/image.js';
 import { InlineEdit } from '../src/components/inline-edit/inline-edit.js';
 import { InlineTextDiff } from '../src/components/inline-text-diff/inline-text-diff.js';
 import {
@@ -869,6 +870,7 @@ const restCases: Record<string, RootRefCase> = {
     element: (ref) => <Avatar ref={ref} name="Ana Lima" onPress={() => {}} />,
     root: 'ui-avatar',
   },
+  Image: { element: (ref) => <Image ref={ref} src="/photo.jpg" alt="Photo" />, root: 'ui-image' },
   CardGrid: {
     element: (ref) => (
       <CardGrid ref={ref} aria-label="Cards">

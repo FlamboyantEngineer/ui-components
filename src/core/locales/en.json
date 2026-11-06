@@ -573,6 +573,7 @@
   "downloadFile": "Download {name}",
   "previewUnavailable": "No preview is available for this file.",
   "imageLoadFailed": "“{name}” could not be loaded.",
+  "imageRetry": "Reload image",
   "thumbnails": "Thumbnails",
   "mediaStage": "{name}, viewer",
   "miniAppLoading": "Loading {title}…",

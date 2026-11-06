@@ -573,6 +573,7 @@
   "downloadFile": "Descargar {name}",
   "previewUnavailable": "No hay vista previa disponible para este archivo.",
   "imageLoadFailed": "No se pudo cargar «{name}».",
+  "imageRetry": "Volver a cargar la imagen",
   "thumbnails": "Miniaturas",
   "mediaStage": "{name}, visor",
   "miniAppLoading": "Cargando {title}…",

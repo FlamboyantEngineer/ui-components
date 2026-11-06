@@ -573,6 +573,7 @@
   "downloadFile": "Télécharger {name}",
   "previewUnavailable": "Aucun aperçu n’est disponible pour ce fichier.",
   "imageLoadFailed": "Impossible de charger « {name} ».",
+  "imageRetry": "Recharger l’image",
   "thumbnails": "Miniatures",
   "mediaStage": "{name}, visionneuse",
   "miniAppLoading": "Chargement de {title}…",

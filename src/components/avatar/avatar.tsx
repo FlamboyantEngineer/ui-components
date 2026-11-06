@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import type { PressEvent } from '../../core/events.js';
 import { UsersGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
@@ -9,7 +9,7 @@ import { Glyph, useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { getInitials } from '../../utils/initials.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
-import { useStableArray } from '../../utils/use-stable-array.js';
+import { type ImageLoading, useImageLoading } from '../../utils/use-image-loading.js';
 import { toImageProps } from '../icon/icon.js';
 import { Tooltip } from '../tooltip/tooltip.js';
 import type { UserCardTriggerType } from '../user-card-trigger/user-card-trigger.js';
@@ -108,15 +108,6 @@ export interface AvatarProps
   onLoadingStatusChange?: ((status: AvatarLoadingStatus) => void) | undefined;
 }
 
-/** The picture's loading state and the handlers that settle it. */
-interface AvatarPicture {
-  /** Counts the image requests, so each gets its own element. */
-  generation: number;
-  status: AvatarLoadingStatus;
-  settle: (status: 'loaded' | 'error') => void;
-  imageRef: (image: HTMLImageElement | null) => void;
-}
-
 const hooks = createHooks('avatar', [
   'image',
   'initials',
@@ -142,68 +133,8 @@ function requestOf(identity: Pick<AvatarIdentity, 'src' | 'kind' | 'imageProps'>
   return [picture, srcSet, sizes, crossOrigin, referrerPolicy];
 }
 
-/**
- * Tracks whether the image `request` has loaded or failed; a different request (compared item by
- * item) starts loading afresh.
- */
-function useAvatarPicture(
-  requested: readonly unknown[],
-  onLoadingStatusChange: AvatarProps['onLoadingStatusChange'],
-): AvatarPicture {
-  const request = useStableArray(requested);
-  const [tracked, setTracked] = useState({ request, generation: 0 });
-  if (tracked.request !== request) setTracked({ request, generation: tracked.generation + 1 });
-  const generation = tracked.request === request ? tracked.generation : tracked.generation + 1;
-  const [settled, setSettled] = useState<{
-    generation: number;
-    status: 'loaded' | 'error';
-  } | null>(null);
-  const status: AvatarLoadingStatus =
-    request.length === 0 ? 'idle' : settled?.generation === generation ? settled.status : 'loading';
-  const settle = useCallback(
-    (next: 'loaded' | 'error') =>
-      setSettled((previous) =>
-        previous?.generation === generation && previous.status === next
-          ? previous
-          : { generation, status: next },
-      ),
-    [generation],
-  );
-  // An image the browser settled before the handlers were attached, such as before hydration,
-  // fires no event to them. A lazy image that has not started is not complete, so it stays loading.
-  const imageRef = useCallback(
-    (image: HTMLImageElement | null) => {
-      if (!image?.complete) return;
-      if (image.naturalWidth > 0) settle('loaded');
-      // An image without intrinsic size, such as some SVG, has no width once loaded either.
-      else if (typeof image.decode === 'function') {
-        // Each request has its own image element, so one that has left answers nothing.
-        const answer = (next: 'loaded' | 'error') => image.isConnected && settle(next);
-        image.decode().then(
-          () => answer('loaded'),
-          () => answer('error'),
-        );
-      } else settle('error');
-    },
-    [settle],
-  );
-  const reported = useRef<AvatarLoadingStatus | null>(null);
-  useEffect(() => {
-    if (reported.current === status) return;
-    reported.current = status;
-    onLoadingStatusChange?.(status);
-  });
-  return { generation, status, settle, imageRef };
-}
-
 /** The group glyph, the picture, or the initials without a picture or once it has failed. */
-function AvatarContent({
-  identity,
-  picture,
-}: {
-  identity: AvatarIdentity;
-  picture: AvatarPicture;
-}) {
+function AvatarContent({ identity, picture }: { identity: AvatarIdentity; picture: ImageLoading }) {
   const { name, src, imageProps, initials, kind } = identity;
   const { status, generation, imageRef, settle } = picture;
   if (kind === 'group') return <Glyph icon={UsersGlyph} className={hooks.slotClass('glyph')} />;
@@ -329,7 +260,7 @@ export function Avatar(props: AvatarProps) {
       ...rest
     },
   ] = splitAvatarIdentity(props);
-  const picture = useAvatarPicture(requestOf(identity), onLoadingStatusChange);
+  const picture = useImageLoading(requestOf(identity), onLoadingStatusChange);
   const color = resolveAvatarColor(identity, colorCount);
   const { accessibleName, hasTooltip, surfaceProps } = useAvatarPresentation({
     name: identity.name,

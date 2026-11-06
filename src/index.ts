@@ -83,6 +83,7 @@ export * from './components/hover-card/index.js';
 export * from './components/html-markup/index.js';
 export * from './components/icon/index.js';
 export * from './components/icon-label/index.js';
+export * from './components/image/index.js';
 export * from './components/inline-edit/index.js';
 export * from './components/inline-error/index.js';
 export * from './components/inline-text-diff/index.js';
