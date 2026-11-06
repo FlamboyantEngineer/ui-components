@@ -78,6 +78,7 @@ import { FourSidePropertyStrip } from '../src/components/four-side-property-stri
 import { GridSizePicker } from '../src/components/grid-size-picker/grid-size-picker.js';
 import { HoverCard, HoverCardTrigger } from '../src/components/hover-card/hover-card.js';
 import { HtmlMarkup } from '../src/components/html-markup/html-markup.js';
+import { Image } from '../src/components/image/image.js';
 import { InlineEdit } from '../src/components/inline-edit/inline-edit.js';
 import { InlineTextDiff } from '../src/components/inline-text-diff/inline-text-diff.js';
 import {
@@ -103,6 +104,11 @@ import {
 import { MetaLine } from '../src/components/meta-line/meta-line.js';
 import { Modal } from '../src/components/modal/modal.js';
 import {
+  NavigationMenu,
+  NavigationMenuItem,
+  NavigationMenuLink,
+} from '../src/components/navigation-menu/index.js';
+import {
   NavigationRail,
   NavigationRailGroup,
   NavigationRailItem,
@@ -117,6 +123,7 @@ import { PinInput } from '../src/components/pin-input/pin-input.js';
 import { Popover, PopoverTrigger } from '../src/components/popover/popover.js';
 import { PortalHost } from '../src/components/portal/portal.js';
 import { ProblemList } from '../src/components/problem-list/problem-list.js';
+import { Meter } from '../src/components/progress-bar/progress-bar.js';
 import { PropertyFilter } from '../src/components/property-filter/property-filter.js';
 import {
   PropertyCard,
@@ -131,6 +138,7 @@ import {
 import { PropertyScope } from '../src/components/property-scope/property-scope.js';
 import { ProseTable } from '../src/components/prose-table/prose-table.js';
 import { QueryField } from '../src/components/query-field/query-field.js';
+import { Rating, RatingField } from '../src/components/rating-field/index.js';
 import { RecordHeader } from '../src/components/record-header/record-header.js';
 import { RecordLabel } from '../src/components/record-label/record-label.js';
 import { RelativeDateField } from '../src/components/relative-date-field/relative-date-field.js';
@@ -482,6 +490,7 @@ const cases: Record<string, RootRefCase> = {
 /** Fields: each forwards `ref` to the root of the `Field` it renders. */
 const fieldCases: Record<string, RootRefCase> = {
   BooleanField: { element: (ref) => <BooleanField ref={ref} label="Ripe" />, root: 'ui-field' },
+  RatingField: { element: (ref) => <RatingField ref={ref} label="Quality" />, root: 'ui-field' },
   ChoiceGroup: {
     element: (ref) => (
       <ChoiceGroup ref={ref} label="Size">
@@ -868,6 +877,7 @@ const restCases: Record<string, RootRefCase> = {
     element: (ref) => <Avatar ref={ref} name="Ana Lima" onPress={() => {}} />,
     root: 'ui-avatar',
   },
+  Image: { element: (ref) => <Image ref={ref} src="/photo.jpg" alt="Photo" />, root: 'ui-image' },
   CardGrid: {
     element: (ref) => (
       <CardGrid ref={ref} aria-label="Cards">
@@ -917,6 +927,34 @@ const restCases: Record<string, RootRefCase> = {
     ),
     root: 'ui-key-hints',
   },
+  NavigationMenu: {
+    element: (ref) => (
+      <NavigationMenu ref={ref} aria-label="Site">
+        <NavigationMenuLink href="/">Home</NavigationMenuLink>
+      </NavigationMenu>
+    ),
+    root: 'ui-navigation-menu',
+  },
+  NavigationMenuItem: {
+    element: (ref) => (
+      <NavigationMenu aria-label="Site">
+        <NavigationMenuItem ref={ref} id="fruit" label="Fruit">
+          <NavigationMenuLink href="/fruit">Fruit</NavigationMenuLink>
+        </NavigationMenuItem>
+      </NavigationMenu>
+    ),
+    root: 'ui-navigation-menu__item',
+  },
+  NavigationMenuLink: {
+    element: (ref) => (
+      <NavigationMenu aria-label="Site">
+        <NavigationMenuLink ref={ref} href="/">
+          Home
+        </NavigationMenuLink>
+      </NavigationMenu>
+    ),
+    root: 'ui-navigation-menu__link',
+  },
   NavigationRail: {
     element: (ref) => (
       <NavigationRail ref={ref} aria-label="Main">
@@ -953,6 +991,11 @@ const restCases: Record<string, RootRefCase> = {
     ),
     root: 'ui-navigation-rail__section',
   },
+  Meter: {
+    element: (ref) => <Meter ref={ref} aria-label="Storage" value={40} />,
+    root: 'ui-meter',
+  },
+  Rating: { element: (ref) => <Rating ref={ref} value={3} />, root: 'ui-rating' },
   Pagination: { element: (ref) => <Pagination ref={ref} pageCount={3} />, root: 'ui-pagination' },
   PortalHost: { element: (ref) => <PortalHost ref={ref}>Body</PortalHost>, root: 'ui-portal-host' },
   ProblemList: { element: (ref) => <ProblemList ref={ref} />, root: 'ui-problem-list' },

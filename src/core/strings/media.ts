@@ -7,6 +7,8 @@ interface MediaStrings {
   previewUnavailable: string;
   /** Says a media viewer's image failed to load, from the file name. */
   imageLoadFailed: (name: string) => string;
+  /** Requests an image that failed to load again. */
+  imageRetry: string;
   /** Names a media viewer's strip of thumbnails. */
   thumbnails: string;
   /** Names a media viewer's stage, from the shown file's name. */

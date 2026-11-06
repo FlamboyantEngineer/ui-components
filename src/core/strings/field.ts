@@ -234,6 +234,10 @@ interface FieldStrings {
   signatureImageNoPaste: string;
   /** Names the end thumb of a range slider, read before the slider's label. */
   rangeMaximum: string;
+  /** Names a rating, or one choice of a rating field, from the value and the highest value. */
+  ratingValue: (value: number, max: number) => string;
+  /** Names a rating that has no value. */
+  ratingNone: string;
 }
 
 /** The module's text, with the message values each text function reads its arguments as. */
@@ -279,4 +283,5 @@ export const fieldStrings = defineStrings<FieldStrings>({
   nextPeriod: (period) => ({ period }),
   signatureStrokes: (count) => ({ count }),
   signatureImageSize: (size) => ({ size }),
+  ratingValue: (value, max) => ({ value, max }),
 });

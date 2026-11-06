@@ -1,0 +1,50 @@
+/* Image: the box keeps its reserved size while loading and once it fails. */
+
+.ui-image {
+  position: relative;
+  display: inline-grid;
+  max-width: 100%;
+  vertical-align: middle;
+}
+
+.ui-image__img {
+  grid-area: 1 / 1;
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--ref-radius-sm);
+}
+
+.ui-image[data-status='loading'] .ui-image__img {
+  opacity: 0;
+}
+
+.ui-image__placeholder,
+.ui-image__fallback {
+  box-sizing: border-box;
+  display: grid;
+  grid-area: 1 / 1;
+  place-items: center;
+  width: var(--ui-image-width, 100%);
+  max-width: 100%;
+  height: var(--ui-image-height, auto);
+  min-height: 48px;
+  border-radius: var(--ref-radius-sm);
+  background: var(--ref-tint-subtle);
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-image__fallback {
+  border: 1px dashed var(--ref-border);
+}
+
+.ui-image__retry {
+  justify-self: start;
+  margin-top: 6px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ui-image__img {
+    transition: opacity var(--ref-duration);
+  }
+}

@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { ProgressBar, resolveMeterTone } from '../../src/components/progress-bar/index.js';
+import { Meter, ProgressBar, resolveMeterTone } from '../../src/components/progress-bar/index.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
 
 /** Two ranges that do not start at zero, one above it and one across it, each with three values. */
@@ -9,11 +9,7 @@ const ranges = {
   '-50 to 50': { minValue: -50, maxValue: 50, values: { below: -80, within: 25, above: 70 } },
 } as const;
 
-const kinds = {
-  linear: { shape: 'linear', mode: 'progress' },
-  circular: { shape: 'circular', mode: 'progress' },
-  meter: { shape: 'linear', mode: 'meter' },
-} as const;
+const kinds = ['linear', 'circular', 'meter'] as const;
 
 /** A bar whose root the caller renders, showing the values it receives as they change. */
 function RenderedRoot() {
@@ -76,13 +72,7 @@ function MeterToneHelper() {
   const tone = resolveMeterTone({ value: used, minValue: 0, maxValue: 100 }, thresholds);
   return (
     <div data-lab-demo="meter-tone" style={{ width: 280 }}>
-      <ProgressBar
-        mode="meter"
-        label="Disk used"
-        value={used}
-        {...thresholds}
-        valueLabel={`${used} of 100 GB`}
-      />
+      <Meter label="Disk used" value={used} {...thresholds} valueLabel={`${used} of 100 GB`} />
       <p>
         <Button size="sm" isDisabled={used === 0} onPress={() => setUsed(used - 10)}>
           Free 10 GB
@@ -113,19 +103,19 @@ export function ProgressRangeCases() {
           axes={{
             range: Object.keys(ranges) as (keyof typeof ranges)[],
             value: ['below', 'within', 'above'],
-            kind: Object.keys(kinds) as (keyof typeof kinds)[],
+            kind: kinds,
           }}
           render={({ range, value, kind }) => {
             const { values, ...bounds } = ranges[range];
+            const props = {
+              label: `${values[value]} of ${range}`,
+              value: values[value],
+              ...bounds,
+              showValueLabel: true,
+            };
             return (
               <div style={{ width: 160 }}>
-                <ProgressBar
-                  label={`${values[value]} of ${range}`}
-                  value={values[value]}
-                  {...bounds}
-                  {...kinds[kind]}
-                  showValueLabel
-                />
+                {kind === 'meter' ? <Meter {...props} /> : <ProgressBar {...props} shape={kind} />}
               </div>
             );
           }}

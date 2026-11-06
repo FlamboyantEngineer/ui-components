@@ -161,7 +161,7 @@ test.describe('Progress Bar lab', () => {
           const bar = cell.getByRole(kind === 'meter' ? 'meter' : 'progressbar');
           await expect(bar).toHaveAttribute('aria-valuenow', now);
           await expect(bar).toHaveAttribute('aria-valuetext', text);
-          await expect(cell.locator('.ui-progress-bar__value')).toHaveText(text);
+          await expect(cell.locator('.ui-progress-bar__value, .ui-meter__value')).toHaveText(text);
         }
       }
     }

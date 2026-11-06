@@ -1,0 +1,141 @@
+/* Navigation Menu: a row of triggers and links; the open panel drops under the list, over one shared box sized from the measured panel. */
+
+.ui-navigation-menu {
+  position: relative;
+  container: ui-navigation-menu / inline-size;
+  font-size: var(--ref-font-size-md);
+}
+
+.ui-navigation-menu__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* The shared box: it follows the open panel's measured size, so moving between items resizes one surface. */
+.ui-navigation-menu[data-open]::after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  top: calc(100% + 8px);
+  inset-inline-start: 0;
+  width: var(--ui-navigation-menu-panel-width, 0);
+  height: var(--ui-navigation-menu-panel-height, 0);
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius-lg);
+  background: var(--ref-raised);
+  box-shadow: var(--ref-shadow);
+  box-sizing: border-box;
+  transition:
+    width var(--ref-duration) ease,
+    height var(--ref-duration) ease;
+}
+
+.ui-navigation-menu__trigger,
+.ui-navigation-menu__list > .ui-navigation-menu__item > .ui-navigation-menu__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  box-sizing: border-box;
+  min-height: 32px;
+  padding: 4px 10px;
+  border: 0;
+  border-radius: var(--ref-radius);
+  background: none;
+  color: var(--ref-text);
+  font: inherit;
+  font-weight: var(--ref-font-weight-medium);
+  cursor: pointer;
+}
+
+.ui-navigation-menu__trigger[data-hovered],
+.ui-navigation-menu__item[data-open] > * > .ui-navigation-menu__trigger,
+.ui-navigation-menu__list > .ui-navigation-menu__item > .ui-navigation-menu__link[data-hovered] {
+  background: var(--ref-hover);
+}
+
+.ui-navigation-menu__trigger[data-disabled] {
+  opacity: var(--ref-disabled-opacity);
+  cursor: default;
+}
+
+.ui-navigation-menu__indicator {
+  width: var(--ref-icon-size-sm);
+  height: var(--ref-icon-size-sm);
+  transition: rotate var(--ref-duration-fast) ease;
+}
+
+.ui-navigation-menu__item[data-open] .ui-navigation-menu__indicator {
+  rotate: 180deg;
+}
+
+.ui-navigation-menu__panel {
+  position: absolute;
+  z-index: 2;
+  top: calc(100% + 8px);
+  inset-inline-start: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  box-sizing: border-box;
+  max-width: min(560px, 100%);
+  padding: 16px;
+  color: var(--ref-text);
+}
+
+.ui-navigation-menu__panel[hidden] {
+  display: none;
+}
+
+.ui-navigation-menu__panel p {
+  margin: 0;
+  max-width: 24ch;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-navigation-menu__panel .ui-navigation-menu__link {
+  padding: 2px 0;
+}
+
+.ui-navigation-menu__link[data-current] {
+  color: var(--ref-accent-ink);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.ui-navigation-menu__trigger[data-focus-visible],
+.ui-navigation-menu__link[data-focus-visible] {
+  outline: var(--ref-focus-ring);
+  outline-offset: 2px;
+}
+
+/* A column layout, as on a narrow screen: the panel opens in the flow under its trigger. */
+@container ui-navigation-menu (width <= 20rem) {
+  .ui-navigation-menu__list {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ui-navigation-menu__panel {
+    position: static;
+    flex-direction: column;
+    gap: 12px;
+    padding: 8px 12px;
+  }
+
+  .ui-navigation-menu[data-open]::after {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-navigation-menu[data-open]::after,
+  .ui-navigation-menu__indicator {
+    transition: none;
+  }
+}

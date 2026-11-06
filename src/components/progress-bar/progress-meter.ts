@@ -1,5 +1,15 @@
 import { clamp } from '../../utils/clamp.js';
-import type { ProgressBarProps, ProgressBarTone } from './progress-bar.js';
+import type { ProgressBarTone } from './progress-bar.js';
+
+/** Where a meter's regions end and which one is best, as on the HTML `meter` element. */
+export interface MeterThresholds {
+  /** The upper end of the low region. Defaults to the minimum. */
+  low?: number | undefined;
+  /** The lower end of the high region. Defaults to the maximum. */
+  high?: number | undefined;
+  /** The best value, whose region is `success`. Defaults to the range midpoint. */
+  optimum?: number | undefined;
+}
 
 /** Where a value sits: below the low boundary, above the high one, or between them. */
 function findRegion(value: number, low: number, high: number): 'low' | 'middle' | 'high' {
@@ -15,7 +25,7 @@ function findRegion(value: number, low: number, high: number): 'low' | 'middle' 
  */
 export function resolveMeterTone(
   range: { value: number; minValue: number; maxValue: number },
-  { low, high, optimum }: Pick<ProgressBarProps, 'low' | 'high' | 'optimum'>,
+  { low, high, optimum }: MeterThresholds,
 ): Exclude<ProgressBarTone, 'neutral'> | undefined {
   if (low === undefined && high === undefined && optimum === undefined) return undefined;
   const { value, minValue, maxValue } = range;
