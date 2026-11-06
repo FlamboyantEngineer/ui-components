@@ -28,8 +28,12 @@
 .ui-table__toolbar > .ui-table__filter {
   flex: 1 1 200px;
 }
-.ui-table__columns-menu {
+.ui-table__columns-menu,
+.ui-table__export-menu {
   margin-inline-start: auto;
+}
+.ui-table__columns-menu + .ui-table__export-menu {
+  margin-inline-start: 0;
 }
 
 .ui-table__filter {
@@ -295,6 +299,29 @@
 }
 .ui-table__row[data-dragging] {
   opacity: var(--ref-dragging-opacity);
+}
+/*
+ * A static table's pinned rows stick at their edge of the scroll area, past the sticky header or
+ * summary and the rows pinned before them, over the rows that scroll under them: their background
+ * is opaque, with the hover and selection tints laid over it.
+ */
+.ui-table:not([data-virtualized]) .ui-table__row[data-pinned] {
+  position: sticky;
+  /* Above the pinned cells of the rows scrolling beneath, below the sticky header and summary. */
+  z-index: 2;
+  background: var(--ref-surface);
+}
+.ui-table:not([data-virtualized]) .ui-table__row[data-pinned='top'] {
+  top: var(--ui-table-row-offset, 0);
+}
+.ui-table:not([data-virtualized]) .ui-table__row[data-pinned='bottom'] {
+  bottom: var(--ui-table-row-offset, 0);
+}
+.ui-table:not([data-virtualized]) .ui-table__row[data-pinned][data-hovered] {
+  background: linear-gradient(var(--ref-hover), var(--ref-hover)), var(--ref-surface);
+}
+.ui-table:not([data-virtualized]) .ui-table__row[data-pinned][data-selected] {
+  background: linear-gradient(var(--ref-selected), var(--ref-selected)), var(--ref-surface);
 }
 /* Caller row marks from getRowAttributes, as the table lab sets them. */
 .ui-table__row[data-change='added'] {
@@ -588,7 +615,7 @@
    sections stick as a whole. */
 .ui-table[data-sticky-header]:not([data-virtualized]) :is(.ui-table__header, .ui-table__footer) {
   position: sticky;
-  z-index: 2;
+  z-index: 3;
 }
 .ui-table[data-sticky-header]:not([data-virtualized]) .ui-table__header {
   top: 0;

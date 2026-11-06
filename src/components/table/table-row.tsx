@@ -1,7 +1,7 @@
 'use client';
 
-import type { JSX, ReactNode } from 'react';
-import { pickDataAttributes } from '../../core/hooks.js';
+import { type JSX, type ReactNode, useState } from 'react';
+import { measuredProperty, pickDataAttributes } from '../../core/hooks.js';
 import { Cell, Collection, Row } from '../../primitives/index.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { readOwn } from '../../utils/read-own.js';
@@ -22,6 +22,7 @@ import {
   selectionColumnId,
 } from './table-structure.js';
 import type { TableNode } from './table-tree.js';
+import { usePinnedRowProbe } from './use-pinned-row-offsets.js';
 
 /** A row's caller attributes: `false` leaves an attribute out, unlike a root `data-*` prop. */
 function toRowAttributes(attributes: TableRowAttributes | undefined) {
@@ -74,17 +75,25 @@ export function TableDataRow<T extends TableRow>({
   node: TableNode<T>;
   model: TableRowModel<T>;
 }) {
-  const { row } = node;
+  const { row, pin } = node;
   const { structure, renderRowActions } = model;
-  const detail = model.renderRowDetail?.(row);
+  // A pinned row stays at its edge alone: its detail and child rows are not drawn.
+  const detail = pin ? null : model.renderRowDetail?.(row);
+  const isStuck = pin !== undefined && !structure.isVirtualized;
+  const rowOffset = isStuck ? readOwn(model.rowPins.offsets, id) : undefined;
+  // The element arrives once React Aria draws the row, after the collection has been built.
+  const [rowElement, setRowElement] = useState<HTMLElement | null>(null);
+  usePinnedRowProbe(rowElement, { ...model.rowPins, isActive: isStuck });
   const selectionPin = getColumnPin(structure, 'selection');
   const actionsPin = getColumnPin(structure, 'actions');
   return (
     <Row
       {...toRowAttributes(model.getRowAttributes?.(row))}
       id={id}
+      ref={isStuck ? setRowElement : undefined}
       textValue={getRowText(row, getRowHeaderColumns(structure.columns))}
-      {...hooks.slot('row')}
+      style={rowOffset === undefined ? undefined : measuredProperty('table-row-offset', rowOffset)}
+      {...hooks.slot('row', { pinned: pin })}
       render={model.dragTrigger === 'handle' ? createHandleRow(structure.isVirtualized) : undefined}
     >
       {structure.hasSelection ? (

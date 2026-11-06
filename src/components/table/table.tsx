@@ -21,6 +21,9 @@ import { TableBody } from './table-body.js';
 import { TableSelectionBar } from './table-bulk-edit.js';
 import { TableColumnFilter } from './table-column-filter.js';
 import { getColumnText, type TableColumnGroup, type TableColumnLayout } from './table-columns.js';
+import type { TableEditHistory } from './table-edit-history.js';
+import type { TableCsvExport } from './table-export.js';
+import { TableExportMenu } from './table-export-menu.js';
 import { isEmptyFilterValue, setColumnFilter, type TableFilter } from './table-filters.js';
 import { hasTableFooter, TableFooter } from './table-footer.js';
 import { readGridTracks } from './table-grid-tracks.js';
@@ -38,7 +41,7 @@ import { useContentWidths } from './use-content-widths.js';
 import type { TableGroupingProps } from './use-table-expansion.js';
 import { type TableGrid, useTableGrid } from './use-table-grid.js';
 import type { TableReorderOptions } from './use-table-reorder.js';
-import type { TablePagination } from './use-table-rows.js';
+import type { TablePagination, TablePinnedRows } from './use-table-rows.js';
 import type { TableSortOptions } from './use-table-sort.js';
 
 export type TableSize = Extract<Size, 'sm' | 'md'>;
@@ -92,14 +95,26 @@ export interface TableProps<T extends TableRow>
   columnLayout?: TableColumnLayout | undefined;
   /** Initial column order and hidden columns while the table owns them and none are stored. */
   defaultColumnLayout?: TableColumnLayout | undefined;
+  /** Draws an export menu above the grid that writes rows as CSV. */
+  csvExport?: TableCsvExport<T> | undefined;
   /** Called with the layout after a column moves, hides or shows. */
   onColumnLayoutChange?: ((layout: TableColumnLayout) => void) | undefined;
   /** A row's child rows, drawn under it once it is expanded. */
   getChildRows?: TableChildRows<T>;
   /** Content of a full-width detail row under a row, drawn once the row is expanded. */
   renderRowDetail?: ((row: T) => ReactNode) | undefined;
+  /**
+   * Records the cell edits the table reports, and applies its undo and redo through
+   * `onCellsChange`; Control or Command with Z undoes on the table.
+   */
+  editHistory?: TableEditHistory | undefined;
   /** Reports a finished cell edit. The table never changes its rows itself. */
   onCellEdit?: ((edit: TableCellEdit<T>) => void) | undefined;
+  /**
+   * Top-level rows, by id, that stay at the top or the bottom of the body while it scrolls, on
+   * every page, outside filtering, sorting, paging, grouping and reordering.
+   */
+  pinnedRows?: TablePinnedRows | undefined;
   /** Shows the rows one page at a time under a page navigation. */
   pagination?: TablePagination | undefined;
   /** Asks for more rows when the end of the rows scrolls into view. */
@@ -271,7 +286,7 @@ export function Table<T extends TableRow>({
 }: TableProps<T>) {
   const strings = useUiStrings();
   const [dataAttributes, gridProps] = splitDataAttributes(rest);
-  const grid = useTableGrid({ ...gridProps, filterable });
+  const grid = useTableGrid({ ...gridProps, filterable, stickyHeader });
   const { view, layout } = grid;
   const { virtualized } = rest;
   const height = rowHeight ?? virtualRowHeights[size];
@@ -308,6 +323,7 @@ export function Table<T extends TableRow>({
         }
         columns={rest.columns}
         layout={layout}
+        exportMenu={grid.exportMenu ? <TableExportMenu {...grid.exportMenu} /> : null}
       />
       {grid.selectionBar ? <TableSelectionBar {...grid.selectionBar} /> : null}
       <TableScroll

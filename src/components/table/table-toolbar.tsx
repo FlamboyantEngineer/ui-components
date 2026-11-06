@@ -13,15 +13,17 @@ interface TableToolbarProps<T> {
   /** Every column, in declared order. */
   columns: readonly TableColumn<T>[];
   layout: ColumnLayout<T>;
+  /** The export menu, for a table that exports. */
+  exportMenu: ReactNode;
 }
 
 /**
- * The controls above the grid: the search box and, when a column allows hiding, the columns menu.
- * Without either it draws nothing.
+ * The controls above the grid: the search box, the columns menu when a column allows hiding, and
+ * the export menu. Without any it draws nothing.
  */
-export function TableToolbar<T>({ filter, columns, layout }: TableToolbarProps<T>) {
+export function TableToolbar<T>({ filter, columns, layout, exportMenu }: TableToolbarProps<T>) {
   const hasMenu = columns.some((column) => column.allowsHiding);
-  if (!filter && !hasMenu) return null;
+  if (!filter && !hasMenu && !exportMenu) return null;
   return (
     <div {...hooks.slot('toolbar')}>
       {filter}
@@ -32,6 +34,7 @@ export function TableToolbar<T>({ filter, columns, layout }: TableToolbarProps<T
           onHiddenChange={layout.setHidden}
         />
       ) : null}
+      {exportMenu}
     </div>
   );
 }

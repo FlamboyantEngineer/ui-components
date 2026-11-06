@@ -1,6 +1,6 @@
 # Table
 
-`Table` shows records a reader scans, sorts, filters, selects, edits and acts on. It is built on React Aria's `Table`: columns and rows are plain data with render callbacks, and the table adds sorting by one or several columns, a search box and typed column filters, selection with a selection bar and bulk edit, resizable, reorderable, hideable, pinned and grouped columns with a persisted layout, row groups with aggregates, nested rows and detail rows, cell editing and a spreadsheet mode with cell ranges, the clipboard and filling, a summary row, row reordering by drag and drop or keyboard, pagination through [Pagination](PAGINATION.md), loading more rows, full-width loading, empty and error notices, and virtualization for long lists. `sortTableRows`, `filterTableRows` and `applyTableMove` are exported for callers that keep the order, the filtering or the pages of their rows themselves, and `formatTsv` and `parseTsv` for tab-separated text.
+`Table` shows records a reader scans, sorts, filters, selects, edits and acts on. It is built on React Aria's `Table`: columns and rows are plain data with render callbacks, and the table adds sorting by one or several columns, a search box and typed column filters, selection with a selection bar and bulk edit, resizable, reorderable, hideable, pinned and grouped columns with a persisted layout, row groups with aggregates, nested rows and detail rows, cell editing and a spreadsheet mode with cell ranges, the clipboard and filling, a summary row, rows pinned at the top or bottom, CSV export, an edit history with undo and redo, row reordering by drag and drop or keyboard, pagination through [Pagination](PAGINATION.md), loading more rows, full-width loading, empty and error notices, and virtualization for long lists. `sortTableRows`, `filterTableRows` and `applyTableMove` are exported for callers that keep the order, the filtering or the pages of their rows themselves, `formatTsv` and `parseTsv` for tab-separated text, and `formatCsv` and `formatTableCsv` for CSV export.
 
 Pointer ownership and drag lifecycle cleanup follow the shared [drag interaction contract](DRAG-INTERACTIONS.md).
 
@@ -611,110 +611,201 @@ When a drawn column has `bulkEdit`, the selection bar shall end with an `edit` a
 Implementation: `src/components/table/table-bulk-edit.tsx`, `src/core/strings/table.ts`
 Verification: `src/components/table/table-bulk-edit.test.tsx`, `e2e/table.spec.ts`
 
+## UIC-TABLE-16 - CSV export
+
+### UIC-TABLE-16.1 - Comma-separated values
+
+`formatCsv(rows, options)` shall join cells with a delimiter (`,` by default, any one character other than a quote or a line break, else it throws) and rows with Windows line breaks, as RFC 4180 does, with no final line break and no byte order mark. A cell holding the delimiter, a quote or a line break is wrapped in quotes with its quotes doubled. Unless `escapeFormulas` is false, text a spreadsheet would read as a formula, starting with `=`, `+`, `-`, `@`, a tab or a carriage return, is prefixed with an apostrophe, except a plain decimal number such as `-12.5`. `CSV_BYTE_ORDER_MARK` is the UTF-8 byte order mark a file may start with.
+
+Implementation: `src/utils/csv.ts`
+Verification: `src/utils/csv.test.ts`
+
+### UIC-TABLE-16.2 - Table CSV
+
+`formatTableCsv({ rows, columns, delimiter, escapeFormulas })` shall write the rows in order under a header row of the columns' accessible names (`textValue`, else a text header, else the id). Each cell is the column's `getExportText(row)`, else its value (`getValue`, else the row's property) as copied text (UIC-TABLE-14.2): numbers and booleans as `String` writes them whatever the locale, dates in ISO 8601, nothing as empty text. Rendered cell content is never read. Locale formatting is the column's own, through `getExportText`. The rows and columns are read, never changed.
+
+Implementation: `src/components/table/table-export.ts`, `src/utils/csv.ts`
+Verification: `src/components/table/table-export.test.ts`
+
+### UIC-TABLE-16.3 - Export menu
+
+`csvExport` shall draw an export menu (`ui-table__export-menu`, a [Dropdown Menu](DROPDOWN-MENU.md) named by the provider's `exportCsv`) at the end of the toolbar, with one item per scope in `scopes`, by default `page` when the table is paginated, `rows`, and `selected` in multiple selection:
+
+- `page` (the provider's `exportPage`) writes the current page's rows;
+- `rows` (`exportAllRows`) writes every row the table presents across pages: filtered and ordered as the table shows them;
+- `selected` (`exportSelectedRows`) writes the selected rows the selection bar counts (UIC-TABLE-15.1), in order, and is disabled while none is selected.
+
+Nested rows follow their parent depth first whether or not it is expanded; group header, detail, notice and summary rows are never written. The columns are the drawn ones in their layout order, or those `csvExport.columns` names by id, in its order, hidden ones included; an unknown id is skipped.
+
+Implementation: `src/components/table/table-export-menu.tsx`, `src/components/table/table-export.ts`, `src/components/table/table-toolbar.tsx`, `src/components/table/use-table-grid.ts`, `src/core/strings/table.ts`
+Verification: `src/components/table/table-export-menu.test.tsx`, `src/components/table/table-export.test.ts`, `e2e/table-data.spec.ts`
+
+### UIC-TABLE-16.4 - Partial rows and the file
+
+When the caller pages the rows (`pagination.rowCount`) or loads them in parts (`onLoadMore`), the table holds only the loaded rows: the `rows` item shall then read `exportLoadedRows` and write those, unless `csvExport.allRows` gives the whole dataset, which the `rows` scope then writes as given, with its child rows, under `exportAllRows`. The menu writes `fileName` as a `text/csv;charset=utf-8` download through `downloadBlob` (UIC-DOWNLOAD-1.1), starting with the UTF-8 byte order mark unless `byteOrderMark` is false, or hands `{ fileName, scope, text }` to `onExport` instead of downloading.
+
+Implementation: `src/components/table/table-export-menu.tsx`, `src/utils/download.ts`
+Verification: `src/components/table/table-export-menu.test.tsx`, `e2e/table-data.spec.ts`
+
+## UIC-TABLE-17 - Edit history
+
+### UIC-TABLE-17.1 - Entries
+
+`useTableEditHistory({ limit, resetKey })` shall return a bounded edit history (`TableEditHistory`) for a table's `editHistory`. Each report the table makes of changed cells becomes one entry of `TableCellChange`s (`rowId`, `columnId`, `before`, `after`): a committed edit, and a whole paste, fill, clear or bulk edit. Edits the column refuses never reach a report, and a cell whose value stays the same is left out, so they record nothing. `undo` reports the latest entry's `before` values through `onCellsChange` in one batch (else `onCellEdit` for each cell) and moves it to the redo entries; `redo` reports its `after` values the same way and moves it back. The table never changes its rows itself. `canUndo` and `canRedo` say whether an entry waits, for the host's toolbar buttons. Recording an entry forgets the undone ones.
+
+Implementation: `src/components/table/table-edit-history.ts`, `src/components/table/use-recorded-edits.ts`, `src/components/table/use-table-grid.ts`
+Verification: `src/components/table/table-edit-history.test.tsx`, `e2e/table-data.spec.ts`
+
+### UIC-TABLE-17.2 - Keys
+
+On a table with `editHistory`, Control or Command with Z shall undo, and with Shift+Z, or Control or Command with Y, redo, except a key whose default a handler already prevented, a key in a field, an open cell editor or editable content, which keeps its own history, and a key an input method composition owns. On a non-Latin layout, the keys in the Z and Y keys' places do ([UIC-SHORTCUT-1.8](SHORTCUT.md)).
+
+Implementation: `src/components/table/use-recorded-edits.ts`, `src/utils/is-editable-target.ts`, `src/utils/is-composing-key.ts`
+Verification: `src/components/table/table-edit-history.test.tsx`, `e2e/table-data.spec.ts`
+
+### UIC-TABLE-17.3 - Rebasing on the host's rows
+
+An entry shall find its cells by row id and column id among the table's current rows, nested ones included, whatever their order, page or filter, and apply only the cells whose row is still there and enabled, whose column still allows editing, and that still hold the value the entry left (`after` to undo, `before` to redo), so a change made elsewhere since is never overwritten. The applied part moves to the other side; an entry none of whose cells apply is dropped, and the step moves on to the next one. `limit` (100 by default) keeps the latest entries, the oldest going first, and a change of `resetKey`, such as replacing the dataset, or `clear()` forgets every entry. `canUndo` counts entries, not whether they still apply.
+
+Implementation: `src/components/table/table-edit-history.ts`, `src/components/table/use-recorded-edits.ts`
+Verification: `src/components/table/table-edit-history.test.tsx`
+
+## UIC-TABLE-18 - Pinned rows
+
+### UIC-TABLE-18.1 - Pinning rows
+
+`pinnedRows` (`{ top, bottom }`, lists of row ids) shall draw the top-level rows it names, in each list's order, as the first and last rows of the body, once each: a row named at both edges stays at the top, and an id that names no top-level row, a nested row included, is skipped. A pinned row publishes `data-pinned` (`top` or `bottom`) and stays the same collection item, so its identity, focus and selection follow its id like any row's.
+
+Implementation: `src/components/table/use-table-rows.ts`, `src/components/table/use-table-grid.ts`, `src/components/table/table-row.tsx`, `src/components/table/table-tree.ts`
+Verification: `src/components/table/table-pinned-rows.test.tsx`, `e2e/table-data.spec.ts`
+
+### UIC-TABLE-18.2 - Outside the presented rows
+
+Pinned rows shall stand outside filtering, sorting, paging and grouping: the search box and column filters never hide them, the sort never moves them, they show on every page without counting towards `pageSize` or the page count, and they sit outside every group. A caller that filters or pages `rows` itself keeps the pinned rows in `rows` to show them. A pinned row draws without its child rows and its detail row. The table is empty, and shows its empty notice, only when no row is pinned or presented. Pinned rows count among the presented rows that select all, the summary and the `rows` export read, the `page` export writes them around the page's rows, and an edit history finds them by id.
+
+Implementation: `src/components/table/use-table-rows.ts`, `src/components/table/use-table-grid.ts`, `src/components/table/table-row.tsx`, `src/components/table/table-export-menu.tsx`
+Verification: `src/components/table/table-pinned-rows.test.tsx`
+
+### UIC-TABLE-18.3 - Interaction
+
+A pinned row shall select, edit, copy, paste and report its row action like any row, and its pinned columns stay at their edges. Row reordering never moves a pinned row: its drag handle is disabled, Alt+Arrow keys leave it in place, and a drop beside it is refused, since the moves the table reports are among the page's other rows.
+
+Implementation: `src/components/table/use-table-rows.ts`, `src/components/table/use-table-reorder.tsx`
+Verification: `src/components/table/table-pinned-rows.test.tsx`, `e2e/table-data.spec.ts`
+
+### UIC-TABLE-18.4 - Sticking
+
+In a static table each pinned row shall publish the measured `--ui-table-row-offset`: its distance from its edge of the scroll area, the height of the header (top) or the summary (bottom) when `stickyHeader` keeps it in view, plus the heights of the rows pinned between it and that edge, measured again as any of them changes size. The reference stylesheet makes pinned rows sticky at that offset, over the rows that scroll beneath them, with an opaque background; the scroll area's height must be bounded for them to stick. A virtualized table, which positions every row itself, draws pinned rows first and last but pins nothing, as with pinned columns (UIC-TABLE-8.6).
+
+Implementation: `src/components/table/use-pinned-row-offsets.ts`, `src/components/table/table-row.tsx`, `labs/reference/table.css`
+Verification: `src/components/table/table-pinned-rows.test.tsx`, `e2e/table-data.spec.ts`
+
 ## Hooks
 
-| Hook                             | Kind      | Values                         | Description                                                                    |
-| -------------------------------- | --------- | ------------------------------ | ------------------------------------------------------------------------------ |
-| `ui-table`                       | root      |                                | The element holding the toolbar, the scroll area and the page navigation.      |
-| `ui-table__toolbar`              | slot      |                                | The controls above the grid: the search field and the columns menu.            |
-| `ui-table__filter`               | slot      |                                | The search field of a filterable table.                                        |
-| `ui-table__filter-icon`          | slot      |                                | The search field's leading glyph (also `ui-icon`).                             |
-| `ui-table__filter-input`         | slot      |                                | The search field's input.                                                      |
-| `ui-table__filter-clear`         | slot      |                                | The search field's clear button.                                               |
-| `ui-table__columns-menu`         | slot      |                                | The columns menu's trigger (also `ui-dropdown-menu`).                          |
-| `ui-table__scroll`               | slot      |                                | React Aria's resizable container; the scroll area.                             |
-| `ui-table__grid`                 | slot      |                                | The grid (`<table>`, or a `div` when virtualized).                             |
-| `ui-table__header`               | slot      |                                | The header row group.                                                          |
-| `ui-table__column-group`         | slot      |                                | A group header cell, or a gap over ungrouped columns.                          |
-| `ui-table__column`               | slot      |                                | One column header.                                                             |
-| `ui-table__column-content`       | slot      |                                | A data column header's label, sort glyph and filter; it takes dropped columns. |
-| `ui-table__column-label`         | slot      |                                | A column header's content; it drags a reorderable column.                      |
-| `ui-table__sort-icon`            | slot      |                                | A sortable header's sort glyph (also `ui-icon`).                               |
-| `ui-table__column-filter`        | slot      |                                | A filterable header's filter button (also `ui-button`).                        |
-| `ui-table__column-filter-dialog` | slot      |                                | A column filter's anchored dialog (also `ui-modal`).                           |
-| `ui-table__resizer`              | slot      |                                | A resizable column's resizer.                                                  |
-| `ui-table__body`                 | slot      |                                | The body row group.                                                            |
-| `ui-table__row`                  | slot      |                                | One data row; it also carries the caller's `getRowAttributes`.                 |
-| `ui-table__cell`                 | slot      |                                | One data row cell.                                                             |
-| `ui-table__expand`               | slot      |                                | A row's expand button in the tree column (also `ui-icon` inside).              |
-| `ui-table__expand-spacer`        | slot      |                                | Holds the expand button's place on a row without nested rows.                  |
-| `ui-table__editor`               | slot      |                                | The default cell editor's input.                                               |
-| `ui-table__editor-message`       | slot      |                                | The default editor's message for a refused value (`role="alert"`).             |
-| `ui-table__fill-handle`          | slot      |                                | The handle at the bottom end corner of the selected cells.                     |
-| `ui-table__detail-row`           | slot      |                                | A full-width row holding a row's detail.                                       |
-| `ui-table__detail-cell`          | slot      |                                | The detail row's spanning cell.                                                |
-| `ui-table__group-row`            | slot      |                                | A group header row.                                                            |
-| `ui-table__group-cell`           | slot      |                                | A group header's first data cell: expand button, label and count.              |
-| `ui-table__group-label`          | slot      |                                | A group header's label.                                                        |
-| `ui-table__group-count`          | slot      |                                | A group header's number of rows.                                               |
-| `ui-table__aggregate-cell`       | slot      |                                | A group header's cell under a column: its aggregate, or empty.                 |
-| `ui-table__checkbox`             | slot      |                                | A selection checkbox (`<label>` around a visually hidden input).               |
-| `ui-table__checkbox-box`         | slot      |                                | The checkbox's box, holding the check or minus glyph.                          |
-| `ui-table__drag-handle`          | slot      |                                | A row's drag handle (also `ui-drag-handle`).                                   |
-| `ui-table__drag-preview`         | slot      |                                | The custom image that follows the pointer during a row drag.                   |
-| `ui-table__drop-indicator`       | slot      |                                | The row marking a drop position while dragging.                                |
-| `ui-table__state-row`            | slot      |                                | The full-width notice row.                                                     |
-| `ui-table__state-cell`           | slot      |                                | The notice row's spanning cell.                                                |
-| `ui-table__loader`               | slot      |                                | The loading row after the rows while more load.                                |
-| `ui-table__footer`               | slot      |                                | The summary row group (React Aria's table footer).                             |
-| `ui-table__footer-row`           | slot      |                                | The summary row.                                                               |
-| `ui-table__footer-cell`          | slot      |                                | One summary cell.                                                              |
-| `ui-table__action-row`           | slot      |                                | The final nonselectable ordinary-content row.                                  |
-| `ui-table__action-cell`          | slot      |                                | Its full-width content cell.                                                   |
-| `ui-table__pagination`           | slot      |                                | The page navigation under a paginated grid (also `ui-pagination`).             |
-| `ui-table__selection-bar`        | slot      |                                | The bar above the grid while rows are selected (also `ui-action-row`).         |
-| `ui-table__bulk-edit`            | slot      |                                | The bulk edit dialog (also `ui-modal`).                                        |
-| `data-size`                      | attribute | `sm`, `md`                     | Row height, on the root.                                                       |
-| `data-kind`                      | attribute | `data`, `selection`, `actions` | What a column header, cell or summary cell holds.                              |
-| `data-align`                     | attribute | `start`, `center`, `end`       | A data column's alignment, on its header and cells.                            |
-| `data-column`                    | attribute |                                | A data column's id, on its header and cells.                                   |
-| `data-sizing`                    | attribute | `content`, `flex`, `fixed`     | The effective sizing mode of a data column header.                             |
-| `data-pinned`                    | attribute | `start`, `end`                 | The edge a pinned column's header and cells stay at.                           |
-| `data-wrap`                      | attribute | `nowrap`, `wrap`, `anywhere`   | How a data column's cells, summary and aggregate cells wrap their text.        |
-| `data-sort-priority`             | attribute |                                | A sorted header's place in a sort by several columns, from 1.                  |
-| `data-count`                     | attribute |                                | The number of dragged rows, on the drag preview.                               |
-| `data-variant`                   | attribute | `loading`, `empty`, `error`    | Which notice the notice row shows.                                             |
-| `data-sort-direction`            | attribute | `ascending`, `descending`      | The sorted column's direction (React Aria).                                    |
-| `data-resizable-direction`       | attribute | `left`, `right`, `both`        | Which ways a column can still be resized (React Aria).                         |
-| `data-selection-mode`            | attribute | `single`, `multiple`           | The table's selection mode, on rows (React Aria).                              |
-| `data-key`                       | attribute |                                | Opaque collection key (React Aria): not the `id`, not for styling.             |
-| `data-collection`                | attribute |                                | React Aria's collection identifier; not for styling.                           |
-| `data-column-index`              | attribute |                                | A cell's column index (React Aria).                                            |
-| `data-level`                     | attribute |                                | A row's or cell's nesting level, from 1 (React Aria).                          |
-| `data-sticky-header`             | state     | `true`                         | The header stays in view, on the root.                                         |
-| `data-virtualized`               | state     | `true`                         | Only the rows in view render, on the root.                                     |
-| `data-reordering`                | state     | `true`                         | The table reorders its rows now, on the root.                                  |
-| `data-empty`                     | state     | `true`                         | The search field has no query (React Aria).                                    |
-| `data-allows-sorting`            | state     | `true`                         | A sortable column header (React Aria).                                         |
-| `data-allows-reordering`         | state     | `true`                         | A column header whose column can move.                                         |
-| `data-drop-position`             | state     | `before`, `after`              | The header a dragged column would land beside, and on which side.              |
-| `data-filtered`                  | state     | `true`                         | A header whose column filters the rows.                                        |
-| `data-ungrouped`                 | state     | `true`                         | A group row cell over columns without a group.                                 |
-| `data-editing`                   | state     | `true`                         | The cell whose editor is open.                                                 |
-| `data-invalid`                   | state     | `true`                         | The default editor while the column refuses its value.                         |
-| `data-in-range`                  | state     | `true`                         | A selected cell in spreadsheet mode.                                           |
-| `data-range-top`                 | state     | `true`                         | A selected cell on the top edge of the selection.                              |
-| `data-range-bottom`              | state     | `true`                         | A selected cell on the bottom edge of the selection.                           |
-| `data-range-start`               | state     | `true`                         | A selected cell on the start edge of the selection.                            |
-| `data-range-end`                 | state     | `true`                         | A selected cell on the end edge of the selection.                              |
-| `data-fill-target`               | state     | `true`                         | A cell a dragged fill handle would fill.                                       |
-| `data-tree-column`               | state     | `true`                         | A cell of the tree column (React Aria).                                        |
-| `data-has-child-items`           | state     | `true`                         | A row with nested or detail rows, and its cells (React Aria).                  |
-| `data-expanded`                  | state     | `true`                         | An expanded row and its cells (React Aria).                                    |
-| `data-allows-dragging`           | state     | `true`                         | React Aria's drag support, on every grid: use `data-reordering`.               |
-| `data-dragging`                  | state     | `true`                         | A row being dragged (React Aria), or a column header whose column drags.       |
-| `data-drop-target`               | state     | `true`                         | The drop indicator or grid targeted by a drag (React Aria).                    |
-| `data-resizing`                  | state     | `true`                         | A resizer being resized, or a virtualized column (React Aria).                 |
-| `data-selected`                  | state     | `true`                         | A selected row or checked checkbox (React Aria).                               |
-| `data-indeterminate`             | state     | `true`                         | The header checkbox while some rows are selected (React Aria).                 |
-| `data-disabled`                  | state     | `true`                         | A disabled row, checkbox or drag handle (React Aria).                          |
-| `data-hovered`                   | state     | `true`                         | Pointer over a row, header, resizer or control (React Aria).                   |
-| `data-pressed`                   | state     | `true`                         | A row, header or control being pressed (React Aria).                           |
-| `data-focused`                   | state     | `true`                         | A focused grid, header, row, cell or control (React Aria).                     |
-| `data-focus-visible`             | state     | `true`                         | Keyboard focus on a grid, header, row, cell or control (React Aria).           |
-| `data-focus-visible-within`      | state     | `true`                         | Keyboard focus inside a row (React Aria).                                      |
-| `data-focus-visible-within-row`  | state     | `true`                         | Keyboard focus inside a cell's row, on the cell (React Aria).                  |
-| `--ui-table-pin-offset`          | property  |                                | A pinned header's or cell's distance from its edge, in pixels.                 |
-| `--ui-table-columns`             | property  |                                | A static table grid's column tracks, for `grid-template-columns`.              |
-| `--ui-table-span`                | property  |                                | A group header cell's number of columns.                                       |
-| `--ui-table-level`               | property  |                                | A tree column or group header cell's nesting level, from 1.                    |
+| Hook                             | Kind      | Values                          | Description                                                                                               |
+| -------------------------------- | --------- | ------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `ui-table`                       | root      |                                 | The element holding the toolbar, the scroll area and the page navigation.                                 |
+| `ui-table__toolbar`              | slot      |                                 | The controls above the grid: the search field, columns and export menus.                                  |
+| `ui-table__filter`               | slot      |                                 | The search field of a filterable table.                                                                   |
+| `ui-table__filter-icon`          | slot      |                                 | The search field's leading glyph (also `ui-icon`).                                                        |
+| `ui-table__filter-input`         | slot      |                                 | The search field's input.                                                                                 |
+| `ui-table__filter-clear`         | slot      |                                 | The search field's clear button.                                                                          |
+| `ui-table__columns-menu`         | slot      |                                 | The columns menu's trigger (also `ui-dropdown-menu`).                                                     |
+| `ui-table__export-menu`          | slot      |                                 | The CSV export menu's trigger (also `ui-dropdown-menu`).                                                  |
+| `ui-table__scroll`               | slot      |                                 | React Aria's resizable container; the scroll area.                                                        |
+| `ui-table__grid`                 | slot      |                                 | The grid (`<table>`, or a `div` when virtualized).                                                        |
+| `ui-table__header`               | slot      |                                 | The header row group.                                                                                     |
+| `ui-table__column-group`         | slot      |                                 | A group header cell, or a gap over ungrouped columns.                                                     |
+| `ui-table__column`               | slot      |                                 | One column header.                                                                                        |
+| `ui-table__column-content`       | slot      |                                 | A data column header's label, sort glyph and filter; it takes dropped columns.                            |
+| `ui-table__column-label`         | slot      |                                 | A column header's content; it drags a reorderable column.                                                 |
+| `ui-table__sort-icon`            | slot      |                                 | A sortable header's sort glyph (also `ui-icon`).                                                          |
+| `ui-table__column-filter`        | slot      |                                 | A filterable header's filter button (also `ui-button`).                                                   |
+| `ui-table__column-filter-dialog` | slot      |                                 | A column filter's anchored dialog (also `ui-modal`).                                                      |
+| `ui-table__resizer`              | slot      |                                 | A resizable column's resizer.                                                                             |
+| `ui-table__body`                 | slot      |                                 | The body row group.                                                                                       |
+| `ui-table__row`                  | slot      |                                 | One data row; it also carries the caller's `getRowAttributes`.                                            |
+| `ui-table__cell`                 | slot      |                                 | One data row cell.                                                                                        |
+| `ui-table__expand`               | slot      |                                 | A row's expand button in the tree column (also `ui-icon` inside).                                         |
+| `ui-table__expand-spacer`        | slot      |                                 | Holds the expand button's place on a row without nested rows.                                             |
+| `ui-table__editor`               | slot      |                                 | The default cell editor's input.                                                                          |
+| `ui-table__editor-message`       | slot      |                                 | The default editor's message for a refused value (`role="alert"`).                                        |
+| `ui-table__fill-handle`          | slot      |                                 | The handle at the bottom end corner of the selected cells.                                                |
+| `ui-table__detail-row`           | slot      |                                 | A full-width row holding a row's detail.                                                                  |
+| `ui-table__detail-cell`          | slot      |                                 | The detail row's spanning cell.                                                                           |
+| `ui-table__group-row`            | slot      |                                 | A group header row.                                                                                       |
+| `ui-table__group-cell`           | slot      |                                 | A group header's first data cell: expand button, label and count.                                         |
+| `ui-table__group-label`          | slot      |                                 | A group header's label.                                                                                   |
+| `ui-table__group-count`          | slot      |                                 | A group header's number of rows.                                                                          |
+| `ui-table__aggregate-cell`       | slot      |                                 | A group header's cell under a column: its aggregate, or empty.                                            |
+| `ui-table__checkbox`             | slot      |                                 | A selection checkbox (`<label>` around a visually hidden input).                                          |
+| `ui-table__checkbox-box`         | slot      |                                 | The checkbox's box, holding the check or minus glyph.                                                     |
+| `ui-table__drag-handle`          | slot      |                                 | A row's drag handle (also `ui-drag-handle`).                                                              |
+| `ui-table__drag-preview`         | slot      |                                 | The custom image that follows the pointer during a row drag.                                              |
+| `ui-table__drop-indicator`       | slot      |                                 | The row marking a drop position while dragging.                                                           |
+| `ui-table__state-row`            | slot      |                                 | The full-width notice row.                                                                                |
+| `ui-table__state-cell`           | slot      |                                 | The notice row's spanning cell.                                                                           |
+| `ui-table__loader`               | slot      |                                 | The loading row after the rows while more load.                                                           |
+| `ui-table__footer`               | slot      |                                 | The summary row group (React Aria's table footer).                                                        |
+| `ui-table__footer-row`           | slot      |                                 | The summary row.                                                                                          |
+| `ui-table__footer-cell`          | slot      |                                 | One summary cell.                                                                                         |
+| `ui-table__action-row`           | slot      |                                 | The final nonselectable ordinary-content row.                                                             |
+| `ui-table__action-cell`          | slot      |                                 | Its full-width content cell.                                                                              |
+| `ui-table__pagination`           | slot      |                                 | The page navigation under a paginated grid (also `ui-pagination`).                                        |
+| `ui-table__selection-bar`        | slot      |                                 | The bar above the grid while rows are selected (also `ui-action-row`).                                    |
+| `ui-table__bulk-edit`            | slot      |                                 | The bulk edit dialog (also `ui-modal`).                                                                   |
+| `data-size`                      | attribute | `sm`, `md`                      | Row height, on the root.                                                                                  |
+| `data-kind`                      | attribute | `data`, `selection`, `actions`  | What a column header, cell or summary cell holds.                                                         |
+| `data-align`                     | attribute | `start`, `center`, `end`        | A data column's alignment, on its header and cells.                                                       |
+| `data-column`                    | attribute |                                 | A data column's id, on its header and cells.                                                              |
+| `data-sizing`                    | attribute | `content`, `flex`, `fixed`      | The effective sizing mode of a data column header.                                                        |
+| `data-pinned`                    | attribute | `start`, `end`, `top`, `bottom` | The edge a pinned column's header and cells (`start`, `end`), or a pinned row (`top`, `bottom`), stay at. |
+| `data-wrap`                      | attribute | `nowrap`, `wrap`, `anywhere`    | How a data column's cells, summary and aggregate cells wrap their text.                                   |
+| `data-sort-priority`             | attribute |                                 | A sorted header's place in a sort by several columns, from 1.                                             |
+| `data-count`                     | attribute |                                 | The number of dragged rows, on the drag preview.                                                          |
+| `data-variant`                   | attribute | `loading`, `empty`, `error`     | Which notice the notice row shows.                                                                        |
+| `data-sort-direction`            | attribute | `ascending`, `descending`       | The sorted column's direction (React Aria).                                                               |
+| `data-resizable-direction`       | attribute | `left`, `right`, `both`         | Which ways a column can still be resized (React Aria).                                                    |
+| `data-selection-mode`            | attribute | `single`, `multiple`            | The table's selection mode, on rows (React Aria).                                                         |
+| `data-key`                       | attribute |                                 | Opaque collection key (React Aria): not the `id`, not for styling.                                        |
+| `data-collection`                | attribute |                                 | React Aria's collection identifier; not for styling.                                                      |
+| `data-column-index`              | attribute |                                 | A cell's column index (React Aria).                                                                       |
+| `data-level`                     | attribute |                                 | A row's or cell's nesting level, from 1 (React Aria).                                                     |
+| `data-sticky-header`             | state     | `true`                          | The header stays in view, on the root.                                                                    |
+| `data-virtualized`               | state     | `true`                          | Only the rows in view render, on the root.                                                                |
+| `data-reordering`                | state     | `true`                          | The table reorders its rows now, on the root.                                                             |
+| `data-empty`                     | state     | `true`                          | The search field has no query (React Aria).                                                               |
+| `data-allows-sorting`            | state     | `true`                          | A sortable column header (React Aria).                                                                    |
+| `data-allows-reordering`         | state     | `true`                          | A column header whose column can move.                                                                    |
+| `data-drop-position`             | state     | `before`, `after`               | The header a dragged column would land beside, and on which side.                                         |
+| `data-filtered`                  | state     | `true`                          | A header whose column filters the rows.                                                                   |
+| `data-ungrouped`                 | state     | `true`                          | A group row cell over columns without a group.                                                            |
+| `data-editing`                   | state     | `true`                          | The cell whose editor is open.                                                                            |
+| `data-invalid`                   | state     | `true`                          | The default editor while the column refuses its value.                                                    |
+| `data-in-range`                  | state     | `true`                          | A selected cell in spreadsheet mode.                                                                      |
+| `data-range-top`                 | state     | `true`                          | A selected cell on the top edge of the selection.                                                         |
+| `data-range-bottom`              | state     | `true`                          | A selected cell on the bottom edge of the selection.                                                      |
+| `data-range-start`               | state     | `true`                          | A selected cell on the start edge of the selection.                                                       |
+| `data-range-end`                 | state     | `true`                          | A selected cell on the end edge of the selection.                                                         |
+| `data-fill-target`               | state     | `true`                          | A cell a dragged fill handle would fill.                                                                  |
+| `data-tree-column`               | state     | `true`                          | A cell of the tree column (React Aria).                                                                   |
+| `data-has-child-items`           | state     | `true`                          | A row with nested or detail rows, and its cells (React Aria).                                             |
+| `data-expanded`                  | state     | `true`                          | An expanded row and its cells (React Aria).                                                               |
+| `data-allows-dragging`           | state     | `true`                          | React Aria's drag support, on every grid: use `data-reordering`.                                          |
+| `data-dragging`                  | state     | `true`                          | A row being dragged (React Aria), or a column header whose column drags.                                  |
+| `data-drop-target`               | state     | `true`                          | The drop indicator or grid targeted by a drag (React Aria).                                               |
+| `data-resizing`                  | state     | `true`                          | A resizer being resized, or a virtualized column (React Aria).                                            |
+| `data-selected`                  | state     | `true`                          | A selected row or checked checkbox (React Aria).                                                          |
+| `data-indeterminate`             | state     | `true`                          | The header checkbox while some rows are selected (React Aria).                                            |
+| `data-disabled`                  | state     | `true`                          | A disabled row, checkbox or drag handle (React Aria).                                                     |
+| `data-hovered`                   | state     | `true`                          | Pointer over a row, header, resizer or control (React Aria).                                              |
+| `data-pressed`                   | state     | `true`                          | A row, header or control being pressed (React Aria).                                                      |
+| `data-focused`                   | state     | `true`                          | A focused grid, header, row, cell or control (React Aria).                                                |
+| `data-focus-visible`             | state     | `true`                          | Keyboard focus on a grid, header, row, cell or control (React Aria).                                      |
+| `data-focus-visible-within`      | state     | `true`                          | Keyboard focus inside a row (React Aria).                                                                 |
+| `data-focus-visible-within-row`  | state     | `true`                          | Keyboard focus inside a cell's row, on the cell (React Aria).                                             |
+| `--ui-table-pin-offset`          | property  |                                 | A pinned header's or cell's distance from its edge, in pixels.                                            |
+| `--ui-table-row-offset`          | property  |                                 | A static table's pinned row's distance from its edge, in pixels.                                          |
+| `--ui-table-columns`             | property  |                                 | A static table grid's column tracks, for `grid-template-columns`.                                         |
+| `--ui-table-span`                | property  |                                 | A group header cell's number of columns.                                                                  |
+| `--ui-table-level`               | property  |                                 | A tree column or group header cell's nesting level, from 1.                                               |

@@ -2,11 +2,16 @@ import type { Key } from '../../core/props.js';
 import { mapTree } from '../../utils/map-tree.js';
 import type { TableRow } from './table-rows.js';
 
+/** The edge of the body a pinned row stays at. */
+export type TableRowPin = 'top' | 'bottom';
+
 /** A row with the child rows the table presents under it, keyed by the row's id. */
 export interface TableNode<T> {
   id: Key;
   row: T;
   children: readonly TableNode<T>[];
+  /** The edge a pinned row stays at; a pinned row draws without child or detail rows. */
+  pin?: TableRowPin | undefined;
 }
 
 /** Reads a row's child rows; without one every row is a leaf. */
