@@ -10,6 +10,8 @@ import { tourHooks as hooks } from './tour-hooks.js';
 interface TourSpotlightProps {
   /** The element the step points at; without one the spotlight is an empty point at the centre. */
   target: Element | null;
+  /** While the step gets its target ready: the spotlight waits at the centre. */
+  isPending: boolean;
   /** The spotlight element once rendered, which anchors the popover of a step without a target. */
   element: HTMLDivElement | null;
   /** Receives the spotlight element. */
@@ -73,12 +75,15 @@ function useSpotlightBox(target: Element | null, element: HTMLDivElement | null)
  * stylesheet draws as a spotlight (for example a ring with a wide shadow dimming the page). It
  * never takes pointer events, so the target stays reachable in a non-modal tour.
  */
-export function TourSpotlight({ target, spotlightRef, element }: TourSpotlightProps) {
+export function TourSpotlight({ target, isPending, spotlightRef, element }: TourSpotlightProps) {
   const box = useSpotlightBox(target, element);
   return (
     <Portal layer="modal">
       <div
-        {...hooks.slot('spotlight', { targetMissing: target === null })}
+        {...hooks.slot('spotlight', {
+          targetMissing: target === null && !isPending,
+          pending: isPending,
+        })}
         ref={spotlightRef}
         aria-hidden="true"
         style={{

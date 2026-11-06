@@ -122,3 +122,24 @@
     transition: none;
   }
 }
+
+.ui-tour__status:empty {
+  display: none;
+}
+
+.ui-tour__status {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-tour__status[data-status='failed'] {
+  color: var(--ref-danger);
+}
+
+.ui-tour__retry {
+  flex: none;
+}
+
+.ui-tour__spotlight[data-pending] {
+  box-shadow: 0 0 0 9999px var(--ref-scrim);
+}

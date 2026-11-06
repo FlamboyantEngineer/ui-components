@@ -248,6 +248,8 @@
   "optional": "Facultatif",
   "steps": "Étapes",
   "stepStatus": "{status, select, complete {Terminée} error {Contient des erreurs} other {Ignorée}}",
+  "tourStepPreparing": "Préparation de cette étape…",
+  "tourStepFailed": "Impossible d’afficher cette étape.",
   "attachFiles": "Joindre des fichiers",
   "insertEmoji": "Insérer un emoji",
   "composerMenu": "Ajouter et plus",
