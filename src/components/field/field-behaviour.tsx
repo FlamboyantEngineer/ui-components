@@ -107,6 +107,8 @@ interface FieldBehaviourOptions {
   controlRef: Ref<FieldControlHandle> | undefined;
   /** Called once focus has left the field. */
   onLeave: (() => void) | undefined;
+  /** The id of the form the field's inputs name, when it names one. */
+  form: string | undefined;
 }
 
 /**
@@ -122,7 +124,7 @@ export function useFieldBehaviour(
   useFieldRoot(getRoot);
   const onKeyDown = useFieldUndo(getRoot, state);
   const focus = useFieldLeave(state, slots, options);
-  useFieldFormBinding(state, slots, options.label);
+  useFieldFormBinding(state, slots, { label: options.label, form: options.form });
   useFieldControlHandle(options.controlRef, slots);
   useAutoFocus(options.autoFocus, slots);
   const help = useFieldHelpTooltip(

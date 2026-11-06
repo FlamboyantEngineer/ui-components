@@ -377,3 +377,39 @@ test('UIC-CHART-10.1 UIC-CHART-10.2 draws observations that keep their identity 
   await demo.getByRole('button', { name: 'Show as table' }).click();
   await expect(demo.getByRole('row')).toHaveCount(10);
 });
+
+test('UIC-CHART-11.1 UIC-CHART-11.2 UIC-CHART-11.3 draws a quarter of days by week, moves by day and week, and replaces its data', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('chart');
+  const demo = page.locator('[data-lab-demo="calendar-heatmap"]');
+  const cells = demo.locator('.ui-calendar-heatmap__cell');
+  await expect(cells).toHaveCount(91);
+  const leap = demo.getByRole('img', { name: /^Feb 29, 2028: / });
+  await expect(leap).toHaveCount(1);
+  await expect(demo.getByRole('img', { name: 'Feb 10, 2028: 48' })).toHaveAttribute(
+    'data-outlier',
+    'high',
+  );
+  await expect(demo.locator('.ui-calendar-heatmap__cell[data-state="missing"]')).toHaveCount(5);
+  await expect(demo.locator('.ui-calendar-heatmap__cell[data-state="absent"]')).toHaveCount(3);
+  // 2028-02-29 is a Tuesday: one row below Monday's.
+  const mondayY = Number(await leap.getAttribute('y'));
+  await leap.focus();
+  await page.keyboard.press('ArrowUp');
+  await expect(demo.getByRole('img', { name: /^Feb 28, 2028: / })).toBeFocused();
+  await page.keyboard.press('ArrowRight');
+  await expect(demo.getByRole('img', { name: /^Mar 6, 2028: / })).toBeFocused();
+  await expect(page.getByRole('tooltip')).toContainText('Mar 6, 2028');
+  await demo.getByText('Weeks start on Monday').click();
+  await expect(leap).not.toHaveAttribute('y', String(mondayY));
+  for (const cell of await cells.all()) {
+    await expect(cell).not.toHaveAttribute('x', /NaN|Infinity/);
+  }
+  await demo.getByRole('button', { name: 'Next quarter' }).click();
+  await expect(demo.getByRole('img', { name: /^Apr 1, 2028: / })).toHaveCount(1);
+  await expect(leap).toHaveCount(0);
+  await demo.getByRole('button', { name: 'Show as table' }).click();
+  await expect(demo.getByRole('row')).toHaveCount(89);
+});

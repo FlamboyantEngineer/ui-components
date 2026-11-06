@@ -30,6 +30,16 @@ export const donutChartHooks = createHooks('donut-chart', ['slice', 'total']);
 
 export const scatterChartHooks = createHooks('scatter-chart', ['point']);
 
+export const calendarHeatmapHooks = createHooks('calendar-heatmap', [
+  'cell',
+  'month',
+  'weekday',
+  'legend',
+  'legend-item',
+  'legend-swatch',
+  'legend-label',
+]);
+
 export const chartAxisHooks = createHooks('chart-axis', ['line', 'tick', 'label', 'grid']);
 
 export const chartLegendHooks = createHooks('chart-legend', ['item', 'swatch', 'label']);

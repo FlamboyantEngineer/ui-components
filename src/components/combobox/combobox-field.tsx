@@ -168,14 +168,15 @@ export function ComboboxField({
 export function ComboboxInputs({
   name,
   isDisabled,
-  isCustom,
+  owner: { form, allowsCustomValue },
 }: {
   name: string | undefined;
   isDisabled: boolean | undefined;
-  isCustom: boolean | undefined;
+  /** The combobox's native form, and whether its own input submits a custom value instead. */
+  owner: { form?: string | undefined; allowsCustomValue?: boolean | undefined };
 }) {
   const state = useContext(ComboBoxStateContext);
-  if (!name || isCustom) return null;
+  if (!name || allowsCustomValue) return null;
   const value = state?.value ?? null;
   const submitted =
     value === null
@@ -183,5 +184,5 @@ export function ComboboxInputs({
       : typeof value === 'object'
         ? value.map((key) => String(fromCollectionKey(key)))
         : String(fromCollectionKey(value));
-  return <FieldFormValue name={name} value={submitted} isDisabled={isDisabled} />;
+  return <FieldFormValue name={name} value={submitted} isDisabled={isDisabled} form={form} />;
 }

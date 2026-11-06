@@ -328,3 +328,98 @@
 .ui-chart-legend__label {
   white-space: nowrap;
 }
+
+/* Calendar heatmap: one hue at rising strength; missing days dashed, absent days faded. */
+.ui-calendar-heatmap {
+  --ref-chart-heat: var(--ref-category-0);
+  color: var(--ref-text);
+}
+
+.ui-calendar-heatmap .ui-chart__body {
+  overflow-x: auto;
+}
+
+.ui-calendar-heatmap__cell,
+.ui-calendar-heatmap__legend-swatch {
+  --ref-chart-heat-strength: 0%;
+  fill: color-mix(in srgb, var(--ref-chart-heat) var(--ref-chart-heat-strength), var(--ref-canvas));
+  background: color-mix(
+    in srgb,
+    var(--ref-chart-heat) var(--ref-chart-heat-strength),
+    var(--ref-canvas)
+  );
+  stroke: var(--ref-border);
+  stroke-width: 1px;
+}
+
+.ui-calendar-heatmap__cell {
+  cursor: default;
+  outline: none;
+}
+
+:is(.ui-calendar-heatmap__cell, .ui-calendar-heatmap__legend-swatch)[data-level='1'] {
+  --ref-chart-heat-strength: 25%;
+}
+
+:is(.ui-calendar-heatmap__cell, .ui-calendar-heatmap__legend-swatch)[data-level='2'] {
+  --ref-chart-heat-strength: 50%;
+}
+
+:is(.ui-calendar-heatmap__cell, .ui-calendar-heatmap__legend-swatch)[data-level='3'] {
+  --ref-chart-heat-strength: 75%;
+}
+
+:is(.ui-calendar-heatmap__cell, .ui-calendar-heatmap__legend-swatch)[data-level='4'] {
+  --ref-chart-heat-strength: 100%;
+}
+
+:is(.ui-calendar-heatmap__cell, .ui-calendar-heatmap__legend-swatch)[data-state='missing'] {
+  stroke-dasharray: 2 2;
+  border-style: dashed;
+}
+
+:is(.ui-calendar-heatmap__cell, .ui-calendar-heatmap__legend-swatch)[data-state='absent'] {
+  opacity: var(--ref-disabled-opacity);
+}
+
+.ui-calendar-heatmap__cell[data-active] {
+  stroke: var(--ref-text);
+}
+
+.ui-calendar-heatmap__cell:focus-visible {
+  stroke: var(--ref-focus);
+  stroke-width: 2px;
+}
+
+.ui-calendar-heatmap__month,
+.ui-calendar-heatmap__weekday {
+  fill: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-calendar-heatmap__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-calendar-heatmap__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ui-calendar-heatmap__legend-swatch {
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius-xs);
+}
+
+.ui-calendar-heatmap__legend-label {
+  color: var(--ref-text);
+}

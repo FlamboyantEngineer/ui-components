@@ -2,7 +2,12 @@
 
 import { Fragment } from 'react';
 import { Input, NumberField as AriaNumberField } from '../../primitives/index.js';
-import { type FieldControlProps, type FieldState, toAriaControlProps } from '../field/field.js';
+import {
+  type FieldControlProps,
+  type FieldState,
+  toAriaControlProps,
+  useFieldFormOwner,
+} from '../field/field.js';
 import { numberFieldHooks as hooks } from './number-field-parts.js';
 
 type EndpointValue = number | [number, number];
@@ -47,6 +52,7 @@ export function NumberEndpoints<T extends EndpointValue>({
 }: NumberEndpointsProps<T>) {
   const values = toList(state.value);
   const field = toAriaControlProps(control);
+  const form = useFieldFormOwner();
   const isLocked = state.isReadOnly || state.isDisabled;
   const change = (index: number, typed: number) => {
     if (isLocked || Number.isNaN(typed)) return;
@@ -74,6 +80,7 @@ export function NumberEndpoints<T extends EndpointValue>({
             isDisabled={field.isDisabled}
             isReadOnly={state.isReadOnly}
             name={names[index]}
+            form={form}
             minValue={rules.minValue}
             maxValue={rules.maxValue}
             step={rules.step}

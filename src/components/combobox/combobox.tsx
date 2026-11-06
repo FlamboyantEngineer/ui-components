@@ -77,6 +77,8 @@ export interface ComboboxProps<M extends ComboboxSelectionMode = 'single'>
   isRequired?: boolean | undefined;
   /** The form name the picked option's id is submitted under. */
   name?: string | undefined;
+  /** The id of the native form the submitted value belongs to, wherever the combobox sits. */
+  form?: string | undefined;
   /** Called when the end of the list scrolls into view, to load more suggestions. */
   onLoadMore?: (() => void) | undefined;
   /** More suggestions are loading: the list ends with a loading row. */
@@ -283,7 +285,7 @@ export function Combobox<M extends ComboboxSelectionMode = 'single'>({
           input={{ ref: input, setRef: setInput }}
         />
         <ComboboxMessages description={description} errorMessage={errorMessage} />
-        <ComboboxInputs name={name} isDisabled={isDisabled} isCustom={aria.allowsCustomValue} />
+        <ComboboxInputs name={name} isDisabled={isDisabled} owner={aria} />
         <ComboboxSuggestions
           {...list}
           size={size}

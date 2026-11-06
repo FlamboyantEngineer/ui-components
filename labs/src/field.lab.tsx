@@ -29,6 +29,7 @@ import {
   OwnHistory,
   PreviousValues,
 } from './field-custom-control-cases.js';
+import { FieldFormAssociationSection } from './field-form-association-cases.js';
 import { HelpFromMenu, MenuEverywhere, MenuIcons } from './field-menu-cases.js';
 import { fieldLayouts, type FieldStateName, fieldStates } from './field-states.js';
 import { TooltipMessagesSection } from './field-tooltip-cases.js';
@@ -509,6 +510,7 @@ mountLab(
     </LabSection>
     <CompactFieldsSection />
     <TooltipMessagesSection />
+    <FieldFormAssociationSection />
     <LabSection title="Dirty and restore" description="Restore puts the committed value back.">
       <DirtyAndRestore />
     </LabSection>

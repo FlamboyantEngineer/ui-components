@@ -179,6 +179,11 @@
   outline: none;
 }
 
+/* A virtualized list takes the popover's width instead of sizing it from rows it lays out to that width. */
+.ui-select-field__listbox[data-virtualized] {
+  contain: inline-size;
+}
+
 /* A group's options follow its heading; a rule sets each group apart from what precedes it. */
 .ui-select-field__section {
   display: grid;

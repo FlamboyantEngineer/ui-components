@@ -63,7 +63,7 @@ function OptionList(props: SelectListProps) {
   const display = { isMultiple, blockedKeys, renderOption };
   const list = (
     <ListBox
-      className={hooks.slotClass('listbox')}
+      {...hooks.slot('listbox', { virtualized: props.isVirtualized })}
       // Bulk edits require a fresh press on the option, not the trigger's opening release.
       shouldSelectOnPressUp={!isMultiple}
       renderEmptyState={() => <span {...hooks.slot('empty')}>{emptyMessage}</span>}

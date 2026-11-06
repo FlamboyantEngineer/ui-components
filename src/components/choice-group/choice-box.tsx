@@ -22,6 +22,7 @@ import {
   FieldFormValue,
   type FieldState,
   toAriaControlProps,
+  useFieldFormOwner,
 } from '../field/field.js';
 import { ChoiceContext, type ChoiceGroupProps } from './choice-group.js';
 import { choiceGroupHooks as hooks } from './choice-group-hooks.js';
@@ -158,6 +159,7 @@ export function ChoiceBox({
   const { selectionMode } = useContext(ChoiceContext);
   const { selectAllLabel, orientation = 'vertical', ...rest } = config;
   const aria = toAriaControlProps(control);
+  const form = useFieldFormOwner();
   const pick = (value: string | string[]) => {
     state.setValue(value);
     state.commit();
@@ -169,6 +171,7 @@ export function ChoiceBox({
         {...aria}
         {...hooks.slot('box')}
         orientation={orientation}
+        form={form}
         ref={box}
         value={typeof state.value === 'string' ? state.value : null}
         onChange={pick}
@@ -183,6 +186,7 @@ export function ChoiceBox({
       {...rest}
       {...groupAria}
       {...hooks.slot('box', { orientation })}
+      form={form}
       ref={box}
       value={Array.isArray(state.value) ? state.value : []}
       onChange={pick}

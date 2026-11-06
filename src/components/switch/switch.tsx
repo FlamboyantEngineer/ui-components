@@ -18,6 +18,8 @@ export interface SwitchProps extends BaseProps, RefProps<HTMLLabelElement>, Aria
   onChange?: ((isSelected: boolean) => void) | undefined;
   /** The form name the switch submits `value` under while on. */
   name?: string | undefined;
+  /** The id of the native form the switch belongs to, wherever it sits. */
+  form?: string | undefined;
   /** The value submitted while on. Defaults to `on`. */
   value?: string | undefined;
   /** Draws neither state: the thumb sits in the middle, as for an unset value. */

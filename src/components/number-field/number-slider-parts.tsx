@@ -21,6 +21,7 @@ import {
   isFieldValueEqual,
   toAriaControlProps,
   useFieldControl,
+  useFieldFormOwner,
 } from '../field/field.js';
 import { numberFieldHooks } from './number-field-parts.js';
 import { ScaledSlider } from './scaled-slider.js';
@@ -210,6 +211,7 @@ function SliderParts({
   inputRef,
   field,
 }: SliderPartsProps) {
+  const form = useFieldFormOwner();
   return (
     <>
       {valueLabel === 'output' ? <SliderOutput {...hooks.slot('output')} /> : null}
@@ -224,6 +226,7 @@ function SliderParts({
             {...hooks.slot('thumb')}
             index={index}
             name={thumbNames[index]}
+            form={form}
             aria-label={thumbLabels[index]}
             inputRef={index === 0 ? inputRef : undefined}
             // React Aria reports a thumb invalid only through this deprecated prop.

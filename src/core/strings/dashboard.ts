@@ -32,6 +32,20 @@ interface DashboardStrings {
   chartPoint: string;
   /** Heads the column of a scatter chart's table that names each observation's series. */
   chartSeries: string;
+  /** Heads a calendar heatmap table's column of days. */
+  chartDate: string;
+  /** Describes a calendar heatmap's days: how many, how many have values, the lowest and highest. */
+  heatmapSummary: (summary: { days: number; values: number; low: string; high: string }) => string;
+  /** Stands for the value of a calendar heatmap's day given without one. */
+  heatmapMissing: string;
+  /** Names a calendar heatmap's legend of levels. */
+  heatmapLegend: string;
+  /** Names a calendar heatmap's lowest level: the values at or below its bound. */
+  heatmapAtMost: (value: string) => string;
+  /** Names a calendar heatmap's highest level, which also holds values above the bounds. */
+  heatmapAtLeast: (value: string) => string;
+  /** Names a calendar heatmap level by the values it spans. */
+  heatmapRange: (from: string, to: string) => string;
   /** Describes a chart's reference line by its label and value. */
   chartReferenceLine: (label: string, value: string) => string;
   /** Describes a chart's reference band by its label and the values it spans. */
@@ -67,6 +81,10 @@ export const dashboardStrings = defineStrings<DashboardStrings>({
   chartSummary: (summary) => ({ ...summary }),
   chartValue: (series, at, value) => ({ series, at, value }),
   chartPointValue: (series, value) => ({ series, value }),
+  heatmapSummary: (summary) => ({ ...summary }),
+  heatmapAtMost: (value) => ({ value }),
+  heatmapAtLeast: (value) => ({ value }),
+  heatmapRange: (from, to) => ({ from, to }),
   chartCoordinates: (coordinates) => ({ ...coordinates }),
   chartReferenceLine: (label, value) => ({ label, value }),
   chartReferenceBand: (label, from, to) => ({ label, from, to }),

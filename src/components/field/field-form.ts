@@ -10,6 +10,7 @@ import { getTreeRoot } from '../../utils/owner-window.js';
 import type { SlotRegistry } from '../../utils/slot-registry.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { useStableArray } from '../../utils/use-stable-array.js';
+import { findFormById } from './field-form-owner.js';
 import { isOwnFieldTarget } from './field-root.js';
 import { useFieldScope } from './field-scope.js';
 import { fieldReset, type FieldResetContract, type FieldState } from './field-state.js';
@@ -84,13 +85,15 @@ function isValidatable(element: HTMLElement | null): element is ValidatableEleme
 }
 
 /**
- * The form the control belongs to: a native control's own `form` owner, null included, else the
- * form around the field.
+ * The form the control belongs to: the form the field's `form` names (none when it names no form),
+ * else a native control's own `form` owner, null included, else the form around the field.
  */
-function findForm(slots: FieldSlots): HTMLFormElement | null {
+function findForm(slots: FieldSlots, form: string | undefined): HTMLFormElement | null {
+  const root = slots.read('root');
+  if (form !== undefined) return root ? findFormById(root, form) : null;
   const control = slots.read('control');
   if (control && hasNativeFormOwner(control)) return control.form;
-  return slots.read('root')?.closest('form') ?? null;
+  return root?.closest('form') ?? null;
 }
 
 /** The change hold and value equality the field state keeps for a native reset, when it has them. */
@@ -108,7 +111,7 @@ function readResetContract(state: FieldState<unknown>): FieldResetContract<unkno
  * (`preventDefault`) changes nothing, and any other puts the initial value back unless the field's
  * own value equality finds it already there.
  */
-function useFormReset(state: FieldState<unknown>, slots: FieldSlots) {
+function useFormReset(state: FieldState<unknown>, slots: FieldSlots, form: string | undefined) {
   const latest = useLatest(state);
   const [initial] = useState(() => state.value);
   useEffect(() => {
@@ -130,8 +133,8 @@ function useFormReset(state: FieldState<unknown>, slots: FieldSlots) {
     const onReset = (event: Event) => {
       // The form that owns the control now, read at each reset, so a control moved to another
       // form (its `form` attribute, a form replaced) follows its current owner.
-      const form = findForm(slots);
-      if (!form || event.target !== form) return;
+      const owner = findForm(slots, form);
+      if (!owner || event.target !== owner) return;
       if (hold) hold.isHeld = true;
       view.clearTimeout(timer);
       timer = view.setTimeout(() => restore(event), 0);
@@ -142,7 +145,7 @@ function useFormReset(state: FieldState<unknown>, slots: FieldSlots) {
       if (hold) hold.isHeld = false;
       root.removeEventListener('reset', onReset, true);
     };
-  }, [slots, initial, latest]);
+  }, [slots, initial, latest, form]);
 }
 
 /**
@@ -154,7 +157,7 @@ function useFormReset(state: FieldState<unknown>, slots: FieldSlots) {
 export function useFieldFormBinding(
   state: FieldState<unknown>,
   slots: FieldSlots,
-  label: string,
+  { label, form }: { label: string; form: string | undefined },
 ): void {
   const { register, onIssuesChange, onValidityChange, reveal } = useFieldScope();
   const latest = useLatest({ state, label, reveal });
@@ -169,7 +172,7 @@ export function useFieldFormBinding(
       ? (state.realtimeValidation.message ?? '')
       : '';
   const isNative = state.validationBehavior === 'native';
-  useFormReset(state, slots);
+  useFormReset(state, slots, form);
 
   useEffect(() => {
     if (!register) return undefined;

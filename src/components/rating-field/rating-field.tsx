@@ -11,6 +11,7 @@ import {
   type FieldState,
   toAriaControlProps,
   useFieldControl,
+  useFieldFormOwner,
 } from '../field/field.js';
 import { resolveRatingMax } from './rating.js';
 import { ratingFieldHooks as hooks } from './rating-field-hooks.js';
@@ -58,6 +59,7 @@ function RatingGroup({ control, state, name, max, step, icon, emptyIcon }: Ratin
   const shown = preview !== null && !isLocked ? preview : pick;
   const focusTarget = pick ?? step;
   const group = useRef<HTMLDivElement>(null);
+  const form = useFieldFormOwner();
   // A restore or undo picks another rating while focus is on the old one: focus follows the pick.
   useLayoutEffect(() => {
     const element = group.current;
@@ -70,6 +72,7 @@ function RatingGroup({ control, state, name, max, step, icon, emptyIcon }: Ratin
       {...toAriaControlProps(control)}
       {...hooks.slot('group', { previewing: shown !== pick })}
       name={name}
+      form={form}
       orientation="horizontal"
       value={pick === null ? null : String(pick)}
       onChange={(next) => {
