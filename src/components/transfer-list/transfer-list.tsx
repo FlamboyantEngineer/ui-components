@@ -37,6 +37,10 @@ export interface TransferListProps extends RefProps<HTMLDivElement>, BaseProps, 
   reorderable?: boolean | undefined;
   /** Locks every row, filter and button. */
   isDisabled?: boolean | undefined;
+  /** Renders only each side's rows in view; the stylesheet must bound the lists' height. */
+  virtualized?: boolean | undefined;
+  /** Row height in pixels for virtualized sides. Defaults to the list view's 48. */
+  rowHeight?: number | undefined;
 }
 
 interface MoveButtonsProps {
@@ -77,6 +81,33 @@ function MoveButtons({ from, side, toLabel, onTransfer }: MoveButtonsProps) {
   );
 }
 
+interface ReorderButtonsProps {
+  up: { canStep: boolean; onStep: () => void };
+  down: { canStep: boolean; onStep: () => void };
+  isDisabled: boolean;
+}
+
+/** The chosen side's move up and move down buttons. */
+function ReorderButtons({ isDisabled, ...steps }: ReorderButtonsProps) {
+  const strings = useUiStrings();
+  return (
+    <div {...hooks.slot('reorder')}>
+      {(['up', 'down'] as const).map((direction) => (
+        <Button
+          key={direction}
+          icon={direction === 'up' ? ArrowUpGlyph : ArrowDownGlyph}
+          label={strings.moveItem(direction)}
+          tooltip={strings.moveItem(direction)}
+          size="sm"
+          variant="ghost"
+          isDisabled={isDisabled || !steps[direction].canStep}
+          onPress={steps[direction].onStep}
+        />
+      ))}
+    </div>
+  );
+}
+
 /**
  * Chooses a subset of items, in order, between two lists: the available items and the chosen ones.
  * Each side filters its rows, counts them and selects several (Shift and Ctrl or Cmd); buttons move
@@ -93,6 +124,8 @@ export function TransferList({
   disabledKeys,
   reorderable = false,
   isDisabled = false,
+  virtualized = false,
+  rowHeight,
   className,
   id,
   ...rest
@@ -113,30 +146,23 @@ export function TransferList({
     filterText: sides[side].filterText,
     disabledKeys: model.blocked,
     isDisabled,
+    virtualized,
+    rowHeight,
     onSelectionChange: (keys: Parameters<typeof model.select>[1]) => model.select(side, keys),
     onAction: (key: Key) => model.act(side, key),
     onFilterTextChange: (text: string) => model.filter(side, text),
   });
   const reorderTools = reorderable ? (
-    <div {...hooks.slot('reorder')}>
-      {(['up', 'down'] as const).map((direction) => (
-        <Button
-          key={direction}
-          icon={direction === 'up' ? ArrowUpGlyph : ArrowDownGlyph}
-          label={strings.moveItem(direction)}
-          tooltip={strings.moveItem(direction)}
-          size="sm"
-          variant="ghost"
-          isDisabled={isDisabled || !model[direction].canStep}
-          onPress={model[direction].onStep}
-        />
-      ))}
-    </div>
+    <ReorderButtons up={model.up} down={model.down} isDisabled={isDisabled} />
   ) : null;
   return (
     <div
       {...rest}
-      {...hooks.root({ className, props: rest, data: { reorderable, disabled: isDisabled } })}
+      {...hooks.root({
+        className,
+        props: rest,
+        data: { reorderable, disabled: isDisabled, virtualized },
+      })}
       id={id}
       role="group"
     >

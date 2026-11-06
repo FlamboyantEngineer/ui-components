@@ -99,6 +99,30 @@ function Itinerary() {
   );
 }
 
+const manyItems: TransferListItem[] = Array.from({ length: 5000 }, (_, index) => ({
+  id: index + 1,
+  label: `Record ${String(index + 1).padStart(4, '0')}`,
+}));
+
+function ManyRecords() {
+  const [value, setValue] = useState<Key[]>([]);
+  return (
+    <>
+      <TransferList
+        aria-label="Records"
+        items={manyItems}
+        value={value}
+        onChange={setValue}
+        virtualized
+        rowHeight={40}
+        reorderable
+        data-lab-field="records"
+      />
+      <Output name="records" value={`${value.length} chosen`} />
+    </>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -118,6 +142,12 @@ mountLab(
       description="Every word must match, ignoring case and accents; spaces, slashes, underscores and dashes separate words. Move every shown row, or select several with Shift and Ctrl or Cmd."
     >
       <Itinerary />
+    </LabSection>
+    <LabSection
+      title="Virtualized sides"
+      description="5,000 records: each side renders only the rows in view and scrolls on its own, while filtering, Ctrl+A and Move all reach every shown record."
+    >
+      <ManyRecords />
     </LabSection>
   </>,
 );

@@ -316,4 +316,49 @@ describe('TransferList', () => {
     expect(screen.getByRole('searchbox', { name: 'Filter available' })).toBeDisabled();
     expectHooksMatchSpec(container, 'TRANSFER-LIST');
   });
+
+  // Laying out two virtual lists in jsdom is slow on a busy machine.
+  it(
+    'UIC-TRANSFER-LIST-1.5 renders bounded rows per side and moves every shown item',
+    { timeout: 15_000 },
+    async () => {
+      const user = userEvent.setup();
+      const sizes = { clientWidth: 300, clientHeight: 200 };
+      for (const [name, value] of Object.entries(sizes)) {
+        Object.defineProperty(HTMLElement.prototype, name, {
+          configurable: true,
+          get: () => value,
+        });
+      }
+      const many = Array.from({ length: 2000 }, (_, index) => ({
+        id: index,
+        label: `Item ${index}`,
+      }));
+      const onChange = vi.fn();
+      try {
+        const { container } = render(
+          <TransferList
+            aria-label="Many"
+            items={many}
+            defaultValue={[1999]}
+            onChange={onChange}
+            virtualized
+            rowHeight={40}
+          />,
+        );
+        expect(container.firstElementChild).toHaveAttribute('data-virtualized', 'true');
+        const shown = within(side('Available')).getAllByRole('row');
+        expect(shown.length).toBeLessThan(40);
+        expect(side('Available')).toHaveAccessibleDescription('1,999 items');
+        await user.click(screen.getByRole('button', { name: 'Move all to chosen' }));
+        const value = onChange.mock.lastCall?.[0] as Key[];
+        expect(value).toHaveLength(2000);
+        expect(value.slice(0, 2)).toEqual([1999, 0]);
+        expect(side('Chosen')).toHaveAccessibleDescription('2,000 items, 1,999 selected');
+        expect(within(side('Chosen')).getAllByRole('row').length).toBeLessThan(40);
+      } finally {
+        for (const name of Object.keys(sizes)) Reflect.deleteProperty(HTMLElement.prototype, name);
+      }
+    },
+  );
 });

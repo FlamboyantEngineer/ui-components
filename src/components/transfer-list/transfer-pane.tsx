@@ -39,6 +39,8 @@ interface TransferPaneProps {
   onFilterTextChange: (text: string) => void;
   disabledKeys: ReadonlySet<Key>;
   isDisabled: boolean;
+  virtualized: boolean;
+  rowHeight?: number | undefined;
   /** Reorders the side's rows by drag and drop, when set. */
   onReorder?: ((drop: TransferDrop) => void) | undefined;
   /** Controls under the side's header, such as the reorder buttons. */
@@ -61,6 +63,8 @@ export function TransferPane({
   onFilterTextChange,
   disabledKeys,
   isDisabled,
+  virtualized,
+  rowHeight,
   onReorder,
   tools,
 }: TransferPaneProps) {
@@ -100,6 +104,8 @@ export function TransferPane({
         onSelectionChange={onSelectionChange}
         disabledKeys={disabledKeys}
         onAction={onAction}
+        virtualized={virtualized}
+        rowHeight={rowHeight}
         reorder={onReorder ? { onMove: onReorder } : undefined}
         renderEmptyState={() => (
           <span {...hooks.slot('empty')}>
