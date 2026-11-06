@@ -80,6 +80,19 @@ export function getMonthWeeks(day: string, locale: string): string[][] {
   return weeks;
 }
 
+/** The unit a view's toolbar and PageUp/PageDown move the focused day by. */
+const periodUnits: Readonly<Record<CalendarViewMode, keyof DayShift>> = {
+  month: 'months',
+  week: 'weeks',
+  day: 'days',
+  agenda: 'weeks',
+};
+
+/** The day `step` periods of `mode` away from `day`: months, weeks, or days. */
+export function shiftPeriod(day: string, mode: CalendarViewMode, step: number): string {
+  return shiftDay(day, { [periodUnits[mode]]: step });
+}
+
 /** Whether two days fall in the same month. */
 export function isSameMonth(first: string, second: string): boolean {
   return first.slice(0, 7) === second.slice(0, 7);
@@ -95,7 +108,6 @@ export function moveFocusedDay(
     locale,
   }: { key: string; mode: CalendarViewMode; isRightToLeft: boolean; locale: string },
 ): string | null {
-  const period = mode === 'month' ? 'months' : 'weeks';
   const moves: Readonly<Record<string, () => string>> = {
     ArrowLeft: () => shiftDay(day, { days: isRightToLeft ? 1 : -1 }),
     ArrowRight: () => shiftDay(day, { days: isRightToLeft ? -1 : 1 }),
@@ -103,8 +115,8 @@ export function moveFocusedDay(
     ArrowDown: () => shiftDay(day, { weeks: 1 }),
     Home: () => getWeekDays(day, locale)[0] ?? day,
     End: () => getWeekDays(day, locale)[6] ?? day,
-    PageUp: () => shiftDay(day, { [period]: -1 }),
-    PageDown: () => shiftDay(day, { [period]: 1 }),
+    PageUp: () => shiftPeriod(day, mode, -1),
+    PageDown: () => shiftPeriod(day, mode, 1),
   };
   return moves[key]?.() ?? null;
 }

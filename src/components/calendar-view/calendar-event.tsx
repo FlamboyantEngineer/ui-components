@@ -41,8 +41,11 @@ interface CalendarEventButtonProps {
   context: CalendarEventContext;
   /** Whether the event is in the Tab sequence: only the focused day's events are. */
   isTabbable: boolean;
-  /** The time shown before the title: the start, the range, or none. */
-  time: 'start' | 'range' | 'none';
+  /**
+   * The time shown before the title: the start, the range, none, or, in an agenda, the range or
+   * the days of a timed or a multi-day event and the provider's `allDay` string for a one-day event.
+   */
+  time: 'start' | 'range' | 'none' | 'agenda';
   /** Where it is drawn: a bar across days, a block on a time grid, or in a crowded day's list. */
   placement: EventPlacement | 'list';
   continuesBefore?: boolean | undefined;
@@ -77,15 +80,22 @@ interface CalendarMoreEventsProps {
 function formatTime(
   placed: PlacedEvent,
   time: CalendarEventButtonProps['time'],
-  format: CalendarFormat,
+  { format, allDay }: { format: CalendarFormat; allDay: string },
 ) {
+  if (time === 'agenda') {
+    const isOneDay = placed.isAllDay && placed.startDay === placed.endDay;
+    return isOneDay ? allDay : format.formatWhen(placed);
+  }
   if (time === 'none' || placed.isAllDay) return null;
   return time === 'start' ? format.formatTime(placed.start) : format.formatWhen(placed);
 }
 
+/** Where a focused event that leaves the view hands focus: its grid's day cell or its agenda day. */
+const eventHomeSelector = `${dayCellSelector}, [data-date][tabindex="-1"]`;
+
 /**
  * A focused event button that leaves the view (removed, or hidden behind a crowded day's more
- * button) hands focus to its day cell rather than dropping it on the page.
+ * button) hands focus to its day cell, or its agenda day, rather than dropping it on the page.
  */
 function useFocusHandoff() {
   const ref = useRef<HTMLElement>(null);
@@ -95,7 +105,7 @@ function useFocusHandoff() {
     const root = button?.getRootNode();
     return () => {
       if (button && isFocused(button, root)) {
-        button.closest<HTMLElement>(dayCellSelector)?.focus();
+        button.closest<HTMLElement>(eventHomeSelector)?.focus();
       }
     };
   }, []);
@@ -125,7 +135,8 @@ function EventText({
   time,
   context,
 }: Pick<CalendarEventButtonProps, 'placed' | 'time' | 'context'>) {
-  const shown = formatTime(placed, time, context.format);
+  const { allDay } = useUiStrings();
+  const shown = formatTime(placed, time, { format: context.format, allDay });
   return (
     <>
       {shown ? (

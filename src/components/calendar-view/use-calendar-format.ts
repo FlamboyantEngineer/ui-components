@@ -11,7 +11,10 @@ import type { CalendarViewMode } from './calendar-view.js';
 /** The texts a calendar view shows and reads out, in the provider's locale and the view's time zone. */
 export interface CalendarFormat {
   locale: string;
-  /** The month (`March 2026`) or the week (`Mar 1 – 7, 2026`) on show. */
+  /**
+   * The period on show: the month (`March 2026`), the week of the week or agenda view
+   * (`Mar 1 – 7, 2026`), or the day in full.
+   */
   formatTitle: (mode: CalendarViewMode, days: readonly string[], focused: string) => string;
   /** A day in full, such as `Monday, March 2, 2026`. */
   formatDay: (day: string) => string;
@@ -78,11 +81,9 @@ export function useCalendarFormat(timeZone: string): CalendarFormat {
       locale,
       formatTitle: (mode, days, focused) => {
         const [first, last] = [days[0] ?? focused, days.at(-1) ?? focused];
-        return n(
-          mode === 'month'
-            ? month.format(toDate(focused))
-            : weekRange.formatRange(toDate(first), toDate(last)),
-        );
+        if (mode === 'month') return n(month.format(toDate(focused)));
+        if (mode === 'day') return n(day.format(toDate(focused)));
+        return n(weekRange.formatRange(toDate(first), toDate(last)));
       },
       formatDay: (date) => n(day.format(toDate(date))),
       formatWeekday: (date) => ({

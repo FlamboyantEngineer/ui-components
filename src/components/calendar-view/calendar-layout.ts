@@ -100,26 +100,30 @@ function compareEvents(first: PlacedEvent, second: PlacedEvent): number {
   return first.start - second.start || first.event.title.localeCompare(second.event.title);
 }
 
-function findFreeLane(lanes: boolean[][], column: number, span: number): number {
-  const isFree = (lane: boolean[]) => lane.slice(column, column + span).every((taken) => !taken);
-  const index = lanes.findIndex(isFree);
-  if (index >= 0) return index;
-  lanes.push(Array.from({ length: 7 }, () => false));
-  return lanes.length - 1;
+/** The first lane whose columns from `column` across `span` are free, taking them; lanes hold taken columns. */
+function takeFreeLane(lanes: Array<Set<number>>, column: number, span: number): number {
+  const columns = Array.from({ length: span }, (_, index) => column + index);
+  const found = lanes.findIndex((lane) => columns.every((entry) => !lane.has(entry)));
+  const index = found >= 0 ? found : lanes.push(new Set()) - 1;
+  for (const entry of columns) lanes[index]?.add(entry);
+  return index;
 }
 
-/** The columns of a week an event covers, and whether it goes on past either end of the week. */
+/**
+ * The columns of a run of days (a week, or the one day of a day view) an event covers, and whether
+ * it goes on past either end of the run.
+ */
 function readWeekSpan(placed: PlacedEvent, days: readonly string[]) {
   const continuesBefore = placed.startDay < (days[0] ?? '');
   const continuesAfter = placed.endDay > (days.at(-1) ?? '');
   const column = continuesBefore ? 0 : days.indexOf(placed.startDay);
-  const end = continuesAfter ? 6 : days.indexOf(placed.endDay);
+  const end = continuesAfter ? days.length - 1 : days.indexOf(placed.endDay);
   return { column, span: end - column + 1, continuesBefore, continuesAfter };
 }
 
 /**
- * The events of a week as bars packed into lanes: each event takes the first lane free across the
- * days it covers in the week. With `spansOnly`, events within one day that are not all-day are left
+ * The events of a week, or of any run of days, as bars packed into lanes: each event takes the
+ * first lane free across the days it covers in the run. With `spansOnly`, events within one day that are not all-day are left
  * out (a week view draws them in its time grid). A preview takes no lane: it is drawn over the first
  * lane, so the bars, the dragged one among them, keep their lanes while it moves.
  */
@@ -133,14 +137,13 @@ export function layoutWeek(
   const inWeek = events.filter(
     (placed) => (!spansOnly || placed.isSpan) && placed.startDay <= last && placed.endDay >= first,
   );
-  const lanes: boolean[][] = [];
+  const lanes: Array<Set<number>> = [];
   const segments = inWeek
     .filter((placed) => !placed.isPreview)
     .sort(compareEvents)
     .map((placed) => {
       const { column, span, ...ends } = readWeekSpan(placed, days);
-      const lane = findFreeLane(lanes, column, span);
-      lanes[lane]?.fill(true, column, column + span);
+      const lane = takeFreeLane(lanes, column, span);
       return { placed, column, span, lane, ...ends };
     });
   const previews = inWeek
@@ -254,4 +257,39 @@ export function layoutDay(
     .filter((block) => block.placed.isPreview)
     .map((block) => ({ ...block, left: 0, width: 100 }));
   return [...packColumns(blocks), ...previews];
+}
+
+/** A day of an agenda and the events that cover it, in the order they are listed. */
+export interface AgendaDay {
+  date: string;
+  events: PlacedEvent[];
+}
+
+/** All-day events first, then by start, the shorter first, then by title. */
+function compareAgendaEvents(first: PlacedEvent, second: PlacedEvent): number {
+  if (first.isAllDay !== second.isAllDay) return first.isAllDay ? -1 : 1;
+  return (
+    first.start - second.start ||
+    first.end - second.end ||
+    first.event.title.localeCompare(second.event.title)
+  );
+}
+
+/**
+ * The days of an agenda, each with the events that cover it: an event over several days is listed
+ * on each of them. Days without events are left out unless `emptyDays` is `show`; previews of
+ * dragged events are never listed.
+ */
+export function layoutAgenda(
+  days: readonly string[],
+  events: readonly PlacedEvent[],
+  { emptyDays }: { emptyDays: 'hide' | 'show' },
+): AgendaDay[] {
+  const listed = events.filter((placed) => !placed.isPreview).sort(compareAgendaEvents);
+  return days
+    .map((date) => ({
+      date,
+      events: listed.filter((placed) => placed.startDay <= date && placed.endDay >= date),
+    }))
+    .filter((day) => emptyDays === 'show' || day.events.length > 0);
 }
