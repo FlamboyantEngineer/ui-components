@@ -74,7 +74,7 @@ export function PresetCalendar({ kind, value, bounds, today, onPick }: PresetCal
           if (range) pick({ start: range.start.toString(), end: range.end.toString() });
         }}
       >
-        <CalendarBody months={1} heading="text" />
+        <CalendarBody />
       </RangeCalendar>
     );
   }
@@ -85,7 +85,7 @@ export function PresetCalendar({ kind, value, bounds, today, onPick }: PresetCal
       value={values.date}
       onChange={(date: CalendarDate) => pick(date.toString())}
     >
-      <CalendarBody months={1} heading="text" />
+      <CalendarBody />
     </Calendar>
   );
 }

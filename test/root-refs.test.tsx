@@ -103,6 +103,7 @@ import {
 } from '../src/components/message-composer/index.js';
 import { MetaLine } from '../src/components/meta-line/meta-line.js';
 import { Modal } from '../src/components/modal/modal.js';
+import { MultiDateField } from '../src/components/multi-date-field/multi-date-field.js';
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -504,6 +505,10 @@ const fieldCases: Record<string, RootRefCase> = {
   DateTimeField: { element: (ref) => <DateTimeField ref={ref} label="Due" />, root: 'ui-field' },
   FileField: {
     element: (ref) => <FileField ref={ref} label="Attachments" onSelect={() => {}} />,
+    root: 'ui-field',
+  },
+  MultiDateField: {
+    element: (ref) => <MultiDateField ref={ref} label="Days" />,
     root: 'ui-field',
   },
   NumberField: { element: (ref) => <NumberField ref={ref} label="Count" />, root: 'ui-field' },

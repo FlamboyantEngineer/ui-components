@@ -1,29 +1,14 @@
 'use client';
 
-import { type ReactNode, useContext, useId } from 'react';
+import { type ReactNode, useContext } from 'react';
 import { useGetNow, useTimeZone } from '../../core/clock.js';
-import { ChevronLeftGlyph, ChevronRightGlyph } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
-import {
-  CalendarCell,
-  type CalendarDate,
-  CalendarGrid,
-  CalendarGridBody,
-  CalendarGridHeader,
-  CalendarHeaderCell,
-  Dialog,
-  Heading,
-  OverlayTriggerStateContext,
-  Popover,
-  useLocale,
-} from '../../primitives/index.js';
+import { Dialog, OverlayTriggerStateContext, Popover } from '../../primitives/index.js';
 import { DEFAULT_DROPDOWN_OFFSET, DEFAULT_OVERLAY_GUTTER } from '../../utils/overlay-defaults.js';
 import { Button } from '../button/button.js';
 import { PopoverPresence } from '../popover/popover.js';
 import { useLayerZIndex } from '../portal/portal.js';
 import { useCalendarAnchoring } from './calendar-anchoring.js';
-import { CalendarHeadingSelects } from './date-time-calendar-heading.js';
-import type { DateTimeFieldDateState } from './date-time-field.js';
 import { dateTimeFieldHooks as hooks } from './date-time-field-hooks.js';
 import type { DateControlSettings } from './date-time-pickers.js';
 import { currentDateValue, type DateFieldValue, type DateTimeFieldMode } from './date-values.js';
@@ -35,115 +20,11 @@ export interface DateTimeFieldPreset<V> {
   value: V;
 }
 
-/** How the calendar heading shows its month: as text, or as month and year selects. */
-export type DateTimeFieldCalendarHeading = 'text' | 'select';
-
 interface CalendarPopoverProps {
   mode: DateTimeFieldMode;
   settings: DateControlSettings;
   onPick: (value: DateFieldValue) => void;
   children: ReactNode;
-}
-
-function DateCell({
-  date,
-  state,
-}: {
-  date: CalendarDate;
-  state: DateTimeFieldDateState | undefined;
-}) {
-  const id = useId();
-  return (
-    <CalendarCell
-      date={date}
-      {...hooks.slot('calendar-cell', { tone: state?.tone, taken: state?.isTaken })}
-      render={(props) => (
-        <div
-          {...props}
-          aria-describedby={
-            [props['aria-describedby'], state?.description ? id : undefined]
-              .filter(Boolean)
-              .join(' ') || undefined
-          }
-        />
-      )}
-    >
-      {({ formattedDate }) => (
-        <>
-          {formattedDate}
-          {state?.description ? (
-            <span id={id} hidden>
-              {state.description}
-            </span>
-          ) : null}
-        </>
-      )}
-    </CalendarCell>
-  );
-}
-
-/** The heading (text or selects) with month navigation, and one grid per visible month. */
-export function CalendarBody({
-  months,
-  heading,
-  getDateState,
-}: {
-  months: number;
-  getDateState?: ((date: string) => DateTimeFieldDateState | undefined) | undefined;
-  heading: DateTimeFieldCalendarHeading;
-}) {
-  const strings = useUiStrings();
-  // Previous sits at the inline start and points there; right to left that is the right edge.
-  const isRtl = useLocale().direction === 'rtl';
-  return (
-    <>
-      {/* The month navigation is no page banner, wherever the calendar is drawn. */}
-      <header {...hooks.slot('calendar-header')} role="none">
-        <Button
-          slot="previous"
-          icon={isRtl ? ChevronRightGlyph : ChevronLeftGlyph}
-          label={strings.previous}
-          size="sm"
-          className={hooks.slotClass('calendar-nav')}
-        />
-        {heading === 'select' ? (
-          <CalendarHeadingSelects />
-        ) : (
-          <Heading className={hooks.slotClass('calendar-heading')} />
-        )}
-        <Button
-          slot="next"
-          icon={isRtl ? ChevronLeftGlyph : ChevronRightGlyph}
-          label={strings.next}
-          size="sm"
-          className={hooks.slotClass('calendar-nav')}
-        />
-      </header>
-      <div {...hooks.slot('calendar-months')}>
-        {Array.from({ length: months }, (_, offset) => (
-          <CalendarGrid
-            key={offset}
-            className={hooks.slotClass('calendar-grid')}
-            offset={offset > 0 ? { months: offset } : undefined}
-          >
-            <CalendarGridHeader className={hooks.slotClass('calendar-head')}>
-              {(day) => (
-                <CalendarHeaderCell className={hooks.slotClass('calendar-weekday')}>
-                  {day}
-                </CalendarHeaderCell>
-              )}
-            </CalendarGridHeader>
-            <CalendarGridBody className={hooks.slotClass('calendar-body')}>
-              {(date) => {
-                const state = getDateState?.(date.toString());
-                return <DateCell date={date} state={state} />;
-              }}
-            </CalendarGridBody>
-          </CalendarGrid>
-        ))}
-      </div>
-    </>
-  );
 }
 
 /**

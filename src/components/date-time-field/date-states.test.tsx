@@ -69,3 +69,101 @@ describe('calendar day states', () => {
     expect(onCommit).not.toHaveBeenCalled();
   });
 });
+
+const isHoliday = (date: string) => date === '2026-04-15';
+
+describe('ranges across unavailable days', () => {
+  it('UIC-DATE-TIME-FIELD-3.7 picks a range across an unavailable day by its available ends', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    render(
+      <UiProvider locale="en-US">
+        <DateTimeField
+          label="Work week"
+          mode="date-range"
+          rangeAvailability="endpoints"
+          defaultValue={{ start: '2026-04-06', end: '2026-04-07' }}
+          isDateUnavailable={isHoliday}
+          onCommit={onCommit}
+        />
+      </UiProvider>,
+    );
+    await user.click(screen.getByRole('button', { name: /Calendar/ }));
+    const dialog = screen.getByRole('dialog');
+    await user.click(within(dialog).getByRole('button', { name: /Monday, April 13, 2026/ }));
+    await user.click(within(dialog).getByRole('button', { name: /Friday, April 17, 2026/ }));
+    expect(onCommit).toHaveBeenCalledWith({ start: '2026-04-13', end: '2026-04-17' });
+    const holiday = within(dialog).getByRole('button', { name: /Wednesday, April 15, 2026/ });
+    expect(holiday).toHaveAttribute('data-unavailable', 'true');
+    expect(holiday).not.toHaveAttribute('data-selected');
+    expect(
+      within(dialog).getByRole('button', { name: /Thursday, April 16, 2026/ }),
+    ).toHaveAttribute('data-selected', 'true');
+  });
+
+  it('UIC-DATE-TIME-FIELD-3.7 refuses an unavailable end and keeps the contiguous rule by default', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    const { container, rerender } = render(
+      <UiProvider locale="en-US">
+        <DateTimeField
+          label="Work week"
+          mode="date-range"
+          rangeAvailability="endpoints"
+          value={{ start: '2026-04-13', end: '2026-04-15' }}
+          isDateUnavailable={isHoliday}
+          presets={[{ label: 'Holiday week', value: { start: '2026-04-13', end: '2026-04-17' } }]}
+          onCommit={onCommit}
+        />
+      </UiProvider>,
+    );
+    const root = container.querySelector('.ui-field');
+    expect(root).toHaveAttribute('data-validation', 'invalid');
+    await user.click(screen.getByRole('button', { name: /Calendar/ }));
+    expect(
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Holiday week' }),
+    ).toBeEnabled();
+    await user.keyboard('{Escape}');
+    rerender(
+      <UiProvider locale="en-US">
+        <DateTimeField
+          label="Work week"
+          mode="date-range"
+          value={{ start: '2026-04-13', end: '2026-04-17' }}
+          isDateUnavailable={isHoliday}
+          onCommit={onCommit}
+        />
+      </UiProvider>,
+    );
+    expect(root).toHaveAttribute('data-validation', 'invalid');
+    expect(screen.getByText('Choose an available date.')).toBeInTheDocument();
+  });
+
+  it('UIC-DATE-TIME-FIELD-3.7 submits the canonical interval and runs the caller validation on it', () => {
+    const validate = vi.fn(() => null);
+    const { container } = render(
+      <UiProvider locale="en-US">
+        <form>
+          <DateTimeField
+            label="Work week"
+            mode="date-range"
+            rangeAvailability="endpoints"
+            startName="from"
+            endName="to"
+            defaultValue={{ start: '2026-04-13', end: '2026-04-17' }}
+            isDateUnavailable={isHoliday}
+            validate={validate}
+          />
+        </form>
+      </UiProvider>,
+    );
+    expect(container.querySelector('.ui-field')).not.toHaveAttribute('data-validation', 'invalid');
+    expect(validate).toHaveBeenCalledWith({ start: '2026-04-13', end: '2026-04-17' });
+    const form = container.querySelector('form');
+    if (!form) throw new Error('no form');
+    expect([...new FormData(form).entries()]).toEqual([
+      ['from', '2026-04-13'],
+      ['to', '2026-04-17'],
+    ]);
+  });
+});

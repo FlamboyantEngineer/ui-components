@@ -186,6 +186,12 @@ interface FieldStrings {
   secondsColumn: string;
   /** Names the column of the day periods (AM and PM) in a time picker. */
   dayPeriodColumn: string;
+  /** Heads a calendar's column of week numbers, shortened, such as `Wk`. */
+  weekColumn: string;
+  /** Names a calendar row by its week number. */
+  weekNumber: (week: number) => string;
+  /** The message of a set of dates holding more dates than the field takes. */
+  tooManyDates: (maxValues: number) => string;
   /** The message of a date or time earlier than the field allows. */
   dateTooEarly: (minValue: string) => string;
   /** The message of a date or time later than the field allows. */
@@ -277,6 +283,8 @@ export const fieldStrings = defineStrings<FieldStrings>({
   duplicateValue: (value) => ({ value }),
   tooManyValues: (maxValues) => ({ maxValues }),
   characterPosition: (position, length) => ({ position, length }),
+  weekNumber: (week) => ({ week }),
+  tooManyDates: (maxValues) => ({ maxValues }),
   dateTooEarly: (minValue) => ({ minValue }),
   dateTooLate: (maxValue) => ({ maxValue }),
   lastPeriod: (period) => ({ period }),
