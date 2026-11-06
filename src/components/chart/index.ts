@@ -6,6 +6,7 @@ export type { ChartAxisPosition, ChartAxisProps } from './chart-axis.js';
 export { ChartAxis } from './chart-axis.js';
 export type { ChartHiddenKeysProps, ChartLegendProps } from './chart-legend.js';
 export { ChartLegend } from './chart-legend.js';
+export type { ChartReference, ChartReferenceBand, ChartReferenceLine } from './chart-references.js';
 export type { DonutChartProps, DonutChartSegment } from './donut-chart.js';
 export { DonutChart } from './donut-chart.js';
 export type {

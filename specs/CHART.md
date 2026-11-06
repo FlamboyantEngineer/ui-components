@@ -217,54 +217,77 @@ Axes, lines, areas and the donut's total shall add nothing assistive technology 
 Implementation: `src/components/chart/chart-axis.tsx`, `src/components/chart/line-chart.tsx`, `src/components/chart/donut-chart.tsx`
 Verification: `src/components/chart/chart.test.tsx`, `src/components/chart/line-chart.test.tsx`
 
+## UIC-CHART-9 - Reference lines and bands
+
+### UIC-CHART-9.1 - Placement
+
+`BarChart` and `LineChart` shall draw `references` along their value axis, and `LineChart` also `xReferences` along its x axis, read as the axis reads its points (dates in `timeZone`, or numbers). A reference is a line at a `value` (`type` `line`, the default) or a band between `from` and `to` (`type: 'band'`), with an `id` that keys it, a `label` drawn beside it and an optional `tone`. Each draws, in a `ui-chart__references` group under the values, a `ui-chart__reference` group (`data-kind` `line` or `band`, `data-axis` `y` for a value axis running up the plot, `x` for one running across it, as a horizontal bar chart's does, and `data-tone`) holding a `ui-chart__reference-line` or `ui-chart__reference-band` across the whole plot and a `ui-chart__reference-label`, at the inline end of a horizontal reference and the top of a vertical one, mirrored in right-to-left reading. References follow the axis as it changes, with the box size, the shown series and `minValue` and `maxValue`, but never stretch an automatic domain: a line beyond the axis draws nothing, a band is cut to the plot and draws nothing when none of it is inside, and a value that cannot be read on its axis (not a finite number, or a date on a number axis) draws nothing, so no reference produces invalid SVG coordinates. Labels that overlap draw over one another in the given order.
+
+Implementation: `src/components/chart/chart-references.tsx`, `src/components/chart/bar-chart.tsx`, `src/components/chart/bar-chart-model.ts`, `src/components/chart/line-chart.tsx`, `src/components/chart/line-chart-model.ts`
+Verification: `src/components/chart/chart-references.test.tsx`, `e2e/chart.spec.ts`
+
+### UIC-CHART-9.2 - Accessibility
+
+References shall be decorative in the drawing: their group is hidden from assistive technology and lets the pointer through (`pointer-events="none"`), so they never take focus, a tooltip or a press from the values. The generated summary lists them after the values with the provider's `chartSummaryReferences` string, each read with `chartReferenceLine` (label and value) or `chartReferenceBand` (label and range) in the chart's number or date format, joined as a list in the locale; a reference whose values cannot be read is left out. A caller's `summary` replaces it all.
+
+Implementation: `src/components/chart/chart-references.tsx`, `src/components/chart/chart-summary.ts`, `src/core/strings/dashboard.ts`
+Verification: `src/components/chart/chart-references.test.tsx`
+
 ## Hooks
 
-| Hook                       | Kind      | Values                                            | Description                                                                         |
-| -------------------------- | --------- | ------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| `ui-chart`                 | root      |                                                   | The figure; also on every bar, line and donut chart.                                |
-| `ui-chart__header`         | slot      |                                                   | The title and the view toggle.                                                      |
-| `ui-chart__title`          | slot      |                                                   | The visible label, when `label` is set.                                             |
-| `ui-chart__view-toggle`    | slot      |                                                   | The toggle button that shows the table.                                             |
-| `ui-chart__summary`        | slot      |                                                   | The text summary, visible with `showSummary`.                                       |
-| `ui-chart__body`           | slot      |                                                   | The drawing's container, in the chart view.                                         |
-| `ui-chart__plot`           | slot      |                                                   | The `<svg>` of a bar, line or donut chart.                                          |
-| `ui-chart__empty`          | slot      |                                                   | The text shown instead of a plot with no drawn value.                               |
-| `ui-chart__table`          | slot      |                                                   | The table view, alongside `ui-prose-table`.                                         |
-| `ui-chart__tooltip`        | slot      |                                                   | The tooltip panel of the hovered or focused value, alongside `ui-tooltip`.          |
-| `ui-chart__tooltip-title`  | slot      |                                                   | The value's category or x value.                                                    |
-| `ui-chart__tooltip-swatch` | slot      |                                                   | The decorative mark of the series' colour slot.                                     |
-| `ui-chart__tooltip-label`  | slot      |                                                   | The series' label.                                                                  |
-| `ui-chart__tooltip-value`  | slot      |                                                   | The formatted value.                                                                |
-| `ui-bar-chart`             | root      |                                                   | `BarChart`'s figure, alongside `ui-chart`.                                          |
-| `ui-bar-chart__bar`        | slot      |                                                   | One bar.                                                                            |
-| `ui-line-chart`            | root      |                                                   | `LineChart`'s figure, alongside `ui-chart`.                                         |
-| `ui-line-chart__line`      | slot      |                                                   | A series' line.                                                                     |
-| `ui-line-chart__area`      | slot      |                                                   | The area under a series' line, for `variant="area"`.                                |
-| `ui-line-chart__point`     | slot      |                                                   | A point on a finite value.                                                          |
-| `ui-donut-chart`           | root      |                                                   | `DonutChart`'s figure, alongside `ui-chart`.                                        |
-| `ui-donut-chart__slice`    | slot      |                                                   | One segment's ring slice.                                                           |
-| `ui-donut-chart__total`    | slot      |                                                   | The total in the middle.                                                            |
-| `ui-chart-axis`            | root      |                                                   | `ChartAxis`'s `<g>`.                                                                |
-| `ui-chart-axis__line`      | slot      |                                                   | The axis line.                                                                      |
-| `ui-chart-axis__tick`      | slot      |                                                   | A tick mark.                                                                        |
-| `ui-chart-axis__label`     | slot      |                                                   | A tick label.                                                                       |
-| `ui-chart-axis__grid`      | slot      |                                                   | A grid line across the drawing.                                                     |
-| `ui-chart-legend`          | root      |                                                   | `ChartLegend`'s group.                                                              |
-| `ui-chart-legend__item`    | slot      |                                                   | A series' toggle button.                                                            |
-| `ui-chart-legend__swatch`  | slot      |                                                   | The item's decorative colour mark.                                                  |
-| `ui-chart-legend__label`   | slot      |                                                   | The item's label.                                                                   |
-| `data-view`                | state     | `chart`, `table`                                  | The view the chart shows.                                                           |
-| `data-layout`              | attribute | `grouped`, `stacked`                              | How a bar chart sets out a category's bars.                                         |
-| `data-orientation`         | attribute | `vertical`, `horizontal`                          | The direction of a bar chart's bars; also on the legend group (React Aria).         |
-| `data-variant`             | attribute | `line`, `area`                                    | Lines, or lines over areas.                                                         |
-| `data-position`            | attribute | `bottom`, `left`                                  | The edge an axis runs along.                                                        |
-| `data-series`              | attribute |                                                   | The position of a mark's series, from 0.                                            |
-| `data-tone`                | attribute | `neutral`, `info`, `success`, `warning`, `danger` | A series' tone, when it has one.                                                    |
-| `data-active`              | state     | `true`                                            | The value hovered or focused, whose tooltip shows.                                  |
-| `data-empty`               | state     | `true`                                            | The chart draws no value.                                                           |
-| `data-selected`            | state     | `true`                                            | A shown series' legend item, or the view toggle while the table shows (React Aria). |
-| `data-hovered`             | state     | `true`                                            | The pointer is over a legend item or the view toggle (React Aria).                  |
-| `data-pressed`             | state     | `true`                                            | A legend item or the view toggle is pressed (React Aria).                           |
-| `data-focused`             | state     | `true`                                            | A legend item or the view toggle has focus (React Aria).                            |
-| `data-focus-visible`       | state     | `true`                                            | A legend item or the view toggle has keyboard focus (React Aria).                   |
-| `data-disabled`            | state     | `true`                                            | A legend item or the view toggle is disabled (React Aria).                          |
+| Hook                        | Kind      | Values                                            | Description                                                                         |
+| --------------------------- | --------- | ------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `ui-chart`                  | root      |                                                   | The figure; also on every bar, line and donut chart.                                |
+| `ui-chart__header`          | slot      |                                                   | The title and the view toggle.                                                      |
+| `ui-chart__title`           | slot      |                                                   | The visible label, when `label` is set.                                             |
+| `ui-chart__view-toggle`     | slot      |                                                   | The toggle button that shows the table.                                             |
+| `ui-chart__summary`         | slot      |                                                   | The text summary, visible with `showSummary`.                                       |
+| `ui-chart__body`            | slot      |                                                   | The drawing's container, in the chart view.                                         |
+| `ui-chart__plot`            | slot      |                                                   | The `<svg>` of a bar, line or donut chart.                                          |
+| `ui-chart__empty`           | slot      |                                                   | The text shown instead of a plot with no drawn value.                               |
+| `ui-chart__table`           | slot      |                                                   | The table view, alongside `ui-prose-table`.                                         |
+| `ui-chart__tooltip`         | slot      |                                                   | The tooltip panel of the hovered or focused value, alongside `ui-tooltip`.          |
+| `ui-chart__tooltip-title`   | slot      |                                                   | The value's category or x value.                                                    |
+| `ui-chart__tooltip-swatch`  | slot      |                                                   | The decorative mark of the series' colour slot.                                     |
+| `ui-chart__tooltip-label`   | slot      |                                                   | The series' label.                                                                  |
+| `ui-chart__tooltip-value`   | slot      |                                                   | The formatted value.                                                                |
+| `ui-chart__references`      | slot      |                                                   | The group of reference lines and bands, under the values.                           |
+| `ui-chart__reference`       | slot      |                                                   | One reference: its line or band and its label.                                      |
+| `ui-chart__reference-line`  | slot      |                                                   | A reference line across the plot.                                                   |
+| `ui-chart__reference-band`  | slot      |                                                   | A reference band across the plot.                                                   |
+| `ui-chart__reference-label` | slot      |                                                   | A reference's label.                                                                |
+| `ui-bar-chart`              | root      |                                                   | `BarChart`'s figure, alongside `ui-chart`.                                          |
+| `ui-bar-chart__bar`         | slot      |                                                   | One bar.                                                                            |
+| `ui-line-chart`             | root      |                                                   | `LineChart`'s figure, alongside `ui-chart`.                                         |
+| `ui-line-chart__line`       | slot      |                                                   | A series' line.                                                                     |
+| `ui-line-chart__area`       | slot      |                                                   | The area under a series' line, for `variant="area"`.                                |
+| `ui-line-chart__point`      | slot      |                                                   | A point on a finite value.                                                          |
+| `ui-donut-chart`            | root      |                                                   | `DonutChart`'s figure, alongside `ui-chart`.                                        |
+| `ui-donut-chart__slice`     | slot      |                                                   | One segment's ring slice.                                                           |
+| `ui-donut-chart__total`     | slot      |                                                   | The total in the middle.                                                            |
+| `ui-chart-axis`             | root      |                                                   | `ChartAxis`'s `<g>`.                                                                |
+| `ui-chart-axis__line`       | slot      |                                                   | The axis line.                                                                      |
+| `ui-chart-axis__tick`       | slot      |                                                   | A tick mark.                                                                        |
+| `ui-chart-axis__label`      | slot      |                                                   | A tick label.                                                                       |
+| `ui-chart-axis__grid`       | slot      |                                                   | A grid line across the drawing.                                                     |
+| `ui-chart-legend`           | root      |                                                   | `ChartLegend`'s group.                                                              |
+| `ui-chart-legend__item`     | slot      |                                                   | A series' toggle button.                                                            |
+| `ui-chart-legend__swatch`   | slot      |                                                   | The item's decorative colour mark.                                                  |
+| `ui-chart-legend__label`    | slot      |                                                   | The item's label.                                                                   |
+| `data-view`                 | state     | `chart`, `table`                                  | The view the chart shows.                                                           |
+| `data-layout`               | attribute | `grouped`, `stacked`                              | How a bar chart sets out a category's bars.                                         |
+| `data-orientation`          | attribute | `vertical`, `horizontal`                          | The direction of a bar chart's bars; also on the legend group (React Aria).         |
+| `data-variant`              | attribute | `line`, `area`                                    | Lines, or lines over areas.                                                         |
+| `data-position`             | attribute | `bottom`, `left`                                  | The edge an axis runs along.                                                        |
+| `data-kind`                 | attribute | `line`, `band`                                    | A reference's shape.                                                                |
+| `data-axis`                 | attribute | `x`, `y`                                          | The axis a reference's values sit on: `y` runs up the plot, `x` across it.          |
+| `data-series`               | attribute |                                                   | The position of a mark's series, from 0.                                            |
+| `data-tone`                 | attribute | `neutral`, `info`, `success`, `warning`, `danger` | A series' or reference's tone, when it has one.                                     |
+| `data-active`               | state     | `true`                                            | The value hovered or focused, whose tooltip shows.                                  |
+| `data-empty`                | state     | `true`                                            | The chart draws no value.                                                           |
+| `data-selected`             | state     | `true`                                            | A shown series' legend item, or the view toggle while the table shows (React Aria). |
+| `data-hovered`              | state     | `true`                                            | The pointer is over a legend item or the view toggle (React Aria).                  |
+| `data-pressed`              | state     | `true`                                            | A legend item or the view toggle is pressed (React Aria).                           |
+| `data-focused`              | state     | `true`                                            | A legend item or the view toggle has focus (React Aria).                            |
+| `data-focus-visible`        | state     | `true`                                            | A legend item or the view toggle has keyboard focus (React Aria).                   |
+| `data-disabled`             | state     | `true`                                            | A legend item or the view toggle is disabled (React Aria).                          |

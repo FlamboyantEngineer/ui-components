@@ -279,3 +279,34 @@ test('UIC-CHART-6.5 breaks lines at null values, skips them by keyboard and conn
     await expect(path).not.toHaveAttribute('d', /NaN|Infinity/);
   }
 });
+
+test('UIC-CHART-9.1 UIC-CHART-9.2 draws references under the values, which keep their tooltips', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('chart');
+  const bars = page.locator('[data-lab-demo="bar-references"]');
+  await expect(bars.locator('.ui-chart__reference')).toHaveCount(2);
+  await expect(bars.locator('.ui-chart__reference-label')).toHaveText(['Goal', 'Usual range']);
+  const goal = bars.locator('.ui-chart__reference-line');
+  await expect(goal).toHaveAttribute('y1', (await goal.getAttribute('y2')) ?? '');
+  const bar = bars.getByRole('img', { name: 'Crates, Q2: 28' });
+  await bar.hover();
+  await expect(page.getByRole('tooltip')).toContainText('28');
+  await bars.getByText('Horizontal bars').click();
+  await expect(bars.locator('.ui-chart__reference').first()).toHaveAttribute('data-axis', 'x');
+  await expect(goal).toHaveAttribute('x1', (await goal.getAttribute('x2')) ?? '');
+  await expect(bars.getByRole('figure')).toHaveAccessibleDescription(
+    /Marked: Goal: 50, Usual range: 20 to 35, Stretch goal: 500$/,
+  );
+  const lines = page.locator('[data-lab-demo="line-references"]');
+  await expect(lines.locator('.ui-chart__reference[data-axis="x"]')).toHaveCount(2);
+  for (const shape of await page
+    .locator('.ui-chart__reference-line, .ui-chart__reference-band')
+    .all()) {
+    for (const attribute of ['x1', 'y1', 'x', 'y', 'width', 'height']) {
+      const value = await shape.getAttribute(attribute);
+      if (value !== null) expect(Number.isFinite(Number(value))).toBe(true);
+    }
+  }
+});

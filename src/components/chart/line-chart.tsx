@@ -6,12 +6,11 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { useLocale, useNumberFormatter } from '../../primitives/index.js';
+import { useNumberFormatter } from '../../primitives/index.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { Chart, type ChartSeries, type ChartViewProps } from './chart.js';
 import { ChartAxis } from './chart-axis.js';
 import { chartHooks, lineChartHooks } from './chart-hooks.js';
-import { resolvePlotBox } from './chart-layout.js';
 import {
   type ChartHiddenKeysProps,
   ChartLegend,
@@ -19,17 +18,12 @@ import {
   useHiddenKeys,
 } from './chart-legend.js';
 import { ChartPlot, useChartPoints } from './chart-points.js';
-import { useValueSummary } from './chart-summary.js';
-import {
-  createLineValueScale,
-  type LineChartPoint,
-  type LineGeometry,
-  type LineGeometryInput,
-  resolveLineGeometry,
-} from './line-geometry.js';
+import { type ChartReference, ChartReferences, type PlacedReference } from './chart-references.js';
+import { useLineChartModel } from './line-chart-model.js';
+import type { LineChartPoint, LineGeometry } from './line-geometry.js';
 import { toLineTable } from './line-table.js';
-import { createLineXAxis } from './line-x-axis.js';
-import { useChartFrame, useLabelMargin } from './use-chart-box.js';
+import type { LineChartX } from './line-x-axis.js';
+import { useChartFrame } from './use-chart-box.js';
 
 export type { LineChartPoint } from './line-geometry.js';
 export type { LineChartX } from './line-x-axis.js';
@@ -60,6 +54,10 @@ export interface LineChartProps
    * of breaking them there. Missing values still draw no point and count as no value.
    */
   connectsMissing?: boolean | undefined;
+  /** Lines and bands at values of the value axis; they do not stretch it, and the plot cuts them. */
+  references?: readonly ChartReference[] | undefined;
+  /** Lines and bands at x values, read as the x axis reads its points. */
+  xReferences?: readonly ChartReference<LineChartX>[] | undefined;
   /** Drawing height, in pixels. Defaults to 240; the width follows the container. */
   height?: number | undefined;
   /** The value at the bottom edge. Defaults to a nice value at or below zero and the lowest value. */
@@ -90,6 +88,7 @@ interface LinePlotProps {
   series: readonly LineChartSeries[];
   variant: LineChartVariant;
   format: Intl.NumberFormat;
+  references: readonly PlacedReference[];
 }
 
 /** The hook data that ties a line, area or point to its series. */
@@ -98,7 +97,7 @@ function toSeriesData(series: readonly LineChartSeries[], index: number) {
 }
 
 /** The axes, areas, lines and points, each point a focusable value with a tooltip. */
-function LinePlot({ geometry, width, height, series, variant, format }: LinePlotProps) {
+function LinePlot({ geometry, width, height, series, variant, format, references }: LinePlotProps) {
   const strings = useUiStrings();
   const { plot, lines, xAxis, yTicks } = geometry;
   const all = lines.flatMap((line) => line.points);
@@ -131,6 +130,7 @@ function LinePlot({ geometry, width, height, series, variant, format }: LinePlot
         range={[plot.left, plot.right]}
         ticks={xAxis.ticks}
       />
+      <ChartReferences placed={references} />
       {variant === 'area'
         ? lines.map((line) => (
             <path
@@ -171,37 +171,6 @@ function LinePlot({ geometry, width, height, series, variant, format }: LinePlot
   );
 }
 
-/** The lines laid out with room on the left for the widest value label. */
-function useLineGeometry(
-  element: Element | null,
-  input: Omit<LineGeometryInput, 'margin' | 'locale'>,
-): LineGeometry {
-  const { locale } = useLocale();
-  const margin = { top: 8, right: 24, bottom: 24 };
-  const plot = resolvePlotBox(input.width, input.height, { ...margin, left: 0 });
-  const values = createLineValueScale({ ...input, locale, margin: { ...margin, left: 0 } }, plot);
-  const left = useLabelMargin(
-    element,
-    values.ticks().map((tick) => tick.label),
-  );
-  return resolveLineGeometry({ ...input, locale, margin: { ...margin, left } }, values);
-}
-
-/**
- * The table's x axis. The table lists every series, hidden ones included, so it reads coordinates
- * from all of them, apart from the drawn axis, which an all-hidden chart leaves empty.
- */
-function useTableAxis(series: readonly LineChartSeries[], timeZone: string) {
-  const { locale } = useLocale();
-  return createLineXAxis({
-    values: series.flatMap((entry) => entry.points.map((point) => point.x)),
-    range: [0, 1],
-    tickCount: 0,
-    timeZone,
-    locale,
-  });
-}
-
 /**
  * A line chart of one or more series over dates (a time axis) or numbers (a linear axis), drawn as
  * lines or filled areas. Each point is a named, focusable value with a tooltip; the legend shows
@@ -212,6 +181,8 @@ export function LineChart({
   series,
   variant = 'line',
   connectsMissing,
+  references,
+  xReferences,
   height = 240,
   minValue,
   maxValue,
@@ -234,22 +205,15 @@ export function LineChart({
   const format = useNumberFormatter(formatOptions);
   const [hidden, setHidden] = useHiddenKeys({ hiddenKeys, defaultHiddenKeys, onHiddenKeysChange });
   const showLegend = showLegendProp ?? hasLegendByDefault(series, hidden);
-  const drawn = series
-    .map((entry, index) => ({ series: index, points: entry.points, id: entry.id }))
-    .filter((entry) => !hidden.has(entry.id));
-  const geometry = useLineGeometry(element, {
-    series: drawn,
-    width,
-    height,
-    minValue,
-    maxValue,
+  const { geometry, values, tableAxis, marks, generated } = useLineChartModel({
+    element,
+    series,
+    hidden,
+    box: { width, height },
     timeZone,
-    formatOptions,
-    connectsMissing,
+    format,
+    options: { minValue, maxValue, formatOptions, connectsMissing, references, xReferences },
   });
-  const values = geometry.lines.flatMap((line) => line.points.map((point) => point.value));
-  const tableAxis = useTableAxis(series, timeZone);
-  const generated = useValueSummary({ values, series: drawn.length, format });
   const isEmpty = values.length === 0;
   return (
     <Chart
@@ -282,6 +246,7 @@ export function LineChart({
           series={series}
           variant={variant}
           format={format}
+          references={marks.placed}
         />
       )}
     </Chart>

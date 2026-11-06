@@ -80,6 +80,8 @@ interface LinePath {
 export interface LineGeometry {
   lines: LinePath[];
   xAxis: LineXAxis;
+  /** Values to positions along the value axis. */
+  values: LinearScale;
   yTicks: Array<ScaleTick<number>>;
   plot: ChartBox;
 }
@@ -204,5 +206,5 @@ export function resolveLineGeometry(
       points,
     };
   });
-  return { lines, xAxis, yTicks: values.ticks(), plot };
+  return { lines, xAxis, values, yTicks: values.ticks(), plot };
 }

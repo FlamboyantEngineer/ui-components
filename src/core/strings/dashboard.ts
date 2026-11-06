@@ -15,6 +15,12 @@ interface DashboardStrings {
   chartSummary: (summary: { series: number; values: number; low: string; high: string }) => string;
   /** Names one value of a chart by its series, where it sits on the other axis, and the value. */
   chartValue: (series: string, at: string, value: string) => string;
+  /** Describes a chart's reference line by its label and value. */
+  chartReferenceLine: (label: string, value: string) => string;
+  /** Describes a chart's reference band by its label and the values it spans. */
+  chartReferenceBand: (label: string, from: string, to: string) => string;
+  /** Adds a chart's references, already listed, to its generated summary. */
+  chartSummaryReferences: (summary: string, references: string) => string;
   /** Describes a donut chart by its total and its largest segment with that segment's share. */
   donutSummary: (total: string, largest: string, share: string) => string;
   /** Names a donut segment by its label, its value and its share of the total. */
@@ -43,6 +49,9 @@ interface DashboardStrings {
 export const dashboardStrings = defineStrings<DashboardStrings>({
   chartSummary: (summary) => ({ ...summary }),
   chartValue: (series, at, value) => ({ series, at, value }),
+  chartReferenceLine: (label, value) => ({ label, value }),
+  chartReferenceBand: (label, from, to) => ({ label, from, to }),
+  chartSummaryReferences: (summary, references) => ({ summary, references }),
   donutSummary: (total, largest, share) => ({ total, largest, share }),
   donutSegment: (label, value, share) => ({ label, value, share }),
   donutValue: (value, share) => ({ value, share }),

@@ -15,6 +15,11 @@ export const chartHooks = createHooks('chart', [
   'tooltip-swatch',
   'tooltip-label',
   'tooltip-value',
+  'references',
+  'reference',
+  'reference-line',
+  'reference-band',
+  'reference-label',
 ]);
 
 export const barChartHooks = createHooks('bar-chart', ['bar']);

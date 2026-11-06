@@ -16,6 +16,7 @@ import type { Key } from '../../src/core/props.js';
 import { createBandScale } from '../../src/utils/band-scale.js';
 import { createLinearScale } from '../../src/utils/linear-scale.js';
 import { ChartMissingCases } from './chart-missing-cases.js';
+import { ChartReferencesCases } from './chart-references-cases.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { requireDefined } from './require-defined.js';
 
@@ -467,5 +468,6 @@ mountLab(
       <CustomDrawing />
     </LabSection>
     <ChartMissingCases />
+    <ChartReferencesCases />
   </>,
 );

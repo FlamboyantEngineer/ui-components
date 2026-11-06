@@ -235,6 +235,36 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* References: a dashed line or a faint band across the plot in its tone, labelled in small text. */
+.ui-chart__references {
+  pointer-events: none;
+}
+
+.ui-chart__reference {
+  --ref-chart-reference: var(--ref-text);
+}
+
+.ui-chart__reference[data-tone] {
+  --ref-chart-reference: var(--ref-tone);
+}
+
+.ui-chart__reference-line {
+  stroke: var(--ref-chart-reference);
+  stroke-width: 1.5px;
+  stroke-dasharray: 6 4;
+}
+
+.ui-chart__reference-band {
+  fill: var(--ref-chart-reference);
+  fill-opacity: 0.12;
+}
+
+.ui-chart__reference-label {
+  fill: var(--ref-chart-reference);
+  font-size: var(--ref-font-size-xs);
+  font-weight: var(--ref-font-weight-medium);
+}
+
 /* Legend: one compact toggle per series; a hidden series keeps an outlined swatch. */
 .ui-chart-legend {
   display: flex;
