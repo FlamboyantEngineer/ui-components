@@ -1,6 +1,6 @@
 # File Upload
 
-`FileUpload` chooses files or folders: from the system file chooser through React Aria's `FileTrigger`, and by drag and drop or paste through React Aria's `DropZone`. It checks each file against the accepted types, the size and count limits and the owner's own check, hands the accepted files to its owner and reports the refused ones; a drag says before the drop whether its files would be accepted. It holds no files itself: the owner performs any upload and passes the files back as data to list them, each with an image thumbnail or a type glyph, its size, its upload progress or its error, the owner's actions and a remove button. In a form it submits the listed files under a name and can be required. Sizes are written with [formatBytes](FORMAT-BYTES.md).
+`FileUpload` chooses files or folders: from the system file chooser through React Aria's `FileTrigger`, and by drag and drop or paste through React Aria's `DropZone`. It checks each file against the accepted types, the size and count limits and the owner's own check, hands the accepted files to its owner and reports the refused ones; a drag says before the drop whether its files would be accepted. It holds no files itself: the owner performs any upload and passes the files back as data to list them, each with an image thumbnail or a type glyph, its size, its upload progress or its error, the owner's actions and a remove button, and the reader can reorder them. In a form it submits the listed files under a name and can be required. Sizes are written with [formatBytes](FORMAT-BYTES.md).
 
 ## UIC-FILE-UPLOAD-1 - Command
 
@@ -178,6 +178,15 @@ A listed file whose `change` is `added` shall publish `data-change="added"`, for
 Implementation: `src/components/file-upload/file-upload-files.tsx`
 Verification: `src/components/file-upload/file-upload-files.test.tsx`
 
+### UIC-FILE-UPLOAD-3.10 - Reordering
+
+With `onMove`, each listed file shall start with a drag handle (`ui-file-upload__file-handle`, a `Button` with the `drag-handle` glyph named by the provider string `moveFile` with the file name). Dragging a file's row by its handle onto another file, by pointer or from the handle's press by keyboard and screen reader (React Aria drag and drop, its keyboard drop targets being the other files), and Alt+ArrowUp or Alt+ArrowDown anywhere in a row but a text control, call `onMove` with a `FileUploadMove`: the moved file's `id`, the `targetId` of the file it lands beside and the `position` (`before` or `after`) it lands on. A drop on another file takes that file's place (after it when dragged down, before it when dragged up), and an Alt+Arrow key moves the file one place; at either end, on itself, or onto a file of another upload nothing moves. Pointer and keyboard moves of a file to the same place report the same move. Only the handle starts a pointer drag, so presses elsewhere in a row never drag it. While a drag runs the dragged file publishes `data-dragging` and the file under it `data-drop-position` (`before` or `after`).
+
+The upload never reorders `files` itself: the owner applies the move (`moveFileUploadItem(files, move)` returns the reordered list) and passes the new list back, so each file keeps its id, whether numeric or text, its preview, progress, error and actions. Each move is announced in a visually hidden polite status region (`role="status"`) with the provider string `fileMoved`: the file name, its new position from 1 and the number of files. Focus stays on the element that had it when an Alt+Arrow key moved its row. Every check and move reads the files last rendered, so a file removed or replaced during a drag is never moved and the drag ends without a move. `isDisabled` disables the handles and refuses drags, drops and keyboard moves; `isReadOnly` draws no handles. A form submits the files in the order the owner lists them (UIC-FILE-UPLOAD-4.2).
+
+Implementation: `src/components/file-upload/file-upload-reorder.ts`, `src/components/file-upload/file-upload-moves.ts`, `src/components/file-upload/file-upload-files.tsx`, `src/components/file-upload/file-upload.tsx`, `src/utils/use-item-drag.ts`, `src/core/strings.ts`
+Verification: `src/components/file-upload/file-upload-reorder.test.tsx`, `e2e/file-upload-reorder.spec.ts`
+
 ## UIC-FILE-UPLOAD-4 - Attributes
 
 ### UIC-FILE-UPLOAD-4.1 - Hooks and caller attributes
@@ -208,6 +217,7 @@ Verification: `src/components/file-upload/file-upload.test.tsx`, `src/components
 | `ui-file-upload__error`         | slot      |                                              | The required or invalid message (also `ui-inline-error`).          |
 | `ui-file-upload__files`         | slot      |                                              | The list of files.                                                 |
 | `ui-file-upload__file`          | slot      |                                              | A listed file.                                                     |
+| `ui-file-upload__file-handle`   | slot      |                                              | A file's drag handle, with `onMove` (also `ui-button`).            |
 | `ui-file-upload__file-preview`  | slot      |                                              | A file's image thumbnail.                                          |
 | `ui-file-upload__file-media`    | slot      |                                              | A file's caller preview, from `renderFilePreview`.                 |
 | `ui-file-upload__file-icon`     | slot      |                                              | A file's type glyph (also `ui-icon`).                              |
@@ -220,6 +230,8 @@ Verification: `src/components/file-upload/file-upload.test.tsx`, `src/components
 | `data-variant`                  | attribute | `button`, `dropzone`                         | The command.                                                       |
 | `data-status`                   | state     | `selected`, `uploading`, `complete`, `error` | On a listed file: where its upload stands.                         |
 | `data-change`                   | state     | `added`                                      | On a listed file: an edit added it.                                |
+| `data-dragging`                 | state     | `true`                                       | On a listed file: it is being dragged.                             |
+| `data-drop-position`            | state     | `before`, `after`                            | On a listed file: where the dragged file would land beside it.     |
 | `data-disabled`                 | state     | `true`                                       | Disabled (root, and the drop zone through React Aria).             |
 | `data-readonly`                 | state     | `true`                                       | Read-only: no command and no removal (root).                       |
 | `data-required`                 | state     | `true`                                       | A form needs a file (root).                                        |

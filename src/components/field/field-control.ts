@@ -89,6 +89,7 @@ const stateKeys = new Set<string>([
   'isReadOnly',
   'isDisabled',
   'isPending',
+  'errorMessage',
 ]);
 
 const layoutKeys = new Set<string>([
@@ -107,6 +108,8 @@ const layoutKeys = new Set<string>([
   'onMenuAction',
   'renderMessage',
   'autoFocus',
+  'controlRef',
+  'onLeave',
   'className',
   'id',
   'ref',

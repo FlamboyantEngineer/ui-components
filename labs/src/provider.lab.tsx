@@ -114,6 +114,7 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   resizeTile: ['Visitors'],
   tileMoved: ['Visitors', 3, 2],
   formLayoutMoved: ['City', 'Contact', 2],
+  fileMoved: ['Report.pdf', 2, 3],
   formLayoutAdded: ['City', 'Contact', 2],
   tileResized: ['Visitors', 4, 2],
   redlineSummary: [{ added: 2, removed: 1, changed: 3, moved: 1 }],

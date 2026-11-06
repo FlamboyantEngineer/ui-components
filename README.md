@@ -125,6 +125,10 @@ format('{count, plural, one {# guest} other {# guests}}: {names}', { count: 3, n
 // 3 guests: Ana, Ben, and Chloé
 ```
 
+### External form controllers
+
+Fields can be owned by a form controller such as React Hook Form instead of a library `Form`: they take values through `value` and `onChange`, report leaving through `onLeave`, focus through `controlRef` and show the controller's errors through `errorMessage`. [docs/FORM-CONTROLLERS.md](docs/FORM-CONTROLLERS.md) has the recipe and says which layer owns validation, dirty state and the submit; the library itself depends on no controller.
+
 ### Testing helpers
 
 `@flamboyantengineer/ui-components/testing` drives the components from a host's tests the way a reader does ([specs/TESTING.md](specs/TESTING.md)). The helpers work with any test runner; they need the optional peers `@testing-library/dom` and `@testing-library/user-event`.

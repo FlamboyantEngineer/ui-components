@@ -452,6 +452,8 @@
   "rejectedFileReason": "{name}: {reason}",
   "rejectedFileUnchecked": "{count} 個のファイルを確認できませんでした。",
   "fileCountLimit": "{count, plural, =1 {ファイル 1 個} other {最大 # 個のファイル}}",
+  "moveFile": "{name} を移動",
+  "fileMoved": "{name} を {count} 件中 {position} 番目に移動しました",
   "addFile": "ファイルを追加",
   "addFiles": "ファイルを追加",
   "removedFiles": "削除したファイル",

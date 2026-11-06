@@ -3,7 +3,7 @@
 // How a field takes part in its form: submit validation, the browser's constraint validation and
 // a native reset.
 
-import { useEffect, useState } from 'react';
+import { type Ref, useEffect, useImperativeHandle, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { hasNativeFormOwner } from '../../utils/form-owner.js';
 import { getTreeRoot } from '../../utils/owner-window.js';
@@ -16,6 +16,12 @@ import { fieldReset, type FieldResetContract, type FieldState } from './field-st
 import { isFieldValueEqual } from './field-value.js';
 
 type FieldSlots = SlotRegistry<'root' | 'control'>;
+
+/** What an owner such as an external form controller can do with a field's control. */
+export interface FieldControlHandle {
+  /** Opens what hides the field (a collapsed disclosure) and moves focus into its control. */
+  focus(): void;
+}
 
 /** An element that takes part in the browser's constraint validation. */
 type ValidatableElement = HTMLElement & Pick<HTMLInputElement, 'setCustomValidity'>;
@@ -52,6 +58,25 @@ export function focusControl(control: HTMLElement | null, options?: FocusOptions
       control.querySelector<HTMLElement>(focusableSelector) ??
       control);
   target.focus(options);
+}
+
+/** Opens what hides the field first, so the control can take focus, then focuses it. */
+function revealAndFocus(reveal: (() => void) | undefined, slots: FieldSlots) {
+  if (reveal) flushSync(reveal);
+  focusControl(slots.read('control'));
+}
+
+/** Gives the owner's `controlRef` the field's control handle. */
+export function useFieldControlHandle(
+  controlRef: Ref<FieldControlHandle> | undefined,
+  slots: FieldSlots,
+): void {
+  const { reveal } = useFieldScope();
+  const latest = useLatest(reveal);
+  useImperativeHandle(controlRef, () => ({ focus: () => revealAndFocus(latest.current, slots) }), [
+    latest,
+    slots,
+  ]);
 }
 
 function isValidatable(element: HTMLElement | null): element is ValidatableElement {
@@ -152,12 +177,7 @@ export function useFieldFormBinding(
       getElement: () => slots.read('root'),
       isBlocking: () => isFieldBlocking(latest.current.state),
       revealValidation: () => latest.current.state.revealValidation(),
-      focus: () => {
-        // Opens what hides the field first, so the control can take focus.
-        const { reveal: show } = latest.current;
-        if (show) flushSync(show);
-        focusControl(slots.read('control'));
-      },
+      focus: () => revealAndFocus(latest.current.reveal, slots),
       getLabel: () => latest.current.label,
       getIssues: () => latest.current.state.issues,
       getRealtimeValidation: () => latest.current.state.realtimeValidation,

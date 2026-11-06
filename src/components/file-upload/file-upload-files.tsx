@@ -1,7 +1,7 @@
 'use client';
 
 import { type ReactNode, useEffect, useMemo, useRef } from 'react';
-import { CloseGlyph } from '../../core/glyphs.js';
+import { CloseGlyph, DragHandleGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -15,6 +15,7 @@ import { Button } from '../button/button.js';
 import { Icon } from '../icon/icon.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import { ProgressBar } from '../progress-bar/progress-bar.js';
+import { type FileReorder, useFileRowDrag } from './file-upload-reorder.js';
 
 /** How a listed file differs from a list the owner compares against: `added` by an edit. */
 export type FileUploadChange = 'added';
@@ -45,7 +46,9 @@ interface FileUploadRowOptions {
   locale: string;
   onRemove: ((id: Key) => void) | undefined;
   removalFocus: RemovalFocus;
-  /** Disables the remove buttons. */
+  /** The files' reordering, which draws a drag handle on each; `null` while they do not reorder. */
+  reorder: FileReorder | null;
+  /** Disables the remove buttons and the drag handles. */
   isDisabled: boolean;
   renderFileActions: ((file: FileUploadItem) => ReactNode) | undefined;
   renderFilePreview: ((file: FileUploadItem) => ReactNode) | undefined;
@@ -70,6 +73,7 @@ export const fileUploadHooks = createHooks('file-upload', [
   'error',
   'files',
   'file',
+  'file-handle',
   'file-preview',
   'file-media',
   'file-icon',
@@ -153,8 +157,22 @@ function FileRow({ item, options }: { item: FileUploadItem; options: FileUploadR
   const { locale, onRemove, renderFileActions } = options;
   const status = getFileUploadStatus(item);
   const actions = renderFileActions?.(item);
+  const { reorder } = options;
+  const drag = useFileRowDrag({ id: item.id, name: item.name, reorder });
+  const { ref, props: rowProps, handleProps, isDragging, dropPosition } = drag;
+  const data = { status, change: item.change, dragging: isDragging, dropPosition };
   return (
-    <li {...hooks.slot('file', { status, change: item.change })}>
+    <li ref={ref} {...rowProps} {...hooks.slot('file', data)}>
+      {reorder ? (
+        <Button
+          className={hooks.slotClass('file-handle')}
+          icon={DragHandleGlyph}
+          label={strings.moveFile(item.name)}
+          size="sm"
+          isDisabled={options.isDisabled}
+          {...handleProps}
+        />
+      ) : null}
       <FilePreview item={item} renderFilePreview={options.renderFilePreview} />
       <span {...hooks.slot('file-name')}>{item.name}</span>
       {item.size === undefined ? null : (
@@ -190,7 +208,7 @@ function FileRow({ item, options }: { item: FileUploadItem; options: FileUploadR
   );
 }
 
-/** The listed files, each with its preview, size, upload progress or error, actions and remove button. */
+/** The listed files, each with its drag handle, preview, size, upload progress or error, actions and remove button. */
 export function FileUploadFiles({ label, files, ...options }: FileUploadFilesProps) {
   return (
     <ul {...hooks.slot('files')} aria-label={label}>

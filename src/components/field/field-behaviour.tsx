@@ -17,10 +17,16 @@ import { DialogEnteringContext } from '../../utils/dialog-entering.js';
 import { getComposedActiveElement, isFocusLost } from '../../utils/focus-target.js';
 import { findOwnerDocument } from '../../utils/owner-window.js';
 import type { SlotRegistry } from '../../utils/slot-registry.js';
+import { useLatest } from '../../utils/use-latest.js';
 import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { usePortalContainer } from '../portal/portal.js';
 import { useFieldFocus } from './field-focus.js';
-import { focusControl, useFieldFormBinding } from './field-form.js';
+import {
+  type FieldControlHandle,
+  focusControl,
+  useFieldControlHandle,
+  useFieldFormBinding,
+} from './field-form.js';
 import { useFieldHelpTooltip } from './field-help.js';
 import { useFieldContextMenu, useFieldMenu } from './field-menu.js';
 import type { FieldMenuEntry, FieldMenuIcons } from './field-menu-entries.js';
@@ -31,14 +37,23 @@ import { useFieldUndo } from './field-undo.js';
 
 export type FieldSlots = SlotRegistry<'root' | 'control'>;
 
-/** Focus in the field: leaving it touches the field and, with `commitOnBlur`, commits first. */
-function useFieldLeave(state: FieldState<unknown>, slots: FieldSlots, commitOnBlur: boolean) {
+/**
+ * Focus in the field: leaving it touches the field and, with `commitOnBlur`, commits first, then
+ * tells the owner.
+ */
+function useFieldLeave(
+  state: FieldState<unknown>,
+  slots: FieldSlots,
+  { commitOnBlur, onLeave }: Pick<FieldBehaviourOptions, 'commitOnBlur' | 'onLeave'>,
+) {
+  const latestLeave = useLatest(onLeave);
   return useFieldFocus({
     getRoot: () => slots.read('root'),
     getControl: () => slots.read('control'),
     onLeave: () => {
       if (commitOnBlur) state.commit();
       state.touch();
+      latestLeave.current?.();
     },
   });
 }
@@ -88,6 +103,10 @@ interface FieldBehaviourOptions {
   hasHelp: boolean;
   /** The caller's ref to the root element. */
   ref: Ref<HTMLDivElement> | undefined;
+  /** The owner's ref to the control's handle. */
+  controlRef: Ref<FieldControlHandle> | undefined;
+  /** Called once focus has left the field. */
+  onLeave: (() => void) | undefined;
 }
 
 /**
@@ -102,8 +121,9 @@ export function useFieldBehaviour(
   const getRoot = useCallback(() => slots.read('root'), [slots]);
   useFieldRoot(getRoot);
   const onKeyDown = useFieldUndo(getRoot, state);
-  const focus = useFieldLeave(state, slots, options.commitOnBlur);
+  const focus = useFieldLeave(state, slots, options);
   useFieldFormBinding(state, slots, options.label);
+  useFieldControlHandle(options.controlRef, slots);
   useAutoFocus(options.autoFocus, slots);
   const help = useFieldHelpTooltip(
     { hasHelp: options.hasHelp, isFocused: focus.isFocused, isDisabled: state.isDisabled },
