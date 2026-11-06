@@ -10,7 +10,9 @@ import {
   isSameMonth,
   moveFocusedDay,
   shiftDay,
+  shiftPeriod,
 } from './calendar-days.js';
+import type { CalendarViewMode } from './calendar-view.js';
 
 const day = (text: string) => text;
 
@@ -39,7 +41,7 @@ describe('calendar days', () => {
 
   it('UIC-CALENDAR-VIEW-4.2 moves the focused day by key', () => {
     const date = day('2026-03-18');
-    const move = (key: string, mode: 'month' | 'week' = 'month', isRightToLeft = false) =>
+    const move = (key: string, mode: CalendarViewMode = 'month', isRightToLeft = false) =>
       moveFocusedDay(date, { key, mode, isRightToLeft, locale: 'en-US' });
     expect(move('ArrowLeft')).toBe('2026-03-17');
     expect(move('ArrowRight')).toBe('2026-03-19');
@@ -52,7 +54,17 @@ describe('calendar days', () => {
     expect(move('PageUp')).toBe('2026-02-18');
     expect(move('PageDown')).toBe('2026-04-18');
     expect(move('PageDown', 'week')).toBe('2026-03-25');
+    expect(move('PageDown', 'day')).toBe('2026-03-19');
+    expect(move('PageUp', 'day')).toBe('2026-03-17');
+    expect(move('ArrowDown', 'day')).toBe('2026-03-25');
     expect(move('Enter')).toBeNull();
+  });
+
+  it('UIC-CALENDAR-VIEW-1.3 shifts by the period of each view', () => {
+    expect(shiftPeriod('2026-03-18', 'month', 1)).toBe('2026-04-18');
+    expect(shiftPeriod('2026-03-18', 'week', -1)).toBe('2026-03-11');
+    expect(shiftPeriod('2026-03-18', 'day', 1)).toBe('2026-03-19');
+    expect(shiftPeriod('2026-03-18', 'agenda', 1)).toBe('2026-03-25');
   });
 
   it('UIC-CALENDAR-VIEW-1.5 reads days in a time zone and shifts them', () => {

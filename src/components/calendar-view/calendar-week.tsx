@@ -4,7 +4,6 @@ import { useUiStrings } from '../../core/provider.js';
 import { useLocale } from '../../primitives/index.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { CalendarDayCell, type CalendarDayContext, findDayEvents } from './calendar-day.js';
-import { getWeekDays } from './calendar-days.js';
 import {
   CalendarEventButton,
   type CalendarEventContext,
@@ -16,6 +15,8 @@ import { calendarViewHooks as hooks } from './calendar-view-hooks.js';
 import type { CalendarGrid } from './use-calendar-grid.js';
 
 interface CalendarWeekProps {
+  /** The days on show: the focused day's week, or the focused day alone in the day view. */
+  days: readonly string[];
   events: readonly PlacedEvent[];
   grid: CalendarGrid;
   titleId: string;
@@ -123,10 +124,12 @@ function WeekDay({
   );
 }
 
-/** The week view: day headers, then the days of the focused day's week with all-day bars and a time grid. */
-export function CalendarWeek({ grid, titleId, ...rest }: CalendarWeekProps) {
+/**
+ * The week or day view: day headers, then the days on show (the focused day's week, or the focused
+ * day alone) with all-day bars and a time grid.
+ */
+export function CalendarWeek({ grid, titleId, days, ...rest }: CalendarWeekProps) {
   const { ref, onKeyDown, onFocus } = grid;
-  const days = getWeekDays(rest.day.focused, rest.day.format.locale);
   const { segments, laneCount, previews } = layoutWeek(days, rest.events, { spansOnly: true });
   return (
     <div

@@ -15,12 +15,18 @@ interface PlanningStrings {
   month: string;
   /** The week view of a calendar. */
   week: string;
+  /** The day view of a calendar. */
+  day: string;
+  /** The agenda view of a calendar, its events listed by day. */
+  agenda: string;
+  /** Fills a calendar agenda whose period holds no event. */
+  noEvents: string;
   /** Names the choice between a calendar's views. */
   calendarViews: string;
-  /** Goes back one month or one week. */
-  previousRange: (unit: 'month' | 'week') => string;
-  /** Goes forward one month or one week. */
-  nextRange: (unit: 'month' | 'week') => string;
+  /** Goes back one month, week or day. */
+  previousRange: (unit: 'month' | 'week' | 'day') => string;
+  /** Goes forward one month, week or day. */
+  nextRange: (unit: 'month' | 'week' | 'day') => string;
   /** Marks the events that last whole days. */
   allDay: string;
   /** Opens the events of a day that do not fit in its cell, by their count. */
