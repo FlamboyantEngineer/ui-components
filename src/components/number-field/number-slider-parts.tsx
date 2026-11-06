@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useLayoutEffect } from 'react';
+import { type ReactNode, type RefObject, useLayoutEffect } from 'react';
 import type { Orientation } from '../../core/props.js';
 import {
   Slider as AriaSlider,
@@ -23,6 +23,12 @@ import {
   useFieldControl,
 } from '../field/field.js';
 import { numberFieldHooks } from './number-field-parts.js';
+import { ScaledSlider } from './scaled-slider.js';
+import {
+  type NumberSliderScaleOption,
+  resolveSliderScale,
+  toTrackPercent,
+} from './slider-scale.js';
 import { normalizeSliderValue, type SliderGrid } from './slider-values.js';
 
 /**
@@ -62,6 +68,8 @@ export interface SliderFieldProps<T> extends Omit<FieldInputProps<T>, 'isRequire
   marks?: readonly NumberFieldMark[] | undefined;
   /** Where the value shows. Defaults to `output`. */
   valueLabel?: NumberFieldValueLabel | undefined;
+  /** How values lie along the track. Defaults to `linear`. */
+  scale?: NumberSliderScaleOption | undefined;
 }
 
 type SliderValue = number | [number, number];
@@ -113,6 +121,7 @@ export type SliderOwnProps<T> = Pick<
   | 'orientation'
   | 'formatOptions'
   | 'aria-details'
+  | 'scale'
 >;
 
 interface SliderControlProps<T extends SliderValue> {
@@ -134,8 +143,8 @@ interface SliderControlProps<T extends SliderValue> {
 }
 
 interface TrackBounds {
-  minValue: number;
-  maxValue: number;
+  /** A value's position along the track, from 0 to 1. */
+  toPercent: (value: number) => number;
   isVertical: boolean;
   /** The filled part of the track, from its low to its high value. */
   low: number;
@@ -160,8 +169,7 @@ function resolveFill(
 }
 
 function Mark({ mark, bounds }: { mark: NumberFieldMark; bounds: TrackBounds }) {
-  const span = bounds.maxValue - bounds.minValue || 1;
-  const percent = `${clamp((mark.value - bounds.minValue) / span, 0, 1) * 100}%`;
+  const percent = `${bounds.toPercent(mark.value) * 100}%`;
   const isInRange = mark.value >= bounds.low && mark.value <= bounds.high;
   return (
     <span
@@ -178,9 +186,68 @@ function Mark({ mark, bounds }: { mark: NumberFieldMark; bounds: TrackBounds }) 
   );
 }
 
+interface SliderPartsProps extends Pick<
+  SliderControlProps<SliderValue>,
+  'marks' | 'valueLabel' | 'fillOffset' | 'thumbLabels' | 'thumbNames'
+> {
+  /** The number of thumbs. */
+  count: number;
+  bounds: TrackBounds;
+  /** Receives the first thumb's input, the field's control. */
+  inputRef: RefObject<HTMLInputElement | null>;
+  field: ReturnType<typeof toAriaControlProps>;
+}
+
+/** The slider's parts: the value output, the track with its fill and marks, and the thumbs. */
+function SliderParts({
+  count,
+  marks,
+  bounds,
+  valueLabel,
+  fillOffset,
+  thumbLabels,
+  thumbNames,
+  inputRef,
+  field,
+}: SliderPartsProps) {
+  return (
+    <>
+      {valueLabel === 'output' ? <SliderOutput {...hooks.slot('output')} /> : null}
+      <SliderTrack {...hooks.slot('track')}>
+        <SliderFill {...hooks.slot('fill')} offset={fillOffset} />
+        {marks.map((mark) => (
+          <Mark key={mark.value} mark={mark} bounds={bounds} />
+        ))}
+        {Array.from({ length: count }, (_, index) => (
+          <SliderThumb
+            key={index}
+            {...hooks.slot('thumb')}
+            index={index}
+            name={thumbNames[index]}
+            aria-label={thumbLabels[index]}
+            inputRef={index === 0 ? inputRef : undefined}
+            // React Aria reports a thumb invalid only through this deprecated prop.
+            isInvalid={field.isInvalid}
+            aria-errormessage={field['aria-errormessage']}
+          >
+            {valueLabel === 'thumb'
+              ? ({ state: thumb }) => (
+                  <span {...hooks.slot('thumb-label')} aria-hidden="true">
+                    {thumb.getThumbValueLabel(index)}
+                  </span>
+                )
+              : null}
+          </SliderThumb>
+        ))}
+      </SliderTrack>
+    </>
+  );
+}
+
 /**
- * A slider's group on React Aria's `Slider`: the value output, the track with its fill and marks,
- * and one thumb per value. The value lives in the field state; each drag or key press commits.
+ * A slider's group on React Aria's `Slider`, or on a `ScaledSlider` for a non-linear `scale`: the
+ * value output, the track with its fill and marks, and one thumb per value. The value lives in the
+ * field state; each drag or key press commits.
  */
 export function SliderControl<T extends SliderValue>({
   state,
@@ -194,71 +261,58 @@ export function SliderControl<T extends SliderValue>({
   thumbNames,
   normalize = (next) => next,
 }: SliderControlProps<T>) {
-  const { onChangeEnd, ...aria } = rest;
+  const { onChangeEnd, scale: scaleOption, ...aria } = rest;
   const inputRef = useObjectRef<HTMLInputElement>(control.ref);
   // The value set during this interaction; the field state's value is the last render's.
   const valueRef = useLatest(state.value);
   const isLocked = state.isReadOnly || state.isDisabled;
-  const minValue = aria.minValue ?? 0;
-  const maxValue = aria.maxValue ?? 100;
+  const grid = {
+    minValue: aria.minValue ?? 0,
+    maxValue: aria.maxValue ?? 100,
+    step: aria.step ?? 1,
+  };
+  const scale = resolveSliderScale(scaleOption, grid);
   const values = toValues(state.value);
   const bounds: TrackBounds = {
-    minValue,
-    maxValue,
+    toPercent: (value: number) => toTrackPercent(value, scale, grid),
     isVertical: aria.orientation === 'vertical',
-    ...resolveFill(values, { minValue, maxValue, offset: fillOffset }),
+    ...resolveFill(values, { ...grid, offset: fillOffset }),
   };
   // The slider takes the id, description and lock; each thumb reports the field's error.
   const field = toAriaControlProps(control);
-  return (
-    <AriaSlider<T>
-      {...aria}
-      {...hooks.slot('slider')}
-      id={field.id}
-      // The group carries the label text: React Aria names each thumb after the group's own name.
-      aria-label={label}
-      aria-describedby={field['aria-describedby']}
-      isDisabled={field.isDisabled}
-      value={state.value}
-      onChange={(next) => {
-        if (isLocked) return;
-        valueRef.current = normalize(next, valueRef.current);
-        state.setValue(valueRef.current);
-      }}
-      onChangeEnd={() => {
-        if (isLocked) return;
-        state.commit();
-        onChangeEnd?.(valueRef.current);
-      }}
-    >
-      {valueLabel === 'output' ? <SliderOutput {...hooks.slot('output')} /> : null}
-      <SliderTrack {...hooks.slot('track')}>
-        <SliderFill {...hooks.slot('fill')} offset={fillOffset} />
-        {marks.map((mark) => (
-          <Mark key={mark.value} mark={mark} bounds={bounds} />
-        ))}
-        {values.map((_, index) => (
-          <SliderThumb
-            key={index}
-            {...hooks.slot('thumb')}
-            index={index}
-            name={thumbNames[index]}
-            aria-label={thumbLabels[index]}
-            inputRef={index === 0 ? inputRef : undefined}
-            // React Aria reports a thumb invalid only through this deprecated prop.
-            isInvalid={field.isInvalid}
-            aria-errormessage={field['aria-errormessage']}
-          >
-            {valueLabel === 'thumb'
-              ? ({ state: slider }) => (
-                  <span {...hooks.slot('thumb-label')} aria-hidden="true">
-                    {slider.getThumbValueLabel(index)}
-                  </span>
-                )
-              : null}
-          </SliderThumb>
-        ))}
-      </SliderTrack>
+  const slider = {
+    ...aria,
+    ...grid,
+    id: field.id,
+    // The group carries the label text: React Aria names each thumb after the group's own name.
+    'aria-label': label,
+    'aria-describedby': field['aria-describedby'],
+    isDisabled: field.isDisabled,
+    value: state.value,
+    onChange: (next: T) => {
+      if (isLocked) return;
+      valueRef.current = normalize(next, valueRef.current);
+      state.setValue(valueRef.current);
+    },
+    onChangeEnd: () => {
+      if (isLocked) return;
+      state.commit();
+      onChangeEnd?.(valueRef.current);
+    },
+  };
+  const parts = (
+    <SliderParts
+      {...{ marks, bounds, valueLabel, fillOffset, thumbLabels, thumbNames, inputRef, field }}
+      count={values.length}
+    />
+  );
+  return scale ? (
+    <ScaledSlider<T> {...slider} slot={hooks.slot('slider')} scale={scale}>
+      {parts}
+    </ScaledSlider>
+  ) : (
+    <AriaSlider<T> {...slider} {...hooks.slot('slider')}>
+      {parts}
     </AriaSlider>
   );
 }

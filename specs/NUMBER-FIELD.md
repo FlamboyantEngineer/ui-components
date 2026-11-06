@@ -161,6 +161,13 @@ The slider display shall carry the hooks below on top of the field's, append the
 Implementation: `src/components/number-field/number-slider.tsx`
 Verification: `src/components/number-field/number-slider.test.tsx`
 
+### UIC-NUMBER-FIELD-5.8 - Scale
+
+`scale` shall set how values lie along the track, for a single thumb and a range: `linear` (the default, on React Aria's `Slider`), where equal distances are equal differences; `logarithmic`, where equal distances are equal ratios, so on a 1 to 1000 track 10 sits a third of the way and 100 two thirds; or a `NumberSliderScale`, the caller's monotonic map whose `toPosition(value, bounds)` gives a value's position from 0 at `minValue` to 1 at `maxValue` and whose `toValue(position, bounds)` is its inverse (`logarithmicScale` is the built-in one). The scale changes only positions: the thumbs, the fill and its `fillOffset`, the marks and a press or drag on the track place values by it, on React Aria's own track, fill, thumb and output parts over a scaled slider state. Everything else stays in values: the field's value and every callback, validation, the thumbs' `aria-valuenow`, `aria-valuemin`, `aria-valuemax` and `aria-valuetext`, the output, the thumb labels, the value inputs and the submitted form values, so no caller converts coordinates. `minValue`, `maxValue` and `step` are values too: a position from the pointer becomes the value there, snapped onto the step grid (UIC-NUMBER-FIELD-5.2), and the ends of the track are the bounds. An arrow key moves one `step`, Page Up and Page Down move a tenth of the track (at least one step), and Home and End go to the ends. `minStepsBetweenThumbs` keeps its distance in values (`minStepsBetweenThumbs × step`). Vertical orientation, right-to-left locales, controlled values, reset, and the disabled and read-only states behave as on a linear track. A `logarithmic` scale over a `minValue` or `maxValue` that is not above 0 has no positions, so the field throws a `RangeError` instead of drawing a linear track.
+
+Implementation: `src/components/number-field/slider-scale.ts`, `src/components/number-field/scaled-slider.tsx`, `src/components/number-field/number-slider-parts.tsx`
+Verification: `src/components/number-field/slider-scale.test.ts`, `src/components/number-field/number-slider-scale.test.tsx`, `e2e/number-field-slider.spec.ts`
+
 ## UIC-NUMBER-FIELD-6 - Accessibility and keyboard
 
 ### UIC-NUMBER-FIELD-6.1 - Names and descriptions

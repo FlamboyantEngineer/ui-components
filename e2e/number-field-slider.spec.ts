@@ -356,3 +356,82 @@ test('UIC-NUMBER-FIELD-5.6 runs right to left under a right-to-left locale', asy
   await page.mouse.up();
   await expect(volume.getByRole('slider')).toHaveValue('75');
 });
+
+test.describe('Number Field lab, logarithmic slider', () => {
+  test('UIC-NUMBER-FIELD-5.8 places values by ratio and drags, presses and steps in values', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('number-field');
+    const demo = field(page, 'log');
+    const input = demo.getByRole('slider', { name: 'Sample size' });
+    const track = demo.locator('.ui-number-field__track');
+    const thumb = demo.locator('.ui-number-field__thumb');
+    await track.scrollIntoViewIfNeeded();
+    const rail = await boxOf(track);
+    const centre = async () => {
+      const box = await boxOf(thumb);
+      return box.x + box.width / 2;
+    };
+    // 10 sits a third of the way along a 1 to 1000 track, as its mark does.
+    expect(Math.abs((await centre()) - (rail.x + rail.width / 3))).toBeLessThan(2);
+    const mark = await boxOf(demo.locator('.ui-number-field__mark').nth(1));
+    expect(Math.abs(mark.x + mark.width / 2 - (rail.x + rail.width / 3))).toBeLessThan(2);
+    await dragThumb(page, thumb, track, 2 / 3);
+    await page.mouse.up();
+    await expect(output(page, 'Sample size')).toHaveText('100');
+    await expect(input).toHaveAttribute('aria-valuetext', '100');
+    await page.mouse.click(rail.x + rail.width * 0.5, rail.y + rail.height / 2);
+    // Halfway along three decades is the square root of 1000.
+    await expect(output(page, 'Sample size')).toHaveText('32');
+    await input.focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(output(page, 'Sample size')).toHaveText('33');
+    await page.keyboard.press('PageUp');
+    await expect(output(page, 'Sample size')).toHaveText('66');
+    await page.keyboard.press('End');
+    await expect(input).toHaveValue('1000');
+    await expect(output(page, 'Sample size')).toHaveText('1000');
+    await lab.expectAccessible();
+  });
+
+  test('UIC-NUMBER-FIELD-5.8 keeps a logarithmic range apart in values and edits it from inputs', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('number-field');
+    const demo = field(page, 'log-range');
+    const [low, high] = [demo.getByRole('slider').first(), demo.getByRole('slider').last()];
+    await low.focus();
+    await page.keyboard.press('End');
+    await expect(output(page, 'Band')).toHaveText('190 to 200');
+    const start = demo.getByRole('textbox').first();
+    await start.fill('5');
+    await start.press('Enter');
+    await expect(output(page, 'Band')).toHaveText('5 to 200');
+    await expect(low).toHaveValue('5');
+    await expect(high).toHaveValue('200');
+  });
+
+  test('UIC-NUMBER-FIELD-5.8 lays a logarithmic track vertically and right to left', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('number-field');
+    const vertical = field(page, 'log-vertical');
+    await vertical.scrollIntoViewIfNeeded();
+    const column = await boxOf(vertical.locator('.ui-number-field__track'));
+    const level = await boxOf(vertical.locator('.ui-number-field__thumb'));
+    // 100 sits two thirds of the way up.
+    expect(Math.abs(level.y + level.height / 2 - (column.y + column.height / 3))).toBeLessThan(2);
+    const rtl = field(page, 'log-rtl');
+    const rail = await boxOf(rtl.locator('.ui-number-field__track'));
+    const depth = await boxOf(rtl.locator('.ui-number-field__thumb'));
+    // 10 sits a third of the way from the right.
+    expect(Math.abs(depth.x + depth.width / 2 - (rail.x + (rail.width * 2) / 3))).toBeLessThan(2);
+    const input = rtl.getByRole('slider', { name: 'Depth' });
+    await input.focus();
+    await page.keyboard.press('ArrowLeft');
+    await expect(input).toHaveValue('11');
+  });
+});
