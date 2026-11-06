@@ -73,7 +73,7 @@ Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.s
 
 ### UIC-TEXT-FIELD-3.2 - Revealing masked text
 
-With `allowsReveal` and `type="password"`, the field shall draw a toggle button (`ui-text-field__reveal`, a `Button` in the group) after the text, named by the provider string `revealValue` from the label (`Show <label>`). While pressed (`aria-pressed="true"`, the `eye-slash` glyph) the input shows its text (`type="text"`); otherwise it masks it (the `eye` glyph). A pointer press keeps focus in the input; the button is reached by Tab and works from the keyboard. A disabled field disables it.
+With `allowsReveal` and `type="password"`, the field shall draw a toggle button (`ui-text-field__reveal`, a `Button` in the group) after the text, named by the provider string `revealValue` from the label (`Show <label>`). While pressed (`aria-pressed="true"`, the `eye-slash` glyph) the input shows its text (`type="text"`); otherwise it masks it (the `eye` glyph). A pointer press keeps focus in the input; the button is reached by Tab and works from the keyboard. A disabled field disables it. Its state is the field's reveal state (UIC-TEXT-FIELD-3.5).
 
 Implementation: `src/components/text-field/text-field.tsx`, `src/components/text-field/text-field-parts.tsx`, `src/core/strings.ts`, `src/core/glyphs.tsx`
 Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.spec.ts`
@@ -91,6 +91,13 @@ With `showCount`, the field shall show the text's length after its description, 
 
 Implementation: `src/components/text-field/text-field.tsx`, `src/components/text-field/text-field-parts.tsx`, `src/core/strings.ts`
 Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.spec.ts`
+
+### UIC-TEXT-FIELD-3.5 - Reveal state
+
+A password field's reveal state shall be controllable: `isRevealed` controls it, `defaultRevealed` (`false` by default) starts it while `isRevealed` is not given, and `onRevealChange(isRevealed)` reports each change the built-in button asks for. The state applies to any `type="password"` field, so a host can show or hide the text from its own control with or without the built-in button (`allowsReveal`); a controlled field the host does not update stays as it is, and the button's `aria-pressed` follows the shown state. Revealing only changes the input's `type`: the same input element keeps its value, selection, focus, `autoComplete`, `name` and the caller's ref, and no value, commit or validation callback runs. Disabling the field disables the built-in button but a host's `isRevealed` still applies; a read-only field keeps the button enabled. While the type is not `password` the state has no effect and is kept, so it applies again when the type returns to `password`. Each field holds its own state.
+
+Implementation: `src/components/text-field/text-field.tsx`
+Verification: `src/components/text-field/text-field-reveal.test.tsx`, `e2e/text-field.spec.ts`
 
 ## UIC-TEXT-FIELD-4 - Transformed and displayed text
 
