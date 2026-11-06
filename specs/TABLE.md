@@ -131,6 +131,15 @@ The table shall collate text in the provider locale (React Aria's locale from [P
 Implementation: `src/components/table/table-rows.ts`, `src/components/table/table-sort.ts`, `src/components/table/table-groups.ts`, `src/components/table/table-filters.ts`, `src/components/table/use-table-rows.ts`, `src/components/table/use-table-grouping.ts`, `src/components/table/table-column-filter.tsx`, `src/utils/intl-format.ts`
 Verification: `src/components/table/table-locale.test.tsx`, `src/components/table/table-rows.test.ts`, `e2e/table.spec.ts`
 
+### UIC-TABLE-2.11 - Reused derivations
+
+The table shall derive the rows it presents in three steps, each kept for one table and redone only when its own inputs change: building the nested rows (from `rows` and `getChildRows`), filtering them while the table owns the filter (from the built rows, `columns`, the filter and whether the search box is drawn), and sorting them while the table owns the sort (from the filtered rows, `columns`, the sort and the locale). A new sort therefore calls no `getChildRows` and reads no value for the filter again, and a new filter calls no `getChildRows`; new `rows`, a new `getChildRows` or new `columns` redo the steps that depend on them. The steps hold only the latest result, never modify the caller's rows, and keep the order, stable ties, page reset and caller-owned sorting and filtering of [UIC-TABLE-2.2](#uic-table-22---table-owned-order) to [UIC-TABLE-2.7](#uic-table-27---caller-owned-filtering) and [UIC-TABLE-10.3](#uic-table-103---back-to-the-first-page); the table offers no cache setting.
+
+Measured with React rendering the table's row hook in the unit test environment, with a search query and a sorted column: for 20,000 flat rows a sort change went from 250 to 300 ms, 20,000 `getChildRows` calls and 20,000 reads of each searched column to 4 to 76 ms with none of them; for 5,000 rows of four nested rows each, from 270 to 340 ms and 25,000 `getChildRows` calls to 1 to 6 ms with none. Sorting still reads each sorted value once per row.
+
+Implementation: `src/components/table/use-table-rows.ts`
+Verification: `src/components/table/table-derivations.test.tsx`, `src/components/table/use-table-rows.test.tsx`
+
 ## UIC-TABLE-3 - Selection and row actions
 
 ### UIC-TABLE-3.1 - Selection

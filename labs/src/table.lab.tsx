@@ -624,7 +624,10 @@ mountLab(
         <PinnedRows />
       </MountOnDemand>
     </LabSection>
-    <LabSection title="Virtualized" description="10,000 rows; only those in view are rendered.">
+    <LabSection
+      title="Virtualized"
+      description="10,000 rows; only those in view are rendered. Sorting by a header reuses the built rows and only orders them again."
+    >
       <div data-lab="virtualized" style={{ height: 320 }}>
         <Table
           aria-label="Items, virtualized"

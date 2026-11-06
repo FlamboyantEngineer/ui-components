@@ -166,26 +166,20 @@ export function useTableRows<T extends TableRow>(options: TableRowsOptions<T>): 
   const sort = useTableSort(options, columnIds, resetPage);
   const { locale } = useLocale();
 
-  const presented = useMemo(() => {
-    const nodes = buildTableNodes(rows, getChildRows);
+  // Each step is kept on its own inputs, so a new sort reuses the built and filtered rows, and a
+  // new filter the built rows (UIC-TABLE-2.11).
+  const tree = useMemo(() => buildTableNodes(rows, getChildRows), [rows, getChildRows]);
+  const filtered = useMemo(() => {
     const applied = hasQuery ? filter : { ...filter, query: undefined };
     const matches = isFilterOwned ? createRowMatcher(columns, applied) : null;
-    const filtered = matches ? filterTableNodes(nodes, matches) : nodes;
+    return matches ? filterTableNodes(tree, matches) : tree;
+  }, [tree, columns, filter, hasQuery, isFilterOwned]);
+  const presented = useMemo(() => {
     const compare = sort.isControlled
       ? null
       : createRowComparator(columns, sort.descriptors, locale);
     return compare ? sortTableNodes(filtered, compare) : filtered;
-  }, [
-    rows,
-    getChildRows,
-    columns,
-    filter,
-    hasQuery,
-    isFilterOwned,
-    sort.isControlled,
-    sort.descriptors,
-    locale,
-  ]);
+  }, [filtered, columns, sort.isControlled, sort.descriptors, locale]);
 
   const { page, pageCount, start, end } = resolvePages(pagination, requestedPage, presented.length);
   const nodes = useMemo(() => presented.slice(start, end), [presented, start, end]);
