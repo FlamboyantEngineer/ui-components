@@ -133,6 +133,7 @@ import {
 import { PropertyScope } from '../src/components/property-scope/property-scope.js';
 import { ProseTable } from '../src/components/prose-table/prose-table.js';
 import { QueryField } from '../src/components/query-field/query-field.js';
+import { Rating, RatingField } from '../src/components/rating-field/index.js';
 import { RecordHeader } from '../src/components/record-header/record-header.js';
 import { RecordLabel } from '../src/components/record-label/record-label.js';
 import { RelativeDateField } from '../src/components/relative-date-field/relative-date-field.js';
@@ -484,6 +485,7 @@ const cases: Record<string, RootRefCase> = {
 /** Fields: each forwards `ref` to the root of the `Field` it renders. */
 const fieldCases: Record<string, RootRefCase> = {
   BooleanField: { element: (ref) => <BooleanField ref={ref} label="Ripe" />, root: 'ui-field' },
+  RatingField: { element: (ref) => <RatingField ref={ref} label="Quality" />, root: 'ui-field' },
   ChoiceGroup: {
     element: (ref) => (
       <ChoiceGroup ref={ref} label="Size">
@@ -960,6 +962,7 @@ const restCases: Record<string, RootRefCase> = {
     element: (ref) => <Meter ref={ref} aria-label="Storage" value={40} />,
     root: 'ui-meter',
   },
+  Rating: { element: (ref) => <Rating ref={ref} value={3} />, root: 'ui-rating' },
   Pagination: { element: (ref) => <Pagination ref={ref} pageCount={3} />, root: 'ui-pagination' },
   PortalHost: { element: (ref) => <PortalHost ref={ref}>Body</PortalHost>, root: 'ui-portal-host' },
   ProblemList: { element: (ref) => <ProblemList ref={ref} />, root: 'ui-problem-list' },

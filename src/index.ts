@@ -127,6 +127,7 @@ export * from './components/property-scope/index.js';
 export * from './components/prose-table/index.js';
 export * from './components/qr-code/index.js';
 export * from './components/query-field/index.js';
+export * from './components/rating-field/index.js';
 export * from './components/reaction-bar/index.js';
 export * from './components/record-header/index.js';
 export * from './components/record-label/index.js';

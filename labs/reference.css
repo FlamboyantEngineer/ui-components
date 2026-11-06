@@ -135,6 +135,7 @@
 @import url('reference/provider.css') layer(ui-reference);
 @import url('reference/qr-code.css') layer(ui-reference);
 @import url('reference/query-field.css') layer(ui-reference);
+@import url('reference/rating-field.css') layer(ui-reference);
 @import url('reference/reaction-bar.css') layer(ui-reference);
 @import url('reference/record-header.css') layer(ui-reference);
 @import url('reference/record-label.css') layer(ui-reference);

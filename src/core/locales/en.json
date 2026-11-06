@@ -547,6 +547,8 @@
   "signatureImageUnreadable": "The image could not be read.",
   "signatureImageNoPaste": "The clipboard holds no image.",
   "rangeMaximum": "Maximum",
+  "ratingValue": "{value, number} out of {max, number}",
+  "ratingNone": "No rating",
   "activity": "Activity",
   "noActivity": "No activity yet.",
   "noChanges": "No changes.",

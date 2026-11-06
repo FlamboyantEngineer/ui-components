@@ -547,6 +547,8 @@
   "signatureImageUnreadable": "画像を読み込めませんでした。",
   "signatureImageNoPaste": "クリップボードに画像がありません。",
   "rangeMaximum": "最大",
+  "ratingValue": "{max, number} 段階中 {value, number}",
+  "ratingNone": "評価なし",
   "activity": "アクティビティ",
   "noActivity": "まだアクティビティはありません。",
   "noChanges": "変更はありません。",
