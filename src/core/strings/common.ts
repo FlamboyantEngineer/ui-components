@@ -206,6 +206,10 @@ interface CommonStrings {
   steps: string;
   /** Read after a settled step's label (`Upload, Completed`). */
   stepStatus: (status: 'complete' | 'error' | 'skipped') => string;
+  /** Announced while a tour step gets its target ready. */
+  tourStepPreparing: string;
+  /** Shown when a tour step could not get its target ready. */
+  tourStepFailed: string;
 }
 
 const spokenKeys: Readonly<Record<string, string>> = {

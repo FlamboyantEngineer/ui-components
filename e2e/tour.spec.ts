@@ -270,3 +270,54 @@ test('UIC-TOUR-1.2 follows a target replaced or removed while its step shows', a
   await demo.getByRole('button', { name: 'Refresh the list' }).click();
   await expect(spotlight).not.toHaveAttribute('data-target-missing');
 });
+
+test('UIC-TOUR-1.4 shows a step as pending while it opens its section, then points at the target', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('tour');
+  const demo = page.locator('[data-lab-demo="prepared"]');
+  const panel = page.locator('.ui-tour');
+  await demo.getByRole('button', { name: 'Start the tour' }).click();
+  await expect(page.getByRole('dialog', { name: 'Orders' })).toBeFocused();
+  await page.getByRole('button', { name: 'Next' }).click();
+  await expect(page.getByRole('dialog', { name: 'Shipping options' })).toBeVisible();
+  await expect(panel).toHaveAttribute('data-status', 'pending');
+  await expect(
+    page.getByRole('status').filter({ hasText: 'Getting this step ready…' }),
+  ).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Next' })).toBeDisabled();
+  await expect(panel).toHaveAttribute('data-status', 'ready');
+  const options = demo.locator('[data-lab-prepared="shipping"]');
+  await expect(options).toBeVisible();
+  const spotlight = page.locator('.ui-tour__spotlight');
+  // The section's opening moves the options; the spotlight measures them once they are shown.
+  await expect(async () => {
+    const [ring, target] = await Promise.all([spotlight.boundingBox(), options.boundingBox()]);
+    expect(Math.abs((ring?.y ?? 0) - (target?.y ?? 0))).toBeLessThanOrEqual(8);
+  }).toPass();
+  await page.getByRole('button', { name: 'Next' }).click();
+  await expect(page.getByRole('dialog', { name: 'Notes' })).toBeVisible();
+  await expect(panel).toHaveAttribute('data-status', 'ready');
+  await expect(spotlight).not.toHaveAttribute('data-target-missing');
+  await page.getByRole('button', { name: 'Finish' }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+});
+
+test('UIC-TOUR-1.4 retries a failed step and aborts a load on Back', async ({ page, lab }) => {
+  await lab.open('tour');
+  const demo = page.locator('[data-lab-demo="prepared"]');
+  await demo.getByRole('switch', { name: 'Fail loading the options' }).press('Space');
+  await demo.getByRole('button', { name: 'Start the tour' }).click();
+  await page.getByRole('button', { name: 'Next' }).click();
+  await page.getByRole('button', { name: 'Back' }).click();
+  await expect(page.getByRole('dialog', { name: 'Orders' })).toBeVisible();
+  await expect(demo.locator('[data-lab-output="prepared"]')).toHaveText('shipping aborted');
+  await page.getByRole('button', { name: 'Next' }).click();
+  await expect(page.locator('.ui-tour')).toHaveAttribute('data-status', 'failed');
+  await expect(page.getByText('This step could not be shown.')).toBeVisible();
+  await demo.getByRole('switch', { name: 'Fail loading the options' }).press('Space');
+  await page.getByRole('button', { name: 'Retry' }).click();
+  await expect(page.locator('.ui-tour')).toHaveAttribute('data-status', 'ready');
+  await expect(demo.locator('[data-lab-prepared="shipping"]')).toBeVisible();
+});

@@ -5,6 +5,7 @@ import { Tour, type TourStep } from '../../src/components/tour/tour.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { createMemoryStorage } from '../../src/core/storage.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { TourPreparationSections } from './tour-preparation-cases.js';
 
 const placements = ['top', 'bottom', 'start', 'end'] as const;
 const modalities = ['modal', 'non-modal'] as const;
@@ -393,5 +394,6 @@ mountLab(
     >
       <LaterStart />
     </LabSection>
+    <TourPreparationSections />
   </>,
 );

@@ -5,7 +5,9 @@ import { TourSpotlight } from './tour-spotlight.js';
 
 function Spotlight({ target }: { target: Element | null }) {
   const [element, setElement] = useState<HTMLDivElement | null>(null);
-  return <TourSpotlight target={target} element={element} spotlightRef={setElement} />;
+  return (
+    <TourSpotlight target={target} isPending={false} element={element} spotlightRef={setElement} />
+  );
 }
 
 function renderTargets() {

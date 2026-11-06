@@ -27,6 +27,17 @@ Position and size transitions shall run only when both the previous and next hig
 Implementation: `src/components/tour/tour-spotlight.tsx`, `src/utils/overlay-auto-update.ts`, `labs/reference/tour.css`
 Verification: `src/components/tour/tour.test.tsx`, `src/components/tour/tour-spotlight.test.tsx`, `e2e/tour.spec.ts`
 
+### UIC-TOUR-1.4 - Getting a step ready
+
+A step's `prepare({ signal })` shall run each time the step shows while the tour is open, before the step looks up or points at its target, so the host can open the collapsed section, tab or disclosure the target sits in, or load it: the host keeps its routing and data access, and the tour only waits. Until it settles the step is pending: its dialog shows at the centre of the viewport without an arrow, with its title, content and progress; the status (`ui-tour__status`, a polite live region always present in the dialog) announces the provider's `tourStepPreparing`; Next is disabled while Back and Skip still work; the root and the status publish `data-status="pending"` and the spotlight `data-pending`, not `data-target-missing`. When it resolves the step is ready (`data-status="ready"`, the status empty): its target is looked up, scrolled into view and focused against as in UIC-TOUR-1.2. When it rejects or throws, the step fails: the status shows `tourStepFailed`, `data-status="failed"`, the step stays at the centre, and a Retry button (`ui-tour__retry`, provider string `retry`) runs `prepare` again with a fresh signal; Next still moves on.
+
+A preparation belongs to its step and to one opening of the tour: Back, Next, Skip, Escape, Finish, closing the tour, a controlled `step` or `isOpen` change, a replacement of `steps` whose step at the shown index has another `id`, and unmounting each abort its `signal`, and a settlement after that is ignored, so a late preparation can neither show nor advance the tour, reopen it, or record its completion. Steps without `id` are matched by index, so a list of steps recreated on every render does not restart its preparation. Steps without `prepare` are ready at once.
+
+After the step is ready, `targetTimeout` (milliseconds, 0 by default) shall let it wait for a target that is not in the page yet: the step stays pending, as above, until the target appears (found by the lookup that follows commits and added nodes, UIC-TOUR-1.2, never by polling) or the timeout passes, then shows against the target, or at the centre with `data-target-missing`. Without a timeout a missing target shows at the centre at once, as before. Target replacement tracking, modality, focus return and remembered completion are unchanged.
+
+Implementation: `src/components/tour/use-step-preparation.ts`, `src/components/tour/tour.tsx`, `src/components/tour/tour-panel.tsx`, `src/components/tour/tour-spotlight.tsx`
+Verification: `src/components/tour/tour-preparation.test.tsx`, `e2e/tour.spec.ts`
+
 ## UIC-TOUR-2 - Navigation
 
 ### UIC-TOUR-2.1 - Next, back and finish
@@ -98,7 +109,9 @@ Verification: `src/components/tour/tour.test.tsx`
 | `ui-tour__title`      | slot  |                                  | The step's heading.                                                |
 | `ui-tour__progress`   | slot  |                                  | The position, such as `2 of 5`.                                    |
 | `ui-tour__body`       | slot  |                                  | The step's content.                                                |
-| `ui-tour__footer`     | slot  |                                  | The Skip, Back and Next buttons.                                   |
+| `ui-tour__status`     | slot  |                                  | The step's readiness, a polite live region.                        |
+| `ui-tour__footer`     | slot  |                                  | The Skip, Back, Retry and Next buttons.                            |
+| `ui-tour__retry`      | slot  |                                  | The Retry button of a failed step (also `ui-button`).              |
 | `ui-tour__skip`       | slot  |                                  | The Skip button (also `ui-button`).                                |
 | `ui-tour__back`       | slot  |                                  | The Back button (also `ui-button`).                                |
 | `ui-tour__next`       | slot  |                                  | The Next or Finish button (also `ui-button`).                      |
@@ -108,3 +121,5 @@ Verification: `src/components/tour/tour.test.tsx`
 | `data-exiting`        | state | `true`                           | While the panel animates out (React Aria).                         |
 | `data-non-modal`      | state | `true`                           | The page stays usable while the tour is open.                      |
 | `data-target-missing` | state | `true`                           | On the spotlight, when the step's target was not found.            |
+| `data-status`         | state | `pending`, `ready`, `failed`     | On the panel and the status: whether the step is ready.            |
+| `data-pending`        | state | `true`                           | On the spotlight, while the step gets ready or waits for a target. |

@@ -7,6 +7,8 @@ export const tourHooks = createHooks('tour', [
   'title',
   'progress',
   'body',
+  'status',
+  'retry',
   'footer',
   'skip',
   'back',

@@ -248,6 +248,8 @@
   "optional": "任意",
   "steps": "ステップ",
   "stepStatus": "{status, select, complete {完了} error {エラーあり} other {スキップ}}",
+  "tourStepPreparing": "このステップを準備しています…",
+  "tourStepFailed": "このステップを表示できませんでした。",
   "attachFiles": "ファイルを添付",
   "insertEmoji": "絵文字を挿入",
   "composerMenu": "追加とその他",

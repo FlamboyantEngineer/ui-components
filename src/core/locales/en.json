@@ -248,6 +248,8 @@
   "optional": "Optional",
   "steps": "Steps",
   "stepStatus": "{status, select, complete {Completed} error {Has errors} other {Skipped}}",
+  "tourStepPreparing": "Getting this step ready…",
+  "tourStepFailed": "This step could not be shown.",
   "attachFiles": "Attach files",
   "insertEmoji": "Insert emoji",
   "composerMenu": "Add and more",
