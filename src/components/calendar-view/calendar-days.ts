@@ -10,7 +10,6 @@ import {
   toCalendarDateTime,
   toZoned,
 } from '../../primitives/index.js';
-import type { CalendarViewMode } from './calendar-view.js';
 
 /** A shift of a day by whole days, weeks or months. */
 interface DayShift {
@@ -80,17 +79,25 @@ export function getMonthWeeks(day: string, locale: string): string[][] {
   return weeks;
 }
 
-/** The unit a view's toolbar and PageUp/PageDown move the focused day by. */
-const periodUnits: Readonly<Record<CalendarViewMode, keyof DayShift>> = {
+/** The period a view shows, which its toolbar and PageUp/PageDown move the focused day by. */
+export type CalendarPeriod = 'month' | 'week' | 'day';
+
+const periodUnits: Readonly<Record<CalendarPeriod, keyof DayShift>> = {
   month: 'months',
   week: 'weeks',
   day: 'days',
-  agenda: 'weeks',
 };
 
-/** The day `step` periods of `mode` away from `day`: months, weeks, or days. */
-export function shiftPeriod(day: string, mode: CalendarViewMode, step: number): string {
-  return shiftDay(day, { [periodUnits[mode]]: step });
+/** The day `step` periods away from `day`: months, weeks, or days. */
+export function shiftPeriod(day: string, period: CalendarPeriod, step: number): string {
+  return shiftDay(day, { [periodUnits[period]]: step });
+}
+
+/** The days of the month holding `day`, from its first to its last. */
+export function getMonthDays(day: string): string[] {
+  const first = readDay(day).set({ day: 1 });
+  const length = first.add({ months: 1 }).subtract({ days: 1 }).day;
+  return Array.from({ length }, (_, index) => first.add({ days: index }).toString());
 }
 
 /** Whether two days fall in the same month. */
@@ -103,10 +110,10 @@ export function moveFocusedDay(
   day: string,
   {
     key,
-    mode,
+    period,
     isRightToLeft,
     locale,
-  }: { key: string; mode: CalendarViewMode; isRightToLeft: boolean; locale: string },
+  }: { key: string; period: CalendarPeriod; isRightToLeft: boolean; locale: string },
 ): string | null {
   const moves: Readonly<Record<string, () => string>> = {
     ArrowLeft: () => shiftDay(day, { days: isRightToLeft ? 1 : -1 }),
@@ -115,8 +122,8 @@ export function moveFocusedDay(
     ArrowDown: () => shiftDay(day, { weeks: 1 }),
     Home: () => getWeekDays(day, locale)[0] ?? day,
     End: () => getWeekDays(day, locale)[6] ?? day,
-    PageUp: () => shiftPeriod(day, mode, -1),
-    PageDown: () => shiftPeriod(day, mode, 1),
+    PageUp: () => shiftPeriod(day, period, -1),
+    PageDown: () => shiftPeriod(day, period, 1),
   };
   return moves[key]?.() ?? null;
 }

@@ -436,10 +436,24 @@ function DayAndAgenda() {
   const [view, setView] = useState<CalendarViewMode>('day');
   const [date, setDate] = useState('2026-03-18');
   const [showsEmptyDays, setShowsEmptyDays] = useState(false);
+  const [agendaRange, setAgendaRange] = useState<'week' | 'month'>('week');
   const [isNarrow, setNarrow] = useState(false);
   const [log, setLog] = useState('No event opened');
   return (
     <div data-lab-demo="day-agenda">
+      <SegmentedChoice
+        aria-label="Agenda range"
+        size="sm"
+        sizing="content"
+        options={[
+          { value: 'week', label: 'One week' },
+          { value: 'month', label: 'One month' },
+        ]}
+        value={agendaRange}
+        onChange={(value) => {
+          if (value === 'week' || value === 'month') setAgendaRange(value);
+        }}
+      />{' '}
       <Checkbox isSelected={showsEmptyDays} onChange={setShowsEmptyDays}>
         List empty days in the agenda
       </Checkbox>{' '}
@@ -455,8 +469,11 @@ function DayAndAgenda() {
           onDateChange={setDate}
           view={view}
           onViewChange={setView}
+          agendaRange={agendaRange}
           agendaEmptyDays={showsEmptyDays ? 'show' : 'hide'}
-          renderEmptyState={() => 'Nothing planned this week. Pick another week or add an event.'}
+          renderEmptyState={() =>
+            `Nothing planned this ${agendaRange}. Pick another or add an event.`
+          }
           renderDay={renderWorkload}
           onEventAction={(key) => setLog(`Opened ${String(key)}`)}
           onEventChange={(next, previous) => {
@@ -522,7 +539,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Day and agenda"
-      description="The day view is the week's time grid for one day: all-day bars above, overlapping Team lunch and Design review side by side, every event press, menu, editor, drag and keyboard step as in the week. Previous and Next move a day; PageUp and PageDown on the day move a day too. Switch to Agenda: the focused day's week is listed by day under headings, all-day events first (All day), Trip to Lisbon on each of its days, then by start. Agenda events open, take menus and the editor, but do not drag. Board review is read-only. List empty days to show the week's quiet days under their headings; move to an empty week (Next twice from 18 March) for the host's empty state. Narrow host shows the agenda's times above titles at 320px. The view and the focused day survive every switch."
+      description="The day view is the week's time grid for one day: all-day bars above, overlapping Team lunch and Design review side by side, every event press, menu, editor, drag and keyboard step as in the week. Previous and Next move a day; PageUp and PageDown on the day move a day too. Switch to Agenda: the focused day's week is listed by day under headings, all-day events first (All day), Trip to Lisbon on each of its days, then by start. Agenda month lists the whole month by day instead, and Previous and Next then move a month. Agenda events open, take menus and the editor, but do not drag. Board review is read-only. List empty days to show the week's quiet days under their headings; move to an empty week (Next twice from 18 March) for the host's empty state. Narrow host shows the agenda's times above titles at 320px. The view and the focused day survive every switch."
     >
       <DayAndAgenda />
     </LabSection>
