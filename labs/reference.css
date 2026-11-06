@@ -61,6 +61,7 @@
 @import url('reference/copy-button.css') layer(ui-reference);
 @import url('reference/dashboard-grid.css') layer(ui-reference);
 @import url('reference/date-time-field.css') layer(ui-reference);
+@import url('reference/decimal-field.css') layer(ui-reference);
 @import url('reference/decision-control.css') layer(ui-reference);
 @import url('reference/description-list.css') layer(ui-reference);
 @import url('reference/diagram-canvas.css') layer(ui-reference);

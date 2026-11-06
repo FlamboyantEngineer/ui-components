@@ -474,6 +474,7 @@
   "fieldActions": "Acciones de {label}",
   "rangeUnderflow": "Introduce {minimum} o más.",
   "quantityUnreadable": "Introduce un número en {units}.",
+  "decimalUnreadable": "Introduce un número decimal.",
   "numberIncrease": "Aumentar",
   "numberDecrease": "Disminuir",
   "rangeOverflow": "Introduce {maximum} o menos.",

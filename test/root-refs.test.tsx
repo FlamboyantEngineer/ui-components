@@ -47,6 +47,7 @@ import { ConditionBuilder } from '../src/components/condition-builder/condition-
 import { ContextMenu } from '../src/components/context-menu/context-menu.js';
 import { createMenuController } from '../src/components/context-menu/menu-controller.js';
 import { DateTimeField } from '../src/components/date-time-field/date-time-field.js';
+import { DecimalField } from '../src/components/decimal-field/decimal-field.js';
 import { DecisionControl } from '../src/components/decision-control/decision-control.js';
 import { DescriptionList, DescriptionRow } from '../src/components/description-list/index.js';
 import { DiagramPaletteItem } from '../src/components/diagram-canvas/index.js';
@@ -503,6 +504,7 @@ const fieldCases: Record<string, RootRefCase> = {
   CodeEditor: { element: (ref) => <CodeEditor ref={ref} label="Query" />, root: 'ui-field' },
   ColorField: { element: (ref) => <ColorField ref={ref} label="Colour" />, root: 'ui-field' },
   DateTimeField: { element: (ref) => <DateTimeField ref={ref} label="Due" />, root: 'ui-field' },
+  DecimalField: { element: (ref) => <DecimalField ref={ref} label="Weight" />, root: 'ui-field' },
   FileField: {
     element: (ref) => <FileField ref={ref} label="Attachments" onSelect={() => {}} />,
     root: 'ui-field',

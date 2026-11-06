@@ -53,6 +53,7 @@ export * from './components/context-menu/index.js';
 export * from './components/copy-button/index.js';
 export * from './components/dashboard-grid/index.js';
 export * from './components/date-time-field/index.js';
+export * from './components/decimal-field/index.js';
 export * from './components/decision-control/index.js';
 export * from './components/description-list/index.js';
 export * from './components/diagram-canvas/index.js';

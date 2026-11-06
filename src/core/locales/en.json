@@ -474,6 +474,7 @@
   "fieldActions": "{label} actions",
   "rangeUnderflow": "Enter {minimum} or more.",
   "quantityUnreadable": "Enter a number in {units}.",
+  "decimalUnreadable": "Enter a decimal number.",
   "numberIncrease": "Increase",
   "numberDecrease": "Decrease",
   "rangeOverflow": "Enter {maximum} or less.",
