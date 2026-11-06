@@ -32,6 +32,32 @@ describe('SearchField', () => {
     expect(inputRef.current).toBe(screen.getByRole('searchbox', { name: 'Filter fruit' }));
   });
 
+  it('UIC-SEARCH-FIELD-1.1 UIC-SEARCH-FIELD-1.3 UIC-SEARCH-FIELD-1.6 hands its input to a callback ref and still focuses and resets it', async () => {
+    const user = userEvent.setup();
+    const attached: (HTMLInputElement | null)[] = [];
+    const cleanup = vi.fn();
+    const inputRef = (node: HTMLInputElement | null) => {
+      attached.push(node);
+      return cleanup;
+    };
+    const field = (
+      <ResetForm cancels={false}>
+        <SearchField label="Filter fruit" name="query" defaultValue="fig" inputRef={inputRef} />
+      </ResetForm>
+    );
+    const { unmount } = render(field);
+    const box = screen.getByRole('searchbox', { name: 'Filter fruit' });
+    expect(attached).toEqual([box]);
+    await user.type(box, 's');
+    await user.click(screen.getByRole('button', { name: 'Clear search' }));
+    expect(box).toHaveValue('');
+    expect(box).toHaveFocus();
+    await pressReset(user);
+    expect(box).toHaveValue('fig');
+    unmount();
+    expect(cleanup).toHaveBeenCalledTimes(1);
+  });
+
   it('UIC-SEARCH-FIELD-1.1 UIC-FIELD-8.3 hands its input props, name and locks to the input', async () => {
     const user = userEvent.setup();
     const events: string[] = [];

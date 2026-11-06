@@ -70,7 +70,7 @@ describe('Combobox remote search', () => {
     expect(input()).toHaveValue('lis');
     await user.click(await screen.findByRole('option', { name: 'Lisbon' }));
     expect(loadItems).toHaveBeenLastCalledWith('lis', expect.any(AbortSignal));
-    expect(onChange).toHaveBeenLastCalledWith(['lisbon']);
+    expect(onChange).toHaveBeenLastCalledWith(['lisbon'], { reason: 'select' });
   });
 
   it('UIC-COMBOBOX-5.1 searches only an open list, at once on opening and after a pause in typing', async () => {
@@ -127,7 +127,7 @@ describe('Combobox remote search', () => {
     await waitFor(() => expect(optionLabels()).toEqual(['Cairo', 'Lima', 'Lisbon']));
     expect(screen.getByText('Recently used')).toHaveClass('ui-combobox__section-header');
     await user.click(screen.getByRole('option', { name: 'Lisbon' }));
-    expect(onChange).toHaveBeenLastCalledWith('lisbon');
+    expect(onChange).toHaveBeenLastCalledWith('lisbon', { reason: 'select' });
     expect(input()).toHaveValue('Lisbon');
     await user.tab();
     expect(input()).toHaveValue('Lisbon');

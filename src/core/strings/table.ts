@@ -11,6 +11,16 @@ interface TableStrings {
   field: string;
   /** Applies the bulk edit to the selected rows. */
   apply: string;
+  /** Opens a table's export menu. */
+  exportCsv: string;
+  /** Exports the rows of the current page. */
+  exportPage: string;
+  /** Exports every row of the table. */
+  exportAllRows: string;
+  /** Exports the rows loaded so far, when the table holds only part of its rows. */
+  exportLoadedRows: string;
+  /** Exports the selected rows. */
+  exportSelectedRows: string;
 }
 
 /** The module's text, with the message values each text function reads its arguments as. */

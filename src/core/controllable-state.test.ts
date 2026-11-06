@@ -72,4 +72,27 @@ describe('useControllableState', () => {
     act(() => result.current[1]('b'));
     expect(onChange).toHaveBeenCalledTimes(3);
   });
+
+  it('UIC-COMPOSITION-5.1 compares a controlled set with the controlled value after uncontrolled use', () => {
+    const onChange = vi.fn();
+    const { result, rerender } = renderHook(
+      ({ value }: { value: boolean | undefined }) => useControllableState(value, false, onChange),
+      { initialProps: { value: undefined as boolean | undefined } },
+    );
+    act(() => result.current[1](true));
+    expect(result.current[0]).toBe(true);
+    rerender({ value: false });
+    expect(result.current[0]).toBe(false);
+    act(() => result.current[1](true));
+    expect(onChange.mock.calls).toEqual([[true], [true]]);
+    act(() => result.current[1](false));
+    expect(onChange).toHaveBeenCalledTimes(2);
+    rerender({ value: undefined });
+    expect(result.current[0]).toBe(true);
+    act(() => result.current[1](true));
+    expect(onChange).toHaveBeenCalledTimes(2);
+    act(() => result.current[1](false));
+    expect(onChange.mock.calls).toEqual([[true], [true], [false]]);
+    expect(result.current[0]).toBe(false);
+  });
 });

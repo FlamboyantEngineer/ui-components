@@ -30,6 +30,18 @@ function createReleaseFixture() {
     mkdirSync(dirname(target), { recursive: true });
     copyFileSync(join(process.cwd(), 'scripts', script), target);
   }
+  // The package check records the directory each run checks, and fails a run on the release tree
+  // when FAIL_RELEASE_CHECK is set.
+  writeFileSync(
+    join(fixture, 'scripts/check-fixture.mjs'),
+    [
+      "import { appendFileSync } from 'node:fs';",
+      "const dir = process.argv.indexOf('--dir');",
+      "const checked = dir === -1 ? 'checkout' : process.argv[dir + 1];",
+      "appendFileSync('labs/build/checks.log', `${checked}\\n`);",
+      'if (dir !== -1 && process.env.FAIL_RELEASE_CHECK) process.exit(1);',
+    ].join('\n'),
+  );
   const manifest = {
     name: 'release-fixture',
     version: '0.1.0',
@@ -37,11 +49,9 @@ function createReleaseFixture() {
     scripts: {
       prepare: 'node missing-prepare.mjs',
       ...Object.fromEntries(
-        ['build:package', 'build:labs', 'check:package', 'pack:labs'].map((name) => [
-          name,
-          'node -e "0"',
-        ]),
+        ['build:package', 'build:labs', 'pack:labs'].map((name) => [name, 'node -e "0"']),
       ),
+      'check:package': 'node scripts/check-fixture.mjs',
     },
   };
   const manifestText = `${JSON.stringify(manifest, null, 2)}\n`;
@@ -82,6 +92,41 @@ it('UIC-LABS-1.4 packs the tagged manifest and build output while preserving the
   );
   expect(readFileSync(join(fixture, 'package.json'), 'utf8')).toBe(manifestText);
   expect(git(['branch', '--show-current']).trim()).toBe('main');
+  // The package check ran on the checkout, then on the release tree it tagged.
+  const checks = readFileSync(join(fixture, 'labs/build/checks.log'), 'utf8').trim().split('\n');
+  expect(checks).toHaveLength(2);
+  expect(checks[0]).toBe('checkout');
+  expect(checks[1]).toMatch(/ui-release-.*package$/);
+});
+
+it('UIC-LABS-1.4 refuses to release with untracked files, which the build would compile', () => {
+  const { fixture, git } = createReleaseFixture();
+  mkdirSync(join(fixture, 'src'));
+  writeFileSync(join(fixture, 'src/extra.ts'), 'export const unreviewed = true;\n');
+  let message = '';
+  try {
+    execFileSync(process.execPath, [join(fixture, 'scripts/release.mjs')], {
+      cwd: fixture,
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
+  } catch (error) {
+    message = String((error as { stderr?: unknown }).stderr);
+  }
+  expect(message).toContain('src/extra.ts');
+  expect(git(['tag', '--list', 'v0.1.0']).trim()).toBe('');
+  expect(git(['status', '--porcelain', '--untracked-files=all']).trim()).toBe('?? src/extra.ts');
+});
+
+it('UIC-LABS-1.4 leaves the version untagged when the release tree fails the package check', () => {
+  const { fixture, git } = createReleaseFixture();
+  expect(() =>
+    execFileSync(process.execPath, [join(fixture, 'scripts/release.mjs')], {
+      cwd: fixture,
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: { ...process.env, FAIL_RELEASE_CHECK: '1' },
+    }),
+  ).toThrow();
+  expect(git(['tag', '--list', 'v0.1.0']).trim()).toBe('');
 });
 
 it('UIC-LABS-1.4 leaves the version untagged when packing fails', () => {

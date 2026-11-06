@@ -1,10 +1,11 @@
 'use client';
 
-import { type ReactNode, useLayoutEffect, useRef } from 'react';
+import { type ReactNode, useId, useLayoutEffect, useRef } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import { LinkGlyph } from '../../core/glyphs.js';
 import { createHooks, dataAttributes, mergeClassNames } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Button } from '../button/button.js';
 import {
   PropertyRow,
@@ -40,6 +41,10 @@ export interface FourSideField<T> {
   value: T | undefined;
   /** Sets the side's value, and the sides linked to it. */
   onChange: (value: T) => void;
+  /** Whether `errors` holds a message for the side: the control sets `aria-invalid`. */
+  isInvalid: boolean;
+  /** The id of the strip's error message while the side has one, for the control's `aria-describedby`. */
+  errorId: string | undefined;
 }
 
 interface FourSideOptions<S extends string, A extends string, T> extends Omit<
@@ -54,6 +59,12 @@ interface FourSideOptions<S extends string, A extends string, T> extends Omit<
   defaultValue?: FourSideValues<S, T> | undefined;
   /** Called with every side's value when one changes. */
   onChange?: ((value: FourSideValues<S, T>) => void) | undefined;
+  /**
+   * A message for each side whose value is wrong. The strip marks those cells and shows the
+   * messages on a line of their own across all four controls, so a message is never squeezed
+   * under one narrow control; sides that share a message show it once.
+   */
+  errors?: FourSideValues<S, ReactNode> | undefined;
   /**
    * Where each side control's value sits in its box, published for the stylesheet: `start`,
    * `center` or `end`, in the reading direction. Without it, the controls keep their own alignment.
@@ -97,7 +108,13 @@ const noAxes: readonly string[] = [];
 const physicalAxes: readonly BoxAxis[] = ['vertical', 'horizontal'];
 const logicalAxes: readonly LogicalBoxAxis[] = ['block', 'inline'];
 
-const hooks = createHooks('four-side-property-strip', ['side', 'bracket', 'link']);
+const hooks = createHooks('four-side-property-strip', [
+  'side',
+  'bracket',
+  'link',
+  'error',
+  'message',
+]);
 
 /** Sides one toggle links, drawn as a bracket below their cells: all four, or an opposite pair. */
 interface LinkGroup {
@@ -156,6 +173,45 @@ function useBatchedEdits<V>(values: V, setValues: (next: V) => void) {
   };
 }
 
+/** The sides with a message in `errors`, grouped by message: a text shared by sides shows once. */
+function errorLines(sides: readonly string[], errors: FourSideValues<string, ReactNode>) {
+  const lines: { sides: string[]; message: ReactNode }[] = [];
+  for (const side of sides) {
+    const message = errors[side];
+    if (isEmptyNode(message)) continue;
+    const same =
+      typeof message === 'string' ? lines.find((line) => line.message === message) : undefined;
+    if (same) same.sides.push(side);
+    else lines.push({ sides: [side], message });
+  }
+  return lines;
+}
+
+/**
+ * The strip's messages, one line per distinct message across the whole strip. It stays in the
+ * document while empty, as a live region the side controls refer to.
+ */
+function ErrorMessages({
+  id,
+  lines,
+}: {
+  id: string;
+  lines: readonly { sides: readonly string[]; message: ReactNode }[];
+}) {
+  return (
+    <span {...hooks.slot('error')} id={id} aria-live="polite" aria-atomic="true">
+      {lines.map((line) => (
+        <span
+          key={line.sides.join(' ')}
+          {...hooks.slot('message', { sides: line.sides.join(' ') })}
+        >
+          {line.message}
+        </span>
+      ))}
+    </span>
+  );
+}
+
 /**
  * A bracket below each group of sides a toggle links, its ends at the group's outer cells and its
  * own toggle at its centre, named after the sides it links.
@@ -201,11 +257,20 @@ function LinkBrackets({
  * One property row holding a value for each side of a box, such as margins or padding: top,
  * bottom, left and right, or their flow-relative counterparts. Each side's cell shows the first
  * letter of the side's name; the names are also words a query matches. Holding the values, the
- * strip can link its sides so that one edit sets all four or each opposite pair.
+ * strip can link its sides so that one edit sets all four or each opposite pair. Messages for
+ * wrong sides show across the whole strip, below the controls.
  */
 export function FourSidePropertyStrip<T = string>(props: FourSidePropertyStripProps<T>) {
   const { sides: mode, renderSide, value, defaultValue, onChange, className, ...row } = props;
-  const { link, linked: linkedProp, defaultLinked, onLinkedChange, valueAlign, ...rest } = row;
+  const {
+    link,
+    linked: linkedProp,
+    defaultLinked,
+    onLinkedChange,
+    valueAlign,
+    errors,
+    ...rest
+  } = row;
   const strings = useUiStrings();
   const [values, setValues] = useControllableState<FourSideValues<string, T>>(
     value,
@@ -227,26 +292,32 @@ export function FourSidePropertyStrip<T = string>(props: FourSidePropertyStripPr
       : strings.boxSide(side as BoxSide);
   const edit = useBatchedEdits(values, setValues);
   const draw = renderSide as (side: string, field: FourSideField<T>) => ReactNode;
+  const errorId = `${useId()}-error`;
+  const lines = errorLines(sides, (errors ?? {}) as FourSideValues<string, ReactNode>);
+  const isSideInvalid = (side: string) => lines.some((line) => line.sides.includes(side));
 
   return (
     <PropertyRow
       {...rest}
-      {...dataAttributes({ link, valueAlign })}
+      {...dataAttributes({ link, valueAlign, invalid: lines.length > 0 })}
       className={mergeClassNames(hooks.className, className)}
       keywords={sides.map(nameOf)}
     >
       <PropertyStrip>
         {sides.map((side) => {
           const name = nameOf(side);
+          const isInvalid = isSideInvalid(side);
           const field: FourSideField<T> = {
             value: values[side],
             onChange: (next) => edit((base) => setSide(base, { side, value: next }, linkedGroups)),
+            isInvalid,
+            errorId: isInvalid ? errorId : undefined,
           };
           const isLinked = linkedGroups.some((group) => group.sides.includes(side));
           return (
             <PropertyStripCell
               key={side}
-              {...hooks.slot('side', { side, linked: isLinked })}
+              {...hooks.slot('side', { side, linked: isLinked, invalid: isInvalid })}
               letter={Array.from(name)[0] ?? ''}
               label={name}
             >
@@ -255,6 +326,7 @@ export function FourSidePropertyStrip<T = string>(props: FourSidePropertyStripPr
           );
         })}
         <LinkBrackets groups={groups} axes={axes} linked={linked} onLinkedChange={setLinked} />
+        <ErrorMessages id={errorId} lines={lines} />
       </PropertyStrip>
     </PropertyRow>
   );

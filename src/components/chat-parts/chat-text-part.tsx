@@ -1,8 +1,8 @@
 'use client';
-import { Fragment, type ReactNode, useMemo } from 'react';
+import { Fragment, type ReactNode, useMemo, useState } from 'react';
 import { requireDefined } from '../../utils/require-defined.js';
 import { useLatest } from '../../utils/use-latest.js';
-import { useStableArray } from '../../utils/use-stable-array.js';
+import { isSameArray, useStableArray } from '../../utils/use-stable-array.js';
 import { createCitationOverride } from '../chat-sources/chat-sources.js';
 import { createCodeBlockOverride } from '../code-block/code-block.js';
 import { Markdown, type MarkdownNode } from '../markdown/markdown.js';
@@ -139,14 +139,32 @@ function createTokenOverride({
 
 const noTokens: readonly ChatTextToken[] = [];
 
+/**
+ * The text's tokens and its Markdown source with their markers. A text that grows continues the
+ * previous analysis, parsing only its unsettled end, and the tokens keep their identity while they
+ * stay the same, so a streamed reply keeps its settled blocks.
+ */
+function useTokenSource(text: string, partTokens: readonly ChatTextToken[]) {
+  const [placed, setPlaced] = useState<{
+    text: string;
+    partTokens: readonly ChatTextToken[];
+    tokens: readonly ChatTextToken[];
+    written: ReturnType<typeof writeTokenSource>;
+  } | null>(null);
+  if (placed?.text === text && placed.partTokens === partTokens) return placed;
+  const listed = listTextTokens(text, partTokens);
+  const tokens = placed && isSameArray(placed.tokens, listed) ? placed.tokens : listed;
+  const written = writeTokenSource(text, tokens, placed?.written.parses);
+  const next = { text, partTokens, tokens, written };
+  setPlaced(next);
+  return next;
+}
+
 function MarkdownText({ part, renderNode, getReference }: Omit<ChatTextPartViewProps, 'format'>) {
   // The tokens by content, so a host that rebuilds the array each render keeps the overrides.
   const partTokens = useStableArray(part.tokens ?? noTokens);
-  const placed = useMemo(() => {
-    const tokens = listTextTokens(part.text, partTokens);
-    return { tokens, ...writeTokenSource(part.text, tokens) };
-  }, [part.text, partTokens]);
-  const { tokens, marker } = placed;
+  const { tokens, written } = useTokenSource(part.text, partTokens);
+  const { marker } = written;
   const nodeRenderer = useMemo(
     () =>
       tokens.length === 0
@@ -156,7 +174,7 @@ function MarkdownText({ part, renderNode, getReference }: Omit<ChatTextPartViewP
   );
   return (
     <Markdown
-      source={placed.source}
+      source={written.source}
       isStreaming={part.status === 'streaming'}
       renderNode={nodeRenderer}
       className={hooks.slotClass('text')}

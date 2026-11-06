@@ -1,0 +1,153 @@
+/* Form Layout: a nested layout of sections, rows and grids, and the designer that edits it. */
+
+.ui-form-layout,
+.ui-form-layout__children {
+  display: grid;
+  gap: 12px;
+}
+
+.ui-form-layout__node {
+  min-width: 0;
+}
+
+.ui-form-layout__title {
+  margin-bottom: 6px;
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-form-layout__children[data-arrangement='row'] {
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+}
+
+.ui-form-layout__children[data-arrangement='grid'] {
+  grid-template-columns: repeat(var(--ui-form-layout-columns, 2), minmax(0, 1fr));
+}
+
+.ui-form-layout-designer {
+  display: grid;
+  gap: 10px;
+}
+
+.ui-form-layout-designer__palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ui-form-layout-designer__palette-item[data-dragging] {
+  opacity: var(--ref-dragging-opacity);
+}
+
+.ui-form-layout-designer__canvas,
+.ui-form-layout-designer__children {
+  display: grid;
+  gap: 8px;
+}
+
+.ui-form-layout-designer__canvas {
+  padding: 8px;
+  border: 1px dashed var(--ref-border-strong);
+  border-radius: var(--ref-radius);
+  min-height: 3em;
+}
+
+.ui-form-layout-designer__canvas:focus-visible,
+.ui-form-layout-designer__node:focus-visible {
+  outline: var(--ref-focus-ring);
+  outline-offset: 2px;
+}
+
+.ui-form-layout-designer__empty {
+  color: var(--ref-muted);
+}
+
+.ui-form-layout-designer__children[data-arrangement='row'] {
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+}
+
+.ui-form-layout-designer__children[data-arrangement='grid'] {
+  grid-template-columns: repeat(var(--ui-form-layout-columns, 2), minmax(0, 1fr));
+}
+
+.ui-form-layout-designer__node {
+  min-width: 0;
+  padding: 4px 6px 6px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-surface);
+}
+
+.ui-form-layout-designer__node[data-selected] {
+  border-color: var(--ref-accent);
+  background: var(--ref-selected);
+}
+
+.ui-form-layout-designer__node[data-locked] {
+  border-style: dashed;
+}
+
+.ui-form-layout-designer__node[data-dragging] {
+  opacity: var(--ref-dragging-opacity);
+}
+
+.ui-form-layout-designer__node[data-position='before'] {
+  box-shadow: inset 0 3px 0 var(--ref-accent);
+}
+
+.ui-form-layout-designer__node[data-position='after'] {
+  box-shadow: inset 0 -3px 0 var(--ref-accent);
+}
+
+.ui-form-layout-designer__header {
+  /* A node narrower than its handle and Remove button wraps them rather than spilling out. */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  min-height: 28px;
+}
+
+.ui-form-layout-designer__handle {
+  cursor: grab;
+}
+
+.ui-form-layout-designer__title {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-form-layout-designer__remove {
+  flex: none;
+}
+
+.ui-form-layout-designer__body {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.ui-form-layout-designer__slot {
+  min-height: 12px;
+  border: 1px dashed transparent;
+  border-radius: var(--ref-radius-sm);
+}
+
+.ui-form-layout-designer__slot[data-drop-target] {
+  border-color: var(--ref-accent);
+}
+
+.ui-form-layout-designer__inspector {
+  padding-top: 8px;
+  border-top: 1px solid var(--ref-border);
+}
+
+.ui-form-layout-designer__status {
+  /* Visually hidden by the component; styled here only so the hook is covered. */
+  color: inherit;
+}

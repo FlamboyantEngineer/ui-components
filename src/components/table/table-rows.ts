@@ -82,6 +82,8 @@ export interface TableColumn<T> extends TableColumnSizing {
   bulkEdit?: TableBulkEdit | undefined;
   /** The column's cell in group header rows, from the group's rows. */
   aggregate?: TableAggregate<T> | undefined;
+  /** A cell's text in a CSV export. Defaults to its value as text, dates in ISO 8601. */
+  getExportText?: ((row: T) => string) | undefined;
   /** The column's cell in a summary row under the rows, from every row the table presents. */
   renderFooter?: ((rows: readonly T[]) => ReactNode) | undefined;
 }

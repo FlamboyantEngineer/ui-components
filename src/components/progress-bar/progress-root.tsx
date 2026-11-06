@@ -1,7 +1,9 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import type { AriaLabellingProps } from '../../core/events.js';
 import type { ComponentHooks } from '../../core/hooks.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import {
   Label,
   Meter as AriaMeter,
@@ -10,14 +12,29 @@ import {
 } from '../../primitives/index.js';
 import { clamp } from '../../utils/clamp.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
-import type { ProgressBarProps, ProgressValues } from './progress-bar.js';
-import { resolveMeterTone } from './progress-meter.js';
-
-/** A progress indicator's root: a progress bar, its bounded range and the indicator's hooks. */
-interface ProgressRootProps extends Omit<
+import type { ElementRender } from '../../utils/render-element.js';
+import type {
   ProgressBarProps,
-  'label' | 'showValueLabel' | 'segments'
-> {
+  ProgressBarShape,
+  ProgressBarSize,
+  ProgressBarTone,
+  ProgressRangeProps,
+  ProgressValues,
+} from './progress-bar.js';
+import { type MeterThresholds, resolveMeterTone } from './progress-meter.js';
+
+/** A bounded indicator's root: a progress bar or a meter, its range and the indicator's hooks. */
+interface ProgressRootProps
+  extends BaseProps, AriaLabellingProps, ProgressRangeProps, RefProps<HTMLDivElement> {
+  /** Work toward completion, or a measured quantity judged by its thresholds. */
+  mode: 'progress' | 'meter';
+  shape: ProgressBarShape;
+  size: ProgressBarSize;
+  tone?: ProgressBarTone | undefined;
+  /** A meter's regions, which judge its tone unless `tone` is given. */
+  thresholds?: MeterThresholds | undefined;
+  isIndeterminate?: boolean | undefined;
+  render?: ElementRender<'div', ProgressValues> | undefined;
   /** The bar draws discrete units instead of one fill. */
   isSegmented?: boolean | undefined;
   /** The hooks of the indicator that renders the root. */
@@ -44,7 +61,7 @@ function toFinite(value: number | undefined, fallback: number): number {
  * minimum, the maximum is never below the minimum and the value stays inside the range.
  */
 export function resolveProgressRange(
-  range: Pick<ProgressBarProps, 'value' | 'minValue' | 'maxValue'>,
+  range: Pick<ProgressRangeProps, 'value' | 'minValue' | 'maxValue'>,
 ): { value: number; minValue: number; maxValue: number } {
   const minValue = toFinite(range.minValue, 0);
   const maxValue = Math.max(
@@ -74,7 +91,7 @@ export function toProgressRatio(range: ReturnType<typeof resolveProgressRange>):
  */
 function useWideRangeText(
   range: ReturnType<typeof resolveProgressRange>,
-  { valueLabel, formatOptions }: Pick<ProgressBarProps, 'valueLabel' | 'formatOptions'>,
+  { valueLabel, formatOptions }: Pick<ProgressRangeProps, 'valueLabel' | 'formatOptions'>,
 ): string | undefined {
   const options = formatOptions ?? { style: 'percent' };
   const format = useNumberFormatter(options);
@@ -89,16 +106,14 @@ function isComplete(range: ReturnType<typeof resolveProgressRange>): boolean {
   return range.maxValue > range.minValue && range.value === range.maxValue;
 }
 
-/** The root both progress indicators render; `children` draws the indicator. */
+/** The root every bounded indicator renders; `children` draws the indicator. */
 export function ProgressRoot({
   hooks: rootHooks,
   size,
   tone,
-  mode = 'progress',
-  shape = 'linear',
-  low,
-  high,
-  optimum,
+  mode,
+  shape,
+  thresholds = {},
   isIndeterminate = false,
   value,
   minValue,
@@ -122,10 +137,8 @@ export function ProgressRoot({
   });
   const complete = mode === 'progress' && !indeterminate && isComplete(range);
   const judged =
-    tone ??
-    (mode === 'meter' ? resolveMeterTone(range, { low, high, optimum }) : undefined) ??
-    'neutral';
-  const data = { size, tone: judged, mode, shape, indeterminate, complete, segmented: isSegmented };
+    tone ?? (mode === 'meter' ? resolveMeterTone(range, thresholds) : undefined) ?? 'neutral';
+  const data = { size, tone: judged, shape, indeterminate, complete, segmented: isSegmented };
   const Root = mode === 'meter' ? AriaMeter : AriaProgressBar;
   return (
     <Root
@@ -142,7 +155,7 @@ export function ProgressRoot({
   );
 }
 
-/** The label and value text both progress indicators show. */
+/** The label and value text every bounded indicator shows. */
 export function ProgressText({
   hooks: textHooks,
   label,

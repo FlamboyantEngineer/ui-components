@@ -9,6 +9,9 @@ export {
 export { useNow, useTimeZone, useToday } from './clock.js';
 export type {
   AriaLabellingProps,
+  CollectionHandle,
+  CollectionRevealMiss,
+  CollectionRevealResult,
   CollectionSelectionProps,
   ExpansionProps,
   FocusEventProps,

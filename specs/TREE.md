@@ -212,6 +212,29 @@ Filtering, expansion, selection, the current and disabled rows, loading and empt
 Implementation: `src/components/tree/tree.tsx`, `src/components/tree/use-tree-model.ts`, `src/components/tree/tree-section.tsx`, `labs/reference/tree.css`
 Verification: `src/components/tree/tree-sections.test.tsx`, `e2e/tree-sections.spec.ts`
 
+## UIC-TREE-9 - Revealing rows by id
+
+### UIC-TREE-9.1 - Tree handle
+
+`handleRef` shall receive a `TreeHandle` ([UIC-COLLECTIONS-1.6](COLLECTIONS.md#uic-collections-16---revealing-items-by-key)) whose `revealKey(id)` scrolls the row with that id into view with the nearest scroll, leaving focus where it is, and whose `focusKey(id)` also focuses it, so the arrow keys continue from there. Both resolve `{ found: true }` once the row is in view. Ids keep their type, so `2` and `"2"` reveal different rows. The handle is separate from `ref`, which keeps the tree element.
+
+Implementation: `src/components/tree/tree-reveal.ts`, `src/utils/use-collection-handle.ts`
+Verification: `src/components/tree/tree-reveal.test.tsx`, `e2e/tree-reveal.spec.ts`
+
+### UIC-TREE-9.2 - Rows the tree does not show
+
+A row the tree does not show shall resolve `{ found: false, reason }`: `missing` when no loaded item has the id (children not loaded yet included), `filtered` when the filter hides it, and `collapsed` when a collapsed ancestor holds it; the ancestors a filter reveals count as expanded. The handle never expands rows or loads children; the caller does that and reveals again.
+
+Implementation: `src/components/tree/tree-reveal.ts`
+Verification: `src/components/tree/tree-reveal.test.tsx`
+
+### UIC-TREE-9.3 - Virtualized rows
+
+A virtualized tree shall reveal a row it has not drawn by scrolling itself to the row's place in React Aria's list layout and waiting up to eight frames for the row, as a table does ([UIC-TABLE-19.3](TABLE.md#uic-table-193---virtualized-rows)); a tree that unmounts meanwhile resolves `unmounted`.
+
+Implementation: `src/utils/use-collection-handle.ts`, `src/components/tree/tree-reveal.ts`
+Verification: `src/components/tree/tree-reveal.test.tsx`, `e2e/tree-reveal.spec.ts`
+
 ## Hooks
 
 | Hook                      | Kind      | Values                                      | Description                                                                    |

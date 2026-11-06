@@ -44,7 +44,8 @@ export type NumberFieldTextInputProps = Pick<
   'placeholder' | 'autoComplete' | 'enterKeyHint'
 >;
 
-export interface NumberFieldProps
+/** The props of a `NumberField` that holds one number in a number input. */
+export interface NumberEntryFieldProps
   extends FieldInputProps<number | null>, NumberFieldTextInputProps {
   /** Holds a range with `true` (`NumberRangeFieldProps`); a single number otherwise. */
   range?: false | undefined;
@@ -90,8 +91,15 @@ export interface NumberFieldProps
   units?: NumberFieldUnits | undefined;
 }
 
+/**
+ * The props of any `NumberField`: a number input, a slider (`display="slider"`) or a range
+ * (`range`), told apart by `range` and `display`. A wrapper typed with it forwards every mode.
+ */
+export type NumberFieldProps =
+  NumberEntryFieldProps | NumberSliderFieldProps | NumberRangeFieldProps;
+
 export type NumberControlConfig = Pick<
-  NumberFieldProps,
+  NumberEntryFieldProps,
   | 'name'
   | 'minValue'
   | 'maxValue'
@@ -221,7 +229,7 @@ function NumberEntryField({
   commitBehavior = 'snap',
   units,
   ...props
-}: NumberFieldProps) {
+}: NumberEntryFieldProps) {
   const strings = useUiStrings();
   const { minValue, maxValue, step, formatOptions } = props;
   const formatter = useNumberFormatter(formatOptions);
@@ -294,10 +302,10 @@ export type { NumberFieldRadix } from './radix-number.js';
  */
 export function NumberField(props: NumberRangeFieldProps): ReactElement;
 export function NumberField(props: NumberSliderFieldProps): ReactElement;
+export function NumberField(props: NumberEntryFieldProps): ReactElement;
+// Last, so `ComponentProps<typeof NumberField>` holds every mode and a wrapper can forward any.
 export function NumberField(props: NumberFieldProps): ReactElement;
-export function NumberField(
-  props: NumberFieldProps | NumberSliderFieldProps | NumberRangeFieldProps,
-): ReactElement {
+export function NumberField(props: NumberFieldProps): ReactElement {
   if (props.range) return <NumberRangeField {...props} />;
   if (props.display === 'slider') return <NumberSliderField {...props} />;
   const { range: _range, display: _display, ...entry } = props;

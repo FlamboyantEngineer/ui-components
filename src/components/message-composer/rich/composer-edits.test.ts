@@ -1,4 +1,5 @@
-import { EditorState, TextSelection } from 'prosemirror-state';
+import { selectAll } from 'prosemirror-commands';
+import { AllSelection, EditorState, TextSelection } from 'prosemirror-state';
 import { describe, expect, it } from 'vitest';
 import type { MessageComposerMessage } from '../composer-message.js';
 import {
@@ -55,6 +56,25 @@ describe('Rich composer text offsets', () => {
     expect(readTextSelection(selected)).toEqual({ start: 3, end: 26 });
     const caret = createTextSelection(state, { start: 5, end: 5 });
     expect(caret.from).toBe(toDocumentPosition(state.doc, 3, -1));
+  });
+
+  it('UIC-MESSAGE-COMPOSER-4.11 reads Select All as the whole text and replaces all of it', () => {
+    const messages: MessageComposerMessage[] = [
+      MESSAGE,
+      { text: 'hello\nworld', tokens: [] },
+      { text: '```\ncode\n```', tokens: [] },
+      { text: '@Ana Lopez', tokens: [{ ...ana, start: 0, end: 10 }] },
+    ];
+    for (const message of messages) {
+      let state = stateOf(message);
+      selectAll(state, (tr) => (state = state.apply(tr)));
+      expect(state.selection).toBeInstanceOf(AllSelection);
+      const range = readTextSelection(state);
+      expect(range).toEqual({ start: 0, end: message.text.length });
+      const fragment = { text: 'replacement', tokens: [] };
+      const replaced = state.apply(replaceMessageRange(state, { range, fragment }));
+      expect(serializeComposerDocument(replaced.doc)).toEqual(fragment);
+    }
   });
 });
 

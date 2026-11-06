@@ -135,6 +135,33 @@ function Adornments() {
   );
 }
 
+/** Two password fields the host shows or hides together from its own button, beside their own. */
+function HostRevealed() {
+  const [isRevealed, setIsRevealed] = useState(false);
+  return (
+    <div data-lab-field="host-reveal">
+      <Button label="Show both passwords" isSelected={isRevealed} onChange={setIsRevealed} />
+      <TextField
+        label="New password"
+        type="password"
+        allowsReveal
+        isRevealed={isRevealed}
+        onRevealChange={setIsRevealed}
+        defaultValue="maple river"
+        autoComplete="new-password"
+      />
+      <TextField
+        label="Confirm password"
+        type="password"
+        isRevealed={isRevealed}
+        defaultValue="maple river"
+        autoComplete="new-password"
+      />
+      <LabOutput name="Revealed">{isRevealed ? 'yes' : 'no'}</LabOutput>
+    </div>
+  );
+}
+
 const toHexDigits = (text: string) => text.replace(/[^0-9a-f]/gi, '').toUpperCase();
 const toIdentifier = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, '_');
 
@@ -351,6 +378,12 @@ mountLab(
         autoComplete="new-password"
         data-lab-field="password"
       />
+    </LabSection>
+    <LabSection
+      title="Password shown by the host"
+      description="The host's button shows or hides both fields together; the first field's own button changes the same state, and the second field has no button of its own."
+    >
+      <HostRevealed />
     </LabSection>
     <LabSection
       title="Input types"

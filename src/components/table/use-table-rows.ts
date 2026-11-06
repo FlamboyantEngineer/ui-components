@@ -2,8 +2,10 @@
 
 import { useMemo } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
+import type { Key } from '../../core/props.js';
 import { useLocale } from '../../primitives/index.js';
 import { clamp } from '../../utils/clamp.js';
+import { useEqualValue } from '../../utils/use-equal-value.js';
 import { createRowMatcher, type TableFilter } from './table-filters.js';
 import type { TableColumn, TableRow } from './table-rows.js';
 import { createRowComparator } from './table-sort.js';
@@ -13,8 +15,15 @@ import {
   sortTableNodes,
   type TableChildRows,
   type TableNode,
+  type TableRowPin,
 } from './table-tree.js';
 import { type TableSortOptions, type TableSortState, useTableSort } from './use-table-sort.js';
+
+/** The rows that stay at the top and the bottom of the body, by id, in order. */
+export interface TablePinnedRows {
+  top?: readonly Key[] | undefined;
+  bottom?: readonly Key[] | undefined;
+}
 
 /** Shows the rows one page at a time under a page navigation. */
 export interface TablePagination {
@@ -46,6 +55,7 @@ interface TableRowsOptions<T extends TableRow> extends TableSortOptions {
   /** The search box is drawn; without it an owned filter's query is set aside. */
   filterable?: boolean | undefined;
   pagination?: TablePagination | undefined;
+  pinnedRows?: TablePinnedRows | undefined;
 }
 
 /** The current page and how to move to another. */
@@ -58,11 +68,16 @@ interface TablePages {
 export interface TableRowsView<T> {
   /** The rows of the current page, with their presented child rows. */
   nodes: readonly TableNode<T>[];
-  /** The top-level rows of the current page. */
+  /** The top-level rows of the current page, pinned ones aside. */
   rows: readonly T[];
-  /** The top-level rows of every page, filtered and, while the table owns the sort, ordered. */
+  /** The pinned rows at each edge, on every page. */
+  pinned: { top: readonly TableNode<T>[]; bottom: readonly TableNode<T>[] };
+  /**
+   * The top-level rows of every page, filtered and, while the table owns the sort, ordered, between
+   * the pinned rows.
+   */
   presentedRows: readonly T[];
-  /** The rows of every page with their presented child rows. */
+  /** The rows of every page with their presented child rows, between the pinned rows. */
   presentedNodes: readonly TableNode<T>[];
   sort: TableSortState;
   filter: TableFilter;
@@ -86,12 +101,51 @@ function resolvePages(pagination: TablePagination | undefined, requested: number
   };
 }
 
+function isSameKeys(left: readonly Key[] | undefined, right: readonly Key[] | undefined): boolean {
+  const a = left ?? [];
+  const b = right ?? [];
+  return a.length === b.length && a.every((key, index) => Object.is(key, b[index]));
+}
+
+function isSamePinnedRows(left: TablePinnedRows | undefined, right: TablePinnedRows | undefined) {
+  return isSameKeys(left?.top, right?.top) && isSameKeys(left?.bottom, right?.bottom);
+}
+
+/**
+ * The pinned rows at each edge, from the top-level rows the keys name, in the keys' order, and the
+ * rest. A row named at both edges stays at the top.
+ */
+function splitPinnedRows<T extends TableRow>(
+  rows: readonly T[],
+  pinned: TablePinnedRows | undefined,
+) {
+  const byId = new Map(rows.map((row) => [row.id, row]));
+  const taken = new Set<Key>();
+  const take = (keys: readonly Key[] | undefined, pin: TableRowPin): TableNode<T>[] =>
+    (keys ?? []).flatMap((key) => {
+      const row = byId.get(key);
+      if (!row || taken.has(key)) return [];
+      taken.add(key);
+      return [{ id: row.id, row, children: [], pin }];
+    });
+  const top = take(pinned?.top, 'top');
+  const bottom = take(pinned?.bottom, 'bottom');
+  const rest = taken.size === 0 ? rows : rows.filter((row) => !taken.has(row.id));
+  return { top, bottom, rest };
+}
+
 /**
  * The rows a table presents: built into nested nodes, filtered and sorted by the table unless the
  * caller controls the filter or the sort, then cut to the current page.
  */
 export function useTableRows<T extends TableRow>(options: TableRowsOptions<T>): TableRowsView<T> {
-  const { rows, columns, getChildRows, pagination } = options;
+  const { columns, getChildRows, pagination } = options;
+  const pinnedRows = useEqualValue(options.pinnedRows, isSamePinnedRows);
+  const pinned = useMemo(
+    () => splitPinnedRows(options.rows, pinnedRows),
+    [options.rows, pinnedRows],
+  );
+  const rows = pinned.rest;
   const [filter, setFilter] = useControllableState(
     options.filter,
     options.defaultFilter ?? {},
@@ -112,37 +166,37 @@ export function useTableRows<T extends TableRow>(options: TableRowsOptions<T>): 
   const sort = useTableSort(options, columnIds, resetPage);
   const { locale } = useLocale();
 
-  const presented = useMemo(() => {
-    const nodes = buildTableNodes(rows, getChildRows);
+  // Each step is kept on its own inputs, so a new sort reuses the built and filtered rows, and a
+  // new filter the built rows (UIC-TABLE-2.11).
+  const tree = useMemo(() => buildTableNodes(rows, getChildRows), [rows, getChildRows]);
+  const filtered = useMemo(() => {
     const applied = hasQuery ? filter : { ...filter, query: undefined };
     const matches = isFilterOwned ? createRowMatcher(columns, applied) : null;
-    const filtered = matches ? filterTableNodes(nodes, matches) : nodes;
+    return matches ? filterTableNodes(tree, matches) : tree;
+  }, [tree, columns, filter, hasQuery, isFilterOwned]);
+  const presented = useMemo(() => {
     const compare = sort.isControlled
       ? null
       : createRowComparator(columns, sort.descriptors, locale);
     return compare ? sortTableNodes(filtered, compare) : filtered;
-  }, [
-    rows,
-    getChildRows,
-    columns,
-    filter,
-    hasQuery,
-    isFilterOwned,
-    sort.isControlled,
-    sort.descriptors,
-    locale,
-  ]);
+  }, [filtered, columns, sort.isControlled, sort.descriptors, locale]);
 
   const { page, pageCount, start, end } = resolvePages(pagination, requestedPage, presented.length);
   const nodes = useMemo(() => presented.slice(start, end), [presented, start, end]);
   const pageRows = useMemo(() => nodes.map((node) => node.row), [nodes]);
-  const presentedRows = useMemo(() => presented.map((node) => node.row), [presented]);
+  const presentedNodes = useMemo(
+    () =>
+      pinned.rest === options.rows ? presented : [...pinned.top, ...presented, ...pinned.bottom],
+    [pinned, presented, options.rows],
+  );
+  const presentedRows = useMemo(() => presentedNodes.map((node) => node.row), [presentedNodes]);
 
   return {
     nodes,
     rows: pageRows,
+    pinned,
     presentedRows,
-    presentedNodes: presented,
+    presentedNodes,
     sort,
     filter,
     onFilterChange: (next) => {

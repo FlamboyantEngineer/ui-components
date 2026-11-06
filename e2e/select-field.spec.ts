@@ -651,4 +651,44 @@ test.describe('Select Field trigger ref', () => {
     await page.waitForTimeout(1500);
     await expect(searches).toHaveText(String(next));
   });
+
+  test('UIC-SELECT-FIELD-4.4 UIC-LABS-3.8 marks a chips-inside frame dirty, invalid or warning in both themes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('select-field');
+    for (const theme of ['light', 'dark']) {
+      await page.locator('#lab-chrome').getByLabel('Theme', { exact: true }).selectOption(theme);
+      const tokens = await page.evaluate(() => {
+        const probe = document.createElement('div');
+        document.body.append(probe);
+        const read = (token: string) => {
+          probe.style.borderColor = `var(${token})`;
+          return getComputedStyle(probe).borderTopColor;
+        };
+        const values = {
+          border: read('--ref-field-border'),
+          dirty: read('--ref-dirty'),
+          invalid: read('--ref-danger'),
+          warning: read('--ref-warning'),
+        };
+        probe.remove();
+        return values;
+      });
+      const expected = {
+        resting: tokens.border,
+        dirty: tokens.dirty,
+        invalid: tokens.invalid,
+        warning: tokens.warning,
+      };
+      for (const [state, color] of Object.entries(expected)) {
+        const frame = modeCell(page, state, 'chips-inside').locator('.ui-select-field__chip-frame');
+        await expect(frame, `${theme} ${state}`).toHaveCSS('border-top-color', color);
+        // Below-chip selects keep marking the trigger.
+        const trigger = modeCell(page, state, 'multiple').locator('.ui-select-field__trigger');
+        await expect(trigger, `${theme} ${state}`).toHaveCSS('border-top-color', color);
+      }
+      expect(new Set(Object.values(expected)).size).toBe(4);
+    }
+  });
 });

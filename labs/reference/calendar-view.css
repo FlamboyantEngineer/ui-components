@@ -1,4 +1,7 @@
-/* Calendar View: a bordered grid of days, tinted event bars and a week time grid of 40px hours. */
+/*
+ * Calendar View: a bordered grid of days, tinted event bars, a week or day time grid of 40px hours,
+ * and an agenda of days under their headings.
+ */
 
 .ui-calendar-view {
   display: grid;
@@ -43,6 +46,11 @@
 .ui-calendar-view[data-view='week'] .ui-calendar-view__weekdays,
 .ui-calendar-view[data-view='week'] .ui-calendar-view__week {
   grid-template-columns: 52px repeat(7, minmax(0, 1fr));
+}
+
+.ui-calendar-view[data-view='day'] .ui-calendar-view__weekdays,
+.ui-calendar-view[data-view='day'] .ui-calendar-view__week {
+  grid-template-columns: 52px minmax(0, 1fr);
 }
 
 .ui-calendar-view__weekdays {
@@ -198,11 +206,11 @@
   min-width: 220px;
 }
 
-.ui-calendar-view[data-view='week'] .ui-calendar-view__week {
+.ui-calendar-view:is([data-view='week'], [data-view='day']) .ui-calendar-view__week {
   grid-template-rows: auto 960px;
 }
 
-.ui-calendar-view[data-view='week'] .ui-calendar-view__day,
+.ui-calendar-view:is([data-view='week'], [data-view='day']) .ui-calendar-view__day,
 .ui-calendar-view__gutter {
   display: grid;
   grid-row: span 2;
@@ -219,7 +227,7 @@
   padding: 2px 4px;
 }
 
-.ui-calendar-view[data-view='week'] .ui-calendar-view__all-day {
+.ui-calendar-view:is([data-view='week'], [data-view='day']) .ui-calendar-view__all-day {
   min-height: 24px;
   padding: 2px 0;
   border-bottom: 1px solid var(--ref-border);
@@ -353,4 +361,82 @@
   outline: 2px dashed var(--ref-accent);
   outline-offset: -2px;
   pointer-events: none;
+}
+
+/* The agenda: days in a bordered list, each a heading over its events, times in a fixed column. */
+.ui-calendar-view__agenda {
+  container: ui-calendar-view-agenda / inline-size;
+  overflow: hidden;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-canvas);
+}
+
+.ui-calendar-view__agenda-day {
+  outline: none;
+}
+
+.ui-calendar-view__agenda-day + .ui-calendar-view__agenda-day {
+  border-top: 1px solid var(--ref-border);
+}
+
+.ui-calendar-view__agenda-day:focus-visible {
+  box-shadow: var(--ref-focus-inset);
+}
+
+.ui-calendar-view__agenda-heading {
+  margin: 0;
+  padding: 6px 10px;
+  background: var(--ref-surface);
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-calendar-view__agenda-day[data-today] .ui-calendar-view__agenda-heading {
+  color: var(--ref-accent-ink);
+}
+
+.ui-calendar-view__agenda-day > .ui-calendar-view__day-content {
+  padding: 4px 10px 0;
+}
+
+.ui-calendar-view__agenda-events {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 4px 6px 6px;
+  list-style: none;
+}
+
+/* A listed event keeps its whole frame on every day it covers, and grows with wrapped text. */
+.ui-calendar-view__agenda-item > .ui-calendar-view__event {
+  display: grid;
+  grid-template-columns: minmax(0, 11rem) minmax(0, 1fr);
+  align-items: baseline;
+  gap: 12px;
+  height: auto;
+  min-height: var(--ref-control-height-sm);
+  padding: 4px 8px;
+  border-inline-start-width: 3px;
+  border-radius: var(--ref-radius-sm);
+  white-space: normal;
+}
+
+.ui-calendar-view__agenda-item .ui-calendar-view__event-time {
+  color: var(--ref-muted);
+}
+
+.ui-calendar-view__agenda-empty {
+  padding: 24px 10px;
+  color: var(--ref-muted);
+  text-align: center;
+}
+
+/* A narrow agenda, wherever the host places it, puts each time above its title. */
+@container ui-calendar-view-agenda (max-width: 30rem) {
+  .ui-calendar-view__agenda-item > .ui-calendar-view__event {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
 }

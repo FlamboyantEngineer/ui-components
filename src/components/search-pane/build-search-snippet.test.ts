@@ -86,6 +86,50 @@ describe('buildSearchSnippet', () => {
     expect(snippet.near.length).toBeLessThanOrEqual(9);
   });
 
+  it('UIC-SEARCH-PANE-4.1 cuts at grapheme boundaries of the whole source, for flag runs and long clusters', () => {
+    const boundaries = (source: string) =>
+      new Set([
+        ...Array.from(
+          new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(source),
+          (part) => part.index,
+        ),
+        source.length,
+      ]);
+    const flags = '🇺🇸'.repeat(20);
+    const cluster = `a${'\u0301'.repeat(60)}`;
+    const cases = [
+      { source: `${flags}needle${flags}`, options: { beforeLength: 9, afterLength: 9 } },
+      { source: `${flags}needle${flags}`, options: { beforeLength: 10, afterLength: 11 } },
+      {
+        source: `${'x'.repeat(30)}${cluster}${'x'.repeat(30)}needle`,
+        options: { beforeLength: 80 },
+      },
+      {
+        source: `needle${'x'.repeat(30)}${cluster}${'x'.repeat(30)}`,
+        options: { afterLength: 80 },
+      },
+      {
+        source: `${'x'.repeat(30)} ${cluster} needle ${cluster} ${'x'.repeat(30)}`,
+        options: { beforeLength: 40, afterLength: 40 },
+      },
+    ];
+    for (const { source, options } of cases) {
+      const snippet = snippetOf(source, 'needle', options);
+      const valid = boundaries(source);
+      expect(valid.has(snippet.start), `start ${String(snippet.start)}`).toBe(true);
+      expect(valid.has(snippet.end), `end ${String(snippet.end)}`).toBe(true);
+      const matchStart = source.indexOf('needle');
+      expect(matchStart - snippet.start).toBeLessThanOrEqual(options.beforeLength ?? 40);
+      expect(snippet.end - matchStart - 6).toBeLessThanOrEqual(options.afterLength ?? 80);
+    }
+    const flagged = snippetOf(`${flags}needle${flags}`, 'needle', {
+      beforeLength: 9,
+      afterLength: 9,
+    });
+    expect([72, 76]).toContain(flagged.start);
+    expect(flagged.near.startsWith('🇺🇸')).toBe(true);
+  });
+
   it('UIC-SEARCH-PANE-4.1 cuts Unicode text at word boundaries', () => {
     const snippet = snippetOf('Les poires mûres sont cuites à feu doux.', 'cuites', {
       beforeLength: 12,

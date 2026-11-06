@@ -9,3 +9,13 @@ export const progressBarHooks = createHooks('progress-bar', [
   'value',
   'segment',
 ]);
+
+/** The hook classes of the meter (specs/PROGRESS-BAR.md). */
+export const meterHooks = createHooks('meter', [
+  'ring',
+  'track',
+  'fill',
+  'label',
+  'value',
+  'description',
+]);

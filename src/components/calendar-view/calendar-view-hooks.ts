@@ -30,4 +30,10 @@ export const calendarViewHooks = createHooks('calendar-view', [
   'event-frame',
   'event-start',
   'event-end',
+  'agenda',
+  'agenda-day',
+  'agenda-heading',
+  'agenda-events',
+  'agenda-item',
+  'agenda-empty',
 ]);

@@ -36,7 +36,7 @@ Verification: `src/components/avatar/avatar.test.tsx`, `e2e/avatar.spec.ts`
 
 `Avatar` shall track its picture's loading status: `idle` when there is no picture to load (a blank `src` or a group), `loading` from a new request (UIC-AVATAR-1.4) until it loads or fails, then `loaded` or `error`; an equal request given again, even in new `imageProps` objects, keeps its status and `<img>`; each new request gets its own `<img>`, so a load or error of a request that has since changed is ignored. `onLoadingStatusChange` shall be called with the status once on mount and once each time it changes. While the picture loads, the root shall carry `data-loading`, so the stylesheet can draw a placeholder. A picture the browser settled before the avatar could listen, such as one that loaded or failed before hydration, counts as loaded or failed. A lazy picture the browser has not fetched yet stays loading until it settles.
 
-Implementation: `src/components/avatar/avatar.tsx`
+Implementation: `src/components/avatar/avatar.tsx`, `src/utils/use-image-loading.ts`
 Verification: `src/components/avatar/avatar.test.tsx`, `e2e/avatar.spec.ts`
 
 ### UIC-AVATAR-1.6 - Picture attributes

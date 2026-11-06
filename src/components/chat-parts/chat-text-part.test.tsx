@@ -132,6 +132,24 @@ describe('ChatParts text', () => {
     expect(latest).toHaveBeenCalledWith('ls', { type: 'code', code: 'ls', language: 'sh' });
   });
 
+  it('UIC-CHAT-PARTS-2.2 UIC-CHAT-PARTS-2.4 keeps finished blocks of a streaming part with tokens', () => {
+    const settled = '@Ana settled\n\nFinished paragraph\n\nTail';
+    const streamed = (text: string): ChatPart[] => [
+      {
+        type: 'text',
+        text,
+        status: 'streaming',
+        tokens: [tokenOver(text, '@Ana', { kind: 'mention', id: 'ana', label: 'Ana' })],
+      },
+      sourcesPart({ ...weather }),
+    ];
+    const { rerender } = render(<ChatParts parts={streamed(settled)} isStreaming />);
+    citations.texts = [];
+    rerender(<ChatParts parts={streamed(`${settled} grows`)} isStreaming />);
+    expect(citations.texts).toEqual(['Tail grows']);
+    expect(screen.getByText('Ana')).toBeInTheDocument();
+  });
+
   it('UIC-CHAT-PARTS-2.3 renders plain text as written, with its line breaks', () => {
     const { container } = render(
       <TextMatchProvider query="second">

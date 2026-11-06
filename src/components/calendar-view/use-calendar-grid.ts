@@ -13,14 +13,14 @@ import {
   getComposedActiveElement,
   isFocusLost,
 } from '../../utils/focus-target.js';
-import { moveFocusedDay } from './calendar-days.js';
-import type { CalendarViewMode } from './calendar-view.js';
+import { type CalendarPeriod, moveFocusedDay } from './calendar-days.js';
 
 interface CalendarGridOptions {
   /** The focused day, which holds the grid's tab stop. */
   focused: string;
   setFocused: (date: string) => void;
-  mode: CalendarViewMode;
+  /** The period on show, which PageUp and PageDown move by. */
+  period: CalendarPeriod;
   /** Whether a day focused by pointer may become the focused day (days of other months may not). */
   isInPeriod: (day: string) => boolean;
 }
@@ -45,7 +45,7 @@ export const dayCellSelector = '[role="gridcell"][data-date]';
 export function useCalendarGrid({
   focused,
   setFocused,
-  mode,
+  period,
   isInPeriod,
 }: CalendarGridOptions): CalendarGrid {
   const { locale, direction } = useLocale();
@@ -72,7 +72,7 @@ export function useCalendarGrid({
         return;
       const isRightToLeft = direction === 'rtl';
       const from = target.getAttribute('data-date') ?? focused;
-      const next = moveFocusedDay(from, { key: event.key, mode, isRightToLeft, locale });
+      const next = moveFocusedDay(from, { key: event.key, period, isRightToLeft, locale });
       if (!next) return;
       event.preventDefault();
       if (next === focused) {

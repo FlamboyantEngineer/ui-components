@@ -1,5 +1,5 @@
 import { defineStrings } from '../message-format.js';
-/** Strings of grid size pickers, character grids, transfer lists and tree select fields. */
+/** Strings of grid size pickers, character grids, transfer lists, tree select and cascader fields. */
 interface PickerStrings {
   /** Names a grid size picker that has no label of its own. */
   gridSizePicker: string;
@@ -23,6 +23,10 @@ interface PickerStrings {
   moveSelectedTo: (label: string) => string;
   /** Moves every item a transfer list's side shows to the other side, from that side's label. */
   moveAllTo: (label: string) => string;
+  /** Says a cascader field's level could not load its options. */
+  cascaderLoadFailed: string;
+  /** Separates the levels of a cascader field's chosen path (`/`); spaces surround it. */
+  cascaderPathSeparator: string;
 }
 
 /** The module's text, with the message values each text function reads its arguments as. */

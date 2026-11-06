@@ -53,16 +53,26 @@ Verification: `src/components/four-side-property-strip/four-side-property-strip.
 Implementation: `src/components/four-side-property-strip/four-side-property-strip.tsx`, `labs/reference/four-side-property-strip.css`
 Verification: `src/components/four-side-property-strip/four-side-property-strip.test.tsx`, `e2e/four-side-property-strip.spec.ts`
 
+### UIC-FOUR-SIDE-PROPERTY-STRIP-1.8 - Errors
+
+`errors` shall take a message for each side whose value is wrong. The strip shall draw, after the cells and brackets, one `ui-four-side-property-strip__error` region that stays in the document while empty, as a polite atomic live region, and holds one `ui-four-side-property-strip__message` per distinct message in cell order, listing the sides it is for in `data-sides`: sides whose message is the same text share one line, and an empty message counts as none. A side with a message publishes `data-invalid` on its cell, the row publishes `data-invalid` while any side has one, and `renderSide` receives `isInvalid` and the region's id as `errorId` (undefined while the side has no message), so the side's control can set `aria-invalid` and `aria-describedby`. The reference sheet places the region on a row of its own below the controls and their brackets, spanning all four sides, in the danger colour, each message in the direction of its own text, wrapping within the strip's width instead of widening it, and takes no room while it is empty; a wrong side's input takes the danger border.
+
+Implementation: `src/components/four-side-property-strip/four-side-property-strip.tsx`, `labs/reference/four-side-property-strip.css`
+Verification: `src/components/four-side-property-strip/four-side-property-strip.test.tsx`, `e2e/four-side-property-strip.spec.ts`
+
 ## Hooks
 
-| Hook                                   | Kind      | Values                                                                                     | Description                                               |
-| -------------------------------------- | --------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------- |
-| `ui-four-side-property-strip`          | root      |                                                                                            | The row (also `ui-property-row`).                         |
-| `ui-four-side-property-strip__side`    | slot      |                                                                                            | One side's cell (also `ui-property-strip-cell`).          |
-| `ui-four-side-property-strip__bracket` | slot      |                                                                                            | A group of sides one edit sets together, below the cells. |
-| `ui-four-side-property-strip__link`    | slot      |                                                                                            | A group's link toggle (also `ui-button`).                 |
-| `data-side`                            | attribute | `top`, `bottom`, `left`, `right`, `block-start`, `block-end`, `inline-start`, `inline-end` | On a cell: the side it edits.                             |
-| `data-sides`                           | attribute | Side names, space-separated                                                                | On a bracket: the sides it groups, in cell order.         |
-| `data-link`                            | attribute | `all`, `pairs`                                                                             | On the row: what linked sides share.                      |
-| `data-value-align`                     | attribute | `start`, `center`, `end`                                                                   | On the row: where the side controls' values sit.          |
-| `data-linked`                          | state     | `true`                                                                                     | On a cell or a bracket: its group of sides is linked.     |
+| Hook                                   | Kind      | Values                                                                                     | Description                                                        |
+| -------------------------------------- | --------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------ |
+| `ui-four-side-property-strip`          | root      |                                                                                            | The row (also `ui-property-row`).                                  |
+| `ui-four-side-property-strip__side`    | slot      |                                                                                            | One side's cell (also `ui-property-strip-cell`).                   |
+| `ui-four-side-property-strip__bracket` | slot      |                                                                                            | A group of sides one edit sets together, below the cells.          |
+| `ui-four-side-property-strip__link`    | slot      |                                                                                            | A group's link toggle (also `ui-button`).                          |
+| `ui-four-side-property-strip__error`   | slot      |                                                                                            | The messages for wrong sides, across the strip below the controls. |
+| `ui-four-side-property-strip__message` | slot      |                                                                                            | One message, for the sides in its `data-sides`.                    |
+| `data-side`                            | attribute | `top`, `bottom`, `left`, `right`, `block-start`, `block-end`, `inline-start`, `inline-end` | On a cell: the side it edits.                                      |
+| `data-sides`                           | attribute | Side names, space-separated                                                                | On a bracket or a message: the sides it groups, in cell order.     |
+| `data-link`                            | attribute | `all`, `pairs`                                                                             | On the row: what linked sides share.                               |
+| `data-value-align`                     | attribute | `start`, `center`, `end`                                                                   | On the row: where the side controls' values sit.                   |
+| `data-linked`                          | state     | `true`                                                                                     | On a cell or a bracket: its group of sides is linked.              |
+| `data-invalid`                         | state     | `true`                                                                                     | On a cell: its side has a message. On the row: some side has one.  |

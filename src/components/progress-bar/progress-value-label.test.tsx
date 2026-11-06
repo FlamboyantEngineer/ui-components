@@ -1,14 +1,13 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { LoadingCard } from '../loading-overlay/loading-overlay.js';
-import { ProgressBar, type ProgressBarProps } from './progress-bar.js';
+import { Meter, ProgressBar, type ProgressBarProps } from './progress-bar.js';
 
 // The value text is plain text, read as it shows (UIC-PROGRESS-BAR-1.4).
 
 const presentations: Array<[string, Partial<ProgressBarProps>]> = [
   ['linear', {}],
   ['circular', { shape: 'circular', showValueLabel: true }],
-  ['meter', { mode: 'meter' }],
   ['segmented', { segments: [{ id: 1, label: 'Plan', state: 'complete' }] }],
 ];
 
@@ -19,13 +18,19 @@ describe('ProgressBar value label', () => {
       const { container } = render(
         <ProgressBar label="Upload" value={40} valueLabel="4 of 10 files" {...props} />,
       );
-      const bar = screen.getByRole(props.mode === 'meter' ? 'meter' : 'progressbar');
+      const bar = screen.getByRole('progressbar');
       expect(bar).toHaveAttribute('aria-valuetext', '4 of 10 files');
       expect(container.querySelector('.ui-progress-bar__value')).toHaveTextContent(
         /^4 of 10 files$/,
       );
     },
   );
+
+  it('UIC-PROGRESS-BAR-21.3 shows and reads a meter value label as the same plain text', () => {
+    const { container } = render(<Meter label="Storage" value={40} valueLabel="40 of 100 GB" />);
+    expect(screen.getByRole('meter')).toHaveAttribute('aria-valuetext', '40 of 100 GB');
+    expect(container.querySelector('.ui-meter__value')).toHaveTextContent(/^40 of 100 GB$/);
+  });
 
   it.each(['', '   '])(
     'UIC-PROGRESS-BAR-1.4 keeps the formatted value for a blank value label %j',

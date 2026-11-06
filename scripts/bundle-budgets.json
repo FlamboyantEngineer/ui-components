@@ -1,0 +1,44 @@
+{
+  "allowance": {
+    "relative": 0.05,
+    "absolute": 2048
+  },
+  "consumers": {
+    "button-root": {
+      "raw": 167225,
+      "gzip": 53938
+    },
+    "button": {
+      "raw": 167225,
+      "gzip": 53938
+    },
+    "button-with-reference-css": {
+      "raw": 633176,
+      "gzip": 124515
+    },
+    "text-field": {
+      "raw": 393511,
+      "gzip": 122375
+    },
+    "table": {
+      "raw": 1136841,
+      "gzip": 339497
+    },
+    "markdown": {
+      "raw": 200653,
+      "gzip": 73694
+    },
+    "rich-text-editor": {
+      "raw": 680483,
+      "gzip": 208380
+    },
+    "pdf-viewer": {
+      "raw": 787260,
+      "gzip": 234919
+    },
+    "math-preview": {
+      "raw": 93414,
+      "gzip": 30393
+    }
+  }
+}

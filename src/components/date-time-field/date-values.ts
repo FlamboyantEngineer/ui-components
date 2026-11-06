@@ -31,6 +31,12 @@ export interface DateRangeValue {
   end: string;
 }
 
+/**
+ * Which days of a range must be available: every day from its start to its end (`contiguous`), or
+ * only its start and end (`endpoints`), so a range may span unavailable days such as a holiday.
+ */
+export type DateTimeFieldRangeAvailability = 'contiguous' | 'endpoints';
+
 /** A date-time field's value with its mode erased. */
 export type DateFieldValue = string | DateRangeValue | null;
 
@@ -173,11 +179,17 @@ function toCalendarDay(
   return value ? toCalendarDate(value).toString() : null;
 }
 
-/** Whether a value, or any calendar day in its inclusive range, falls on a date `isDateUnavailable` refuses. */
+/**
+ * Whether a value, or any calendar day of its inclusive range, falls on a date `isDateUnavailable`
+ * refuses; with `rangeAvailability: 'endpoints'`, only a range's start and end days count.
+ */
 export function isUnavailableValue(
   value: DateFieldValue,
   mode: DateTimeFieldMode,
-  options: DateValueOptions & { isDateUnavailable?: ((date: string) => boolean) | undefined },
+  options: DateValueOptions & {
+    isDateUnavailable?: ((date: string) => boolean) | undefined;
+    rangeAvailability?: DateTimeFieldRangeAvailability | undefined;
+  },
 ): boolean {
   const { isDateUnavailable } = options;
   const single = toSingleMode(mode);
@@ -185,6 +197,7 @@ export function isUnavailableValue(
   const ends = typeof value === 'string' ? [value] : [value.start, value.end];
   const days = ends.map((end) => toCalendarDay(end, single, options));
   if (days.some((day) => day !== null && isDateUnavailable(day))) return true;
+  if (options.rangeAvailability === 'endpoints') return false;
   const start = parseIsoDate(days[0]);
   const end = parseIsoDate(days[1]);
   if (!start || !end) return false;

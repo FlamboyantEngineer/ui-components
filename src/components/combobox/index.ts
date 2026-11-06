@@ -1,7 +1,13 @@
 export type {
+  ComboboxChangeDetails,
+  ComboboxChangeReason,
+  ComboboxInputChangeDetails,
+  ComboboxInputChangeReason,
   ComboboxItem,
   ComboboxLoader,
   ComboboxMenuTrigger,
+  ComboboxOpenChangeDetails,
+  ComboboxOpenChangeReason,
   ComboboxOption,
   ComboboxOptionRenderer,
   ComboboxPage,

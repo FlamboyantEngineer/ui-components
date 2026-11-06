@@ -6,7 +6,7 @@
 
 ### UIC-FIND-BAR-1.1 - Find box
 
-`FindBar` shall render a `ui-find-bar` element holding a small [Search Field](SEARCH-FIELD.md) (`ui-find-bar__query`) named by `label`, or the provider's `find` string, with the caller's `placeholder`. The query is `query` (controlled) or `defaultQuery` (uncontrolled), reported through `onQueryChange`; the search field's clear button and Escape empty it (unless the bar closes, UIC-FIND-BAR-1.6). `inputRef` receives the box's input, so a caller can move focus to it.
+`FindBar` shall render a `ui-find-bar` element holding a small [Search Field](SEARCH-FIELD.md) (`ui-find-bar__query`) named by `label`, or the provider's `find` string, with the caller's `placeholder`. The query is `query` (controlled) or `defaultQuery` (uncontrolled), reported through `onQueryChange`; the search field's clear button and Escape empty it (unless the bar closes, UIC-FIND-BAR-1.6). `inputRef` receives the box's input, so a caller can move focus to it; it and `replacementInputRef` take a ref object or a callback ref.
 
 Implementation: `src/components/find-bar/find-bar.tsx`
 Verification: `src/components/find-bar/find-bar.test.tsx`, `e2e/find-bar.spec.ts`

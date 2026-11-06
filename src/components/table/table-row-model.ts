@@ -20,6 +20,14 @@ export interface TableRowModel<T> {
   hideFixedHandles?: boolean;
   dragTrigger: TableDragTrigger;
   pinOffsets: TablePinOffsets;
+  /** Where a static table's pinned rows stick, and how a pinned row reports them. */
+  rowPins: {
+    /** Each pinned row's distance from its edge, by row collection key. */
+    offsets: TablePinOffsets;
+    /** The header and the summary stay in view, so pinned rows stick beside them. */
+    hasStickyEdges: boolean;
+    report: (offsets: TablePinOffsets) => void;
+  };
   editing: Pick<CellEditing<T>, 'editing' | 'commit' | 'cancel' | 'release' | 'dismiss'>;
   renderGroupLabel?: ((group: TableGroup<T>) => ReactNode) | undefined;
   /** Spreadsheet mode's selected cells, or null without it. */

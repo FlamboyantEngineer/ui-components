@@ -153,7 +153,7 @@ describe('Combobox suggestions', () => {
     expect(input()).toHaveFocus();
     await user.keyboard('{Enter}');
     expect(input()).toHaveValue('Lemon');
-    expect(onChange).toHaveBeenLastCalledWith('lemon');
+    expect(onChange).toHaveBeenLastCalledWith('lemon', { reason: 'select' });
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     await user.keyboard('{ArrowDown}');
     expect(await screen.findByRole('listbox')).toBeInTheDocument();

@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -440,6 +440,35 @@ describe('SelectField trigger', () => {
       expect(select()?.style.getPropertyValue('--ui-select-field-label-width')).toBe('98px'),
     );
     expectHooksMatchSpec(container, 'SELECT-FIELD');
+  });
+
+  it('UIC-SELECT-FIELD-2.2 UIC-MEASUREMENT-3.1 measures its labels again when a font loads later', async () => {
+    const measureText = vi.fn((text: string) => ({ width: text.length * 7 }));
+    vi.stubGlobal(
+      'OffscreenCanvas',
+      vi.fn(function () {
+        return { getContext: () => ({ measureText, font: '' }) };
+      }),
+    );
+    const fonts = Object.assign(new EventTarget(), { ready: Promise.resolve() });
+    Object.defineProperty(document, 'fonts', { value: fonts, configurable: true });
+    try {
+      const { container } = render(
+        <SelectField label="Fruit" options={fruit} placeholder="Pick" />,
+      );
+      const select = () => container.querySelector<HTMLElement>('.ui-select-field__select');
+      await waitFor(() =>
+        expect(select()?.style.getPropertyValue('--ui-select-field-label-width')).toBe('35px'),
+      );
+      // The real font arrives wider than the fallback it was first measured in.
+      measureText.mockImplementation((text: string) => ({ width: text.length * 9 }));
+      act(() => {
+        fonts.dispatchEvent(new Event('loadingdone'));
+      });
+      expect(select()?.style.getPropertyValue('--ui-select-field-label-width')).toBe('45px');
+    } finally {
+      Reflect.deleteProperty(document, 'fonts');
+    }
   });
 
   it('UIC-SELECT-FIELD-2.3 shows the replaced committed option before the current value', async () => {

@@ -47,6 +47,15 @@ test.describe('Search Field lab forms, focus and hints', () => {
     await lab.open('search-field');
     await page.getByRole('button', { name: 'Focus the search' }).click();
     await expect(page.getByRole('searchbox', { name: 'Search the archive' })).toBeFocused();
+    await page.getByRole('button', { name: 'Select the shelf query' }).click();
+    const shelves = page.getByRole('searchbox', { name: 'Search the shelves' });
+    await expect(shelves).toBeFocused();
+    expect(
+      await shelves.evaluate((input: HTMLInputElement) => [
+        input.selectionStart,
+        input.selectionEnd,
+      ]),
+    ).toEqual([0, 9]);
     await page.getByRole('button', { name: 'Mount an autofocused search' }).click();
     await expect(page.getByRole('searchbox', { name: 'Quick find' })).toBeFocused();
     const order = page.getByRole('searchbox', { name: 'Order number' });

@@ -31,13 +31,19 @@ describe('Combobox locking', () => {
       const option = await screen.findByRole('option', { name: 'Apple' });
       rerender(<Fruit onOpenChange={onOpenChange} onChange={onChange} {...lock} />);
       expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
-      expect(onOpenChange.mock.calls).toEqual([[true], [false]]);
+      expect(onOpenChange.mock.calls).toEqual([
+        [true, { reason: 'manual' }],
+        [false, { reason: 'lock' }],
+      ]);
       expect(screen.getByRole('combobox')).toHaveFocus();
       await user.click(option);
       expect(onChange).not.toHaveBeenCalled();
       rerender(<Fruit onOpenChange={onOpenChange} onChange={onChange} />);
       expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
-      expect(onOpenChange.mock.calls).toEqual([[true], [false]]);
+      expect(onOpenChange.mock.calls).toEqual([
+        [true, { reason: 'manual' }],
+        [false, { reason: 'lock' }],
+      ]);
     },
   );
 
@@ -56,7 +62,10 @@ describe('Combobox locking', () => {
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     rerender(fieldset(false));
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
-    expect(onOpenChange.mock.calls).toEqual([[true], [false]]);
+    expect(onOpenChange.mock.calls).toEqual([
+      [true, { reason: 'manual' }],
+      [false, { reason: 'lock' }],
+    ]);
   });
 
   it('UIC-COMBOBOX-5.6 reports one close for a controlled list and draws it closed while locked', () => {
@@ -65,7 +74,7 @@ describe('Combobox locking', () => {
     rerender(<Fruit isOpen onOpenChange={onOpenChange} isDisabled />);
     rerender(<Fruit isOpen onOpenChange={onOpenChange} isDisabled />);
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
-    expect(onOpenChange.mock.calls).toEqual([[false]]);
+    expect(onOpenChange.mock.calls).toEqual([[false, { reason: 'lock' }]]);
   });
 
   it('UIC-COMBOBOX-5.6 drops a pending search when the list closes on locking', async () => {

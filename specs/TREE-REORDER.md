@@ -36,7 +36,7 @@ Verification: `src/components/tree/use-tree-reorder.test.tsx`, `e2e/tree-reorder
 
 ### UIC-TREE-REORDER-2.1 - Visible rows
 
-`getVisibleTreeRows(items, options)` shall list the rows a tree shows, in order: each with its key, its parent's key (`null` at the top level), the item, whether it can move (`isMovable`, every row by default) and whether its children are listed below it (expanded with children). Children come from `getChildren`, the item's `children` by default.
+`getVisibleTreeRows(items, options)` shall list the rows a tree shows, in order: each with its key, its parent's key (`null` at the top level), the item, whether it can move (`isMovable`, every row by default) and whether its children are listed below it (expanded with children). Children come from `getChildren`, the item's `children` by default. It walks the tree without recursion, so a tree of any depth lists its rows without overflowing the call stack.
 
 Implementation: `src/utils/tree-reorder.ts`
 Verification: `src/utils/tree-reorder.test.ts`
@@ -50,7 +50,7 @@ Verification: `src/utils/tree-reorder.test.ts`, `e2e/tree-reorder.spec.ts`
 
 ### UIC-TREE-REORDER-2.3 - Drops
 
-`resolveTreeDrop(rows, move, rules)` shall apply the same rules and also refuse a drop just after a row whose children are listed below it, where a line would read as inside that row.
+`resolveTreeDrop(rows, move, rules)` shall apply the same rules and also refuse a drop just after a row whose children are listed below it, where a line would read as inside that row. The move helpers index a rows array (a snapshot: `getVisibleTreeRows` returns a new one for each change) once, by key and by place among siblings, and reuse that index for every move checked against the same array, so a drag that checks each mounted row as a target does work proportional to the rows, not to their square.
 
 Implementation: `src/utils/tree-reorder.ts`
 Verification: `src/utils/tree-reorder.test.ts`
@@ -64,7 +64,7 @@ Verification: `src/utils/tree-reorder.test.ts`
 
 ### UIC-TREE-REORDER-2.5 - Applying a move
 
-`applyTreeMove(items, move)` shall return new nested items with the row placed before, after or inside (last child of) its target, leaving the input unchanged and keeping the identity of subtrees the move does not touch. A move whose row or target is missing, or whose target lies inside the moved row, returns the items as they were.
+`applyTreeMove(items, move)` shall return new nested items with the row placed before, after or inside (last child of) its target, leaving the input unchanged and keeping the identity of subtrees the move does not touch. A move whose row or target is missing, or whose target lies inside the moved row, returns the items as they were. It searches the loaded items, collapsed branches included, and rebuilds the path to each changed item without recursion, so loaded items of any depth can move.
 
 Implementation: `src/utils/tree-reorder.ts`
 Verification: `src/utils/tree-reorder.test.ts`

@@ -1,0 +1,94 @@
+/* Snippet Field: source and line inputs on one row, then the saved code and any preview. */
+
+.ui-snippet-field .ui-field__control:has(> .ui-snippet-field__request) {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.ui-snippet-field__request {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.ui-snippet-field__source,
+.ui-snippet-field__line {
+  box-sizing: border-box;
+  height: var(--ref-control-height);
+  padding: 0 8px;
+  border: 1px solid var(--ref-field-border);
+  border-radius: var(--ref-radius-sm);
+  background: var(--ref-field-fill);
+  color: var(--ref-text);
+  font: inherit;
+}
+
+.ui-snippet-field__source {
+  flex: 1 1 14em;
+  min-width: 0;
+}
+
+.ui-snippet-field__line {
+  flex: none;
+  width: 6em;
+}
+
+.ui-snippet-field__source:focus-visible,
+.ui-snippet-field__line:focus-visible {
+  outline: var(--ref-focus-ring);
+  outline-offset: 1px;
+}
+
+.ui-snippet-field__line[aria-invalid='true'] {
+  border-color: var(--ref-danger);
+}
+
+.ui-snippet-field__range-error {
+  color: var(--ref-danger);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-snippet-field__empty {
+  margin: 0;
+  color: var(--ref-muted);
+}
+
+.ui-snippet-field__preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px;
+  border: 1px dashed var(--ref-border-strong);
+  border-radius: var(--ref-radius);
+}
+
+.ui-snippet-field__preview > .ui-code-block,
+.ui-snippet-field__status {
+  flex: 1 0 100%;
+  min-width: 0;
+}
+
+.ui-snippet-field__status {
+  margin: 0;
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-snippet-field__preview[data-status='error'] .ui-snippet-field__status {
+  color: var(--ref-danger);
+}
+
+.ui-snippet-field__preview[data-stale] {
+  border-color: var(--ref-warning);
+}
+
+.ui-snippet-field__apply,
+.ui-snippet-field__cancel,
+.ui-snippet-field__preview-button {
+  flex: none;
+}
+
+.ui-snippet-field__saved {
+  min-width: 0;
+}

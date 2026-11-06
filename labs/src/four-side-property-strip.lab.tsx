@@ -5,6 +5,7 @@ import {
   FourSidePropertyStrip,
   type FourSidePropertyStripLink,
   type FourSideValueAlign,
+  type FourSideValues,
 } from '../../src/components/four-side-property-strip/four-side-property-strip.js';
 import { PropertyPanel } from '../../src/components/property-panel/property-panel.js';
 import { PropertyScope } from '../../src/components/property-scope/property-scope.js';
@@ -12,6 +13,7 @@ import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { FourSidePropertyStripHostCases } from './four-side-property-strip-host-cases.js';
 
+const sides: readonly BoxSide[] = ['top', 'bottom', 'left', 'right'];
 const states = ['plain', 'unit', 'overridden', 'required', 'wide', 'hint'] as const;
 const start: Record<BoxSide, string> = { top: '10', bottom: '10', left: '16', right: '16' };
 
@@ -268,6 +270,62 @@ function Aligned({
   );
 }
 
+const errorShapes = ['one side', 'two sides', 'linked all', 'narrow', 'right to left'] as const;
+
+/** A side's message when its value is not a whole number from 0 to 999. */
+function checkSide(value: string | undefined): string | undefined {
+  if (value === undefined || /^\d{1,3}$/.test(value)) return undefined;
+  if (/^-\d+$/.test(value)) return 'Enter a value of 0 or more.';
+  return 'Enter a whole number from 0 to 999.';
+}
+
+const errorStarts: Record<(typeof errorShapes)[number], Record<BoxSide, string>> = {
+  'one side': { top: '8', bottom: '8', left: '-4', right: '12' },
+  'two sides': { top: 'auto', bottom: '8', left: '12', right: '-2' },
+  'linked all': { top: '-1', bottom: '-1', left: '-1', right: '-1' },
+  narrow: { top: '4', bottom: 'x', left: '4', right: '4' },
+  'right to left': { top: '4', bottom: '4', left: '4', right: '-8' },
+};
+
+/**
+ * A strip that checks its sides as they change: each wrong side is marked, and its message runs
+ * across the four controls rather than under one of them.
+ */
+function Invalid({ shape }: { shape: (typeof errorShapes)[number] }) {
+  const [values, setValues] = useState<FourSideValues<BoxSide, string>>(errorStarts[shape]);
+  const errors = Object.fromEntries(sides.map((side) => [side, checkSide(values[side])]));
+  const isRtl = shape === 'right to left';
+  const width = shape === 'narrow' ? 260 : 400;
+  const name = `Spacing ${shape}`;
+  return (
+    <UiProvider locale={isRtl ? 'ar-EG' : 'en-US'}>
+      <div dir={isRtl ? 'rtl' : 'ltr'} data-lab-column={width} style={{ width }}>
+        <PropertyPanel aria-label={name}>
+          <FourSidePropertyStrip
+            label="Spacing"
+            unit="px"
+            link={shape === 'linked all' ? 'all' : shape === 'one side' ? 'pairs' : undefined}
+            defaultLinked={shape === 'linked all' ? ['vertical', 'horizontal'] : undefined}
+            value={values}
+            onChange={setValues}
+            errors={errors}
+            renderSide={(side, field) => (
+              <input
+                aria-label={`${name} ${side}`}
+                value={field.value ?? ''}
+                size={3}
+                aria-invalid={field.isInvalid || undefined}
+                aria-describedby={field.errorId}
+                onChange={(event) => field.onChange(event.target.value)}
+              />
+            )}
+          />
+        </PropertyPanel>
+      </div>
+    </UiProvider>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -286,6 +344,15 @@ mountLab(
             </div>
           );
         }}
+      />
+    </LabSection>
+    <LabSection
+      title="Errors"
+      description="Each side is checked as it changes: a wrong side's control is marked, and its message takes a line of its own across all four controls, below any link brackets, instead of under one narrow control. Sides that share a message show it once; each wrong control is described by it. Type a valid number to clear one."
+    >
+      <StateMatrix
+        axes={{ shape: errorShapes }}
+        render={({ shape }) => <Invalid shape={shape} />}
       />
     </LabSection>
     <LabSection

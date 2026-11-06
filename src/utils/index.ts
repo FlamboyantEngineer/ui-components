@@ -28,6 +28,8 @@ export type {
 export { compareTrees } from './compare-trees.js';
 export type { FormatCountOptions } from './count.js';
 export { formatCount, normalizeCount } from './count.js';
+export type { CsvOptions } from './csv.js';
+export { CSV_BYTE_ORDER_MARK, formatCsv } from './csv.js';
 export type { DiffKind, LineDiffHunk, SequenceDiffHunk, WordDiffHunk } from './diff.js';
 export { diffLines, diffSequences, diffWords } from './diff.js';
 export { DOWNLOAD_URL_LIFETIME, downloadBlob, downloadUrl } from './download.js';

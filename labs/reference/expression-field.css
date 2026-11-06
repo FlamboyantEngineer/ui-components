@@ -1,0 +1,48 @@
+/* Expression Field: a one-line source editor, its unit and host actions, then the host's result. */
+
+.ui-expression-field .ui-field__control:has(> .ui-expression-field__editor) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+}
+
+.ui-expression-field__editor {
+  flex: 1 1 12em;
+  min-width: 0;
+}
+
+.ui-expression-field__unit {
+  flex: none;
+  color: var(--ref-muted);
+}
+
+.ui-expression-field__actions {
+  display: inline-flex;
+  flex: none;
+  gap: 4px;
+}
+
+.ui-expression-field__result {
+  flex: 1 0 100%;
+  min-width: 0;
+  font-family: var(--ref-mono);
+  font-size: var(--ref-font-size-sm);
+  overflow-wrap: anywhere;
+}
+
+.ui-expression-field__result:is(
+  [data-status='pending'],
+  [data-status='unavailable'],
+  [data-stale]
+) {
+  color: var(--ref-muted);
+}
+
+.ui-expression-field__result[data-status='invalid'] {
+  color: var(--ref-danger);
+}
+
+.ui-expression-field__result[data-stale] .ui-expression-field__result-value {
+  text-decoration: line-through;
+}

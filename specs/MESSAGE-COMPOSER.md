@@ -219,7 +219,7 @@ Verification: `src/components/message-composer/rich/use-composer-handle.test.tsx
 
 ### UIC-MESSAGE-COMPOSER-4.11 - Selection and ranges
 
-Both composers shall put `inputId` on their text box, apart from the root's `id`. The rich composer shall measure selections and ranges as `{ start, end }` offsets in the shown message's `text`, in UTF-16 code units, over the Markdown as sent: a line break between lines, a code block's fence lines, and each pill's whole raw text. A token is atomic: no caret stands inside it. The handle (UIC-MESSAGE-COMPOSER-4.10) adds the following:
+Both composers shall put `inputId` on their text box, apart from the root's `id`. The rich composer shall measure selections and ranges as `{ start, end }` offsets in the shown message's `text`, in UTF-16 code units, over the Markdown as sent: a line break between lines, a code block's fence lines, and each pill's whole raw text. A token is atomic: no caret stands inside it. A selection over the whole document (Ctrl or Cmd+A) measures as the whole text, from 0 to its length, whatever its first and last blocks are. The handle (UIC-MESSAGE-COMPOSER-4.10) adds the following:
 
 - `getSelection()` returns the selection, or the caret as a collapsed range. It keeps the last selection while focus is in a menu or another control, and returns `null` without a mounted editor.
 - `setSelection(range)` selects a range without taking focus. An end inside a pill moves out of it: the start to the pill's start, the end to its end, and a caret to the nearer side.
@@ -254,10 +254,10 @@ A late answer changes nothing when any of these holds:
 - The composer is disabled or submitting.
 - The composer unmounted.
 
-So a late answer never writes into another draft or conversation.
+So a late answer never writes into another draft or conversation. However the promise settles, the composer stops keeping that paste's range, without an undo step of its own, so a long-lived draft holds no record of pastes that have settled.
 
 Implementation: `src/components/message-composer/rich/composer-paste.ts`, `src/components/message-composer/rich/rich-editor.tsx`, `src/components/message-composer/rich/composer-commands.ts`
-Verification: `src/components/message-composer/rich/composer-selection.test.tsx`, `e2e/message-composer-ranges.spec.ts`
+Verification: `src/components/message-composer/rich/composer-selection.test.tsx`, `src/components/message-composer/rich/composer-paste.test.ts`, `e2e/message-composer-ranges.spec.ts`
 
 ### UIC-MESSAGE-COMPOSER-4.13 - Host triggers
 

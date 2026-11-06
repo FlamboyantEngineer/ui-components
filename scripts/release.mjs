@@ -4,7 +4,9 @@
 // reference stylesheet), with a manifest that has no `prepare` script. Installing the tag therefore
 // installs no development dependencies and builds nothing. Packs the library tarball, from the tree
 // it tagged, and the standalone labs archive for the GitHub Release.
-// Run on `main`, up to date with `origin/main`, with a clean tree, after the version bump merged.
+// Run on `main`, up to date with `origin/main`, with a clean tree, after the version bump merged:
+// no changed and no untracked files, which the build would compile into the tag without their
+// source. The package check then runs again on the release tree itself before anything is tagged.
 
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
@@ -28,8 +30,10 @@ const manifestText = readFileSync(join(root, 'package.json'), 'utf8');
 const { version } = JSON.parse(manifestText);
 const tag = `v${version}`;
 
-if (git(['status', '--porcelain', '--untracked-files=no'])) {
-  fail('Commit or stash the tracked changes before releasing.');
+// Untracked files count: the build compiles the whole `src` directory. Ignored output does not.
+const changes = git(['status', '--porcelain', '--untracked-files=all']);
+if (changes) {
+  fail(`Commit, stash or remove these changes and untracked files before releasing:\n${changes}`);
 }
 if (git(['rev-parse', '--abbrev-ref', 'HEAD']) !== 'main') fail('Release from the main branch.');
 git(['fetch', '--quiet', 'origin', 'main']);
@@ -67,6 +71,8 @@ try {
   git(['archive', '--format=tar.gz', '--output', archive, commit]);
   mkdirSync(packageDir);
   extractTarGz(archive, packageDir);
+  // The checks ran on the checkout; the tag carries this tree, so it is checked too.
+  runNpm(['run', 'check:package', '--', '--dir', packageDir], { cwd: root, stdio: 'inherit' });
   const pack = packTarball(packageDir, root);
   git(['tag', '--annotate', tag, commit, '--message', tag]);
   console.log(

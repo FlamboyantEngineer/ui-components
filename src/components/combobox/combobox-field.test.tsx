@@ -36,7 +36,7 @@ describe('Combobox entry', () => {
     await user.type(input(), '{Backspace}p');
     expect(highlighted()).toBe('Apple');
     await user.keyboard('{Enter}');
-    expect(onChange).toHaveBeenCalledWith('apple');
+    expect(onChange).toHaveBeenCalledWith('apple', { reason: 'select' });
     expect(input()).toHaveValue('Apple');
   });
 
@@ -73,7 +73,7 @@ describe('Combobox entry', () => {
     await user.keyboard('p');
     expect(input()).toHaveValue('apple');
     await user.keyboard('{Enter}');
-    expect(onChange).toHaveBeenCalledWith('apple');
+    expect(onChange).toHaveBeenCalledWith('apple', { reason: 'select' });
     expect(input()).toHaveValue('Apple');
   });
 

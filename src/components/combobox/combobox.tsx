@@ -1,7 +1,7 @@
 'use client';
 
 import { type ReactNode, type Ref, useRef } from 'react';
-import type { AriaLabellingProps, OpenStateProps } from '../../core/events.js';
+import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, ControlSize, Key, RefProps } from '../../core/props.js';
 import { ComboBox as AriaComboBox, FieldError, Label, Text } from '../../primitives/index.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
@@ -11,6 +11,13 @@ import { useChipsLabel } from './combobox-chips.js';
 import { ComboboxField, ComboboxInputs } from './combobox-field.js';
 import { comboboxHooks as hooks } from './combobox-hooks.js';
 import type { ComboboxItem, ComboboxOption } from './combobox-options.js';
+import {
+  type ComboboxChangeDetails,
+  type ComboboxInputChangeDetails,
+  ComboboxMarksContext,
+  type ComboboxOpenChangeDetails,
+  useComboboxReasons,
+} from './combobox-reasons.js';
 import { ComboboxReset, useHeldChange } from './combobox-reset.js';
 import type { ComboboxLoader } from './combobox-search.js';
 import {
@@ -37,21 +44,27 @@ export type ComboboxValue<M extends ComboboxSelectionMode = 'single'> = M extend
 export type ComboboxMenuTrigger = 'input' | 'focus' | 'manual';
 
 export interface ComboboxProps<M extends ComboboxSelectionMode = 'single'>
-  extends BaseProps, AriaLabellingProps, OpenStateProps, RefProps<HTMLDivElement> {
+  extends BaseProps, AriaLabellingProps, RefProps<HTMLDivElement> {
+  /** Whether the list is open (controlled). */
+  isOpen?: boolean | undefined;
+  /** Whether the list is open at first, when uncontrolled. */
+  defaultOpen?: boolean | undefined;
+  /** Called as the list opens or closes, with what opened or closed it. */
+  onOpenChange?: ((isOpen: boolean, details: ComboboxOpenChangeDetails) => void) | undefined;
   /** `single` (the default) picks one option; `multiple` picks several, shown as chips. */
   selectionMode?: M | undefined;
   /** The picked option ids (controlled). */
   value?: ComboboxValue<M> | undefined;
   /** The picked option ids at first, when uncontrolled. */
   defaultValue?: ComboboxValue<M> | undefined;
-  /** Called with the picked option ids. */
-  onChange?: ((value: ComboboxValue<M>) => void) | undefined;
+  /** Called with the picked option ids and why they changed. */
+  onChange?: ((value: ComboboxValue<M>, details: ComboboxChangeDetails) => void) | undefined;
   /** The input's text (controlled). */
   inputValue?: string | undefined;
   /** The input's text at first, when uncontrolled. */
   defaultInputValue?: string | undefined;
-  /** Called as the input's text changes. */
-  onInputChange?: ((text: string) => void) | undefined;
+  /** Called as the input's text changes, with why: typed text, or text the combobox wrote. */
+  onInputChange?: ((text: string, details: ComboboxInputChangeDetails) => void) | undefined;
   /** Keeps typed text that names no option instead of reverting it. */
   allowsCustomValue?: boolean | undefined;
   /** When the list opens. Defaults to `input`. */
@@ -118,10 +131,21 @@ export interface ComboboxProps<M extends ComboboxSelectionMode = 'single'>
   autoFocus?: boolean | undefined;
 }
 
-/** What the chips of a multiple combobox need: the text naming their group, and the options. */
+type ComboboxListProps = Pick<
+  ComboboxProps,
+  | 'virtualized'
+  | 'onCreateOption'
+  | 'highlightMatches'
+  | 'autoHighlight'
+  | 'renderOption'
+  | 'listHeader'
+>;
 
-/** The props React Aria's `ComboBox` takes as given: all but the suggestions and the open state. */
-function omitModelProps<P extends ComboboxModelOptions>(props: P) {
+/**
+ * The props React Aria's `ComboBox` takes as given: all but the suggestions, the open state and
+ * the list's own props.
+ */
+function omitModelProps<P extends ComboboxModelOptions & ComboboxListProps>(props: P) {
   const {
     items,
     defaultItems,
@@ -136,9 +160,21 @@ function omitModelProps<P extends ComboboxModelOptions>(props: P) {
     defaultOpen,
     onOpenChange,
     onInputChange,
+    virtualized,
+    onCreateOption,
+    highlightMatches,
+    autoHighlight,
+    renderOption,
+    listHeader,
     ...aria
   } = props;
   return aria;
+}
+
+/** The props that shape the list of suggestions. */
+function pickListProps(props: ComboboxListProps) {
+  const { virtualized, onCreateOption, highlightMatches, autoHighlight, renderOption } = props;
+  return { virtualized, onCreateOption, highlightMatches, autoHighlight, renderOption };
 }
 
 function ComboboxLabel({ label, labelRef }: { label: ReactNode; labelRef: Ref<HTMLLabelElement> }) {
@@ -166,6 +202,25 @@ function ComboboxMessages({
 }
 
 /**
+ * The input element, the reasons the combobox reports, and the value change React Aria reports,
+ * held through a native reset, to `onChange` with its reason.
+ */
+function useComboboxChange<M extends ComboboxSelectionMode>({
+  inputRef,
+  onChange,
+  isMultiple,
+}: Pick<ComboboxProps<M>, 'inputRef' | 'onChange'> & { isMultiple: boolean }) {
+  const [input, setInput] = useForwardedRef(inputRef);
+  const reasons = useComboboxReasons(input);
+  const reset = useHeldChange(reasons.probeRef, (next) =>
+    onChange?.(decodeComboboxValue(next) as ComboboxValue<M>, {
+      reason: reasons.readChange(next, !isMultiple),
+    }),
+  );
+  return { input, setInput, reasons, reset };
+}
+
+/**
  * A text input with a list of suggestions (React Aria `ComboBox`): typed freely when
  * `allowsCustomValue`, or completed from the list; several options may be picked as chips.
  */
@@ -181,75 +236,80 @@ export function Combobox<M extends ComboboxSelectionMode = 'single'>({
   allowsEmptyCollection = true,
   isReadOnly,
   completesInline,
-  listHeader,
   inputRef,
   onChange,
-  virtualized,
-  onCreateOption,
-  highlightMatches,
-  autoHighlight,
-  renderOption,
   name,
   ...rest
 }: ComboboxProps<M>) {
   const isDisabled = useScopedDisabled(rest.isDisabled);
   const aria = omitModelProps(rest);
   const values = useComboboxValues(aria.value, aria.defaultValue);
-  const model = useComboboxModel({ ...rest, isPending, isDisabled, isReadOnly });
+  const isMultiple = aria.selectionMode === 'multiple';
+  const { input, setInput, reasons, reset } = useComboboxChange({ inputRef, onChange, isMultiple });
+  const model = useComboboxModel({ ...rest, isPending, isDisabled, isReadOnly }, reasons);
   const { suggestions, known, collection } = useComboboxCollection(model, rest.knownOptions);
   const inline = useInlineCompletionState({ completesInline, suggestions });
-  const [input, setInput] = useForwardedRef(inputRef);
   const createdRef = useRef<string | null>(null);
-  const isMultiple = aria.selectionMode === 'multiple';
   const naming = useChipsLabel({ label, aria, isEnabled: isMultiple, inputRef: input });
-  const list = { virtualized, onCreateOption, highlightMatches, autoHighlight, renderOption };
-  const reset = useHeldChange((next) => onChange?.(decodeComboboxValue(next) as ComboboxValue<M>));
+  const list = pickListProps(rest);
+  const data = { variant, size, pending: model.isPending };
   return (
-    <AriaComboBox<ComboboxItem, ComboboxSelectionMode>
-      {...aria}
-      {...values}
-      onChange={reset.onChange}
-      name={aria.allowsCustomValue ? name : undefined}
-      {...hooks.root({ className, props: aria, data: { variant, size, pending: model.isPending } })}
-      {...(model.isControlled ? { items: collection } : { defaultItems: collection })}
-      defaultFilter={inline.defaultFilter}
-      onInputChange={model.input.onInputChange}
-      onOpenChange={model.onOpenChange}
-      isDisabled={isDisabled}
-      isReadOnly={isReadOnly}
-      allowsEmptyCollection={allowsEmptyCollection}
-    >
-      <ComboboxReset {...reset} input={input} isControlled={aria.value !== undefined} />
-      <ComboboxLabel label={label} labelRef={naming.labelRef} />
-      <ComboboxField
-        variant={variant}
-        size={size}
-        placeholder={placeholder}
-        isPending={model.isPending}
-        isEditable={!isDisabled && !isReadOnly}
-        chips={isMultiple ? { label: naming.text, options: model.flatOptions, known } : null}
-        completion={inline.field}
-        input={{ ref: input, setRef: setInput }}
-      />
-      <ComboboxMessages description={description} errorMessage={errorMessage} />
-      <ComboboxInputs name={name} isDisabled={isDisabled} isCustom={aria.allowsCustomValue} />
-      <ComboboxSuggestions
-        {...list}
-        size={size}
-        items={collection}
-        loading={model.loading}
-        inputText={model.input.text}
-        completion={inline.completion}
-        createdRef={createdRef}
-        renderEmpty={model.renderEmpty}
-        listHeader={listHeader}
-        inputRef={input}
-        isOpen={model.isOpen}
-      />
-    </AriaComboBox>
+    <ComboboxMarksContext value={reasons.marksRef}>
+      <AriaComboBox<ComboboxItem, ComboboxSelectionMode>
+        {...aria}
+        {...values}
+        onChange={reset.onChange}
+        onSelectionChange={reasons.onSelectionChange}
+        name={aria.allowsCustomValue ? name : undefined}
+        {...hooks.root({ className, props: aria, data })}
+        {...(model.isControlled ? { items: collection } : { defaultItems: collection })}
+        defaultFilter={inline.defaultFilter}
+        onInputChange={model.input.onInputChange}
+        onOpenChange={model.onOpenChange}
+        isDisabled={isDisabled}
+        isReadOnly={isReadOnly}
+        allowsEmptyCollection={allowsEmptyCollection}
+      >
+        <ComboboxReset {...reset} input={input} isControlled={aria.value !== undefined} />
+        <ComboboxLabel label={label} labelRef={naming.labelRef} />
+        <ComboboxField
+          variant={variant}
+          size={size}
+          placeholder={placeholder}
+          isPending={model.isPending}
+          isEditable={!isDisabled && !isReadOnly}
+          chips={isMultiple ? { label: naming.text, options: model.flatOptions, known } : null}
+          completion={inline.field}
+          input={{ ref: input, setRef: setInput }}
+        />
+        <ComboboxMessages description={description} errorMessage={errorMessage} />
+        <ComboboxInputs name={name} isDisabled={isDisabled} isCustom={aria.allowsCustomValue} />
+        <ComboboxSuggestions
+          {...list}
+          size={size}
+          items={collection}
+          loading={model.loading}
+          inputText={model.input.text}
+          completion={inline.completion}
+          createdRef={createdRef}
+          renderEmpty={model.renderEmpty}
+          listHeader={rest.listHeader}
+          inputRef={input}
+          isOpen={model.isOpen}
+        />
+      </AriaComboBox>
+    </ComboboxMarksContext>
   );
 }
 
 export type { ComboboxItem, ComboboxOption, ComboboxSection } from './combobox-options.js';
+export type {
+  ComboboxChangeDetails,
+  ComboboxChangeReason,
+  ComboboxInputChangeDetails,
+  ComboboxInputChangeReason,
+  ComboboxOpenChangeDetails,
+  ComboboxOpenChangeReason,
+} from './combobox-reasons.js';
 export type { ComboboxLoader, ComboboxPage } from './combobox-search.js';
 export type { ComboboxOptionRenderer } from './combobox-suggestions.js';

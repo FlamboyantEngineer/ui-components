@@ -41,6 +41,12 @@ CI runs on pushes to `dev` and `main` and on every pull request. Workflow action
 
 Hosts can also install a branch or commit before it is released: npm runs `prepare` (`scripts/prepare.mjs`), which runs `npm run build:package` to build `dist/` and the reference stylesheet without building the labs. In a checkout, `npm ci` builds nothing: the script builds only when npm prepares or packs the package, and the checks pack with `--ignore-scripts` after building once (`npm run build:package` before `npm run check:package`). A change to the build or the package contents runs `npm run check:git-install`, which installs the committed `HEAD` into a clean consumer through `npm install` and then `npm ci`, and checks its imports and declarations with the minimum `react` and `react-dom` the peer ranges admit, and verifies that labs and the optional rich-text peers are excluded. It then adds the rich-text peers at their minimum versions, with npm's strict peer resolution, and renders the rich text editor; pass a dependency such as `"git+https://github.com/FlamboyantEngineer/ui-components.git#dev"` to check a pushed branch.
 
+### Bundle-size budgets
+
+`npm run check:bundle-size`, after `npm run build:package`, packs the package and bundles a small matrix of consumers under production webpack, with React external: `Button` from the root and from its entry point (with and without `reference.css`), `TextField`, `Table`, `Markdown`, `RichTextEditor`, `PdfViewer` with its engine as a lazy chunk, and `MathPreview`. Each consumer's initial code has a raw and gzipped baseline in `scripts/bundle-budgets.json`; growth beyond 5% or 2 KB, whichever is larger, fails with the largest modules by owner. The simple consumers must also leave out the rich-text, PDF and math code and every language file but English. `npm run check` runs it. `--report <file>` writes every size and its module attribution as JSON.
+
+When a change grows or shrinks a bundle on purpose, run `npm run check:bundle-size -- --update`, review the new baselines in the diff and say why they moved in the pull request. Do not raise the allowance to absorb a regression; find the module that grew instead.
+
 ## Source rules
 
 Code follows [docs/CODING-GUIDELINES.md](docs/CODING-GUIDELINES.md): naming, structure, composition and simplicity rules, most of them enforced by lint and `npm run check:structure`. In addition, these are enforced by lint and CI:

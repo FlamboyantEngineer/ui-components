@@ -9,6 +9,7 @@ import { Avatar } from '../src/components/avatar/avatar.js';
 import { BooleanField } from '../src/components/boolean-field/boolean-field.js';
 import { Button } from '../src/components/button/button.js';
 import { Card, CardGrid, CardGridItem, CardTitle } from '../src/components/card/index.js';
+import { CascaderField } from '../src/components/cascader-field/cascader-field.js';
 import { CharacterGrid } from '../src/components/character-grid/character-grid.js';
 import { Chat } from '../src/components/chat/chat.js';
 import { ChatHeader } from '../src/components/chat/chat-header.js';
@@ -47,6 +48,7 @@ import { ConditionBuilder } from '../src/components/condition-builder/condition-
 import { ContextMenu } from '../src/components/context-menu/context-menu.js';
 import { createMenuController } from '../src/components/context-menu/menu-controller.js';
 import { DateTimeField } from '../src/components/date-time-field/date-time-field.js';
+import { DecimalField } from '../src/components/decimal-field/decimal-field.js';
 import { DecisionControl } from '../src/components/decision-control/decision-control.js';
 import { DescriptionList, DescriptionRow } from '../src/components/description-list/index.js';
 import { DiagramPaletteItem } from '../src/components/diagram-canvas/index.js';
@@ -78,6 +80,7 @@ import { FourSidePropertyStrip } from '../src/components/four-side-property-stri
 import { GridSizePicker } from '../src/components/grid-size-picker/grid-size-picker.js';
 import { HoverCard, HoverCardTrigger } from '../src/components/hover-card/hover-card.js';
 import { HtmlMarkup } from '../src/components/html-markup/html-markup.js';
+import { Image } from '../src/components/image/image.js';
 import { InlineEdit } from '../src/components/inline-edit/inline-edit.js';
 import { InlineTextDiff } from '../src/components/inline-text-diff/inline-text-diff.js';
 import {
@@ -89,6 +92,7 @@ import { ListView, ListViewItem, ListViewSection } from '../src/components/list-
 import { LoadingCard, LoadingRegion } from '../src/components/loading-overlay/index.js';
 import { MappingTable } from '../src/components/mapping-table/mapping-table.js';
 import { Markdown } from '../src/components/markdown/markdown.js';
+import { MaskedTextField } from '../src/components/masked-text-field/masked-text-field.js';
 import { MediaViewer } from '../src/components/media-viewer/media-viewer.js';
 import { Menu, MenuItem, MenuSection, MenuSeparator } from '../src/components/menu/index.js';
 import {
@@ -102,6 +106,12 @@ import {
 } from '../src/components/message-composer/index.js';
 import { MetaLine } from '../src/components/meta-line/meta-line.js';
 import { Modal } from '../src/components/modal/modal.js';
+import { MultiDateField } from '../src/components/multi-date-field/multi-date-field.js';
+import {
+  NavigationMenu,
+  NavigationMenuItem,
+  NavigationMenuLink,
+} from '../src/components/navigation-menu/index.js';
 import {
   NavigationRail,
   NavigationRailGroup,
@@ -117,6 +127,7 @@ import { PinInput } from '../src/components/pin-input/pin-input.js';
 import { Popover, PopoverTrigger } from '../src/components/popover/popover.js';
 import { PortalHost } from '../src/components/portal/portal.js';
 import { ProblemList } from '../src/components/problem-list/problem-list.js';
+import { Meter } from '../src/components/progress-bar/progress-bar.js';
 import { PropertyFilter } from '../src/components/property-filter/property-filter.js';
 import {
   PropertyCard,
@@ -131,6 +142,7 @@ import {
 import { PropertyScope } from '../src/components/property-scope/property-scope.js';
 import { ProseTable } from '../src/components/prose-table/prose-table.js';
 import { QueryField } from '../src/components/query-field/query-field.js';
+import { Rating, RatingField } from '../src/components/rating-field/index.js';
 import { RecordHeader } from '../src/components/record-header/record-header.js';
 import { RecordLabel } from '../src/components/record-label/record-label.js';
 import { RelativeDateField } from '../src/components/relative-date-field/relative-date-field.js';
@@ -482,6 +494,11 @@ const cases: Record<string, RootRefCase> = {
 /** Fields: each forwards `ref` to the root of the `Field` it renders. */
 const fieldCases: Record<string, RootRefCase> = {
   BooleanField: { element: (ref) => <BooleanField ref={ref} label="Ripe" />, root: 'ui-field' },
+  RatingField: { element: (ref) => <RatingField ref={ref} label="Quality" />, root: 'ui-field' },
+  CascaderField: {
+    element: (ref) => <CascaderField ref={ref} label="Place" options={[]} />,
+    root: 'ui-field',
+  },
   ChoiceGroup: {
     element: (ref) => (
       <ChoiceGroup ref={ref} label="Size">
@@ -493,8 +510,17 @@ const fieldCases: Record<string, RootRefCase> = {
   CodeEditor: { element: (ref) => <CodeEditor ref={ref} label="Query" />, root: 'ui-field' },
   ColorField: { element: (ref) => <ColorField ref={ref} label="Colour" />, root: 'ui-field' },
   DateTimeField: { element: (ref) => <DateTimeField ref={ref} label="Due" />, root: 'ui-field' },
+  DecimalField: { element: (ref) => <DecimalField ref={ref} label="Weight" />, root: 'ui-field' },
   FileField: {
     element: (ref) => <FileField ref={ref} label="Attachments" onSelect={() => {}} />,
+    root: 'ui-field',
+  },
+  MaskedTextField: {
+    element: (ref) => <MaskedTextField ref={ref} label="Code" mask="999-999" />,
+    root: 'ui-field',
+  },
+  MultiDateField: {
+    element: (ref) => <MultiDateField ref={ref} label="Days" />,
     root: 'ui-field',
   },
   NumberField: { element: (ref) => <NumberField ref={ref} label="Count" />, root: 'ui-field' },
@@ -868,6 +894,7 @@ const restCases: Record<string, RootRefCase> = {
     element: (ref) => <Avatar ref={ref} name="Ana Lima" onPress={() => {}} />,
     root: 'ui-avatar',
   },
+  Image: { element: (ref) => <Image ref={ref} src="/photo.jpg" alt="Photo" />, root: 'ui-image' },
   CardGrid: {
     element: (ref) => (
       <CardGrid ref={ref} aria-label="Cards">
@@ -917,6 +944,34 @@ const restCases: Record<string, RootRefCase> = {
     ),
     root: 'ui-key-hints',
   },
+  NavigationMenu: {
+    element: (ref) => (
+      <NavigationMenu ref={ref} aria-label="Site">
+        <NavigationMenuLink href="/">Home</NavigationMenuLink>
+      </NavigationMenu>
+    ),
+    root: 'ui-navigation-menu',
+  },
+  NavigationMenuItem: {
+    element: (ref) => (
+      <NavigationMenu aria-label="Site">
+        <NavigationMenuItem ref={ref} id="fruit" label="Fruit">
+          <NavigationMenuLink href="/fruit">Fruit</NavigationMenuLink>
+        </NavigationMenuItem>
+      </NavigationMenu>
+    ),
+    root: 'ui-navigation-menu__item',
+  },
+  NavigationMenuLink: {
+    element: (ref) => (
+      <NavigationMenu aria-label="Site">
+        <NavigationMenuLink ref={ref} href="/">
+          Home
+        </NavigationMenuLink>
+      </NavigationMenu>
+    ),
+    root: 'ui-navigation-menu__link',
+  },
   NavigationRail: {
     element: (ref) => (
       <NavigationRail ref={ref} aria-label="Main">
@@ -953,6 +1008,11 @@ const restCases: Record<string, RootRefCase> = {
     ),
     root: 'ui-navigation-rail__section',
   },
+  Meter: {
+    element: (ref) => <Meter ref={ref} aria-label="Storage" value={40} />,
+    root: 'ui-meter',
+  },
+  Rating: { element: (ref) => <Rating ref={ref} value={3} />, root: 'ui-rating' },
   Pagination: { element: (ref) => <Pagination ref={ref} pageCount={3} />, root: 'ui-pagination' },
   PortalHost: { element: (ref) => <PortalHost ref={ref}>Body</PortalHost>, root: 'ui-portal-host' },
   ProblemList: { element: (ref) => <ProblemList ref={ref} />, root: 'ui-problem-list' },

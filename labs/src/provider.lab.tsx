@@ -13,6 +13,7 @@ import {
   StorageSwitch,
   WrappedStorage,
 } from './provider-storage-cases.js';
+import { IndependentServices } from './provider-subscription-cases.js';
 
 const replacedGlyphs = Object.fromEntries(glyphNames.map((name) => [name, SquareGlyph]));
 
@@ -25,6 +26,11 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   shortcutKeyName: ['↑'],
   shortcutThen: ['G', 'I'],
   stepOfTotal: [3, 5],
+  snippetLines: [3, 8],
+  constraintLabel: ['minLength'],
+  constraintRequiredChoice: ['optional'],
+  constraintUnset: ['Minimum'],
+  constraintIssue: ['boundsReversed'],
   segmentCount: [{ completed: '2', total: '5', percent: '40%' }],
   segmentProgress: [{ completed: '2', total: '5', percent: '40%', current: 'Review' }],
   heading: [2],
@@ -107,6 +113,9 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   moveTile: ['Visitors'],
   resizeTile: ['Visitors'],
   tileMoved: ['Visitors', 3, 2],
+  formLayoutMoved: ['City', 'Contact', 2],
+  fileMoved: ['Report.pdf', 2, 3],
+  formLayoutAdded: ['City', 'Contact', 2],
   tileResized: ['Visitors', 4, 2],
   redlineSummary: [{ added: 2, removed: 1, changed: 3, moved: 1 }],
   redlineBlockType: ['heading', 2],
@@ -264,6 +273,12 @@ mountLab(
       description="A provider with a fixed clock at 23:30 UTC on October 31. Switch its time zone: today, the relative words, the field and the day headings all follow it."
     >
       <ProviderClock />
+    </LabSection>
+    <LabSection
+      title="Independent services"
+      description="Each row is a memoized component reading one provider service, with the number of times it has rendered. Switch one service: only the row reading it renders again."
+    >
+      <IndependentServices />
     </LabSection>
   </>,
 );

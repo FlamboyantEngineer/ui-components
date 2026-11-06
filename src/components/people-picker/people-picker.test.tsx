@@ -96,7 +96,7 @@ describe('PeoplePicker', () => {
     expect(row?.querySelector('.ui-avatar')).toHaveAttribute('aria-hidden', 'true');
     expectHooksMatchSpec(document.body, 'PEOPLE-PICKER', { slots: ['person'] });
     await user.click(option);
-    expect(onChange).toHaveBeenLastCalledWith('ada');
+    expect(onChange).toHaveBeenLastCalledWith('ada', { reason: 'select' });
     expect(input()).toHaveValue('Ada Moreno');
   });
 
@@ -119,7 +119,7 @@ describe('PeoplePicker', () => {
     await user.click(design);
     await setText(user, 'ben');
     await user.click(await screen.findByRole('option', { name: /Ben Okafor/ }));
-    expect(onChange).toHaveBeenLastCalledWith(['design', 'ben']);
+    expect(onChange).toHaveBeenLastCalledWith(['design', 'ben'], { reason: 'select' });
     await user.keyboard('{Escape}');
     const chips = screen.getByRole('grid', { name: 'Reviewers selected values' });
     const group = within(chips).getByRole('row', { name: 'Design team' });
@@ -179,7 +179,7 @@ describe('PeoplePicker', () => {
     expect(screen.getByRole('option', { name: /Sam Rivera \(you\)/ })).toBeInTheDocument();
     await setText(user, '');
     await user.click(await screen.findByRole('option', { name: /Sam Rivera/ }));
-    expect(onChange).toHaveBeenLastCalledWith('me');
+    expect(onChange).toHaveBeenLastCalledWith('me', { reason: 'select' });
   });
 
   it('UIC-PEOPLE-PICKER-3.5 names known people of a saved value and lists them before a search', async () => {
@@ -301,7 +301,7 @@ describe('PeoplePicker', () => {
       expect(option).not.toHaveAttribute('aria-disabled');
       expect(option).not.toHaveTextContent('Revoked');
       await user.click(option);
-      expect(onChange).toHaveBeenLastCalledWith('a');
+      expect(onChange).toHaveBeenLastCalledWith('a', { reason: 'select' });
       expect(input()).toHaveValue('New Alex');
     });
 

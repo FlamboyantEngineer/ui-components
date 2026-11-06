@@ -122,17 +122,20 @@ function stateProps(
   return props[state];
 }
 
-/** A select whose dirty state starts from a controlled value that differs from the committed one. */
+/**
+ * A select whose dirty state starts from a controlled value that differs from the committed one;
+ * `chips-inside` is a multiple select that draws its chips inside its frame.
+ */
 function MatrixField({
   state,
   mode,
   layout,
 }: {
   state: FieldStateName;
-  mode: SelectFieldSelectionMode;
+  mode: SelectFieldSelectionMode | 'chips-inside';
   layout: FieldLabelLayout;
 }) {
-  const multiple = mode === 'multiple';
+  const multiple = mode !== 'single';
   const { defaultValue, ...props } = stateProps(state, multiple);
   const [value, setValue] = useState(defaultValue);
   const controlled = state === 'dirty' ? { value, onChange: setValue } : { defaultValue };
@@ -140,7 +143,8 @@ function MatrixField({
     <SelectField
       label="Fruit"
       labelLayout={layout}
-      selectionMode={mode}
+      selectionMode={multiple ? 'multiple' : 'single'}
+      chipPlacement={mode === 'chips-inside' ? 'inside' : undefined}
       options={fruit}
       {...props}
       {...controlled}
@@ -411,13 +415,16 @@ mountLab(
       >
         <ChangeFit />
       </LabSection>
-      <LabSection title="Selection modes" description="Single and multiple selects in every state.">
+      <LabSection
+        title="Selection modes"
+        description="Single and multiple selects in every state, and a multiple select with its chips inside the frame, whose frame shows the dirty and validation marks."
+      >
         <StateMatrix
-          axes={{ state: fieldStates, mode: ['single', 'multiple'] }}
+          axes={{ state: fieldStates, mode: ['single', 'multiple', 'chips-inside'] }}
           render={({ state, mode }) => (
             <MatrixField
               state={state}
-              mode={mode as SelectFieldSelectionMode}
+              mode={mode as SelectFieldSelectionMode | 'chips-inside'}
               layout="label-control"
             />
           )}

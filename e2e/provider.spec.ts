@@ -193,4 +193,38 @@ test.describe('Provider lab', () => {
     await expect(log.getByRole('heading', { name: 'Yesterday' })).toBeVisible();
     await lab.expectAccessible();
   });
+
+  test('UIC-PROVIDER-1.3 re-renders only the consumers of the service that changed', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('provider');
+    const section = page.locator('[data-lab-case="subscriptions"]');
+    const renders = (name: string) => section.locator(`[data-lab-renders="${name}"]`);
+    const counts = async () =>
+      Object.fromEntries(
+        await Promise.all(
+          ['glyph', 'text', 'storage', 'clock'].map(
+            async (name) => [name, Number(await renders(name).textContent())] as const,
+          ),
+        ),
+      );
+    await expect(renders('clock')).not.toHaveText('');
+    const switches = [
+      ['Switch storage', 'storage'],
+      ['Switch clock', 'clock'],
+      ['Switch glyph', 'glyph'],
+      ['Switch text', 'text'],
+    ] as const;
+    for (const [button, service] of switches) {
+      const before = await counts();
+      await section.getByRole('button', { name: button }).click();
+      await expect(renders(service)).toHaveText(String((before[service] ?? 0) + 1));
+      expect(await counts()).toEqual({ ...before, [service]: (before[service] ?? 0) + 1 });
+    }
+    const table = section.getByRole('table', { name: 'Service renders' });
+    await expect(table.getByRole('row', { name: /Storage/ })).toContainText('4');
+    await expect(table.getByRole('row', { name: /Text/ })).toContainText('Shut');
+    await lab.expectAccessible();
+  });
 });

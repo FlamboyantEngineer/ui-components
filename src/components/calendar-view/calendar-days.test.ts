@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+  type CalendarPeriod,
   compareDays,
   getDayOf,
   getDayStart,
+  getMonthDays,
   getMonthWeeks,
   getWallHours,
   getWeekDays,
@@ -10,6 +12,7 @@ import {
   isSameMonth,
   moveFocusedDay,
   shiftDay,
+  shiftPeriod,
 } from './calendar-days.js';
 
 const day = (text: string) => text;
@@ -39,8 +42,8 @@ describe('calendar days', () => {
 
   it('UIC-CALENDAR-VIEW-4.2 moves the focused day by key', () => {
     const date = day('2026-03-18');
-    const move = (key: string, mode: 'month' | 'week' = 'month', isRightToLeft = false) =>
-      moveFocusedDay(date, { key, mode, isRightToLeft, locale: 'en-US' });
+    const move = (key: string, period: CalendarPeriod = 'month', isRightToLeft = false) =>
+      moveFocusedDay(date, { key, period, isRightToLeft, locale: 'en-US' });
     expect(move('ArrowLeft')).toBe('2026-03-17');
     expect(move('ArrowRight')).toBe('2026-03-19');
     expect(move('ArrowRight', 'month', true)).toBe('2026-03-17');
@@ -52,7 +55,22 @@ describe('calendar days', () => {
     expect(move('PageUp')).toBe('2026-02-18');
     expect(move('PageDown')).toBe('2026-04-18');
     expect(move('PageDown', 'week')).toBe('2026-03-25');
+    expect(move('PageDown', 'day')).toBe('2026-03-19');
+    expect(move('PageUp', 'day')).toBe('2026-03-17');
+    expect(move('ArrowDown', 'day')).toBe('2026-03-25');
     expect(move('Enter')).toBeNull();
+  });
+
+  it('UIC-CALENDAR-VIEW-1.3 shifts by the period of each view', () => {
+    expect(shiftPeriod('2026-03-18', 'month', 1)).toBe('2026-04-18');
+    expect(shiftPeriod('2026-03-18', 'week', -1)).toBe('2026-03-11');
+    expect(shiftPeriod('2026-03-18', 'day', 1)).toBe('2026-03-19');
+  });
+
+  it('UIC-CALENDAR-VIEW-1.8 lists the days of a month', () => {
+    const february = getMonthDays('2028-02-10');
+    expect(february).toHaveLength(29);
+    expect([february[0], february.at(-1)]).toEqual(['2028-02-01', '2028-02-29']);
   });
 
   it('UIC-CALENDAR-VIEW-1.5 reads days in a time zone and shifts them', () => {

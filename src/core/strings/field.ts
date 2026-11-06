@@ -19,6 +19,10 @@ interface FieldStrings {
   rejectedFileUnchecked: (count: number) => string;
   /** States how many files an upload holds at most. */
   fileCountLimit: (count: number) => string;
+  /** Names a listed file's drag handle, by the file's name. */
+  moveFile: (name: string) => string;
+  /** Announces a listed file moved: its position in the list, from 1, and the number of files. */
+  fileMoved: (name: string, position: number, count: number) => string;
   /** The command of a file field that takes one file. */
   addFile: string;
   /** The command of a file field that takes several files. */
@@ -59,6 +63,10 @@ interface FieldStrings {
   rangeUnderflow: (minimum: string) => string;
   /** The message of typed text that is no number in one of the units a field reads (`mm, cm, or m`). */
   quantityUnreadable: (units: string) => string;
+  /** The message of typed text that is no decimal number. */
+  decimalUnreadable: string;
+  /** The message of a masked value that leaves slots of its mask empty. */
+  maskIncomplete: string;
   /** Names the numeric increment button. */
   numberIncrease: string;
   /** Names the numeric decrement button. */
@@ -97,6 +105,47 @@ interface FieldStrings {
   remove: string;
   /** Names the button that clears a field's value in one press, from the field's label. */
   clearValue: (label: string) => string;
+  /** Labels an expression field's result, which the host evaluates. */
+  expressionResult: string;
+  /** Says the host is still evaluating an expression field's source. */
+  expressionPending: string;
+  /** Marks an expression result evaluated from source that has changed since. */
+  expressionStale: string;
+  /** Says an expression field has no result, when the host gives no reason. */
+  expressionUnavailable: string;
+  /** Names a constraint editor's control for one constraint. */
+  constraintLabel: (
+    name:
+      | 'required'
+      | 'default'
+      | 'minimum'
+      | 'maximum'
+      | 'minLength'
+      | 'maxLength'
+      | 'pattern'
+      | 'minCount'
+      | 'maxCount',
+  ) => string;
+  /** A choice of a constraint editor's Required control. */
+  constraintRequiredChoice: (choice: 'required' | 'optional') => string;
+  /** Shown in a constraint's control while the constraint is not set. */
+  constraintNotSet: string;
+  /** Names the button that unsets a constraint, from the constraint's label. */
+  constraintUnset: (label: string) => string;
+  /** Says why a constraint does not hold together with the others. */
+  constraintIssue: (
+    reason:
+      | 'notNumber'
+      | 'boundsReversed'
+      | 'lengthsReversed'
+      | 'countsReversed'
+      | 'defaultBelowMinimum'
+      | 'defaultAboveMaximum'
+      | 'defaultTooShort'
+      | 'defaultTooLong'
+      | 'patternInvalid'
+      | 'defaultPatternMismatch',
+  ) => string;
   /** The text of a select that has no value and no placeholder of its own. */
   selectPlaceholder: string;
   /** Describes a multiple select option with mixed membership across records. */
@@ -141,6 +190,12 @@ interface FieldStrings {
   secondsColumn: string;
   /** Names the column of the day periods (AM and PM) in a time picker. */
   dayPeriodColumn: string;
+  /** Heads a calendar's column of week numbers, shortened, such as `Wk`. */
+  weekColumn: string;
+  /** Names a calendar row by its week number. */
+  weekNumber: (week: number) => string;
+  /** The message of a set of dates holding more dates than the field takes. */
+  tooManyDates: (maxValues: number) => string;
   /** The message of a date or time earlier than the field allows. */
   dateTooEarly: (minValue: string) => string;
   /** The message of a date or time later than the field allows. */
@@ -189,6 +244,10 @@ interface FieldStrings {
   signatureImageNoPaste: string;
   /** Names the end thumb of a range slider, read before the slider's label. */
   rangeMaximum: string;
+  /** Names a rating, or one choice of a rating field, from the value and the highest value. */
+  ratingValue: (value: number, max: number) => string;
+  /** Names a rating that has no value. */
+  ratingNone: string;
 }
 
 /** The module's text, with the message values each text function reads its arguments as. */
@@ -201,6 +260,8 @@ export const fieldStrings = defineStrings<FieldStrings>({
   rejectedFileReason: (name, reason) => ({ name, reason }),
   rejectedFileUnchecked: (count) => ({ count }),
   fileCountLimit: (count) => ({ count }),
+  moveFile: (name) => ({ name }),
+  fileMoved: (name, position, count) => ({ name, position, count }),
   problemCount: (errors, warnings) => ({ errors, warnings }),
   problemSeverityLead: (severity) => ({ severity }),
   tooShort: (minLength) => ({ minLength }),
@@ -216,16 +277,23 @@ export const fieldStrings = defineStrings<FieldStrings>({
   characterCount: (count, maxLength) => ({ count, maxLength, hasLimit: maxLength !== undefined }),
   colorPicker: (label) => ({ label }),
   clearValue: (label) => ({ label }),
+  constraintLabel: (name) => ({ name }),
+  constraintRequiredChoice: (choice) => ({ choice }),
+  constraintUnset: (label) => ({ label }),
+  constraintIssue: (reason) => ({ reason }),
   selectedValues: (label) => ({ label }),
   createOption: (text) => ({ text }),
   typeToSearch: (minLength) => ({ minLength }),
   duplicateValue: (value) => ({ value }),
   tooManyValues: (maxValues) => ({ maxValues }),
   characterPosition: (position, length) => ({ position, length }),
+  weekNumber: (week) => ({ week }),
+  tooManyDates: (maxValues) => ({ maxValues }),
   dateTooEarly: (minValue) => ({ minValue }),
   dateTooLate: (maxValue) => ({ maxValue }),
   lastPeriod: (period) => ({ period }),
   nextPeriod: (period) => ({ period }),
   signatureStrokes: (count) => ({ count }),
   signatureImageSize: (size) => ({ size }),
+  ratingValue: (value, max) => ({ value, max }),
 });

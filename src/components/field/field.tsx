@@ -1,11 +1,11 @@
 'use client';
 
-import { type ReactNode, type RefObject, useRef, useState } from 'react';
+import { type ReactNode, type Ref, type RefObject, useRef, useState } from 'react';
 import type { BaseProps, ControlSize, Key, RefProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { createSlotRegistry } from '../../utils/slot-registry.js';
 import { type FieldSlots, useFieldBehaviour } from './field-behaviour.js';
-import { focusControl } from './field-form.js';
+import { type FieldControlHandle, focusControl } from './field-form.js';
 import { FieldHelpParts } from './field-help.js';
 import {
   defaultFieldMenu,
@@ -94,6 +94,13 @@ export interface FieldProps<T> extends BaseProps, RefProps<HTMLDivElement> {
     ((validation: FieldValidation, issues: readonly FieldIssue[]) => ReactNode) | undefined;
   /** Focuses the control when the field mounts (its first focusable element for a group). */
   autoFocus?: boolean | undefined;
+  /** A handle whose `focus()` reveals the field and focuses its control, for an external owner. */
+  controlRef?: Ref<FieldControlHandle> | undefined;
+  /**
+   * Called once focus leaves the field (its control, its buttons and the popovers they open), as
+   * an external form controller's blur: moving between a compound control's parts never calls it.
+   */
+  onLeave?: (() => void) | undefined;
   /**
    * Commits the value once focus leaves the field (its control, its buttons and the popovers they
    * open), for a control that commits on blur: moving to the field's own buttons does not commit.
@@ -243,6 +250,8 @@ export function Field<T>({
   onMenuAction,
   renderMessage,
   autoFocus,
+  controlRef,
+  onLeave,
   commitOnBlur = false,
   children,
   className,
@@ -254,7 +263,7 @@ export function Field<T>({
   const [slots] = useState<FieldSlots>(() => createSlotRegistry());
   const behaviour = useFieldBehaviour(state, slots, {
     ...{ label, menu, menuIcons, onMenuAction },
-    ...{ commitOnBlur, autoFocus, messageDisplay, ref },
+    ...{ commitOnBlur, autoFocus, messageDisplay, ref, controlRef, onLeave },
     hasHelp: !isEmptyNode(help),
   });
   const controlSlot = useRef<HTMLDivElement>(null);
@@ -324,7 +333,7 @@ export type {
   FieldDensity,
   FieldLabelLayout,
 } from './field-parts.js';
-export { FieldMessage } from './field-parts.js';
+export { FieldMessage, toInnerControlSize } from './field-parts.js';
 export { PickerOptionRow, usePickerEmptyContent, usePickerPopoverStyle } from './field-picker.js';
 export type { PickerItem, PickerOption, PickerSection } from './field-picker-items.js';
 export { flattenPickerItems, isPickerSection, pickerListLayout } from './field-picker-items.js';

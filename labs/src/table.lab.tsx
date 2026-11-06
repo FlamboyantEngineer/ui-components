@@ -34,6 +34,7 @@ import {
   ShareWeights,
 } from './table-content-contracts.js';
 import { HeaderFilter, PickerCell } from './table-control-cases.js';
+import { CsvExport, EditHistory, PinnedRows } from './table-data-cases.js';
 import {
   ControlledLayout,
   ControlledMultipleSort,
@@ -41,8 +42,10 @@ import {
   SeededTable,
   SelectionModes,
 } from './table-owned-cases.js';
+import { RevealRows } from './table-reveal-cases.js';
 import { RepeatedSelection } from './table-selection-cases.js';
 import { BulkEdit, Grouping, SmallSteps, Spreadsheet } from './table-sheet-cases.js';
+import { VirtualGroupsAndSummary, VirtualMeasuredRows } from './table-virtual-cases.js';
 
 function TrailingActions() {
   const [count, setCount] = useState(0);
@@ -380,6 +383,12 @@ mountLab(
     >
       <GroupedReordering />
     </LabSection>
+    <LabSection
+      title="Revealing rows by id"
+      description="The table's handle reveals a row by id, drawn or not, without moving focus, or focuses one of its cells; a row the table does not show reports why."
+    >
+      <RevealRows />
+    </LabSection>
     <LabSection title="States" description="Each state at both row sizes.">
       <StateMatrix
         axes={{ state: states, size: ['md', 'sm'] }}
@@ -594,7 +603,28 @@ mountLab(
     >
       <BulkEdit />
     </LabSection>
-    <LabSection title="Virtualized" description="10,000 rows; only those in view are rendered.">
+    <LabSection
+      title="CSV export"
+      description="Export CSV writes the current page, every filtered row in the shown order, or the selected rows, as the drawn columns. The caller-paged table writes Note then Name, reads Loaded rows until it is given every row, and shows the text instead of downloading it. Formula-like notes start with an apostrophe."
+    >
+      <CsvExport />
+    </LabSection>
+    <LabSection
+      title="Undo and redo"
+      description="Edit, paste, fill, clear or bulk edit, then Undo or Control+Z on the grid; Shift+Control+Z or Control+Y redoes. A paste undoes as one step. Grow Basil elsewhere, then undo a Basil height edit: the newer height stays. Reload the plants forgets the history. Control+Z inside an open editor stays the editor's."
+    >
+      <EditHistory />
+    </LabSection>
+    <LabSection
+      title="Pinned rows"
+      description="Bed 3 stays under the sticky header and Bed 14 above the summary while the body scrolls, outside the filter and the sort. Each row's menu pins it to the top or the bottom, or unpins it; pinned rows still select and edit (double-click a name)."
+    >
+      <PinnedRows />
+    </LabSection>
+    <LabSection
+      title="Virtualized"
+      description="10,000 rows; only those in view are rendered. Sorting by a header reuses the built rows and only orders them again."
+    >
       <div data-lab="virtualized" style={{ height: 320 }}>
         <Table
           aria-label="Items, virtualized"
@@ -609,6 +639,18 @@ mountLab(
           rowHeight={36}
         />
       </div>
+    </LabSection>
+    <LabSection
+      title="Virtualized groups and summary"
+      description="2,000 rows under a Range group header, with a summary row that stays in the document wherever the table scrolls. Resize a column or sort, then scroll to the end."
+    >
+      <VirtualGroupsAndSummary />
+    </LabSection>
+    <LabSection
+      title="Virtualized measured rows"
+      description="1,000 notes with rowHeight auto: one-line and wrapped notes and opened details take their own heights. Resize the Note column or lengthen the notes and the rows are measured again; the row at the top of the view stays where it is."
+    >
+      <VirtualMeasuredRows />
     </LabSection>
   </>,
 );

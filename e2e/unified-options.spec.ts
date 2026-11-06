@@ -16,13 +16,13 @@ test('UIC-PROGRESS-BAR-3.1 draws a circular meter with threshold styling', async
   lab,
 }) => {
   await lab.open('progress-bar');
-  const meter = matrixCell(page, 'mode=meter shape=circular').getByRole('meter', {
+  const meter = matrixCell(page, 'component=Meter shape=circular').getByRole('meter', {
     name: 'Storage',
   });
   await expect(meter).toHaveAttribute('aria-valuenow', '60');
   await expect(meter).toHaveAttribute('data-tone', 'success');
-  await expect(meter.locator('.ui-progress-bar__ring')).toHaveCSS('width', '24px');
-  await expect(meter.locator('.ui-progress-bar__fill')).toHaveAttribute('stroke-dashoffset', '40');
+  await expect(meter.locator('.ui-meter__ring')).toHaveCSS('width', '24px');
+  await expect(meter.locator('.ui-meter__fill')).toHaveAttribute('stroke-dashoffset', '40');
   await lab.expectAccessible();
 });
 

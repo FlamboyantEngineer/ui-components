@@ -18,6 +18,13 @@ A provider inside another shall merge its glyphs and messages over its parent's 
 Implementation: `src/core/provider.tsx`
 Verification: `src/core/provider.test.tsx`, `e2e/provider.spec.ts`
 
+### UIC-PROVIDER-1.3 - Independent services
+
+A provider shall publish each service that changes on its own (glyphs, text with its locale, the link renderer, the router, storage and the clock) separately, so that changing one option re-renders only the components reading that service: a new storage adapter or clock leaves glyph-only and text-only components alone, while a change of messages or locale reaches every text consumer. A parent render that changes no service re-renders no consumer, and nested merges, router inheritance and hydration behave as with one service.
+
+Implementation: `src/core/provider.tsx`
+Verification: `src/core/provider-subscriptions.test.tsx`, `e2e/provider.spec.ts`
+
 ## UIC-PROVIDER-2 - Glyphs
 
 ### UIC-PROVIDER-2.1 - Built-in glyphs
@@ -73,7 +80,7 @@ Verification: `src/core/locales/index.test.ts`, `e2e/languages.spec.ts`
 
 ### UIC-PROVIDER-3.6 - Host messages
 
-`formatMessage(message, values, locale)` and `useFormatMessage()` shall format a host's own ICU messages with the same rules, the hook with the provider's locale, so a host builds its sentences, counts and lists the way the library does. A list value `{ items, type: 'or' }` or `{ items, type: 'unit' }` joins its items with "or" or with commas only. An argument passed as `undefined` or `null` reads as empty text, picks a `select`'s `other` branch and counts as zero in a plural or number; an argument the message names but `values` leaves out throws, as a malformed message does, so a misspelt argument or a stale translation never prints a silent gap.
+`formatMessage(message, values, locale)` and `useFormatMessage()` shall format a host's own ICU messages with the same rules, the hook with the provider's locale, so a host builds its sentences, counts and lists the way the library does. A list value `{ items, type: 'or' }` or `{ items, type: 'unit' }` joins its items with "or" or with commas only. An argument passed as `undefined` or `null` reads as empty text, picks a `select`'s `other` branch and counts as zero in a plural or number; an argument the message names but `values` leaves out throws, as a malformed message does, so a misspelt argument or a stale translation never prints a silent gap. Only the own entries of `values` are arguments, so a name such as `toString`, `constructor` or `__proto__` is provided or left out like any other.
 
 Implementation: `src/core/message-format.ts`, `src/core/provider.tsx`
 Verification: `src/core/message-format.test.ts`, `src/core/provider.test.tsx`

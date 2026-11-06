@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 import type {
   AriaLabellingProps,
   CollectionSelectionProps,
@@ -18,27 +18,29 @@ import type { ActionRowAction } from '../action-row/action-row.js';
 import { Pagination } from '../pagination/pagination.js';
 import type { TableColumnWidths } from './column-sizing.js';
 import { TableBody } from './table-body.js';
-import { TableSelectionBar } from './table-bulk-edit.js';
 import { TableColumnFilter } from './table-column-filter.js';
 import { getColumnText, type TableColumnGroup, type TableColumnLayout } from './table-columns.js';
+import type { TableEditHistory } from './table-edit-history.js';
+import type { TableCsvExport } from './table-export.js';
 import { isEmptyFilterValue, setColumnFilter, type TableFilter } from './table-filters.js';
 import { hasTableFooter, TableFooter } from './table-footer.js';
 import { readGridTracks } from './table-grid-tracks.js';
 import { hasGroupRow } from './table-group-header.js';
 import { selectionColumnWidth, TableHeader, type TableHeaderModel } from './table-header.js';
 import { tableHooks as hooks } from './table-hooks.js';
+import { type TableHandle, useTableHandle } from './table-reveal.js';
 import type { TableCellWrap, TableColumn, TableRow } from './table-rows.js';
 import { TableScroll } from './table-scroll.js';
-import { TableSearch } from './table-search.js';
-import { TableToolbar } from './table-toolbar.js';
+import { TableControls } from './table-toolbar.js';
 import type { TableChildRows } from './table-tree.js';
 import type { TableCellEdit } from './use-cell-editing.js';
 import type { TableSpreadsheetProps } from './use-cell-selection.js';
 import { useContentWidths } from './use-content-widths.js';
+import { useOrderedDropKeys } from './use-ordered-drop-keys.js';
 import type { TableGroupingProps } from './use-table-expansion.js';
 import { type TableGrid, useTableGrid } from './use-table-grid.js';
 import type { TableReorderOptions } from './use-table-reorder.js';
-import type { TablePagination } from './use-table-rows.js';
+import type { TablePagination, TablePinnedRows } from './use-table-rows.js';
 import type { TableSortOptions } from './use-table-sort.js';
 
 export type TableSize = Extract<Size, 'sm' | 'md'>;
@@ -92,14 +94,26 @@ export interface TableProps<T extends TableRow>
   columnLayout?: TableColumnLayout | undefined;
   /** Initial column order and hidden columns while the table owns them and none are stored. */
   defaultColumnLayout?: TableColumnLayout | undefined;
+  /** Draws an export menu above the grid that writes rows as CSV. */
+  csvExport?: TableCsvExport<T> | undefined;
   /** Called with the layout after a column moves, hides or shows. */
   onColumnLayoutChange?: ((layout: TableColumnLayout) => void) | undefined;
   /** A row's child rows, drawn under it once it is expanded. */
   getChildRows?: TableChildRows<T>;
   /** Content of a full-width detail row under a row, drawn once the row is expanded. */
   renderRowDetail?: ((row: T) => ReactNode) | undefined;
+  /**
+   * Records the cell edits the table reports, and applies its undo and redo through
+   * `onCellsChange`; Control or Command with Z undoes on the table.
+   */
+  editHistory?: TableEditHistory | undefined;
   /** Reports a finished cell edit. The table never changes its rows itself. */
   onCellEdit?: ((edit: TableCellEdit<T>) => void) | undefined;
+  /**
+   * Top-level rows, by id, that stay at the top or the bottom of the body while it scrolls, on
+   * every page, outside filtering, sorting, paging, grouping and reordering.
+   */
+  pinnedRows?: TablePinnedRows | undefined;
   /** Shows the rows one page at a time under a page navigation. */
   pagination?: TablePagination | undefined;
   /** Asks for more rows when the end of the rows scrolls into view. */
@@ -136,11 +150,32 @@ export interface TableProps<T extends TableRow>
   stickyHeader?: boolean | undefined;
   /** Renders only the rows in view; the stylesheet must bound the scroll area's height. */
   virtualized?: boolean | undefined;
-  /** Row height in pixels for a virtualized table. Defaults to 40, or 32 at size `sm`. */
-  rowHeight?: number | undefined;
+  /**
+   * Row height in pixels for a virtualized table, or `auto` to measure each row's natural height.
+   * Defaults to 40, or 32 at size `sm`.
+   */
+  rowHeight?: number | 'auto' | undefined;
+  /**
+   * The height a virtualized table with `rowHeight="auto"` gives a row until it is measured, and
+   * the height of its header rows. Defaults to 40, or 32 at size `sm`.
+   */
+  estimatedRowHeight?: number | undefined;
+  /** Receives the handle that reveals and focuses rows and cells by row id, drawn or not. */
+  handleRef?: Ref<TableHandle> | undefined;
 }
 
 const virtualRowHeights: Readonly<Record<TableSize, number>> = { md: 40, sm: 32 };
+
+/** A virtualized table's row height, or its estimate when it measures rows (UIC-TABLE-7.5). */
+function readRowHeight({
+  rowHeight,
+  estimatedRowHeight,
+  size,
+}: Pick<TableProps<TableRow>, 'rowHeight' | 'estimatedRowHeight'> & { size: TableSize }) {
+  const measuresRows = rowHeight === 'auto';
+  const height = (measuresRows ? estimatedRowHeight : rowHeight) ?? virtualRowHeights[size];
+  return { height, measuresRows };
+}
 
 type TableGridElementOptions<T extends TableRow> = Pick<
   TableProps<T>,
@@ -197,10 +232,9 @@ function TableGridElement<T extends TableRow>({
   const header = createHeaderModel(grid, options, contentWidths);
   // React Aria keeps the hooks a table mounts with, so they stay and are disabled while it does
   // not reorder: turning reordering or grouping on and off keeps the rows mounted.
-  const { dragAndDropHooks } = useDragAndDrop<T>({
-    ...grid.dragAndDrop,
-    isDisabled: reordering === null,
-  });
+  const dragAndDropHooks = useOrderedDropKeys(
+    useDragAndDrop<T>({ ...grid.dragAndDrop, isDisabled: reordering === null }).dragAndDropHooks,
+  );
   const gridRef = useKeptCollectionAttributes<HTMLTableElement>(ariaProps);
   return (
     <AriaTable
@@ -262,20 +296,23 @@ export function Table<T extends TableRow>({
   size = 'md',
   stickyHeader,
   rowHeight,
+  estimatedRowHeight,
   filterable,
   filterLabel,
   className,
   id,
   ref,
+  handleRef,
   ...rest
 }: TableProps<T>) {
   const strings = useUiStrings();
   const [dataAttributes, gridProps] = splitDataAttributes(rest);
-  const grid = useTableGrid({ ...gridProps, filterable });
-  const { view, layout } = grid;
-  const { virtualized } = rest;
-  const height = rowHeight ?? virtualRowHeights[size];
-  const { ref: rootRef, widths: contentWidths } = useContentWidths(rest.columns, ref);
+  const grid = useTableGrid({ ...gridProps, filterable, stickyHeader });
+  const { view } = grid;
+  const isVirtualized = rest.virtualized === true;
+  const { height, measuresRows } = readRowHeight({ rowHeight, estimatedRowHeight, size });
+  const reveal = useTableHandle(handleRef, { ...rest, grid, ref });
+  const { ref: rootRef, widths: contentWidths } = useContentWidths(rest.columns, reveal.ref);
   const element = (
     <TableGridElement
       grid={grid}
@@ -290,29 +327,28 @@ export function Table<T extends TableRow>({
       {...hooks.root({
         className,
         props: dataAttributes,
-        data: { size, stickyHeader, virtualized, reordering: grid.reordering !== null },
+        data: {
+          size,
+          stickyHeader,
+          virtualized: isVirtualized,
+          measuredRows: isVirtualized && measuresRows,
+          reordering: grid.reordering !== null,
+        },
       })}
       id={id}
       ref={rootRef}
       aria-busy={grid.body.status === 'loading' || undefined}
     >
-      <TableToolbar
-        filter={
-          filterable ? (
-            <TableSearch
-              label={filterLabel ?? strings.filterRows}
-              value={view.filter.query ?? ''}
-              onChange={(query) => view.onFilterChange({ ...view.filter, query })}
-            />
-          ) : null
-        }
+      <TableControls
+        grid={grid}
         columns={rest.columns}
-        layout={layout}
+        search={filterable ? (filterLabel ?? strings.filterRows) : null}
       />
-      {grid.selectionBar ? <TableSelectionBar {...grid.selectionBar} /> : null}
       <TableScroll
-        isVirtualized={virtualized === true}
+        isVirtualized={isVirtualized}
+        layoutRef={reveal.layoutRef}
         rowHeight={height}
+        measuresRows={measuresRows}
         hasGroupRow={hasGroupRow(rest.columnGroups ?? [])}
         widths={grid.widths}
       >

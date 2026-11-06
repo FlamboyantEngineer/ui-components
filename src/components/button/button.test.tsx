@@ -1,8 +1,9 @@
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import type { Ref } from 'react';
 import { hydrateRoot } from 'react-dom/client';
 import { renderToString } from 'react-dom/server';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { ChevronDownGlyph, PlusGlyph, SaveGlyph } from '../../core/glyphs.js';
 import { UiProvider } from '../../core/provider.js';
@@ -11,7 +12,7 @@ import * as primitives from '../../primitives/index.js';
 import { mergeProps } from '../../utils/merge-props.js';
 import { HoverCard, HoverCardTrigger } from '../hover-card/hover-card.js';
 import { Tooltip } from '../tooltip/tooltip.js';
-import { Button } from './button.js';
+import { Button, type ButtonProps } from './button.js';
 
 describe('Button', () => {
   it('UIC-HOOKS-2.3 keeps inactive hooks clear when caller attributes conflict', () => {
@@ -591,6 +592,28 @@ describe('Button', () => {
     expect(link).toHaveAttribute('data-disabled', 'true');
     await user.click(link);
     expect(onPress).not.toHaveBeenCalled();
+  });
+
+  it('UIC-BUTTON-1.9 hands its ref the button, the anchor or the span of a disabled link', () => {
+    expectTypeOf<ButtonProps['ref']>().toEqualTypeOf<
+      Ref<HTMLButtonElement | HTMLAnchorElement | HTMLSpanElement> | undefined
+    >();
+    const nodes: Element[] = [];
+    const ref = (node: HTMLButtonElement | HTMLAnchorElement | HTMLSpanElement | null) => {
+      if (node) nodes.push(node);
+    };
+    const { rerender } = render(<Button ref={ref}>Reports</Button>);
+    rerender(
+      <Button href="/reports" ref={ref}>
+        Reports
+      </Button>,
+    );
+    rerender(
+      <Button href="/reports" isDisabled ref={ref}>
+        Reports
+      </Button>,
+    );
+    expect(nodes.map((node) => node.tagName)).toEqual(['BUTTON', 'A', 'SPAN']);
   });
 
   it('UIC-BUTTON-1.9 names a link by aria-label or aria-labelledby and reports its key and focus handlers', async () => {

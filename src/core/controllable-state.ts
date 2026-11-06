@@ -17,10 +17,11 @@ export function useControllableState<T>(
   const isControlled = value !== undefined;
   const shown = isControlled ? value : own;
   // The last uncontrolled set and the value shown when it was made: a second set before the field
-  // renders again compares with the first one's value, not with the value still shown.
+  // renders again compares with the first one's value, not with the value still shown. A controlled
+  // set always compares with the controlled value, since the own copy no longer shows.
   const lastSetRef = useRef<{ from: T; to: T } | null>(null);
   const setValue = (next: T) => {
-    const last = lastSetRef.current;
+    const last = isControlled ? null : lastSetRef.current;
     const current = last && Object.is(last.from, shown) ? last.to : shown;
     if (Object.is(next, current)) return;
     if (!isControlled) {

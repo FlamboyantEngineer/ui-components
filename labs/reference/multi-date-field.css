@@ -1,0 +1,35 @@
+/* Multi Date Field: an inline calendar in a frame, then the chosen dates as tags. */
+
+.ui-multi-date-field {
+  min-width: 0;
+}
+
+.ui-multi-date-field__control {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  max-width: 100%;
+}
+
+.ui-multi-date-field__calendar {
+  display: grid;
+  gap: 4px;
+  max-width: 100%;
+  padding: 8px;
+  overflow-x: auto;
+  border: 1px solid var(--ref-field-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-field-fill);
+}
+
+.ui-multi-date-field__calendar[data-invalid] {
+  border-color: var(--ref-danger);
+}
+
+.ui-multi-date-field__calendar[data-disabled] {
+  background: var(--ref-field-fill-inactive);
+}
+
+.ui-multi-date-field__tags {
+  max-width: 100%;
+}

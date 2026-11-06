@@ -4,7 +4,11 @@
 import { requireDefined } from '../../utils/require-defined.js';
 import { walkTree } from '../../utils/walk-tree.js';
 import type { MarkdownNode } from '../markdown/markdown.js';
-import { parseMarkdown } from '../markdown/parse-markdown.js';
+import type { MarkdownBlock } from '../markdown/markdown-nodes.js';
+import {
+  parseStreamingMarkdown,
+  type StreamingMarkdownParse,
+} from '../markdown/parse-streaming-markdown.js';
 import type { ChatTextToken } from './chat-part.js';
 
 /** A run of text, or a token by its position among the listed tokens. */
@@ -117,12 +121,33 @@ function listNodeChildren(node: MarkdownNode): readonly MarkdownNode[] | undefin
   return node.type === 'table' ? [...node.header.flat(), ...node.rows.flat(2)] : undefined;
 }
 
-/** What Markdown shows of `source`: its text, and what it shows as written. */
-function readShownText(source: string) {
-  const nodes = [...walkTree<MarkdownNode>(parseMarkdown(source).children, listNodeChildren)];
-  return {
+/** What a block of Markdown shows: its text, and what it shows as written. */
+interface ShownText {
+  text: readonly string[];
+  literal: readonly string[];
+}
+
+/** What each parsed block shows, kept while a streaming parse keeps the block itself. */
+const shownByBlock = new WeakMap<MarkdownBlock, ShownText>();
+
+function readBlockShownText(block: MarkdownBlock): ShownText {
+  const known = shownByBlock.get(block);
+  if (known) return known;
+  const nodes = [...walkTree<MarkdownNode>([block], listNodeChildren)];
+  const shown = {
     text: nodes.flatMap((node) => (node.type === 'text' ? [node.text] : [])),
     literal: nodes.flatMap(readLiteralText),
+  };
+  shownByBlock.set(block, shown);
+  return shown;
+}
+
+/** What Markdown shows of a parsed source, block by block. */
+function readShownText(parse: StreamingMarkdownParse): ShownText {
+  const blocks = parse.document.children.map(readBlockShownText);
+  return {
+    text: blocks.flatMap((block) => block.text),
+    literal: blocks.flatMap((block) => block.literal),
   };
 }
 
@@ -137,23 +162,37 @@ function chooseMarker(values: readonly string[]): TokenMarker {
   return `${anchor}${key}${separator}`;
 }
 
+/** The parses a token source was read from, which the source of a longer text continues. */
+export interface TokenSourceParses {
+  text: StreamingMarkdownParse;
+  marked: StreamingMarkdownParse;
+}
+
 /**
  * The Markdown source of a text with tokens: a marker in place of each token that Markdown reads as
  * text, and the token's own text where Markdown shows the source as written (in code, a link's
  * target or an image), since a pill cannot show there. Its markers open with a key no anchor in the
  * text is followed by, so literal text never reads as a token, and each marker stays a few
- * characters long, so the source grows linearly with the tokens.
+ * characters long, so the source grows linearly with the tokens. Given the `parses` of an earlier
+ * source, a text that continues it parses only its unsettled end again (UIC-MARKDOWN-2.12), so a
+ * streamed text with tokens does not parse its whole source for every chunk.
  */
-export function writeTokenSource(text: string, tokens: readonly ChatTextToken[]): TokenSource {
-  if (tokens.length === 0) return { source: text, marker: chooseMarker([]) };
-  const shown = readShownText(text);
+export function writeTokenSource(
+  text: string,
+  tokens: readonly ChatTextToken[],
+  previous?: TokenSourceParses | null,
+): TokenSource & { parses: TokenSourceParses | null } {
+  if (tokens.length === 0) return { source: text, marker: chooseMarker([]), parses: null };
+  const textParse = parseStreamingMarkdown(text, previous?.text ?? null);
+  const shown = readShownText(textParse);
   const marker = chooseMarker([text, ...shown.text, ...shown.literal]);
   const marked = writeTokenMarkers(text, tokens, { literal: noTokens, marker });
+  const markedParse = parseStreamingMarkdown(marked, previous?.marked ?? null);
   const literal = new Set(
-    readShownText(marked)
+    readShownText(markedParse)
       .literal.flatMap((value) => splitTokenMarkers(value, tokens.length, marker))
       .filter((piece) => typeof piece === 'number'),
   );
   const source = literal.size === 0 ? marked : writeTokenMarkers(text, tokens, { literal, marker });
-  return { source, marker };
+  return { source, marker, parses: { text: textParse, marked: markedParse } };
 }

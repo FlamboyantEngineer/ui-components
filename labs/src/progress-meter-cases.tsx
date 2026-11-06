@@ -1,6 +1,6 @@
 import { type CSSProperties, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { ProgressBar } from '../../src/components/progress-bar/progress-bar.js';
+import { Meter } from '../../src/components/progress-bar/progress-bar.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
 
 const column = (width: number): CSSProperties => ({ width });
@@ -15,8 +15,7 @@ function SteppedDisk() {
   const [used, setUsed] = useState(50);
   return (
     <div style={column(280)} data-lab-demo="disk">
-      <ProgressBar
-        mode="meter"
+      <Meter
         label="Disk used"
         value={used}
         low={60}
@@ -48,7 +47,7 @@ export function ProgressMeterCases() {
             axes={{ value: ['0', '40', '100'], size: ['sm', 'md', 'lg'] }}
             render={({ value, size }) => (
               <div style={column(200)}>
-                <ProgressBar mode="meter" label="Storage" size={size} value={Number(value)} />
+                <Meter label="Storage" size={size} value={Number(value)} />
               </div>
             )}
           />
@@ -58,7 +57,7 @@ export function ProgressMeterCases() {
             axes={{ tone: ['neutral', 'success', 'warning', 'danger'] }}
             render={({ tone }) => (
               <div style={column(200)}>
-                <ProgressBar mode="meter" label="Score" tone={tone} value={70} />
+                <Meter label="Score" tone={tone} value={70} />
               </div>
             )}
           />
@@ -73,8 +72,7 @@ export function ProgressMeterCases() {
             }}
             render={({ option }) => (
               <div style={column(160)}>
-                <ProgressBar
-                  mode="meter"
+                <Meter
                   value={40}
                   maxValue={option === 'unit' ? 128 : 100}
                   {...(option === 'aria-label only'
@@ -103,11 +101,36 @@ export function ProgressMeterCases() {
               const { label, ...thresholds } = thresholdCases[optimum];
               return (
                 <div style={column(200)}>
-                  <ProgressBar mode="meter" label={label} value={Number(value)} {...thresholds} />
+                  <Meter label={label} value={Number(value)} {...thresholds} />
                 </div>
               );
             }}
           />
+        </LabSection>
+        <LabSection
+          title="Meter: Capacity with a description"
+          description="A team's shared storage, judged so low use is best, with a unit format and a description that says what the meter measures. The description is the meter's accessible description."
+        >
+          <div style={column(320)} data-lab-demo="capacity">
+            <Meter
+              label="Shared storage"
+              value={92}
+              maxValue={128}
+              formatOptions={{ style: 'unit', unit: 'gigabyte' }}
+              low={80}
+              high={112}
+              optimum={0}
+              description="92 of 128 GB used. Archived files do not count."
+            />
+          </div>
+        </LabSection>
+        <LabSection
+          title="Meter: Right to left"
+          description="In a right-to-left page the meter's fill starts at the right edge."
+        >
+          <div dir="rtl" style={column(200)} data-lab-demo="meter-rtl">
+            <Meter label="Battery" value={30} low={20} high={50} optimum={100} />
+          </div>
         </LabSection>
         <LabSection
           title="Meter: Stepping a value"

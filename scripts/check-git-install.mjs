@@ -2,7 +2,7 @@
 // Installs the package as an npm Git dependency into a clean temporary consumer, as a host installs a
 // branch, and checks what npm prepared: the root and component entry points import and render with
 // the minimum supported React, the public declarations type-check, the reference stylesheet is
-// built, self-contained and exported, the rest of labs is excluded and no optional rich-text peer is
+// built, self-contained and exported, the rest of labs is excluded and no optional peer (rich text, KaTeX) is
 // installed. Then it deletes node_modules and repeats the checks through `npm ci`
 // with the consumer's lockfile. Last, it adds the rich-text peers at their minimum versions, without
 // relaxing npm's peer resolution, and renders the rich text editor. Each install
@@ -136,9 +136,9 @@ function check(phase) {
   if (labFiles.length > 0) {
     problems.push(`${phase}: the installed package contains labs, such as ${labFiles[0]}`);
   }
-  for (const name of richTextPeers) {
+  for (const name of [...richTextPeers, 'katex']) {
     if (existsSync(join(consumer, 'node_modules', ...name.split('/')))) {
-      problems.push(`${phase}: the optional rich-text peer ${name} was installed`);
+      problems.push(`${phase}: the optional peer ${name} was installed`);
     }
   }
   try {

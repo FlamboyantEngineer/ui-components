@@ -107,8 +107,8 @@ function useValidity(
 
 /**
  * The browser fires `invalid` at each invalid control of a native submit it blocked, in document
- * order. The first event of that run shows every field's validation and focuses its control, through
- * its field when it has one, so a collapsed or filtered container opens first.
+ * order. Only the first event of that run shows every field's validation, once each, and focuses its
+ * control, through its field when it has one, so a collapsed or filtered container opens first.
  */
 function useInvalidFocus(fields: Set<FieldRegistration>) {
   const form = useRef<HTMLFormElement>(null);
@@ -117,10 +117,13 @@ function useInvalidFocus(fields: Set<FieldRegistration>) {
     if (!element) return undefined;
     let isFocusing = false;
     const onInvalid = (event: Event) => {
-      for (const field of fields) field.revealValidation();
-      if (isFocusing || !isHTMLElement(event.target)) return;
+      // One pass of native validation fires an event per invalid control, synchronously: only its
+      // first reveals the fields and focuses, so the work stays proportional to the form's size.
+      if (isFocusing) return;
       isFocusing = true;
       queueMicrotask(() => (isFocusing = false));
+      for (const field of fields) field.revealValidation();
+      if (!isHTMLElement(event.target)) return;
       // The field focuses its own control, revealing it first when a container hides it.
       const { target } = event;
       const field = [...fields].find((entry) => entry.getElement()?.contains(target));

@@ -1,4 +1,4 @@
-import { progressBarHooks as hooks } from './progress-bar-hooks.js';
+import type { ComponentHooks } from '../../core/hooks.js';
 
 /** The ring's circumference, normalised through `pathLength` so offsets read as percentages. */
 const ringLength = 100;
@@ -8,7 +8,13 @@ const ringLength = 100;
  * full ring draws its fill undashed, a closed stroke, since a dash that ends where it starts leaves
  * a hairline seam at the top on some pixel ratios.
  */
-export function ProgressRing({ gap }: { gap: number }) {
+export function ProgressRing({
+  gap,
+  hooks,
+}: {
+  gap: number;
+  hooks: ComponentHooks<'ring' | 'track' | 'fill'>;
+}) {
   const dash = gap > 0 ? { strokeDasharray: ringLength, strokeDashoffset: gap } : {};
   return (
     <svg

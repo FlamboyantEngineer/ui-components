@@ -172,6 +172,36 @@ test.describe('Text Field lab', () => {
     await expect(reveal).toHaveAttribute('aria-pressed', 'false');
   });
 
+  test('UIC-TEXT-FIELD-3.5 shows passwords from a host button and keeps each input', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('text-field');
+    const host = field(page, 'host-reveal');
+    const first = host.getByLabel('New password', { exact: true });
+    const second = host.getByLabel('Confirm password', { exact: true });
+    await first.click();
+    await page.keyboard.press('End');
+    await page.keyboard.type('s');
+    await host.getByRole('button', { name: 'Show both passwords' }).click();
+    await expect(first).toHaveAttribute('type', 'text');
+    await expect(second).toHaveAttribute('type', 'text');
+    await expect(first).toHaveValue('maple rivers');
+    await expect(first).toHaveAttribute('autocomplete', 'new-password');
+    await expect(output(page, 'Revealed')).toHaveText('yes');
+    const own = host.getByRole('button', { name: 'Show New password' });
+    await expect(own).toHaveAttribute('aria-pressed', 'true');
+    await first.click();
+    await own.click();
+    await expect(first).toBeFocused();
+    await expect(first).toHaveAttribute('type', 'password');
+    await expect(second).toHaveAttribute('type', 'password');
+    await page.keyboard.press('End');
+    await page.keyboard.type('!');
+    await expect(first).toHaveValue('maple rivers!');
+    await lab.expectAccessible();
+  });
+
   for (const hasCanParse of [true, false]) {
     test(`UIC-TEXT-FIELD-2.3 checks initial and edited URLs with URL.canParse ${hasCanParse ? 'available' : 'unavailable'}`, async ({
       page,

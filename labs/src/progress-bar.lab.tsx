@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { ProgressBar, Spinner } from '../../src/components/progress-bar/progress-bar.js';
+import { Meter, ProgressBar, Spinner } from '../../src/components/progress-bar/progress-bar.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { ProgressMeterCases } from './progress-meter-cases.js';
 import { ProgressRangeCases } from './progress-range-cases.js';
@@ -155,22 +155,25 @@ mountLab(
 
     <LabSection
       title="Shape and meaning"
-      description="A work indicator or measured quantity, as a linear track or circular ring. Meter thresholds judge storage; it never becomes indeterminate or complete."
+      description="A ProgressBar for work and a Meter for a measured quantity, as a linear track or circular ring. The meter's thresholds judge storage; it never becomes indeterminate or complete."
     >
       <StateMatrix
-        axes={{ mode: ['progress', 'meter'], shape: ['linear', 'circular'] }}
-        render={({ mode, shape }) => (
+        axes={{ component: ['ProgressBar', 'Meter'], shape: ['linear', 'circular'] }}
+        render={({ component, shape }) => (
           <div style={{ width: 200 }}>
-            <ProgressBar
-              mode={mode}
-              shape={shape}
-              label={mode === 'meter' ? 'Storage' : 'Uploading'}
-              value={60}
-              low={20}
-              high={80}
-              optimum={50}
-              showValueLabel
-            />
+            {component === 'Meter' ? (
+              <Meter
+                shape={shape}
+                label="Storage"
+                value={60}
+                low={20}
+                high={80}
+                optimum={50}
+                showValueLabel
+              />
+            ) : (
+              <ProgressBar shape={shape} label="Uploading" value={60} showValueLabel />
+            )}
           </div>
         )}
       />

@@ -1,6 +1,6 @@
 'use client';
 
-import type { JSX, ReactElement, ReactNode } from 'react';
+import type { JSX, ReactElement, ReactNode, Ref } from 'react';
 import type {
   AriaLabellingProps,
   FocusEventProps,
@@ -37,7 +37,8 @@ export interface LinkProps
     FocusEventProps,
     AriaLabellingProps,
     Pick<NativeProps<'a'>, 'target' | 'rel' | 'download' | 'title' | 'aria-current'>,
-    RefProps<HTMLAnchorElement> {
+    // A disabled link, or one without `href`, renders a `<span>` and hands that to the ref.
+    RefProps<HTMLAnchorElement | HTMLSpanElement> {
   /** The destination. Without it the link is a pressable `<span>`. */
   href?: string | undefined;
   /** Options handed to the provider's `navigate` with the `href`. */
@@ -128,6 +129,7 @@ export function Link({
   children,
   render = renderLinkElement,
   className,
+  ref,
   ...rest
 }: LinkProps) {
   // A link without a destination, or a disabled one, is a span that opens nothing.
@@ -135,6 +137,8 @@ export function Link({
   return (
     <AriaLink
       {...rest}
+      // The building block types its ref as the anchor, though it hands it the span it draws too.
+      ref={ref as Ref<HTMLAnchorElement> | undefined}
       routerOptions={routerOptions as never}
       {...hooks.root({
         className,

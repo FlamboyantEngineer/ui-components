@@ -2,6 +2,7 @@ export type { TreeDropPosition, TreeMove } from '../../utils/tree-reorder.js';
 export type {
   TreeCurrentMark,
   TreeExpandGlyph,
+  TreeHandle,
   TreeItemData,
   TreeItemState,
   TreeMarks,

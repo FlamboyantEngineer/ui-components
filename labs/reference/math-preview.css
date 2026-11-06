@@ -1,0 +1,68 @@
+/* Math Preview: typeset MathML, its pending note and errors, and the math field's editor and preview. */
+
+.ui-math-preview {
+  display: inline;
+}
+
+.ui-math-preview[data-display='display'] {
+  display: block;
+}
+
+.ui-math-preview__math math {
+  font-size: 1.1em;
+}
+
+.ui-math-preview[data-stale] .ui-math-preview__math {
+  opacity: 0.6;
+}
+
+.ui-math-preview__pending {
+  color: var(--ref-muted);
+  font-style: italic;
+}
+
+.ui-math-preview__error {
+  color: var(--ref-danger);
+}
+
+.ui-math-preview__source {
+  display: block;
+  font-family: var(--ref-mono);
+  font-size: var(--ref-font-size-sm);
+  color: var(--ref-muted);
+  overflow-wrap: anywhere;
+}
+
+.ui-math-preview[data-display='inline'] .ui-math-preview__source {
+  display: inline;
+  margin-inline-start: 0.5em;
+}
+
+.ui-math-field {
+  min-width: 0;
+}
+
+/* The preview stands below the editor, both as wide as the field. */
+.ui-math-field .ui-field__control:has(> .ui-math-field__editor) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+}
+
+.ui-math-field__editor {
+  min-width: 0;
+}
+
+.ui-math-field__preview {
+  display: block;
+  margin-top: 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  min-height: 2.5em;
+}
+
+.ui-math-field__status {
+  /* Visually hidden by the component; styled here only so the hook is covered. */
+  color: inherit;
+}

@@ -177,3 +177,50 @@
 .ui-file-upload__file-error {
   grid-column: 1 / -1;
 }
+
+.ui-file-upload__file:has(> .ui-file-upload__file-handle) {
+  grid-template-columns: auto auto minmax(0, 1fr) auto auto auto;
+  padding-inline-start: 4px;
+}
+
+.ui-file-upload__file-handle {
+  grid-column: 1;
+  grid-row: 1;
+  cursor: grab;
+}
+
+.ui-file-upload__file:has(> .ui-file-upload__file-handle) > .ui-file-upload__file-preview,
+.ui-file-upload__file:has(> .ui-file-upload__file-handle) > .ui-file-upload__file-icon,
+.ui-file-upload__file:has(> .ui-file-upload__file-handle) > .ui-file-upload__file-media {
+  grid-column: 2;
+}
+
+.ui-file-upload__file:has(> .ui-file-upload__file-handle) > .ui-file-upload__file-name {
+  grid-column: 3;
+}
+
+.ui-file-upload__file:has(> .ui-file-upload__file-handle) > .ui-file-upload__file-size {
+  grid-column: 4;
+}
+
+.ui-file-upload__file:has(> .ui-file-upload__file-handle) > .ui-file-upload__file-actions {
+  grid-column: 5;
+}
+
+.ui-file-upload__file:has(> .ui-file-upload__file-handle) > .ui-file-upload__file-remove {
+  grid-column: 6;
+}
+
+.ui-file-upload__file[data-dragging] {
+  opacity: var(--ref-dragging-opacity);
+}
+
+.ui-file-upload__file[data-drop-position='before'] {
+  border-top-color: var(--ref-accent);
+  box-shadow: 0 -1px 0 var(--ref-accent);
+}
+
+.ui-file-upload__file[data-drop-position='after'] {
+  border-bottom-color: var(--ref-accent);
+  box-shadow: 0 1px 0 var(--ref-accent);
+}

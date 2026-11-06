@@ -1,6 +1,6 @@
-/* Progress Bar and Spinner */
+/* Progress Bar, Meter and Spinner */
 
-.ui-progress-bar {
+:is(.ui-progress-bar, .ui-meter) {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: baseline;
@@ -8,19 +8,19 @@
   min-width: 80px;
 }
 
-.ui-progress-bar__label {
+:is(.ui-progress-bar__label, .ui-meter__label) {
   grid-column: 1;
   font-size: var(--ref-font-size-md);
 }
 
-.ui-progress-bar__value {
+:is(.ui-progress-bar__value, .ui-meter__value) {
   grid-column: 2;
   color: var(--ref-muted);
   font-size: var(--ref-font-size-sm);
   font-variant-numeric: tabular-nums;
 }
 
-.ui-progress-bar__track {
+:is(.ui-progress-bar__track, .ui-meter__track) {
   grid-column: 1 / -1;
   height: 6px;
   overflow: hidden;
@@ -28,36 +28,43 @@
   background: var(--ref-border);
 }
 
-.ui-progress-bar[data-size='sm'] .ui-progress-bar__track {
+:is(.ui-progress-bar, .ui-meter)[data-size='sm'] :is(.ui-progress-bar__track, .ui-meter__track) {
   height: 4px;
 }
 
-.ui-progress-bar[data-size='lg'] .ui-progress-bar__track {
+:is(.ui-progress-bar, .ui-meter)[data-size='lg'] :is(.ui-progress-bar__track, .ui-meter__track) {
   height: 8px;
 }
 
-.ui-progress-bar__fill {
+:is(.ui-progress-bar__fill, .ui-meter__fill) {
   height: 100%;
   border-radius: inherit;
   background: var(--ref-accent);
   transition: width var(--ref-duration);
 }
 
-.ui-progress-bar[data-complete] .ui-progress-bar__fill {
+:is(.ui-progress-bar, .ui-meter)[data-complete] :is(.ui-progress-bar__fill, .ui-meter__fill) {
   background: var(--ref-success);
 }
 
-.ui-progress-bar:is([data-tone='success'], [data-tone='warning'], [data-tone='danger'])
-  .ui-progress-bar__fill {
+:is(.ui-progress-bar, .ui-meter):is(
+    [data-tone='success'],
+    [data-tone='warning'],
+    [data-tone='danger']
+  )
+  :is(.ui-progress-bar__fill, .ui-meter__fill) {
   background: var(--ref-tone);
 }
 
-.ui-progress-bar[data-shape='linear'][data-indeterminate] .ui-progress-bar__fill {
+:is(.ui-progress-bar, .ui-meter)[data-shape='linear'][data-indeterminate]
+  :is(.ui-progress-bar__fill, .ui-meter__fill) {
   width: 40%;
   animation: ref-progress-slide var(--ref-duration-loop) ease-in-out infinite;
 }
 
-[dir='rtl'] .ui-progress-bar[data-shape='linear'][data-indeterminate] .ui-progress-bar__fill {
+[dir='rtl']
+  :is(.ui-progress-bar, .ui-meter)[data-shape='linear'][data-indeterminate]
+  :is(.ui-progress-bar__fill, .ui-meter__fill) {
   animation-name: ref-progress-slide-rtl;
 }
 
@@ -93,12 +100,20 @@
   --ref-spinner-size: var(--ref-icon-size-xl);
 }
 
+/* The meter's description sits under its track. */
+.ui-meter__description {
+  grid-column: 1 / -1;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .ui-progress-bar__fill {
+  :is(.ui-progress-bar__fill, .ui-meter__fill) {
     transition: none;
   }
 
-  .ui-progress-bar[data-indeterminate] .ui-progress-bar__fill {
+  :is(.ui-progress-bar, .ui-meter)[data-indeterminate]
+    :is(.ui-progress-bar__fill, .ui-meter__fill) {
     animation: none;
   }
 }
@@ -161,73 +176,84 @@
 
 /* Circular Progress */
 
-.ui-progress-bar[data-shape='circular'] {
+:is(.ui-progress-bar, .ui-meter)[data-shape='circular'] {
   display: inline-flex;
   min-width: 0;
   align-items: center;
   gap: 6px;
 }
 
-.ui-progress-bar[data-shape='circular'] .ui-progress-bar__ring {
+:is(.ui-progress-bar, .ui-meter)[data-shape='circular']
+  :is(.ui-progress-bar__ring, .ui-meter__ring) {
   order: -1;
   flex: none;
   width: 24px;
   height: 24px;
 }
 
-.ui-progress-bar[data-shape='circular'][data-size='sm'] .ui-progress-bar__ring {
+:is(.ui-progress-bar, .ui-meter)[data-shape='circular'][data-size='sm']
+  :is(.ui-progress-bar__ring, .ui-meter__ring) {
   width: 16px;
   height: 16px;
 }
 
-.ui-progress-bar[data-shape='circular'][data-size='lg'] .ui-progress-bar__ring {
+:is(.ui-progress-bar, .ui-meter)[data-shape='circular'][data-size='lg']
+  :is(.ui-progress-bar__ring, .ui-meter__ring) {
   width: 32px;
   height: 32px;
 }
 
-.ui-progress-bar[data-shape='circular'] .ui-progress-bar__track {
+:is(.ui-progress-bar, .ui-meter)[data-shape='circular']
+  :is(.ui-progress-bar__track, .ui-meter__track) {
   stroke: var(--ref-border);
   stroke-width: 4;
 }
 
-.ui-progress-bar[data-shape='circular'] .ui-progress-bar__fill {
+:is(.ui-progress-bar, .ui-meter)[data-shape='circular']
+  :is(.ui-progress-bar__fill, .ui-meter__fill) {
   stroke: var(--ref-accent);
   stroke-width: 4;
   transition: stroke-dashoffset var(--ref-duration);
 }
 
-.ui-progress-bar[data-shape='circular'][data-complete] .ui-progress-bar__fill,
-.ui-progress-bar[data-shape='circular']:is(
+:is(.ui-progress-bar, .ui-meter)[data-shape='circular'][data-complete]
+  :is(.ui-progress-bar__fill, .ui-meter__fill),
+:is(.ui-progress-bar, .ui-meter)[data-shape='circular']:is(
     [data-tone='success'],
     [data-tone='warning'],
     [data-tone='danger']
   )
-  .ui-progress-bar__fill {
+  :is(.ui-progress-bar__fill, .ui-meter__fill) {
   stroke: var(--ref-tone);
 }
 
-.ui-progress-bar[data-shape='circular'][data-indeterminate] .ui-progress-bar__ring {
+:is(.ui-progress-bar, .ui-meter)[data-shape='circular'][data-indeterminate]
+  :is(.ui-progress-bar__ring, .ui-meter__ring) {
   animation: ref-spin var(--ref-duration-spin) linear infinite;
   transform-box: view-box;
   transform-origin: center;
 }
 
-.ui-progress-bar[data-shape='circular'] .ui-progress-bar__label {
+:is(.ui-progress-bar, .ui-meter)[data-shape='circular']
+  :is(.ui-progress-bar__label, .ui-meter__label) {
   font-size: var(--ref-font-size-md);
 }
 
-.ui-progress-bar[data-shape='circular'] .ui-progress-bar__value {
+:is(.ui-progress-bar, .ui-meter)[data-shape='circular']
+  :is(.ui-progress-bar__value, .ui-meter__value) {
   color: var(--ref-muted);
   font-size: var(--ref-font-size-sm);
   font-variant-numeric: tabular-nums;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ui-progress-bar[data-shape='circular'] .ui-progress-bar__fill {
+  :is(.ui-progress-bar, .ui-meter)[data-shape='circular']
+    :is(.ui-progress-bar__fill, .ui-meter__fill) {
     transition: none;
   }
 
-  .ui-progress-bar[data-shape='circular'][data-indeterminate] .ui-progress-bar__ring {
+  :is(.ui-progress-bar, .ui-meter)[data-shape='circular'][data-indeterminate]
+    :is(.ui-progress-bar__ring, .ui-meter__ring) {
     animation: none;
   }
 }

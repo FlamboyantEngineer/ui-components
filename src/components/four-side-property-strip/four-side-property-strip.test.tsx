@@ -187,7 +187,9 @@ describe('FourSidePropertyStrip', () => {
     await userEvent.type(input('right'), '0');
     expect(input('right')).toHaveValue('350');
     expect(input('left')).toHaveValue('35');
-    expectHooksMatchSpec(container, 'FOUR-SIDE-PROPERTY-STRIP', { slots: 'all' });
+    expectHooksMatchSpec(container, 'FOUR-SIDE-PROPERTY-STRIP', {
+      slots: ['side', 'bracket', 'link', 'error'],
+    });
   });
 
   it('UIC-FOUR-SIDE-PROPERTY-STRIP-1.5 keeps controlled linked pairs coherent across modes', async () => {
@@ -396,5 +398,68 @@ describe('FourSidePropertyStrip', () => {
     expect(row).toHaveAttribute('data-value-align', 'end');
     rerender(strip());
     expect(row).not.toHaveAttribute('data-value-align');
+  });
+
+  it("UIC-FOUR-SIDE-PROPERTY-STRIP-1.8 shows the sides' messages once across the strip and describes the wrong controls", () => {
+    const renderSide = (side: string, field: FourSideField<string>) => (
+      <input
+        aria-label={`Margin ${side}`}
+        aria-invalid={field.isInvalid || undefined}
+        aria-describedby={field.errorId}
+      />
+    );
+    const { container, rerender } = render(
+      <FourSidePropertyStrip label="Margin" link="pairs" renderSide={renderSide} />,
+    );
+    const row = container.querySelector('.ui-four-side-property-strip');
+    const region = container.querySelector('.ui-four-side-property-strip__error');
+    // The live region is there before any message, after the cells and brackets.
+    expect(region).toBeEmptyDOMElement();
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    expect(region).toHaveAttribute('aria-atomic', 'true');
+    expect(region?.previousElementSibling).toHaveClass('ui-four-side-property-strip__bracket');
+    expect(row).not.toHaveAttribute('data-invalid');
+    expect(screen.getByRole('textbox', { name: 'Margin top' })).not.toHaveAttribute('aria-invalid');
+    expect(screen.getByRole('textbox', { name: 'Margin top' })).not.toHaveAttribute(
+      'aria-describedby',
+    );
+
+    rerender(
+      <FourSidePropertyStrip
+        label="Margin"
+        link="pairs"
+        errors={{
+          right: 'Enter 0 or more.',
+          top: 'Enter 0 or more.',
+          left: 'Too large.',
+          bottom: '',
+        }}
+        renderSide={renderSide}
+      />,
+    );
+    expect(row).toHaveAttribute('data-invalid', 'true');
+    const messages = [...container.querySelectorAll('.ui-four-side-property-strip__message')];
+    expect(
+      messages.map((message) => [message.getAttribute('data-sides'), message.textContent]),
+    ).toEqual([
+      ['top right', 'Enter 0 or more.'],
+      ['left', 'Too large.'],
+    ]);
+    for (const side of ['top', 'left', 'right']) {
+      const input = screen.getByRole('textbox', { name: `Margin ${side}` });
+      expect(input).toHaveAttribute('aria-invalid', 'true');
+      expect(input).toHaveAccessibleDescription('Enter 0 or more.Too large.');
+      expect(container.querySelector(`[data-side="${side}"]`)).toHaveAttribute(
+        'data-invalid',
+        'true',
+      );
+    }
+    const bottom = screen.getByRole('textbox', { name: 'Margin bottom' });
+    expect(bottom).not.toHaveAttribute('aria-invalid');
+    expect(bottom).not.toHaveAttribute('aria-describedby');
+    expect(container.querySelector('[data-side="bottom"]')).not.toHaveAttribute('data-invalid');
+    expectHooksMatchSpec(container, 'FOUR-SIDE-PROPERTY-STRIP', {
+      slots: ['side', 'bracket', 'link', 'error', 'message'],
+    });
   });
 });

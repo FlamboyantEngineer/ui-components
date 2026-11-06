@@ -3,6 +3,7 @@ import { getWeekDays } from './calendar-days.js';
 import {
   countVisibleLanes,
   findColumnSegments,
+  layoutAgenda,
   layoutDay,
   layoutWeek,
   readEvents,
@@ -16,6 +17,45 @@ const ids = (segments: ReturnType<typeof layoutWeek>['segments']) =>
 const rounded = (value: number) => Math.round(value * 1000) / 1000;
 
 describe('calendar layout', () => {
+  it('UIC-CALENDAR-VIEW-1.7 packs one day of bars, an event past it spanning the day alone', () => {
+    const placed = readEvents(
+      [
+        { id: 'trip', title: 'Trip', start: '2026-03-02', end: '2026-03-06' },
+        { id: 'due', title: 'Due', start: '2026-03-04' },
+      ],
+      'UTC',
+    );
+    expect(ids(layoutWeek(['2026-03-04'], placed, { spansOnly: true }).segments)).toEqual([
+      ['trip', 0, 1, 0],
+      ['due', 0, 1, 1],
+    ]);
+  });
+
+  it('UIC-CALENDAR-VIEW-1.8 lists the days of an agenda, all-day events first, then by start', () => {
+    const placed = readEvents(
+      [
+        { id: 'late', title: 'Late', start: '2026-03-03T15:00Z' },
+        { id: 'trip', title: 'Trip', start: '2026-03-02', end: '2026-03-03' },
+        { id: 'early', title: 'Early', start: '2026-03-03T09:00Z' },
+        { id: 'short', title: 'Short', start: '2026-03-03T09:00Z', end: '2026-03-03T09:30Z' },
+      ],
+      'UTC',
+    );
+    const days = ['2026-03-01', '2026-03-02', '2026-03-03'];
+    const listed = (emptyDays: 'hide' | 'show') =>
+      layoutAgenda(days, placed, { emptyDays }).map((entry) => [
+        entry.date,
+        entry.events.map((event) => event.event.id),
+      ]);
+    expect(listed('hide')).toEqual([
+      ['2026-03-02', ['trip']],
+      ['2026-03-03', ['trip', 'short', 'early', 'late']],
+    ]);
+    expect(listed('show')[0]).toEqual(['2026-03-01', []]);
+    const preview = placed.map((entry) => ({ ...entry, isPreview: true }));
+    expect(layoutAgenda(days, preview, { emptyDays: 'hide' })).toEqual([]);
+  });
+
   it('UIC-CALENDAR-VIEW-2.1 UIC-CALENDAR-VIEW-1.5 reads all-day and timed events in a time zone', () => {
     const events: CalendarViewEvent[] = [
       { id: 'trip', title: 'Trip', start: '2026-03-02', end: '2026-03-04' },

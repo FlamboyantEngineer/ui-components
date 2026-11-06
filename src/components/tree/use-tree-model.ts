@@ -13,6 +13,7 @@ import type {
   TreeSectionData,
   TreeSize,
 } from './tree-props.js';
+import { useTreeHandle } from './tree-reveal.js';
 import { useTreeExpansion } from './use-tree-expansion.js';
 import { useTreeFilter } from './use-tree-filter.js';
 import { useTreeKeyDown } from './use-tree-key-down.js';
@@ -69,6 +70,7 @@ function splitTreeProps<T extends TreeItemData>({
   rowHeight,
   className,
   ref,
+  handleRef,
   disabledKeys,
   checkboxSelection,
   selectionPropagation,
@@ -113,7 +115,7 @@ function splitTreeProps<T extends TreeItemData>({
     sectioned: getSection !== undefined,
   };
   const height = virtualized ? (rowHeight ?? virtualRowHeights[size]) : null;
-  const root = { className, ref, data, rowHeight: height };
+  const root = { className, ref, handleRef, data, rowHeight: height };
   return { row, expansion, state, features, rename: { onRename, canRename }, root, aria };
 }
 
@@ -242,8 +244,16 @@ export function useTreeModel<T extends TreeItemData>(props: TreeProps<T>) {
     [items, getSection],
   );
   const dependencies = useMemo(() => [renderItem], [renderItem]);
+  const reveal = useTreeHandle(parts.root.handleRef, {
+    all: { items: state.items, getChildren: getAllChildren },
+    shown: { items, getChildren },
+    expandedKeys: expansion.expandedKeys,
+    isVirtualized: parts.root.rowHeight !== null,
+    ref: parts.root.ref,
+  });
   return {
     ...parts,
+    root: { ...parts.root, ...reveal },
     state: { ...state, disabledKeys },
     items,
     shown,

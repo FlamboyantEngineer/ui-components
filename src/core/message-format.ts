@@ -67,7 +67,9 @@ export function formatMessage(
   values: MessageValues = {},
   locale = DEFAULT_LOCALE,
 ): string {
-  const args: Record<string, string | number> = {};
+  // Without a prototype, so only the caller's own entries are arguments: `{toString}` with no such
+  // value fails, and an own `__proto__` value is stored rather than setting the prototype.
+  const args = Object.create(null) as Record<string, string | number>;
   for (const [name, value] of Object.entries(values)) args[name] = toArgument(value, locale);
   return String(getFormat(message, locale).format(args));
 }

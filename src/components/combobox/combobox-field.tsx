@@ -27,6 +27,7 @@ import {
   type ComboboxOption,
   findCompletion,
 } from './combobox-options.js';
+import { useMarkedAction } from './combobox-reasons.js';
 
 interface ComboboxFieldProps {
   variant: 'default' | 'search';
@@ -61,6 +62,7 @@ interface Selection {
 function ClearButton({ inputRef }: { inputRef: RefObject<HTMLInputElement | null> }) {
   const state = useContext(ComboBoxStateContext);
   const strings = useUiStrings();
+  const runMarked = useMarkedAction();
   if (!state || state.inputValue === '') return null;
   return (
     <Button
@@ -74,8 +76,10 @@ function ClearButton({ inputRef }: { inputRef: RefObject<HTMLInputElement | null
       // under the pointer, which would take the button away mid-press.
       preventFocusOnPress
       onPress={() => {
-        if (!Array.isArray(state.value)) state.setSelectedKey(null);
-        state.setInputValue('');
+        runMarked({ change: 'clear', input: 'clear' }, () => {
+          if (!Array.isArray(state.value)) state.setSelectedKey(null);
+          state.setInputValue('');
+        });
         inputRef.current?.focus();
       }}
     />
@@ -92,6 +96,7 @@ function useInlineCompletion(
   inputRef: RefObject<HTMLInputElement | null>,
 ) {
   const state = useContext(ComboBoxStateContext);
+  const runMarked = useMarkedAction();
   const pending = useRef<Selection | null>(null);
   useLayoutEffect(() => {
     const input = inputRef.current;
@@ -114,7 +119,7 @@ function useInlineCompletion(
     completion.onComplete(found);
     if (!found) return;
     pending.current = { text: found.text, start: typed.length };
-    state.setInputValue(found.text);
+    runMarked({ input: 'input' }, () => state.setInputValue(found.text));
   };
 }
 

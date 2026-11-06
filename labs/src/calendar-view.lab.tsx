@@ -386,23 +386,26 @@ function LiveLanes() {
   );
 }
 
+const viewModes = ['month', 'week', 'day', 'agenda'] as const;
+
 /** An uncontrolled calendar whose allowed views the host changes (UIC-CALENDAR-VIEW-1.3). */
 function AllowedViews() {
   const [allowed, setAllowed] = useState<readonly CalendarViewMode[]>(['week']);
   const toggle = (mode: CalendarViewMode, isAllowed: boolean) =>
     setAllowed((current) =>
-      (['month', 'week'] as const).filter((entry) =>
-        entry === mode ? isAllowed : current.includes(entry),
-      ),
+      viewModes.filter((entry) => (entry === mode ? isAllowed : current.includes(entry))),
     );
   return (
     <div data-lab-case="allowed-views">
-      <Checkbox isSelected={allowed.includes('month')} onChange={(on) => toggle('month', on)}>
-        Allow month
-      </Checkbox>{' '}
-      <Checkbox isSelected={allowed.includes('week')} onChange={(on) => toggle('week', on)}>
-        Allow week
-      </Checkbox>
+      {viewModes.map((mode) => (
+        <Checkbox
+          key={mode}
+          isSelected={allowed.includes(mode)}
+          onChange={(on) => toggle(mode, on)}
+        >
+          {`Allow ${mode}`}
+        </Checkbox>
+      ))}
       <div style={frame(720)}>
         <CalendarView
           events={events}
@@ -416,16 +419,84 @@ function AllowedViews() {
   );
 }
 
+// A day and an agenda week: an all-day event, a trip across the week, overlapping meetings, a
+// read-only all-day review and a night event into the next day.
+const planner: CalendarViewEvent[] = [
+  ...events,
+  { id: 'standup', title: 'Standup', start: '2026-03-18T09:00', end: '2026-03-18T09:15' },
+  { id: 'locked', title: 'Board review (locked)', start: '2026-03-18', isReadOnly: true },
+];
+
+/**
+ * The day and agenda views of one editable calendar, from a host that applies every change: the
+ * view and focused day are the host's, so switching views keeps the day.
+ */
+function DayAndAgenda() {
+  const [items, setItems] = useState(planner);
+  const [view, setView] = useState<CalendarViewMode>('day');
+  const [date, setDate] = useState('2026-03-18');
+  const [showsEmptyDays, setShowsEmptyDays] = useState(false);
+  const [agendaRange, setAgendaRange] = useState<'week' | 'month'>('week');
+  const [isNarrow, setNarrow] = useState(false);
+  const [log, setLog] = useState('No event opened');
+  return (
+    <div data-lab-demo="day-agenda">
+      <SegmentedChoice
+        aria-label="Agenda range"
+        size="sm"
+        sizing="content"
+        options={[
+          { value: 'week', label: 'One week' },
+          { value: 'month', label: 'One month' },
+        ]}
+        value={agendaRange}
+        onChange={(value) => {
+          if (value === 'week' || value === 'month') setAgendaRange(value);
+        }}
+      />{' '}
+      <Checkbox isSelected={showsEmptyDays} onChange={setShowsEmptyDays}>
+        List empty days in the agenda
+      </Checkbox>{' '}
+      <Checkbox isSelected={isNarrow} onChange={setNarrow}>
+        Narrow host (320px)
+      </Checkbox>
+      <div style={frame(isNarrow ? 320 : 900)}>
+        <CalendarView
+          events={items}
+          timeZone="UTC"
+          getNow={getNow}
+          date={date}
+          onDateChange={setDate}
+          view={view}
+          onViewChange={setView}
+          agendaRange={agendaRange}
+          agendaEmptyDays={showsEmptyDays ? 'show' : 'hide'}
+          renderEmptyState={() =>
+            `Nothing planned this ${agendaRange}. Pick another or add an event.`
+          }
+          renderDay={renderWorkload}
+          onEventAction={(key) => setLog(`Opened ${String(key)}`)}
+          onEventChange={(next, previous) => {
+            setItems((current) => current.map((item) => (item.id === previous.id ? next : item)));
+            setLog(`Saved ${next.title}: ${next.start} to ${next.end ?? next.start}`);
+          }}
+        />
+      </div>
+      <output data-lab-output>{`${date}, ${view}. ${log}`}</output>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
       title="States"
-      description="The month and week views with events, with a crowded day and empty. Week events sit at their wall-clock times under the hour labels and clip at midnight when they continue into another day. The crowded cases include distinct numeric and text event keys with the same spelling. The clock is fixed at 18 March 2026, 10:30 UTC."
+      description="The month, week, day and agenda views with events, with a crowded day and empty; the empty agenda says No events. Week events sit at their wall-clock times under the hour labels and clip at midnight when they continue into another day. The crowded cases include distinct numeric and text event keys with the same spelling. The clock is fixed at 18 March 2026, 10:30 UTC."
     >
       <StateMatrix
         axes={{
           state: Object.keys(states) as Array<keyof typeof states>,
-          view: ['month', 'week'] as const,
+          view: viewModes,
         }}
         render={({ state, view }) => (
           <div style={frame(620)}>
@@ -467,8 +538,14 @@ mountLab(
       <DraggableCalendar />
     </LabSection>
     <LabSection
+      title="Day and agenda"
+      description="The day view is the week's time grid for one day: all-day bars above, overlapping Team lunch and Design review side by side, every event press, menu, editor, drag and keyboard step as in the week. Previous and Next move a day; PageUp and PageDown on the day move a day too. Switch to Agenda: the focused day's week is listed by day under headings, all-day events first (All day), Trip to Lisbon on each of its days, then by start. Agenda month lists the whole month by day instead, and Previous and Next then move a month. Agenda events open, take menus and the editor, but do not drag. Board review is read-only. List empty days to show the week's quiet days under their headings; move to an empty week (Next twice from 18 March) for the host's empty state. Narrow host shows the agenda's times above titles at 320px. The view and the focused day survive every switch."
+    >
+      <DayAndAgenda />
+    </LabSection>
+    <LabSection
       title="Allowed views"
-      description="Starts with only the week allowed, so it opens on the week. Allow the month and switch to it, then disallow the month: the calendar moves to the week, and returns to the month once it is allowed again. With neither box ticked both views are allowed."
+      description="Starts with only the week allowed, so it opens on the week. Allow the month and switch to it, then disallow the month: the calendar moves to the week, and returns to the month once it is allowed again. With no box ticked every view is allowed."
     >
       <AllowedViews />
     </LabSection>
@@ -490,7 +567,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Clock changes"
-      description="Weeks in New York when the clocks go forward (8 March) and back (1 November). Events sit under the hour labels at their wall-clock times, so noon lines up on every day. The skipped 2 AM hour stays empty and a shift across it spans it; Open day runs midnight to midnight, 23 hours that day, and is still a bar; both passes of the repeated 1 AM hour share its place side by side and name their offsets (EDT, EST), each in its own lane even with Between passes, later in the first pass, between them in time."
+      description="Weeks in New York when the clocks go forward (8 March) and back (1 November); the day and agenda views show the same days. Events sit under the hour labels at their wall-clock times, so noon lines up on every day. The skipped 2 AM hour stays empty and a shift across it spans it; Open day runs midnight to midnight, 23 hours that day, and is still a bar; both passes of the repeated 1 AM hour share its place side by side and name their offsets (EDT, EST), each in its own lane even with Between passes, later in the first pass, between them in time."
     >
       <div style={{ display: 'grid', gap: 16 }}>
         {(['2026-03-08', '2026-11-01'] as const).map((date) => (
@@ -501,7 +578,7 @@ mountLab(
               getNow={getNow}
               defaultDate={date}
               defaultView="week"
-              views={['week']}
+              views={['week', 'day', 'agenda']}
             />
           </div>
         ))}
@@ -544,18 +621,31 @@ mountLab(
     </LabSection>
     <LabSection
       title="Right to left"
-      description="An Arabic locale, right to left: the days run from the right, the chevrons mirror, and the overlapping Team lunch and Design review on 18 March pack from the right edge."
+      description="An Arabic locale, right to left: the days run from the right, the chevrons mirror, and the overlapping Team lunch and Design review on 18 March pack from the right edge. The agenda below lists the same week with its times on the right."
     >
-      <div style={frame(900)} data-lab-demo="rtl" dir="rtl">
-        <UiProvider locale="ar-EG">
-          <CalendarView
-            events={events}
-            timeZone="UTC"
-            getNow={getNow}
-            defaultDate="2026-03-18"
-            defaultView="week"
-          />
-        </UiProvider>
+      <div style={{ display: 'grid', gap: 16 }}>
+        <div style={frame(900)} data-lab-demo="rtl" dir="rtl">
+          <UiProvider locale="ar-EG">
+            <CalendarView
+              events={events}
+              timeZone="UTC"
+              getNow={getNow}
+              defaultDate="2026-03-18"
+              defaultView="week"
+            />
+          </UiProvider>
+        </div>
+        <div style={frame(900)} data-lab-demo="rtl-agenda" dir="rtl">
+          <UiProvider locale="ar-EG">
+            <CalendarView
+              events={events}
+              timeZone="UTC"
+              getNow={getNow}
+              defaultDate="2026-03-18"
+              defaultView="agenda"
+            />
+          </UiProvider>
+        </div>
       </div>
     </LabSection>
   </>,

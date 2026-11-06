@@ -345,3 +345,19 @@ describe('optional rich-text peers', () => {
     expect(manifest.devDependencies['prosemirror-view']).toBe(required);
   });
 });
+
+describe('optional math peer', () => {
+  it('UIC-MATH-PREVIEW-1.5 reaches KaTeX only from the math-preview entry point, as an optional peer', () => {
+    const componentsDir = join(process.cwd(), 'src/components');
+    const needsKatex = readdirSync(componentsDir).filter(
+      (name) =>
+        existsSync(join(componentsDir, name, 'index.ts')) &&
+        collectPackages(`src/components/${name}/index.ts`).includes('katex'),
+    );
+    expect(needsKatex).toEqual(['math-preview']);
+    for (const entry of ['src/index.ts', 'src/core/index.ts']) {
+      expect(collectPackages(entry)).not.toContain('katex');
+    }
+    expect(manifest.peerDependenciesMeta?.katex).toEqual({ optional: true });
+  });
+});
