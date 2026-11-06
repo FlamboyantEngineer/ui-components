@@ -104,6 +104,11 @@ import {
 import { MetaLine } from '../src/components/meta-line/meta-line.js';
 import { Modal } from '../src/components/modal/modal.js';
 import {
+  NavigationMenu,
+  NavigationMenuItem,
+  NavigationMenuLink,
+} from '../src/components/navigation-menu/index.js';
+import {
   NavigationRail,
   NavigationRailGroup,
   NavigationRailItem,
@@ -921,6 +926,34 @@ const restCases: Record<string, RootRefCase> = {
       <KeyHints ref={ref} hints={[{ keys: ['Enter'], action: 'Send' }]} platform="windows" />
     ),
     root: 'ui-key-hints',
+  },
+  NavigationMenu: {
+    element: (ref) => (
+      <NavigationMenu ref={ref} aria-label="Site">
+        <NavigationMenuLink href="/">Home</NavigationMenuLink>
+      </NavigationMenu>
+    ),
+    root: 'ui-navigation-menu',
+  },
+  NavigationMenuItem: {
+    element: (ref) => (
+      <NavigationMenu aria-label="Site">
+        <NavigationMenuItem ref={ref} id="fruit" label="Fruit">
+          <NavigationMenuLink href="/fruit">Fruit</NavigationMenuLink>
+        </NavigationMenuItem>
+      </NavigationMenu>
+    ),
+    root: 'ui-navigation-menu__item',
+  },
+  NavigationMenuLink: {
+    element: (ref) => (
+      <NavigationMenu aria-label="Site">
+        <NavigationMenuLink ref={ref} href="/">
+          Home
+        </NavigationMenuLink>
+      </NavigationMenu>
+    ),
+    root: 'ui-navigation-menu__link',
   },
   NavigationRail: {
     element: (ref) => (

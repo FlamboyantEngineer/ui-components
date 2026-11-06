@@ -112,6 +112,7 @@
 @import url('reference/meta-line.css') layer(ui-reference);
 @import url('reference/mini-app.css') layer(ui-reference);
 @import url('reference/modal.css') layer(ui-reference);
+@import url('reference/navigation-menu.css') layer(ui-reference);
 @import url('reference/navigation-rail.css') layer(ui-reference);
 @import url('reference/notification-center.css') layer(ui-reference);
 @import url('reference/number-field.css') layer(ui-reference);
