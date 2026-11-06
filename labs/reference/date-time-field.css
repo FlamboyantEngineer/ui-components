@@ -337,6 +337,20 @@
   border-collapse: collapse;
 }
 
+/* With several months, a day of another month shows only in its own month's grid. */
+.ui-date-time-field__calendar-months:has(
+    > .ui-date-time-field__calendar-grid ~ .ui-date-time-field__calendar-grid
+  )
+  .ui-date-time-field__calendar-cell[data-outside-month] {
+  visibility: hidden;
+}
+
+.ui-date-time-field__calendar-month {
+  padding-block-end: 4px;
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-medium);
+}
+
 .ui-date-time-field__calendar-head {
   color: var(--ref-muted);
 }

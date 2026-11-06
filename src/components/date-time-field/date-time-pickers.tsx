@@ -29,14 +29,10 @@ import {
   type FieldState,
   toAriaControlProps,
 } from '../field/field.js';
+import { CalendarBody, type CalendarOptions, toCalendarProps } from './calendar-grid.js';
 import { DateDraftScope } from './date-draft.js';
 import { Segments } from './date-segments.js';
-import {
-  CalendarBody,
-  CalendarPopover,
-  type DateTimeFieldCalendarHeading,
-  type DateTimeFieldPreset,
-} from './date-time-calendar.js';
+import { CalendarPopover, type DateTimeFieldPreset } from './date-time-calendar.js';
 import type { DateTimeFieldDateState } from './date-time-field.js';
 import { dateTimeFieldHooks as hooks } from './date-time-field-hooks.js';
 import { DatePickerTime, DateRangePickerTime } from './date-time-time-picker.js';
@@ -60,7 +56,8 @@ export interface DateControlSettings extends DateValueOptions {
   isDateUnavailable?: ((date: string) => boolean) | undefined;
   getDateState?: ((date: string) => DateTimeFieldDateState | undefined) | undefined;
   presets: readonly DateTimeFieldPreset<DateFieldValue>[];
-  calendarHeading: DateTimeFieldCalendarHeading;
+  /** The calendar's heading, visible months and paging. */
+  calendar: CalendarOptions;
   /** Whether the field would take a value, so the presets it refuses are disabled. */
   isPickable: (value: DateFieldValue) => boolean;
   /** A required field offers no Clear action. */
@@ -219,12 +216,8 @@ export function DateControl(props: DatePickerControlProps) {
         <CalendarButton />
       </DateGroup>
       <CalendarPopover mode={mode} settings={settings} onPick={onPick}>
-        <Calendar className={hooks.slotClass('calendar')}>
-          <CalendarBody
-            getDateState={settings.getDateState}
-            months={1}
-            heading={settings.calendarHeading}
-          />
+        <Calendar className={hooks.slotClass('calendar')} {...toCalendarProps(settings.calendar)}>
+          <CalendarBody getDateState={settings.getDateState} options={settings.calendar} />
         </Calendar>
         {single === 'date-time' ? <DatePickerTime {...props} /> : null}
       </CalendarPopover>
@@ -270,12 +263,11 @@ export function DateRangeControl(props: DatePickerControlProps) {
         <CalendarButton />
       </DateGroup>
       <CalendarPopover mode={mode} settings={settings} onPick={onPick}>
-        <RangeCalendar className={hooks.slotClass('calendar')} visibleDuration={{ months: 2 }}>
-          <CalendarBody
-            getDateState={settings.getDateState}
-            months={2}
-            heading={settings.calendarHeading}
-          />
+        <RangeCalendar
+          className={hooks.slotClass('calendar')}
+          {...toCalendarProps(settings.calendar)}
+        >
+          <CalendarBody getDateState={settings.getDateState} options={settings.calendar} />
         </RangeCalendar>
         {single === 'date-time' ? <DateRangePickerTime {...props} /> : null}
       </CalendarPopover>

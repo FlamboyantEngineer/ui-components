@@ -8,6 +8,7 @@ import {
 import type { FieldLabelLayout } from '../../src/components/field/field.js';
 import { Form as UiForm } from '../../src/components/form/form.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { CalendarMonths } from './date-calendar-cases.js';
 import { DateStates } from './date-states.js';
 import { HourGranularity, OpenPopups } from './date-time-open-cases.js';
 import { fieldLayouts, type FieldStateName, fieldStates } from './field-states.js';
@@ -400,6 +401,12 @@ mountLab(
     </LabSection>
     <LabSection title="Range" description="One range calendar of two months.">
       <Range />
+    </LabSection>
+    <LabSection
+      title="Visible months"
+      description="One, two or three months side by side with one selection and focus; a range crosses months. Narrow viewports stack the months."
+    >
+      <CalendarMonths />
     </LabSection>
     <LabSection
       title="Corrected range"

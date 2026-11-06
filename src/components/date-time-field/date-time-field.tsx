@@ -12,8 +12,13 @@ import {
   type FieldState,
   useFieldControl,
 } from '../field/field.js';
+import type {
+  DateTimeFieldCalendarHeading,
+  DateTimeFieldCalendarPaging,
+  DateTimeFieldVisibleMonths,
+} from './calendar-grid.js';
 import { createDateUnavailableCheck } from './date-states.js';
-import type { DateTimeFieldCalendarHeading, DateTimeFieldPreset } from './date-time-calendar.js';
+import type { DateTimeFieldPreset } from './date-time-calendar.js';
 import { dateTimeFieldHooks as hooks } from './date-time-field-hooks.js';
 import { DateFormInputs, toEndpointErrorSources } from './date-time-form.js';
 import {
@@ -33,6 +38,7 @@ import {
   isReadableValue,
   isUnavailableValue,
   normalizeDateValue,
+  toSingleMode,
 } from './date-values.js';
 
 /**
@@ -79,6 +85,10 @@ export interface DateTimeFieldProps<M extends DateTimeFieldMode = 'date'>
   presets?: readonly DateTimeFieldPreset<NonNullable<DateTimeFieldValue<M>>>[] | undefined;
   /** How the calendar heading shows its month. Defaults to `text`; `select` jumps by month and year. */
   calendarHeading?: DateTimeFieldCalendarHeading | undefined;
+  /** How many months the calendar shows side by side. Defaults to 1, and 2 for a range. */
+  visibleMonths?: DateTimeFieldVisibleMonths | undefined;
+  /** What the calendar's previous and next buttons move by. Defaults to `page`, every visible month. */
+  calendarPaging?: DateTimeFieldCalendarPaging | undefined;
   /** The form name of a single value, submitted as its canonical text. */
   name?: string | undefined;
   /** The form name of a range's start. */
@@ -136,6 +146,7 @@ function toSettings(
   options: DateValueOptions & Pick<DateControlSettings, 'isPickable'>,
   state: Pick<FieldState<unknown>, 'isRequired' | 'canClear'>,
 ): DateControlSettings {
+  const mode = props.mode ?? 'date';
   return {
     isRequired: state.isRequired,
     canClear: state.canClear,
@@ -145,7 +156,11 @@ function toSettings(
     getDateState: props.getDateState,
     isDateUnavailable: createDateUnavailableCheck(props),
     presets: props.presets ?? [],
-    calendarHeading: props.calendarHeading ?? 'text',
+    calendar: {
+      heading: props.calendarHeading,
+      months: props.visibleMonths ?? (toSingleMode(mode) === mode ? 1 : 2),
+      paging: props.calendarPaging,
+    },
   };
 }
 
@@ -223,8 +238,14 @@ export function DateTimeField<M extends DateTimeFieldMode = 'date'>(props: DateT
   );
 }
 
-export type { DateTimeFieldCalendarHeading, DateTimeFieldPreset } from './date-time-calendar.js';
-export { CalendarBody } from './date-time-calendar.js';
+export type {
+  CalendarOptions,
+  DateTimeFieldCalendarHeading,
+  DateTimeFieldCalendarPaging,
+  DateTimeFieldVisibleMonths,
+} from './calendar-grid.js';
+export { CalendarBody, toCalendarProps } from './calendar-grid.js';
+export type { DateTimeFieldPreset } from './date-time-calendar.js';
 export { DateFormInputs, toEndpointErrorSources } from './date-time-form.js';
 export type { DateRangeValue, DateTimeFieldGranularity, DateTimeFieldMode } from './date-values.js';
 export { formatDateValue } from './date-values.js';
