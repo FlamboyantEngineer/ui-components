@@ -57,7 +57,7 @@ describe('TagsInput', () => {
       'ui-tag-group ui-tags-input__tags',
       'ui-tags-input__input',
     ]);
-    expectHooksMatchSpec(container, 'TAGS-INPUT', { slots: 'all' });
+    expectHooksMatchSpec(container, 'TAGS-INPUT', { slots: ['group', 'tags', 'input'] });
     expectHooksMatchSpec(container, 'TAG-GROUP', { slots: ['list', 'tag', 'label', 'remove'] });
     expectHooksMatchSpec(container, 'FIELD', { slots: ['label', 'control', 'message'] });
   });
@@ -170,7 +170,7 @@ describe('TagsInput', () => {
       'data-disabled',
       'true',
     );
-    expectHooksMatchSpec(container, 'TAGS-INPUT', { slots: 'all' });
+    expectHooksMatchSpec(container, 'TAGS-INPUT', { slots: ['group', 'tags', 'input'] });
   });
 
   it('UIC-TAGS-INPUT-1.4 forwards the class name, data attributes and id to its root', () => {
@@ -542,5 +542,142 @@ describe('TagsInput', () => {
     await user.click(screen.getByRole('button', { name: 'Restore Fruit' }));
     expect(tagTexts()).toEqual(['Apple']);
     expect(screen.getByRole('textbox', { name: 'Fruit' })).toHaveFocus();
+  });
+
+  describe('editing a tag', () => {
+    function EditableField(props: Partial<TagsInputProps>) {
+      return (
+        <TagsInput label="Fruit" defaultValue={['Apple', 'Fig', 'Kiwi']} allowsEditing {...props} />
+      );
+    }
+
+    it('UIC-TAGS-INPUT-4.5 opens a named editor on Enter and F2 and keeps the tag in place', async () => {
+      const user = userEvent.setup();
+      const onCommit = vi.fn();
+      const { container } = render(<EditableField onCommit={onCommit} />);
+      await user.click(screen.getByRole('textbox', { name: 'Fruit' }));
+      await user.keyboard('{ArrowLeft}{ArrowLeft}');
+      expect(screen.getByRole('row', { name: 'Fig' })).toHaveFocus();
+      await user.keyboard('{Enter}');
+      const editor = screen.getByRole('textbox', { name: 'Edit Fig' });
+      expect(editor).toHaveFocus();
+      expect(editor).toHaveValue('Fig');
+      expect(container.querySelector('.ui-tags-input__group')).toHaveAttribute(
+        'data-editing',
+        'true',
+      );
+      expectHooksMatchSpec(container, 'TAGS-INPUT', { slots: ['editor'] });
+      await user.keyboard('Pear{Enter}');
+      expect(tagTexts()).toEqual(['Apple', 'Pear', 'Kiwi']);
+      expect(onCommit).toHaveBeenCalledTimes(1);
+      expect(onCommit).toHaveBeenLastCalledWith(['Apple', 'Pear', 'Kiwi']);
+      await waitFor(() => expect(screen.getByRole('row', { name: 'Pear' })).toHaveFocus());
+      await user.keyboard('{F2}');
+      expect(screen.getByRole('textbox', { name: 'Edit Pear' })).toHaveFocus();
+    });
+
+    it('UIC-TAGS-INPUT-4.5 opens on a double click and restores the tag on Escape', async () => {
+      const user = userEvent.setup();
+      const onChange = vi.fn();
+      render(<EditableField onChange={onChange} />);
+      await user.dblClick(screen.getByText('Kiwi'));
+      const editor = screen.getByRole('textbox', { name: 'Edit Kiwi' });
+      await user.clear(editor);
+      await user.type(editor, 'Lime');
+      await user.keyboard('{Escape}');
+      expect(tagTexts()).toEqual(['Apple', 'Fig', 'Kiwi']);
+      expect(onChange).not.toHaveBeenCalled();
+      await waitFor(() => expect(screen.getByRole('row', { name: 'Kiwi' })).toHaveFocus());
+    });
+
+    it('UIC-TAGS-INPUT-4.5 refuses a duplicate edit but not the tag itself, and stays correctable', async () => {
+      const user = userEvent.setup();
+      const { container } = render(<EditableField />);
+      await user.dblClick(screen.getByText('Fig'));
+      const editor = screen.getByRole('textbox', { name: 'Edit Fig' });
+      await user.clear(editor);
+      await user.type(editor, ' Fig {Enter}');
+      expect(screen.queryByRole('textbox', { name: 'Edit Fig' })).not.toBeInTheDocument();
+      expect(message(container)).toBeFalsy();
+      await user.dblClick(screen.getByText('Fig'));
+      await user.clear(screen.getByRole('textbox', { name: 'Edit Fig' }));
+      await user.type(screen.getByRole('textbox', { name: 'Edit Fig' }), 'Apple{Enter}');
+      const refused = screen.getByRole('textbox', { name: 'Edit Fig' });
+      expect(refused).toHaveAttribute('aria-invalid', 'true');
+      expect(message(container)).toBe('“Apple” is already added.');
+      // The edited tag shows its editor, and the value keeps its accepted text.
+      expect(tagTexts()).toEqual(['Apple', '', 'Kiwi']);
+      expect(container.querySelectorAll('input[type="hidden"]')).toHaveLength(0);
+      await user.type(refused, 's{Enter}');
+      expect(tagTexts()).toEqual(['Apple', 'Apples', 'Kiwi']);
+      expect(message(container)).toBeFalsy();
+    });
+
+    it('UIC-TAGS-INPUT-4.5 keeps allowed duplicates apart and removes a tag left empty', async () => {
+      const user = userEvent.setup();
+      const onChange = vi.fn();
+      render(
+        <EditableField
+          defaultValue={['Fig', 'Fig', 'Kiwi']}
+          allowsDuplicates
+          onChange={onChange}
+        />,
+      );
+      await user.dblClick(screen.getAllByText('Fig')[1] as HTMLElement);
+      const editor = screen.getByRole('textbox', { name: 'Edit Fig' });
+      await user.clear(editor);
+      await user.type(editor, 'Plum{Enter}');
+      expect(onChange).toHaveBeenLastCalledWith(['Fig', 'Plum', 'Kiwi']);
+      await user.dblClick(screen.getByText('Plum'));
+      await user.clear(screen.getByRole('textbox', { name: 'Edit Plum' }));
+      await user.keyboard('{Enter}');
+      expect(onChange).toHaveBeenLastCalledWith(['Fig', 'Kiwi']);
+    });
+
+    it('UIC-TAGS-INPUT-4.5 accepts on blur, and restores a refused draft on blur', async () => {
+      const user = userEvent.setup();
+      render(
+        <>
+          <EditableField />
+          <button type="button">Elsewhere</button>
+        </>,
+      );
+      await user.dblClick(screen.getByText('Fig'));
+      await user.type(screen.getByRole('textbox', { name: 'Edit Fig' }), 's');
+      await user.click(screen.getByRole('button', { name: 'Elsewhere' }));
+      expect(tagTexts()).toEqual(['Apple', 'Figs', 'Kiwi']);
+      await user.dblClick(screen.getByText('Figs'));
+      await user.clear(screen.getByRole('textbox', { name: 'Edit Figs' }));
+      await user.type(screen.getByRole('textbox', { name: 'Edit Figs' }), 'Kiwi');
+      await user.click(screen.getByRole('button', { name: 'Elsewhere' }));
+      expect(tagTexts()).toEqual(['Apple', 'Figs', 'Kiwi']);
+      expect(screen.queryByRole('textbox', { name: /^Edit/ })).not.toBeInTheDocument();
+    });
+
+    it('UIC-TAGS-INPUT-4.5 leaves keys an input method composes and ends on outside changes', async () => {
+      const user = userEvent.setup();
+      const { rerender } = render(<EditableField value={['Apple', 'Fig']} />);
+      await user.dblClick(screen.getByText('Fig'));
+      const editor = screen.getByRole('textbox', { name: 'Edit Fig' });
+      // eslint-disable-next-line testing-library/prefer-user-event -- an Enter an input method sends while it composes
+      fireEvent.keyDown(editor, { key: 'Enter', isComposing: true });
+      expect(editor).toBeInTheDocument();
+      rerender(<EditableField value={['Fig']} />);
+      expect(screen.queryByRole('textbox', { name: 'Edit Fig' })).not.toBeInTheDocument();
+      await user.dblClick(screen.getByText('Fig'));
+      expect(screen.getByRole('textbox', { name: 'Edit Fig' })).toBeInTheDocument();
+      rerender(<EditableField value={['Fig']} isReadOnly />);
+      expect(screen.queryByRole('textbox', { name: 'Edit Fig' })).not.toBeInTheDocument();
+      await user.dblClick(screen.getByText('Fig'));
+      expect(screen.queryByRole('textbox', { name: 'Edit Fig' })).not.toBeInTheDocument();
+    });
+
+    it('UIC-TAGS-INPUT-4.5 opens no editor without allowsEditing', async () => {
+      const user = userEvent.setup();
+      render(<TagsInput label="Fruit" defaultValue={['Fig']} />);
+      await user.dblClick(screen.getByText('Fig'));
+      await user.keyboard('{F2}');
+      expect(screen.queryByRole('textbox', { name: 'Edit Fig' })).not.toBeInTheDocument();
+    });
   });
 });

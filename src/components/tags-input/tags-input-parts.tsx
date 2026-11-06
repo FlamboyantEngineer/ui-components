@@ -5,11 +5,11 @@ import {
   type FocusEvent,
   type KeyboardEvent,
   memo,
+  type ReactNode,
   useCallback,
   useMemo,
   useState,
 } from 'react';
-import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Group, Input, type Key, useLocale } from '../../primitives/index.js';
 import { isComposingInput, isComposingKey } from '../../utils/is-composing-key.js';
@@ -23,6 +23,8 @@ import {
   type FieldTextInputProps,
 } from '../field/field.js';
 import { Tag, TagGroup } from '../tag-group/tag-group.js';
+import { type TagEdit, type TagEditing, useTagEditorControl } from './tag-editor.js';
+import { tagsInputHooks as hooks } from './tags-input-hooks.js';
 
 /** What the input does with text: type it, enter it as tags, or split a paste. */
 interface TagsInputEntry {
@@ -50,13 +52,16 @@ interface TagsInputControlProps {
   textInput: Omit<FieldTextInputProps, 'autoFocus'>;
   /** The form name each tag submits under. */
   name: string | undefined;
+  /** The tags' editing, when the field lets the reader edit them. */
+  editing: TagEditing | null;
 }
 
-export const tagsInputHooks = createHooks('tags-input', ['group', 'tags', 'input']);
-
-const hooks = tagsInputHooks;
-
 type TagsInputSlots = SlotRegistry<'group' | 'input'>;
+
+/** The tags' rows, in order. */
+function readTagRows(slots: TagsInputSlots): HTMLElement[] {
+  return [...(slots.read('group')?.querySelectorAll<HTMLElement>('[role="row"]') ?? [])];
+}
 
 /** The keys that move from the input into the tags and from the last tag back, in reading order. */
 function useArrowKeys() {
@@ -73,9 +78,7 @@ function useArrowKeys() {
 function useEntryKeys(entry: TagsInputEntry, slots: TagsInputSlots) {
   const keys = useArrowKeys();
   const focusInput = () => slots.read('input')?.focus();
-  const readRows = () => [
-    ...(slots.read('group')?.querySelectorAll<HTMLElement>('[role="row"]') ?? []),
-  ];
+  const readRows = () => readTagRows(slots);
   const focusLastTag = () => readRows().at(-1)?.focus();
   const onInputKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (isComposingKey(event.nativeEvent)) return;
@@ -123,21 +126,38 @@ const TagsInputTags = memo(function TagsInputTags({
   label,
   isDisabled,
   onRemove,
+  edit,
+  renderEditor,
 }: {
   tags: ReadonlyArray<KeyedValue<string>>;
   label: string;
   isDisabled: boolean;
   onRemove: ((keys: Set<Key>) => void) | undefined;
+  /** The open edit, whose tag shows its editor in place of its label and remove button. */
+  edit: TagEdit | null;
+  renderEditor: ((edit: TagEdit) => ReactNode) | null;
 }) {
+  // The collection caches each tag's render by its item, so the edited tag gets a new item.
+  const items = edit
+    ? tags.map((tag, index) => (index === edit.index ? { ...tag, edit } : tag))
+    : tags;
   return (
     <TagGroup
       className={hooks.slotClass('tags')}
       aria-label={label}
-      items={tags}
-      onRemove={onRemove}
+      items={items}
+      onRemove={edit ? undefined : onRemove}
       disabledKeys={isDisabled ? tags.map((tag) => tag.key) : undefined}
     >
-      {(tag) => <Tag id={tag.key}>{tag.value}</Tag>}
+      {(tag: KeyedValue<string> & { edit?: TagEdit }) =>
+        tag.edit && renderEditor ? (
+          <Tag id={tag.key} textValue={tag.value}>
+            {renderEditor(tag.edit)}
+          </Tag>
+        ) : (
+          <Tag id={tag.key}>{tag.value}</Tag>
+        )
+      }
     </TagGroup>
   );
 });
@@ -153,12 +173,19 @@ export function TagsInputControl({
   entry,
   textInput,
   name,
+  editing,
 }: TagsInputControlProps) {
   const strings = useUiStrings();
   const [slots] = useState<TagsInputSlots>(() => createSlotRegistry());
   const inputRef = useMemo(() => mergeRefs(control.ref, slots.ref('input')), [control.ref, slots]);
   const { focusInput, onInputKeyDown, onTagKeyDownCapture, onBlur } = useEntryKeys(entry, slots);
   const tags = useMemo(() => assignOccurrenceKeys(state.value, (tag) => tag), [state.value]);
+  const editor = useTagEditorControl({
+    editing,
+    readRows: () => readTagRows(slots),
+    control,
+    onTagKeyDownCapture,
+  });
   const isEditable = !state.isReadOnly && !state.isDisabled;
   const { setValue, commit } = state;
   const remove = useCallback(
@@ -172,14 +199,15 @@ export function TagsInputControl({
   return (
     <>
       <Group
-        {...hooks.slot('group')}
+        {...hooks.slot('group', { editing: editor.edit !== null })}
         ref={slots.ref('group')}
         role="presentation"
         isDisabled={state.isDisabled}
         isInvalid={control['aria-invalid']}
         isReadOnly={state.isReadOnly}
         onClick={(event) => (event.target === event.currentTarget ? focusInput() : undefined)}
-        onKeyDownCapture={onTagKeyDownCapture}
+        onKeyDownCapture={editor.onKeyDownCapture}
+        onDoubleClick={editor.onDoubleClick}
       >
         {tags.length > 0 ? (
           <TagsInputTags
@@ -187,6 +215,8 @@ export function TagsInputControl({
             label={strings.selectedValues(label)}
             isDisabled={state.isDisabled}
             onRemove={isEditable ? remove : undefined}
+            edit={editor.edit}
+            renderEditor={editor.renderEditor}
           />
         ) : null}
         <Input

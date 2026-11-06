@@ -131,3 +131,23 @@ export function resolveTagEntry(
   const kept = last ? [...refused, last] : refused;
   return { added, inputValue: kept.join(rules.delimiters[0] ?? ' '), rejected: refused[0] ?? null };
 }
+
+/**
+ * Replaces the tag at `index` with `text`, trimmed, checked as a new tag against the other tags,
+ * so the tag's own earlier text never counts as a duplicate. An empty edit removes the tag, and an
+ * unchanged one returns the same value.
+ */
+export function replaceTag(options: {
+  value: readonly string[];
+  index: number;
+  text: string;
+  rules: TagRules;
+}): { ok: true; value: readonly string[] } | { ok: false; issue: FieldIssue } {
+  const { value, index, rules } = options;
+  const tag = options.text.trim();
+  if (tag === value[index]) return { ok: true, value };
+  const others = value.filter((_, at) => at !== index);
+  if (tag === '') return { ok: true, value: others };
+  const issue = checkTag(tag, others, rules);
+  return issue ? { ok: false, issue } : { ok: true, value: value.with(index, tag) };
+}

@@ -78,6 +78,26 @@ function Limits() {
   );
 }
 
+/** Tags edit in place; the output shows the accepted list. */
+function Editing() {
+  const [tags, setTags] = useState<string[]>(['Oslo', 'Lima', 'Lima', 'Quito']);
+  return (
+    <>
+      <TagsInput
+        label="Stops"
+        description="Repeats are allowed; each stop must start with a capital letter."
+        value={tags}
+        onChange={setTags}
+        allowsEditing
+        allowsDuplicates
+        validateTag={(tag) => (/^\p{Lu}/u.test(tag) ? null : 'Start with a capital letter.')}
+        data-lab-field="editing"
+      />
+      <LabOutput name="Stops">{formatTags(tags)}</LabOutput>
+    </>
+  );
+}
+
 /** The typed text is the caller's: it shows below as it changes. */
 function Draft() {
   const [text, setText] = useState('');
@@ -185,6 +205,12 @@ mountLab(
       description="Leaving the input adds what it holds, as Enter would."
     >
       <TagsInput label="Toppings" addOnBlur data-lab-field="blur" />
+    </LabSection>
+    <LabSection
+      title="Editing tags"
+      description="Press Enter or F2 on a focused tag, or double-click it, to edit it in place. Enter accepts, Escape restores, leaving accepts; an empty edit removes the tag and a refused edit stays open."
+    >
+      <Editing />
     </LabSection>
     <LabSection title="Typed text" description="The input's text, controlled by the caller.">
       <Draft />
