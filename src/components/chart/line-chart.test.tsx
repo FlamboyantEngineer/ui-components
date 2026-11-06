@@ -286,4 +286,63 @@ describe('LineChart', () => {
       'Mar 23, 202639',
     ]);
   });
+
+  it('UIC-CHART-6.5 breaks at null values, counts them as no value and skips them by keyboard', async () => {
+    const user = userEvent.setup();
+    const readings: LineChartSeries[] = [
+      {
+        id: 'level',
+        label: 'Level',
+        points: [
+          { x: 0, y: 2 },
+          { x: 1, y: null },
+          { x: 2, y: null },
+          { x: 3, y: 6 },
+          { x: 4, y: 4 },
+        ],
+      },
+    ];
+    const { rerender } = render(
+      <LineChart aria-label="Readings" series={readings} variant="area" showLegend={false} />,
+    );
+    expect(lines()[0]?.getAttribute('d')?.match(/M/g)).toHaveLength(2);
+    expect(document.querySelector('.ui-line-chart__area')?.getAttribute('d')).not.toMatch(/NaN/);
+    expect(screen.getAllByRole('img')).toHaveLength(3);
+    expect(screen.getByRole('figure')).toHaveAccessibleDescription(
+      '1 series, 3 values, from 2 to 6',
+    );
+    await user.tab();
+    await user.tab();
+    await user.keyboard('{ArrowRight}');
+    expect(document.activeElement).toHaveAccessibleName('Level, 3: 6');
+    rerender(
+      <LineChart
+        aria-label="Readings"
+        series={readings}
+        variant="area"
+        showLegend={false}
+        connectsMissing
+      />,
+    );
+    expect(lines()[0]?.getAttribute('d')?.match(/M/g)).toHaveLength(1);
+    expect(screen.getAllByRole('img')).toHaveLength(3);
+    expect(document.activeElement).toHaveAccessibleName('Level, 3: 6');
+    await user.click(screen.getByRole('button', { name: 'Show as table' }));
+    expect(
+      within(screen.getByRole('table', { name: 'Readings' }))
+        .getAllByRole('row')
+        .map((row) => row.textContent),
+    ).toEqual(['CategoryLevel', '02', '1', '2', '36', '44']);
+  });
+
+  it('UIC-CHART-6.5 marks a series of only missing values as no data', () => {
+    render(
+      <LineChart
+        aria-label="Readings"
+        series={[{ id: 'level', label: 'Level', points: [{ x: '2026-03-02', y: null }] }]}
+      />,
+    );
+    expect(screen.getByRole('figure')).toHaveAttribute('data-empty', 'true');
+    expect(document.querySelector('.ui-line-chart__line')).toBeNull();
+  });
 });

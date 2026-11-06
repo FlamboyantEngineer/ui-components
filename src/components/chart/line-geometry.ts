@@ -24,8 +24,8 @@ import {
 export interface LineChartPoint {
   /** Where the value sits along the x axis: an ISO 8601 date or date-time, or a number. */
   x: LineChartX;
-  /** The value; one that is not a finite number breaks the line. */
-  y: number;
+  /** The value, or `null` when it is missing; a missing value or one that is not a finite number breaks the line. */
+  y: number | null;
 }
 
 /** A drawn series: its position among the chart's series and its points. */
@@ -49,6 +49,8 @@ export interface LineGeometryInput {
   timeZone: string;
   locale: string;
   formatOptions?: Intl.NumberFormatOptions | undefined;
+  /** Draws the line and area straight across missing values instead of breaking them there. */
+  connectsMissing?: boolean | undefined;
 }
 
 /** A drawn value. */
@@ -118,7 +120,7 @@ function toPaths(runs: readonly LinePoint[][], baseline: number) {
 /** One series laid out: its readable points in x order, split into runs at missing values. */
 function layOutSeries(
   { series, id, points }: LineGeometrySeries,
-  scales: { xAxis: LineXAxis; y: (value: number) => number },
+  scales: { xAxis: LineXAxis; y: (value: number) => number; connectsMissing: boolean },
 ): { runs: LinePoint[][]; points: LinePoint[] } {
   // Each x is read once before the sort, not again in the comparator.
   const ordered = points
@@ -133,8 +135,9 @@ function layOutSeries(
   const placeOf = createPlaceIdentities();
   for (const { point, x, at } of ordered) {
     const place = placeOf(at);
-    if (!Number.isFinite(point.y)) {
-      runs.push([]);
+    const value = point.y;
+    if (value === null || !Number.isFinite(value)) {
+      if (!scales.connectsMissing) runs.push([]);
       continue;
     }
     const laid = {
@@ -143,9 +146,9 @@ function layOutSeries(
       index: drawn.length,
       position: at,
       at: x,
-      value: point.y,
+      value,
       x: roundCoordinate(scales.xAxis.map(x)),
-      y: roundCoordinate(scales.y(point.y)),
+      y: roundCoordinate(scales.y(value)),
     };
     drawn.push(laid);
     requireDefined(runs.at(-1)).push(laid);
@@ -170,8 +173,8 @@ export function createLineValueScale(input: LineGeometryInput, plot: ChartBox): 
 /**
  * Lays series out in a box: x along a time or linear axis across the readable x values, and
  * values along a value axis (higher values higher up). Points whose x cannot be read are left out;
- * a value that is not a finite number breaks the line and the area, which fills toward zero or
- * the edge nearest it. Coordinates are rounded to two decimals.
+ * a missing value (`null`) or one that is not a finite number breaks the line and the area, unless
+ * `connectsMissing` draws across it. The area fills toward zero or the edge nearest it. Coordinates are rounded to two decimals.
  */
 export function resolveLineGeometry(
   input: LineGeometryInput,
@@ -189,7 +192,11 @@ export function resolveLineGeometry(
   const [low, high] = [Math.min(...values.domain), Math.max(...values.domain)];
   const baseline = roundCoordinate(values.map(clamp(0, low, high)));
   const lines = input.series.map((entry) => {
-    const { runs, points } = layOutSeries(entry, { xAxis, y: values.map });
+    const { runs, points } = layOutSeries(entry, {
+      xAxis,
+      y: values.map,
+      connectsMissing: input.connectsMissing ?? false,
+    });
     return {
       key: toValueIdentity(entry.id),
       series: entry.series,

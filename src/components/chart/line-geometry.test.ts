@@ -106,6 +106,32 @@ describe('resolveLineGeometry', () => {
     expect(geometry.lines[0]?.points.map((point) => point.y)).toEqual([60, 10]);
   });
 
+  it('UIC-CHART-6.5 breaks at runs of nulls, keeps point identities and connects on request', () => {
+    const points = [
+      { x: 0, y: -2 },
+      { x: 1, y: null },
+      { x: 1, y: null },
+      { x: 2, y: null },
+      { x: 3, y: -6 },
+    ];
+    const input = { ...base, series: [{ series: 0, id: 'a', points }] };
+    const broken = resolveLineGeometry(input);
+    const connected = resolveLineGeometry({ ...input, connectsMissing: true });
+    expect(broken.lines[0]?.line.match(/M/g)).toHaveLength(2);
+    expect(broken.lines[0]?.area.match(/Z/g)).toHaveLength(2);
+    expect(connected.lines[0]?.line.match(/M/g)).toHaveLength(1);
+    expect(connected.lines[0]?.area).not.toMatch(/NaN|Infinity/);
+    expect(broken.lines[0]?.points.map((point) => point.key)).toEqual([
+      toValueIdentity('a', '[0,0]'),
+      toValueIdentity('a', '[3,0]'),
+    ]);
+    expect(connected.lines[0]?.points.map((point) => point.key)).toEqual(
+      broken.lines[0]?.points.map((point) => point.key),
+    );
+    expect(broken.yTicks[0]?.value).toBe(-6);
+    expect(broken.yTicks.at(-1)?.value).toBe(0);
+  });
+
   it('UIC-CHART-6.2 UIC-CHART-6.3 keeps a missing value at a readable x as a break', () => {
     const geometry = resolveLineGeometry({
       ...base,

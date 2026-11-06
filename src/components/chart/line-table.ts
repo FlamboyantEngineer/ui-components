@@ -36,7 +36,9 @@ export function toLineTable(
       xAxis.format(x),
       ...indexed.map((points) => {
         const point = points.get(at);
-        return point && Number.isFinite(point.y) ? format.format(point.y) : '';
+        return typeof point?.y === 'number' && Number.isFinite(point.y)
+          ? format.format(point.y)
+          : '';
       }),
     ]);
   return { columns: [categoryLabel, ...series.map((entry) => entry.label)], rows };

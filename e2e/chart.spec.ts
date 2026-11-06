@@ -254,3 +254,28 @@ test('UIC-CHART-1.4 a custom chart owns its empty state through isEmpty', async 
   await expect(chart).not.toHaveAttribute('data-empty');
   await expect(chart.getByRole('img', { name: 'Lab B, 16:00: 9 people' })).toBeVisible();
 });
+
+test('UIC-CHART-6.5 breaks lines at null values, skips them by keyboard and connects on request', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('chart');
+  const demo = page.locator('[data-lab-demo="missing-values"]');
+  const north = demo.locator('.ui-line-chart__line[data-series="0"]');
+  await expect(north).toHaveAttribute('d', /^M[^M]+M[^M]+$/);
+  await expect(demo.getByRole('img', { name: /^North sensor/ })).toHaveCount(4);
+  await demo
+    .getByRole('img', { name: /^North sensor/ })
+    .nth(1)
+    .focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(demo.getByRole('img', { name: /^North sensor/ }).nth(2)).toBeFocused();
+  await expect(demo.getByRole('img', { name: /^North sensor/ }).nth(2)).toHaveAccessibleName(
+    /: 9$/,
+  );
+  await demo.getByText('Connect missing values').click();
+  await expect(north).toHaveAttribute('d', /^M[^M]+$/);
+  for (const path of await demo.locator('.ui-line-chart__line, .ui-line-chart__area').all()) {
+    await expect(path).not.toHaveAttribute('d', /NaN|Infinity/);
+  }
+});

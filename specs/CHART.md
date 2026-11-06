@@ -155,7 +155,7 @@ Verification: `src/components/chart/line-geometry.test.ts`, `src/components/char
 
 ### UIC-CHART-6.2 - Lines, areas and points
 
-Each shown series shall draw a `ui-line-chart__line` path (with no fill) through its points in x order and a `ui-line-chart__point` circle on each finite value. A value that is not a finite number breaks the line, which resumes at the next one. `variant` publishes `data-variant`: `line` (the default) or `area`, which also fills a `ui-line-chart__area` under each line, toward zero or the edge nearest it.
+Each shown series shall draw a `ui-line-chart__line` path (with no fill) through its points in x order and a `ui-line-chart__point` circle on each finite value. A missing value ([UIC-CHART-6.5](#uic-chart-65---missing-values)) breaks the line, which resumes at the next one. `variant` publishes `data-variant`: `line` (the default) or `area`, which also fills a `ui-line-chart__area` under each line, toward zero or the edge nearest it.
 
 Implementation: `src/components/chart/line-chart.tsx`, `src/components/chart/line-geometry.ts`
 Verification: `src/components/chart/line-geometry.test.ts`, `src/components/chart/line-chart.test.tsx`, `e2e/chart.spec.ts`
@@ -177,6 +177,13 @@ A repeated coordinate shall use its first point in each series, leaving the cell
 
 Implementation: `src/components/chart/line-table.ts`, `src/components/chart/line-chart.tsx`
 Verification: `src/components/chart/line-table.test.ts`, `src/components/chart/line-chart.test.tsx`
+
+### UIC-CHART-6.5 - Missing values
+
+A point's `y` may be `null`, a missing value, as JSON writes one; a `y` that is not a finite number is missing too. A missing value shall draw no point and break the line and the area there (a run of missing values makes one break), unless `connectsMissing` draws them straight across it; either way it is never read as zero: it does not stretch the value axis, count in the generated summary, take keyboard focus (the arrow keys move from the value before it to the value after it, which keep their identities) or show a tooltip. Its x still counts toward the x axis and the table, whose cell for it is blank. A series of only missing values draws nothing, and a chart with no other values shows its no-data state. No missing value produces SVG coordinates that are not numbers.
+
+Implementation: `src/components/chart/line-geometry.ts`, `src/components/chart/line-table.ts`, `src/components/chart/line-chart.tsx`
+Verification: `src/components/chart/line-geometry.test.ts`, `src/components/chart/line-chart.test.tsx`, `e2e/chart.spec.ts`
 
 ## UIC-CHART-7 - Donut chart
 

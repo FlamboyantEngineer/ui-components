@@ -55,6 +55,11 @@ export interface LineChartProps
   series: readonly LineChartSeries[];
   /** Lines, or lines over filled areas. Defaults to `line`. */
   variant?: LineChartVariant | undefined;
+  /**
+   * Draws lines and areas straight across missing values (`null` or not a finite number) instead
+   * of breaking them there. Missing values still draw no point and count as no value.
+   */
+  connectsMissing?: boolean | undefined;
   /** Drawing height, in pixels. Defaults to 240; the width follows the container. */
   height?: number | undefined;
   /** The value at the bottom edge. Defaults to a nice value at or below zero and the lowest value. */
@@ -206,6 +211,7 @@ export function LineChart({
   label,
   series,
   variant = 'line',
+  connectsMissing,
   height = 240,
   minValue,
   maxValue,
@@ -239,6 +245,7 @@ export function LineChart({
     maxValue,
     timeZone,
     formatOptions,
+    connectsMissing,
   });
   const values = geometry.lines.flatMap((line) => line.points.map((point) => point.value));
   const tableAxis = useTableAxis(series, timeZone);
