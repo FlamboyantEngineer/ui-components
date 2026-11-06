@@ -11,6 +11,7 @@ import { DeleteGlyph, EditGlyph } from '../../src/core/glyphs.js';
 import type { Key, Selection, SortDescriptor } from '../../src/core/props.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { GroupKeyTable, ObjectKeyTable, TypedTable } from './collection-identity-cases.js';
+import { MountOnDemand } from './lab-form.js';
 import { LabOutput } from './lab-output.js';
 import {
   CallerFilter,
@@ -34,7 +35,7 @@ import {
   ShareWeights,
 } from './table-content-contracts.js';
 import { HeaderFilter, PickerCell } from './table-control-cases.js';
-import { CsvExport, EditHistory } from './table-data-cases.js';
+import { CsvExport, EditHistory, PinnedRows } from './table-data-cases.js';
 import {
   ControlledLayout,
   ControlledMultipleSort,
@@ -606,6 +607,14 @@ mountLab(
       description="Edit, paste, fill, clear or bulk edit, then Undo or Control+Z on the grid; Shift+Control+Z or Control+Y redoes. A paste undoes as one step. Grow Basil elsewhere, then undo a Basil height edit: the newer height stays. Reload the plants forgets the history. Control+Z inside an open editor stays the editor's."
     >
       <EditHistory />
+    </LabSection>
+    <LabSection
+      title="Pinned rows"
+      description="Bed 3 stays under the sticky header and Bed 14 above the summary while the body scrolls, outside the filter and the sort. Each row's menu pins it to the top or the bottom, or unpins it; pinned rows still select and edit (double-click a name)."
+    >
+      <MountOnDemand label="the pinned rows table">
+        <PinnedRows />
+      </MountOnDemand>
     </LabSection>
     <LabSection title="Virtualized" description="10,000 rows; only those in view are rendered.">
       <div data-lab="virtualized" style={{ height: 320 }}>

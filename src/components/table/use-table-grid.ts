@@ -30,7 +30,7 @@ import { useTableSelection } from './use-table-selection.js';
 /** The props that shape the grid; the root's presentation is the table's own. */
 export type TableGridOptions<T extends TableRow> = Omit<
   TableProps<T>,
-  'size' | 'stickyHeader' | 'rowHeight' | 'filterLabel' | 'className' | 'id'
+  'size' | 'rowHeight' | 'filterLabel' | 'className' | 'id'
 >;
 
 /** What the table renders from. */
@@ -118,6 +118,21 @@ function useStructure<T extends TableRow>(
     }),
     [columns, hasSelection, hasActions, actionsColumnWidth, cellWrap, treeColumn, virtualized],
   );
+}
+
+/** The body's nodes: the pinned top rows, the current page's rows or groups, the pinned bottom rows. */
+function useBodyNodes<T extends TableRow>(
+  grouped: ReturnType<typeof useTableGrouping<T>>,
+  { pinned }: TableRowsView<T>,
+): ReturnType<typeof useTableGrouping<T>> {
+  const nodes = useMemo(
+    () =>
+      pinned.top.length + pinned.bottom.length === 0
+        ? grouped.nodes
+        : [...pinned.top, ...grouped.nodes, ...pinned.bottom],
+    [grouped.nodes, pinned],
+  );
+  return nodes === grouped.nodes ? grouped : { ...grouped, nodes };
 }
 
 /** The rows the grid presents: those of the current page outside collapsed groups and parents. */
@@ -225,7 +240,8 @@ export function useTableGrid<T extends TableRow>(options: TableGridOptions<T>): 
   const reorderView = useGroupReorder(options, view, grouped);
   const reordering = useTableReorder({ ...reorderView, isRowDisabled });
   const structure = useStructure(options, layout.visibleColumns, grouped.isGrouped);
-  const visibleRows = useVisibleRows<T>(grouped);
+  const body = useBodyNodes(grouped, view);
+  const visibleRows = useVisibleRows<T>(body);
   const { edited, cells, editing, historyProps } = useEditingParts(options, {
     rows: visibleRows,
     structure,
@@ -237,7 +253,10 @@ export function useTableGrid<T extends TableRow>(options: TableGridOptions<T>): 
   });
   const hasPins = !structure.isVirtualized && structure.columns.some((column) => column.pin);
   const pinned = usePinnedOffsets(hasPins);
-  const status = resolveStatus(options, view.nodes.length === 0);
+  const hasPinnedRows =
+    !structure.isVirtualized && view.pinned.top.length + view.pinned.bottom.length > 0;
+  const rowPins = usePinnedOffsets(hasPinnedRows);
+  const status = resolveStatus(options, body.nodes.length === 0);
   const message = useStatusMessage(options, status);
   const activeReordering = reorderView.reorder ? reordering : null;
   const model = useRowModel(options, {
@@ -247,6 +266,11 @@ export function useTableGrid<T extends TableRow>(options: TableGridOptions<T>): 
     isReorderable: activeReordering !== null,
     hideFixedHandles: reorderView.groupKeys !== undefined,
     pinOffsets: pinned.offsets,
+    rowPins: {
+      offsets: rowPins.offsets,
+      hasStickyEdges: options.stickyHeader === true,
+      report: rowPins.report,
+    },
     editing,
     cells: cells.view,
   });
@@ -269,7 +293,7 @@ export function useTableGrid<T extends TableRow>(options: TableGridOptions<T>): 
     pinOffsets: pinned.offsets,
     onPinOffsets: pinned.report,
     onRowAction: createTableRowAction(keyIndex, onRowAction),
-    body: createBody(options, { nodes: grouped.nodes, model, status, message }),
+    body: createBody(options, { nodes: body.nodes, model, status, message }),
     exportMenu: resolveExportMenu(options, { view, selection, drawn: structure.columns }),
     selectionBar: resolveSelectionBar(edited, { selection, columns: structure.columns }),
     rootProps: mergeRootProps(columns, {

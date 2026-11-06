@@ -23,6 +23,7 @@ interface ModelParts<T> {
   isReorderable: boolean;
   hideFixedHandles: boolean;
   pinOffsets: TablePinOffsets;
+  rowPins: TableRowModel<T>['rowPins'];
   editing: CellEditing<T>;
   cells: TableCellsView<T> | null;
 }
@@ -34,7 +35,7 @@ export function useRowModel<T extends TableRow>(
 ): TableRowModel<T> {
   const { renderRowActions, renderRowDetail, getRowAttributes, reorder, renderGroupLabel } =
     options;
-  const { structure, status, reordering, isReorderable, pinOffsets, cells } = parts;
+  const { structure, status, reordering, isReorderable, pinOffsets, rowPins, cells } = parts;
   const { editing, commit, cancel, release, dismiss } = parts.editing;
   const editingModel = useShallowStable({ editing, commit, cancel, release, dismiss });
   return useShallowStable<TableRowModel<T>>({
@@ -48,6 +49,7 @@ export function useRowModel<T extends TableRow>(
     hideFixedHandles: parts.hideFixedHandles,
     dragTrigger: reorder?.dragTrigger ?? 'row',
     pinOffsets,
+    rowPins: useShallowStable(rowPins),
     editing: editingModel,
     cells,
   });

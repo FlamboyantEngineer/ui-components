@@ -41,7 +41,7 @@ import { useContentWidths } from './use-content-widths.js';
 import type { TableGroupingProps } from './use-table-expansion.js';
 import { type TableGrid, useTableGrid } from './use-table-grid.js';
 import type { TableReorderOptions } from './use-table-reorder.js';
-import type { TablePagination } from './use-table-rows.js';
+import type { TablePagination, TablePinnedRows } from './use-table-rows.js';
 import type { TableSortOptions } from './use-table-sort.js';
 
 export type TableSize = Extract<Size, 'sm' | 'md'>;
@@ -110,6 +110,11 @@ export interface TableProps<T extends TableRow>
   editHistory?: TableEditHistory | undefined;
   /** Reports a finished cell edit. The table never changes its rows itself. */
   onCellEdit?: ((edit: TableCellEdit<T>) => void) | undefined;
+  /**
+   * Top-level rows, by id, that stay at the top or the bottom of the body while it scrolls, on
+   * every page, outside filtering, sorting, paging, grouping and reordering.
+   */
+  pinnedRows?: TablePinnedRows | undefined;
   /** Shows the rows one page at a time under a page navigation. */
   pagination?: TablePagination | undefined;
   /** Asks for more rows when the end of the rows scrolls into view. */
@@ -281,7 +286,7 @@ export function Table<T extends TableRow>({
 }: TableProps<T>) {
   const strings = useUiStrings();
   const [dataAttributes, gridProps] = splitDataAttributes(rest);
-  const grid = useTableGrid({ ...gridProps, filterable });
+  const grid = useTableGrid({ ...gridProps, filterable, stickyHeader });
   const { view, layout } = grid;
   const { virtualized } = rest;
   const height = rowHeight ?? virtualRowHeights[size];

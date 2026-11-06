@@ -54,7 +54,7 @@ export function resolveExportMenu<T extends TableRow>(
     csvExport,
     scopes: csvExport.scopes ?? listDefaultScopes(options),
     rows: {
-      page: parts.view.nodes,
+      page: [...parts.view.pinned.top, ...parts.view.nodes, ...parts.view.pinned.bottom],
       presented: parts.view.presentedNodes,
       selected: parts.selection.selectedRows,
       getChildRows: options.getChildRows,

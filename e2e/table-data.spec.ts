@@ -120,3 +120,58 @@ test.describe('Table lab, edit history', () => {
     await expect(name).toHaveText('Thyme');
   });
 });
+
+test.describe('Table lab, pinned rows', () => {
+  const rowNamed = (grid: Locator, name: string) => grid.getByRole('row', { name, exact: true });
+
+  test('UIC-TABLE-18.1 UIC-TABLE-18.4 keeps pinned rows at their edges while the body scrolls', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('table');
+    await page.getByRole('button', { name: 'Mount the pinned rows table' }).click();
+    const root = page.locator('[data-lab="pinned-rows"]');
+    const grid = root.getByRole('grid');
+    const scroll = root.locator('.ui-table__scroll');
+    const header = grid.locator('.ui-table__header');
+    const footer = grid.locator('.ui-table__footer');
+    await expect(rowNamed(grid, 'Bed 3')).toHaveAttribute('data-pinned', 'top');
+    await scroll.evaluate((element) => {
+      element.scrollTop = element.scrollHeight;
+    });
+    await expect(async () => {
+      const scrollBox = await scroll.boundingBox();
+      const headerBox = await header.boundingBox();
+      const top = await rowNamed(grid, 'Bed 3').boundingBox();
+      const bottom = await rowNamed(grid, 'Bed 14').boundingBox();
+      const footerBox = await footer.boundingBox();
+      if (!scrollBox || !headerBox || !top || !bottom || !footerBox) throw new Error('Not drawn');
+      expect(Math.abs(top.y - (headerBox.y + headerBox.height))).toBeLessThan(1.5);
+      expect(Math.abs(bottom.y + bottom.height - footerBox.y)).toBeLessThan(1.5);
+      expect(footerBox.y + footerBox.height).toBeLessThanOrEqual(
+        scrollBox.y + scrollBox.height + 1,
+      );
+    }).toPass();
+    await lab.expectAccessible('[data-lab="pinned-rows"]');
+  });
+
+  test('UIC-TABLE-18.2 UIC-TABLE-18.3 pins from the row menu, outside the filter', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('table');
+    await page.getByRole('button', { name: 'Mount the pinned rows table' }).click();
+    const root = page.locator('[data-lab="pinned-rows"]');
+    const grid = root.getByRole('grid');
+    await root.getByRole('searchbox', { name: 'Filter rows' }).fill('Bed 1');
+    await expect(rowNamed(grid, 'Bed 3')).toBeVisible();
+    await rowNamed(grid, 'Bed 10').getByRole('button', { name: 'Pin Bed 10' }).click();
+    await page.getByRole('menu').getByRole('menuitem', { name: 'Pin to top' }).click();
+    await expect(output(root, 'pinned-rows')).toHaveText('top bed-3, bed-10; bottom bed-14');
+    await expect(rowNamed(grid, 'Bed 10')).toHaveAttribute('data-pinned', 'top');
+    await expect(grid.getByRole('rowheader').first()).toHaveText('Bed 3');
+    await expect(grid.getByRole('rowheader').nth(1)).toHaveText('Bed 10');
+    await rowNamed(grid, 'Bed 10').locator('.ui-table__checkbox').click();
+    await expect(rowNamed(grid, 'Bed 10')).toHaveAttribute('aria-selected', 'true');
+  });
+});

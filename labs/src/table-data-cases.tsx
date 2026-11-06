@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Checkbox } from '../../src/components/checkbox/checkbox.js';
+import { DropdownMenu } from '../../src/components/dropdown-menu/dropdown-menu.js';
 import {
   type TableCellEdit,
   type TableColumn,
   type TableExportFile,
+  type TablePinnedRows,
   useTableEditHistory,
 } from '../../src/components/table/index.js';
 import { Table } from '../../src/components/table/table.js';
@@ -155,6 +157,93 @@ export function EditHistory() {
         onCellsChange={apply}
       />
       <LabOutput name="history-last">{last}</LabOutput>
+    </div>
+  );
+}
+
+const beds = Array.from({ length: 14 }, (_, index) => ({
+  id: `bed-${index + 1}`,
+  name: `Bed ${index + 1}`,
+  family: ['Mint', 'Onion', 'Carrot'][index % 3] ?? 'Mint',
+  height: 20 + ((index * 37) % 130),
+  note: index % 4 === 0 ? 'Needs water' : '',
+}));
+
+const bedColumns: TableColumn<Plant>[] = [
+  {
+    id: 'name',
+    header: 'Name',
+    allowsSorting: true,
+    allowsEditing: true,
+    pin: 'start',
+    renderFooter: () => 'All beds',
+  },
+  { id: 'family', header: 'Family', allowsSorting: true, width: 160 },
+  {
+    id: 'height',
+    header: 'Height (cm)',
+    align: 'end',
+    allowsSorting: true,
+    width: 140,
+    renderFooter: (rows) => `${rows.length} beds`,
+  },
+  { id: 'note', header: 'Note', width: 220 },
+];
+
+/** Moves `id` to an edge of the pinned rows, or out of them for `none`. */
+function pinRow(pinned: TablePinnedRows, id: string, edge: 'top' | 'bottom' | 'none') {
+  const top = (pinned.top ?? []).filter((key) => key !== id);
+  const bottom = (pinned.bottom ?? []).filter((key) => key !== id);
+  if (edge === 'top') return { top: [...top, id], bottom };
+  return edge === 'bottom' ? { top, bottom: [...bottom, id] } : { top, bottom };
+}
+
+/**
+ * Pinned rows: rows stay at the top or the bottom of a scrolling body, on every page, outside the
+ * filter and the sort; each row's menu pins or unpins it.
+ */
+export function PinnedRows() {
+  const [rows, setRows] = useState<readonly Plant[]>(beds);
+  const [pinned, setPinned] = useState<TablePinnedRows>({ top: ['bed-3'], bottom: ['bed-14'] });
+  return (
+    <div data-lab="pinned-rows">
+      <div style={{ height: 300 }}>
+        <Table
+          aria-label="Beds with pinned rows"
+          rows={rows}
+          columns={bedColumns}
+          pinnedRows={pinned}
+          stickyHeader
+          filterable
+          selectionMode="multiple"
+          onCellEdit={(edit) => setRows((current) => applyEdits(current, [edit]))}
+          actionsColumnWidth={52}
+          renderRowActions={(row) => (
+            <DropdownMenu
+              iconOnly
+              size="sm"
+              label={`Pin ${row.name}`}
+              items={[
+                { id: 'top', label: 'Pin to top' },
+                { id: 'bottom', label: 'Pin to bottom' },
+                { id: 'none', label: 'Unpin' },
+              ]}
+              onAction={(key) =>
+                setPinned((current) =>
+                  pinRow(
+                    current,
+                    row.id,
+                    key === 'none' ? 'none' : key === 'bottom' ? 'bottom' : 'top',
+                  ),
+                )
+              }
+            />
+          )}
+        />
+      </div>
+      <LabOutput name="pinned-rows">
+        {`top ${(pinned.top ?? []).join(', ') || 'none'}; bottom ${(pinned.bottom ?? []).join(', ') || 'none'}`}
+      </LabOutput>
     </div>
   );
 }
