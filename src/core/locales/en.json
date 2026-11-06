@@ -452,6 +452,8 @@
   "rejectedFileReason": "{name}: {reason}",
   "rejectedFileUnchecked": "{count, plural, one {# file could not be checked.} other {# files could not be checked.}}",
   "fileCountLimit": "{count, plural, one {One file} other {Up to # files}}",
+  "moveFile": "Move {name}",
+  "fileMoved": "{name} moved to position {position} of {count}",
   "addFile": "Add a file",
   "addFiles": "Add files",
   "removedFiles": "Removed files",

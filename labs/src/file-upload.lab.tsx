@@ -10,6 +10,7 @@ import {
 import type { Key } from '../../src/core/props.js';
 import { formatBytes } from '../../src/utils/index.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { ReorderDocuments, ReorderImages } from './file-upload-reorder-cases.js';
 import { LabHelperCalls } from './lab-helper-calls.js';
 
 const variants = ['button', 'dropzone'] as const;
@@ -512,6 +513,18 @@ mountLab(
       description="Forty listed photos in a short scrolling box: their thumbnails load only as they scroll near. Photo 3 is a format the browser cannot decode and shows the image glyph instead."
     >
       <ManyPhotos />
+    </LabSection>
+    <LabSection
+      title="Reordering files"
+      description="Drag a file by its handle, press the handle and choose where to drop it from the keyboard, or press Alt+ArrowUp and Alt+ArrowDown in a row. The page applies each move, numeric and text ids stay apart, and progress, errors and focus follow each file; each move is announced. Send carries the files in the new order. Disabled refuses every move."
+    >
+      <ReorderDocuments />
+    </LabSection>
+    <LabSection
+      title="Reordering images"
+      description="Thumbnails in a drop zone's list, reordered the same way."
+    >
+      <ReorderImages />
     </LabSection>
     <LabSection
       title="One file at a time"

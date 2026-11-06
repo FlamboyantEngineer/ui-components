@@ -12,6 +12,7 @@ import { toErrorMessage } from '../../utils/to-error-message.js';
 import { useRemovalFocus } from '../../utils/use-removal-focus.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import { formatMetaLine } from '../meta-line/meta-line.js';
+import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import type { FileRejection, FileRules } from './file-rules.js';
 import { ButtonCommand, type CommandProps, DropZoneCommand } from './file-upload-drop.js';
 import {
@@ -21,6 +22,8 @@ import {
 } from './file-upload-files.js';
 import { useFileForm } from './file-upload-form.js';
 import { useFileIntake } from './file-upload-intake.js';
+import type { FileUploadMove } from './file-upload-moves.js';
+import { useFileReorder } from './file-upload-reorder.js';
 
 /** `button` is one command among others; `dropzone` is a drop target that also offers Browse. */
 export type FileUploadVariant = 'button' | 'dropzone';
@@ -54,6 +57,11 @@ export interface FileUploadProps
   files?: readonly FileUploadItem[] | undefined;
   /** Shows a remove button on each listed file. */
   onRemove?: ((id: Key) => void) | undefined;
+  /**
+   * Lets the reader reorder the listed files by their drag handles or Alt+ArrowUp and Alt+ArrowDown,
+   * and reports each move. The upload never reorders `files` itself: apply the move and re-render.
+   */
+  onMove?: ((move: FileUploadMove) => void) | undefined;
   /** Submits the listed files' `file`s with a form under this name. */
   name?: string | undefined;
   /** A form submit is refused while no file is listed. */
@@ -148,12 +156,33 @@ function useFileCommand(
 const noFiles: readonly FileUploadItem[] = [];
 
 /**
+ * The listed files' reordering while the owner takes moves and the files are editable, and the
+ * status region that announces each move.
+ */
+function useUploadReorder(props: FileUploadProps, files: readonly FileUploadItem[]) {
+  const { onMove, isReadOnly } = props;
+  const { reorder, announcement } = useFileReorder({
+    files,
+    onMove: (move) => onMove?.(move),
+    isDisabled: props.isDisabled ?? false,
+  });
+  return {
+    reorder: onMove && !isReadOnly ? reorder : null,
+    status: onMove ? (
+      <VisuallyHidden as="div" role="status">
+        {announcement}
+      </VisuallyHidden>
+    ) : null,
+  };
+}
+
+/**
  * Chooses files or folders from the system file chooser or by drag and drop, checks them against
  * the accepted types, the size and count limits and the caller's own check, and hands the accepted
  * ones to `onSelect`. Refusals are reported below the command and to `onReject`; a drag says
  * whether it would be accepted. Listed files show image thumbnails or type glyphs, the upload
- * progress and errors the host reports and the owner's actions, and can take part in a form under
- * `name`.
+ * progress and errors the host reports and the owner's actions, can be reordered by the reader,
+ * and can take part in a form under `name`.
  */
 export function FileUpload(props: FileUploadProps) {
   const { ref } = props;
@@ -165,6 +194,7 @@ export function FileUpload(props: FileUploadProps) {
   const form = useFileForm({ ...props, files, commandRef });
   const command = useFileCommand(props, intake, { ...form, commandRef });
   const removalFocus = useRemovalFocus(files, commandRef);
+  const reordering = useUploadReorder(props, files);
   const data = {
     variant,
     disabled: props.isDisabled,
@@ -197,10 +227,12 @@ export function FileUpload(props: FileUploadProps) {
           onRemove={isReadOnly ? undefined : props.onRemove}
           isDisabled={props.isDisabled ?? false}
           removalFocus={removalFocus}
+          reorder={reordering.reorder}
           renderFileActions={props.renderFileActions}
           renderFilePreview={props.renderFilePreview}
         />
       ) : null}
+      {reordering.status}
       {form.input}
     </div>
   );
@@ -208,3 +240,4 @@ export function FileUpload(props: FileUploadProps) {
 
 export type { FileRejection, FileRejectionReason, FileValidator } from './file-rules.js';
 export type { FileUploadChange, FileUploadItem } from './file-upload-files.js';
+export { type FileUploadMove, moveFileUploadItem } from './file-upload-moves.js';

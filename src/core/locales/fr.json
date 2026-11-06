@@ -452,6 +452,8 @@
   "rejectedFileReason": "{name} : {reason}",
   "rejectedFileUnchecked": "{count, plural, one {# fichier n’a pas pu être vérifié.} other {# fichiers n’ont pas pu être vérifiés.}}",
   "fileCountLimit": "{count, plural, =1 {Un fichier} other {Jusqu’à # fichiers}}",
+  "moveFile": "Déplacer {name}",
+  "fileMoved": "{name} déplacé en position {position} sur {count}",
   "addFile": "Ajouter un fichier",
   "addFiles": "Ajouter des fichiers",
   "removedFiles": "Fichiers retirés",

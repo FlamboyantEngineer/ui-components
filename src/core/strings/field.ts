@@ -19,6 +19,10 @@ interface FieldStrings {
   rejectedFileUnchecked: (count: number) => string;
   /** States how many files an upload holds at most. */
   fileCountLimit: (count: number) => string;
+  /** Names a listed file's drag handle, by the file's name. */
+  moveFile: (name: string) => string;
+  /** Announces a listed file moved: its position in the list, from 1, and the number of files. */
+  fileMoved: (name: string, position: number, count: number) => string;
   /** The command of a file field that takes one file. */
   addFile: string;
   /** The command of a file field that takes several files. */
@@ -242,6 +246,8 @@ export const fieldStrings = defineStrings<FieldStrings>({
   rejectedFileReason: (name, reason) => ({ name, reason }),
   rejectedFileUnchecked: (count) => ({ count }),
   fileCountLimit: (count) => ({ count }),
+  moveFile: (name) => ({ name }),
+  fileMoved: (name, position, count) => ({ name, position, count }),
   problemCount: (errors, warnings) => ({ errors, warnings }),
   problemSeverityLead: (severity) => ({ severity }),
   tooShort: (minLength) => ({ minLength }),
