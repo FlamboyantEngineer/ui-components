@@ -1,5 +1,18 @@
-export type { KeyHint, KeyHintsProps, ShortcutAppearance, ShortcutProps } from './shortcut.js';
-export { KeyHints, Shortcut, ShortcutAppearanceContext } from './shortcut.js';
+export type {
+  KeyHint,
+  KeyHintsProps,
+  ShortcutAppearance,
+  ShortcutOptions,
+  ShortcutProps,
+  ShortcutScopeProps,
+} from './shortcut.js';
+export {
+  KeyHints,
+  Shortcut,
+  ShortcutAppearanceContext,
+  ShortcutScope,
+  useShortcut,
+} from './shortcut.js';
 export type {
   ShortcutChord,
   ShortcutKeyNamer,

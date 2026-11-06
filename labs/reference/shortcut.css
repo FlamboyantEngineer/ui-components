@@ -93,3 +93,13 @@
 .ui-key-hints__action {
   color: var(--ref-muted);
 }
+
+/* A shortcut scope is a plain block region; the lab frames it to show where it ends. */
+.ui-shortcut-scope {
+  display: block;
+  min-width: 0;
+}
+
+.ui-shortcut-scope[data-disabled] {
+  opacity: var(--ref-disabled-opacity);
+}

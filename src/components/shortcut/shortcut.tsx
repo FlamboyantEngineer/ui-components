@@ -159,6 +159,8 @@ export function KeyHints({ hints, platform, appearance, className, ...rest }: Ke
   );
 }
 
-export type { ShortcutChord, ShortcutPlatform } from './shortcut-format.js';
+export type { ShortcutChord, ShortcutPlatform, ShortcutSequence } from './shortcut-format.js';
 export { formatAriaKeyShortcuts } from './shortcut-format.js';
 export { isChordPress, matchesChord, readCommandKey } from './shortcut-match.js';
+export type { ShortcutOptions, ShortcutScopeProps } from './shortcut-scope.js';
+export { ShortcutScope, useShortcut } from './shortcut-scope.js';

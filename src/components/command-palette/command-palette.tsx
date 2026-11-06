@@ -25,12 +25,11 @@ import { getOwnerDocument } from '../../utils/owner-window.js';
 import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { Menu, type MenuProps, type MenuSize } from '../menu/menu.js';
 import { useLayerZIndex, usePortalContainer } from '../portal/portal.js';
-import { isChordPress, type ShortcutChord } from '../shortcut/shortcut.js';
+import { isChordPress, type ShortcutChord, useShortcut } from '../shortcut/shortcut.js';
 import type { CommandPaletteEntry, CommandPaletteFilter } from './command-palette-entries.js';
 import { useReturnFocusOnClose } from './command-palette-focus.js';
 import { commandPaletteHooks as hooks } from './command-palette-hooks.js';
 import { CommandPageHeader, useCommandPages } from './command-palette-pages.js';
-import { useDocumentShortcut } from './command-palette-shortcut.js';
 
 export type {
   CommandPaletteEntry,
@@ -246,7 +245,12 @@ export function CommandPalette({
   const changeOpen = (next: boolean) => {
     if (next !== open) setOpen(next);
   };
-  useDocumentShortcut(shortcut, () => changeOpen(true));
+  // Document-wide, from fields too: one press opens one palette, the one registered last.
+  useShortcut(shortcut, () => changeOpen(true), {
+    isGlobal: true,
+    allowsEditable: true,
+    allowsReserved: true,
+  });
   const overlayRef = useRef<HTMLDivElement>(null);
   useReturnFocusOnClose(open, overlayRef);
   const rootRefs = useMergedRefs(overlayRef, ref);
