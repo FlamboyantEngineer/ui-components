@@ -13,6 +13,7 @@ import { decorateMarkers, placeMarkers, type RichTextBlockMarker } from './block
 import { defaultMarks, defaultNodes } from './default-schema.js';
 import { domSelectionEvents } from './dom-selection-sync.js';
 import { decoratePlaceholder } from './editor-state.js';
+import { findEngineKit } from './engine-schema.js';
 import { LinkMarkView } from './link-mark-view.js';
 import {
   getGutter,
@@ -48,13 +49,32 @@ type ContentAttributes = Readonly<Record<string, string | undefined>>;
 const defaultTaskViews = { taskItem: TaskItemView };
 const defaultLinkViews = { link: LinkMarkView };
 
-function getNodeViewComponents(schema: Schema) {
-  return schema.nodes.taskItem?.spec === defaultNodes.taskItem ? defaultTaskViews : undefined;
+type ViewComponents = Record<string, never>;
+
+interface SchemaViews {
+  nodes: ViewComponents;
+  marks: ViewComponents;
 }
 
-/** The mark views of a schema: the default link's anchor, which leaves the tab sequence when disabled. */
-function getMarkViewComponents(schema: Schema) {
-  return schema.marks.link?.spec === defaultMarks.link ? defaultLinkViews : undefined;
+/** The views of each schema, built once so the engine keeps its views between renders. */
+const schemaViews = new WeakMap<Schema, SchemaViews>();
+
+/**
+ * The views of a schema: the default task item's and the default link's anchor (which leaves the
+ * tab sequence when disabled), then those the schema's extensions contribute.
+ */
+function getViewComponents(schema: Schema): SchemaViews {
+  let views = schemaViews.get(schema);
+  if (views) return views;
+  const kit = findEngineKit(schema);
+  const taskViews = schema.nodes.taskItem?.spec === defaultNodes.taskItem ? defaultTaskViews : {};
+  const linkViews = schema.marks.link?.spec === defaultMarks.link ? defaultLinkViews : {};
+  views = {
+    nodes: { ...taskViews, ...kit?.nodeViews } as ViewComponents,
+    marks: { ...linkViews, ...kit?.markViews } as ViewComponents,
+  };
+  schemaViews.set(schema, views);
+  return views;
 }
 
 interface SyncedEditorOptions<T> {
@@ -191,8 +211,8 @@ export function EditorSurface(props: EditorSurfaceProps) {
       dispatchTransaction={dispatchTransaction}
       editable={editable}
       decorations={decorations}
-      nodeViewComponents={getNodeViewComponents(state.schema)}
-      markViewComponents={getMarkViewComponents(state.schema)}
+      nodeViewComponents={getViewComponents(state.schema).nodes}
+      markViewComponents={getViewComponents(state.schema).marks}
       handleDOMEvents={domSelectionEvents}
     >
       <RichTextEditorContext value={context}>

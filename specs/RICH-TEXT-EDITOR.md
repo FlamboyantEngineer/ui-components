@@ -307,6 +307,50 @@ Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/
 Implementation: `src/components/rich-text-editor/block-markers.ts`, `src/components/rich-text-editor/surface-scrollbars.tsx`, `src/components/rich-text-editor/editor-surface.tsx`, `src/components/rich-text-editor/rich-text-editor.tsx`
 Verification: `src/components/rich-text-editor/block-markers.test.ts`, `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/rich-text-editor.spec.ts`
 
+## UIC-RICH-TEXT-EDITOR-13 - Extensions
+
+### UIC-RICH-TEXT-EDITOR-13.1 - Extension contributions
+
+A `RichTextExtension` shall name one feature of an editor and contribute any of: node types and mark types (`RichTextExtensionNode`, `RichTextExtensionMark`: a name, a ProseMirror spec and an `order`), engine plugin contributions (`RichTextPluginContribution`: a name, a `priority`, a `build(context, schema)` that returns plugins and an optional `when(context)` gate), node views and mark views by type name, and the names of the extensions it `requires`. Extensions are the shared core of every rich-text editor: the editor in this library and editors built on it assemble their features the same way, whoever registers them.
+
+Implementation: `src/components/rich-text-editor/rich-text-extension.ts`
+Verification: `src/components/rich-text-editor/rich-text-extension.test.tsx`
+
+### UIC-RICH-TEXT-EDITOR-13.2 - Kit assembly and order
+
+`createRichTextKit(extensions)` shall return a `RichTextKit` whose `schema` holds every contributed node and mark type ordered by `order`, ties in registration order; the first node type is the top node. `buildPlugins(context)` shall return the plugins of every contribution whose `when` admits the context, ordered by `priority` with ties in registration order, and `pluginOrder` lists the contribution names in that order. `nodeViews` and `markViews` merge the views of every extension. The order in which extensions are passed only breaks ties.
+
+Implementation: `src/components/rich-text-editor/rich-text-extension.ts`
+Verification: `src/components/rich-text-editor/rich-text-extension.test.tsx`
+
+### UIC-RICH-TEXT-EDITOR-13.3 - Conflicts fail early
+
+`createRichTextKit` shall throw, naming the extensions involved, when two extensions share a name, when a required extension is missing, or when two extensions contribute the same node type, mark type, plugin contribution name, node view or mark view.
+
+Implementation: `src/components/rich-text-editor/rich-text-extension.ts`
+Verification: `src/components/rich-text-editor/rich-text-extension.test.tsx`
+
+### UIC-RICH-TEXT-EDITOR-13.4 - Built-in extensions
+
+`createRichTextSchema` shall assemble its schema as a kit of the built-in `base` extension (the default types with the caller's `nodes` and `marks` changes, ordered 0, 10, 20 and so on, so an extension can place a type between two defaults), the built-in `editing` extension (history, input rules and shortcuts, at priority 500) and the caller's `extensions`. `getRichTextKit(schema)` returns the kit, whose engine schema is the one the editor and HTML serialization use.
+
+Implementation: `src/components/rich-text-editor/rich-text-schema.ts`, `src/components/rich-text-editor/engine-schema.ts`
+Verification: `src/components/rich-text-editor/rich-text-extension.test.tsx`
+
+### UIC-RICH-TEXT-EDITOR-13.5 - Extensions in the editor
+
+`RichTextEditor` given a schema with extensions shall run the kit's plugins in their order and render the extensions' node views and mark views, built once per schema, beside the default task item and link views. A node view is a React component that takes the engine's node view props; it renders the node's content inside the element it gives `nodeProps.contentDOMRef`, which stays editable.
+
+Implementation: `src/components/rich-text-editor/rich-text-editor.tsx`, `src/components/rich-text-editor/editor-state.ts`, `src/components/rich-text-editor/editor-surface.tsx`
+Verification: `src/components/rich-text-editor/rich-text-extension.test.tsx`
+
+### UIC-RICH-TEXT-EDITOR-13.6 - Server-safe assembly
+
+Kits shall be assembled without a DOM, so a server builds the same schema and plugin order as the browser and reads and writes the same documents.
+
+Implementation: `src/components/rich-text-editor/rich-text-extension.ts`
+Verification: `src/components/rich-text-editor/rich-text-extension.test.tsx`
+
 ## Hooks
 
 | Hook                                 | Kind      | Values                                                | Description                                                                     |

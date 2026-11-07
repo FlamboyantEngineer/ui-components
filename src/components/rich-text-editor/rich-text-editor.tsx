@@ -13,7 +13,7 @@ import {
   toRichTextJson,
 } from './editor-state.js';
 import { EditorSurface, useSyncedEditorState, withEditorHistory } from './editor-surface.js';
-import { getEngineSchema } from './engine-schema.js';
+import { getRichTextKit } from './engine-schema.js';
 import { richTextEditorHooks as hooks } from './rich-text-context.js';
 import { isRichTextEqual, type RichTextDocument } from './rich-text-document.js';
 import { getDefaultRichTextSchema, type RichTextSchema } from './rich-text-schema.js';
@@ -64,7 +64,8 @@ function DocumentFormValue({
  */
 export function RichTextEditor(props: RichTextEditorProps) {
   const schema = props.schema ?? getDefaultRichTextSchema();
-  const engine = getEngineSchema(schema);
+  const kit = getRichTextKit(schema);
+  const engine = kit.schema;
   const empty = useMemo(() => createEmptyDocument(engine), [engine]);
   const fieldControl = useFieldControl<RichTextDocument, RichTextEditorProps>(props, {
     initialValue: empty,
@@ -74,7 +75,7 @@ export function RichTextEditor(props: RichTextEditorProps) {
     hasOwnHistory: true,
   });
   const { field, rest } = fieldControl;
-  const plugins = useMemo(() => createEditorPlugins(engine), [engine]);
+  const plugins = useMemo(() => createEditorPlugins(kit, undefined), [kit]);
   // A new value is one undo step of the shown history; the documents share unchanged nodes.
   const editor = useSyncedEditorState({
     schema: engine,
@@ -117,6 +118,7 @@ export function RichTextEditor(props: RichTextEditorProps) {
 }
 
 export type { RichTextBlockMarker } from './block-markers.js';
+export { getRichTextKit } from './engine-schema.js';
 export type { RichTextCommand } from './rich-text-command.js';
 export type { RichTextController } from './rich-text-controller.js';
 export { useRichTextController } from './rich-text-controller.js';
@@ -129,6 +131,14 @@ export type {
 } from './rich-text-document.js';
 export type { RichTextExportOptions } from './rich-text-export.js';
 export { serializeRichTextHtml, serializeRichTextText } from './rich-text-export.js';
+export type { RichTextKit } from './rich-text-extension.js';
+export type {
+  RichTextExtension,
+  RichTextExtensionMark,
+  RichTextExtensionNode,
+  RichTextPluginContribution,
+} from './rich-text-extension.js';
+export { createRichTextKit } from './rich-text-extension.js';
 export type {
   RichTextAttributeSpec,
   RichTextDomAttributes,

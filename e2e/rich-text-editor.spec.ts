@@ -671,6 +671,27 @@ test.describe('Rich Text Editor lab', () => {
     );
   });
 
+  test('UIC-RICH-TEXT-EDITOR-13.4 UIC-RICH-TEXT-EDITOR-13.5 edits with a block, view and plugins from an extension', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('rich-text-editor');
+    const box = content(page, 'extension');
+    await expect(box).toHaveAttribute('data-lab-extended', 'tip');
+    await expect(box.getByRole('complementary', { name: 'Tip' })).toHaveText(
+      'Ripen them in a bag.',
+    );
+    await box.locator('p').first().click();
+    await pressEnd(page);
+    await page.keyboard.press('Enter');
+    await page.keyboard.type('!! ');
+    await expect(box.getByRole('complementary', { name: 'Tip' })).toHaveCount(2);
+    await page.keyboard.type('Store them cool');
+    await expect(output(page, 'extension-html')).toContainText(
+      '<aside data-tip="true"><p>Store them cool</p></aside>',
+    );
+  });
+
   test('UIC-RICH-TEXT-EDITOR-4.2 replaces the document when the value changes from outside', async ({
     page,
     lab,
