@@ -86,6 +86,27 @@
   white-space: pre-wrap;
 }
 
+/* The same rules on a document rendered by `RichTextEngineContent`. */
+.ui-rich-text-engine-content {
+  position: relative;
+  outline: none;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+  white-space: break-spaces;
+  font-variant-ligatures: none;
+  font-feature-settings: 'liga' 0;
+  line-height: 1.55;
+  font-size: var(--ref-font-size);
+}
+
+.ui-rich-text-engine-content.ProseMirror-hideselection *::selection {
+  background: transparent;
+}
+
+.ui-rich-text-engine-content.ProseMirror-hideselection {
+  caret-color: transparent;
+}
+
 .ui-rich-text-editor__content li {
   position: relative;
 }

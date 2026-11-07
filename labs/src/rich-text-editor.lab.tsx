@@ -21,6 +21,7 @@ import {
   shortNote,
   taskNote,
 } from './rich-text-editor-cases.js';
+import { EngineHostEditor } from './rich-text-editor-engine-cases.js';
 import { ExtensionEditor } from './rich-text-editor-extension-cases.js';
 import { RichTextFieldSections } from './rich-text-editor-field-cases.js';
 
@@ -124,6 +125,12 @@ mountLab(
       description="A tip block contributed by an extension, with its own view. Start a line with two exclamation marks and a space to wrap it in a tip."
     >
       <ExtensionEditor />
+    </LabSection>
+    <LabSection
+      title="Engine host"
+      description="The engine every editor shares, with chrome of the caller's own. Its dispatch body drops any edit that would make the note longer than 40 characters."
+    >
+      <EngineHostEditor />
     </LabSection>
     <LabSection title="Controlled value">
       <ControlledEditor />

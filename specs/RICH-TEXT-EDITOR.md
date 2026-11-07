@@ -351,6 +351,50 @@ Kits shall be assembled without a DOM, so a server builds the same schema and pl
 Implementation: `src/components/rich-text-editor/rich-text-extension.ts`
 Verification: `src/components/rich-text-editor/rich-text-extension.test.tsx`
 
+## UIC-RICH-TEXT-EDITOR-14 - Engines
+
+### UIC-RICH-TEXT-EDITOR-14.1 - Gated transactions
+
+Every engine, rendered or headless, shall pass each transaction to `onTransaction`, then to the caller's `dispatchTransaction(tr, view, commit)`, which commits it with `commit.applyDefault()` (the transaction applied, or an `override` transaction instead) or `commit.applyState(next)` (a state the body computed), or drops it by calling neither. Without a body, every transaction commits. `onSelectionChange` reports a selection a committed transaction moved.
+
+Implementation: `src/components/rich-text-editor/rich-text-engine.ts`, `src/components/rich-text-editor/headless-engine.ts`, `src/components/rich-text-editor/rich-text-engine-view.tsx`
+Verification: `src/components/rich-text-editor/headless-engine.test.ts`, `src/components/rich-text-editor/rich-text-engine-view.test.tsx`
+
+### UIC-RICH-TEXT-EDITOR-14.2 - Headless commits
+
+`createRichTextHeadlessEngine(options)` shall run an engine with no rendered document and return a `RichTextEngineHandle` (`view`, `getView`, `replaceState`, `destroy`, `whenDestroyed`). A commit lands at once: `view.state` is the new state and every plugin view has updated before `applyState` returns. `afterCommit` fires for every commit, and `onUpdated(view, previous)` only for a transaction's, both once the outermost dispatch body has returned, one pair per commit in commit order, including the commits a plugin view makes while it updates. `replaceState` and `view.updateState` commit without `onUpdated`; `replaceState` settles once committed and rejects once the engine is destroyed, which ignores later dispatches.
+
+Implementation: `src/components/rich-text-editor/headless-engine.ts`
+Verification: `src/components/rich-text-editor/headless-engine.test.ts`
+
+### UIC-RICH-TEXT-EDITOR-14.3 - Headless plugin views
+
+The headless engine shall create the state's plugin views in plugin order when it starts, update them for each commit, create them afresh when a commit brings another plugin set, and destroy them last to first on `destroy`, then fire `onUnmounted` and settle `whenDestroyed`. A plugin view may dispatch while the views are created, as a collaboration binding does on its first synchronization: the commit updates the views created so far, the remaining views see its state, and its notifications follow `onMounted`.
+
+Implementation: `src/components/rich-text-editor/headless-engine.ts`
+Verification: `src/components/rich-text-editor/headless-engine.test.ts`
+
+### UIC-RICH-TEXT-EDITOR-14.4 - Headless view members
+
+The headless view shall answer `endOfTextblock` from the selection (up and down as backward and forward), find `someProp` values in its `props` before its plugins' and merge `setProps`, never hold focus or edit, and stand in for its element with an object whose listeners, classes and queries do nothing. Members that need a rendered document (`coordsAtPos`, `posAtCoords`, `domAtPos`, `nodeDOM` and the others) shall throw an error that `isRichTextHeadlessDomError` recognises and that names the member. The engine reads no DOM, so a server runs it too, and `isRichTextHeadlessView` tells its view from a rendered one.
+
+Implementation: `src/components/rich-text-editor/headless-engine.ts`, `src/components/rich-text-editor/headless-view.ts`
+Verification: `src/components/rich-text-editor/headless-engine.test.ts`
+
+### UIC-RICH-TEXT-EDITOR-14.5 - Rendered engine
+
+`RichTextEngineHost` shall render the caller's `state` with the caller's React node and mark views and decorations, and commit through `onStateChange`, which takes a state or an update of the current one as a React state setter does. `RichTextEngineContent`, inside it, renders the document element (`ui-rich-text-engine-content`, also ProseMirror's `ProseMirror` class) with the caller's role, label, class, id and `data-*` attributes. Notifications fire once React shows a new state: `afterCommit` for each, `onMounted` for the first, `onSelectionChange` and `onUpdated` only for states a transaction committed, and `onUnmounted` when the host unmounts. `RichTextEditor` renders its document through the host.
+
+Implementation: `src/components/rich-text-editor/rich-text-engine-view.tsx`, `src/components/rich-text-editor/editor-surface.tsx`
+Verification: `src/components/rich-text-editor/rich-text-engine-view.test.tsx`, `e2e/rich-text-editor.spec.ts`
+
+### UIC-RICH-TEXT-EDITOR-14.6 - Moving a state between engines
+
+The rendered host shall add the `reactKeys` plugin its view needs to a state that lacks it, the same keyed copy each render, and `withoutReactKeys(state)` shall take it out for a headless engine, keeping every other plugin's instance and state, so one state moves between a rendered and a headless engine and back.
+
+Implementation: `src/components/rich-text-editor/rich-text-engine-view.tsx`, `src/components/rich-text-editor/headless-engine.ts`
+Verification: `src/components/rich-text-editor/rich-text-engine-view.test.tsx`
+
 ## Hooks
 
 | Hook                                 | Kind      | Values                                                | Description                                                                     |
@@ -368,6 +412,7 @@ Verification: `src/components/rich-text-editor/rich-text-extension.test.tsx`
 | `ui-rich-text-editor__task-item`     | slot      |                                                       | A task list item in the default task-item view.                                 |
 | `ui-rich-text-editor__task-checkbox` | slot      |                                                       | The default task-item view's checkbox holder, alongside a `ui-checkbox`.        |
 | `ui-rich-text-editor__task-content`  | slot      |                                                       | The default task-item view's content.                                           |
+| `ui-rich-text-engine-content`        | root      |                                                       | `RichTextEngineContent`'s document, also ProseMirror's `ProseMirror` class.     |
 | `ui-format-toolbar`                  | root      |                                                       | `FormatToolbar`'s row, alongside `ui-toolbar-row`.                              |
 | `ui-format-toolbar__block-type`      | slot      |                                                       | The block type select, alongside `ui-select-field`.                             |
 | `ui-format-toolbar__block-preview`   | slot      |                                                       | A block type option's name drawn as a preview, with `data-block`.               |

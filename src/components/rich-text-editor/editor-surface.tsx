@@ -1,10 +1,10 @@
 'use client';
 
-import { ProseMirror, ProseMirrorDoc } from '@handlewithcare/react-prosemirror';
+import { ProseMirrorDoc } from '@handlewithcare/react-prosemirror';
 import { redo, redoDepth, undo, undoDepth } from 'prosemirror-history';
 import type { Node, Schema } from 'prosemirror-model';
 import type { EditorState, Transaction } from 'prosemirror-state';
-import { DecorationSet } from 'prosemirror-view';
+import { DecorationSet, type EditorView } from 'prosemirror-view';
 import { type ReactNode, useCallback, useId, useMemo, useRef, useState } from 'react';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { useLatest } from '../../utils/use-latest.js';
@@ -23,13 +23,19 @@ import {
   richTextEditorHooks as hooks,
 } from './rich-text-context.js';
 import type { RichTextDocument } from './rich-text-document.js';
+import type { RichTextEngineCommit } from './rich-text-engine.js';
+import { RichTextEngineHost, type RichTextStateUpdate } from './rich-text-engine-view.js';
 import { SurfaceScrollbars } from './surface-scrollbars.js';
 import { TaskItemView } from './task-item-view.js';
 
-/** The engine state behind an editor and the function that applies its transactions. */
+/** The engine state behind an editor and the functions that apply its transactions. */
 interface SyncedEditor {
   state: EditorState;
   dispatchTransaction: (tr: Transaction) => void;
+  /** Commits a state or an update, as the engine's `onStateChange`. */
+  setState: (update: RichTextStateUpdate) => void;
+  /** The engine's dispatch body: commits the transaction and reports the new value. */
+  commitTransaction: (tr: Transaction, view: EditorView, commit: RichTextEngineCommit) => void;
 }
 
 interface EditorSurfaceProps {
@@ -124,9 +130,8 @@ export function useSyncedEditorState<T>(options: SyncedEditorOptions<T>): Synced
     }
   }
   const latest = useLatest(options);
-  const dispatchTransaction = useCallback(
+  const report = useCallback(
     (tr: Transaction) => {
-      setState((current: EditorState) => current.apply(tr));
       if (!tr.docChanged) return;
       const next = latest.current.serialize(tr.doc);
       setShown(next);
@@ -134,7 +139,21 @@ export function useSyncedEditorState<T>(options: SyncedEditorOptions<T>): Synced
     },
     [latest],
   );
-  return { state, dispatchTransaction };
+  const dispatchTransaction = useCallback(
+    (tr: Transaction) => {
+      setState((current: EditorState) => current.apply(tr));
+      report(tr);
+    },
+    [report],
+  );
+  const commitTransaction = useCallback(
+    (tr: Transaction, _view: EditorView, commit: RichTextEngineCommit) => {
+      commit.applyDefault();
+      report(tr);
+    },
+    [report],
+  );
+  return { state, dispatchTransaction, setState, commitTransaction };
 }
 
 /** The `editable` prop of an editor, which keeps its identity while `isEditable` does. */
@@ -182,7 +201,7 @@ function useDecorations(
 export function EditorSurface(props: EditorSurfaceProps) {
   const { control, placeholder } = props;
   const { ref: contentRef, ...content } = control;
-  const { state, dispatchTransaction } = props.editor;
+  const { state, setState, commitTransaction } = props.editor;
   const surfaceRef = useRef<HTMLDivElement>(null);
   const [contentAttributes, setContentAttributes] = useState<ContentAttributes>({});
   const [gutterHolders, setGutterHolders] = useState<readonly GutterControls[]>([]);
@@ -205,15 +224,17 @@ export function EditorSurface(props: EditorSurfaceProps) {
   const placed = useMemo(() => placeMarkers(state.doc, markers), [state.doc, markers]);
   const decorations = useDecorations(placeholder, markers);
   const surfaceId = useId();
+  const viewProps = useMemo(() => ({ editable, handleDOMEvents: domSelectionEvents }), [editable]);
+  const views = getViewComponents(state.schema);
   return (
-    <ProseMirror
+    <RichTextEngineHost
       state={state}
-      dispatchTransaction={dispatchTransaction}
-      editable={editable}
+      onStateChange={setState}
+      dispatchTransaction={commitTransaction}
+      props={viewProps}
       decorations={decorations}
-      nodeViewComponents={getViewComponents(state.schema).nodes}
-      markViewComponents={getViewComponents(state.schema).marks}
-      handleDOMEvents={domSelectionEvents}
+      nodeViews={views.nodes}
+      markViews={views.marks}
     >
       <RichTextEditorContext value={context}>
         <div {...hooks.slot('frame')}>
@@ -254,6 +275,6 @@ export function EditorSurface(props: EditorSurfaceProps) {
           </div>
         </div>
       </RichTextEditorContext>
-    </ProseMirror>
+    </RichTextEngineHost>
   );
 }
