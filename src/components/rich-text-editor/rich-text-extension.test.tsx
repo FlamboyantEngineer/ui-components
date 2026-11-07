@@ -80,6 +80,29 @@ describe('createRichTextKit', () => {
     expect(kit.markViews).toEqual({ link: View });
   });
 
+  it('UIC-RICH-TEXT-EDITOR-13.2 refines every placed type with each extension in turn', () => {
+    const ids: RichTextExtension = {
+      name: 'ids',
+      refineNode: (name, spec) =>
+        name === 'text' ? spec : { ...spec, attrs: { ...spec.attrs, id: { default: null } } },
+      refineMark: (_name, spec) => ({ ...spec, inclusive: false }),
+    };
+    const levels: RichTextExtension = {
+      name: 'levels',
+      refineNode: (name, spec) =>
+        name === 'paragraph' ? { ...spec, attrs: { ...spec.attrs, level: { default: 1 } } } : spec,
+    };
+    const marks: RichTextExtension = {
+      name: 'marks',
+      marks: [{ name: 'em', spec: {}, order: 0 }],
+    };
+    const kit = createRichTextKit([top, ids, paragraphs(50), levels, marks]);
+    expect(Object.keys(kit.schema.nodes.paragraph?.spec.attrs ?? {})).toEqual(['id', 'level']);
+    expect(Object.keys(kit.schema.nodes.doc?.spec.attrs ?? {})).toEqual(['id']);
+    expect(kit.schema.nodes.text?.spec.attrs).toBeUndefined();
+    expect(kit.schema.marks.em?.spec.inclusive).toBe(false);
+  });
+
   it('UIC-RICH-TEXT-EDITOR-13.3 throws on duplicate names and missing requirements', () => {
     expect(() => createRichTextKit([top, top])).toThrow('The extension "top" is registered twice.');
     expect(() => createRichTextKit([top, { name: 'needs', requires: ['tables'] }])).toThrow(

@@ -311,14 +311,14 @@ Verification: `src/components/rich-text-editor/block-markers.test.ts`, `src/comp
 
 ### UIC-RICH-TEXT-EDITOR-13.1 - Extension contributions
 
-A `RichTextExtension` shall name one feature of an editor and contribute any of: node types and mark types (`RichTextExtensionNode`, `RichTextExtensionMark`: a name, a ProseMirror spec and an `order`), engine plugin contributions (`RichTextPluginContribution`: a name, a `priority`, a `build(context, schema)` that returns plugins and an optional `when(context)` gate), node views and mark views by type name, and the names of the extensions it `requires`. Extensions are the shared core of every rich-text editor: the editor in this library and editors built on it assemble their features the same way, whoever registers them.
+A `RichTextExtension` shall name one feature of an editor and contribute any of: node types and mark types (`RichTextExtensionNode`, `RichTextExtensionMark`: a name, a ProseMirror spec and an `order`), engine plugin contributions (`RichTextPluginContribution`: a name, a `priority`, a `build(context, schema)` that returns plugins and an optional `when(context)` gate), node views and mark views by type name, refinements that change every node or mark type's spec (`refineNode(name, spec)`, `refineMark(name, spec)`), and the names of the extensions it `requires`. Extensions are the shared core of every rich-text editor: the editor in this library and editors built on it assemble their features the same way, whoever registers them.
 
 Implementation: `src/components/rich-text-editor/rich-text-extension.ts`
 Verification: `src/components/rich-text-editor/rich-text-extension.test.tsx`
 
 ### UIC-RICH-TEXT-EDITOR-13.2 - Kit assembly and order
 
-`createRichTextKit(extensions)` shall return a `RichTextKit` whose `schema` holds every contributed node and mark type ordered by `order`, ties in registration order; the first node type is the top node. `buildPlugins(context)` shall return the plugins of every contribution whose `when` admits the context, ordered by `priority` with ties in registration order, and `pluginOrder` lists the contribution names in that order. `nodeViews` and `markViews` merge the views of every extension. The order in which extensions are passed only breaks ties.
+`createRichTextKit(extensions)` shall return a `RichTextKit` whose `schema` holds every contributed node and mark type ordered by `order`, ties in registration order; the first node type is the top node. `buildPlugins(context)` shall return the plugins of every contribution whose `when` admits the context, ordered by `priority` with ties in registration order, and `pluginOrder` lists the contribution names in that order. Each type's spec passes through every extension's refinement in registration order, whichever extension contributed the type, so one extension can give every node an attribute. `nodeViews` and `markViews` merge the views of every extension. The order in which extensions are passed only breaks ties.
 
 Implementation: `src/components/rich-text-editor/rich-text-extension.ts`
 Verification: `src/components/rich-text-editor/rich-text-extension.test.tsx`

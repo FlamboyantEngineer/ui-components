@@ -51,6 +51,13 @@ export interface RichTextExtension<C = unknown> {
   nodeViews?: Readonly<Record<string, unknown>> | undefined;
   /** Views by mark type name. */
   markViews?: Readonly<Record<string, unknown>> | undefined;
+  /**
+   * Changes every node type's spec once all are placed, whichever extension contributed it, such
+   * as an attribute every node carries. Runs in registration order, after earlier extensions'.
+   */
+  refineNode?: ((name: string, spec: NodeSpec) => NodeSpec) | undefined;
+  /** Changes every mark type's spec once all are placed, as `refineNode` does for nodes. */
+  refineMark?: ((name: string, spec: MarkSpec) => MarkSpec) | undefined;
 }
 
 /** The assembled extensions: one schema, and the plugins and views of each editor built on it. */
@@ -132,6 +139,16 @@ function collectViews<C>(
   return Object.fromEntries(entries.map(({ item }) => item));
 }
 
+/** The specs by name in their placed order, each passed through every extension's refinement. */
+function refineSpecs<S>(
+  placed: Placed<{ name: string; spec: S }>[],
+  refiners: readonly (((name: string, spec: S) => S) | undefined)[],
+): Record<string, S> {
+  const refine = (name: string, spec: S) =>
+    refiners.reduce((current, refiner) => (refiner ? refiner(name, current) : current), spec);
+  return Object.fromEntries(placed.map(({ item }) => [item.name, refine(item.name, item.spec)]));
+}
+
 function buildSchema<C>(extensions: readonly RichTextExtension<C>[]): Schema {
   const nodes = placeInOrder(
     collect(extensions, (extension) => extension.nodes),
@@ -144,8 +161,14 @@ function buildSchema<C>(extensions: readonly RichTextExtension<C>[]): Schema {
   assertUniqueNames(nodes, 'node type');
   assertUniqueNames(marks, 'mark type');
   return new Schema({
-    nodes: Object.fromEntries(nodes.map(({ item }) => [item.name, item.spec])),
-    marks: Object.fromEntries(marks.map(({ item }) => [item.name, item.spec])),
+    nodes: refineSpecs(
+      nodes,
+      extensions.map((extension) => extension.refineNode),
+    ),
+    marks: refineSpecs(
+      marks,
+      extensions.map((extension) => extension.refineMark),
+    ),
   });
 }
 
