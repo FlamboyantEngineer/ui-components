@@ -39,6 +39,8 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   boxSide: ['top'],
   logicalBoxSide: ['inline-start'],
   seriesSummary: [{ low: '2', high: '9', last: '7' }],
+  chartCoordinates: [{ xLabel: 'Rain (mm)', x: '12', yLabel: 'Yield (t)', y: '3.4' }],
+  heatmapSummary: [{ days: 30, values: 24, low: '0', high: '9' }],
   invalidJsonAt: [3, 5],
   jsonTypeMismatch: [['string', 'null']],
   jsonValueMismatch: [['"starter"', '"main"']],
