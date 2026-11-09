@@ -2,7 +2,8 @@
  * The script that runs first in every mini-app frame. It defines `window.miniApp` and talks to the
  * host only through the `MessagePort` the host transfers once the frame has loaded; messages sent
  * before then wait in a queue. It reports uncaught errors and rejections to the host instead of the
- * console, posts the document's height whenever it changes, and posts `ready` on the `load` event.
+ * console, posts the document's height whenever it changes, posts `ready` on the `load` event, and
+ * posts `focus` with whether its focused element shows a focus ring as focus enters, moves and leaves.
  * The document does not scroll vertically until the host says its frame is capped (`scroll`).
  * `__STATE__` is replaced with the initial state's JSON.
  */
@@ -23,6 +24,16 @@ export const miniAppBridge = `(() => {
     event.preventDefault();
     send({ type: 'error', message: describe(event.reason) });
   });
+  let focusVisible = false;
+  const reportFocus = () => {
+    const active = document.hasFocus() ? document.activeElement : null;
+    const visible = !!active && active !== document.body && active.matches(':focus-visible');
+    if (visible === focusVisible) return;
+    focusVisible = visible;
+    send({ type: 'focus', visible });
+  };
+  addEventListener('focusin', reportFocus);
+  addEventListener('blur', reportFocus);
   addEventListener('message', (event) => {
     const data = event.data;
     if (port || event.source !== parent || !data || data.type !== 'ui-mini-app:connect') return;
