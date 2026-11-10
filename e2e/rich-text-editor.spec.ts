@@ -671,6 +671,44 @@ test.describe('Rich Text Editor lab', () => {
     );
   });
 
+  test('UIC-RICH-TEXT-EDITOR-13.4 UIC-RICH-TEXT-EDITOR-13.5 edits with a block, view and plugins from an extension', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('rich-text-editor');
+    const box = content(page, 'extension');
+    await expect(box).toHaveAttribute('data-lab-extended', 'tip');
+    await expect(box.getByRole('complementary', { name: 'Tip' })).toHaveText(
+      'Ripen them in a bag.',
+    );
+    await box.locator('p').first().click();
+    await pressEnd(page);
+    await page.keyboard.press('Enter');
+    await page.keyboard.type('!! ');
+    await expect(box.getByRole('complementary', { name: 'Tip' })).toHaveCount(2);
+    await page.keyboard.type('Store them cool');
+    await expect(output(page, 'extension-html')).toContainText(
+      '<aside data-tip="true"><p>Store them cool</p></aside>',
+    );
+  });
+
+  test('UIC-RICH-TEXT-EDITOR-14.1 UIC-RICH-TEXT-EDITOR-14.5 gates edits in an engine host', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('rich-text-editor');
+    const note = page.getByRole('textbox', { name: 'Short note' });
+    await expect(note).toHaveClass(/ui-rich-text-engine-content/);
+    await note.click();
+    await pressEnd(page);
+    await page.keyboard.type(' Store cool.');
+    await expect(note).toHaveText('Pears ripen off the tree. Store cool.');
+    await expect(output(page, 'engine-edits')).toHaveText('12');
+    await page.keyboard.type(' Then eat them.');
+    await expect(output(page, 'engine-length')).toHaveText('40');
+    await expect(note).toHaveText('Pears ripen off the tree. Store cool. Th');
+  });
+
   test('UIC-RICH-TEXT-EDITOR-4.2 replaces the document when the value changes from outside', async ({
     page,
     lab,

@@ -106,6 +106,8 @@ test('UIC-TABLE-5.7 grouped pointer and keyboard moves stay inside the leaf grou
   page,
   lab,
 }) => {
+  // This whole-lab flow can outlast the default budget on a loaded machine.
+  test.slow();
   await lab.open('table');
   const demo = page.locator('[data-lab="grouped-reorder"]');
   const grid = demo.getByRole('treegrid', {

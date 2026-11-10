@@ -10,14 +10,18 @@ test('UIC-TIME-ZONE-FIELD-1.1 UIC-TIME-ZONE-FIELD-1.2 orders zones by offset at 
   await expect(trigger).toContainText('Australia/Lord Howe');
   await trigger.click();
   const option = (name: RegExp) => page.getByRole('listbox').getByRole('option', { name });
+  // The list is virtualized and opens scrolled to the chosen zone, so a zone far from it is found
+  // by searching rather than expected among the rendered rows.
+  const search = page.getByRole('searchbox');
   await expect(option(/Lord Howe/)).toContainText('GMT+11:00');
+  await search.fill('new york');
   await expect(option(/New York/)).toContainText('GMT-05:00');
   await page.keyboard.press('Escape');
   await demo.getByRole('radio', { name: 'July' }).click();
   await trigger.click();
   await expect(option(/Lord Howe/)).toContainText('GMT+10:30');
+  await search.fill('new york');
   await expect(option(/New York/)).toContainText('GMT-04:00');
-  const search = page.getByRole('searchbox');
   await search.fill('india');
   await expect(page.getByRole('listbox').getByRole('option')).toHaveCount(1);
   await search.fill('+05:45');

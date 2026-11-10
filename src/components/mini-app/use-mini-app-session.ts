@@ -39,6 +39,7 @@ type FrameMessage =
   | { type: 'resize'; height: number }
   | { type: 'state'; value: MiniAppState }
   | { type: 'error'; message: string }
+  | { type: 'focus'; visible: boolean }
   | { type: 'call'; id: number; name: string; args: unknown };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -59,6 +60,10 @@ function readFrameMessage(data: unknown): FrameMessage | undefined {
     case 'error':
       return typeof data.message === 'string'
         ? { type: 'error', message: data.message }
+        : undefined;
+    case 'focus':
+      return typeof data.visible === 'boolean'
+        ? { type: 'focus', visible: data.visible }
         : undefined;
     case 'call':
       return typeof data.id === 'number' && typeof data.name === 'string'
@@ -148,16 +153,28 @@ function useFrameScrollCap({ frameRef, portRef, contentHeightRef, height }: Fram
   }, [frameRef, portRef, contentHeightRef, height]);
 }
 
+/** Closes the frame's channel when the session unmounts. */
+function useClosePortOnUnmount(portRef: RefObject<MessagePort | null>) {
+  useEffect(
+    () => () => {
+      portRef.current?.close();
+      portRef.current = null;
+    },
+    [portRef],
+  );
+}
+
 /**
  * The lifecycle of one mini-app frame: it connects to the frame on its first `load`, settles
- * `loading` into `ready` or `error`, follows the height the frame reports, answers capability calls
- * and closes the channel on unmount.
+ * `loading` into `ready` or `error`, follows the height and keyboard focus the frame reports, answers
+ * capability calls and closes the channel on unmount.
  */
 export function useMiniAppSession(options: MiniAppSessionOptions) {
   const latest = useLatest(options);
   const [status, setStatus] = useState<MiniAppStatus>('loading');
   const [error, setError] = useState<MiniAppError>();
   const [height, setHeight] = useState<number>();
+  const [focusVisible, setFocusVisible] = useState(false);
   const statusRef = useRef<MiniAppStatus>('loading');
   const portRef = useRef<MessagePort>(null);
   const hasLoadedRef = useRef(false);
@@ -192,6 +209,9 @@ export function useMiniAppSession(options: MiniAppSessionOptions) {
       case 'error':
         if (statusRef.current === 'loading') fail({ kind: 'script', message: message.message });
         else latest.current.onError?.({ kind: 'script', message: message.message });
+        return;
+      case 'focus':
+        setFocusVisible(message.visible);
         return;
       case 'call':
         void answerCall(port, message, latest.current.capabilities);
@@ -232,13 +252,7 @@ export function useMiniAppSession(options: MiniAppSessionOptions) {
 
   useFrameScrollCap({ frameRef, portRef, contentHeightRef, height });
 
-  useEffect(
-    () => () => {
-      portRef.current?.close();
-      portRef.current = null;
-    },
-    [],
-  );
+  useClosePortOnUnmount(portRef);
 
-  return { status, error, height, onLoad };
+  return { status, error, height, focusVisible, onLoad };
 }

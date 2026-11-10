@@ -89,10 +89,10 @@ Verification: `src/components/mini-app/mini-app.test.tsx`, `e2e/mini-app.spec.ts
 
 ### UIC-MINI-APP-4.2 - Focus and keyboard
 
-The frame shall be named by `title` and take part in the page's tab order: Tab moves into the mini-app's own controls in their order and out again after the last, and keys pressed inside go to the mini-app, not to the host's shortcuts. The status slot is a `status` live region, so assistive technology hears when a mini-app starts loading or fails.
+The frame shall be named by `title` and take part in the page's tab order: Tab moves into the mini-app's own controls in their order and out again after the last, and keys pressed inside go to the mini-app, not to the host's shortcuts. While the frame's focused element shows a focus ring (`:focus-visible` inside the frame), the bridge reports it and the frame publishes `data-focus-visible`, so the host draws a ring around the frame even where the browser does not match `:focus-visible` on a frame whose document holds the focus. The status slot is a `status` live region, so assistive technology hears when a mini-app starts loading or fails.
 
-Implementation: `src/components/mini-app/mini-app.tsx`
-Verification: `src/components/mini-app/mini-app.test.tsx`, `e2e/mini-app.spec.ts`
+Implementation: `src/components/mini-app/mini-app.tsx`, `src/components/mini-app/mini-app-bridge.ts`, `src/components/mini-app/use-mini-app-session.ts`
+Verification: `src/components/mini-app/mini-app.test.tsx`, `e2e/mini-app.spec.ts`, `e2e/forced-colors.spec.ts`
 
 ### UIC-MINI-APP-4.3 - Hooks and caller attributes
 
@@ -110,3 +110,4 @@ Verification: `src/components/mini-app/mini-app.test.tsx`
 | `ui-mini-app__status` | slot      |                                   | The live region saying it is loading or has failed.       |
 | `data-status`         | attribute | `loading`, `ready`, `error`       | Where the mini-app stands.                                |
 | `data-error`          | state     | `script`, `timeout`, `navigation` | Why the mini-app failed.                                  |
+| `data-focus-visible`  | state     | `true`                            | On the frame, while keyboard focus is inside it.          |

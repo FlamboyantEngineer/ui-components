@@ -1,7 +1,9 @@
-import { type MarkSpec, type NodeSpec, type ParseRule, Schema } from 'prosemirror-model';
+import type { MarkSpec, NodeSpec, ParseRule } from 'prosemirror-model';
 import { defaultMarks, defaultNodes } from './default-schema.js';
-import { registerEngineSchema } from './engine-schema.js';
+import { registerEngineKit } from './engine-schema.js';
 import type { RichTextAttributes, RichTextAttributeValue } from './rich-text-document.js';
+import { createRichTextKit, type RichTextExtension } from './rich-text-extension.js';
+import { createEditingPlugins } from './rich-text-keys.js';
 
 /** The element attributes of a rendered node or mark; `null` and `undefined` leave one out. */
 export interface RichTextDomAttributes {
@@ -76,6 +78,11 @@ export interface RichTextMarkSpec extends RichTextTypeSpec {
 export interface RichTextSchemaOptions {
   nodes?: Readonly<Record<string, RichTextNodeSpec | null>> | undefined;
   marks?: Readonly<Record<string, RichTextMarkSpec | null>> | undefined;
+  /**
+   * Extensions assembled beside the built-in `base` (the default types with the changes above)
+   * and `editing` (history, input rules and shortcuts) extensions.
+   */
+  extensions?: readonly RichTextExtension[] | undefined;
 }
 
 /** The node and mark types a document may hold. Create one with `createRichTextSchema`. */
@@ -119,21 +126,61 @@ function mergeSpecs<S, T>(
   return merged;
 }
 
+/** The spacing between built-in type orders, leaving room for extensions to place types between. */
+const ORDER_STEP = 10;
+
+/** The plugin priorities of the built-in editing extension. */
+export const EDITING_PLUGIN_PRIORITY = 500;
+
+/** The default node and mark types, with the caller's changes, as the built-in `base` extension. */
+function createBaseExtension(options: RichTextSchemaOptions): RichTextExtension {
+  const nodes = mergeSpecs(defaultNodes, options.nodes, (spec) => toEngineSpec(spec) as NodeSpec);
+  const marks = mergeSpecs(defaultMarks, options.marks, (spec) => toEngineSpec(spec) as MarkSpec);
+  return {
+    name: 'base',
+    nodes: Object.entries(nodes).map(([name, spec], index) => ({
+      name,
+      spec,
+      order: index * ORDER_STEP,
+    })),
+    marks: Object.entries(marks).map(([name, spec], index) => ({
+      name,
+      spec,
+      order: index * ORDER_STEP,
+    })),
+  };
+}
+
+/** History, Markdown-style input rules and keyboard shortcuts for the schema's types. */
+const editingExtension: RichTextExtension = {
+  name: 'editing',
+  requires: ['base'],
+  plugins: [
+    {
+      name: 'editing',
+      priority: EDITING_PLUGIN_PRIORITY,
+      build: (_context, schema) => createEditingPlugins(schema),
+    },
+  ],
+};
+
 /**
  * Creates the schema of a rich-text document: the default node types (paragraph, headings 1 to
  * 3, quote, code block, divider, bullet, numbered and task lists, hard break) and marks (link,
- * bold, italic, underline, strike, code), with the caller's changes. Create it once, outside render.
+ * bold, italic, underline, strike, code), with the caller's changes and extensions. Create it
+ * once, outside render.
  */
 export function createRichTextSchema(options: RichTextSchemaOptions = {}): RichTextSchema {
-  const engine = new Schema({
-    nodes: mergeSpecs(defaultNodes, options.nodes, (spec) => toEngineSpec(spec) as NodeSpec),
-    marks: mergeSpecs(defaultMarks, options.marks, (spec) => toEngineSpec(spec) as MarkSpec),
-  });
+  const kit = createRichTextKit([
+    createBaseExtension(options),
+    editingExtension,
+    ...(options.extensions ?? []),
+  ]);
   const schema: RichTextSchema = {
-    nodes: Object.keys(engine.nodes),
-    marks: Object.keys(engine.marks),
+    nodes: Object.keys(kit.schema.nodes),
+    marks: Object.keys(kit.schema.marks),
   };
-  return registerEngineSchema(schema, engine);
+  return registerEngineKit(schema, kit);
 }
 
 let defaultSchema: RichTextSchema | undefined;

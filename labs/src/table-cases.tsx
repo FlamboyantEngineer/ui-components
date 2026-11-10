@@ -590,10 +590,11 @@ export function LoadingMore() {
     if (isLoading || count >= allItems.length) return;
     setLoading(true);
     clearTimeout(timer.current);
+    // A second is long enough for a test polling on a busy machine to see the loading row.
     timer.current = setTimeout(() => {
       setCount((value) => value + loadPageSize);
       setLoading(false);
-    }, 200);
+    }, 1000);
   };
   return (
     <div data-lab="load-more">
