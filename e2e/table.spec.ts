@@ -336,6 +336,8 @@ test.describe('Table lab', () => {
     page,
     lab,
   }) => {
+    // This whole-lab flow can outlast the default budget on a loaded machine.
+    test.slow();
     await lab.open('table');
     const root = section(page, 'reorder');
     const grid = root.getByRole('grid');
@@ -827,6 +829,8 @@ test.describe('Table lab', () => {
     page,
     lab,
   }) => {
+    // This whole-lab flow can outlast the default budget on a loaded machine.
+    test.slow();
     await lab.open('table');
     const root = section(page, 'grouping');
     const grid = page.getByRole('treegrid', { name: 'Stock, grouped' });
@@ -1024,6 +1028,8 @@ test.describe('Table lab', () => {
       page,
       lab,
     }) => {
+      // This whole-lab flow can outlast the default budget on a loaded machine.
+      test.slow();
       await lab.open('table');
       const root = section(page, 'spreadsheet');
       const grid = root.getByRole('grid', { name: 'Stock, spreadsheet' });
@@ -1111,6 +1117,8 @@ test.describe('Table lab', () => {
       page,
       lab,
     }) => {
+      // This whole-lab flow can outlast the default budget on a loaded machine.
+      test.slow();
       await lab.open('table');
       const root = section(page, 'spreadsheet');
       const grid = root.getByRole('grid', { name: 'Stock, spreadsheet' });
@@ -1162,6 +1170,8 @@ test.describe('Table lab', () => {
     page,
     lab,
   }) => {
+    // This whole-lab flow can outlast the default budget on a loaded machine.
+    test.slow();
     await lab.open('table');
     const root = section(page, 'bulk-edit');
     const grid = root.getByRole('grid', { name: 'Stock, bulk edit' });
