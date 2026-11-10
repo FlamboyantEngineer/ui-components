@@ -15,7 +15,7 @@ import {
   type RichTextMark,
   type RichTextNode,
 } from './rich-text-document.js';
-import { createEditingPlugins } from './rich-text-keys.js';
+import type { RichTextKit } from './rich-text-extension.js';
 
 /** The document of a new editor: the top node holding one empty default block. */
 export function createEmptyDocument(schema: Schema): RichTextDocument {
@@ -37,9 +37,12 @@ export function isDocumentBlank(node: RichTextNode, schema: Schema): boolean {
   return (node.content ?? []).every((child) => isDocumentBlank(child, schema));
 }
 
-/** The plugins every editor runs; `reactKeys` lets the React view keep node identities. */
-export function createEditorPlugins(schema: Schema): Plugin[] {
-  return [reactKeys(), ...createEditingPlugins(schema)];
+/**
+ * The plugins an editor runs: `reactKeys`, which lets the React view keep node identities, then
+ * the kit's plugins in priority order.
+ */
+export function createEditorPlugins<C>(kit: RichTextKit<C>, context: C): Plugin[] {
+  return [reactKeys(), ...kit.buildPlugins(context)];
 }
 
 /** The JSON of each engine node, built once: nodes are immutable and edits share unchanged ones. */

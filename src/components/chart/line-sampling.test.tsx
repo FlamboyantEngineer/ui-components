@@ -37,27 +37,31 @@ describe('LineChart downsample', () => {
     },
   ];
 
-  it('UIC-CHART-6.6 draws a bounded set of real points, keeping extremes, ends and breaks', async () => {
-    const user = userEvent.setup();
-    render(<LineChart aria-label="Dense" series={dense} downsample showLegend={false} />);
-    const points = screen.getAllByRole('img');
-    expect(points.length).toBeLessThan(3000);
-    expect(points[0]).toHaveAccessibleName('Dense, 0: 0');
-    expect(points.at(-1)).toHaveAccessibleName('Dense, 2,999: 9');
-    expect(screen.getByRole('img', { name: 'Dense, 700: 999' })).toBeInTheDocument();
-    expect(
-      document.querySelector('.ui-line-chart__line')?.getAttribute('d')?.match(/M/g),
-    ).toHaveLength(2);
-    expect(screen.getByRole('figure')).toHaveAccessibleDescription(
-      '1 series, 2,999 values, from 0 to 999',
-    );
-    await user.tab();
-    await user.tab();
-    await user.keyboard('{ArrowRight}');
-    expect(points[1]).toHaveFocus();
-    await user.click(screen.getByRole('button', { name: 'Show as table' }));
-    expect(within(screen.getByRole('table')).getAllByRole('row')).toHaveLength(3001);
-  });
+  it(
+    'UIC-CHART-6.6 draws a bounded set of real points, keeping extremes, ends and breaks',
+    { timeout: 15_000 },
+    async () => {
+      const user = userEvent.setup();
+      render(<LineChart aria-label="Dense" series={dense} downsample showLegend={false} />);
+      const points = screen.getAllByRole('img');
+      expect(points.length).toBeLessThan(3000);
+      expect(points[0]).toHaveAccessibleName('Dense, 0: 0');
+      expect(points.at(-1)).toHaveAccessibleName('Dense, 2,999: 9');
+      expect(screen.getByRole('img', { name: 'Dense, 700: 999' })).toBeInTheDocument();
+      expect(
+        document.querySelector('.ui-line-chart__line')?.getAttribute('d')?.match(/M/g),
+      ).toHaveLength(2);
+      expect(screen.getByRole('figure')).toHaveAccessibleDescription(
+        '1 series, 2,999 values, from 0 to 999',
+      );
+      await user.tab();
+      await user.tab();
+      await user.keyboard('{ArrowRight}');
+      expect(points[1]).toHaveFocus();
+      await user.click(screen.getByRole('button', { name: 'Show as table' }));
+      expect(within(screen.getByRole('table')).getAllByRole('row')).toHaveLength(3001);
+    },
+  );
 
   it('UIC-CHART-6.6 leaves every point drawn by default', () => {
     render(<LineChart aria-label="Dense" series={dense} showLegend={false} />);

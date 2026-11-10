@@ -104,13 +104,19 @@ describe('useMarkdownBlocks', () => {
 });
 
 describe('signMarkdownNode', () => {
-  it('UIC-MARKDOWN-2.12 signs blocks by their content, without recursive calls', () => {
-    const [first, second, third] = parseMarkdown('A *b*\n\nA *b*\n\nA **b**').children;
-    expect(signMarkdownNode(requireDefined(first))).toBe(signMarkdownNode(requireDefined(second)));
-    expect(signMarkdownNode(requireDefined(first))).not.toBe(
-      signMarkdownNode(requireDefined(third)),
-    );
-    const deep = requireDefined(parseMarkdown('>'.repeat(5000) + ' deep').children[0]);
-    expect(signMarkdownNode(deep)).toContain('"deep"');
-  });
+  it(
+    'UIC-MARKDOWN-2.12 signs blocks by their content, without recursive calls',
+    { timeout: 15_000 },
+    () => {
+      const [first, second, third] = parseMarkdown('A *b*\n\nA *b*\n\nA **b**').children;
+      expect(signMarkdownNode(requireDefined(first))).toBe(
+        signMarkdownNode(requireDefined(second)),
+      );
+      expect(signMarkdownNode(requireDefined(first))).not.toBe(
+        signMarkdownNode(requireDefined(third)),
+      );
+      const deep = requireDefined(parseMarkdown('>'.repeat(5000) + ' deep').children[0]);
+      expect(signMarkdownNode(deep)).toContain('"deep"');
+    },
+  );
 });

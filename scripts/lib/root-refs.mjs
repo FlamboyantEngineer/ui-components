@@ -27,6 +27,7 @@ export const ROOTLESS = new Map([
   ['ProjectionContent', 'projects its children into an outlet'],
   ['ProjectionOutlet', 'renders the projected content'],
   ['ProjectionProvider', 'a context provider'],
+  ['RichTextEngineHost', 'runs the engine for the document its children render'],
   ['ShortcutAppearanceContext', 'a context provider'],
   ['SubmenuTrigger', 'pairs its item child with a submenu'],
   ['TextMatch', 'renders text runs'],
