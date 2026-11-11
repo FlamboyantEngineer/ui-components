@@ -6,7 +6,11 @@ import { ReactionBar, type ReactionEntry } from '../../src/components/reaction-b
 import { Switch } from '../../src/components/switch/switch.js';
 import { LinkGlyph } from '../../src/core/glyphs.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
-import { BuiltInMentionThread, MentionThread } from './comment-thread-mentions.js';
+import {
+  BuiltInMentionThread,
+  MarkdownComments,
+  MentionThread,
+} from './comment-thread-mentions.js';
 import { CommentThreadZoneCases } from './comment-thread-zone-cases.js';
 import { samplePicture } from './people-samples.js';
 
@@ -325,6 +329,12 @@ mountLab(
       description="With mentions, the default composer and editor take @: pick a person and they go into the text as a token. Each comment draws its text with CommentText, whose chips open the person's card. Edit your own comment: it starts with its mentions as chips."
     >
       <BuiltInMentionThread />
+    </LabSection>
+    <LabSection
+      title="Inline Markdown"
+      description="CommentText with format markdown-inline reads emphasis, code spans and safe links around the mention chips, and keeps raw HTML as text; plain shows the same text as written."
+    >
+      <MarkdownComments />
     </LabSection>
     <LabSection
       title="Frozen clock"

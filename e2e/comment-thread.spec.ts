@@ -366,4 +366,27 @@ test.describe('Comment Thread reply time zones', () => {
     await expect(posted.locator('.ui-comment-text__mention')).toHaveText('Jon Berg');
     await lab.expectAccessible('[data-lab-thread="built-in-mentions"]');
   });
+
+  test('UIC-COMMENT-THREAD-3.3 reads inline Markdown around mention chips', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('comment-thread');
+    const demo = page.locator('[data-lab-demo="markdown-comment"]');
+    const markdown = demo.locator('.ui-comment-text[data-format="markdown-inline"]');
+    await expect(markdown.locator('strong')).toHaveText('Ask Jon Berg');
+    await expect(markdown.locator('code')).toHaveText('@[Lena Ortiz](lena)');
+    await expect(markdown.getByRole('link', { name: /the recipe/ })).toHaveAttribute(
+      'href',
+      'https://example.com/recipe',
+    );
+    await expect(markdown).toContainText('<b>raw</b> stays text.');
+    await markdown.getByRole('button', { name: 'Jon Berg' }).click();
+    await expect(page.getByRole('dialog')).toContainText('Jon Berg');
+    await page.keyboard.press('Escape');
+    await expect(demo.locator('.ui-comment-text[data-format="plain"]')).toContainText(
+      '**Ask Jon Berg**',
+    );
+    await lab.expectAccessible('[data-lab-demo="markdown-comment"]');
+  });
 });
