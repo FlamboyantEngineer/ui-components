@@ -218,6 +218,8 @@
   "segmentProgress": "{total} 件中 {completed} 件完了、{percent}{hasCurrent, select, true {、{current}が進行中} other {}}",
   "totalCount": "合計 {total}",
   "containsOverrides": "上書きされた値を含みます",
+  "inheritedValue": "継承",
+  "resetToInherited": "継承された値に戻す",
   "filterLabel": "{label}を絞り込む",
   "noPropertyMatches": "「{query}」に一致するプロパティはありません。",
   "clearFilter": "フィルターをクリア",

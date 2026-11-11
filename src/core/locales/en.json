@@ -218,6 +218,8 @@
   "segmentProgress": "{completed} of {total} done, {percent}{hasCurrent, select, true {, {current} in progress} other {}}",
   "totalCount": "{total} total",
   "containsOverrides": "Contains overridden values",
+  "inheritedValue": "Inherited",
+  "resetToInherited": "Reset to inherited value",
   "filterLabel": "Filter {label}",
   "noPropertyMatches": "No properties match “{query}”.",
   "clearFilter": "Clear filter",

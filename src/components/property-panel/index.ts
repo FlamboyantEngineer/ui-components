@@ -3,6 +3,7 @@ export type {
   PropertyGroupProps,
   PropertyIconGroupProps,
   PropertyIconGroupVariant,
+  PropertyInheritance,
   PropertyPanelLabelLayout,
   PropertyPanelProps,
   PropertyRowProps,
