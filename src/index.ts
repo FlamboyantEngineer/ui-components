@@ -145,6 +145,7 @@ export * from './components/relation-matrix/index.js';
 export * from './components/relative-date-field/index.js';
 export * from './components/relative-time/index.js';
 export * from './components/save-status/index.js';
+export * from './components/scroll-overview/index.js';
 export * from './components/scroll-region/index.js';
 export * from './components/search-field/index.js';
 export * from './components/search-pane/index.js';

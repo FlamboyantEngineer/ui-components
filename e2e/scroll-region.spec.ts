@@ -346,6 +346,25 @@ test.describe('Scroll Region lab', () => {
     }
   });
 
+  test('UIC-SCROLL-REGION-3.1 paints the overview on the overlay track under the thumb', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('scroll-region');
+    const host = page.locator('[data-lab-region="overview-markers-overlay"]');
+    const root = host.locator('.ui-scroll-region');
+    await expect(root).toHaveAttribute('data-overview', 'true');
+    await root.hover();
+    const overview = await box(host.locator('.ui-scroll-region__overview'));
+    const thumb = await box(
+      host.locator(
+        '.ui-scroll-region__track[data-orientation="vertical"] .ui-scroll-region__thumb',
+      ),
+    );
+    // The strip runs where the thumb does, so the thumb draws over it.
+    expect(Math.abs(overview.x + overview.width - (thumb.x + thumb.width))).toBeLessThanOrEqual(1);
+  });
+
   test('UIC-SCROLL-STRIP-1.1 UIC-SCROLL-STRIP-1.3 reports hidden edges and scrolls a strip with the wheel', async ({
     page,
     lab,

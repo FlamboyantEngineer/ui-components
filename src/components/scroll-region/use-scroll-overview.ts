@@ -13,8 +13,6 @@ interface ScrollOverviewOptions {
   markers: readonly ScrollOverviewMarker[] | undefined;
   /** Named marker layers; they replace `markers`. */
   layers: readonly ScrollOverviewLayer[] | undefined;
-  /** Paint at all; the overview belongs to native scrollbars. */
-  enabled: boolean;
 }
 
 export interface ScrollOverviewPaint {
@@ -27,18 +25,18 @@ export interface ScrollOverviewPaint {
 
 /**
  * Measures the viewport's visible and content heights and turns the markers into an overview image.
- * It paints only: scrolling, the native scrollbar and its hit testing are untouched. Observers and the
+ * It paints only: scrolling, the scrollbars and their hit testing are untouched. Observers and the
  * pending frame are released when the markers go away or the region unmounts.
  */
 export function useScrollOverview(
   viewport: RefObject<HTMLDivElement | null>,
   observer: SharedViewportObserver,
-  { markers, layers, enabled }: ScrollOverviewOptions,
+  { markers, layers }: ScrollOverviewOptions,
 ): ScrollOverviewPaint {
-  const activeLayers = useMemo<readonly ScrollOverviewLayer[]>(() => {
-    if (!enabled) return [];
-    return layers ?? (markers ? [{ name: 'markers', markers }] : []);
-  }, [enabled, layers, markers]);
+  const activeLayers = useMemo<readonly ScrollOverviewLayer[]>(
+    () => layers ?? (markers ? [{ name: 'markers', markers }] : []),
+    [layers, markers],
+  );
   const hasMarkers = activeLayers.some((layer) => layer.markers.length > 0);
   const [metrics, setMetrics] = useState({ height: 0, scrollHeight: 0 });
 

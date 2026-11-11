@@ -154,6 +154,7 @@
 @import url('reference/relative-time.css') layer(ui-reference);
 @import url('reference/rich-text-editor.css') layer(ui-reference);
 @import url('reference/save-status.css') layer(ui-reference);
+@import url('reference/scroll-overview.css') layer(ui-reference);
 @import url('reference/scroll-region.css') layer(ui-reference);
 @import url('reference/search-field.css') layer(ui-reference);
 @import url('reference/search-pane.css') layer(ui-reference);
