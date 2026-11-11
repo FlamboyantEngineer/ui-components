@@ -19,6 +19,8 @@ interface DiffStrings {
   textDiffLines: string;
   /** Names the list of annotation cards in a margin. */
   annotations: string;
+  /** Names an annotation's marker in a margin of icons, by its place and the count. */
+  annotationMarker: (index: number, total: number) => string;
 }
 
 /** The module's text, with the message values each text function reads its arguments as. */
@@ -32,4 +34,5 @@ export const diffStrings = defineStrings<DiffStrings>({
     hasNew: newNumber !== null,
   }),
   textDiffShowLines: (count) => ({ count }),
+  annotationMarker: (index, total) => ({ index, total }),
 });

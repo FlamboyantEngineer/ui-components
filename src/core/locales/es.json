@@ -431,6 +431,7 @@
   "textDiffNextChange": "Cambio siguiente",
   "textDiffLines": "Líneas",
   "annotations": "Anotaciones",
+  "annotationMarker": "Anotación {index} de {total}",
   "columnMapping": "Asignación de columnas",
   "sourceColumn": "Columna",
   "sampleValues": "Valores de ejemplo",

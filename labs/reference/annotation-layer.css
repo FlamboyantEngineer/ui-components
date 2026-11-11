@@ -51,7 +51,81 @@
   max-width: none;
 }
 
+/* Icons: a marker per annotation, which opens its card below it. */
+.ui-annotation-layer:has(> .ui-annotation-layer__margin[data-presentation='icons']) {
+  grid-template-columns: minmax(0, 1fr) minmax(28px, max-content);
+}
+
+.ui-annotation-layer__margin[data-presentation='icons'] {
+  min-width: 28px;
+}
+
+.ui-annotation-layer:has(> .ui-annotation-layer__margin[data-empty]) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.ui-annotation-layer__margin[data-empty] {
+  display: none;
+}
+
+.ui-annotation-layer__entry {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+  inset-inline-end: 0;
+  width: max-content;
+  transition: top var(--ref-duration-fast) ease;
+}
+
+.ui-annotation-layer__entry[data-open] {
+  z-index: 1;
+  width: 260px;
+}
+
+.ui-annotation-layer__entry[data-orphaned] .ui-annotation-layer__marker {
+  border-style: dashed;
+}
+
+.ui-annotation-layer__marker {
+  display: inline-grid;
+  place-items: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 4px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius-full);
+  background: var(--ref-surface);
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-xs);
+  cursor: pointer;
+}
+
+.ui-annotation-layer__marker svg {
+  width: 16px;
+  height: 16px;
+}
+
+.ui-annotation-layer__marker:hover {
+  background: var(--ref-hover);
+  color: var(--ref-text);
+}
+
+.ui-annotation-layer__marker[data-active] {
+  border-color: var(--ref-warning);
+  color: var(--ref-text);
+}
+
+.ui-annotation-layer__marker:focus-visible {
+  outline: var(--ref-focus-ring);
+  outline-offset: 2px;
+}
+
+.ui-annotation-layer__entry > .ui-annotation-layer__card {
+  justify-self: stretch;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .ui-annotation-layer__entry,
   .ui-annotation-layer__card {
     transition: none;
   }

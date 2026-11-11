@@ -5,4 +5,6 @@ export const annotationLayerHooks = createHooks('annotation-layer', [
   'mark',
   'margin',
   'card',
+  'entry',
+  'marker',
 ]);

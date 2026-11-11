@@ -431,6 +431,7 @@
   "textDiffNextChange": "次の変更",
   "textDiffLines": "行",
   "annotations": "注釈",
+  "annotationMarker": "注釈 {index}/{total}",
   "columnMapping": "列の対応付け",
   "sourceColumn": "列",
   "sampleValues": "値の例",

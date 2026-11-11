@@ -75,6 +75,20 @@ The cards shall form one tab stop (`tabIndex` 0 on the active card, else the fir
 Implementation: `src/components/annotation-layer/annotation-margin.tsx`
 Verification: `src/components/annotation-layer/annotation-layer.test.tsx`, `e2e/annotation-layer.spec.ts`
 
+### UIC-ANNOTATION-LAYER-2.5 - Icons
+
+With `presentation="icons"` (`'cards'` by default), the margin shall hold, per annotation, a `ui-annotation-layer__entry` (`role="listitem"`) in place of the card: a marker button (`ui-annotation-layer__marker`) named by the provider string `annotationMarker` (its place and the count), drawing `renderMarker(annotation, { isActive, isOrphaned, isOpen })` or else its number, hidden from assistive technology. Entries are placed and stacked as cards are (UIC-ANNOTATION-LAYER-2.2 and 2.3, measuring each entry), so markers on the same line stack one under another. Activating a marker toggles its annotation's card, a `ui-annotation-layer__card` below it holding `renderCard`; the marker publishes `aria-expanded` and, while open, `aria-controls` naming the card. Several cards may be open at once: `openKeys` controls which, else the margin holds them from `defaultOpenKeys`, and `onOpenChange` is called with each new set. The markers are the one tab stop and move as cards do (UIC-ANNOTATION-LAYER-2.4); focus moving into an entry makes its annotation active, which the entry and its marker publish as `data-active`. Escape inside an open card, unless its content handled it, closes it and focuses its marker. An entry publishes `data-open` while its card is open and `data-orphaned` as a card does.
+
+Implementation: `src/components/annotation-layer/annotation-margin.tsx`, `src/components/annotation-layer/annotation-marker.tsx`
+Verification: `src/components/annotation-layer/annotation-margin-icons.test.tsx`, `e2e/annotation-layer.spec.ts`
+
+### UIC-ANNOTATION-LAYER-2.6 - Presentation and empty margins
+
+The margin shall publish `data-presentation` (`cards` or `icons`) and, while the layer has no annotations, `data-empty`, so a host can hide or narrow it.
+
+Implementation: `src/components/annotation-layer/annotation-margin.tsx`
+Verification: `src/components/annotation-layer/annotation-margin-icons.test.tsx`
+
 ## UIC-ANNOTATION-LAYER-3 - Accessibility and hooks
 
 ### UIC-ANNOTATION-LAYER-3.1 - Decorative marks, listed cards
@@ -93,12 +107,17 @@ Verification: `src/components/annotation-layer/annotation-layer.test.tsx`
 
 ## Hooks
 
-| Hook                          | Kind  | Values | Description                                          |
-| ----------------------------- | ----- | ------ | ---------------------------------------------------- |
-| `ui-annotation-layer`         | root  |        | The `AnnotationLayer` element around the content.    |
-| `ui-annotation-layer__marks`  | slot  |        | The element covering the layer that holds the marks. |
-| `ui-annotation-layer__mark`   | slot  |        | One rectangle of an anchor.                          |
-| `ui-annotation-layer__margin` | slot  |        | The `AnnotationMargin` list of cards.                |
-| `ui-annotation-layer__card`   | slot  |        | One annotation's card.                               |
-| `data-active`                 | state | `true` | On the marks and the card of the active annotation.  |
-| `data-orphaned`               | state | `true` | On the card of an annotation without an anchor.      |
+| Hook                          | Kind  | Values           | Description                                                                      |
+| ----------------------------- | ----- | ---------------- | -------------------------------------------------------------------------------- |
+| `ui-annotation-layer`         | root  |                  | The `AnnotationLayer` element around the content.                                |
+| `ui-annotation-layer__marks`  | slot  |                  | The element covering the layer that holds the marks.                             |
+| `ui-annotation-layer__mark`   | slot  |                  | One rectangle of an anchor.                                                      |
+| `ui-annotation-layer__margin` | slot  |                  | The `AnnotationMargin` list of cards.                                            |
+| `ui-annotation-layer__card`   | slot  |                  | One annotation's card.                                                           |
+| `ui-annotation-layer__entry`  | slot  |                  | One annotation in the icons presentation: its marker, then its card while open.  |
+| `ui-annotation-layer__marker` | slot  |                  | The button that opens and closes an annotation's card in the icons presentation. |
+| `data-presentation`           | state | `cards`, `icons` | On the margin: how it shows its annotations.                                     |
+| `data-empty`                  | state | `true`           | On the margin while the layer has no annotations.                                |
+| `data-open`                   | state | `true`           | On an entry whose card is open.                                                  |
+| `data-active`                 | state | `true`           | On the marks, the card, the entry and the marker of the active annotation.       |
+| `data-orphaned`               | state | `true`           | On the card or entry of an annotation without an anchor.                         |

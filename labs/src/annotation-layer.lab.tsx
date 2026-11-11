@@ -8,6 +8,7 @@ import {
 import { Button } from '../../src/components/button/button.js';
 import { CommentThread } from '../../src/components/comment-thread/comment-thread.js';
 import { CommentThreadReply } from '../../src/components/comment-thread/index.js';
+import { ChatBubbleCheckGlyph } from '../../src/core/drawn-glyphs.js';
 import type { Key } from '../../src/core/props.js';
 import { ZoomedReview } from './annotation-layer-cases.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
@@ -36,6 +37,7 @@ const noteText: Record<string, Note> = {
     quote: 'bake the shell blind',
     text: 'Fifteen minutes is short for a deep tin. Try twenty.',
   },
+  beans: { author: maria, quote: 'paper and beans', text: 'Rice works as well as beans.' },
   pantry: { author: jon, quote: 'Pantry shelf', text: 'This paragraph was removed.' },
 };
 
@@ -94,7 +96,7 @@ function Method({ prefix, isLong = false }: { prefix: string; isLong?: boolean }
         it out and line the tin.
       </p>
       <p>
-        Prick the base, line it with paper and beans, and{' '}
+        Prick the base, line it with <span id={`${prefix}-beans`}>paper and beans</span>, and{' '}
         <span id={`${prefix}-blind`}>bake the shell blind</span> for 15 minutes.
       </p>
     </div>
@@ -150,6 +152,31 @@ function LiveReview() {
       >
         <Method prefix="live" isLong={isLong} />
         <AnnotationMargin aria-label="Review notes" renderCard={renderCard} />
+      </AnnotationLayer>
+    </div>
+  );
+}
+
+/** A review in the icons presentation: a marker per note, each opening its card below it. */
+function IconsReview() {
+  const [openKeys, setOpenKeys] = useState<Set<Key>>(new Set());
+  return (
+    <div data-lab-demo="icons">
+      <p>
+        Open: <output data-lab-open>{[...openKeys].join(', ') || 'none'}</output>
+      </p>
+      <AnnotationLayer
+        annotations={[...createAnnotations('icons'), { id: 'beans', targetId: 'icons-beans' }]}
+      >
+        <Method prefix="icons" />
+        <AnnotationMargin
+          aria-label="Note markers"
+          presentation="icons"
+          openKeys={openKeys}
+          onOpenChange={setOpenKeys}
+          renderMarker={() => <ChatBubbleCheckGlyph />}
+          renderCard={renderCard}
+        />
       </AnnotationLayer>
     </div>
   );
@@ -236,6 +263,21 @@ mountLab(
       description="Press a highlight or a card to make it active, or Tab to the cards and move with the arrow keys, Home and End. Adding an intro moves the phrases: the layer measures them again and the cards follow."
     >
       <LiveReview />
+    </LabSection>
+    <LabSection
+      title="Icons"
+      description="The icons presentation draws a marker per note instead of its card; the two notes on one line stack. Activating a marker opens its card below it, several at once, and Escape inside a card closes it. Tab reaches the markers as one stop, moved with the arrow keys, Home and End."
+    >
+      <IconsReview />
+    </LabSection>
+    <LabSection
+      title="Empty margin"
+      description="A margin without annotations publishes data-empty; the reference styles hide it and give the content the full width."
+    >
+      <AnnotationLayer annotations={[]} data-lab-demo="empty">
+        <p>No one has commented on this paragraph yet.</p>
+        <AnnotationMargin presentation="icons" renderCard={renderCard} />
+      </AnnotationLayer>
     </LabSection>
     <LabSection
       title="Scrolling and changing content"
