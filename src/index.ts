@@ -9,6 +9,7 @@ export * from './components/annotation-layer/index.js';
 export * from './components/announcer/index.js';
 export * from './components/app-frame/index.js';
 export * from './components/approval-panel/index.js';
+export * from './components/asset-picker/index.js';
 export * from './components/attribution/index.js';
 export * from './components/avatar/index.js';
 export * from './components/avatar-group/index.js';

@@ -1,0 +1,76 @@
+.ui-asset-picker {
+  display: grid;
+  gap: 12px;
+}
+
+.ui-asset-picker__search {
+  max-width: 320px;
+}
+
+.ui-asset-picker__results {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 8px;
+  max-height: 280px;
+  overflow: auto;
+}
+
+.ui-asset-picker__item {
+  display: grid;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  cursor: pointer;
+}
+
+.ui-asset-picker__item[data-selected] {
+  border-color: var(--ref-accent-ink);
+  box-shadow: 0 0 0 1px var(--ref-accent-ink);
+}
+
+.ui-asset-picker__item[data-focus-visible] {
+  outline: var(--ref-focus-ring);
+  outline-offset: 1px;
+}
+
+.ui-asset-picker__thumbnail {
+  aspect-ratio: 4 / 3;
+  border-radius: var(--ref-radius-sm);
+  overflow: hidden;
+}
+
+.ui-asset-picker__thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ui-asset-picker__name {
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-asset-picker__details {
+  display: grid;
+  gap: 8px;
+}
+
+.ui-asset-picker__alt {
+  width: 100%;
+}
+
+.ui-asset-picker__size {
+  display: flex;
+  gap: 8px;
+}
+
+.ui-asset-picker__constrain,
+.ui-asset-picker__align {
+  justify-self: start;
+}
+
+.ui-asset-picker__actions {
+  display: flex;
+  justify-content: end;
+  gap: 8px;
+}

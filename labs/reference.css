@@ -18,6 +18,7 @@
 @import url('reference/announcer.css') layer(ui-reference);
 @import url('reference/app-frame.css') layer(ui-reference);
 @import url('reference/approval-panel.css') layer(ui-reference);
+@import url('reference/asset-picker.css') layer(ui-reference);
 @import url('reference/attribution.css') layer(ui-reference);
 @import url('reference/avatar.css') layer(ui-reference);
 @import url('reference/avatar-group.css') layer(ui-reference);
