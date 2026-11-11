@@ -6,6 +6,7 @@ import { ReactionBar, type ReactionEntry } from '../../src/components/reaction-b
 import { Switch } from '../../src/components/switch/switch.js';
 import { LinkGlyph } from '../../src/core/glyphs.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { ActivityThread, HighlightThread } from './comment-thread-activity-cases.js';
 import {
   BuiltInMentionThread,
   MarkdownComments,
@@ -329,6 +330,18 @@ mountLab(
       description="With mentions, the default composer and editor take @: pick a person and they go into the text as a token. Each comment draws its text with CommentText, whose chips open the person's card. Edit your own comment: it starts with its mentions as chips."
     >
       <BuiltInMentionThread />
+    </LabSection>
+    <LabSection
+      title="Activity rows"
+      description="Replies take a second to post: a pending row offers Cancel, every second reply fails with Retry, and the switch shows Jon typing. Each change is announced politely."
+    >
+      <ActivityThread />
+    </LabSection>
+    <LabSection
+      title="Highlighted comment"
+      description="Pick a comment: it is highlighted, revealed if hidden, and scrolled into view within the panel."
+    >
+      <HighlightThread />
     </LabSection>
     <LabSection
       title="Inline Markdown"

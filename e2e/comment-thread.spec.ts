@@ -389,4 +389,49 @@ test.describe('Comment Thread reply time zones', () => {
     );
     await lab.expectAccessible('[data-lab-demo="markdown-comment"]');
   });
+
+  test('UIC-COMMENT-THREAD-1.12 shows posting, typing and failed replies as activity rows', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('comment-thread');
+    const demo = page.locator('[data-lab-demo="activity"]');
+    const rows = demo.locator('.ui-comment-thread__activity-item');
+    await demo.getByText('Jon is typing').click();
+    await expect(rows).toHaveText(['Jon Berg is typing…']);
+    await demo.getByRole('textbox', { name: 'Reply' }).fill('Monday it is.');
+    await demo.getByRole('button', { name: 'Reply' }).click();
+    await expect(rows.first()).toHaveAttribute('data-kind', 'pending');
+    await expect(demo.locator('.ui-comment-thread__activity-status')).toHaveText(
+      'Posting your reply… Jon Berg is typing…',
+    );
+    await page.clock.runFor(1000);
+    await expect(rows.last()).toHaveAttribute('data-kind', 'error');
+    await lab.expectAccessible('[data-lab-demo="activity"]');
+    await demo.getByRole('button', { name: 'Retry' }).click();
+    await page.clock.runFor(1000);
+    await expect(demo.getByRole('article')).toHaveCount(2);
+    await expect(rows).toHaveText(['Jon Berg is typing…']);
+  });
+
+  test('UIC-COMMENT-THREAD-1.13 highlights a comment and scrolls it into view', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('comment-thread');
+    const demo = page.locator('[data-lab-demo="highlight"]');
+    const panel = demo.locator('[data-lab-panel="highlight"]');
+    await demo.getByRole('button', { name: 'Highlight comment 2' }).click();
+    const item = demo.locator('.ui-comment-thread__item[data-highlighted]');
+    await expect(item).toContainText('Bananas are on the list.');
+    await expect(demo.getByRole('article')).toHaveCount(7);
+    await expect(async () => {
+      const [itemBox, panelBox] = [await item.boundingBox(), await panel.boundingBox()];
+      expect(itemBox && panelBox && itemBox.y >= panelBox.y - 1).toBe(true);
+      expect(
+        itemBox && panelBox && itemBox.y + itemBox.height <= panelBox.y + panelBox.height + 1,
+      ).toBe(true);
+    }).toPass();
+  });
 });
