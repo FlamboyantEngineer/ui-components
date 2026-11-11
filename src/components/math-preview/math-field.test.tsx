@@ -1,8 +1,10 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { pressComposingKeys } from '../../../test/composition.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import type { FieldControlHandle } from '../field/field-form.js';
 import { MathField } from './math-field.js';
 
 describe('MathField', () => {
@@ -83,5 +85,62 @@ describe('MathField', () => {
     expect(editor).toHaveValue('y1');
     expect(screen.getByRole('textbox', { name: 'Locked' })).toHaveAttribute('readonly');
     expect(screen.getByRole('textbox', { name: 'Off' })).toBeDisabled();
+  });
+
+  it('UIC-MATH-PREVIEW-2.3 submits on Enter, cancels on Escape and takes focus only when asked', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    const onCommit = vi.fn();
+    const onCancel = vi.fn();
+    const onKeyDown = vi.fn();
+    const controlRef = createRef<FieldControlHandle>();
+    render(
+      <div role="group" aria-label="Document" onKeyDown={(event) => onKeyDown(event.key)}>
+        <MathField
+          label="Formula"
+          display="inline"
+          defaultValue="x"
+          controlRef={controlRef}
+          onSubmit={onSubmit}
+          onCommit={onCommit}
+          onCancel={onCancel}
+        />
+      </div>,
+    );
+    const editor = screen.getByRole('textbox', { name: 'Formula' });
+    expect(editor).not.toHaveFocus();
+    await act(() => controlRef.current?.focus());
+    expect(editor).toHaveFocus();
+    await user.keyboard('{End}+1{Shift>}{Enter}{/Shift}');
+    expect(onSubmit).toHaveBeenLastCalledWith('x+1');
+    await user.keyboard('+2{Enter}');
+    expect(editor).toHaveValue('x+1+2');
+    expect(onCommit).toHaveBeenLastCalledWith('x+1+2');
+    expect(onSubmit).toHaveBeenLastCalledWith('x+1+2');
+    await user.keyboard('{Enter}');
+    expect(onSubmit).toHaveBeenCalledTimes(3);
+    expect(onCommit).toHaveBeenCalledTimes(2);
+    await user.keyboard('y{Escape}');
+    expect(editor).toHaveValue('x+1+2');
+    await user.keyboard('{Escape}');
+    expect(onCancel).toHaveBeenCalledTimes(2);
+    expect(onKeyDown).not.toHaveBeenCalledWith('Escape');
+    expect(onKeyDown).not.toHaveBeenCalledWith('Enter');
+  });
+
+  it('UIC-MATH-PREVIEW-2.3 breaks display math lines on Enter and submits on Ctrl+Enter', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(<MathField label="Formula" defaultValue="a" onSubmit={onSubmit} />);
+    const editor = screen.getByRole('textbox', { name: 'Formula' });
+    await user.click(editor);
+    await user.keyboard('{End}{Enter}b{Control>}{Enter}{/Control}');
+    expect(editor).toHaveValue('a\nb');
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith('a\nb');
+  });
+
+  it('UIC-MATH-PREVIEW-2.3 focuses on mount with autoFocus', () => {
+    render(<MathField label="Formula" defaultValue="x" autoFocus />);
+    expect(screen.getByRole('textbox', { name: 'Formula' })).toHaveFocus();
   });
 });
