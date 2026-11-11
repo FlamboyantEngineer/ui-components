@@ -90,6 +90,7 @@ export * from './components/image/index.js';
 export * from './components/inline-edit/index.js';
 export * from './components/inline-error/index.js';
 export * from './components/inline-text-diff/index.js';
+export * from './components/inline-text-field/index.js';
 export * from './components/layout/index.js';
 export * from './components/link/index.js';
 export * from './components/list-filter/index.js';

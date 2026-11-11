@@ -1,0 +1,31 @@
+/* Inline Text Field. A borderless line of text that shows a frame on hover and focus. */
+
+.ui-inline-text-field {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  padding: 2px 4px;
+  border: 1px solid transparent;
+  border-radius: var(--ref-radius-sm);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+}
+
+.ui-inline-text-field::placeholder {
+  color: var(--ref-muted);
+}
+
+.ui-inline-text-field:hover:not([data-readonly]) {
+  border-color: var(--ref-border);
+}
+
+.ui-inline-text-field:focus-visible {
+  border-color: var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
+}
+
+.ui-inline-text-field[data-dirty] {
+  border-color: var(--ref-dirty);
+}
