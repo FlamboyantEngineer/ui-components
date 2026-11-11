@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import * as glyphPaths from './glyph-paths.js';
+import * as glyphStrokes from './glyph-strokes.js';
 import type { GlyphComponent } from './glyph-types.js';
 import * as core from './index.js';
 
@@ -42,10 +43,14 @@ describe('built-in glyph names', () => {
 
 describe('built-in glyph paths', () => {
   it('UIC-PROVIDER-2.1 carries only drawn Heroicons paths, with the MIT notice', () => {
-    const glyphs = read('src/core/glyphs.tsx');
+    const glyphs = read('src/core/glyphs.tsx') + read('src/core/drawn-glyphs.tsx');
     for (const [name, path] of Object.entries(glyphPaths)) {
       expect(glyphs, name).toMatch(new RegExp(`createGlyph\\([^)]*\\b${name}\\b`));
       expect(path, name).toMatch(/^[Mm][-\d.\s]/);
+    }
+    for (const [name, strokes] of Object.entries(glyphStrokes)) {
+      expect(glyphs, name).toMatch(new RegExp(`createGlyph\\([^)]*\\b${name}\\b`));
+      for (const stroke of strokes) expect(stroke.d, name).toMatch(/^M[-\d.\s]/);
     }
     const notice = read('src/core/glyph-paths.ts');
     expect(notice).toContain('MIT License');
@@ -58,7 +63,9 @@ describe('built-in glyph paths', () => {
       'informationCirclePath',
       'questionMarkCirclePath',
       'exclamationCirclePath',
-      'exclamationTrianglePath',
+      'warningTrianglePath',
+      'gripVerticalPath',
+      'abbreviationPath',
       'signalSlashPath',
       'wrenchPath',
     ] as const) {

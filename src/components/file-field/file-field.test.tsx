@@ -210,7 +210,7 @@ describe('FileField', () => {
       'src',
       photo.previewUrl,
     );
-    expect(third?.querySelector('[data-glyph="audio"]')).not.toBeNull();
+    expect(third?.querySelector('[data-glyph="file-audio"]')).not.toBeNull();
     expect(third?.querySelector('.ui-file-upload__file-actions')).toBeNull();
     expectHooksMatchSpec(container, 'FILE-FIELD', { slots: ['upload', 'download'] });
   });
@@ -236,7 +236,7 @@ describe('FileField', () => {
     expect(actions?.lastElementChild).toHaveAccessibleName('Open Report.pdf');
     expect(second?.querySelector('.ui-file-upload__file-media audio')).not.toBeNull();
     expect(third?.querySelector('.ui-file-upload__file-actions')).toBeNull();
-    expect(third?.querySelector('[data-glyph="video"]')).not.toBeNull();
+    expect(third?.querySelector('[data-glyph="file-video"]')).not.toBeNull();
   });
 
   it('UIC-FILE-FIELD-2.3 commits the value without a removed file and hands upload removals on', async () => {

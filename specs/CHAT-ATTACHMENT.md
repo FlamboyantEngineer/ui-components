@@ -20,7 +20,7 @@ Verification: `src/components/chat-attachment/chat-attachment.test.tsx`, `src/co
 
 ### UIC-CHAT-ATTACHMENT-1.3 - File chip
 
-Any other attachment, and an image without a URL to show, shall show as a chip (`data-display="chip"`): its type glyph (`ui-chat-attachment__icon`, decorative: `file-pdf`, `file-archive` or `file-text` for those kinds, `image` for an image, else the glyph of its media family from `getFileGlyph`: `video`, `audio` or `file`), its name (`ui-chat-attachment__name`) and, when given, its size (`ui-chat-attachment__size`, from [formatBytes](FORMAT-BYTES.md) in the `UiProvider` locale).
+Any other attachment, and an image without a URL to show, shall show as a chip (`data-display="chip"`): its type glyph (`ui-chat-attachment__icon`, decorative: `file-pdf`, `file-archive` or `file-text` for those kinds, else the glyph of its media family from `getFileGlyph`: `file-image`, `file-video`, `file-audio` or `file`), its name (`ui-chat-attachment__name`) and, when given, its size (`ui-chat-attachment__size`, from [formatBytes](FORMAT-BYTES.md) in the `UiProvider` locale).
 
 Implementation: `src/components/chat-attachment/chat-attachment.tsx`, `src/components/chat-attachment/attachment-parts.tsx`, `src/components/chat-attachment/attachment-model.ts`, `src/core/glyphs.tsx`
 Verification: `src/components/chat-attachment/chat-attachment.test.tsx`, `src/components/chat-attachment/attachment-model.test.ts`, `e2e/chat-attachment.spec.ts`

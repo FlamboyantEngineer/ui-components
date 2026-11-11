@@ -40,7 +40,7 @@ test.describe('Chat Attachment lab', () => {
     );
     await expect(
       page.locator('[data-lab-demo="no-url"] .ui-chat-attachment__icon'),
-    ).toHaveAttribute('data-glyph', 'image');
+    ).toHaveAttribute('data-glyph', 'file-image');
     await lab.expectAccessible();
   });
 

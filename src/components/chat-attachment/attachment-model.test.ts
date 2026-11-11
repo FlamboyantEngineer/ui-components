@@ -1,12 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import {
-  AudioGlyph,
-  FileArchiveGlyph,
-  FileGlyph,
-  FilePdfGlyph,
-  FileTextGlyph,
-  ImageGlyph,
-} from '../../core/glyphs.js';
+import { FileAudioGlyph, FileImageGlyph } from '../../core/drawn-glyphs.js';
+import { FileArchiveGlyph, FileGlyph, FilePdfGlyph, FileTextGlyph } from '../../core/glyphs.js';
 import {
   getAttachmentGlyph,
   getAttachmentImage,
@@ -51,8 +45,8 @@ describe('attachment model', () => {
     expect(getAttachmentGlyph('pdf', 'application/pdf')).toBe(FilePdfGlyph);
     expect(getAttachmentGlyph('archive', 'application/zip')).toBe(FileArchiveGlyph);
     expect(getAttachmentGlyph('text', 'text/plain')).toBe(FileTextGlyph);
-    expect(getAttachmentGlyph('image', '')).toBe(ImageGlyph);
-    expect(getAttachmentGlyph('file', 'audio/ogg')).toBe(AudioGlyph);
+    expect(getAttachmentGlyph('image', '')).toBe(FileImageGlyph);
+    expect(getAttachmentGlyph('file', 'audio/ogg')).toBe(FileAudioGlyph);
     expect(getAttachmentGlyph('file', 'application/x-unknown')).toBe(FileGlyph);
   });
 

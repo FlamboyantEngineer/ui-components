@@ -29,7 +29,7 @@ describe('FileUpload rows', () => {
         row.querySelector('.ui-file-upload__file-icon [data-glyph]')?.getAttribute('data-glyph') ??
         null,
     );
-    expect(glyphs).toEqual(['file', 'audio', null, 'video']);
+    expect(glyphs).toEqual(['file', 'file-audio', null, 'file-video']);
     expect(rows(container)[2]?.querySelector('.ui-file-upload__file-preview')).not.toBeNull();
     expectHooksMatchSpec(container, 'FILE-UPLOAD', { slots: ['file-icon', 'file-preview'] });
   });

@@ -249,7 +249,7 @@ test.describe('File Upload lab', () => {
     await expect(broken.locator('.ui-file-upload__file-preview')).toHaveCount(0);
     await expect(broken.locator('.ui-file-upload__file-icon')).toHaveAttribute(
       'data-glyph',
-      'image',
+      'file-image',
     );
     const first = rows.nth(0).locator('.ui-file-upload__file-preview');
     await expect

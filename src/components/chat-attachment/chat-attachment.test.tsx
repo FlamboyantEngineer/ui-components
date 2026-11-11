@@ -107,7 +107,7 @@ describe('ChatAttachment', () => {
     expect(screen.queryByRole('button', { name: 'View Harbour.png' })).not.toBeInTheDocument();
     expect(root(container)?.querySelector('.ui-chat-attachment__icon')).toHaveAttribute(
       'data-glyph',
-      'image',
+      'file-image',
     );
     expect(screen.getByText('Harbour.png')).toBeInTheDocument();
   });

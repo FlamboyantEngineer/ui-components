@@ -893,7 +893,7 @@ describe('FileUpload', () => {
       expect(container.querySelector('.ui-file-upload__file-preview')).toBeNull();
       expect(container.querySelector('.ui-file-upload__file-icon')).toHaveAttribute(
         'data-glyph',
-        'image',
+        'file-image',
       );
       rerender(
         <FileUpload
