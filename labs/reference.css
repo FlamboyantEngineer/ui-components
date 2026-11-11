@@ -15,6 +15,7 @@
 @import url('reference/action-row.css') layer(ui-reference);
 @import url('reference/activity-feed.css') layer(ui-reference);
 @import url('reference/annotation-layer.css') layer(ui-reference);
+@import url('reference/announcer.css') layer(ui-reference);
 @import url('reference/app-frame.css') layer(ui-reference);
 @import url('reference/approval-panel.css') layer(ui-reference);
 @import url('reference/attribution.css') layer(ui-reference);
