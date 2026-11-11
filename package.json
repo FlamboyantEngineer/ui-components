@@ -38,6 +38,11 @@
       "import": "./dist/testing/index.js",
       "default": "./dist/testing/index.js"
     },
+    "./labs": {
+      "types": "./dist/labs/index.d.ts",
+      "import": "./dist/labs/index.js",
+      "default": "./dist/labs/index.js"
+    },
     "./locales": {
       "types": "./dist/core/locales/index.d.ts",
       "import": "./dist/core/locales/index.js",

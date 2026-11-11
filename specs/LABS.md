@@ -68,36 +68,36 @@ Verification: `test/bundle-budgets.test.ts`, `test/package-bundle.test.ts`
 
 Every lab and the index shall show a toolbar with a stylesheet picker offering Unstyled, Reference (`labs/build/reference.css`) and Custom URL. The toolbar sticks to the top of the page above the lab's content and below every overlay layer (its z-index is one less than the backdrop layer's), so a full-screen modal, drawer, menu or tooltip covers it and its controls stay reachable. The chosen stylesheet applies to the lab content immediately. The root element reports the current stylesheet's loading state in `data-lab-stylesheet-state` (`none`, `loading`, `loaded`, `error`); events from a replaced or removed stylesheet shall not change it. An invalid stylesheet URL shall report `error` without interrupting the lab or preventing another choice.
 
-Implementation: `labs/src/chrome/lab-chrome.tsx`, `labs/src/chrome/settings.ts`, `labs/src/chrome/mount.tsx`
-Verification: `e2e/lab-harness.spec.ts`, `labs/src/chrome/settings.test.ts`
+Implementation: `src/labs/lab-bar.tsx`, `src/labs/lab-settings.ts`, `src/labs/mount-lab-bar.tsx`
+Verification: `e2e/lab-harness.spec.ts`, `src/labs/lab-settings.test.ts`, `src/labs/lab-bar.test.tsx`
 
 ### UIC-LABS-2.2 - Theme
 
-The toolbar shall offer a theme picker: System (the default), Light, Dark and Custom, and the root-element data attribute the theme is written to (`data-theme` by default). Only `data-*` attributes outside the reserved `data-lab-*` namespace are allowed; an invalid attribute from the query string, storage or a direct settings call falls back to `data-theme`, so theme text never becomes an event handler or overwrites lab bookkeeping. System writes `light` or `dark` from the reader's colour scheme and follows it when it changes; Light and Dark write `light` and `dark`, which the reference stylesheet draws; Custom writes a value typed in, nothing while it is empty, so a host stylesheet's own theme switch can be exercised. The toolbar draws itself in the colour scheme a light or dark theme sets.
+The toolbar shall offer a theme switch, a [segmented choice](SEGMENTED-CHOICE.md) of System (the default), Light, Dark and Custom, each with its icon (the `theme-system`, `theme-light`, `theme-dark` and `edit` glyphs), and the root-element data attribute the theme is written to (`data-theme` by default). Only `data-*` attributes outside the reserved `data-lab-*` namespace are allowed; an invalid attribute from the query string, storage or a direct settings call falls back to `data-theme`, so theme text never becomes an event handler or overwrites lab bookkeeping. System writes `light` or `dark` from the reader's colour scheme and follows it when it changes; Light and Dark write `light` and `dark`, which the reference stylesheet draws; Custom writes a value typed in, nothing while it is empty, so a host stylesheet's own theme switch can be exercised. The toolbar draws itself in the colour scheme a light or dark theme sets.
 
-Implementation: `labs/src/chrome/lab-chrome.tsx`, `labs/src/chrome/settings.ts`, `labs/src/chrome/mount.tsx`
-Verification: `e2e/lab-harness.spec.ts`, `labs/src/chrome/settings.test.ts`
+Implementation: `src/labs/lab-bar.tsx`, `src/labs/lab-settings.ts`, `src/labs/mount-lab-bar.tsx`
+Verification: `e2e/lab-harness.spec.ts`, `src/labs/lab-settings.test.ts`, `src/labs/lab-bar.test.tsx`
 
 ### UIC-LABS-2.3 - Query string and remembered choice
 
 `?stylesheet=` (`none`, `reference` or a URL), `?theme=` and `?themeAttribute=` shall preselect the settings. Otherwise the last choice made in the toolbar applies, remembered in `localStorage`; a browser that refuses storage falls back to the defaults (reference sheet, system theme). Changing a setting rewrites the query string, leaving out each setting at its default, and the index carries the current settings into every lab link, including after repeated toolbar changes.
 
-Implementation: `labs/src/chrome/settings.ts`, `labs/src/chrome/mount.tsx`
-Verification: `e2e/lab-harness.spec.ts`, `labs/src/chrome/settings.test.ts`
+Implementation: `src/labs/lab-settings.ts`, `src/labs/mount-lab-bar.tsx`, `labs/src/chrome/settings.ts`, `labs/src/chrome/mount.tsx`
+Verification: `e2e/lab-harness.spec.ts`, `src/labs/lab-settings.test.ts`, `src/labs/lab-bar.test.tsx`
 
 ### UIC-LABS-2.4 - Isolated chrome
 
-The toolbar shall render in a shadow root with its own styles, so neither the chosen stylesheet nor the lab content changes how it looks.
+The toolbar shall render in a shadow root with its own styles, drawn in system colours, so neither the chosen stylesheet nor the lab content changes how it looks. Rendering it turns on the library's shadow root support for the page (`enableShadowRoots`, UIC-PORTAL), so its segmented choice presses and takes focus across the shadow boundary.
 
-Implementation: `labs/src/chrome/mount.tsx`, `labs/src/chrome/lab-chrome.tsx`
-Verification: `e2e/lab-harness.spec.ts`
+Implementation: `src/labs/mount-lab-bar.tsx`, `src/labs/lab-bar-styles.ts`
+Verification: `e2e/lab-harness.spec.ts`, `src/labs/lab-bar.test.tsx`
 
 ### UIC-LABS-2.5 - Styled from the first paint
 
 Every lab page and the index shall apply the stylesheet and theme from a classic script in the head (`labs/build/boot.js`), before the body is parsed: the stylesheet link holds the first paint (`blocking="render"`) and the lab content stays hidden while the stylesheet loads, so a page never paints unstyled first. The toolbar stays visible, so a slow stylesheet can still be changed.
 
-Implementation: `labs/src/chrome/boot.ts`, `labs/src/chrome/settings.ts`, `scripts/lib/labs.mjs`, `scripts/build-labs.mjs`
-Verification: `e2e/lab-harness.spec.ts`, `labs/src/chrome/settings.test.ts`
+Implementation: `labs/src/chrome/boot.ts`, `src/labs/lab-settings.ts`, `scripts/lib/labs.mjs`, `scripts/build-labs.mjs`
+Verification: `e2e/lab-harness.spec.ts`, `src/labs/lab-settings.test.ts`, `src/labs/lab-bar.test.tsx`
 
 ## UIC-LABS-3 - Content
 
@@ -172,3 +172,19 @@ Under `forced-colors: active` the system drops every `box-shadow`, so a focus ha
 
 Implementation: `labs/reference/base.css`
 Verification: `e2e/forced-colors.spec.ts`
+
+## UIC-LABS-4 - Lab shell for other libraries
+
+### UIC-LABS-4.1 - Lab bar
+
+The package shall export the lab toolbar from `@flamboyantengineer/ui-components/labs` (built to `dist/labs/`), so a library built on this one gives its own labs the same top bar: `LabBar` draws the page's `title`, an "All labs" link to `indexHref` that carries the current settings in its query string (none when `indexHref` is null, as on the index itself), the stylesheet picker (UIC-LABS-2.1) and the theme switch (UIC-LABS-2.2). It starts from `defaultSettings` and reports every committed change through `onChange`. `LabSettings` holds the `stylesheet` (`LabStylesheet`: `none`, `reference` or a `custom` URL), the `theme` and the `themeAttribute`. It forwards `ref` to its root `<div>`. The bar is lab tooling, not a styled component: it emits no hook classes, marks its parts with `data-lab-part` in the reserved lab namespace, and carries its styles only in the shadow root `mountLabBar` gives it (UIC-LABS-2.4).
+
+Implementation: `src/labs/index.ts`, `src/labs/lab-bar.tsx`, `package.json`, `scripts/check-package.mjs`, `scripts/check-public-types.mjs`
+Verification: `src/labs/lab-bar.test.tsx`, `test/package.test.ts`
+
+### UIC-LABS-4.2 - Mounting and first paint
+
+`mountLabBar({ host, title, indexHref, storage, referenceStylesheet, onSettingsChange })` shall read the settings from the page's query string, then `storage`, then the defaults (UIC-LABS-2.3), apply them, and render `LabBar` into a shadow root on `host` (labelled "Lab settings"). Each change is applied, remembered in `storage` (a `UiStorage`, or null to remember nothing) and written to the page's query string; `onSettingsChange` receives the settings and their query string when the bar mounts and after every change, so an index page can carry them into its links. `mountLabBar` returns the settings it started from. `bootLabSettings({ storage, referenceStylesheet })` shall read and apply the same settings without rendering, for a classic script in the page head (UIC-LABS-2.5). `referenceStylesheet` is the URL the Reference option loads, `build/reference.css` by default. The library never reads browser storage itself: the page passes its own adapter.
+
+Implementation: `src/labs/mount-lab-bar.tsx`, `src/labs/lab-settings.ts`
+Verification: `src/labs/lab-bar.test.tsx`

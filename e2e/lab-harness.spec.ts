@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, formatLabUrl, matrixCell, test, waitForLab } from './fixtures.js';
+import { expect, formatLabUrl, matrixCell, test, themeSegment, waitForLab } from './fixtures.js';
 
 const customSheet = 'data:text/css,html%7Bbackground-color%3Argb(1%2C%202%2C%203)%7D';
 
@@ -37,13 +37,13 @@ test.describe('lab harness', () => {
     expect(await background(page)).toBe('rgb(13, 17, 23)');
     const chrome = page.locator('#lab-chrome');
     await expect(chrome.getByLabel('Stylesheet', { exact: true })).toHaveValue('reference');
-    await expect(chrome.getByLabel('Theme', { exact: true })).toHaveValue('dark');
+    await expect(themeSegment(page, 'dark')).toBeChecked();
 
     await lab.open('provider', { stylesheet: 'none', theme: 'night', themeAttribute: 'data-mode' });
     await expect(page.locator('html')).toHaveAttribute('data-mode', 'night');
     await expect(page.locator('html')).not.toHaveAttribute('data-theme', /.*/);
     await expect(chrome.getByLabel('Stylesheet', { exact: true })).toHaveValue('none');
-    await expect(chrome.getByLabel('Theme', { exact: true })).toHaveValue('custom');
+    await expect(themeSegment(page, 'custom')).toBeChecked();
     await expect(chrome.getByLabel('Theme value')).toHaveValue('night');
   });
 
@@ -69,14 +69,14 @@ test.describe('lab harness', () => {
     await page.emulateMedia({ colorScheme: 'dark' });
     await lab.open('provider');
     const chrome = page.locator('#lab-chrome');
-    await expect(chrome.getByLabel('Theme', { exact: true })).toHaveValue('system');
+    await expect(themeSegment(page, 'system')).toBeChecked();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
     expect(await background(page)).toBe('rgb(13, 17, 23)');
     await page.emulateMedia({ colorScheme: 'light' });
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
     expect(await background(page)).toBe('rgb(255, 255, 255)');
 
-    await chrome.getByLabel('Theme', { exact: true }).selectOption('dark');
+    await themeSegment(page, 'dark').click();
     await page.emulateMedia({ colorScheme: 'light' });
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
     await expect(page).toHaveURL((url) => url.searchParams.get('theme') === 'dark');
@@ -110,7 +110,7 @@ test.describe('lab harness', () => {
     expect(await background(page)).toBe('rgb(1, 2, 3)');
     await expect(page).toHaveURL((url) => url.searchParams.get('stylesheet') === customSheet);
 
-    await chrome.getByLabel('Theme', { exact: true }).selectOption('dark');
+    await themeSegment(page, 'dark').click();
     await expect(page).toHaveURL((url) => url.searchParams.get('theme') === 'dark');
 
     await page.goto('provider.html');
@@ -228,7 +228,7 @@ test.describe('lab harness', () => {
     await waitForLab(page);
     const chrome = page.locator('#lab-chrome');
     await chrome.getByLabel('Stylesheet', { exact: true }).selectOption('none');
-    await chrome.getByLabel('Theme', { exact: true }).selectOption('dark');
+    await themeSegment(page, 'dark').click();
     const links = page.locator('#lab-index a');
     const hrefs = await links.evaluateAll((elements) =>
       elements.map((element) => element.getAttribute('href')),

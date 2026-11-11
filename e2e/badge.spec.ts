@@ -1,4 +1,4 @@
-import { expect, matrixCell, test } from './fixtures.js';
+import { expect, matrixCell, test, themeSegment } from './fixtures.js';
 
 test.describe('Badge lab', () => {
   test('UIC-BADGE-1.2 UIC-BADGE-1.3 UIC-BADGE-1.4 draws every variant and tone at three heights', async ({
@@ -167,8 +167,8 @@ test('UIC-BADGE-3.1 UIC-BADGE-1.2 shares count geometry and typography across ap
 }) => {
   await lab.open('badge');
   const section = page.getByRole('region', { name: 'Count appearances', exact: true });
-  for (const theme of ['light', 'dark']) {
-    await page.locator('#lab-chrome').getByLabel('Theme', { exact: true }).selectOption(theme);
+  for (const theme of ['light', 'dark'] as const) {
+    await themeSegment(page, theme).click();
     for (const count of ['0', '7', '12', '128']) {
       const read = async (variant: string) =>
         matrixCell(section, `variant=${variant} count=${count}`)

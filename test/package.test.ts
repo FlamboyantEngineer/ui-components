@@ -179,6 +179,14 @@ describe('package manifest', () => {
     }
   });
 
+  it('UIC-LABS-4.1 exports the lab bar from its own entry point', () => {
+    expect(manifest.exports['./labs']).toEqual({
+      types: './dist/labs/index.d.ts',
+      import: './dist/labs/index.js',
+      default: './dist/labs/index.js',
+    });
+  });
+
   it('UIC-PROVIDER-3.5 exports the shipped language files as modules and as JSON', () => {
     expect(manifest.exports['./locales']).toEqual({
       types: './dist/core/locales/index.d.ts',

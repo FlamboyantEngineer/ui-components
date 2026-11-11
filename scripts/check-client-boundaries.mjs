@@ -66,6 +66,7 @@ const CLIENT_HELPERS = new Set([
   'createToastQueue',
   'getFieldUndo',
   'keepHandleCellDraggable',
+  'mountLabBar',
   'prompt',
   'resolveScrollSpy',
 ]);

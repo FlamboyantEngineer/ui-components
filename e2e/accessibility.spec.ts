@@ -1,5 +1,5 @@
 import { readdirSync } from 'node:fs';
-import { expect, test } from './fixtures.js';
+import { expect, test, themeSegment } from './fixtures.js';
 
 const labNames = readdirSync('labs')
   .filter((file) => file.endsWith('.html') && file !== 'index.html')
@@ -44,12 +44,9 @@ test.describe('every lab', () => {
     // One page load scans both themes: the chrome's theme picker flips the root attribute in place.
     test(`UIC-LABS-3.4 ${name} passes axe in the light and dark themes`, async ({ page, lab }) => {
       await lab.open(name, { theme: 'light' });
-      for (const theme of ['light', 'dark']) {
+      for (const theme of ['light', 'dark'] as const) {
         await test.step(`${theme} theme`, async () => {
-          await page
-            .locator('#lab-chrome')
-            .getByLabel('Theme', { exact: true })
-            .selectOption(theme);
+          await themeSegment(page, theme).click();
           await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
           await lab.expectAccessible();
         });

@@ -1,6 +1,13 @@
 import type { Locator, Page } from '@playwright/test';
 import { requireDefined } from '../src/utils/require-defined.js';
-import { cellSelector, controlHeight, expect, familySelector, test } from './fixtures.js';
+import {
+  cellSelector,
+  controlHeight,
+  expect,
+  familySelector,
+  test,
+  themeSegment,
+} from './fixtures.js';
 
 function cell(page: Page, state: string, layout: string): Locator {
   return page.locator(
@@ -668,8 +675,8 @@ test.describe('Select Field trigger ref', () => {
     lab,
   }) => {
     await lab.open('select-field');
-    for (const theme of ['light', 'dark']) {
-      await page.locator('#lab-chrome').getByLabel('Theme', { exact: true }).selectOption(theme);
+    for (const theme of ['light', 'dark'] as const) {
+      await themeSegment(page, theme).click();
       const tokens = await page.evaluate(() => {
         const probe = document.createElement('div');
         document.body.append(probe);

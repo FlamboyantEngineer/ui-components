@@ -42,6 +42,7 @@ import {
   codeBracketPath,
   codeBracketSquarePath,
   commandLinePath,
+  computerDesktopPath,
   diskPath,
   documentDuplicatePath,
   documentPath,
@@ -80,6 +81,7 @@ import {
   magnifyingGlassPath,
   minusCirclePath,
   minusPath,
+  moonPath,
   musicalNotePath,
   noSymbolPath,
   numberedListPath,
@@ -97,6 +99,7 @@ import {
   starPath,
   stopPath,
   strikethroughPath,
+  sunPath,
   tableCellsPath,
   trashPath,
   underlinePath,
@@ -231,3 +234,6 @@ export const GlobeGlyph = /* @__PURE__ */ createGlyph('globe', globeAltPath);
 export const WrenchGlyph = /* @__PURE__ */ createGlyph('wrench', wrenchPath);
 export const SparklesGlyph = /* @__PURE__ */ createGlyph('sparkles', sparklesPath);
 export const ClipboardGlyph = /* @__PURE__ */ createGlyph('clipboard', clipboardPath);
+export const ThemeSystemGlyph = /* @__PURE__ */ createGlyph('theme-system', computerDesktopPath);
+export const ThemeLightGlyph = /* @__PURE__ */ createGlyph('theme-light', sunPath);
+export const ThemeDarkGlyph = /* @__PURE__ */ createGlyph('theme-dark', moonPath);

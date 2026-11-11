@@ -47,10 +47,11 @@ reportProblems(problems, {
   success: `No building block exposed in ${files.length} public declaration files.`,
 });
 
-// The entry points package.json exports: the root, `core`, `testing` and every component index.
+// The entry points package.json exports: the root, `core`, `testing`, `labs` and every component
+// index.
 const entries = walk(dir).filter((path) => {
   const rel = relativePosix(dir, path);
-  return /^(index|core\/index|testing\/index|components\/.+\/index)\.d\.ts$/.test(rel);
+  return /^(index|core\/index|testing\/index|labs\/index|components\/.+\/index)\.d\.ts$/.test(rel);
 });
 const unexported = findUnexportedTypes(dir, { entries, only: components });
 reportProblems(unexported, {
