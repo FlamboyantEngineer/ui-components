@@ -17,6 +17,22 @@ export interface AssetPickerItem {
   height?: number | undefined;
 }
 
+/** One page of a search's assets; a `cursor` means another page follows. */
+export interface AssetPickerPage {
+  items: readonly AssetPickerItem[];
+  cursor?: string | undefined;
+}
+
+/**
+ * Finds the assets matching `query`, or with `cursor` the page after the one that returned it; it
+ * should stop when `signal` aborts. A search without pages returns the assets alone.
+ */
+export type AssetPickerSearch = (
+  query: string,
+  signal: AbortSignal,
+  cursor?: string,
+) => Promise<readonly AssetPickerItem[] | AssetPickerPage>;
+
 /** Where the placed asset sits on its line. */
 export type AssetPickerAlign = 'start' | 'center' | 'end';
 

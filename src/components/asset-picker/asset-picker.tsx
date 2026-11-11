@@ -4,7 +4,7 @@ import { useState } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { type RemoteLoader, useRemoteSearch } from '../../utils/use-remote-search.js';
+import { useRemoteSearch } from '../../utils/use-remote-search.js';
 import { Button } from '../button/button.js';
 import { SearchField } from '../search-field/search-field.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
@@ -13,12 +13,19 @@ import { assetPickerHooks as hooks } from './asset-picker-hooks.js';
 import {
   type AssetPickerAlign,
   type AssetPickerItem,
+  type AssetPickerSearch,
   type AssetPlacement,
   initialPlacement,
 } from './asset-placement.js';
 import { AssetResults } from './asset-results.js';
 
-export type { AssetPickerAlign, AssetPickerItem, AssetPlacement } from './asset-placement.js';
+export type {
+  AssetPickerAlign,
+  AssetPickerItem,
+  AssetPickerPage,
+  AssetPickerSearch,
+  AssetPlacement,
+} from './asset-placement.js';
 
 export interface AssetPickerProps extends RefProps<HTMLDivElement>, BaseProps, AriaLabellingProps {
   /**
@@ -26,7 +33,7 @@ export interface AssetPickerProps extends RefProps<HTMLDivElement>, BaseProps, A
    * as the picker mounts, browses. It should stop when `signal` aborts. Keep it stable: a new
    * function ends the running search.
    */
-  search: RemoteLoader<AssetPickerItem>;
+  search: AssetPickerSearch;
   /** Called with the chosen asset and how the reader placed it when they insert it. */
   onSelect: (item: AssetPickerItem, placement: AssetPlacement) => void;
   /** Called when the reader cancels; without it there is no Cancel button. */
