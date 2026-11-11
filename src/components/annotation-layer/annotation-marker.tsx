@@ -18,6 +18,13 @@ export interface AnnotationMarkerState {
   isOpen: boolean;
 }
 
+/** Where an entry goes in its margin: its top, and its inline-start edge when the caller sets one. */
+export interface EntryPlace {
+  position: 'absolute';
+  top: number;
+  insetInlineStart?: number;
+}
+
 /** One annotation in the icons presentation: where it goes, and what it shows. */
 export interface AnnotationMarkerEntryProps {
   annotation: Annotation;
@@ -25,7 +32,7 @@ export interface AnnotationMarkerEntryProps {
   /** Its place among the margin's annotations, from 0, and their count. */
   index: number;
   total: number;
-  style: { position: 'absolute'; top: number };
+  style: EntryPlace;
   isTabStop: boolean;
   entryRef: Ref<HTMLDivElement>;
   markerRef: Ref<HTMLButtonElement>;

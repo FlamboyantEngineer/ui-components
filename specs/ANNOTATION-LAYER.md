@@ -89,6 +89,13 @@ The margin shall publish `data-presentation` (`cards` or `icons`) and, while the
 Implementation: `src/components/annotation-layer/annotation-margin.tsx`
 Verification: `src/components/annotation-layer/annotation-margin-icons.test.tsx`
 
+### UIC-ANNOTATION-LAYER-2.7 - Placing each entry
+
+`getInlineOffset(annotation)` shall place each card, or in the icons presentation each entry, with its inline-start edge that many pixels from the margin's inline-start edge (`inset-inline-start` inline, beside its `top`), so entries can follow the edge of the page or sheet each annotation sits on; a negative offset reaches before the margin. An annotation for which it returns `undefined`, or a margin without it, leaves the entry where the stylesheet puts it. The offset never changes the stacking (UIC-ANNOTATION-LAYER-2.2).
+
+Implementation: `src/components/annotation-layer/annotation-margin.tsx`, `src/components/annotation-layer/annotation-marker.tsx`
+Verification: `src/components/annotation-layer/annotation-margin.test.tsx`, `e2e/annotation-layer.spec.ts`
+
 ## UIC-ANNOTATION-LAYER-3 - Accessibility and hooks
 
 ### UIC-ANNOTATION-LAYER-3.1 - Decorative marks, listed cards

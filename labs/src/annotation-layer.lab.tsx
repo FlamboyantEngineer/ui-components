@@ -10,7 +10,7 @@ import { CommentThread } from '../../src/components/comment-thread/comment-threa
 import { CommentThreadReply } from '../../src/components/comment-thread/index.js';
 import { ChatBubbleCheckGlyph } from '../../src/core/drawn-glyphs.js';
 import type { Key } from '../../src/core/props.js';
-import { ZoomedReview } from './annotation-layer-cases.js';
+import { StaggeredSheets, ZoomedReview } from './annotation-layer-cases.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { requireDefined } from './require-defined.js';
 import { ShadowRootApp } from './shadow-root-host.js';
@@ -269,6 +269,12 @@ mountLab(
       description="The icons presentation draws a marker per note instead of its card; the two notes on one line stack. Activating a marker opens its card below it, several at once, and Escape inside a card closes it. Tab reaches the markers as one stop, moved with the arrow keys, Home and End."
     >
       <IconsReview />
+    </LabSection>
+    <LabSection
+      title="Entries placed per annotation"
+      description="getInlineOffset moves each marker to its own sheet's edge: the note on the narrower sheet sits 120 pixels further in."
+    >
+      <StaggeredSheets />
     </LabSection>
     <LabSection
       title="Empty margin"
