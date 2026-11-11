@@ -314,6 +314,8 @@ test.describe('Message Composer lab', () => {
     await expect(input).toHaveText(' this for ');
     await page.keyboard.press('End');
     await page.keyboard.type('@ma');
+    // Enter picks the suggestion only once the list shows it; earlier it sends the text as typed.
+    await expect(list.getByRole('option', { name: /Maria Santos/ })).toBeVisible();
     await page.keyboard.press('Enter');
     await page.keyboard.press('Enter');
     await expect(page.locator('[data-lab-sent="1"]')).toHaveText(
@@ -442,6 +444,11 @@ test.describe('Message Composer lab', () => {
     const team = composer(page, 'team');
     await team.getByRole('textbox').click();
     await page.keyboard.type('Ask @ma');
+    await expect(
+      page
+        .getByRole('listbox', { name: 'Suggestions' })
+        .getByRole('option', { name: /Maria Santos/ }),
+    ).toBeVisible();
     await page.keyboard.press('Enter');
     await page.keyboard.type('later');
     await page.getByRole('radio', { name: 'Jon Berg' }).click();
