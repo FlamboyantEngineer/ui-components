@@ -79,4 +79,19 @@ test.describe('Math Preview lab', () => {
     await expect(preview).not.toHaveAttribute('data-stale');
     await expect(preview.locator('math')).toContainText('c');
   });
+
+  test('UIC-MATH-PREVIEW-3.1 UIC-MATH-PREVIEW-3.2 typesets to an element without React', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('math-preview');
+    const demo = page.locator('[data-lab-demo="element"]');
+    const valid = demo.locator('li').first();
+    await expect(valid.locator('math mi').first()).toHaveText('e');
+    expect(await valid.locator('math').evaluate((math) => math.namespaceURI)).toBe(
+      'http://www.w3.org/1998/Math/MathML',
+    );
+    await expect(demo.locator('li').nth(1)).toContainText('Unexpected end of input');
+    await expect(demo.locator('li').nth(1).locator('math')).toHaveCount(0);
+  });
 });

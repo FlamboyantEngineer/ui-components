@@ -34,7 +34,7 @@ Verification: `src/components/math-preview/math-markup.test.tsx`, `src/component
 
 ### UIC-MATH-PREVIEW-1.5 - Entry point and caller attributes
 
-The math components shall load only from the `math-preview` entry point, which alone imports KaTeX, and only when the default renderer first typesets. `MathPreview` appends the caller's `className` and forwards `id`, `ref` and caller `data-*` attributes to its root.
+The math components and `sanitizeMathMarkup` and `renderMathElement` shall load only from the `math-preview` entry point, which alone imports KaTeX, and only when the default renderer first typesets. `MathPreview` appends the caller's `className` and forwards `id`, `ref` and caller `data-*` attributes to its root.
 
 Implementation: `src/components/math-preview/index.ts`, `package.json`
 Verification: `test/package.test.ts`, `src/components/math-preview/math-preview.test.tsx`
@@ -54,6 +54,22 @@ The source shall follow the field's value contract (`value`/`defaultValue`/`comm
 
 Implementation: `src/components/math-preview/math-field.tsx`
 Verification: `src/components/math-preview/math-field.test.tsx`, `e2e/math-preview.spec.ts`
+
+## UIC-MATH-PREVIEW-3 - Math without React
+
+### UIC-MATH-PREVIEW-3.1 - Sanitizing markup
+
+`sanitizeMathMarkup(markup, ownerDocument)` shall parse MathML markup as an inert HTML document and return its first `<math>` element rebuilt in `ownerDocument` through the allow-list of UIC-MATH-PREVIEW-1.4, as a detached MathML element; it returns `null` when the markup holds no math or no HTML parser is available. It needs no React, so a host can insert math into its own DOM.
+
+Implementation: `src/components/math-preview/math-sanitize.ts`
+Verification: `src/components/math-preview/math-element.test.ts`, `e2e/math-preview.spec.ts`
+
+### UIC-MATH-PREVIEW-3.2 - Typesetting to an element
+
+`renderMathElement(source, { displayMode, renderer, ownerDocument })` shall typeset the source with `renderer` (`renderKatexMath` by default) and answer `{ ok: true, element }` with the sanitized element, or `{ ok: false, message }`. It never throws: invalid source answers the renderer's message, a renderer that throws or rejects answers its error's message, and so does the default renderer when KaTeX is not installed. It needs no React.
+
+Implementation: `src/components/math-preview/math-element.ts`
+Verification: `src/components/math-preview/math-element.test.ts`, `e2e/math-preview.spec.ts`
 
 ## Hooks
 
