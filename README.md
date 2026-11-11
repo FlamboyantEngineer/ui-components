@@ -173,7 +173,7 @@ npm run labs         # install and build what is out of date, then serve labs/ a
 npm run build:labs   # bundle labs/src/*.lab.tsx into labs/build/
 ```
 
-`npm run labs` runs `npm ci` when `package-lock.json` changed since the last install and `npm run build:labs` when a lab source changed since the last build. `npm run labs -- --dry-run` lists those steps without running them; `node scripts/serve-labs.mjs` serves `labs/` as it is. Both, and the browser tests, use port 4173 (`LABS_PORT` in `scripts/lib/labs.mjs`); set the `LABS_PORT` environment variable to use another.
+`npm run labs` runs `npm ci` when `package-lock.json` changed since the last install and `npm run build:labs` when a lab source changed since the last build. `npm run labs -- --dry-run` lists those steps without running them; `node bin/serve-labs.mjs` serves `labs/` as it is. Both, and the browser tests, use port 4173 (`LABS_PORT` in `scripts/lib/labs.mjs`); set the `LABS_PORT` environment variable to use another. When the port is taken, the server moves to the next free one and prints it. Libraries built on this one run the same server as `ui-components-labs --dir labs --port <port>` once the package is installed.
 
 Labs are static HTML files; any static file server works. In a lab, the toolbar's stylesheet picker switches between no styles, the neutral reference sheet (`labs/build/reference.css`, bundled from the partials in `labs/reference.css`) and any stylesheet URL, and writes a theme value to a root data attribute (`data-theme` by default, excluding the reserved `data-lab-*` attributes). `?stylesheet=`, `?theme=` and `?themeAttribute=` preselect them, so a host can open a lab with its own stylesheet and theme:
 

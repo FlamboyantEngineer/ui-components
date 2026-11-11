@@ -2,7 +2,7 @@
 // Brings the labs up to date, then serves them: installs the dependencies when package-lock.json
 // changed since the last install, and builds the labs when one of their sources changed since the
 // last build. --dry-run prints those steps without running them or serving.
-//   node scripts/start-labs.mjs [--dry-run] [--port $LABS_PORT] [--host 127.0.0.1] [--dir labs]
+//   node scripts/start-labs.mjs [--dry-run] [--port $LABS_PORT] [--host 127.0.0.1] [--dir labs] [--strict-port]
 
 import { lstatSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
@@ -79,5 +79,8 @@ else if (install) console.log(`Not installing (${install}): node_modules links e
 const build = installing ? 'the dependencies were installed' : buildReason();
 if (build) run(build, ['run', 'build:labs']);
 
-if (!dryRun) await import('./serve-labs.mjs');
-else if (!installing && !build) console.log('The labs are up to date.');
+if (!dryRun) {
+  // The server reads its directory relative to the working directory: this checkout's labs.
+  process.chdir(root);
+  await import('../bin/serve-labs.mjs');
+} else if (!installing && !build) console.log('The labs are up to date.');

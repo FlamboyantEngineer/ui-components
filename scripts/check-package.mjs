@@ -50,6 +50,8 @@ try {
     'dist/testing/index.d.ts',
     'dist/labs/index.js',
     'dist/labs/index.d.ts',
+    'bin/serve-labs.mjs',
+    'bin/lab-server.mjs',
     REFERENCE_STYLESHEET,
   ]) {
     if (!files.has(required)) problems.push(`tarball is missing ${required}`);

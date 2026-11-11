@@ -57,12 +57,17 @@
     "./reference.css": "./labs/build/reference.css",
     "./package.json": "./package.json"
   },
+  "bin": {
+    "ui-components-labs": "bin/serve-labs.mjs"
+  },
   "files": [
     "dist",
     "!dist/**/*.test.*",
     "src",
     "!src/**/*.test.*",
     "labs/build/reference.css",
+    "bin/serve-labs.mjs",
+    "bin/lab-server.mjs",
     "specs",
     "CHANGELOG.md"
   ],

@@ -2,6 +2,7 @@
 
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { DEFAULT_LABS_HOST, DEFAULT_LABS_PORT } from '../../bin/lab-server.mjs';
 import { REFERENCE_LAYER } from './reference-stylesheet.mjs';
 import { root } from './script.mjs';
 
@@ -11,8 +12,8 @@ export const labSourceDir = join(labsDir, 'src');
 export const referenceDir = join(labsDir, 'reference');
 
 /** Where the lab server listens by default; `LABS_PORT` picks another port. */
-export const LABS_HOST = '127.0.0.1';
-export const LABS_PORT = Number(process.env.LABS_PORT ?? 4173);
+export const LABS_HOST = DEFAULT_LABS_HOST;
+export const LABS_PORT = Number(process.env.LABS_PORT ?? DEFAULT_LABS_PORT);
 
 /**
  * The tiers of the lab index from the simplest up, each with its groups in order: foundations,

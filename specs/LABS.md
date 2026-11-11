@@ -6,11 +6,11 @@ Every component has a static lab page that renders its full variant, size and st
 
 ### UIC-LABS-1.1 - Static files
 
-Each lab shall be a static file `labs/<name>.html` that loads a prebuilt bundle from `labs/build/<name>.js`. `npm run build:labs` builds every bundle, and the labs need nothing beyond a static file server (`npm run labs` is one). `labs/index.html` lists every lab with its description, in tiers from the simplest up: Foundations (setup and layout), Primitives grouped by type, Fields built on the field base, Assemblies of primitives and fields for one job, and Widgets that run a whole task on their own surface. Each tier lists its groups in order and each group its labs by title; every lab page names its tier and group (`lab-tier`, `lab-group`), and `npm run check:labs` rejects a tier or group the index does not list. The supplied server shall reject malformed URL paths with 400, reject paths outside the lab directory (including symbolic links that resolve outside it) with 403 and return 404 for missing files, while continuing to serve subsequent requests. It shall serve each file type with its own content type (extensionless files as plain text) and answer a file of an unknown type with 500 rather than a guessed type. The server, `npm run labs` and the browser tests listen on one address, `127.0.0.1` at port 4173 or the `LABS_PORT` environment variable.
+Each lab shall be a static file `labs/<name>.html` that loads a prebuilt bundle from `labs/build/<name>.js`. `npm run build:labs` builds every bundle, and the labs need nothing beyond a static file server (`npm run labs` is one). `labs/index.html` lists every lab with its description, in tiers from the simplest up: Foundations (setup and layout), Primitives grouped by type, Fields built on the field base, Assemblies of primitives and fields for one job, and Widgets that run a whole task on their own surface. Each tier lists its groups in order and each group its labs by title; every lab page names its tier and group (`lab-tier`, `lab-group`), and `npm run check:labs` rejects a tier or group the index does not list. The supplied server shall reject malformed URL paths with 400, reject paths outside the lab directory (including symbolic links that resolve outside it) with 403 and return 404 for missing files, while continuing to serve subsequent requests. It shall serve each file type with its own content type (extensionless files as plain text) and answer a file of an unknown type with 500 rather than a guessed type. The server, `npm run labs` and the browser tests listen on one address, `127.0.0.1` at port 4173 or the `LABS_PORT` environment variable. When another process holds that port, the server moves on to the next free one (trying up to 20) and says which port it took and that the asked one was in use; with `--strict-port`, which the browser tests pass since they address the configured port, it exits with status 1 and names the busy port instead.
 
 Every page shall declare an embedded icon so browsers do not request a missing `favicon.ico` while opening the standalone labs.
 
-Implementation: `scripts/build-labs.mjs`, `scripts/serve-labs.mjs`, `scripts/lib/labs.mjs`, `scripts/check-labs.mjs`
+Implementation: `scripts/build-labs.mjs`, `bin/serve-labs.mjs`, `bin/lab-server.mjs`, `scripts/lib/labs.mjs`, `scripts/check-labs.mjs`, `playwright.config.ts`
 Verification: `e2e/lab-harness.spec.ts`, `test/serve-labs.test.ts`
 
 ### UIC-LABS-1.2 - Standalone release archive
@@ -188,3 +188,10 @@ Verification: `src/labs/lab-bar.test.tsx`, `test/package.test.ts`
 
 Implementation: `src/labs/mount-lab-bar.tsx`, `src/labs/lab-settings.ts`
 Verification: `src/labs/lab-bar.test.tsx`
+
+### UIC-LABS-4.3 - Lab server
+
+The package shall ship the lab server (UIC-LABS-1.1) as the `ui-components-labs` command, so a library built on this one serves its own labs the same way: `ui-components-labs [--dir labs] [--port <port>] [--host 127.0.0.1] [--strict-port]` serves `--dir`, relative to the working directory, as plain static files, defaulting to port 4173 or `LABS_PORT`, and moves to the next free port when that one is taken unless `--strict-port` is given. The command and the module it runs use only Node's built-in modules, so it runs from an install without this repository's development dependencies.
+
+Implementation: `bin/serve-labs.mjs`, `bin/lab-server.mjs`, `package.json`, `scripts/check-package.mjs`
+Verification: `test/serve-labs.test.ts`, `test/package.test.ts`

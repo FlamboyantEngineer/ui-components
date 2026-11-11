@@ -22,7 +22,8 @@ export default defineConfig({
     trace: 'off',
   },
   webServer: {
-    command: 'node scripts/serve-labs.mjs',
+    // The tests address the configured port, so the server must not move to another one.
+    command: 'node bin/serve-labs.mjs --strict-port',
     url: `${origin}/index.html`,
     reuseExistingServer: !process.env.CI,
   },

@@ -7,6 +7,7 @@ import { collectPackages } from './module-imports.js';
 
 const manifest = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8')) as {
   files: string[];
+  bin?: Record<string, string>;
   browserslist: string[];
   scripts: Record<string, string>;
   exports: Record<string, unknown>;
@@ -185,6 +186,13 @@ describe('package manifest', () => {
       import: './dist/labs/index.js',
       default: './dist/labs/index.js',
     });
+  });
+
+  it('UIC-LABS-4.3 ships the lab server as a command', () => {
+    expect(manifest.bin).toEqual({ 'ui-components-labs': 'bin/serve-labs.mjs' });
+    expect(manifest.files).toEqual(
+      expect.arrayContaining(['bin/serve-labs.mjs', 'bin/lab-server.mjs']),
+    );
   });
 
   it('UIC-PROVIDER-3.5 exports the shipped language files as modules and as JSON', () => {
