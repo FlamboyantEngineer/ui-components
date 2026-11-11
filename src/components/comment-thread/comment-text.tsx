@@ -6,6 +6,7 @@ import type { BaseProps, RefProps } from '../../core/props.js';
 import {
   type CommentTextSegment,
   type MentionCandidate,
+  type MentionKind,
   parseMentions,
 } from '../comment-composer/comment-mentions.js';
 import { UserCardTrigger } from '../user-card-trigger/user-card-trigger.js';
@@ -15,8 +16,13 @@ export interface CommentTextProps extends BaseProps, RefProps<HTMLSpanElement> {
   text: string;
   /** Splits the text into text and mentions. Defaults to `parseMentions`, for `@[Name](id)`. */
   parse?: ((text: string) => readonly CommentTextSegment[]) | undefined;
-  /** The card a mention's chip opens, usually a `UserCard`; without one the chip is plain text. */
-  renderCard?: ((person: Pick<MentionCandidate, 'id' | 'name'>) => ReactNode) | undefined;
+  /**
+   * The card a mention's chip opens, usually a `UserCard` for a person; without one the chip is
+   * plain text. It receives what the mention names, `kind` included.
+   */
+  renderCard?:
+    | ((person: Pick<MentionCandidate, 'id' | 'name'> & { kind: MentionKind }) => ReactNode)
+    | undefined;
 }
 
 const hooks = createHooks('comment-text', ['mention']);
@@ -38,8 +44,9 @@ function MentionChip({
 }: Pick<CommentTextProps, 'renderCard'> & {
   segment: Extract<CommentTextSegment, { kind: 'mention' }>;
 }) {
-  const card = renderCard?.({ id: segment.id, name: segment.name });
-  const chip = <span {...hooks.slot('mention')}>{segment.name}</span>;
+  const kind = segment.mentionKind ?? 'person';
+  const card = renderCard?.({ id: segment.id, name: segment.name, kind });
+  const chip = <span {...hooks.slot('mention', { kind })}>{segment.name}</span>;
   if (card === undefined || card === null) return chip;
   return <UserCardTrigger card={card}>{chip}</UserCardTrigger>;
 }

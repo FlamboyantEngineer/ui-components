@@ -37,6 +37,24 @@ describe('CommentText', () => {
     expect(await screen.findByText('Ana Lopez, pastry')).toBeInTheDocument();
   });
 
+  it('UIC-COMMENT-THREAD-3.2 marks each chip with its kind and hands the kind to renderCard', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <CommentText
+        text="Ask @group[Bakers](bakers), not `@[Ana](ana)`"
+        renderCard={(target) => <p>{`${target.name} is a ${target.kind}`}</p>}
+      />,
+    );
+    const chips = container.querySelectorAll('.ui-comment-text__mention');
+    expect(chips).toHaveLength(1);
+    expect(chips[0]).toHaveAttribute('data-kind', 'group');
+    expect(container.querySelector('.ui-comment-text')).toHaveTextContent(
+      'Ask Bakers, not `@[Ana](ana)`',
+    );
+    await user.click(screen.getByRole('button', { name: 'Bakers' }));
+    expect(await screen.findByText('Bakers is a group')).toBeInTheDocument();
+  });
+
   it('UIC-COMMENT-THREAD-3.2 reads mentions in the host format with parse', () => {
     const { container } = render(
       <CommentText

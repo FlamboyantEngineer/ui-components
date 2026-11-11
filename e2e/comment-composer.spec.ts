@@ -225,4 +225,16 @@ test.describe('Comment Composer host cases', () => {
       '@[Lena Ortiz](lena) can you taste the pear sauce? Ask @[Jon Berg](jon)',
     ]);
   });
+
+  test('UIC-COMMENT-COMPOSER-2.4 mentions a group with its size', async ({ page, lab }) => {
+    await lab.open('comment-composer');
+    const composer = page.locator('[data-lab-composer="mentions"]');
+    const box = composer.getByRole('textbox', { name: 'Add a comment' });
+    await box.click();
+    await page.keyboard.press('ControlOrMeta+End');
+    await page.keyboard.type(' @ba');
+    await page.getByRole('option', { name: 'Bakers Team · 4 members' }).waitFor();
+    await page.keyboard.press('Enter');
+    await expect(box.locator('.ui-message-composer__pill')).toHaveText(['Lena Ortiz', 'Bakers']);
+  });
 });

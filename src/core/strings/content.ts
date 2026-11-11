@@ -181,6 +181,8 @@ interface ContentStrings {
   resolved: string;
   /** Reveals the replies a long thread hides. */
   showMoreReplies: (count: number) => string;
+  /** How many people a group the reader can mention holds. */
+  mentionGroupCount: (count: number) => string;
   /** The title and message of the confirmation before a comment is deleted. */
   deleteComment: string;
   deleteCommentMessage: string;
@@ -225,6 +227,7 @@ export const contentStrings = defineStrings<ContentStrings>({
   saveStatus: (phase) => ({ phase }),
   recordUnavailable: (reason) => ({ reason }),
   showMoreReplies: (count) => ({ count }),
+  mentionGroupCount: (count) => ({ count }),
   reactionSummary: (count, labels, own) => ({
     count,
     labels: { items: labels, type: 'unit' },

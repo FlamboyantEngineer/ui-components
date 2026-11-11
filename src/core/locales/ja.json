@@ -358,6 +358,7 @@
   "reopen": "再開",
   "resolved": "解決済み",
   "showMoreReplies": "さらに {count} 件の返信を表示",
+  "mentionGroupCount": "{count} 人のメンバー",
   "deleteComment": "コメントを削除",
   "deleteCommentMessage": "コメントはスレッドから削除されます。",
   "reactions": "リアクション",

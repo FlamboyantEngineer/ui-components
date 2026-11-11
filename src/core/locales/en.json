@@ -358,6 +358,7 @@
   "reopen": "Reopen",
   "resolved": "Resolved",
   "showMoreReplies": "{count, plural, one {Show # more reply} other {Show # more replies}}",
+  "mentionGroupCount": "{count, plural, one {# member} other {# members}}",
   "deleteComment": "Delete comment",
   "deleteCommentMessage": "The comment will be removed from the thread.",
   "reactions": "Reactions",

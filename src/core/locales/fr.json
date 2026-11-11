@@ -358,6 +358,7 @@
   "reopen": "Rouvrir",
   "resolved": "Résolu",
   "showMoreReplies": "{count, plural, one {Afficher # autre réponse} other {Afficher # autres réponses}}",
+  "mentionGroupCount": "{count, plural, one {# membre} other {# membres}}",
   "deleteComment": "Supprimer le commentaire",
   "deleteCommentMessage": "Le commentaire sera retiré du fil.",
   "reactions": "Réactions",

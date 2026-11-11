@@ -145,7 +145,7 @@ Verification: `src/components/comment-thread/comment-thread-mentions.test.tsx`, 
 
 ### UIC-COMMENT-THREAD-3.2 - Comment text
 
-`CommentText` shall render a comment's stored `text` in a `ui-comment-text` `<span>`: its plain runs as text, and each mention that `parse` finds (by default `parseMentions`, for `@[Name](id)`) as a `ui-comment-text__mention` chip that shows the person's name, which is what assistive technology reads. With `renderCard`, a mention whose card it returns sits in a [User Card Trigger](USER-CARD-TRIGGER.md), a button named by the person that opens the card; a mention it returns nothing for stays a plain chip. It appends the caller's `className` and forwards caller `data-*` attributes, `id` and `ref`. It needs no rich text peer, so a host shows mentions anywhere it shows comments.
+`CommentText` shall render a comment's stored `text` in a `ui-comment-text` `<span>`: its plain runs as text, and each mention that `parse` finds (by default `parseMentions`, for `@[Name](id)`) as a `ui-comment-text__mention` chip that shows the name, which is what assistive technology reads, and publishes what the mention names in `data-kind` (`person` when the parser gives no `mentionKind`, else `group`, `assistant` or the host's own kind). Tokens inside a code span or after a backslash stay text (UIC-COMMENT-COMPOSER-2.4). With `renderCard`, which receives the mention's `id`, `name` and `kind`, a mention whose card it returns sits in a [User Card Trigger](USER-CARD-TRIGGER.md), a button named by the person that opens the card; a mention it returns nothing for stays a plain chip. It appends the caller's `className` and forwards caller `data-*` attributes, `id` and `ref`. It needs no rich text peer, so a host shows mentions anywhere it shows comments.
 
 Implementation: `src/components/comment-thread/comment-text.tsx`, `src/components/comment-composer/comment-mentions.ts`
 Verification: `src/components/comment-thread/comment-text.test.tsx`, `e2e/comment-thread.spec.ts`
@@ -185,3 +185,4 @@ Verification: `src/components/comment-thread/comment-text.test.tsx`, `e2e/commen
 | `data-editing`                       | state     | `true` | The reader is editing the comment (on the reply).                                  |
 | `ui-comment-text`                    | root      |        | A comment's text with its mentions (`<span>`).                                     |
 | `ui-comment-text__mention`           | slot      |        | A mention's chip, showing the person's name.                                       |
+| `data-kind`                          | attribute |        | On a mention chip: what it names, `person`, `group`, `assistant` or a host kind.   |

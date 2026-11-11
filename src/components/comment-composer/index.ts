@@ -6,5 +6,6 @@ export type {
   CommentMentions,
   CommentTextSegment,
   MentionCandidate,
+  MentionKind,
 } from './comment-mentions.js';
 export { parseMentions, serializeMention } from './comment-mentions.js';

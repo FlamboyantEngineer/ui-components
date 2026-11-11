@@ -94,6 +94,24 @@ describe('CommentComposer mentions', () => {
     expect(onSubmit).toHaveBeenCalledWith('Ask @[Jon Berg](jon) and @[Lena Ortiz](lena) \ntoday');
   });
 
+  it('UIC-COMMENT-COMPOSER-2.4 suggests groups with their size and writes each kind', async () => {
+    const candidates: MentionCandidate[] = [
+      { kind: 'group', id: 'bakers', name: 'Bakers', description: 'Team', count: 4 },
+      { kind: 'assistant', id: 'helper', name: 'Helper' },
+    ];
+    const { user, box, onSubmit } = renderComposer(
+      {},
+      { search: () => Promise.resolve(candidates) },
+    );
+    await user.click(box);
+    await user.keyboard('@');
+    await screen.findByRole('option', { name: 'Bakers Team · 4 members' });
+    await user.keyboard('{Enter}and @');
+    await screen.findByRole('option', { name: 'Helper' });
+    await user.keyboard('{ArrowDown}{Enter}{Control>}{Enter}{/Control}');
+    expect(onSubmit).toHaveBeenCalledWith('@group[Bakers](bakers) and @assistant[Helper](helper)');
+  });
+
   it('UIC-COMMENT-COMPOSER-2.2 deletes a chip whole with one Backspace and announces it', async () => {
     const { user, box, onSubmit } = renderComposer({ defaultValue: 'Hi @[Ana Lopez](ana)' });
     // Focus from the keyboard keeps the caret where the editor put it: after the chip.
