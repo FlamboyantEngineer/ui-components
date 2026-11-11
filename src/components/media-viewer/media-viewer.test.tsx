@@ -225,7 +225,7 @@ describe('MediaViewer', () => {
     expect(image).toHaveAttribute('loading', 'lazy');
     fireEvent.error(image);
     expect(harbour.querySelector('img')).toBeNull();
-    expect(harbour.querySelector('[data-glyph="image"]')).toHaveClass(
+    expect(harbour.querySelector('[data-glyph="file-image"]')).toHaveClass(
       'ui-media-viewer__thumbnail-icon',
     );
   });
