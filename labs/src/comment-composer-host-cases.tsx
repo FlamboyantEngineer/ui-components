@@ -3,6 +3,7 @@ import { Button } from '../../src/components/button/button.js';
 import { CommentComposer } from '../../src/components/comment-composer/comment-composer.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { LabSection } from './chrome/index.js';
+import { sampleMentions } from './comment-mention-samples.js';
 import { LabOutput } from './lab-output.js';
 
 const outcomes = ['succeeds', 'fails'] as const;
@@ -61,11 +62,14 @@ function HostDraft() {
   );
 }
 
-/** A composer the reader opens, which takes focus as it mounts. */
-function OpenOnDemand() {
+/**
+ * A composer the reader opens, which takes focus as it mounts; with mentions its rich text box
+ * mounts its editable after the composer's own effects.
+ */
+function OpenOnDemand({ withMentions = false }: { withMentions?: boolean }) {
   const [isOpen, setOpen] = useState(false);
   return (
-    <div data-lab-demo="focus-on-mount">
+    <div data-lab-demo={withMentions ? 'focus-on-mount-mentions' : 'focus-on-mount'}>
       <Button size="sm" onPress={() => setOpen((open) => !open)}>
         {isOpen ? 'Close the reply' : 'Reply'}
       </Button>
@@ -74,6 +78,7 @@ function OpenOnDemand() {
           label="Quick reply"
           placeholder="Say something kind"
           autoFocus
+          mentions={withMentions ? sampleMentions : undefined}
           onSubmit={() => setOpen(false)}
           onCancel={() => setOpen(false)}
         />
@@ -96,6 +101,12 @@ export function CommentComposerHostCases() {
         description="Reply mounts a composer with its own placeholder that takes focus as it appears; Cancel or a submit closes it."
       >
         <OpenOnDemand />
+      </LabSection>
+      <LabSection
+        title="Focus on mount with mentions"
+        description="The same reply with mentions: the rich text box takes focus once its editable exists."
+      >
+        <OpenOnDemand withMentions />
       </LabSection>
     </div>
   );

@@ -193,6 +193,19 @@ test.describe('Comment Composer host cases', () => {
     await page.keyboard.press('ControlOrMeta+Enter');
     await expect(box).toHaveCount(0);
   });
+  test('UIC-COMMENT-COMPOSER-1.7 UIC-MESSAGE-COMPOSER-4.14 focuses a rich text box with mentions as it mounts', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('comment-composer');
+    const demo = page.locator('[data-lab-demo="focus-on-mount-mentions"]');
+    await demo.getByRole('button', { name: 'Reply' }).click();
+    const box = demo.getByRole('textbox', { name: 'Quick reply' });
+    await expect(box).toBeFocused();
+    await page.keyboard.type('Thanks!');
+    await expect(box).toHaveText('Thanks!');
+  });
+
   test('UIC-COMMENT-COMPOSER-2.1 UIC-COMMENT-COMPOSER-2.2 UIC-COMMENT-COMPOSER-2.3 mentions people from the search', async ({
     page,
     lab,
