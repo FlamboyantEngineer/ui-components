@@ -9,6 +9,7 @@ import { isEmptyNode } from '../../utils/is-empty-node.js';
 import type { RemoteSearch } from '../../utils/use-remote-search.js';
 import { Icon, toIconProps } from '../icon/icon.js';
 import { triggerWidthProperty, useLayerZIndex } from '../portal/portal.js';
+import { Shortcut } from '../shortcut/shortcut.js';
 import { TextMatch } from '../text-match/text-match.js';
 import type { PickerOption } from './field-picker-items.js';
 
@@ -19,7 +20,8 @@ type PickerSearchStatus = Pick<
 >;
 
 /** The slots of a picker's option rows. */
-type PickerOptionSlot = 'option' | 'option-icon' | 'option-label' | 'option-description';
+type PickerOptionSlot =
+  'option' | 'option-icon' | 'option-label' | 'option-description' | 'option-shortcut';
 
 interface PickerOptionRowProps {
   /** The row's collection key. */
@@ -82,6 +84,12 @@ function PickerOptionContent({
         <>
           {/* The space keeps the label and the description apart in the option's name. */}{' '}
           <span {...hooks.slot('option-description')}>{option.description}</span>
+        </>
+      )}
+      {option.shortcut === undefined ? null : (
+        <>
+          {' '}
+          <Shortcut chord={option.shortcut} className={hooks.slotClass('option-shortcut')} />
         </>
       )}
     </>

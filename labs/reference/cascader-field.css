@@ -149,6 +149,17 @@
   min-width: 0;
 }
 
+/* An option's shortcut holds the first row's trailing edge, after the label. */
+.ui-cascader-field__option-shortcut {
+  flex: none;
+  color: var(--ref-muted);
+}
+
+.ui-cascader-field__option-shortcut .ui-shortcut__key {
+  font-size: var(--ref-font-size-xs);
+  line-height: 0.875rem;
+}
+
 .ui-cascader-field__option-description {
   order: 1;
   flex-basis: 100%;

@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 import type { Key } from '../../core/props.js';
 import type { IconSource } from '../icon/icon.js';
+import type { ShortcutProps } from '../shortcut/shortcut.js';
 
 /** One option of a picker: `Combobox`, `SelectField` and the pickers built on them. */
 export interface PickerOption {
@@ -14,6 +15,11 @@ export interface PickerOption {
   description?: ReactNode;
   /** An imported icon component or rendered element, shown on the row (and the chip). */
   icon?: IconSource;
+  /**
+   * A keyboard chord shown at the row's trailing edge, in the `Shortcut` format (`Ctrl+B`), for a
+   * shortcut the host handles itself. It is display only: the picker binds no key.
+   */
+  shortcut?: ShortcutProps['chord'] | undefined;
   isDisabled?: boolean | undefined;
 }
 

@@ -15,6 +15,7 @@ export const cascaderFieldHooks = createHooks('cascader-field', [
   'option-icon',
   'option-label',
   'option-description',
+  'option-shortcut',
   'branch-icon',
   'status',
   'retry',

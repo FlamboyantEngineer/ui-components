@@ -10,6 +10,7 @@ import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { Button } from '../button/button.js';
 import { Icon, toIconProps } from '../icon/icon.js';
+import { Shortcut } from '../shortcut/shortcut.js';
 import { cascaderFieldHooks as hooks } from './cascader-field-hooks.js';
 import { type CascaderOption, isCascaderBranch } from './cascader-options.js';
 
@@ -61,6 +62,12 @@ function CascaderOptionRow({ id, option }: { id: string; option: CascaderOption 
         <>
           {/* The space keeps the label and the description apart in the option's name. */}{' '}
           <span {...hooks.slot('option-description')}>{option.description}</span>
+        </>
+      )}
+      {option.shortcut === undefined ? null : (
+        <>
+          {' '}
+          <Shortcut chord={option.shortcut} className={hooks.slotClass('option-shortcut')} />
         </>
       )}
       {isBranch ? (

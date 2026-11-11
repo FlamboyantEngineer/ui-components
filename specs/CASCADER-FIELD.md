@@ -2,7 +2,7 @@
 
 `CascaderField` is a [field](FIELD.md) for choosing one leaf of a hierarchy through adjacent panels. Its value is the path of option ids from the top level down to the chosen leaf (`CascaderValue`, `readonly Key[] | null`). It takes the field's props (`FieldInputProps<CascaderValue>`), so it has a label and layout, validation, dirty state and restore, undo and redo, and the field menu. Its control is a trigger showing the chosen path, which opens a popover of panels built on React Aria's `ListBox`: the top-level options, then the children of each option on the active path, each level in its own listbox beside the last.
 
-Options are plain data (`CascaderOption`: `id`, `label`, optional `description`, `icon`, `isDisabled`, `children` and `hasChildren`). An option with `children`, or with `hasChildren` and none given, is a branch; every other option is a leaf. Only a leaf is chosen: pressing a branch opens its level, and the value always ends at a leaf.
+Options are plain data (`CascaderOption`: `id`, `label`, optional `description`, `icon`, `shortcut`, `isDisabled`, `children` and `hasChildren`). An option with `children`, or with `hasChildren` and none given, is a branch; every other option is a leaf. Only a leaf is chosen: pressing a branch opens its level, and the value always ends at a leaf.
 
 When another component is simpler:
 
@@ -70,43 +70,44 @@ Verification: `src/components/cascader-field/cascader-field.test.tsx`
 
 ## Hooks
 
-| Hook                                    | Kind      | Values                                     | Description                                                   |
-| --------------------------------------- | --------- | ------------------------------------------ | ------------------------------------------------------------- |
-| `ui-cascader-field`                     | root      |                                            | The field's root (also `ui-field`).                           |
-| `ui-cascader-field__trigger`            | slot      |                                            | The button that opens the panels.                             |
-| `ui-cascader-field__value`              | slot      |                                            | The chosen path, or the placeholder.                          |
-| `ui-cascader-field__segment`            | slot      |                                            | One option of the chosen path.                                |
-| `ui-cascader-field__separator`          | slot      |                                            | The separator between two segments.                           |
-| `ui-cascader-field__popover`            | slot      |                                            | The popover holding the panels.                               |
-| `ui-cascader-field__dialog`             | slot      |                                            | The dialog inside the popover.                                |
-| `ui-cascader-field__panels`             | slot      |                                            | The row of panels.                                            |
-| `ui-cascader-field__panel`              | slot      |                                            | One level of the active path.                                 |
-| `ui-cascader-field__listbox`            | slot      |                                            | A level's `role="listbox"` list.                              |
-| `ui-cascader-field__option`             | slot      |                                            | One `role="option"` row.                                      |
-| `ui-cascader-field__option-icon`        | slot      |                                            | An option's icon (also `ui-icon`).                            |
-| `ui-cascader-field__option-label`       | slot      |                                            | An option's label.                                            |
-| `ui-cascader-field__option-description` | slot      |                                            | An option's description.                                      |
-| `ui-cascader-field__branch-icon`        | slot      |                                            | A branch's forward glyph (also `ui-glyph`).                   |
-| `ui-cascader-field__status`             | slot      |                                            | A level's loading, failure or empty message.                  |
-| `ui-cascader-field__retry`              | slot      |                                            | The Retry button of a failed level (also `ui-button`).        |
-| `data-placeholder`                      | state     | `true`                                     | On the value: nothing is chosen, so it shows the placeholder. |
-| `data-level`                            | state     |                                            | On a panel: its depth, from `0` for the top level.            |
-| `data-status`                           | state     | `ready`, `loading`, `failed`               | On a panel and its status: whether its options are there.     |
-| `data-branch`                           | state     | `true`                                     | On an option: it opens a further level.                       |
-| `data-layer`                            | attribute | `dropdown`                                 | On the popover: its overlay layer; the z-index is set inline. |
-| `data-placement`                        | state     | `top`, `bottom`, `left`, `right`, `center` | On the popover: the side it opened on (React Aria).           |
-| `data-trigger`                          | state     | `DialogTrigger`                            | On the popover: what opened it (React Aria).                  |
-| `data-entering`                         | state     | `true`                                     | On the popover: opening (React Aria).                         |
-| `data-exiting`                          | state     | `true`                                     | On the popover: closing (React Aria).                         |
-| `data-collection`                       | state     |                                            | React Aria's collection marker, on the listboxes and options. |
-| `data-key`                              | attribute |                                            | On an option: its encoded collection key; not for styling.    |
-| `data-layout`                           | state     | `stack`                                    | On a listbox (React Aria).                                    |
-| `data-orientation`                      | state     | `vertical`                                 | On a listbox (React Aria).                                    |
-| `data-empty`                            | state     | `true`                                     | On a listbox with no options (React Aria).                    |
-| `data-focused`                          | state     | `true`                                     | On the trigger, a listbox or an option (React Aria).          |
-| `data-focus-visible`                    | state     | `true`                                     | On the trigger, a listbox or an option (React Aria).          |
-| `data-hovered`                          | state     | `true`                                     | On the trigger or an option (React Aria).                     |
-| `data-pressed`                          | state     | `true`                                     | On the trigger or an option (React Aria).                     |
-| `data-selected`                         | state     | `true`                                     | On an option: the active option of its level (React Aria).    |
-| `data-selection-mode`                   | state     | `single`                                   | On an option (React Aria).                                    |
-| `data-disabled`                         | state     | `true`                                     | On the trigger or an option: disabled (React Aria).           |
+| Hook                                    | Kind      | Values                                     | Description                                                                     |
+| --------------------------------------- | --------- | ------------------------------------------ | ------------------------------------------------------------------------------- |
+| `ui-cascader-field`                     | root      |                                            | The field's root (also `ui-field`).                                             |
+| `ui-cascader-field__trigger`            | slot      |                                            | The button that opens the panels.                                               |
+| `ui-cascader-field__value`              | slot      |                                            | The chosen path, or the placeholder.                                            |
+| `ui-cascader-field__segment`            | slot      |                                            | One option of the chosen path.                                                  |
+| `ui-cascader-field__separator`          | slot      |                                            | The separator between two segments.                                             |
+| `ui-cascader-field__popover`            | slot      |                                            | The popover holding the panels.                                                 |
+| `ui-cascader-field__dialog`             | slot      |                                            | The dialog inside the popover.                                                  |
+| `ui-cascader-field__panels`             | slot      |                                            | The row of panels.                                                              |
+| `ui-cascader-field__panel`              | slot      |                                            | One level of the active path.                                                   |
+| `ui-cascader-field__listbox`            | slot      |                                            | A level's `role="listbox"` list.                                                |
+| `ui-cascader-field__option`             | slot      |                                            | One `role="option"` row.                                                        |
+| `ui-cascader-field__option-icon`        | slot      |                                            | An option's icon (also `ui-icon`).                                              |
+| `ui-cascader-field__option-label`       | slot      |                                            | An option's label.                                                              |
+| `ui-cascader-field__option-description` | slot      |                                            | An option's description.                                                        |
+| `ui-cascader-field__option-shortcut`    | slot      |                                            | An option's keyboard chord (also `ui-shortcut`), display only (UIC-FIELD-11.2). |
+| `ui-cascader-field__branch-icon`        | slot      |                                            | A branch's forward glyph (also `ui-glyph`).                                     |
+| `ui-cascader-field__status`             | slot      |                                            | A level's loading, failure or empty message.                                    |
+| `ui-cascader-field__retry`              | slot      |                                            | The Retry button of a failed level (also `ui-button`).                          |
+| `data-placeholder`                      | state     | `true`                                     | On the value: nothing is chosen, so it shows the placeholder.                   |
+| `data-level`                            | state     |                                            | On a panel: its depth, from `0` for the top level.                              |
+| `data-status`                           | state     | `ready`, `loading`, `failed`               | On a panel and its status: whether its options are there.                       |
+| `data-branch`                           | state     | `true`                                     | On an option: it opens a further level.                                         |
+| `data-layer`                            | attribute | `dropdown`                                 | On the popover: its overlay layer; the z-index is set inline.                   |
+| `data-placement`                        | state     | `top`, `bottom`, `left`, `right`, `center` | On the popover: the side it opened on (React Aria).                             |
+| `data-trigger`                          | state     | `DialogTrigger`                            | On the popover: what opened it (React Aria).                                    |
+| `data-entering`                         | state     | `true`                                     | On the popover: opening (React Aria).                                           |
+| `data-exiting`                          | state     | `true`                                     | On the popover: closing (React Aria).                                           |
+| `data-collection`                       | state     |                                            | React Aria's collection marker, on the listboxes and options.                   |
+| `data-key`                              | attribute |                                            | On an option: its encoded collection key; not for styling.                      |
+| `data-layout`                           | state     | `stack`                                    | On a listbox (React Aria).                                                      |
+| `data-orientation`                      | state     | `vertical`                                 | On a listbox (React Aria).                                                      |
+| `data-empty`                            | state     | `true`                                     | On a listbox with no options (React Aria).                                      |
+| `data-focused`                          | state     | `true`                                     | On the trigger, a listbox or an option (React Aria).                            |
+| `data-focus-visible`                    | state     | `true`                                     | On the trigger, a listbox or an option (React Aria).                            |
+| `data-hovered`                          | state     | `true`                                     | On the trigger or an option (React Aria).                                       |
+| `data-pressed`                          | state     | `true`                                     | On the trigger or an option (React Aria).                                       |
+| `data-selected`                         | state     | `true`                                     | On an option: the active option of its level (React Aria).                      |
+| `data-selection-mode`                   | state     | `single`                                   | On an option (React Aria).                                                      |
+| `data-disabled`                         | state     | `true`                                     | On the trigger or an option: disabled (React Aria).                             |
