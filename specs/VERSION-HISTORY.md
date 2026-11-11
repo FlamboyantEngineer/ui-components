@@ -76,6 +76,13 @@ Verification: `src/components/version-history/version-history.test.tsx`, `e2e/ve
 Implementation: `src/components/version-history/version-history.tsx`
 Verification: `src/components/version-history/version-history.test.tsx`
 
+### UIC-VERSION-HISTORY-1.11 - Folded versions
+
+A version's `children` shall be older versions folded under it, newest first, such as the automatic versions saved before a named one (one level deep). While the filters keep any of them, its row's trailing controls start with an [Expand Toggle](EXPAND-TOGGLE.md) (`ui-version-history__fold`), before the menu, named, and tooltipped, by the provider's `foldedVersions` string for their number and the version's title, and the row publishes `data-expanded` while expanded; expanding shows the kept folded versions right after it, each row publishing `data-nested`, and collapsing hides them. `expandedKeys` (controlled) or `defaultExpandedKeys` set the expanded versions and `onExpandedChange` receives them as a `Set` after each toggle. Folded versions are versions like any other for selection, comparison (the order of `versions` with each version followed by its folded ones), restoring, naming, the person filter's people and disabling, and the filters apply to them: a folded version the filters keep under a version they drop stands on its own row, so a filter never hides a match.
+
+Implementation: `src/components/version-history/version-history.tsx`, `src/components/version-history/version-row.tsx`, `src/components/version-history/version-model.ts`, `src/core/strings/history.ts`
+Verification: `src/components/version-history/version-history-folding.test.tsx`, `e2e/version-history.spec.ts`
+
 ## UIC-VERSION-HISTORY-2 - Accessibility
 
 ### UIC-VERSION-HISTORY-2.1 - Named list and keyboard
@@ -87,21 +94,24 @@ Verification: `src/components/version-history/version-history.test.tsx`, `e2e/ve
 
 ## Hooks
 
-| Hook                              | Kind  | Values | Description                                                   |
-| --------------------------------- | ----- | ------ | ------------------------------------------------------------- |
-| `ui-version-history`              | root  |        | The history (`<div>`).                                        |
-| `ui-version-history__toolbar`     | slot  |        | The filters and the compare action above the list.            |
-| `ui-version-history__named-only`  | slot  |        | The named-versions switch (also `ui-switch`).                 |
-| `ui-version-history__person`      | slot  |        | The person filter's menu button (also `ui-dropdown-menu`).    |
-| `ui-version-history__compare`     | slot  |        | The compare button (also `ui-button`).                        |
-| `ui-version-history__list`        | slot  |        | The list of versions (also `ui-list-view`).                   |
-| `ui-version-history__version`     | slot  |        | One version's row (also `ui-list-view-item`).                 |
-| `ui-version-history__label`       | slot  |        | The version's name or time.                                   |
-| `ui-version-history__current`     | slot  |        | The current version's mark.                                   |
-| `ui-version-history__attribution` | slot  |        | Who saved the version and when (also `ui-attribution`).       |
-| `ui-version-history__summary`     | slot  |        | What changed in the version.                                  |
-| `ui-version-history__actions`     | slot  |        | The version's menu button (also `ui-dropdown-menu`).          |
-| `ui-version-history__error`       | slot  |        | Why the versions could not be loaded (also `ui-empty-state`). |
-| `data-named`                      | state | `true` | On a version: it has a name.                                  |
-| `data-current`                    | state | `true` | On a version: it is the current one.                          |
-| `data-loading`                    | state | `true` | While versions load.                                          |
+| Hook                              | Kind  | Values          | Description                                                                  |
+| --------------------------------- | ----- | --------------- | ---------------------------------------------------------------------------- |
+| `ui-version-history`              | root  |                 | The history (`<div>`).                                                       |
+| `ui-version-history__toolbar`     | slot  |                 | The filters and the compare action above the list.                           |
+| `ui-version-history__named-only`  | slot  |                 | The named-versions switch (also `ui-switch`).                                |
+| `ui-version-history__person`      | slot  |                 | The person filter's menu button (also `ui-dropdown-menu`).                   |
+| `ui-version-history__compare`     | slot  |                 | The compare button (also `ui-button`).                                       |
+| `ui-version-history__list`        | slot  |                 | The list of versions (also `ui-list-view`).                                  |
+| `ui-version-history__version`     | slot  |                 | One version's row (also `ui-list-view-item`).                                |
+| `ui-version-history__label`       | slot  |                 | The version's name or time.                                                  |
+| `ui-version-history__current`     | slot  |                 | The current version's mark.                                                  |
+| `ui-version-history__attribution` | slot  |                 | Who saved the version and when (also `ui-attribution`).                      |
+| `ui-version-history__summary`     | slot  |                 | What changed in the version.                                                 |
+| `ui-version-history__actions`     | slot  |                 | The version's menu button (also `ui-dropdown-menu`).                         |
+| `ui-version-history__fold`        | slot  |                 | The toggle that shows a version's folded versions (also `ui-expand-toggle`). |
+| `ui-version-history__error`       | slot  |                 | Why the versions could not be loaded (also `ui-empty-state`).                |
+| `data-named`                      | state | `true`          | On a version: it has a name.                                                 |
+| `data-current`                    | state | `true`          | On a version: it is the current one.                                         |
+| `data-nested`                     | state | `true`          | On a version folded under another, while shown.                              |
+| `data-expanded`                   | state | `true`, `false` | On a version that folds others: whether they are shown.                      |
+| `data-loading`                    | state | `true`          | While versions load.                                                         |

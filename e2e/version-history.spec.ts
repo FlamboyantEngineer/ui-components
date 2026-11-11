@@ -226,4 +226,28 @@ test.describe('Version History lab', () => {
     ).toBeFocused();
     await lab.expectAccessible();
   });
+
+  test('UIC-VERSION-HISTORY-1.11 folds automatic versions under a named one', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('version-history');
+    const demo = page.locator('[data-lab-demo="folded"]');
+    const rows = demo.getByRole('row');
+    await expect(rows).toHaveCount(3);
+    const toggle = demo.getByRole('button', {
+      name: '2 earlier versions under Shared with the club',
+    });
+    await toggle.click();
+    await expect(rows).toHaveCount(5);
+    await expect(demo.locator('[data-nested]')).toHaveCount(2);
+    await expect(demo.locator('[data-lab-output="expanded"]')).toHaveText('f5');
+    await rows.nth(3).locator('.ui-list-view-item__checkbox').click();
+    await rows.nth(0).locator('.ui-list-view-item__checkbox').click();
+    await demo.getByRole('button', { name: 'Compare' }).click();
+    await expect(demo.locator('[data-lab-output="compared"]')).toHaveText('f3 → f6');
+    await lab.expectAccessible('[data-lab-demo="folded"]');
+    await toggle.click();
+    await expect(rows).toHaveCount(3);
+  });
 });

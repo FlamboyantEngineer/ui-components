@@ -29,6 +29,8 @@ interface HistoryStrings {
   anyone: string;
   /** Names a version's menu of actions, from the version's name. */
   versionActions: (name: string) => string;
+  /** Names the toggle that shows or hides the versions folded under a version. */
+  foldedVersions: (count: number, name: string) => string;
   /** Asks to bring an earlier version back as the current one. */
   restoreVersion: string;
   /** Titles the confirmation of a restore, from the version's name. */
@@ -53,5 +55,6 @@ interface HistoryStrings {
 export const historyStrings = defineStrings<HistoryStrings>({
   versionsBy: (name) => ({ name, hasName: name !== null }),
   versionActions: (name) => ({ name }),
+  foldedVersions: (count, name) => ({ count, name }),
   restoreVersionTitle: (name) => ({ name }),
 });

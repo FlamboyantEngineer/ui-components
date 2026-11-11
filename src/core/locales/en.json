@@ -589,6 +589,7 @@
   "versionsBy": "{hasName, select, true {Edited by {name}} other {Edited by anyone}}",
   "anyone": "Anyone",
   "versionActions": "Actions for {name}",
+  "foldedVersions": "{count, plural, one {# earlier version} other {# earlier versions}} under {name}",
   "restoreVersion": "Restore this version",
   "restoreVersionTitle": "Restore {name}?",
   "restoreVersionMessage": "Its content replaces the current content.",

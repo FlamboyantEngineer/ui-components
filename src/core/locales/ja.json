@@ -589,6 +589,7 @@
   "versionsBy": "{hasName, select, true {{name}が編集} other {すべての編集者}}",
   "anyone": "すべてのユーザー",
   "versionActions": "{name}の操作",
+  "foldedVersions": "{name} の下の以前のバージョン {count} 件",
   "restoreVersion": "このバージョンを復元",
   "restoreVersionTitle": "{name}を復元しますか？",
   "restoreVersionMessage": "現在の内容がこのバージョンの内容に置き換わります。",

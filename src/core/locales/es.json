@@ -589,6 +589,7 @@
   "versionsBy": "{hasName, select, true {Editadas por {name}} other {Editadas por cualquiera}}",
   "anyone": "Cualquiera",
   "versionActions": "Acciones de {name}",
+  "foldedVersions": "{count, plural, one {# versión anterior} other {# versiones anteriores}} bajo {name}",
   "restoreVersion": "Restaurar esta versión",
   "restoreVersionTitle": "¿Restaurar {name}?",
   "restoreVersionMessage": "Su contenido reemplaza el contenido actual.",

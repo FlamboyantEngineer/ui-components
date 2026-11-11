@@ -12,6 +12,7 @@ import { requireDefined } from './require-defined.js';
 import {
   ControlledFilter,
   CustomEmpty,
+  FoldedHistory,
   PagedHistory,
   TimePolicy,
 } from './version-history-cases.js';
@@ -226,6 +227,12 @@ mountLab(
           />
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Folded versions"
+      description="Automatic versions fold under the named version saved after them: the toggle on a named version's row shows and hides them. Folded versions select, compare and filter like any other."
+    >
+      <FoldedHistory />
     </LabSection>
     <LabSection
       title="Filter owned by the host"

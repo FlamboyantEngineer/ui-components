@@ -13,6 +13,19 @@ interface VersionFacts {
   person?: { name: string } | undefined;
 }
 
+/** A version that may fold older versions under it. */
+interface FoldingVersion extends VersionFacts {
+  children?: readonly this[] | undefined;
+}
+
+/** A row the list draws: a version, whether it sits folded under another, and what it folds. */
+export interface VersionRow<V> {
+  version: V;
+  isNested: boolean;
+  /** How many of its folded versions the filter keeps; a row with any shows a toggle. */
+  foldedCount: number;
+}
+
 /** Which versions a history shows. */
 export interface VersionHistoryFilter {
   /** Keeps only the versions that have a name. */
@@ -39,6 +52,30 @@ export function filterVersions<V extends VersionFacts>(
       (!filter.namedOnly || isNamedVersion(version)) &&
       (filter.person === null || version.person?.name.trim() === filter.person),
   );
+}
+
+/** Every version, each followed by the versions it folds, newest first as listed. */
+export function flattenVersions<V extends FoldingVersion>(versions: readonly V[]): V[] {
+  return versions.flatMap((version) => [version, ...(version.children ?? [])]);
+}
+
+/**
+ * The rows the list draws: each version the filter keeps, followed, while it is expanded, by the
+ * folded versions the filter keeps. A folded version the filter keeps under a version it drops
+ * stands on its own row, so a filter never hides a match.
+ */
+export function listVersionRows<V extends FoldingVersion>(
+  versions: readonly V[],
+  options: { filter: VersionHistoryFilter; expandedKeys: ReadonlySet<Key> },
+): VersionRow<V>[] {
+  return versions.flatMap((version) => {
+    const kept = filterVersions(version.children ?? [], options.filter);
+    const loose = kept.map((child) => ({ version: child, isNested: false, foldedCount: 0 }));
+    if (filterVersions([version], options.filter).length === 0) return loose;
+    const row = { version, isNested: false, foldedCount: kept.length };
+    if (!options.expandedKeys.has(version.id)) return [row];
+    return [row, ...loose.map((child) => ({ ...child, isNested: true }))];
+  });
 }
 
 /** The names of the people who made the versions, once each, in order of first appearance. */
