@@ -2,7 +2,20 @@ import type { CodeToken, CodeTokenizer } from './code-layers.js';
 import { tokenizeJson } from './json-text.js';
 
 export type CodeLanguage =
-  'text' | 'json' | 'javascript' | 'typescript' | 'html' | 'css' | 'sql' | 'python' | 'markdown';
+  | 'text'
+  | 'json'
+  | 'javascript'
+  | 'typescript'
+  | 'html'
+  | 'css'
+  | 'sql'
+  | 'python'
+  | 'markdown'
+  | 'c'
+  | 'cpp'
+  | 'yaml'
+  | 'xml'
+  | 'shell';
 export interface CodeSyntaxRule {
   /** Styling token kind, such as keyword, string, number or comment. */
   type: string;
@@ -29,6 +42,24 @@ const js: CodeSyntax = [
     pattern:
       /\b(?:async|await|break|case|catch|class|const|continue|debugger|default|delete|do|else|export|extends|false|finally|for|from|function|if|import|in|instanceof|let|new|null|of|return|static|super|switch|this|throw|true|try|typeof|undefined|var|void|while|yield)\b/,
   },
+];
+const cKeywords =
+  'auto|break|case|char|const|continue|default|do|double|else|enum|extern|float|for|goto|if|inline|int|long|register|restrict|return|short|signed|sizeof|static|struct|switch|typedef|union|unsigned|void|volatile|while|NULL|true|false|bool';
+const cppKeywords =
+  'alignas|alignof|catch|class|constexpr|consteval|decltype|delete|explicit|friend|mutable|namespace|new|noexcept|nullptr|operator|override|private|protected|public|template|this|throw|try|typename|using|virtual';
+const c: CodeSyntax = [
+  comment,
+  { type: 'keyword', pattern: /^[ \t]*#[ \t]*\w+/m },
+  quoted,
+  numeric,
+  { type: 'keyword', pattern: new RegExp(`\\b(?:${cKeywords})\\b`) },
+];
+const xml: CodeSyntax = [
+  { type: 'comment', pattern: /<!--[\s\S]*?(?:-->|$)/ },
+  { type: 'string', pattern: /<!\[CDATA\[[\s\S]*?(?:\]\]>|$)/ },
+  { type: 'keyword', pattern: /<[?!/]?[\w:.-]*|\??\/?>/ },
+  { type: 'string', pattern: /"[^"]*"|'[^']*'/ },
+  { type: 'key', pattern: /[\w:.-]+(?=\s*=)/ },
 ];
 const presets: Record<Exclude<CodeLanguage, 'text' | 'json'>, CodeSyntax> = {
   javascript: js,
@@ -71,6 +102,29 @@ const presets: Record<Exclude<CodeLanguage, 'text' | 'json'>, CodeSyntax> = {
       pattern:
         /\b(?:and|as|assert|async|await|break|class|continue|def|del|elif|else|except|False|finally|for|from|global|if|import|in|is|lambda|None|nonlocal|not|or|pass|raise|return|True|try|while|with|yield)\b/,
     },
+  ],
+  c,
+  cpp: [{ type: 'keyword', pattern: new RegExp(`\\b(?:${cppKeywords})\\b`) }, ...c],
+  yaml: [
+    { type: 'comment', pattern: /(?:^|(?<=\s))#[^\n]*/ },
+    { type: 'keyword', pattern: /^(?:---|\.\.\.)$/m },
+    { type: 'key', pattern: /[^\s#:'"[\]{},-][^\n#:]*(?=:(?:\s|$))/ },
+    quoted,
+    numeric,
+    { type: 'keyword', pattern: /\b(?:true|false|null|yes|no|on|off)\b|~/i },
+  ],
+  xml,
+  shell: [
+    { type: 'comment', pattern: /(?:^|(?<=\s))#[^\n]*/ },
+    { type: 'string', pattern: /"(?:\\.|[^"\\])*"|'[^']*'/ },
+    { type: 'literal', pattern: /\$(?:\{[^}\n]*\}|\w+|[?#$!@*-])/ },
+    numeric,
+    {
+      type: 'keyword',
+      pattern:
+        /\b(?:if|then|else|elif|fi|for|while|until|do|done|case|esac|in|function|return|exit|export|local|readonly|set|unset|echo|cd|source)\b/,
+    },
+    { type: 'punctuation', pattern: /&&|\|\||[|&;<>]/ },
   ],
   markdown: [
     { type: 'string', pattern: /```[\s\S]*?(?:```|$)|`[^`\n]*`/ },
