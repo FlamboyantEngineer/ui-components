@@ -26,6 +26,7 @@ import {
   bellPath,
   bellSlashPath,
   boldPath,
+  bookOpenPath,
   calendarPath,
   chatBubbleBottomCenterTextPath,
   checkCirclePath,
@@ -72,6 +73,7 @@ import {
   handRaisedPath,
   handThumbDownPath,
   handThumbUpPath,
+  hashtagPath,
   informationCirclePath,
   italicPath,
   linkPath,
@@ -94,6 +96,7 @@ import {
   playPath,
   plusPath,
   questionMarkCirclePath,
+  scissorsPath,
   signalSlashPath,
   sparklesPath,
   starPath,
@@ -237,3 +240,6 @@ export const ClipboardGlyph = /* @__PURE__ */ createGlyph('clipboard', clipboard
 export const ThemeSystemGlyph = /* @__PURE__ */ createGlyph('theme-system', computerDesktopPath);
 export const ThemeLightGlyph = /* @__PURE__ */ createGlyph('theme-light', sunPath);
 export const ThemeDarkGlyph = /* @__PURE__ */ createGlyph('theme-dark', moonPath);
+export const NumberFormatGlyph = /* @__PURE__ */ createGlyph('number-format', hashtagPath);
+export const CutGlyph = /* @__PURE__ */ createGlyph('cut', scissorsPath);
+export const BookOpenGlyph = /* @__PURE__ */ createGlyph('book-open', bookOpenPath);

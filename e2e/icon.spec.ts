@@ -49,6 +49,28 @@ test.describe('Icon lab', () => {
     }
   });
 
+  test('UIC-PROVIDER-2.1 draws each formatting choice as its own mark at 16 and 24 pixels', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('icon');
+    const matrix = page.locator('table[data-lab-matrix="glyph pixels"]');
+    for (const pixels of [16, 24]) {
+      const marks = await matrix
+        .locator(`td[data-lab-cell*="pixels=${pixels}"] svg`)
+        .evaluateAll((glyphs) =>
+          glyphs.map((glyph) => ({
+            name: glyph.getAttribute('data-glyph'),
+            width: glyph.getBoundingClientRect().width,
+            drawing: glyph.innerHTML,
+          })),
+        );
+      expect(marks.length).toBe(23);
+      expect(new Set(marks.map((mark) => mark.drawing)).size).toBe(marks.length);
+      for (const mark of marks) expect(mark.width, mark.name ?? '').toBe(pixels);
+    }
+  });
+
   test('UIC-ICON-1.2 renders unstyled without errors', async ({ page, lab }) => {
     await lab.open('icon', { stylesheet: 'none' });
     await expect(page.locator('.ui-icon').first()).toBeVisible();

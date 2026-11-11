@@ -7,9 +7,13 @@ import { expectHooksMatchSpec } from '../../test/hooks.js';
 import { Link, useLocale } from '../primitives/index.js';
 import { numberCodec } from '../utils/json-codec.js';
 import { requireDefined } from '../utils/require-defined.js';
-import { BorderBottomGlyph, SuperscriptGlyph } from './drawn-glyphs.js';
+import {
+  AlignMiddleCenterGlyph,
+  SuperscriptGlyph,
+  TableBorderBottomGlyph,
+} from './drawn-glyphs.js';
 import { checkPath, xMarkPath } from './glyph-paths.js';
-import { CheckGlyph, CloseGlyph, type GlyphComponentProps } from './glyphs.js';
+import { CheckGlyph, CloseGlyph, CutGlyph, type GlyphComponentProps } from './glyphs.js';
 import { en } from './locales/index.js';
 import {
   Glyph,
@@ -90,9 +94,9 @@ describe('UiProvider defaults', () => {
 
 describe('drawn glyphs', () => {
   it('UIC-PROVIDER-2.1 draws a border glyph as a dotted grid of thin strokes and one solid edge', () => {
-    const { container } = render(<Glyph icon={BorderBottomGlyph} />);
+    const { container } = render(<Glyph icon={TableBorderBottomGlyph} />);
     const strokes = [...container.querySelectorAll('path')];
-    expect(container.querySelector('svg')).toHaveAttribute('data-glyph', 'border-bottom');
+    expect(container.querySelector('svg')).toHaveAttribute('data-glyph', 'table-border-bottom');
     expect(strokes).toHaveLength(4);
     for (const dotted of strokes.slice(0, 3)) {
       expect(dotted).toHaveAttribute('stroke-width', '1');
@@ -109,6 +113,21 @@ describe('drawn glyphs', () => {
       </UiProvider>,
     );
     expect(container.querySelector('svg')).toHaveAttribute('data-glyph', 'star');
+  });
+
+  it('UIC-PROVIDER-2.2 replaces a tabular formatting glyph by its key and keeps the caller props', () => {
+    const { container } = render(
+      <UiProvider icons={{ cut: StarGlyph }}>
+        <Glyph icon={CutGlyph} />
+        <Glyph icon={AlignMiddleCenterGlyph} className="caller" />
+      </UiProvider>,
+    );
+    const [cut, align] = container.querySelectorAll('svg');
+    expect(cut).toHaveAttribute('data-glyph', 'star');
+    expect(align).toHaveAttribute('data-glyph', 'align-middle-center');
+    expect(align).toHaveAttribute('aria-hidden', 'true');
+    expect(align).toHaveClass('caller');
+    expect(renderToStaticMarkup(<Glyph icon={CutGlyph} />)).toContain('data-glyph="cut"');
   });
 });
 
