@@ -19,6 +19,7 @@ export const comboboxHooks = createHooks('combobox', [
   'option-icon',
   'option-label',
   'option-description',
+  'option-shortcut',
   'create',
   'load-more',
   'empty',

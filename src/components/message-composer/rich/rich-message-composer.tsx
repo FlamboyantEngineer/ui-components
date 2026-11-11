@@ -1,10 +1,11 @@
 'use client';
 
-import { type FocusEvent, type Ref, useCallback, useRef } from 'react';
+import { type FocusEvent, type Ref, useCallback, useEffect, useRef } from 'react';
 import type { AvatarIdentity } from '../../avatar/avatar.js';
 import type { RecordLabelResolver } from '../../record-label/record-label.js';
 import { ComposerFrame } from '../composer-frame.js';
-import { useComposerKeys } from '../composer-keys.js';
+import { composerHooks as hooks } from '../composer-hooks.js';
+import { type ComposerKeys, useComposerKeys } from '../composer-keys.js';
 import {
   createMessageCodec,
   emptyMessage,
@@ -110,6 +111,20 @@ export interface RichMessageComposerProps extends MessageComposerSharedProps {
   onPaste?: ((paste: MessageComposerPaste) => MessageComposerPasteResult) | undefined;
 }
 
+/** The rich text box alone, for a host component with its own buttons, keys and sending. */
+export interface RichMessageFieldProps extends Pick<
+  RichMessageComposerProps,
+  'className' | 'aria-label' | 'placeholder' | 'isDisabled' | 'triggers' | 'minRows' | 'maxRows'
+> {
+  value: MessageComposerMessage;
+  onChange: (value: MessageComposerMessage) => void;
+  /** Focuses the text box when it mounts. */
+  autoFocus?: boolean | undefined;
+}
+
+/** The field takes no chord: every key it does not use reaches the component around it. */
+const fieldKeys: ComposerKeys = { submit: [], submitNow: [] };
+
 const richFormat: ComposerFormat<MessageComposerMessage> = {
   empty: emptyMessage,
   toText: (message) => message.text,
@@ -167,5 +182,33 @@ export function RichMessageComposer(props: RichMessageComposerProps) {
         handleRef={handleRef}
       />
     </ComposerFrame>
+  );
+}
+
+/**
+ * The rich composer's text box without its frame: pills from the host's triggers, chosen from the
+ * completion list, inside a `ui-message-composer` root that anchors the list. It sends nothing:
+ * Enter breaks the line and the other keys reach the component around it.
+ */
+export function RichMessageField({ className, autoFocus, ...props }: RichMessageFieldProps) {
+  const { isDisabled = false } = props;
+  const state = useComposerState({ ...props, isBlocked: true, format: richFormat });
+  const rootRef = useRef<HTMLDivElement>(null);
+  const handleRef = useRef<RichEditorHandle | null>(null);
+  const inputRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (autoFocus) inputRef.current?.focus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- on mount only, as a text field's autoFocus
+  }, []);
+  return (
+    <div {...hooks.root({ className, data: { disabled: isDisabled } })} ref={rootRef}>
+      <RichComposerEditor
+        props={{ ...props, ref: inputRef }}
+        state={state}
+        keys={fieldKeys}
+        rootRef={rootRef}
+        handleRef={handleRef}
+      />
+    </div>
   );
 }

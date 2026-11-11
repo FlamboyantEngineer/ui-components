@@ -1,6 +1,13 @@
 'use client';
 
-import { type KeyboardEvent, type RefObject, useMemo, useRef, useState } from 'react';
+import {
+  type CSSProperties,
+  type KeyboardEvent,
+  type RefObject,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
@@ -31,6 +38,10 @@ export interface CharacterGridProps
   persistKey?: string | undefined;
   /** Focuses the search field when the grid mounts. */
   autoFocus?: boolean | undefined;
+  /** The font the characters show in, such as the font of the text they go into. */
+  fontFamily?: string | undefined;
+  /** How many cells make a row of each section. Without it, the host's stylesheet decides. */
+  columns?: number | undefined;
 }
 
 interface CharacterSection {
@@ -56,6 +67,15 @@ const hooks = createHooks('character-grid', [
 // never reach the menu or toolbar that holds it.
 const gridKeys = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End']);
 
+function keepGridKeys(event: KeyboardEvent<HTMLElement>) {
+  if (gridKeys.has(event.key)) event.stopPropagation();
+}
+
+/** The caller's font for the characters, as the cells and the preview show them. */
+function toFontStyle(fontFamily: string | undefined): CSSProperties | undefined {
+  return fontFamily ? { fontFamily } : undefined;
+}
+
 function getCellKey(section: string, char: string): string {
   return encodeURIComponent(JSON.stringify([section, char]));
 }
@@ -64,13 +84,22 @@ function getCellKey(section: string, char: string): string {
  * The decorative preview of the character last hovered or focused: itself, its name and code. It
  * reads the active character from a store, so a hover re-renders the preview alone, not the grid.
  */
-function CharacterPreview({ active }: { active: ValueStore<CharacterGridCharacter | null> }) {
+function CharacterPreview({
+  active,
+  fontFamily,
+}: {
+  active: ValueStore<CharacterGridCharacter | null>;
+  fontFamily: string | undefined;
+}) {
   const character = useStoreValue(active);
+  const font = toFontStyle(fontFamily);
   return (
     <div {...hooks.slot('preview')} aria-hidden="true">
       {character ? (
         <>
-          <span {...hooks.slot('preview-char')}>{character.char}</span>
+          <span {...hooks.slot('preview-char')} style={font}>
+            {character.char}
+          </span>
           <span {...hooks.slot('preview-name')}>{character.name}</span>
           <span {...hooks.slot('preview-code')}>{formatCodePoints(character.char)}</span>
         </>
@@ -84,6 +113,8 @@ interface CharacterSectionsProps extends Pick<
   'aria-label' | 'aria-labelledby'
 > {
   sections: readonly CharacterSection[];
+  fontFamily: string | undefined;
+  columns: number | undefined;
   gridRef: RefObject<HTMLDivElement | null>;
   onAction: (key: Key) => void;
   onActiveChange: (character: CharacterGridCharacter) => void;
@@ -92,11 +123,14 @@ interface CharacterSectionsProps extends Pick<
 /** The grid list: one section per category, headed by its label, one cell per character. */
 function CharacterSections({
   sections,
+  fontFamily,
+  columns,
   gridRef,
   onAction,
   onActiveChange,
   ...labelling
 }: CharacterSectionsProps) {
+  const font = toFontStyle(fontFamily);
   return (
     <GridList
       ref={gridRef}
@@ -110,6 +144,11 @@ function CharacterSections({
           key={section.key}
           id={toCollectionKey(section.key)}
           className={hooks.slotClass('section')}
+          style={
+            columns === undefined
+              ? undefined
+              : { gridTemplateColumns: `repeat(${String(columns)}, minmax(0, 1fr))` }
+          }
         >
           <GridListHeader className={hooks.slotClass('heading')}>{section.label}</GridListHeader>
           {section.characters.map((character) => (
@@ -118,6 +157,7 @@ function CharacterSections({
               id={getCellKey(section.key, character.char)}
               className={hooks.slotClass('cell')}
               textValue={character.name}
+              style={font}
               onHoverStart={() => onActiveChange(character)}
             >
               {character.char}
@@ -164,6 +204,8 @@ export function CharacterGrid({
   onSelect,
   persistKey,
   autoFocus = false,
+  fontFamily,
+  columns,
   className,
   id,
   ...rest
@@ -205,9 +247,7 @@ export function CharacterGrid({
         if (character) active.set(character);
       }}
       onKeyDownCapture={moveToGrid}
-      onKeyDown={(event) => {
-        if (gridKeys.has(event.key)) event.stopPropagation();
-      }}
+      onKeyDown={keepGridKeys}
     >
       <SearchField
         className={hooks.slotClass('search')}
@@ -228,12 +268,14 @@ export function CharacterGrid({
           aria-label={label}
           aria-labelledby={labelledBy}
           sections={sections}
+          fontFamily={fontFamily}
+          columns={columns}
           gridRef={gridRef}
           onAction={(key) => choose(byKey.get(key))}
           onActiveChange={active.set}
         />
       )}
-      <CharacterPreview active={active} />
+      <CharacterPreview active={active} fontFamily={fontFamily} />
     </div>
   );
 }

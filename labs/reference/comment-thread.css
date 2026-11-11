@@ -171,3 +171,16 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+
+/* A comment's text keeps its line breaks; a mention reads as a tinted chip in the sentence. */
+.ui-comment-text {
+  white-space: pre-wrap;
+}
+
+.ui-comment-text__mention {
+  padding: 0 4px;
+  border-radius: var(--ref-radius-sm);
+  background: color-mix(in srgb, var(--ref-accent) var(--ref-tint), transparent);
+  font-weight: var(--ref-font-weight-medium);
+  box-decoration-break: clone;
+}

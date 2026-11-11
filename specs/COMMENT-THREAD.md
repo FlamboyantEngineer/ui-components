@@ -20,7 +20,7 @@ Verification: `src/components/comment-thread/comment-thread.test.tsx`, `src/comp
 
 ### UIC-COMMENT-THREAD-1.3 - Caller composer
 
-`composer` shall render in the composer slot in place of the default composer, so a host can reply with mentions, attachments or rich text. The [Rich Message Composer](MESSAGE-COMPOSER.md) fits there and in `renderEditor` (UIC-COMMENT-THREAD-2.3): `@` inserts a mention pill and its emoji button inserts at the caret. The thread and its comments carry plain text, so the host keeps each message's mentions beside its text, starts an edit from them, and draws them in the comment's children, for example through [Chat Parts](CHAT-PARTS.md).
+`composer` shall render in the composer slot in place of the default composer, so a host can reply with attachments or rich text. The [Rich Message Composer](MESSAGE-COMPOSER.md) fits there and in `renderEditor` (UIC-COMMENT-THREAD-2.3): `@` inserts a mention pill and its emoji button inserts at the caret. The thread and its comments carry plain text, so such a host keeps each message's tokens beside its text, starts an edit from them, and draws them in the comment's children, for example through [Chat Parts](CHAT-PARTS.md). Mentions alone need no caller composer: they travel in the text ([UIC-COMMENT-THREAD-3](#uic-comment-thread-3---mentions)).
 
 Implementation: `src/components/comment-thread/comment-thread.tsx`
 Verification: `src/components/comment-thread/comment-thread.test.tsx`, `e2e/comment-thread.spec.ts`
@@ -134,6 +134,22 @@ When a comment loses `onEdit`, or its thread turns read-only, while its editor i
 Implementation: `src/components/comment-thread/comment-thread-reply.tsx`
 Verification: `src/components/comment-thread/comment-thread-reply-mutations.test.tsx`, `e2e/comment-thread.spec.ts`
 
+## UIC-COMMENT-THREAD-3 - Mentions
+
+### UIC-COMMENT-THREAD-3.1 - Mentions in the thread
+
+With `mentions` (from `createCommentMentions`, [UIC-COMMENT-COMPOSER-2](COMMENT-COMPOSER.md#uic-comment-composer-2---mentions)), the thread shall pass them to its default composer and, through its comments, to each comment's default editor, so `@` mentions people in a reply and an edit starts from the comment's `text` with its mentions as chips; `onReply` and `onEdit` receive the text with each mention as its token. A comment without `children` shows its `text` as a `CommentText` with the mentions' `parse` ([UIC-COMMENT-THREAD-3.2](#uic-comment-thread-32---comment-text)). `CommentThreadReply` takes its own `mentions` too, which win over the thread's; without either, its body is the plain `text`. A caller `composer` or `renderEditor` is used as it is.
+
+Implementation: `src/components/comment-thread/comment-thread.tsx`, `src/components/comment-thread/comment-thread-reply.tsx`, `src/components/comment-thread/comment-thread-context.ts`
+Verification: `src/components/comment-thread/comment-thread-mentions.test.tsx`, `e2e/comment-thread.spec.ts`
+
+### UIC-COMMENT-THREAD-3.2 - Comment text
+
+`CommentText` shall render a comment's stored `text` in a `ui-comment-text` `<span>`: its plain runs as text, and each mention that `parse` finds (by default `parseMentions`, for `@[Name](id)`) as a `ui-comment-text__mention` chip that shows the person's name, which is what assistive technology reads. With `renderCard`, a mention whose card it returns sits in a [User Card Trigger](USER-CARD-TRIGGER.md), a button named by the person that opens the card; a mention it returns nothing for stays a plain chip. It appends the caller's `className` and forwards caller `data-*` attributes, `id` and `ref`. It needs no rich text peer, so a host shows mentions anywhere it shows comments.
+
+Implementation: `src/components/comment-thread/comment-text.tsx`, `src/components/comment-composer/comment-mentions.ts`
+Verification: `src/components/comment-thread/comment-text.test.tsx`, `e2e/comment-thread.spec.ts`
+
 ## Hooks
 
 | Hook                                 | Kind      | Values | Description                                                                        |
@@ -167,3 +183,5 @@ Verification: `src/components/comment-thread/comment-thread-reply-mutations.test
 | `ui-comment-thread-reply__reactions` | slot      |        | The reactions under the body.                                                      |
 | `data-edited`                        | state     | `true` | The comment changed after it was posted (on the reply).                            |
 | `data-editing`                       | state     | `true` | The reader is editing the comment (on the reply).                                  |
+| `ui-comment-text`                    | root      |        | A comment's text with its mentions (`<span>`).                                     |
+| `ui-comment-text__mention`           | slot      |        | A mention's chip, showing the person's name.                                       |

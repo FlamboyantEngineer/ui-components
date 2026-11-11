@@ -27,6 +27,7 @@ export const selectFieldHooks = createHooks('select-field', [
   'option-icon',
   'option-label',
   'option-description',
+  'option-shortcut',
   'frame',
   'trigger',
   'previous',

@@ -4,6 +4,7 @@ import { CommentComposer } from '../../src/components/comment-composer/comment-c
 import { Switch } from '../../src/components/switch/switch.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { CommentComposerHostCases } from './comment-composer-host-cases.js';
+import { sampleMentions } from './comment-mention-samples.js';
 
 const drafts = { empty: '', draft: 'The pears arrive on Tuesday.\nCan we move the tasting?' };
 
@@ -69,6 +70,26 @@ function StoredDraft() {
       <p>
         Cancelled: <output data-lab-output="cancelled">{cancelled}</output>
       </p>
+    </div>
+  );
+}
+
+/** A composer that mentions people: the submitted text keeps each mention as its token. */
+function MentionComposer() {
+  const [posted, setPosted] = useState<string[]>([]);
+  return (
+    <div>
+      <CommentComposer
+        mentions={sampleMentions}
+        defaultValue="@[Lena Ortiz](lena) can you taste the pear sauce?"
+        onSubmit={(text) => setPosted((list) => [...list, text])}
+        data-lab-composer="mentions"
+      />
+      <ol data-lab-output="mentions">
+        {posted.map((text, index) => (
+          <li key={index}>{text}</li>
+        ))}
+      </ol>
     </div>
   );
 }
@@ -146,6 +167,12 @@ mountLab(
       description="Send in one thread, then open the other before the 1.5-second submit settles: only the sent thread's draft clears, and the other thread is not pending."
     >
       <ThreadDrafts />
+    </LabSection>
+    <LabSection
+      title="Mentions"
+      description="With mentions, type @ and a few letters: the list shows the people the host's search finds after a short delay. Arrows and Enter insert a person as a chip that Backspace removes whole. Ctrl+Enter sends the text with each mention as its @[Name](id) token, listed below."
+    >
+      <MentionComposer />
     </LabSection>
     <CommentComposerHostCases />
   </>,

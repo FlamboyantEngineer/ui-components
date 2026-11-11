@@ -16,6 +16,7 @@ import {
   CommentComposer,
   type CommentComposerProps,
 } from '../comment-composer/comment-composer.js';
+import type { CommentMentions } from '../comment-composer/comment-mentions.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import { Tooltip } from '../tooltip/tooltip.js';
 import { CommentThreadContext } from './comment-thread-context.js';
@@ -54,6 +55,11 @@ export interface CommentThreadProps
   onReply?: CommentComposerProps['onSubmit'] | undefined;
   /** The caller's own composer, in place of the default one. */
   composer?: ReactNode;
+  /**
+   * Lets `@` mention people in the default composer and in each comment's default editor, and shows
+   * the mentions of a comment without `children` as chips. From `createCommentMentions`.
+   */
+  mentions?: CommentMentions | undefined;
   /** A failure to report under the comments, such as a reply that could not be posted. */
   error?: ReactNode;
 }
@@ -192,15 +198,20 @@ function CommentThreadHeader({
 function ThreadComposer({
   composer,
   onReply,
+  mentions,
   isFirst,
   isHidden,
-}: Pick<CommentThreadProps, 'composer' | 'onReply'> & { isFirst: boolean; isHidden: boolean }) {
+}: Pick<CommentThreadProps, 'composer' | 'onReply' | 'mentions'> & {
+  isFirst: boolean;
+  isHidden: boolean;
+}) {
   const strings = useUiStrings();
   const content =
     composer ??
     (onReply ? (
       <CommentComposer
         onSubmit={onReply}
+        mentions={mentions}
         label={isFirst ? strings.addComment : strings.reply}
         submitLabel={isFirst ? strings.comment : strings.reply}
       />
@@ -230,12 +241,13 @@ export function CommentThread({
   visibleReplies,
   onReply,
   composer,
+  mentions,
   error,
   className,
   ...rest
 }: CommentThreadProps) {
   const strings = useUiStrings();
-  const threadContext = useMemo(() => ({ isReadOnly }), [isReadOnly]);
+  const threadContext = useMemo(() => ({ isReadOnly, mentions }), [isReadOnly, mentions]);
   const [resolved, setResolved] = useControllableState(
     isResolved,
     defaultResolved,
@@ -279,6 +291,7 @@ export function CommentThread({
           <ThreadComposer
             composer={composer}
             onReply={onReply}
+            mentions={mentions}
             isFirst={comments.length === 0}
             isHidden={!canReply}
           />

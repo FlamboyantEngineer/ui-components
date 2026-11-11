@@ -159,7 +159,7 @@ Verification: `src/components/file-upload/file-upload-files.test.tsx`, `e2e/file
 
 ### UIC-FILE-UPLOAD-3.7 - Type glyph
 
-A listed file without a thumbnail shall show the glyph of its MIME type (`ui-file-upload__file-icon`, decorative): `image`, `video` or `audio` for those families, `file` otherwise, from its `type`, else its `file`'s type (`getFileGlyph`).
+A listed file without a thumbnail shall show the glyph of its MIME type (`ui-file-upload__file-icon`, decorative): `file-image`, `file-video` or `file-audio` for those families, `file` otherwise, from its `type`, else its `file`'s type (`getFileGlyph`).
 
 Implementation: `src/components/file-upload/file-upload-files.tsx`, `src/utils/file-glyph.ts`, `src/core/glyphs.tsx`
 Verification: `src/components/file-upload/file-upload-files.test.tsx`, `src/utils/file-glyph.test.ts`

@@ -9,6 +9,7 @@ import { createJsonCodec } from '../../utils/json-codec.js';
 import { useDraftSubmission } from '../../utils/use-draft-submission.js';
 import { Button } from '../button/button.js';
 import { TextField } from '../text-field/text-field.js';
+import type { CommentMentionFieldProps, CommentMentions } from './comment-mentions.js';
 
 export interface CommentComposerProps extends BaseProps, RefProps<HTMLDivElement> {
   /** The draft, controlled. */
@@ -37,6 +38,11 @@ export interface CommentComposerProps extends BaseProps, RefProps<HTMLDivElement
   isDisabled?: boolean | undefined;
   /** Focuses the text box when the composer mounts. */
   autoFocus?: boolean | undefined;
+  /**
+   * Lets `@` mention people, from `createCommentMentions`: the draft and the submitted text hold
+   * each mention as its token. Keep the object stable: a new one asks its source again.
+   */
+  mentions?: CommentMentions | undefined;
 }
 
 const hooks = createHooks('comment-composer', ['field', 'actions', 'cancel', 'submit']);
@@ -132,10 +138,25 @@ function handleComposerKey(event: KeyboardEvent, actions: ComposerActions) {
   }
 }
 
+/** The text box: a multi-line `TextField`, or the one `mentions` draws. */
+function ComposerField({
+  field,
+  mentions,
+}: {
+  field: CommentMentionFieldProps;
+  mentions: CommentMentions | undefined;
+}) {
+  if (mentions) return mentions.renderField(field);
+  return (
+    <TextField {...field} labelLayout="control-only" multiline minRows={2} tracksChanges={false} />
+  );
+}
+
 /**
  * A plain-text comment box: a multi-line `TextField` with submit and cancel buttons. Ctrl+Enter or
- * Command+Enter submits and Escape cancels. A host with mentions or rich text passes its own
- * composer where this one is the default.
+ * Command+Enter submits and Escape cancels. With `mentions`, `@` picks a person, who shows as a chip
+ * and is submitted as a token in the text. A host with rich text passes its own composer where this
+ * one is the default.
  */
 export function CommentComposer({
   value,
@@ -149,6 +170,7 @@ export function CommentComposer({
   persistKey,
   isDisabled = false,
   autoFocus,
+  mentions,
   className,
   ...rest
 }: CommentComposerProps) {
@@ -175,18 +197,17 @@ export function CommentComposer({
       {...hooks.root({ className, data: { disabled: isDisabled, pending: actions.isPending } })}
       onKeyDown={(event) => handleComposerKey(event, actions)}
     >
-      <TextField
-        className={hooks.slotClass('field')}
-        label={fieldLabel}
-        labelLayout="control-only"
-        placeholder={placeholder ?? fieldLabel}
-        multiline
-        minRows={2}
-        value={draft}
-        tracksChanges={false}
-        onChange={actions.setDraft}
-        isDisabled={isDisabled}
-        autoFocus={autoFocus}
+      <ComposerField
+        mentions={mentions}
+        field={{
+          className: hooks.slotClass('field'),
+          label: fieldLabel,
+          placeholder: placeholder ?? fieldLabel,
+          value: draft,
+          onChange: actions.setDraft,
+          isDisabled,
+          autoFocus,
+        }}
       />
       <div {...hooks.slot('actions')}>
         {actions.canCancel ? (

@@ -163,6 +163,19 @@ mountLab(
       <InlineGrid />
     </LabSection>
     <LabSection
+      title="Font and columns"
+      description="The cells and the preview show the characters in a serif font, six to a row instead of the stylesheet's eight; the arrow keys follow the rows."
+    >
+      <CharacterGrid
+        categories={symbols}
+        onSelect={() => {}}
+        fontFamily="Georgia, 'Times New Roman', serif"
+        columns={6}
+        aria-label="Serif symbols"
+        data-lab-field="font"
+      />
+    </LabSection>
+    <LabSection
       title="In a popover"
       description="The insert command opens the grid with the search focused; choosing appends the character and closes it."
     >

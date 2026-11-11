@@ -438,6 +438,32 @@ describe('CharacterGrid', () => {
       'Ideograph 299',
     );
   });
+
+  it('UIC-CHARACTER-GRID-1.5 shows the characters in the caller font and columns', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <CharacterGrid
+        categories={categories}
+        onSelect={() => {}}
+        fontFamily="Georgia, serif"
+        columns={8}
+      />,
+    );
+    for (const section of container.querySelectorAll<HTMLElement>('.ui-character-grid__section')) {
+      expect(section.style.gridTemplateColumns).toBe('repeat(8, minmax(0, 1fr))');
+    }
+    expect(cell('Euro sign').style.fontFamily).toBe('Georgia, serif');
+    await user.hover(cell('Euro sign'));
+    const preview = container.querySelector<HTMLElement>('.ui-character-grid__preview-char');
+    expect(preview?.style.fontFamily).toBe('Georgia, serif');
+    expect(container.querySelector('.ui-character-grid__preview-code')).toHaveTextContent('U+20AC');
+  });
+
+  it('UIC-CHARACTER-GRID-1.5 leaves the font and columns to the stylesheet by default', () => {
+    const { container } = renderGrid();
+    expect(container.querySelector('.ui-character-grid__section')).not.toHaveAttribute('style');
+    expect(cell('Euro sign')).not.toHaveAttribute('style');
+  });
 });
 
 function requireCircled(offered: readonly CharacterGridCategory[]): CharacterGridCategory {

@@ -12,6 +12,7 @@ const hooks = createHooks('combobox', [
   'option-icon',
   'option-label',
   'option-description',
+  'option-shortcut',
 ]);
 
 const search = { isLoading: false, hasFailed: false, isTooShort: false, minSearchLength: 2 };
@@ -63,6 +64,25 @@ describe('picker vocabulary', () => {
     expect(pear).toHaveAttribute('aria-disabled', 'true');
     expect(pear.querySelector('.ui-combobox__option-description')).toBeNull();
     expect(screen.getByRole('option', { name: 'Custom fig' })).toBeInTheDocument();
+  });
+
+  it('UIC-FIELD-11.2 draws an option shortcut at the end of its row, named after the description', () => {
+    render(
+      <ListBox aria-label="Styles">
+        <PickerOptionRow
+          id="bold"
+          option={{ id: 'bold', label: 'Bold', description: 'Heavier', shortcut: 'Ctrl+B' }}
+          hooks={hooks}
+        />
+        <PickerOptionRow id="plain" option={{ id: 'plain', label: 'Plain' }} hooks={hooks} />
+      </ListBox>,
+    );
+    const bold = screen.getByRole('option', { name: 'Bold Heavier Control B' });
+    const shortcut = bold.querySelector('.ui-combobox__option-shortcut');
+    expect(shortcut).toHaveClass('ui-shortcut');
+    expect(bold.lastElementChild).toBe(shortcut);
+    const plain = screen.getByRole('option', { name: 'Plain' });
+    expect(plain.querySelector('.ui-combobox__option-shortcut')).toBeNull();
   });
 
   it('UIC-FIELD-11.1 tells the empty list the search status, else the caller or no results', () => {

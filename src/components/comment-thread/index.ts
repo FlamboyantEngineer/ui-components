@@ -1,3 +1,5 @@
+export type { CommentTextProps } from './comment-text.js';
+export { CommentText } from './comment-text.js';
 export type { CommentThreadProps } from './comment-thread.js';
 export { CommentThread } from './comment-thread.js';
 export type { CommentEditorOptions, CommentThreadReplyProps } from './comment-thread-reply.js';

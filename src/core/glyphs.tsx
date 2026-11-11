@@ -3,7 +3,6 @@
 import { createGlyph } from './glyph-component.js';
 import {
   adjustmentsHorizontalPath,
-  archiveBoxPath,
   arrowDownPath,
   arrowDownTrayPath,
   arrowLeftPath,
@@ -23,7 +22,6 @@ import {
   arrowUpTrayPath,
   arrowUturnLeftPath,
   arrowUturnRightPath,
-  bars2Path,
   bars3BottomLeftPath,
   bellPath,
   bellSlashPath,
@@ -44,25 +42,29 @@ import {
   codeBracketPath,
   codeBracketSquarePath,
   commandLinePath,
+  diskPath,
   documentDuplicatePath,
   documentPath,
-  documentTextPath,
   ellipsisHorizontalCirclePath,
   ellipsisHorizontalPath,
   ellipsisVerticalPath,
   envelopeOpenPath,
   envelopePath,
   exclamationCirclePath,
-  exclamationTrianglePath,
   eyeDropperPath,
   eyePath,
   eyeSlashPath,
   faceSmilePath,
+  fileBadgeArchivePath,
+  fileBadgePath,
+  fileBadgePdfPath,
+  fileBadgeTextPath,
   filmPath,
   folderPath,
   functionPath,
   funnelPath,
   globeAltPath,
+  gripVerticalPath,
   h1Path,
   h2Path,
   h3Path,
@@ -79,9 +81,9 @@ import {
   minusCirclePath,
   minusPath,
   musicalNotePath,
-  newspaperPath,
   noSymbolPath,
   numberedListPath,
+  pageFitWidthPath,
   paperAirplanePath,
   paperClipPath,
   pausePath,
@@ -100,6 +102,7 @@ import {
   underlinePath,
   usersPath,
   viewColumnsPath,
+  warningTrianglePath,
   wrenchPath,
   xCirclePath,
   xMarkPath,
@@ -135,7 +138,7 @@ export const CollapseGlyph = /* @__PURE__ */ createGlyph('collapse', arrowsPoint
 export const SearchGlyph = /* @__PURE__ */ createGlyph('search', magnifyingGlassPath);
 export const FilterGlyph = /* @__PURE__ */ createGlyph('filter', funnelPath);
 export const InfoGlyph = /* @__PURE__ */ createGlyph('info', informationCirclePath);
-export const WarningGlyph = /* @__PURE__ */ createGlyph('warning', exclamationTrianglePath);
+export const WarningGlyph = /* @__PURE__ */ createGlyph('warning', warningTrianglePath);
 export const ErrorGlyph = /* @__PURE__ */ createGlyph('error', exclamationCirclePath);
 export const SuccessGlyph = /* @__PURE__ */ createGlyph('success', checkCirclePath);
 export const HelpGlyph = /* @__PURE__ */ createGlyph('help', questionMarkCirclePath);
@@ -147,14 +150,14 @@ export const RestoreGlyph = /* @__PURE__ */ createGlyph('restore', arrowPathPath
 export const RefreshGlyph = /* @__PURE__ */ createGlyph('refresh', arrowPathPath);
 export const EditGlyph = /* @__PURE__ */ createGlyph('edit', pencilSquarePath);
 export const CopyGlyph = /* @__PURE__ */ createGlyph('copy', documentDuplicatePath);
-export const SaveGlyph = /* @__PURE__ */ createGlyph('save', checkPath);
+export const SaveGlyph = /* @__PURE__ */ createGlyph('save', diskPath);
 export const DeleteGlyph = /* @__PURE__ */ createGlyph('delete', trashPath);
 export const CalendarGlyph = /* @__PURE__ */ createGlyph('calendar', calendarPath);
-export const DragHandleGlyph = /* @__PURE__ */ createGlyph('drag-handle', bars2Path);
+export const DragHandleGlyph = /* @__PURE__ */ createGlyph('drag-handle', gripVerticalPath);
 export const UploadGlyph = /* @__PURE__ */ createGlyph('upload', arrowUpTrayPath);
 export const FolderGlyph = /* @__PURE__ */ createGlyph('folder', folderPath);
 export const UsersGlyph = /* @__PURE__ */ createGlyph('users', usersPath);
-export const FitWidthGlyph = /* @__PURE__ */ createGlyph('fit-width', arrowsRightLeftPath);
+export const FitWidthGlyph = /* @__PURE__ */ createGlyph('fit-width', pageFitWidthPath);
 export const FitPageGlyph = /* @__PURE__ */ createGlyph('fit-page', documentPath);
 export const EyeDropperGlyph = /* @__PURE__ */ createGlyph('eye-dropper', eyeDropperPath);
 export const EyeGlyph = /* @__PURE__ */ createGlyph('eye', eyePath);
@@ -181,13 +184,13 @@ export const AttachGlyph = /* @__PURE__ */ createGlyph('attach', paperClipPath);
 export const StopGlyph = /* @__PURE__ */ createGlyph('stop', stopPath);
 export const DownloadGlyph = /* @__PURE__ */ createGlyph('download', arrowDownTrayPath);
 export const RotateGlyph = /* @__PURE__ */ createGlyph('rotate', arrowPathRoundedSquarePath);
-export const FileGlyph = /* @__PURE__ */ createGlyph('file', documentPath);
+export const FileGlyph = /* @__PURE__ */ createGlyph('file', fileBadgePath);
 export const ImageGlyph = /* @__PURE__ */ createGlyph('image', photoPath);
 export const VideoGlyph = /* @__PURE__ */ createGlyph('video', filmPath);
 export const AudioGlyph = /* @__PURE__ */ createGlyph('audio', musicalNotePath);
-export const FilePdfGlyph = /* @__PURE__ */ createGlyph('file-pdf', newspaperPath);
-export const FileArchiveGlyph = /* @__PURE__ */ createGlyph('file-archive', archiveBoxPath);
-export const FileTextGlyph = /* @__PURE__ */ createGlyph('file-text', documentTextPath);
+export const FilePdfGlyph = /* @__PURE__ */ createGlyph('file-pdf', fileBadgePdfPath);
+export const FileArchiveGlyph = /* @__PURE__ */ createGlyph('file-archive', fileBadgeArchivePath);
+export const FileTextGlyph = /* @__PURE__ */ createGlyph('file-text', fileBadgeTextPath);
 export const StarGlyph = /* @__PURE__ */ createGlyph('star', starPath);
 export const AdjustmentsGlyph = /* @__PURE__ */ createGlyph(
   'adjustments',

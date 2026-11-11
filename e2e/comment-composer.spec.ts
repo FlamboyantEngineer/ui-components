@@ -193,4 +193,36 @@ test.describe('Comment Composer host cases', () => {
     await page.keyboard.press('ControlOrMeta+Enter');
     await expect(box).toHaveCount(0);
   });
+  test('UIC-COMMENT-COMPOSER-2.1 UIC-COMMENT-COMPOSER-2.2 UIC-COMMENT-COMPOSER-2.3 mentions people from the search', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('comment-composer');
+    const composer = page.locator('[data-lab-composer="mentions"]');
+    const box = composer.getByRole('textbox', { name: 'Add a comment' });
+    await expect(box.locator('.ui-message-composer__pill')).toHaveText('Lena Ortiz');
+    await box.click();
+    await page.keyboard.press('ControlOrMeta+End');
+    await page.keyboard.type(' Ask @ma');
+    const list = page.getByRole('listbox', { name: 'Suggestions' });
+    await expect(list.getByRole('option', { name: /Maria Santos/ })).toBeVisible();
+    await expect(box).toHaveAttribute('aria-controls', (await list.getAttribute('id')) ?? '');
+    await lab.expectAccessible('[data-lab-composer="mentions"]');
+    await page.keyboard.press('Enter');
+    await expect(list).toHaveCount(0);
+    await expect(box.locator('.ui-message-composer__pill')).toHaveText([
+      'Lena Ortiz',
+      'Maria Santos',
+    ]);
+    await page.keyboard.press('Backspace');
+    await page.keyboard.press('Backspace');
+    await expect(box.locator('.ui-message-composer__pill')).toHaveCount(1);
+    await page.keyboard.type('@jo');
+    await expect(page.getByRole('option', { name: /Jon Berg/ })).toBeVisible();
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('ControlOrMeta+Enter');
+    await expect(page.locator('[data-lab-output="mentions"] li')).toHaveText([
+      '@[Lena Ortiz](lena) can you taste the pear sauce? Ask @[Jon Berg](jon)',
+    ]);
+  });
 });

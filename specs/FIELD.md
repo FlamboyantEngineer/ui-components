@@ -451,10 +451,17 @@ Verification: `src/components/field/fieldset.test.tsx`, `src/components/field/fi
 
 ### UIC-FIELD-11.1 - Picker vocabulary
 
-The pickers built on fields (`Combobox`, `SelectField` and `PeoplePicker` on the combobox) shall share one option model, one remote loader and one way to draw an option and an empty list. An option (`PickerOption`) has an `id`, a `label`, an optional `description`, `icon` and `isDisabled`; a section (`PickerSection`) has an `id`, an optional `label` heading it, and `options`. A remote loader (`RemoteLoader`) takes the query, an abort signal and, for a next page, the cursor, and returns the results or a page (`RemotePage`, `{ items, cursor }`). An option row draws the option's icon, label and description in the picker's own `option`, `option-icon`, `option-label` and `option-description` slots, or the caller's `renderOption` content. An empty list shows the provider's `loading` while searching, `searchFailed` after a failure, `typeToSearch` while the text is too short, else the caller's empty state or `noResults`.
+The pickers built on fields (`Combobox`, `SelectField` and `PeoplePicker` on the combobox) shall share one option model, one remote loader and one way to draw an option and an empty list. An option (`PickerOption`) has an `id`, a `label`, an optional `description`, `icon`, `shortcut` ([UIC-FIELD-11.2](#uic-field-112---option-shortcuts)) and `isDisabled`; a section (`PickerSection`) has an `id`, an optional `label` heading it, and `options`. A remote loader (`RemoteLoader`) takes the query, an abort signal and, for a next page, the cursor, and returns the results or a page (`RemotePage`, `{ items, cursor }`). An option row draws the option's icon, label and description in the picker's own `option`, `option-icon`, `option-label` and `option-description` slots, or the caller's `renderOption` content. An empty list shows the provider's `loading` while searching, `searchFailed` after a failure, `typeToSearch` while the text is too short, else the caller's empty state or `noResults`.
 
 Implementation: `src/components/field/field-picker.tsx`, `src/components/field/field-picker-items.ts`, `src/utils/use-remote-search.ts`
 Verification: `src/components/field/field-picker.test.tsx`
+
+### UIC-FIELD-11.2 - Option shortcuts
+
+An option's optional `shortcut`, a chord or key sequence in the `Shortcut` format ([SHORTCUT.md](SHORTCUT.md)), shall be drawn as a `Shortcut` in the picker's `option-shortcut` slot after the description, at the row's trailing edge, in `SelectField`, `Combobox` and the pickers built on it, and `CascaderField`. Its readable words join the option's accessible name after the description, as a menu item's do; its `textValue` stays the label, so typing and filtering still match the label. It is display only: the picker binds no key, and the host handles the shortcut itself.
+
+Implementation: `src/components/field/field-picker.tsx`, `src/components/field/field-picker-items.ts`, `src/components/cascader-field/cascader-panels.tsx`
+Verification: `src/components/field/field-picker.test.tsx`, `src/components/cascader-field/cascader-field.test.tsx`, `e2e/select-field.spec.ts`
 
 ## UIC-FIELD-12 - External form controllers
 

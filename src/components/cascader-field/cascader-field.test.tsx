@@ -262,6 +262,20 @@ describe('CascaderField', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
+  it('UIC-FIELD-11.2 draws an option shortcut after its description', async () => {
+    const user = userEvent.setup();
+    const options: CascaderOption[] = [
+      { id: 'bold', label: 'Bold', description: 'Heavier', shortcut: 'Ctrl+B' },
+      { id: 'more', label: 'More', children: [{ id: 'plain', label: 'Plain' }] },
+    ];
+    const { baseElement } = render(<CascaderField label="Place" options={options} />);
+    await user.click(trigger());
+    const bold = screen.getByRole('option', { name: 'Bold Heavier Control B' });
+    expect(bold.querySelector('.ui-cascader-field__option-shortcut')).toHaveClass('ui-shortcut');
+    expect(screen.getByRole('option', { name: 'More' })).toBeInTheDocument();
+    expectHooksMatchSpec(baseElement, 'CASCADER-FIELD', { slots: ['option-shortcut'] });
+  });
+
   it('UIC-CASCADER-FIELD-1.1 shows an id whose option is not known yet', () => {
     render(<CascaderField label="Place" options={places} defaultValue={['north', 'gone']} />);
     expect(trigger()).toHaveAccessibleName('Place North / gone');

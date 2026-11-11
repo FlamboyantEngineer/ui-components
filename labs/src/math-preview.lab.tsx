@@ -1,9 +1,10 @@
-import { type CSSProperties, useState } from 'react';
+import { type CSSProperties, useEffect, useRef, useState } from 'react';
 import {
   MathField,
   MathPreview,
   type MathRenderer,
   renderKatexMath,
+  renderMathElement,
 } from '../../src/components/math-preview/index.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
@@ -64,6 +65,34 @@ function SlowDemo() {
   );
 }
 
+/** Math a host draws itself: `renderMathElement` appends a sanitized element, or shows why not. */
+function ElementDemo({ source }: { source: string }) {
+  const slot = useRef<HTMLSpanElement>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  useEffect(() => {
+    const target = slot.current;
+    if (!target) return undefined;
+    let isCurrent = true;
+    void renderMathElement(source, {
+      displayMode: false,
+      ownerDocument: target.ownerDocument,
+    }).then((result) => {
+      if (!isCurrent) return;
+      if (result.ok) target.replaceChildren(result.element);
+      else setMessage(result.message);
+    });
+    return () => {
+      isCurrent = false;
+    };
+  }, [source]);
+  return (
+    <li data-lab-element={source}>
+      <code>{source}</code>: <span ref={slot} />
+      {message}
+    </li>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -112,6 +141,15 @@ mountLab(
             <code>{source}</code>: <MathPreview source={source} />
           </li>
         ))}
+      </ul>
+    </LabSection>
+    <LabSection
+      title="Without React"
+      description="renderMathElement typesets to a sanitized MathML element that the host inserts itself; invalid source answers a message."
+    >
+      <ul data-lab-demo="element" style={column}>
+        <ElementDemo source={String.raw`e^{i\pi} + 1 = 0`} />
+        <ElementDemo source={String.raw`\frac{1}{`} />
       </ul>
     </LabSection>
   </>,

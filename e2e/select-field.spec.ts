@@ -702,4 +702,24 @@ test.describe('Select Field trigger ref', () => {
       expect(new Set(Object.values(expected)).size).toBe(4);
     }
   });
+
+  test('UIC-FIELD-11.2 shows option shortcuts at the trailing edge', async ({ page, lab }) => {
+    await lab.open('select-field');
+    await field(page, 'shortcuts')
+      .getByRole('button', { name: /Paragraph style/ })
+      .click();
+    const heading = page.getByRole('option', { name: /^Heading 1 Chapter titles/ });
+    const shortcut = heading.locator('.ui-select-field__option-shortcut');
+    await expect(shortcut).toBeVisible();
+    const [row, chord, label] = await Promise.all([
+      heading.boundingBox(),
+      shortcut.boundingBox(),
+      heading.locator('.ui-select-field__option-label').boundingBox(),
+    ]);
+    expect(
+      (row?.x ?? 0) + (row?.width ?? 0) - ((chord?.x ?? 0) + (chord?.width ?? 0)),
+    ).toBeLessThan(16);
+    expect(Math.abs((chord?.y ?? 0) - (label?.y ?? 0))).toBeLessThan(8);
+    await expect(page.getByRole('option', { name: 'Quote' })).toBeVisible();
+  });
 });

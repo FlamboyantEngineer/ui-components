@@ -254,4 +254,35 @@ test.describe('Annotation Layer lab', () => {
     await expect(marks).toHaveCount(1);
     await expect(card).not.toHaveAttribute('data-orphaned', 'true');
   });
+
+  test('UIC-ANNOTATION-LAYER-2.5 UIC-ANNOTATION-LAYER-2.6 shows markers that open several cards', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('annotation-layer');
+    const demo = page.locator('[data-lab-demo="icons"]');
+    await demo.scrollIntoViewIfNeeded();
+    const margin = demo.getByRole('list', { name: 'Note markers' });
+    await expect(margin).toHaveAttribute('data-presentation', 'icons');
+    const markers = margin.locator('.ui-annotation-layer__marker');
+    await expect(markers).toHaveCount(5);
+    // The blind and beans notes share a line: their markers stack without overlap.
+    const blind = await boxOf(markers.nth(2));
+    const beans = await boxOf(markers.nth(3));
+    expect(beans.y).toBeGreaterThanOrEqual(blind.y + blind.height);
+    await markers.first().click();
+    await markers.nth(3).click();
+    await expect(demo.locator('[data-lab-open]')).toHaveText('kitchen, beans');
+    await expect(margin.locator('.ui-annotation-layer__card')).toHaveCount(2);
+    await expect(markers.nth(3)).toHaveAttribute('aria-expanded', 'true');
+    await page.keyboard.press('Escape');
+    await expect(markers.nth(3)).toHaveAttribute('aria-expanded', 'false');
+    await expect(markers.nth(3)).toBeFocused();
+    await page.keyboard.press('Home');
+    await expect(markers.first()).toBeFocused();
+    const empty = page.locator('[data-lab-demo="empty"] .ui-annotation-layer__margin');
+    await expect(empty).toHaveAttribute('data-empty', 'true');
+    await expect(empty).toBeHidden();
+    await lab.expectAccessible();
+  });
 });

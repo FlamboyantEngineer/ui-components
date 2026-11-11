@@ -12,6 +12,17 @@ export interface GlyphComponentProps {
   focusable?: boolean | 'true' | 'false';
 }
 
+/** One stroke of a glyph drawn from several, with its own width and dash pattern. */
+export interface GlyphStroke {
+  /** The stroke's path data on the 24 by 24 view box. */
+  d: string;
+  /** Defaults to the glyph's 1.5. */
+  strokeWidth?: number | undefined;
+  /** A dash pattern, such as the dotted lines of a table border glyph. */
+  dashArray?: string | undefined;
+  dashOffset?: number | undefined;
+}
+
 export type GlyphComponent = ComponentType<GlyphComponentProps> & {
   readonly glyphName?: GlyphName;
 };
@@ -126,6 +137,46 @@ export type GlyphName =
   | 'globe'
   | 'wrench'
   | 'sparkles'
-  | 'clipboard';
+  | 'clipboard'
+  | 'article'
+  | 'bars-3-bar'
+  | 'bars-3-center-middle'
+  | 'chat-bubble-check'
+  | 'chat-bubble-plus'
+  | 'chat-bubble-trash'
+  | 'chat-bubble-x-mark'
+  | 'layout-add-below'
+  | 'layout-halves'
+  | 'layout-single'
+  | 'layout-third-two-thirds'
+  | 'layout-thirds'
+  | 'layout-two-thirds-third'
+  | 'library'
+  | 'fit-height'
+  | 'page-landscape'
+  | 'page-portrait'
+  | 'superscript'
+  | 'subscript'
+  | 'special-character'
+  | 'footnote'
+  | 'cross-reference'
+  | 'abbreviation'
+  | 'page-break'
+  | 'table-of-contents'
+  | 'border-all'
+  | 'border-bottom'
+  | 'border-left'
+  | 'border-none'
+  | 'border-outside'
+  | 'border-right'
+  | 'border-top'
+  | 'merge-cells'
+  | 'split-cells'
+  | 'file-image'
+  | 'file-video'
+  | 'file-audio'
+  | 'file-document'
+  | 'file-data'
+  | 'file-spreadsheet';
 
 export type GlyphMap = Record<GlyphName, GlyphComponent>;

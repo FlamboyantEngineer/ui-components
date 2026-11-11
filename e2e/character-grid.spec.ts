@@ -129,4 +129,27 @@ test.describe('Character Grid lab', () => {
     );
     await lab.expectAccessible();
   });
+
+  test('UIC-CHARACTER-GRID-1.5 shows the caller font, six cells to a row', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('character-grid');
+    const grid = field(page, 'font');
+    const first = grid.getByRole('row', { name: 'Plus-minus sign' });
+    const seventh = grid.getByRole('row', { name: 'Greater-than or equal to' });
+    await expect(first).toHaveCSS('font-family', /Georgia/);
+    const [firstBox, seventhBox] = await Promise.all([first.boundingBox(), seventh.boundingBox()]);
+    // The seventh cell starts the second row, under the first.
+    expect(Math.abs((seventhBox?.x ?? 0) - (firstBox?.x ?? 1))).toBeLessThan(1);
+    expect(seventhBox?.y ?? 0).toBeGreaterThan(firstBox?.y ?? 0);
+    await first.focus();
+    await page.keyboard.press('ArrowDown');
+    await expect(seventh).toBeFocused();
+    await expect(grid.locator('.ui-character-grid__preview-char')).toHaveCSS(
+      'font-family',
+      /Georgia/,
+    );
+    await expect(grid.locator('.ui-character-grid__preview-code')).toHaveText('U+2265');
+  });
 });

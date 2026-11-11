@@ -34,6 +34,7 @@ import { observeTargets } from './observe-targets.js';
 export type { Annotation, AnnotationRect } from './anchor-geometry.js';
 export type { AnnotationCardState, AnnotationMarginProps } from './annotation-margin.js';
 export { AnnotationMargin } from './annotation-margin.js';
+export type { AnnotationMarkerState } from './annotation-marker.js';
 
 export interface AnnotationLayerProps extends RefProps<HTMLDivElement>, BaseProps {
   /** The annotations, each anchored by rectangles or by an element inside the layer. */

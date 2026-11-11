@@ -7,6 +7,7 @@ import { expectHooksMatchSpec } from '../../test/hooks.js';
 import { Link, useLocale } from '../primitives/index.js';
 import { numberCodec } from '../utils/json-codec.js';
 import { requireDefined } from '../utils/require-defined.js';
+import { BorderBottomGlyph, SuperscriptGlyph } from './drawn-glyphs.js';
 import { checkPath, xMarkPath } from './glyph-paths.js';
 import { CheckGlyph, CloseGlyph, type GlyphComponentProps } from './glyphs.js';
 import { en } from './locales/index.js';
@@ -84,6 +85,30 @@ describe('UiProvider defaults', () => {
     expect(defaultStrings.close).toBe('Close');
     const { result } = renderHook(() => useGlyph('check', StarGlyph));
     expect(result.current).toBe(StarGlyph);
+  });
+});
+
+describe('drawn glyphs', () => {
+  it('UIC-PROVIDER-2.1 draws a border glyph as a dotted grid of thin strokes and one solid edge', () => {
+    const { container } = render(<Glyph icon={BorderBottomGlyph} />);
+    const strokes = [...container.querySelectorAll('path')];
+    expect(container.querySelector('svg')).toHaveAttribute('data-glyph', 'border-bottom');
+    expect(strokes).toHaveLength(4);
+    for (const dotted of strokes.slice(0, 3)) {
+      expect(dotted).toHaveAttribute('stroke-width', '1');
+      expect(dotted).toHaveAttribute('stroke-dasharray');
+    }
+    expect(strokes[3]).toHaveAttribute('d', 'M2.25 19.5h19.5');
+    expect(strokes[3]).not.toHaveAttribute('stroke-dasharray');
+  });
+
+  it('UIC-PROVIDER-2.2 replaces a document formatting glyph like any other', () => {
+    const { container } = render(
+      <UiProvider icons={{ superscript: StarGlyph }}>
+        <Glyph icon={SuperscriptGlyph} />
+      </UiProvider>,
+    );
+    expect(container.querySelector('svg')).toHaveAttribute('data-glyph', 'star');
   });
 });
 

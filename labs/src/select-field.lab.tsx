@@ -372,6 +372,13 @@ function Form() {
   );
 }
 
+const paragraphStyles: SelectFieldOption[] = [
+  { id: 'body', label: 'Body text', shortcut: 'Ctrl+Alt+0' },
+  { id: 'heading-1', label: 'Heading 1', description: 'Chapter titles', shortcut: 'Ctrl+Alt+1' },
+  { id: 'heading-2', label: 'Heading 2', shortcut: 'Ctrl+Alt+2' },
+  { id: 'quote', label: 'Quote' },
+];
+
 mountLab(
   <>
     {treeChoices}
@@ -458,6 +465,17 @@ mountLab(
         description="Apple belongs to both records; Pear and disabled Plum belong only to the first. useSelectMembership cycles Pear from mixed to selected for all, removed for all, then back to mixed, and reports added, removed and retained keys; the preview applies them, so each record keeps its untouched memberships. Clear removes the chosen options and leaves locked Plum alone."
       >
         <BulkMembershipEditor />
+      </LabSection>
+      <LabSection
+        title="Shortcuts"
+        description="Each style shows its keyboard chord at the end of its row, in the reader's platform notation; the chords are display only."
+      >
+        <SelectField
+          label="Paragraph style"
+          options={paragraphStyles}
+          defaultValue="body"
+          data-lab-field="shortcuts"
+        />
       </LabSection>
       <LabSection title="Search" description="Options load as you type at least 2 characters.">
         <Search />

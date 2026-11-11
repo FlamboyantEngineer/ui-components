@@ -337,4 +337,33 @@ test.describe('Comment Thread reply time zones', () => {
     await expect(override).toHaveText('Yesterday');
     await lab.expectAccessible('[data-lab-demo="reply-zones"]');
   });
+  test('UIC-COMMENT-THREAD-3.1 UIC-COMMENT-THREAD-3.2 replies and edits with built-in mentions', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('comment-thread');
+    const thread = page.locator('[data-lab-thread="built-in-mentions"]');
+    const first = thread.getByRole('article').first();
+    await first.getByRole('button', { name: 'Lena Ortiz' }).click();
+    await expect(page.getByRole('dialog').getByText('Busy')).toBeVisible();
+    await page.keyboard.press('Escape');
+    const box = thread.getByRole('textbox', { name: 'Reply' });
+    await box.click();
+    await page.keyboard.type('On it @jo');
+    await expect(page.getByRole('option', { name: /Jon Berg/ })).toBeVisible();
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('ControlOrMeta+Enter');
+    const posted = thread.getByRole('article').last();
+    await expect(posted.locator('.ui-comment-text__mention')).toHaveText('Jon Berg');
+    await expect(posted).toContainText('On it Jon Berg');
+    await posted.getByRole('button', { name: 'Comment actions' }).click();
+    await page.getByRole('menuitem', { name: 'Edit' }).click();
+    const editor = thread.getByRole('textbox', { name: 'Edit comment' });
+    await expect(editor.locator('.ui-message-composer__pill')).toHaveText('Jon Berg');
+    await page.keyboard.type('today');
+    await thread.getByRole('button', { name: 'Save' }).click();
+    await expect(posted).toContainText('Edited');
+    await expect(posted.locator('.ui-comment-text__mention')).toHaveText('Jon Berg');
+    await lab.expectAccessible('[data-lab-thread="built-in-mentions"]');
+  });
 });
