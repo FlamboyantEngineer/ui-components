@@ -1,6 +1,10 @@
 import { useRef, useState } from 'react';
 import { ChatParts } from '../../src/components/chat-parts/index.js';
-import { CommentThread, CommentThreadReply } from '../../src/components/comment-thread/index.js';
+import {
+  CommentText,
+  CommentThread,
+  CommentThreadReply,
+} from '../../src/components/comment-thread/index.js';
 import { MessageComposerEmojiButton } from '../../src/components/message-composer/index.js';
 import {
   type MessageComposerMention,
@@ -8,6 +12,7 @@ import {
   RichMessageComposer,
 } from '../../src/components/message-composer/rich/index.js';
 import { ReactionBar, type ReactionEntry } from '../../src/components/reaction-bar/reaction-bar.js';
+import { renderSampleCard, sampleMentions } from './comment-mention-samples.js';
 import { samplePicture } from './people-samples.js';
 
 const maria = { name: 'Maria Santos', colorKey: 'maria' };
@@ -139,6 +144,54 @@ export function MentionThread() {
           }
         >
           <MentionBody message={comment.message} />
+        </CommentThreadReply>
+      ))}
+    </CommentThread>
+  );
+}
+
+interface StoredComment {
+  id: number;
+  author: typeof maria | typeof jon;
+  text: string;
+  isEdited?: boolean;
+}
+
+/**
+ * A thread with built-in mentions: the default composer and editor take `@`, the comments keep
+ * their mentions as tokens in their text, and each chip opens the person's card.
+ */
+export function BuiltInMentionThread() {
+  const [comments, setComments] = useState<StoredComment[]>([
+    { id: 1, author: jon, text: '@[Lena Ortiz](lena) can you taste the pear sauce before Friday?' },
+  ]);
+  return (
+    <CommentThread
+      data-lab-thread="built-in-mentions"
+      mentions={sampleMentions}
+      onReply={(text) =>
+        setComments((list) => [...list, { id: list.length + 1, author: maria, text }])
+      }
+    >
+      {comments.map((comment) => (
+        <CommentThreadReply
+          key={comment.id}
+          author={comment.author}
+          time="2026-04-20T09:40:00"
+          text={comment.text}
+          isEdited={comment.isEdited}
+          onEdit={
+            comment.author === maria
+              ? (text) =>
+                  setComments((list) =>
+                    list.map((entry) =>
+                      entry.id === comment.id ? { ...entry, text, isEdited: true } : entry,
+                    ),
+                  )
+              : undefined
+          }
+        >
+          <CommentText text={comment.text} renderCard={renderSampleCard} />
         </CommentThreadReply>
       ))}
     </CommentThread>

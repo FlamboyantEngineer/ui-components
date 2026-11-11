@@ -60,6 +60,7 @@ const CLIENT_HELPERS = new Set([
   'confirm',
   'createCitationOverride',
   'createCodeBlockOverride',
+  'createCommentMentions',
   'createMenuController',
   'createModalController',
   'createToastQueue',

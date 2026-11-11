@@ -6,7 +6,7 @@ import { ReactionBar, type ReactionEntry } from '../../src/components/reaction-b
 import { Switch } from '../../src/components/switch/switch.js';
 import { LinkGlyph } from '../../src/core/glyphs.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
-import { MentionThread } from './comment-thread-mentions.js';
+import { BuiltInMentionThread, MentionThread } from './comment-thread-mentions.js';
 import { CommentThreadZoneCases } from './comment-thread-zone-cases.js';
 import { samplePicture } from './people-samples.js';
 
@@ -319,6 +319,12 @@ mountLab(
       description="The thread's composer and editor are the rich composer: type @ and pick a person to insert a pill, or use the emoji button to insert at the caret. Sent comments draw their mentions as pills through the chat parts renderer, and editing your own comment starts from its mentions and keeps them. Add a reaction from the smiley button, or press a reaction to toggle yours."
     >
       <MentionThread />
+    </LabSection>
+    <LabSection
+      title="Built-in mentions"
+      description="With mentions, the default composer and editor take @: pick a person and they go into the text as a token. Each comment draws its text with CommentText, whose chips open the person's card. Edit your own comment: it starts with its mentions as chips."
+    >
+      <BuiltInMentionThread />
     </LabSection>
     <LabSection
       title="Frozen clock"

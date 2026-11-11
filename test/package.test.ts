@@ -323,11 +323,16 @@ describe('optional rich-text peers', () => {
     [name, `${name}/rich`].filter((entry) => existsSync(join(componentsDir, entry, 'index.ts'))),
   );
 
-  it('UIC-MESSAGE-COMPOSER-4.1 are reached only from the rich text, rich composer and chat entry points', () => {
+  it('UIC-MESSAGE-COMPOSER-4.1 are reached only from the rich text, rich composer, chat and comment mention entry points', () => {
     const needsPeers = entries.filter((entry) =>
       collectPackages(`src/components/${entry}/index.ts`).some((name) => RICH_TEXT_PEER.test(name)),
     );
-    expect(needsPeers.sort()).toEqual(['chat', 'message-composer/rich', 'rich-text-editor']);
+    expect(needsPeers.sort()).toEqual([
+      'chat',
+      'comment-composer/rich',
+      'message-composer/rich',
+      'rich-text-editor',
+    ]);
     for (const entry of ['src/index.ts', 'src/core/index.ts']) {
       expect(collectPackages(entry).filter((name) => RICH_TEXT_PEER.test(name))).toEqual([]);
     }

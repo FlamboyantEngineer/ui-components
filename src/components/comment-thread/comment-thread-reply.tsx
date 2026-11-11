@@ -11,12 +11,13 @@ import { isThenable } from '../../utils/is-thenable.js';
 import { toErrorMessage } from '../../utils/to-error-message.js';
 import { Attribution, type AttributionProps } from '../attribution/attribution.js';
 import { type AvatarIdentity, getDisplayName } from '../avatar/avatar.js';
-import { CommentComposer } from '../comment-composer/comment-composer.js';
+import type { CommentMentions } from '../comment-composer/comment-mentions.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import type { MenuEntry } from '../menu/menu.js';
 import { Modal } from '../modal/modal.js';
 import { UserIdentity } from '../user-identity/user-identity.js';
+import { ReplyEditor, ReplyText } from './comment-reply-body.js';
 import { CommentThreadContext } from './comment-thread-context.js';
 
 /** What a comment hands the editor that replaces its body while the reader edits it. */
@@ -66,8 +67,13 @@ export interface CommentThreadReplyProps
    * keeps the confirmation pending until it resolves, and open with the failure when it rejects.
    */
   onDelete?: (() => void | Promise<unknown>) | undefined;
-  /** Renders the editor in place of the default `CommentComposer`, for mentions or rich text. */
+  /** Renders the editor in place of the default `CommentComposer`, for rich text. */
   renderEditor?: ((options: CommentEditorOptions) => ReactNode) | undefined;
+  /**
+   * Lets `@` mention people in the default editor, which keeps the comment's mentions, and shows
+   * the mentions in `text` as chips when there are no `children`. Defaults to the thread's.
+   */
+  mentions?: CommentMentions | undefined;
 }
 
 const hooks = createHooks('comment-thread-reply', [
@@ -84,19 +90,6 @@ const hooks = createHooks('comment-thread-reply', [
 
 const editKey = 'edit';
 const deleteKey = 'delete';
-
-/** The default editor: a `CommentComposer` holding the comment's text. */
-function DefaultEditor(options: CommentEditorOptions) {
-  const strings = useUiStrings();
-  return (
-    <CommentComposer
-      {...options}
-      label={strings.editComment}
-      submitLabel={strings.save}
-      autoFocus
-    />
-  );
-}
 
 /** The comment's menu entries: the caller's actions, then Edit and Delete when offered. */
 function useMenuEntries({
@@ -273,15 +266,17 @@ export function CommentThreadReply({
   onAction,
   onEdit,
   onDelete,
-  // Rendered as an element, so its hooks belong to the editor and not to the reply.
-  renderEditor = (options) => <DefaultEditor {...options} />,
+  renderEditor,
+  mentions: ownMentions,
   fallbackAfterDays,
   getNow,
   timeZone,
   className,
   ...rest
 }: CommentThreadReplyProps) {
-  const { isReadOnly } = useContext(CommentThreadContext);
+  const thread = useContext(CommentThreadContext);
+  const { isReadOnly } = thread;
+  const mentions = ownMentions ?? thread.mentions;
   const {
     isEditing: editing,
     failure,
@@ -317,13 +312,19 @@ export function CommentThreadReply({
       </div>
       {editing ? (
         <div {...hooks.slot('editor')}>
-          {renderEditor({ defaultValue: text, onSubmit: save, onCancel: closeEditor })}
+          <ReplyEditor
+            renderEditor={renderEditor}
+            options={{ defaultValue: text, onSubmit: save, onCancel: closeEditor }}
+            mentions={mentions}
+          />
           {failure === null ? null : (
             <InlineError className={hooks.slotClass('error')}>{failure}</InlineError>
           )}
         </div>
       ) : (
-        <div {...hooks.slot('body')}>{children ?? text}</div>
+        <div {...hooks.slot('body')}>
+          {children ?? <ReplyText text={text} mentions={mentions} />}
+        </div>
       )}
       {!isEmptyNode(reactions) && !editing ? (
         <div {...hooks.slot('reactions')}>{reactions}</div>
