@@ -4,6 +4,29 @@ import { glyphCatalog, glyphNames } from './glyph-catalog.js';
 
 const sizes = ['sm', 'md', 'lg'] as const;
 
+/** Formatting choices a toolbar shows side by side, which must stay apart at a glance. */
+const formattingGlyphs = [
+  ...(['top', 'middle', 'bottom'] as const).flatMap((vertical) =>
+    (['left', 'center', 'right'] as const).map(
+      (horizontal) => `align-${vertical}-${horizontal}` as const,
+    ),
+  ),
+  'cell-alignment',
+  'table-border-top',
+  'table-border-right',
+  'table-border-bottom',
+  'table-border-left',
+  'table-border-all',
+  'table-border-outside',
+  'table-border-none',
+  'increase-decimals',
+  'decrease-decimals',
+  'text-align-left',
+  'text-align-center',
+  'text-align-right',
+  'text-align-justify',
+] as const;
+
 const sources: Record<string, { code: string; source: IconSource }> = {
   component: { code: 'glyphCatalog.check', source: glyphCatalog.check },
   element: {
@@ -105,6 +128,19 @@ mountLab(
           }
         />
       </div>
+    </LabSection>
+    <LabSection
+      title="Formatting choices at 16 and 24 pixels"
+      description="The nine cell alignments, the seven table borders, the decimal steps and the text alignments side by side at 16 and 24 pixels; switch the theme to compare them on the dark page."
+    >
+      <StateMatrix
+        axes={{ glyph: formattingGlyphs, pixels: ['16', '24'] }}
+        render={({ glyph, pixels }) => (
+          <span style={{ fontSize: Number(pixels) }}>
+            <Icon icon={glyphCatalog[glyph]} size="inherit" />
+          </span>
+        )}
+      />
     </LabSection>
     <LabSection
       title="Inherited size"

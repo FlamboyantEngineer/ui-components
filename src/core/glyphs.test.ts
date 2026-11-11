@@ -41,6 +41,72 @@ describe('built-in glyph names', () => {
   });
 });
 
+describe('tabular formatting glyphs', () => {
+  it('UIC-PROVIDER-2.1 exports each formatting glyph under its provider key', () => {
+    const exports: Record<string, string> = {
+      FontFamilyGlyph: 'font-family',
+      FontSizeGlyph: 'font-size',
+      NumberFormatGlyph: 'number-format',
+      PercentGlyph: 'percent',
+      CurrencyGlyph: 'currency',
+      ScientificNotationGlyph: 'scientific-notation',
+      FractionGlyph: 'fraction',
+      UnitGlyph: 'unit',
+      IncreaseDecimalsGlyph: 'increase-decimals',
+      DecreaseDecimalsGlyph: 'decrease-decimals',
+      CellAlignmentGlyph: 'cell-alignment',
+      AlignTopLeftGlyph: 'align-top-left',
+      AlignTopCenterGlyph: 'align-top-center',
+      AlignTopRightGlyph: 'align-top-right',
+      AlignMiddleLeftGlyph: 'align-middle-left',
+      AlignMiddleCenterGlyph: 'align-middle-center',
+      AlignMiddleRightGlyph: 'align-middle-right',
+      AlignBottomLeftGlyph: 'align-bottom-left',
+      AlignBottomCenterGlyph: 'align-bottom-center',
+      AlignBottomRightGlyph: 'align-bottom-right',
+      TableBorderTopGlyph: 'table-border-top',
+      TableBorderRightGlyph: 'table-border-right',
+      TableBorderBottomGlyph: 'table-border-bottom',
+      TableBorderLeftGlyph: 'table-border-left',
+      TableBorderAllGlyph: 'table-border-all',
+      TableBorderOutsideGlyph: 'table-border-outside',
+      TableBorderNoneGlyph: 'table-border-none',
+      WrapTextGlyph: 'wrap-text',
+      MergeCellsGlyph: 'merge-cells',
+      UnmergeCellsGlyph: 'unmerge-cells',
+      CutGlyph: 'cut',
+      TextAlignLeftGlyph: 'text-align-left',
+      TextAlignCenterGlyph: 'text-align-center',
+      TextAlignRightGlyph: 'text-align-right',
+      TextAlignJustifyGlyph: 'text-align-justify',
+      BookOpenGlyph: 'book-open',
+    };
+    const entry = core as unknown as Record<string, Partial<GlyphComponent> | undefined>;
+    for (const [name, key] of Object.entries(exports)) {
+      expect(entry[name]?.glyphName, name).toBe(key);
+    }
+  });
+
+  it('UIC-PROVIDER-2.1 draws every alignment, border and decimal choice as its own mark', () => {
+    const groups = [
+      ['top', 'middle', 'bottom'].flatMap((v) =>
+        ['Left', 'Center', 'Right'].map((h) => `align${v[0]?.toUpperCase()}${v.slice(1)}${h}Path`),
+      ),
+      ['textAlignLeftPath', 'textAlignCenterPath', 'textAlignRightPath', 'textAlignJustifyPath'],
+      ['increaseDecimalsPath', 'decreaseDecimalsPath', 'plusPath', 'minusPath'],
+      ['cellAlignmentPath', 'alignMiddleCenterPath'],
+    ];
+    const paths = glyphPaths as Record<string, string>;
+    for (const group of groups) {
+      const drawn = group.map((name) => paths[name]);
+      expect(drawn.every(Boolean), group.join()).toBe(true);
+      expect(new Set(drawn).size, group.join()).toBe(group.length);
+    }
+    const borders = Object.values(glyphStrokes).map((strokes) => JSON.stringify(strokes));
+    expect(new Set([...borders, glyphPaths.borderAllPath]).size).toBe(7);
+  });
+});
+
 describe('built-in glyph paths', () => {
   it('UIC-PROVIDER-2.1 carries only drawn Heroicons paths, with the MIT notice', () => {
     const glyphs = read('src/core/glyphs.tsx') + read('src/core/drawn-glyphs.tsx');
@@ -68,6 +134,8 @@ describe('built-in glyph paths', () => {
       'abbreviationPath',
       'signalSlashPath',
       'wrenchPath',
+      'increaseDecimalsPath',
+      'decreaseDecimalsPath',
     ] as const) {
       expect(glyphPaths[name], name).toMatch(dot);
     }
