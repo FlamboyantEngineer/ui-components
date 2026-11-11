@@ -18,12 +18,15 @@ function widestText(element: Element, texts: readonly string[]): number | null {
 
 /**
  * The width, in pixels, of the widest of `texts` in the font of `ref`'s element, measured on a
- * canvas once per set of texts, again when the document's fonts are ready, and again whenever
- * fonts finish loading in the element's document later on. `null` where no canvas is available.
+ * canvas once per set of texts, again when `fontKey` changes (a value that changes when the
+ * element's font may have, such as a choice a stylesheet draws in its own font), again when the
+ * document's fonts are ready, and again whenever fonts finish loading in the element's document
+ * later on. `null` where no canvas is available.
  */
 export function useWidestTextWidth(
   ref: RefObject<Element | null>,
   texts: readonly string[],
+  fontKey?: unknown,
 ): number | null {
   const [width, setWidth] = useState<number | null>(null);
   const lines = useStableArray(texts);
@@ -42,6 +45,7 @@ export function useWidestTextWidth(
       active = false;
       stopListening();
     };
-  }, [ref, lines]);
+    // `fontKey` only marks when to measure again; the font itself is read from the element.
+  }, [ref, lines, fontKey]);
   return width;
 }

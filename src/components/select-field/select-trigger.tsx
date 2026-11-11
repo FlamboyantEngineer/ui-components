@@ -18,6 +18,8 @@ import type { ChosenSelectOption } from './select-options.js';
 
 interface SelectTriggerProps {
   ref: Ref<HTMLButtonElement>;
+  /** The value label, whose font the select measures its labels in. */
+  labelRef: Ref<HTMLSpanElement>;
   /** The chosen option of a single select. A multiple select shows its choices as chips. */
   chosen: ChosenSelectOption | null;
   /** A multiple select's count of its choices (`2 selected`), shown in place of the placeholder. */
@@ -47,6 +49,7 @@ function OptionIcon({ option, slot }: { option: ChosenSelectOption; slot: 'value
  */
 export function SelectTrigger({
   ref,
+  labelRef,
   chosen,
   previous,
   placeholder,
@@ -73,7 +76,7 @@ export function SelectTrigger({
           id={valueProps?.id}
         >
           {chosen ? <OptionIcon option={chosen} slot="value-icon" /> : null}
-          <TruncationTooltip {...hooks.slot('value-label')}>
+          <TruncationTooltip {...hooks.slot('value-label')} ref={labelRef}>
             {chosen?.label ?? summary ?? placeholder}
           </TruncationTooltip>
         </span>

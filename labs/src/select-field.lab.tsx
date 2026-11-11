@@ -16,7 +16,7 @@ import { BulkMembershipEditor } from './select-field-bulk.js';
 import { ChangeFit, ChangeMatrix } from './select-field-changes.js';
 import { OpenStates } from './select-field-open-cases.js';
 import { Paged } from './select-field-paged.js';
-import { TriggerRefField } from './select-field-trigger-cases.js';
+import { StyledValueField, TriggerRefField } from './select-field-trigger-cases.js';
 import { iconsChoices } from './select-icons.js';
 import { treeChoices } from './select-tree.js';
 
@@ -565,6 +565,12 @@ mountLab(
         description="The button returns focus to the select's trigger through its ref."
       >
         <TriggerRefField />
+      </LabSection>
+      <LabSection
+        title="Value drawn in its own font"
+        description="The page draws a chosen heading's name bold and larger; the select measures its labels again in that font, so Heading shows whole."
+      >
+        <StyledValueField />
       </LabSection>
     </div>
   </>,

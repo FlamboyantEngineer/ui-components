@@ -287,6 +287,29 @@ test.describe('Select Field lab', () => {
     expect(await width(short)).toBe(shortWidth);
   });
 
+  test('UIC-SELECT-FIELD-2.2 measures again when the chosen value is drawn in its own font', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('select-field');
+    const demo = page.locator('[data-lab-demo="styled-value"]');
+    const select = demo.locator('.ui-select-field__select');
+    const label = demo.locator('.ui-select-field__value-label');
+    await demo.scrollIntoViewIfNeeded();
+    await expect(select).toHaveCSS('--ui-select-field-label-width', /\d+px/);
+    const before = await select.evaluate((element) =>
+      element.style.getPropertyValue('--ui-select-field-label-width'),
+    );
+    await demo.getByRole('button', { name: /Paragraph style$/ }).click();
+    await page.getByRole('option', { name: 'Heading' }).click();
+    await expect(label).toHaveText('Heading');
+    await expect(select).not.toHaveCSS('--ui-select-field-label-width', before);
+    // The bold, larger name fits whole: its box is as wide as its text.
+    await expect
+      .poll(() => label.evaluate((element) => element.scrollWidth - element.clientWidth))
+      .toBeLessThanOrEqual(0);
+  });
+
   test('UIC-SELECT-FIELD-3.1 UIC-SELECT-FIELD-3.2 UIC-SELECT-FIELD-3.3 picks from the keyboard below the trigger', async ({
     page,
     lab,

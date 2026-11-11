@@ -3,11 +3,11 @@ import { createElement, useRef } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useWidestTextWidth } from './use-widest-text-width.js';
 
-function Probe({ texts }: { texts: readonly string[] }) {
+function Probe({ texts, fontKey }: { texts: readonly string[]; fontKey?: string }) {
   const ref = useRef<HTMLSpanElement | null>(null);
-  const width = useWidestTextWidth(ref, texts);
+  const width = useWidestTextWidth(ref, texts, fontKey);
   return (
-    <span ref={ref} role="status" aria-label="Widest text">
+    <span ref={ref} role="status" aria-label="Widest text" className={fontKey}>
       {String(width)}
     </span>
   );
@@ -101,6 +101,23 @@ describe('useWidestTextWidth', () => {
     loaded();
     await ready;
     expect(measureText).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-MEASUREMENT-3.1 measures again in the new font when the font key changes', () => {
+    const { measureText, fonts } = stubCanvas();
+    const sheet = document.createElement('style');
+    sheet.textContent = '.bold { font-weight: 700; }';
+    document.head.append(sheet);
+    try {
+      const { rerender } = render(createElement(Probe, { texts: ['Pear'], fontKey: 'plain' }));
+      rerender(createElement(Probe, { texts: ['Pear'], fontKey: 'plain' }));
+      expect(measureText).toHaveBeenCalledTimes(1);
+      rerender(createElement(Probe, { texts: ['Pear'], fontKey: 'bold' }));
+      expect(measureText).toHaveBeenCalledTimes(2);
+      expect(fonts.at(-1)).toContain('700');
+    } finally {
+      sheet.remove();
+    }
   });
 
   it('UIC-MEASUREMENT-3.1 returns null without an offscreen canvas', () => {
