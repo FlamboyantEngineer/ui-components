@@ -2,11 +2,13 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import * as glyphPaths from './glyph-paths.js';
+import * as outlinePaths from './glyph-paths.js';
 import * as glyphStrokes from './glyph-strokes.js';
 import type { GlyphComponent } from './glyph-types.js';
 import * as core from './index.js';
+import * as tabularGlyphPaths from './tabular-glyph-paths.js';
 
+const glyphPaths = { ...outlinePaths, ...tabularGlyphPaths };
 const root = process.cwd();
 const read = (path: string) => readFileSync(join(root, path), 'utf8');
 

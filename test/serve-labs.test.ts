@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { type ChildProcess, spawn } from 'node:child_process';
 import { copyFileSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { createServer, type Server } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -21,7 +22,7 @@ beforeAll(async () => {
   writeFileSync(join(labs, 'module.wasm'), new Uint8Array([0, 97, 115, 109]));
   writeFileSync(join(labs, 'notes.unknown'), 'Unknown');
   server = spawn(process.execPath, [
-    join(process.cwd(), 'scripts/serve-labs.mjs'),
+    join(process.cwd(), 'bin/serve-labs.mjs'),
     '--port',
     '0',
     '--dir',
@@ -88,7 +89,7 @@ describe('static lab server', () => {
   });
 
   it('UIC-LABS-1.1 listens on the port LABS_PORT names', async () => {
-    const other = spawn(process.execPath, [join(process.cwd(), 'scripts/serve-labs.mjs')], {
+    const other = spawn(process.execPath, [join(process.cwd(), 'bin/serve-labs.mjs')], {
       env: { ...process.env, LABS_PORT: '0' },
     });
     try {
@@ -106,4 +107,69 @@ describe('static lab server', () => {
       await stopped;
     }
   });
+
+  it('UIC-LABS-1.1 UIC-LABS-4.3 moves to the next free port when its port is taken', async () => {
+    const { blocker, port } = await holdPort();
+    const other = spawn(process.execPath, [
+      join(process.cwd(), 'bin/serve-labs.mjs'),
+      '--port',
+      String(port),
+    ]);
+    try {
+      const output = await readUntil(other, /http:\/\/127\.0\.0\.1:(\d+)\/.*/);
+      const served = Number(/:(\d+)\//.exec(output)?.[1]);
+      expect(served).toBeGreaterThan(port);
+      expect(output).toContain(`(port ${port} was in use)`);
+      expect((await fetch(`http://127.0.0.1:${served}/index.html`)).status).toBe(200);
+    } finally {
+      await stop(other);
+      blocker.close();
+    }
+  });
+
+  it('UIC-LABS-1.1 UIC-LABS-4.3 keeps to its port with --strict-port', async () => {
+    const { blocker, port } = await holdPort();
+    const other = spawn(process.execPath, [
+      join(process.cwd(), 'bin/serve-labs.mjs'),
+      '--port',
+      String(port),
+      '--strict-port',
+    ]);
+    try {
+      let stderr = '';
+      other.stderr.on('data', (chunk: Buffer) => (stderr += chunk.toString()));
+      const code = await new Promise<number | null>((resolve) => other.once('exit', resolve));
+      expect(code).toBe(1);
+      expect(stderr).toContain(`Port ${port} on 127.0.0.1 is in use`);
+    } finally {
+      blocker.close();
+    }
+  });
 });
+
+/** Takes a free port on the lab host and holds it, as another process would. */
+async function holdPort(): Promise<{ blocker: Server; port: number }> {
+  const blocker = createServer();
+  await new Promise<void>((resolve) => blocker.listen(0, '127.0.0.1', resolve));
+  const address = blocker.address();
+  if (address === null || typeof address === 'string') throw new Error('No port held');
+  return { blocker, port: address.port };
+}
+
+/** The first line of `child`'s output that matches `pattern`. */
+function readUntil(child: ChildProcess, pattern: RegExp): Promise<string> {
+  return new Promise((resolve, reject) => {
+    child.stdout?.on('data', (chunk: Buffer) => {
+      const match = pattern.exec(chunk.toString());
+      if (match) resolve(match[0]);
+    });
+    child.once('exit', (code) => reject(new Error(`Lab server exited with ${code}`)));
+  });
+}
+
+async function stop(child: ChildProcess): Promise<void> {
+  if (child.exitCode !== null || child.signalCode !== null) return;
+  const stopped = new Promise<void>((resolve) => child.once('exit', () => resolve()));
+  child.kill();
+  await stopped;
+}

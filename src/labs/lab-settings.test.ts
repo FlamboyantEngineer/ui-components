@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { createSafeStorage } from '../../../src/core/storage.js';
+import { createSafeStorage } from '../core/storage.js';
 import {
   applySettings,
   defaultSettings,
@@ -7,7 +7,7 @@ import {
   rememberSettings,
   resolveTheme,
   settingsSearch,
-} from './settings.js';
+} from './lab-settings.js';
 
 function memoryStorage(initial: Record<string, string> = {}): Storage {
   const values = new Map(Object.entries(initial));
@@ -124,7 +124,7 @@ describe('applySettings', () => {
       theme: 'dark',
     });
     expect(document.documentElement.dataset.labStylesheetState).toBe('error');
-    expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+    expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
     expect(document.getElementById('ui-lab-stylesheet')).toBeNull();
     applySettings(defaultSettings);
     expect(document.documentElement.dataset.labStylesheetState).toBe('loading');
@@ -152,7 +152,7 @@ describe('applySettings', () => {
   it('adds, swaps and removes the stylesheet link', () => {
     applySettings(defaultSettings);
     const link = document.getElementById('ui-lab-stylesheet') as HTMLLinkElement;
-    expect(link.getAttribute('href')).toBe('build/reference.css');
+    expect(link).toHaveAttribute('href', 'build/reference.css');
     expect(document.documentElement.dataset.labStylesheetState).toBe('loading');
 
     applySettings({ ...defaultSettings, stylesheet: { kind: 'custom', url: '/host.css' } });
@@ -172,7 +172,7 @@ describe('applySettings', () => {
     applySettings({ ...defaultSettings, theme: 'dark' });
     expect(document.documentElement.dataset.labScheme).toBe('dark');
     applySettings({ ...defaultSettings, theme: 'night' });
-    expect(document.documentElement.getAttribute('data-theme')).toBe('night');
+    expect(document.documentElement).toHaveAttribute('data-theme', 'night');
     expect(document.documentElement.dataset.labScheme).toBeUndefined();
   });
 
@@ -183,11 +183,11 @@ describe('applySettings', () => {
 
   it('moves the theme between attributes', () => {
     applySettings({ ...defaultSettings, theme: 'dark' });
-    expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+    expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
     applySettings({ ...defaultSettings, theme: 'dark', themeAttribute: 'data-mode' });
-    expect(document.documentElement.getAttribute('data-theme')).toBeNull();
-    expect(document.documentElement.getAttribute('data-mode')).toBe('dark');
+    expect(document.documentElement).not.toHaveAttribute('data-theme');
+    expect(document.documentElement).toHaveAttribute('data-mode', 'dark');
     applySettings({ ...defaultSettings, theme: '', themeAttribute: 'data-mode' });
-    expect(document.documentElement.getAttribute('data-mode')).toBeNull();
+    expect(document.documentElement).not.toHaveAttribute('data-mode');
   });
 });

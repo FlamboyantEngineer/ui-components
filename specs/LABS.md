@@ -6,11 +6,11 @@ Every component has a static lab page that renders its full variant, size and st
 
 ### UIC-LABS-1.1 - Static files
 
-Each lab shall be a static file `labs/<name>.html` that loads a prebuilt bundle from `labs/build/<name>.js`. `npm run build:labs` builds every bundle, and the labs need nothing beyond a static file server (`npm run labs` is one). `labs/index.html` lists every lab with its description, in tiers from the simplest up: Foundations (setup and layout), Primitives grouped by type, Fields built on the field base, Assemblies of primitives and fields for one job, and Widgets that run a whole task on their own surface. Each tier lists its groups in order and each group its labs by title; every lab page names its tier and group (`lab-tier`, `lab-group`), and `npm run check:labs` rejects a tier or group the index does not list. The supplied server shall reject malformed URL paths with 400, reject paths outside the lab directory (including symbolic links that resolve outside it) with 403 and return 404 for missing files, while continuing to serve subsequent requests. It shall serve each file type with its own content type (extensionless files as plain text) and answer a file of an unknown type with 500 rather than a guessed type. The server, `npm run labs` and the browser tests listen on one address, `127.0.0.1` at port 4173 or the `LABS_PORT` environment variable.
+Each lab shall be a static file `labs/<name>.html` that loads a prebuilt bundle from `labs/build/<name>.js`. `npm run build:labs` builds every bundle, and the labs need nothing beyond a static file server (`npm run labs` is one). `labs/index.html` lists every lab with its description, in tiers from the simplest up: Foundations (setup and layout), Primitives grouped by type, Fields built on the field base, Assemblies of primitives and fields for one job, and Widgets that run a whole task on their own surface. Each tier lists its groups in order and each group its labs by title; every lab page names its tier and group (`lab-tier`, `lab-group`), and `npm run check:labs` rejects a tier or group the index does not list. The supplied server shall reject malformed URL paths with 400, reject paths outside the lab directory (including symbolic links that resolve outside it) with 403 and return 404 for missing files, while continuing to serve subsequent requests. It shall serve each file type with its own content type (extensionless files as plain text) and answer a file of an unknown type with 500 rather than a guessed type. The server, `npm run labs` and the browser tests listen on one address, `127.0.0.1` at port 4173 or the `LABS_PORT` environment variable. When another process holds that port, the server moves on to the next free one (trying up to 20) and says which port it took and that the asked one was in use; with `--strict-port`, which the browser tests pass since they address the configured port, it exits with status 1 and names the busy port instead.
 
 Every page shall declare an embedded icon so browsers do not request a missing `favicon.ico` while opening the standalone labs.
 
-Implementation: `scripts/build-labs.mjs`, `scripts/serve-labs.mjs`, `scripts/lib/labs.mjs`, `scripts/check-labs.mjs`
+Implementation: `scripts/build-labs.mjs`, `bin/serve-labs.mjs`, `bin/lab-server.mjs`, `scripts/lib/labs.mjs`, `scripts/check-labs.mjs`, `playwright.config.ts`
 Verification: `e2e/lab-harness.spec.ts`, `test/serve-labs.test.ts`
 
 ### UIC-LABS-1.2 - Standalone release archive
@@ -68,36 +68,36 @@ Verification: `test/bundle-budgets.test.ts`, `test/package-bundle.test.ts`
 
 Every lab and the index shall show a toolbar with a stylesheet picker offering Unstyled, Reference (`labs/build/reference.css`) and Custom URL. The toolbar sticks to the top of the page above the lab's content and below every overlay layer (its z-index is one less than the backdrop layer's), so a full-screen modal, drawer, menu or tooltip covers it and its controls stay reachable. The chosen stylesheet applies to the lab content immediately. The root element reports the current stylesheet's loading state in `data-lab-stylesheet-state` (`none`, `loading`, `loaded`, `error`); events from a replaced or removed stylesheet shall not change it. An invalid stylesheet URL shall report `error` without interrupting the lab or preventing another choice.
 
-Implementation: `labs/src/chrome/lab-chrome.tsx`, `labs/src/chrome/settings.ts`, `labs/src/chrome/mount.tsx`
-Verification: `e2e/lab-harness.spec.ts`, `labs/src/chrome/settings.test.ts`
+Implementation: `src/labs/lab-bar.tsx`, `src/labs/lab-settings.ts`, `src/labs/mount-lab-bar.tsx`
+Verification: `e2e/lab-harness.spec.ts`, `src/labs/lab-settings.test.ts`, `src/labs/lab-bar.test.tsx`
 
 ### UIC-LABS-2.2 - Theme
 
-The toolbar shall offer a theme picker: System (the default), Light, Dark and Custom, and the root-element data attribute the theme is written to (`data-theme` by default). Only `data-*` attributes outside the reserved `data-lab-*` namespace are allowed; an invalid attribute from the query string, storage or a direct settings call falls back to `data-theme`, so theme text never becomes an event handler or overwrites lab bookkeeping. System writes `light` or `dark` from the reader's colour scheme and follows it when it changes; Light and Dark write `light` and `dark`, which the reference stylesheet draws; Custom writes a value typed in, nothing while it is empty, so a host stylesheet's own theme switch can be exercised. The toolbar draws itself in the colour scheme a light or dark theme sets.
+The toolbar shall offer a theme switch, a [segmented choice](SEGMENTED-CHOICE.md) of System (the default), Light, Dark and Custom, each with its icon (the `theme-system`, `theme-light`, `theme-dark` and `edit` glyphs), and the root-element data attribute the theme is written to (`data-theme` by default). Only `data-*` attributes outside the reserved `data-lab-*` namespace are allowed; an invalid attribute from the query string, storage or a direct settings call falls back to `data-theme`, so theme text never becomes an event handler or overwrites lab bookkeeping. System writes `light` or `dark` from the reader's colour scheme and follows it when it changes; Light and Dark write `light` and `dark`, which the reference stylesheet draws; Custom writes a value typed in, nothing while it is empty, so a host stylesheet's own theme switch can be exercised. The toolbar draws itself in the colour scheme a light or dark theme sets.
 
-Implementation: `labs/src/chrome/lab-chrome.tsx`, `labs/src/chrome/settings.ts`, `labs/src/chrome/mount.tsx`
-Verification: `e2e/lab-harness.spec.ts`, `labs/src/chrome/settings.test.ts`
+Implementation: `src/labs/lab-bar.tsx`, `src/labs/lab-settings.ts`, `src/labs/mount-lab-bar.tsx`
+Verification: `e2e/lab-harness.spec.ts`, `src/labs/lab-settings.test.ts`, `src/labs/lab-bar.test.tsx`
 
 ### UIC-LABS-2.3 - Query string and remembered choice
 
 `?stylesheet=` (`none`, `reference` or a URL), `?theme=` and `?themeAttribute=` shall preselect the settings. Otherwise the last choice made in the toolbar applies, remembered in `localStorage`; a browser that refuses storage falls back to the defaults (reference sheet, system theme). Changing a setting rewrites the query string, leaving out each setting at its default, and the index carries the current settings into every lab link, including after repeated toolbar changes.
 
-Implementation: `labs/src/chrome/settings.ts`, `labs/src/chrome/mount.tsx`
-Verification: `e2e/lab-harness.spec.ts`, `labs/src/chrome/settings.test.ts`
+Implementation: `src/labs/lab-settings.ts`, `src/labs/mount-lab-bar.tsx`, `labs/src/chrome/settings.ts`, `labs/src/chrome/mount.tsx`
+Verification: `e2e/lab-harness.spec.ts`, `src/labs/lab-settings.test.ts`, `src/labs/lab-bar.test.tsx`
 
 ### UIC-LABS-2.4 - Isolated chrome
 
-The toolbar shall render in a shadow root with its own styles, so neither the chosen stylesheet nor the lab content changes how it looks.
+The toolbar shall render in a shadow root with its own styles, drawn in system colours, so neither the chosen stylesheet nor the lab content changes how it looks. Rendering it turns on the library's shadow root support for the page (`enableShadowRoots`, UIC-PORTAL), so its segmented choice presses and takes focus across the shadow boundary.
 
-Implementation: `labs/src/chrome/mount.tsx`, `labs/src/chrome/lab-chrome.tsx`
-Verification: `e2e/lab-harness.spec.ts`
+Implementation: `src/labs/mount-lab-bar.tsx`, `src/labs/lab-bar-styles.ts`
+Verification: `e2e/lab-harness.spec.ts`, `src/labs/lab-bar.test.tsx`
 
 ### UIC-LABS-2.5 - Styled from the first paint
 
 Every lab page and the index shall apply the stylesheet and theme from a classic script in the head (`labs/build/boot.js`), before the body is parsed: the stylesheet link holds the first paint (`blocking="render"`) and the lab content stays hidden while the stylesheet loads, so a page never paints unstyled first. The toolbar stays visible, so a slow stylesheet can still be changed.
 
-Implementation: `labs/src/chrome/boot.ts`, `labs/src/chrome/settings.ts`, `scripts/lib/labs.mjs`, `scripts/build-labs.mjs`
-Verification: `e2e/lab-harness.spec.ts`, `labs/src/chrome/settings.test.ts`
+Implementation: `labs/src/chrome/boot.ts`, `src/labs/lab-settings.ts`, `scripts/lib/labs.mjs`, `scripts/build-labs.mjs`
+Verification: `e2e/lab-harness.spec.ts`, `src/labs/lab-settings.test.ts`, `src/labs/lab-bar.test.tsx`
 
 ## UIC-LABS-3 - Content
 
@@ -172,3 +172,26 @@ Under `forced-colors: active` the system drops every `box-shadow`, so a focus ha
 
 Implementation: `labs/reference/base.css`
 Verification: `e2e/forced-colors.spec.ts`
+
+## UIC-LABS-4 - Lab shell for other libraries
+
+### UIC-LABS-4.1 - Lab bar
+
+The package shall export the lab toolbar from `@flamboyantengineer/ui-components/labs` (built to `dist/labs/`), so a library built on this one gives its own labs the same top bar: `LabBar` draws the page's `title`, an "All labs" link to `indexHref` that carries the current settings in its query string (none when `indexHref` is null, as on the index itself), the stylesheet picker (UIC-LABS-2.1) and the theme switch (UIC-LABS-2.2). It starts from `defaultSettings` and reports every committed change through `onChange`. `LabSettings` holds the `stylesheet` (`LabStylesheet`: `none`, `reference` or a `custom` URL), the `theme` and the `themeAttribute`. It forwards `ref` to its root `<div>`. The bar is lab tooling, not a styled component: it emits no hook classes, marks its parts with `data-lab-part` in the reserved lab namespace, and carries its styles only in the shadow root `mountLabBar` gives it (UIC-LABS-2.4).
+
+Implementation: `src/labs/index.ts`, `src/labs/lab-bar.tsx`, `package.json`, `scripts/check-package.mjs`, `scripts/check-public-types.mjs`
+Verification: `src/labs/lab-bar.test.tsx`, `test/package.test.ts`
+
+### UIC-LABS-4.2 - Mounting and first paint
+
+`mountLabBar({ host, title, indexHref, storage, referenceStylesheet, onSettingsChange })` shall read the settings from the page's query string, then `storage`, then the defaults (UIC-LABS-2.3), apply them, and render `LabBar` into a shadow root on `host` (labelled "Lab settings"). Each change is applied, remembered in `storage` (a `UiStorage`, or null to remember nothing) and written to the page's query string; `onSettingsChange` receives the settings and their query string when the bar mounts and after every change, so an index page can carry them into its links. `mountLabBar` returns the settings it started from. `bootLabSettings({ storage, referenceStylesheet })` shall read and apply the same settings without rendering, for a classic script in the page head (UIC-LABS-2.5). `referenceStylesheet` is the URL the Reference option loads, `build/reference.css` by default. The library never reads browser storage itself: the page passes its own adapter.
+
+Implementation: `src/labs/mount-lab-bar.tsx`, `src/labs/lab-settings.ts`
+Verification: `src/labs/lab-bar.test.tsx`
+
+### UIC-LABS-4.3 - Lab server
+
+The package shall ship the lab server (UIC-LABS-1.1) as the `ui-components-labs` command, so a library built on this one serves its own labs the same way: `ui-components-labs [--dir labs] [--port <port>] [--host 127.0.0.1] [--strict-port]` serves `--dir`, relative to the working directory, as plain static files, defaulting to port 4173 or `LABS_PORT`, and moves to the next free port when that one is taken unless `--strict-port` is given. The command and the module it runs use only Node's built-in modules, so it runs from an install without this repository's development dependencies.
+
+Implementation: `bin/serve-labs.mjs`, `bin/lab-server.mjs`, `package.json`, `scripts/check-package.mjs`
+Verification: `test/serve-labs.test.ts`, `test/package.test.ts`

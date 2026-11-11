@@ -2,8 +2,9 @@
 // page style, the stylesheet and theme at once, so the first paint already has them and nothing
 // flashes unstyled.
 
+import { bootLabSettings } from '../../../src/labs/index.js';
 import { applyPageStyle } from './page-style.js';
-import { applySettings, labStorage, readSettings } from './settings.js';
+import { labStorage } from './settings.js';
 
 applyPageStyle();
-applySettings(readSettings(location.search, labStorage()));
+bootLabSettings({ storage: labStorage() });

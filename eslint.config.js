@@ -426,7 +426,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['scripts/**/*.mjs', 'eslint-rules/**/*.js', '*.config.{js,ts}'],
+    files: ['scripts/**/*.mjs', 'bin/*.mjs', 'eslint-rules/**/*.js', '*.config.{js,ts}'],
     languageOptions: { globals: { ...globals.node } },
   },
 );

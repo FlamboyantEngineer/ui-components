@@ -100,6 +100,19 @@ export function formatLabUrl(name: string, options: OpenLabOptions = {}): string
   return `${name}.html?${query.toString()}`;
 }
 
+const themeNames = { system: 'System', light: 'Light', dark: 'Dark', custom: 'Custom' } as const;
+
+/** A theme the lab chrome's switch offers. */
+export type LabTheme = keyof typeof themeNames;
+
+/** The lab chrome's theme switch segment for `theme`, to press or to check. */
+export function themeSegment(page: Page, theme: LabTheme): Locator {
+  return page
+    .locator('#lab-chrome')
+    .getByRole('radiogroup', { name: 'Theme', exact: true })
+    .getByRole('radio', { name: themeNames[theme], exact: true });
+}
+
 export async function waitForLab(page: Page): Promise<void> {
   const root = page.locator('html');
   await expect(root).toHaveAttribute('data-lab-ready', 'true');
