@@ -54,6 +54,8 @@ input[data-lab-part='attribute'] { width: 12ch; }
 :focus-visible { outline: 2px solid Highlight; outline-offset: 1px; }
 .ui-segmented-choice {
   display: inline-flex;
+  box-sizing: border-box;
+  height: 24px;
   border: 1px solid GrayText;
   border-radius: 4px;
   overflow: hidden;
@@ -63,6 +65,7 @@ input[data-lab-part='attribute'] { width: 12ch; }
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  min-height: 0;
   border: 0;
   border-radius: 0;
   background: Field;
