@@ -1,7 +1,7 @@
 'use client';
 
 import { type KeyboardEvent, useLayoutEffect, useState } from 'react';
-import { MinusGlyph, PlusGlyph } from '../../core/glyphs.js';
+import { type GlyphComponent, MinusGlyph, PlusGlyph } from '../../core/glyphs.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import {
   Button as AriaButton,
@@ -159,9 +159,11 @@ function TextNumberStepper({
   steps,
   controlId,
   labelledBy,
+  icon,
   onStep,
 }: {
   direction: 1 | -1;
+  icon: GlyphComponent | undefined;
   state: FieldState<number | null>;
   steps: NumberSteps;
   controlId: string;
@@ -186,7 +188,7 @@ function TextNumberStepper({
       {...toModifiedPressProps(state, steps, onStep)}
       onPress={() => onStep()}
     >
-      <Glyph icon={direction === 1 ? PlusGlyph : MinusGlyph} />
+      <Glyph icon={icon ?? (direction === 1 ? PlusGlyph : MinusGlyph)} />
     </AriaButton>
   );
 }
@@ -209,6 +211,8 @@ export function TextNumberControl(props: TextNumberControlProps) {
     minValue,
     maxValue,
     name,
+    decrementIcon,
+    incrementIcon,
   } = config;
   const [input, inputRef] = useForwardedRef<HTMLInputElement>(control.ref);
   const entry = useTextEntry(props);
@@ -219,6 +223,7 @@ export function TextNumberControl(props: TextNumberControlProps) {
       steps={steps}
       controlId={control.id}
       labelledBy={control['aria-labelledby']}
+      icon={direction === 1 ? incrementIcon : decrementIcon}
       onStep={(size) => {
         entry.step(direction, size);
         input.current?.focus();

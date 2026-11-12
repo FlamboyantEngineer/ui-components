@@ -130,4 +130,54 @@ test.describe('Color Swatch lab', () => {
     await page.getByRole('button', { name: 'Clear' }).click();
     await expect(selected).toHaveCount(0);
   });
+  test('UIC-COLOR-SWATCH-3.1 draws the colour as a bar under the glyph', async ({ page, lab }) => {
+    await lab.open('color-swatch');
+    for (const size of ['sm', 'md', 'lg']) {
+      const button = matrixCell(page, `command=text colour=#cc3300 size=${size}`).getByRole(
+        'button',
+        { name: 'Text color' },
+      );
+      const icon = await button.locator('.ui-button__icon').boundingBox();
+      const glyph = await button.locator('.ui-glyph').boundingBox();
+      const bar = button.locator('.ui-color-swatch-button__swatch');
+      const box = await bar.boundingBox();
+      if (!icon || !glyph || !box) throw new Error(`The ${size} button did not lay out`);
+      await expect(bar).toHaveCSS('background-color', 'rgb(204, 51, 0)');
+      expect(box.y + box.height).toBeCloseTo(icon.y + icon.height, 0);
+      expect(box.width).toBeLessThan(icon.width);
+      expect(box.height).toBeGreaterThanOrEqual(2);
+      expect(box.height).toBeLessThan(icon.height / 4);
+    }
+    const empty = matrixCell(page, 'command=fill colour=empty size=md');
+    await expect(empty.locator('.ui-color-swatch-button__swatch')).toHaveAttribute(
+      'data-empty',
+      'true',
+    );
+    await expect(empty.getByRole('button', { name: 'Fill color' })).toHaveAccessibleDescription(
+      'No color',
+    );
+    await lab.expectAccessible('table[data-lab-matrix="command colour size"]');
+  });
+
+  test('UIC-COLOR-SWATCH-3.1 UIC-COLOR-SWATCH-3.2 follows the picked colour and applies it', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('color-swatch');
+    const text = page.locator('[data-lab-command="text"]');
+    await page
+      .locator('[data-lab-picker="text-colour"]')
+      .getByRole('option', { name: 'dark grayish cyan blue' })
+      .click();
+    await expect(text).toHaveAccessibleDescription('dark grayish cyan blue');
+    await expect(text.locator('.ui-color-swatch-button__swatch')).toHaveCSS(
+      'background-color',
+      'rgb(51, 102, 153)',
+    );
+    await text.click();
+    await expect(page.locator('[data-lab-output="applied"]')).toHaveText('text #336699');
+    await expect(
+      matrixCell(page, 'command=text colour=disabled size=md').getByRole('button'),
+    ).toBeDisabled();
+  });
 });

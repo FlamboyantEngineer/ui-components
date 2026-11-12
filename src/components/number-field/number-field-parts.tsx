@@ -9,7 +9,7 @@ import {
   useId,
   useRef,
 } from 'react';
-import { MinusGlyph, PlusGlyph, ScrubGlyph } from '../../core/glyphs.js';
+import { type GlyphComponent, MinusGlyph, PlusGlyph, ScrubGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import { Glyph } from '../../core/provider.js';
 import { Button as AriaButton, useLocale } from '../../primitives/index.js';
@@ -196,27 +196,38 @@ export function NumberValue({
   );
 }
 
+/** The capture handlers a step button takes its presses with. */
+export type StepperPressProps = ReturnType<typeof toModifiedPressProps>;
+
 /** A step button, named by its action and the field label (`Decrease Weight`). */
 export function Stepper({
   slot,
   labelledBy,
-  modifiedPress,
+  press,
+  icon,
+  isDisabled,
 }: {
   slot: 'decrement' | 'increment';
   labelledBy?: string | undefined;
-  /** The capture handlers of a press with Shift or Alt held (`toModifiedPressProps`). */
-  modifiedPress: ReturnType<typeof toModifiedPressProps>;
+  /** The capture handlers of its presses, such as those with Shift or Alt held (`toModifiedPressProps`). */
+  press: StepperPressProps;
+  /** The glyph; minus or plus by default. */
+  icon?: GlyphComponent | undefined;
+  /** Refuses presses; otherwise the field decides, by its range and state. */
+  isDisabled?: boolean | undefined;
 }) {
   const id = useId();
   return (
     <AriaButton
       slot={slot}
-      {...modifiedPress}
+      {...press}
       {...hooks.slot(slot)}
       id={id}
       aria-labelledby={labelledBy ? `${id} ${labelledBy}` : undefined}
+      // Only a refusal is passed: `undefined` leaves the field's own disabled state in place.
+      isDisabled={isDisabled === true ? true : undefined}
     >
-      <Glyph icon={slot === 'decrement' ? MinusGlyph : PlusGlyph} />
+      <Glyph icon={icon ?? (slot === 'decrement' ? MinusGlyph : PlusGlyph)} />
     </AriaButton>
   );
 }

@@ -58,6 +58,8 @@ export function ColorSwatch({
   );
 }
 
+export type { ColorSwatchButtonProps } from './color-swatch-button.js';
+export { ColorSwatchButton } from './color-swatch-button.js';
 export type {
   ColorSwatchPickerItemProps,
   ColorSwatchPickerLayout,

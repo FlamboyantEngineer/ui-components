@@ -94,6 +94,20 @@ Verification: `src/components/number-field/number-field.test.tsx`, `e2e/number-f
 Implementation: `src/components/number-field/number-field.tsx`, `src/components/number-field/unit-number.ts`, `src/components/number-field/number-codecs.ts`, `src/components/number-field/text-number-control.tsx`, `src/core/strings/field.ts`
 Verification: `src/components/number-field/unit-number.test.ts`, `src/components/number-field/number-field-units.test.tsx`, `e2e/number-field-displays.spec.ts`
 
+### UIC-NUMBER-FIELD-3.5 - Preset steps
+
+With `stepValues`, a list of numbers such as font sizes (`[8, 9, 10, 11, 12, 14, 18, 24]`), the increment button and plain Arrow Up shall move the value to the smallest preset above the number the input shows, and the decrement button and plain Arrow Down to the largest preset below it, and commit, so a value between presets (`13`) moves to the nearest one that way (`14` up, `12` down). The presets are read in ascending order whatever their order in the list, and those outside `minValue` and `maxValue` are left out. An empty value moves to the first preset going up and to the last going down. Past the last preset that way, the button is disabled and the key does nothing. Any number in the range can still be typed: without `step`, a typed value off the presets is kept rather than snapped or reported, and with `step` the range and step rules of UIC-NUMBER-FIELD-2.2 apply to it as usual. Each preset press steps once, keeping focus in the input; React Aria's own step and press-and-hold repeat are left out of it, and the mouse wheel does not step the field. Shift and Alt keep their `largeStep` and `smallStep` (UIC-NUMBER-FIELD-3.2). A read-only or disabled field refuses the steps, and an arrow that belongs to an input method composition is the input method's. An empty list steps by `step`. Presets apply to decimal fields without `units`.
+
+Implementation: `src/components/number-field/number-field.tsx`, `src/components/number-field/decimal-control.tsx`, `src/components/number-field/step-values.ts`
+Verification: `src/components/number-field/step-values.test.tsx`, `e2e/number-field.spec.ts`
+
+### UIC-NUMBER-FIELD-3.6 - Step button glyphs
+
+`decrementIcon` and `incrementIcon` shall replace the `minus` and `plus` glyphs of the decrement and increment buttons, in every base, such as `DecreaseFontSizeGlyph` and `IncreaseFontSizeGlyph` beside a font size. The buttons keep their names, slots and behaviour.
+
+Implementation: `src/components/number-field/number-field.tsx`, `src/components/number-field/number-field-parts.tsx`, `src/components/number-field/text-number-control.tsx`
+Verification: `src/components/number-field/step-values.test.tsx`, `e2e/number-field.spec.ts`
+
 ## UIC-NUMBER-FIELD-4 - Number bases
 
 ### UIC-NUMBER-FIELD-4.1 - Radix input
