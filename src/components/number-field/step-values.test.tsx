@@ -3,7 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { DecreaseFontSizeGlyph, IncreaseFontSizeGlyph } from '../../core/drawn-glyphs.js';
 import { type NumberEntryFieldProps, NumberField } from './number-field.js';
-import { findStepValue } from './step-values.js';
+import { findStepValue, toSortedStepValues } from './step-values.js';
 
 const fontSizes = [8, 9, 10, 11, 12, 14, 18, 24, 36] as const;
 
@@ -30,7 +30,8 @@ function renderSize(props: Partial<NumberEntryFieldProps> = {}) {
 
 describe('findStepValue', () => {
   it('UIC-NUMBER-FIELD-3.5 finds the next preset either way, sorted and within the range', () => {
-    const list = { values: [24, 8, 12, 10, Number.NaN] };
+    const list = toSortedStepValues({ values: [24, 8, 12, 10, Number.NaN] });
+    expect(list).toEqual([8, 10, 12, 24]);
     expect(findStepValue(10, 1, list)).toBe(12);
     expect(findStepValue(10, -1, list)).toBe(8);
     expect(findStepValue(13, 1, list)).toBe(24);
@@ -39,8 +40,10 @@ describe('findStepValue', () => {
     expect(findStepValue(8, -1, list)).toBeNull();
     expect(findStepValue(null, 1, list)).toBe(8);
     expect(findStepValue(null, -1, list)).toBe(24);
-    expect(findStepValue(0.30000000000000004, 1, { values: [0.1, 0.3, 0.5] })).toBe(0.5);
-    const bounded = { values: [8, 10, 12, 24], minValue: 9, maxValue: 20 };
+    expect(
+      findStepValue(0.30000000000000004, 1, toSortedStepValues({ values: [0.1, 0.3, 0.5] })),
+    ).toBe(0.5);
+    const bounded = toSortedStepValues({ values: [8, 10, 12, 24], minValue: 9, maxValue: 20 });
     expect(findStepValue(null, 1, bounded)).toBe(10);
     expect(findStepValue(12, 1, bounded)).toBeNull();
   });

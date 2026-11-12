@@ -8,6 +8,8 @@ import {
   buildScrollOverviewImage,
   resolveLayeredScrollOverviewSegments,
 } from '../../utils/scroll-overview.js';
+import { useEqualValue } from '../../utils/use-equal-value.js';
+import { isSameArray } from '../../utils/use-stable-array.js';
 import {
   isSameMetrics,
   markerAt,
@@ -41,6 +43,24 @@ export interface ScrollOverviewProps extends RefProps<HTMLDivElement>, BaseProps
 const hooks = createHooks('scroll-overview', []);
 
 const noMetrics: OverviewMetrics = { height: 0, scrollHeight: 0, layers: [] };
+
+/** Whether two layer lists name the same markers, compared field by field. */
+function isSameSources(
+  kept: readonly ScrollOverviewSourceLayer[],
+  next: readonly ScrollOverviewSourceLayer[],
+): boolean {
+  return (
+    kept.length === next.length &&
+    kept.every((layer, index) => {
+      const other = next[index];
+      return (
+        other !== undefined &&
+        layer.name === other.name &&
+        isSameArray(layer.markers, other.markers)
+      );
+    })
+  );
+}
 
 /**
  * Measures the container's visible and content heights and each marker's range, again when the
@@ -92,9 +112,11 @@ export function ScrollOverview({
   ref,
   ...rest
 }: ScrollOverviewProps) {
-  const sources = useMemo(
-    () => layers ?? (markers ? [{ name: 'markers', markers }] : []),
-    [layers, markers],
+  // Markers written inline are new objects each render: equal ones keep the measured sources, so
+  // the observers are not rebuilt and every marker measured again on each parent render.
+  const sources = useEqualValue(
+    useMemo(() => layers ?? (markers ? [{ name: 'markers', markers }] : []), [layers, markers]),
+    isSameSources,
   );
   const metrics = useOverviewMetrics(scrollRef, sources);
   const image = buildScrollOverviewImage(

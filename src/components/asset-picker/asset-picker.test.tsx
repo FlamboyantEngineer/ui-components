@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -35,6 +35,12 @@ function renderPicker(props: Partial<Parameters<typeof AssetPicker>[0]> = {}) {
     />,
   );
   return { ...view, onSelect, search };
+}
+
+function requireAsset(id: string): AssetPickerItem {
+  const asset = assets.find((each) => each.id === id);
+  if (!asset) throw new Error(`No asset ${id}`);
+  return asset;
 }
 
 const grid = () => screen.getByRole('grid', { name: 'Images' });
@@ -114,6 +120,59 @@ describe('AssetPicker', () => {
     await user.tab();
     expect(screen.getByRole('textbox', { name: 'Width' })).toHaveValue('800');
     expect(screen.getByRole('radio', { name: 'End' })).toBeChecked();
+  });
+
+  it('UIC-ASSET-PICKER-1.2 never derives a side below one pixel for a very wide asset', async () => {
+    const user = userEvent.setup();
+    const banner = {
+      ...requireAsset('loaf'),
+      id: 'banner',
+      name: 'Banner',
+      width: 2000,
+      height: 10,
+    };
+    renderPicker({ search: () => Promise.resolve([banner]) });
+    await user.click(await within(grid()).findByRole('row', { name: 'Banner' }));
+    const width = screen.getByRole('textbox', { name: 'Width' });
+    await user.clear(width);
+    await user.type(width, '50');
+    await user.tab();
+    expect(screen.getByRole('textbox', { name: 'Height' })).toHaveValue('1');
+  });
+
+  it('UIC-ASSET-PICKER-1.1 searches again with a new search function', async () => {
+    const user = userEvent.setup();
+    let resolveFirst: (items: AssetPickerItem[]) => void = () => undefined;
+    const first = vi.fn(
+      () =>
+        new Promise<AssetPickerItem[]>((resolve) => {
+          resolveFirst = resolve;
+        }),
+    );
+    const onSelect = vi.fn();
+    const { rerender } = render(
+      <AssetPicker
+        aria-label="Insert an image"
+        search={first}
+        onSelect={onSelect}
+        searchDelay={0}
+      />,
+    );
+    await waitFor(() => expect(first).toHaveBeenCalled());
+    const second = vi.fn(searchAssets);
+    rerender(
+      <AssetPicker
+        aria-label="Insert an image"
+        search={second}
+        onSelect={onSelect}
+        searchDelay={0}
+      />,
+    );
+    resolveFirst([]);
+    expect(await within(grid()).findByRole('row', { name: 'Loaf' })).toBeVisible();
+    expect(second).toHaveBeenCalledWith('', expect.any(AbortSignal));
+    await user.type(screen.getByRole('searchbox', { name: 'Search images' }), 'rol');
+    expect(await within(grid()).findByRole('row', { name: 'Rolls' })).toBeVisible();
   });
 
   it('UIC-ASSET-PICKER-1.2 starts the placement again for another asset', async () => {

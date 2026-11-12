@@ -1,6 +1,6 @@
 'use client';
 
-import { type KeyboardEvent, useRef } from 'react';
+import { type KeyboardEvent, useMemo, useRef } from 'react';
 import { Group, Input, NumberField as AriaNumberField } from '../../primitives/index.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { useMergedRefs } from '../../utils/use-merged-refs.js';
@@ -22,7 +22,7 @@ import {
   toModifiedPressProps,
 } from './number-field-parts.js';
 import { snapNumberValue } from './snap-number-value.js';
-import { findStepValue, type StepValueList, toStepValuePressProps } from './step-values.js';
+import { findStepValue, toSortedStepValues, toStepValuePressProps } from './step-values.js';
 
 interface DecimalControlProps {
   state: FieldState<number | null>;
@@ -40,8 +40,8 @@ interface NumberEntryOptions {
   commitBehavior: NumberFieldCommitBehavior;
   bounds: Pick<NumberEntryFieldProps, 'minValue' | 'maxValue' | 'step'>;
   steps: NumberSteps;
-  /** The presets the plain steps move through, when the field has any. */
-  presets: StepValueList | undefined;
+  /** The presets the plain steps move through, sorted (`toSortedStepValues`), when the field has any. */
+  presets: readonly number[] | undefined;
 }
 
 const presetArrows: Readonly<Record<string, 1 | -1>> = { ArrowUp: 1, ArrowDown: -1 };
@@ -135,6 +135,21 @@ function useNumberEntry(state: FieldState<number | null>, options: NumberEntryOp
   return { inputRef, commit, toInputProps, toStepperPress, isPastPresets };
 }
 
+/** The presets in range and ascending, filtered and sorted once per change, not on every render. */
+function useSortedPresets(
+  stepValues: readonly number[] | undefined,
+  minValue: number | undefined,
+  maxValue: number | undefined,
+) {
+  return useMemo(
+    () =>
+      stepValues && stepValues.length > 0
+        ? toSortedStepValues({ values: stepValues, minValue, maxValue })
+        : undefined,
+    [stepValues, minValue, maxValue],
+  );
+}
+
 export function DecimalControl({ state, control, config, steps }: DecimalControlProps) {
   const {
     hideStepper,
@@ -152,10 +167,7 @@ export function DecimalControl({ state, control, config, steps }: DecimalControl
     ...rest
   } = config;
   const bounds = { minValue: config.minValue, maxValue: config.maxValue, step: config.step };
-  const presets =
-    stepValues && stepValues.length > 0
-      ? { values: stepValues, minValue: config.minValue, maxValue: config.maxValue }
-      : undefined;
+  const presets = useSortedPresets(stepValues, config.minValue, config.maxValue);
   const { inputRef, ...entry } = useNumberEntry(state, { commitBehavior, bounds, steps, presets });
   const ref = useMergedRefs(inputRef, control.ref);
   return (

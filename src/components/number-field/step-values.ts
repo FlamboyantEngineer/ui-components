@@ -11,8 +11,8 @@ export interface StepValueList {
 // Tolerates the binary rounding of decimal presets (0.1 + 0.2).
 const valueTolerance = 1e-9;
 
-/** The finite presets within the range, in ascending order. */
-function toSortedValues({ values, minValue, maxValue }: StepValueList): number[] {
+/** The finite presets within the range, in ascending order, as `findStepValue` reads them. */
+export function toSortedStepValues({ values, minValue, maxValue }: StepValueList): number[] {
   const minimum = minValue ?? -Infinity;
   const maximum = maxValue ?? Infinity;
   return values
@@ -28,9 +28,8 @@ function toSortedValues({ values, minValue, maxValue }: StepValueList): number[]
 export function findStepValue(
   value: number | null,
   direction: 1 | -1,
-  list: StepValueList,
+  sorted: readonly number[],
 ): number | null {
-  const sorted = toSortedValues(list);
   if (value === null) return (direction === 1 ? sorted[0] : sorted.at(-1)) ?? null;
   const next =
     direction === 1
