@@ -6,6 +6,7 @@ import {
   renderKatexMath,
   renderMathElement,
 } from '../../src/components/math-preview/index.js';
+import { VisuallyHidden } from '../../src/components/visually-hidden/visually-hidden.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 import { MathFieldCorners, MathFieldSizes, MathPreviewCorners } from './math-preview-cases.js';
@@ -47,6 +48,45 @@ function FieldDemo() {
       />
       <LabOutput name="Committed source">{committed}</LabOutput>
     </div>
+  );
+}
+
+/**
+ * Inline math edited where it stands, as a document editor would: pressing the formula opens the
+ * field in its place, Enter puts the new math back and Escape leaves it as it was.
+ */
+function InPlaceDemo() {
+  const [source, setSource] = useState(String.raw`\pi r^2`);
+  const [isEditing, setEditing] = useState(false);
+  const editRef = useRef<HTMLButtonElement>(null);
+  const close = () => {
+    setEditing(false);
+    requestAnimationFrame(() => editRef.current?.focus());
+  };
+  return (
+    <p data-lab-demo="in-place" style={column}>
+      The area of a circle is{' '}
+      {isEditing ? (
+        <MathField
+          label="Formula"
+          labelLayout="control-only"
+          display="inline"
+          defaultValue={source}
+          autoFocus
+          onSubmit={(next) => {
+            setSource(next);
+            close();
+          }}
+          onCancel={close}
+        />
+      ) : (
+        <button ref={editRef} type="button" onClick={() => setEditing(true)}>
+          <VisuallyHidden as="span">Edit formula </VisuallyHidden>
+          <MathPreview source={source} display="inline" />
+        </button>
+      )}
+      .
+    </p>
   );
 }
 
@@ -125,6 +165,12 @@ mountLab(
       description="A source editor with a live display preview below it."
     >
       <FieldDemo />
+    </LabSection>
+    <LabSection
+      title="Editing in place"
+      description="Press the formula to edit it inline: Enter puts the new math back, Escape cancels, and the field takes focus only because it opens on request."
+    >
+      <InPlaceDemo />
     </LabSection>
     <MathFieldSizes />
     <MathFieldCorners />

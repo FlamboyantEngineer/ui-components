@@ -21,7 +21,11 @@ import { useResizeObserver } from '../../utils/use-resize-observer.js';
 import { type Annotation, getLayerFrame } from './anchor-geometry.js';
 import { useAnnotationContext } from './annotation-context.js';
 import { annotationLayerHooks as hooks } from './annotation-hooks.js';
-import { AnnotationMarkerEntry, type AnnotationMarkerState } from './annotation-marker.js';
+import {
+  AnnotationMarkerEntry,
+  type AnnotationMarkerState,
+  type EntryPlace,
+} from './annotation-marker.js';
 import { stackAnnotationCards } from './stack-cards.js';
 
 /** What a card shows about its annotation. */
@@ -48,6 +52,11 @@ export interface AnnotationMarginProps
   defaultOpenKeys?: Iterable<Key> | undefined;
   /** Called with the open annotations after each change. */
   onOpenChange?: ((keys: Set<Key>) => void) | undefined;
+  /**
+   * Where an annotation's card or entry starts, in pixels from the margin's inline-start edge, so
+   * each can follow its own page's edge; `undefined` leaves it where the stylesheet puts it.
+   */
+  getInlineOffset?: ((annotation: Annotation) => number | undefined) | undefined;
 }
 
 /** The margin's measurements: its top in the layer's content and each card's height. */
@@ -163,7 +172,11 @@ function moveFocusFrom(
   };
 }
 
-const toPlace = (top: number) => ({ position: 'absolute', top }) as const;
+/** An entry's place: its top inline, and its inline-start edge when the caller gives one. */
+const toPlace = (top: number, inset: number | undefined): EntryPlace =>
+  inset === undefined
+    ? { position: 'absolute', top }
+    : { position: 'absolute', top, insetInlineStart: inset };
 
 /** One annotation's card in the cards presentation, itself the list item that takes focus. */
 function AnnotationCardEntry({
@@ -213,6 +226,7 @@ export function AnnotationMargin({
   openKeys,
   defaultOpenKeys,
   onOpenChange,
+  getInlineOffset,
   className,
   ...rest
 }: AnnotationMarginProps) {
@@ -230,7 +244,10 @@ export function AnnotationMargin({
     const isActive = card.id === currentKey;
     const isOpen = open.has(card.id);
     const key = toKeyIdentity(card.id);
-    const shared = { onFocus: () => layout.activate(card.id), style: toPlace(card.top) };
+    const shared = {
+      onFocus: () => layout.activate(card.id),
+      style: toPlace(card.top, getInlineOffset?.(annotation)),
+    };
     if (!isIcons) {
       return (
         <AnnotationCardEntry

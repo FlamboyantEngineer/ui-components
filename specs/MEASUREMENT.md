@@ -66,10 +66,10 @@ Verification: `src/utils/use-element-size.test.tsx`
 
 ### UIC-MEASUREMENT-3.1 - Widest text
 
-`useWidestTextWidth(ref, texts)` shall return the width, in whole pixels rounded up, of the widest of `texts` drawn in the computed font of the ref's element, measured on an offscreen canvas after the element mounts. It measures each complete string, including embedded newlines, and returns zero for an empty list. It measures again when the set of texts changes, once the document's fonts are ready, and again each time fonts finish loading in the element's document later on (a stylesheet or `FontFace` added after mount, through `listenFontsLoaded`), never for a fresh array holding the same texts; it ignores font readiness and stops listening after unmount, and returns `null` where no offscreen canvas is available. Components publish the result as a measured property so a control keeps its width as the shown text changes.
+`useWidestTextWidth(ref, texts, fontKey)` shall return the width, in whole pixels rounded up, of the widest of `texts` drawn in the computed font of the ref's element, measured on an offscreen canvas after the element mounts. It measures each complete string, including embedded newlines, and returns zero for an empty list. It measures again when the set of texts changes, when its optional `fontKey` changes (a value that changes when the element's font may have, such as a choice a stylesheet draws in its own font), once the document's fonts are ready, and again each time fonts finish loading in the element's document later on (a stylesheet or `FontFace` added after mount, through `listenFontsLoaded`), never for a fresh array holding the same texts; it ignores font readiness and stops listening after unmount, and returns `null` where no offscreen canvas is available. Components publish the result as a measured property so a control keeps its width as the shown text changes.
 
 Implementation: `src/utils/use-widest-text-width.ts`, `src/utils/listen-fonts-loaded.ts`
-Verification: `src/utils/use-widest-text-width.test.tsx`, `src/components/select-field/select-field.test.tsx`
+Verification: `src/utils/use-widest-text-width.test.tsx`, `src/components/select-field/select-field.test.tsx`, `src/components/select-field/select-field-font.test.tsx`
 
 ## UIC-MEASUREMENT-4 - Visibility
 

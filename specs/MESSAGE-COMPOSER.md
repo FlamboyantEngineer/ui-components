@@ -298,6 +298,13 @@ A stored or controlled message reads a `trigger` token back with the raw text it
 Implementation: `src/components/message-composer/rich/composer-triggers.ts`, `src/components/message-composer/rich/use-rich-completions.ts`, `src/components/message-composer/rich/rich-content.tsx`, `src/components/message-composer/rich/composer-pill.tsx`, `src/components/message-composer/rich/composer-schema.ts`, `src/components/message-composer/rich/composer-markdown.ts`, `src/components/message-composer/composer-message.ts`
 Verification: `src/components/message-composer/rich/composer-triggers.test.tsx`, `e2e/message-composer-ranges.spec.ts`
 
+### UIC-MESSAGE-COMPOSER-4.14 - Field focus on mount
+
+`RichMessageField` with `autoFocus` shall focus its editable once, as soon as the editor's view exists, even when the view mounts its editable after the field's own mount effects (a field opened on demand, or inside a host that renders it a render late). Without `autoFocus` it leaves focus where it is.
+
+Implementation: `src/components/message-composer/rich/rich-message-composer.tsx`, `src/components/message-composer/rich/rich-content.tsx`
+Verification: `src/components/message-composer/rich/rich-message-field.test.tsx`, `e2e/comment-composer.spec.ts`
+
 ## UIC-MESSAGE-COMPOSER-5 - Menu
 
 ### UIC-MESSAGE-COMPOSER-5.1 - Menu button

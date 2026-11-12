@@ -2,6 +2,7 @@
 
 import {
   ProseMirrorDoc,
+  useEditorEffect,
   useEditorEventCallback,
   useEditorEventListener,
   useEditorState,
@@ -199,6 +200,16 @@ function RichCompletionList({
   );
 }
 
+/** Focuses the view once, as soon as it exists, when `autoFocus` asks for it on mount. */
+function useAutoFocus(autoFocus: boolean) {
+  const pendingRef = useRef(autoFocus);
+  useEditorEffect((view) => {
+    if (!pendingRef.current) return;
+    pendingRef.current = false;
+    view.focus();
+  });
+}
+
 /** The editable document, a multi-line text box, with its completion list and announcements. */
 export function RichComposerContent(editor: RichComposerEditorProps) {
   const { props, state, rootRef } = editor;
@@ -218,6 +229,7 @@ export function RichComposerContent(editor: RichComposerEditorProps) {
   const [contentRef, docRef] = useForwardedRef(props.ref);
   useRowLimits(contentRef, props.minRows ?? 1, props.maxRows ?? 8);
   useEditorHandle(editor.handleRef);
+  useAutoFocus(Boolean(editor.autoFocus));
   useSelectionReport(props.onSelectionChange);
   const actions = { ...state, keys: editor.keys, onCancel: props.onCancel };
   useRichKeys(completions, actions, (label) => setStatus(strings.removedFromMessage(label)));

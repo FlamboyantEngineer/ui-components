@@ -9,9 +9,15 @@ describe('comment mention tokens', () => {
   it('UIC-COMMENT-COMPOSER-2.3 splits text into runs and mentions', () => {
     expect(parseMentions('Hi @[Ana Lopez](ana) and @[Jon](j-1)!')).toEqual([
       { kind: 'text', text: 'Hi ' },
-      { kind: 'mention', text: '@[Ana Lopez](ana)', id: 'ana', name: 'Ana Lopez' },
+      {
+        kind: 'mention',
+        text: '@[Ana Lopez](ana)',
+        id: 'ana',
+        name: 'Ana Lopez',
+        mentionKind: 'person',
+      },
       { kind: 'text', text: ' and ' },
-      { kind: 'mention', text: '@[Jon](j-1)', id: 'j-1', name: 'Jon' },
+      { kind: 'mention', text: '@[Jon](j-1)', id: 'j-1', name: 'Jon', mentionKind: 'person' },
       { kind: 'text', text: '!' },
     ]);
     expect(parseMentions('')).toEqual([]);
@@ -26,8 +32,49 @@ describe('comment mention tokens', () => {
     expect(token).toBe('@[Jo [the\\] \\\\ one](a\\)b\\\\c)');
     expect(parseMentions(`x${token}y`)).toEqual([
       { kind: 'text', text: 'x' },
-      { kind: 'mention', text: token, ...person },
+      { kind: 'mention', text: token, ...person, mentionKind: 'person' },
       { kind: 'text', text: 'y' },
+    ]);
+  });
+
+  it('UIC-COMMENT-COMPOSER-2.4 writes and reads a kind before the brackets', () => {
+    const group = { kind: 'group', id: 'g-1', name: 'Bakers' } as const;
+    expect(serializeMention(group)).toBe('@group[Bakers](g-1)');
+    expect(serializeMention({ kind: 'person', id: 'ana', name: 'Ana' })).toBe('@[Ana](ana)');
+    expect(parseMentions('Ask @group[Bakers](g-1) or @assistant[Helper](bot)')).toEqual([
+      { kind: 'text', text: 'Ask ' },
+      {
+        kind: 'mention',
+        text: '@group[Bakers](g-1)',
+        id: 'g-1',
+        name: 'Bakers',
+        mentionKind: 'group',
+      },
+      { kind: 'text', text: ' or ' },
+      {
+        kind: 'mention',
+        text: '@assistant[Helper](bot)',
+        id: 'bot',
+        name: 'Helper',
+        mentionKind: 'assistant',
+      },
+    ]);
+    expect(() => serializeMention({ kind: 'Team Lead', id: 'x', name: 'X' })).toThrow(
+      'Mention kind "Team Lead" is not lower-case words.',
+    );
+  });
+
+  it('UIC-COMMENT-COMPOSER-2.4 keeps tokens in code spans and after a backslash as text', () => {
+    const text =
+      'Use `@[Ana](ana)` or ``a ` @[Jon](jon)`` or \\@[Kim](kim), then @[Lee](lee) `open';
+    const segments = parseMentions(text);
+    expect(segments.map((segment) => segment.text).join('')).toBe(text);
+    expect(segments.filter((segment) => segment.kind === 'mention')).toEqual([
+      { kind: 'mention', text: '@[Lee](lee)', id: 'lee', name: 'Lee', mentionKind: 'person' },
+    ]);
+    expect(parseMentions('`@[Ana](ana)')).toEqual([
+      { kind: 'text', text: '`' },
+      { kind: 'mention', text: '@[Ana](ana)', id: 'ana', name: 'Ana', mentionKind: 'person' },
     ]);
   });
 });

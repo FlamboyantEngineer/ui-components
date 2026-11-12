@@ -247,6 +247,29 @@
   gap: 2px;
 }
 
+.ui-property-row__inherited {
+  grid-column: 2 / -1;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-property-row__inherited-label {
+  font-weight: var(--ref-font-weight-medium);
+}
+
+.ui-property-row__inherited-source {
+  font-style: italic;
+}
+
+.ui-property-row[data-overridden] .ui-property-row__inherited-value {
+  text-decoration: line-through;
+}
+
+.ui-property-row__reset {
+  grid-row: 1;
+  grid-column: 3;
+}
+
 .ui-property-row__description {
   grid-column: 2 / -1;
   padding-bottom: 4px;

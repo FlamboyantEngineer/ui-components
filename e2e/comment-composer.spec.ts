@@ -193,6 +193,19 @@ test.describe('Comment Composer host cases', () => {
     await page.keyboard.press('ControlOrMeta+Enter');
     await expect(box).toHaveCount(0);
   });
+  test('UIC-COMMENT-COMPOSER-1.7 UIC-MESSAGE-COMPOSER-4.14 focuses a rich text box with mentions as it mounts', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('comment-composer');
+    const demo = page.locator('[data-lab-demo="focus-on-mount-mentions"]');
+    await demo.getByRole('button', { name: 'Reply' }).click();
+    const box = demo.getByRole('textbox', { name: 'Quick reply' });
+    await expect(box).toBeFocused();
+    await page.keyboard.type('Thanks!');
+    await expect(box).toHaveText('Thanks!');
+  });
+
   test('UIC-COMMENT-COMPOSER-2.1 UIC-COMMENT-COMPOSER-2.2 UIC-COMMENT-COMPOSER-2.3 mentions people from the search', async ({
     page,
     lab,
@@ -224,5 +237,17 @@ test.describe('Comment Composer host cases', () => {
     await expect(page.locator('[data-lab-output="mentions"] li')).toHaveText([
       '@[Lena Ortiz](lena) can you taste the pear sauce? Ask @[Jon Berg](jon)',
     ]);
+  });
+
+  test('UIC-COMMENT-COMPOSER-2.4 mentions a group with its size', async ({ page, lab }) => {
+    await lab.open('comment-composer');
+    const composer = page.locator('[data-lab-composer="mentions"]');
+    const box = composer.getByRole('textbox', { name: 'Add a comment' });
+    await box.click();
+    await page.keyboard.press('ControlOrMeta+End');
+    await page.keyboard.type(' @ba');
+    await page.getByRole('option', { name: 'Bakers Team · 4 members' }).waitFor();
+    await page.keyboard.press('Enter');
+    await expect(box.locator('.ui-message-composer__pill')).toHaveText(['Lena Ortiz', 'Bakers']);
   });
 });

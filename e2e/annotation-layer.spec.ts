@@ -285,4 +285,22 @@ test.describe('Annotation Layer lab', () => {
     await expect(empty).toBeHidden();
     await lab.expectAccessible();
   });
+
+  test('UIC-ANNOTATION-LAYER-2.7 starts each marker at its own sheet edge', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('annotation-layer');
+    const demo = page.locator('[data-lab-demo="staggered"]');
+    await demo.scrollIntoViewIfNeeded();
+    const markers = demo
+      .getByRole('list', { name: 'Sheet notes' })
+      .locator('.ui-annotation-layer__marker');
+    await expect(markers).toHaveCount(2);
+    const wide = await boxOf(markers.first());
+    const narrow = await boxOf(markers.nth(1));
+    expect(Math.round(wide.x - narrow.x)).toBe(120);
+    await markers.nth(1).click();
+    await expect(demo.locator('.ui-annotation-layer__card')).toHaveText('Note on rest');
+  });
 });

@@ -230,3 +230,43 @@ export function PagedHistory() {
     </div>
   );
 }
+
+const folded: VersionHistoryVersion[] = [
+  { id: 'f6', time: '2026-04-20T09:45:00Z', person: ana },
+  {
+    id: 'f5',
+    label: 'Shared with the club',
+    time: '2026-04-18T23:30:00Z',
+    person: tom,
+    children: [
+      { id: 'f4', time: '2026-04-18T21:00:00Z', person: tom },
+      { id: 'f3', time: '2026-04-17T14:00:00Z', person: ana },
+    ],
+  },
+  {
+    id: 'f2',
+    label: 'First plan',
+    time: '2026-04-09T08:15:00Z',
+    person: ana,
+    children: [{ id: 'f1', time: '2026-04-02T19:00:00Z', person: ana }],
+  },
+];
+
+/** Automatic versions folded under the named version saved after them, with compare. */
+export function FoldedHistory() {
+  const [expanded, setExpanded] = useState<readonly string[]>([]);
+  const [compared, setCompared] = useState('none');
+  return (
+    <div data-lab-demo="folded">
+      <VersionHistory
+        aria-label="Folded history"
+        versions={folded}
+        getNow={getNow}
+        onExpandedChange={(keys) => setExpanded([...keys].map(String))}
+        onCompare={(keys) => setCompared(keys.join(' → '))}
+      />
+      <Output name="expanded" value={expanded.join(', ') || 'none'} />
+      <Output name="compared" value={compared} />
+    </div>
+  );
+}

@@ -216,6 +216,27 @@ test.describe('Property Panel lab', () => {
     await lab.expectAccessible('[data-lab-revealing]');
   });
 
+  test('UIC-PROPERTY-PANEL-3.7 keeps an empty value as an override until the row resets to the inherited one', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('property-panel');
+    const demo = page.locator('[data-lab-demo="inherited-values"]');
+    const size = demo.getByRole('textbox', { name: 'Size' });
+    const reset = demo.getByRole('button', { name: 'Reset to inherited value' });
+    await expect(demo.locator('.ui-property-row__inherited').first()).toHaveText(
+      'Inherited 16 px from Body text',
+    );
+    await expect(reset).toHaveCount(0);
+    await size.fill('12');
+    await size.fill('');
+    await expect(reset).toBeVisible();
+    await reset.click();
+    await expect(reset).toHaveCount(0);
+    await expect(size).toHaveValue('');
+    await lab.expectAccessible('[data-lab-demo="inherited-values"]');
+  });
+
   test('UIC-PROPERTY-PANEL-1.5 locks every field of a disabled or read-only panel', async ({
     page,
     lab,

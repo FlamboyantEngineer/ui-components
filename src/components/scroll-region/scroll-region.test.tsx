@@ -675,13 +675,22 @@ describe('ScrollRegion', () => {
     expect(container.querySelector('.ui-scroll-region__overview')).toBeNull();
   });
 
-  it('UIC-SCROLL-REGION-3.1 paints nothing for fitting content or in overlay mode', () => {
+  it('UIC-SCROLL-REGION-3.1 paints nothing for fitting content', () => {
     viewports.set('short', {
       clientHeight: 100,
       scrollHeight: 100,
       clientWidth: 100,
       scrollWidth: 100,
     });
+    const markers = [{ top: 10, height: 10, color: 'blue', priority: 0 }];
+    const { container } = render(<ScrollRegion id="short" overview={markers} />);
+    flushFrames();
+    flushFrames();
+    expect(container.querySelector('[data-overview]')).toBeNull();
+    expect(container.querySelector('.ui-scroll-region__overview')).toBeNull();
+  });
+
+  it('UIC-SCROLL-REGION-3.1 paints the overview under the overlay thumbs', () => {
     viewports.set('overlay', {
       clientHeight: 100,
       scrollHeight: 1000,
@@ -690,15 +699,19 @@ describe('ScrollRegion', () => {
     });
     const markers = [{ top: 10, height: 10, color: 'blue', priority: 0 }];
     const { container } = render(
-      <>
-        <ScrollRegion id="short" overview={markers} />
-        <ScrollRegion id="overlay" scrollbar="overlay" overview={markers} />
-      </>,
+      <ScrollRegion id="overlay" scrollbar="overlay" overview={markers} />,
     );
     flushFrames();
     flushFrames();
-    expect(container.querySelector('[data-overview]')).toBeNull();
-    expect(container.querySelector('.ui-scroll-region__overview')).toBeNull();
+    const root = container.firstElementChild as HTMLElement;
+    expect(root).toHaveAttribute('data-overview', 'true');
+    expect(root.style.getPropertyValue('--ui-scroll-region-overview-image')).toContain('blue');
+    const layer = requireDefined(
+      container.querySelector<HTMLElement>('.ui-scroll-region__overview'),
+    );
+    const track = requireDefined(container.querySelector('.ui-scroll-region__track'));
+    // Before the tracks, so a thumb draws over it.
+    expect(layer.compareDocumentPosition(track) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it('UIC-SCROLL-REGION-3.3 paints named layers', () => {

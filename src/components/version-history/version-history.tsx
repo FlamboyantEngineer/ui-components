@@ -18,10 +18,11 @@ import {
   type VersionDialogTarget,
 } from './version-dialogs.js';
 import {
-  filterVersions,
+  flattenVersions,
   keepSelectableKeys,
   limitSelection,
   listVersionPeople,
+  listVersionRows,
   orderForComparison,
   type VersionHistoryFilter,
 } from './version-model.js';
@@ -48,6 +49,11 @@ export interface VersionHistoryVersion {
   summary?: ReactNode;
   /** The version cannot be selected and has no actions. */
   isDisabled?: boolean | undefined;
+  /**
+   * Older versions folded under this one, newest first, such as the automatic versions saved
+   * before a named one: a toggle on its row shows and hides them. One level deep.
+   */
+  children?: readonly VersionHistoryVersion[] | undefined;
 }
 
 export interface VersionHistoryProps
@@ -78,6 +84,12 @@ export interface VersionHistoryProps
   defaultFilter?: VersionHistoryFilter | undefined;
   /** Called with the filter after each change. */
   onFilterChange?: ((filter: VersionHistoryFilter) => void) | undefined;
+  /** The versions whose folded versions are shown. Controlled. */
+  expandedKeys?: Iterable<Key> | undefined;
+  /** The versions whose folded versions are shown at first, uncontrolled. Defaults to none. */
+  defaultExpandedKeys?: Iterable<Key> | undefined;
+  /** Called with the expanded versions after a toggle. */
+  onExpandedChange?: ((keys: Set<Key>) => void) | undefined;
   /** Shows the filters above the list. Defaults to true. */
   showFilters?: boolean | undefined;
   /** Asks for older versions when the end of the list scrolls into view. */
@@ -105,7 +117,7 @@ const noKeys: Iterable<Key> = [];
 
 /** Whether `action` can run on the version `key` now: listed, enabled, and offered. */
 function isActionAvailable(props: VersionHistoryProps, action: VersionAction, key: Key): boolean {
-  const version = props.versions.find((entry) => entry.id === key);
+  const version = flattenVersions(props.versions).find((entry) => entry.id === key);
   if (!version || version.isDisabled) return false;
   if (action === 'rename') return props.onRename !== undefined;
   return props.onRestore !== undefined && key !== (props.currentKey ?? null);
@@ -163,7 +175,7 @@ function useVersionState(props: VersionHistoryProps) {
     new Set(props.defaultSelectedKeys ?? noKeys),
     props.onSelectionChange,
   );
-  const selected = keepSelectableKeys(props.versions, stored);
+  const selected = keepSelectableKeys(flattenVersions(props.versions), stored);
   const isStale = selected.size !== stored.size;
   const isControlled = props.selectedKeys !== undefined;
   useEffect(() => {
@@ -177,7 +189,18 @@ function useVersionState(props: VersionHistoryProps) {
   const select = (keys: Selection) => {
     if (keys !== 'all') setSelected(limitSelection(selected, keys));
   };
-  return { selected, select, filter, setFilter };
+  const [expanded, setExpanded] = useControllableState<Set<Key>>(
+    props.expandedKeys === undefined ? undefined : new Set(props.expandedKeys),
+    new Set(props.defaultExpandedKeys ?? noKeys),
+    props.onExpandedChange,
+  );
+  const toggle = (key: Key, isExpanded: boolean) => {
+    const next = new Set(expanded);
+    if (isExpanded) next.add(key);
+    else next.delete(key);
+    setExpanded(next);
+  };
+  return { selected, select, filter, setFilter, expanded, toggle };
 }
 
 /** What the list shows without rows: loading, no match for the filters, or no versions at all. */
@@ -264,9 +287,10 @@ export function VersionHistory(props: VersionHistoryProps) {
   const strings = useUiStrings();
   const { locale } = useLocale();
   const zone = useTimeZone(timeZone);
-  const { selected, select, filter, setFilter } = useVersionState(props);
+  const { selected, select, filter, setFilter, expanded, toggle } = useVersionState(props);
   const dialog = useVersionDialog(props);
-  const comparison = orderForComparison(versions, selected);
+  const everyVersionListed = flattenVersions(versions);
+  const comparison = orderForComparison(everyVersionListed, selected);
   const context = {
     currentKey,
     locale,
@@ -275,6 +299,7 @@ export function VersionHistory(props: VersionHistoryProps) {
     canRename: onRename !== undefined,
     canRestore: onRestore !== undefined,
     onAction: dialog.open,
+    onExpandedChange: toggle,
     showAvatar,
     fallbackAfterDays,
     getNow,
@@ -290,7 +315,7 @@ export function VersionHistory(props: VersionHistoryProps) {
         <VersionToolbar
           filter={showFilters ? filter : null}
           onFilterChange={setFilter}
-          people={listVersionPeople(versions)}
+          people={listVersionPeople(everyVersionListed)}
           onCompare={onCompare ? () => comparison && onCompare(comparison) : null}
           canCompare={comparison !== null}
         />
@@ -307,7 +332,7 @@ export function VersionHistory(props: VersionHistoryProps) {
           selectionMode="multiple"
           selectedKeys={selected}
           onSelectionChange={select}
-          disabledKeys={versions.filter((version) => version.isDisabled).map(({ id }) => id)}
+          disabledKeys={everyVersionListed.filter((entry) => entry.isDisabled).map(({ id }) => id)}
           onLoadMore={onLoadMore}
           isLoading={isLoading}
           renderEmptyState={() => (
@@ -318,7 +343,9 @@ export function VersionHistory(props: VersionHistoryProps) {
             />
           )}
         >
-          {filterVersions(versions, filter).map((version) => renderVersionRow(version, context))}
+          {listVersionRows(versions, { filter, expandedKeys: expanded }).map((row) =>
+            renderVersionRow({ ...row, isExpanded: expanded.has(row.version.id) }, context),
+          )}
         </ListView>
       )}
       <VersionDialogs dialog={dialog} onRestore={onRestore} onRename={onRename} />

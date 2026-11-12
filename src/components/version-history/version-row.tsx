@@ -12,10 +12,11 @@ import { capitalizeText } from '../../utils/relative-time.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { Attribution, type AttributionProps } from '../attribution/attribution.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
+import { ExpandToggle } from '../expand-toggle/expand-toggle.js';
 import { ListViewItem } from '../list-row/list-row.js';
 import type { VersionDialogTarget } from './version-dialogs.js';
 import type { VersionHistoryVersion } from './version-history.js';
-import { formatVersionTime, isNamedVersion } from './version-model.js';
+import { formatVersionTime, isNamedVersion, type VersionRow } from './version-model.js';
 
 /** A version menu's actions. */
 export type VersionAction = 'rename' | 'restore';
@@ -34,6 +35,8 @@ interface VersionRowContext extends Pick<
   /** Whether versions other than the current one can be restored. */
   canRestore: boolean;
   onAction: (action: VersionAction, target: VersionDialogTarget) => void;
+  /** Shows or hides the versions folded under a version. */
+  onExpandedChange: (key: Key, isExpanded: boolean) => void;
 }
 
 export const versionHistoryHooks = createHooks('version-history', [
@@ -48,6 +51,7 @@ export const versionHistoryHooks = createHooks('version-history', [
   'attribution',
   'summary',
   'actions',
+  'fold',
   'error',
 ]);
 
@@ -80,11 +84,35 @@ function listActions(version: VersionHistoryVersion, context: VersionRowContext)
   return actions;
 }
 
+/** A row as drawn: the version, where it sits, what it folds and whether that is shown. */
+type ShownVersionRow = VersionRow<VersionHistoryVersion> & { isExpanded: boolean };
+
+/** The toggle that shows or hides the versions folded under a version. */
+function FoldToggle({
+  row,
+  title,
+  context,
+}: {
+  row: ShownVersionRow;
+  title: string;
+  context: VersionRowContext;
+}) {
+  const { version } = row;
+  const label = context.strings.foldedVersions(row.foldedCount, title);
+  return (
+    <ExpandToggle
+      className={hooks.slotClass('fold')}
+      label={label}
+      tooltip={label}
+      isExpanded={row.isExpanded}
+      onExpandedChange={(isExpanded) => context.onExpandedChange(version.id, isExpanded)}
+    />
+  );
+}
+
 /** One version as a row of the history's list view. */
-export function renderVersionRow(
-  version: VersionHistoryVersion,
-  context: VersionRowContext,
-): ReactElement {
+export function renderVersionRow(row: ShownVersionRow, context: VersionRowContext): ReactElement {
+  const { version } = row;
   const { strings } = context;
   const target = toVersionTarget(version, context);
   const isCurrent = version.id === context.currentKey;
@@ -97,6 +125,8 @@ export function renderVersionRow(
       className={hooks.slotClass('version')}
       data-named={isNamedVersion(version) || undefined}
       data-current={isCurrent || undefined}
+      data-nested={row.isNested || undefined}
+      data-expanded={(row.foldedCount > 0 && row.isExpanded) || undefined}
       title={
         <>
           <span {...hooks.slot('label')}>{target.title}</span>
@@ -120,16 +150,23 @@ export function renderVersionRow(
         </>
       }
       trailing={
-        actions.length > 0 ? (
-          <DropdownMenu
-            iconOnly
-            label={strings.versionActions(target.title)}
-            variant="ghost"
-            size="sm"
-            className={hooks.slotClass('actions')}
-            items={actions}
-            onAction={(key) => context.onAction(key as VersionAction, target)}
-          />
+        row.foldedCount > 0 || actions.length > 0 ? (
+          <>
+            {row.foldedCount > 0 ? (
+              <FoldToggle row={row} title={target.title} context={context} />
+            ) : null}
+            {actions.length > 0 ? (
+              <DropdownMenu
+                iconOnly
+                label={strings.versionActions(target.title)}
+                variant="ghost"
+                size="sm"
+                className={hooks.slotClass('actions')}
+                items={actions}
+                onAction={(key) => context.onAction(key as VersionAction, target)}
+              />
+            ) : null}
+          </>
         ) : null
       }
     />

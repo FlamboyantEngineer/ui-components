@@ -144,6 +144,10 @@ interface CommonStrings {
   totalCount: (total: string) => string;
   /** Names the mark of a group holding a value that overrides an inherited one. */
   containsOverrides: string;
+  /** Introduces the value a property row inherits when it sets none of its own. */
+  inheritedValue: string;
+  /** Names the button of a property row that drops its own value for the inherited one. */
+  resetToInherited: string;
   /** Names a search box that filters a panel, from the panel's label. */
   filterLabel: (label: string) => string;
   /** The message of a filter no property matches, from the trimmed query. */

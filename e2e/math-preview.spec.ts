@@ -94,4 +94,26 @@ test.describe('Math Preview lab', () => {
     await expect(demo.locator('li').nth(1)).toContainText('Unexpected end of input');
     await expect(demo.locator('li').nth(1).locator('math')).toHaveCount(0);
   });
+
+  test('UIC-MATH-PREVIEW-2.3 edits inline math in place, submitting on Enter and cancelling on Escape', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('math-preview');
+    const demo = page.locator('[data-lab-demo="in-place"]');
+    await demo.getByRole('button', { name: 'Edit formula' }).click();
+    const editor = demo.getByRole('textbox', { name: 'Formula' });
+    await expect(editor).toBeFocused();
+    await page.keyboard.press('End');
+    await page.keyboard.type(' h');
+    await page.keyboard.press('Enter');
+    const edit = demo.getByRole('button', { name: 'Edit formula' });
+    await expect(edit).toBeFocused();
+    await expect(edit.locator('annotation')).toHaveText(String.raw`\pi r^2 h`);
+    await edit.press('Enter');
+    await page.keyboard.type('x');
+    await page.keyboard.press('Escape');
+    await expect(edit.locator('annotation')).toHaveText(String.raw`\pi r^2 h`);
+    await lab.expectAccessible('[data-lab-demo="in-place"]');
+  });
 });

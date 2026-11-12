@@ -59,7 +59,7 @@ export interface ScrollRegionProps
   onTopReached?: (() => void) | undefined;
   /** Called when scrolling reaches the bottom, for example to load more content. */
   onBottomReached?: (() => void) | undefined;
-  /** Decorative markers painted beside the native vertical scrollbar. */
+  /** Decorative markers painted beside the native vertical scrollbar, or on the overlay track. */
   overview?: readonly ScrollOverviewMarker[] | undefined;
   /** Named marker layers, combined with equal weight where they meet. Replaces `overview`. */
   overviewLayers?: readonly ScrollOverviewLayer[] | undefined;
@@ -218,7 +218,6 @@ function useRegionBehaviour(
   const paint = useScrollOverview(viewport, observer, {
     markers: overview,
     layers: overviewLayers,
-    enabled: !overlay,
   });
   return {
     measurement,
@@ -248,7 +247,7 @@ function useRegionBehaviour(
 
 /**
  * An area that scrolls on its own. The root frames a native scroll viewport; overlay mode adds
- * thumbs over it, and markers add a decorative overview beside the native scrollbar. It grows by
+ * thumbs over it, and markers add a decorative overview beside the scrollbar. It grows by
  * default, clips only when no axis scrolls, and publishes how far the content reaches past each edge.
  */
 export function ScrollRegion({

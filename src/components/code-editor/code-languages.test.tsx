@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { requireDefined } from '../../utils/require-defined.js';
-import { CodeEditor } from './code-editor.js';
+import { CodeEditor, type CodeLanguage } from './code-editor.js';
 import { createCodeTokenizer, resolveCodeTokenizer } from './code-languages.js';
 
 describe('CodeEditor languages', () => {
@@ -16,6 +16,11 @@ describe('CodeEditor languages', () => {
       sql: 'SELECT name FROM fruit;',
       python: 'def name():\n  return "Pear" # fruit',
       markdown: '# Fruit\n**Pear** and `plum`',
+      c: '#include <stdio.h>\nint count = 12; /* pears */',
+      cpp: 'namespace fruit { class Pear {}; }',
+      yaml: 'fruit: Pear # ripe\ncount: 12',
+      xml: '<?xml version="1.0"?>\n<fruit name="Pear"><!-- ripe --></fruit>',
+      shell: 'export FRUIT="Pear" && echo $FRUIT # ripe',
     } as const;
     for (const [language, source] of Object.entries(samples)) {
       const tokenize = requireDefined(
@@ -26,6 +31,41 @@ describe('CodeEditor languages', () => {
       expect(tokens.some((token) => token.type)).toBe(true);
     }
     expect(resolveCodeTokenizer({ language: 'text' })).toBeUndefined();
+  });
+  it('UIC-CODE-EDITOR-12.1 marks the kinds of the C, C++, YAML, XML and shell presets', () => {
+    const kinds = (language: CodeLanguage, source: string) =>
+      requireDefined(resolveCodeTokenizer({ language }))(source)
+        .filter((token) => token.type)
+        .map((token) => `${token.type}:${token.text}`);
+    expect(kinds('c', '#include <stdio.h>\nreturn 0; // done')).toEqual([
+      'keyword:#include',
+      'keyword:return',
+      'number:0',
+      'comment:// done',
+    ]);
+    expect(kinds('cpp', 'template <typename T> int pick();')).toEqual([
+      'keyword:template',
+      'keyword:typename',
+      'keyword:int',
+    ]);
+    expect(kinds('yaml', 'fruit: Pear # ripe\nfresh: true')).toEqual([
+      'key:fruit',
+      'comment:# ripe',
+      'key:fresh',
+      'keyword:true',
+    ]);
+    expect(kinds('xml', '<fruit name="Pear"/>')).toEqual([
+      'keyword:<fruit',
+      'key:name',
+      'string:"Pear"',
+      'keyword:/>',
+    ]);
+    expect(kinds('shell', 'echo "$FRUIT" | wc -l # count')).toEqual([
+      'keyword:echo',
+      'string:"$FRUIT"',
+      'punctuation:|',
+      'comment:# count',
+    ]);
   });
   it('UIC-CODE-EDITOR-12.1 accepts custom syntax rules, preserves flags and ignores empty matches', () => {
     const tokenize = createCodeTokenizer([

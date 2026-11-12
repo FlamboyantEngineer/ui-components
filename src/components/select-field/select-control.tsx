@@ -69,9 +69,9 @@ function useListProps(
 }
 
 /**
- * The trigger's ref (read for its font, focused after a clear and published to the field), its
- * placeholder, a multiple select's count of its choices and the measured width of the widest text
- * it can show.
+ * The trigger's ref (focused after a clear and published to the field), the value label's ref
+ * (read for its font), the placeholder, a multiple select's count of its choices and the measured
+ * width of the widest text it can show.
  */
 function useTrigger(
   control: FieldControlProps,
@@ -80,6 +80,7 @@ function useTrigger(
 ) {
   const strings = useUiStrings();
   const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const labelRef = useRef<HTMLSpanElement | null>(null);
   const ref = useMergedRefs(triggerRef, control.ref, props.triggerRef);
   const placeholder = props.placeholder ?? strings.selectPlaceholder;
   const options = flattenPickerItems(props.options);
@@ -89,13 +90,15 @@ function useTrigger(
     ...(props.isMultiple ? [strings.selectedCount(options.length)] : []),
     ...options.map((option) => option.label),
   ];
-  const width = useWidestTextWidth(triggerRef, texts);
+  // A stylesheet may draw the chosen option in a font of its own, so a new choice measures again.
+  const width = useWidestTextWidth(labelRef, texts, model.single?.id);
   const style =
     width === null
       ? undefined
       : (measuredProperty('select-field-label-width', width) as CSSProperties);
   return {
     ref,
+    labelRef,
     placeholder,
     summary:
       props.isMultiple && props.isMixed
@@ -160,7 +163,7 @@ export function SelectControl({
   const model = useSelectModel(props);
   const list = useListProps(props, model);
   const actions = useSelectActions(props, model, list.isFilterable);
-  const { ref: triggerRef, style, placeholder, summary, focus } = useTrigger(control, props, model);
+  const { ref: triggerRef, labelRef, ...trigger } = useTrigger(control, props, model);
   const submitted = isMultiple ? model.keys : [model.keys[0] ?? ''];
   const { chips, removed } = renderMultipleValues({
     label,
@@ -173,7 +176,7 @@ export function SelectControl({
   const select = (
     <AriaSelect<SelectFieldOption, 'single' | 'multiple'>
       className={hooks.slotClass('select')}
-      style={style}
+      style={trigger.style}
       {...toAriaControlProps(control)}
       selectionMode={isMultiple ? 'multiple' : 'single'}
       value={
@@ -190,14 +193,15 @@ export function SelectControl({
     >
       <SelectTrigger
         ref={triggerRef}
+        labelRef={labelRef}
         chosen={model.single}
         previous={model.previous}
-        placeholder={placeholder}
-        summary={summary}
+        placeholder={trigger.placeholder}
+        summary={trigger.summary}
         clearLabel={props.isClearable && state.canClear ? strings.clearValue(label) : null}
         onClear={() => {
           state.clear();
-          focus();
+          trigger.focus();
         }}
         onKeyDownCapture={actions.seedFilter}
       />

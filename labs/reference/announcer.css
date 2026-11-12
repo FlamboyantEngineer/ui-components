@@ -1,0 +1,8 @@
+/*
+ * Announcer. Visually Hidden hides the regions inline; screen readers read each new text, and
+ * repeated text keeps its line breaks so a multi-line announcement reads in order.
+ */
+
+.ui-announcer :is(.ui-announcer__polite, .ui-announcer__assertive) {
+  white-space: pre-line;
+}

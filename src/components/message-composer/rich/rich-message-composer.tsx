@@ -1,6 +1,6 @@
 'use client';
 
-import { type FocusEvent, type Ref, useCallback, useEffect, useRef } from 'react';
+import { type FocusEvent, type Ref, useCallback, useRef } from 'react';
 import type { AvatarIdentity } from '../../avatar/avatar.js';
 import type { RecordLabelResolver } from '../../record-label/record-label.js';
 import { ComposerFrame } from '../composer-frame.js';
@@ -118,7 +118,7 @@ export interface RichMessageFieldProps extends Pick<
 > {
   value: MessageComposerMessage;
   onChange: (value: MessageComposerMessage) => void;
-  /** Focuses the text box when it mounts. */
+  /** Focuses the text box when it mounts, once its editable exists. */
   autoFocus?: boolean | undefined;
 }
 
@@ -195,19 +195,15 @@ export function RichMessageField({ className, autoFocus, ...props }: RichMessage
   const state = useComposerState({ ...props, isBlocked: true, format: richFormat });
   const rootRef = useRef<HTMLDivElement>(null);
   const handleRef = useRef<RichEditorHandle | null>(null);
-  const inputRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (autoFocus) inputRef.current?.focus();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- on mount only, as a text field's autoFocus
-  }, []);
   return (
     <div {...hooks.root({ className, data: { disabled: isDisabled } })} ref={rootRef}>
       <RichComposerEditor
-        props={{ ...props, ref: inputRef }}
+        props={props}
         state={state}
         keys={fieldKeys}
         rootRef={rootRef}
         handleRef={handleRef}
+        autoFocus={autoFocus}
       />
     </div>
   );

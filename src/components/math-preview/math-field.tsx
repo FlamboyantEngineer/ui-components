@@ -32,6 +32,14 @@ export interface MathFieldProps
   renderer?: MathRenderer | undefined;
   /** The longest source previewed, in characters. Defaults to 10000. */
   maxLength?: number | undefined;
+  /**
+   * Finishes the edit from the keyboard: the source commits and `onSubmit` runs with it, changed or
+   * not. Inline math is then one line and Enter submits; display math submits on Ctrl or Cmd with
+   * Enter, and Enter breaks the line. Without it, Enter breaks the line.
+   */
+  onSubmit?: ((value: string) => void) | undefined;
+  /** Called on Escape, after a changed source goes back to the committed one; Escape stops here. */
+  onCancel?: (() => void) | undefined;
 }
 
 /** Splits LaTeX into commands, braces, digits and plain text for highlighting. */
@@ -54,20 +62,44 @@ function tokenizeLatex(source: string): CodeToken[] {
   }));
 }
 
-/** Escape puts the committed source back and goes no further; Enter breaks the line. */
-function createKeyHandler(state: FieldState<string>) {
+interface MathKeyOptions {
+  state: FieldState<string>;
+  display: MathDisplay;
+  onSubmit: ((value: string) => void) | undefined;
+  onCancel: (() => void) | undefined;
+}
+
+/**
+ * Escape puts the committed source back, and goes no further when it changed something or the
+ * caller cancels; the submit key submits when the caller asked for it.
+ */
+function createKeyHandler({ state, display, onSubmit, onCancel }: MathKeyOptions) {
   return (event: KeyboardEvent) => {
-    if (isComposingKey(event.nativeEvent) || event.key !== 'Escape' || !state.isDirty) return;
+    if (isComposingKey(event.nativeEvent)) return;
+    const isSubmitKey =
+      event.key === 'Enter' && (display === 'inline' || event.ctrlKey || event.metaKey);
+    if (isSubmitKey && onSubmit && !state.isReadOnly) {
+      event.preventDefault();
+      event.stopPropagation();
+      state.commit();
+      onSubmit(state.value);
+      return;
+    }
+    if (event.key !== 'Escape' || (!state.isDirty && !onCancel)) return;
     event.preventDefault();
     event.stopPropagation();
     state.restore();
+    onCancel?.();
   };
 }
 
 /**
  * A field for LaTeX source with a live preview below it: the source editor keeps its text, caret
  * and focus while the preview typesets, and a source that does not typeset says why. Leaving the
- * field commits; Escape restores the committed source. Inserting the math into a document,
+ * field commits; Escape restores the committed source. With `onSubmit` Enter (inline) or Ctrl or
+ * Cmd with Enter (display) commits too, and with
+ * `onCancel` Escape always stops at the field, so the field can edit math in place inside a document
+ * (where `controlRef` focuses it and it takes focus on mount only with `autoFocus`). Inserting the math into a document,
  * numbering equations and storing the source stay with the host.
  */
 export function MathField(props: MathFieldProps) {
@@ -113,7 +145,13 @@ export function MathField(props: MathFieldProps) {
               onChange={state.setValue}
               tokenize={tokenizeLatex}
               placeholder={rest.placeholder}
-              onKeyDown={createKeyHandler(state)}
+              multiline={!(rest.onSubmit && display === 'inline')}
+              onKeyDown={createKeyHandler({
+                state,
+                display,
+                onSubmit: rest.onSubmit,
+                onCancel: rest.onCancel,
+              })}
             />
             <div
               {...hooks.slot('preview')}

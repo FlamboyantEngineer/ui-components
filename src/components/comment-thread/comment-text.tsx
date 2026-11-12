@@ -6,17 +6,32 @@ import type { BaseProps, RefProps } from '../../core/props.js';
 import {
   type CommentTextSegment,
   type MentionCandidate,
+  type MentionKind,
   parseMentions,
 } from '../comment-composer/comment-mentions.js';
 import { UserCardTrigger } from '../user-card-trigger/user-card-trigger.js';
+import { renderMarkdownComment } from './comment-text-markdown.js';
+
+/** How a comment's text reads: as `plain` text, or as inline Markdown (`markdown-inline`). */
+export type CommentTextFormat = 'plain' | 'markdown-inline';
 
 export interface CommentTextProps extends BaseProps, RefProps<HTMLSpanElement> {
   /** The comment's stored text, with its mentions as tokens. */
   text: string;
+  /**
+   * `plain` (the default) shows the text as written; `markdown-inline` reads emphasis, strong,
+   * strikethrough, code spans, safe links and line breaks, keeps raw HTML as text and keeps chips.
+   */
+  format?: CommentTextFormat | undefined;
   /** Splits the text into text and mentions. Defaults to `parseMentions`, for `@[Name](id)`. */
   parse?: ((text: string) => readonly CommentTextSegment[]) | undefined;
-  /** The card a mention's chip opens, usually a `UserCard`; without one the chip is plain text. */
-  renderCard?: ((person: Pick<MentionCandidate, 'id' | 'name'>) => ReactNode) | undefined;
+  /**
+   * The card a mention's chip opens, usually a `UserCard` for a person; without one the chip is
+   * plain text. It receives what the mention names, `kind` included.
+   */
+  renderCard?:
+    | ((person: Pick<MentionCandidate, 'id' | 'name'> & { kind: MentionKind }) => ReactNode)
+    | undefined;
 }
 
 const hooks = createHooks('comment-text', ['mention']);
@@ -31,15 +46,19 @@ function toKeyedSegments(segments: readonly CommentTextSegment[]) {
   });
 }
 
-/** A mention as a chip named by the person, which opens their card when the host has one. */
+/**
+ * A mention as a chip named by the person, which opens their card when the host has one and the
+ * chip is not inside a link.
+ */
 function MentionChip({
   segment,
   renderCard,
 }: Pick<CommentTextProps, 'renderCard'> & {
   segment: Extract<CommentTextSegment, { kind: 'mention' }>;
 }) {
-  const card = renderCard?.({ id: segment.id, name: segment.name });
-  const chip = <span {...hooks.slot('mention')}>{segment.name}</span>;
+  const kind = segment.mentionKind ?? 'person';
+  const card = renderCard?.({ id: segment.id, name: segment.name, kind });
+  const chip = <span {...hooks.slot('mention', { kind })}>{segment.name}</span>;
   if (card === undefined || card === null) return chip;
   return <UserCardTrigger card={card}>{chip}</UserCardTrigger>;
 }
@@ -50,20 +69,26 @@ function MentionChip({
  */
 export function CommentText({
   text,
+  format = 'plain',
   parse = parseMentions,
   renderCard,
   className,
   ...rest
 }: CommentTextProps) {
+  const segments = parse(text);
   return (
-    <span {...rest} {...hooks.root({ className })}>
-      {toKeyedSegments(parse(text)).map(({ key, segment }) =>
-        segment.kind === 'mention' ? (
-          <MentionChip key={key} segment={segment} renderCard={renderCard} />
-        ) : (
-          <Fragment key={key}>{segment.text}</Fragment>
-        ),
-      )}
+    <span {...rest} {...hooks.root({ className, data: { format } })}>
+      {format === 'markdown-inline'
+        ? renderMarkdownComment(segments, (segment, isInLink) => (
+            <MentionChip segment={segment} renderCard={isInLink ? undefined : renderCard} />
+          ))
+        : toKeyedSegments(segments).map(({ key, segment }) =>
+            segment.kind === 'mention' ? (
+              <MentionChip key={key} segment={segment} renderCard={renderCard} />
+            ) : (
+              <Fragment key={key}>{segment.text}</Fragment>
+            ),
+          )}
     </span>
   );
 }

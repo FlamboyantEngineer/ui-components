@@ -3,9 +3,17 @@
 
 import type { ReactNode } from 'react';
 
-/** A person the reader can mention. */
+/**
+ * What a mention names: a `person` (the default), a `group` of people, an `assistant`, or a kind of
+ * the host's own, in lower-case letters, digits and hyphens.
+ */
+export type MentionKind = 'person' | 'group' | 'assistant' | (string & {});
+
+/** Someone or something the reader can mention: a person, a group, an assistant. */
 export interface MentionCandidate {
-  /** The person's stable id, kept in the comment's text. */
+  /** What the mention names. Defaults to `person`. */
+  kind?: MentionKind | undefined;
+  /** The stable id, kept in the comment's text. */
   id: string;
   /** The name shown in the suggestion list and on the mention's chip. */
   name: string;
@@ -13,17 +21,26 @@ export interface MentionCandidate {
   avatar?: string | undefined;
   /** A second line in the suggestion list, such as a role. */
   description?: string | undefined;
+  /** How many people a group holds, shown in the suggestion list. */
+  count?: number | undefined;
 }
 
-/** A run of a comment's text: plain text, or one mention with the raw text it was written as. */
+/**
+ * A run of a comment's text: plain text, or one mention with the raw text it was written as and
+ * what it names (`mentionKind`, a person when left out).
+ */
 export type CommentTextSegment =
-  { kind: 'text'; text: string } | { kind: 'mention'; text: string; id: string; name: string };
+  | { kind: 'text'; text: string }
+  | { kind: 'mention'; text: string; id: string; name: string; mentionKind?: MentionKind };
 
 /** Where mentions come from, and how they are written into a comment's text. */
 export interface CommentMentionOptions {
   /** The people matching the text typed after `@`. Aborted once the answer is no longer wanted. */
   search: (query: string, signal: AbortSignal) => Promise<readonly MentionCandidate[]>;
-  /** Writes a chosen person into the text. Defaults to `serializeMention`, `@[Name](id)`. */
+  /**
+   * Writes a chosen candidate into the text. Defaults to `serializeMention`: `@[Name](id)` for a
+   * person, `@kind[Name](id)` for another kind.
+   */
   serialize?: ((candidate: MentionCandidate) => string) | undefined;
   /** Splits stored text into text and mentions; the inverse of `serialize`. Defaults to `parseMentions`. */
   parse?: ((text: string) => readonly CommentTextSegment[]) | undefined;
@@ -49,9 +66,11 @@ export interface CommentMentions extends Required<CommentMentionOptions> {
   renderField: (field: CommentMentionFieldProps) => ReactNode;
 }
 
-// `@[Name](id)`, where a backslash escapes `\`, `]` in the name and `\`, `)` in the id.
-const mentionPattern = /@\[((?:\\.|[^\\\]])*)\]\(((?:\\.|[^\\)])*)\)/g;
+// `@[Name](id)` or `@kind[Name](id)`, where a backslash escapes `\`, `]` in the name and `\`, `)` in
+// the id. The pattern is sticky: the scanner tries it where an `@` stands.
+const mentionPattern = /@([a-z][a-z0-9-]*)?\[((?:\\.|[^\\\]])*)\]\(((?:\\.|[^\\)])*)\)/y;
 const escapedPattern = /\\(.)/g;
+const kindPattern = /^[a-z][a-z0-9-]*$/;
 
 function escapeMentionPart(text: string, closer: string): string {
   return text.replaceAll('\\', '\\\\').replaceAll(closer, `\\${closer}`);
@@ -61,26 +80,80 @@ function unescapeMentionPart(text: string): string {
   return text.replace(escapedPattern, '$1');
 }
 
-/** Writes a person as the default mention token, `@[Name](id)`, escaping what would end it early. */
-export function serializeMention(candidate: Pick<MentionCandidate, 'id' | 'name'>): string {
-  return `@[${escapeMentionPart(candidate.name, ']')}](${escapeMentionPart(candidate.id, ')')})`;
+/**
+ * Writes a candidate as the default mention token: `@[Name](id)` for a person, `@kind[Name](id)`
+ * for another kind, escaping what would end it early. A kind outside lower-case letters, digits and
+ * hyphens is an error, since it could not be read back.
+ */
+export function serializeMention(
+  candidate: Pick<MentionCandidate, 'id' | 'name' | 'kind'>,
+): string {
+  const kind = candidate.kind ?? 'person';
+  if (!kindPattern.test(kind)) throw new Error(`Mention kind "${kind}" is not lower-case words.`);
+  const prefix = kind === 'person' ? '' : kind;
+  return `@${prefix}[${escapeMentionPart(candidate.name, ']')}](${escapeMentionPart(candidate.id, ')')})`;
 }
 
-/** Splits text into plain runs and the `@[Name](id)` mentions that `serializeMention` writes. */
+/** The end of the code span opening at `at` (a run of backticks closed by an equal run), or -1. */
+function findCodeSpanEnd(text: string, at: number): number {
+  let run = at;
+  while (text[run] === '`') run += 1;
+  const fence = text.slice(at, run);
+  for (let close = text.indexOf(fence, run); close >= 0; close = text.indexOf(fence, close + 1)) {
+    const end = close + fence.length;
+    if (text[close - 1] !== '`' && text[end] !== '`') return end;
+    while (text[close + 1] === '`') close += 1;
+  }
+  return -1;
+}
+
+/** The mention token that starts at `at`, or null. */
+function readMention(text: string, at: number): CommentTextSegment | null {
+  mentionPattern.lastIndex = at;
+  const match = mentionPattern.exec(text);
+  if (!match) return null;
+  const [raw, kind = 'person', name = '', id = ''] = match;
+  return {
+    kind: 'mention',
+    text: raw,
+    id: unescapeMentionPart(id),
+    name: unescapeMentionPart(name),
+    mentionKind: kind,
+  };
+}
+
+/**
+ * Splits text into plain runs and the mentions that `serializeMention` writes. Text inside a code
+ * span (between equal runs of backticks) and an `@` after a backslash stay plain, so a token can be
+ * quoted literally; the runs always join back into the text.
+ */
 export function parseMentions(text: string): CommentTextSegment[] {
   const segments: CommentTextSegment[] = [];
+  let plain = 0;
   let at = 0;
-  for (const match of text.matchAll(mentionPattern)) {
-    if (match.index > at) segments.push({ kind: 'text', text: text.slice(at, match.index) });
-    const [raw, name = '', id = ''] = match;
-    segments.push({
-      kind: 'mention',
-      text: raw,
-      id: unescapeMentionPart(id),
-      name: unescapeMentionPart(name),
-    });
-    at = match.index + raw.length;
+  while (at < text.length) {
+    const char = text[at];
+    if (char === '\\') {
+      at += 2;
+      continue;
+    }
+    if (char === '`') {
+      const end = findCodeSpanEnd(text, at);
+      let run = at;
+      while (text[run] === '`') run += 1;
+      at = end < 0 ? run : end;
+      continue;
+    }
+    const mention = char === '@' ? readMention(text, at) : null;
+    if (!mention) {
+      at += 1;
+      continue;
+    }
+    if (at > plain) segments.push({ kind: 'text', text: text.slice(plain, at) });
+    segments.push(mention);
+    at += mention.text.length;
+    plain = at;
   }
-  if (at < text.length) segments.push({ kind: 'text', text: text.slice(at) });
+  if (plain < text.length) segments.push({ kind: 'text', text: text.slice(plain) });
   return segments;
 }

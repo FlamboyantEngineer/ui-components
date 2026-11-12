@@ -55,6 +55,13 @@ The source shall follow the field's value contract (`value`/`defaultValue`/`comm
 Implementation: `src/components/math-preview/math-field.tsx`
 Verification: `src/components/math-preview/math-field.test.tsx`, `e2e/math-preview.spec.ts`
 
+### UIC-MATH-PREVIEW-2.3 - Editing in place
+
+So that a host can edit math where it stands in a document (a rich-text editor's node view) rather than in a dialog, `MathField` shall take focus on mount only with `autoFocus`, and `controlRef.focus()` (UIC-FIELD) focuses its editor on demand. With `onSubmit`, the submit key commits the source and calls `onSubmit` with it, changed or not, and goes no further, unless it confirms an input method candidate: inline math (`display="inline"`) is then a one-line editor whose Enter submits, while display math keeps Enter for line breaks and submits on Ctrl or Cmd with Enter. With `onCancel`, Escape restores a changed source, calls `onCancel` and goes no further, even when the source is unchanged. `display="inline"` previews the source as inline math. A host that listens for keys on an ancestor still sees the editor's native events, so a node view stops them itself (for example through its own event filter).
+
+Implementation: `src/components/math-preview/math-field.tsx`
+Verification: `src/components/math-preview/math-field.test.tsx`
+
 ## UIC-MATH-PREVIEW-3 - Math without React
 
 ### UIC-MATH-PREVIEW-3.1 - Sanitizing markup

@@ -1,0 +1,15 @@
+.ui-scroll-overview {
+  flex: 0 0 8px;
+  width: 8px;
+  border-radius: var(--ref-radius-full);
+  background-color: color-mix(in srgb, var(--ref-text) var(--ref-tint), transparent);
+  background-image: var(--ui-scroll-overview-image);
+}
+
+.ui-scroll-overview[data-interactive] {
+  cursor: pointer;
+}
+
+.ui-scroll-overview[data-empty] {
+  background-image: none;
+}

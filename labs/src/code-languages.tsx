@@ -15,6 +15,12 @@ const samples: Record<CodeLanguage, string> = {
   python: '# A fruit label\ndef label(fruit):\n    return f"Fresh {fruit}"',
   markdown:
     '# Fruit basket\n\nA **fresh** pear and `12` plums.\n\n[Recipe](https://example.com/recipe)',
+  c: '#include <stdio.h>\n\n/* Count the pears */\nint main(void) {\n  printf("%d pears\\n", 12);\n  return 0;\n}',
+  cpp: 'namespace fruit {\nclass Basket {\npublic:\n  explicit Basket(int count) : count_(count) {}\nprivate:\n  int count_ = 12;\n};\n}',
+  yaml: '# A fruit basket\nfruit: Pear\ncount: 12\nfresh: true\nnotes: "picked today"',
+  xml: '<?xml version="1.0"?>\n<!-- A fruit basket -->\n<basket fresh="true">\n  <fruit count="12">Pear</fruit>\n</basket>',
+  shell:
+    '#!/bin/sh\n# Count the pears\nFRUIT="Pear"\nif [ -f basket.txt ]; then\n  grep -c "$FRUIT" basket.txt && echo done\nfi',
 };
 function LanguageSample({ language }: { language: CodeLanguage }) {
   const [value, setValue] = useState(samples[language]);
@@ -53,7 +59,7 @@ export const languageExamples = (
   <>
     <LabSection
       title="Language presets"
-      description="Basic highlighting for eight languages and plain text. Only JSON is validated automatically; supply diagnostics for other languages."
+      description="Basic highlighting for thirteen languages and plain text. Only JSON is validated automatically; supply diagnostics for other languages."
     >
       {Object.keys(samples).map((language) => (
         <LanguageSample key={language} language={language as CodeLanguage} />

@@ -4,7 +4,6 @@ import { isValidElement, type ReactNode, useEffect, useMemo, useRef, useState } 
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { CheckGlyph, UndoGlyph } from '../../core/glyphs.js';
-import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Focusable } from '../../primitives/index.js';
@@ -19,7 +18,12 @@ import {
 import type { CommentMentions } from '../comment-composer/comment-mentions.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import { Tooltip } from '../tooltip/tooltip.js';
+import {
+  type CommentThreadActivity,
+  CommentThreadActivityList,
+} from './comment-thread-activity.js';
 import { CommentThreadContext } from './comment-thread-context.js';
+import { commentThreadHooks as hooks } from './comment-thread-hooks.js';
 
 export interface CommentThreadProps
   extends BaseProps, AriaLabellingProps, RefProps<HTMLDivElement> {
@@ -62,20 +66,22 @@ export interface CommentThreadProps
   mentions?: CommentMentions | undefined;
   /** A failure to report under the comments, such as a reply that could not be posted. */
   error?: ReactNode;
+  /**
+   * What is happening after the replies: a reply being posted (`pending`), someone typing
+   * (`typing`) or a reply that failed (`error`), each with optional Cancel and Retry.
+   */
+  activity?: readonly CommentThreadActivity[] | undefined;
+  /**
+   * The `id` of the comment to point the reader at, such as the one a link opened: its list item
+   * publishes `data-highlighted`, hidden replies are shown, and it scrolls into view.
+   */
+  highlightedId?: string | undefined;
 }
 
-const hooks = createHooks('comment-thread', [
-  'header',
-  'quote',
-  'status',
-  'resolve',
-  'comments',
-  'item',
-  'more',
-  'show-more',
-  'error',
-  'composer',
-]);
+/** Whether a comment is the element whose `id` prop is `id`. */
+function hasId(comment: ReactNode, id: string): boolean {
+  return isValidElement<{ id?: unknown }>(comment) && comment.props.id === id;
+}
 
 /**
  * The comments, with the middle replies of a long thread hidden behind a button until it is pressed.
@@ -84,21 +90,42 @@ const hooks = createHooks('comment-thread', [
 function CommentList({
   comments,
   visibleReplies,
-}: Pick<CommentThreadProps, 'visibleReplies'> & { comments: readonly ReactNode[] }) {
+  highlightedId,
+}: Pick<CommentThreadProps, 'visibleReplies' | 'highlightedId'> & {
+  comments: readonly ReactNode[];
+}) {
   const strings = useUiStrings();
   const [isExpanded, setIsExpanded] = useState(false);
   const revealedRef = useRef<HTMLLIElement>(null);
+  const highlightedRef = useRef<HTMLLIElement>(null);
   // The first revealed reply takes focus from the button, which disappears.
   useEffect(() => {
     if (isExpanded) revealedRef.current?.focus();
   }, [isExpanded]);
   const [first, ...replies] = comments;
+  const highlightedIndex =
+    highlightedId === undefined ? -1 : replies.findIndex((reply) => hasId(reply, highlightedId));
+  const isHighlightHidden =
+    visibleReplies !== undefined &&
+    highlightedIndex >= 0 &&
+    highlightedIndex < replies.length - visibleReplies;
+  if (isHighlightHidden && !isExpanded) setIsExpanded(true);
+  useEffect(() => {
+    highlightedRef.current?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+  }, [highlightedId]);
   if (first === undefined) return null;
   const hidden = isExpanded || visibleReplies === undefined ? 0 : replies.length - visibleReplies;
   const shown = hidden > 0 ? replies.slice(hidden) : replies;
+  const isHighlighted = (comment: ReactNode) =>
+    highlightedId !== undefined && hasId(comment, highlightedId);
   return (
     <ol {...hooks.slot('comments')}>
-      <li {...hooks.slot('item')}>{first}</li>
+      <li
+        ref={isHighlighted(first) ? highlightedRef : undefined}
+        {...hooks.slot('item', { highlighted: isHighlighted(first) })}
+      >
+        {first}
+      </li>
       {hidden > 0 ? (
         <li {...hooks.slot('more', { reply: true })}>
           <Button
@@ -111,15 +138,23 @@ function CommentList({
           </Button>
         </li>
       ) : null}
-      {shown.map((reply, index) => (
-        <li
-          key={isValidElement(reply) ? reply.key : index}
-          {...hooks.slot('item', { reply: true })}
-          {...(isExpanded && index === 0 ? { ref: revealedRef, tabIndex: -1 } : {})}
-        >
-          {reply}
-        </li>
-      ))}
+      {shown.map((reply, index) => {
+        const highlighted = isHighlighted(reply);
+        const isRevealed = isExpanded && index === 0;
+        return (
+          <li
+            key={isValidElement(reply) ? reply.key : index}
+            {...hooks.slot('item', { reply: true, highlighted })}
+            ref={(element) => {
+              if (isRevealed) revealedRef.current = element;
+              if (highlighted) highlightedRef.current = element;
+            }}
+            tabIndex={isRevealed ? -1 : undefined}
+          >
+            {reply}
+          </li>
+        );
+      })}
     </ol>
   );
 }
@@ -243,6 +278,8 @@ export function CommentThread({
   composer,
   mentions,
   error,
+  activity,
+  highlightedId,
   className,
   ...rest
 }: CommentThreadProps) {
@@ -283,7 +320,12 @@ export function CommentThread({
           iconOnly={resolveIconOnly}
           statusIconOnly={statusIconOnly}
         />
-        <CommentList visibleReplies={visibleReplies} comments={comments} />
+        <CommentList
+          visibleReplies={visibleReplies}
+          comments={comments}
+          highlightedId={highlightedId}
+        />
+        <CommentThreadActivityList activity={activity} />
         {isEmptyNode(error) ? null : (
           <InlineError className={hooks.slotClass('error')}>{error}</InlineError>
         )}

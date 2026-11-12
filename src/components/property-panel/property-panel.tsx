@@ -191,7 +191,7 @@ export function PropertyIconGroup({
 
 export type { PropertyCardProps } from './property-card.js';
 export { PropertyCard } from './property-card.js';
-export type { PropertyRowProps } from './property-row.js';
+export type { PropertyInheritance, PropertyRowProps } from './property-row.js';
 export { PropertyRow } from './property-row.js';
 export type { PropertySectionProps } from './property-section.js';
 export { PropertySection } from './property-section.js';

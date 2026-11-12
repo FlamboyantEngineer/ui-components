@@ -172,6 +172,14 @@
   opacity: 0.5;
 }
 
+/* On the vertical track's place, under its thumb; the image still spans the visible height. */
+.ui-scroll-region[data-scrollbar='overlay'] > .ui-scroll-region__overview {
+  z-index: 4;
+  inset-inline-end: 2px;
+  width: 8px;
+  border-radius: var(--ref-radius-full);
+}
+
 /*
  * Edge shades: an edge the content reaches past takes a short shade, as deep as the published
  * distance up to 8px, so a reader sees there is more. One pseudo-element over the viewport carries

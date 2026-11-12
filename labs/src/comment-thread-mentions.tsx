@@ -197,3 +197,21 @@ export function BuiltInMentionThread() {
     </CommentThread>
   );
 }
+
+/** Stored comments read as inline Markdown, beside the same text read plainly. */
+export function MarkdownComments() {
+  const text =
+    '**Ask @[Jon Berg](jon)** about the _pear sauce_: see [the recipe](https://example.com/recipe) or `@[Lena Ortiz](lena)` for the token. <b>raw</b> stays text.';
+  return (
+    <dl data-lab-demo="markdown-comment">
+      <dt>markdown-inline</dt>
+      <dd>
+        <CommentText format="markdown-inline" text={text} renderCard={renderSampleCard} />
+      </dd>
+      <dt>plain</dt>
+      <dd>
+        <CommentText text={text} renderCard={renderSampleCard} />
+      </dd>
+    </dl>
+  );
+}

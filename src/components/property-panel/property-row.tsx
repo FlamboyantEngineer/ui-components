@@ -1,9 +1,12 @@
 'use client';
 
 import { type ReactNode, useContext, useId } from 'react';
+import { UndoGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
+import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { Button } from '../button/button.js';
 import { FieldScopeContext, useRevealScope } from '../field/field.js';
 import {
   matchesPropertyScope,
@@ -11,6 +14,14 @@ import {
   useReportPropertyTally,
 } from '../property-scope/property-scope.js';
 import { TextMatch } from '../text-match/text-match.js';
+
+/** The value a row takes from further up when it sets none of its own, and where it comes from. */
+export interface PropertyInheritance {
+  /** The inherited value as it reads, such as `16 px`. */
+  value: ReactNode;
+  /** What the value comes from, such as the name of a parent style. */
+  source?: ReactNode;
+}
 
 export interface PropertyRowProps extends RefProps<HTMLDivElement>, BaseProps {
   /** The property's name, beside its control. A text label takes part in filtering and is marked. */
@@ -29,6 +40,13 @@ export interface PropertyRowProps extends RefProps<HTMLDivElement>, BaseProps {
   actions?: ReactNode;
   /** The value is set here rather than inherited; sections and cards around it show a mark. */
   isOverridden?: boolean | undefined;
+  /**
+   * The value the row inherits, shown under the control. An explicit empty value is an override
+   * like any other: pass `isOverridden` with the empty field.
+   */
+  inherited?: PropertyInheritance | undefined;
+  /** Drops the row's own value for the inherited one; an overridden row then shows a reset button. */
+  onReset?: (() => void) | undefined;
   /** Shows an asterisk after the label. The control announces the requirement itself. */
   isRequired?: boolean | undefined;
   /** Puts the label above a large control that spans the row. */
@@ -55,6 +73,11 @@ const hooks = createHooks('property-row', [
   'hint',
   'description',
   'actions',
+  'inherited',
+  'inherited-label',
+  'inherited-value',
+  'inherited-source',
+  'reset',
 ]);
 
 const noKeywords: readonly string[] = [];
@@ -90,6 +113,39 @@ function RowControl({ labelId, htmlFor, unit, hint, children }: RowControlProps)
   );
 }
 
+/** The inherited value under the control, introduced by a label and followed by its source. */
+function RowInheritance({ value, source }: PropertyInheritance) {
+  const strings = useUiStrings();
+  return (
+    <div {...hooks.slot('inherited')}>
+      <span {...hooks.slot('inherited-label')}>{strings.inheritedValue}</span>{' '}
+      <span {...hooks.slot('inherited-value')}>{value}</span>
+      {isEmptyNode(source) ? null : (
+        <>
+          {' '}
+          <span {...hooks.slot('inherited-source')}>{source}</span>
+        </>
+      )}
+    </div>
+  );
+}
+
+/** The button that drops an overridden row's value, described by the row's label. */
+function RowReset({ labelId, onReset }: { labelId: string; onReset: () => void }) {
+  const strings = useUiStrings();
+  return (
+    <Button
+      {...hooks.slot('reset')}
+      variant="ghost"
+      size="sm"
+      icon={UndoGlyph}
+      label={strings.resetToInherited}
+      aria-describedby={labelId}
+      onPress={onReset}
+    />
+  );
+}
+
 /**
  * One labelled property of a panel: the label, then the control with its unit and hint, a
  * description and actions. Under a query it hides, staying mounted, unless the enclosing path, its
@@ -104,6 +160,8 @@ export function PropertyRow({
   description,
   actions,
   isOverridden = false,
+  inherited,
+  onReset,
   isRequired = false,
   wide = false,
   children,
@@ -141,7 +199,9 @@ export function PropertyRow({
       <RowControl labelId={labelId} htmlFor={htmlFor} unit={unit} hint={hint}>
         <FieldScopeContext value={fieldScope}>{children}</FieldScopeContext>
       </RowControl>
+      {inherited ? <RowInheritance {...inherited} /> : null}
       {isEmptyNode(description) ? null : <div {...hooks.slot('description')}>{description}</div>}
+      {isOverridden && onReset ? <RowReset labelId={labelId} onReset={onReset} /> : null}
       {isEmptyNode(actions) ? null : <div {...hooks.slot('actions')}>{actions}</div>}
     </div>
   );

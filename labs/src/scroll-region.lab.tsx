@@ -455,16 +455,22 @@ mountLab(
     </LabSection>
     <LabSection
       title="Overview"
-      description="Markers painted beside the native vertical scrollbar, as one set and as two layers mixed with CSS color-mix where they overlap."
+      description="Markers painted beside the native vertical scrollbar, or on the overlay track under its thumb, as one set and as two layers mixed with CSS color-mix where they overlap."
     >
       <StateMatrix
-        axes={{ source: ['markers', 'layers'] }}
-        render={({ source }) => (
-          <div style={frame(260, 160)} data-lab-region={`overview-${source}`}>
+        axes={{ source: ['markers', 'layers'], scrollbar: ['native', 'overlay'] }}
+        render={({ source, scrollbar }) => (
+          <div
+            style={frame(260, 160)}
+            data-lab-region={
+              scrollbar === 'native' ? `overview-${source}` : `overview-${source}-overlay`
+            }
+          >
             <ScrollRegion
               {...(source === 'markers' ? { overview: markers } : { overviewLayers: layers })}
+              scrollbar={scrollbar}
               role="region"
-              aria-label={`Cities with overview ${source}`}
+              aria-label={`Cities with overview ${source} and ${scrollbar} scrollbar`}
               tabIndex={0}
             >
               <ol style={{ margin: 0 }}>

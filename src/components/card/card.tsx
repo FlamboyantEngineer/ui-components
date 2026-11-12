@@ -286,3 +286,6 @@ export function Card(props: CardProps) {
     </section>
   );
 }
+
+export type { CardGridItemProps, CardGridProps } from './card-grid.js';
+export { CardGrid, CardGridItem } from './card-grid.js';

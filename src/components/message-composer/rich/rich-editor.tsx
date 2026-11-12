@@ -42,6 +42,8 @@ export interface RichComposerEditorProps {
   keys: ComposerKeys;
   rootRef: RefObject<HTMLDivElement | null>;
   handleRef: RefObject<RichEditorHandle | null>;
+  /** Focuses the editable once its view exists, which can be after the host's mount effects. */
+  autoFocus?: boolean | undefined;
 }
 
 const placeholderClass = hooks.slotClass('placeholder');

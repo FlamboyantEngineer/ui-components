@@ -97,3 +97,12 @@
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius);
 }
+
+.ui-version-history__fold {
+  flex: none;
+}
+
+/* A folded version sits indented under the version that folds it. */
+.ui-version-history__version[data-nested] {
+  padding-inline-start: var(--ref-indent);
+}

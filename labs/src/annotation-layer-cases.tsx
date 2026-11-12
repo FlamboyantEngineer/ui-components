@@ -1,5 +1,6 @@
 // Cases of the annotation layer lab in which the layer's surroundings change how its anchors show:
-// a zoomed surface around the layer.
+// a zoomed surface around the layer, and sheets of different widths whose markers follow each
+// sheet's edge.
 
 import { useLayoutEffect, useRef, useState } from 'react';
 import {
@@ -64,6 +65,42 @@ export function ZoomedReview() {
           </AnnotationLayer>
         </div>
       </div>
+    </div>
+  );
+}
+
+const sheetNotes = [
+  { id: 'flour', targetId: 'sheet-flour', sheet: 'wide' },
+  { id: 'rest', targetId: 'sheet-rest', sheet: 'narrow' },
+] as const;
+
+/** How far the narrow sheet's edge sits before the wide one's, in pixels. */
+const narrowInset = 120;
+
+/**
+ * Two sheets, the second narrower, with a marker per note: each marker starts at its own sheet's
+ * edge, so the margin follows the narrow sheet in by the difference.
+ */
+export function StaggeredSheets() {
+  const sheetOf = (id: Key) => sheetNotes.find((note) => note.id === id)?.sheet;
+  return (
+    <div data-lab-demo="staggered">
+      <AnnotationLayer annotations={sheetNotes.map(({ id, targetId }) => ({ id, targetId }))}>
+        <div>
+          <p style={{ width: 360 }}>
+            Sift the <span id="sheet-flour">flour twice</span> before folding it in.
+          </p>
+          <p style={{ width: 360 - narrowInset }}>
+            Let the dough <span id="sheet-rest">rest an hour</span>.
+          </p>
+        </div>
+        <AnnotationMargin
+          aria-label="Sheet notes"
+          presentation="icons"
+          getInlineOffset={(annotation) => (sheetOf(annotation.id) === 'narrow' ? -narrowInset : 0)}
+          renderCard={(annotation) => `Note on ${String(annotation.id)}`}
+        />
+      </AnnotationLayer>
     </div>
   );
 }

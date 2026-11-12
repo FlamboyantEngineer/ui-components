@@ -1,11 +1,12 @@
-// Property Panel cases: a section and a card each opened by the host, and a hidden section that
-// keeps its draft.
+// Property Panel cases: a section and a card each opened by the host, a hidden section that keeps
+// its draft, and rows that inherit a value until they set their own.
 
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
   PropertyCard,
   PropertyPanel,
+  PropertyRow,
   PropertySection,
 } from '../../src/components/property-panel/property-panel.js';
 import { LabSection } from './chrome/index.js';
@@ -78,6 +79,48 @@ function HiddenSection() {
   );
 }
 
+const inheritedSize = { value: '16 px', source: 'from Body text' };
+
+/** A size row whose own value is `undefined` while it inherits; an empty value still overrides. */
+function InheritedSize() {
+  const [own, setOwn] = useState<string | undefined>(undefined);
+  return (
+    <PropertyRow
+      label="Size"
+      htmlFor="inherited-size"
+      unit="px"
+      inherited={inheritedSize}
+      isOverridden={own !== undefined}
+      onReset={() => setOwn(undefined)}
+    >
+      <input
+        id="inherited-size"
+        value={own ?? ''}
+        placeholder="16"
+        onChange={(event) => setOwn(event.target.value)}
+      />
+    </PropertyRow>
+  );
+}
+
+function InheritedValues() {
+  return (
+    <div data-lab-demo="inherited-values" style={{ width: 440 }}>
+      <PropertyPanel aria-label="Inherited settings">
+        <PropertySection title="Text">
+          <InheritedSize />
+          <TextSetting
+            label="Colour"
+            value="#204060"
+            isOverridden
+            inherited={{ value: '#000000', source: 'from Theme' }}
+          />
+        </PropertySection>
+      </PropertyPanel>
+    </div>
+  );
+}
+
 export function PropertyPanelHostCases() {
   return (
     <div data-lab-family="property-panel-host-cases">
@@ -92,6 +135,12 @@ export function PropertyPanelHostCases() {
         description="Type a cache size, then hide Advanced: the section leaves layout and Tab order but stays mounted, so showing it again brings back the draft."
       >
         <HiddenSection />
+      </LabSection>
+      <LabSection
+        title="Inherited values"
+        description="Size inherits 16 px until you type, even an empty value after clearing it; the reset button drops the row's own value. Colour overrides its inherited value but offers no reset."
+      >
+        <InheritedValues />
       </LabSection>
     </div>
   );

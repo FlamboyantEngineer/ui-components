@@ -184,3 +184,43 @@
   font-weight: var(--ref-font-weight-medium);
   box-decoration-break: clone;
 }
+
+/* Activity rows after the comments: a quiet line per row, an error in the danger colour. */
+.ui-comment-thread__activity {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ui-comment-thread__activity-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-comment-thread__activity-item[data-kind='error'] {
+  color: var(--ref-danger);
+}
+
+.ui-comment-thread__activity-label {
+  min-width: 0;
+}
+
+.ui-comment-thread__activity-cancel,
+.ui-comment-thread__activity-retry {
+  color: var(--ref-accent-ink);
+}
+
+.ui-comment-thread__activity-status {
+  white-space: pre-line;
+}
+
+/* The highlighted comment carries a tint, so a reader sent to it finds it at a glance. */
+.ui-comment-thread__item[data-highlighted] {
+  border-radius: var(--ref-radius);
+  background: var(--ref-highlight);
+}
