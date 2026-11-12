@@ -61,7 +61,6 @@ describe('ChatList context menus', () => {
     const user = userEvent.setup();
     render(<List />);
     await user.tab();
-    await user.tab();
     const ana = row(/Ana Lima/);
     expect(ana).toHaveFocus();
     await user.keyboard('{ContextMenu}');

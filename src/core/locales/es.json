@@ -57,7 +57,7 @@
   "loadingConversations": "Cargando conversaciones",
   "unreadMessages": "{count, plural, one {# mensaje no leído} other {# mensajes no leídos}}",
   "conversationMuted": "Silenciada",
-  "conversationLabel": "{title}{hasPresence, select, true {, {presence}} other {}}{unreadCount, plural, =0 {} one {, # mensaje no leído} other {, # mensajes no leídos}}{isMuted, select, true {, silenciada} other {}}{hasTime, select, true {, {time}} other {}}",
+  "conversationLabel": "{title}{hasPresence, select, true {, {presence}} other {}}{unreadCount, plural, =0 {} one {, # mensaje no leído} other {, # mensajes no leídos}}{isMuted, select, true {, silenciada} other {}}{hasStatus, select, true {, {status}} other {}}{hasActivity, select, true {, {activity}} other {}}{hasTime, select, true {, {time}} other {}}",
   "conversationMenu": "Acciones de {title}",
   "chatMessageLabel": "{author}{hasBoth, select, true {, } other {}}{time}",
   "chatDelivery": "{delivery, select, sending {Enviando} sent {Enviado} delivered {Entregado} read {Leído} other {No enviado}}",

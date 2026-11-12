@@ -1,25 +1,21 @@
 'use client';
 
-import { type KeyboardEvent, type ReactNode, useEffect, useState } from 'react';
+import { type KeyboardEvent, type ReactNode, useEffect, useId, useState } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
-import { PlusGlyph } from '../../core/glyphs.js';
 import type { BaseProps, RefProps, Selection } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { GridList, useFilter } from '../../primitives/index.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import type { AttributionProps } from '../attribution/attribution.js';
-import { Button } from '../button/button.js';
 import {
   ContextMenu,
   useMenuController,
   useMenuControllerState,
 } from '../context-menu/context-menu.js';
-import { EmptyState } from '../empty-state/empty-state.js';
-import { SearchField } from '../search-field/search-field.js';
-import { Skeleton, SkeletonText } from '../skeleton/skeleton.js';
+import { LoadMore, type LoadMoreProps } from '../load-more/load-more.js';
 import { TextMatchProvider } from '../text-match/text-match.js';
-import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { type ChatListMenu, openRowMenu } from './chat-list-menu.js';
+import { ListEmptyState, ListHeader } from './chat-list-parts.js';
 import { type ChatConversation, ChatListRow, listHooks } from './chat-list-row.js';
 
 export interface ChatListProps
@@ -40,23 +36,27 @@ export interface ChatListProps
    * message contains the text.
    */
   onSearchChange?: ((query: string) => void) | undefined;
-  /** Starts a new conversation. Shows the New chat button. */
+  /** Shows the search field above the rows. */
+  showSearch?: boolean | undefined;
+  /** Starts a new conversation. Shows the New chat row. */
   onNew?: (() => void) | undefined;
+  /** A heading above the rows, such as "Recents", which names the list unless a label is given. */
+  heading?: ReactNode;
+  /**
+   * Requests the next conversations. Shows a Load more row below the rows and fades the last ones;
+   * leave it out once there are no more. A returned promise keeps the row pending until it settles.
+   */
+  onLoadMore?: LoadMoreProps['onLoadMore'];
   /** The conversations are loading: placeholder rows stand in for them. */
   isLoading?: boolean | undefined;
   /** Shown while there are no conversations. Defaults to the provider's `noConversations` string. */
   emptyState?: ReactNode;
-  /** Controls at the end of each row, such as a menu of the conversation's commands. */
-  renderActions?: ((conversation: ChatConversation) => ReactNode) | undefined;
   /**
    * The `Menu` a row's context menu shows, opened by a secondary click, a long touch, the Context
    * Menu key or Shift+F10. A conversation it returns nothing for keeps the browser's own menu.
    */
   renderContextMenu?: ((conversation: ChatConversation) => ReactNode) | undefined;
 }
-
-/** How many placeholder rows stand in for the conversations while they load. */
-const skeletonRows = 4;
 
 /** The conversations the search keeps: all of them while the host searches or the text is blank. */
 function useShownConversations(
@@ -132,94 +132,82 @@ function useConversationSelection(
   };
 }
 
-/** Placeholder rows and a loading announcement. */
-function LoadingRows() {
-  const strings = useUiStrings();
-  return (
-    <>
-      {Array.from({ length: skeletonRows }, (_, row) => (
-        <div key={row} {...listHooks.slot('skeleton')}>
-          <Skeleton shape="circle" />
-          <SkeletonText lines={2} />
-        </div>
-      ))}
-      <VisuallyHidden role="status">{strings.loadingConversations}</VisuallyHidden>
-    </>
-  );
-}
-
-/** What the list shows without rows: loading rows, the empty state or the no-match notice. */
-function ListEmptyState({
-  isLoading,
-  isSearching,
-  emptyState,
-}: {
-  isLoading: boolean;
-  isSearching: boolean;
-  emptyState: ReactNode;
-}) {
-  const strings = useUiStrings();
-  if (isLoading) return <LoadingRows />;
-  return (
-    <div {...listHooks.slot('empty')}>
-      {isSearching ? (
-        <EmptyState size="sm" description={strings.noMatchingConversations} />
-      ) : (
-        (emptyState ?? <EmptyState size="sm" description={strings.noConversations} />)
-      )}
-    </div>
-  );
-}
-
-/** The search field and, given `onNew`, the New chat button. */
-function ListHeader({
-  query,
-  onSearch,
-  onNew,
-}: {
+interface ConversationGridProps extends AriaLabellingProps {
   query: string;
-  onSearch: (query: string) => void;
-  onNew: (() => void) | undefined;
-}) {
-  const strings = useUiStrings();
+  items: readonly ChatConversation[];
+  selection: ReturnType<typeof useConversationSelection>;
+  menu: ReturnType<typeof useConversationMenu>;
+  isLoading: boolean;
+  emptyState: ReactNode;
+  timeOptions: Pick<ChatListProps, 'fallbackAfterDays' | 'getNow' | 'timeZone'>;
+  /** The host's menu, on which whether each row has a menu depends. */
+  renderContextMenu: ChatListProps['renderContextMenu'];
+}
+
+/** The grid list of rows, marking the search text, or what stands in for them. */
+function ConversationGrid({
+  query,
+  items,
+  selection,
+  menu,
+  isLoading,
+  emptyState,
+  timeOptions,
+  renderContextMenu,
+  ...labelling
+}: ConversationGridProps) {
+  const { fallbackAfterDays, getNow, timeZone } = timeOptions;
   return (
-    <div {...listHooks.slot('header')}>
-      <SearchField
-        label={strings.searchConversations}
-        placeholder={strings.searchConversations}
-        size="sm"
-        value={query}
-        onChange={onSearch}
-        className={listHooks.slotClass('search')}
-      />
-      {onNew ? (
-        <Button
-          size="sm"
-          startIcon={PlusGlyph}
-          onPress={onNew}
-          className={listHooks.slotClass('new')}
-        >
-          {strings.newChat}
-        </Button>
-      ) : null}
-    </div>
+    <TextMatchProvider query={query} ignoreAccents>
+      <GridList
+        {...labelling}
+        className={listHooks.slotClass('list')}
+        items={items}
+        selectionMode="single"
+        disallowEmptySelection
+        selectedKeys={selection.selectedKeys}
+        onSelectionChange={selection.select}
+        dependencies={[renderContextMenu, menu.openKey, fallbackAfterDays, getNow, timeZone]}
+        renderEmptyState={() => (
+          <ListEmptyState
+            isLoading={isLoading}
+            isSearching={query.trim() !== ''}
+            emptyState={emptyState}
+          />
+        )}
+      >
+        {(conversation) => (
+          <ChatListRow
+            conversation={conversation}
+            menu={menu.hasMenu(conversation) ? menu.target : undefined}
+            isMenuOpen={menu.openKey === conversation.id}
+            fallbackAfterDays={fallbackAfterDays}
+            getNow={getNow}
+            timeZone={timeZone}
+          />
+        )}
+      </GridList>
+    </TextMatchProvider>
   );
 }
 
 /**
- * A list of conversations to open: a search field, a New chat button and a React Aria grid list of
- * rows with an avatar, title, time, last message, muted mark, unread count and the host's actions.
- * One conversation is selected at a time; arrow keys move between rows and into a row's controls.
+ * A list of conversations to open: a New chat row, an optional search field and heading, a React Aria
+ * grid list of rows with an icon or avatar, title, marks, activity, time, last message and unread
+ * count, then a Load more row. One conversation is selected at a time; arrow keys move between rows,
+ * and each row's context menu holds the host's commands for it.
  */
 export function ChatList({
   conversations,
   selectedKey,
   onSelectionChange,
   onSearchChange,
+  showSearch = false,
   onNew,
+  heading,
+  onLoadMore,
   isLoading = false,
   emptyState,
-  renderActions,
   renderContextMenu,
   fallbackAfterDays,
   getNow,
@@ -230,14 +218,21 @@ export function ChatList({
   ...rest
 }: ChatListProps) {
   const strings = useUiStrings();
+  const headingId = useId();
+  const hasHeading = !isEmptyNode(heading);
   const [query, setQuery] = useState('');
   const shown = useShownConversations({ conversations, onSearchChange }, query);
   const selection = useConversationSelection(selectedKey, onSelectionChange);
   const menu = useConversationMenu(renderContextMenu, shown);
+  const labelledBy = ariaLabelledby ?? (hasHeading && !ariaLabel ? headingId : undefined);
   return (
     <div
       {...rest}
-      {...listHooks.root({ className, props: rest, data: { loading: isLoading } })}
+      {...listHooks.root({
+        className,
+        props: rest,
+        data: { loading: isLoading, hasMore: Boolean(onLoadMore) },
+      })}
       onKeyDown={menu.onKeyDown}
     >
       <ListHeader
@@ -247,49 +242,42 @@ export function ChatList({
           onSearchChange?.(value);
         }}
         onNew={onNew}
+        showSearch={showSearch}
       />
-      <TextMatchProvider query={query} ignoreAccents>
-        <GridList
-          aria-label={ariaLabelledby ? undefined : (ariaLabel ?? strings.conversations)}
-          aria-labelledby={ariaLabelledby}
-          className={listHooks.slotClass('list')}
+      <div {...listHooks.slot('body')}>
+        {hasHeading ? (
+          <div id={headingId} {...listHooks.slot('heading')}>
+            {heading}
+          </div>
+        ) : null}
+        <ConversationGrid
+          query={query}
           items={isLoading ? [] : shown}
-          selectionMode="single"
-          disallowEmptySelection
-          selectedKeys={selection.selectedKeys}
-          onSelectionChange={selection.select}
-          dependencies={[
-            renderActions,
-            renderContextMenu,
-            menu.openKey,
-            fallbackAfterDays,
-            getNow,
-            timeZone,
-          ]}
-          renderEmptyState={() => (
-            <ListEmptyState
-              isLoading={isLoading}
-              isSearching={query.trim() !== ''}
-              emptyState={emptyState}
-            />
-          )}
-        >
-          {(conversation) => (
-            <ChatListRow
-              conversation={conversation}
-              renderActions={renderActions}
-              menu={menu.hasMenu(conversation) ? menu.target : undefined}
-              isMenuOpen={menu.openKey === conversation.id}
-              fallbackAfterDays={fallbackAfterDays}
-              getNow={getNow}
-              timeZone={timeZone}
-            />
-          )}
-        </GridList>
-      </TextMatchProvider>
+          selection={selection}
+          menu={menu}
+          isLoading={isLoading}
+          emptyState={emptyState}
+          aria-label={labelledBy ? undefined : (ariaLabel ?? strings.conversations)}
+          aria-labelledby={labelledBy}
+          timeOptions={{ fallbackAfterDays, getNow, timeZone }}
+          renderContextMenu={renderContextMenu}
+        />
+        {onLoadMore && !isLoading ? (
+          <LoadMore
+            variant="ghost"
+            size="md"
+            onLoadMore={onLoadMore}
+            className={listHooks.slotClass('load-more')}
+          />
+        ) : null}
+      </div>
       {menu.element}
     </div>
   );
 }
 
-export type { ChatConversation, ChatListParticipant } from './chat-list-row.js';
+export type {
+  ChatConversation,
+  ChatConversationStatus,
+  ChatListParticipant,
+} from './chat-list-row.js';

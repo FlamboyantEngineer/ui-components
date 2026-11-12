@@ -210,6 +210,11 @@ export const xMarkPath = 'M6 18 18 6M6 6l12 12';
 export const functionPath =
   'M15 3.75c-2.25-.375-3.5.5-3.875 2.75L9.5 17.25c-.375 2.25-1.625 3.125-3.875 2.75M7.5 9h6M14.25 13.5l4.5 6M18.75 13.5l-4.5 6';
 
+// Drawn for the library in the same outline style, as Heroicons has no history mark: a clock face
+// whose rim turns back into an arrow at its left, for a conversation or document's past.
+export const historyPath =
+  'M3.75 12a8.25 8.25 0 1 0 2.42-5.83L3.75 8.6M3.75 4.5v4.1h4.1M12 7.5V12l3 1.5';
+
 // Drawn for the library in the same outline style, as Heroicons has no diagonal two-headed arrow:
 // one shaft from the top-left corner to the bottom-right, with a head at each end, for resizing.
 export const arrowsDiagonalPath = 'M5.25 5.25l13.5 13.5M5.25 5.25v6m0-6h6M18.75 18.75v-6m0 6h-6';

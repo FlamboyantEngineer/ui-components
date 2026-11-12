@@ -87,6 +87,7 @@ export type GlyphName =
   | 'emoji'
   | 'bell'
   | 'clock'
+  | 'history'
   | 'envelope'
   | 'envelope-open'
   | 'send'

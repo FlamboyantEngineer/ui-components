@@ -2,10 +2,8 @@ import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { MoreGlyph } from '../../core/glyphs.js';
+import { HistoryGlyph, SparklesGlyph } from '../../core/glyphs.js';
 import { UiProvider } from '../../core/provider.js';
-import { Button } from '../button/button.js';
-import { Menu, MenuItem, MenuPopover, MenuTrigger } from '../menu/menu.js';
 import { type ChatConversation, ChatList } from './chat-list.js';
 
 const getNow = () => new Date('2026-04-20T10:30:00');
@@ -48,10 +46,8 @@ describe('ChatList', () => {
     const { container } = render(
       <ChatList
         conversations={conversations}
+        showSearch
         onNew={() => {}}
-        renderActions={(conversation) => (
-          <Button icon={MoreGlyph} label={`More for ${conversation.title}`} size="sm" />
-        )}
         getNow={getNow}
         className="host"
         id="inbox"
@@ -86,14 +82,13 @@ describe('ChatList', () => {
     expect(helper).not.toHaveAttribute('data-unread');
     expect(helper.querySelector('.ui-avatar')).toHaveAttribute('data-shape', 'rounded');
     expect(helper.querySelector('.ui-chat-list__time')).toBeNull();
-    expect(
-      within(helper).getByRole('button', { name: 'More for Travel helper' }).parentElement,
-    ).toHaveClass('ui-chat-list__actions');
+    expect(within(helper).queryByRole('button')).not.toBeInTheDocument();
     expectHooksMatchSpec(container, 'CHAT-LIST', {
       slots: [
         'header',
         'search',
         'new',
+        'body',
         'list',
         'conversation',
         'avatar',
@@ -102,7 +97,6 @@ describe('ChatList', () => {
         'preview',
         'muted',
         'unread',
-        'actions',
       ],
       callerAttributes: ['data-host-list'],
     });
@@ -184,60 +178,11 @@ describe('ChatList', () => {
     expect(row(/^Travel helper/)).toHaveAttribute('aria-selected', 'false');
   });
 
-  it('UIC-CHAT-LIST-1.5 opens a row menu from the keyboard and returns focus to its button', async () => {
+  it('UIC-CHAT-LIST-1.5 UIC-CHAT-LIST-1.3 is one tab stop with arrow keys and typeahead', async () => {
     const user = userEvent.setup();
-    const onAction = vi.fn();
-    const onSelectionChange = vi.fn();
-    render(
-      <ChatList
-        conversations={conversations}
-        onSelectionChange={onSelectionChange}
-        renderActions={(conversation) => (
-          <MenuTrigger>
-            <Button icon={MoreGlyph} label={`More for ${conversation.title}`} size="sm" />
-            <MenuPopover>
-              <Menu onAction={(key) => onAction(conversation.id, key)}>
-                <MenuItem id="mute">Mute</MenuItem>
-              </Menu>
-            </MenuPopover>
-          </MenuTrigger>
-        )}
-      />,
-    );
-    const more = screen.getByRole('button', { name: 'More for Ana Lima' });
-    for (const key of ['{Enter}', ' ']) {
-      act(() => row(/^Ana Lima/).focus());
-      await user.keyboard('{ArrowRight}');
-      expect(more).toHaveFocus();
-      await user.keyboard(key);
-      expect(await screen.findByRole('menuitem', { name: 'Mute' })).toHaveFocus();
-      await user.keyboard('{Escape}');
-      await waitFor(() => expect(more).toHaveFocus());
-    }
-    await user.keyboard('{Enter}');
-    expect(await screen.findByRole('menuitem', { name: 'Mute' })).toHaveFocus();
-    await user.keyboard('{Enter}');
-    expect(onAction).toHaveBeenCalledWith('ana', 'mute');
-    await waitFor(() => expect(more).toHaveFocus());
-    expect(onSelectionChange).not.toHaveBeenCalled();
-  });
-
-  it('UIC-CHAT-LIST-1.5 UIC-CHAT-LIST-1.3 is one tab stop with arrow keys, typeahead and row controls', async () => {
-    const user = userEvent.setup();
-    const onMore = vi.fn();
     render(
       <>
-        <ChatList
-          conversations={conversations}
-          renderActions={(conversation) => (
-            <Button
-              icon={MoreGlyph}
-              label={`More for ${conversation.title}`}
-              size="sm"
-              onPress={() => onMore(conversation.id)}
-            />
-          )}
-        />
+        <ChatList conversations={conversations} showSearch />
         <button type="button">After</button>
       </>,
     );
@@ -251,12 +196,6 @@ describe('ChatList', () => {
     expect(row(/^Ana Lima/)).toHaveFocus();
     await user.keyboard('l');
     expect(row(/^Lisbon trip/)).toHaveFocus();
-    await user.keyboard('{ArrowRight}');
-    expect(screen.getByRole('button', { name: 'More for Lisbon trip' })).toHaveFocus();
-    await user.keyboard('{Enter}');
-    expect(onMore).toHaveBeenCalledWith('trip');
-    await user.keyboard('{ArrowLeft}');
-    expect(row(/^Lisbon trip/)).toHaveFocus();
     await user.tab();
     expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
     await user.tab({ shift: true });
@@ -265,7 +204,7 @@ describe('ChatList', () => {
 
   it('UIC-CHAT-LIST-1.6 UIC-CHAT-LIST-1.9 filters by title and last message, ignoring case and accents', async () => {
     const user = userEvent.setup();
-    const { container } = render(<ChatList conversations={conversations} />);
+    const { container } = render(<ChatList conversations={conversations} showSearch />);
     const search = screen.getByRole('searchbox', { name: 'Search conversations' });
     await user.type(search, 'CAFE');
     expect(within(grid()).getAllByRole('row')).toHaveLength(1);
@@ -287,7 +226,7 @@ describe('ChatList', () => {
   it('UIC-CHAT-LIST-1.6 reports the search to a host that searches itself', async () => {
     const user = userEvent.setup();
     const onSearchChange = vi.fn();
-    render(<ChatList conversations={conversations} onSearchChange={onSearchChange} />);
+    render(<ChatList conversations={conversations} onSearchChange={onSearchChange} showSearch />);
     await user.type(screen.getByRole('searchbox'), 'zz');
     expect(onSearchChange).toHaveBeenLastCalledWith('zz');
     expect(within(grid()).getAllByRole('row')).toHaveLength(3);
@@ -339,5 +278,89 @@ describe('ChatList', () => {
       </>,
     );
     expect(screen.getByRole('grid', { name: 'Inbox' })).toBeVisible();
+  });
+
+  it('UIC-CHAT-LIST-1.1 UIC-CHAT-LIST-1.6 leaves the search out unless asked and the header without its parts', () => {
+    const { container } = render(<ChatList conversations={conversations} />);
+    expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
+    expect(container.querySelector('.ui-chat-list__header')).toBeNull();
+  });
+
+  it('UIC-CHAT-LIST-1.2 UIC-CHAT-LIST-1.3 draws a title alone, an icon at the start, the status mark and the activity', () => {
+    const { container } = render(
+      <ChatList
+        conversations={[
+          { id: 'plain', title: 'Sourdough starter schedule' },
+          { id: 'icon', title: 'Weekend hiking routes', icon: SparklesGlyph },
+          {
+            id: 'status',
+            title: 'Repotting a fig tree',
+            status: { icon: HistoryGlyph, label: 'Earlier versions' },
+            activity: 'Working',
+          },
+        ]}
+      />,
+    );
+    const plain = row('Sourdough starter schedule');
+    expect(plain.querySelector('.ui-chat-list__avatar')).toBeNull();
+    expect(plain.querySelector('.ui-avatar')).toBeNull();
+    const icon = row('Weekend hiking routes');
+    expect(icon.querySelector('.ui-chat-list__avatar')).toHaveAttribute('aria-hidden', 'true');
+    expect(icon.querySelector('.ui-chat-list__avatar [data-glyph]')).toHaveAttribute(
+      'data-glyph',
+      'sparkles',
+    );
+    const status = row('Repotting a fig tree, Earlier versions, Working');
+    const mark = status.querySelector('.ui-chat-list__status');
+    expect(mark).toHaveAccessibleName('Earlier versions');
+    expect(mark?.querySelector('[data-glyph]')).toHaveAttribute('data-glyph', 'history');
+    const activity = status.querySelector('.ui-chat-list__activity');
+    expect(activity).toHaveAttribute('aria-hidden', 'true');
+    expect(activity?.querySelectorAll('.ui-chat-list__activity-dot')).toHaveLength(3);
+    expect(plain.querySelector('.ui-chat-list__activity')).toBeNull();
+    expectHooksMatchSpec(container, 'CHAT-LIST', {
+      slots: ['avatar', 'status', 'activity', 'activity-dot'],
+    });
+  });
+
+  it('UIC-CHAT-LIST-1.12 shows a heading that names the list unless a label does', () => {
+    const { container, rerender } = render(
+      <ChatList conversations={conversations} heading="Recents" />,
+    );
+    expect(container.querySelector('.ui-chat-list__heading')).toHaveTextContent('Recents');
+    expect(screen.getByRole('grid', { name: 'Recents' })).toBeVisible();
+    expectHooksMatchSpec(container, 'CHAT-LIST', { slots: ['heading'] });
+    rerender(<ChatList conversations={conversations} heading="Recents" aria-label="History" />);
+    expect(screen.getByRole('grid', { name: 'History' })).toBeVisible();
+  });
+
+  it('UIC-CHAT-LIST-1.11 asks for more conversations from the Load more row', async () => {
+    const user = userEvent.setup();
+    let finish = () => {};
+    const onLoadMore = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    const { container, rerender } = render(
+      <ChatList conversations={conversations} onLoadMore={onLoadMore} />,
+    );
+    const root = container.firstElementChild;
+    expect(root).toHaveAttribute('data-has-more', 'true');
+    const button = screen.getByRole('button', { name: 'Load more' });
+    expect(button).toHaveClass('ui-chat-list__load-more', 'ui-load-more');
+    expect(button.parentElement).toHaveClass('ui-chat-list__body');
+    await user.click(button);
+    expect(onLoadMore).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(button).toHaveAttribute('data-pending', 'true'));
+    await act(async () => finish());
+    expect(button).not.toHaveAttribute('data-pending');
+    expectHooksMatchSpec(container, 'CHAT-LIST', { slots: ['body', 'load-more'] });
+    rerender(<ChatList conversations={conversations} onLoadMore={onLoadMore} isLoading />);
+    expect(screen.queryByRole('button', { name: 'Load more' })).not.toBeInTheDocument();
+    rerender(<ChatList conversations={conversations} />);
+    expect(root).not.toHaveAttribute('data-has-more');
+    expect(screen.queryByRole('button', { name: 'Load more' })).not.toBeInTheDocument();
   });
 });
