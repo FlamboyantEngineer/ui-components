@@ -105,6 +105,10 @@ export interface ChatEngineContext {
   readonly createId: () => string;
   readonly uploads: Map<string, { file: File; controller: AbortController }>;
   run: ChatRun | undefined;
+  /** The queued message the reader edits, which neither goes out nor steers until the edit ends. */
+  editingQueuedId: string | undefined;
+  /** The queue waits for that edit: its first message was due to go out while it was edited. */
+  isHeldForEdit: boolean;
   /** The reply the last run streamed into, and its parts before, when it continued one. */
   lastRun: { replyId: string; baseParts?: readonly ChatPart[] | undefined } | undefined;
   /**

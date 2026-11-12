@@ -100,6 +100,11 @@ export interface ChatComposerOptions
    * reply and sends it ahead of the rest of the queue; offers Steer on each queued message.
    */
   onSteer?: ((id: string) => void) | undefined;
+  /**
+   * Called with the queued message the reader starts to edit, and with `undefined` when the edit
+   * ends, so the host holds that message back meanwhile, from the queue and from Steer.
+   */
+  onQueuedEditChange?: ((id: string | undefined) => void) | undefined;
   /** The files attached to the next message. */
   attachments?: readonly ChatAttachmentData[] | undefined;
   /** Removes a file from the next message. */
@@ -329,15 +334,7 @@ export function ChatComposer(given: ChatComposerProps) {
   };
   return (
     <>
-      <ChatQueue
-        queue={options.queue}
-        onQueueChange={options.onQueueChange}
-        onSteer={options.onSteer}
-        onEdit={(id) => state.startEdit({ kind: 'queued', id })}
-        onCancelEdit={cancelEdit}
-        editingId={state.editing?.kind === 'queued' ? state.editing.id : undefined}
-        composerRef={state.composerRef}
-      />
+      <ChatQueue options={options} state={state} />
       <RichMessageComposer
         ref={setComposer}
         handleRef={composerRef}

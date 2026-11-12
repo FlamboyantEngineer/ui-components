@@ -232,6 +232,27 @@ test.describe('Chat lab', () => {
     await expect(composer(demo)).toBeFocused();
   });
 
+  test('UIC-CHAT-3.4 UIC-CHAT-CONTROLLER-2.5 holds a queued message while it is edited and sends the saved text', async ({
+    page,
+  }) => {
+    await openChat(page, 20);
+    const demo = section(page, 'Shortcuts and queue');
+    const state = demo.locator('[data-lab-output="queue-state"]');
+    await composer(demo).click();
+    for (const text of ['Pick a museum', 'And a café']) {
+      await page.keyboard.type(text);
+      await page.keyboard.press('Enter');
+    }
+    await demo.getByRole('button', { name: 'Edit queued message 1' }).click();
+    await page.keyboard.type(' nearby');
+    await expect(state).toHaveText('idle', { timeout: 30_000 });
+    await expect(demo.locator('[data-lab-output="queue-count"]')).toHaveText('1');
+    await expect(demo.getByRole('button', { name: /^Steer/ })).toHaveCount(0);
+    await page.keyboard.press('Enter');
+    await expect(demo.locator('article', { hasText: 'Noted: And a café nearby' })).toBeVisible();
+    await expect(demo.locator('[data-lab-output="queue-count"]')).toHaveText('0');
+  });
+
   test('UIC-CHAT-3.1 UIC-MESSAGE-COMPOSER-3.10 sends on Enter while idle and queues on Ctrl+Enter while a reply runs', async ({
     page,
   }) => {

@@ -316,7 +316,11 @@ test('UIC-TOUR-1.4 retries a failed step and aborts a load on Back', async ({ pa
   await page.getByRole('button', { name: 'Next' }).click();
   await expect(page.locator('.ui-tour')).toHaveAttribute('data-status', 'failed');
   await expect(page.getByText('This step could not be shown.')).toBeVisible();
-  await demo.getByRole('switch', { name: 'Fail loading the options' }).press('Space');
+  // The failed step's dialog covers the switch, and the popover's focus scope can pull focus back to
+  // the dialog between the key's down and up, so the switch is toggled by a click on its input.
+  const fails = demo.getByRole('switch', { name: 'Fail loading the options' });
+  await fails.dispatchEvent('click');
+  await expect(fails).not.toBeChecked();
   await page.getByRole('button', { name: 'Retry' }).click();
   await expect(page.locator('.ui-tour')).toHaveAttribute('data-status', 'ready');
   await expect(demo.locator('[data-lab-prepared="shipping"]')).toBeVisible();
