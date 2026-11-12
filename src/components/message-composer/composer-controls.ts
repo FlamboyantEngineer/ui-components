@@ -17,7 +17,14 @@ import { useResizeObserver } from '../../utils/use-resize-observer.js';
 import { useShallowStable } from '../../utils/use-shallow-stable.js';
 import type { ShortcutChord } from '../shortcut/shortcut.js';
 import type { ComposerFrameModel } from './composer-frame.js';
+import type { MessageComposerMenuSection } from './composer-menu.js';
 import type { MessageComposerSharedProps } from './message-composer.js';
+
+/**
+ * How long a sent message may wait for the host before the action button shows that it waits, so a
+ * quick acceptance never flashes a spinner.
+ */
+export const composerSubmittingDelay = 400;
 
 /** What a control in a composer's row reads from the composer. */
 export interface MessageComposerControls {
@@ -41,6 +48,8 @@ type ComposerControlActions = Pick<
 export interface ComposerControlsValue extends MessageComposerControls, ComposerControlActions {
   isEditing: boolean;
   canSubmit: boolean;
+  /** A sent message waits for the host to accept it. */
+  isSubmitting: boolean;
   /** A reply is on its way. */
   isPending: boolean;
   /** The composer sends while a reply is on its way. */
@@ -51,6 +60,10 @@ export interface ComposerControlsValue extends MessageComposerControls, Composer
   rootRef: RefObject<HTMLDivElement | null>;
   /** Tells the composer that the host placed the send button, so it adds none; returns the undo. */
   registerSendButton: () => () => void;
+  /** Sections every menu button shows after its own. */
+  menuSections: readonly MessageComposerMenuSection[];
+  /** Tells the composer that the host placed a menu button, so it adds none; returns the undo. */
+  registerMenuButton: () => () => void;
 }
 
 /**
@@ -85,7 +98,10 @@ export function useComposerControls({
   props,
   model,
   ...rest
-}: Pick<ComposerControlsValue, 'rootRef' | 'isCompact' | 'isDisabled' | 'registerSendButton'> & {
+}: Pick<
+  ComposerControlsValue,
+  'rootRef' | 'isCompact' | 'isDisabled' | 'registerSendButton' | 'registerMenuButton'
+> & {
   props: MessageComposerSharedProps;
   model: ComposerFrameModel;
 }): ComposerControlsValue {
@@ -95,11 +111,15 @@ export function useComposerControls({
     ...rest,
     isEditing: model.isEditing,
     canSubmit: model.canSubmit,
+    isSubmitting: model.isSubmitting,
     isPending: Boolean(props.isPending),
     allowsPendingSubmit: Boolean(props.allowsPendingSubmit),
     submitShortcut: model.keys.submit[0],
+    menuSections: props.menuSections ?? noSections,
   });
 }
+
+const noSections: readonly MessageComposerMenuSection[] = [];
 
 /** Gives the composer's controls what they read. */
 export const ComposerControlsContext = createContext<ComposerControlsValue | null>(null);
@@ -147,12 +167,12 @@ export function useCompactRow(
   return fullWidth !== null;
 }
 
-/** Counts the send buttons the host placed: the composer adds its own while there is none. */
-export function useSendButtonRegistry() {
+/** Counts the controls of a kind the host placed: the composer adds its own while there is none. */
+export function useControlRegistry() {
   const [count, setCount] = useState(0);
-  const registerSendButton = useCallback(() => {
+  const register = useCallback(() => {
     setCount((current) => current + 1);
     return () => setCount((current) => current - 1);
   }, []);
-  return { hasHostSendButton: count > 0, registerSendButton };
+  return { hasHostControl: count > 0, register };
 }

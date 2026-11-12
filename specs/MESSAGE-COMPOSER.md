@@ -124,14 +124,14 @@ Verification: `src/components/message-composer/composer-frame.test.tsx`, `e2e/me
 
 ### UIC-MESSAGE-COMPOSER-3.8 - Sending while a reply is pending
 
-With `allowsPendingSubmit`, a pending composer shall send as it does when not pending (the `queue` chords and the button), for a host that queues the message until the reply ends. Its one action button is then Send (without the pending spinner) while there is something to send, and Stop (with `onStop`) while there is not, so keyboard focus on it stays put as it switches.
+With `allowsPendingSubmit`, a pending composer shall send as it does when not pending (the `queue` chords and the button), for a host that queues the message until the reply ends. Its one action button is then Send (without the pending spinner) while there is something to send or a sent message waits for the host ([UIC-MESSAGE-COMPOSER-3.9](#uic-message-composer-39---accepting-a-message)), and Stop (with `onStop`) while there is not, so keyboard focus on it stays put as it switches.
 
 Implementation: `src/components/message-composer/composer-frame.tsx`, `src/components/message-composer/use-message-composer.ts`, `src/components/message-composer/rich/rich-message-composer.tsx`
 Verification: `src/components/message-composer/message-composer.test.tsx`, `src/components/message-composer/rich/rich-message-composer.test.tsx`
 
 ### UIC-MESSAGE-COMPOSER-3.9 - Accepting a message
 
-`onSubmit` may return a promise that settles once the host accepts the message or refuses it. While it is pending, the root publishes `data-submitting`, the action button is disabled (`aria-disabled`, staying focusable) and the composer sends nothing more from the same draft, however often the reader presses it or the chord; the text stays editable. Once the promise resolves, the draft empties (through `onChange` when it is controlled) unless the reader has changed it since, even back to the words sent: those words are a newer message. When it rejects, or `onSubmit` throws, the message stays, the composer may send again, and `onSubmitError` receives the error (without `onSubmitError` the error is rethrown). With `persistKey`, a message belongs to the draft it was sent from, which the key and the provider's storage adapter name together (a controlled draft, held by the host, only by its key): under another key or another adapter the composer is not held, even where that draft holds the same text, and once the message is accepted the draft that is shown now empties only if it is the one the message was sent from and still holds that message; otherwise only the stored draft it was sent from empties, in the adapter it was sent from, if it still holds that message. A composer that unmounts while its message waits settles the same way, emptying only that stored draft. A refusal keeps every draft and still goes to `onSubmitError`. An `onSubmit` that returns nothing is accepted at once. An edit settles the same way, and stays for the host to end.
+`onSubmit` may return a promise that settles once the host accepts the message or refuses it. While it is pending, the root publishes `data-submitting`, the action button is disabled (`aria-disabled`, staying focusable) and, once the promise has been pending for 400 ms, shows itself busy (its pending spinner, [UIC-BUTTON-2.2](BUTTON.md#uic-button-22---pending), named by the provider string `sending`, or `saving` while it saves an edit), so a slow host never looks stalled, and the composer sends nothing more from the same draft, however often the reader presses it or the chord; the text stays editable. Once the promise resolves, the draft empties (through `onChange` when it is controlled) unless the reader has changed it since, even back to the words sent: those words are a newer message. When it rejects, or `onSubmit` throws, the message stays, the composer may send again, and `onSubmitError` receives the error (without `onSubmitError` the error is rethrown). With `persistKey`, a message belongs to the draft it was sent from, which the key and the provider's storage adapter name together (a controlled draft, held by the host, only by its key): under another key or another adapter the composer is not held, even where that draft holds the same text, and once the message is accepted the draft that is shown now empties only if it is the one the message was sent from and still holds that message; otherwise only the stored draft it was sent from empties, in the adapter it was sent from, if it still holds that message. A composer that unmounts while its message waits settles the same way, emptying only that stored draft. A refusal keeps every draft and still goes to `onSubmitError`. An `onSubmit` that returns nothing is accepted at once. An edit settles the same way, and stays for the host to end.
 
 Implementation: `src/utils/use-draft-submission.ts`, `src/components/message-composer/use-composer-state.ts`, `src/components/message-composer/composer-frame.tsx`
 Verification: `src/components/message-composer/use-submission.test.tsx`
@@ -341,6 +341,13 @@ With `filterable` (off by default), the menu shall lead with a search field ([UI
 
 Implementation: `src/components/message-composer/composer-menu.tsx`
 Verification: `src/components/message-composer/composer-menu.test.tsx`, `e2e/message-composer.spec.ts`
+
+### UIC-MESSAGE-COMPOSER-5.6 - The composer's own sections
+
+`menuSections` shall add sections to every "+" menu button among the composer's controls, after the button's own `sections`, such as the sending options a chat offers. When `menuSections` holds a section and no `MessageComposerMenuButton` is among the controls, the composer adds a "+" button of its own, holding only those sections, first in the start group of its row.
+
+Implementation: `src/components/message-composer/composer-menu.tsx`, `src/components/message-composer/composer-frame.tsx`, `src/components/message-composer/composer-controls.ts`
+Verification: `src/components/message-composer/composer-menu.test.tsx`
 
 ## UIC-MESSAGE-COMPOSER-6 - Controls
 

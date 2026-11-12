@@ -13,10 +13,12 @@ import {
 import type { ShortcutChord } from '../shortcut/shortcut.js';
 import { ComposerFrame } from './composer-frame.js';
 import { composerHooks as hooks } from './composer-hooks.js';
+import type { MessageComposerMenuSection } from './composer-menu.js';
 import { useMessageComposer } from './use-message-composer.js';
 
 export { ComposerControlButton } from './composer-control-button.js';
-export { useMessageComposerControls } from './composer-controls.js';
+export { composerSubmittingDelay, useMessageComposerControls } from './composer-controls.js';
+export type { MessageComposerMenuSection } from './composer-menu.js';
 export { MessageComposerAttachButton, MessageComposerEmojiButton } from './composer-tools.js';
 
 /** The chords of one composer action, in Shortcut notation: one, or several that all do it. */
@@ -74,6 +76,11 @@ export interface MessageComposerSharedProps
   startControls?: ReactNode;
   /** Controls at the end of the row below the input, in order, before the send button unless they hold it. */
   endControls?: ReactNode;
+  /**
+   * Sections every "+" menu button among the controls shows after its own, such as the chat's
+   * sending options; without a menu button among them, the composer adds one at the row's start.
+   */
+  menuSections?: readonly MessageComposerMenuSection[] | undefined;
   /** Called with files chosen with the attach button or a menu item, dropped on the composer or pasted. */
   onAttach?: ((files: File[]) => void) | undefined;
   /** Called when the reader cancels an edit, with Cancel or Escape. */
