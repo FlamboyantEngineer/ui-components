@@ -191,6 +191,19 @@ describe('ShortcutScope and useShortcut', () => {
     expect(ran.mock.calls).toEqual([['Anywhere'], ['Owned close']]);
   });
 
+  it('UIC-SHORTCUT-4.4 rechecks a shortcut against the reserved chords when its chord changes', () => {
+    const ran = vi.fn();
+    const { rerender } = render(<Action name="Close" shortcut="Ctrl+W" onPress={ran} />);
+    for (let count = 0; count < 3; count += 1) press({ key: 'w', ctrlKey: true });
+    expect(ran).not.toHaveBeenCalled();
+    rerender(<Action name="Close" shortcut="Ctrl+E" onPress={ran} />);
+    press({ key: 'e', ctrlKey: true });
+    expect(ran.mock.calls).toEqual([['Close']]);
+    rerender(<Action name="Close" shortcut="Ctrl+W" onPress={ran} />);
+    press({ key: 'w', ctrlKey: true });
+    expect(ran).toHaveBeenCalledOnce();
+  });
+
   it('UIC-SHORTCUT-4.5 calls the latest callback, publishes its chord and goes with its owner', () => {
     const calls: string[] = [];
     function Counter() {

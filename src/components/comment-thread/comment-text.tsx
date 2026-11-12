@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, type ReactNode } from 'react';
+import { Fragment, type ReactNode, useMemo } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import {
@@ -75,10 +75,11 @@ export function CommentText({
   className,
   ...rest
 }: CommentTextProps) {
-  const segments = parse(text);
-  return (
-    <span {...rest} {...hooks.root({ className, data: { format } })}>
-      {format === 'markdown-inline'
+  // A thread renders every comment again whenever it renders: parse and draw only on new text.
+  const segments = useMemo(() => parse(text), [parse, text]);
+  const content = useMemo(
+    () =>
+      format === 'markdown-inline'
         ? renderMarkdownComment(segments, (segment, isInLink) => (
             <MentionChip segment={segment} renderCard={isInLink ? undefined : renderCard} />
           ))
@@ -88,7 +89,12 @@ export function CommentText({
             ) : (
               <Fragment key={key}>{segment.text}</Fragment>
             ),
-          )}
+          ),
+    [segments, format, renderCard],
+  );
+  return (
+    <span {...rest} {...hooks.root({ className, data: { format } })}>
+      {content}
     </span>
   );
 }

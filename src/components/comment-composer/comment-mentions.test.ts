@@ -77,4 +77,15 @@ describe('comment mention tokens', () => {
       { kind: 'mention', text: '@[Ana](ana)', id: 'ana', name: 'Ana', mentionKind: 'person' },
     ]);
   });
+
+  it('UIC-COMMENT-COMPOSER-2.4 reads long unclosed tokens and backtick runs in linear time', () => {
+    const tokens = '@['.repeat(50_000);
+    const runs = Array.from({ length: 400 }, (_, index) => `${'`'.repeat(index + 1)}a`).join('');
+    const started = performance.now();
+    expect(parseMentions(`${tokens} @[Ana](ana)`).at(-1)).toMatchObject({ id: 'ana' });
+    expect(parseMentions(runs)).toEqual([{ kind: 'text', text: runs }]);
+    expect(performance.now() - started).toBeLessThan(2000);
+    const long = 'n'.repeat(257);
+    expect(parseMentions(`@[${long}](ana)`)).toEqual([{ kind: 'text', text: `@[${long}](ana)` }]);
+  });
 });
