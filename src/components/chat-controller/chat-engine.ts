@@ -77,9 +77,15 @@ function continueReply(engine: ChatEngineContext, reply: ChatMessageData) {
   startRun(engine, { replyId: reply.id, messages: [...earlier, { ...rest, status: 'complete' }] });
 }
 
+/** Sends the first queued message, or waits while the reader edits it. */
 function sendNextQueued(engine: ChatEngineContext) {
   const [next, ...rest] = engine.store.get().queue;
   if (!next) return;
+  if (next.id === engine.editingQueuedId) {
+    engine.isHeldForEdit = true;
+    return;
+  }
+  engine.isHeldForEdit = false;
   patchState(engine, { queue: rest });
   startTurn(engine, next);
 }
@@ -148,10 +154,19 @@ function sendNow(engine: ChatEngineContext, text: string, tokens?: readonly Chat
 function steer(engine: ChatEngineContext, id: string) {
   const { queue } = engine.store.get();
   const outgoing = queue.find((entry) => entry.id === id);
-  if (!outgoing) return;
+  if (!outgoing || id === engine.editingQueuedId) return;
   patchState(engine, { queue: queue.filter((entry) => entry !== outgoing) });
   if (engine.run) endRun(engine, engine.run, { status: 'cancelled' });
   startTurn(engine, outgoing);
+}
+
+/**
+ * Records the queued message the reader edits, or the edit's end, when the queue goes on from
+ * where it waited for the edit, with the message's saved text.
+ */
+function setEditingQueued(engine: ChatEngineContext, id: string | undefined) {
+  engine.editingQueuedId = id;
+  if (id === undefined && engine.isHeldForEdit && !engine.run) sendNextQueued(engine);
 }
 
 /** Runs the last turn again after its reply failed: as it stood before, or from scratch. */
@@ -176,6 +191,7 @@ function resetConversation(engine: ChatEngineContext, messages: readonly ChatMes
   if (engine.run) abandonRun(engine, engine.run);
   abortUploads(engine);
   engine.lastRun = undefined;
+  engine.isHeldForEdit = false;
   patchState(engine, { messages, isPending: false, queue: [], attachments: [] });
 }
 
@@ -216,6 +232,8 @@ export function createChatEngine(
     createId: createIdFactory(),
     uploads: new Map(),
     run: undefined,
+    editingQueuedId: undefined,
+    isHeldForEdit: false,
     lastRun: undefined,
     onSettle: (settled) => settle(engine, settled),
   };
@@ -239,6 +257,7 @@ export function createChatEngine(
     resetConversation: (messages: readonly ChatMessageData[] = []) =>
       resetConversation(engine, messages),
     setQueue: (queue: readonly ChatQueuedMessage[]) => patchState(engine, { queue }),
+    setEditingQueued: (id: string | undefined) => setEditingQueued(engine, id),
     approve: (id: string) => answer(id, { type: 'approval', decision: 'approved' }),
     deny: (id: string, reason?: string) =>
       answer(id, { type: 'approval', decision: 'denied', reason }),

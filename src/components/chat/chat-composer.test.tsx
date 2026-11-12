@@ -345,6 +345,40 @@ describe('Chat composer', () => {
     );
   });
 
+  it('UIC-CHAT-3.4 tells the host which queued message is edited, and steers with any of them', async () => {
+    const onQueuedEditChange = vi.fn();
+    const onSteer = vi.fn();
+    const queue = [
+      { id: 'q1', text: 'First' },
+      { id: 'q2', text: 'Second' },
+      { id: 'q3', text: 'Third' },
+    ];
+    const { user } = renderChat({
+      participants: assistantPeople,
+      isPending: true,
+      queue,
+      onQueueChange: vi.fn(),
+      onSteer,
+      onQueuedEditChange,
+    });
+    await user.click(screen.getByRole('button', { name: 'Steer with queued message 3' }));
+    await user.click(screen.getByRole('button', { name: 'Steer with queued message 2' }));
+    expect(onSteer.mock.calls).toEqual([['q3'], ['q2']]);
+    await user.click(screen.getByRole('button', { name: 'Edit queued message 1' }));
+    expect(onQueuedEditChange).toHaveBeenLastCalledWith('q1');
+    expect(
+      screen.queryByRole('button', { name: 'Steer with queued message 1' }),
+    ).not.toBeInTheDocument();
+    await waitFor(() => expect(box()).toHaveFocus());
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(onQueuedEditChange).toHaveBeenLastCalledWith(undefined));
+    await user.click(screen.getByRole('button', { name: 'Edit queued message 2' }));
+    await waitFor(() => expect(box()).toHaveFocus());
+    await user.keyboard(' too{Enter}');
+    await waitFor(() => expect(onQueuedEditChange).toHaveBeenLastCalledWith(undefined));
+    expect(onQueuedEditChange.mock.calls).toEqual([['q1'], [undefined], ['q2'], [undefined]]);
+  });
+
   it('UIC-CHAT-3.4 offers no Steer without onSteer', () => {
     renderChat({
       participants: assistantPeople,

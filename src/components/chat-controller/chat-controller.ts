@@ -79,6 +79,8 @@ export interface ChatControllerProps {
   queue: readonly ChatQueuedMessage[];
   /** Replaces the queue, as when the reader edits or removes a queued message. */
   onQueueChange: (queue: readonly ChatQueuedMessage[]) => void;
+  /** Records the queued message the reader edits, or `undefined` when the edit ends; it waits meanwhile. */
+  onQueuedEditChange: (id: string | undefined) => void;
   /** The text of the messages the reader sent, oldest first, for the composer's recall. */
   history: readonly string[];
   /** The files the composer holds for the next message. */
@@ -151,6 +153,7 @@ function useChatProps(
       onDismissQuestion: engine.dismissQuestion,
       queue,
       onQueueChange: engine.setQueue,
+      onQueuedEditChange: engine.setEditingQueued,
       history,
       attachments,
       onAttach: canUpload ? engine.attach : undefined,

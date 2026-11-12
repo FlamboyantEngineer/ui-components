@@ -289,6 +289,44 @@ describe('useChatController runs', () => {
     expect(at().messages.at(-1)?.parts).toEqual([{ type: 'text', text: 'Second' }]);
   });
 
+  it('UIC-CHAT-CONTROLLER-2.5 holds a queued message while the reader edits it, then sends its saved text', async () => {
+    const { result, at, send } = renderController();
+    act(() => result.current.send('First'));
+    act(() => result.current.send('Second'));
+    act(() => result.current.send('Third'));
+    const second = requireDefined(result.current.queue[0]);
+    const third = requireDefined(result.current.queue[1]);
+    act(() => result.current.props.onQueuedEditChange(second.id));
+    await push(at(), { type: 'finish' });
+    expect(send).toHaveBeenCalledTimes(1);
+    act(() => result.current.steer(second.id));
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(result.current.queue.map((entry) => entry.text)).toEqual(['Second', 'Third']);
+    act(() => result.current.steer(third.id));
+    expect(send).toHaveBeenCalledTimes(2);
+    expect(at().messages.at(-1)?.parts).toEqual([{ type: 'text', text: 'Third' }]);
+    await push(at(), { type: 'finish' });
+    expect(send).toHaveBeenCalledTimes(2);
+    act(() => result.current.props.onQueueChange([{ ...second, text: 'Second, edited' }]));
+    act(() => result.current.props.onQueuedEditChange(undefined));
+    expect(send).toHaveBeenCalledTimes(3);
+    expect(at().messages.at(-1)?.parts).toEqual([{ type: 'text', text: 'Second, edited' }]);
+    expect(result.current.queue).toEqual([]);
+  });
+
+  it('UIC-CHAT-CONTROLLER-2.5 sends the first queued message while a later one is edited', async () => {
+    const { result, at, send } = renderController();
+    act(() => result.current.send('First'));
+    act(() => result.current.send('Second'));
+    act(() => result.current.send('Third'));
+    act(() => result.current.props.onQueuedEditChange(requireDefined(result.current.queue[1]).id));
+    await push(at(), { type: 'finish' });
+    expect(send).toHaveBeenCalledTimes(2);
+    expect(at().messages.at(-1)?.parts).toEqual([{ type: 'text', text: 'Second' }]);
+    act(() => result.current.props.onQueuedEditChange(undefined));
+    expect(send).toHaveBeenCalledTimes(2);
+  });
+
   it('UIC-CHAT-CONTROLLER-2.6 lists the reader prompts for recall', async () => {
     const { result, at } = renderController({
       initialMessages: [
@@ -344,6 +382,7 @@ describe('useChatController props', () => {
         'onDeny',
         'onDismissQuestion',
         'onQueueChange',
+        'onQueuedEditChange',
         'onRemoveAttachment',
         'onRetry',
         'onRetryAttachment',
