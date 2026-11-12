@@ -12,7 +12,9 @@ const root = process.cwd();
 const read = (path: string) => readFileSync(join(root, path), 'utf8');
 const isMarked = (path: string) => read(path).startsWith("'use client';\n");
 
-describe('client boundaries', () => {
+// Three tests run the checker over the whole source tree, which takes seconds on its own and longer
+// on a loaded runner, past Vitest's five-second default.
+describe('client boundaries', { timeout: 60_000 }, () => {
   it('UIC-SERVER-COMPONENTS-1.1 UIC-SERVER-COMPONENTS-1.2 marks exactly the modules that need the client', () => {
     const output = execFileSync('node', ['scripts/check-client-boundaries.mjs'], {
       cwd: root,

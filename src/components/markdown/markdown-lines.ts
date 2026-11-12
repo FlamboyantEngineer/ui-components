@@ -93,13 +93,24 @@ export function isFenceClose(line: string, fence: Fence): boolean {
   return marker.startsWith(fence.marker.charAt(0)) && marker.length >= fence.marker.length;
 }
 
+/**
+ * A trimmed heading text without its closing run of `#`, which counts only when a space or tab
+ * comes before it or it is the whole text. Scanning back by index keeps a long line linear.
+ */
+function stripClosingSequence(text: string): string {
+  let start = text.length;
+  while (start > 0 && text[start - 1] === '#') start -= 1;
+  if (start === text.length) return text;
+  if (start === 0) return '';
+  const before = text[start - 1];
+  return before === ' ' || before === '\t' ? text.slice(0, start) : text;
+}
+
 /** A heading line's level and text, without the optional closing `#` sequence. */
 export function readAtxHeading(line: string): { level: number; text: string } | null {
   const match = atxHeading.exec(line);
   if (!match) return null;
-  const text = decodeBlockText(match[2] ?? '')
-    .trim()
-    .replace(/(?:^|[ \t]+)#+[ \t]*$/, '');
+  const text = stripClosingSequence(decodeBlockText(match[2] ?? '').trim());
   return { level: (match[1] ?? '').length, text: text.trim() };
 }
 

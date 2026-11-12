@@ -85,13 +85,34 @@ describe('parseStreamingMarkdown', () => {
     expect(parse.settled).toBe('');
   });
 
-  it('UIC-MARKDOWN-2.13 parses a source with a link definition or a carriage return whole', () => {
+  it('UIC-MARKDOWN-2.13 parses a source with a link definition whole', () => {
     const settled = parseStreamingMarkdown('Text\n\nSee [docs].\n\nMore', null);
     expect(settled.settled).not.toBe('');
     const defined = parseStreamingMarkdown('Text\n\nSee [docs].\n\n[docs]: /docs\n\nMore', settled);
     expect(defined.settled).toBe('');
     expect(defined.document).toEqual(parseMarkdown('Text\n\nSee [docs].\n\n[docs]: /docs\n\nMore'));
-    expect(parseStreamingMarkdown('Text\r\n\r\nMore\r\n', null).settled).toBe('');
+    const quoted = '> Text\n\n> [docs]: /docs\n\nMore';
+    expect(parseStreamingMarkdown(quoted, null).settled).toBe('');
+    const listed = '- Text\n\n- [docs]: /docs\n\nMore';
+    expect(parseStreamingMarkdown(listed, null).settled).toBe('');
+  });
+
+  it('UIC-MARKDOWN-2.13 keeps settling text that only contains a bracket and a colon', () => {
+    const source = 'Text\n\n```py\nif x[0]:\n    pass\n```\n\nSee items[1]: two\n\nMore';
+    const parse = parseStreamingMarkdown(source, null);
+    expect(parse.settled).not.toBe('');
+    expect(parse.document).toEqual(parseMarkdown(source));
+  });
+
+  it('UIC-MARKDOWN-2.13 reads carriage returns as line ends and keeps settling', () => {
+    const windows = reply.replaceAll('\n', '\r\n');
+    let previous: StreamingMarkdownParse | null = null;
+    for (let end = 1; end <= windows.length; end += 7) {
+      const prefix = prepareStreamingMarkdown(windows.slice(0, end));
+      previous = parseStreamingMarkdown(prefix, previous);
+      expect(previous.document).toEqual(parseMarkdown(prefix));
+    }
+    expect(requireDefined(previous).settled).not.toBe('');
   });
 
   it('UIC-MARKDOWN-2.13 starts over for a source that does not continue the previous one', () => {

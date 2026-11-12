@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { createHeadingIdAllocator, listMarkdownHeadings } from './markdown-headings.js';
+import { maxMarkupDepth } from '../../utils/markup.js';
+import {
+  createHeadingIdAllocator,
+  listMarkdownHeadings,
+  toPlainText,
+} from './markdown-headings.js';
 import type { MarkdownBlock, MarkdownInline } from './markdown-nodes.js';
 import { parseMarkdown } from './parse-markdown.js';
 
@@ -76,17 +81,61 @@ describe('parseMarkdown', () => {
     ]);
   });
 
-  it('UIC-MARKDOWN-1.1 UIC-MARKDOWN-1.5 parses five thousand nested block quotes', () => {
-    const document = parseMarkdown(`${'> '.repeat(5_000)}# Nested`);
-    let children = document.children;
-    let depth = 0;
-    while (children[0]?.type === 'blockquote') {
-      depth += 1;
-      children = children[0].children;
+  it('UIC-MARKDOWN-1.1 UIC-MARKDOWN-1.5 opens nested block quotes up to the drawn depth', () => {
+    for (const levels of [300, 5_000]) {
+      const document = parseMarkdown(`${'> '.repeat(levels)}# Nested`);
+      let children = document.children;
+      let depth = 0;
+      while (children[0]?.type === 'blockquote') {
+        depth += 1;
+        children = children[0].children;
+      }
+      expect(depth).toBe(maxMarkupDepth);
+      // Past the limit, the remaining markers and the heading stay paragraph text.
+      expect(children[0]).toMatchObject({ type: 'paragraph' });
+      expect(toPlainText(children[0]?.type === 'paragraph' ? children[0].children : [])).toBe(
+        `${'> '.repeat(levels - maxMarkupDepth)}# Nested`,
+      );
+      expect(Object.isFrozen(children[0])).toBe(true);
     }
-    expect(depth).toBe(5_000);
-    expect(children[0]).toMatchObject({ type: 'heading', id: 'nested' });
-    expect(Object.isFrozen(children[0])).toBe(true);
+    const nested = parseMarkdown(`${'> '.repeat(100)}# Nested`);
+    expect(JSON.stringify(nested)).toContain('"type":"heading"');
+  });
+
+  it('UIC-MARKDOWN-1.2 UIC-MARKDOWN-1.13 strips a closing sequence only after a space, on a long line too', () => {
+    const headingText = (source: string) => {
+      const [block] = blocks(source);
+      return block?.type === 'heading' ? toPlainText(block.children) : null;
+    };
+    expect(headingText('# Title ##')).toBe('Title');
+    expect(headingText('# Title#')).toBe('Title#');
+    expect(headingText('# ###')).toBe('');
+    const spaces = ' '.repeat(40_000);
+    expect(headingText(`# a${spaces}b${spaces}#`)).toBe(`a${spaces}b`);
+  });
+
+  it('UIC-MARKDOWN-1.10 UIC-MARKDOWN-1.13 pairs code spans by run length across many unclosed runs', () => {
+    const runs = Array.from({ length: 800 }, (_, index) => `${'`'.repeat(index + 2)}x`).join(' ');
+    expect(inlines(runs)).toEqual([{ type: 'text', text: runs }]);
+    expect(inlines('`a` ``b`` ```c`` d```')).toEqual([
+      { type: 'inlineCode', text: 'a' },
+      { type: 'text', text: ' ' },
+      { type: 'inlineCode', text: 'b' },
+      { type: 'text', text: ' ' },
+      { type: 'inlineCode', text: 'c`` d' },
+    ]);
+  });
+
+  it('UIC-MARKDOWN-1.6 UIC-MARKDOWN-1.13 opens nested lists up to the drawn depth', () => {
+    const levels = 400;
+    const source = Array.from({ length: levels }, (_, index) => `${'  '.repeat(index)}- item`);
+    let blocks: readonly MarkdownBlock[] = parseMarkdown(source.join('\n')).children;
+    let depth = 0;
+    for (let block = blocks.at(-1); block?.type === 'list'; block = blocks.at(-1)) {
+      depth += 1;
+      blocks = block.children.at(-1)?.children ?? [];
+    }
+    expect(depth).toBe(maxMarkupDepth);
   });
 
   it('UIC-MARKDOWN-1.2 UIC-MARKDOWN-1.11 preserves source order for nested definitions and repeated headings', () => {

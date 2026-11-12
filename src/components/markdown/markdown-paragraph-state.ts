@@ -1,6 +1,7 @@
 // Follows the lines of a block quote or list item to know whether the last one leaves a paragraph
 // open, since only an open paragraph takes lazy continuation lines (specs/MARKDOWN.md).
 
+import { maxMarkupDepth } from '../../utils/markup.js';
 import {
   type Fence,
   indentOf,
@@ -29,6 +30,28 @@ interface Containers {
 }
 
 /**
+ * The deepest container nesting the parser opens: past it, a quote or list marker stays paragraph
+ * text, so hostile nesting cannot make parsing explode. It matches the depth the renderers draw.
+ */
+export const maxContainerDepth = maxMarkupDepth;
+
+/**
+ * The line inside the open list items its indentation continues, from `depth` on, and the depth
+ * it reaches. The indentation is measured once for all of them, not once per item.
+ */
+function continueItems(content: string, indents: readonly number[], from: number) {
+  const lead = indentOf(content);
+  let taken = 0;
+  let depth = from;
+  for (let indent = indents[depth]; indent !== undefined && lead - taken >= indent;) {
+    taken += indent;
+    depth += 1;
+    indent = indents[depth];
+  }
+  return { content: stripColumns(content, taken), depth };
+}
+
+/**
  * The line inside the containers it continues or opens, and whether it opened any. `indents`
  * holds the content columns of the list items still open, outermost first; a line indented to
  * one continues that item, and a list marker opens a new one in its place.
@@ -37,16 +60,19 @@ function stripContainers(line: string, indents: number[]): Containers {
   let content = line;
   let opensContainer = false;
   let depth = 0;
+  let opened = 0;
   for (;;) {
-    const indent = indents[depth];
-    if (indent !== undefined && !isBlank(content) && indentOf(content) >= indent) {
-      content = stripColumns(content, indent);
-      depth += 1;
-      continue;
+    if (depth < indents.length && !isBlank(content)) {
+      const continued = continueItems(content, indents, depth);
+      content = continued.content;
+      depth = continued.depth;
     }
     const quoted = stripBlockquoteMarker(content);
     const marker = quoted === null ? readListMarker(content) : null;
     if (quoted === null && marker === null) break;
+    // The parser opens no deeper containers, so the rest of the line is its content.
+    if (opened >= maxContainerDepth) break;
+    opened += 1;
     if (marker) indents.splice(depth, Infinity, marker.contentIndent);
     depth += marker ? 1 : 0;
     content = quoted ?? marker?.content ?? content;

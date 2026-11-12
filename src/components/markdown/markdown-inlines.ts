@@ -12,6 +12,8 @@ import {
 } from './markdown-emphasis.js';
 import { toPlainText } from './markdown-headings.js';
 import {
+  type CodeRuns,
+  indexCodeRuns,
   isEscapable,
   type LinkTarget,
   normalizeLabel,
@@ -37,6 +39,8 @@ interface InlineState {
   activeDepth: number;
   buffer: string;
   definitions: MarkdownDefinitions;
+  /** The text's backtick runs, indexed when the first one is read. */
+  codeRuns: CodeRuns | null;
 }
 
 const imageSchemes = ['http', 'https'];
@@ -144,7 +148,8 @@ function readBackslash(state: InlineState): boolean {
 }
 
 function readBackticks(state: InlineState): boolean {
-  const span = readCodeSpan(state.text, state.at);
+  state.codeRuns ??= indexCodeRuns(state.text);
+  const span = readCodeSpan(state.text, state.at, state.codeRuns);
   if (span) return push(state, { type: 'inlineCode', text: span.text }, span.end);
   const end = runEnd(state.text, state.at, '`');
   state.buffer += state.text.slice(state.at, end);
@@ -219,6 +224,7 @@ export function parseMarkdownInlines(
     activeDepth: 0,
     buffer: '',
     definitions,
+    codeRuns: null,
   };
   while (state.at < text.length) {
     const char = text[state.at] as string;

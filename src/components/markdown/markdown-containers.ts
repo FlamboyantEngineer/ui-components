@@ -15,7 +15,11 @@ import {
   stripIndent,
 } from './markdown-lines.js';
 import type { MarkdownListItem } from './markdown-nodes.js';
-import { createParagraphState, type ParagraphState } from './markdown-paragraph-state.js';
+import {
+  createParagraphState,
+  maxContainerDepth,
+  type ParagraphState,
+} from './markdown-paragraph-state.js';
 
 interface CollectedItem {
   lines: string[];
@@ -35,6 +39,7 @@ function isLazyLine(state: ParagraphState, line: string, next: string | undefine
 }
 
 export const readBlockquote: BlockReader = (lines, at, context) => {
+  if (context.depth >= maxContainerDepth) return null;
   if (stripBlockquoteMarker(lines[at] ?? '') === null) return null;
   const inner: string[] = [];
   const state = createParagraphState();
@@ -118,6 +123,7 @@ function isSibling(marker: ListMarker | null, first: ListMarker): marker is List
 }
 
 export const readList: BlockReader = (lines, at, context) => {
+  if (context.depth >= maxContainerDepth) return null;
   const first = readListMarker(lines[at] ?? '');
   if (!first) return null;
   const items: MarkdownListItem[] = [];
