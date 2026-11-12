@@ -94,6 +94,11 @@ test.describe('Link lab', () => {
     });
     await expect(prose).toHaveAttribute('target', '_blank');
     await expect(prose).toHaveAttribute('rel', 'nofollow noopener noreferrer');
+    const named = page.locator('[data-lab-demo="prose"]').getByRole('link', {
+      name: 'season planner (opens in a new tab)',
+    });
+    await expect(named).toHaveAttribute('target', 'planner');
+    await expect(named).toHaveAttribute('rel', 'noopener noreferrer');
   });
 
   test('UIC-LINK-2.3 UIC-LINK-3.2 runs a pressable link with Enter but not Space', async ({

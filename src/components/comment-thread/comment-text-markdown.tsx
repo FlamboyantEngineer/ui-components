@@ -5,6 +5,7 @@
 // (specs/COMMENT-THREAD.md, UIC-COMMENT-THREAD-3.3).
 
 import { Fragment, type ReactNode } from 'react';
+import { isSafeUrl } from '../../utils/safe-url.js';
 import type { CommentTextSegment } from '../comment-composer/comment-mentions.js';
 import { Link } from '../link/link.js';
 import { parseMarkdownInlines } from '../markdown/markdown-inlines.js';
@@ -65,6 +66,25 @@ function restoreText(text: string, mentions: readonly MentionSegment[]): string 
   });
 }
 
+/**
+ * A link, with mentions in its address and title written as their tokens: an address that the
+ * restored tokens make unsafe renders its content without a link.
+ */
+function renderLink(node: Extract<MarkdownInline, { type: 'link' }>, context: InlineContext) {
+  const content = renderInlines(node.children, { ...context, isInLink: true });
+  const href = restoreText(node.href, context.mentions);
+  if (!isSafeUrl(href)) return content;
+  return (
+    <Link
+      href={href}
+      isExternal={externalUrl.test(href)}
+      title={node.title ? restoreText(node.title, context.mentions) : undefined}
+    >
+      {content}
+    </Link>
+  );
+}
+
 function renderInline(node: MarkdownInline, context: InlineContext): ReactNode {
   switch (node.type) {
     case 'text':
@@ -78,15 +98,7 @@ function renderInline(node: MarkdownInline, context: InlineContext): ReactNode {
     case 'strikethrough':
       return <del>{renderInlines(node.children, context)}</del>;
     case 'link':
-      return (
-        <Link
-          href={node.href}
-          isExternal={externalUrl.test(node.href)}
-          title={node.title || undefined}
-        >
-          {renderInlines(node.children, { ...context, isInLink: true })}
-        </Link>
-      );
+      return renderLink(node, context);
     case 'image':
       // A comment shows no pictures from its text: the image reads as its alt text.
       return restoreText(node.alt, context.mentions);

@@ -162,6 +162,17 @@ describe('Link', () => {
     expect(stay.querySelector('.ui-link__external-icon')).toBeNull();
   });
 
+  it('UIC-LINK-2.2 treats a named window target as a new tab', () => {
+    render(
+      <Link href="/preview" target="preview">
+        Preview
+      </Link>,
+    );
+    const link = screen.getByRole('link', { name: 'Preview (opens in a new tab)' });
+    expect(link).toHaveAttribute('target', 'preview');
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+  });
+
   it('UIC-LINK-2.3 UIC-LINK-3.2 is a pressable link without href that Enter activates', async () => {
     const user = userEvent.setup();
     const onPress = vi.fn();

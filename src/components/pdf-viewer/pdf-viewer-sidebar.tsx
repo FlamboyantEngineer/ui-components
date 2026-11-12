@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import type { Key } from '../../primitives/index.js';
+import { isSafeUrl } from '../../utils/safe-url.js';
 import { Tab, TabList, TabPanel, Tabs } from '../tabs/tabs.js';
 import { Tree } from '../tree/tree.js';
 import type { PdfOutlineNode, PdfTextContent, PdfViewport } from './pdf-engine.js';
@@ -71,10 +72,12 @@ function PdfViewerOutline({
       defaultExpandedKeys={tree.expanded}
       onAction={(key) => {
         const node = tree.byId.get(key)?.node;
-        // A new tab opens the same from any window, so the script's own opens it.
-        // eslint-disable-next-line no-restricted-globals
-        if (node?.url) window.open(node.url, '_blank', 'noopener,noreferrer');
-        else if (node?.dest) followDestination(node.dest);
+        // A new tab opens the same from any window, so the script's own opens it. An unsafe
+        // address from the document (`javascript:`) opens nothing.
+        if (node?.url) {
+          // eslint-disable-next-line no-restricted-globals
+          if (isSafeUrl(node.url)) window.open(node.url, '_blank', 'noopener,noreferrer');
+        } else if (node?.dest) followDestination(node.dest);
       }}
     />
   );

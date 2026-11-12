@@ -23,7 +23,7 @@ import { mergeSafeRel } from '../../utils/merge-safe-rel.js';
 export interface CardActionOptions {
   /** Makes the card a link to this address; its title is the link. */
   href?: string | undefined;
-  /** The link's target. `_blank` adds `noopener` and `noreferrer` to `rel`. */
+  /** The link's target. A target that opens a new browsing context (`_blank` or a window name) adds `noopener` and `noreferrer` to `rel`. */
   target?: string | undefined;
   /** The link's relationship to the current page. */
   rel?: string | undefined;

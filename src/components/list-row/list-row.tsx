@@ -56,7 +56,7 @@ export interface ListRowProps
     Pick<ListRowContentProps, 'title' | 'meta' | 'icon' | 'leading'> {
   /** Makes the row's primary control a link, rendered through the provider's link renderer. */
   href?: string | undefined;
-  /** Link target. `_blank` adds `noopener` and `noreferrer` to `rel`. */
+  /** Link target. A target that opens a new browsing context (`_blank` or a window name) adds `noopener` and `noreferrer` to `rel`. */
   target?: string | undefined;
   /** The link's relationship to the current page. */
   rel?: string | undefined;

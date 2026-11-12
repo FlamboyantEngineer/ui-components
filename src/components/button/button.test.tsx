@@ -548,6 +548,9 @@ describe('Button', () => {
         <Button href="https://example.com/forum" target="_blank" rel="nofollow">
           Forum
         </Button>
+        <Button href="https://example.com/preview" target="preview">
+          Preview
+        </Button>
       </UiProvider>,
     );
     const link = screen.getByRole('link', { name: 'New report' });
@@ -560,6 +563,10 @@ describe('Button', () => {
     expect(link).toHaveAttribute('aria-keyshortcuts', 'Control+N');
     expect(link).not.toHaveAttribute('type');
     expect(link.querySelector('.ui-button__start-icon')).not.toBeNull();
+    expect(screen.getByRole('link', { name: 'Preview (opens in a new tab)' })).toHaveAttribute(
+      'rel',
+      'noopener noreferrer',
+    );
     expect(screen.getByRole('link', { name: 'Help (opens in a new tab)' })).toHaveAttribute(
       'rel',
       'noopener noreferrer',

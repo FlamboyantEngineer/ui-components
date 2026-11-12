@@ -186,6 +186,9 @@ describe('sanitizeHtml', () => {
     ).toBe(
       '<a href="/a" target="_blank" rel="nofollow noopener noreferrer">a</a><a href="/b" target="_self">b</a>',
     );
+    expect(clean('<a href="/c" target="preview">c</a><a href="/d" target="_BLANK">d</a>')).toBe(
+      '<a href="/c" target="preview" rel="noopener noreferrer">c</a><a href="/d" target="_BLANK" rel="noopener noreferrer">d</a>',
+    );
   });
 
   it('UIC-HTML-MARKUP-1.7 follows a custom policy', () => {

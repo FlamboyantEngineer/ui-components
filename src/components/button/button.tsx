@@ -12,6 +12,7 @@ import {
   ProgressBar,
 } from '../../primitives/index.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { isNewContextTarget } from '../../utils/merge-safe-rel.js';
 import { hasIcon, Icon, type IconSource, toIconProps } from '../icon/icon.js';
 import type { LinkUnderline } from '../link/link.js';
 import { Shortcut, useDetectedPlatform } from '../shortcut/shortcut.js';
@@ -224,7 +225,7 @@ function useNewTab(
 ) {
   const strings = useUiStrings();
   const target = props.target ?? (props.isExternal ? '_blank' : undefined);
-  const opensNewTab = props.href !== undefined && target === '_blank' && !isDisabled;
+  const opensNewTab = props.href !== undefined && isNewContextTarget(target) && !isDisabled;
   const iconName = opensNewTab ? `${name} ${strings.opensInNewTab}` : name;
   return {
     target,
