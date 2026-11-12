@@ -102,8 +102,14 @@ function createTextCache<V extends PdfViewport, C extends PdfTextContent>(
   return (pageIndex) => {
     const page = pages[pageIndex];
     if (!page) return Promise.reject(new RangeError(`No page ${pageIndex}`));
-    const content = cache.get(pageIndex) ?? page.getTextContent();
+    const cached = cache.get(pageIndex);
+    if (cached) return cached;
+    const content = page.getTextContent();
     cache.set(pageIndex, content);
+    // A failed request is forgotten, so the text layer and the search can ask again.
+    content.catch(() => {
+      if (cache.get(pageIndex) === content) cache.delete(pageIndex);
+    });
     return content;
   };
 }

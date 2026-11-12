@@ -13,7 +13,7 @@ Verification: `src/components/chat-sources/chat-sources.test.tsx`, `e2e/chat-sou
 
 ### UIC-CHAT-SOURCES-1.2 - Source details
 
-Each item shall show the source's `title` in `ui-chat-sources__title`: a [Link](LINK.md) to `url`, opening in a new tab when the URL is absolute `http` or `https`, or plain text without a URL. Then its site in `ui-chat-sources__site`, `siteName` or else the host of an absolute URL without `www.`, and its `snippet` in a `<p>` (`ui-chat-sources__snippet`). A part the source lacks is not rendered.
+Each item shall show the source's `title` in `ui-chat-sources__title`: a [Link](LINK.md) to `url`, opening in a new tab when the URL is absolute `http` or `https`, or plain text without a URL or with one that is not safe to open (`isSafeUrl`: relative or `http`, `https`, `mailto` or `tel`, as links from content are checked), since sources come from model output. Then its site in `ui-chat-sources__site`, `siteName` or else the host of an absolute URL without `www.`, and its `snippet` in a `<p>` (`ui-chat-sources__snippet`). A part the source lacks is not rendered.
 
 Implementation: `src/components/chat-sources/chat-source-summary.tsx`, `labs/reference/chat-sources.css`
 Verification: `src/components/chat-sources/chat-sources.test.tsx`, `e2e/chat-sources.spec.ts`
@@ -50,7 +50,7 @@ Verification: `src/components/chat-sources/chat-citation.test.tsx`, `e2e/chat-so
 
 ### UIC-CHAT-SOURCES-2.3 - Source without a URL
 
-For a source without a `url`, the trigger shall be a bare [Button](BUTTON.md) instead of a link, and pressing it (by pointer, touch or keyboard) opens the card at once.
+For a source without a `url`, or with one that is not safe to open ([UIC-CHAT-SOURCES-1.2](#uic-chat-sources-12---source-details)), the trigger shall be a bare [Button](BUTTON.md) instead of a link, and pressing it (by pointer, touch or keyboard) opens the card at once.
 
 Implementation: `src/components/chat-sources/chat-citation.tsx`
 Verification: `src/components/chat-sources/chat-citation.test.tsx`, `e2e/chat-sources.spec.ts`

@@ -2,7 +2,7 @@
 
 import { downloadBlob } from '../../utils/download.js';
 import { isUrl } from '../../utils/is-url.js';
-import { type PageBitmap, renderPageBitmap } from './page-bitmap.js';
+import { capCanvasPixels, type PageBitmap, renderPageBitmap } from './page-bitmap.js';
 import type { PdfSource, PdfTextContent, PdfViewport } from './pdf-engine.js';
 import type { LoadedPdf } from './use-pdf-document.js';
 
@@ -26,11 +26,17 @@ async function drawPrintedPage<V extends PdfViewport, C extends PdfTextContent>(
   }
   signal.throwIfAborted();
   const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve));
+  // The image holds the page now; an emptied canvas gives its pixels back at once.
+  canvas.width = 0;
+  canvas.height = 0;
   if (!blob) throw new Error('A printed page could not be encoded.');
   return blob;
 }
 
-/** Each page as an image at the print resolution, as the document itself sets it, in order. */
+/**
+ * Each page as an image at the print resolution, as the document itself sets it, in order, within
+ * the engine's pixel ceiling.
+ */
 async function* drawPrintedPages<V extends PdfViewport, C extends PdfTextContent>(
   loaded: LoadedPdf<V, C>,
   owner: Document,
@@ -39,8 +45,10 @@ async function* drawPrintedPages<V extends PdfViewport, C extends PdfTextContent
   for (const page of loaded.pages) {
     const viewport = page.getViewport({ scale: printScale });
     const canvas = owner.createElement('canvas');
-    canvas.width = Math.floor(viewport.width);
-    canvas.height = Math.floor(viewport.height);
+    // A very large page draws smaller, within the same pixel ceiling as the screen.
+    const pixels = capCanvasPixels(viewport.width, viewport.height);
+    canvas.width = pixels.width;
+    canvas.height = pixels.height;
     yield await drawPrintedPage({ loaded, page, viewport }, canvas, signal);
   }
 }

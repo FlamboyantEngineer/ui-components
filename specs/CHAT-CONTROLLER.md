@@ -132,9 +132,9 @@ Verification: `src/components/chat-controller/chat-controller.test.tsx`, `src/co
 
 ### UIC-CHAT-CONTROLLER-2.7 - Timing
 
-The controller shall time each reasoning part and tool call from its first event, and give that duration to the reducer for those the stream ends without `durationMs`.
+The controller shall time each reasoning part and tool call from its first event, and give that duration to the reducer for those the stream ends without `durationMs`. It reads the provider clock (`getNow` of [Provider](PROVIDER.md)) for these times and for the `createdAt` of the messages it adds, so a host clock dates them as it dates `RelativeTime`.
 
-Implementation: `src/components/chat-controller/chat-run.ts`
+Implementation: `src/components/chat-controller/chat-run.ts`, `src/components/chat-controller/chat-engine.ts`, `src/components/chat-controller/chat-controller.ts`
 Verification: `src/components/chat-controller/chat-controller.test.tsx`
 
 ## UIC-CHAT-CONTROLLER-3 - Reader responses

@@ -97,7 +97,7 @@ function dropPending(run: ChatRun) {
  * or a question is written at once, since the reply then waits for the reader.
  */
 function applyEvent(engine: ChatEngineContext, run: ChatRun, event: ChatStreamEvent) {
-  const now = Date.now();
+  const now = engine.getConfig().getNow().getTime();
   if (
     (event.type === 'reasoning-delta' || event.type === 'tool-call') &&
     !run.starts.has(event.id)
@@ -132,7 +132,7 @@ export function endRun(engine: ChatEngineContext, run: ChatRun, outcome: ChatRep
   if (!isComplete) run.controller.abort();
   const reason = run.controller.signal.reason ?? new DOMException('The reply ended.', 'AbortError');
   for (const waiter of run.waiters.values()) waiter.reject(reason);
-  const context = readContext(engine, run, Date.now());
+  const context = readContext(engine, run, engine.getConfig().getNow().getTime());
   updateMessage(engine, run.replyId, (message) => endChatReply(message, outcome, context));
   patchState(engine, { isPending: false });
   engine.onSettle({ replyId: run.replyId, isComplete, needsContinuation: run.needsContinuation });

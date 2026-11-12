@@ -8,7 +8,12 @@ import { Button } from '../button/button.js';
 import { HoverCard, HoverCardTrigger } from '../hover-card/hover-card.js';
 import { Link } from '../link/link.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
-import { type ChatSource, ChatSourceSummary, isExternalUrl } from './chat-source-summary.js';
+import {
+  type ChatSource,
+  ChatSourceSummary,
+  isExternalUrl,
+  toSafeSourceUrl,
+} from './chat-source-summary.js';
 
 /** The data of a citation, as a message part carries it. */
 export interface ChatCitationData {
@@ -25,12 +30,13 @@ const hooks = createHooks('chat-citation', ['marker', 'card', 'title', 'site', '
 
 /**
  * An inline numbered marker (`[1]`) for a source. It links to the source and previews it in a
- * `HoverCard` on hover, keyboard focus and long press; a source without a URL opens its card on
- * press instead.
+ * `HoverCard` on hover, keyboard focus and long press; a source without a URL, or with one that
+ * is not safe to open (`isSafeUrl`), opens its card on press instead.
  */
 export function ChatCitation({ ref, source, index, className, id, ...rest }: ChatCitationProps) {
   const strings = useUiStrings();
   const [isOpen, setOpen] = useState(false);
+  const href = toSafeSourceUrl(source.url);
   const rootProps = { ...hooks.root({ className, props: rest }), id };
   const content = (
     <>
@@ -42,13 +48,13 @@ export function ChatCitation({ ref, source, index, className, id, ...rest }: Cha
   );
   return (
     <HoverCardTrigger isOpen={isOpen} onOpenChange={setOpen}>
-      {source.url ? (
+      {href ? (
         <Link
           {...rootProps}
           // The root is this link or the button below, each typed as its own element.
           ref={ref as Ref<HTMLAnchorElement> | undefined}
-          href={source.url}
-          isExternal={isExternalUrl(source.url)}
+          href={href}
+          isExternal={isExternalUrl(href)}
           underline="hover"
         >
           {content}

@@ -3,6 +3,7 @@
 // What a list item and a citation's card show of a source: its title (a link when it has a URL),
 // its site and its snippet (specs/CHAT-SOURCES.md).
 
+import { isSafeUrl } from '../../utils/safe-url.js';
 import { Link } from '../link/link.js';
 
 /** A source an answer drew on, such as a web page or a document. */
@@ -35,6 +36,14 @@ export function isExternalUrl(url: string): boolean {
   return absoluteUrl.test(url);
 }
 
+/**
+ * A source's address when it is safe to open (`isSafeUrl`): sources come from model output, so an
+ * address with another scheme, such as `data:` or `file:`, is not linked.
+ */
+export function toSafeSourceUrl(url: string | undefined): string | undefined {
+  return url && isSafeUrl(url) ? url : undefined;
+}
+
 export function ChatSourceSummary({
   source,
   slotClass,
@@ -43,14 +52,11 @@ export function ChatSourceSummary({
   slotClass: (slot: SummarySlot) => string;
 }) {
   const site = source.siteName ?? readHost(source.url);
+  const href = toSafeSourceUrl(source.url);
   return (
     <>
-      {source.url ? (
-        <Link
-          className={slotClass('title')}
-          href={source.url}
-          isExternal={isExternalUrl(source.url)}
-        >
+      {href ? (
+        <Link className={slotClass('title')} href={href} isExternal={isExternalUrl(href)}>
           {source.title}
         </Link>
       ) : (

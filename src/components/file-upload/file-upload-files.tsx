@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useEffect, useMemo, useRef } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import { CloseGlyph, DragHandleGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
@@ -94,28 +94,22 @@ function getFileUploadStatus({ progress, error }: FileUploadItem): FileUploadSta
   return progress >= 100 ? 'complete' : 'uploading';
 }
 
-/** A temporary URL for an image file, revoked when the file changes or the row goes. */
+/**
+ * A temporary URL for an image file, created after commit and revoked when the file changes or the
+ * row goes. Creating it during render would leak one for every render React discards.
+ */
 function useImageUrl(file: File | undefined): string | undefined {
-  const url = useMemo(
-    () =>
-      file?.type.startsWith('image/') && typeof URL.createObjectURL === 'function'
-        ? URL.createObjectURL(file)
-        : undefined,
-    [file],
-  );
-  // Revoked a microtask after cleanup: a remount of the same URL (Strict Mode) cancels it.
-  const revoking = useRef<string | null>(null);
+  const [image, setImage] = useState<{ file: File; url: string } | null>(null);
   useEffect(() => {
-    if (url === undefined) return undefined;
-    if (revoking.current === url) revoking.current = null;
-    return () => {
-      revoking.current = url;
-      queueMicrotask(() => {
-        if (revoking.current === url) URL.revokeObjectURL(url);
-      });
-    };
-  }, [url]);
-  return url;
+    if (!file?.type.startsWith('image/') || typeof URL.createObjectURL !== 'function') {
+      return undefined;
+    }
+    const url = URL.createObjectURL(file);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- An object URL is a resource that only an effect can release, so it is made after commit.
+    setImage({ file, url });
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+  return image && image.file === file ? image.url : undefined;
 }
 
 /**
