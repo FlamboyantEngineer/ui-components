@@ -1,6 +1,6 @@
 import { defineStrings } from '../message-format.js';
 
-/** Strings of the `Chat` widget: its search, the reply and edit banners and the queue. */
+/** Strings of the `Chat` widget: its search, the reply and edit banners, the queue and sending. */
 interface ChatWidgetStrings {
   /** Names the button that opens the search within a conversation, and its find box. */
   chatSearch: string;
@@ -22,6 +22,14 @@ interface ChatWidgetStrings {
   chatRemoveQueued: (position: number) => string;
   /** The line above the composer while the host takes time to accept what the reader did. */
   chatProgress: (action: 'send' | 'queue' | 'steer' | 'save' | 'remove') => string;
+  /** Heads the reader's sending options in the composer's "+" menu. */
+  chatSendOptions: string;
+  /** Names the option that sends a message written during a reply at once instead of queuing it. */
+  chatSteerWhilePending: string;
+  /** Explains the option that steers during a reply. */
+  chatSteerWhilePendingNote: string;
+  /** Names the option that sends with Ctrl+Enter (Command+Enter on macOS), its chord after it. */
+  chatSendWith: string;
 }
 
 /** The module's text, with the message values each text function reads its arguments as. */

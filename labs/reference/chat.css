@@ -115,6 +115,38 @@
   display: none;
 }
 
+.ui-chat__queue-item[data-steering] {
+  background: var(--ref-selected);
+}
+
+/*
+ * What the chat waits for the host to accept, drawn as a message's delivery status: a small muted
+ * line with the clock (or the host's icon) before its text. Empty, it takes no room.
+ */
+.ui-chat__progress {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 3px;
+  padding-inline: 4px;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-xs);
+}
+
+.ui-chat__progress:empty {
+  display: none;
+}
+
+.ui-chat__progress-icon {
+  flex: none;
+  width: 14px;
+  height: 14px;
+}
+
+.ui-chat__progress-label {
+  color: inherit;
+}
+
 .ui-chat__queue-steer,
 .ui-chat__queue-edit,
 .ui-chat__queue-remove,

@@ -2,7 +2,7 @@
 
 // The composer's "+" menu: the host's categories of items, whose actions get the composer's helpers
 // (specs/MESSAGE-COMPOSER.md, UIC-MESSAGE-COMPOSER-5).
-import { type ReactElement, useRef } from 'react';
+import { type ReactElement, useLayoutEffect, useRef } from 'react';
 import { PlusGlyph } from '../../core/glyphs.js';
 import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
@@ -158,11 +158,18 @@ function useComposerHelpers(composer: ComposerControlsValue) {
 
 /**
  * The "+" button among the composer's controls and the menu it opens above the composer: the host's
- * sections of items, optionally led by a search field. Insertions take focus back to the input once
+ * sections of items, then the composer's own (`menuSections`), optionally led by a search field. Insertions take focus back to the input once
  * the menu has closed and given focus back to the button. The file chooser behind `attachFiles` is a
  * hidden file input, since the press that opens it is the host's menu item rather than a button.
  */
-export function MessageComposerMenuButton({
+export function MessageComposerMenuButton(props: MessageComposerMenuButtonProps) {
+  const { registerMenuButton } = useComposerControlsValue('MessageComposerMenuButton');
+  useLayoutEffect(registerMenuButton, [registerMenuButton]);
+  return <ComposerMenuButton {...props} />;
+}
+
+/** The "+" button and its menu, which the composer also adds itself for its own sections. */
+export function ComposerMenuButton({
   ref,
   sections,
   filterable,
@@ -170,7 +177,8 @@ export function MessageComposerMenuButton({
 }: MessageComposerMenuButtonProps) {
   const strings = useUiStrings();
   const composer = useComposerControlsValue('MessageComposerMenuButton');
-  const { rootRef, isDisabled, onAttach } = composer;
+  const { rootRef, isDisabled, onAttach, menuSections } = composer;
+  const allSections = menuSections.length ? [...sections, ...menuSections] : sections;
   const { helpers, returnFocusRef, chooserRef } = useComposerHelpers(composer);
   const rootRefs = useMergedRefs(returnFocusRef, ref);
   return (
@@ -189,7 +197,7 @@ export function MessageComposerMenuButton({
         {/* Above the whole composer, as its completion list opens, rather than over its input. */}
         <MenuOverlay placement="top start" triggerRef={rootRef}>
           <Menu className={hooks.slotClass('menu')} filterable={filterable}>
-            {sections.map((section) => (
+            {allSections.map((section) => (
               <MenuSection key={section.id} id={section.id} title={section.title}>
                 {section.items.map((item) => renderItem(item, helpers))}
               </MenuSection>

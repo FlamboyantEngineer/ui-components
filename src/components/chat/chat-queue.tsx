@@ -42,6 +42,18 @@ function useSteering(options: ChatQueueProps['options'], track: ChatProgress['tr
   return { steeringId, steer };
 }
 
+/** Tells the host which queued message the composer edits, and when the edit ends. */
+function useQueuedEditReport(
+  editingId: string | undefined,
+  onQueuedEditChange: ((id: string | undefined) => void) | undefined,
+) {
+  useEffect(() => {
+    if (editingId === undefined || !onQueuedEditChange) return undefined;
+    onQueuedEditChange(editingId);
+    return () => onQueuedEditChange(undefined);
+  }, [editingId, onQueuedEditChange]);
+}
+
 /**
  * The messages waiting for the running reply to end, in the order they will go out, each with its
  * text and files, Steer (send it now), Edit (in the composer) and Remove. Focus stays in the list as
@@ -54,11 +66,7 @@ export function ChatQueue({ options, state, track }: ChatQueueProps) {
   const editingId = state.editing?.kind === 'queued' ? state.editing.id : undefined;
   const { cancelEdit, composerRef } = state;
   const strings = useUiStrings();
-  useEffect(() => {
-    if (editingId === undefined || !onQueuedEditChange) return undefined;
-    onQueuedEditChange(editingId);
-    return () => onQueuedEditChange(undefined);
-  }, [editingId, onQueuedEditChange]);
+  useQueuedEditReport(editingId, onQueuedEditChange);
   const labelId = useId();
   const removal = useRemovalFocus(queue, composerRef);
   const { steeringId, steer } = useSteering(options, track);

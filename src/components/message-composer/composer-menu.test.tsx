@@ -307,4 +307,38 @@ describe('MessageComposer menu', () => {
     await user.click(trigger());
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
+
+  it("UIC-MESSAGE-COMPOSER-5.6 adds the composer's own sections after the button's, or a button of its own", async () => {
+    const onSelectedChange = vi.fn();
+    const own = [
+      {
+        id: 'options',
+        title: 'Options',
+        items: [{ id: 'quiet', label: 'Quiet', isSelected: false, onSelectedChange }],
+      },
+    ];
+    const user = userEvent.setup();
+    const { rerender } = render(<MessageComposer onSubmit={vi.fn()} menuSections={own} />);
+    const start = document.querySelector('.ui-message-composer__start') as HTMLElement;
+    expect(start.firstElementChild).toBe(trigger());
+    await user.click(trigger());
+    const menu = await screen.findByRole('menu', { name: 'Add and more' });
+    expect(within(menu).getAllByRole('group')).toHaveLength(1);
+    await user.click(within(menu).getByRole('menuitemcheckbox', { name: 'Quiet' }));
+    expect(onSelectedChange).toHaveBeenCalledWith(true);
+    await user.keyboard('{Escape}');
+    rerender(
+      <MessageComposer onSubmit={vi.fn()} menuSections={own} startControls={createMenu([])} />,
+    );
+    expect(screen.getAllByRole('button', { name: 'Add and more' })).toHaveLength(1);
+    await user.click(trigger());
+    const joined = await screen.findByRole('menu', { name: 'Add and more' });
+    const titles = within(joined)
+      .getAllByRole('group')
+      .map((group) => group.getAttribute('aria-labelledby'))
+      .map((id) => (id ? document.getElementById(id)?.textContent : null));
+    expect(titles).toEqual(['Add', 'Sources', 'Options']);
+    rerender(<MessageComposer onSubmit={vi.fn()} />);
+    expect(screen.queryByRole('button', { name: 'Add and more' })).not.toBeInTheDocument();
+  });
 });

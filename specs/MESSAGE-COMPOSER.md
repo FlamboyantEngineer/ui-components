@@ -342,6 +342,13 @@ With `filterable` (off by default), the menu shall lead with a search field ([UI
 Implementation: `src/components/message-composer/composer-menu.tsx`
 Verification: `src/components/message-composer/composer-menu.test.tsx`, `e2e/message-composer.spec.ts`
 
+### UIC-MESSAGE-COMPOSER-5.6 - The composer's own sections
+
+`menuSections` shall add sections to every "+" menu button among the composer's controls, after the button's own `sections`, such as the sending options a chat offers. When `menuSections` holds a section and no `MessageComposerMenuButton` is among the controls, the composer adds a "+" button of its own, holding only those sections, first in the start group of its row.
+
+Implementation: `src/components/message-composer/composer-menu.tsx`, `src/components/message-composer/composer-frame.tsx`, `src/components/message-composer/composer-controls.ts`
+Verification: `src/components/message-composer/composer-menu.test.tsx`
+
 ## UIC-MESSAGE-COMPOSER-6 - Controls
 
 ### UIC-MESSAGE-COMPOSER-6.1 - Entry point

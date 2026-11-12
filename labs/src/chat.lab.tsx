@@ -11,6 +11,7 @@ import { ChatGroupCases } from './chat-group-cases.js';
 import { ChatHostCases } from './chat-host-cases.js';
 import { ChatInlineOptionsCases } from './chat-inline-options-cases.js';
 import { ChatPeopleCases } from './chat-people-cases.js';
+import { ChatProgressCases } from './chat-progress-cases.js';
 import { ChatQueueCases } from './chat-queue-cases.js';
 import { ChatReferenceCases } from './chat-reference-cases.js';
 import { ana, ben, mia, planner } from './chat-samples.js';
@@ -56,6 +57,7 @@ mountLab(
     <ChatAssistantCases />
     <ChatTypingWhileStreamingCases />
     <ChatQueueCases />
+    <ChatProgressCases />
     <ChatThinkingCases />
     <ChatCaretCases />
     <ChatThinkingStyles />

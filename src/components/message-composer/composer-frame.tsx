@@ -6,10 +6,11 @@ import {
   ComposerControlsContext,
   useCompactRow,
   useComposerControls,
-  useSendButtonRegistry,
+  useControlRegistry,
 } from './composer-controls.js';
 import { composerHooks as hooks } from './composer-hooks.js';
 import type { ComposerKeys } from './composer-keys.js';
+import { ComposerMenuButton } from './composer-menu.js';
 import type { MessageComposerToken } from './composer-message.js';
 import { ComposerSendControl } from './composer-tools.js';
 import type { MessageComposerSharedProps } from './message-composer.js';
@@ -40,7 +41,8 @@ interface ComposerFrameProps {
 
 /**
  * The composer around its input: the banner, the attachments, the input, then the row of the host's
- * controls at its start and end, with the send button last unless the host placed it. Files dragged
+ * controls at its start and end, with the send button last unless the host placed it, and a "+"
+ * menu button first when there are menu sections and the host placed none. Files dragged
  * onto it, pasted or chosen go to `onAttach`.
  */
 export function ComposerFrame({ props, rootRef, model, children }: ComposerFrameProps) {
@@ -51,15 +53,18 @@ export function ComposerFrame({ props, rootRef, model, children }: ComposerFrame
   const startRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const isCompact = useCompactRow(footerRef, [startRef, endRef]);
-  const { hasHostSendButton, registerSendButton } = useSendButtonRegistry();
+  const sendButtons = useControlRegistry();
+  const menuButtons = useControlRegistry();
   const controls = useComposerControls({
     props,
     model,
     rootRef,
     isCompact,
     isDisabled,
-    registerSendButton,
+    registerSendButton: sendButtons.register,
+    registerMenuButton: menuButtons.register,
   });
+  const addsMenuButton = !menuButtons.hasHostControl && Boolean(props.menuSections?.length);
   const data = {
     pending: Boolean(props.isPending),
     disabled: isDisabled,
@@ -76,11 +81,12 @@ export function ComposerFrame({ props, rootRef, model, children }: ComposerFrame
       <ComposerControlsContext value={controls}>
         <div {...hooks.slot('footer')} ref={footerRef}>
           <div {...hooks.slot('start')} ref={startRef}>
+            {addsMenuButton ? <ComposerMenuButton sections={[]} /> : null}
             {startControls}
           </div>
           <div {...hooks.slot('end')} ref={endRef}>
             {endControls}
-            {hasHostSendButton ? null : <ComposerSendControl composer={controls} />}
+            {sendButtons.hasHostControl ? null : <ComposerSendControl composer={controls} />}
           </div>
         </div>
       </ComposerControlsContext>

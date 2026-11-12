@@ -1,13 +1,13 @@
 'use client';
 
-import { type ReactNode, useCallback, useState } from 'react';
+import { type ReactNode, useCallback, useRef, useState } from 'react';
 import { ClockGlyph } from '../../core/glyphs.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { isThenable } from '../../utils/is-thenable.js';
 import { useActiveAfter } from '../../utils/use-delayed-flag.js';
 import { useLatest } from '../../utils/use-latest.js';
-import { composerSubmittingDelay } from '../message-composer/composer-controls.js';
+import { composerSubmittingDelay } from '../message-composer/message-composer.js';
 import { Spinner } from '../progress-bar/progress-bar.js';
 import { chatHooks as hooks } from './chat-hooks.js';
 
@@ -42,7 +42,7 @@ export interface ChatProgress {
  */
 export function useChatProgress(conversationId: string | undefined): ChatProgress {
   const [waiting, setWaiting] = useState<readonly Waiting[]>([]);
-  const [nextKey] = useState(() => ({ current: 0 }));
+  const nextKey = useRef(0);
   const latestConversation = useLatest(conversationId);
   const track = useCallback(
     <T,>(action: ChatProgressAction, result: T): T => {

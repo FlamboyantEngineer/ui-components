@@ -3,6 +3,7 @@ import { isSameMessage } from '../message-composer/composer-message.js';
 import type { RichMessageComposerProps } from '../message-composer/rich/rich-message-composer.js';
 import type { ChatComposerProps } from './chat-composer.js';
 import { toDisplayTokens } from './chat-model.js';
+import type { ChatProgress, ChatProgressAction } from './chat-progress.js';
 
 /** A message as the composer sends it: Markdown text and its tokens. */
 type ComposerMessage = Parameters<NonNullable<RichMessageComposerProps['onSubmit']>>[0];
@@ -64,4 +65,38 @@ export function sendMessageNow(
   { text, tokens }: ComposerMessage,
 ): void | Promise<unknown> {
   return options.onSendNow?.(text, toDisplayTokens(tokens));
+}
+
+/**
+ * Whether sending the composer's message steers: a new message (not an edit or a reply) written
+ * during a reply while the reader steers automatically.
+ */
+function steersNow({ options, state }: ChatComposerProps, steers: boolean) {
+  return steers && Boolean(options.isPending) && !state.editing && state.replyingId === null;
+}
+
+/** What sending the composer's message does: save an edit, queue it while a reply runs, or send it. */
+function toSubmitAction({ options, state }: ChatComposerProps): ChatProgressAction {
+  if (state.editing) return 'save';
+  return options.isPending && options.onQueueChange ? 'queue' : 'send';
+}
+
+interface SendContext {
+  /** The reader steers during a reply instead of queuing. */
+  steers: boolean;
+  track: ChatProgress['track'];
+  readShown: () => ComposerMessage | undefined;
+}
+
+/**
+ * Sends what the composer holds: at once ahead of the queue when the reader steers during a reply,
+ * else as `submitMessage` does, showing the host's answer under way while it takes time.
+ */
+export function sendFromComposer(
+  props: ChatComposerProps,
+  message: ComposerMessage,
+  { steers, track, readShown }: SendContext,
+): void | Promise<unknown> {
+  if (steersNow(props, steers)) return track('steer', sendMessageNow(props, message));
+  return track(toSubmitAction(props), submitMessage(props, message, readShown));
 }

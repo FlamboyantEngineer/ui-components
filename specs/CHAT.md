@@ -96,14 +96,14 @@ Verification: `src/components/chat/chat-commands.test.ts`, `src/components/chat/
 
 Reply shall move focus to the composer and show above its input a banner (`ui-chat__banner`) that reads the provider string `chatReplyingTo` (`ui-chat__banner-label`) and quotes the message (`ChatQuote`, its author and an excerpt of its text), with a Cancel reply button (`ui-chat__banner-cancel`, the `close` glyph, the `chatCancelReply` string); the banner describes the input. Cancel reply, or Escape in the composer, ends the reply; an Escape that belongs to an input method composition (`isComposing`, or key code 229) is the input method's and keeps the reply. The Escape that ends a reply is marked handled, so a Modal or Drawer around the chat stays open until the next Escape. Sending while replying calls `onReply` with the replied message's id, the text and its tokens instead of `onSend`, and the reply ends once the host accepts it ([UIC-CHAT-3.7](#uic-chat-37---accepting-a-message)). A reply whose message leaves `messages` or is deleted (`isDeleted`) ends at once: the banner goes, the composer keeps its text and sends it through `onSend`, and the message coming back does not bring the reply back. Reply works the same in an assistant chat. A message whose `replyTo` names a loaded message shows its quote; pressing the quote highlights that message ([UIC-CHAT-TRANSCRIPT-4.3](CHAT-TRANSCRIPT.md)) and moves focus to it.
 
-Implementation: `src/components/chat/chat-composer.tsx`, `src/components/chat/chat-message-view.tsx`, `src/components/chat/use-chat-state.ts`
+Implementation: `src/components/chat/chat-composer.tsx`, `src/components/chat/chat-banner.tsx`, `src/components/chat/chat-message-view.tsx`, `src/components/chat/use-chat-state.ts`
 Verification: `src/components/chat/chat-composer.test.tsx`, `e2e/chat.spec.ts`, `src/components/chat/chat-reply-target.test.tsx`
 
 ### UIC-CHAT-2.5 - Edit
 
 Edit, and Up in the empty composer of a chat between people with `onEdit` (on the reader's last message that has text), shall put the composer in edit mode ([UIC-MESSAGE-COMPOSER-3.3](MESSAGE-COMPOSER.md#uic-message-composer-33---edit-mode)) with the message's first text part and its tokens, move focus to it, and show the banner reading the provider string `chatEditingMessage`. Save calls `onEdit` with the message's id, the text and its tokens; Cancel and Escape leave edit mode. The edit holds while it stays the same session and target (the conversation, whether it edits a message or a queued one, and its id), whatever else changes in the message, as when a reaction arrives or the host applies a save the reader goes on editing after; Edit on another message, or on a queued message with the same id, starts again from that message's words even when they are the same, so an unsaved edit is never saved to another message.
 
-Implementation: `src/components/chat/chat-composer.tsx`, `src/components/chat/use-chat-state.ts`
+Implementation: `src/components/chat/chat-composer.tsx`, `src/components/chat/chat-banner.tsx`, `src/components/chat/use-chat-state.ts`
 Verification: `src/components/chat/chat-composer.test.tsx`, `e2e/chat.spec.ts`, `src/components/chat/chat-edit-target.test.tsx`
 
 ### UIC-CHAT-2.6 - Delete
@@ -208,12 +208,23 @@ Verification: `src/components/chat/chat-composer-handle.test.tsx`
 
 ### UIC-CHAT-3.13 - Waiting for the host
 
-While the composer is shown, `Chat` shall render, between the queue and the composer, a `ui-chat__progress` polite live region (`role="status"`). While a promise from `onSend`, `onSendNow`, `onReply`, `onEdit`, `onQueueChange` or `onSteer` has been pending for 400 ms, it shows what the chat waits for: an icon (`ui-chat__progress-icon`) and the provider string `chatProgress` (`ui-chat__progress-label`) for the action, which it publishes as `data-action`: `send` ("Sending…", also a reply), `queue` ("Queuing…", a message sent while a reply runs with `onQueueChange`), `steer` ("Steering…"), `save` ("Saving…", an edit of a message or a queued one) or `remove` ("Removing…"). It is empty otherwise, so a host that answers within 400 ms never shows it, and the reader hears the line once as it appears. The icon is the clock glyph a message waiting for delivery shows ([UIC-CHAT-TRANSCRIPT-2.8](CHAT-TRANSCRIPT.md#uic-chat-transcript-28---delivery)), unless `progressIcon` replaces it: `true` shows the library's `Spinner`, an element shows itself; either is decorative. When several wait, the line shows the latest; a wait belongs to the conversation it started in, so switching `conversationId` shows only the shown conversation's waits. Nothing can be cancelled: Stop still stops the running reply. The composer's own action button shows itself busy after the same delay ([UIC-MESSAGE-COMPOSER-3.9](MESSAGE-COMPOSER.md#uic-message-composer-39---accepting-a-message)), as do the queue's Steer and Remove buttons ([UIC-CHAT-3.4](#uic-chat-34---queue-of-follow-ups)).
+While the composer is shown, `Chat` shall render, between the queue and the composer, a `ui-chat__progress` polite live region (`role="status"`). While a promise from `onSend`, `onSendNow`, `onReply`, `onEdit`, `onQueueChange` or `onSteer` has been pending for 400 ms, it shows what the chat waits for: an icon (`ui-chat__progress-icon`) and the provider string `chatProgress` (`ui-chat__progress-label`) for the action, which it publishes as `data-action`: `send` ("Sending…", also a reply), `queue` ("Queuing…", a message sent while a reply runs with `onQueueChange`), `steer` ("Steering…", `onSteer`, `onSendNow` and a message that steers, [UIC-CHAT-3.14](#uic-chat-314---sending-options)), `save` ("Saving…", an edit of a message or a queued one) or `remove` ("Removing…"). It is empty otherwise, so a host that answers within 400 ms never shows it, and the reader hears the line once as it appears. The icon is the clock glyph a message waiting for delivery shows ([UIC-CHAT-TRANSCRIPT-2.8](CHAT-TRANSCRIPT.md#uic-chat-transcript-28---delivery)), unless `progressIcon` replaces it: `true` shows the library's `Spinner`, an element shows itself; either is decorative. When several wait, the line shows the latest; a wait belongs to the conversation it started in, so switching `conversationId` shows only the shown conversation's waits. Nothing can be cancelled: Stop still stops the running reply. The composer's own action button shows itself busy after the same delay ([UIC-MESSAGE-COMPOSER-3.9](MESSAGE-COMPOSER.md#uic-message-composer-39---accepting-a-message)), as do the queue's Steer and Remove buttons ([UIC-CHAT-3.4](#uic-chat-34---queue-of-follow-ups)).
 
 A host that queues a message sent while a reply runs (`onSend` while `isPending`, with `onQueueChange`) adds it to `queue`, not to `messages`, so it never shows in the transcript before it goes out.
 
 Implementation: `src/components/chat/chat-progress.tsx`, `src/components/chat/chat-composer.tsx`, `src/components/chat/chat-queue.tsx`, `src/core/strings/chat-widget.ts`, `labs/reference/chat.css`
-Verification: `src/components/chat/chat-progress.test.tsx`, `e2e/chat.spec.ts`
+Verification: `src/components/chat/chat-progress.test.tsx`, `e2e/chat-progress.spec.ts`
+
+### UIC-CHAT-3.14 - Sending options
+
+Two options, each off by default, shall govern how the reader sends. Steering during a reply (`steersWhilePending`): a new message sent while a reply runs (`isPending`), with Enter, Ctrl+Enter or Send, goes through `onSendNow`, which stops the reply and sends it ahead of the queue ([UIC-CHAT-3.4](#uic-chat-34---queue-of-follow-ups)), instead of through `onSend` to be queued; it settles as `onSend` does and its wait reads "Steering…" ([UIC-CHAT-3.13](#uic-chat-313---waiting-for-the-host)). An edit, a reply and a message sent while no reply runs go as before, and without `onSendNow` and `onQueueChange` the option does nothing. Sending with a modifier (`sendsWithModifier`): the composer sends, and queues, with Ctrl+Enter (Command+Enter on macOS) only, overriding the `send` and `queue` chords of `shortcuts`, and Enter breaks the line; the send button's tooltip shows the chord.
+
+Each option is the host's while it passes its value (`steersWhilePending`, `sendsWithModifier`); otherwise the chat holds it, starting from `defaultSteersWhilePending` or `defaultSendsWithModifier`, and keeps the reader's choice in the provider's storage under `chat-steers-while-pending` and `chat-sends-with-modifier`, for every conversation. A change calls `onSteersWhilePendingChange` or `onSendsWithModifierChange` either way.
+
+With `showSendOptions` (off by default), the composer's "+" menu shall end with a section headed by the provider string `chatSendOptions` ("Sending") holding the options as toggles ([UIC-MESSAGE-COMPOSER-5.4](MESSAGE-COMPOSER.md#uic-message-composer-54---toggles)): `chatSteerWhilePending` ("Steer automatically", with the note `chatSteerWhilePendingNote`), offered only with `onSendNow` and `onQueueChange`, and `chatSendWith` ("Send with") followed by the Ctrl+Enter chord. The section joins the host's own "+" menu button among the composer's controls, after its sections, or a "+" button the composer adds at the start of its row when the host placed none ([UIC-MESSAGE-COMPOSER-5.6](MESSAGE-COMPOSER.md#uic-message-composer-56---the-composers-own-sections)).
+
+Implementation: `src/components/chat/chat-send-options.ts`, `src/components/chat/chat-composer.tsx`, `src/core/strings/chat-widget.ts`
+Verification: `src/components/chat/chat-send-options.test.tsx`, `e2e/chat-progress.spec.ts`
 
 ## UIC-CHAT-4 - Activity and receipts
 
@@ -272,37 +283,37 @@ Verification: `src/components/chat/chat.test.tsx`
 
 ## Hooks
 
-| Hook                         | Kind  | Values | Description                                                                       |
-| ---------------------------- | ----- | ------ | --------------------------------------------------------------------------------- |
-| `ui-chat`                    | root  |        | The conversation.                                                                 |
-| `ui-chat__search-toggle`     | slot  |        | The header's search button (also `ui-button`).                                    |
-| `ui-chat__search`            | slot  |        | The search bar under the header (also `ui-find-bar`).                             |
-| `ui-chat__transcript`        | slot  |        | The transcript (also `ui-chat-transcript`).                                       |
-| `ui-chat__typing`            | slot  |        | Who is typing (also `ui-chat-typing-indicator`).                                  |
-| `ui-chat__status`            | slot  |        | In a reply: what the assistant is thinking or doing (also `ui-chat-status-line`). |
-| `ui-chat__queue`             | slot  |        | The queue of follow-ups above the composer.                                       |
-| `ui-chat__queue-label`       | slot  |        | The queue's label, with its count.                                                |
-| `ui-chat__queue-list`        | slot  |        | The ordered list of queued messages.                                              |
-| `ui-chat__queue-item`        | slot  |        | One queued message.                                                               |
-| `ui-chat__queue-text`        | slot  |        | A queued message's text.                                                          |
-| `ui-chat__queue-attachments` | slot  |        | A queued message's files (also `ui-chat-attachment-list`).                        |
-| `ui-chat__queue-steer`       | slot  |        | Send a queued message into the conversation now (also `ui-button`).               |
-| `ui-chat__queue-edit`        | slot  |        | Edit a queued message (also `ui-button`).                                         |
-| `ui-chat__queue-remove`      | slot  |        | Remove a queued message (also `ui-button`).                                       |
-| `ui-chat__progress`          | slot  |        | What the chat waits for the host to accept, a polite live region.                 |
-| `ui-chat__progress-icon`     | slot  |        | The progress line's clock, spinner or host icon.                                  |
-| `ui-chat__progress-label`    | slot  |        | The progress line's text, such as "Sending…".                                     |
-| `ui-chat__composer`          | slot  |        | The composer (also `ui-message-composer`).                                        |
-| `ui-chat__disclaimer`        | slot  |        | The caller's disclaimer under the composer.                                       |
-| `ui-chat__banner`            | slot  |        | The reply or edit banner's text, inside the composer's banner.                    |
-| `ui-chat__banner-label`      | slot  |        | What the banner is about: replying, or editing.                                   |
-| `ui-chat__banner-cancel`     | slot  |        | Cancel reply (also `ui-button`).                                                  |
-| `data-editing`               | state | `true` | On a queued message the composer edits.                                           |
-| `data-steering`              | state | `true` | On a queued message whose steer the host has not accepted yet.                    |
-| `data-action`                | state | `send`, `queue`, `steer`, `save`, `remove` | On the progress line while it shows: what it waits for. |
-| `ui-chat-header`             | root  |        | The header.                                                                       |
-| `ui-chat-header__avatar`     | slot  |        | The participants' avatar or avatar group.                                         |
-| `ui-chat-header__text`       | slot  |        | The title and the status line.                                                    |
-| `ui-chat-header__title`      | slot  |        | The title, a heading.                                                             |
-| `ui-chat-header__status`     | slot  |        | Who is typing, or what the assistant is doing.                                    |
-| `ui-chat-header__actions`    | slot  |        | The search button and the host's controls.                                        |
+| Hook                         | Kind  | Values                                     | Description                                                                       |
+| ---------------------------- | ----- | ------------------------------------------ | --------------------------------------------------------------------------------- |
+| `ui-chat`                    | root  |                                            | The conversation.                                                                 |
+| `ui-chat__search-toggle`     | slot  |                                            | The header's search button (also `ui-button`).                                    |
+| `ui-chat__search`            | slot  |                                            | The search bar under the header (also `ui-find-bar`).                             |
+| `ui-chat__transcript`        | slot  |                                            | The transcript (also `ui-chat-transcript`).                                       |
+| `ui-chat__typing`            | slot  |                                            | Who is typing (also `ui-chat-typing-indicator`).                                  |
+| `ui-chat__status`            | slot  |                                            | In a reply: what the assistant is thinking or doing (also `ui-chat-status-line`). |
+| `ui-chat__queue`             | slot  |                                            | The queue of follow-ups above the composer.                                       |
+| `ui-chat__queue-label`       | slot  |                                            | The queue's label, with its count.                                                |
+| `ui-chat__queue-list`        | slot  |                                            | The ordered list of queued messages.                                              |
+| `ui-chat__queue-item`        | slot  |                                            | One queued message.                                                               |
+| `ui-chat__queue-text`        | slot  |                                            | A queued message's text.                                                          |
+| `ui-chat__queue-attachments` | slot  |                                            | A queued message's files (also `ui-chat-attachment-list`).                        |
+| `ui-chat__queue-steer`       | slot  |                                            | Send a queued message into the conversation now (also `ui-button`).               |
+| `ui-chat__queue-edit`        | slot  |                                            | Edit a queued message (also `ui-button`).                                         |
+| `ui-chat__queue-remove`      | slot  |                                            | Remove a queued message (also `ui-button`).                                       |
+| `ui-chat__progress`          | slot  |                                            | What the chat waits for the host to accept, a polite live region.                 |
+| `ui-chat__progress-icon`     | slot  |                                            | The progress line's clock, spinner or host icon.                                  |
+| `ui-chat__progress-label`    | slot  |                                            | The progress line's text, such as "Sending…".                                     |
+| `ui-chat__composer`          | slot  |                                            | The composer (also `ui-message-composer`).                                        |
+| `ui-chat__disclaimer`        | slot  |                                            | The caller's disclaimer under the composer.                                       |
+| `ui-chat__banner`            | slot  |                                            | The reply or edit banner's text, inside the composer's banner.                    |
+| `ui-chat__banner-label`      | slot  |                                            | What the banner is about: replying, or editing.                                   |
+| `ui-chat__banner-cancel`     | slot  |                                            | Cancel reply (also `ui-button`).                                                  |
+| `data-editing`               | state | `true`                                     | On a queued message the composer edits.                                           |
+| `data-steering`              | state | `true`                                     | On a queued message whose steer the host has not accepted yet.                    |
+| `data-action`                | state | `send`, `queue`, `steer`, `save`, `remove` | On the progress line while it shows: what it waits for.                           |
+| `ui-chat-header`             | root  |                                            | The header.                                                                       |
+| `ui-chat-header__avatar`     | slot  |                                            | The participants' avatar or avatar group.                                         |
+| `ui-chat-header__text`       | slot  |                                            | The title and the status line.                                                    |
+| `ui-chat-header__title`      | slot  |                                            | The title, a heading.                                                             |
+| `ui-chat-header__status`     | slot  |                                            | Who is typing, or what the assistant is doing.                                    |
+| `ui-chat-header__actions`    | slot  |                                            | The search button and the host's controls.                                        |

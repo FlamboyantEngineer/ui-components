@@ -33,7 +33,7 @@ const action = () => document.querySelector('.ui-message-composer__action') as H
 function setup(props: Partial<ChatProps>) {
   const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
   const view = renderChat(props);
-  return { user, ...view };
+  return { ...view, user };
 }
 
 /** Lets the host's wait pass the chat's delay. */
@@ -179,7 +179,7 @@ describe('Chat progress', () => {
     await settle(sending.resolve);
   });
 
-  it("UIC-CHAT-3.13 keeps a wait to its conversation", async () => {
+  it('UIC-CHAT-3.13 keeps a wait to its conversation', async () => {
     const sending = deferred();
     const onSend = () => sending.promise;
     const { user, rerenderWith } = setup({ conversationId: 'a', onSend });
@@ -193,5 +193,25 @@ describe('Chat progress', () => {
     wait(400);
     expect(line()).toHaveTextContent('Sending…');
     await settle(sending.resolve);
+  });
+
+  it("UIC-CHAT-3.4 UIC-CHAT-3.13 holds a queued message's edit until the host accepts it, reading Saving", async () => {
+    const saving = deferred();
+    const onQueueChange = vi.fn(() => saving.promise);
+    const { user } = setup({ queue: [{ id: 'q1', text: 'First' }], onQueueChange });
+    await user.click(screen.getByRole('button', { name: 'Edit queued message 1' }));
+    await user.keyboard(' draft');
+    await user.keyboard('{Enter}');
+    expect(onQueueChange).toHaveBeenCalledWith([
+      expect.objectContaining({ id: 'q1', text: 'First draft' }),
+    ]);
+    wait(400);
+    expect(line()).toHaveTextContent('Saving…');
+    expect(document.querySelector('.ui-chat__banner')).toHaveTextContent(
+      'Editing a queued message',
+    );
+    await settle(saving.resolve);
+    expect(document.querySelector('.ui-chat__banner')).toBeNull();
+    expect(line()).toBeEmptyDOMElement();
   });
 });
