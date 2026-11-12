@@ -10,8 +10,8 @@ const kinds = ['person', 'group', 'assistant'] as const;
 const rowStates = ['read', 'unread', 'muted', 'muted-unread'] as const;
 const listStates = ['loading', 'empty', 'custom-empty', 'selected'] as const;
 
-/** A conversation's own menu, drawn in its row: mark as read and mute. */
-function RowMenu({
+/** A conversation's commands: mark as read and mute. */
+function ConversationMenu({
   conversation,
   onChange,
 }: {
@@ -19,19 +19,29 @@ function RowMenu({
   onChange: (change: Partial<ChatConversation>) => void;
 }) {
   return (
+    <Menu
+      onAction={(key) =>
+        onChange(key === 'read' ? { unreadCount: 0 } : { isMuted: !conversation.isMuted })
+      }
+    >
+      <MenuItem id="read" isDisabled={!conversation.unreadCount}>
+        Mark as read
+      </MenuItem>
+      <MenuItem id="mute">{conversation.isMuted ? 'Unmute' : 'Mute'}</MenuItem>
+    </Menu>
+  );
+}
+
+/** A conversation's own menu, drawn in its row. */
+function RowMenu(props: {
+  conversation: ChatConversation;
+  onChange: (change: Partial<ChatConversation>) => void;
+}) {
+  return (
     <MenuTrigger>
-      <Button icon={MoreGlyph} label={`More for ${conversation.title}`} size="sm" />
+      <Button icon={MoreGlyph} label={`More for ${props.conversation.title}`} size="sm" />
       <MenuPopover>
-        <Menu
-          onAction={(key) =>
-            onChange(key === 'read' ? { unreadCount: 0 } : { isMuted: !conversation.isMuted })
-          }
-        >
-          <MenuItem id="read" isDisabled={!conversation.unreadCount}>
-            Mark as read
-          </MenuItem>
-          <MenuItem id="mute">{conversation.isMuted ? 'Unmute' : 'Mute'}</MenuItem>
-        </Menu>
+        <ConversationMenu {...props} />
       </MenuPopover>
     </MenuTrigger>
   );
@@ -66,6 +76,12 @@ function InboxDemo() {
           getNow={getNow}
           renderActions={(conversation) => (
             <RowMenu
+              conversation={conversation}
+              onChange={(change) => update(conversation.id, change)}
+            />
+          )}
+          renderContextMenu={(conversation) => (
+            <ConversationMenu
               conversation={conversation}
               onChange={(change) => update(conversation.id, change)}
             />
@@ -154,7 +170,7 @@ mountLab(
   <>
     <LabSection
       title="Conversations"
-      description="Forty conversations, one-to-one with presence, groups, an assistant, unread and muted. Search narrows them by title and last message; each row's menu marks it read or mutes it; New chat starts one. Arrow keys move between rows, Left and Right into a row's menu, Enter or Space opens a conversation, or on the menu button opens the menu, which returns focus to its button as it closes. The clock is fixed at 20 April 2026, 10:30."
+      description="Forty conversations, one-to-one with presence, groups, an assistant, unread and muted. Search narrows them by title and last message; each row's menu, and its context menu (a secondary click, a long touch, the Context Menu key or Shift+F10), marks it read or mutes it, and focus returns to the row; New chat starts one. Arrow keys move between rows, Left and Right into a row's menu, Enter or Space opens a conversation, or on the menu button opens the menu, which returns focus to its button as it closes. The clock is fixed at 20 April 2026, 10:30."
     >
       <InboxDemo />
     </LabSection>

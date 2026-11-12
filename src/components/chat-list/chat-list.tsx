@@ -1,18 +1,25 @@
 'use client';
 
-import { type ReactNode, useState } from 'react';
+import { type KeyboardEvent, type ReactNode, useEffect, useState } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { PlusGlyph } from '../../core/glyphs.js';
 import type { BaseProps, RefProps, Selection } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { GridList, useFilter } from '../../primitives/index.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import type { AttributionProps } from '../attribution/attribution.js';
 import { Button } from '../button/button.js';
+import {
+  ContextMenu,
+  useMenuController,
+  useMenuControllerState,
+} from '../context-menu/context-menu.js';
 import { EmptyState } from '../empty-state/empty-state.js';
 import { SearchField } from '../search-field/search-field.js';
 import { Skeleton, SkeletonText } from '../skeleton/skeleton.js';
 import { TextMatchProvider } from '../text-match/text-match.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
+import { type ChatListMenu, openRowMenu } from './chat-list-menu.js';
 import { type ChatConversation, ChatListRow, listHooks } from './chat-list-row.js';
 
 export interface ChatListProps
@@ -41,6 +48,11 @@ export interface ChatListProps
   emptyState?: ReactNode;
   /** Controls at the end of each row, such as a menu of the conversation's commands. */
   renderActions?: ((conversation: ChatConversation) => ReactNode) | undefined;
+  /**
+   * The `Menu` a row's context menu shows, opened by a secondary click, a long touch, the Context
+   * Menu key or Shift+F10. A conversation it returns nothing for keeps the browser's own menu.
+   */
+  renderContextMenu?: ((conversation: ChatConversation) => ReactNode) | undefined;
 }
 
 /** How many placeholder rows stand in for the conversations while they load. */
@@ -58,6 +70,66 @@ function useShownConversations(
     (conversation) =>
       contains(conversation.title, text) || contains(conversation.lastMessage ?? '', text),
   );
+}
+
+/**
+ * The list's one context menu: the conversation it is open for, whether a conversation has one, the
+ * target the rows open it through and the menu itself.
+ */
+function useConversationMenu(
+  renderContextMenu: ChatListProps['renderContextMenu'],
+  conversations: readonly ChatConversation[],
+) {
+  const strings = useUiStrings();
+  const controller = useMenuController();
+  const { isOpen } = useMenuControllerState(controller);
+  const [menuKey, setMenuKey] = useState<string | null>(null);
+  const [target] = useState<ChatListMenu>(() => ({
+    controller,
+    onOpen: setMenuKey,
+    rows: new Map(),
+  }));
+  const conversation = isOpen ? conversations.find((entry) => entry.id === menuKey) : undefined;
+  const content = conversation ? renderContextMenu?.(conversation) : undefined;
+  const hasContent = !isEmptyNode(content);
+  // A conversation that leaves the list, or loses its menu, takes its open menu with it.
+  useEffect(() => {
+    if (isOpen && !hasContent) controller.close();
+  }, [isOpen, hasContent, controller]);
+  return {
+    target,
+    onKeyDown: renderContextMenu
+      ? (event: KeyboardEvent<HTMLElement>) => openRowMenu(target, event)
+      : undefined,
+    openKey: conversation && hasContent ? conversation.id : null,
+    hasMenu: (entry: ChatConversation) => !isEmptyNode(renderContextMenu?.(entry)),
+    element: renderContextMenu ? (
+      <ContextMenu
+        controller={controller}
+        aria-label={conversation ? strings.conversationMenu(conversation.title) : undefined}
+      >
+        {hasContent ? content : null}
+      </ContextMenu>
+    ) : null,
+  };
+}
+
+/** The one selected conversation, held by the caller (`selectedKey`) or by the list. */
+function useConversationSelection(
+  selectedKey: ChatListProps['selectedKey'],
+  onSelectionChange: ChatListProps['onSelectionChange'],
+) {
+  const [ownSelection, setOwnSelection] = useState<string | null>(null);
+  const selected = selectedKey === undefined ? ownSelection : selectedKey;
+  return {
+    selectedKeys: selected === null ? [] : [selected],
+    select(keys: Selection) {
+      const [key] = keys === 'all' ? [] : [...keys];
+      if (key === undefined) return;
+      setOwnSelection(String(key));
+      onSelectionChange?.(String(key));
+    },
+  };
 }
 
 /** Placeholder rows and a loading announcement. */
@@ -148,6 +220,7 @@ export function ChatList({
   isLoading = false,
   emptyState,
   renderActions,
+  renderContextMenu,
   fallbackAfterDays,
   getNow,
   timeZone,
@@ -158,17 +231,15 @@ export function ChatList({
 }: ChatListProps) {
   const strings = useUiStrings();
   const [query, setQuery] = useState('');
-  const [ownSelection, setOwnSelection] = useState<string | null>(null);
   const shown = useShownConversations({ conversations, onSearchChange }, query);
-  const selected = selectedKey === undefined ? ownSelection : selectedKey;
-  const select = (keys: Selection) => {
-    const [key] = keys === 'all' ? [] : [...keys];
-    if (key === undefined) return;
-    setOwnSelection(String(key));
-    onSelectionChange?.(String(key));
-  };
+  const selection = useConversationSelection(selectedKey, onSelectionChange);
+  const menu = useConversationMenu(renderContextMenu, shown);
   return (
-    <div {...rest} {...listHooks.root({ className, props: rest, data: { loading: isLoading } })}>
+    <div
+      {...rest}
+      {...listHooks.root({ className, props: rest, data: { loading: isLoading } })}
+      onKeyDown={menu.onKeyDown}
+    >
       <ListHeader
         query={query}
         onSearch={(value) => {
@@ -185,9 +256,16 @@ export function ChatList({
           items={isLoading ? [] : shown}
           selectionMode="single"
           disallowEmptySelection
-          selectedKeys={selected === null ? [] : [selected]}
-          onSelectionChange={select}
-          dependencies={[renderActions, fallbackAfterDays, getNow, timeZone]}
+          selectedKeys={selection.selectedKeys}
+          onSelectionChange={selection.select}
+          dependencies={[
+            renderActions,
+            renderContextMenu,
+            menu.openKey,
+            fallbackAfterDays,
+            getNow,
+            timeZone,
+          ]}
           renderEmptyState={() => (
             <ListEmptyState
               isLoading={isLoading}
@@ -200,6 +278,8 @@ export function ChatList({
             <ChatListRow
               conversation={conversation}
               renderActions={renderActions}
+              menu={menu.hasMenu(conversation) ? menu.target : undefined}
+              isMenuOpen={menu.openKey === conversation.id}
               fallbackAfterDays={fallbackAfterDays}
               getNow={getNow}
               timeZone={timeZone}
@@ -207,6 +287,7 @@ export function ChatList({
           )}
         </GridList>
       </TextMatchProvider>
+      {menu.element}
     </div>
   );
 }
