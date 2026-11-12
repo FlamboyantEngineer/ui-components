@@ -1,7 +1,7 @@
 // Commands that insert nodes and set links.
 
 import { setBlockType } from 'prosemirror-commands';
-import type { MarkType, NodeType, ResolvedPos } from 'prosemirror-model';
+import type { Mark, MarkType, NodeType, ResolvedPos } from 'prosemirror-model';
 import {
   type Command,
   type EditorState,
@@ -60,23 +60,33 @@ export function insertNode(type: NodeType, attrs: RichTextAttributes | undefined
   };
 }
 
-/** The extent of the mark of `type` around a position, within its text block. */
+/** A run of adjacent children carrying an equal mark. */
+interface MarkRun {
+  from: number;
+  to: number;
+  mark: Mark;
+}
+
+/**
+ * The extent of the mark of `type` around a position, within its text block: the run of adjacent
+ * children that carry an equal mark, before and after the position's own child, so a link whose
+ * middle is bold is changed whole.
+ */
 function findMarkRange($pos: ResolvedPos, type: MarkType): { from: number; to: number } | null {
-  const start = $pos.start();
-  let offset = 0;
-  let range: { from: number; to: number } | null = null;
-  let mark = null;
+  const holds = (range: MarkRun | null): range is MarkRun =>
+    range !== null && $pos.pos >= range.from && $pos.pos <= range.to;
+  let from = $pos.start();
+  let run: MarkRun | null = null;
   for (let index = 0; index < $pos.parent.childCount; index += 1) {
     const child = $pos.parent.child(index);
-    const from = start + offset;
     const to = from + child.nodeSize;
-    offset += child.nodeSize;
     const own = type.isInSet(child.marks);
-    if (range && own && mark && own.eq(mark)) range.to = to;
-    else if (range) break;
-    else if (own && $pos.pos >= from && $pos.pos <= to) [range, mark] = [{ from, to }, own];
+    if (own && run?.mark.eq(own)) run.to = to;
+    else if (holds(run)) break;
+    else run = own ? { from, to, mark: own } : null;
+    from = to;
   }
-  return range;
+  return holds(run) ? { from: run.from, to: run.to } : null;
 }
 
 /**

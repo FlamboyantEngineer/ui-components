@@ -483,6 +483,18 @@ describe('RichTextEditor', () => {
     ]);
   });
 
+  it('UIC-RICH-TEXT-EDITOR-3.2 starts a numbered list at a typed number of up to nine digits', async () => {
+    const { user, value } = renderEditor();
+    await user.click(getContent());
+    await user.keyboard('99999999999999999999. ');
+    expect(blockTypes(value())).toEqual(['paragraph']);
+    await user.keyboard('{Control>}a{/Control}{Backspace}123456789. ');
+    expect(value()?.content?.[0]).toMatchObject({
+      type: 'orderedList',
+      attrs: { start: 123456789 },
+    });
+  });
+
   it('UIC-RICH-TEXT-EDITOR-3.2 undoes a shortcut with Backspace and leaves code alone', async () => {
     const { user, value } = renderEditor();
     await user.click(getContent());

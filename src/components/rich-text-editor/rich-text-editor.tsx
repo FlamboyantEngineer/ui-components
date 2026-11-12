@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useMemo } from 'react';
+import { type ReactNode, useDeferredValue, useMemo } from 'react';
 import { mergeClassNames } from '../../core/hooks.js';
 import { Field, FieldFormValue, type FieldInputProps, useFieldControl } from '../field/field.js';
 import type { RichTextBlockMarker } from './block-markers.js';
@@ -53,7 +53,10 @@ function DocumentFormValue({
   value: RichTextDocument;
   isDisabled: boolean;
 }) {
-  const json = useMemo(() => JSON.stringify(value), [value]);
+  // The whole document per keystroke: deferring lets typing render first and skips the values a
+  // fast typist leaves behind.
+  const deferred = useDeferredValue(value);
+  const json = useMemo(() => JSON.stringify(deferred), [deferred]);
   return <FieldFormValue name={name} value={json} isDisabled={isDisabled} />;
 }
 
