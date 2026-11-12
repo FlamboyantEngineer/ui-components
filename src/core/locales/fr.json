@@ -115,6 +115,7 @@
   "chatEditingMessage": "Modification de votre message",
   "chatEditingQueued": "Modification d’un message en file d’attente",
   "chatQueuedMessages": "{count, plural, one {# message en file d’attente} other {# messages en file d’attente}}",
+  "chatSteerQueued": "Réorienter avec le message en file d’attente {position}",
   "chatEditQueued": "Modifier le message en file d’attente {position}",
   "chatRemoveQueued": "Retirer le message en file d’attente {position}",
   "codeBlockTitle": "{variant, select, terminal {Terminal} other {Code}}",

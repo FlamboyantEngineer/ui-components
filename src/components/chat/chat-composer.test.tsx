@@ -281,6 +281,80 @@ describe('Chat composer', () => {
     expect(onQueueChange).not.toHaveBeenCalled();
   });
 
+  it('UIC-CHAT-3.4 ends the edit as soon as the edited queued message is removed', async () => {
+    // A host that applies the new queue later, as after a round trip, still clears the banner at once.
+    const onQueueChange = vi.fn();
+    const queue = [{ id: 'q1', text: 'And lunch?' }];
+    const { user, container, onSend } = renderChat({
+      participants: assistantPeople,
+      isPending: true,
+      queue,
+      onQueueChange,
+    });
+    await user.click(screen.getByRole('button', { name: 'Edit queued message 1' }));
+    expect(container.querySelector('.ui-chat__banner')).toHaveTextContent(
+      'Editing a queued message',
+    );
+    await user.click(screen.getByRole('button', { name: 'Remove queued message 1' }));
+    expect(onQueueChange).toHaveBeenLastCalledWith([]);
+    expect(container.querySelector('.ui-chat__banner')).toBeNull();
+    expect(container.querySelector('.ui-chat__queue-item')).not.toHaveAttribute('data-editing');
+    await user.click(box());
+    await user.keyboard('And tea?{Enter}');
+    expect(onSend).toHaveBeenCalledWith('And tea?', []);
+    expect(onQueueChange).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-CHAT-3.4 steers with a queued message, except the one the composer edits', async () => {
+    const user = userEvent.setup();
+    const onSteer = vi.fn();
+    function SteerHost() {
+      const [queue, setQueue] = useState<readonly ChatQueuedMessage[]>([
+        { id: 'q1', text: 'First' },
+        { id: 'q2', text: 'Second' },
+      ]);
+      return (
+        <TestChat
+          participants={assistantPeople}
+          onSend={() => undefined}
+          isPending
+          queue={queue}
+          onQueueChange={setQueue}
+          onSteer={(id) => {
+            onSteer(id);
+            setQueue((entries) => entries.filter((entry) => entry.id !== id));
+          }}
+        />
+      );
+    }
+    const { container } = render(<SteerHost />);
+    const steer = container.querySelectorAll('.ui-chat__queue-steer');
+    expect(steer).toHaveLength(2);
+    expect(steer[0]).toHaveClass('ui-button');
+    await user.click(screen.getByRole('button', { name: 'Edit queued message 2' }));
+    expect(
+      screen.queryByRole('button', { name: 'Steer with queued message 2' }),
+    ).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Steer with queued message 1' }));
+    expect(onSteer).toHaveBeenCalledWith('q1');
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Remove queued message 1' })).toHaveFocus(),
+    );
+    expect(container.querySelector('.ui-chat__banner')).toHaveTextContent(
+      'Editing a queued message',
+    );
+  });
+
+  it('UIC-CHAT-3.4 offers no Steer without onSteer', () => {
+    renderChat({
+      participants: assistantPeople,
+      isPending: true,
+      queue: [{ id: 'q1', text: 'First' }],
+      onQueueChange: vi.fn(),
+    });
+    expect(screen.queryByRole('button', { name: /^Steer/ })).not.toBeInTheDocument();
+  });
+
   it('UIC-CHAT-3.4 shows a queued message’s files and keeps them when its text is saved', async () => {
     const onQueueChange = vi.fn();
     const photo = {

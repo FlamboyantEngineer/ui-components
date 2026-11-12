@@ -13,6 +13,8 @@ interface ChatWidgetStrings {
   chatEditingQueued: string;
   /** Counts the messages waiting for the running reply to end. */
   chatQueuedMessages: (count: number) => string;
+  /** Names the button that sends the queued message at `position` (1-based) into the conversation now. */
+  chatSteerQueued: (position: number) => string;
   /** Names the button that edits the queued message at `position` (1-based). */
   chatEditQueued: (position: number) => string;
   /** Names the button that removes the queued message at `position` (1-based). */
@@ -22,6 +24,7 @@ interface ChatWidgetStrings {
 /** The module's text, with the message values each text function reads its arguments as. */
 export const chatWidgetStrings = defineStrings<ChatWidgetStrings>({
   chatQueuedMessages: (count) => ({ count }),
+  chatSteerQueued: (position) => ({ position }),
   chatEditQueued: (position) => ({ position }),
   chatRemoveQueued: (position) => ({ position }),
 });

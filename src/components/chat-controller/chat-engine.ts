@@ -140,6 +140,20 @@ function sendNow(engine: ChatEngineContext, text: string, tokens?: readonly Chat
   startTurn(engine, outgoing);
 }
 
+/**
+ * Takes the queued message `id` out of the queue and sends it at once as `sendNow` does: the running
+ * reply stops, keeping what it streamed, and the rest of the queue goes on once the new reply
+ * finishes.
+ */
+function steer(engine: ChatEngineContext, id: string) {
+  const { queue } = engine.store.get();
+  const outgoing = queue.find((entry) => entry.id === id);
+  if (!outgoing) return;
+  patchState(engine, { queue: queue.filter((entry) => entry !== outgoing) });
+  if (engine.run) endRun(engine, engine.run, { status: 'cancelled' });
+  startTurn(engine, outgoing);
+}
+
 /** Runs the last turn again after its reply failed: as it stood before, or from scratch. */
 function retry(engine: ChatEngineContext) {
   const { messages } = engine.store.get();
@@ -212,6 +226,7 @@ export function createChatEngine(
     store: engine.store,
     send: (text: string, tokens?: readonly ChatTextToken[]) => send(engine, text, tokens),
     sendNow: (text: string, tokens?: readonly ChatTextToken[]) => sendNow(engine, text, tokens),
+    steer: (id: string) => steer(engine, id),
     stop: () => {
       if (engine.run) endRun(engine, engine.run, { status: 'cancelled' });
     },

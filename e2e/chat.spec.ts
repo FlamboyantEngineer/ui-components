@@ -209,6 +209,29 @@ test.describe('Chat lab', () => {
     await expect(state).toHaveText('idle');
   });
 
+  test('UIC-CHAT-3.4 UIC-CHAT-CONTROLLER-2.5 steers with a queued message and ends an edit whose message is removed', async ({
+    page,
+  }) => {
+    await openChat(page, 80);
+    const demo = section(page, 'Shortcuts and queue');
+    await composer(demo).click();
+    for (const text of ['Pick a museum', 'And a café', 'And a park']) {
+      await page.keyboard.type(text);
+      await page.keyboard.press('Enter');
+    }
+    await expect(demo.getByRole('list', { name: '2 queued messages' })).toBeVisible();
+    await demo.getByRole('button', { name: 'Edit queued message 1' }).click();
+    await expect(demo.locator('.ui-chat__banner')).toHaveText('Editing a queued message');
+    await page.keyboard.type(' nearby');
+    await demo.getByRole('button', { name: 'Remove queued message 1' }).click();
+    await expect(demo.locator('.ui-chat__banner')).toHaveCount(0);
+    await demo.getByRole('button', { name: 'Steer with queued message 1' }).click();
+    await expect(demo.locator('article[data-status="cancelled"]')).toHaveCount(1);
+    await expect(demo.locator('article', { hasText: 'Noted: And a park' })).toBeVisible();
+    await expect(demo.locator('[data-lab-output="queue-count"]')).toHaveText('0');
+    await expect(composer(demo)).toBeFocused();
+  });
+
   test('UIC-CHAT-3.1 UIC-MESSAGE-COMPOSER-3.10 sends on Enter while idle and queues on Ctrl+Enter while a reply runs', async ({
     page,
   }) => {
