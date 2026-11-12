@@ -1,7 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { parseMentions } from '../comment-composer/comment-mentions.js';
 import { CommentText } from './comment-text.js';
 
 const stored = 'Ask @[Ana Lopez](ana) and @[Jon Berg](jon).';
@@ -66,6 +67,16 @@ describe('CommentText', () => {
       />,
     );
     expect(container.querySelector('.ui-comment-text__mention')).toHaveTextContent('Ana Lopez');
+  });
+
+  it('UIC-COMMENT-THREAD-3.2 reads the text again only when it changes', () => {
+    const parse = vi.fn(parseMentions);
+    const { rerender } = render(<CommentText text="Hi @[Ana](ana)" parse={parse} />);
+    rerender(<CommentText text="Hi @[Ana](ana)" parse={parse} className="read" />);
+    expect(parse).toHaveBeenCalledOnce();
+    rerender(<CommentText text="Hi @[Jon](jon)" parse={parse} />);
+    expect(parse).toHaveBeenCalledTimes(2);
+    expect(screen.getByText('Jon')).toHaveClass('ui-comment-text__mention');
   });
 });
 

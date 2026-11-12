@@ -68,9 +68,26 @@ export function toShortcutSteps(shortcut: ShortcutChord | ShortcutSequence): Sho
   return steps.filter((step) => formatAriaKeyShortcuts(step) !== '');
 }
 
+// Every key press ranks every registered shortcut, so the reserved chords are formatted once and
+// each registration's answer is kept for as long as its steps are the same array.
+let reservedKeys: ReadonlySet<string> | null = null;
+const reservedSteps = new WeakMap<readonly ShortcutChord[], boolean>();
+
 function isReserved(steps: readonly ShortcutChord[]): boolean {
-  const reserved = new Set(reservedChords.map((chord) => formatAriaKeyShortcuts(chord)));
-  return steps.some((step) => reserved.has(formatAriaKeyShortcuts(step)));
+  const known = reservedSteps.get(steps);
+  if (known !== undefined) return known;
+  reservedKeys ??= new Set(reservedChords.map((chord) => formatAriaKeyShortcuts(chord)));
+  const keys = reservedKeys;
+  const reserved = steps.some((step) => keys.has(formatAriaKeyShortcuts(step)));
+  reservedSteps.set(steps, reserved);
+  return reserved;
+}
+
+/** Where a press's path enters a modal overlay, found once per press. */
+interface PressPath {
+  nodes: readonly EventTarget[];
+  /** The index of the innermost modal overlay in `nodes`, or -1. */
+  modal: number;
 }
 
 /**
@@ -78,21 +95,23 @@ function isReserved(steps: readonly ShortcutChord[]): boolean {
  * scoped shortcut at its scope's place in the path, a document-wide one after every scope. Inside
  * a modal overlay only the scopes within it answer.
  */
-function rankEntry(entry: ShortcutEntry, event: KeyboardEvent, path: readonly EventTarget[]) {
+function rankEntry(entry: ShortcutEntry, event: KeyboardEvent, path: PressPath) {
   const shortcut = entry.current;
+  const { nodes, modal } = path;
   if (shortcut.isDisabled || (event.repeat && !shortcut.allowsRepeat)) return null;
-  if (!shortcut.allowsEditable && isEditableTarget(path[0] ?? event.target)) return null;
+  if (!shortcut.allowsEditable && isEditableTarget(nodes[0] ?? event.target)) return null;
   if (!shortcut.allowsReserved && isReserved(shortcut.steps)) return null;
-  const modal = path.findIndex((node) => isElement(node) && node.matches(modalSelector));
-  const limit = modal === -1 ? path.length : modal;
-  if (shortcut.scope === null) return modal === -1 ? path.length : null;
-  const place = shortcut.scope.current ? path.indexOf(shortcut.scope.current) : -1;
+  const limit = modal === -1 ? nodes.length : modal;
+  if (shortcut.scope === null) return modal === -1 ? nodes.length : null;
+  const place = shortcut.scope.current ? nodes.indexOf(shortcut.scope.current) : -1;
   return place !== -1 && place < limit ? place : null;
 }
 
 /** The shortcuts a press may answer, innermost scope first, the latest registered first. */
 function rankEntries(registry: Registry, event: KeyboardEvent): ShortcutEntry[] {
-  const path = event.composedPath();
+  const nodes = event.composedPath();
+  const modal = nodes.findIndex((node) => isElement(node) && node.matches(modalSelector));
+  const path = { nodes, modal };
   return [...registry.entries]
     .reverse()
     .map((entry) => ({ entry, rank: rankEntry(entry, event, path) }))

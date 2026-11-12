@@ -67,10 +67,12 @@ export interface CommentMentions extends Required<CommentMentionOptions> {
 }
 
 // `@[Name](id)` or `@kind[Name](id)`, where a backslash escapes `\`, `]` in the name and `\`, `)` in
-// the id. The pattern is sticky: the scanner tries it where an `@` stands.
-const mentionPattern = /@([a-z][a-z0-9-]*)?\[((?:\\.|[^\\\]])*)\]\(((?:\\.|[^\\)])*)\)/y;
+// the id. The pattern is sticky: the scanner tries it where an `@` stands. The kind, name and id
+// are bounded, so a failed try reads a bounded stretch of text and scanning stays linear in it.
+const mentionPattern =
+  /@([a-z][a-z0-9-]{0,63})?\[((?:\\.|[^\\\]]){0,256})\]\(((?:\\.|[^\\)]){0,256})\)/y;
 const escapedPattern = /\\(.)/g;
-const kindPattern = /^[a-z][a-z0-9-]*$/;
+const kindPattern = /^[a-z][a-z0-9-]{0,63}$/;
 
 function escapeMentionPart(text: string, closer: string): string {
   return text.replaceAll('\\', '\\\\').replaceAll(closer, `\\${closer}`);
@@ -94,16 +96,22 @@ export function serializeMention(
   return `@${prefix}[${escapeMentionPart(candidate.name, ']')}](${escapeMentionPart(candidate.id, ')')})`;
 }
 
-/** The end of the code span opening at `at` (a run of backticks closed by an equal run), or -1. */
-function findCodeSpanEnd(text: string, at: number): number {
+/**
+ * The end of the code span opening at `at` (a run of backticks closed by an equal run), or -1.
+ * `unclosed` holds the run lengths already known to have no closer further on, so a text of many
+ * unclosed runs is searched once per length, not once per run.
+ */
+function findCodeSpanEnd(text: string, at: number, unclosed: Set<number>): number {
   let run = at;
   while (text[run] === '`') run += 1;
   const fence = text.slice(at, run);
+  if (unclosed.has(fence.length)) return -1;
   for (let close = text.indexOf(fence, run); close >= 0; close = text.indexOf(fence, close + 1)) {
     const end = close + fence.length;
     if (text[close - 1] !== '`' && text[end] !== '`') return end;
     while (text[close + 1] === '`') close += 1;
   }
+  unclosed.add(fence.length);
   return -1;
 }
 
@@ -129,6 +137,7 @@ function readMention(text: string, at: number): CommentTextSegment | null {
  */
 export function parseMentions(text: string): CommentTextSegment[] {
   const segments: CommentTextSegment[] = [];
+  const unclosed = new Set<number>();
   let plain = 0;
   let at = 0;
   while (at < text.length) {
@@ -138,7 +147,7 @@ export function parseMentions(text: string): CommentTextSegment[] {
       continue;
     }
     if (char === '`') {
-      const end = findCodeSpanEnd(text, at);
+      const end = findCodeSpanEnd(text, at, unclosed);
       let run = at;
       while (text[run] === '`') run += 1;
       at = end < 0 ? run : end;
