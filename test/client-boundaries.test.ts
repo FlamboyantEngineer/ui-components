@@ -35,7 +35,9 @@ describe('client boundaries', () => {
     ]) {
       expect(isMarked(path), path).toBe(false);
     }
-  });
+    // The check parses every library module, about four seconds on an idle machine and more on a
+    // runner busy with the other test workers.
+  }, 30_000);
 
   it('UIC-SERVER-COMPONENTS-1.1 reports a server module that calls or reads a client export', () => {
     // A scratch library beside the checker; inside node_modules so it resolves TypeScript.
