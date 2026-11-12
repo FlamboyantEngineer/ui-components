@@ -9,6 +9,7 @@ import {
   getRowText,
   getTextCollator,
   isEffectiveTableMove,
+  type TableCellValue,
   type TableColumn,
 } from './table-rows.js';
 import { nextSortDescriptor, sortTableRows } from './table-sort.js';
@@ -51,6 +52,38 @@ describe('table row helpers', () => {
     expect(compareCellValues('item 2', 'Item 10', english)).toBeLessThan(0);
     expect(compareCellValues('apple', 'APPLE', english)).toBe(0);
     expect(compareCellValues(null, 'a', english)).toBeLessThan(0);
+  });
+
+  it('UIC-TABLE-2.2 sorts mixed, NaN and invalid values to one order from every input order', () => {
+    const values: TableCellValue[] = [
+      -5,
+      '-7',
+      -10,
+      Number.NaN,
+      new Date(Number.NaN),
+      'pear',
+      null,
+      3,
+    ];
+    const permutations = (items: readonly TableCellValue[]): TableCellValue[][] =>
+      items.length <= 1
+        ? [[...items]]
+        : items.flatMap((item, index) =>
+            permutations(items.filter((_, other) => other !== index)).map((rest) => [
+              item,
+              ...rest,
+            ]),
+          );
+    const sorted = new Set(
+      permutations(values).map((order) =>
+        JSON.stringify([...order].sort((a, b) => compareCellValues(a, b, english))),
+      ),
+    );
+    expect(sorted.size).toBe(1);
+    const [first] = sorted;
+    // Empty values (NaN, an invalid date, null) first, then text, then numbers by value.
+    expect(JSON.parse(first ?? '[]').slice(3)).toEqual(['-7', 'pear', -10, -5, 3]);
+    expect(compareCellValues(Number.NaN, null, english)).toBe(0);
   });
 
   it('UIC-TABLE-2.10 collates text by the given locale', () => {
@@ -133,6 +166,18 @@ describe('table row helpers', () => {
     ]);
     expect(filterTableRows(fruit, columns, { query: 'CHER' })).toEqual([fruit[2]]);
     expect(filterTableRows(fruit, columns, { query: '   ' })).toBe(fruit);
+  });
+
+  it('UIC-TABLE-2.5 reads and folds a row text once for the keystrokes of a query', () => {
+    const getValue = vi.fn((item: Fruit) => item.name);
+    const searched = [{ id: 'name', getValue }];
+    for (const query of ['b', 'ba', 'ban', 'bana']) {
+      expect(filterTableRows(fruit, searched, { query }).map((row) => row.id)).toEqual(['banana']);
+    }
+    expect(getValue).toHaveBeenCalledTimes(fruit.length);
+    // Another array of columns reads the rows again.
+    filterTableRows(fruit, [...searched], { query: 'ban' });
+    expect(getValue).toHaveBeenCalledTimes(fruit.length * 2);
   });
 
   it('UIC-TABLE-2.1 cycles ascending, descending, then unsorted', () => {

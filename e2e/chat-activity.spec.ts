@@ -155,7 +155,9 @@ test.describe('Chat Activity lab', () => {
     await working.focus();
     await page.keyboard.press('Enter');
     await expect(working).toHaveAttribute('aria-expanded', 'false');
-    await expect(steps.locator('.ui-chat-steps__panel')).toBeHidden();
+    // The panel looks hidden once its height transition reaches zero, but React Aria hides it only
+    // after the transition finishes; a Tab in between lands in the panel and is lost when it hides.
+    await expect(steps.locator('.ui-chat-steps__panel')).toHaveAttribute('hidden', 'until-found');
     await page.keyboard.press('Tab');
     await expect(matrixCell(page, 'state=reader-closed').getByRole('button')).toBeFocused();
   });

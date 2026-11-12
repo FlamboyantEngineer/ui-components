@@ -2,6 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import {
+  createFoldedTermsTest,
   findTermRanges,
   findWordMatches,
   isWordMatchAt,
@@ -18,6 +19,15 @@ describe('text matching helpers', () => {
     expect(normalizeMatchText('İstanbul', { ignoreAccents: true })).toBe('istanbul');
     expect(splitMatchTerms('  Page  size/orientation ')).toEqual(['page', 'size', 'orientation']);
     expect(splitMatchTerms('')).toEqual([]);
+    expect(normalizeMatchText('Plain ASCII-text_with/Marks')).toBe('plain ascii text with marks');
+    expect(normalizeMatchText('ÉCOLE', { ignoreAccents: true })).toBe('ecole');
+  });
+
+  it('UIC-TEXT-MATCH-1.2 tests many folded texts against terms folded once', () => {
+    const matches = createFoldedTermsTest(['Pear', 'TREE']);
+    expect(matches(normalizeMatchText('A pear tree'))).toBe(true);
+    expect(matches(normalizeMatchText('A pear'))).toBe(false);
+    expect(createFoldedTermsTest([])('anything')).toBe(true);
   });
 
   it('UIC-TEXT-MATCH-1.2 finds sorted, merged ranges and requires every term', () => {
