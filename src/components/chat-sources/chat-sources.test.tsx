@@ -75,6 +75,20 @@ describe('ChatSources', () => {
     expect(requireDefined(notes).querySelector('.ui-chat-sources__site')).toBeNull();
   });
 
+  it('UIC-CHAT-SOURCES-1.2 shows the title of a source with an unsafe URL as text', () => {
+    render(
+      <ChatSources
+        sources={[
+          { id: 'data', title: 'Packed page', url: 'data:text/html,<p>x</p>' },
+          { id: 'file', title: 'Local file', url: 'file:///notes.txt' },
+        ]}
+      />,
+    );
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+    expect(screen.getByText('Packed page')).toHaveClass('ui-chat-sources__title');
+    expect(screen.getByText('Local file')).toHaveClass('ui-chat-sources__title');
+  });
+
   it('UIC-CHAT-SOURCES-1.3 carries its hooks, the caller class, id and data attributes', () => {
     const { container } = render(
       <ChatSources sources={[]} className="caller" id="answer-sources" data-probe="sources" />,

@@ -69,8 +69,16 @@ export function measureCanvasPixels(
   height: number,
   node: Node | null,
 ): CanvasPixels {
-  const area = width * height;
   const deviceRatio = node ? getOwnerWindow(node).devicePixelRatio || 1 : 1;
-  const ratio = area > 0 ? Math.min(deviceRatio, Math.sqrt(maxCanvasPixels / area)) : 0;
-  return { width: Math.floor(width * ratio), height: Math.floor(height * ratio) };
+  return capCanvasPixels(width, height, deviceRatio);
+}
+
+/**
+ * A bitmap's size in pixels for a `width` by `height` area drawn at `ratio` pixels per unit, scaled
+ * down so it holds at most the engine's ceiling of pixels.
+ */
+export function capCanvasPixels(width: number, height: number, ratio = 1): CanvasPixels {
+  const area = width * height;
+  const scale = area > 0 ? Math.min(ratio, Math.sqrt(maxCanvasPixels / area)) : 0;
+  return { width: Math.floor(width * scale), height: Math.floor(height * scale) };
 }

@@ -908,8 +908,12 @@ describe('FileUpload', () => {
       );
     });
 
-    it('UIC-FILE-UPLOAD-3.5 keeps a thumbnail URL through a Strict Mode remount', async () => {
-      const createObjectURL = vi.fn(() => 'blob:photo');
+    it('UIC-FILE-UPLOAD-3.5 revokes every thumbnail URL it creates, through a Strict Mode remount', () => {
+      let created = 0;
+      const createObjectURL = vi.fn(() => {
+        created += 1;
+        return `blob:photo-${created}`;
+      });
       const revokeObjectURL = vi.fn();
       vi.stubGlobal('URL', Object.assign(URL, { createObjectURL, revokeObjectURL }));
       const listed: FileUploadItem[] = [
@@ -920,14 +924,13 @@ describe('FileUpload', () => {
           <FileUpload label="Attachments" files={listed} onSelect={() => {}} />
         </StrictMode>,
       );
-      await Promise.resolve();
-      expect(revokeObjectURL).not.toHaveBeenCalled();
-      expect(container.querySelector('.ui-file-upload__file-preview')).toHaveAttribute(
-        'src',
-        'blob:photo',
-      );
+      const shown = container.querySelector('.ui-file-upload__file-preview')?.getAttribute('src');
+      expect(shown).toBe(`blob:photo-${created}`);
+      expect(revokeObjectURL).not.toHaveBeenCalledWith(shown);
       unmount();
-      await waitFor(() => expect(revokeObjectURL).toHaveBeenCalledWith('blob:photo'));
+      // Each address made after a commit is released by that effect's cleanup, none left behind.
+      const urls = createObjectURL.mock.results.map((result) => result.value as string);
+      expect(revokeObjectURL.mock.calls.map(([url]) => url as string).sort()).toEqual(urls.sort());
     });
   });
 

@@ -341,11 +341,15 @@ describe('useChatController runs', () => {
     expect(result.current.props.history).toEqual(['Hello', 'Plan dinner']);
   });
 
-  it('UIC-CHAT-CONTROLLER-2.7 times reasoning and tool calls the stream leaves untimed', async () => {
+  it('UIC-CHAT-CONTROLLER-2.7 times reasoning and tool calls the stream leaves untimed, by the provider clock', async () => {
     let now = 1_000;
-    vi.spyOn(Date, 'now').mockImplementation(() => now);
-    const { result, at } = renderController();
+    // The provider clock times them, and dates the messages.
+    const { result, at } = renderController({}, () => new Date(now));
     act(() => result.current.send('Plan dinner'));
+    expect(result.current.messages.map((message) => message.createdAt)).toEqual([
+      new Date(1_000).toISOString(),
+      new Date(1_000).toISOString(),
+    ]);
     await push(at(), { type: 'reasoning-delta', id: 'r1', text: 'Hmm' });
     now = 3_500;
     await push(at(), { type: 'tool-call', id: 'call-1', name: 'search_recipes' });

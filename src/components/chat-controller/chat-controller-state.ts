@@ -69,6 +69,8 @@ export interface ChatEngineConfig {
   onAlwaysAllowedChange?: ((tools: readonly string[]) => void) | undefined;
   /** The error a failed reply shows when the failure has no message. */
   failureText: string;
+  /** The provider clock (`useUiClock`), which dates messages and times reasoning and tool calls. */
+  getNow: () => Date;
 }
 
 /** One running reply. */
