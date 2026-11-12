@@ -395,8 +395,8 @@ describe('Field', () => {
     await chooseFieldMenuItem(user, input, 'Reset');
     expect(input).toHaveValue('Fig');
     unmount();
-    const shown = render(<Marked showRestoreButton />);
-    expect(root(shown.container)).toHaveAttribute('data-restore-button', 'true');
+    const view = render(<Marked showRestoreButton />);
+    expect(root(view.container)).toHaveAttribute('data-restore-button', 'true');
     await user.type(screen.getByRole('textbox'), 's');
     expect(screen.getByRole('button', { name: 'Restore Fruit' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Restore Fig' })).toBeInTheDocument();

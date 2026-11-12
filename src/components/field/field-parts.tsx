@@ -225,13 +225,15 @@ export function toFieldData(
     density: FieldDensity | undefined;
     changeLayout: FieldChangeLayout | undefined;
     messageDisplay: FieldMessageDisplay | undefined;
-    restoreButton: boolean;
+    showRestoreButton: boolean | undefined;
   },
   state: FieldState<unknown>,
   focused: boolean,
 ) {
+  const { showRestoreButton, ...rest } = layout;
   return {
-    ...layout,
+    ...rest,
+    restoreButton: showRestoreButton === true,
     density: layout.density ?? 'default',
     changeLayout: layout.changeLayout ?? 'inline',
     messageDisplay: layout.messageDisplay ?? 'inline',

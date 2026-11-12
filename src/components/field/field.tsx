@@ -282,18 +282,8 @@ export function Field<T>({
   const labelElement = hasLabel ? (
     <FieldLabel ids={ids} label={label} layout={labelLayout} isRequired={state.isRequired} />
   ) : null;
-  const data = toFieldData(
-    {
-      labelLayout,
-      size,
-      density,
-      changeLayout,
-      messageDisplay,
-      restoreButton: !!showRestoreButton,
-    },
-    state,
-    behaviour.isFocused,
-  );
+  const layout = { labelLayout, size, density, changeLayout, messageDisplay };
+  const data = toFieldData({ ...layout, showRestoreButton }, state, behaviour.isFocused);
   return (
     <div {...hooks.root({ className, props: rest, data })} {...behaviour.rootProps} id={id}>
       {labelLayout === 'control-label' ? null : labelElement}
