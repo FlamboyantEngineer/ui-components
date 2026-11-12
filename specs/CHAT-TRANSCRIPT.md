@@ -210,7 +210,7 @@ Verification: `src/components/chat-transcript/transcript-history.test.tsx`, `e2e
 
 ### UIC-CHAT-TRANSCRIPT-4.2 - Keeping the reader's place
 
-While the reader is scrolled away from the bottom (and no message is anchored), content added or resized above the first message in view (older history, the loading indicator, a message that grew) shall leave that message where it was in the view, so the reader keeps their place and the focused message keeps focus.
+While the reader is scrolled away from the bottom (and no message is anchored), content added or resized above the first message in view (older history, the loading indicator, a message that grew) shall leave that message where it was in the view, so the reader keeps their place and the focused message keeps focus. The place is kept against where the reader left it, so changes each too small to correct at once (under half a pixel) cannot add up to a visible drift.
 
 Implementation: `src/components/chat-transcript/transcript-scroll.ts`, `src/components/chat-transcript/use-transcript.ts`
 Verification: `src/components/chat-transcript/transcript-history.test.tsx`, `e2e/chat-transcript.spec.ts`
