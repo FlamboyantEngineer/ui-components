@@ -544,3 +544,140 @@ describe('MediaViewer', () => {
     });
   });
 });
+
+describe('MediaViewer zoom', () => {
+  const zoomValue = () => document.querySelector('.ui-zoom-control__value')?.textContent;
+
+  function viewport() {
+    return requireDefined(document.querySelector<HTMLElement>('.ui-media-viewer__viewport'));
+  }
+
+  /** Rolls the wheel over the viewport; returns whether the viewer let the browser handle it. */
+  function wheel(init: WheelEventInit) {
+    return fireEvent.wheel(viewport(), init);
+  }
+
+  it('UIC-MEDIA-VIEWER-2.1 leaves the reset button out unless asked for, and resets to defaultZoom', async () => {
+    const user = userEvent.setup();
+    const { unmount } = render(<Viewer />);
+    loadImage(800, 600);
+    expect(screen.queryByRole('button', { name: 'Reset zoom' })).not.toBeInTheDocument();
+    unmount();
+    render(<Viewer showZoomReset defaultZoom={50} />);
+    loadImage(800, 600);
+    const reset = screen.getByRole('button', { name: 'Reset zoom' });
+    expect(reset).toHaveAttribute('aria-disabled', 'true');
+    await user.click(screen.getByRole('button', { name: 'Zoom in' }));
+    await user.click(reset);
+    expect(zoomValue()).toBe('50%');
+  });
+
+  it('UIC-MEDIA-VIEWER-2.3 UIC-MEDIA-VIEWER-2.6 starts each item at defaultZoom and reports each request', async () => {
+    const user = userEvent.setup();
+    const onZoomChange = vi.fn();
+    render(<Viewer defaultZoom={50} onZoomChange={onZoomChange} />);
+    expect(zoomValue()).toBe('50%');
+    loadImage(800, 600);
+    await user.keyboard('+');
+    expect(onZoomChange).toHaveBeenLastCalledWith(75);
+    await user.click(screen.getByRole('button', { name: 'Next' }));
+    expect(onZoomChange).toHaveBeenLastCalledWith(50);
+    expect(zoomValue()).toBe('50%');
+  });
+
+  it('UIC-MEDIA-VIEWER-2.6 follows a controlled zoom and asks for defaultZoom on moving', async () => {
+    const user = userEvent.setup();
+    const onZoomChange = vi.fn();
+    const { rerender } = render(<Viewer zoom={200} onZoomChange={onZoomChange} />);
+    expect(zoomValue()).toBe('200%');
+    loadImage(800, 600);
+    await user.keyboard('+');
+    expect(onZoomChange).toHaveBeenLastCalledWith(300);
+    expect(zoomValue()).toBe('200%');
+    rerender(<Viewer zoom={150} onZoomChange={onZoomChange} />);
+    expect(zoomValue()).toBe('150%');
+    await user.click(screen.getByRole('button', { name: 'Bridge.png' }));
+    expect(onZoomChange).toHaveBeenLastCalledWith(100);
+    expect(zoomValue()).toBe('150%');
+  });
+
+  it('UIC-MEDIA-VIEWER-2.5 leaves the wheel to the browser unless zoomsOnWheel', () => {
+    render(<Viewer />);
+    loadImage(800, 600);
+    expect(wheel({ deltaY: -100 })).toBe(true);
+    expect(zoomValue()).toBe('100%');
+  });
+
+  it('UIC-MEDIA-VIEWER-2.5 steps one level per mouse notch and cancels the wheel', () => {
+    const onZoomChange = vi.fn();
+    render(<Viewer zoomsOnWheel onZoomChange={onZoomChange} />);
+    loadImage(800, 600);
+    expect(wheel({ deltaY: -100 })).toBe(false);
+    expect(zoomValue()).toBe('125%');
+    expect(wheel({ deltaY: -1, deltaMode: 1 })).toBe(false);
+    expect(zoomValue()).toBe('150%');
+    wheel({ deltaY: 100 });
+    wheel({ deltaY: 100 });
+    expect(zoomValue()).toBe('100%');
+    expect(onZoomChange.mock.calls).toEqual([[125], [150], [125], [100]]);
+  });
+
+  it('UIC-MEDIA-VIEWER-2.5 adds small touchpad deltas and pinches up to one level', () => {
+    render(<Viewer zoomsOnWheel />);
+    loadImage(800, 600);
+    for (let event = 0; event < 3; event += 1) expect(wheel({ deltaY: -15 })).toBe(false);
+    expect(zoomValue()).toBe('100%');
+    wheel({ deltaY: -15 });
+    expect(zoomValue()).toBe('125%');
+    for (let event = 0; event < 5; event += 1) {
+      expect(wheel({ deltaY: 10, ctrlKey: true })).toBe(false);
+    }
+    expect(zoomValue()).toBe('100%');
+  });
+
+  it('UIC-MEDIA-VIEWER-2.5 pans sideways, waits for the image and leaves other files alone', async () => {
+    const user = userEvent.setup();
+    render(<Viewer zoomsOnWheel />);
+    expect(wheel({ deltaY: -100 })).toBe(false);
+    expect(zoomValue()).toBe('100%');
+    loadImage(800, 600);
+    expect(wheel({ deltaX: 100, deltaY: 5 })).toBe(true);
+    expect(wheel({ deltaX: 100, ctrlKey: true })).toBe(false);
+    expect(zoomValue()).toBe('100%');
+    await user.click(screen.getByRole('button', { name: 'Guide.pdf' }));
+    expect(wheel({ deltaY: -100 })).toBe(true);
+    expect(wheel({ deltaY: -100, ctrlKey: true })).toBe(true);
+  });
+
+  it('UIC-MEDIA-VIEWER-2.5 keeps the point under the pointer in place once the image overflows', () => {
+    stubViewportSize(800, 600);
+    render(<Viewer zoomsOnWheel />);
+    loadImage(2000, 1000);
+    const scroller = viewport();
+    const scroll = { left: 0, top: 0 };
+    Object.defineProperty(scroller, 'scrollLeft', {
+      get: () => scroll.left,
+      set: (value: number) => (scroll.left = Math.max(0, value)),
+    });
+    Object.defineProperty(scroller, 'scrollTop', {
+      get: () => scroll.top,
+      set: (value: number) => (scroll.top = Math.max(0, value)),
+    });
+    const canvas = requireDefined(document.querySelector<HTMLElement>('.ui-media-viewer__canvas'));
+    // The canvas is centred while it fits and starts at the viewport's edge, less the scroll, once
+    // it overflows, as the reference stylesheet lays it out.
+    vi.spyOn(canvas, 'getBoundingClientRect').mockImplementation(() => {
+      const width = Number.parseFloat(canvas.style.width);
+      const height = Number.parseFloat(canvas.style.height);
+      const left = Math.max(0, (800 - width) / 2) - scroll.left;
+      const top = Math.max(0, (600 - height) / 2) - scroll.top;
+      return DOMRect.fromRect({ x: left, y: top, width, height });
+    });
+    wheel({ deltaY: -100, clientX: 600, clientY: 300 });
+    expect(canvas.style.width).toBe('1000px');
+    expect(scroll).toEqual({ left: 150, top: 0 });
+    wheel({ deltaY: -100, clientX: 600, clientY: 300 });
+    expect(canvas.style.width).toBe('1200px');
+    expect(scroll).toEqual({ left: 300, top: 0 });
+  });
+});

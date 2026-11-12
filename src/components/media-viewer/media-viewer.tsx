@@ -1,6 +1,6 @@
 'use client';
 
-import { type KeyboardEvent, type ReactNode, useRef, useState } from 'react';
+import { type KeyboardEvent, type ReactNode, useRef } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { OpenStateProps } from '../../core/events.js';
 import { mergeClassNames } from '../../core/hooks.js';
@@ -10,8 +10,7 @@ import { containsFocus, isFocused } from '../../utils/focus-target.js';
 import { isNode } from '../../utils/is-element.js';
 import { useRetainedKey } from '../../utils/use-retained-key.js';
 import { Modal } from '../modal/modal.js';
-import { defaultZoomLevels, findNextZoomLevel } from '../zoom-control/zoom-control.js';
-import { type MediaKeyCommand, resolveMediaKey } from './media-layout.js';
+import { resolveMediaKey } from './media-layout.js';
 import { MediaStage } from './media-stage.js';
 import {
   isImageItem,
@@ -21,6 +20,7 @@ import {
   type MediaViewerItem,
 } from './media-viewer-parts.js';
 import { useImageRequest } from './use-image-request.js';
+import { useMediaView } from './use-media-view.js';
 
 export type { MediaViewerItem } from './media-viewer-parts.js';
 
@@ -43,13 +43,22 @@ export interface MediaViewerProps extends RefProps<HTMLDivElement>, BaseProps, O
    * viewer shows the failure with a Retry button meanwhile.
    */
   onImageError?: ((item: MediaViewerItem) => void) | undefined;
-}
-
-/** How the shown image is zoomed and turned; moving to another item starts afresh. */
-interface MediaView {
-  key: Key | undefined;
-  zoom: number;
-  rotation: number;
+  /**
+   * The image's zoom in percent of its fit, controlled. Moving to another item from the viewer
+   * asks for `defaultZoom` through `onZoomChange`.
+   */
+  zoom?: number | undefined;
+  /** The zoom each image starts at, uncontrolled, in percent of its fit. Defaults to `100`. */
+  defaultZoom?: number | undefined;
+  /** Called with each zoom the reader asks for, from the zoom control, the keys or the wheel. */
+  onZoomChange?: ((zoom: number) => void) | undefined;
+  /**
+   * The wheel over the stage, and a touchpad pinch, step the zoom through its levels instead of
+   * scrolling, keeping the point under the pointer in place.
+   */
+  zoomsOnWheel?: boolean | undefined;
+  /** Adds a reset button to the zoom control that returns to `defaultZoom`. */
+  showZoomReset?: boolean | undefined;
 }
 
 /** Whether the arrow keys scroll the image: focus is in the viewport and the image is wider. */
@@ -71,11 +80,6 @@ function keepFocusInViewport(viewport: HTMLElement | null) {
   if (!isFocused(viewport) && containsFocus(viewport)) viewport.focus();
 }
 
-/** The zoom a key asks for, or the current one when there is no level that way. */
-function stepZoom(zoom: number, command: MediaKeyCommand): number {
-  return findNextZoomLevel(defaultZoomLevels, zoom, command === 'zoom-in' ? 1 : -1) ?? zoom;
-}
-
 interface MediaViewerDialogProps extends Omit<
   MediaViewerProps,
   'selectedKey' | 'defaultSelectedKey' | 'onSelectionChange'
@@ -93,24 +97,25 @@ function MediaViewerDialog({
   setKey,
   renderItem,
   onImageError,
-  className,
+  zoom,
+  defaultZoom = 100,
+  onZoomChange,
+  zoomsOnWheel = false,
+  showZoomReset = false,
   ...modal
 }: MediaViewerDialogProps) {
   const { direction } = useLocale();
-  const [ownView, setView] = useState<MediaView>({ key: item.id, zoom: 100, rotation: 0 });
   const viewportRef = useRef<HTMLDivElement>(null);
   const request = useImageRequest(item, onImageError);
-  const view = ownView.key === item.id ? ownView : { key: item.id, zoom: 100, rotation: 0 };
-  // Moving to another item shows it afresh, so coming back to one shows it at 100% again.
-  if (view !== ownView) setView(view);
+  const view = useMediaView({ itemKey: item.id, zoom, defaultZoom, onZoomChange });
   const isImageReady = isImageItem(item) && request.status === 'loaded';
   const show = (key: Key) => {
     keepFocusInViewport(viewportRef.current);
+    if (key !== item.id) view.leave();
     setKey(key);
   };
-  const previous = items[index - 1];
-  const next = items[index + 1];
-  const move = (target: MediaViewerItem | undefined) => {
+  const move = (offset: 1 | -1) => {
+    const target = items[index + offset];
     if (target) show(target.id);
   };
   const onKeyDown = (event: KeyboardEvent) => {
@@ -118,13 +123,13 @@ function MediaViewerDialog({
     const command = resolveMediaKey(event.nativeEvent, direction, panning);
     if (!command) return;
     event.preventDefault();
-    if (command === 'previous' || command === 'next') move(command === 'next' ? next : previous);
-    else if (isImageReady) setView({ ...view, zoom: stepZoom(view.zoom, command) });
+    if (command === 'previous' || command === 'next') move(command === 'next' ? 1 : -1);
+    else if (isImageReady) view.step(command === 'zoom-in' ? 1 : -1);
   };
   return (
     <Modal
       {...modal}
-      className={mergeClassNames(hooks.className, className)}
+      className={mergeClassNames(hooks.className, modal.className)}
       title={item.name}
       description={item.caption}
       size="full"
@@ -139,8 +144,9 @@ function MediaViewerDialog({
           position={index + 1}
           count={items.length}
           zoom={view.zoom}
-          onZoomChange={(zoom) => setView({ ...view, zoom })}
-          onRotate={() => setView({ ...view, rotation: (view.rotation + 90) % 360 })}
+          resetZoom={showZoomReset ? defaultZoom : undefined}
+          onZoomChange={view.setZoom}
+          onRotate={view.rotate}
         />
       }
       footerContent={
@@ -153,10 +159,11 @@ function MediaViewerDialog({
         item={item}
         zoom={view.zoom}
         rotation={view.rotation}
+        onWheelStep={zoomsOnWheel ? view.step : undefined}
         viewportRef={viewportRef}
         hasSiblings={items.length > 1}
-        onPrevious={previous ? () => move(previous) : undefined}
-        onNext={next ? () => move(next) : undefined}
+        onPrevious={index > 0 ? () => move(-1) : undefined}
+        onNext={index < items.length - 1 ? () => move(1) : undefined}
         renderItem={renderItem}
         request={request}
       />
