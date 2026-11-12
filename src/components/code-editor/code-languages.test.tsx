@@ -67,6 +67,39 @@ describe('CodeEditor languages', () => {
       'comment:# count',
     ]);
   });
+  it('UIC-CODE-EDITOR-12.1 highlights hostile lines in linear time, keeping every character', () => {
+    const tokenize = (language: CodeLanguage, source: string) => {
+      const tokens = requireDefined(resolveCodeTokenizer({ language }))(source);
+      expect(tokens.map((token) => token.text).join('')).toBe(source);
+      return tokens.filter((token) => token.type).map((token) => `${token.type}:${token.text}`);
+    };
+    // Each of these took seconds when every rule rescanned the rest of the line at every offset.
+    expect(tokenize('html', `<a${' '.repeat(4000)}`)).toEqual([]);
+    expect(tokenize('html', '<a href="x">Pear</a><br/><br />')).toEqual([
+      'keyword:<a href="x">',
+      'keyword:</a>',
+      'keyword:<br/>',
+      'keyword:<br />',
+    ]);
+    const word = 'a'.repeat(2400);
+    expect(tokenize('xml', `<fruit ${word}="1"/> ${word}`)).toEqual([
+      'keyword:<fruit',
+      `key:${word}`,
+      'string:"1"',
+      'keyword:/>',
+    ]);
+    expect(tokenize('css', `${word}: red; ${word}`)).toEqual([`keyword:${word}`]);
+    expect(tokenize('yaml', `${word} ${word}`)).toEqual([]);
+    expect(tokenize('markdown', `${'['.repeat(4000)}[Pear](https://example.com)`)).toEqual([
+      'link:[Pear](https://example.com)',
+    ]);
+    // A line past five thousand characters stays plain; the next line is highlighted again.
+    const long = `const ${'x'.repeat(5000)}`;
+    expect(tokenize('javascript', `${long}\nconst pear = 1;`)).toEqual([
+      'keyword:const',
+      'number:1',
+    ]);
+  });
   it('UIC-CODE-EDITOR-12.1 accepts custom syntax rules, preserves flags and ignores empty matches', () => {
     const tokenize = createCodeTokenizer([
       { type: 'empty', pattern: /(?:)/g },

@@ -530,12 +530,13 @@ test.describe('Board lab', () => {
     const todo = demo(page, 'virtualized').getByRole('grid', { name: 'To do' });
     const done = demo(page, 'virtualized').getByRole('grid', { name: 'Done' });
     await todo.evaluate((element) => element.scrollTo(0, element.scrollHeight / 2));
-    // The virtualizer redraws its window as the scroll settles, so a row read by its position may
-    // hold another card a moment later: read one card's name, then work with that card by name.
-    await expect(todo.getByRole('row').nth(4)).toBeVisible();
+    // The virtualizer renders the scrolled rows a frame or more later: wait until the first rendered
+    // row is no longer the column's first, then pin the card by name.
+    await expect
+      .poll(async () => Number(await todo.getByRole('row').first().getAttribute('aria-rowindex')))
+      .toBeGreaterThan(10);
     const name = (await todo.getByRole('row').nth(4).textContent()) ?? '';
     const card = todo.getByRole('row', { name, exact: true });
-    await expect(card).toBeVisible();
     await card.focus();
     await expect(card).toBeFocused();
     await page.keyboard.press('Alt+ArrowRight');

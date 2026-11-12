@@ -59,7 +59,7 @@ const xml: CodeSyntax = [
   { type: 'string', pattern: /<!\[CDATA\[[\s\S]*?(?:\]\]>|$)/ },
   { type: 'keyword', pattern: /<[?!/]?[\w:.-]*|\??\/?>/ },
   { type: 'string', pattern: /"[^"]*"|'[^']*'/ },
-  { type: 'key', pattern: /[\w:.-]+(?=\s*=)/ },
+  { type: 'key', pattern: /(?=([\w:.-]+))\1(?=\s*=)/ },
 ];
 const presets: Record<Exclude<CodeLanguage, 'text' | 'json'>, CodeSyntax> = {
   javascript: js,
@@ -73,14 +73,14 @@ const presets: Record<Exclude<CodeLanguage, 'text' | 'json'>, CodeSyntax> = {
   ],
   html: [
     { type: 'comment', pattern: /<!--[\s\S]*?(?:-->|$)/ },
-    { type: 'keyword', pattern: /<\/?[\w:-]+(?:\s+[^<>]*?)?\s*\/?>|<!DOCTYPE[^>]*>/i },
+    { type: 'keyword', pattern: /<\/?[\w:-]+(?:\s[^<>]*)?\/?>|<!DOCTYPE[^>]*>/i },
     quoted,
   ],
   css: [
     { type: 'comment', pattern: /\/\*[\s\S]*?(?:\*\/|$)/ },
     quoted,
     { type: 'number', pattern: /#[\da-f]{3,8}\b|\b\d+(?:\.\d+)?(?:px|em|rem|vh|vw|s|ms|%)?/i },
-    { type: 'keyword', pattern: /--?[\w-]+|[\w-]+(?=\s*:)/ },
+    { type: 'keyword', pattern: /--?[\w-]+|(?=([\w-]+))\1(?=\s*:)/ },
   ],
   sql: [
     { type: 'comment', pattern: /--[^\n]*|\/\*[\s\S]*?(?:\*\/|$)/ },
@@ -129,36 +129,75 @@ const presets: Record<Exclude<CodeLanguage, 'text' | 'json'>, CodeSyntax> = {
   markdown: [
     { type: 'string', pattern: /```[\s\S]*?(?:```|$)|`[^`\n]*`/ },
     { type: 'keyword', pattern: /^#{1,6}\s[^\n]*|\*\*[^*\n]+\*\*|__[^_\n]+__/m },
-    { type: 'link', pattern: /\[[^\]\n]+\]\([^)\n]+\)/ },
+    { type: 'link', pattern: /\[[^[\]\n]+\]\([^)\n]+\)/ },
   ],
 };
 
+/** Options of `createCodeTokenizer` for the presets. */
+interface TokenizerOptions {
+  /**
+   * Whether rules are tried at the start of each word only: after no rule matches at a word
+   * character, the rest of that word stays plain. True for presets, whose rules start at a word
+   * boundary or match to the same word end from any start inside it.
+   */
+  wordStarts: boolean;
+}
+
+/** Lines longer than this stay plain, so a pasted minified file cannot stall highlighting. */
+const maxHighlightedLine = 5000;
+
+const wordCharacter = /\w/;
+const wordRun = /\w+/y;
+
+/** The end of the run of `pattern` at `offset` in `source`. */
+function runEndOf(pattern: RegExp, source: string, offset: number): number {
+  pattern.lastIndex = offset;
+  return pattern.test(source) ? pattern.lastIndex : offset + 1;
+}
+
+/** The end of the line at `offset` when it is too long to highlight, or null. */
+function longLineEnd(source: string, offset: number): number | null {
+  if (offset > 0 && source[offset - 1] !== '\n') return null;
+  const newline = source.indexOf('\n', offset);
+  const end = newline === -1 ? source.length : newline;
+  return end - offset > maxHighlightedLine ? end : null;
+}
+
 /** Ordered syntax rules preserve every source character, including unmatched text. */
-export function createCodeTokenizer(syntax: CodeSyntax): CodeTokenizer {
+export function createCodeTokenizer(
+  syntax: CodeSyntax,
+  { wordStarts }: TokenizerOptions = { wordStarts: false },
+): CodeTokenizer {
   const rules = syntax.map((rule) => ({
     ...rule,
     pattern: new RegExp(rule.pattern.source, rule.pattern.flags.replace(/[gy]/g, '') + 'y'),
   }));
+  const matchAt = (source: string, offset: number) => {
+    for (const rule of rules) {
+      rule.pattern.lastIndex = offset;
+      const text = rule.pattern.exec(source)?.[0];
+      if (text) return { text, type: rule.type };
+    }
+    return null;
+  };
   return (source) => {
     const tokens: CodeToken[] = [];
     let plain = '';
     for (let offset = 0; offset < source.length;) {
-      const match = rules
-        .map((rule) => {
-          rule.pattern.lastIndex = offset;
-          return { type: rule.type, text: rule.pattern.exec(source)?.[0] };
-        })
-        .find((token) => token.text);
-      if (!match?.text) {
-        plain += source[offset];
-        offset += 1;
+      const skipTo = longLineEnd(source, offset);
+      const match = skipTo === null ? matchAt(source, offset) : null;
+      if (!match) {
+        const isWord = wordStarts && wordCharacter.test(source[offset] ?? '');
+        const end = skipTo ?? (isWord ? runEndOf(wordRun, source, offset) : offset + 1);
+        plain += source.slice(offset, end);
+        offset = end;
         continue;
       }
       if (plain) {
         tokens.push({ text: plain });
         plain = '';
       }
-      tokens.push({ text: match.text, type: match.type });
+      tokens.push(match);
       offset += match.text.length;
     }
     if (plain) tokens.push({ text: plain });
@@ -166,7 +205,10 @@ export function createCodeTokenizer(syntax: CodeSyntax): CodeTokenizer {
   };
 }
 const tokenizers = Object.fromEntries(
-  Object.entries(presets).map(([language, syntax]) => [language, createCodeTokenizer(syntax)]),
+  Object.entries(presets).map(([language, syntax]) => [
+    language,
+    createCodeTokenizer(syntax, { wordStarts: true }),
+  ]),
 ) as Record<keyof typeof presets, CodeTokenizer>;
 
 /**
