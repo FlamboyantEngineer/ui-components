@@ -1,6 +1,6 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { REANNOUNCE_MARK } from '../../utils/reannounce.js';
 import { Button } from '../button/button.js';
@@ -10,6 +10,10 @@ function Saver({ text, options }: { text: string; options?: AnnounceOptions }) {
   const announce = useAnnounce();
   return <Button onPress={() => announce(text, options)}>Announce {text}</Button>;
 }
+
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 describe('Announcer', () => {
   it('UIC-ANNOUNCER-1.1 renders a polite and an assertive live region, hidden from view', () => {
@@ -45,6 +49,31 @@ describe('Announcer', () => {
     await user.click(screen.getByRole('button', { name: 'Announce Connection lost' }));
     expect(screen.getByRole('alert')).toHaveTextContent('Connection lost');
     expect(screen.getByRole('status')).toHaveTextContent('Saved');
+  });
+
+  it('UIC-ANNOUNCER-1.2 empties a region seven seconds after its last announcement', async () => {
+    vi.useFakeTimers();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    render(
+      <Announcer>
+        <Saver text="Saved" />
+        <Saver text="Connection lost" options={{ politeness: 'assertive' }} />
+      </Announcer>,
+    );
+    await user.click(screen.getByRole('button', { name: 'Announce Saved' }));
+    act(() => {
+      vi.advanceTimersByTime(5000);
+    });
+    await user.click(screen.getByRole('button', { name: 'Announce Connection lost' }));
+    act(() => {
+      vi.advanceTimersByTime(2100);
+    });
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
+    expect(screen.getByRole('alert')).toHaveTextContent('Connection lost');
+    act(() => {
+      vi.advanceTimersByTime(5000);
+    });
+    expect(screen.getByRole('alert')).toBeEmptyDOMElement();
   });
 
   it('UIC-ANNOUNCER-1.3 changes the region again for repeated text', async () => {

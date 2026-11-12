@@ -137,9 +137,21 @@ export function createDeferred<T>(): Deferred<T> {
   return { promise, resolve, reject };
 }
 
+/**
+ * A token unique to this session: a random UUID where the browser offers one (secure contexts),
+ * else 16 random base-36 characters.
+ */
+function createSessionToken(): string {
+  const uuid = globalThis.crypto?.randomUUID?.();
+  if (uuid) return uuid;
+  let token = '';
+  while (token.length < 16) token += Math.random().toString(36).slice(2);
+  return token.slice(0, 16);
+}
+
 /** Ids unique across sessions, so stored messages never clash with new ones. */
 export function createIdFactory(): () => string {
-  const prefix = `chat-${Math.random().toString(36).slice(2, 10)}`;
+  const prefix = `chat-${createSessionToken()}`;
   let count = 0;
   return () => {
     count += 1;

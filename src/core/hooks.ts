@@ -77,6 +77,18 @@ function writeDataAttributes(attributes: DataAttributes, values: DataValues, cle
   }
 }
 
+/** Whether `key` is a valid `data-*` prop name; the cheap prefix test runs first. */
+function isDataAttributeName(key: string): boolean {
+  return key.startsWith('data-') && dataAttributeName.test(key);
+}
+
+/** Writes one caller `data-*` value as React renders it, skipping `null` and `undefined`. */
+function writeDataAttribute(attributes: DataAttributes, key: string, value: unknown) {
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    attributes[key as `data-${string}`] = String(value);
+  }
+}
+
 /** Joins class names, skipping empty values. */
 export function mergeClassNames(...classNames: Array<string | false | null | undefined>): string {
   return classNames.filter(Boolean).join(' ');
@@ -89,24 +101,28 @@ export function mergeClassNames(...classNames: Array<string | false | null | und
  */
 export function pickDataAttributes(props: object): DataAttributes {
   const attributes: DataAttributes = {};
-  for (const [key, value] of Object.entries(props)) {
-    if (!key.startsWith('data-') || !dataAttributeName.test(key)) continue;
-    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-      attributes[key as `data-${string}`] = String(value);
+  const values = props as Record<string, unknown>;
+  for (const key in values) {
+    if (isDataAttributeName(key) && Object.hasOwn(values, key)) {
+      writeDataAttribute(attributes, key, values[key]);
     }
   }
   return attributes;
 }
 
-/** Splits a props object into its `data-*` attributes and the rest. */
+/** Splits a props object into its `data-*` attributes and the rest, in one pass. */
 export function splitDataAttributes<P extends object>(
   props: P,
 ): [DataAttributes, Omit<P, `data-${string}`>] {
+  const attributes: DataAttributes = {};
   const rest: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(props)) {
-    if (!key.startsWith('data-') || !dataAttributeName.test(key)) rest[key] = value;
+  const values = props as Record<string, unknown>;
+  for (const key in values) {
+    if (!Object.hasOwn(values, key)) continue;
+    if (isDataAttributeName(key)) writeDataAttribute(attributes, key, values[key]);
+    else rest[key] = values[key];
   }
-  return [pickDataAttributes(props), rest as Omit<P, `data-${string}`>];
+  return [attributes, rest as Omit<P, `data-${string}`>];
 }
 
 /**

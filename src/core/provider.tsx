@@ -123,6 +123,15 @@ interface PendingWrite {
   encode: () => string;
 }
 
+/** The stored text under `key`, or `null` when there is none or the adapter throws (blocked storage). */
+function readStoredItem(storage: UiStorage, key: string): string | null {
+  try {
+    return storage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Writes changes to the adapter after `writeDelay`, keeping only the last one. The pending write
  * goes out at once when the key or adapter changes, the component unmounts or the page hides.
@@ -135,7 +144,12 @@ function useDelayedWrite(owner: { key: string | undefined; storage: UiStorage | 
     timer.current = undefined;
     const write = pending.current;
     pending.current = null;
-    write?.storage.setItem(write.key, write.encode());
+    // Persistence is best effort: a codec or an adapter that throws drops the write, not the tree.
+    try {
+      write?.storage.setItem(write.key, write.encode());
+    } catch {
+      // Dropped.
+    }
   }, []);
   const schedule = useCallback(
     (write: PendingWrite, delay: number) => {
@@ -147,10 +161,18 @@ function useDelayedWrite(owner: { key: string | undefined; storage: UiStorage | 
   );
   // Before the next owner's value is read or written, the last owner's change lands.
   useLayoutEffect(() => flush, [flush, owner.key, owner.storage]);
+  // Mobile browsers often freeze or discard a hidden tab without `pagehide`: hiding writes too.
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
+    const onVisibilityChange = () => {
+      if (window.document.visibilityState === 'hidden') flush();
+    };
     window.addEventListener('pagehide', flush);
-    return () => window.removeEventListener('pagehide', flush);
+    window.document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      window.removeEventListener('pagehide', flush);
+      window.document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
   }, [flush]);
   return useMemo(() => ({ schedule, flush }), [schedule, flush]);
 }
@@ -362,7 +384,7 @@ export function usePersistentState<T>(
     const fallback = () =>
       typeof initialValue === 'function' ? (initialValue as () => T)() : initialValue;
     if (key === undefined || storage === undefined) return { value: fallback(), raw: null };
-    const raw = storage.getItem(key);
+    const raw = readStoredItem(storage, key);
     if (raw === null) return { value: fallback(), raw };
     try {
       return { value: codec.parse(raw), raw };
@@ -385,7 +407,7 @@ export function usePersistentState<T>(
   // new owner reads again before paint and keeps what was written.
   useLayoutEffect(() => {
     const { key, storage, raw, read } = latestRef.current;
-    if (key === undefined || storage === undefined || storage.getItem(key) === raw) return;
+    if (key === undefined || storage === undefined || readStoredItem(storage, key) === raw) return;
     setState({ key, storage, ...read() });
   }, [key, storage, latestRef]);
 

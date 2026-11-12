@@ -44,7 +44,7 @@ describe('downloadBlob', () => {
     expect(document.querySelector('a')).toBeNull();
     expect(URL.revokeObjectURL).not.toHaveBeenCalled();
     vi.advanceTimersByTime(DOWNLOAD_URL_LIFETIME);
-    expect(DOWNLOAD_URL_LIFETIME).toBe(1000);
+    expect(DOWNLOAD_URL_LIFETIME).toBe(40_000);
     expect(URL.revokeObjectURL).toHaveBeenCalledWith(`blob:${location.origin}/file-1`);
   });
 });

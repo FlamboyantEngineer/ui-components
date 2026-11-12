@@ -61,16 +61,24 @@ describe('PdfViewer commands', () => {
     const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
     const engine = createEngine();
     await renderReady({ source: new Uint8Array([1, 2]) }, engine);
-    await chooseCommand('Download');
-    await waitFor(() => expect(click).toHaveBeenCalledTimes(1));
-    const link = click.mock.contexts[0] as HTMLAnchorElement;
-    expect(link.download).toBe('Report.pdf');
-    expect(link.href).toBe('blob:page-1');
-    expect(engine.pdf.getData).toHaveBeenCalled();
-    // The file's address is released once the download has started.
-    await waitFor(() => expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:page-1'), {
-      timeout: 3000,
-    });
+    // Fake timers that still follow real time, so the address's lifetime can be skipped.
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      await chooseCommand('Download');
+      await waitFor(() => expect(click).toHaveBeenCalledTimes(1));
+      const link = click.mock.contexts[0] as HTMLAnchorElement;
+      expect(link.download).toBe('Report.pdf');
+      expect(link.href).toBe('blob:page-1');
+      expect(engine.pdf.getData).toHaveBeenCalled();
+      // The file's address is released once the download has had time to start.
+      expect(URL.revokeObjectURL).not.toHaveBeenCalledWith('blob:page-1');
+      act(() => {
+        vi.advanceTimersByTime(40_000);
+      });
+      expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:page-1');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('UIC-PDF-VIEWER-9.3 prints every page as an image in a hidden frame and removes it after', async () => {

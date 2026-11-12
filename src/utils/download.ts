@@ -1,7 +1,10 @@
 // Saving a file as a clicked download link would, without opening a window or navigating.
 
-/** How long an object URL stays valid after its download starts, in milliseconds. */
-export const DOWNLOAD_URL_LIFETIME = 1000;
+/**
+ * How long an object URL stays valid after its download starts, in milliseconds: long enough for a
+ * browser that reads a large blob slowly (Safari in particular) to finish reading it.
+ */
+export const DOWNLOAD_URL_LIFETIME = 40_000;
 
 function clickDownloadLink(href: string, fileName: string): void {
   const link = document.createElement('a');

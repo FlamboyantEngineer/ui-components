@@ -752,7 +752,7 @@ Verification: `src/components/table/table-reveal.test.tsx`
 
 ### UIC-TABLE-19.3 - Virtualized rows
 
-A virtualized table shall reveal a row it has not drawn: it scrolls its scroll area (`ui-table__scroll`) to the row's place in React Aria's layout, waits up to eight frames for the row to be drawn, then reveals it as above. Rows replaced while it waits are read again, so a row that is gone resolves with its new reason, and a table that unmounts resolves `unmounted`.
+A virtualized table shall reveal a row it has not drawn: it scrolls its scroll area (`ui-table__scroll`) to the row's place in React Aria's layout, waits up to eight frames of the table's own window for the row to be drawn, each wait cut short after 100 ms because a hidden page draws no frames, then reveals it as above. Rows replaced while it waits are read again, so a row that is gone resolves with its new reason, and a table that unmounts resolves `unmounted`.
 
 Implementation: `src/utils/use-collection-handle.ts`, `src/components/table/table-virtualizer.tsx`
 Verification: `src/components/table/table-reveal.test.tsx`, `e2e/table-reveal.spec.ts`

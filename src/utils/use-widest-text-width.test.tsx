@@ -13,6 +13,28 @@ function Probe({ texts, fontKey }: { texts: readonly string[]; fontKey?: string 
   );
 }
 
+/** A probe whose element sets the text styles that change a text's width. */
+function StyledProbe({ texts }: { texts: readonly string[] }) {
+  const ref = useRef<HTMLSpanElement | null>(null);
+  const width = useWidestTextWidth(ref, texts);
+  return (
+    <span
+      ref={ref}
+      role="status"
+      aria-label="Widest text"
+      style={{
+        letterSpacing: '2px',
+        fontStretch: '75%',
+        fontKerning: 'none',
+        fontVariantCaps: 'small-caps',
+        textTransform: 'uppercase',
+      }}
+    >
+      {String(width)}
+    </span>
+  );
+}
+
 function stubCanvas() {
   const fonts: string[] = [];
   const measureText = vi.fn((text: string) => ({ width: text.length * 6.5 }));
@@ -145,5 +167,45 @@ describe('useWidestTextWidth', () => {
     unmount();
     fonts.dispatchEvent(new Event('loadingdone'));
     expect(measureText).toHaveBeenCalledTimes(calls);
+  });
+
+  it('UIC-MEASUREMENT-3.1 measures with the element spacing, stretch, caps and text transform', async () => {
+    const settings: Record<string, string> = {};
+    const measured: string[] = [];
+    const context = new Proxy(
+      {
+        measureText: (text: string) => {
+          measured.push(text);
+          return { width: text.length * 6.5 };
+        },
+        letterSpacing: '0px',
+        wordSpacing: '0px',
+        fontStretch: 'normal',
+        fontKerning: 'auto',
+        fontVariantCaps: 'normal',
+        font: '',
+      },
+      {
+        set(target, key: string, value: string) {
+          settings[key] = value;
+          return Reflect.set(target, key, value);
+        },
+      },
+    );
+    vi.stubGlobal(
+      'OffscreenCanvas',
+      vi.fn(function () {
+        return { getContext: () => context };
+      }),
+    );
+    render(createElement(StyledProbe, { texts: ['fig tree', 'plum'] }));
+    await waitFor(() => expect(probe()).toHaveTextContent('52'));
+    expect(measured).toContain('FIG TREE');
+    expect(settings).toMatchObject({
+      letterSpacing: '2px',
+      fontStretch: 'condensed',
+      fontKerning: 'none',
+      fontVariantCaps: 'small-caps',
+    });
   });
 });
