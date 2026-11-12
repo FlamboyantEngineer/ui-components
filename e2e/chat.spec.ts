@@ -73,8 +73,12 @@ for (const cell of [
     // Each wheel takes effect before the next, so the last one is the reader's.
     await page.mouse.wheel(0, -60);
     await expect.poll(() => distanceToBottom(scope)).toBeGreaterThan(1);
-    await page.mouse.wheel(0, 4000);
-    await expect.poll(() => distanceToBottom(scope)).toBeLessThanOrEqual(1);
+    // A virtualized history measures the rows the wheel reveals and can grow past one wheel's
+    // reach, so keep wheeling, as a reader does, until the bottom holds.
+    await expect(async () => {
+      await page.mouse.wheel(0, 4000);
+      expect(await distanceToBottom(scope)).toBeLessThanOrEqual(1);
+    }).toPass();
     await composer(scope).click();
     await typeDraft(page);
     await expect(scope.locator('.ui-chat__status')).toHaveCount(0, { timeout: 20_000 });
