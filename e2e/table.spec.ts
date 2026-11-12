@@ -917,13 +917,13 @@ test.describe('Table lab', () => {
     });
     await expect(grid.locator('.ui-table__group-label')).toHaveText([
       'Code 1 (string)',
+      'Code true (string)',
       'Code 1 (number)',
       'Code true (boolean)',
-      'Code true (string)',
     ]);
     await expect(
       grid.locator('.ui-table__group-row .ui-table__aggregate-cell:last-child'),
-    ).toHaveText(['20', '10', '30', '40']);
+    ).toHaveText(['20', '40', '10', '30']);
     await lab.expectAccessible('[data-lab="grouping-typed"]');
   });
 
