@@ -185,16 +185,71 @@
  * distance up to 8px, so a reader sees there is more. One pseudo-element over the viewport carries
  * all four, beneath the overlay tracks; it never masks the content or its focus rings. The inline
  * start is the left edge, or the right one right to left.
+ *
+ * The distances change with every scroll, and a custom property that inherits restyles everything
+ * inside the region each time it changes. So the distances are registered not to inherit, and the
+ * depths the pseudo-element reads are registered lengths: computed, they stop changing once an
+ * edge is 8px away, and the content is restyled only while the region is within 8px of an edge.
  */
+@property --ui-scroll-region-overflow-y-start {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --ui-scroll-region-overflow-y-end {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --ui-scroll-region-overflow-x-start {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --ui-scroll-region-overflow-x-end {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --ref-scroll-region-shade-top {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --ref-scroll-region-shade-bottom {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --ref-scroll-region-shade-left {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --ref-scroll-region-shade-right {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
 .ui-scroll-region {
   --ref-scroll-region-shade: color-mix(in srgb, var(--ref-text) var(--ref-tint), transparent);
-  --ref-scroll-region-shade-left: var(--ui-scroll-region-overflow-x-start);
-  --ref-scroll-region-shade-right: var(--ui-scroll-region-overflow-x-end);
+  --ref-scroll-region-shade-top: min(var(--ui-scroll-region-overflow-y-start), 8px);
+  --ref-scroll-region-shade-bottom: min(var(--ui-scroll-region-overflow-y-end), 8px);
+  --ref-scroll-region-shade-left: min(var(--ui-scroll-region-overflow-x-start), 8px);
+  --ref-scroll-region-shade-right: min(var(--ui-scroll-region-overflow-x-end), 8px);
 }
 
 [dir='rtl'] .ui-scroll-region {
-  --ref-scroll-region-shade-left: var(--ui-scroll-region-overflow-x-end);
-  --ref-scroll-region-shade-right: var(--ui-scroll-region-overflow-x-start);
+  --ref-scroll-region-shade-left: min(var(--ui-scroll-region-overflow-x-end), 8px);
+  --ref-scroll-region-shade-right: min(var(--ui-scroll-region-overflow-x-start), 8px);
 }
 
 .ui-scroll-region:is(
@@ -208,13 +263,13 @@
   z-index: 0;
   background:
     linear-gradient(to bottom, var(--ref-scroll-region-shade), transparent) top / 100%
-      min(var(--ui-scroll-region-overflow-y-start), 8px) no-repeat,
+      var(--ref-scroll-region-shade-top) no-repeat,
     linear-gradient(to top, var(--ref-scroll-region-shade), transparent) bottom / 100%
-      min(var(--ui-scroll-region-overflow-y-end), 8px) no-repeat,
+      var(--ref-scroll-region-shade-bottom) no-repeat,
     linear-gradient(to right, var(--ref-scroll-region-shade), transparent) left /
-      min(var(--ref-scroll-region-shade-left), 8px) 100% no-repeat,
+      var(--ref-scroll-region-shade-left) 100% no-repeat,
     linear-gradient(to left, var(--ref-scroll-region-shade), transparent) right /
-      min(var(--ref-scroll-region-shade-right), 8px) 100% no-repeat;
+      var(--ref-scroll-region-shade-right) 100% no-repeat;
   content: '';
   pointer-events: none;
 }

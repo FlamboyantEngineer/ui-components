@@ -180,21 +180,18 @@ function MessageLabel({ id, label }: { id: string; label: string | undefined }) 
   ) : null;
 }
 
-/**
- * The time in a tooltip over the message's body once it has been hovered or held focus for the
- * tooltip delay, so a pointer passing over the chat opens nothing.
- */
-function MessageTimeTooltip({
+/** The tooltip that shows the time, with the positioning and listeners an open tooltip needs. */
+function MessageTimePanel({
   time,
   getNow,
   isOpen,
   anchor,
-}: Pick<ChatMessageProps, 'time' | 'getNow'> & {
+}: Pick<ChatMessageProps, 'getNow'> & {
+  time: string;
   isOpen: boolean;
   anchor: RefObject<HTMLDivElement | null>;
 }) {
-  const isShown = useActiveAfter(isOpen && Boolean(time), TOOLTIP_DELAY);
-  if (!time) return null;
+  const isShown = useActiveAfter(isOpen, TOOLTIP_DELAY);
   return (
     <AnchoredTooltip
       isOpen={isShown}
@@ -213,6 +210,24 @@ function MessageTimeTooltip({
       }
     />
   );
+}
+
+/**
+ * The time in a tooltip over the message's body once it has been hovered or held focus for the
+ * tooltip delay, so a pointer passing over the chat opens nothing. A message that was never hovered
+ * or focused holds no tooltip at all, so a long conversation does not carry one per message.
+ */
+function MessageTimeTooltip({
+  time,
+  isOpen,
+  ...panel
+}: Pick<ChatMessageProps, 'time' | 'getNow'> & {
+  isOpen: boolean;
+  anchor: RefObject<HTMLDivElement | null>;
+}) {
+  const [isUsed, setUsed] = useState(false);
+  if (isOpen && !isUsed) setUsed(true);
+  return time && isUsed ? <MessageTimePanel {...panel} time={time} isOpen={isOpen} /> : null;
 }
 
 /**

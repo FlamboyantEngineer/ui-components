@@ -10,6 +10,7 @@ import { ChatEverythingCases } from './chat-everything-cases.js';
 import { ChatGroupCases } from './chat-group-cases.js';
 import { ChatHostCases } from './chat-host-cases.js';
 import { ChatInlineOptionsCases } from './chat-inline-options-cases.js';
+import { ChatLongCases } from './chat-long-cases.js';
 import { ChatPeopleCases } from './chat-people-cases.js';
 import { ChatProgressCases } from './chat-progress-cases.js';
 import { ChatQueueCases } from './chat-queue-cases.js';
@@ -72,6 +73,7 @@ mountLab(
     <ChatSurfaceCases />
     <ChatStateCases />
     <ChatDisplayCases />
+    <ChatLongCases />
     <LabSection
       title="Header"
       description="ChatHeader on its own: one participant with their presence (or a plain avatar without it; an assistant's is rounded), a stack of several that lists everyone with their presence when pressed, the title as a heading, a line saying who is typing or what the assistant does, and the host's controls."

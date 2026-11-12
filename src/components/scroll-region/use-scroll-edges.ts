@@ -47,6 +47,14 @@ export function readScrollEdges(element: HTMLElement): ScrollEdges {
 }
 
 /**
+ * Whether the browser draws `element`: not while an ancestor hides its content, as a collapsed
+ * panel does. Where the browser cannot tell, the element counts as drawn.
+ */
+function isRendered(element: HTMLElement): boolean {
+  return typeof element.checkVisibility !== 'function' || element.checkVisibility();
+}
+
+/**
  * The viewport's edge distances, read when it scrolls, resizes or its children change (without
  * waiting for an animation frame), and once a frame when content deeper inside changes, through the
  * region's shared observer. Scrolling to the top or bottom calls the edge callbacks; with `stickToBottom` a viewport scrolled to the bottom follows
@@ -66,7 +74,7 @@ export function useScrollEdges(
   const read = useCallback(
     (fromScroll: boolean) => {
       const element = viewportRef.current;
-      if (!element) return;
+      if (!element || !isRendered(element)) return;
       // A scroll that comes with a new extent is the browser's (scroll anchoring or clamping on a
       // content change), not the reader's, so it keeps the reader's pin.
       const range = element.scrollHeight - element.clientHeight;

@@ -60,7 +60,6 @@ export interface ChatProps
       ChatTranscriptProps,
       | 'emptyState'
       | 'presentation'
-      | 'virtualized'
       | 'onLoadOlder'
       | 'hasOlder'
       | 'isLoadingOlder'
@@ -69,6 +68,12 @@ export interface ChatProps
     > {
   /** The conversation, oldest first. */
   messages: readonly ChatMessageData[];
+  /**
+   * Mount only the messages near the view, so a long conversation stays as quick as a short one.
+   * Defaults to `true`; `false` keeps every message in the page, where the browser's own find
+   * reaches it, at a cost that grows with the conversation.
+   */
+  virtualized?: boolean | undefined;
   /** Everyone who takes part, the reader included. An assistant among them makes an assistant chat. */
   participants: readonly ChatParticipant[];
   /** `anchor` keeps the reader's sent message at the top while the reply fills in below; `follow` keeps the latest in view. Defaults to `anchor` in an assistant chat, else `follow`. */
@@ -220,7 +225,7 @@ export function Chat(props: ChatProps) {
           highlightedMessageId={search.highlightedId ?? state.jumpedId}
           firstUnreadId={props.firstUnreadId}
           onRead={props.onRead}
-          virtualized={props.virtualized}
+          virtualized={props.virtualized ?? true}
         >
           {sequence}
         </ChatTranscript>
