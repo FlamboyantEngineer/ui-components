@@ -1,12 +1,16 @@
 import { useState } from 'react';
-import { Button } from '../../src/components/button/button.js';
 import { type ChatConversation, ChatList } from '../../src/components/chat-list/chat-list.js';
-import { Menu, MenuItem, MenuPopover, MenuTrigger } from '../../src/components/menu/menu.js';
-import { MoreGlyph } from '../../src/core/glyphs.js';
-import { getNow, manyConversations, minutesAgo, rowKinds } from './chat-list-samples.js';
+import { Menu, MenuItem } from '../../src/components/menu/menu.js';
+import {
+  getNow,
+  historyConversations,
+  manyConversations,
+  minutesAgo,
+  rowKinds,
+} from './chat-list-samples.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
-const kinds = ['person', 'group', 'assistant'] as const;
+const kinds = ['person', 'group', 'assistant', 'title', 'icon', 'status', 'activity'] as const;
 const rowStates = ['read', 'unread', 'muted', 'muted-unread'] as const;
 const listStates = ['loading', 'empty', 'custom-empty', 'selected'] as const;
 
@@ -32,18 +36,46 @@ function ConversationMenu({
   );
 }
 
-/** A conversation's own menu, drawn in its row. */
-function RowMenu(props: {
-  conversation: ChatConversation;
-  onChange: (change: Partial<ChatConversation>) => void;
-}) {
+/** A conversation's history commands: rename and delete. */
+function HistoryMenu({ onDelete }: { onDelete: () => void }) {
   return (
-    <MenuTrigger>
-      <Button icon={MoreGlyph} label={`More for ${props.conversation.title}`} size="sm" />
-      <MenuPopover>
-        <ConversationMenu {...props} />
-      </MenuPopover>
-    </MenuTrigger>
+    <Menu onAction={(key) => (key === 'delete' ? onDelete() : undefined)}>
+      <MenuItem id="rename">Rename</MenuItem>
+      <MenuItem id="delete">Delete</MenuItem>
+    </Menu>
+  );
+}
+
+/** How many conversations each page of the history adds. */
+const historyPage = 10;
+
+/** Titles only, a page at a time: open one, start one, delete one or load the next page. */
+function HistoryDemo() {
+  const [shown, setShown] = useState(historyPage);
+  const [removed, setRemoved] = useState<readonly string[]>([]);
+  const [added, setAdded] = useState<readonly ChatConversation[]>([]);
+  const [selectedKey, setSelectedKey] = useState<string | null>('history-1');
+  const all = [...added, ...historyConversations].filter((item) => !removed.includes(item.id));
+  const remove = (id: string) => setRemoved((list) => [...list, id]);
+  const start = () => {
+    const id = `started-${added.length + 1}`;
+    setAdded((list) => [{ id, title: 'New chat' }, ...list]);
+    setSelectedKey(id);
+  };
+  return (
+    <div data-lab-demo="history" style={{ height: 520, width: 300 }}>
+      <ChatList
+        heading="Recents"
+        conversations={all.slice(0, shown)}
+        selectedKey={selectedKey}
+        onSelectionChange={setSelectedKey}
+        onNew={start}
+        onLoadMore={shown < all.length ? () => setShown((count) => count + historyPage) : undefined}
+        renderContextMenu={(conversation) => (
+          <HistoryMenu onDelete={() => remove(conversation.id)} />
+        )}
+      />
+    </div>
   );
 }
 
@@ -72,14 +104,9 @@ function InboxDemo() {
           conversations={conversations}
           selectedKey={selectedKey}
           onSelectionChange={open}
+          showSearch
           onNew={start}
           getNow={getNow}
-          renderActions={(conversation) => (
-            <RowMenu
-              conversation={conversation}
-              onChange={(change) => update(conversation.id, change)}
-            />
-          )}
           renderContextMenu={(conversation) => (
             <ConversationMenu
               conversation={conversation}
@@ -105,6 +132,7 @@ function HostSearchDemo() {
         aria-label="Conversations found by the host"
         conversations={found}
         onSearchChange={setQuery}
+        showSearch
         getNow={getNow}
       />
     </div>
@@ -140,6 +168,7 @@ function StateCell({ state }: { state: (typeof listStates)[number] }) {
         conversations={conversations}
         isLoading={state === 'loading'}
         selectedKey={state === 'selected' ? 'trip' : null}
+        showSearch
         onNew={() => {}}
         emptyState={state === 'custom-empty' ? <p>Say hello to your team.</p> : undefined}
         getNow={getNow}
@@ -169,14 +198,20 @@ function FallbackCell({ fallback }: { fallback: (typeof fallbacks)[number] }) {
 mountLab(
   <>
     <LabSection
+      title="History"
+      description="An assistant's chat history: a New chat row, the Recents heading and titles only. The first conversation's assistant is working: its dots pulse and its name says Working. Every row but the second carries the history mark, read in its name as Earlier versions. A row's context menu (a secondary click, a long touch, the Context Menu key or Shift+F10) renames or deletes it. While more conversations can load, the last two rows fade above the Load more row, which adds ten at a time."
+    >
+      <HistoryDemo />
+    </LabSection>
+    <LabSection
       title="Conversations"
-      description="Forty conversations, one-to-one with presence, groups, an assistant, unread and muted. Search narrows them by title and last message; each row's menu, and its context menu (a secondary click, a long touch, the Context Menu key or Shift+F10), marks it read or mutes it, and focus returns to the row; New chat starts one. Arrow keys move between rows, Left and Right into a row's menu, Enter or Space opens a conversation, or on the menu button opens the menu, which returns focus to its button as it closes. The clock is fixed at 20 April 2026, 10:30."
+      description="Forty conversations, one-to-one with presence, groups, an assistant, unread and muted, with the search field shown (showSearch). Search narrows them by title and last message; each row's context menu (a secondary click, a long touch, the Context Menu key or Shift+F10) marks it read or mutes it, and focus returns to the row; New chat starts one. Arrow keys move between rows and Enter or Space opens a conversation. The clock is fixed at 20 April 2026, 10:30."
     >
       <InboxDemo />
     </LabSection>
     <LabSection
       title="Rows"
-      description="Each kind of conversation, read, unread, muted, and muted with unread messages."
+      description="Each kind of conversation, read, unread, muted, and muted with unread messages: a person, a group, an assistant with its own avatar, a title alone, a title with an icon, a title with a status mark and one whose participant is typing."
     >
       <StateMatrix
         axes={{ kind: kinds, state: rowStates }}

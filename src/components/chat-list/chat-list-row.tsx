@@ -1,6 +1,5 @@
 'use client';
 
-import type { ReactNode } from 'react';
 import { useNow, useTimeZone } from '../../core/clock.js';
 import { useClockTick } from '../../core/clock-tick.js';
 import { BellSlashGlyph } from '../../core/glyphs.js';
@@ -9,8 +8,6 @@ import type { PresenceStatus } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { GridListItem, Text, useLocale } from '../../primitives/index.js';
 import { normalizeCount } from '../../utils/count.js';
-import { isEmptyNode } from '../../utils/is-empty-node.js';
-import { keepControlFocusReturn } from '../../utils/keep-control-focus-return.js';
 import {
   capitalizeText,
   describeRelativeTime,
@@ -20,7 +17,7 @@ import { Attribution, type AttributionProps } from '../attribution/attribution.j
 import { Avatar, type AvatarIdentity, resolveStatusLabel } from '../avatar/avatar.js';
 import { AvatarGroup } from '../avatar-group/avatar-group.js';
 import { Badge } from '../badge/badge.js';
-import { Icon } from '../icon/icon.js';
+import { hasIcon, Icon, type IconSource, toIconProps } from '../icon/icon.js';
 import { TextMatch } from '../text-match/text-match.js';
 import { type ChatListMenu, useConversationMenuTarget } from './chat-list-menu.js';
 
@@ -50,8 +47,25 @@ export interface ChatConversation {
   participants?: readonly ChatListParticipant[] | undefined;
   /** A picture or initials for the conversation itself, such as a named group's. Wins over the participants. */
   avatar?: AvatarIdentity | undefined;
+  /** A glyph at the row's start, for a conversation without an avatar or participants. */
+  icon?: IconSource | undefined;
   /** The reader turned the conversation's notifications off. */
   isMuted?: boolean | undefined;
+  /** A mark the host gives the conversation, such as `HistoryGlyph`, drawn at the row's end and read in its name. */
+  status?: ChatConversationStatus | undefined;
+  /**
+   * What a participant is doing right now, such as "Typing" or "Working": animated dots at the row's
+   * end, read in the row's name.
+   */
+  activity?: string | undefined;
+}
+
+/** A host's mark on a conversation: its glyph and what it means in words. */
+export interface ChatConversationStatus {
+  /** The glyph drawn at the row's end. */
+  icon: IconSource;
+  /** What the mark means, read in the row's name. */
+  label: string;
 }
 
 /** How a conversation's time reads, in its row and in the row's name. */
@@ -59,7 +73,6 @@ type ChatListTimeOptions = Pick<AttributionProps, 'fallbackAfterDays' | 'getNow'
 
 interface ChatListRowProps extends ChatListTimeOptions {
   conversation: ChatConversation;
-  renderActions: ((conversation: ChatConversation) => ReactNode) | undefined;
   /** The list's context menu, given that the row's conversation has one. */
   menu: ChatListMenu | undefined;
   /** The list's context menu is open for this row. */
@@ -70,18 +83,26 @@ export const listHooks = createHooks('chat-list', [
   'header',
   'search',
   'new',
+  'body',
+  'heading',
   'list',
   'conversation',
   'avatar',
   'title',
+  'status',
+  'activity',
+  'activity-dot',
   'time',
   'preview',
   'muted',
   'unread',
-  'actions',
   'empty',
   'skeleton',
+  'load-more',
 ]);
+
+/** The keys of the activity indicator's three dots. */
+const activityDots = ['first', 'second', 'third'];
 
 /**
  * The time as the row shows it, for the row's name: the stable absolute text on the server and while
@@ -106,63 +127,107 @@ function useTimeText(
   return text.isRelative ? capitalizeText(text.relative, locale) : text.relative;
 }
 
-/** The conversation's own avatar, its one participant with presence, or its participants' stack. */
+/**
+ * The row's start: the conversation's own avatar, its one participant with presence, its
+ * participants' stack or its icon.
+ */
 function ConversationAvatar({ conversation }: { conversation: ChatConversation }) {
-  const { avatar, participants = [] } = conversation;
+  const { avatar, participants = [], icon } = conversation;
   const [first] = participants;
   if (avatar) return <Avatar {...avatar} size="md" decorative />;
   if (participants.length > 1)
     return <AvatarGroup people={participants} size="sm" maxVisible={2} />;
-  if (!first) return <Avatar name={conversation.title} size="md" decorative />;
+  if (!first) return <Icon {...toIconProps(icon)} />;
   const { id: _id, presence, presenceLabel, ...identity } = first;
   return <Avatar {...identity} status={presence} statusLabel={presenceLabel} size="md" />;
 }
 
-/**
- * One conversation: its avatar, title, relative time, last message, muted mark, unread count and
- * the host's actions. The row is named by its title, presence, unread count, muted state and time,
- * then the last message.
- */
-export function ChatListRow({
-  conversation,
-  renderActions,
-  menu,
-  isMenuOpen,
-  ...timeOptions
-}: ChatListRowProps) {
+/** The row's start, given the conversation has an avatar, participants or an icon. */
+function RowStart({ conversation }: { conversation: ChatConversation }) {
+  const { avatar, participants = [], icon } = conversation;
+  if (!avatar && participants.length === 0 && !hasIcon(icon)) return null;
+  return (
+    <span {...listHooks.slot('avatar')} aria-hidden="true">
+      <ConversationAvatar conversation={conversation} />
+    </span>
+  );
+}
+
+/** The marks after the title: muted, the host's status and the activity dots. */
+function RowMarks({ conversation }: { conversation: ChatConversation }) {
   const strings = useUiStrings();
-  const { title, lastMessage, time, isMuted = false, participants = [] } = conversation;
-  const unread = normalizeCount(conversation.unreadCount) ?? 0;
-  const timeText = useTimeText(time, timeOptions);
+  const { isMuted, status, activity } = conversation;
+  return (
+    <>
+      {isMuted ? (
+        <Icon
+          icon={BellSlashGlyph}
+          label={strings.conversationMuted}
+          className={listHooks.slotClass('muted')}
+        />
+      ) : null}
+      {status ? (
+        <Icon
+          {...toIconProps(status.icon)}
+          label={status.label}
+          className={listHooks.slotClass('status')}
+        />
+      ) : null}
+      {activity ? (
+        <span {...listHooks.slot('activity')} aria-hidden="true">
+          {activityDots.map((key) => (
+            <span key={key} {...listHooks.slot('activity-dot')} />
+          ))}
+        </span>
+      ) : null}
+    </>
+  );
+}
+
+/** The row's name, from what it shows. */
+function useRowLabel(conversation: ChatConversation, timeOptions: ChatListTimeOptions) {
+  const strings = useUiStrings();
+  const { title, isMuted = false, participants = [], status, activity } = conversation;
+  const timeText = useTimeText(conversation.time, timeOptions);
   const [only] = participants;
   const presence =
-    conversation.avatar || !only
+    conversation.avatar || !only || participants.length > 1
       ? undefined
       : resolveStatusLabel({ status: only.presence, statusLabel: only.presenceLabel }, strings);
-  const actions = renderActions?.(conversation);
-  const menuTarget = useConversationMenuTarget({ menu, id: conversation.id });
-  const label = strings.conversationLabel({
+  return strings.conversationLabel({
     title,
-    presence: participants.length === 1 ? presence : undefined,
-    unreadCount: unread,
+    presence,
+    unreadCount: normalizeCount(conversation.unreadCount) ?? 0,
     isMuted,
+    status: status?.label,
+    activity,
     time: timeText,
   });
+}
+
+/**
+ * One conversation: its icon or avatar, title, muted mark, status mark, activity, relative time,
+ * last message and unread count. The row is named by its title, presence, unread count, muted
+ * state, status, activity and time, then the last message.
+ */
+export function ChatListRow({ conversation, menu, isMenuOpen, ...timeOptions }: ChatListRowProps) {
+  const strings = useUiStrings();
+  const { title, lastMessage, time, isMuted = false } = conversation;
+  const unread = normalizeCount(conversation.unreadCount) ?? 0;
+  const menuTarget = useConversationMenuTarget({ menu, id: conversation.id });
   return (
     <GridListItem
       {...menuTarget}
       id={conversation.id}
       textValue={title}
-      aria-label={label}
+      aria-label={useRowLabel(conversation, timeOptions)}
       {...listHooks.slot('conversation', {
         unread: unread > 0,
         muted: isMuted,
         menuOpen: isMenuOpen,
       })}
     >
-      <span {...listHooks.slot('avatar')} aria-hidden="true">
-        <ConversationAvatar conversation={conversation} />
-      </span>
+      <RowStart conversation={conversation} />
       <span {...listHooks.slot('title')}>
         <TextMatch>{title}</TextMatch>
       </span>
@@ -179,13 +244,7 @@ export function ChatListRow({
           <TextMatch>{lastMessage}</TextMatch>
         </Text>
       ) : null}
-      {isMuted ? (
-        <Icon
-          icon={BellSlashGlyph}
-          label={strings.conversationMuted}
-          className={listHooks.slotClass('muted')}
-        />
-      ) : null}
+      <RowMarks conversation={conversation} />
       {unread > 0 ? (
         <Badge
           count={unread}
@@ -195,11 +254,6 @@ export function ChatListRow({
           className={listHooks.slotClass('unread')}
         />
       ) : null}
-      {isEmptyNode(actions) ? null : (
-        <div ref={keepControlFocusReturn} {...listHooks.slot('actions')}>
-          {actions}
-        </div>
-      )}
     </GridListItem>
   );
 }
