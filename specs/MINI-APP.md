@@ -1,6 +1,6 @@
 # Mini App
 
-`MiniApp` runs a small self-contained tool, written in HTML, CSS and JavaScript by a person or an AI assistant, inside the page: a calculator with its own inputs and output, an interactive chart, a scripted form. It builds on [Layout](LAYOUT.md)'s `EmbeddedFrame`: the mini-app's code runs in a sandboxed frame of its own opaque origin, so it never reaches the host's DOM, cookies, storage or services. It talks to the host over one message channel, through the named capabilities the host lends it and the state it saves, and reaches the network only at the origins the host allows. [HTML Markup](HTML-MARKUP.md) stays a renderer of inert markup; executable content belongs here.
+`MiniApp` runs a small self-contained tool, written in HTML, CSS and JavaScript by a person or an AI assistant, inside the page: a calculator with its own inputs and output, an interactive chart, a scripted form. It builds on [Layout](LAYOUT.md)'s `EmbeddedFrame`: the mini-app's code runs in a sandboxed frame of its own opaque origin, so it never reaches the host's DOM, cookies, storage or services. It talks to the host over one message channel, through the named capabilities the host lends it and the state it saves, and loads and connects only to the origins the host allows. No policy can stop a frame from navigating itself to another address; when it does, the mini-app fails and its frame is removed (UIC-MINI-APP-3.2). [HTML Markup](HTML-MARKUP.md) stays a renderer of inert markup; executable content belongs here.
 
 ## UIC-MINI-APP-1 - Source and isolation
 
@@ -20,7 +20,7 @@ Verification: `src/components/mini-app/mini-app.test.tsx`, `e2e/mini-app.spec.ts
 
 ### UIC-MINI-APP-1.3 - Network policy
 
-The frame's document shall carry a Content Security Policy that blocks every load and connection by default (`default-src 'none'`) and lets the mini-app's inline code, inline styles and `data:` or `blob:` images, fonts and media run. `allowedOrigins` lists the `https:` origins it may also load scripts, styles, images, fonts and media from and connect to (`fetch`, `XMLHttpRequest`, `WebSocket`, `EventSource`). Only entries that are exactly an `https:` origin count; an entry with a path, a query, a wildcard, another scheme or a policy keyword is ignored, so no entry widens the policy beyond the origins it names. The host page's own policy, which a `srcdoc` frame inherits, still applies.
+The frame's document shall carry a Content Security Policy that blocks every load and connection by default (`default-src 'none'`) and lets the mini-app's inline code, inline styles and `data:` or `blob:` images, fonts and media run. `allowedOrigins` lists the `https:` origins it may also load scripts, styles, images, fonts and media from and connect to (`fetch`, `XMLHttpRequest`, `WebSocket`, `EventSource`). Only entries that are exactly an `https:` origin count; an entry with a path, a query, a wildcard, another scheme or a policy keyword is ignored, so no entry widens the policy beyond the origins it names. The host page's own policy, which a `srcdoc` frame inherits, still applies. The policy governs loads and connections, not navigation: a frame that sends itself to another address is removed (UIC-MINI-APP-3.2).
 
 Implementation: `src/components/mini-app/mini-app-document.ts`
 Verification: `src/components/mini-app/mini-app-document.test.ts`
@@ -50,7 +50,7 @@ Verification: `src/components/mini-app/mini-app.test.tsx`, `e2e/mini-app.spec.ts
 
 ### UIC-MINI-APP-2.3 - State
 
-`miniApp.state` shall be `initialState` (a JSON value, `null` by default) as it was when the mini-app started, and `miniApp.setState(state)` shall pass a JSON copy of `state` to `onStateChange`. A later `initialState` is read only at the next start (UIC-MINI-APP-3.3), so a host that passes back what it saved does not restart the mini-app. Where the state is kept, for how long and for whom is the host's decision: the component persists nothing itself.
+`miniApp.state` shall be `initialState` (a JSON value, `null` by default) as it was when the mini-app started, and `miniApp.setState(state)` shall pass a JSON copy of `state` to `onStateChange`. The host checks what reaches it, since the mini-app's code can post on the channel directly: a state that is not a JSON value (a `Map`, a `Date`, a cycle, a non-finite number, or nesting deeper than 64 levels) is dropped and reported to `onError` as a `script` error. A later `initialState` is read only at the next start (UIC-MINI-APP-3.3), so a host that passes back what it saved does not restart the mini-app. Where the state is kept, for how long and for whom is the host's decision: the component persists nothing itself.
 
 Implementation: `src/components/mini-app/mini-app-document.ts`, `src/components/mini-app/mini-app-bridge.ts`, `src/components/mini-app/use-mini-app-session.ts`
 Verification: `src/components/mini-app/mini-app-document.test.ts`, `src/components/mini-app/mini-app.test.tsx`, `e2e/mini-app.spec.ts`
@@ -66,7 +66,7 @@ Verification: `src/components/mini-app/mini-app.test.tsx`, `e2e/mini-app.spec.ts
 
 ### UIC-MINI-APP-3.2 - Errors
 
-The bridge shall report every uncaught error and unhandled rejection in the frame to the host instead of the console, and `onError` receives `{ kind, message }`. The mini-app fails, publishing `data-status="error"` and the kind in `data-error`, when its code throws before it is ready (`script`), when it is not ready within `readyTimeout` milliseconds (`timeout`, 10000 by default), or when its frame loads another document, for example by following a link (`navigation`). A failed mini-app hides its frame, closes its channel, and its status slot holds the provider's `miniAppFailed` string with the title. An error after the mini-app is ready reaches `onError` and leaves it running.
+The bridge shall report every uncaught error and unhandled rejection in the frame to the host instead of the console, and `onError` receives `{ kind, message }`. The mini-app fails, publishing `data-status="error"` and the kind in `data-error`, when its code throws before it is ready (`script`), when it is not ready within `readyTimeout` milliseconds (`timeout`, 10000 by default), or when its frame loads another document, for example by following a link (`navigation`). A failed mini-app hides its frame (and after `navigation` removes it, so the other document stops running), closes its channel, and its status slot holds the provider's `miniAppFailed` string with the title. An error after the mini-app is ready reaches `onError` and leaves it running.
 
 Implementation: `src/components/mini-app/use-mini-app-session.ts`, `src/components/mini-app/mini-app-bridge.ts`, `src/components/mini-app/mini-app.tsx`, `src/core/strings/media.ts`
 Verification: `src/components/mini-app/mini-app.test.tsx`, `e2e/mini-app.spec.ts`

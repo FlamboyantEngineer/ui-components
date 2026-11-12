@@ -50,6 +50,11 @@ interface Direction {
   trimEnd: number;
 }
 
+// About half a second of searching on a typical machine; below 10,000 tokens in all, the search is
+// never cut short.
+const searchBudget = 50_000_000;
+const minSearchSteps = 64;
+
 const wordToken = /[\p{L}\p{N}\p{M}_]+|\s+|[^\p{L}\p{N}\p{M}_\s]/gu;
 
 function commonPrefixLength<T>(a: readonly T[], b: readonly T[]): number {
@@ -127,10 +132,15 @@ function scanBackward<T>(search: Bisection<T>, d: number): [number, number] | nu
 
 /**
  * Finds a point on a shortest edit path by searching from both ends until the paths meet (Myers'
- * middle snake), so the diff needs memory linear in the texts' lengths.
+ * middle snake), so the diff needs memory linear in the texts' lengths. Each step costs time in
+ * proportion to the texts' lengths, so the search gives up, returning `null`, once its steps would
+ * pass `searchBudget` token comparisons: very large, very different inputs then diff coarsely
+ * instead of blocking the page.
  */
 function findSplit<T>(a: readonly T[], b: readonly T[]): [number, number] | null {
-  const maxD = Math.ceil((a.length + b.length) / 2);
+  const length = a.length + b.length;
+  const maxD = Math.ceil(length / 2);
+  const steps = Math.min(maxD, Math.max(minSearchSteps, Math.floor(searchBudget / length)));
   const direction = (): Direction => {
     const reach = new Array<number>(2 * maxD + 2).fill(-1);
     reach[maxD + 1] = 0;
@@ -144,7 +154,7 @@ function findSplit<T>(a: readonly T[], b: readonly T[]): [number, number] | null
     forward: direction(),
     backward: direction(),
   };
-  for (let d = 0; d < maxD; d += 1) {
+  for (let d = 0; d < steps; d += 1) {
     const split = scanForward(search, d) ?? scanBackward(search, d);
     if (split) return split;
   }

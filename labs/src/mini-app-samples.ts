@@ -134,4 +134,9 @@ export const outcomeSources = {
     html: '<main aria-labelledby="title"><h1 id="title">Slow tool</h1><p>Never ready in time.</p></main>',
     css: baseCss,
   },
+  navigation: {
+    html: '<main aria-labelledby="title"><h1 id="title">Wanderer</h1><p>Leaves for another page.</p></main>',
+    css: baseCss,
+    script: 'setTimeout(() => location.reload(), 100);',
+  },
 } satisfies Record<string, MiniAppSource>;

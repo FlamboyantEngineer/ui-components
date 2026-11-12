@@ -127,6 +127,24 @@ describe('diffLines', () => {
     expect(unrelated.map((hunk) => hunk.kind)).toEqual(['delete', 'insert']);
   });
 
+  it('UIC-DIFF-1.3 bounds the search on very large, very different texts', () => {
+    // Every other line is shared, so the texts are not disjoint, and the rest differs throughout.
+    const lines = 20_000;
+    const before = Array.from({ length: lines }, (_, index) =>
+      index % 2 ? 'same' : `old ${index}`,
+    );
+    const after = Array.from({ length: lines }, (_, index) =>
+      index % 3 ? 'same' : `new ${index}`,
+    );
+    const started = performance.now();
+    const hunks = diffLines(before.join('\n'), after.join('\n'));
+    expect(performance.now() - started).toBeLessThan(3000);
+    const rebuild = (kind: 'insert' | 'delete') =>
+      hunks.filter((hunk) => hunk.kind !== kind).flatMap((hunk) => hunk.lines);
+    expect(rebuild('insert')).toEqual(before);
+    expect(rebuild('delete')).toEqual(after);
+  });
+
   it('UIC-DIFF-1.3 replaces texts with no line in common at once, at any length', () => {
     // The search would take tens of seconds here; texts with nothing in common skip it.
     const lines = 20_000;

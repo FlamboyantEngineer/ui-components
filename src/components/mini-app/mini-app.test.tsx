@@ -237,6 +237,30 @@ describe('MiniApp', () => {
     expect(frame).toHaveAttribute('srcdoc', document);
   });
 
+  it('UIC-MINI-APP-2.3 drops a posted state that is not a JSON value and reports it', async () => {
+    const onStateChange = vi.fn();
+    const onError = vi.fn();
+    renderMiniApp({ onStateChange, onError });
+    const { send } = await connect(frameOf());
+    const deep: unknown[] = [];
+    let level = deep;
+    for (let depth = 0; depth < 70; depth += 1) level.push((level = []));
+    for (const value of [new Map([['a', 1]]), new Date(0), Number.NaN, deep]) {
+      send({ type: 'state', value });
+    }
+    send({ type: 'state', value: { totals: [1, 'two', null, { done: true }] } });
+    await waitFor(() =>
+      expect(onStateChange).toHaveBeenCalledExactlyOnceWith({
+        totals: [1, 'two', null, { done: true }],
+      }),
+    );
+    expect(onError).toHaveBeenCalledTimes(4);
+    expect(onError).toHaveBeenLastCalledWith({
+      kind: 'script',
+      message: 'The mini-app saved a state that is not a JSON value; it was dropped.',
+    });
+  });
+
   it('UIC-MINI-APP-3.2 fails on a script error before ready and hides the frame', async () => {
     const onError = vi.fn();
     const onReady = vi.fn();
@@ -307,8 +331,11 @@ describe('MiniApp', () => {
     send({ type: 'ready' });
     await waitFor(() => expect(rootOf(frame)).toHaveAttribute('data-status', 'ready'));
     const closed = new Promise((resolve) => port.addEventListener('close', resolve));
+    const root = rootOf(frame);
     fireEvent.load(frame);
-    expect(rootOf(frame)).toHaveAttribute('data-error', 'navigation');
+    expect(root).toHaveAttribute('data-error', 'navigation');
+    expect(frame).not.toBeInTheDocument();
+    expect(screen.queryByTitle('Loan calculator')).not.toBeInTheDocument();
     expect(onError).toHaveBeenCalledExactlyOnceWith({
       kind: 'navigation',
       message: 'The mini-app frame loaded another document.',

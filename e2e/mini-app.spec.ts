@@ -145,6 +145,13 @@ test.describe('Mini App lab', () => {
     await expect(late.locator('.ui-mini-app').getByRole('status')).toHaveText(
       'Sample: timeout could not run.',
     );
+
+    const wandered = matrixCell(page, 'outcome=navigation');
+    await expect(wandered.locator('.ui-mini-app')).toHaveAttribute('data-error', 'navigation');
+    await expect(wandered.locator('iframe')).toHaveCount(0);
+    await expect(wandered.locator('[data-lab-output="error"]')).toHaveText(
+      'navigation: The mini-app frame loaded another document.',
+    );
     await lab.expectAccessible('[data-lab-matrix]');
   });
 

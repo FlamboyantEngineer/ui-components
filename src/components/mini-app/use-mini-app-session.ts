@@ -3,6 +3,7 @@
 import { type RefObject, type SyntheticEvent, useEffect, useRef, useState } from 'react';
 import { useLatest } from '../../utils/use-latest.js';
 import type { MiniAppState } from './mini-app-document.js';
+import { isMiniAppState } from './mini-app-state.js';
 
 /** Where a mini-app stands: starting, running, or stopped by an error. */
 export type MiniAppStatus = 'loading' | 'ready' | 'error';
@@ -37,10 +38,12 @@ export interface MiniAppSessionOptions {
 type FrameMessage =
   | { type: 'ready' }
   | { type: 'resize'; height: number }
-  | { type: 'state'; value: MiniAppState }
+  | { type: 'state'; value: unknown }
   | { type: 'error'; message: string }
   | { type: 'focus'; visible: boolean }
   | { type: 'call'; id: number; name: string; args: unknown };
+
+const invalidStateMessage = 'The mini-app saved a state that is not a JSON value; it was dropped.';
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
@@ -56,7 +59,7 @@ function readFrameMessage(data: unknown): FrameMessage | undefined {
         ? { type: 'resize', height: data.height }
         : undefined;
     case 'state':
-      return { type: 'state', value: data.value as MiniAppState };
+      return { type: 'state', value: data.value };
     case 'error':
       return typeof data.message === 'string'
         ? { type: 'error', message: data.message }
@@ -204,7 +207,8 @@ export function useMiniAppSession(options: MiniAppSessionOptions) {
         setHeight(Math.ceil(message.height + measureFrameEdges(frameRef.current)));
         return;
       case 'state':
-        latest.current.onStateChange?.(message.value);
+        if (isMiniAppState(message.value)) latest.current.onStateChange?.(message.value);
+        else latest.current.onError?.({ kind: 'script', message: invalidStateMessage });
         return;
       case 'error':
         if (statusRef.current === 'loading') fail({ kind: 'script', message: message.message });

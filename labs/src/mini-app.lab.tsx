@@ -124,10 +124,10 @@ mountLab(
     </LabSection>
     <LabSection
       title="Outcomes"
-      description="Each instance runs on its own channel. A script that throws before it is ready, or a mini-app that is not ready within readyTimeout (0 here), fails: the frame is hidden and the status says it could not run."
+      description="Each instance runs on its own channel. A script that throws before it is ready, or a mini-app that is not ready within readyTimeout (0 here), fails: the frame is hidden and the status says it could not run. A mini-app that navigates its frame fails too, and its frame is removed."
     >
       <StateMatrix
-        axes={{ outcome: ['ready', 'script error', 'timeout'] }}
+        axes={{ outcome: ['ready', 'script error', 'timeout', 'navigation'] }}
         render={({ outcome }) => <OutcomeCell outcome={outcome} />}
       />
     </LabSection>
