@@ -21,10 +21,24 @@ interface BlockGap {
   top: number;
 }
 
+/** The start of each top-level block, per document: documents are immutable, so it holds. */
+const blockStarts = new WeakMap<DocNode, readonly number[]>();
+
+function readBlockStarts(doc: DocNode): readonly number[] {
+  let starts = blockStarts.get(doc);
+  if (!starts) {
+    const list: number[] = [];
+    doc.forEach((_child, offset) => list.push(offset));
+    starts = list;
+    blockStarts.set(doc, starts);
+  }
+  return starts;
+}
+
 /** The top-level block at `index`'s box, if it is drawn. */
 function blockRect(view: EditorView, doc: DocNode, index: number): DOMRect | null {
-  let pos = 0;
-  for (let at = 0; at < index; at += 1) pos += doc.child(at).nodeSize;
+  const pos = readBlockStarts(doc)[index];
+  if (pos === undefined) return null;
   const dom = view.nodeDOM(pos);
   return isHTMLElement(dom) ? dom.getBoundingClientRect() : null;
 }

@@ -79,7 +79,7 @@ Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `src/
 
 ### UIC-RICH-TEXT-EDITOR-3.2 - Markdown shortcuts
 
-Typed at the start of a text block, `# `, `## ` and `### ` shall make a heading, `- `, `* ` or `+ ` a bullet list, `1. ` a numbered list starting at that number, `[ ] ` or `[x] ` an open or done task, `> ` a quote, ` ``` ` and a space a code block, and `---` in an empty block a divider. Typed around text, `**text**` makes it bold, `*text*` or `_text_` italic, `~~text~~` struck and `` `text` `` inline code. Backspace right after a shortcut undoes it. Code blocks and inline code take no shortcuts.
+Typed at the start of a text block, `# `, `## ` and `### ` shall make a heading, `- `, `* ` or `+ ` a bullet list, `1. ` a numbered list starting at that number (up to nine digits, so the start stays a whole number the schema reads back; a longer number stays text), `[ ] ` or `[x] ` an open or done task, `> ` a quote, ` ``` ` and a space a code block, and `---` in an empty block a divider. Typed around text, `**text**` makes it bold, `*text*` or `_text_` italic, `~~text~~` struck and `` `text` `` inline code. Backspace right after a shortcut undoes it. Code blocks and inline code take no shortcuts.
 
 Implementation: `src/components/rich-text-editor/rich-text-keys.ts`, `src/components/rich-text-editor/insert-commands.ts`
 Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/rich-text-editor.spec.ts`
@@ -123,7 +123,7 @@ Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/
 
 ### UIC-RICH-TEXT-EDITOR-4.3 - Form value
 
-With `name`, the editor shall submit its document with its form through a hidden input under that name holding the document's JSON (UIC-RICH-TEXT-EDITOR-1.3), which `JSON.parse` turns back into the same document with every block, attribute and mark. The input reads the field's value, keeping no copy of the document, and follows every edit, controlled change, undo, restore, clear and native form reset (UIC-FIELD-2.6); an empty editor submits its empty document. A read-only editor submits its document; a disabled one, or one inside a disabled `<fieldset>`, submits nothing, and an editor without `name` adds no entry.
+With `name`, the editor shall submit its document with its form through a hidden input under that name holding the document's JSON (UIC-RICH-TEXT-EDITOR-1.3), which `JSON.parse` turns back into the same document with every block, attribute and mark. The input reads the field's value, keeping no copy of the document, and follows every edit, controlled change, undo, restore, clear and native form reset (UIC-FIELD-2.6), written as a deferred update so serializing the whole document never delays typing; an empty editor submits its empty document. A read-only editor submits its document; a disabled one, or one inside a disabled `<fieldset>`, submits nothing, and an editor without `name` adds no entry.
 
 Implementation: `src/components/rich-text-editor/rich-text-editor.tsx`
 Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/rich-text-editor.spec.ts`
@@ -153,7 +153,7 @@ Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/
 
 ### UIC-RICH-TEXT-EDITOR-5.4 - Links
 
-`set-link` with an address shall link the selected text, change the whole link around a caret, or at a caret outside a link insert the address as linked text; with `null` it removes the link from the selection or around the caret. An empty or unsafe address (`javascript:`) is refused.
+`set-link` with an address shall link the selected text, change the whole link around a caret (every adjacent part that carries the same link, before and after the caret, whatever its other formatting), or at a caret outside a link insert the address as linked text; with `null` it removes the link from the selection or around the caret. An empty or unsafe address (`javascript:`) is refused.
 
 Implementation: `src/components/rich-text-editor/insert-commands.ts`
 Verification: `src/components/rich-text-editor/engine-commands.test.ts`, `e2e/rich-text-editor.spec.ts`

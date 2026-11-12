@@ -172,6 +172,34 @@ describe('rich-text commands', () => {
     expect(run(stateOf([p(text('a'))], 1), { type: 'set-link', href: null })).toBeNull();
   });
 
+  it('UIC-RICH-TEXT-EDITOR-5.4 changes and removes a link whose parts are formatted differently', () => {
+    const link = { type: 'link', attrs: { href: '/old', title: null } };
+    const mixed = [
+      p(
+        text('see '),
+        text('aa', [link]),
+        text('bb', [{ type: 'bold' }, link]),
+        text('cc', [{ type: 'italic' }, link]),
+        text(' now'),
+      ),
+    ];
+    // Carets in the first, middle and last part of the link.
+    for (const caret of [6, 8, 10]) {
+      const changed = run(stateOf(mixed, caret), { type: 'set-link', href: '/new' });
+      const parts = blocks(changed)?.[0]?.content ?? [];
+      expect(parts.map((part) => part.text)).toEqual(['see ', 'aa', 'bb', 'cc', ' now']);
+      expect(
+        parts
+          .slice(1, 4)
+          .map((part) => part.marks?.find((mark) => mark.type === 'link')?.attrs?.href),
+      ).toEqual(['/new', '/new', '/new']);
+      const removed = run(stateOf(mixed, caret), { type: 'set-link', href: null });
+      expect(
+        blocks(removed)?.[0]?.content?.some((part) => part.marks?.some((m) => m.type === 'link')),
+      ).toBe(false);
+    }
+  });
+
   it('UIC-RICH-TEXT-EDITOR-5.5 moves, duplicates and deletes the top-level block', () => {
     const state = stateOf([p(text('one')), p(text('two')), p(text('three'))], 7, 8);
     const down = run(state, { type: 'move-block', direction: 'down' });

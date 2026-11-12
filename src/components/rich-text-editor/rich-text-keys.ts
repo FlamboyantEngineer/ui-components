@@ -101,7 +101,8 @@ function blockRules(schema: Schema): InputRule[] {
     bulletList && wrappingInputRule(/^\s*([-+*])\s$/, bulletList),
     orderedList &&
       wrappingInputRule(
-        /^\s*(\d+)\.\s$/,
+        // Nine digits keep `start` a safe integer, as reading a stored list requires.
+        /^\s*(\d{1,9})\.\s$/,
         orderedList,
         (match) => ({ start: Number(match[1]) }),
         (match, node) => node.childCount + Number(node.attrs.start) === Number(match[1]),
