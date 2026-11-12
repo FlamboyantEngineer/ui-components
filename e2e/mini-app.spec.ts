@@ -213,6 +213,11 @@ test.describe('Mini App lab', () => {
     await lab.open('mini-app');
     const frames = page.locator('.ui-mini-app[data-status="ready"] iframe');
     await expect(page.locator('.ui-mini-app[data-status="loading"]')).toHaveCount(0);
+    // The navigation sample is ready until its reload, so wait for it to fail first.
+    await expect(matrixCell(page, 'outcome=navigation').locator('.ui-mini-app')).toHaveAttribute(
+      'data-error',
+      'navigation',
+    );
     const count = await frames.count();
     expect(count).toBe(5);
     for (let index = 0; index < count; index += 1) {
