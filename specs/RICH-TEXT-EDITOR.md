@@ -395,6 +395,13 @@ The rendered host shall add the `reactKeys` plugin its view needs to a state tha
 Implementation: `src/components/rich-text-editor/rich-text-engine-view.tsx`, `src/components/rich-text-editor/headless-engine.ts`
 Verification: `src/components/rich-text-editor/rich-text-engine-view.test.tsx`
 
+### UIC-RICH-TEXT-EDITOR-14.7 - A view mounted outside the React tree
+
+`mountRichTextView(element, { state, nodeViews, markViews, decorations, props, wrap })` shall mount a rendered view of a state in an element, with its own React root, and draw it before it returns, so the caller holds its `view` at once: a second view of a document, such as one that measures it, that renders the caller's React node and mark views as the editor does, editor hooks included, inside the providers `wrap` adds. It is not editable unless `props` says so. `update(state)` shall show another state before it returns; the view's own transactions, such as a plugin view's, commit to it; `destroy()` unmounts it and empties the element.
+
+Implementation: `src/components/rich-text-editor/rich-text-view-mount.tsx`
+Verification: `src/components/rich-text-editor/rich-text-view-mount.test.tsx`
+
 ## Hooks
 
 | Hook                                 | Kind      | Values                                                | Description                                                                     |
