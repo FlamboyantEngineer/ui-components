@@ -227,6 +227,28 @@ describe('AnnotationLayer', () => {
     expect(getClientRects).not.toHaveBeenCalled();
   });
 
+  it('UIC-ANNOTATION-LAYER-1.4 follows a target moved by a font that finishes loading', async () => {
+    const fonts = new EventTarget();
+    Object.defineProperty(document, 'fonts', { value: fonts, configurable: true });
+    try {
+      const { container, unmount } = render(<Notes withMargin={false} />);
+      targetRects.phrase = [{ top: 300, left: 50, width: 10, height: 20 }];
+      act(() => {
+        fonts.dispatchEvent(new Event('loadingdone'));
+      });
+      await nextFrame();
+      expect(marks(container)[1]).toHaveStyle({ top: '200px', left: '0px', width: '10px' });
+      const getClientRects = vi.mocked(Element.prototype.getClientRects);
+      unmount();
+      getClientRects.mockClear();
+      fonts.dispatchEvent(new Event('loadingdone'));
+      await nextFrame();
+      expect(getClientRects).not.toHaveBeenCalled();
+    } finally {
+      Reflect.deleteProperty(document, 'fonts');
+    }
+  });
+
   it('UIC-ANNOTATION-LAYER-1.4 measures again on demand through its handle', () => {
     const handle = createRef<AnnotationLayerHandle>();
     const { container } = render(<Notes withMargin={false} handleRef={handle} />);

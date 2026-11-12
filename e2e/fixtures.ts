@@ -14,7 +14,7 @@ export interface OpenLabOptions {
 }
 
 export interface LabFixture {
-  /** Opens `labs/<name>.html` with the given stylesheet and waits until it has rendered and loaded. */
+  /** Opens `labs/<name>.html` with the given stylesheet and waits until it has rendered and its stylesheet and fonts have loaded. */
   open(name: string, options?: OpenLabOptions): Promise<void>;
   /** Runs axe on the lab content and fails on any violation or unaccepted incomplete result. */
   expectAccessible(selector?: string): Promise<void>;
@@ -117,6 +117,11 @@ export async function waitForLab(page: Page): Promise<void> {
   const root = page.locator('html');
   await expect(root).toHaveAttribute('data-lab-ready', 'true');
   await expect(root).toHaveAttribute('data-lab-stylesheet-state', /^(none|loaded)$/);
+  // The lab fonts load once a layout uses them and then move text; settle them before measuring.
+  await page.evaluate(async () => {
+    void document.body.offsetHeight;
+    await document.fonts.ready;
+  });
 }
 
 /** Where a lab locator searches: the whole page or a part of it. */
