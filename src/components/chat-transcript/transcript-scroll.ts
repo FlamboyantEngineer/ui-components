@@ -169,7 +169,10 @@ export function createScrollKeeper(sources: ScrollKeeperSources): ScrollKeeper {
     if (hold === 'bottom') viewport.scrollTop = viewport.scrollHeight;
     else if (hold === 'anchor' && anchorTop !== null) viewport.scrollTop = anchorTop;
     else restoreSnapshot(sources, viewport, snapshot);
-    snapshot = readSnapshot(sources, viewport);
+    // Held free on the same message, the place stays where the reader left it, so shifts too small
+    // to correct one at a time cannot add up to a visible one.
+    const next = readSnapshot(sources, viewport);
+    snapshot = hold === 'free' && next && next.key === snapshot?.key ? snapshot : next;
     remember(viewport);
   };
 

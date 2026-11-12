@@ -100,6 +100,18 @@ describe('ChatTranscript history', () => {
     expect(offsetInViewport(article('m24'))).toBe(20);
   });
 
+  it('UIC-CHAT-TRANSCRIPT-4.2 keeps the reader’s place through growth above too small to correct at once', () => {
+    render(<History />);
+    const viewport = getViewport();
+    scrollViewport(viewport, 120);
+    const place = offsetInViewport(article('m25'));
+    for (const height of [50.3, 50.6, 50.9]) {
+      layout.heights.set('m21', height);
+      resizeContent();
+    }
+    expect(Math.abs(offsetInViewport(article('m25')) - place)).toBeLessThan(0.5);
+  });
+
   it('UIC-CHAT-TRANSCRIPT-4.3 scrolls to the highlighted message, marks it and focuses it', () => {
     const { container, rerender } = render(<History />);
     const viewport = getViewport();

@@ -73,7 +73,7 @@ interface Note {
   size: number;
 }
 
-const words = 'a short note that wraps onto more lines when it runs long'.split(' ');
+const words = 'a short note that wraps onto more lines when it runs long in a column'.split(' ');
 const notes: Note[] = Array.from({ length: 1000 }, (_, index) => ({
   id: `note-${index + 1}`,
   title: `Note ${index + 1}`,

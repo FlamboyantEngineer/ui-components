@@ -201,7 +201,8 @@ describe('ChatParts part views', () => {
     expect(container.querySelector('#m7-ask-1')).toHaveAttribute('data-submitting', 'true');
   });
 
-  it('UIC-CHAT-PARTS-4.1 UIC-CHAT-PARTS-4.2 renders plans and sources', () => {
+  it('UIC-CHAT-PARTS-4.1 UIC-CHAT-PARTS-4.2 renders plans and collapsed sources', async () => {
+    const user = userEvent.setup();
     render(
       <ChatParts
         parts={[
@@ -219,7 +220,25 @@ describe('ChatParts part views', () => {
       />,
     );
     expect(screen.getByRole('list', { name: 'Dinner for six' })).toHaveClass('ui-chat-plan__list');
-    expect(screen.getByRole('list', { name: '1 source' })).toHaveTextContent('Seasonal produce');
+    const trigger = screen.getByRole('button', { name: 'Sources (1)' });
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await user.click(trigger);
+    expect(screen.getByRole('list', { name: 'Sources (1)' })).toHaveTextContent('Seasonal produce');
+  });
+
+  it('UIC-CHAT-PARTS-4.2 UIC-CHAT-PARTS-6.1 keeps the reader’s choice for sources by part id', async () => {
+    const user = userEvent.setup();
+    const onExpandedPartsChange = vi.fn();
+    const parts: ChatPart[] = [
+      { type: 'sources', id: 'cited', sources: [{ id: 's1', title: 'Seasonal produce' }] },
+    ];
+    const { rerender } = render(
+      <ChatParts parts={parts} expandedParts={{}} onExpandedPartsChange={onExpandedPartsChange} />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Sources (1)' }));
+    expect(onExpandedPartsChange).toHaveBeenLastCalledWith({ cited: true });
+    rerender(<ChatParts parts={parts} expandedParts={{ cited: true }} />);
+    expect(screen.getByRole('list', { name: 'Sources (1)' })).toBeInTheDocument();
   });
 
   it('UIC-CHAT-PARTS-4.3 renders attachments and retries a failed upload by id', async () => {

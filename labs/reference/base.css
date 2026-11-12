@@ -20,9 +20,11 @@
  * (`--ref-<component>-*`) are only for sizes one component varies by its own data attributes.
  */
 :root {
-  /* Type, in rem so the reader's browser font size enlarges it (14 pixels at the default 16). */
-  --ref-font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --ref-mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  /* Type, in rem so the reader's browser font size enlarges it (14 pixels at the default 16).
+     Geist and Geist Mono are named, not loaded: this sheet loads nothing, so the host serves the
+     fonts (the labs serve their own copies) and the system stacks stand in where it does not. */
+  --ref-font: Geist, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --ref-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
   --ref-script: Georgia, 'Times New Roman', serif;
   --ref-font-size-2xs: 0.625rem;
   --ref-font-size-xs: 0.6875rem;

@@ -128,6 +128,17 @@ describe('ChatTranscript virtualized', () => {
     expect(screen.getAllByRole('article').length).toBeLessThan(40);
   });
 
+  it('UIC-CHAT-TRANSCRIPT-1.6 draws spacers in whole pixels from fractional measurements', () => {
+    uninstallTranscriptLayout();
+    installTranscriptLayout({ viewportHeight: 200, messageHeight: 50.3 });
+    const { container } = render(<LongHistory />);
+    const spacers = [...container.querySelectorAll<HTMLElement>('.ui-chat-transcript__feed > div')];
+    expect(spacers.length).toBeGreaterThan(0);
+    for (const spacer of spacers) {
+      expect(Number.isInteger(Number.parseFloat(spacer.style.height))).toBe(true);
+    }
+  });
+
   it('UIC-CHAT-TRANSCRIPT-1.6 mounts the message the keyboard moves to', async () => {
     const user = userEvent.setup();
     render(<LongHistory />);

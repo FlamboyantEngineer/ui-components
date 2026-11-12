@@ -204,6 +204,30 @@ describe('Completions engine', () => {
     expect(input()).toHaveValue('apricot');
   });
 
+  it('UIC-COMPLETION-LIST-2.2 UIC-COMPLETION-LIST-2.3 keeps the option the reader moved to when the pending answer comes', async () => {
+    const user = userEvent.setup();
+    const answers: Array<(options: Completion[]) => void> = [];
+    const source: CompletionSource = () =>
+      new Promise<Completion[]>((resolve) => answers.push(resolve));
+    render(<Notes completions={source} />);
+    await user.click(input());
+    await user.keyboard('a');
+    await act(async () => answers.at(-1)?.(fruit));
+    await waitFor(() => expect(optionTexts()).toEqual(['apple', 'apricot']));
+    await user.keyboard('p{ArrowDown}');
+    expect(screen.getByRole('option', { name: 'apricot' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    await act(async () => answers.at(-1)?.(fruit.map((option) => ({ ...option }))));
+    expect(screen.getByRole('option', { name: 'apricot' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    await user.keyboard('{Enter}');
+    expect(input()).toHaveValue('apricot');
+  });
+
   it.each(['rejects', 'throws'])(
     'UIC-COMPLETION-LIST-2.2 hides the options kept while pending when the next lookup %s',
     async (failure) => {

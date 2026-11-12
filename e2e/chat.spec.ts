@@ -773,14 +773,20 @@ async function rateAndCopy(page: Page, reply: Locator) {
   await page.context().grantPermissions(['clipboard-read', 'clipboard-write'], {
     origin: new URL(page.url()).origin,
   });
+  // The actions float over the reply's top corner. A reply taller than the transcript leaves them
+  // at its top edge, under the page and message headers, so bring them to the middle first.
+  const bad = reply.getByRole('button', { name: 'Bad response' });
+  await bad.evaluate((node) => node.scrollIntoView({ block: 'center' }));
   await reply.hover();
-  await reply.getByRole('button', { name: 'Bad response' }).click();
+  await bad.click();
   await page.getByRole('button', { name: 'Too long' }).click();
   await page.getByRole('button', { name: 'Submit' }).click();
   await expect(page.locator('[data-lab-output="assistant-log"]')).toContainText(
     'rated down Too long',
   );
+  const copy = reply.getByRole('button', { name: 'Copy', exact: true });
+  await copy.evaluate((node) => node.scrollIntoView({ block: 'center' }));
   await reply.hover();
-  await reply.getByRole('button', { name: 'Copy', exact: true }).click();
+  await copy.click();
   await expect(page.locator('[data-lab-output="assistant-log"]')).toContainText('copied');
 }

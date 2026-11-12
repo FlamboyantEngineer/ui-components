@@ -105,7 +105,7 @@ Verification: `src/components/chat-parts/chat-part-view.test.tsx`
 
 ### UIC-CHAT-PARTS-4.2 - Sources
 
-A sources part shall render as `ChatSources` with its `sources`.
+A sources part shall render as `ChatSources` with its `sources`, collapsed until the reader opens it ([UIC-CHAT-SOURCES-1.4](CHAT-SOURCES.md#uic-chat-sources-14---collapsed-by-default)). A sources part with an `id` keeps the reader's choice by that `id` ([UIC-CHAT-PARTS-6.1](#uic-chat-parts-61---readers-choices)).
 
 Implementation: `src/components/chat-parts/chat-part-view.tsx`
 Verification: `src/components/chat-parts/chat-part-view.test.tsx`
@@ -172,7 +172,7 @@ Verification: `src/components/chat-parts/chat-parts.test.tsx`, `src/components/c
 
 ### UIC-CHAT-PARTS-6.1 - Reader's choices
 
-The reader's choices to open or close reasoning, tool-call cards and groups of steps shall be kept by key: a part's `id`, and `steps:<first step's id>` for a group. Without `expandedParts`, `ChatParts` keeps them itself, so they survive a part moving into a group and the message completing. With `expandedParts`, it follows that record, so the choices also survive remounts such as virtualization; a key absent from the record leaves the part to its progress. `onExpandedPartsChange` receives the whole record each time the reader opens or closes one.
+The reader's choices to open or close reasoning, tool-call cards, sources and groups of steps shall be kept by key: a part's `id`, and `steps:<first step's id>` for a group. Without `expandedParts`, `ChatParts` keeps them itself, so they survive a part moving into a group and the message completing. With `expandedParts`, it follows that record, so the choices also survive remounts such as virtualization; a key absent from the record leaves the part to its progress. `onExpandedPartsChange` receives the whole record each time the reader opens or closes one.
 
 Implementation: `src/components/chat-parts/use-parts-expansion.ts`, `src/components/chat-parts/chat-part-view.tsx`, `src/components/chat-parts/chat-parts.tsx`
 Verification: `src/components/chat-parts/chat-parts.test.tsx`

@@ -7,7 +7,7 @@ test.describe('Chat Sources lab', () => {
   }) => {
     await lab.open('chat-sources');
     const full = matrixCell(page, 'count=several details=full');
-    const list = full.getByRole('list', { name: '3 sources' });
+    const list = full.getByRole('list', { name: 'Sources (3)' });
     await expect(list.getByRole('listitem')).toHaveCount(3);
     const first = list.getByRole('listitem').first();
     await expect(first.getByRole('link', { name: /Lisbon weather by month/ })).toHaveAttribute(
@@ -17,7 +17,7 @@ test.describe('Chat Sources lab', () => {
     await expect(first.locator('.ui-chat-sources__site')).toHaveText('example.com');
     await expect(first.locator('.ui-chat-sources__snippet')).toBeVisible();
     const minimal = matrixCell(page, 'count=one details=minimal');
-    await expect(minimal.getByRole('list', { name: '1 source' })).toBeVisible();
+    await expect(minimal.getByRole('list', { name: 'Sources (1)' })).toBeVisible();
     await expect(minimal.getByRole('link')).toHaveCount(0);
     await lab.expectAccessible();
   });
@@ -91,7 +91,29 @@ test.describe('Chat Sources lab', () => {
     await expect(link.locator('a, button')).toHaveCount(0);
     await expect(answer.locator('label a, label button')).toHaveCount(0);
     await expect(answer.getByRole('checkbox', { name: 'Booked the train [2]' })).toBeChecked();
-    await expect(answer.getByRole('list', { name: '3 sources' })).toBeVisible();
     await lab.expectAccessible('[data-lab-demo="answer"]');
+  });
+
+  test('UIC-CHAT-SOURCES-1.4 keeps an answer’s sources collapsed until the trigger opens them', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-sources');
+    const answer = page.locator('[data-lab-demo="answer"]');
+    const trigger = answer.getByRole('button', { name: 'Sources (3)' });
+    const list = answer.getByRole('list', { name: 'Sources (3)' });
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await expect(list).toBeHidden();
+    await trigger.click();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await expect(list).toBeVisible();
+    await expect(list.getByRole('listitem')).toHaveCount(3);
+    await expect(answer.locator('.ui-chat-sources')).toHaveAttribute('data-expanded', 'true');
+    await lab.expectAccessible('[data-lab-demo="answer"]');
+    await trigger.focus();
+    await page.keyboard.press('Enter');
+    await expect(list).toBeHidden();
+    await page.keyboard.press('Space');
+    await expect(list).toBeVisible();
   });
 });
