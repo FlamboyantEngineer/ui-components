@@ -36,7 +36,7 @@ Verification: `src/components/media-viewer/media-layout.test.ts`, `src/component
 
 ### UIC-MEDIA-VIEWER-2.1 - Fit, zoom and pan
 
-An image item (type `image/*`, or no type) shall draw as an `<img>` (`ui-media-viewer__image`) inside a canvas (`ui-media-viewer__canvas`) inside the viewport (`ui-media-viewer__viewport`). Once the image has loaded, at 100% it fits inside the viewport's client box and is never drawn larger than its own size; the header's `ZoomControl` (`ui-media-viewer__zoom`, reset to 100%) scales that fit. The canvas takes the turned image's size and the image is centred in it, both with functional inline sizes and positions (`layoutMedia`), so a zoomed image larger than the viewport scrolls to pan.
+An image item (type `image/*`, or no type) shall draw as an `<img>` (`ui-media-viewer__image`) inside a canvas (`ui-media-viewer__canvas`) inside the viewport (`ui-media-viewer__viewport`). Once the image has loaded, at 100% it fits inside the viewport's client box and is never drawn larger than its own size; the header's `ZoomControl` (`ui-media-viewer__zoom`) scales that fit. The zoom control has no reset button unless `showZoomReset` asks for one, which returns to `defaultZoom`. The canvas takes the turned image's size and the image is centred in it, both with functional inline sizes and positions (`layoutMedia`), so a zoomed image larger than the viewport scrolls to pan.
 
 Implementation: `src/components/media-viewer/media-stage.tsx`, `src/components/media-viewer/media-layout.ts`, `src/components/media-viewer/media-viewer-parts.tsx`
 Verification: `src/components/media-viewer/media-layout.test.ts`, `src/components/media-viewer/media-viewer.test.tsx`, `e2e/media-viewer.spec.ts`
@@ -50,7 +50,7 @@ Verification: `src/components/media-viewer/media-layout.test.ts`, `src/component
 
 ### UIC-MEDIA-VIEWER-2.3 - A fresh view per item
 
-Moving to another item shall show it at 100% and unturned.
+Moving to another item shall show it unturned and at `defaultZoom` (100% by default) while the zoom is uncontrolled.
 
 Implementation: `src/components/media-viewer/media-viewer.tsx`
 Verification: `src/components/media-viewer/media-viewer.test.tsx`
@@ -61,6 +61,20 @@ While the shown image loads, the canvas shall also hold a `ui-media-viewer__load
 
 Implementation: `src/components/media-viewer/media-stage.tsx`, `src/components/media-viewer/use-image-request.ts`, `src/components/media-viewer/media-viewer.tsx`, `src/components/media-viewer/media-viewer-parts.tsx`, `src/core/strings/media.ts`
 Verification: `src/components/media-viewer/media-viewer.test.tsx`, `e2e/media-viewer.spec.ts`
+
+### UIC-MEDIA-VIEWER-2.5 - Wheel and pinch zoom
+
+With `zoomsOnWheel`, the vertical wheel over the viewport, and a touchpad pinch (which the browser reports as the wheel with Control), shall step a loaded image's zoom through the zoom control's levels, up zooming in: one mouse notch (a pixel delta of 50 or more, or any line or page delta) is one level, and smaller touchpad deltas add up to one level, a change of direction starting afresh. The viewer cancels those wheel events, so the viewport does not scroll and the browser does not zoom the page, also while the image loads, when they step nothing. A mostly sideways wheel without Control is left to the browser, so it still pans. Once the zoomed image is larger than the viewport, the point of the image under the pointer stays under it. Without `zoomsOnWheel`, and for files the caller renders, the wheel is the browser's.
+
+Implementation: `src/components/media-viewer/use-wheel-zoom.ts`, `src/components/media-viewer/media-stage.tsx`, `src/components/media-viewer/media-viewer.tsx`, `src/utils/use-wheel-steps.ts`
+Verification: `src/components/media-viewer/media-viewer.test.tsx`, `e2e/media-viewer.spec.ts`
+
+### UIC-MEDIA-VIEWER-2.6 - Controlled zoom
+
+`zoom` (controlled, in percent of the fit) or `defaultZoom` (uncontrolled, `100` by default) shall set the image's zoom, and `onZoomChange` receives every zoom the reader asks for, from the zoom control, the `+` and `-` keys or the wheel. Moving to another item from the viewer's buttons, keys or thumbnails asks for `defaultZoom` when the zoom is elsewhere; a controlled zoom shows only what `zoom` says.
+
+Implementation: `src/components/media-viewer/use-media-view.ts`, `src/components/media-viewer/media-viewer.tsx`
+Verification: `src/components/media-viewer/media-viewer.test.tsx`
 
 ## UIC-MEDIA-VIEWER-3 - Other files
 

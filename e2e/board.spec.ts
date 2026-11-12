@@ -538,6 +538,7 @@ test.describe('Board lab', () => {
     const name = (await todo.getByRole('row').nth(4).textContent()) ?? '';
     const card = todo.getByRole('row', { name, exact: true });
     await card.focus();
+    await expect(card).toBeFocused();
     await page.keyboard.press('Alt+ArrowRight');
     const moved = done.getByRole('row', { name, exact: true });
     await expect(moved).toBeFocused();

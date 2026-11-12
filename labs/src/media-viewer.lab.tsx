@@ -14,6 +14,7 @@ import {
   LargeSet,
   NoteDrafts,
   RefreshingList,
+  WheelZoom,
 } from './media-viewer-cases.js';
 import { loadEngine, sampleUrl, workerSrc } from './pdf-viewer-cases.js';
 import { requireDefined } from './require-defined.js';
@@ -169,6 +170,12 @@ mountLab(
       description="Press a photo to open it. Arrow keys move through the set, + and - zoom, the header turns and downloads, and Escape closes."
     >
       <Gallery />
+    </LabSection>
+    <LabSection
+      title="Wheel zoom"
+      description="The page holds the zoom and opens the viewer at 100% or 200%. The wheel or a touchpad pinch over the image steps the zoom and keeps the point under the pointer in place once the image overflows; the zoom control has a reset button. Moving to the next photo asks for 100% again."
+    >
+      <WheelZoom items={photos} />
     </LabSection>
     <LabSection
       title="Large set"

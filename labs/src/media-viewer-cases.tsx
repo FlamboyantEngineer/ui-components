@@ -159,3 +159,36 @@ export function ArrivingItems() {
     </>
   );
 }
+
+/**
+ * A viewer whose zoom the page holds: the wheel and a touchpad pinch step it, the zoom control has
+ * its reset button, and the page opens the viewer at a zoom of its choosing.
+ */
+export function WheelZoom({ items }: { items: readonly MediaViewerItem[] }) {
+  const [isOpen, setOpen] = useState(false);
+  const [zoom, setZoom] = useState(100);
+  const openAt = (percent: number) => {
+    setZoom(percent);
+    setOpen(true);
+  };
+  return (
+    <>
+      <Button onPress={() => openAt(100)} data-lab-open="wheel">
+        Open with wheel zoom
+      </Button>
+      <Button onPress={() => openAt(200)} data-lab-open="wheel-200">
+        Open at 200%
+      </Button>
+      <LabOutput name="wheel-zoom">{zoom}</LabOutput>
+      <MediaViewer
+        items={items}
+        isOpen={isOpen}
+        onOpenChange={setOpen}
+        zoom={zoom}
+        onZoomChange={setZoom}
+        zoomsOnWheel
+        showZoomReset
+      />
+    </>
+  );
+}

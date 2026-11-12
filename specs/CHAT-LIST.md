@@ -74,6 +74,22 @@ Verification: `src/components/chat-list/chat-list.test.tsx`, `e2e/chat-list.spec
 Implementation: `src/components/chat-list/chat-list.tsx`
 Verification: `src/components/chat-list/chat-list.test.tsx`
 
+## UIC-CHAT-LIST-2 - Row menus
+
+### UIC-CHAT-LIST-2.1 - Opening a row's menu
+
+Given `renderContextMenu`, a secondary click or a long touch on a row shall open a [Context Menu](CONTEXT-MENU.md) at the pointer, and the Context Menu key or Shift+F10 with focus on the row or a control inside it (not a text control) shall open it below the row, showing the `Menu` that `renderContextMenu` returns for that row's conversation and named by the provider string `conversationMenu` with its title. A pointer that opens the menu first moves focus to the row, without selecting it, and focus returns to the row when the menu closes, whether by an action, Escape or a press outside. While the menu is open for a row, the row carries `data-menu-open`. The list opens one menu at a time: opening it for another row moves it there. The list itself handles the keys for its rows, so the host needs no event handlers of its own.
+
+Implementation: `src/components/chat-list/chat-list.tsx`, `src/components/chat-list/chat-list-menu.ts`, `src/components/chat-list/chat-list-row.tsx`, `src/core/strings/chat-list.ts`, `labs/reference/chat-list.css`
+Verification: `src/components/chat-list/chat-list-menu.test.tsx`, `e2e/chat-list.spec.ts`
+
+### UIC-CHAT-LIST-2.2 - Rows without a menu
+
+A row whose conversation `renderContextMenu` returns nothing for, and every row without `renderContextMenu`, shall leave the browser's own menu and the keys alone. When the conversation whose menu is open leaves the list, or its menu becomes empty, the menu closes.
+
+Implementation: `src/components/chat-list/chat-list.tsx`, `src/components/chat-list/chat-list-menu.ts`
+Verification: `src/components/chat-list/chat-list-menu.test.tsx`
+
 ## Hooks
 
 | Hook                         | Kind  | Values     | Description                                                    |
@@ -96,6 +112,7 @@ Verification: `src/components/chat-list/chat-list.test.tsx`
 | `data-loading`               | state | `true`     | On the root: the conversations are loading.                    |
 | `data-unread`                | state | `true`     | On a row: it has unread messages.                              |
 | `data-muted`                 | state | `true`     | On a row: its notifications are off.                           |
+| `data-menu-open`             | state | `true`     | On a row: its context menu is open.                            |
 | `data-selected`              | state | `true`     | On a row: the selected conversation (React Aria).              |
 | `data-selection-mode`        | state | `single`   | On a row: the list's selection mode (React Aria).              |
 | `data-hovered`               | state | `true`     | On a row: under the pointer (React Aria).                      |
