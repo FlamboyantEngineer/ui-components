@@ -267,7 +267,7 @@ describe('ChoiceGroup', () => {
     const user = userEvent.setup();
     function Saved() {
       const [value, setValue] = useState<string | null>('small');
-      return <Sizes value={value} onChange={setValue} committedValue="small" />;
+      return <Sizes showRestoreButton value={value} onChange={setValue} committedValue="small" />;
     }
     const { container } = render(<Saved />);
     await user.click(screen.getByText('Large'));

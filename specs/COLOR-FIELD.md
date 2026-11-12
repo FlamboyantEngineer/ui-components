@@ -57,7 +57,7 @@ Verification: `src/components/color-field/color-field.test.tsx`, `e2e/color-fiel
 
 ### UIC-COLOR-FIELD-2.3 - Field behaviour
 
-`ColorField` shall show each validation status, show dirty state with a restore button, undo and redo with the field's chords from its trigger, and offer the field menu, whose Clear removes the colour and Set to default puts the default back.
+`ColorField` shall show each validation status, show dirty state, with a restore button given `showRestoreButton`, undo and redo with the field's chords from its trigger, and offer the field menu, whose Clear removes the colour and Set to default puts the default back.
 
 Implementation: `src/components/color-field/color-field.tsx`, `src/components/field/field.tsx`
 Verification: `src/components/color-field/color-field.test.tsx`, `e2e/color-field.spec.ts`

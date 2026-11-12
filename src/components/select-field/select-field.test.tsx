@@ -215,7 +215,7 @@ describe('SelectField field', () => {
   it('UIC-SELECT-FIELD-1.4 restores the committed value', async () => {
     const user = userEvent.setup();
     const { container } = render(
-      <SelectField label="Fruit" options={fruit} committedValue="apple" />,
+      <SelectField showRestoreButton label="Fruit" options={fruit} committedValue="apple" />,
     );
     await user.click(trigger('Apple Fruit'));
     await user.click(screen.getByRole('option', { name: 'Fig' }));
@@ -514,6 +514,7 @@ describe('SelectField trigger', () => {
     const user = userEvent.setup();
     const { container } = render(
       <SelectField
+        showRestoreButton
         label="Fruit"
         selectionMode="multiple"
         options={fruit}

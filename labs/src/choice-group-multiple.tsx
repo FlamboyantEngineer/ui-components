@@ -93,6 +93,7 @@ function SavedGroup() {
         onChange={setValue}
         committedValue={saved}
         description="Each ticked fruit submits under the name fruit."
+        showRestoreButton
         data-lab-field="saved"
       >
         {fruit.map(({ label, ...option }) => (

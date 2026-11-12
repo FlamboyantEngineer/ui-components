@@ -595,7 +595,11 @@ describe('RichTextEditor', () => {
   });
 
   it('UIC-RICH-TEXT-EDITOR-3.4 UIC-RICH-TEXT-EDITOR-4.2 undoes a restore, bringing the edits back', async () => {
-    const { user } = renderEditor({ defaultValue: note, children: <ViewProbe /> });
+    const { user } = renderEditor({
+      showRestoreButton: true,
+      defaultValue: note,
+      children: <ViewProbe />,
+    });
     selectRange(11);
     await user.keyboard('!');
     await user.click(screen.getByRole('button', { name: 'Restore Notes' }));
@@ -763,7 +767,12 @@ describe('RichTextEditor', () => {
 
   it('UIC-RICH-TEXT-EDITOR-4.2 UIC-FIELD-1.11 reaches the restore button by Tab and commits on leaving the field', async () => {
     const onCommit = vi.fn();
-    const { user } = renderEditor({ defaultValue: note, onCommit, children: <ViewProbe /> });
+    const { user } = renderEditor({
+      showRestoreButton: true,
+      defaultValue: note,
+      onCommit,
+      children: <ViewProbe />,
+    });
     selectRange(11);
     await user.keyboard('!');
     await user.tab();
@@ -776,6 +785,7 @@ describe('RichTextEditor', () => {
 
   it('UIC-RICH-TEXT-EDITOR-4.2 offers restore while the document differs from the committed one', async () => {
     const { user } = renderEditor({
+      showRestoreButton: true,
       defaultValue: note,
       committedValue: note,
       children: <ViewProbe />,
@@ -849,6 +859,7 @@ describe('RichTextEditor', () => {
       return (
         <form aria-label="Plan">
           <RichTextEditor
+            showRestoreButton
             label="Notes"
             name="notes"
             schema={schema}
@@ -929,7 +940,13 @@ describe('RichTextEditor', () => {
       const user = userEvent.setup();
       render(
         <form aria-label="Plan">
-          <RichTextEditor label="Notes" name="notes" committedValue={note} defaultValue={note}>
+          <RichTextEditor
+            showRestoreButton
+            label="Notes"
+            name="notes"
+            committedValue={note}
+            defaultValue={note}
+          >
             <ViewProbe />
           </RichTextEditor>
           <button type="reset">Reset</button>

@@ -87,7 +87,7 @@ Verification: `src/components/decimal-field/decimal-field.test.tsx`, `e2e/decima
 
 ### UIC-DECIMAL-FIELD-3.2 - Field behaviour
 
-`DecimalField` shall show each validation status, show dirty state with a restore button, undo and redo with the field's chords, and offer the field's menu, whose Clear empties the value, Reset puts the committed value back and Set to default puts the default back.
+`DecimalField` shall show each validation status, show dirty state, with a restore button given `showRestoreButton`, undo and redo with the field's chords, and offer the field's menu, whose Clear empties the value, Reset puts the committed value back and Set to default puts the default back.
 
 Implementation: `src/components/decimal-field/decimal-field.tsx`, `src/components/field/field.tsx`
 Verification: `src/components/decimal-field/decimal-field.test.tsx`

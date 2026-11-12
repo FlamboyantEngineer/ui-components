@@ -381,6 +381,13 @@ describe('DiagramCanvas', () => {
     expect(contentOf(container).style.transform).toBe('translate(5px, 6px) scale(2)');
   });
 
+  it('UIC-DIAGRAM-CANVAS-3.2 leaves the zoom reset button out unless showZoomReset', () => {
+    stubViewportSize(400, 300);
+    render(<DiagramCanvas nodes={pipeNodes} edges={pipeEdges} />);
+    expect(screen.getByRole('button', { name: 'Zoom in' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Reset zoom' })).not.toBeInTheDocument();
+  });
+
   it('UIC-DIAGRAM-CANVAS-3.2 zooms with Ctrl and the wheel, the zoom control and the plus and minus keys', async () => {
     stubViewportSize(400, 300);
     const onViewportChange = vi.fn();
@@ -390,6 +397,7 @@ describe('DiagramCanvas', () => {
         edges={pipeEdges}
         defaultViewport={{ x: 0, y: 0, zoom: 100 }}
         onViewportChange={onViewportChange}
+        showZoomReset
       />,
     );
     fireEvent.wheel(viewportOf(container), {

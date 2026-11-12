@@ -73,7 +73,7 @@ Verification: `src/components/choice-group/choice-group.test.tsx`
 
 ### UIC-CHOICE-GROUP-3.1 - Validation, dirty state and undo
 
-A required group with no listed radio selected shall be invalid (UIC-FIELD-3.1, UIC-CHOICE-GROUP-3.3). `ChoiceGroup` shows each validation status, shows dirty state with a restore button, undoes and redoes with the field's chords from its radios, and offers the field menu, whose Clear selects none.
+A required group with no listed radio selected shall be invalid (UIC-FIELD-3.1, UIC-CHOICE-GROUP-3.3). `ChoiceGroup` shows each validation status, shows dirty state, with a restore button given `showRestoreButton`, undoes and redoes with the field's chords from its radios, and offers the field menu, whose Clear selects none.
 
 Implementation: `src/components/choice-group/choice-group.tsx`, `src/components/choice-group/choice-box.tsx`, `src/components/choice-group/choice.tsx`, `src/components/field/field.tsx`
 Verification: `src/components/choice-group/choice-group.test.tsx`, `e2e/choice-group.spec.ts`
@@ -126,7 +126,7 @@ Verification: `src/components/choice-group/choice-group-multiple.test.tsx`, `e2e
 
 ### UIC-CHOICE-GROUP-4.5 - Field behaviour
 
-`ChoiceGroup` shall show each validation status, refuse toggles while read-only or disabled, show dirty state with a restore button, undo and redo with the field's chords from its boxes, and offer the field menu, whose Clear empties the list.
+`ChoiceGroup` shall show each validation status, refuse toggles while read-only or disabled, show dirty state, with a restore button given `showRestoreButton`, undo and redo with the field's chords from its boxes, and offer the field menu, whose Clear empties the list.
 
 Implementation: `src/components/choice-group/choice-group.tsx`, `src/components/choice-group/choice-box.tsx`, `src/components/choice-group/choice.tsx`, `src/components/field/field.tsx`
 Verification: `src/components/choice-group/choice-group-multiple.test.tsx`, `e2e/choice-group-multiple.spec.ts`

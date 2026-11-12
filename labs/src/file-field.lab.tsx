@@ -86,6 +86,7 @@ function Sample({
         label="Attachments"
         labelLayout={layout}
         allowsMultiple
+        showRestoreButton
         onSelect={() => {}}
         uploads={state === 'pending' ? [{ id: 'up', name: 'Map.svg', progress: 45 }] : undefined}
         {...props}
@@ -353,6 +354,7 @@ function RemovedFiles({
         onChange={setValue}
         committedValue={committedFiles}
         hideRemovedLabel={title === 'hidden'}
+        showRestoreButton
         onSelect={() => {}}
         data-lab-field={`removed-${width}${title === 'hidden' ? '-untitled' : ''}${kept === 'none' ? '-all' : ''}`}
       />
@@ -401,6 +403,7 @@ mountLab(
         initial={[report, harbour]}
         committedValue={[report, harbour]}
         allowsMultiple
+        showRestoreButton
         maxFiles={3}
       />
     </LabSection>

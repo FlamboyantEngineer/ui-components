@@ -438,6 +438,7 @@ export function ControlledEditor() {
       <RichTextEditor
         label="Reminder"
         labelLayout="label-colon-control"
+        showRestoreButton
         data-lab-editor="controlled"
         value={value}
         committedValue={committed}
@@ -587,6 +588,7 @@ export function LongDocumentEditor() {
       </style>
       <RichTextEditor
         label="Orchard log"
+        showRestoreButton
         data-lab-editor="long"
         description="The host flags rows mentioning blight (error) or frost (warning)."
         toolbar={<FormatToolbar />}

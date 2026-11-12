@@ -43,6 +43,7 @@ function FilterRow({ density, width }: { density: FieldDensity; width?: number }
           value={status}
           onChange={(next) => setStatus(next ?? 'waiting')}
           committedValue="waiting"
+          showRestoreButton
           size="sm"
           density={density}
         />
@@ -52,6 +53,7 @@ function FilterRow({ density, width }: { density: FieldDensity; width?: number }
           defaultValue="Maria"
           validate={noDigits}
           validationMode="immediate"
+          showRestoreButton
           size="sm"
           density={density}
         />

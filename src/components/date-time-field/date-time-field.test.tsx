@@ -379,7 +379,14 @@ describe('DateTimeField field', () => {
   it('UIC-DATE-TIME-FIELD-1.7 restores, undoes and clears from the menu', async () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();
-    renderInLocale(<DateTimeField label="Due" committedValue="2026-04-13" onCommit={onCommit} />);
+    renderInLocale(
+      <DateTimeField
+        showRestoreButton
+        label="Due"
+        committedValue="2026-04-13"
+        onCommit={onCommit}
+      />,
+    );
     act(() => segment(/^day/).focus());
     await user.keyboard('{ArrowUp}');
     expect(onCommit).toHaveBeenLastCalledWith('2026-04-14');

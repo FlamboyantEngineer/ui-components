@@ -57,7 +57,7 @@ Verification: `src/components/text-field/text-field.test.tsx`, `src/components/t
 
 ### UIC-TEXT-FIELD-2.4 - Field behaviour
 
-`TextField` shall show each validation status (invalid, warning and pending), show dirty state with a restore button, undo and redo with the field's chords, and offer the field's context menu, whose Clear empties the text, Reset puts the committed value back and Set to default puts the default back. Opening the menu keeps the draft: it neither commits nor discards it.
+`TextField` shall show each validation status (invalid, warning and pending), show dirty state, with a restore button given `showRestoreButton`, undo and redo with the field's chords, and offer the field's context menu, whose Clear empties the text, Reset puts the committed value back and Set to default puts the default back. Opening the menu keeps the draft: it neither commits nor discards it.
 
 Implementation: `src/components/text-field/text-field.tsx`, `src/components/field/field.tsx`
 Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.spec.ts`

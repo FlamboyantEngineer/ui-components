@@ -535,7 +535,12 @@ describe('TagsInput', () => {
   it('UIC-TAGS-INPUT-4.4 shows dirty state against a committed value the caller holds', async () => {
     const user = userEvent.setup();
     const { container } = render(
-      <TagsInput label="Fruit" committedValue={['Apple']} defaultValue={['Apple']} />,
+      <TagsInput
+        showRestoreButton
+        label="Fruit"
+        committedValue={['Apple']}
+        defaultValue={['Apple']}
+      />,
     );
     await user.type(screen.getByRole('textbox', { name: 'Fruit' }), 'Fig{Enter}');
     expect(root(container)).toHaveAttribute('data-dirty', 'true');

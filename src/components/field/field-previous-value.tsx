@@ -23,6 +23,12 @@ const hooks = createHooks('field-previous-value', ['value']);
 export const FieldChangeLayoutContext = createContext<FieldChangeLayout>('inline');
 
 /**
+ * Whether the field around the marker draws restore buttons (`showRestoreButton`). Outside a field,
+ * a caller that passes `onRestore` asks for the button itself.
+ */
+export const FieldRestoreContext = createContext(true);
+
+/**
  * Marks a value that differs from the field's committed value: the previous value in a `<del>`
  * element, and, when the control can put that one value back, a restore button.
  */
@@ -41,6 +47,7 @@ export function FieldPreviousValue({
   const [text, setText] = useState(typeof children === 'string' ? children : '');
   useLayoutEffect(() => setText(valueRef.current?.textContent?.trim() ?? ''), [children]);
   const label = restoreLabel ?? text;
+  const showsRestore = use(FieldRestoreContext);
   // A field that hides what its edits replaced draws no marker, for sighted and assistive readers.
   if (use(FieldChangeLayoutContext) === 'hidden') return null;
   return (
@@ -48,7 +55,7 @@ export function FieldPreviousValue({
       <del {...hooks.slot('value')} ref={valueRef}>
         {children}
       </del>
-      {onRestore && label ? (
+      {showsRestore && onRestore && label ? (
         <FieldRestoreButton label={label} size="sm" isDisabled={isDisabled} onPress={onRestore} />
       ) : null}
     </span>

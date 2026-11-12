@@ -1,13 +1,14 @@
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
-import { TextField } from '../../../test/field-fixtures.js';
+import { chooseFieldMenuItem, TextField } from '../../../test/field-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { fr, ja } from '../../core/locales/index.js';
 import type { ControlSize } from '../../core/props.js';
 import { UiProvider } from '../../core/provider.js';
+import { Input } from '../../primitives/index.js';
 import { TextMatchProvider } from '../text-match/text-match.js';
-import type { FieldLabelLayout } from './field.js';
+import { Field, type FieldLabelLayout, FieldPreviousValue, useFieldState } from './field.js';
 
 function root(container: HTMLElement) {
   return container.querySelector<HTMLElement>('.ui-field');
@@ -183,7 +184,12 @@ describe('Field', () => {
   it('UIC-FIELD-1.10 publishes its size and sizes its buttons one step below', () => {
     const sizesOf = (size?: ControlSize) => {
       const { container, unmount } = render(
-        <TextField size={size} options={{ value: 'Pear', committedValue: 'Apple' }} help="Tip" />,
+        <TextField
+          showRestoreButton
+          size={size}
+          options={{ value: 'Pear', committedValue: 'Apple' }}
+          help="Tip"
+        />,
       );
       expectHooksMatchSpec(container, 'FIELD');
       const sizes = [
@@ -211,11 +217,12 @@ describe('Field', () => {
 
   it('UIC-FIELD-1.12 publishes its density and keeps every part in a compact field', async () => {
     const user = userEvent.setup();
-    const { container, unmount } = render(<TextField />);
+    const { container, unmount } = render(<TextField showRestoreButton />);
     expect(root(container)).toHaveAttribute('data-density', 'default');
     unmount();
     const view = render(
       <TextField
+        showRestoreButton
         density="compact"
         labelLayout="label-colon-control"
         description="Pick one."
@@ -346,7 +353,9 @@ describe('Field', () => {
 
   it('UIC-FIELD-4.1 restores the committed value and keeps focus on the control', async () => {
     const user = userEvent.setup();
-    const { container } = render(<TextField options={{ committedValue: 'Fig' }} />);
+    const { container } = render(
+      <TextField showRestoreButton options={{ committedValue: 'Fig' }} />,
+    );
     const input = screen.getByRole('textbox');
     await user.type(input, 's');
     const restore = screen.getByRole('button', { name: 'Restore Fruit' });
@@ -356,6 +365,41 @@ describe('Field', () => {
     expect(input).toHaveValue('Fig');
     expect(input).toHaveFocus();
     expect(screen.queryByRole('button', { name: 'Restore Fruit' })).not.toBeInTheDocument();
+  });
+
+  it('UIC-FIELD-4.1 UIC-FIELD-9.2 draws no restore button without showRestoreButton, and keeps Reset in the menu', async () => {
+    const user = userEvent.setup();
+    function Marked({ showRestoreButton }: { showRestoreButton?: boolean }) {
+      const state = useFieldState<string>({ defaultValue: 'Fig', committedValue: 'Fig' });
+      return (
+        <Field state={state} label="Fruit" showRestoreButton={showRestoreButton}>
+          {(control) => (
+            <>
+              <Input
+                {...control}
+                value={state.value}
+                onChange={(event) => state.setValue(event.target.value)}
+              />
+              <FieldPreviousValue onRestore={() => state.restore()}>Fig</FieldPreviousValue>
+            </>
+          )}
+        </Field>
+      );
+    }
+    const { container, unmount } = render(<Marked />);
+    const input = screen.getByRole('textbox');
+    await user.type(input, 's');
+    expect(root(container)).toHaveAttribute('data-dirty', 'true');
+    expect(root(container)).not.toHaveAttribute('data-restore-button');
+    expect(screen.queryByRole('button', { name: /^Restore/ })).not.toBeInTheDocument();
+    await chooseFieldMenuItem(user, input, 'Reset');
+    expect(input).toHaveValue('Fig');
+    unmount();
+    const view = render(<Marked showRestoreButton />);
+    expect(root(view.container)).toHaveAttribute('data-restore-button', 'true');
+    await user.type(screen.getByRole('textbox'), 's');
+    expect(screen.getByRole('button', { name: 'Restore Fruit' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Restore Fig' })).toBeInTheDocument();
   });
 
   it('UIC-FIELD-2.7 shows no dirty state or Restore for a plain input', async () => {
@@ -369,7 +413,7 @@ describe('Field', () => {
   it('UIC-FIELD-4.1 UIC-SLOT-REGISTRY-1.2 moves keyboard focus to the control before the button leaves', async () => {
     const user = userEvent.setup();
     // The caller controls the committed value, so leaving the input keeps the field dirty.
-    render(<TextField options={{ committedValue: 'Fig' }} />);
+    render(<TextField showRestoreButton options={{ committedValue: 'Fig' }} />);
     const input = screen.getByRole('textbox');
     await user.type(input, 's');
     await user.tab();

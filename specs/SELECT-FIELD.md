@@ -27,7 +27,7 @@ Verification: `src/components/select-field/select-field.test.tsx`, `e2e/select-f
 
 ### UIC-SELECT-FIELD-1.4 - Restore, undo and menu
 
-The field base's restore button, undo and redo chords and field menu shall apply to the select's value: Clear sets `null` for a single select and an empty list for a multiple select (the default `emptyValue`), and Set to default sets `defaultValue`.
+The field base's restore button (given `showRestoreButton`), undo and redo chords and field menu shall apply to the select's value: Clear sets `null` for a single select and an empty list for a multiple select (the default `emptyValue`), and Set to default sets `defaultValue`.
 
 Implementation: `src/components/select-field/select-field.tsx`
 Verification: `src/components/select-field/select-field.test.tsx`, `e2e/select-field.spec.ts`
@@ -137,7 +137,7 @@ Verification: `src/components/select-field/select-chips.test.tsx`, `e2e/select-f
 
 ### UIC-SELECT-FIELD-4.3 - Changes against the committed value
 
-While a multiple select is dirty, the chips of values the edit added shall publish `data-change="added"`, and each committed value the edit removed shall follow the chips as a `FieldPreviousValue` (`ui-select-field__removed`) whose restore button (`Restore <label>`) puts that one value back and commits.
+While a multiple select is dirty, the chips of values the edit added shall publish `data-change="added"`, and each committed value the edit removed shall follow the chips as a `FieldPreviousValue` (`ui-select-field__removed`) whose restore button (`Restore <label>`, given `showRestoreButton`) puts that one value back and commits.
 
 Implementation: `src/components/select-field/select-chips.tsx`, `src/components/select-field/select-control.tsx`
 Verification: `src/components/select-field/select-chips.test.tsx`, `src/components/select-field/select-options.test.ts`, `e2e/select-field.spec.ts`

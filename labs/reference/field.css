@@ -1,7 +1,8 @@
 /*
  * Field: label, control and buttons on one wrapping row; description and message below. A field keeps
  * room for what its states add, so turning dirty, invalid or pending never moves its control or its
- * neighbours: the restore button's place closes the control row, and the message keeps one line.
+ * neighbours: the restore button's place, given showRestoreButton, closes the control row, and the
+ * message keeps one line.
  * A compact field keeps neither, for dense rows.
  */
 
@@ -137,11 +138,11 @@
 
 /* The restore button closes the row, and holds its place while the field is clean. */
 .ui-field > .ui-field-restore-button,
-.ui-field:not([data-dirty])::after {
+.ui-field[data-restore-button]:not([data-dirty])::after {
   order: 1;
 }
 
-.ui-field:not([data-dirty])::after {
+.ui-field[data-restore-button]:not([data-dirty])::after {
   content: '';
   flex: none;
   width: var(--ref-field-button);
@@ -222,7 +223,7 @@
   flex: 1 1 0;
 }
 
-.ui-field[data-density='compact']:not([data-dirty])::after {
+.ui-field[data-density='compact'][data-restore-button]:not([data-dirty])::after {
   content: none;
 }
 

@@ -59,7 +59,7 @@ Verification: `src/components/number-field/number-field.test.tsx`, `src/componen
 
 ### UIC-NUMBER-FIELD-2.3 - Field behaviour
 
-`NumberField` shall show each validation status (invalid, warning and pending), show dirty state with a restore button, undo and redo with the field's chords, and offer the field menu, whose Clear empties the value and Set to default puts the default back.
+`NumberField` shall show each validation status (invalid, warning and pending), show dirty state, with a restore button given `showRestoreButton`, undo and redo with the field's chords, and offer the field menu, whose Clear empties the value and Set to default puts the default back.
 
 Implementation: `src/components/number-field/number-field.tsx`, `src/components/field/field.tsx`
 Verification: `src/components/number-field/number-field.test.tsx`, `e2e/number-field.spec.ts`
@@ -209,7 +209,7 @@ Verification: `src/components/number-field/number-slider.test.tsx`
 
 ### UIC-NUMBER-FIELD-7.1 - Validation, dirty state and undo
 
-The slider display shall show each validation status from `validate` (invalid, warning and pending), show dirty state with a restore button that puts the committed value back and focuses the first thumb, undo and redo with the field's chords pressed on a thumb, and offer the field menu, whose Set to default puts the default back.
+The slider display shall show each validation status from `validate` (invalid, warning and pending), show dirty state, with a restore button given `showRestoreButton` that puts the committed value back and focuses the first thumb, undo and redo with the field's chords pressed on a thumb, and offer the field menu, whose Set to default puts the default back.
 
 Implementation: `src/components/number-field/number-slider.tsx`, `src/components/field/field.tsx`
 Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-field-slider.spec.ts`

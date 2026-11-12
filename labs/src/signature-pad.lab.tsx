@@ -58,7 +58,7 @@ function Sample({
   layout: (typeof fieldLayouts)[number];
 }) {
   const props = useLabFieldState(state, samples);
-  return <SignaturePad label="Signature" labelLayout={layout} {...props} />;
+  return <SignaturePad label="Signature" labelLayout={layout} showRestoreButton {...props} />;
 }
 
 const menuValues = ['empty draw', 'drawn', 'empty type', 'typed', 'empty image', 'image'] as const;
@@ -175,6 +175,7 @@ function InForm() {
         name="signature"
         isRequired
         modes={withoutTyping}
+        showRestoreButton
         data-lab-field="form"
       />
       <Button type="submit" variant="primary">
@@ -238,6 +239,7 @@ mountLab(
             label="Signature"
             modes={mode === 'draw only' ? drawOnly : undefined}
             defaultValue={modeSamples[mode]}
+            showRestoreButton
           />
         )}
       />

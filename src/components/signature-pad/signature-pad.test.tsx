@@ -359,6 +359,7 @@ describe('SignaturePad', () => {
     const onCommit = vi.fn();
     const { container } = render(
       <SignaturePad
+        showRestoreButton
         label="Signature"
         isRequired
         defaultValue={{ kind: 'typed', text: '' }}
@@ -392,6 +393,7 @@ describe('SignaturePad', () => {
     const user = userEvent.setup();
     const { container } = render(
       <SignaturePad
+        showRestoreButton
         label="Signature"
         isRequired
         validationMode="immediate"
@@ -421,7 +423,13 @@ describe('SignaturePad', () => {
     const onSubmit = vi.fn();
     const { container } = render(
       <Form aria-label="Sign" onSubmit={onSubmit}>
-        <SignaturePad label="Signature" name="signature" defaultValue={value} isRequired />
+        <SignaturePad
+          showRestoreButton
+          label="Signature"
+          name="signature"
+          defaultValue={value}
+          isRequired
+        />
         <button type="submit">Send</button>
       </Form>,
     );

@@ -125,6 +125,7 @@ describe('SelectField chips', () => {
         <SelectField
           label="Fruit"
           selectionMode="multiple"
+          showRestoreButton
           options={fruit}
           committedValue={['apple', 'pear']}
           value={value}

@@ -609,7 +609,7 @@ describe('PinInput', () => {
     const onCommit = vi.fn();
     render(
       <>
-        <PinInput label="Code" length={4} onCommit={onCommit} />
+        <PinInput showRestoreButton label="Code" length={4} onCommit={onCommit} />
         <button type="button">After</button>
       </>,
     );
@@ -686,7 +686,7 @@ describe('PinInput', () => {
 
   it('UIC-PIN-INPUT-2.7 shows dirty state, restores, undoes and clears from the menu', async () => {
     const user = userEvent.setup();
-    const { container } = render(<SavedCode />);
+    const { container } = render(<SavedCode showRestoreButton />);
     await user.click(cells()[3] as HTMLElement);
     await user.keyboard('9');
     expect(screen.getByRole('status', { hidden: true })).toHaveTextContent('1239');

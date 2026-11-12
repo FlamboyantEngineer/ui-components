@@ -52,6 +52,7 @@ function Commit() {
         maxValue={10}
         step={0.5}
         onCommit={setCommitted}
+        showRestoreButton
         data-lab-field="snap"
       />
       <NumberField
@@ -125,6 +126,7 @@ function SavedField() {
         committedValue={saved}
         defaultValue={2}
         menu={['clear', 'reset', 'set-default']}
+        showRestoreButton
         data-lab-field="dirty"
       />
       <Button onPress={() => setSaved(value)}>Save</Button>

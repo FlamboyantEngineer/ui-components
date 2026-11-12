@@ -18,6 +18,7 @@ describe('SelectField limits', () => {
       <SelectField
         label="Basket"
         selectionMode="multiple"
+        showRestoreButton
         options={fruit}
         defaultValue={['apple']}
         maxValues={2}
@@ -48,6 +49,7 @@ describe('SelectField limits', () => {
       <SelectField
         label="Basket"
         selectionMode="multiple"
+        showRestoreButton
         options={fruit}
         committedValue={['apple']}
         value={['pear', 'fig']}
@@ -67,6 +69,7 @@ describe('SelectField limits', () => {
       <SelectField
         label="Basket"
         selectionMode="multiple"
+        showRestoreButton
         options={[{ id: 'apple', label: 'Apple' }]}
         value={['apple']}
         committedValue={['missing']}
@@ -82,6 +85,7 @@ describe('SelectField limits', () => {
       <SelectField
         label="Basket"
         selectionMode="multiple"
+        showRestoreButton
         options={[]}
         value={['apple']}
         committedValue={['missing']}

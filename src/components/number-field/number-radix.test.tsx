@@ -40,6 +40,7 @@ describe('NumberField bases', () => {
     const user = userEvent.setup();
     render(
       <NumberField
+        showRestoreButton
         label="Bits"
         radix={2}
         committedValue={8}

@@ -119,6 +119,7 @@ function SavedGroup() {
         value={value}
         onChange={setValue}
         committedValue={saved}
+        showRestoreButton
         data-lab-field="saved"
       >
         <Fruit />

@@ -242,6 +242,7 @@ describe('RelativeDateField', () => {
     const onCommit = vi.fn();
     const { container } = renderInLocale(
       <RelativeDateField
+        showRestoreButton
         label="Due"
         committedValue="2026-05-23"
         getNow={getNow}

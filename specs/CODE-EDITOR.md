@@ -317,7 +317,7 @@ Verification: `src/components/code-editor/code-json.test.tsx`, `src/components/c
 
 ### UIC-CODE-EDITOR-11.1 - Commit, dirty state and restore
 
-The editor shall commit its text when focus leaves the field (UIC-FIELD-1.11), so Tab from the edited text area reaches the restore button without committing. While the text differs from the committed text the field is dirty and offers its restore button, which puts the committed text back.
+The editor shall commit its text when focus leaves the field (UIC-FIELD-1.11), so Tab from the edited text area reaches the restore button (given `showRestoreButton`) without committing. While the text differs from the committed text the field is dirty and, given `showRestoreButton`, offers its restore button, which puts the committed text back.
 
 Implementation: `src/components/code-editor/code-field.tsx`
 Verification: `src/components/code-editor/code-json.test.tsx`, `e2e/code-json.spec.ts`

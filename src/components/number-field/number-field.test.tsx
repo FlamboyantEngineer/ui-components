@@ -328,7 +328,13 @@ describe('NumberField', () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();
     const { container } = render(
-      <NumberField label="Weight" committedValue={4} defaultValue={4} onCommit={onCommit} />,
+      <NumberField
+        showRestoreButton
+        label="Weight"
+        committedValue={4}
+        defaultValue={4}
+        onCommit={onCommit}
+      />,
     );
     const input = screen.getByRole('textbox');
     await user.click(screen.getByRole('button', { name: 'Increase Weight' }));

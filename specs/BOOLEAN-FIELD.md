@@ -64,7 +64,7 @@ Verification: `src/components/boolean-field/boolean-field.test.tsx`, `e2e/boolea
 
 ### UIC-BOOLEAN-FIELD-2.3 - Field behaviour
 
-In every variant, `BooleanField` shall show each validation status, refuse presses and picks while read-only or disabled, show dirty state with a restore button, undo and redo with the field's chords from its control, and offer the field menu. Every variant registers its control with the field, so `autoFocus`, a form's focus on its first invalid field and the restore button reach it; the segmented choice takes focus on its selected segment, else its first enabled one, and a change of variant registers the new control.
+In every variant, `BooleanField` shall show each validation status, refuse presses and picks while read-only or disabled, show dirty state, with a restore button given `showRestoreButton`, undo and redo with the field's chords from its control, and offer the field menu. Every variant registers its control with the field, so `autoFocus`, a form's focus on its first invalid field and the restore button reach it; the segmented choice takes focus on its selected segment, else its first enabled one, and a change of variant registers the new control.
 
 Implementation: `src/components/boolean-field/boolean-field.tsx`, `src/components/boolean-field/boolean-controls.tsx`, `src/components/field/field.tsx`
 Verification: `src/components/boolean-field/boolean-field.test.tsx`, `e2e/boolean-field.spec.ts`

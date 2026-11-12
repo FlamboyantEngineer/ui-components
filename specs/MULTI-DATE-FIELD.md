@@ -34,7 +34,7 @@ Verification: `src/components/multi-date-field/multi-date-values.test.ts`, `src/
 
 ### UIC-MULTI-DATE-FIELD-1.5 - Clear, restore, undo and forms
 
-The field base's restore button, undo and redo chords and field menu shall apply to the set, and Clear sets `[]`. A required field is empty with no date. `name` adds one hidden input per chosen date to the field's form, each holding a `YYYY-MM-DD` date under that same name, earliest first, so the form submits the name once per date and nothing for an empty set; a disabled field submits none.
+The field base's restore button (given `showRestoreButton`), undo and redo chords and field menu shall apply to the set, and Clear sets `[]`. A required field is empty with no date. `name` adds one hidden input per chosen date to the field's form, each holding a `YYYY-MM-DD` date under that same name, earliest first, so the form submits the name once per date and nothing for an empty set; a disabled field submits none.
 
 Implementation: `src/components/multi-date-field/multi-date-field.tsx`, `src/components/multi-date-field/multi-date-parts.tsx`
 Verification: `src/components/multi-date-field/multi-date-field.test.tsx`

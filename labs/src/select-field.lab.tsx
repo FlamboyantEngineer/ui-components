@@ -145,6 +145,7 @@ function MatrixField({
       labelLayout={layout}
       selectionMode={multiple ? 'multiple' : 'single'}
       chipPlacement={mode === 'chips-inside' ? 'inside' : undefined}
+      showRestoreButton
       options={fruit}
       {...props}
       {...controlled}
@@ -182,6 +183,7 @@ function Chips() {
         onChange={setValue}
         committedValue={committed}
         description="Fig was added and Apple removed since the last save."
+        showRestoreButton
         data-lab-field="multiple"
       />
       <button type="button" onClick={() => setCommitted(value)}>
@@ -310,6 +312,7 @@ function Limits() {
         committedValue={['retired']}
         maxValues={1}
         description="The committed value is no longer listed; it cannot be restored while one fruit is chosen."
+        showRestoreButton
         data-lab-field="limited-missing"
       />
     </>

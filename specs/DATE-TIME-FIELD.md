@@ -59,7 +59,7 @@ Verification: `src/components/date-time-field/date-time-field.test.tsx`, `src/co
 
 ### UIC-DATE-TIME-FIELD-1.7 - Restore, undo and menu
 
-The field base's restore button, undo and redo chords and field menu shall apply to the value; Clear sets `null` (the default `emptyValue`).
+The field base's restore button (given `showRestoreButton`), undo and redo chords and field menu shall apply to the value; Clear sets `null` (the default `emptyValue`).
 
 Implementation: `src/components/date-time-field/date-time-field.tsx`
 Verification: `src/components/date-time-field/date-time-field.test.tsx`

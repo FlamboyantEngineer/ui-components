@@ -25,7 +25,7 @@ describe('Field owner hooks', () => {
     const onLeave = vi.fn();
     render(
       <>
-        <TextField label="Name" defaultValue="Ann" onLeave={onLeave} />
+        <TextField showRestoreButton label="Name" defaultValue="Ann" onLeave={onLeave} />
         <button type="button">After</button>
       </>,
     );

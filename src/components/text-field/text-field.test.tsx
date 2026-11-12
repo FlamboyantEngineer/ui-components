@@ -112,7 +112,7 @@ describe('TextField', () => {
   it('UIC-TEXT-FIELD-2.1 commits on blur and Enter, once per value', async () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();
-    render(<TextField label="Fruit" defaultValue="Fig" onCommit={onCommit} />);
+    render(<TextField showRestoreButton label="Fruit" defaultValue="Fig" onCommit={onCommit} />);
     const input = screen.getByRole('textbox');
     await user.type(input, 's');
     await user.keyboard('{Enter}{Enter}');
@@ -213,7 +213,7 @@ describe('TextField', () => {
 
   it('UIC-TEXT-FIELD-2.4 shows dirty state, restores, undoes and redoes', async () => {
     const user = userEvent.setup();
-    const { container } = render(<SavedField />);
+    const { container } = render(<SavedField showRestoreButton />);
     const input = screen.getByRole('textbox', { name: 'Fruit' });
     await user.type(input, 's');
     await user.tab();

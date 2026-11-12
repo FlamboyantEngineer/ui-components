@@ -175,7 +175,13 @@ describe('CodeEditor', () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();
     const { container } = render(
-      <CodeEditor language="json" label="Settings" committedValue="[1]" onCommit={onCommit} />,
+      <CodeEditor
+        showRestoreButton
+        language="json"
+        label="Settings"
+        committedValue="[1]"
+        onCommit={onCommit}
+      />,
     );
     await user.click(editor());
     await user.keyboard('{End}{ArrowLeft},2');

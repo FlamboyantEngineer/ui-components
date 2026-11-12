@@ -239,6 +239,7 @@ function Typing() {
         description="Type hex, rgb() or hsl(): a colour is the value as it is typed; Enter, or leaving the field, commits. Enter and Escape that an input method composition owns stay with it."
         onChange={(value) => setTyped(value ?? 'empty')}
         onCommit={(value) => setCommitted(value ?? 'empty')}
+        showRestoreButton
         data-lab-field="typing"
       />
       <LabOutput name="Typed value">{typed}</LabOutput>
@@ -260,6 +261,7 @@ function Saved() {
         committedValue={saved}
         defaultValue="#000000"
         menu={['clear', 'reset', 'set-default']}
+        showRestoreButton
         data-lab-field="dirty"
       />
       <Button onPress={() => setSaved(value)}>Save</Button>

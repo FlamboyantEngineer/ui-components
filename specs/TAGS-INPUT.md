@@ -117,7 +117,7 @@ Verification: `src/components/tags-input/tags-input.test.tsx`, `e2e/tags-input.s
 
 ### UIC-TAGS-INPUT-4.4 - Field behaviour
 
-`TagsInput` shall show each validation status of its list (a required field with no tag is invalid, UIC-FIELD-3.1), refuse every change while read-only or disabled, show dirty state with a restore button, undo and redo with the field's chords from the input, and offer the field menu, whose Clear empties the list.
+`TagsInput` shall show each validation status of its list (a required field with no tag is invalid, UIC-FIELD-3.1), refuse every change while read-only or disabled, show dirty state, with a restore button given `showRestoreButton`, undo and redo with the field's chords from the input, and offer the field menu, whose Clear empties the list.
 
 Implementation: `src/components/tags-input/tags-input.tsx`, `src/components/field/field.tsx`
 Verification: `src/components/tags-input/tags-input.test.tsx`, `e2e/tags-input.spec.ts`

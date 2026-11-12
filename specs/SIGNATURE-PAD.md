@@ -96,7 +96,7 @@ Verification: `src/components/signature-pad/signature-pad.test.tsx`, `e2e/signat
 
 ### UIC-SIGNATURE-PAD-3.3 - Field behaviour
 
-`SignaturePad` shall show each validation status (a required field is invalid while empty: no value, typed text that is blank or a drawing with no stroke, whether typed, drawn or given as `value`, `defaultValue` or `committedValue`; such a value stays as given, it is never replaced by `null` unasked), show dirty state with a restore button, undo and redo with the field's chords from its controls, and offer the field menu, whose Clear empties the signature.
+`SignaturePad` shall show each validation status (a required field is invalid while empty: no value, typed text that is blank or a drawing with no stroke, whether typed, drawn or given as `value`, `defaultValue` or `committedValue`; such a value stays as given, it is never replaced by `null` unasked), show dirty state, with a restore button given `showRestoreButton`, undo and redo with the field's chords from its controls, and offer the field menu, whose Clear empties the signature.
 
 Implementation: `src/components/signature-pad/signature-pad.tsx`, `src/components/field/field.tsx`
 Verification: `src/components/signature-pad/signature-pad.test.tsx`, `e2e/signature-pad.spec.ts`
