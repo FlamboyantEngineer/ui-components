@@ -42,7 +42,10 @@ async function clearFull(page: Page) {
 async function pressEnd(page: Page) {
   await expect(async () => {
     await page.keyboard.press('End');
-    const atEnd = await page.evaluate(() => {
+    const atEnd = await page.evaluate(async () => {
+      // ProseMirror may put back its own selection shortly after the editor gains focus (a 20 ms
+      // timer), so the caret must still be at the end once that has run.
+      await new Promise((resolve) => setTimeout(resolve, 50));
       const selection = window.getSelection();
       const node = selection?.focusNode;
       if (!selection?.isCollapsed || !node) return false;

@@ -90,7 +90,7 @@
   "questionAnsweredText": "回答: {text}",
   "questionNoAnswer": "回答なし",
   "questionDismissed": "スキップしました",
-  "chatSourcesLabel": "出典 {count} 件",
+  "chatSourcesLabel": "出典 ({count})",
   "chatCitationLabel": "出典 {index}: {title}",
   "newMessageAnnouncement": "{hasAuthor, select, true {{author}さんからの新しいメッセージ: {text}} other {新しいメッセージ: {text}}}",
   "newMessageCount": "新しいメッセージ {count} 件",

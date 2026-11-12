@@ -60,7 +60,7 @@ mountLab(
   <>
     <LabSection
       title="Sources list"
-      description="One or several sources, with their full details (link, site, snippet) or only titles."
+      description="One or several sources, with their full details (link, site, snippet) or only titles, opened with defaultExpanded."
     >
       <StateMatrix
         axes={{ count: ['one', 'several'], details: ['full', 'minimal'] }}
@@ -68,7 +68,7 @@ mountLab(
           const list = details === 'full' ? sources : minimalSources;
           return (
             <div style={{ width: 320 }}>
-              <ChatSources sources={count === 'one' ? list.slice(0, 1) : list} />
+              <ChatSources sources={count === 'one' ? list.slice(0, 1) : list} defaultExpanded />
             </div>
           );
         }}
@@ -88,7 +88,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Answer with citations"
-      description="createCitationOverride turns the [n] markers of a Markdown answer into citations of its sources, listed below it. Unknown numbers and code stay text, as do markers inside a link or a task label, where a citation's link or button cannot nest."
+      description="createCitationOverride turns the [n] markers of a Markdown answer into citations of its sources, listed below it behind a collapsed Sources (3) trigger. Unknown numbers and code stay text, as do markers inside a link or a task label, where a citation's link or button cannot nest."
     >
       <AnswerDemo />
     </LabSection>
