@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { requireDefined } from '../../utils/require-defined.js';
 import { Markdown } from './markdown.js';
 import { signMarkdownNode } from './markdown-block-cache.js';
-import type { MarkdownNode } from './markdown-nodes.js';
+import type { MarkdownBlock, MarkdownNode } from './markdown-nodes.js';
 import { parseMarkdown } from './parse-markdown.js';
 
 const paragraphs = [
@@ -115,7 +115,14 @@ describe('signMarkdownNode', () => {
       expect(signMarkdownNode(requireDefined(first))).not.toBe(
         signMarkdownNode(requireDefined(third)),
       );
-      const deep = requireDefined(parseMarkdown('>'.repeat(5000) + ' deep').children[0]);
+      // The parser opens no more than the drawn depth, so build a deeper tree by hand.
+      let deep: MarkdownBlock = {
+        type: 'paragraph',
+        children: [{ type: 'text', text: 'deep' }],
+      };
+      for (let level = 0; level < 5000; level += 1) {
+        deep = { type: 'blockquote', children: [deep] };
+      }
       expect(signMarkdownNode(deep)).toContain('"deep"');
     },
   );

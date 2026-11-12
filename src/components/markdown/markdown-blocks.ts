@@ -30,6 +30,8 @@ export interface BlockContext {
   headings: Array<{ id: string; readonly children: readonly MarkdownInline[] }>;
   /** Queues a container's lines and returns its blocks, filled before the parent resumes. */
   parseBlocks: (lines: readonly string[]) => MarkdownBlock[];
+  /** How many containers hold the lines being read; none open past `maxContainerDepth`. */
+  depth: number;
 }
 
 /** A block read from `lines`, or null when the lines held only definitions, and the next line. */

@@ -27,6 +27,13 @@ export interface StreamingMarkdownParse {
  */
 const freshStart = /^[\p{L}\p{N}#|!(]/u;
 
+/**
+ * A line that may start a link reference definition, inside block quotes and list items too.
+ * Definitions can change the blocks before them, so a source with one is parsed whole; text such
+ * as `x[0]:` inside a line does not match.
+ */
+const definitionStart = /^[ \t>]*(?:(?:[-+*]|\d{1,9}[.)])[ \t]+[ \t>]*)*\[[^\]]{0,999}\]:/m;
+
 /** A paragraph that only the end of a source can reach; it stays out of an unclosed fence. */
 const sentinel = '﷐';
 
@@ -83,15 +90,17 @@ function createParse(
 
 /**
  * Parses `source` as `parseMarkdown` does, reusing the settled blocks of `previous` when `source`
- * continues its source. A source with link reference definitions or carriage returns, which can
- * change what came before, is parsed whole.
+ * continues its source. Line endings are read as `\n`. A source with a line that may start a link
+ * reference definition, which can change what came before, is parsed whole.
  */
 export function parseStreamingMarkdown(
-  source: string,
+  rawSource: string,
   previous: StreamingMarkdownParse | null,
 ): StreamingMarkdownParse {
   const empty = { settled: '', settledBlocks: [], settledHeadingIds: [] };
-  if (source.includes(']:') || source.includes('\r')) return createParse(source, empty);
+  // A lone `\r` and `\r\n` each end one line, so a source read in pieces keeps its prefix.
+  const source = rawSource.includes('\r') ? rawSource.replaceAll(/\r\n?/g, '\n') : rawSource;
+  if (definitionStart.test(source)) return createParse(source, empty);
   const base = previous && source.startsWith(previous.settled) ? previous : empty;
   const end = findSettledEnd(source, base.settled.length);
   if (end === base.settled.length) return createParse(source, base);

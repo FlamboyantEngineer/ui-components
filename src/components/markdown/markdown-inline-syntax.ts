@@ -47,20 +47,51 @@ export function runEnd(text: string, at: number, char: string): number {
   return end;
 }
 
-/** A code span opening at `at`: its content and end, or null when no equal run closes it. */
-export function readCodeSpan(text: string, at: number): { text: string; end: number } | null {
+/** The starts of a text's backtick runs, by run length, in order. */
+export type CodeRuns = ReadonlyMap<number, readonly number[]>;
+
+/** Indexes every backtick run of `text` once, so code spans find their closing run directly. */
+export function indexCodeRuns(text: string): CodeRuns {
+  const runs = new Map<number, number[]>();
+  for (let at = text.indexOf('`'); at !== -1;) {
+    const end = runEnd(text, at, '`');
+    const starts = runs.get(end - at);
+    if (starts) starts.push(at);
+    else runs.set(end - at, [at]);
+    at = text.indexOf('`', end);
+  }
+  return runs;
+}
+
+/** The first of the ascending `starts` at or after `from`, by binary search. */
+function firstStartFrom(starts: readonly number[], from: number): number | undefined {
+  let low = 0;
+  let high = starts.length;
+  while (low < high) {
+    const middle = (low + high) >>> 1;
+    if ((starts[middle] ?? Infinity) < from) low = middle + 1;
+    else high = middle;
+  }
+  return starts[low];
+}
+
+/**
+ * A code span opening at `at`: its content and end, or null when no equal run closes it. `runs`
+ * indexes the text's backtick runs (`indexCodeRuns`), so a long line of unclosed runs stays
+ * linear.
+ */
+export function readCodeSpan(
+  text: string,
+  at: number,
+  runs: CodeRuns,
+): { text: string; end: number } | null {
   const openEnd = runEnd(text, at, '`');
   const size = openEnd - at;
-  for (let search = text.indexOf('`', openEnd); search !== -1;) {
-    const closeEnd = runEnd(text, search, '`');
-    if (closeEnd - search === size) {
-      const content = text.slice(openEnd, search).replaceAll('\n', ' ');
-      const isPadded = content.startsWith(' ') && content.endsWith(' ') && content.trim() !== '';
-      return { text: isPadded ? content.slice(1, -1) : content, end: closeEnd };
-    }
-    search = text.indexOf('`', closeEnd);
-  }
-  return null;
+  const search = firstStartFrom(runs.get(size) ?? [], openEnd);
+  if (search === undefined) return null;
+  const content = text.slice(openEnd, search).replaceAll('\n', ' ');
+  const isPadded = content.startsWith(' ') && content.endsWith(' ') && content.trim() !== '';
+  return { text: isPadded ? content.slice(1, -1) : content, end: search + size };
 }
 
 /** An autolink (`<https://…>` or `<name@example.com>`) at `at`. */

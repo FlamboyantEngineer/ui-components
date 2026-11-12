@@ -22,6 +22,8 @@ interface BlockFrame {
   lines: readonly string[];
   index: number;
   blocks: MarkdownBlock[];
+  /** How many containers hold these lines. */
+  depth: number;
 }
 
 /** Block readers in the order they are tried; the paragraph reader takes any other line. */
@@ -36,9 +38,13 @@ const blockReaders: readonly BlockReader[] = [
   readParagraph,
 ];
 
-function queueBlocks(frames: BlockFrame[], lines: readonly string[]): MarkdownBlock[] {
+function queueBlocks(
+  frames: BlockFrame[],
+  lines: readonly string[],
+  depth: number,
+): MarkdownBlock[] {
   const blocks: MarkdownBlock[] = [];
-  frames.push({ lines, blocks, index: 0 });
+  frames.push({ lines, blocks, index: 0, depth });
   return blocks;
 }
 
@@ -55,6 +61,7 @@ function readBlocks(frames: BlockFrame[], context: BlockContext) {
       continue;
     }
     const queuedAt = frames.length;
+    context.depth = frame.depth;
     for (const read of blockReaders) {
       const result = read(lines, frame.index, context);
       if (!result) continue;
@@ -102,9 +109,10 @@ export function parseMarkdownBlocks(
     definitions: new Map(),
     inlines: [],
     headings: [],
-    parseBlocks: (inner) => queueBlocks(frames, inner),
+    parseBlocks: (inner) => queueBlocks(frames, inner, context.depth + 1),
+    depth: 0,
   };
-  const blocks = queueBlocks(frames, lines);
+  const blocks = queueBlocks(frames, lines, 0);
   readBlocks(frames, context);
   for (const { target, text } of context.inlines) {
     for (const inline of parseMarkdownInlines(text, context.definitions)) target.push(inline);
