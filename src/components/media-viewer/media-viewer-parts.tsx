@@ -71,6 +71,8 @@ interface MediaHeaderActionsProps {
   position: number;
   count: number;
   zoom: number;
+  /** The zoom the zoom control's reset button returns to; `undefined` leaves the button out. */
+  resetZoom: number | undefined;
   onZoomChange: (zoom: number) => void;
   onRotate: () => void;
 }
@@ -93,7 +95,7 @@ export function MediaHeaderActions(props: MediaHeaderActionsProps) {
             isDisabled={!props.isImageReady}
             value={zoom}
             onChange={props.onZoomChange}
-            resetValue={100}
+            resetValue={props.resetZoom}
           />
           <Button
             className={hooks.slotClass('rotate')}

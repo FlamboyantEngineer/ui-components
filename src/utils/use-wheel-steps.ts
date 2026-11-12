@@ -16,6 +16,23 @@ export function isZoomWheel(event: Pick<WheelEvent, 'ctrlKey' | 'metaKey'>): boo
 }
 
 /**
+ * Adds up vertical wheel travel, in pixels, into steps: each call returns `1` once the travel rolled
+ * up (away from the reader) reaches one step, `-1` once the travel down does, and `null` until then.
+ * A change of direction starts a new step, and one call steps once at most, so a fast notch is still
+ * one step.
+ */
+export function createWheelStepCounter(): (deltaY: number) => 1 | -1 | null {
+  let travelled = 0;
+  return (deltaY) => {
+    if (Math.sign(travelled) !== Math.sign(deltaY)) travelled = 0;
+    travelled += deltaY;
+    if (Math.abs(travelled) < pixelsPerStep && Math.abs(deltaY) < pixelsPerStep) return null;
+    travelled = 0;
+    return deltaY < 0 ? 1 : -1;
+  };
+}
+
+/**
  * The vertical wheel over `target` steps a value: `onStep(1)` for each notch rolled up (away from
  * the reader) and `onStep(-1)` for each notch down, a trackpad's smaller deltas adding up to a step.
  * While it steps, the wheel does not scroll the page. A zoom gesture, a mostly horizontal wheel and
@@ -32,7 +49,7 @@ export function useWheelSteps(
   useEffect(() => {
     const element = target.current;
     if (!element || isDisabled) return;
-    let travelled = 0;
+    const count = createWheelStepCounter();
     const onWheel = (event: WheelEvent) => {
       if (isZoomWheel(event)) return;
       const pixels = toWheelPixels(event, { width: element.clientWidth, height: 400 });
@@ -41,13 +58,8 @@ export function useWheelSteps(
       if (Math.abs(delta.y) <= Math.abs(delta.x)) return;
       event.preventDefault();
       event.stopPropagation();
-      // A change of direction starts a new step.
-      if (Math.sign(travelled) !== Math.sign(delta.y)) travelled = 0;
-      travelled += delta.y;
-      // One step at most per event, so a fast notch is still one step.
-      if (Math.abs(travelled) < pixelsPerStep && Math.abs(delta.y) < pixelsPerStep) return;
-      travelled = 0;
-      step.current(delta.y < 0 ? 1 : -1, event);
+      const direction = count(delta.y);
+      if (direction !== null) step.current(direction, event);
     };
     element.addEventListener('wheel', onWheel, { capture: true, passive: false });
     return () => element.removeEventListener('wheel', onWheel, { capture: true });

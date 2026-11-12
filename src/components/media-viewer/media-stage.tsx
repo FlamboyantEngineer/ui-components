@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, type RefObject, useState } from 'react';
+import { type ReactNode, type RefObject, useRef, useState } from 'react';
 import { ChevronLeftGlyph, ChevronRightGlyph } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useLocale } from '../../primitives/index.js';
@@ -17,11 +17,14 @@ import {
   type MediaViewerItem,
 } from './media-viewer-parts.js';
 import type { MediaImageRequest } from './use-image-request.js';
+import { useWheelZoom } from './use-wheel-zoom.js';
 
 interface MediaStageProps {
   item: MediaViewerItem;
   zoom: number;
   rotation: number;
+  /** Steps the zoom from the wheel and returns the zoom asked for; `undefined` leaves the wheel be. */
+  onWheelStep: ((direction: 1 | -1) => number | undefined) | undefined;
   /** The scrolling viewport, which takes focus when the viewer opens. */
   viewportRef: RefObject<HTMLDivElement | null>;
   /** Moves to the previous item; `undefined` at the first. */
@@ -42,7 +45,11 @@ function MediaImage({
   rotation,
   stage,
   request,
-}: Pick<MediaStageProps, 'item' | 'zoom' | 'rotation' | 'request'> & { stage: MediaSize | null }) {
+  canvasRef,
+}: Pick<MediaStageProps, 'item' | 'zoom' | 'rotation' | 'request'> & {
+  stage: MediaSize | null;
+  canvasRef: RefObject<HTMLDivElement | null>;
+}) {
   const [natural, setNatural] = useState<MediaSize | null>(null);
   const layout = natural && stage ? layoutMedia({ natural, stage, zoom, rotation }) : null;
   if (request.status === 'failed') return <MediaImageError item={item} onRetry={request.retry} />;
@@ -79,6 +86,7 @@ function MediaImage({
   return (
     <div
       {...hooks.slot('canvas')}
+      ref={canvasRef}
       style={
         layout
           ? { position: 'relative', width: layout.canvas.width, height: layout.canvas.height }
@@ -135,6 +143,15 @@ export function MediaStage(props: MediaStageProps) {
   const isRtl = useLocale().direction === 'rtl';
   const stage = useElementSize(viewportRef, { box: 'client' });
   const isImage = isImageItem(item);
+  const canvasRef = useRef<HTMLDivElement>(null);
+  useWheelZoom({
+    viewportRef,
+    canvasRef,
+    zoom: props.zoom,
+    // The caller's rendering of another file keeps the wheel for itself.
+    onStep: isImage ? props.onWheelStep : undefined,
+    isReady: request.status === 'loaded',
+  });
   const custom = isImage ? null : props.renderItem?.(item);
   return (
     <div {...hooks.slot('stage', { kind: isImage ? 'image' : 'file', status: request.status })}>
@@ -164,6 +181,7 @@ export function MediaStage(props: MediaStageProps) {
             rotation={props.rotation}
             stage={stage}
             request={request}
+            canvasRef={canvasRef}
           />
         ) : isEmptyNode(custom) ? (
           <MediaFallback item={item} />

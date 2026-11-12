@@ -166,7 +166,9 @@ test.describe('Media Viewer lab', () => {
     await expect
       .poll(() => viewport.evaluate((element) => element.scrollWidth > element.clientWidth))
       .toBe(true);
-    await page.getByRole('button', { name: 'Reset zoom' }).click();
+    await expect(page.getByRole('button', { name: 'Reset zoom' })).toHaveCount(0);
+    for (let press = 0; press < 3; press += 1) await page.keyboard.press('-');
+    await expect(page.locator('.ui-zoom-control__value')).toHaveText('100%');
     await page.getByRole('button', { name: 'Rotate clockwise' }).click();
     await expect(image).toHaveAttribute('style', /rotate\(90deg\)/);
     const canvas = page.locator('.ui-media-viewer__canvas');
@@ -388,5 +390,59 @@ test.describe('Media Viewer lab', () => {
     await expect(page.locator('[data-lab-output="refreshing-count"]')).toHaveText('0');
     await expect(page.locator('[data-lab-output="refreshing-count"]')).toHaveText('3');
     await expect(page.locator('.ui-media-viewer')).toHaveCount(0);
+  });
+
+  test('UIC-MEDIA-VIEWER-2.5 UIC-MEDIA-VIEWER-2.6 zooms with the wheel and a pinch around the pointer', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('media-viewer');
+    await page.locator('[data-lab-open="wheel"]').click();
+    await settled(page);
+    const value = page.locator('.ui-zoom-control__value');
+    const viewport = page.locator('.ui-media-viewer__viewport');
+    const image = page.locator('.ui-media-viewer__image');
+    const box = await viewport.boundingBox();
+    if (!box) throw new Error('no viewport');
+    const pointer = { x: box.x + box.width * 0.75, y: box.y + box.height * 0.6 };
+    await page.mouse.move(pointer.x, pointer.y);
+    // The point of the image under the pointer, as a fraction of the image's box.
+    const pointOnImage = () =>
+      image.evaluate((element, at) => {
+        const rect = element.getBoundingClientRect();
+        return [(at.x - rect.left) / rect.width, (at.y - rect.top) / rect.height];
+      }, pointer);
+    for (const level of ['125%', '150%', '200%']) {
+      await page.mouse.wheel(0, -100);
+      await expect(value).toHaveText(level);
+    }
+    await expect
+      .poll(() => viewport.evaluate((element) => element.scrollWidth > element.clientWidth))
+      .toBe(true);
+    const before = await pointOnImage();
+    await page.mouse.wheel(0, -100);
+    await expect(value).toHaveText('300%');
+    await expect(async () => {
+      const after = await pointOnImage();
+      expect(Math.abs((after[0] ?? 0) - (before[0] ?? 0))).toBeLessThan(0.01);
+      expect(Math.abs((after[1] ?? 0) - (before[1] ?? 0))).toBeLessThan(0.01);
+    }).toPass();
+    await expect(page.locator('[data-lab-output="wheel-zoom"]')).toHaveText('300');
+    // A touchpad pinch arrives as the wheel with Control; the page itself stays unzoomed.
+    await page.keyboard.down('Control');
+    for (let event = 0; event < 5; event += 1) await page.mouse.wheel(0, 12);
+    await page.keyboard.up('Control');
+    await expect(value).toHaveText('200%');
+    expect(await page.evaluate(() => window.visualViewport?.scale ?? 1)).toBe(1);
+    await page.getByRole('button', { name: 'Reset zoom' }).click();
+    await expect(value).toHaveText('100%');
+    await page.keyboard.press('Escape');
+    await page.locator('[data-lab-open="wheel-200"]').click();
+    await settled(page);
+    await expect(value).toHaveText('200%');
+    await page.getByRole('button', { name: 'Next' }).click();
+    await expect(page.locator('.ui-media-viewer__stage')).toHaveAttribute('data-status', 'loaded');
+    await expect(value).toHaveText('100%');
+    await lab.expectAccessible('.ui-media-viewer');
   });
 });
