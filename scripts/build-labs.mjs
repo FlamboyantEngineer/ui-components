@@ -28,12 +28,14 @@ if (!referenceOnly) {
   rmSync(outdir, { recursive: true, force: true });
 
   // Files the labs load at runtime, shipped with the bundles so the static labs work offline:
-  // the PDF engine and its worker with their license, and the sample documents and image.
+  // the PDF engine and its worker with their license, the Geist fonts the reference stylesheet
+  // names with their license, and the sample documents and image.
   const resolvePackage = createRequire(import.meta.url).resolve;
   const staticFiles = {
     'vendor/pdf.min.mjs': resolvePackage('pdfjs-dist/build/pdf.min.mjs'),
     'vendor/pdf.worker.min.mjs': resolvePackage('pdfjs-dist/build/pdf.worker.min.mjs'),
     'vendor/LICENSE': resolvePackage('pdfjs-dist/LICENSE'),
+    ...labFontFiles(resolvePackage),
     'samples/seasonal-report.pdf': join(labsDir, 'samples', 'seasonal-report.pdf'),
     'samples/seasonal-report-locked.pdf': join(labsDir, 'samples', 'seasonal-report-locked.pdf'),
     'samples/landscape.svg': join(labsDir, 'samples', 'landscape.svg'),
@@ -42,6 +44,25 @@ if (!referenceOnly) {
     mkdirSync(dirname(join(outdir, target)), { recursive: true });
     copyFileSync(source, join(outdir, target));
   }
+}
+
+/**
+ * The Geist and Geist Mono files the lab pages declare (`labs/src/chrome/page-style.ts`), Latin and
+ * Latin Extended in both styles, at `vendor/fonts/`, with the fonts' license.
+ */
+function labFontFiles(resolvePackage) {
+  const files = { 'vendor/fonts/LICENSE': resolvePackage('@fontsource-variable/geist/LICENSE') };
+  for (const family of ['geist', 'geist-mono']) {
+    for (const subset of ['latin', 'latin-ext']) {
+      for (const style of ['normal', 'italic']) {
+        const file = `${family}-${subset}-wght-${style}.woff2`;
+        files[`vendor/fonts/${file}`] = resolvePackage(
+          `@fontsource-variable/${family}/files/${file}`,
+        );
+      }
+    }
+  }
+  return files;
 }
 
 /** @type {import('esbuild').BuildOptions} */

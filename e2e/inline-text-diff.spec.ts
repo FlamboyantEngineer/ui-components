@@ -37,8 +37,11 @@ test.describe('Inline Text Diff lab', () => {
     const long = matrixCell(page, 'change=long change container=narrow');
     await expect(long.locator('ins')).toHaveText(/…$/);
     const diff = long.locator('.ui-inline-text-diff');
-    expect((await diff.boundingBox())?.width ?? 0).toBeLessThanOrEqual(161);
-    expect(await diff.evaluate((node) => node.scrollWidth <= 161)).toBe(true);
+    // The column scrolls nothing: the text wraps inside it. A preserved space ending a line hangs
+    // past the edge without overflowing, so the excerpt's own box is not the measure.
+    const column = diff.locator('xpath=..');
+    expect(await column.evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(true);
+    expect((await diff.boundingBox())?.height ?? 0).toBeGreaterThan(60);
     await expect(matrixCell(page, 'change=markup container=inline').locator('ins')).toHaveText(
       'i>italic</i',
     );

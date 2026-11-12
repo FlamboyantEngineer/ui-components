@@ -1,5 +1,7 @@
 // Keeps measured anchors current: one measurement per animation frame after content inside the
-// layer changes, scrolls or resizes (specs/ANNOTATION-LAYER.md).
+// layer changes, scrolls or resizes, or fonts load (specs/ANNOTATION-LAYER.md).
+
+import { listenFontsLoaded } from '../../utils/listen-fonts-loaded.js';
 
 interface TargetObserverOptions {
   /** Reads the anchors; called at most once per animation frame. */
@@ -27,8 +29,9 @@ function* withAncestors(target: Element, layer: Element): Iterable<Element> {
  * Watches the layer's content for changes that can move a target without the layer rendering:
  * content added, removed or edited (a `MutationObserver` over the subtree), scrolling inside the
  * layer (a capturing `scroll` listener; the layer's own scroll moves nothing in its coordinates),
- * and resizes of the layer, the targets and their ancestors. A content change or scroll schedules
- * one measurement for the next frame; a resize, already reported once a frame, measures at once.
+ * fonts finishing loading (which moves text inside boxes that keep their size), and resizes of the
+ * layer, the targets and their ancestors. A content change, scroll or font load schedules one
+ * measurement for the next frame; a resize, already reported once a frame, measures at once.
  */
 export function observeTargets(
   layer: HTMLElement,
@@ -81,6 +84,7 @@ export function observeTargets(
     if (event.target !== layer) schedule();
   };
   layer.addEventListener('scroll', onScroll, { capture: true, passive: true });
+  const stopFonts = listenFontsLoaded(layer, schedule);
   watchTargets();
   return {
     schedule,
@@ -90,6 +94,7 @@ export function observeTargets(
       observed.clear();
       mutations.disconnect();
       layer.removeEventListener('scroll', onScroll, { capture: true });
+      stopFonts();
       if (frame !== null) view.cancelAnimationFrame(frame);
       frame = null;
     },

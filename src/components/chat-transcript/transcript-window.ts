@@ -16,7 +16,10 @@ export interface WindowModel {
   measure(feed: HTMLElement, mounted: readonly string[]): void;
   /** The children within one viewport height of the visible area. */
   range(viewport: HTMLElement, feed: HTMLElement, keys: readonly string[]): WindowRange | null;
-  /** The height that stands in for the unmounted children from `start` up to `end`. */
+  /**
+   * The height that stands in for the unmounted children from `start` up to `end`, in whole pixels,
+   * so the scroll position, which browsers keep in whole pixels, can follow a change exactly.
+   */
   gapHeight(keys: readonly string[], start: number, end: number): number;
   /** Forgets every measurement, for another conversation. */
   reset(): void;
@@ -92,7 +95,7 @@ export function createWindowModel(): WindowModel {
     gapHeight(keys, start, end) {
       let height = 0;
       for (let index = start; index < end; index += 1) height += estimate(keys[index] as string);
-      return height + Math.max(0, end - start - 1) * gap;
+      return Math.round(height + Math.max(0, end - start - 1) * gap);
     },
   };
 }
