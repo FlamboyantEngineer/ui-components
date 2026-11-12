@@ -267,4 +267,36 @@ test.describe('Number Field lab', () => {
     await page.mouse.up();
     await expect(output(page, 'Opacity')).toHaveText('39');
   });
+  test('UIC-NUMBER-FIELD-3.5 UIC-NUMBER-FIELD-3.6 steps a font size through its presets', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('number-field');
+    const size = field(page, 'font-size');
+    const input = size.getByRole('textbox', { name: 'Font size' });
+    const increase = size.getByRole('button', { name: 'Increase Font size' });
+    const decrease = size.getByRole('button', { name: 'Decrease Font size' });
+    await expect(increase.locator('.ui-glyph')).toHaveAttribute('data-glyph', 'increase-font-size');
+    await expect(decrease.locator('.ui-glyph')).toHaveAttribute('data-glyph', 'decrease-font-size');
+    await increase.click();
+    await expect(input).toHaveValue('12');
+    await increase.click();
+    await expect(input).toHaveValue('14');
+    await expect(output(page, 'Font size')).toHaveText('14');
+    await expect(input).toBeFocused();
+    await input.fill('13');
+    await input.press('Enter');
+    await expect(output(page, 'Font size')).toHaveText('13');
+    await input.press('ArrowDown');
+    await expect(input).toHaveValue('12');
+    await input.fill('100');
+    await input.press('Enter');
+    await expect(increase).toBeDisabled();
+    await input.press('ArrowDown');
+    await expect(input).toHaveValue('96');
+    await expect(
+      matrixCell(page, 'state=at last preset').getByRole('button', { name: 'Increase Size' }),
+    ).toBeDisabled();
+    await lab.expectAccessible('[data-lab-field="font-size"]');
+  });
 });

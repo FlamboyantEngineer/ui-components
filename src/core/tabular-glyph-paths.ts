@@ -50,3 +50,15 @@ export const alignBottomRightPath =
   'M5.25 3.75h13.5a1.5 1.5 0 0 1 1.5 1.5v13.5a1.5 1.5 0 0 1-1.5 1.5H5.25a1.5 1.5 0 0 1-1.5-1.5V5.25a1.5 1.5 0 0 1 1.5-1.5ZM9.75 13.5h7.5M12.75 16.5h4.5';
 export const cellAlignmentPath =
   'M5.25 3.75h13.5a1.5 1.5 0 0 1 1.5 1.5v13.5a1.5 1.5 0 0 1-1.5 1.5H5.25a1.5 1.5 0 0 1-1.5-1.5V5.25a1.5 1.5 0 0 1 1.5-1.5ZM8.25 7.5a.75.75 0 1 1-1.5 0 .75.75 0 1 1 1.5 0M12.75 7.5a.75.75 0 1 1-1.5 0 .75.75 0 1 1 1.5 0M17.25 7.5a.75.75 0 1 1-1.5 0 .75.75 0 1 1 1.5 0M8.25 12a.75.75 0 1 1-1.5 0 .75.75 0 1 1 1.5 0M12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 1 1 1.5 0M17.25 12a.75.75 0 1 1-1.5 0 .75.75 0 1 1 1.5 0M8.25 16.5a.75.75 0 1 1-1.5 0 .75.75 0 1 1 1.5 0M12.75 16.5a.75.75 0 1 1-1.5 0 .75.75 0 1 1 1.5 0M17.25 16.5a.75.75 0 1 1-1.5 0 .75.75 0 1 1 1.5 0';
+
+// Text colour and size, drawn for this library in the same style: `fontColorPath` is a capital A
+// and `backgroundColorPath` a tipped paint bucket with a falling drop, both kept above a 4.5 pixel
+// band at the bottom of the box, where a colour button draws its swatch bar; the font size steps
+// pair a capital A with an arrow pointing up or down.
+export const fontColorPath = 'M6.75 16.5 12 3.75l5.25 12.75M8.6 12h6.8';
+export const backgroundColorPath =
+  'M6.75 2.25l4.5 4.5M10.5 4.5l6.75 6.75-6.75 6.75-6.75-6.75 6.75-6.75ZM3.75 11.25h13.5M20.25 13.5s-1.5 1.8-1.5 2.85a1.5 1.5 0 0 0 3 0c0-1.05-1.5-2.85-1.5-2.85Z';
+export const increaseFontSizePath =
+  'M3 19.5 8.25 6l5.25 13.5M5.04 14.25h6.42M18 15V6m0 0-3 3m3-3 3 3';
+export const decreaseFontSizePath =
+  'M3 19.5 8.25 6l5.25 13.5M5.04 14.25h6.42M18 6v9m0 0-3-3m3 3 3-3';

@@ -15,6 +15,7 @@ import {
   NumberFieldUnitsSection,
   NumberFieldUnitTypeSection,
 } from './number-field-displays.js';
+import { NumberFieldPresetsSection } from './number-field-presets.js';
 import { NumberFieldSliderSections } from './number-field-slider.js';
 import { Radices } from './number-radices.js';
 
@@ -285,6 +286,7 @@ mountLab(
     >
       <FastSteps />
     </LabSection>
+    <NumberFieldPresetsSection />
     <NumberFieldDisplays />
     <NumberFieldUnitsSection />
     <NumberFieldUnitTypeSection />

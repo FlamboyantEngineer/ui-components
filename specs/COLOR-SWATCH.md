@@ -1,6 +1,6 @@
 # Color Swatch
 
-`ColorSwatch` shows one colour on its own, such as a legend key or a person's marker colour, on React Aria's `ColorSwatch`. It is named by its colour so assistive technology can read it. The [Color Field](COLOR-FIELD.md) draws it inside its trigger. `ColorSwatchPicker` and `ColorSwatchPickerItem` lay swatches out as a list to choose one colour from, on React Aria's `ColorSwatchPicker`.
+`ColorSwatch` shows one colour on its own, such as a legend key or a person's marker colour, on React Aria's `ColorSwatch`. It is named by its colour so assistive technology can read it. The [Color Field](COLOR-FIELD.md) draws it inside its trigger. `ColorSwatchPicker` and `ColorSwatchPickerItem` lay swatches out as a list to choose one colour from, on React Aria's `ColorSwatchPicker`. `ColorSwatchButton` is an icon [Button](BUTTON.md) whose glyph sits over a bar of the colour it applies, for text and fill colour commands.
 
 ## UIC-COLOR-SWATCH-1 - Contract
 
@@ -69,24 +69,42 @@ Items shall be options in their own right whatever their colour: equal colours, 
 Implementation: `src/components/color-swatch/color-swatch-picker.tsx`
 Verification: `src/components/color-swatch/color-swatch-picker-values.test.tsx`, `e2e/color-swatch.spec.ts`
 
+## UIC-COLOR-SWATCH-3 - Colour button
+
+### UIC-COLOR-SWATCH-3.1 - Glyph over a colour bar
+
+`ColorSwatchButton` shall render an icon-only [Button](BUTTON.md) (`ui-button`, also `ui-color-swatch-button`), named by its `label`, whose icon holds its `icon` glyph followed by a `ColorSwatch` of `color` (`ui-color-swatch-button__swatch`), so a stylesheet can draw the swatch as a bar under the glyph. The [`font-color` and `background-color` glyphs](PROVIDER.md#uic-provider-21---built-in-glyphs) leave room for that bar at the bottom of the box; the reference sheet draws it there, across three quarters of the box and a sixth of its height. The swatch follows [UIC-COLOR-SWATCH-1.1](#uic-color-swatch-11---colour) and [UIC-COLOR-SWATCH-1.2](#uic-color-swatch-12---empty-swatch): an empty or unreadable `color` draws an empty bar (`data-empty`). The swatch's name (the colour's name in the locale, `colorName`, or the provider's `noColor` string) is the button's accessible description, so a reader hears the command and the colour it applies (`Text color, button, vibrant red`).
+
+Implementation: `src/components/color-swatch/color-swatch-button.tsx`, `labs/reference/color-swatch.css`
+Verification: `src/components/color-swatch/color-swatch-button.test.tsx`, `e2e/color-swatch.spec.ts`
+
+### UIC-COLOR-SWATCH-3.2 - Button behaviour
+
+`variant` (`ghost` by default, as for an icon button), `size`, `isDisabled`, `onPress`, `tooltip` and `shortcut` shall pass to the Button and behave as they do there; a disabled button refuses presses. The button appends the caller's `className` and forwards caller `data-*` attributes, `id` and `ref` to the Button's root. A host opens a palette from it by placing it in a menu or dialog trigger, as any Button.
+
+Implementation: `src/components/color-swatch/color-swatch-button.tsx`
+Verification: `src/components/color-swatch/color-swatch-button.test.tsx`
+
 ## Hooks
 
-| Hook                           | Kind      | Values                       | Description                                                  |
-| ------------------------------ | --------- | ---------------------------- | ------------------------------------------------------------ |
-| `ui-color-swatch`              | root      |                              | The swatch (`<div>`).                                        |
-| `data-size`                    | attribute | `xs`, `sm`, `md`, `lg`, `xl` | Box size; on a picker, the size of its swatches.             |
-| `data-empty`                   | state     | `true`                       | No colour is set; on a picker, it has no items (React Aria). |
-| `--ui-color-swatch-color`      | property  |                              | On a swatch with a colour: the colour it draws, in CSS.      |
-| `ui-color-swatch-picker`       | root      |                              | A swatch picker's `role="listbox"` list.                     |
-| `ui-color-swatch-picker__item` | slot      |                              | One `role="option"` holding its swatch.                      |
-| `data-layout`                  | state     | `grid`, `stack`              | On the picker: how the swatches are laid out (React Aria).   |
-| `data-orientation`             | state     | `vertical`                   | On the picker: its orientation (React Aria).                 |
-| `data-focused`                 | state     | `true`                       | On the picker or an item: focused (React Aria).              |
-| `data-focus-visible`           | state     | `true`                       | On the picker or an item: keyboard focus (React Aria).       |
-| `data-selected`                | state     | `true`                       | On an item: its colour is the picker's value (React Aria).   |
-| `data-hovered`                 | state     | `true`                       | On an item: pointer over it (React Aria).                    |
-| `data-pressed`                 | state     | `true`                       | On an item: pressed (React Aria).                            |
-| `data-disabled`                | state     | `true`                       | On an item: cannot be picked (React Aria).                   |
-| `data-selection-mode`          | state     | `single`                     | On an item: the picker's selection mode (React Aria).        |
-| `data-collection`              | state     |                              | React Aria's collection marker.                              |
-| `data-key`                     | state     |                              | On an item: its colour as `#RRGGBBAA` (React Aria).          |
+| Hook                             | Kind      | Values                       | Description                                                  |
+| -------------------------------- | --------- | ---------------------------- | ------------------------------------------------------------ |
+| `ui-color-swatch`                | root      |                              | The swatch (`<div>`).                                        |
+| `data-size`                      | attribute | `xs`, `sm`, `md`, `lg`, `xl` | Box size; on a picker, the size of its swatches.             |
+| `data-empty`                     | state     | `true`                       | No colour is set; on a picker, it has no items (React Aria). |
+| `--ui-color-swatch-color`        | property  |                              | On a swatch with a colour: the colour it draws, in CSS.      |
+| `ui-color-swatch-picker`         | root      |                              | A swatch picker's `role="listbox"` list.                     |
+| `ui-color-swatch-picker__item`   | slot      |                              | One `role="option"` holding its swatch.                      |
+| `data-layout`                    | state     | `grid`, `stack`              | On the picker: how the swatches are laid out (React Aria).   |
+| `data-orientation`               | state     | `vertical`                   | On the picker: its orientation (React Aria).                 |
+| `data-focused`                   | state     | `true`                       | On the picker or an item: focused (React Aria).              |
+| `data-focus-visible`             | state     | `true`                       | On the picker or an item: keyboard focus (React Aria).       |
+| `data-selected`                  | state     | `true`                       | On an item: its colour is the picker's value (React Aria).   |
+| `data-hovered`                   | state     | `true`                       | On an item: pointer over it (React Aria).                    |
+| `data-pressed`                   | state     | `true`                       | On an item: pressed (React Aria).                            |
+| `data-disabled`                  | state     | `true`                       | On an item: cannot be picked (React Aria).                   |
+| `data-selection-mode`            | state     | `single`                     | On an item: the picker's selection mode (React Aria).        |
+| `data-collection`                | state     |                              | React Aria's collection marker.                              |
+| `data-key`                       | state     |                              | On an item: its colour as `#RRGGBBAA` (React Aria).          |
+| `ui-color-swatch-button`         | root      |                              | A colour button (also `ui-button`, whose hooks it carries).  |
+| `ui-color-swatch-button__swatch` | slot      |                              | The button's colour bar (also `ui-color-swatch`).            |
