@@ -200,7 +200,7 @@ Verification: `src/components/button/button-action.test.tsx`, `e2e/button-action
 
 ### UIC-BUTTON-21.2 - No repeat activation
 
-While pending, the button shall refuse further activation by pointer, keyboard or programmatic click, so the action runs once per press until it settles. A `type="submit"` or `type="reset"` action button keeps its type: the press that starts the action submits or resets its form, whatever its modality (pointer, touch, Enter, Space, which presses before its click, or a programmatic click), and the native activation of every later click (pointer, keyboard, implicit submission or programmatic) is cancelled until the action settles, also while `pendingDelay` holds the pending state back.
+While pending, the button shall refuse further activation by pointer, keyboard or programmatic click, so the action runs once per press until it settles. A `type="submit"` or `type="reset"` action button keeps its type: the press that starts the action submits or resets its form, whatever its modality (pointer, touch, Enter, Space, which presses before its click, or a programmatic click), and the native activation of every later click (pointer, keyboard, implicit submission or programmatic) is cancelled until the action settles, also while `pendingDelay` holds the pending state back. A key or pointer press that follows the starting press at once, before any timer runs, is refused like the others.
 
 Implementation: `src/components/button/button-action.tsx`
 Verification: `src/components/button/button-action.test.tsx`, `e2e/button-action.spec.ts`

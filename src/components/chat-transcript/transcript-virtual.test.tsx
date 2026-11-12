@@ -49,6 +49,18 @@ function LongHistory({
 const article = (id: string) => document.getElementById(id);
 
 describe('ChatTranscript virtualized', () => {
+  it('UIC-CHAT-TRANSCRIPT-1.6 keeps the reader in place when a shown transcript turns virtualized', () => {
+    const { rerender } = render(<LongHistory last={150} virtualized={false} />);
+    const viewport = getViewport();
+    scrollViewport(viewport, 3000);
+    expect(screen.getAllByRole('article')).toHaveLength(150);
+    rerender(<LongHistory last={150} />);
+    expect(screen.getAllByRole('article').length).toBeLessThan(40);
+    expect(viewport.scrollHeight).toBe(7500);
+    expect(viewport.scrollTop).toBe(3000);
+    expect(offsetInViewport(article('m61') as HTMLElement)).toBe(0);
+  });
+
   it('UIC-CHAT-TRANSCRIPT-1.6 releases a large arrival batch after measuring it', () => {
     const { rerender } = render(<LongHistory last={100} />);
     const viewport = getViewport();

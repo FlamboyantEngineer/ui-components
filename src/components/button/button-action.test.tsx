@@ -118,6 +118,24 @@ describe('Button', () => {
     },
   );
 
+  it('UIC-BUTTON-21.2 refuses a key press that follows the Enter press at once', async () => {
+    const user = userEvent.setup({ delay: null });
+    const onSubmit = vi.fn((event: React.FormEvent) => event.preventDefault());
+    const onPress = vi.fn(() => new Promise<void>(() => undefined));
+    render(
+      <form onSubmit={onSubmit}>
+        <Button type="submit" onPress={onPress}>
+          Send
+        </Button>
+      </form>,
+    );
+    screen.getByRole('button', { name: 'Send' }).focus();
+    // One call types both keys with no timer between them, as a busy browser delivers them.
+    await user.keyboard('{Enter} ');
+    expect(onPress).toHaveBeenCalledOnce();
+    expect(onSubmit).toHaveBeenCalledOnce();
+  });
+
   it('UIC-BUTTON-21.3 settles after a rejection and reports it', async () => {
     const user = userEvent.setup();
 

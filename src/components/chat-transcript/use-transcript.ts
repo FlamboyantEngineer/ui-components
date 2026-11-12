@@ -49,7 +49,7 @@ import { resolveTailRange, selectMounted, type WindowRange } from './transcript-
 /** The transcript's props that drive its behaviour. */
 type TranscriptOptions = Omit<
   TranscriptSettings,
-  'strings' | 'announcer' | 'setUi' | 'setRange' | 'requestRender'
+  'strings' | 'announcer' | 'setUi' | 'setRange' | 'setWindowed' | 'requestRender'
 > & { children: ReactNode };
 
 /** What the transcript renders and wires up. */
@@ -123,7 +123,8 @@ const noChange: TranscriptChange = { isReset: false, arrivals: [], older: [] };
 /** What a commit's pass reads besides the keys and window. */
 function readPassSettings(settings: TranscriptSettings) {
   const { scrollMode, highlightedMessageId, hasOlder, isLoadingOlder, firstUnreadId } = settings;
-  return { scrollMode, highlightedMessageId, hasOlder, isLoadingOlder, firstUnreadId };
+  const { virtualized } = settings;
+  return { scrollMode, highlightedMessageId, hasOlder, isLoadingOlder, firstUnreadId, virtualized };
 }
 
 /** Focuses the message a focus request waited on, once a commit mounted it. */
@@ -173,6 +174,8 @@ function useCommit(
       runtime.keeper.anchor(null);
     }
     measureWindow(runtime, settings);
+    // Every child a transcript had mounted is measured by now, so its window can open.
+    settings.setWindowed(settings.virtualized);
     for (const key of commit.mountedItems) runtime.seen.add(key);
     refreshMounted(runtime);
     publishView(runtime, settings);
@@ -269,6 +272,9 @@ export function useTranscript({ children, ...options }: TranscriptOptions): Tran
   const announcer = useTranscriptAnnouncer(strings);
   const [ui, setUi] = useState(initialUi);
   const [range, setRange] = useState<WindowRange | null>(null);
+  // A transcript that turns virtualized keeps every child through one commit, which measures them:
+  // its window then starts from their true heights, and the reader's place holds.
+  const [isWindowed, setWindowed] = useState(options.virtualized);
   const [, setRenders] = useState(0);
   const requestRender = useCallback(() => setRenders((count) => count + 1), []);
   const latest = useLatest<TranscriptSettings>({
@@ -277,15 +283,17 @@ export function useTranscript({ children, ...options }: TranscriptOptions): Tran
     announcer,
     setUi,
     setRange,
+    setWindowed,
     requestRender,
   });
   const forced = collectForced(runtime, keys, {
     arrivals: runtime.keys !== keys ? change.arrivals : [],
     highlight: resolveMessageKey(runtime, options.highlightedMessageId),
   });
-  const mounted = options.virtualized
-    ? selectMounted(indexOf, range ?? resolveTailRange(keys), forced)
-    : null;
+  const mounted =
+    options.virtualized && isWindowed
+      ? selectMounted(indexOf, range ?? resolveTailRange(keys), forced)
+      : null;
   const mountedItems = useShallowStable(
     mounted ? mounted.map((index) => keys[index] as string) : keys,
   );

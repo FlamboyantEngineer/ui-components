@@ -247,6 +247,20 @@ describe('ChatMessage avatar, name and background', () => {
     expect(collapsed).toHaveAttribute('data-collapse-footer-time', 'true');
   });
 
+  it('UIC-CHAT-TRANSCRIPT-2.13 creates the time tooltip at the first hover, not with the message', async () => {
+    const user = userEvent.setup();
+    const listen = vi.spyOn(window, 'addEventListener');
+    const resizeListeners = () => listen.mock.calls.filter(([type]) => type === 'resize').length;
+    render(
+      <ChatMessage author={maria} time={time} getNow={getNow} timePlacement="tooltip">
+        Tooltip time
+      </ChatMessage>,
+    );
+    expect(resizeListeners()).toBe(0);
+    await user.hover(screen.getByText('Tooltip time'));
+    expect(resizeListeners()).toBe(1);
+  });
+
   it('UIC-CHAT-TRANSCRIPT-2.13 shows the time in a tooltip once the message is hovered for the delay', async () => {
     const user = userEvent.setup();
     const { container } = render(

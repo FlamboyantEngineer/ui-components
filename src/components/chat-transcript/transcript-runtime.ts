@@ -35,6 +35,8 @@ export interface TranscriptSettings {
   announcer: TranscriptAnnouncer;
   setUi: Dispatch<SetStateAction<TranscriptUi>>;
   setRange: Dispatch<SetStateAction<WindowRange | null>>;
+  /** Opens the window of a virtualized transcript once its mounted children are measured. */
+  setWindowed: Dispatch<SetStateAction<boolean>>;
   /** Renders again to mount a focus target or release temporary arrival mounts. */
   requestRender: () => void;
 }

@@ -999,6 +999,31 @@ describe('ScrollRegion', () => {
     expect(root.style.getPropertyValue('--ui-scroll-region-overflow-y-start')).toBe('');
   });
 
+  it('UIC-SCROLL-REGION-4.1 measures a region only once the browser draws it', () => {
+    viewports.set('folded', {
+      clientHeight: 100,
+      scrollHeight: 300,
+      clientWidth: 120,
+      scrollWidth: 120,
+    });
+    let isDrawn = false;
+    Object.defineProperty(HTMLElement.prototype, 'checkVisibility', {
+      configurable: true,
+      value: () => isDrawn,
+    });
+    try {
+      const { container } = render(<ScrollRegion id="folded">Rows</ScrollRegion>);
+      const root = container.firstElementChild as HTMLElement;
+      expect(root).not.toHaveAttribute('data-overflow-y-end');
+      isDrawn = true;
+      resizeAll();
+      expect(root).toHaveAttribute('data-overflow-y-end', 'true');
+      expect(root.style.getPropertyValue('--ui-scroll-region-overflow-y-end')).toBe('200px');
+    } finally {
+      Reflect.deleteProperty(HTMLElement.prototype, 'checkVisibility');
+    }
+  });
+
   it('UIC-SCROLL-REGION-4.1 measures horizontal edges from the inline start', () => {
     const element = (scrollLeft: number, direction: string) =>
       ({

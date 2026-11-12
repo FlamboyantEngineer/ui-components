@@ -202,6 +202,28 @@ describe('CodeBlock', () => {
     expect(pre).toHaveAttribute('data-overflowing', 'true');
   });
 
+  it('UIC-CODE-BLOCK-1.3 leaves the first measurement to the resize observer', () => {
+    let resize: ResizeObserverCallback = () => undefined;
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(callback: ResizeObserverCallback) {
+          resize = callback;
+        }
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      },
+    );
+    const scrollWidth = vi.spyOn(Element.prototype, 'scrollWidth', 'get').mockReturnValue(500);
+    const { container } = render(<CodeBlock code="a long line" />);
+    const pre = container.querySelector('pre') as HTMLElement;
+    expect(scrollWidth).not.toHaveBeenCalled();
+    expect(pre).not.toHaveAttribute('data-overflowing');
+    act(() => resize([], {} as ResizeObserver));
+    expect(pre).toHaveAttribute('data-overflowing', 'true');
+  });
+
   it('UIC-CODE-BLOCK-1.3 measures again when highlighting changes the same code', () => {
     const { container, rerender } = render(<CodeBlock code="x" />);
     const pre = container.querySelector('pre') as HTMLElement;
