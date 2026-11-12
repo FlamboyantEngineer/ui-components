@@ -22,6 +22,7 @@ import { AvatarGroup } from '../avatar-group/avatar-group.js';
 import { Badge } from '../badge/badge.js';
 import { Icon } from '../icon/icon.js';
 import { TextMatch } from '../text-match/text-match.js';
+import { type ChatListMenu, useConversationMenuTarget } from './chat-list-menu.js';
 
 /** One person in a conversation. */
 export interface ChatListParticipant extends AvatarIdentity {
@@ -59,6 +60,10 @@ type ChatListTimeOptions = Pick<AttributionProps, 'fallbackAfterDays' | 'getNow'
 interface ChatListRowProps extends ChatListTimeOptions {
   conversation: ChatConversation;
   renderActions: ((conversation: ChatConversation) => ReactNode) | undefined;
+  /** The list's context menu, given that the row's conversation has one. */
+  menu: ChatListMenu | undefined;
+  /** The list's context menu is open for this row. */
+  isMenuOpen: boolean;
 }
 
 export const listHooks = createHooks('chat-list', [
@@ -118,7 +123,13 @@ function ConversationAvatar({ conversation }: { conversation: ChatConversation }
  * the host's actions. The row is named by its title, presence, unread count, muted state and time,
  * then the last message.
  */
-export function ChatListRow({ conversation, renderActions, ...timeOptions }: ChatListRowProps) {
+export function ChatListRow({
+  conversation,
+  renderActions,
+  menu,
+  isMenuOpen,
+  ...timeOptions
+}: ChatListRowProps) {
   const strings = useUiStrings();
   const { title, lastMessage, time, isMuted = false, participants = [] } = conversation;
   const unread = normalizeCount(conversation.unreadCount) ?? 0;
@@ -129,6 +140,7 @@ export function ChatListRow({ conversation, renderActions, ...timeOptions }: Cha
       ? undefined
       : resolveStatusLabel({ status: only.presence, statusLabel: only.presenceLabel }, strings);
   const actions = renderActions?.(conversation);
+  const menuTarget = useConversationMenuTarget({ menu, id: conversation.id });
   const label = strings.conversationLabel({
     title,
     presence: participants.length === 1 ? presence : undefined,
@@ -138,10 +150,15 @@ export function ChatListRow({ conversation, renderActions, ...timeOptions }: Cha
   });
   return (
     <GridListItem
+      {...menuTarget}
       id={conversation.id}
       textValue={title}
       aria-label={label}
-      {...listHooks.slot('conversation', { unread: unread > 0, muted: isMuted })}
+      {...listHooks.slot('conversation', {
+        unread: unread > 0,
+        muted: isMuted,
+        menuOpen: isMenuOpen,
+      })}
     >
       <span {...listHooks.slot('avatar')} aria-hidden="true">
         <ConversationAvatar conversation={conversation} />

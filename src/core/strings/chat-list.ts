@@ -33,6 +33,8 @@ interface ChatListStrings {
   conversationMuted: string;
   /** Names a conversation row from what it shows. */
   conversationLabel: (parts: ChatConversationLabelParts) => string;
+  /** Names a conversation's context menu. */
+  conversationMenu: (title: string) => string;
 }
 
 /** The module's text, with the message values each text function reads its arguments as. */
@@ -43,4 +45,5 @@ export const chatListStrings = defineStrings<ChatListStrings>({
     hasPresence: Boolean(parts.presence),
     hasTime: Boolean(parts.time),
   }),
+  conversationMenu: (title) => ({ title }),
 });

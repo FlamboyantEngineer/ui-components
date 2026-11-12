@@ -57,7 +57,7 @@
   cursor: default;
 }
 
-.ui-chat-list__conversation:is([data-hovered], [data-pressed]) {
+.ui-chat-list__conversation:is([data-hovered], [data-pressed], [data-menu-open]) {
   background: var(--ref-hover);
 }
 

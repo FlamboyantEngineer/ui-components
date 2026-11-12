@@ -129,6 +129,61 @@ test.describe('Chat List lab', () => {
     await expect(row(page, 'Recipe swap')).not.toBeFocused();
   });
 
+  test('UIC-CHAT-LIST-2.1 opens a row context menu by secondary click, keys and touch, and returns focus to the row', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-list');
+    const log = page.locator('[data-lab-log="inbox"]');
+    const recipe = row(page, 'Recipe swap');
+    await recipe.scrollIntoViewIfNeeded();
+    const box = await recipe.boundingBox();
+    if (!box) throw new Error('no row');
+    const at = { x: box.x + 40, y: box.y + box.height / 2 };
+    await page.mouse.click(at.x, at.y, { button: 'right' });
+    const menu = page.getByRole('menu', { name: 'Actions for Recipe swap' });
+    await expect(menu).toBeVisible();
+    await expect(recipe).toHaveAttribute('data-menu-open', 'true');
+    const popover = await page.locator('.ui-menu-popover').boundingBox();
+    expect(Math.abs((popover?.x ?? 0) - at.x)).toBeLessThan(2);
+    await expect(menu.getByRole('menuitem').and(page.locator(':focus'))).toHaveCount(1);
+    await expect(recipe).toHaveAttribute('data-muted', 'true');
+    await menu.getByRole('menuitem', { name: 'Unmute' }).click();
+    await expect(menu).toHaveCount(0);
+    await expect(recipe).not.toHaveAttribute('data-muted');
+    await expect(recipe).toBeFocused();
+    await expect(recipe).not.toHaveAttribute('data-menu-open');
+    await expect(log).toHaveText('Open: Lisbon trip');
+    for (const key of ['Shift+F10', 'ContextMenu']) {
+      await page.keyboard.press(key);
+      await expect(menu).toBeVisible();
+      const below = await page.locator('.ui-menu-popover').boundingBox();
+      expect(below?.y ?? 0).toBeGreaterThanOrEqual(box.y + box.height - 2);
+      await page.keyboard.press('Escape');
+      await expect(menu).toHaveCount(0);
+      await expect(recipe).toBeFocused();
+    }
+    const touch = {
+      pointerType: 'touch',
+      pointerId: 5,
+      isPrimary: true,
+      clientX: at.x,
+      clientY: at.y,
+    };
+    const ana = row(page, 'Ana Lima');
+    await ana.dispatchEvent('pointerdown', touch);
+    await expect(page.getByRole('menu', { name: 'Actions for Ana Lima' })).toBeVisible({
+      timeout: 2000,
+    });
+    // Lifting the finger after the menu opened opens no conversation.
+    await ana.dispatchEvent('pointerup', touch);
+    await expect(page.getByRole('menu', { name: 'Actions for Ana Lima' })).toBeVisible();
+    await expect(log).toHaveText('Open: Lisbon trip');
+    await page.keyboard.press('Escape');
+    await expect(ana).toBeFocused();
+    await lab.expectAccessible('[data-lab-demo="inbox"]');
+  });
+
   test('UIC-CHAT-LIST-1.6 UIC-CHAT-LIST-1.9 searches by title and last message', async ({
     page,
     lab,
