@@ -60,7 +60,8 @@ export function initialPlacement(item: AssetPickerItem, align: AssetPickerAlign)
 
 /**
  * A new width or height, the other side following in the asset's proportions while `constrain`
- * holds and the asset has both sides; rounded to whole pixels.
+ * holds and the asset has both sides; rounded to whole pixels, and never below one, so a very wide
+ * or tall asset never gets a zero side.
  */
 export function resizePlacement(
   placement: AssetPlacement,
@@ -71,6 +72,6 @@ export function resizePlacement(
   const { width, height } = item;
   if (!placement.constrain || change.value === null || !width || !height) return next;
   return change.side === 'width'
-    ? { ...next, height: Math.round((change.value * height) / width) }
-    : { ...next, width: Math.round((change.value * width) / height) };
+    ? { ...next, height: Math.max(1, Math.round((change.value * height) / width)) }
+    : { ...next, width: Math.max(1, Math.round((change.value * width) / height)) };
 }

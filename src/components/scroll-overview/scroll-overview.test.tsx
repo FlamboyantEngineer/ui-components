@@ -81,6 +81,26 @@ describe('ScrollOverview', () => {
     );
   });
 
+  it('UIC-SCROLL-OVERVIEW-1.2 measures again only when the markers change, not for equal inline ones', () => {
+    const target = document.createElement('p');
+    const measure = vi.fn(() => DOMRect.fromRect({ x: 0, y: 300, width: 10, height: 20 }));
+    target.getBoundingClientRect = measure;
+    const overview = (color: string) => (
+      <Scroller markers={[{ element: target, color, priority: 0 }]}>
+        <div ref={(host) => void host?.append(target)} />
+      </Scroller>
+    );
+    const { container, rerender } = render(overview('green'));
+    const measured = measure.mock.calls.length;
+    expect(measured).toBeGreaterThan(0);
+    rerender(overview('green'));
+    rerender(overview('green'));
+    expect(measure).toHaveBeenCalledTimes(measured);
+    rerender(overview('blue'));
+    expect(measure.mock.calls.length).toBeGreaterThan(measured);
+    expect(strip(container).style.getPropertyValue('--ui-scroll-overview-image')).toContain('blue');
+  });
+
   it('UIC-SCROLL-OVERVIEW-1.2 leaves out an element outside the container', () => {
     const outside = document.createElement('p');
     document.body.append(outside);

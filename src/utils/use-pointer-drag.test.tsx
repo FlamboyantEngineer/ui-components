@@ -184,6 +184,45 @@ describe('usePointerDrag', () => {
     expect(onEnd).not.toHaveBeenCalled();
   });
 
+  it('UIC-DRAG-INTERACTIONS-1.3 abandons an uncaptured gesture released outside its element', async () => {
+    const user = userEvent.setup();
+    const onMove = vi.fn();
+    const onEnd = vi.fn();
+    const onCancel = vi.fn();
+    render(<Gesture capture={false} onMove={onMove} onEnd={onEnd} onCancel={onCancel} />);
+    const button = screen.getByRole('button', { name: 'Move' });
+    await user.pointer({ keys: '[MouseLeft>]', target: button, coords: { x: 10, y: 10 } });
+    await user.pointer({ keys: '[/MouseLeft]', target: document.body });
+    expect(onCancel).toHaveBeenCalledExactlyOnceWith({ x: 10 });
+    await user.pointer({ target: button, coords: { x: 60, y: 10 } });
+    await user.pointer({ keys: '[MouseLeft>]', target: button, coords: { x: 20, y: 10 } });
+    await user.pointer({ target: button, coords: { x: 35, y: 10 } });
+    await user.pointer({ keys: '[/MouseLeft]', target: button });
+    expect(onMove.mock.calls).toEqual([[15]]);
+    expect(onEnd).toHaveBeenCalledExactlyOnceWith(false);
+  });
+
+  it('UIC-DRAG-INTERACTIONS-1.3 ends a gesture whose release went unseen at the next move or press', () => {
+    const onMove = vi.fn();
+    const onEnd = vi.fn();
+    render(<Gesture capture={false} onMove={onMove} onEnd={onEnd} />);
+    const button = screen.getByRole('button', { name: 'Move' });
+    const pointer = { pointerId: 1, pointerType: 'mouse', isPrimary: true, button: 0 };
+    // The release happened where the document did not hear it (another frame, for example), so no
+    // user-event call can stand in for it.
+    /* eslint-disable testing-library/prefer-user-event */
+    fireEvent.pointerDown(button, { ...pointer, buttons: 1, clientX: 10 });
+    fireEvent.pointerMove(button, { ...pointer, buttons: 0, clientX: 40 });
+    expect(onMove).not.toHaveBeenCalled();
+    expect(onEnd).toHaveBeenCalledExactlyOnceWith(true);
+    fireEvent.pointerDown(button, { ...pointer, buttons: 1, clientX: 10 });
+    fireEvent.pointerDown(button, { ...pointer, buttons: 1, clientX: 20 });
+    expect(onEnd.mock.calls).toEqual([[true], [true]]);
+    fireEvent.pointerMove(button, { ...pointer, buttons: 1, clientX: 50 });
+    /* eslint-enable testing-library/prefer-user-event */
+    expect(onMove).toHaveBeenCalledExactlyOnceWith(30);
+  });
+
   it('UIC-DRAG-INTERACTIONS-1.1 UIC-DRAG-INTERACTIONS-1.5 refuses a press and uses current callbacks throughout a later gesture', async () => {
     const user = userEvent.setup();
     const previous = vi.fn();

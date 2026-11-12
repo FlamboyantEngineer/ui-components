@@ -22,6 +22,8 @@ Verification: `src/utils/use-pointer-drag.test.tsx`
 
 Release shall finish a gesture once; cancellation and lost capture shall finish it once as cancelled. Ending shall clear ownership before releasing capture, so a subsequent lost-capture event has no effect. Unmount or changing `isDisabled` to true shall release capture and abandon the gesture without an end callback. Disabling shall call the latest `onCancel` with the starting data once, after clearing ownership and capture, so a component can clear its preview; unmount shall call no callback. Re-enabling shall require a new press rather than resuming that gesture.
 
+A gesture whose release its element never sees, because it holds no capture and the pointer was released outside it, shall not live on: the element's document hearing that pointer's release or cancellation abandons it with `onCancel`, a mouse move for it with no button pressed finishes it as cancelled, and a new primary press finishes it as cancelled and starts a new gesture. A later move over the element with the button up therefore never continues it, and the next press is never refused.
+
 Changing a gesture's `resetKey` shall abandon it through the same cancellation cleanup, while allowing new presses in the new mode. A shared selection and editing surface uses this to discard an edit when its mode changes while keeping viewing gestures available.
 
 Implementation: `src/utils/use-pointer-drag.ts`, `src/utils/pointer-drag.ts`

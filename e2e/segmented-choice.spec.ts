@@ -135,7 +135,14 @@ test.describe('Segmented Choice lab', () => {
     await expect(group).toHaveAttribute('data-icon-only', 'true');
     const width = group.getByRole('radio', { name: 'Fit width' });
     await expect(width.locator('.ui-segmented-choice__label')).toHaveCount(0);
-    await page.getByRole('radiogroup', { name: 'Zoom, sm' }).getByRole('radio').first().focus();
+    // A scroll closes an open tooltip (React Aria), and the scroll event of a focus can arrive
+    // after the next Tab, so the target is brought into view first and nothing scrolls after.
+    await width.scrollIntoViewIfNeeded();
+    await page
+      .getByRole('radiogroup', { name: 'Zoom, sm' })
+      .getByRole('radio')
+      .first()
+      .evaluate((element: HTMLElement) => element.focus({ preventScroll: true }));
     await page.keyboard.press('Tab');
     await expect(width).toBeFocused();
     await expect(

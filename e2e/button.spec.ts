@@ -172,7 +172,12 @@ test.describe('Button lab', () => {
       const both = cell('tooltip and shortcut', 'default');
       await expect(both).toHaveAttribute('aria-keyshortcuts', 'Control+Shift+S');
       await expect(cell('tooltip', 'default')).not.toHaveAttribute('aria-keyshortcuts');
-      await cell('shortcut', 'pending').focus();
+      // A scroll closes an open tooltip (React Aria), and the scroll event of a focus can arrive
+      // after the next Tab, so the target is brought into view first and nothing scrolls after.
+      await both.scrollIntoViewIfNeeded();
+      await cell('shortcut', 'pending').evaluate((element: HTMLElement) =>
+        element.focus({ preventScroll: true }),
+      );
       await page.keyboard.press('Tab');
       await expect(both).toBeFocused();
       const tooltip = page.getByRole('tooltip', { name: /Save every change/ });

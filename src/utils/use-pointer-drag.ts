@@ -30,11 +30,33 @@ interface PointerDrag<E extends Element, T> {
   element: E;
   state: T;
   resetKey: unknown;
+  /** Stops watching the document for a release the element did not see. */
+  unwatch: () => void;
+}
+
+/**
+ * Calls `onRelease` when the document sees `pointerId` released or cancelled. Without capture, a
+ * release outside the element reaches only the document; one over the element bubbles there after
+ * the element's own handler has ended the drag, so it finds nothing to end.
+ */
+function watchRelease(element: Element, pointerId: number, onRelease: () => void): () => void {
+  const owner = element.ownerDocument;
+  const listener = (event: Event) => {
+    if ('pointerId' in event && event.pointerId === pointerId) onRelease();
+  };
+  owner.addEventListener('pointerup', listener);
+  owner.addEventListener('pointercancel', listener);
+  return () => {
+    owner.removeEventListener('pointerup', listener);
+    owner.removeEventListener('pointercancel', listener);
+  };
 }
 
 /**
  * One primary-pointer gesture at a time. Moves and endings from other pointers are ignored;
- * release, cancellation, lost capture and unmount share the same capture cleanup.
+ * release, cancellation, lost capture and unmount share the same capture cleanup. A gesture whose
+ * release the element never saw (no capture, released outside) ends as abandoned when the document
+ * sees the release, when a mouse move arrives with no button pressed, or when a new primary press starts.
  */
 export function usePointerDrag<E extends Element, T>(options: PointerDragOptions<E, T>) {
   const active = useRef<PointerDrag<E, T> | null>(null);
@@ -44,7 +66,10 @@ export function usePointerDrag<E extends Element, T>(options: PointerDragOptions
   const cancel = useCallback(() => {
     const drag = active.current;
     active.current = null;
-    if (drag) releasePointer(drag.element, drag.pointerId);
+    if (drag) {
+      drag.unwatch();
+      releasePointer(drag.element, drag.pointerId);
+    }
     return drag;
   }, []);
   useEffect(
@@ -73,19 +98,37 @@ export function usePointerDrag<E extends Element, T>(options: PointerDragOptions
   };
   return {
     onPointerDown: (event: PointerEvent<E>) => {
-      if (isDisabled || event.button !== 0 || event.isPrimary === false || active.current) return;
+      if (isDisabled || event.button !== 0 || event.isPrimary === false) return;
+      // A primary press while a gesture is active means its release went unseen: it is stale.
+      const stale = cancel();
+      if (stale) options.onEnd?.(event, stale.state, true);
       const state = options.onStart(event);
       if (state === null) return;
+      const { pointerId } = event;
+      const unwatch = watchRelease(event.currentTarget, pointerId, () => {
+        const drag = cancel();
+        if (drag) onCancel.current?.(drag.state);
+      });
       active.current = {
-        pointerId: event.pointerId,
+        pointerId,
         element: event.currentTarget,
         state,
         resetKey: options.resetKey,
+        unwatch,
       };
       if (options.capture !== false) capturePointer(event);
     },
     onPointerMove: (event: PointerEvent<E>) => {
       const drag = active.current;
+      // A mouse keeps its pointer id: a move with no button pressed follows a release unseen.
+      if (
+        drag?.pointerId === event.pointerId &&
+        event.pointerType === 'mouse' &&
+        event.buttons === 0
+      ) {
+        finish(event, true);
+        return;
+      }
       if (
         !isDisabled &&
         drag?.pointerId === event.pointerId &&

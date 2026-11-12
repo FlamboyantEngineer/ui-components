@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { useRemoteSearch } from '../../utils/use-remote-search.js';
+import { type RemoteSearch, useRemoteSearch } from '../../utils/use-remote-search.js';
 import { Button } from '../button/button.js';
 import { SearchField } from '../search-field/search-field.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
@@ -61,6 +61,19 @@ function useChoice(defaultAlign: AssetPickerAlign) {
 }
 
 /**
+ * A new `search` function ends the running search (it is the search's source), so the picker
+ * searches its current query again with it rather than sitting idle with no results.
+ */
+function useSearchAgainWith<T>(load: unknown, search: RemoteSearch<T>) {
+  const previousRef = useRef(load);
+  useEffect(() => {
+    if (previousRef.current === load) return;
+    previousRef.current = load;
+    search.searchNow(search.query);
+  }, [load, search]);
+}
+
+/**
  * Browses and searches assets through the caller's `search`, shows them as a grid of thumbnails,
  * and places the chosen one: alternative text, width and height kept in proportion or not, and
  * alignment. Insert hands the asset and its placement to `onSelect`. All data comes through the
@@ -78,6 +91,7 @@ export function AssetPicker({
 }: AssetPickerProps) {
   const strings = useUiStrings();
   const search = useRemoteSearch({ load, source: load, minSearchLength: 0, searchDelay });
+  useSearchAgainWith(load, search);
   const { choice, choose, place } = useChoice(defaultAlign);
   const results = search.results.length;
   return (
