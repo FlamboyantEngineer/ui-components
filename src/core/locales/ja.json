@@ -57,7 +57,7 @@
   "loadingConversations": "会話を読み込み中",
   "unreadMessages": "未読メッセージ {count} 件",
   "conversationMuted": "ミュート中",
-  "conversationLabel": "{title}{hasPresence, select, true {、{presence}} other {}}{unreadCount, plural, =0 {} other {、未読メッセージ # 件}}{isMuted, select, true {、ミュート中} other {}}{hasTime, select, true {、{time}} other {}}",
+  "conversationLabel": "{title}{hasPresence, select, true {、{presence}} other {}}{unreadCount, plural, =0 {} other {、未読メッセージ # 件}}{isMuted, select, true {、ミュート中} other {}}{hasStatus, select, true {、{status}} other {}}{hasActivity, select, true {、{activity}} other {}}{hasTime, select, true {、{time}} other {}}",
   "conversationMenu": "{title} の操作",
   "chatMessageLabel": "{author}{hasBoth, select, true {、} other {}}{time}",
   "chatDelivery": "{delivery, select, sending {送信中} sent {送信済み} delivered {配信済み} read {既読} other {未送信}}",

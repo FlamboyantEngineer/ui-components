@@ -74,6 +74,7 @@ import {
   handThumbDownPath,
   handThumbUpPath,
   hashtagPath,
+  historyPath,
   informationCirclePath,
   italicPath,
   linkPath,
@@ -183,6 +184,7 @@ export const LockGlyph = /* @__PURE__ */ createGlyph('lock', lockClosedPath);
 export const EmojiGlyph = /* @__PURE__ */ createGlyph('emoji', faceSmilePath);
 export const BellGlyph = /* @__PURE__ */ createGlyph('bell', bellPath);
 export const ClockGlyph = /* @__PURE__ */ createGlyph('clock', clockPath);
+export const HistoryGlyph = /* @__PURE__ */ createGlyph('history', historyPath);
 export const EnvelopeGlyph = /* @__PURE__ */ createGlyph('envelope', envelopePath);
 export const EnvelopeOpenGlyph = /* @__PURE__ */ createGlyph('envelope-open', envelopeOpenPath);
 export const SendGlyph = /* @__PURE__ */ createGlyph('send', paperAirplanePath);

@@ -9,6 +9,10 @@ interface ChatConversationLabelParts {
   unreadCount: number;
   /** The reader turned the conversation's notifications off. */
   isMuted: boolean;
+  /** The host's mark on the conversation, in words. */
+  status?: string | undefined;
+  /** What a participant is doing right now. */
+  activity?: string | undefined;
   /** When the last message arrived, as the row shows it. */
   time?: string | undefined;
 }
@@ -43,6 +47,8 @@ export const chatListStrings = defineStrings<ChatListStrings>({
   conversationLabel: (parts) => ({
     ...parts,
     hasPresence: Boolean(parts.presence),
+    hasStatus: Boolean(parts.status),
+    hasActivity: Boolean(parts.activity),
     hasTime: Boolean(parts.time),
   }),
   conversationMenu: (title) => ({ title }),

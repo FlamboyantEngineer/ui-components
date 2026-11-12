@@ -154,6 +154,7 @@ export {
   Heading2Glyph,
   Heading3Glyph,
   HelpGlyph,
+  HistoryGlyph,
   ImageGlyph,
   InfoGlyph,
   ItalicGlyph,

@@ -57,7 +57,7 @@
   "loadingConversations": "Chargement des conversations",
   "unreadMessages": "{count, plural, one {# message non lu} other {# messages non lus}}",
   "conversationMuted": "Notifications coupées",
-  "conversationLabel": "{title}{hasPresence, select, true {, {presence}} other {}}{unreadCount, plural, =0 {} one {, # message non lu} other {, # messages non lus}}{isMuted, select, true {, notifications coupées} other {}}{hasTime, select, true {, {time}} other {}}",
+  "conversationLabel": "{title}{hasPresence, select, true {, {presence}} other {}}{unreadCount, plural, =0 {} one {, # message non lu} other {, # messages non lus}}{isMuted, select, true {, notifications coupées} other {}}{hasStatus, select, true {, {status}} other {}}{hasActivity, select, true {, {activity}} other {}}{hasTime, select, true {, {time}} other {}}",
   "conversationMenu": "Actions pour {title}",
   "chatMessageLabel": "{author}{hasBoth, select, true {, } other {}}{time}",
   "chatDelivery": "{delivery, select, sending {Envoi…} sent {Envoyé} delivered {Distribué} read {Lu} other {Non envoyé}}",

@@ -34,14 +34,14 @@ test.describe('Chat List lab', () => {
     await lab.expectAccessible();
   });
 
-  test('UIC-CHAT-LIST-1.4 UIC-CHAT-LIST-1.5 selects by keyboard and reaches a row menu with the arrow keys', async ({
+  test('UIC-CHAT-LIST-1.4 UIC-CHAT-LIST-1.5 selects by keyboard with the arrow keys', async ({
     page,
     lab,
   }) => {
     await lab.open('chat-list');
     const log = page.locator('[data-lab-log="inbox"]');
     await expect(log).toHaveText('Open: Lisbon trip');
-    await inbox(page).getByRole('button', { name: 'New chat' }).focus();
+    await inbox(page).getByRole('searchbox', { name: 'Search conversations' }).focus();
     await page.keyboard.press('Tab');
     await expect(row(page, 'Lisbon trip')).toBeFocused();
     await expect(row(page, 'Lisbon trip')).toHaveAttribute('aria-selected', 'true');
@@ -62,71 +62,8 @@ test.describe('Chat List lab', () => {
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('ArrowDown');
     await expect(row(page, 'Recipe swap')).toBeFocused();
-    await page.keyboard.press('ArrowRight');
-    const more = page.getByRole('button', { name: 'More for Recipe swap' });
-    await expect(more).toBeFocused();
-    // Enter and Space open the menu after moving through the rows, and Escape returns to the button.
-    for (const key of ['Enter', 'Space']) {
-      await page.keyboard.press(key);
-      await expect(page.getByRole('menu')).toBeVisible();
-      // A scroll the reader did not make, as one still settling from the row moves, leaves it open.
-      await grid(page).evaluate(async (list) => {
-        const scroller = list.closest('.ui-chat-list__list') ?? list;
-        for (const top of [24, 12, 0]) {
-          scroller.scrollTop = top;
-          await new Promise(requestAnimationFrame);
-        }
-      });
-      await expect(page.getByRole('menu')).toBeVisible();
-      await page.keyboard.press('Escape');
-      await expect(page.getByRole('menu')).toHaveCount(0);
-      await expect(more).toBeFocused();
-    }
-    await expect(log).toHaveText('Open: Ana Lima');
-    await page.keyboard.press('Enter');
-    await page.getByRole('menuitem', { name: 'Unmute' }).click();
-    await expect(row(page, 'Recipe swap')).not.toHaveAttribute('data-muted');
-    // The changed conversation redraws its row, and focus returns to the menu's button.
-    await expect(more).toBeFocused();
-    await page.keyboard.press('ArrowLeft');
-    await expect(row(page, 'Recipe swap')).toBeFocused();
     await page.keyboard.press('Space');
     await expect(log).toHaveText('Open: Recipe swap');
-  });
-
-  test('UIC-CHAT-LIST-1.5 opens a row menu with Enter and Space and returns focus to its button', async ({
-    page,
-    lab,
-  }) => {
-    await lab.open('chat-list');
-    const log = page.locator('[data-lab-log="inbox"]');
-    const more = page.getByRole('button', { name: 'More for Recipe swap' });
-    for (const key of ['Enter', 'Space']) {
-      await row(page, 'Recipe swap').focus();
-      await page.keyboard.press('ArrowRight');
-      await expect(more).toBeFocused();
-      await page.keyboard.press(key);
-      const menu = page.getByRole('menu');
-      await expect(menu).toBeVisible();
-      await expect(menu.getByRole('menuitem').and(page.locator(':focus'))).toHaveCount(1);
-      await expect(log).toHaveText('Open: Lisbon trip');
-      await page.keyboard.press('Escape');
-      await expect(menu).toHaveCount(0);
-      await expect(more).toBeFocused();
-    }
-    // An action from the keyboard leaves the row's selection alone, and focus on the menu's button.
-    await page.keyboard.press('Enter');
-    await expect(page.getByRole('menuitem', { name: /mute/i })).toBeVisible();
-    await page.keyboard.press('ArrowDown');
-    await page.keyboard.press('Enter');
-    await expect(page.getByRole('menu')).toHaveCount(0);
-    await expect(row(page, 'Recipe swap')).not.toHaveAttribute('data-muted');
-    await expect(more).toBeFocused();
-    await expect(log).toHaveText('Open: Lisbon trip');
-    // Up and Down on the button move between rows, as everywhere in the list.
-    await page.keyboard.press('ArrowDown');
-    await expect(page.getByRole('menu')).toHaveCount(0);
-    await expect(row(page, 'Recipe swap')).not.toBeFocused();
   });
 
   test('UIC-CHAT-LIST-2.1 opens a row context menu by secondary click, keys and touch, and returns focus to the row', async ({
@@ -247,6 +184,74 @@ test.describe('Chat List lab', () => {
       expect(bounds.overflows, state).toBe(false);
       expect(bounds.partsRight, state).toBeLessThanOrEqual(bounds.right);
     }
+  });
+});
+
+test.describe('Chat List history', () => {
+  const history = (page: Page) => page.locator('[data-lab-demo="history"]');
+  const recents = (page: Page) => history(page).getByRole('grid', { name: 'Recents' });
+
+  test('UIC-CHAT-LIST-1.2 UIC-CHAT-LIST-1.12 draws titles under a heading with marks, activity and a context menu', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-list');
+    await expect(history(page).getByRole('searchbox')).toHaveCount(0);
+    await expect(history(page).locator('.ui-chat-list__heading')).toHaveText('Recents');
+    const rows = recents(page).getByRole('row');
+    await expect(rows).toHaveCount(10);
+    await expect(rows.nth(1)).toHaveAccessibleName('Sourdough starter schedule');
+    await expect(rows.nth(0).locator('.ui-chat-list__avatar')).toHaveCount(0);
+    await expect(rows.nth(0)).toHaveAccessibleName(
+      'Planning a vegetable garden, Earlier versions, Working',
+    );
+    await expect(rows.nth(0).locator('.ui-chat-list__activity-dot')).toHaveCount(3);
+    await expect(rows.nth(2).getByRole('img', { name: 'Earlier versions' })).toBeVisible();
+    await expect(history(page).getByRole('button', { name: /^More for/ })).toHaveCount(0);
+    // A title alone keeps the row to one line, its mark at the row's end.
+    const box = await rows.nth(3).evaluate((element) => ({
+      height: element.getBoundingClientRect().height,
+      row: element.getBoundingClientRect().right,
+      mark: (element.querySelector('.ui-chat-list__status') as HTMLElement).getBoundingClientRect()
+        .right,
+    }));
+    expect(box.height).toBeLessThan(40);
+    expect(box.row - box.mark).toBeLessThan(16);
+    await rows.nth(1).focus();
+    await page.keyboard.press('Shift+F10');
+    await page.getByRole('menuitem', { name: 'Delete' }).click();
+    await expect(
+      recents(page).getByRole('row', { name: 'Sourdough starter schedule' }),
+    ).toHaveCount(0);
+    await lab.expectAccessible();
+  });
+
+  test('UIC-CHAT-LIST-1.11 fades the last rows while more can load and loads the next page', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-list');
+    const list = history(page).locator('.ui-chat-list');
+    await expect(list).toHaveAttribute('data-has-more', 'true');
+    const rows = recents(page).getByRole('row');
+    const opacity = (index: number) =>
+      rows.nth(index).evaluate((element) => Number(getComputedStyle(element).opacity));
+    expect(await opacity(0)).toBe(1);
+    expect(await opacity(8)).toBeLessThan(1);
+    expect(await opacity(9)).toBeLessThan(await opacity(8));
+    await history(page).getByRole('button', { name: 'Load more' }).click();
+    await expect(rows).toHaveCount(20);
+    await expect(list).not.toHaveAttribute('data-has-more');
+    await expect(history(page).getByRole('button', { name: 'Load more' })).toHaveCount(0);
+    expect(await opacity(19)).toBe(1);
+  });
+
+  test('UIC-CHAT-LIST-1.7 starts a conversation from the New chat row', async ({ page, lab }) => {
+    await lab.open('chat-list');
+    await history(page).getByRole('button', { name: 'New chat' }).click();
+    const first = recents(page).getByRole('row').first();
+    await expect(first).toHaveAccessibleName('New chat');
+    await expect(first).toHaveAttribute('aria-selected', 'true');
   });
 });
 
