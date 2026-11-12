@@ -231,7 +231,10 @@ test.describe('Markdown lab', () => {
     );
     await expect(stream.locator('ol > li')).toHaveCount(3);
     await expect(stream.locator('.ui-chat-citation')).toHaveCount(2);
-    await expect(demo.getByRole('list', { name: '2 sources' })).toBeVisible();
+    await expect(demo.getByRole('button', { name: 'Sources (2)' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
     await page.clock.resume();
     await lab.expectAccessible('[data-lab-demo="streaming"]');
   });
