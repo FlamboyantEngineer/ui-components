@@ -151,6 +151,19 @@ describe('Table handle', { timeout: 15_000 }, () => {
       expect(scrolled()).toHaveTextContent('Place 401');
       expect(view.container.querySelector('.ui-table__scroll')?.scrollTop).toBeGreaterThan(0);
 
+      // A hidden page draws no frames; each wait ends after a short timeout instead.
+      const noFrames = vi.spyOn(window, 'requestAnimationFrame').mockImplementation(() => 0);
+      const hiddenRef = createRef<TableHandle>();
+      const { unmount: unmountHidden } = render(renderMany(many, hiddenRef));
+      try {
+        const settled = await act(() => hiddenRef.current?.revealKey('row-300'));
+        expect(settled).toEqual({ found: true });
+        expect(noFrames).toHaveBeenCalled();
+      } finally {
+        noFrames.mockRestore();
+        unmountHidden();
+      }
+
       const replacedRef = createRef<TableHandle>();
       const { rerender } = render(renderMany(many, replacedRef));
       const replaced = replacedRef.current?.revealKey('row-450');

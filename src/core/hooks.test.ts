@@ -110,6 +110,15 @@ describe('caller attribute helpers', () => {
     expect(rest).toEqual({ title: 't' });
   });
 
+  it('UIC-HOOKS-2.3 reads only own props and skips invalid data names', () => {
+    const inherited = Object.create({ 'data-inherited': 'x', title: 'inherited' }) as object;
+    const props = Object.assign(inherited, { 'data-a b': 1, 'data-row': 2, 'data-': 3, id: 'a' });
+    expect(pickDataAttributes(props)).toEqual({ 'data-row': '2' });
+    const [data, rest] = splitDataAttributes(props);
+    expect(data).toEqual({ 'data-row': '2' });
+    expect(rest).toEqual({ 'data-a b': 1, 'data-': 3, id: 'a' });
+  });
+
   it('UIC-HOOKS-2.3 takes a typed caller null, which omits the attribute', () => {
     const props: BaseProps = { className: 'caller', 'data-row': 2, 'data-none': null };
     const root = createHooks('row').root({ className: props.className, props });

@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, type ReactNode, useContext, useState } from 'react';
+import { createContext, type ReactNode, useContext, useEffect, useState } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { REANNOUNCE_MARK } from '../../utils/reannounce.js';
@@ -36,6 +36,28 @@ function nextText(current: string, text: string): string {
 
 type Messages = Record<AnnouncePoliteness, string>;
 
+/**
+ * How long an announcement stays in its region, in milliseconds, as React Aria's announcer keeps
+ * it: long enough to be read, short enough that a reader browsing later meets no stale message.
+ */
+const clearDelay = 7000;
+
+/** Empties the region `politeness` names once its message has stood for `clearDelay`. */
+function useClearAfterDelay(
+  message: string,
+  politeness: AnnouncePoliteness,
+  setMessages: (update: (current: Messages) => Messages) => void,
+) {
+  useEffect(() => {
+    if (message === '') return;
+    const timer = setTimeout(
+      () => setMessages((current) => ({ ...current, [politeness]: '' })),
+      clearDelay,
+    );
+    return () => clearTimeout(timer);
+  }, [message, politeness, setMessages]);
+}
+
 /** An `announce` that writes into the region its politeness names. */
 function createAnnounce(setMessages: (update: (current: Messages) => Messages) => void): Announce {
   return (text, { politeness = 'polite' } = {}) =>
@@ -50,6 +72,8 @@ function createAnnounce(setMessages: (update: (current: Messages) => Messages) =
 export function Announcer({ ref, children, className, id, ...rest }: AnnouncerProps) {
   const [messages, setMessages] = useState<Messages>({ polite: '', assertive: '' });
   const [announce] = useState(() => createAnnounce(setMessages));
+  useClearAfterDelay(messages.polite, 'polite', setMessages);
+  useClearAfterDelay(messages.assertive, 'assertive', setMessages);
   return (
     <AnnounceContext value={announce}>
       {children}

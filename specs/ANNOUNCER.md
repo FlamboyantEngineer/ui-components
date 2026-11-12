@@ -13,7 +13,7 @@ Verification: `src/components/announcer/announcer.test.tsx`, `e2e/announcer.spec
 
 ### UIC-ANNOUNCER-1.2 - Politeness
 
-`announce(text, { politeness })` shall replace the text of the polite region (`politeness: 'polite'`, the default), which a screen reader reads once it finishes what it is reading, or of the assertive region (`'assertive'`), which interrupts it. The other region keeps its text. `announce` is stable for the announcer's lifetime and is called from event handlers and effects, not during render.
+`announce(text, { politeness })` shall replace the text of the polite region (`politeness: 'polite'`, the default), which a screen reader reads once it finishes what it is reading, or of the assertive region (`'assertive'`), which interrupts it. The other region keeps its text. A region empties seven seconds after its last announcement, as React Aria's announcer does, so a reader browsing the page later meets no stale message; a new announcement starts the wait again, and unmounting clears the timer. `announce` is stable for the announcer's lifetime and is called from event handlers and effects, not during render.
 
 Implementation: `src/components/announcer/announcer.tsx`
 Verification: `src/components/announcer/announcer.test.tsx`, `e2e/announcer.spec.ts`

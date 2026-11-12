@@ -34,14 +34,27 @@ export interface CollectionHandleSource<O extends object> {
 /** Frames a virtualized collection gets to draw a row after it scrolled to its place. */
 const drawFrames = 8;
 
+/** How long to wait for a frame before going on, as a hidden page draws none. */
+const frameTimeout = 100;
+
 function findRow(root: HTMLElement | null, key: Key): HTMLElement | null {
   const id = toCollectionKey(key);
   // Collection keys are URI-encoded, so they never hold a quote or a backslash.
   return root?.querySelector<HTMLElement>(`[role="row"][data-key="${id}"]`) ?? null;
 }
 
-function nextFrame(): Promise<void> {
-  return new Promise((resolve) => requestAnimationFrame(() => resolve()));
+/** The next frame of the root's own window, or a short timeout where it draws none. */
+function nextFrame(root: HTMLElement | null): Promise<void> {
+  const view = root?.ownerDocument.defaultView ?? globalThis.window;
+  return new Promise((resolve) => {
+    const finish = () => {
+      view.cancelAnimationFrame(frame);
+      view.clearTimeout(timer);
+      resolve();
+    };
+    const frame = view.requestAnimationFrame(finish);
+    const timer = view.setTimeout(finish, frameTimeout);
+  });
 }
 
 /** Scrolls a virtualized collection so the row's place is in the middle of its view. */
@@ -79,7 +92,7 @@ export function useCollectionHandle<O extends object>(
       const { virtual } = latest.current;
       if (!row && virtual) scrollToPlace(virtual, key);
       for (let frame = 0; !row && virtual && frame < drawFrames && !signal.aborted; frame += 1) {
-        await nextFrame();
+        await nextFrame(latest.current.getRoot());
         row = findRow(latest.current.getRoot(), key);
       }
       if (signal.aborted) return { found: false, reason: 'unmounted' };

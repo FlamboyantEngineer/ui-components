@@ -138,4 +138,56 @@ describe('persistent state with a write delay', () => {
     expect(result.current[0]).toBe('Plum');
     expect(backing.getItem('note')).toBeNull();
   });
+
+  it('UIC-PROVIDER-6.3 writes a waiting change when the document becomes hidden', () => {
+    vi.useFakeTimers();
+    const storage = countingStorage();
+    const { result } = renderDelayed(storage);
+    act(() => result.current[1]('draft'));
+    expect(storage.writes).toBe(0);
+    const visibility = vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden');
+    act(() => {
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    visibility.mockRestore();
+    expect(storage.getItem('note')).toBe('"draft"');
+  });
+
+  it('UIC-PROVIDER-6.2 keeps rendering over an adapter or codec that throws', () => {
+    const throwing: UiStorage = {
+      getItem: () => {
+        throw new Error('Storage is blocked');
+      },
+      setItem: () => {
+        throw new Error('The quota is full');
+      },
+      removeItem: () => undefined,
+    };
+    const { result } = renderHook(() => usePersistentState('note', 'start', { codec: textCodec }), {
+      wrapper: ({ children }: { children: ReactNode }) => (
+        <UiProvider storage={throwing}>{children}</UiProvider>
+      ),
+    });
+    expect(result.current[0]).toBe('start');
+    act(() => result.current[1]('next'));
+    expect(result.current[0]).toBe('next');
+    const failingCodec = {
+      parse: (raw: string) => raw,
+      stringify: (): string => {
+        throw new TypeError('Cannot encode');
+      },
+    };
+    const memory = createMemoryStorage();
+    const { result: encoded } = renderHook(
+      () => usePersistentState('note', 'a', { codec: failingCodec }),
+      {
+        wrapper: ({ children }: { children: ReactNode }) => (
+          <UiProvider storage={memory}>{children}</UiProvider>
+        ),
+      },
+    );
+    act(() => encoded.current[1]('b'));
+    expect(encoded.current[0]).toBe('b');
+    expect(memory.getItem('note')).toBeNull();
+  });
 });

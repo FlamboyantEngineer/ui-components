@@ -6,7 +6,7 @@ Download utilities in `src/utils/download.ts`. They save a file the way a clicke
 
 ### UIC-DOWNLOAD-1.1 - Blob download
 
-`downloadBlob` shall save a `Blob` under the given file name by clicking one hidden, temporary download link once, remove the link, and revoke the blob's object URL one second later (`DOWNLOAD_URL_LIFETIME`). It returns true, or false without a document.
+`downloadBlob` shall save a `Blob` under the given file name by clicking one hidden, temporary download link once, remove the link, and revoke the blob's object URL forty seconds later (`DOWNLOAD_URL_LIFETIME`), long enough for a browser that reads a large blob slowly to finish. It returns true, or false without a document.
 
 Implementation: `src/utils/download.ts`
 Verification: `src/utils/download.test.ts`
