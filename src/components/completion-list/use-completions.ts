@@ -212,7 +212,11 @@ function askSource(
       return 'none';
     }
     const next = toState(answer, lookup, 0);
-    session.setState((state) => ({ ...next, revision: state.revision + 1 }));
+    session.setState((state) => ({
+      ...next,
+      activeIndex: keptActiveIndex(state, next),
+      revision: state.revision + 1,
+    }));
     return next.isOpen ? 'options' : 'none';
   };
   // A source that throws is a source that rejects: the lookup shows nothing, quietly.
@@ -228,6 +232,20 @@ function askSource(
     if (id === session.requestRef.current) closeCompletions(session);
   });
   return 'pending';
+}
+
+/**
+ * Where the active option is once an answer replaces an open list: on the option the reader moved
+ * to, when the answer still lists it (the same label and inserted text), else on the first.
+ */
+function keptActiveIndex(state: CompletionState, next: CompletionState): number {
+  const active =
+    state.isOpen && state.activeIndex > 0 ? state.options[state.activeIndex] : undefined;
+  if (!active) return 0;
+  const index = next.options.findIndex(
+    (option) => option.label === active.label && option.insertText === active.insertText,
+  );
+  return Math.max(index, 0);
 }
 
 function trackCompletions(session: CompletionSession, reason: CompletionReason): LookupOutcome {
