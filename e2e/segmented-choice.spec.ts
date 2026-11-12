@@ -135,6 +135,9 @@ test.describe('Segmented Choice lab', () => {
     await expect(group).toHaveAttribute('data-icon-only', 'true');
     const width = group.getByRole('radio', { name: 'Fit width' });
     await expect(width.locator('.ui-segmented-choice__label')).toHaveCount(0);
+    // A focus that scrolls the page closes the tooltip it opens (React Aria closes tooltips on
+    // scroll), so bring the group into view before tabbing to it.
+    await group.scrollIntoViewIfNeeded();
     await page.getByRole('radiogroup', { name: 'Zoom, sm' }).getByRole('radio').first().focus();
     await page.keyboard.press('Tab');
     await expect(width).toBeFocused();
