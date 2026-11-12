@@ -1,12 +1,12 @@
 # Chat Sources
 
-`ChatSources` lists the sources an answer drew on, such as web pages or documents: a numbered list labelled by its count, each source's title (a [Link](LINK.md) when it has a URL), its site and a snippet, without favicons. `ChatCitation` is the inline numbered marker (`[1]`) that cites one of them in the answer's text: it links to the source and previews it in a [Hover Card](HOVER-CARD.md) on hover, keyboard focus and long press. `createCitationOverride` turns the `[n]` markers in a [Markdown](MARKDOWN.md) answer into citations ([UIC-MARKDOWN-2.8](MARKDOWN.md#uic-markdown-28---node-overrides)). Sources are numbered by their order: the first source is `[1]`.
+`ChatSources` lists the sources an answer drew on, such as web pages or documents, collapsed behind a trigger that counts them ("Sources (3)"): a numbered list named by that count, each source's title (a [Link](LINK.md) when it has a URL), its site and a snippet, without favicons. `ChatCitation` is the inline numbered marker (`[1]`) that cites one of them in the answer's text: it links to the source and previews it in a [Hover Card](HOVER-CARD.md) on hover, keyboard focus and long press. `createCitationOverride` turns the `[n]` markers in a [Markdown](MARKDOWN.md) answer into citations ([UIC-MARKDOWN-2.8](MARKDOWN.md#uic-markdown-28---node-overrides)). Sources are numbered by their order: the first source is `[1]`.
 
 ## UIC-CHAT-SOURCES-1 - Sources list
 
 ### UIC-CHAT-SOURCES-1.1 - Labelled list
 
-`ChatSources` shall render a `ui-chat-sources` root holding a label (`ui-chat-sources__label`) that reads the provider's `chatSourcesLabel` string for the number of sources (`3 sources`, `1 source`) and an ordered list (`ui-chat-sources__list`) named by it, with one `ui-chat-sources__item` per source in the order of `sources`, so each item's number is its citation number.
+`ChatSources` shall render a `ui-chat-sources` root (React Aria `Disclosure`) holding a trigger button (`ui-chat-sources__trigger`) with a label (`ui-chat-sources__label`) that reads the provider's `chatSourcesLabel` string for the number of sources (`Sources (3)`) followed by the disclosure's indicator glyph (`ui-chat-sources__indicator`, pointing to the inline end while collapsed and down while open), then the panel (`ui-chat-sources__panel`, a `group` named by the trigger) holding an ordered list (`ui-chat-sources__list`) named by the label, with one `ui-chat-sources__item` per source in the order of `sources`, so each item's number is its citation number.
 
 Implementation: `src/components/chat-sources/chat-sources.tsx`, `src/core/strings/chat-sources.ts`, `labs/reference/chat-sources.css`
 Verification: `src/components/chat-sources/chat-sources.test.tsx`, `e2e/chat-sources.spec.ts`
@@ -24,6 +24,13 @@ Verification: `src/components/chat-sources/chat-sources.test.tsx`, `e2e/chat-sou
 
 Implementation: `src/components/chat-sources/chat-sources.tsx`
 Verification: `src/components/chat-sources/chat-sources.test.tsx`
+
+### UIC-CHAT-SOURCES-1.4 - Collapsed by default
+
+`ChatSources` shall start collapsed, its list hidden, unless `defaultExpanded` is true. Pressing the trigger by pointer, touch, Enter or Space toggles the list; the trigger's `aria-expanded` follows it and the root publishes `data-expanded` while it is open. `isExpanded` controls the state, and `onExpandedChange` receives each state the reader requests, also while controlled.
+
+Implementation: `src/components/chat-sources/chat-sources.tsx`, `labs/reference/chat-sources.css`
+Verification: `src/components/chat-sources/chat-sources.test.tsx`, `e2e/chat-sources.spec.ts`
 
 ## UIC-CHAT-SOURCES-2 - Citations
 
@@ -66,18 +73,27 @@ Verification: `src/components/chat-sources/markdown-citations.test.tsx`, `src/co
 
 ## Hooks
 
-| Hook                        | Kind | Values | Description                                                     |
-| --------------------------- | ---- | ------ | --------------------------------------------------------------- |
-| `ui-chat-sources`           | root |        | The list's root.                                                |
-| `ui-chat-sources__label`    | slot |        | The label naming the list by its count.                         |
-| `ui-chat-sources__list`     | slot |        | The `<ol>` of sources.                                          |
-| `ui-chat-sources__item`     | slot |        | One source's `<li>`.                                            |
-| `ui-chat-sources__title`    | slot |        | A source's title: a link (also `ui-link`) or text.              |
-| `ui-chat-sources__site`     | slot |        | A source's site.                                                |
-| `ui-chat-sources__snippet`  | slot |        | A source's snippet.                                             |
-| `ui-chat-citation`          | root |        | The marker's trigger: a link (also `ui-link`) or a bare button. |
-| `ui-chat-citation__marker`  | slot |        | The visible `[n]`, hidden from assistive technology.            |
-| `ui-chat-citation__card`    | slot |        | The preview card (also `ui-hover-card`), portalled.             |
-| `ui-chat-citation__title`   | slot |        | The card's title: a link (also `ui-link`) or text.              |
-| `ui-chat-citation__site`    | slot |        | The card's site.                                                |
-| `ui-chat-citation__snippet` | slot |        | The card's snippet.                                             |
+| Hook                         | Kind  | Values | Description                                                        |
+| ---------------------------- | ----- | ------ | ------------------------------------------------------------------ |
+| `ui-chat-sources`            | root  |        | The sources' disclosure `<div>` (React Aria `Disclosure`).         |
+| `ui-chat-sources__trigger`   | slot  |        | The trigger button.                                                |
+| `ui-chat-sources__label`     | slot  |        | The label counting the sources, which also names the list.         |
+| `ui-chat-sources__indicator` | slot  |        | The disclosure chevron (also `ui-glyph`).                          |
+| `ui-chat-sources__panel`     | slot  |        | The panel holding the list (React Aria `DisclosurePanel`).         |
+| `ui-chat-sources__list`      | slot  |        | The `<ol>` of sources.                                             |
+| `ui-chat-sources__item`      | slot  |        | One source's `<li>`.                                               |
+| `ui-chat-sources__title`     | slot  |        | A source's title: a link (also `ui-link`) or text.                 |
+| `ui-chat-sources__site`      | slot  |        | A source's site.                                                   |
+| `ui-chat-sources__snippet`   | slot  |        | A source's snippet.                                                |
+| `ui-chat-citation`           | root  |        | The marker's trigger: a link (also `ui-link`) or a bare button.    |
+| `ui-chat-citation__marker`   | slot  |        | The visible `[n]`, hidden from assistive technology.               |
+| `ui-chat-citation__card`     | slot  |        | The preview card (also `ui-hover-card`), portalled.                |
+| `ui-chat-citation__title`    | slot  |        | The card's title: a link (also `ui-link`) or text.                 |
+| `ui-chat-citation__site`     | slot  |        | The card's site.                                                   |
+| `ui-chat-citation__snippet`  | slot  |        | The card's snippet.                                                |
+| `data-expanded`              | state | `true` | On the sources' root: the list shows (React Aria).                 |
+| `data-focus-visible-within`  | state | `true` | On the sources' root or panel: keyboard focus inside (React Aria). |
+| `data-hovered`               | state | `true` | On the trigger, while the pointer is over it (React Aria).         |
+| `data-pressed`               | state | `true` | On the trigger, while pressed (React Aria).                        |
+| `data-focused`               | state | `true` | On the trigger, while focused (React Aria).                        |
+| `data-focus-visible`         | state | `true` | On the trigger, while focused by keyboard (React Aria).            |

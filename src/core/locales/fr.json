@@ -90,7 +90,7 @@
   "questionAnsweredText": "Vous avez répondu : {text}",
   "questionNoAnswer": "Aucune réponse",
   "questionDismissed": "Ignorée",
-  "chatSourcesLabel": "{count, plural, one {# source} other {# sources}}",
+  "chatSourcesLabel": "Sources ({count})",
   "chatCitationLabel": "Source {index} : {title}",
   "newMessageAnnouncement": "{hasAuthor, select, true {Nouveau message de {author} : {text}} other {Nouveau message : {text}}}",
   "newMessageCount": "{count, plural, one {# nouveau message} other {# nouveaux messages}}",

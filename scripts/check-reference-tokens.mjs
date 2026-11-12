@@ -306,7 +306,7 @@ const measured = new Set(
       ].map((match) => match[1]),
     ),
 );
-const reactAriaDisclosure = ['disclosure.css', 'chat-activity.css'];
+const reactAriaDisclosure = ['disclosure.css', 'chat-activity.css', 'chat-sources.css'];
 const pdfTextLayer = ['pdf-viewer.css'];
 const interop = new Map([
   // React Aria's DisclosurePanel measures its content's height.

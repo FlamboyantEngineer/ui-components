@@ -40,7 +40,7 @@ describe('default strings (UIC-PROVIDER-3.1)', () => {
       expect(typeof strings[key as keyof UiStrings], key).toBe('function');
     }
     expect(strings.chatReplyFailed).toBe(en.chatReplyFailed);
-    expect(strings.chatSourcesLabel(2)).toBe('2 sources');
+    expect(strings.chatSourcesLabel(2)).toBe('Sources (2)');
     // @ts-expect-error A key no module declares is not built-in text.
     expect(strings.notDeclared).toBeUndefined();
   });

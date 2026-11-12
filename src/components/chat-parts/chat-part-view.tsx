@@ -15,6 +15,7 @@ import type {
   ChatPart,
   ChatQuestionPart,
   ChatReasoningPart,
+  ChatSourcesPart,
   ChatTextFormat,
   ChatToolCallPart,
 } from './chat-part.js';
@@ -72,6 +73,21 @@ function ReasoningView({ part, context }: PartViewProps<ChatReasoningPart>) {
       isExpanded={readOwn(expansion.expanded, part.id)}
       onExpandedChange={(isExpanded) => expansion.setExpanded(part.id, isExpanded)}
       expandsAutomatically={context.expandsActivity}
+    />
+  );
+}
+
+/** Sources start collapsed; the reader's choice is kept by the part's `id` when it has one. */
+function SourcesView({ part, context }: PartViewProps<ChatSourcesPart>) {
+  const { expansion } = context;
+  const key = part.id;
+  return (
+    <ChatSources
+      sources={part.sources}
+      isExpanded={key === undefined ? undefined : readOwn(expansion.expanded, key)}
+      onExpandedChange={(isExpanded) => {
+        if (key !== undefined) expansion.setExpanded(key, isExpanded);
+      }}
     />
   );
 }
@@ -170,7 +186,7 @@ export function ChatPartView({ part, context }: PartViewProps<ChatPart>): ReactN
     case 'plan':
       return <ChatPlan title={part.title} steps={part.steps} />;
     case 'sources':
-      return <ChatSources sources={part.sources} />;
+      return <SourcesView part={part} context={context} />;
     case 'files':
       return (
         <ChatAttachmentList attachments={part.attachments} onRetry={context.onRetryAttachment} />

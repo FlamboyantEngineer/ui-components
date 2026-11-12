@@ -1,5 +1,6 @@
 import { render, screen, within } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { userEvent } from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { requireDefined } from '../../utils/require-defined.js';
@@ -18,8 +19,8 @@ const sources: ChatSource[] = [
 
 describe('ChatSources', () => {
   it('UIC-CHAT-SOURCES-1.1 lists the sources in order, labelled by their count', () => {
-    const { container } = render(<ChatSources sources={sources} />);
-    const list = screen.getByRole('list', { name: '3 sources' });
+    const { container } = render(<ChatSources sources={sources} defaultExpanded />);
+    const list = screen.getByRole('list', { name: 'Sources (3)' });
     expect(list.tagName).toBe('OL');
     expect(list).toHaveClass('ui-chat-sources__list');
     const items = within(list).getAllByRole('listitem');
@@ -28,25 +29,25 @@ describe('ChatSources', () => {
       'Coastal rail timetable',
       'Trip notes.md',
     ]);
-    expect(container.querySelector('.ui-chat-sources__label')).toHaveTextContent('3 sources');
+    expect(container.querySelector('.ui-chat-sources__label')).toHaveTextContent('Sources (3)');
     expectHooksMatchSpec(container, 'CHAT-SOURCES', {
-      slots: ['label', 'list', 'item', 'title', 'site', 'snippet'],
+      slots: ['trigger', 'label', 'indicator', 'panel', 'list', 'item', 'title', 'site', 'snippet'],
     });
   });
 
-  it('UIC-CHAT-SOURCES-1.1 names a single source in the singular, from the provider strings', () => {
-    const { rerender } = render(<ChatSources sources={sources.slice(0, 1)} />);
-    expect(screen.getByRole('list', { name: '1 source' })).toBeInTheDocument();
+  it('UIC-CHAT-SOURCES-1.1 counts a single source, and reads the label from the provider strings', () => {
+    const { rerender } = render(<ChatSources sources={sources.slice(0, 1)} defaultExpanded />);
+    expect(screen.getByRole('list', { name: 'Sources (1)' })).toBeInTheDocument();
     rerender(
-      <UiProvider messages={{ chatSourcesLabel: 'Sources ({count})' }}>
-        <ChatSources sources={sources} />
+      <UiProvider messages={{ chatSourcesLabel: '{count} sources' }}>
+        <ChatSources sources={sources} defaultExpanded />
       </UiProvider>,
     );
-    expect(screen.getByRole('list', { name: 'Sources (3)' })).toBeInTheDocument();
+    expect(screen.getByRole('list', { name: '3 sources' })).toBeInTheDocument();
   });
 
   it('UIC-CHAT-SOURCES-1.2 shows each title, site and snippet the source has', () => {
-    render(<ChatSources sources={sources} />);
+    render(<ChatSources sources={sources} defaultExpanded />);
     const [weather, rail, notes] = screen.getAllByRole('listitem');
     const external = within(requireDefined(weather)).getByRole('link', {
       name: /Lisbon weather by month/,
@@ -77,13 +78,62 @@ describe('ChatSources', () => {
 
   it('UIC-CHAT-SOURCES-1.3 carries its hooks, the caller class, id and data attributes', () => {
     const { container } = render(
-      <ChatSources sources={[]} className="caller" id="answer-sources" data-probe="sources" />,
+      <ChatSources
+        sources={[]}
+        className="caller"
+        id="answer-sources"
+        data-probe="sources"
+        defaultExpanded
+      />,
     );
     const root = container.firstElementChild as HTMLElement;
     expect(root).toHaveClass('ui-chat-sources', 'caller');
     expect(root).toHaveAttribute('id', 'answer-sources');
     expect(root).toHaveAttribute('data-probe', 'sources');
-    expect(screen.getByRole('list', { name: '0 sources' })).toBeEmptyDOMElement();
+    expect(screen.getByRole('list', { name: 'Sources (0)' })).toBeEmptyDOMElement();
     expectHooksMatchSpec(container, 'CHAT-SOURCES', { callerAttributes: ['data-probe'] });
+  });
+
+  it('UIC-CHAT-SOURCES-1.4 starts collapsed and toggles the list from its trigger', async () => {
+    const user = userEvent.setup();
+    const onExpandedChange = vi.fn();
+    const { container } = render(
+      <ChatSources sources={sources} onExpandedChange={onExpandedChange} />,
+    );
+    const root = container.firstElementChild as HTMLElement;
+    const trigger = screen.getByRole('button', { name: 'Sources (3)' });
+    expect(trigger).toHaveClass('ui-chat-sources__trigger');
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    expect(root).not.toHaveAttribute('data-expanded');
+    expect(screen.queryByRole('list')).not.toBeInTheDocument();
+    expect(trigger.lastElementChild).toHaveClass('ui-chat-sources__indicator', 'ui-glyph');
+    await user.click(trigger);
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    expect(root).toHaveAttribute('data-expanded', 'true');
+    expect(screen.getByRole('group', { name: 'Sources (3)' })).toHaveClass(
+      'ui-chat-sources__panel',
+    );
+    expect(screen.getByRole('list', { name: 'Sources (3)' })).toBeInTheDocument();
+    expect(onExpandedChange).toHaveBeenLastCalledWith(true);
+    await user.keyboard('{Enter}');
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await user.keyboard(' ');
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    expect(onExpandedChange).toHaveBeenCalledTimes(3);
+  });
+
+  it('UIC-CHAT-SOURCES-1.4 follows a controlled state', async () => {
+    const user = userEvent.setup();
+    const onExpandedChange = vi.fn();
+    const { rerender } = render(
+      <ChatSources sources={sources} isExpanded={false} onExpandedChange={onExpandedChange} />,
+    );
+    const trigger = screen.getByRole('button', { name: 'Sources (3)' });
+    await user.click(trigger);
+    expect(onExpandedChange).toHaveBeenCalledWith(true);
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    rerender(<ChatSources sources={sources} isExpanded onExpandedChange={onExpandedChange} />);
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('list', { name: 'Sources (3)' })).toBeInTheDocument();
   });
 });
