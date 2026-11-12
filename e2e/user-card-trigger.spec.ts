@@ -196,10 +196,15 @@ test.describe('User Card Trigger lab', () => {
     await lab.open('user-card-trigger');
     const trigger = page.locator('[data-lab-trigger="hover-avatar"]');
     const card = page.getByRole('dialog', { name: 'Priya Nair' });
+    // The page's clock is installed before any card timer starts: a timer of the real clock could
+    // not be cancelled afterwards, and would close the card that the keyboard opens below.
+    await page.clock.install();
     await page.mouse.move(5, 5);
     await trigger.hover();
+    await page.clock.runFor(600);
     await expect(card).toBeVisible();
     await card.getByRole('button', { name: 'Message' }).click();
+    await page.clock.runFor(2000);
     await expect(card).toHaveCount(0);
     await expect(page.locator('[data-lab-output="hover-action"]')).toHaveText(
       'message for Priya Nair',
@@ -207,7 +212,6 @@ test.describe('User Card Trigger lab', () => {
     await expect(trigger).toBeFocused();
 
     // From the keyboard, focus returns without reopening the card.
-    await page.clock.install();
     await page.mouse.move(5, 5);
     await page.keyboard.press('Shift+Tab');
     await page.keyboard.press('Tab');
