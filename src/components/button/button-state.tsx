@@ -95,7 +95,7 @@ export interface ButtonStateProps
    * `type`, the pending and selected states and `focusableWhenDisabled` apply to a `<button>` only.
    */
   href?: string | undefined;
-  /** A link button's target. `_blank` adds `noopener` and `noreferrer` to `rel`. */
+  /** A link button's target. A target that opens a new browsing context (`_blank` or a window name) adds `noopener` and `noreferrer` to `rel`. */
   target?: NativeProps<'a'>['target'];
   /** A link button's relationship to its destination. */
   rel?: string | undefined;

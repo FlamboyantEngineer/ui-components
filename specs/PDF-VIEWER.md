@@ -78,9 +78,9 @@ Verification: `src/components/pdf-viewer/pdf-viewer.test.tsx`, `src/components/p
 
 ### UIC-PDF-VIEWER-2.4 - Links
 
-Over the text layer of each rendered page that has links, unless annotations are switched off (UIC-PDF-VIEWER-2.5), the engine shall build its annotation layer of those links in `ui-pdf-viewer__annotation-layer`; the page's other annotations and its form fields show as the bitmap draws them. The layer is transparent to the pointer (`pointer-events: none`), so the text under it stays selectable; the engine positions each link as a percentage of the layer and sets the layer's `data-main-rotation`, and the host stylesheet places the links and gives them the pointer, as the reference sheet's annotation-layer rules do. A link to the web opens in a new tab (`target="_blank"`, `rel="nofollow noopener noreferrer"`: `nofollow` because the document's links are its author's, and the new-tab tokens of a [Link](LINK.md#uic-link-22---new-tabs); its address as its `title`); a link to a destination in the document goes there as a named destination does (UIC-PDF-VIEWER-4.5); a link running the named actions `NextPage`, `PrevPage`, `FirstPage` or `LastPage` goes to that page.
+Over the text layer of each rendered page that has links, unless annotations are switched off (UIC-PDF-VIEWER-2.5), the engine shall build its annotation layer of those links in `ui-pdf-viewer__annotation-layer`; the page's other annotations and its form fields show as the bitmap draws them. The layer is transparent to the pointer (`pointer-events: none`), so the text under it stays selectable; the engine positions each link as a percentage of the layer and sets the layer's `data-main-rotation`, and the host stylesheet places the links and gives them the pointer, as the reference sheet's annotation-layer rules do. A link to the web opens in a new tab (`target="_blank"`, `rel="nofollow noopener noreferrer"`: `nofollow` because the document's links are its author's, and the new-tab tokens of a [Link](LINK.md#uic-link-22---new-tabs); its address as its `title`); a link whose address `isSafeUrl` refuses (`javascript:`) gets no destination, since the engine adapter does not promise to filter the document's addresses; a link to a destination in the document goes there as a named destination does (UIC-PDF-VIEWER-4.5); a link running the named actions `NextPage`, `PrevPage`, `FirstPage` or `LastPage` goes to that page.
 
-Implementation: `src/components/pdf-viewer/use-page-render.ts`, `src/components/pdf-viewer/pdf-link-service.ts`, `src/components/pdf-viewer/use-pdf-links.ts`, `src/components/pdf-viewer/pdf-viewer-page.tsx`, `labs/reference/pdf-viewer.css`
+Implementation: `src/components/pdf-viewer/use-page-render.ts`, `src/components/pdf-viewer/pdf-link-service.ts`, `src/utils/safe-url.ts`, `src/components/pdf-viewer/use-pdf-links.ts`, `src/components/pdf-viewer/pdf-viewer-page.tsx`, `labs/reference/pdf-viewer.css`
 Verification: `src/components/pdf-viewer/use-pdf-links.test.tsx`, `src/components/pdf-viewer/pdf-link-service.test.ts`, `e2e/pdf-viewer.spec.ts`
 
 ### UIC-PDF-VIEWER-2.5 - Annotations switch
@@ -399,9 +399,9 @@ Verification: `src/components/pdf-viewer/pdf-viewer-sidebar.test.tsx`, `e2e/pdf-
 
 ### UIC-PDF-VIEWER-10.3 - Outline
 
-The outline shall be a [Tree](TREE.md) (`ui-pdf-viewer__outline`) named with the `outline` string, one row per entry of the document's outline, nested as the document nests them; an entry the document opens (a positive count) starts expanded. Choosing an entry goes to its destination (UIC-PDF-VIEWER-4.5), or opens its web address in a new tab. The outline is not virtualized: only top-level entries and those the document opens render at first, which keeps it to a few hundred rows for documents a reader browses this way.
+The outline shall be a [Tree](TREE.md) (`ui-pdf-viewer__outline`) named with the `outline` string, one row per entry of the document's outline, nested as the document nests them; an entry the document opens (a positive count) starts expanded. Choosing an entry goes to its destination (UIC-PDF-VIEWER-4.5), or opens its web address in a new tab; an address `isSafeUrl` refuses opens nothing. The outline is not virtualized: only top-level entries and those the document opens render at first, which keeps it to a few hundred rows for documents a reader browses this way.
 
-Implementation: `src/components/pdf-viewer/pdf-viewer-sidebar.tsx`, `src/components/pdf-viewer/use-pdf-document.ts`
+Implementation: `src/components/pdf-viewer/pdf-viewer-sidebar.tsx`, `src/components/pdf-viewer/use-pdf-document.ts`, `src/utils/safe-url.ts`
 Verification: `src/components/pdf-viewer/pdf-viewer-sidebar.test.tsx`, `e2e/pdf-viewer.spec.ts`
 
 ### UIC-PDF-VIEWER-10.4 - Resizing

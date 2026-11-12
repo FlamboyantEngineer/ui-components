@@ -19,6 +19,13 @@ describe('PDF link service', () => {
     expect(link.rel).toBe('nofollow noopener noreferrer');
   });
 
+  it('UIC-PDF-VIEWER-2.4 leaves a link with an unsafe address without a destination', () => {
+    const link = document.createElement('a');
+    createLinkService(createActions()).addLinkAttributes(link, 'javascript:alert(1)', false);
+    expect(link).not.toHaveAttribute('href');
+    expect(link).not.toHaveAttribute('target');
+  });
+
   it('UIC-PDF-VIEWER-2.4 sends destinations to the viewer instead of the browser', () => {
     const actions = createActions();
     const service = createLinkService(actions);

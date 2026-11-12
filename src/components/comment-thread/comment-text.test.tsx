@@ -117,6 +117,19 @@ describe('CommentText inline Markdown', () => {
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 
+  it('UIC-COMMENT-THREAD-3.3 writes mentions in a link address and title as their tokens', () => {
+    render(
+      <CommentText
+        format="markdown-inline"
+        text={'[profile](https://example.com/@[Ana](ana) "About @[Ana](ana)")'}
+        renderCard={(person) => <p>{person.name}</p>}
+      />,
+    );
+    const link = screen.getByRole('link', { name: /profile/ });
+    expect(link).toHaveAttribute('href', 'https://example.com/@[Ana](ana)');
+    expect(link).toHaveAttribute('title', 'About @[Ana](ana)');
+  });
+
   it('UIC-COMMENT-THREAD-3.3 shows plain text as written by default', () => {
     const { container } = render(<CommentText text="**not bold** @[Ana](ana)" />);
     expect(container.querySelector('strong')).toBeNull();

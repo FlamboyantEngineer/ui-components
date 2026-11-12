@@ -12,7 +12,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, InteractionState, NativeProps, RefProps } from '../../core/props.js';
 import { Glyph, UiLink, useUiStrings } from '../../core/provider.js';
 import { Link as AriaLink } from '../../primitives/index.js';
-import { mergeSafeRel } from '../../utils/merge-safe-rel.js';
+import { isNewContextTarget, mergeSafeRel } from '../../utils/merge-safe-rel.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 
@@ -133,7 +133,7 @@ export function Link({
   ...rest
 }: LinkProps) {
   // A link without a destination, or a disabled one, is a span that opens nothing.
-  const opensNewTab = target === '_blank' && rest.href !== undefined && !rest.isDisabled;
+  const opensNewTab = isNewContextTarget(target) && rest.href !== undefined && !rest.isDisabled;
   return (
     <AriaLink
       {...rest}

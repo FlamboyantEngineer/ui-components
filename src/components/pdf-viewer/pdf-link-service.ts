@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { mergeSafeRel } from '../../utils/merge-safe-rel.js';
+import { isSafeUrl } from '../../utils/safe-url.js';
 import type { PdfLinkService } from './pdf-engine.js';
 
 interface LinkServiceActions {
@@ -38,6 +39,12 @@ export function resolveNamedAction(
 export function createLinkService(actions: LinkServiceActions): PdfLinkService {
   return {
     addLinkAttributes(link, url) {
+      // The engine adapter does not promise to filter the document's addresses: an unsafe one
+      // (`javascript:`) leaves the link without a destination.
+      if (!isSafeUrl(url)) {
+        link.removeAttribute('href');
+        return;
+      }
       link.href = url;
       link.title = url;
       link.target = '_blank';

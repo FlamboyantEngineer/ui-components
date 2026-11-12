@@ -47,7 +47,7 @@ Verification: `src/components/html-markup/sanitize-html.test.ts`, `e2e/html-mark
 
 ### UIC-HTML-MARKUP-1.6 - New tabs
 
-A kept link with `target="_blank"` shall get `noopener` and `noreferrer` added to its `rel`, by the same policy as a [Link](LINK.md#uic-link-22---new-tabs); a link without that target keeps its `rel` as written.
+A kept link whose `target` opens a new browsing context (`_blank` in any letter case, or a window name such as `target="preview"`) shall get `noopener` and `noreferrer` added to its `rel`, by the same policy as a [Link](LINK.md#uic-link-22---new-tabs); a link that stays in the page's context keeps its `rel` as written.
 
 Implementation: `src/components/html-markup/sanitize-html.ts`
 Verification: `src/components/html-markup/sanitize-html.test.ts`

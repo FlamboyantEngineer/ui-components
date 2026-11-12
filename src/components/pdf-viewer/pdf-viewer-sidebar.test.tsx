@@ -23,6 +23,7 @@ const outline: PdfOutlineNode[] = [
     items: [
       { title: 'Apple', dest: [{ num: 1, gen: 0 }, { name: 'Fit' }], url: null, items: [] },
       { title: 'Orchard guide', dest: null, url: 'https://example.com/', items: [] },
+      { title: 'Script', dest: null, url: 'javascript:alert(1)', items: [] },
     ],
   },
   {
@@ -181,7 +182,7 @@ describe('PdfViewer sidebar', () => {
       within(tree)
         .getAllByRole('row')
         .map((row) => row.textContent),
-    ).toEqual(['Seasonal Report', 'Varieties', 'Apple', 'Orchard guide', 'Markets']);
+    ).toEqual(['Seasonal Report', 'Varieties', 'Apple', 'Orchard guide', 'Script', 'Markets']);
     expectHooksMatchSpec(container, 'PDF-VIEWER', { slots: ['outline'] });
 
     const scroller = screen.getByRole('document');
@@ -191,6 +192,8 @@ describe('PdfViewer sidebar', () => {
     await waitFor(() => expect(scroller.scrollTop).toBe(800));
     await userEvent.click(within(tree).getByRole('row', { name: 'Orchard guide' }));
     expect(open).toHaveBeenCalledWith('https://example.com/', '_blank', 'noopener,noreferrer');
+    await userEvent.click(within(tree).getByRole('row', { name: 'Script' }));
+    expect(open).toHaveBeenCalledOnce();
     await userEvent.click(within(tree).getByRole('row', { name: 'Varieties' }));
     expect(scroller.scrollTop).toBe(800);
   });
