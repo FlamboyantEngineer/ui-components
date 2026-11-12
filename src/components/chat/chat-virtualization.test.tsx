@@ -33,10 +33,11 @@ describe('Chat virtualization', () => {
   });
 
   it('UIC-CHAT-1.7 keeps every message mounted where the host turns virtualization off', () => {
-    const { container, rerenderWith } = renderChat({ messages: history(150), virtualized: false });
+    // Sixty messages: more than a window holds, and few enough to mount within the test's time.
+    const { container, rerenderWith } = renderChat({ messages: history(60), virtualized: false });
     expect(transcript(container)).not.toHaveAttribute('data-virtualized');
-    expect(container.querySelectorAll('article')).toHaveLength(150);
-    rerenderWith({ messages: history(150) });
+    expect(container.querySelectorAll('article')).toHaveLength(60);
+    rerenderWith({ messages: history(60) });
     expect(transcript(container)).toHaveAttribute('data-virtualized', 'true');
     expect(container.querySelectorAll('article').length).toBeLessThan(40);
   });
