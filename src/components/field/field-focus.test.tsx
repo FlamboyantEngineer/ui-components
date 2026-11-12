@@ -14,7 +14,7 @@ function root(container: HTMLElement) {
 function LeavingField({ options }: { options: FieldStateOptions<string> }) {
   const state = useFieldState<string>({ defaultValue: '', ...options });
   return (
-    <Field state={state} label="Fruit" help="Ripe only." commitOnBlur>
+    <Field state={state} label="Fruit" help="Ripe only." commitOnBlur showRestoreButton>
       {(control) => (
         <Input
           {...control}

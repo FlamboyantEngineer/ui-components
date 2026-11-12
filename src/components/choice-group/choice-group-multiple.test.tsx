@@ -158,7 +158,12 @@ describe('ChoiceGroup', () => {
   it('UIC-CHOICE-GROUP-4.5 shows dirty state, restores, undoes and refuses changes while locked', async () => {
     const user = userEvent.setup();
     const { container, rerender } = render(
-      <ChoiceGroup selectionMode="multiple" label="Toppings" committedValue={['basil']}>
+      <ChoiceGroup
+        showRestoreButton
+        selectionMode="multiple"
+        label="Toppings"
+        committedValue={['basil']}
+      >
         {toppings.map(({ label, ...option }) => (
           <Choice key={option.value} {...option}>
             {label}
@@ -178,7 +183,13 @@ describe('ChoiceGroup', () => {
       screen.getAllByRole('checkbox').filter((box) => (box as HTMLInputElement).checked),
     ).toEqual([]);
     rerender(
-      <ChoiceGroup selectionMode="multiple" label="Toppings" value={['basil']} isReadOnly>
+      <ChoiceGroup
+        showRestoreButton
+        selectionMode="multiple"
+        label="Toppings"
+        value={['basil']}
+        isReadOnly
+      >
         {toppings.map(({ label, ...option }) => (
           <Choice key={option.value} {...option}>
             {label}
@@ -189,7 +200,13 @@ describe('ChoiceGroup', () => {
     await user.click(screen.getByText('Olives'));
     expect(screen.getByRole('checkbox', { name: 'Olives' })).not.toBeChecked();
     rerender(
-      <ChoiceGroup selectionMode="multiple" label="Toppings" value={['basil']} isDisabled>
+      <ChoiceGroup
+        showRestoreButton
+        selectionMode="multiple"
+        label="Toppings"
+        value={['basil']}
+        isDisabled
+      >
         {toppings.map(({ label, ...option }) => (
           <Choice key={option.value} {...option}>
             {label}

@@ -49,6 +49,7 @@ function ChangeSample({ edit, changeLayout, labelLayout, size, isInvalid }: Chan
     label: multiple ? 'Basket' : 'Fruit',
     options: produce,
     changeLayout,
+    showRestoreButton: true,
     labelLayout,
     size,
     menu: ['clear', 'reset', 'set-default'] as const,

@@ -61,6 +61,7 @@ describe('ColorField typing', () => {
     const onCommit = vi.fn();
     render(
       <ColorField
+        showRestoreButton
         label="Accent"
         allowsTyping
         defaultValue="#336699"
@@ -97,6 +98,7 @@ describe('ColorField typing', () => {
       const [committed, setCommitted] = useState<string | null>('#336699');
       return (
         <ColorField
+          showRestoreButton
           label="Accent"
           allowsTyping
           value={value}
@@ -126,7 +128,15 @@ describe('ColorField typing', () => {
   it('UIC-COLOR-FIELD-4.3 UIC-FIELD-1.11 applies typed text when focus moves to the swatch button', async () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();
-    render(<ColorField label="Accent" allowsTyping defaultValue="#336699" onCommit={onCommit} />);
+    render(
+      <ColorField
+        showRestoreButton
+        label="Accent"
+        allowsTyping
+        defaultValue="#336699"
+        onCommit={onCommit}
+      />,
+    );
     await user.clear(input());
     await user.type(input(), 'f00');
     await user.tab({ shift: true });

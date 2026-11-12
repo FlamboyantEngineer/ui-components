@@ -37,6 +37,7 @@ function MatrixField({ state, layout }: { state: FieldStateName; layout: FieldLa
     <RelativeDateField
       label="Due"
       labelLayout={layout}
+      showRestoreButton
       getNow={getNow}
       {...stateProps[state]}
       {...controlled}

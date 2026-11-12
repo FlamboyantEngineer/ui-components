@@ -548,6 +548,7 @@ describe('NumberField slider display', () => {
     const user = userEvent.setup();
     const { container } = render(
       <NumberField
+        showRestoreButton
         display="slider"
         label="Volume"
         committedValue={20}

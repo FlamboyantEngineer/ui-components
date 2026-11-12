@@ -87,6 +87,7 @@ function TypedLength() {
         step={0.1}
         description="Type 5cm, 0.25 m or 2 in: the length converts to millimetres when you press Enter or leave the field. Another unit, or text that is no number, stays and shows which units the field reads. Save, then edit and restore."
         menu={['clear']}
+        showRestoreButton
         data-lab-field="units"
       />
       <Button onPress={() => setSaved(value)}>Save length</Button>

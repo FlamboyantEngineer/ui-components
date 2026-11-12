@@ -399,6 +399,7 @@ function SavedForm() {
         committedValue={saved}
         defaultValue={50}
         menu={['reset', 'set-default']}
+        showRestoreButton
         data-lab-field="saved"
       />
       <NumberField

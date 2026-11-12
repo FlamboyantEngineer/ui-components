@@ -225,6 +225,7 @@ export function toFieldData(
     density: FieldDensity | undefined;
     changeLayout: FieldChangeLayout | undefined;
     messageDisplay: FieldMessageDisplay | undefined;
+    restoreButton: boolean;
   },
   state: FieldState<unknown>,
   focused: boolean,

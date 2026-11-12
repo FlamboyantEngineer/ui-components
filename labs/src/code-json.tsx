@@ -70,6 +70,7 @@ function SavedEditor() {
         language="json"
         label="Order"
         description="Edit, format, restore, or undo with Ctrl+Z."
+        showRestoreButton
         committedValue={committed}
         onCommit={setCommitted}
         defaultValue='{"fruit":"Apple"}'

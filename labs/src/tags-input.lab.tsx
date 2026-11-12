@@ -130,6 +130,7 @@ function DirtyAndRestore() {
         committedValue={saved}
         defaultValue={['Plum']}
         menu={['clear', 'reset', 'set-default']}
+        showRestoreButton
         data-lab-field="dirty"
       />
       <Button onPress={() => setSaved(value)}>Save</Button>

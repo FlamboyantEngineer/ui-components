@@ -53,6 +53,7 @@ function CommitAndRevert() {
         defaultValue="Oslo"
         description="Enter or Tab commits, Escape reverts."
         onCommit={setCommitted}
+        showRestoreButton
         data-lab-field="commit"
       />
       <TextField
@@ -82,6 +83,7 @@ function DirtyAndRestore() {
         menu={['clear', 'reset', 'set-default', 'help']}
         defaultValue="Pear"
         help="Clear empties the field, Reset puts back the saved value and Set to default puts Pear back."
+        showRestoreButton
         data-lab-field="dirty"
       />
       <Button onPress={() => setSaved(value)}>Save</Button>

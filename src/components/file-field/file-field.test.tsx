@@ -292,6 +292,7 @@ describe('FileField', () => {
       return (
         <Attachments
           allowsMultiple
+          showRestoreButton
           maxFiles={2}
           value={value}
           committedValue={[report, photo]}
@@ -357,7 +358,13 @@ describe('FileField', () => {
 
   it('UIC-FILE-FIELD-3.2 leaves out the removed files title on request, keeping the group named', () => {
     const { container } = render(
-      <Attachments allowsMultiple hideRemovedLabel value={[]} committedValue={[report, song]} />,
+      <Attachments
+        allowsMultiple
+        showRestoreButton
+        hideRemovedLabel
+        value={[]}
+        committedValue={[report, song]}
+      />,
     );
     const group = screen.getByRole('group', { name: 'Removed files' });
     expect(group).toHaveAttribute('data-hide-label', 'true');
@@ -370,6 +377,7 @@ describe('FileField', () => {
     const { container } = render(
       <Attachments
         allowsMultiple
+        showRestoreButton
         value={[report]}
         committedValue={[report, photo]}
         uploads={[{ id: 'up', name: 'Map.svg', error: 'The server refused the file.' }]}

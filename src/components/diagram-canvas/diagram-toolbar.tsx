@@ -14,11 +14,18 @@ export type DiagramView = 'canvas' | 'outline';
 interface DiagramToolbarProps {
   controller: DiagramController;
   view: DiagramView;
+  /** The zoom control has a reset button to 100%. */
+  showZoomReset: boolean;
   onViewChange: (view: DiagramView) => void;
 }
 
 /** The zoom control and fit button of the canvas, and the switch between canvas and outline. */
-export function DiagramToolbar({ controller, view, onViewChange }: DiagramToolbarProps) {
+export function DiagramToolbar({
+  controller,
+  view,
+  showZoomReset,
+  onViewChange,
+}: DiagramToolbarProps) {
   const strings = useUiStrings();
   const { viewport, zoomTo, fit } = controller.view;
   return (
@@ -29,7 +36,7 @@ export function DiagramToolbar({ controller, view, onViewChange }: DiagramToolba
             className={hooks.slotClass('zoom')}
             value={viewport.zoom}
             onChange={(zoom) => zoomTo(zoom)}
-            resetValue={100}
+            resetValue={showZoomReset ? 100 : undefined}
             formatOptions={{ maximumFractionDigits: 0 }}
           />
           <Button

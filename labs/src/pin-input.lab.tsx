@@ -70,6 +70,7 @@ function OneTimeCode() {
         validate={(value) =>
           value === rejected ? { severity: 'error', message: 'That code is not right.' } : null
         }
+        showRestoreButton
         data-lab-field="otp"
       />
       <LabOutput name="Completed">
@@ -94,6 +95,7 @@ function DirtyAndRestore() {
         committedValue={saved}
         defaultValue="0000"
         menu={['clear', 'reset', 'set-default']}
+        showRestoreButton
         data-lab-field="dirty"
       />
       <Button onPress={() => setSaved(value)}>Save</Button>

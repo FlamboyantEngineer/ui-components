@@ -27,7 +27,7 @@ import {
   toInnerControlSize,
   useFieldIds,
 } from './field-parts.js';
-import { FieldChangeLayoutContext } from './field-previous-value.js';
+import { FieldChangeLayoutContext, FieldRestoreContext } from './field-previous-value.js';
 import { FieldRestoreButton } from './field-restore-button.js';
 import type { FieldIssue, FieldState, FieldValidation } from './field-state.js';
 
@@ -72,6 +72,11 @@ export interface FieldProps<T> extends BaseProps, RefProps<HTMLDivElement> {
    * the help then describes the control.
    */
   showHelpButton?: boolean | undefined;
+  /**
+   * Draws a restore button after the control while the field is dirty, which puts the committed
+   * value back. Defaults to false; the dirty state and the context menu's Reset stay either way.
+   */
+  showRestoreButton?: boolean | undefined;
   /** Badges and other marks the host renders for the field; they describe the control. */
   decoration?: ReactNode;
   /**
@@ -120,16 +125,19 @@ function restoreField(state: FieldState<unknown>, slots: FieldSlots) {
   state.restore();
 }
 
-/** The parts after the control, one size below the field: restore while dirty, and the help. */
+/** The parts after the control, one size below the field: restore while dirty if asked, and the help. */
 function FieldButtons({
-  props: { label, size = 'md', help, showHelpButton = true },
+  props: { label, size = 'md', help, showHelpButton = true, showRestoreButton = false },
   ids,
   state,
   slots,
   behaviour,
   controlSlot,
 }: {
-  props: Pick<FieldProps<unknown>, 'label' | 'size' | 'help' | 'showHelpButton'>;
+  props: Pick<
+    FieldProps<unknown>,
+    'label' | 'size' | 'help' | 'showHelpButton' | 'showRestoreButton'
+  >;
   ids: ReturnType<typeof useFieldIds>;
   state: FieldState<unknown>;
   slots: FieldSlots;
@@ -139,7 +147,7 @@ function FieldButtons({
   const button = { label, size: toInnerControlSize(size) };
   return (
     <>
-      {state.isDirty ? (
+      {showRestoreButton && state.isDirty ? (
         <FieldRestoreButton {...button} onPress={() => restoreField(state, slots)} />
       ) : null}
       {isEmptyNode(help) ? null : (
@@ -153,6 +161,24 @@ function FieldButtons({
         />
       )}
     </>
+  );
+}
+
+/** What the control's own parts read from the field: its change layout, restore buttons and form. */
+function FieldControlContexts({
+  changeLayout = 'inline',
+  showRestoreButton = false,
+  form,
+  children,
+}: Pick<FieldProps<unknown>, 'changeLayout' | 'showRestoreButton' | 'form'> & {
+  children: ReactNode;
+}) {
+  return (
+    <FieldChangeLayoutContext value={changeLayout}>
+      <FieldRestoreContext value={showRestoreButton}>
+        <FieldFormOwnerContext value={form}>{children}</FieldFormOwnerContext>
+      </FieldRestoreContext>
+    </FieldChangeLayoutContext>
   );
 }
 
@@ -220,6 +246,7 @@ export function Field<T>({
   description,
   help,
   showHelpButton,
+  showRestoreButton,
   decoration,
   menu = defaultFieldMenu,
   menuIcons,
@@ -256,7 +283,14 @@ export function Field<T>({
     <FieldLabel ids={ids} label={label} layout={labelLayout} isRequired={state.isRequired} />
   ) : null;
   const data = toFieldData(
-    { labelLayout, size, density, changeLayout, messageDisplay },
+    {
+      labelLayout,
+      size,
+      density,
+      changeLayout,
+      messageDisplay,
+      restoreButton: !!showRestoreButton,
+    },
     state,
     behaviour.isFocused,
   );
@@ -264,18 +298,17 @@ export function Field<T>({
     <div {...hooks.root({ className, props: rest, data })} {...behaviour.rootProps} id={id}>
       {labelLayout === 'control-label' ? null : labelElement}
       <div {...hooks.slot('control')} ref={controlSlot}>
-        <FieldChangeLayoutContext value={changeLayout ?? 'inline'}>
-          <FieldFormOwnerContext value={form}>{children(control)}</FieldFormOwnerContext>
-        </FieldChangeLayoutContext>
+        <FieldControlContexts {...{ changeLayout, showRestoreButton, form }}>
+          {children(control)}
+        </FieldControlContexts>
       </div>
       {labelLayout === 'control-label' ? labelElement : null}
       <FieldButtons
-        props={{ label, size, help, showHelpButton }}
+        props={{ label, size, help, showHelpButton, showRestoreButton }}
         {...{ ids, state, slots, behaviour, controlSlot }}
       />
       <FieldNotes
-        ids={ids}
-        state={state}
+        {...{ ids, state }}
         decoration={decoration}
         description={description}
         renderMessage={renderMessage}

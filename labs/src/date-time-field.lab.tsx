@@ -78,7 +78,9 @@ function MatrixField({
       labelLayout={layout}
       mode={mode}
       {...stateProps(state, mode)}
-      {...(stable ? { defaultValue: sample.value, changeLayout: 'hidden' as const } : {})}
+      {...(stable
+        ? { defaultValue: sample.value, changeLayout: 'hidden' as const, showRestoreButton: true }
+        : {})}
       {...dirty}
     />
   );
@@ -95,6 +97,7 @@ function Bounded() {
         maxValue="2026-04-30"
         description="Any day in April 2026."
         onCommit={setCommitted}
+        showRestoreButton
         data-lab-field="bounded"
       />
       <p>

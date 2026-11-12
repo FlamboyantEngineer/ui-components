@@ -106,7 +106,7 @@ Verification: `src/components/pin-input/pin-input.test.tsx`, `src/components/pin
 
 ### UIC-PIN-INPUT-2.7 - Field behaviour
 
-`PinInput` shall show each validation status, show dirty state with a restore button, undo and redo with the field's chords from its cells, and offer the field menu, whose Clear empties the code.
+`PinInput` shall show each validation status, show dirty state, with a restore button given `showRestoreButton`, undo and redo with the field's chords from its cells, and offer the field menu, whose Clear empties the code.
 
 Implementation: `src/components/pin-input/pin-input.tsx`, `src/components/field/field.tsx`
 Verification: `src/components/pin-input/pin-input.test.tsx`, `e2e/pin-input.spec.ts`

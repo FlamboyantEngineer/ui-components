@@ -205,7 +205,7 @@ describe('RatingField', () => {
     const user = userEvent.setup();
     function Saved() {
       const [value, setValue] = useState<number | null>(3);
-      return <Quality value={value} onChange={setValue} committedValue={3} />;
+      return <Quality showRestoreButton value={value} onChange={setValue} committedValue={3} />;
     }
     const { container } = render(<Saved />);
     await user.click(radio('5 out of 5'));

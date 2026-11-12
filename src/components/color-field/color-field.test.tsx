@@ -219,6 +219,7 @@ describe('ColorField', () => {
     const user = userEvent.setup();
     const { container } = render(
       <ColorField
+        showRestoreButton
         label="Accent"
         committedValue="#336699"
         defaultValue="#000000"

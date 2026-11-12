@@ -155,7 +155,12 @@ function PreviousColour({
   });
   return (
     <>
-      <Field state={state} label={`Colour, ${layout}, ${marker}`} changeLayout={layout}>
+      <Field
+        state={state}
+        label={`Colour, ${layout}, ${marker}`}
+        changeLayout={layout}
+        showRestoreButton
+      >
         {(control) => (
           <span>
             {state.isDirty || marker === 'locked' ? (

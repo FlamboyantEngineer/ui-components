@@ -57,7 +57,7 @@ export function ModalTallFormCase() {
         data-lab-modal="tall-form"
         primaryAction={{ label: 'Save', onPress: (close) => close() }}
       >
-        <NumberField label="Travellers" size="sm" defaultValue={2} minValue={1} />
+        <NumberField label="Travellers" size="sm" defaultValue={2} minValue={1} showRestoreButton />
         {groups.map((group, index) => (
           <Disclosure key={group} title={group} defaultExpanded={index % 2 === 0}>
             <TextField label={`${group} note`} defaultValue={`${group} as booked.`} />

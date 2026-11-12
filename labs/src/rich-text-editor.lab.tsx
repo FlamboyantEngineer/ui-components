@@ -65,6 +65,7 @@ mountLab(
         render={({ state, chrome }) => (
           <RichTextEditor
             label="Note"
+            showRestoreButton
             description={state === 'resting' ? 'Plain formatted text.' : undefined}
             toolbar={chrome === 'toolbar' ? <FormatToolbar /> : undefined}
             {...stateProps[state]}

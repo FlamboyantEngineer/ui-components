@@ -102,6 +102,8 @@ export interface DiagramCanvasProps<T = unknown>
   palette?: ReactNode;
   /** Shows the overview of the whole diagram. Defaults to true. */
   showMinimap?: boolean | undefined;
+  /** Adds a reset button to the toolbar's zoom control, which returns to 100%. */
+  showZoomReset?: boolean | undefined;
 }
 
 /** Each node's description: the labels of the nodes it leads to and comes from. */
@@ -273,6 +275,7 @@ export function DiagramCanvas<T = unknown>({
   onNodeAdd,
   palette: paletteContent,
   showMinimap = true,
+  showZoomReset = false,
   'aria-label': ariaLabel,
   className,
   ...rest
@@ -311,7 +314,7 @@ export function DiagramCanvas<T = unknown>({
       aria-label={ariaLabel ?? (rest['aria-labelledby'] ? undefined : strings.diagram)}
     >
       <DiagramPaletteContext value={palette}>
-        <DiagramToolbar controller={controller} view={view} onViewChange={setView} />
+        <DiagramToolbar {...{ controller, view, showZoomReset }} onViewChange={setView} />
         {paletteContent ? (
           <div {...hooks.slot('palette')} role="group" aria-label={strings.diagramPalette}>
             {paletteContent}

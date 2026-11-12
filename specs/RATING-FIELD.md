@@ -73,7 +73,7 @@ Verification: `src/components/rating-field/rating-field.test.tsx`
 
 ### UIC-RATING-FIELD-3.1 - Validation, dirty state, restore and Clear
 
-A required field with no rating shall be invalid (UIC-FIELD-3.1). `RatingField` shows dirty state with a restore button, which puts back the committed rating and focuses its radio, undoes and redoes with the field's chords, and offers the field menu, whose Clear removes the rating.
+A required field with no rating shall be invalid (UIC-FIELD-3.1). `RatingField` shows dirty state, with a restore button given `showRestoreButton`, which puts back the committed rating and focuses its radio, undoes and redoes with the field's chords, and offers the field menu, whose Clear removes the rating.
 
 Implementation: `src/components/rating-field/rating-field.tsx`, `src/components/field/field.tsx`
 Verification: `src/components/rating-field/rating-field.test.tsx`, `e2e/rating-field.spec.ts`

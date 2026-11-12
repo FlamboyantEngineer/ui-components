@@ -82,6 +82,7 @@ describe('TextField display value', () => {
     const onCommit = vi.fn();
     const { container } = render(
       <TextField
+        showRestoreButton
         label="Quantity"
         defaultValue="2 * 3"
         displayValue="6"

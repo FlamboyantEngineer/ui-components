@@ -5,7 +5,8 @@
   flex: 0 1 auto;
 }
 
-.ui-date-time-field:not([data-density='compact']) .ui-field__control {
+/* With a restore button, the control leaves room for its place at the end of the row. */
+.ui-date-time-field[data-restore-button]:not([data-density='compact']) .ui-field__control {
   max-width: calc(100% - var(--ref-field-button) - 6px);
 }
 

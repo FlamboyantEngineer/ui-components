@@ -290,7 +290,12 @@ function DirtyAndRestore() {
   const state = useFieldState<string>({ committedValue: committed, onCommit: setCommitted });
   return (
     <>
-      <Field state={state} label="Favourite fruit" description="Edit, then restore or save.">
+      <Field
+        state={state}
+        label="Favourite fruit"
+        description="Edit, then restore or save."
+        showRestoreButton
+      >
         {(control) => (
           <input
             {...control}
@@ -505,6 +510,7 @@ mountLab(
           </Badge>
         }
         menu={['clear', 'reset', 'help']}
+        showRestoreButton
         data-lab-field="parts"
       />
     </LabSection>

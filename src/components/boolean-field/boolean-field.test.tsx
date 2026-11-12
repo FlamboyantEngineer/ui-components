@@ -294,7 +294,7 @@ describe('BooleanField', () => {
     const outer: boolean[] = [];
     const { container } = render(
       <div onKeyDown={(event) => outer.push(event.defaultPrevented)}>
-        <BooleanField label="Ripe" committedValue={false} defaultValue={false} />
+        <BooleanField showRestoreButton label="Ripe" committedValue={false} defaultValue={false} />
       </div>,
     );
     const box = screen.getByRole('checkbox');
@@ -326,6 +326,7 @@ describe('BooleanField', () => {
     const user = userEvent.setup();
     const { container } = render(
       <BooleanField
+        showRestoreButton
         label="Ripe"
         variant="toggle-button"
         committedValue={false}
