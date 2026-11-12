@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
   ColorSwatch,
+  ColorSwatchButton,
   ColorSwatchPicker,
   ColorSwatchPickerItem,
 } from '../../src/components/color-swatch/color-swatch.js';
+import { BackgroundColorGlyph, FontColorGlyph } from '../../src/core/drawn-glyphs.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const sizes = ['xs', 'sm', 'md', 'lg', 'xl'] as const;
@@ -84,6 +86,49 @@ function ControlledPalette() {
   );
 }
 
+const colourCommands = {
+  text: { icon: FontColorGlyph, label: 'Text color' },
+  fill: { icon: BackgroundColorGlyph, label: 'Fill color' },
+} as const;
+
+/** Text and fill colour buttons that apply the colours a palette picks. */
+function ColourCommands() {
+  const [colours, setColours] = useState({ text: '#cc3300', fill: '#e69500' });
+  const [applied, setApplied] = useState('');
+  return (
+    <>
+      <p>
+        {(['text', 'fill'] as const).map((command) => (
+          <ColorSwatchButton
+            key={command}
+            {...colourCommands[command]}
+            color={colours[command]}
+            tooltip={colourCommands[command].label}
+            onPress={() => setApplied(`${command} ${colours[command]}`)}
+            data-lab-command={command}
+          />
+        ))}
+      </p>
+      {(['text', 'fill'] as const).map((command) => (
+        <ColorSwatchPicker
+          key={command}
+          aria-label={`${colourCommands[command].label} palette`}
+          value={colours[command]}
+          onChange={(color) => setColours((current) => ({ ...current, [command]: color }))}
+          data-lab-picker={`${command}-colour`}
+        >
+          {palette.map((color) => (
+            <ColorSwatchPickerItem key={color} color={color} />
+          ))}
+        </ColorSwatchPicker>
+      ))}
+      <p>
+        Applied: <output data-lab-output="applied">{applied}</output>
+      </p>
+    </>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -133,6 +178,32 @@ mountLab(
           <ColorSwatchPickerItem key={color} color={color} />
         ))}
       </ColorSwatchPicker>
+    </LabSection>
+    <LabSection
+      title="Colour buttons"
+      description="Text and fill colour glyphs over a bar of their colour, in three sizes, with a translucent, an empty and a disabled case."
+    >
+      <StateMatrix
+        axes={{
+          command: ['text', 'fill'] as const,
+          colour: ['#cc3300', '#33669980', 'empty', 'disabled'] as const,
+          size: ['sm', 'md', 'lg'] as const,
+        }}
+        render={({ command, colour, size }) => (
+          <ColorSwatchButton
+            {...colourCommands[command]}
+            color={colour === 'empty' ? null : colour === 'disabled' ? '#2e8b57' : colour}
+            isDisabled={colour === 'disabled'}
+            size={size}
+          />
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Colour commands"
+      description="Pick a text or fill colour below: its button's bar follows, and a press applies it."
+    >
+      <ColourCommands />
     </LabSection>
     <LabSection title="Picker layouts and sizes" description="A grid or a stack of swatches.">
       <StateMatrix

@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactElement, ReactNode } from 'react';
+import type { GlyphComponent } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { useLocale, useNumberFormatter } from '../../primitives/index.js';
@@ -69,6 +70,16 @@ export interface NumberEntryFieldProps
   commitBehavior?: NumberFieldCommitBehavior | undefined;
   /** Leave out the decrement and increment buttons; the arrow keys still step the value. */
   hideStepper?: boolean | undefined;
+  /** The decrement button's glyph, such as `DecreaseFontSizeGlyph`. Defaults to minus. */
+  decrementIcon?: GlyphComponent | undefined;
+  /** The increment button's glyph, such as `IncreaseFontSizeGlyph`. Defaults to plus. */
+  incrementIcon?: GlyphComponent | undefined;
+  /**
+   * Preset values the step buttons and plain Arrow Up and Arrow Down move through, to the next
+   * larger or smaller one, such as font sizes. Any number in the range can still be typed, and
+   * without `step` it is kept off the presets. Decimal fields without `units` only.
+   */
+  stepValues?: readonly number[] | undefined;
   /** Content inside the frame before the number, such as a literal prefix (`$`). */
   startAdornment?: ReactNode;
   /** Content inside the frame after the number, such as a literal suffix (`/mo`) or a unit. */
@@ -109,6 +120,9 @@ export type NumberControlConfig = Pick<
   | 'autoComplete'
   | 'enterKeyHint'
   | 'hideStepper'
+  | 'decrementIcon'
+  | 'incrementIcon'
+  | 'stepValues'
   | 'startAdornment'
   | 'endAdornment'
   | 'endAdornmentPlacement'

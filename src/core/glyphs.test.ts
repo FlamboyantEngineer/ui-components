@@ -109,6 +109,36 @@ describe('tabular formatting glyphs', () => {
   });
 });
 
+describe('text colour and size glyphs', () => {
+  it('UIC-PROVIDER-2.1 exports each text colour and size glyph under its provider key', () => {
+    const exports: Record<string, string> = {
+      FontColorGlyph: 'font-color',
+      BackgroundColorGlyph: 'background-color',
+      IncreaseFontSizeGlyph: 'increase-font-size',
+      DecreaseFontSizeGlyph: 'decrease-font-size',
+    };
+    const entry = core as unknown as Record<string, Partial<GlyphComponent> | undefined>;
+    for (const [name, key] of Object.entries(exports)) {
+      expect(entry[name]?.glyphName, name).toBe(key);
+    }
+  });
+
+  it('UIC-PROVIDER-2.1 keeps the colour glyphs above the swatch band and the size steps apart', () => {
+    for (const path of [glyphPaths.fontColorPath, glyphPaths.backgroundColorPath]) {
+      const ys = [...path.matchAll(/[ML](-?[\d.]+)[ ,](-?[\d.]+)/g)].map(([, , y]) => Number(y));
+      expect(Math.max(...ys)).toBeLessThanOrEqual(19.5);
+    }
+    const sizes = [
+      glyphPaths.increaseFontSizePath,
+      glyphPaths.decreaseFontSizePath,
+      glyphPaths.fontSizePath,
+      glyphPaths.fontFamilyPath,
+      glyphPaths.fontColorPath,
+    ];
+    expect(new Set(sizes).size).toBe(sizes.length);
+  });
+});
+
 describe('built-in glyph paths', () => {
   it('UIC-PROVIDER-2.1 carries only drawn Heroicons paths, with the MIT notice', () => {
     const glyphs = read('src/core/glyphs.tsx') + read('src/core/drawn-glyphs.tsx');

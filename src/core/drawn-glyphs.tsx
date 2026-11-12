@@ -58,13 +58,17 @@ import {
   alignTopCenterPath,
   alignTopLeftPath,
   alignTopRightPath,
+  backgroundColorPath,
   banknotePath,
   cellAlignmentPath,
   decreaseDecimalsPath,
+  decreaseFontSizePath,
+  fontColorPath,
   fontFamilyPath,
   fontSizePath,
   fractionPath,
   increaseDecimalsPath,
+  increaseFontSizePath,
   percentPath,
   rulerPath,
   scientificNotationPath,
@@ -232,3 +236,16 @@ export const AlignBottomRightGlyph = /* @__PURE__ */ createGlyph(
   alignBottomRightPath,
 );
 export const WrapTextGlyph = /* @__PURE__ */ createGlyph('wrap-text', wrapTextPath);
+export const FontColorGlyph = /* @__PURE__ */ createGlyph('font-color', fontColorPath);
+export const BackgroundColorGlyph = /* @__PURE__ */ createGlyph(
+  'background-color',
+  backgroundColorPath,
+);
+export const IncreaseFontSizeGlyph = /* @__PURE__ */ createGlyph(
+  'increase-font-size',
+  increaseFontSizePath,
+);
+export const DecreaseFontSizeGlyph = /* @__PURE__ */ createGlyph(
+  'decrease-font-size',
+  decreaseFontSizePath,
+);

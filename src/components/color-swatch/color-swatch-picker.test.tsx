@@ -34,7 +34,7 @@ describe('ColorSwatchPicker', () => {
       'true',
     );
     expect(options[0]?.querySelector('.ui-color-swatch')).toHaveAttribute('data-size', 'md');
-    expectHooksMatchSpec(container, 'COLOR-SWATCH', { slots: 'all' });
+    expectHooksMatchSpec(container, 'COLOR-SWATCH', { slots: ['item'] });
   });
 
   it('UIC-COLOR-SWATCH-2.1 leaves out items and values in a notation React Aria does not read', () => {

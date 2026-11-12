@@ -207,6 +207,10 @@ export type GlyphName =
   | 'text-align-center'
   | 'text-align-right'
   | 'text-align-justify'
-  | 'book-open';
+  | 'book-open'
+  | 'font-color'
+  | 'background-color'
+  | 'increase-font-size'
+  | 'decrease-font-size';
 
 export type GlyphMap = Record<GlyphName, GlyphComponent>;
