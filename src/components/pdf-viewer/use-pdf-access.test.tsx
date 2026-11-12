@@ -41,16 +41,20 @@ describe('PdfViewer document access', () => {
     expect(scroller.scrollTop).toBe(0);
   });
 
-  it('UIC-PDF-VIEWER-11.1 rejects a missing page and passes on the engine error', async () => {
+  it('UIC-PDF-VIEWER-11.1 rejects a missing page and passes on the engine error, then asks again', async () => {
     const engine = createEngine();
     const failure = new Error('Unreadable page');
     const page = await engine.pdf.getPage(2);
-    vi.mocked(page.getTextContent).mockRejectedValueOnce(failure);
+    const readText = vi.mocked(page.getTextContent).getMockImplementation();
+    vi.mocked(page.getTextContent).mockRejectedValue(failure);
     const { handle } = await renderWithAccess(engine);
 
     await expect(handle().getPageText(3)).rejects.toBeInstanceOf(RangeError);
     await expect(handle().getPageText(-1)).rejects.toBeInstanceOf(RangeError);
     await expect(handle().getPageText(1)).rejects.toBe(failure);
+    // A failed request is not kept: once the engine reads the page, asking again gets its text.
+    vi.mocked(page.getTextContent).mockImplementation(requireDefined(readText));
+    await expect(handle().getPageText(1)).resolves.toMatchObject({ pageIndex: 1 });
   });
 
   it('UIC-PDF-VIEWER-11.1 reads at the reader rotation through the same handle', async () => {

@@ -117,6 +117,34 @@ describe('PdfViewer commands', () => {
     expect(URL.revokeObjectURL).toHaveBeenCalledTimes(3);
   });
 
+  it('UIC-PDF-VIEWER-9.3 draws a huge page within the pixel ceiling and empties each canvas', async () => {
+    const canvases: HTMLCanvasElement[] = [];
+    vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation(function (
+      this: HTMLCanvasElement,
+      callback,
+    ) {
+      canvases.push(this);
+      expect(this.width * this.height).toBeLessThanOrEqual(2 ** 25);
+      callback(new Blob(['png']));
+    });
+    const engine = createEngine();
+    // Each page is ten times larger at the print scale than a normal page would be.
+    for (let pageNumber = 1; pageNumber <= engine.pdf.numPages; pageNumber += 1) {
+      const page = await engine.pdf.getPage(pageNumber);
+      const getViewport = page.getViewport.bind(page);
+      vi.spyOn(page, 'getViewport').mockImplementation((params) => {
+        const viewport = getViewport(params);
+        if (params.scale !== 150 / 72) return viewport;
+        return { ...viewport, width: viewport.width * 10, height: viewport.height * 10 };
+      });
+    }
+    await renderReady({}, engine);
+    await chooseCommand('Print');
+    await waitFor(() => expect(canvases).toHaveLength(3));
+    expect(canvases.every((canvas) => canvas.width === 0 && canvas.height === 0)).toBe(true);
+    document.querySelector('iframe')?.remove();
+  });
+
   it('UIC-PDF-VIEWER-2.5 prints the pages without their annotations when they are switched off', async () => {
     vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation(() => undefined);
     const engine = createEngine();

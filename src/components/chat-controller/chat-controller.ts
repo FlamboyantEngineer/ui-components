@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useUiStrings } from '../../core/provider.js';
+import { useUiClock, useUiStrings } from '../../core/provider.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { useStoreValue } from '../../utils/use-store-value.js';
 import type { ChatAttachmentData } from '../chat-attachment/chat-attachment.js';
@@ -171,7 +171,12 @@ function useChatProps(
  */
 export function useChatController(options: ChatControllerOptions): ChatController {
   const strings = useUiStrings();
-  const config = useLatest<ChatEngineConfig>({ ...options, failureText: strings.chatReplyFailed });
+  const { getNow } = useUiClock();
+  const config = useLatest<ChatEngineConfig>({
+    ...options,
+    failureText: strings.chatReplyFailed,
+    getNow,
+  });
   const [engine] = useState(() =>
     createChatEngine(() => config.current, options.initialMessages ?? []),
   );

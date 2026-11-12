@@ -133,4 +133,11 @@ describe('ChatCitation', () => {
     expect(preview.querySelector('.ui-chat-citation__site')).toBeNull();
     expectHooksMatchSpec(container, 'CHAT-SOURCES', { callerAttributes: ['data-probe'] });
   });
+
+  it('UIC-CHAT-SOURCES-2.3 opens the card on press for a source whose URL is not safe', () => {
+    const unsafe: ChatSource = { id: 'data', title: 'Packed page', url: 'data:text/html,<p>x</p>' };
+    render(<Sentence source={unsafe} />);
+    expect(screen.getByRole('button', { name: 'Source 2: Packed page' })).toBeInTheDocument();
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+  });
 });

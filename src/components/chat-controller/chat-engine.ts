@@ -48,7 +48,7 @@ function startReply(engine: ChatEngineContext, conversation: readonly ChatMessag
   const reply: ChatMessageData = {
     id: replyId,
     authorId: engine.getConfig().assistantId,
-    createdAt: new Date().toISOString(),
+    createdAt: engine.getConfig().getNow().toISOString(),
     parts: [],
     status: 'streaming',
   };
@@ -62,7 +62,7 @@ function startTurn(engine: ChatEngineContext, outgoing: ChatQueuedMessage) {
   dismissWaiting(engine);
   const author = {
     authorId: engine.getConfig().currentUserId,
-    createdAt: new Date().toISOString(),
+    createdAt: engine.getConfig().getNow().toISOString(),
   };
   const sent = createOutgoingMessage(outgoing, author);
   startReply(engine, [...engine.store.get().messages, sent]);

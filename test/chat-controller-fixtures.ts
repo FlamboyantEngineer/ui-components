@@ -1,6 +1,6 @@
 // Shared fixtures for the chat controller's tests: streams a test drives event by event.
-
 import { act, renderHook } from '@testing-library/react';
+import { createElement, type ReactNode } from 'react';
 import { vi } from 'vitest';
 import {
   type ChatControllerOptions,
@@ -9,6 +9,7 @@ import {
   useChatController,
 } from '../src/components/chat-controller/chat-controller.js';
 import type { ChatMessageData } from '../src/components/chat-parts/chat-parts.js';
+import { UiProvider } from '../src/core/provider.js';
 
 /** A stream the test pushes events into and ends; it also ends when its signal aborts. */
 export interface TestStream {
@@ -81,8 +82,14 @@ export async function push(stream: TestStream, ...events: ChatStreamEvent[]): Pr
   await settle();
 }
 
-/** Renders the controller for the reader `ana` and the assistant `helper`. */
-export function renderController(options: Partial<ChatControllerOptions> = {}) {
+/**
+ * Renders the controller for the reader `ana` and the assistant `helper`, under a provider with
+ * the `getNow` clock when one is given.
+ */
+export function renderController(
+  options: Partial<ChatControllerOptions> = {},
+  getNow?: () => Date,
+) {
   const testSend = createTestSend();
   const view = renderHook(
     (props: Partial<ChatControllerOptions>) =>
@@ -92,7 +99,13 @@ export function renderController(options: Partial<ChatControllerOptions> = {}) {
         assistantId: 'helper',
         ...props,
       }),
-    { initialProps: options },
+    {
+      initialProps: options,
+      ...(getNow && {
+        wrapper: ({ children }: { children: ReactNode }) =>
+          createElement(UiProvider, { getNow }, children),
+      }),
+    },
   );
   return { ...view, ...testSend };
 }
