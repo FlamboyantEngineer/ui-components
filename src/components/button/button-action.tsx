@@ -1,6 +1,14 @@
 'use client';
 
-import { type MouseEvent, type RefObject, useCallback, useRef, useState } from 'react';
+import {
+  type KeyboardEvent,
+  type MouseEvent,
+  type PointerEvent,
+  type RefObject,
+  useCallback,
+  useRef,
+  useState,
+} from 'react';
 import type { PressEvent } from '../../core/events.js';
 import { isThenable } from '../../utils/is-thenable.js';
 import type { ElementRender } from '../../utils/render-element.js';
@@ -71,9 +79,23 @@ function useActivationGuard(
   render: ButtonProps['render'],
 ): ElementRender<'button', ButtonRenderState> {
   return (props, state) => {
+    // The admission is for the click of the press that started the action. Enter clicks before it
+    // presses, so its admission finds no click to admit: a new key or pointer press ends it, since
+    // the timer that would can run after input a busy browser has already queued.
+    const endAdmission = () => {
+      guard.admitted.current = false;
+    };
     const guarded = {
       ...props,
       type,
+      onKeyDownCapture: (event: KeyboardEvent<HTMLButtonElement>) => {
+        endAdmission();
+        props.onKeyDownCapture?.(event);
+      },
+      onPointerDownCapture: (event: PointerEvent<HTMLButtonElement>) => {
+        endAdmission();
+        props.onPointerDownCapture?.(event);
+      },
       onClick: (event: MouseEvent<HTMLButtonElement>) => {
         if (guard.isBusy() && !guard.admitted.current) event.preventDefault();
         props.onClick?.(event);

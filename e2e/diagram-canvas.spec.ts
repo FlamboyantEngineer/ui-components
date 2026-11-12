@@ -96,9 +96,13 @@ async function expectSharpZoom(page: Page, lab: { open(name: string): Promise<vo
     );
     expect(native).toBe(true);
     const sample = page.locator('[data-lab-sample="native"]');
-    const [zoomed, reference] = [await halfTones(label), await halfTones(sample)];
+    // The browser draws the zoomed label again a frame or more after the zoom shows, so the
+    // comparison waits for that drawing rather than reading the label once.
+    await expect(async () => {
+      const [zoomed, reference] = [await halfTones(label), await halfTones(sample)];
+      expect(zoomed, zoom).toBeLessThan(reference * 1.15 + 0.03);
+    }).toPass();
     await sample.evaluate((node) => node.remove());
-    expect(zoomed, zoom).toBeLessThan(reference * 1.15 + 0.03);
   }
 }
 
