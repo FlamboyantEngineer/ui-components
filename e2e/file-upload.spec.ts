@@ -399,14 +399,22 @@ test.describe('File Upload lab', () => {
             input.value = '';
           }
           const isShadowed = element.elements instanceof HTMLInputElement;
-          const read = () =>
+          // Both reads happen before any await: a render the lab commits in between would restore
+          // the shadowing names this test set by hand.
+          const firstEntries = Array.from(new FormData(element));
+          const repeatedEntries = Array.from(new FormData(element));
+          const describe = (entries: [string, FormDataEntryValue][]) =>
             Promise.all(
-              Array.from(new FormData(element), async ([name, value]) => [
+              entries.map(async ([name, value]) => [
                 name,
                 typeof value === 'string' ? value : `${value.name}:${await value.text()}`,
               ]),
             );
-          return { isShadowed, first: await read(), repeated: await read() };
+          return {
+            isShadowed,
+            first: await describe(firstEntries),
+            repeated: await describe(repeatedEntries),
+          };
         }, shadow);
         const expected = [
           ['docs', ':'],
